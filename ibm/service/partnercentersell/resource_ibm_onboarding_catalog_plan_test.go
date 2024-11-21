@@ -22,24 +22,29 @@ import (
 
 func TestAccIbmOnboardingCatalogPlanBasic(t *testing.T) {
 	var conf partnercentersellv1.GlobalCatalogPlan
-	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	productID := acc.PcsOnboardingProductWithCatalogProduct
+	catalogProductID := acc.PcsOnboardingCatalogProductId
+	objectId := fmt.Sprintf("test-object-id-terraform-%d", acctest.RandIntRange(10, 100))
+	name := "test-plan-name-terraform"
 	active := "true"
-	disabled := "true"
+	disabled := "false"
 	kind := "plan"
-	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	nameUpdate := "test-plan-name-terraform"
 	activeUpdate := "false"
 	disabledUpdate := "false"
 	kindUpdate := "plan"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		PreCheck:     func() { acc.TestAccPreCheckPartnerCenterSell(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmOnboardingCatalogPlanDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmOnboardingCatalogPlanConfigBasic(name, active, disabled, kind),
+				Config: testAccCheckIbmOnboardingCatalogPlanConfigBasic(productID, catalogProductID, name, active, disabled, kind, objectId),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmOnboardingCatalogPlanExists("ibm_onboarding_catalog_plan.onboarding_catalog_plan_instance", conf),
+					resource.TestCheckResourceAttr("ibm_onboarding_catalog_plan.onboarding_catalog_plan_instance", "product_id", productID),
+					resource.TestCheckResourceAttr("ibm_onboarding_catalog_plan.onboarding_catalog_plan_instance", "catalog_product_id", catalogProductID),
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_plan.onboarding_catalog_plan_instance", "name", name),
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_plan.onboarding_catalog_plan_instance", "active", active),
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_plan.onboarding_catalog_plan_instance", "disabled", disabled),
@@ -47,8 +52,10 @@ func TestAccIbmOnboardingCatalogPlanBasic(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmOnboardingCatalogPlanConfigBasic(nameUpdate, activeUpdate, disabledUpdate, kindUpdate),
+				Config: testAccCheckIbmOnboardingCatalogPlanConfigBasic(productID, catalogProductID, nameUpdate, activeUpdate, disabledUpdate, kindUpdate, objectId),
 				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_onboarding_catalog_plan.onboarding_catalog_plan_instance", "product_id", productID),
+					resource.TestCheckResourceAttr("ibm_onboarding_catalog_plan.onboarding_catalog_plan_instance", "catalog_product_id", catalogProductID),
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_plan.onboarding_catalog_plan_instance", "name", nameUpdate),
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_plan.onboarding_catalog_plan_instance", "active", activeUpdate),
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_plan.onboarding_catalog_plan_instance", "disabled", disabledUpdate),
@@ -61,30 +68,44 @@ func TestAccIbmOnboardingCatalogPlanBasic(t *testing.T) {
 
 func TestAccIbmOnboardingCatalogPlanAllArgs(t *testing.T) {
 	var conf partnercentersellv1.GlobalCatalogPlan
-	env := fmt.Sprintf("tf_env_%d", acctest.RandIntRange(10, 100))
-	objectID := fmt.Sprintf("tf_object_id_%d", acctest.RandIntRange(10, 100))
-	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	productID := acc.PcsOnboardingProductWithCatalogProduct
+	catalogProductID := acc.PcsOnboardingCatalogProductId
+	objectId := fmt.Sprintf("test-object-id-terraform-%d", acctest.RandIntRange(10, 100))
+	env := "current"
+	name := "test-plan-name-terraform"
 	active := "true"
-	disabled := "true"
+	disabled := "false"
 	kind := "plan"
-	envUpdate := fmt.Sprintf("tf_env_%d", acctest.RandIntRange(10, 100))
-	objectIDUpdate := fmt.Sprintf("tf_object_id_%d", acctest.RandIntRange(10, 100))
-	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	envUpdate := "current"
+	nameUpdate := "test-plan-name-terraform"
 	activeUpdate := "false"
 	disabledUpdate := "false"
 	kindUpdate := "plan"
+	overviewUiEn := "display_name"
+	overviewUiEnUpdate := "display_name_2"
+	rcCompatible := "true"
+	rcCompatibleUpdate := "false"
+	allowInternalUsers := "true"
+	allowInternalUsersUpdate := "false"
+	pricingType := "paid"
+	pricingTypeUpdate := "free"
+	bulletTitleName := "title"
+	bulletTitleNameUpdate := "title-2"
+	mediaCaption := "Some random minecraft Video"
+	mediaCaptionUpdate := "Some random minecraft Video 2"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		PreCheck:     func() { acc.TestAccPreCheckPartnerCenterSell(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmOnboardingCatalogPlanDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmOnboardingCatalogPlanConfig(env, objectID, name, active, disabled, kind),
+				Config: testAccCheckIbmOnboardingCatalogPlanConfig(productID, catalogProductID, env, name, active, disabled, kind, objectId, overviewUiEn, rcCompatible, pricingType, allowInternalUsers, bulletTitleName, mediaCaption),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmOnboardingCatalogPlanExists("ibm_onboarding_catalog_plan.onboarding_catalog_plan_instance", conf),
+					resource.TestCheckResourceAttr("ibm_onboarding_catalog_plan.onboarding_catalog_plan_instance", "product_id", productID),
+					resource.TestCheckResourceAttr("ibm_onboarding_catalog_plan.onboarding_catalog_plan_instance", "catalog_product_id", catalogProductID),
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_plan.onboarding_catalog_plan_instance", "env", env),
-					resource.TestCheckResourceAttr("ibm_onboarding_catalog_plan.onboarding_catalog_plan_instance", "object_id", objectID),
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_plan.onboarding_catalog_plan_instance", "name", name),
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_plan.onboarding_catalog_plan_instance", "active", active),
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_plan.onboarding_catalog_plan_instance", "disabled", disabled),
@@ -92,10 +113,11 @@ func TestAccIbmOnboardingCatalogPlanAllArgs(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmOnboardingCatalogPlanConfig(envUpdate, objectIDUpdate, nameUpdate, activeUpdate, disabledUpdate, kindUpdate),
+				Config: testAccCheckIbmOnboardingCatalogPlanUpdateConfig(productID, catalogProductID, envUpdate, nameUpdate, activeUpdate, disabledUpdate, kindUpdate, objectId, overviewUiEnUpdate, rcCompatibleUpdate, pricingTypeUpdate, allowInternalUsersUpdate, bulletTitleNameUpdate, mediaCaptionUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_onboarding_catalog_plan.onboarding_catalog_plan_instance", "product_id", productID),
+					resource.TestCheckResourceAttr("ibm_onboarding_catalog_plan.onboarding_catalog_plan_instance", "catalog_product_id", catalogProductID),
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_plan.onboarding_catalog_plan_instance", "env", envUpdate),
-					resource.TestCheckResourceAttr("ibm_onboarding_catalog_plan.onboarding_catalog_plan_instance", "object_id", objectIDUpdate),
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_plan.onboarding_catalog_plan_instance", "name", nameUpdate),
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_plan.onboarding_catalog_plan_instance", "active", activeUpdate),
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_plan.onboarding_catalog_plan_instance", "disabled", disabledUpdate),
@@ -103,107 +125,162 @@ func TestAccIbmOnboardingCatalogPlanAllArgs(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				ResourceName:      "ibm_onboarding_catalog_plan.onboarding_catalog_plan",
+				ResourceName:      "ibm_onboarding_catalog_plan.onboarding_catalog_plan_instance",
 				ImportState:       true,
 				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"env", "product_id", "catalog_product_id",
+				},
 			},
 		},
 	})
 }
 
-func testAccCheckIbmOnboardingCatalogPlanConfigBasic(name string, active string, disabled string, kind string) string {
+func testAccCheckIbmOnboardingCatalogPlanConfigBasic(productID string, catalogProductID string, name string, active string, disabled string, kind string, objectId string) string {
 	return fmt.Sprintf(`
 		resource "ibm_onboarding_catalog_plan" "onboarding_catalog_plan_instance" {
-			product_id = ibm_onboarding_product.onboarding_product_instance.id
-			catalog_product_id = ibm_onboarding_catalog_product.onboarding_catalog_product_instance.onboarding_catalog_product_id
+			product_id = "%s"
+			catalog_product_id = "%s"
 			name = "%s"
 			active = %s
 			disabled = %s
 			kind = "%s"
-			tags = "FIXME"
+			object_id = "%s"
+			tags = ["tag"]
 			object_provider {
 				name = "name"
-				email = "email"
+				email = "email@email.com"
 			}
+			metadata {
+                rc_compatible =	 false
+                pricing {
+                    type = "paid"
+                    origin = "pricing_catalog"
+                }
+				plan {
+					allow_internal_users = true
+					bindable = false
+				}
+            }
 		}
-	`, name, active, disabled, kind)
+	`, productID, catalogProductID, name, active, disabled, kind, objectId)
 }
 
-func testAccCheckIbmOnboardingCatalogPlanConfig(env string, objectID string, name string, active string, disabled string, kind string) string {
+func testAccCheckIbmOnboardingCatalogPlanConfig(productID string, catalogProductID string, env string, name string, active string, disabled string, kind string, objectId string, overviewUiEn string, rcCompatible string, pricingType string, allowInternalUsers string, bulletTitleName string, mediaCaption string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_onboarding_catalog_plan" "onboarding_catalog_plan_instance" {
-			product_id = ibm_onboarding_product.onboarding_product_instance.id
-			catalog_product_id = ibm_onboarding_catalog_product.onboarding_catalog_product_instance.onboarding_catalog_product_id
+			product_id = "%s"
+			catalog_product_id = "%s"
 			env = "%s"
-			object_id = "%s"
 			name = "%s"
 			active = %s
 			disabled = %s
 			kind = "%s"
+			object_id = "%s"
 			overview_ui {
 				en {
-					display_name = "display_name"
+					display_name = "%s"
 					description = "description"
 					long_description = "long_description"
 				}
 			}
-			tags = "FIXME"
+			tags = ["tag"]
 			object_provider {
 				name = "name"
-				email = "email"
+				email = "email@email.com"
 			}
 			metadata {
-				rc_compatible = true
-				ui {
-					strings {
-						en {
-							bullets {
-								description = "description"
-								description_i18n = { "key" = "inner" }
-								title = "title"
-								title_i18n = { "key" = "inner" }
-							}
-							media {
-								caption = "caption"
-								caption_i18n = { "key" = "inner" }
-								thumbnail = "thumbnail"
-								type = "image"
-								url = "url"
-							}
-							embeddable_dashboard = "embeddable_dashboard"
-						}
-					}
-					urls {
-						doc_url = "doc_url"
-						apidocs_url = "apidocs_url"
-						terms_url = "terms_url"
-						instructions_url = "instructions_url"
-						catalog_details_url = "catalog_details_url"
-						custom_create_page_url = "custom_create_page_url"
-						dashboard = "dashboard"
-					}
-					hidden = true
-					side_by_side_index = 1.0
-				}
-				service {
-					rc_provisionable = true
-					iam_compatible = true
-					bindable = true
-					plan_updateable = true
-					service_key_supported = true
-				}
+				rc_compatible = "%s"
 				pricing {
-					type = "free"
+					type = "%s"
 					origin = "global_catalog"
 				}
 				plan {
-					allow_internal_users = true
-					bindable = true
+					allow_internal_users = "%s"
+					bindable = false
 				}
+				ui {
+            		strings {
+                		en {
+                    		bullets {
+                        		title = "%s"
+                        		description = "some1"
+                    		}
+							media {
+                        		type = "youtube"
+                        		url = "https://www.youtube.com/embed/HtkpMgNFYtE"
+                        		caption = "%s"
+                    		}
+                		}
+            		}
+        		}
 			}
 		}
-	`, env, objectID, name, active, disabled, kind)
+	`, productID, catalogProductID, env, name, active, disabled, kind, objectId, overviewUiEn, rcCompatible, pricingType, allowInternalUsers, bulletTitleName, mediaCaption)
+}
+
+func testAccCheckIbmOnboardingCatalogPlanUpdateConfig(productID string, catalogProductID string, env string, name string, active string, disabled string, kind string, objectId string, overviewUiEn string, rcCompatible string, pricingType string, allowInternalUsers string, bulletTitleName string, mediaCaption string) string {
+	return fmt.Sprintf(`
+
+		resource "ibm_onboarding_catalog_plan" "onboarding_catalog_plan_instance" {
+			product_id = "%s"
+			catalog_product_id = "%s"
+			env = "%s"
+			name = "%s"
+			active = %s
+			disabled = %s
+			kind = "%s"
+			object_id = "%s"
+			overview_ui {
+				en {
+					display_name = "%s"
+					description = "description"
+					long_description = "long_description"
+				}
+			}
+			tags = ["tag"]
+			object_provider {
+				name = "name"
+				email = "email@email.com"
+			}
+			metadata {
+				rc_compatible = "%s"
+				pricing {
+					type = "%s"
+					origin = "global_catalog"
+				}
+				plan {
+					allow_internal_users = "%s"
+					bindable = false
+				}
+				ui {
+            		strings {
+                		en {
+                    		bullets {
+                        		title = "%s"
+                        		description = "some1"
+                    		}
+							bullets {
+                        		title = "newBullet"
+                        		description = "some1"
+                    		}
+							media {
+                        		type = "youtube"
+                        		url = "https://www.youtube.com/embed/HtkpMgNFYtE"
+                        		caption = "%s"
+                    		}
+							media {
+                        		type = "youtube"
+                        		url = "https://www.youtube.com/embed/HtkpMgNFYtE"
+                        		caption = "newMedia"
+                    		}
+                		}
+            		}
+        		}
+			}
+		}
+	`, productID, catalogProductID, env, name, active, disabled, kind, objectId, overviewUiEn, rcCompatible, pricingType, allowInternalUsers, bulletTitleName, mediaCaption)
 }
 
 func testAccCheckIbmOnboardingCatalogPlanExists(n string, obj partnercentersellv1.GlobalCatalogPlan) resource.TestCheckFunc {
