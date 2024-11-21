@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
@@ -20,10 +21,10 @@ import (
 
 func TestAccIbmOnboardingRegistrationBasic(t *testing.T) {
 	var conf partnercentersellv1.Registration
-	accountID := acc.PcsRegistrationAccountId
-	companyName := "Test_company"
-	accountIDUpdate := acc.PcsRegistrationAccountId
-	companyNameUpdate := "Test_company_up"
+	accountID := fmt.Sprintf("tf_account_id_%d", acctest.RandIntRange(10, 100))
+	companyName := fmt.Sprintf("tf_company_name_%d", acctest.RandIntRange(10, 100))
+	accountIDUpdate := fmt.Sprintf("tf_account_id_%d", acctest.RandIntRange(10, 100))
+	companyNameUpdate := fmt.Sprintf("tf_company_name_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -51,14 +52,14 @@ func TestAccIbmOnboardingRegistrationBasic(t *testing.T) {
 
 func TestAccIbmOnboardingRegistrationAllArgs(t *testing.T) {
 	var conf partnercentersellv1.Registration
-	accountID := acc.PcsRegistrationAccountId
-	companyName := "Test_company"
-	defaultPrivateCatalogID := "772b632e-fab4-4c41-b0b7-0a92fa40cf67"
-	providerAccessGroup := "AccessGroupId-b08e7bb5-d480-4c26-b193-d57dd9311608"
-	accountIDUpdate := acc.PcsRegistrationAccountId
-	companyNameUpdate := "Test_company_up"
-	defaultPrivateCatalogIDUpdate := "772b632e-fab4-4c41-b0b7-0a92fa40cf67"
-	providerAccessGroupUpdate := "AccessGroupId-b08e7bb5-d480-4c26-b193-d57dd9311608"
+	accountID := fmt.Sprintf("tf_account_id_%d", acctest.RandIntRange(10, 100))
+	companyName := fmt.Sprintf("tf_company_name_%d", acctest.RandIntRange(10, 100))
+	defaultPrivateCatalogID := fmt.Sprintf("tf_default_private_catalog_id_%d", acctest.RandIntRange(10, 100))
+	providerAccessGroup := fmt.Sprintf("tf_provider_access_group_%d", acctest.RandIntRange(10, 100))
+	accountIDUpdate := fmt.Sprintf("tf_account_id_%d", acctest.RandIntRange(10, 100))
+	companyNameUpdate := fmt.Sprintf("tf_company_name_%d", acctest.RandIntRange(10, 100))
+	defaultPrivateCatalogIDUpdate := fmt.Sprintf("tf_default_private_catalog_id_%d", acctest.RandIntRange(10, 100))
+	providerAccessGroupUpdate := fmt.Sprintf("tf_provider_access_group_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -85,7 +86,7 @@ func TestAccIbmOnboardingRegistrationAllArgs(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				ResourceName:      "ibm_onboarding_registration.onboarding_registration_instance",
+				ResourceName:      "ibm_onboarding_registration.onboarding_registration",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -99,8 +100,8 @@ func testAccCheckIbmOnboardingRegistrationConfigBasic(accountID string, companyN
 			account_id = "%s"
 			company_name = "%s"
 			primary_contact {
-				name = "Petra"
-				email = "petra@ibm.com"
+				name = "name"
+				email = "email"
 			}
 		}
 	`, accountID, companyName)
@@ -113,8 +114,8 @@ func testAccCheckIbmOnboardingRegistrationConfig(accountID string, companyName s
 			account_id = "%s"
 			company_name = "%s"
 			primary_contact {
-				name = "Petra"
-				email = "petra@ibm.com"
+				name = "name"
+				email = "email"
 			}
 			default_private_catalog_id = "%s"
 			provider_access_group = "%s"

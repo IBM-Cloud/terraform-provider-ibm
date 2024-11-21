@@ -22,19 +22,25 @@ import (
 
 func TestAccIbmOnboardingIamRegistrationBasic(t *testing.T) {
 	var conf partnercentersellv1.IamServiceRegistration
-	productID := acc.PcsOnboardingProductWithCatalogProduct
-	name := acc.PcsIamServiceRegistrationId
+	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheckPartnerCenterSell(t) },
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmOnboardingIamRegistrationDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmOnboardingIamRegistrationConfigBasic(productID, name),
+				Config: testAccCheckIbmOnboardingIamRegistrationConfigBasic(name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmOnboardingIamRegistrationExists("ibm_onboarding_iam_registration.onboarding_iam_registration_instance", conf),
-					resource.TestCheckResourceAttr("ibm_onboarding_iam_registration.onboarding_iam_registration_instance", "product_id", productID),
+					resource.TestCheckResourceAttr("ibm_onboarding_iam_registration.onboarding_iam_registration_instance", "name", name),
+				),
+			},
+			resource.TestStep{
+				Config: testAccCheckIbmOnboardingIamRegistrationConfigBasic(nameUpdate),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_onboarding_iam_registration.onboarding_iam_registration_instance", "name", nameUpdate),
 				),
 			},
 		},
@@ -43,29 +49,24 @@ func TestAccIbmOnboardingIamRegistrationBasic(t *testing.T) {
 
 func TestAccIbmOnboardingIamRegistrationAllArgs(t *testing.T) {
 	var conf partnercentersellv1.IamServiceRegistration
-	productID := acc.PcsOnboardingProductWithCatalogProduct
-	env := "current"
-	name := acc.PcsIamServiceRegistrationId
-	roleDisplayName := fmt.Sprintf("random-%d", acctest.RandIntRange(10, 100))
-	iamRegistrationRole := fmt.Sprintf("crn:v1:bluemix:public:%s::::serviceRole:%s", acc.PcsIamServiceRegistrationId, roleDisplayName)
-	enabled := "true"
-	serviceType := "platform_service"
-	envUpdate := "current"
-	roleDisplayNameUpdate := fmt.Sprintf("random-%d", acctest.RandIntRange(10, 100))
-	nameUpdate := acc.PcsIamServiceRegistrationId
+	env := fmt.Sprintf("tf_env_%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	enabled := "false"
+	serviceType := "service"
+	envUpdate := fmt.Sprintf("tf_env_%d", acctest.RandIntRange(10, 100))
+	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	enabledUpdate := "true"
-	serviceTypeUpdate := "service"
+	serviceTypeUpdate := "platform_service"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheckPartnerCenterSell(t) },
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmOnboardingIamRegistrationDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmOnboardingIamRegistrationConfig(productID, env, name, enabled, serviceType, iamRegistrationRole, roleDisplayName, acc.PcsIamServiceRegistrationId),
+				Config: testAccCheckIbmOnboardingIamRegistrationConfig(env, name, enabled, serviceType),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmOnboardingIamRegistrationExists("ibm_onboarding_iam_registration.onboarding_iam_registration_instance", conf),
-					resource.TestCheckResourceAttr("ibm_onboarding_iam_registration.onboarding_iam_registration_instance", "product_id", productID),
 					resource.TestCheckResourceAttr("ibm_onboarding_iam_registration.onboarding_iam_registration_instance", "env", env),
 					resource.TestCheckResourceAttr("ibm_onboarding_iam_registration.onboarding_iam_registration_instance", "name", name),
 					resource.TestCheckResourceAttr("ibm_onboarding_iam_registration.onboarding_iam_registration_instance", "enabled", enabled),
@@ -73,9 +74,8 @@ func TestAccIbmOnboardingIamRegistrationAllArgs(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmOnboardingIamRegistrationConfig(productID, envUpdate, nameUpdate, enabledUpdate, serviceTypeUpdate, iamRegistrationRole, roleDisplayNameUpdate, acc.PcsIamServiceRegistrationId),
+				Config: testAccCheckIbmOnboardingIamRegistrationConfig(envUpdate, nameUpdate, enabledUpdate, serviceTypeUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_onboarding_iam_registration.onboarding_iam_registration_instance", "product_id", productID),
 					resource.TestCheckResourceAttr("ibm_onboarding_iam_registration.onboarding_iam_registration_instance", "env", envUpdate),
 					resource.TestCheckResourceAttr("ibm_onboarding_iam_registration.onboarding_iam_registration_instance", "name", nameUpdate),
 					resource.TestCheckResourceAttr("ibm_onboarding_iam_registration.onboarding_iam_registration_instance", "enabled", enabledUpdate),
@@ -83,41 +83,35 @@ func TestAccIbmOnboardingIamRegistrationAllArgs(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				ResourceName:      "ibm_onboarding_iam_registration.onboarding_iam_registration_instance",
+				ResourceName:      "ibm_onboarding_iam_registration.onboarding_iam_registration",
 				ImportState:       true,
 				ImportStateVerify: true,
-				ImportStateVerifyIgnore: []string{
-					"env", "product_id", "service_type"},
 			},
 		},
 	})
 }
 
-func testAccCheckIbmOnboardingIamRegistrationConfigBasic(productID string, name string) string {
+func testAccCheckIbmOnboardingIamRegistrationConfigBasic(name string) string {
 	return fmt.Sprintf(`
 		resource "ibm_onboarding_iam_registration" "onboarding_iam_registration_instance" {
-			product_id = "%s"
+			product_id = ibm_onboarding_product.onboarding_product_instance.id
 			name = "%s"
-			enabled = true
-			display_name {
-				default = "%s"
-			}
 		}
-	`, productID, name, name)
+	`, name)
 }
 
-func testAccCheckIbmOnboardingIamRegistrationConfig(productID string, env string, name string, enabled string, serviceType string, iamRegistrationRole string, roleDisplayName string, iamRegistrationID string) string {
+func testAccCheckIbmOnboardingIamRegistrationConfig(env string, name string, enabled string, serviceType string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_onboarding_iam_registration" "onboarding_iam_registration_instance" {
-			product_id = "%s"
+			product_id = ibm_onboarding_product.onboarding_product_instance.id
 			env = "%s"
 			name = "%s"
 			enabled = %s
 			service_type = "%s"
 			actions {
 				id = "id"
-				roles = [ "%s" ]
+				roles = [ "roles" ]
 				description {
 					default = "default"
 					en = "en"
@@ -148,9 +142,9 @@ func testAccCheckIbmOnboardingIamRegistrationConfig(productID string, env string
 					hidden = true
 				}
 			}
-			additional_policy_scopes = ["%s"]
+			additional_policy_scopes = "FIXME"
 			display_name {
-				default = "%s"
+				default = "default"
 				en = "en"
 				de = "de"
 				es = "es"
@@ -162,16 +156,38 @@ func testAccCheckIbmOnboardingIamRegistrationConfig(productID string, env string
 				zh_tw = "zh_tw"
 				zh_cn = "zh_cn"
 			}
-			parent_ids = ["05ca8653-de25-49fa-a14d-aaa5d373bc21"]	
+			parent_ids = "FIXME"
+			resource_hierarchy_attribute {
+				key = "key"
+				value = "value"
+			}
+			supported_anonymous_accesses {
+				attributes {
+					account_id = "account_id"
+					service_name = "service_name"
+					additional_properties = { "key" = "inner" }
+				}
+				roles = [ "roles" ]
+			}
 			supported_attributes {
-				key = "testString"
+				key = "key"
 				options {
 					operators = [ "stringEquals" ]
-					hidden = false
+					hidden = true
+					supported_patterns = [ "supported_patterns" ]
 					policy_types = [ "access" ]
 					is_empty_value_supported = true
 					is_string_exists_false_value_supported = true
-					supported_attributes = [	]
+					key = "key"
+					resource_hierarchy {
+						key {
+							key = "key"
+							value = "value"
+						}
+						value {
+							key = "key"
+						}
+					}
 				}
 				display_name {
 					default = "default"
@@ -200,72 +216,90 @@ func testAccCheckIbmOnboardingIamRegistrationConfig(productID string, env string
 					zh_cn = "zh_cn"
 				}
 				ui {
-					input_type = "selector"
+					input_type = "input_type"
 					input_details {
-						type = "gst"
+						type = "type"
 						values {
-							value = "testString"
+							value = "value"
 							display_name {
-								default = "testString"
-								en = "testString"
-								de = "testString"
-								es = "testString"
-								fr = "testString"
-								it = "testString"
-								ja = "testString"
-								ko = "testString"
-								pt_br = "testString"
-								zh_tw = "testString"
-								zh_cn = "testString"
+								default = "default"
+								en = "en"
+								de = "de"
+								es = "es"
+								fr = "fr"
+								it = "it"
+								ja = "ja"
+								ko = "ko"
+								pt_br = "pt_br"
+								zh_tw = "zh_tw"
+								zh_cn = "zh_cn"
 							}
 						}
 						gst {
 							query = "query"
-							value_property_name = "teststring"
-							input_option_label = "{name} - {instance_id}"
+							value_property_name = "value_property_name"
+							label_property_name = "label_property_name"
+							input_option_label = "input_option_label"
+						}
+						url {
+							url_endpoint = "url_endpoint"
+							input_option_label = "input_option_label"
 						}
 					}
 				}
 			}
 			supported_authorization_subjects {
 				attributes {
-					service_name = "testString"
-					resource_type = "testString"
+					service_name = "service_name"
+					resource_type = "resource_type"
 				}
-				roles = [ "%s" ]
+				roles = [ "roles" ]
 			}
 			supported_roles {
-				id = "%s"
+				id = "id"
 				description {
-					default = "desc"
+					default = "default"
+					en = "en"
+					de = "de"
+					es = "es"
+					fr = "fr"
+					it = "it"
+					ja = "ja"
+					ko = "ko"
+					pt_br = "pt_br"
+					zh_tw = "zh_tw"
+					zh_cn = "zh_cn"
 				}
 				display_name {
-					default = "%s"
+					default = "default"
+					en = "en"
+					de = "de"
+					es = "es"
+					fr = "fr"
+					it = "it"
+					ja = "ja"
+					ko = "ko"
+					pt_br = "pt_br"
+					zh_tw = "zh_tw"
+					zh_cn = "zh_cn"
 				}
 				options {
 					access_policy = true
 					policy_type = [ "access" ]
+					account_type = "enterprise"
 				}
 			}
 			supported_network {
 				environment_attributes {
-					key = "networkType"
-					values = [ "public" ]
+					key = "key"
+					values = [ "values" ]
 					options {
-						hidden = false
+						hidden = true
 					}
 				}
 			}
-			supported_anonymous_accesses {
-				attributes {
-					account_id = "account_id"
-					service_name = "%s"
-					additional_properties = { "testString" = "additionalProps" }
-				}
-				roles = [ "%s" ]
-			}
 		}
-	`, productID, env, name, enabled, serviceType, iamRegistrationRole, name, name, iamRegistrationRole, iamRegistrationRole, roleDisplayName, iamRegistrationID, iamRegistrationRole)
+	`, env, name, enabled, serviceType)
 }
 
 func testAccCheckIbmOnboardingIamRegistrationExists(n string, obj partnercentersellv1.IamServiceRegistration) resource.TestCheckFunc {
@@ -586,7 +620,7 @@ func TestResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedAttr
 		supportedAttributesOptionsModel := make(map[string]interface{})
 		supportedAttributesOptionsModel["operators"] = []string{"stringEquals"}
 		supportedAttributesOptionsModel["hidden"] = true
-		supportedAttributesOptionsModel["supported_attributes"] = []string{"testString"}
+		supportedAttributesOptionsModel["supported_patterns"] = []string{"testString"}
 		supportedAttributesOptionsModel["policy_types"] = []string{"access"}
 		supportedAttributesOptionsModel["is_empty_value_supported"] = true
 		supportedAttributesOptionsModel["is_string_exists_false_value_supported"] = true
@@ -667,7 +701,7 @@ func TestResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedAttr
 	supportedAttributesOptionsModel := new(partnercentersellv1.SupportedAttributesOptions)
 	supportedAttributesOptionsModel.Operators = []string{"stringEquals"}
 	supportedAttributesOptionsModel.Hidden = core.BoolPtr(true)
-	supportedAttributesOptionsModel.SupportedAttributes = []string{"testString"}
+	supportedAttributesOptionsModel.SupportedPatterns = []string{"testString"}
 	supportedAttributesOptionsModel.PolicyTypes = []string{"access"}
 	supportedAttributesOptionsModel.IsEmptyValueSupported = core.BoolPtr(true)
 	supportedAttributesOptionsModel.IsStringExistsFalseValueSupported = core.BoolPtr(true)
@@ -752,7 +786,7 @@ func TestResourceIbmOnboardingIamRegistrationSupportedAttributesOptionsToMap(t *
 		model := make(map[string]interface{})
 		model["operators"] = []string{"stringEquals"}
 		model["hidden"] = true
-		model["supported_attributes"] = []string{"testString"}
+		model["supported_patterns"] = []string{"testString"}
 		model["policy_types"] = []string{"access"}
 		model["is_empty_value_supported"] = true
 		model["is_string_exists_false_value_supported"] = true
@@ -776,7 +810,7 @@ func TestResourceIbmOnboardingIamRegistrationSupportedAttributesOptionsToMap(t *
 	model := new(partnercentersellv1.SupportedAttributesOptions)
 	model.Operators = []string{"stringEquals"}
 	model.Hidden = core.BoolPtr(true)
-	model.SupportedAttributes = []string{"testString"}
+	model.SupportedPatterns = []string{"testString"}
 	model.PolicyTypes = []string{"access"}
 	model.IsEmptyValueSupported = core.BoolPtr(true)
 	model.IsStringExistsFalseValueSupported = core.BoolPtr(true)
@@ -1513,6 +1547,7 @@ func TestResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupporte
 		iamServiceRegistrationSupportedAnonymousAccessAttributesModel := new(partnercentersellv1.IamServiceRegistrationSupportedAnonymousAccessAttributes)
 		iamServiceRegistrationSupportedAnonymousAccessAttributesModel.AccountID = core.StringPtr("testString")
 		iamServiceRegistrationSupportedAnonymousAccessAttributesModel.ServiceName = core.StringPtr("testString")
+		iamServiceRegistrationSupportedAnonymousAccessAttributesModel.AdditionalProperties = map[string]string{"key1": "testString"}
 
 		model := new(partnercentersellv1.IamServiceRegistrationSupportedAnonymousAccess)
 		model.Attributes = iamServiceRegistrationSupportedAnonymousAccessAttributesModel
@@ -1524,6 +1559,7 @@ func TestResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupporte
 	iamServiceRegistrationSupportedAnonymousAccessAttributesModel := make(map[string]interface{})
 	iamServiceRegistrationSupportedAnonymousAccessAttributesModel["account_id"] = "testString"
 	iamServiceRegistrationSupportedAnonymousAccessAttributesModel["service_name"] = "testString"
+	iamServiceRegistrationSupportedAnonymousAccessAttributesModel["additional_properties"] = map[string]interface{}{"key1": "testString"}
 
 	model := make(map[string]interface{})
 	model["attributes"] = []interface{}{iamServiceRegistrationSupportedAnonymousAccessAttributesModel}
@@ -1539,6 +1575,7 @@ func TestResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupporte
 		model := new(partnercentersellv1.IamServiceRegistrationSupportedAnonymousAccessAttributes)
 		model.AccountID = core.StringPtr("testString")
 		model.ServiceName = core.StringPtr("testString")
+		model.AdditionalProperties = map[string]string{"key1": "testString"}
 
 		assert.Equal(t, result, model)
 	}
@@ -1546,6 +1583,7 @@ func TestResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupporte
 	model := make(map[string]interface{})
 	model["account_id"] = "testString"
 	model["service_name"] = "testString"
+	model["additional_properties"] = map[string]interface{}{"key1": "testString"}
 
 	result, err := partnercentersell.ResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupportedAnonymousAccessAttributes(model)
 	assert.Nil(t, err)
@@ -1568,7 +1606,7 @@ func TestResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupporte
 		supportedAttributesOptionsModel := new(partnercentersellv1.SupportedAttributesOptions)
 		supportedAttributesOptionsModel.Operators = []string{"stringEquals"}
 		supportedAttributesOptionsModel.Hidden = core.BoolPtr(true)
-		supportedAttributesOptionsModel.SupportedAttributes = []string{"testString"}
+		supportedAttributesOptionsModel.SupportedPatterns = []string{"testString"}
 		supportedAttributesOptionsModel.PolicyTypes = []string{"access"}
 		supportedAttributesOptionsModel.IsEmptyValueSupported = core.BoolPtr(true)
 		supportedAttributesOptionsModel.IsStringExistsFalseValueSupported = core.BoolPtr(true)
@@ -1649,7 +1687,7 @@ func TestResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupporte
 	supportedAttributesOptionsModel := make(map[string]interface{})
 	supportedAttributesOptionsModel["operators"] = []interface{}{"stringEquals"}
 	supportedAttributesOptionsModel["hidden"] = true
-	supportedAttributesOptionsModel["supported_attributes"] = []interface{}{"testString"}
+	supportedAttributesOptionsModel["supported_patterns"] = []interface{}{"testString"}
 	supportedAttributesOptionsModel["policy_types"] = []interface{}{"access"}
 	supportedAttributesOptionsModel["is_empty_value_supported"] = true
 	supportedAttributesOptionsModel["is_string_exists_false_value_supported"] = true
@@ -1734,7 +1772,7 @@ func TestResourceIbmOnboardingIamRegistrationMapToSupportedAttributesOptions(t *
 		model := new(partnercentersellv1.SupportedAttributesOptions)
 		model.Operators = []string{"stringEquals"}
 		model.Hidden = core.BoolPtr(true)
-		model.SupportedAttributes = []string{"testString"}
+		model.SupportedPatterns = []string{"testString"}
 		model.PolicyTypes = []string{"access"}
 		model.IsEmptyValueSupported = core.BoolPtr(true)
 		model.IsStringExistsFalseValueSupported = core.BoolPtr(true)
@@ -1758,7 +1796,7 @@ func TestResourceIbmOnboardingIamRegistrationMapToSupportedAttributesOptions(t *
 	model := make(map[string]interface{})
 	model["operators"] = []interface{}{"stringEquals"}
 	model["hidden"] = true
-	model["supported_attributes"] = []interface{}{"testString"}
+	model["supported_patterns"] = []interface{}{"testString"}
 	model["policy_types"] = []interface{}{"access"}
 	model["is_empty_value_supported"] = true
 	model["is_string_exists_false_value_supported"] = true

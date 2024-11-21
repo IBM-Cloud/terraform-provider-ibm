@@ -354,7 +354,7 @@ resource "ibm_onboarding_iam_registration" "onboarding_iam_registration_instance
     options {
       operators = [ "stringEquals" ]
       hidden = true
-      supported_attributes = [ "supported_attributes" ]
+      supported_patterns = [ "supported_patterns" ]
       policy_types = [ "access" ]
       is_empty_value_supported = true
       is_string_exists_false_value_supported = true

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
@@ -20,8 +21,8 @@ import (
 
 func TestAccIbmOnboardingProductBasic(t *testing.T) {
 	var conf partnercentersellv1.OnboardingProduct
-	typeVar := "service"
-	typeVarUpdate := "service"
+	typeVar := "software"
+	typeVarUpdate := "professional_service"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -47,14 +48,14 @@ func TestAccIbmOnboardingProductBasic(t *testing.T) {
 
 func TestAccIbmOnboardingProductAllArgs(t *testing.T) {
 	var conf partnercentersellv1.OnboardingProduct
-	typeVar := "service"
-	eccnNumber := "5D002.C.1"
-	eroClass := "A6VR"
-	taxAssessment := "PAAS"
-	typeVarUpdate := "service"
-	eccnNumberUpdate := "5D002.C.1"
-	eroClassUpdate := "A6VR"
-	taxAssessmentUpdate := "PAAS"
+	typeVar := "software"
+	eccnNumber := fmt.Sprintf("tf_eccn_number_%d", acctest.RandIntRange(10, 100))
+	eroClass := fmt.Sprintf("tf_ero_class_%d", acctest.RandIntRange(10, 100))
+	taxAssessment := fmt.Sprintf("tf_tax_assessment_%d", acctest.RandIntRange(10, 100))
+	typeVarUpdate := "professional_service"
+	eccnNumberUpdate := fmt.Sprintf("tf_eccn_number_%d", acctest.RandIntRange(10, 100))
+	eroClassUpdate := fmt.Sprintf("tf_ero_class_%d", acctest.RandIntRange(10, 100))
+	taxAssessmentUpdate := fmt.Sprintf("tf_tax_assessment_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
