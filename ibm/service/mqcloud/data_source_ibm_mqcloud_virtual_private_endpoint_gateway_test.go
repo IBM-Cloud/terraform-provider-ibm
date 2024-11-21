@@ -45,7 +45,7 @@ func TestAccIbmMqcloudVirtualPrivateEndpointGatewayDataSourceBasic(t *testing.T)
 
 func TestAccIbmMqcloudVirtualPrivateEndpointGatewayDataSourceAllArgs(t *testing.T) {
 	t.Parallel()
-	virtualPrivateEndpointGatewayDetailsServiceInstanceGuid := acc.MqcloudDeploymentID
+	virtualPrivateEndpointGatewayDetailsServiceInstanceGuid := acc.MqcloudCapacityID
 	virtualPrivateEndpointGatewayDetailsTrustedProfile := acc.MqCloudVirtualPrivateEndPointTrustedProfile
 	virtualPrivateEndpointGatewayDetailsName := fmt.Sprintf("tf-name-%d", acctest.RandIntRange(10, 100))
 	virtualPrivateEndpointGatewayDetailsTargetCrn := acc.MqCloudVirtualPrivateEndPointTargetCrn
