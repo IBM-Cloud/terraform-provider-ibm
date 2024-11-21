@@ -206,6 +206,7 @@ const (
 	Attr_HostGroupID                        = "host_group_id"
 	Attr_HostGroups                         = "host_groups"
 	Attr_HostID                             = "host_id"
+	Attr_HostReference                      = "host_reference"
 	Attr_Hosts                              = "hosts"
 	Attr_Href                               = "href"
 	Attr_Hypervisor                         = "hypervisor"
