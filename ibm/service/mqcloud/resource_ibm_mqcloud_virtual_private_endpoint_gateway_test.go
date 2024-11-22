@@ -66,9 +66,10 @@ func TestAccIbmMqcloudVirtualPrivateEndpointGatewayAllArgs(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      "ibm_mqcloud_virtual_private_endpoint_gateway.mqcloud_virtual_private_endpoint_gateway",
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            "ibm_mqcloud_virtual_private_endpoint_gateway.mqcloud_virtual_private_endpoint_gateway_instance",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"trusted_profile", "service_instance_guid"},
 			},
 		},
 	})
