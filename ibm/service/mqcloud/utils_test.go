@@ -92,7 +92,7 @@ func TestHandlePlanCheck(t *testing.T) {
 		{"reserved-deployment", "123", false, ""},
 
 		// Test with non-matching plan
-		{"Basic_Plan", "123", true, "[ERROR] Terraform is only supported for Reserved Deployment, Reserved Capacity, and Subscription Plans. Your Service Plan is: Basic_Plan for the instance 123"},
+		{"Basic_Plan", "123", true, "[ERROR] Terraform is only supported for Reserved Deployment, Reserved Capacity, and Reserved Capacity Subscription Plans. Your Service Plan is: Basic_Plan for the instance 123"},
 	}
 
 	for _, tt := range tests {
@@ -145,7 +145,7 @@ func Test_checkSIPlan(t *testing.T) {
 			name:                 "Cache Hit: Default Plan",
 			cachePlan:            "cached-default-plan",
 			wantErr:              true,
-			expectedErrorMessage: "[ERROR] Terraform is only supported for Reserved Deployment, Reserved Capacity, and Subscription Plans. Your Service Plan is: cached-default-plan for the instance cached-default-plan",
+			expectedErrorMessage: "[ERROR] Terraform is only supported for Reserved Deployment, Reserved Capacity, and Reserved Capacity Subscription Plans. Your Service Plan is: cached-default-plan for the instance cached-default-plan",
 		},
 		{
 			name:      "Reserved Deployment Plan Wildcard",
@@ -161,7 +161,7 @@ func Test_checkSIPlan(t *testing.T) {
 			name:                 "Default Plan",
 			cachePlan:            "default_plan_id",
 			wantErr:              true,
-			expectedErrorMessage: "[ERROR] Terraform is only supported for Reserved Deployment, Reserved Capacity, and Subscription Plans. Your Service Plan is: default for the instance default_plan_id",
+			expectedErrorMessage: "[ERROR] Terraform is only supported for Reserved Deployment, Reserved Capacity, and Reserved Capacity Subscription Plans. Your Service Plan is: default for the instance default_plan_id",
 		},
 		{
 			name:                 "fetchServicePlanFunc Error: Invalid id",
