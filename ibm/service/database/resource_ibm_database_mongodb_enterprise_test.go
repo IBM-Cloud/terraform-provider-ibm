@@ -80,7 +80,7 @@ func TestAccIBMMongoDBEnterpriseDatabaseInstanceBasic(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
-					"wait_time_minutes", "adminpassword", "group"},
+					"wait_time_minutes", "adminpassword", "group", "deletion_protection"},
 			},
 		},
 	})
