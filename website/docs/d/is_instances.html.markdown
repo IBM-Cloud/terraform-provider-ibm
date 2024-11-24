@@ -97,6 +97,13 @@ In addition to all argument reference list, you can access the following attribu
         - `manufacture` - Manufacture of the gpu.
         - `memory` - Memory of the gpu.
         - `model` - Model of the gpu.
+	- `health_reasons` - (List) The reasons for the current health_state (if any).
+
+      Nested scheme for `health_reasons`:
+    	- `code` - (String) A snake case string succinctly identifying the reason for this health state.
+    	- `message` - (String) An explanation of the reason for this health state.
+    	- `more_info` - (String) Link to documentation about the reason for this health state.
+    - `health_state` - (String) The health of this resource.
 	- `id` - (String) The ID that was assigned to the Virtual Servers for VPC instance.
 	- `image` - (String) The ID of the virtual server image that is used in the instance.
 	- `lifecycle_reasons`- (List) The reasons for the current lifecycle_state (if any).
