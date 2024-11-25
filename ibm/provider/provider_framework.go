@@ -261,6 +261,9 @@ func (p *IbmCloudProvider) Configure(ctx context.Context, req provider.Configure
 func (p *IbmCloudProvider) DataSources(_ context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
 		// Add your data sources here
+		func() datasource.DataSource {
+			return vpc.NewIsSshKeyDataSource(p.clientSession)
+		},
 	}
 }
 
