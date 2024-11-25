@@ -24,7 +24,7 @@ func TestAccIbmSccInstanceSettingsBasic(t *testing.T) {
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmSccInstanceSettingsDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIbmSccInstanceSettingsConfigBasic(acc.SccInstanceID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmSccInstanceSettingsExists("ibm_scc_instance_settings.scc_instance_settings_instance", conf),
@@ -42,19 +42,19 @@ func TestAccIbmSccInstanceSettingsAllArgs(t *testing.T) {
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmSccInstanceSettingsDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIbmSccInstanceSettingsConfigBasic(acc.SccInstanceID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmSccInstanceSettingsExists("ibm_scc_instance_settings.scc_instance_settings_instance", conf),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckIbmSccInstanceSettingsConfig(acc.SccInstanceID, acc.SccEventNotificationsCRN, acc.SccObjectStorageCRN, acc.SccObjectStorageBucket),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmSccInstanceSettingsExists("ibm_scc_instance_settings.scc_instance_settings_instance", conf),
 				),
 			},
-			resource.TestStep{
+			{
 				ResourceName:      "ibm_scc_instance_settings.scc_instance_settings_instance",
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -79,6 +79,8 @@ func testAccCheckIbmSccInstanceSettingsConfig(instanceID, enInstanceCRN, objStor
 			instance_id = "%s"
 			event_notifications {
 				instance_crn = "%s"
+        source_description = "This source is used by the scc instance"
+        source_name = "scc compliance"
 			}
 			object_storage {
 				instance_crn = "%s"
@@ -89,7 +91,6 @@ func testAccCheckIbmSccInstanceSettingsConfig(instanceID, enInstanceCRN, objStor
 }
 
 func testAccCheckIbmSccInstanceSettingsExists(n string, obj securityandcompliancecenterapiv3.Settings) resource.TestCheckFunc {
-
 	return func(s *terraform.State) error {
 		_, ok := s.RootModule().Resources[n]
 		if !ok {

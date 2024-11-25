@@ -34,7 +34,20 @@ func ResourceIbmSccInstanceSettings() *schema.Resource {
 						"instance_crn": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
+							Computed:    true,
 							Description: "The Event Notifications instance CRN.",
+						},
+						"source_description": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "The description of the source in Event Notifications connected Security and Compliance Center",
+						},
+						"source_name": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "The name of the Event Notifications source connected Security and Compliance Center instance CRN.",
 						},
 						"updated_on": &schema.Schema{
 							Type:        schema.TypeString,
@@ -123,11 +136,8 @@ func resourceIbmSccInstanceSettingsCreate(context context.Context, d *schema.Res
 			return diag.FromErr(err)
 		}
 		eventNotificationsModel = eventNotificationsData
-		eventNotificationsModel.SourceName = core.StringPtr("compliance")
-		eventNotificationsModel.SourceDescription = core.StringPtr("This source is used for integration with IBM Cloud Security and Compliance Center.")
 	} else {
 		eventNotificationsModel = &securityandcompliancecenterapiv3.EventNotifications{}
-		eventNotificationsModel.InstanceCrn = core.StringPtr("")
 	}
 	updateSettingsOptions.SetEventNotifications(eventNotificationsModel)
 
@@ -139,8 +149,7 @@ func resourceIbmSccInstanceSettingsCreate(context context.Context, d *schema.Res
 		}
 		objectStorageModel = objectStorageData
 	} else {
-		objectStorageModel := &securityandcompliancecenterapiv3.ObjectStorage{}
-		objectStorageModel.InstanceCrn = core.StringPtr("")
+		objectStorageModel = &securityandcompliancecenterapiv3.ObjectStorage{}
 	}
 	updateSettingsOptions.SetObjectStorage(objectStorageModel)
 
@@ -217,10 +226,6 @@ func resourceIbmSccInstanceSettingsUpdate(context context.Context, d *schema.Res
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		if eventNotifications.InstanceCrn != nil && *eventNotifications.InstanceCrn != "" {
-			eventNotifications.SourceName = core.StringPtr("compliance")
-			eventNotifications.SourceDescription = core.StringPtr("This source is used for integration with IBM Cloud Security and Compliance Center.")
-		}
 		updateSettingsOptions.SetEventNotifications(eventNotifications)
 		hasChange = true
 	}
@@ -233,6 +238,7 @@ func resourceIbmSccInstanceSettingsUpdate(context context.Context, d *schema.Res
 		hasChange = true
 	}
 
+	log.Printf("[INFO] UpdateSettingsWithContext payload EventNotifications: %#v\n", updateSettingsOptions.EventNotifications)
 	if hasChange {
 		_, response, err := adminClient.UpdateSettingsWithContext(context, updateSettingsOptions)
 		if err != nil {
@@ -265,6 +271,12 @@ func resourceIbmSccInstanceSettingsMapToEventNotifications(modelMap map[string]i
 	}
 	if modelMap["source_id"] != nil && modelMap["source_id"].(string) != "" {
 		model.SourceID = core.StringPtr(modelMap["source_id"].(string))
+	}
+	if modelMap["source_name"] != nil && modelMap["source_name"].(string) != "" {
+		model.SourceName = core.StringPtr(modelMap["source_name"].(string))
+	}
+	if modelMap["source_description"] != nil && modelMap["source_description"].(string) != "" {
+		model.SourceDescription = core.StringPtr(modelMap["source_description"].(string))
 	}
 	return model, nil
 }
