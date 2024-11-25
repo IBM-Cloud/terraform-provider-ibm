@@ -2903,6 +2903,15 @@ func ResourceTagsCustomizeDiff(diff *schema.ResourceDiff) error {
 	return nil
 }
 
+func OnlyInUpdateDiff(resources []string, diff *schema.ResourceDiff) error {
+	for _, r := range resources {
+		if diff.HasChange(r) && diff.Id() == "" {
+			return fmt.Errorf("the %s can't be used at create time", r)
+		}
+	}
+	return nil
+}
+
 func ResourceValidateAccessTags(diff *schema.ResourceDiff, meta interface{}) error {
 
 	if value, ok := diff.GetOkExists("access_tags"); ok {
