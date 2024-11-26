@@ -7621,6 +7621,7 @@ func ResourceIBMIsInstanceMapToClusterNetworkSubnetIdentity(modelMap map[string]
 		model.Href = core.StringPtr(modelMap["href"].(string))
 	}
 	return model, nil
+}
 func diffSuppressVolumePrototypes(k, old, new string, d *schema.ResourceData) bool {
 	if d.Id() == "" {
 		return false

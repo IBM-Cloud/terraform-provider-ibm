@@ -5,7 +5,6 @@ package vpc
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log"
 	"reflect"
@@ -919,14 +918,6 @@ func DataSourceIBMISInstanceTemplate() *schema.Resource {
 			},
 		},
 	}
-}
-
-func prettifyResponse(response interface{}) string {
-	output, err := json.MarshalIndent(response, "", "    ")
-	if err == nil {
-		return fmt.Sprintf("%+v\n", string(output))
-	}
-	return fmt.Sprintf("Error : %#v", response)
 }
 
 func dataSourceIBMISInstanceTemplateRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
