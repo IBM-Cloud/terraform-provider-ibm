@@ -90,6 +90,7 @@ var (
 	ISResourceCrn                   string
 	ISCIDR                          string
 	ISCIDR2                         string
+	ISIPV4Address                   string
 	ISPublicSSHKeyFilePath          string
 	ISPrivateSSHKeyFilePath         string
 	ISAddressPrefixCIDR             string
@@ -132,14 +133,17 @@ var (
 
 // MQ on Cloud
 var (
-	MqcloudConfigEndpoint            string
-	MqcloudInstanceID                string
-	MqcloudQueueManagerID            string
-	MqcloudKSCertFilePath            string
-	MqcloudTSCertFilePath            string
-	MqCloudQueueManagerLocation      string
-	MqCloudQueueManagerVersion       string
-	MqCloudQueueManagerVersionUpdate string
+	MqcloudConfigEndpoint                       string
+	MqcloudDeploymentID                         string
+	MqcloudCapacityID                           string
+	MqcloudQueueManagerID                       string
+	MqcloudKSCertFilePath                       string
+	MqcloudTSCertFilePath                       string
+	MqCloudQueueManagerLocation                 string
+	MqCloudQueueManagerVersion                  string
+	MqCloudQueueManagerVersionUpdate            string
+	MqCloudVirtualPrivateEndPointTargetCrn      string
+	MqCloudVirtualPrivateEndPointTrustedProfile string
 )
 
 // Logs
@@ -763,6 +767,11 @@ func init() {
 	if ISCIDR2 == "" {
 		ISCIDR2 = "10.240.64.0/24"
 		fmt.Println("[INFO] Set the environment variable SL_CIDR_2 for testing ibm_is_subnet else it is set to default value '10.240.64.0/24'")
+	}
+	ISIPV4Address = os.Getenv("IS_IPV4_ADDRESS")
+	if ISIPV4Address == "" {
+		ISIPV4Address = "10.240.0.6"
+		fmt.Println("[INFO] Set the environment variable IS_IPV4_ADDRESS for testing ibm_is_instance else it is set to default value '10.240.0.6'")
 	}
 
 	AccountId = os.Getenv("IS_ACCOUNT_ID")
@@ -1868,9 +1877,13 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable IBMCLOUD_MQCLOUD_CONFIG_ENDPOINT for ibm_mqcloud service else tests will fail if this is not set correctly")
 	}
 
-	MqcloudInstanceID = os.Getenv("IBM_MQCLOUD_INSTANCE_ID")
-	if MqcloudInstanceID == "" {
-		fmt.Println("[INFO] Set the environment variable IBM_MQCLOUD_INSTANCE_ID for ibm_mqcloud_queue_manager resource or datasource else tests will fail if this is not set correctly")
+	MqcloudDeploymentID = os.Getenv("IBM_MQCLOUD_DEPLOYMENT_ID")
+	if MqcloudDeploymentID == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_MQCLOUD_DEPLOYMENT_ID for ibm_mqcloud_queue_manager resource or datasource else tests will fail if this is not set correctly")
+	}
+	MqcloudCapacityID = os.Getenv("IBM_MQCLOUD_CAPACITY_ID")
+	if MqcloudCapacityID == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_MQCLOUD_DEPLOYMENT_ID for ibm_mqcloud_queue_manager resource or datasource else tests will fail if this is not set correctly")
 	}
 	MqcloudQueueManagerID = os.Getenv("IBM_MQCLOUD_QUEUEMANAGER_ID")
 	if MqcloudQueueManagerID == "" {
@@ -1895,6 +1908,14 @@ func init() {
 	MqCloudQueueManagerVersionUpdate = os.Getenv(("IBM_MQCLOUD_QUEUEMANAGER_VERSIONUPDATE"))
 	if MqCloudQueueManagerVersionUpdate == "" {
 		fmt.Println("[INFO] Set the environment variable IBM_MQCLOUD_QUEUEMANAGER_VERSIONUPDATE for ibm_mqcloud_queue_manager resource or datasource else tests will fail if this is not set correctly")
+	}
+	MqCloudVirtualPrivateEndPointTargetCrn = os.Getenv(("IBM_MQCLOUD_TARGET_CRN"))
+	if MqCloudVirtualPrivateEndPointTargetCrn == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_MQCLOUD_TARGET_CRN for ibm_mqcloud_virtual_private_endpoint resource or datasource else tests will fail if this is not set correctly")
+	}
+	MqCloudVirtualPrivateEndPointTrustedProfile = os.Getenv(("IBM_MQCLOUD_TRUSTED_PROFILE"))
+	if MqCloudVirtualPrivateEndPointTrustedProfile == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_MQCLOUD_TRUSTED_PROFILE for ibm_mqcloud_virtual_private_endpoint resource or datasource else tests will fail if this is not set correctly")
 	}
 	LogsInstanceId = os.Getenv("IBMCLOUD_LOGS_SERVICE_INSTANCE_ID")
 	if LogsInstanceId == "" {
@@ -2267,8 +2288,11 @@ func TestAccPreCheckMqcloud(t *testing.T) {
 	if MqcloudConfigEndpoint == "" {
 		t.Fatal("IBMCLOUD_MQCLOUD_CONFIG_ENDPOINT must be set for acceptance tests")
 	}
-	if MqcloudInstanceID == "" {
-		t.Fatal("IBM_MQCLOUD_INSTANCE_ID must be set for acceptance tests")
+	if MqcloudDeploymentID == "" {
+		t.Fatal("IBM_MQCLOUD_DEPLOYMENT_ID must be set for acceptance tests")
+	}
+	if MqcloudCapacityID == "" {
+		t.Fatal("IBM_MQCLOUD_CAPACITY_ID must be set for acceptance tests")
 	}
 	if MqcloudQueueManagerID == "" {
 		t.Fatal("IBM_MQCLOUD_QUEUEMANAGER_ID must be set for acceptance tests")

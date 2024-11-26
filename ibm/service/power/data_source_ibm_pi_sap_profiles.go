@@ -118,7 +118,7 @@ func dataSourceIBMPISAPProfilesRead(ctx context.Context, d *schema.ResourceData,
 			Attr_SAPS:              sapProfile.Saps,
 			Attr_SupportedSystems:  sapProfile.SupportedSystems,
 			Attr_Type:              *sapProfile.Type,
-			Attr_WorkloadType:      *&sapProfile.WorkloadTypes,
+			Attr_WorkloadType:      sapProfile.WorkloadTypes,
 		}
 		result = append(result, profile)
 	}

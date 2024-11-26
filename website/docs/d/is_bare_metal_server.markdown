@@ -6,7 +6,7 @@ description: |-
   Manages IBM Cloud Bare Metal Server.
 ---
 
-# ibm\_is_bare_metal_server
+# ibm_is_bare_metal_server
 
 Import the details of an existing IBM Cloud Bare Metal Server as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax. For more information, about bare metal servers, see [About Bare Metal Servers for VPC](https://cloud.ibm.com/docs/vpc?topic=vpc-about-bare-metal-servers).
 
@@ -70,6 +70,13 @@ In addition to all argument reference list, you can access the following attribu
     - `resource_type` - (String) The resource type
     - `size` - (Integer) The size of the disk in GB (gigabytes)
 - `enable_secure_boot` - (Boolean) Indicates whether secure boot is enabled. If enabled, the image must support secure boot or the server will fail to boot.
+- `health_reasons` - (List) The reasons for the current health_state (if any).
+
+    Nested scheme for `health_reasons`:
+    - `code` - (String) A snake case string succinctly identifying the reason for this health state.
+    - `message` - (String) An explanation of the reason for this health state.
+    - `more_info` - (String) Link to documentation about the reason for this health state.
+- `health_state` - (String) The health of this resource.
 - `href` - (String) The URL for this bare metal server
 - `id` - (String) The unique identifier for this bare metal server
 - `image` - (String) Image used in the bare metal server.
@@ -95,8 +102,35 @@ In addition to all argument reference list, you can access the following attribu
 		- `name` - (String) The name for this reserved IP. The name is unique across all reserved IPs in a subnet.
 		- `resource_type` - (String) The resource type.
 
+	- `reservation`- (List) The reservation used by this bare metal server. 
+    Nested scheme for `reservation`:
+    - `crn` - (String) The CRN for this reservation.
+    - `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.
+
+      Nested `deleted` blocks have the following structure: 
+      - `more_info` - (String) Link to documentation about deleted resources.
+    - `href` - (String) The URL for this reservation.
+    - `id` - (String) The unique identifier for this reservation.
+    - `name` - (string) The name for this reservation. The name is unique across all reservations in the region.
+    - `resource_type` - (string) The resource type.
+  - `reservation_affinity`- (List) The bare metal server reservation affinity. 
+
+    Nested scheme for `reservation_affinity`:
+    - `policy` - (String) The reservation affinity policy to use for this bare metal server.
+    - `pool` - (List) The pool of reservations available for use by this bare metal server.
+
+      Nested `pool` blocks have the following structure: 
+      - `crn` - (String) The CRN for this reservation.
+      - `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.
+
+        Nested `deleted` blocks have the following structure:
+        - `more_info` - (String) Link to documentation about deleted resources. 
+      - `href` - (String) The URL for this reservation.
+      - `id` - (String) The unique identifier for this reservation.
+      - `name` - (string) The name for this reservation. The name is unique across all reservations in the region.
+      - `resource_type` - (string) The resource type.
 	- `resource_type` - (String) The resource type.
-	- `subnet` - (List) The subnet of the virtual network interface for the network attachment.
+  - `subnet` - (List) The subnet of the virtual network interface for the network attachment.
 	  Nested schema for **subnet**:
 		- `crn` - (String) The CRN for this subnet.
 		- `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.

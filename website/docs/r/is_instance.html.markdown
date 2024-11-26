@@ -735,7 +735,16 @@ Review the argument references that you can specify for your resource.
 - `tags` (Optional, Array of Strings) A list of tags that you want to add to your instance. Tags can help you find your instance more easily later.
 - `total_volume_bandwidth` - (Optional, Integer) The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes
 - `user_data` - (Optional, String) User data to transfer to the instance. For more information, about `user_data`, see [about user data](https://cloud.ibm.com/docs/vpc?topic=vpc-user-data).
-- `volumes`  (Optional, List) A comma separated list of volume IDs to attach to the instance.
+- `volumes`  (Optional, List) A comma separated list of volume IDs to attach to the instance. Mutually exclusive with `volume_prototypes`.
+- `volume_prototypes`- (List of Strings) A list of data volumes to attach to the instance. Mutually exclusive with `volumes`.
+
+  Nested scheme for `volume_prototypes`:
+  - `delete_volume_on_instance_delete` - (Bool) If set to **true**, automatically deletes the volumes that are attached to an instance. **Note** Setting this argument can bring some inconsistency in the volume resource, as the volumes is destroyed along with instances.
+  - `encryption` - (String) The type of encryption that is used for the volume prototype.
+  - `iops`- (Integer) The number of input and output operations per second of the volume prototype.
+  - `name` - (String) The name of the volume prototype.
+  - `profile` - (String) The profile of the volume prototype.
+  - `size`- (Integer) The capacity of the volume in gigabytes.
 - `vpc` - (Required, Forces new resource, String) The ID of the VPC where you want to create the instance. When using `instance_template`, `vpc` is not required.
 - `zone` - (Required, Forces new resource, String) The name of the VPC zone where you want to create the instance. When using `instance_template`, `zone` is not required.
 
@@ -778,6 +787,13 @@ In addition to all argument reference list, you can access the following attribu
   - `manufacture` - (String) The manufacturer of the GPU.
   - `memory`- (Integer) The amount of memory of the GPU in gigabytes.
   - `model` - (String) The model of the GPU.
+- `health_reasons` - (List) The reasons for the current health_state (if any).
+
+    Nested scheme for `health_reasons`:
+    - `code` - (String) A snake case string succinctly identifying the reason for this health state.
+    - `message` - (String) An explanation of the reason for this health state.
+    - `more_info` - (String) Link to documentation about the reason for this health state.
+- `health_state` - (String) The health of this resource.
 - `placement_target` - The placement restrictions for the virtual server instance.
   - `crn` - The CRN of the placement target
   - `deleted` - If present, this property indicates the referenced resource has been deleted and providessome supplementary information.

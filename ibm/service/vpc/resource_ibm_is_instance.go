@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"reflect"
 	"strings"
 	"time"
 
@@ -537,6 +538,87 @@ func ResourceIBMISInstance() *schema.Resource {
 							Type:     schema.TypeString,
 							Required: true,
 							ForceNew: true,
+						},
+					},
+				},
+			},
+
+			// volume_prototypes
+			"volume_prototypes": {
+				Type:             schema.TypeList,
+				Optional:         true,
+				DiffSuppressFunc: diffSuppressVolumePrototypes,
+				ConflictsWith:    []string{isInstanceVolumes},
+				Computed:         true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"name": {
+							Type:             schema.TypeString,
+							Required:         true,
+							DiffSuppressFunc: flex.ApplyOnce,
+						},
+						"delete_volume_on_instance_delete": {
+							Type:     schema.TypeBool,
+							Optional: true,
+						},
+						"volume_id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"volume_name": {
+							Type:     schema.TypeString,
+							Optional: true,
+							Computed: true,
+						},
+						"volume_crn": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"volume_resource_type": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"volume_iops": {
+							Type:        schema.TypeInt,
+							Optional:    true,
+							Computed:    true,
+							Description: "The maximum I/O operations per second (IOPS) for the volume.",
+						},
+						"volume_profile": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "The  globally unique name for the volume profile to use for this volume.",
+						},
+						"volume_capacity": {
+							Type:        schema.TypeInt,
+							Optional:    true,
+							Computed:    true,
+							Description: "The capacity of the volume in gigabytes. The specified minimum and maximum capacity values for creating or updating volumes may expand in the future.",
+						},
+						"volume_source_snapshot": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "The snapshot from which to clone the volume",
+						},
+						"volume_encryption_key": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "The CRN of the [Key Protect Root Key](https://cloud.ibm.com/docs/key-protect?topic=key-protect-getting-started-tutorial) or [Hyper Protect Crypto Service Root Key](https://cloud.ibm.com/docs/hs-crypto?topic=hs-crypto-get-started) for this resource.",
+						},
+						"volume_tags": {
+							Type:        schema.TypeSet,
+							Optional:    true,
+							Computed:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: validate.InvokeValidator("ibm_is_instance_template", "tags")},
+							Set:         flex.ResourceIBMVPCHash,
+							Description: "UserTags for the volume instance",
 						},
 					},
 				},
@@ -1230,10 +1312,11 @@ func ResourceIBMISInstance() *schema.Resource {
 			},
 
 			isInstanceVolumes: {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Elem:        &schema.Schema{Type: schema.TypeString},
-				Description: "List of volumes",
+				Type:          schema.TypeList,
+				Optional:      true,
+				ConflictsWith: []string{"volume_prototypes"},
+				Elem:          &schema.Schema{Type: schema.TypeString},
+				Description:   "List of volumes",
 			},
 			isInstanceVolAttVolAutoDelete: {
 				Type:        schema.TypeBool,
@@ -1546,6 +1629,35 @@ func ResourceIBMISInstance() *schema.Resource {
 					},
 				},
 			},
+			"health_reasons": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The reasons for the current health_state (if any).",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"code": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "A snake case string succinctly identifying the reason for this health state.",
+						},
+						"message": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "An explanation of the reason for this health state.",
+						},
+						"more_info": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Link to documentation about the reason for this health state.",
+						},
+					},
+				},
+			},
+			"health_state": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The health of this resource",
+			},
 			isInstanceReservation: {
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -1787,6 +1899,86 @@ func instanceCreateByImage(d *schema.ResourceData, meta interface{}, profile, na
 			ID: &vpcID,
 		},
 	}
+
+	// volume_prototypes
+	if volumeattintf, ok := d.GetOk("volume_prototypes"); ok {
+		volumeatt := []vpcv1.VolumeAttachmentPrototype{}
+		for i, _ := range volumeattintf.([]interface{}) {
+			volumeattItemModel := &vpcv1.VolumeAttachmentPrototype{}
+			volumeattItemPrototypeModel := &vpcv1.VolumeAttachmentPrototypeVolume{}
+			if attNameOk, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.name", i)); ok {
+				attName := attNameOk.(string)
+				if attName != "" {
+					volumeattItemModel.Name = &attName
+				}
+			}
+			if vname, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.volume_name", i)); ok {
+				volName := vname.(string)
+				if volName != "" {
+					volumeattItemPrototypeModel.Name = &volName
+				}
+			}
+			if volAutoDelete, ok := d.GetOkExists(fmt.Sprintf("volume_prototypes.%d.delete_volume_on_instance_delete", i)); ok {
+				volumeattItemModel.DeleteVolumeOnInstanceDelete = core.BoolPtr(volAutoDelete.(bool))
+			}
+			if volIops, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.volume_iops", i)); ok {
+				if volIops.(int) != 0 {
+					volumeattItemPrototypeModel.Iops = core.Int64Ptr(int64(volIops.(int)))
+				}
+			}
+			if volCapacity, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.volume_capacity", i)); ok {
+				if volCapacity != 0 {
+					volumeattItemPrototypeModel.Capacity = core.Int64Ptr(int64(volCapacity.(int)))
+				}
+			}
+			if volEncKeyOk, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.volume_encryption_key", i)); ok {
+				volEncKey := volEncKeyOk.(string)
+				if volEncKey != "" {
+					volumeattItemPrototypeModel.EncryptionKey = &vpcv1.EncryptionKeyIdentity{
+						CRN: &volEncKey,
+					}
+				}
+			}
+			if volProfileOk, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.volume_profile", i)); ok {
+				volProfile := volProfileOk.(string)
+				if volProfile != "" {
+					volumeattItemPrototypeModel.Profile = &vpcv1.VolumeProfileIdentity{
+						Name: &volProfile,
+					}
+				}
+			}
+			if volRgOk, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.volume_resource_group", i)); ok {
+				volRg := volRgOk.(string)
+				if volRg != "" {
+					volumeattItemPrototypeModel.ResourceGroup = &vpcv1.ResourceGroupIdentity{
+						ID: &volRg,
+					}
+				}
+			}
+			if volSnapshotok, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.volume_source_snapshot", i)); ok {
+				volSnapshot := volSnapshotok.(string)
+				if volSnapshot != "" {
+					volumeattItemPrototypeModel.SourceSnapshot = &vpcv1.SnapshotIdentity{
+						ID: &volSnapshot,
+					}
+				}
+			}
+			volTags := d.Get(fmt.Sprintf("volume_prototypes.%d.volume_tags", i)).(*schema.Set)
+			if volTags != nil && volTags.Len() != 0 {
+				userTagsArray := make([]string, volTags.Len())
+				for i, userTag := range volTags.List() {
+					userTagStr := userTag.(string)
+					userTagsArray[i] = userTagStr
+				}
+				volumeattItemPrototypeModel.UserTags = userTagsArray
+			}
+
+			volumeattItemModel.Volume = volumeattItemPrototypeModel
+
+			volumeatt = append(volumeatt, *volumeattItemModel)
+		}
+		instanceproto.VolumeAttachments = volumeatt
+	}
 	if _, ok := d.GetOk("confidential_compute_mode"); ok {
 		instanceproto.ConfidentialComputeMode = core.StringPtr(d.Get("confidential_compute_mode").(string))
 	}
@@ -1933,7 +2125,7 @@ func instanceCreateByImage(d *schema.ResourceData, meta interface{}, profile, na
 			resAffinity.Policy = &policyStr
 		}
 		poolIntf, okPool := resAff[isReservationAffinityPool]
-		if okPool {
+		if okPool && poolIntf != nil && poolIntf.([]interface{}) != nil && len(poolIntf.([]interface{})) > 0 {
 			pool := poolIntf.([]interface{})[0].(map[string]interface{})
 			id, okId := pool["id"]
 			if okId {
@@ -2223,6 +2415,86 @@ func instanceCreateByCatalogOffering(d *schema.ResourceData, meta interface{}, p
 			ID: &vpcID,
 		},
 	}
+
+	// volume_prototypes
+	if volumeattintf, ok := d.GetOk("volume_prototypes"); ok {
+		volumeatt := []vpcv1.VolumeAttachmentPrototype{}
+		for i, _ := range volumeattintf.([]interface{}) {
+			volumeattItemModel := &vpcv1.VolumeAttachmentPrototype{}
+			volumeattItemPrototypeModel := &vpcv1.VolumeAttachmentPrototypeVolume{}
+			if attNameOk, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.name", i)); ok {
+				attName := attNameOk.(string)
+				if attName != "" {
+					volumeattItemModel.Name = &attName
+				}
+			}
+			if vname, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.volume_name", i)); ok {
+				volName := vname.(string)
+				if volName != "" {
+					volumeattItemPrototypeModel.Name = &volName
+				}
+			}
+			if volAutoDelete, ok := d.GetOkExists(fmt.Sprintf("volume_prototypes.%d.delete_volume_on_instance_delete", i)); ok {
+				volumeattItemModel.DeleteVolumeOnInstanceDelete = core.BoolPtr(volAutoDelete.(bool))
+			}
+			if volIops, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.volume_iops", i)); ok {
+				if volIops.(int) != 0 {
+					volumeattItemPrototypeModel.Iops = core.Int64Ptr(int64(volIops.(int)))
+				}
+			}
+			if volCapacity, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.volume_capacity", i)); ok {
+				if volCapacity != 0 {
+					volumeattItemPrototypeModel.Capacity = core.Int64Ptr(int64(volCapacity.(int)))
+				}
+			}
+			if volEncKeyOk, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.volume_encryption_key", i)); ok {
+				volEncKey := volEncKeyOk.(string)
+				if volEncKey != "" {
+					volumeattItemPrototypeModel.EncryptionKey = &vpcv1.EncryptionKeyIdentity{
+						CRN: &volEncKey,
+					}
+				}
+			}
+			if volProfileOk, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.volume_profile", i)); ok {
+				volProfile := volProfileOk.(string)
+				if volProfile != "" {
+					volumeattItemPrototypeModel.Profile = &vpcv1.VolumeProfileIdentity{
+						Name: &volProfile,
+					}
+				}
+			}
+			if volRgOk, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.volume_resource_group", i)); ok {
+				volRg := volRgOk.(string)
+				if volRg != "" {
+					volumeattItemPrototypeModel.ResourceGroup = &vpcv1.ResourceGroupIdentity{
+						ID: &volRg,
+					}
+				}
+			}
+			if volSnapshotok, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.volume_source_snapshot", i)); ok {
+				volSnapshot := volSnapshotok.(string)
+				if volSnapshot != "" {
+					volumeattItemPrototypeModel.SourceSnapshot = &vpcv1.SnapshotIdentity{
+						ID: &volSnapshot,
+					}
+				}
+			}
+			volTags := d.Get(fmt.Sprintf("volume_prototypes.%d.volume_tags", i)).(*schema.Set)
+			if volTags != nil && volTags.Len() != 0 {
+				userTagsArray := make([]string, volTags.Len())
+				for i, userTag := range volTags.List() {
+					userTagStr := userTag.(string)
+					userTagsArray[i] = userTagStr
+				}
+				volumeattItemPrototypeModel.UserTags = userTagsArray
+			}
+
+			volumeattItemModel.Volume = volumeattItemPrototypeModel
+
+			volumeatt = append(volumeatt, *volumeattItemModel)
+		}
+		instanceproto.VolumeAttachments = volumeatt
+	}
 	if _, ok := d.GetOk("confidential_compute_mode"); ok {
 		instanceproto.ConfidentialComputeMode = core.StringPtr(d.Get("confidential_compute_mode").(string))
 	}
@@ -2388,7 +2660,7 @@ func instanceCreateByCatalogOffering(d *schema.ResourceData, meta interface{}, p
 			resAffinity.Policy = &policyStr
 		}
 		poolIntf, okPool := resAff[isReservationAffinityPool]
-		if okPool {
+		if okPool && poolIntf != nil && poolIntf.([]interface{}) != nil && len(poolIntf.([]interface{})) > 0 {
 			pool := poolIntf.([]interface{})[0].(map[string]interface{})
 			id, okId := pool["id"]
 			if okId {
@@ -2665,6 +2937,86 @@ func instanceCreateByTemplate(d *schema.ResourceData, meta interface{}, profile,
 		},
 		Name: &name,
 	}
+
+	// volume_prototypes
+	if volumeattintf, ok := d.GetOk("volume_prototypes"); ok {
+		volumeatt := []vpcv1.VolumeAttachmentPrototype{}
+		for i, _ := range volumeattintf.([]interface{}) {
+			volumeattItemModel := &vpcv1.VolumeAttachmentPrototype{}
+			volumeattItemPrototypeModel := &vpcv1.VolumeAttachmentPrototypeVolume{}
+			if attNameOk, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.name", i)); ok {
+				attName := attNameOk.(string)
+				if attName != "" {
+					volumeattItemModel.Name = &attName
+				}
+			}
+			if vname, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.volume_name", i)); ok {
+				volName := vname.(string)
+				if volName != "" {
+					volumeattItemPrototypeModel.Name = &volName
+				}
+			}
+			if volAutoDelete, ok := d.GetOkExists(fmt.Sprintf("volume_prototypes.%d.delete_volume_on_instance_delete", i)); ok {
+				volumeattItemModel.DeleteVolumeOnInstanceDelete = core.BoolPtr(volAutoDelete.(bool))
+			}
+			if volIops, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.volume_iops", i)); ok {
+				if volIops.(int) != 0 {
+					volumeattItemPrototypeModel.Iops = core.Int64Ptr(int64(volIops.(int)))
+				}
+			}
+			if volCapacity, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.volume_capacity", i)); ok {
+				if volCapacity != 0 {
+					volumeattItemPrototypeModel.Capacity = core.Int64Ptr(int64(volCapacity.(int)))
+				}
+			}
+			if volEncKeyOk, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.volume_encryption_key", i)); ok {
+				volEncKey := volEncKeyOk.(string)
+				if volEncKey != "" {
+					volumeattItemPrototypeModel.EncryptionKey = &vpcv1.EncryptionKeyIdentity{
+						CRN: &volEncKey,
+					}
+				}
+			}
+			if volProfileOk, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.volume_profile", i)); ok {
+				volProfile := volProfileOk.(string)
+				if volProfile != "" {
+					volumeattItemPrototypeModel.Profile = &vpcv1.VolumeProfileIdentity{
+						Name: &volProfile,
+					}
+				}
+			}
+			if volRgOk, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.volume_resource_group", i)); ok {
+				volRg := volRgOk.(string)
+				if volRg != "" {
+					volumeattItemPrototypeModel.ResourceGroup = &vpcv1.ResourceGroupIdentity{
+						ID: &volRg,
+					}
+				}
+			}
+			if volSnapshotok, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.volume_source_snapshot", i)); ok {
+				volSnapshot := volSnapshotok.(string)
+				if volSnapshot != "" {
+					volumeattItemPrototypeModel.SourceSnapshot = &vpcv1.SnapshotIdentity{
+						ID: &volSnapshot,
+					}
+				}
+			}
+			volTags := d.Get(fmt.Sprintf("volume_prototypes.%d.volume_tags", i)).(*schema.Set)
+			if volTags != nil && volTags.Len() != 0 {
+				userTagsArray := make([]string, volTags.Len())
+				for i, userTag := range volTags.List() {
+					userTagStr := userTag.(string)
+					userTagsArray[i] = userTagStr
+				}
+				volumeattItemPrototypeModel.UserTags = userTagsArray
+			}
+
+			volumeattItemModel.Volume = volumeattItemPrototypeModel
+
+			volumeatt = append(volumeatt, *volumeattItemModel)
+		}
+		instanceproto.VolumeAttachments = volumeatt
+	}
 	if _, ok := d.GetOk("confidential_compute_mode"); ok {
 		instanceproto.ConfidentialComputeMode = core.StringPtr(d.Get("confidential_compute_mode").(string))
 	}
@@ -2823,7 +3175,7 @@ func instanceCreateByTemplate(d *schema.ResourceData, meta interface{}, profile,
 			resAffinity.Policy = &policyStr
 		}
 		poolIntf, okPool := resAff[isReservationAffinityPool]
-		if okPool {
+		if okPool && poolIntf != nil && poolIntf.([]interface{}) != nil && len(poolIntf.([]interface{})) > 0 {
 			pool := poolIntf.([]interface{})[0].(map[string]interface{})
 			id, okId := pool["id"]
 			if okId {
@@ -3113,6 +3465,85 @@ func instanceCreateBySnapshot(d *schema.ResourceData, meta interface{}, profile,
 			ID: &vpcID,
 		},
 	}
+	// volume_prototypes
+	if volumeattintf, ok := d.GetOk("volume_prototypes"); ok {
+		volumeatt := []vpcv1.VolumeAttachmentPrototype{}
+		for i, _ := range volumeattintf.([]interface{}) {
+			volumeattItemModel := &vpcv1.VolumeAttachmentPrototype{}
+			volumeattItemPrototypeModel := &vpcv1.VolumeAttachmentPrototypeVolume{}
+			if attNameOk, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.name", i)); ok {
+				attName := attNameOk.(string)
+				if attName != "" {
+					volumeattItemModel.Name = &attName
+				}
+			}
+			if vname, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.volume_name", i)); ok {
+				volName := vname.(string)
+				if volName != "" {
+					volumeattItemPrototypeModel.Name = &volName
+				}
+			}
+			if volAutoDelete, ok := d.GetOkExists(fmt.Sprintf("volume_prototypes.%d.delete_volume_on_instance_delete", i)); ok {
+				volumeattItemModel.DeleteVolumeOnInstanceDelete = core.BoolPtr(volAutoDelete.(bool))
+			}
+			if volIops, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.volume_iops", i)); ok {
+				if volIops.(int) != 0 {
+					volumeattItemPrototypeModel.Iops = core.Int64Ptr(int64(volIops.(int)))
+				}
+			}
+			if volCapacity, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.volume_capacity", i)); ok {
+				if volCapacity != 0 {
+					volumeattItemPrototypeModel.Capacity = core.Int64Ptr(int64(volCapacity.(int)))
+				}
+			}
+			if volEncKeyOk, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.volume_encryption_key", i)); ok {
+				volEncKey := volEncKeyOk.(string)
+				if volEncKey != "" {
+					volumeattItemPrototypeModel.EncryptionKey = &vpcv1.EncryptionKeyIdentity{
+						CRN: &volEncKey,
+					}
+				}
+			}
+			if volProfileOk, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.volume_profile", i)); ok {
+				volProfile := volProfileOk.(string)
+				if volProfile != "" {
+					volumeattItemPrototypeModel.Profile = &vpcv1.VolumeProfileIdentity{
+						Name: &volProfile,
+					}
+				}
+			}
+			if volRgOk, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.volume_resource_group", i)); ok {
+				volRg := volRgOk.(string)
+				if volRg != "" {
+					volumeattItemPrototypeModel.ResourceGroup = &vpcv1.ResourceGroupIdentity{
+						ID: &volRg,
+					}
+				}
+			}
+			if volSnapshotok, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.volume_source_snapshot", i)); ok {
+				volSnapshot := volSnapshotok.(string)
+				if volSnapshot != "" {
+					volumeattItemPrototypeModel.SourceSnapshot = &vpcv1.SnapshotIdentity{
+						ID: &volSnapshot,
+					}
+				}
+			}
+			volTags := d.Get(fmt.Sprintf("volume_prototypes.%d.volume_tags", i)).(*schema.Set)
+			if volTags != nil && volTags.Len() != 0 {
+				userTagsArray := make([]string, volTags.Len())
+				for i, userTag := range volTags.List() {
+					userTagStr := userTag.(string)
+					userTagsArray[i] = userTagStr
+				}
+				volumeattItemPrototypeModel.UserTags = userTagsArray
+			}
+
+			volumeattItemModel.Volume = volumeattItemPrototypeModel
+
+			volumeatt = append(volumeatt, *volumeattItemModel)
+		}
+		instanceproto.VolumeAttachments = volumeatt
+	}
 	if _, ok := d.GetOk("confidential_compute_mode"); ok {
 		instanceproto.ConfidentialComputeMode = core.StringPtr(d.Get("confidential_compute_mode").(string))
 	}
@@ -3233,7 +3664,7 @@ func instanceCreateBySnapshot(d *schema.ResourceData, meta interface{}, profile,
 			resAffinity.Policy = &policyStr
 		}
 		poolIntf, okPool := resAff[isReservationAffinityPool]
-		if okPool {
+		if okPool && poolIntf != nil && poolIntf.([]interface{}) != nil && len(poolIntf.([]interface{})) > 0 {
 			pool := poolIntf.([]interface{})[0].(map[string]interface{})
 			id, okId := pool["id"]
 			if okId {
@@ -3559,6 +3990,85 @@ func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, n
 			ID: &vpcID,
 		},
 	}
+	// volume_prototypes
+	if volumeattintf, ok := d.GetOk("volume_prototypes"); ok {
+		volumeatt := []vpcv1.VolumeAttachmentPrototype{}
+		for i, _ := range volumeattintf.([]interface{}) {
+			volumeattItemModel := &vpcv1.VolumeAttachmentPrototype{}
+			volumeattItemPrototypeModel := &vpcv1.VolumeAttachmentPrototypeVolume{}
+			if attNameOk, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.name", i)); ok {
+				attName := attNameOk.(string)
+				if attName != "" {
+					volumeattItemModel.Name = &attName
+				}
+			}
+			if vname, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.volume_name", i)); ok {
+				volName := vname.(string)
+				if volName != "" {
+					volumeattItemPrototypeModel.Name = &volName
+				}
+			}
+			if volAutoDelete, ok := d.GetOkExists(fmt.Sprintf("volume_prototypes.%d.delete_volume_on_instance_delete", i)); ok {
+				volumeattItemModel.DeleteVolumeOnInstanceDelete = core.BoolPtr(volAutoDelete.(bool))
+			}
+			if volIops, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.volume_iops", i)); ok {
+				if volIops.(int) != 0 {
+					volumeattItemPrototypeModel.Iops = core.Int64Ptr(int64(volIops.(int)))
+				}
+			}
+			if volCapacity, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.volume_capacity", i)); ok {
+				if volCapacity != 0 {
+					volumeattItemPrototypeModel.Capacity = core.Int64Ptr(int64(volCapacity.(int)))
+				}
+			}
+			if volEncKeyOk, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.volume_encryption_key", i)); ok {
+				volEncKey := volEncKeyOk.(string)
+				if volEncKey != "" {
+					volumeattItemPrototypeModel.EncryptionKey = &vpcv1.EncryptionKeyIdentity{
+						CRN: &volEncKey,
+					}
+				}
+			}
+			if volProfileOk, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.volume_profile", i)); ok {
+				volProfile := volProfileOk.(string)
+				if volProfile != "" {
+					volumeattItemPrototypeModel.Profile = &vpcv1.VolumeProfileIdentity{
+						Name: &volProfile,
+					}
+				}
+			}
+			if volRgOk, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.volume_resource_group", i)); ok {
+				volRg := volRgOk.(string)
+				if volRg != "" {
+					volumeattItemPrototypeModel.ResourceGroup = &vpcv1.ResourceGroupIdentity{
+						ID: &volRg,
+					}
+				}
+			}
+			if volSnapshotok, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.volume_source_snapshot", i)); ok {
+				volSnapshot := volSnapshotok.(string)
+				if volSnapshot != "" {
+					volumeattItemPrototypeModel.SourceSnapshot = &vpcv1.SnapshotIdentity{
+						ID: &volSnapshot,
+					}
+				}
+			}
+			volTags := d.Get(fmt.Sprintf("volume_prototypes.%d.volume_tags", i)).(*schema.Set)
+			if volTags != nil && volTags.Len() != 0 {
+				userTagsArray := make([]string, volTags.Len())
+				for i, userTag := range volTags.List() {
+					userTagStr := userTag.(string)
+					userTagsArray[i] = userTagStr
+				}
+				volumeattItemPrototypeModel.UserTags = userTagsArray
+			}
+
+			volumeattItemModel.Volume = volumeattItemPrototypeModel
+
+			volumeatt = append(volumeatt, *volumeattItemModel)
+		}
+		instanceproto.VolumeAttachments = volumeatt
+	}
 	if _, ok := d.GetOk("confidential_compute_mode"); ok {
 		instanceproto.ConfidentialComputeMode = core.StringPtr(d.Get("confidential_compute_mode").(string))
 	}
@@ -3632,7 +4142,7 @@ func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, n
 			resAffinity.Policy = &policyStr
 		}
 		poolIntf, okPool := resAff[isReservationAffinityPool]
-		if okPool {
+		if okPool && poolIntf != nil && poolIntf.([]interface{}) != nil && len(poolIntf.([]interface{})) > 0 {
 			pool := poolIntf.([]interface{})[0].(map[string]interface{})
 			id, okId := pool["id"]
 			if okId {
@@ -4159,6 +4669,10 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 		d.Set(isInstanceAvailablePolicyHostFailure, *instance.AvailabilityPolicy.HostFailure)
 	}
 
+	// volume_prototypes
+	volList, _ := setVolumePrototypesInState(d, instance, instanceC)
+	d.Set("volume_prototypes", volList)
+
 	// catalog
 	if instance.CatalogOffering != nil {
 		versionCrn := *instance.CatalogOffering.Version.CRN
@@ -4277,6 +4791,24 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 		primaryNicList = append(primaryNicList, currentPrimNic)
 		d.Set(isInstancePrimaryNetworkInterface, primaryNicList)
 	}
+	if instance.HealthReasons != nil {
+		healthReasonsList := make([]map[string]interface{}, 0)
+		for _, sr := range instance.HealthReasons {
+			currentSR := map[string]interface{}{}
+			if sr.Code != nil && sr.Message != nil {
+				currentSR["code"] = *sr.Code
+				currentSR["message"] = *sr.Message
+				if sr.MoreInfo != nil {
+					currentSR["more_info"] = *sr.Message
+				}
+				healthReasonsList = append(healthReasonsList, currentSR)
+			}
+		}
+		d.Set("health_reasons", healthReasonsList)
+	}
+	if err = d.Set("health_state", instance.HealthState); err != nil {
+		return err
+	}
 	if instance.ReservationAffinity != nil {
 		reservationAffinity := []map[string]interface{}{}
 		reservationAffinityMap := map[string]interface{}{}
@@ -4294,7 +4826,7 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 				res[isReservationResourceType] = *pool.ResourceType
 				if pool.Deleted != nil {
 					deletedList := []map[string]interface{}{}
-					deletedMap := dataSourceInstanceReservationDeletedToMap(*pool.Deleted)
+					deletedMap := dataSourceReservationDeletedToMap(*pool.Deleted)
 					deletedList = append(deletedList, deletedMap)
 					res[isReservationDeleted] = deletedList
 				}
@@ -4316,7 +4848,7 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 		res[isReservationResourceType] = *instance.Reservation.ResourceType
 		if instance.Reservation.Deleted != nil {
 			deletedList := []map[string]interface{}{}
-			deletedMap := dataSourceInstanceReservationDeletedToMap(*instance.Reservation.Deleted)
+			deletedMap := dataSourceReservationDeletedToMap(*instance.Reservation.Deleted)
 			deletedList = append(deletedList, deletedMap)
 			res[isReservationDeleted] = deletedList
 		}
@@ -4610,6 +5142,11 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 	}
 	id := d.Id()
 	// network attachments
+
+	err = handleVolumePrototypesUpdate(d, instanceC)
+	if err != nil {
+		return err
+	}
 
 	if d.HasChange("network_attachments") && !d.IsNewResource() {
 		nacs := d.Get("network_attachments").([]interface{})
@@ -5101,7 +5638,7 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 			}
 			if d.HasChange(resPool) {
 				poolIntf, okPool := resAff[isReservationAffinityPool]
-				if okPool {
+				if okPool && poolIntf != nil && poolIntf.([]interface{}) != nil && len(poolIntf.([]interface{})) > 0 {
 					pool := poolIntf.([]interface{})[0].(map[string]interface{})
 					id, okId := pool["id"]
 					if okId {
@@ -6056,7 +6593,7 @@ func instanceDelete(d *schema.ResourceData, meta interface{}, id string) error {
 			return fmt.Errorf("[ERROR] Error Listing volume attachments to the instance: %s\n%s", err, response)
 		}
 		for _, vol := range vols.VolumeAttachments {
-			if *vol.Type == "data" {
+			if *vol.Type == "data" && *vol.DeleteVolumeOnInstanceDelete {
 				delvolattoptions := &vpcv1.DeleteInstanceVolumeAttachmentOptions{
 					InstanceID: &id,
 					ID:         vol.ID,
@@ -6375,15 +6912,6 @@ func resourceIbmIsInstanceInstancePlacementToMap(instancePlacement vpcv1.Instanc
 	return instancePlacementMap
 }
 
-func resourceIbmIsInstanceReservationAffinityPoolToMap(reservationPool vpcv1.ReservationReference) map[string]interface{} {
-	resAffPoolMap := map[string]interface{}{}
-
-	resAffPoolMap["crn"] = reservationPool.CRN
-	resAffPoolMap["href"] = reservationPool.Href
-	resAffPoolMap["id"] = reservationPool.ID
-	return resAffPoolMap
-}
-
 func resourceIbmIsInstanceDedicatedHostGroupReferenceDeletedToMap(dedicatedHostGroupReferenceDeleted vpcv1.Deleted) map[string]interface{} {
 	dedicatedHostGroupReferenceDeletedMap := map[string]interface{}{}
 
@@ -6650,4 +7178,531 @@ func containsNacId(s []string, e string) bool {
 		}
 	}
 	return false
+}
+
+func diffSuppressVolumePrototypes(k, old, new string, d *schema.ResourceData) bool {
+	if d.Id() == "" {
+		return false
+	}
+
+	o, n := d.GetChange("volume_prototypes")
+	oldList := o.([]interface{})
+	newList := n.([]interface{})
+
+	if len(oldList) != len(newList) {
+		return false
+	}
+
+	// First, find which volume in new list corresponds to each old volume by name
+	volMap := make(map[string]int) // maps attachment name to position in new list
+	for i, v := range newList {
+		vol := v.(map[string]interface{})
+		attachmentName := vol["name"].(string)
+		volMap[attachmentName] = i
+	}
+
+	// Compare each old volume with its corresponding new volume
+	for _, oldVol := range oldList {
+		oldVolMap := oldVol.(map[string]interface{})
+		attachmentName := oldVolMap["name"].(string)
+
+		// Find corresponding new volume
+		newIndex, exists := volMap[attachmentName]
+		if !exists {
+			return false
+		}
+
+		newVol := newList[newIndex].(map[string]interface{})
+
+		// Compare relevant fields
+		if !volumesEqual(oldVolMap, newVol) {
+			return false
+		}
+	}
+
+	return true
+}
+
+func volumesEqual(oldVol, newVol map[string]interface{}) bool {
+	fieldsToCompare := []string{
+		"delete_volume_on_instance_delete",
+		"volume_name",
+		"volume_capacity",
+		"volume_profile",
+		"volume_source_snapshot",
+		"volume_encryption_key",
+		"volume_tags",
+	}
+
+	for _, field := range fieldsToCompare {
+		oldVal, oldOk := oldVol[field]
+		newVal, newOk := newVol[field]
+
+		if oldOk != newOk {
+			return false
+		}
+
+		if oldOk && newOk {
+			if field == "volume_tags" {
+				if !compareVolumeTags(oldVal, newVal) {
+					return false
+				}
+				continue
+			}
+
+			if !reflect.DeepEqual(oldVal, newVal) {
+				return false
+			}
+		}
+	}
+
+	// Handle IOPS specially based on profile
+	profile := oldVol["volume_profile"].(string)
+	if !isTieredProfile(profile) {
+		oldIops, oldOk := oldVol["volume_iops"]
+		newIops, newOk := newVol["volume_iops"]
+
+		if oldOk != newOk {
+			return false
+		}
+
+		if oldOk && newOk && !reflect.DeepEqual(oldIops, newIops) {
+			return false
+		}
+	}
+
+	return true
+}
+
+// Validation function
+func ResourceValidateInstanceVolumePrototypes(diff *schema.ResourceDiff, meta interface{}) error {
+	// For new resource creation
+	if diff.Id() == "" {
+		volProtoListIntf := diff.Get("volume_prototypes")
+		if volProtoListIntf == nil {
+			return nil
+		}
+
+		volProtoList := volProtoListIntf.([]interface{})
+		for i, vol := range volProtoList {
+			volMap := vol.(map[string]interface{})
+			profile := volMap["volume_profile"].(string)
+
+			// For tiered profiles, validate IOPS not set
+			if isTieredProfile(profile) {
+				if iops, ok := volMap["volume_iops"]; ok && iops.(int) != 0 {
+					return fmt.Errorf("volume prototype %d (%s): iops cannot be set for tiered profile %s",
+						i, volMap["volume_name"].(string), profile)
+				}
+			}
+		}
+		return nil
+	}
+
+	// For updates
+	if !diff.HasChange("volume_prototypes") {
+		return nil
+	}
+
+	oldVolProtoListIntf, newVolProtoListIntf := diff.GetChange("volume_prototypes")
+	if oldVolProtoListIntf == nil || newVolProtoListIntf == nil {
+		return nil
+	}
+
+	oldVolProtoList := oldVolProtoListIntf.([]interface{})
+	newVolProtoList := newVolProtoListIntf.([]interface{})
+
+	oldVolMap := make(map[string]map[string]interface{})
+	for _, v := range oldVolProtoList {
+		volMap := v.(map[string]interface{})
+		oldVolMap[volMap["volume_name"].(string)] = volMap
+	}
+
+	// Validate each volume
+	for _, v := range newVolProtoList {
+		volMap := v.(map[string]interface{})
+		volName := volMap["volume_name"].(string)
+		newProfile := volMap["volume_profile"].(string)
+
+		if oldVol, exists := oldVolMap[volName]; exists {
+			oldProfile := oldVol["volume_profile"].(string)
+
+			// Validate profile transitions
+			if oldProfile != newProfile {
+				if oldProfile == "custom" && newProfile != "custom" {
+					return fmt.Errorf("volume %s: custom profile can only be changed to another custom profile", volName)
+				}
+				if isTieredProfile(oldProfile) && !isTieredProfile(newProfile) {
+					return fmt.Errorf("volume %s: tiered profile can only be changed to another tiered profile", volName)
+				}
+			}
+		}
+
+		// Validate tiered profile constraints
+		if isTieredProfile(newProfile) {
+			if iops, ok := volMap["volume_iops"]; ok && iops.(int) != 0 {
+				return fmt.Errorf("volume %s: iops cannot be set for tiered profile", volName)
+			}
+		}
+	}
+
+	return nil
+}
+
+func handleVolumePrototypesUpdate(d *schema.ResourceData, instanceC *vpcv1.VpcV1) error {
+	if !d.HasChange("volume_prototypes") || d.IsNewResource() {
+		return nil
+	}
+
+	instanceID := d.Id()
+	o, n := d.GetChange("volume_prototypes")
+	oldList := o.([]interface{})
+	newList := n.([]interface{})
+
+	// Track processed old volumes
+	processedOldVolumes := make(map[string]bool)
+
+	// First create a map of old volumes by name for easy lookup
+	oldVolMap := make(map[string]map[string]interface{})
+	for _, v := range oldList {
+		vol := v.(map[string]interface{})
+		name := vol["name"].(string)
+		oldVolMap[name] = vol
+	}
+
+	// Process new list for updates and additions
+	for i, newVolInterface := range newList {
+		newVol := newVolInterface.(map[string]interface{})
+		name := newVol["name"].(string)
+
+		// Check if volume exists in old list
+		if oldVol, exists := oldVolMap[name]; exists {
+			// Mark as processed
+			processedOldVolumes[name] = true
+
+			// Check if update is needed
+			if hasVolumeChanged(d, i, oldVol, newVol) {
+				// Handle update
+				volID := oldVol["volume_id"].(string)
+
+				voloptions := &vpcv1.UpdateVolumeOptions{
+					ID: &volID,
+				}
+				getvoloptions := &vpcv1.GetVolumeOptions{
+					ID: &volID,
+				}
+				_, res, err := instanceC.GetVolume(getvoloptions)
+				if err != nil {
+					return fmt.Errorf("error getting volume for patch for %s: %w", name, err)
+				}
+				eTag := res.Headers.Get("ETag")
+				volumePatchModel := &vpcv1.VolumePatch{}
+				if newVol["volume_profile"].(string) != oldVol["volume_profile"].(string) && isTieredProfile(newVol["volume_profile"].(string)) {
+					volumePatchModel.Profile = &vpcv1.VolumeProfileIdentity{
+						Name: core.StringPtr(newVol["volume_profile"].(string)),
+					}
+				}
+				if newVol["volume_name"].(string) != oldVol["volume_name"].(string) {
+					volumePatchModel.Name = core.StringPtr(newVol["volume_name"].(string))
+				}
+				if newVol["volume_tags"] == nil && oldVol["volume_tags"] == nil {
+					// do nothing
+				} else if newVol["volume_tags"] == nil && oldVol["volume_tags"] != nil {
+					volumePatchModel.UserTags = nil
+				} else if (newVol["volume_tags"] != nil && oldVol["volume_tags"] == nil) || (!newVol["volume_tags"].(*schema.Set).Equal(oldVol["volume_tags"].(*schema.Set))) {
+					userTags := newVol["volume_tags"].(*schema.Set)
+					userTagsArray := make([]string, userTags.Len())
+					for i, userTag := range userTags.List() {
+						userTagStr := userTag.(string)
+						userTagsArray[i] = userTagStr
+					}
+					volumePatchModel.UserTags = userTagsArray
+				}
+				volumePatch, err := volumePatchModel.AsPatch()
+				if err != nil {
+					return fmt.Errorf("error creating volume patch for %s: %w", name, err)
+				}
+				voloptions.VolumePatch = volumePatch
+				voloptions.SetIfMatch(eTag)
+				_, response, err := instanceC.UpdateVolume(voloptions)
+				if err != nil {
+					return fmt.Errorf("error updating volume %s: %s\n%s", name, err, response)
+				}
+				eTag = response.Headers.Get("ETag")
+
+				// Only include IOPS for non-tiered profiles
+				if !isTieredProfile(newVol["volume_profile"].(string)) && (int64(newVol["volume_iops"].(int)) != int64(oldVol["volume_iops"].(int))) {
+					volumeIopsPatchModel := &vpcv1.VolumePatch{}
+					iops := int64(newVol["volume_iops"].(int))
+					volumeIopsPatchModel.Iops = &iops
+					volumePatch, err := volumeIopsPatchModel.AsPatch()
+					if err != nil {
+						return fmt.Errorf("error creating volume patch for iops update %s: %w", name, err)
+					}
+					voloptions.VolumePatch = volumePatch
+					voloptions.SetIfMatch(eTag)
+					_, response, err := instanceC.UpdateVolume(voloptions)
+					if err != nil {
+						return fmt.Errorf("error updating volume during iops update %s: %s\n%s", name, err, response)
+					}
+					eTag = response.Headers.Get("ETag")
+				}
+				// Only include capacity update
+				if int64(newVol["volume_capacity"].(int)) != int64(oldVol["volume_capacity"].(int)) {
+					volumeCapacityPatchModel := &vpcv1.VolumePatch{}
+					capacity := int64(newVol["volume_capacity"].(int))
+					volumeCapacityPatchModel.Capacity = &capacity
+					volumePatch, err := volumeCapacityPatchModel.AsPatch()
+					if err != nil {
+						return fmt.Errorf("error creating volume patch for capacity update %s: %w", name, err)
+					}
+					voloptions.SetIfMatch(eTag)
+					voloptions.VolumePatch = volumePatch
+					_, response, err := instanceC.UpdateVolume(voloptions)
+					if err != nil {
+						return fmt.Errorf("error updating volume during capacity update %s: %s\n%s", name, err, response)
+					}
+					eTag = response.Headers.Get("ETag")
+				}
+			}
+		} else {
+			// Handle addition
+			profile := newVol["volume_profile"].(string)
+			capacity := int64(newVol["volume_capacity"].(int))
+			volumeName := newVol["volume_name"].(string)
+
+			createvolattoptions := &vpcv1.CreateInstanceVolumeAttachmentOptions{
+				InstanceID: &instanceID,
+			}
+			volAtt := &vpcv1.VolumeAttachmentPrototypeVolume{
+				Name: &volumeName,
+				Profile: &vpcv1.VolumeProfileIdentity{
+					Name: &profile,
+				},
+				Capacity: &capacity,
+			}
+			// Handle delete_volume_on_instance_delete using GetOkExists only for new volumes
+			if volAutoDelete, ok := d.GetOkExists(fmt.Sprintf("volume_prototypes.%d.delete_volume_on_instance_delete", i)); ok {
+				createvolattoptions.DeleteVolumeOnInstanceDelete = core.BoolPtr(volAutoDelete.(bool))
+			}
+
+			// Only set IOPS for non-tiered profiles
+			if !isTieredProfile(profile) {
+				iops := int64(newVol["volume_iops"].(int))
+				volAtt.Iops = &iops
+			}
+			createvolattoptions.Volume = volAtt
+			newVolume, _, err := instanceC.CreateInstanceVolumeAttachment(createvolattoptions)
+			if err != nil {
+				return fmt.Errorf("error attaching volume %s: %w", name, err)
+			}
+
+			_, err = isWaitForInstanceVolumeAttached(instanceC, d, instanceID, *newVolume.ID)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	// Handle deletions - anything in old list that wasn't processed
+	for _, oldVolInterface := range oldList {
+		oldVol := oldVolInterface.(map[string]interface{})
+		name := oldVol["name"].(string)
+
+		if !processedOldVolumes[name] {
+			// Handle deletion
+			volID := oldVol["id"].(string)
+
+			delvolattoptions := &vpcv1.DeleteInstanceVolumeAttachmentOptions{
+				InstanceID: &instanceID,
+				ID:         &volID,
+			}
+
+			_, err := instanceC.DeleteInstanceVolumeAttachment(delvolattoptions)
+			if err != nil {
+				return fmt.Errorf("error removing volume %s: %w", name, err)
+			}
+
+			_, err = isWaitForInstanceVolumeDetached(instanceC, d, instanceID, volID)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+// Modified to handle boolean comparison correctly between state and config
+func hasVolumeChanged(d *schema.ResourceData, newIndex int, oldVol, newVol map[string]interface{}) bool {
+	fieldsToCompare := []string{
+		"volume_name",
+		"volume_capacity",
+		"volume_profile",
+	}
+
+	// Compare standard fields
+	for _, field := range fieldsToCompare {
+		oldVal := oldVol[field]
+		newVal := newVol[field]
+
+		if !reflect.DeepEqual(oldVal, newVal) {
+			return true
+		}
+	}
+
+	// Compare delete_volume_on_instance_delete
+	// For old (state), direct access
+	oldAutoDelete := oldVol["delete_volume_on_instance_delete"].(bool)
+
+	// For new (config), use GetOkExists
+	if newAutoDelete, ok := d.GetOkExists(fmt.Sprintf("volume_prototypes.%d.delete_volume_on_instance_delete", newIndex)); ok {
+		if oldAutoDelete != newAutoDelete.(bool) {
+			return true
+		}
+	}
+
+	// Special handling for IOPS based on profile
+	newProfile := newVol["volume_profile"].(string)
+
+	if !isTieredProfile(newProfile) {
+		oldIops := oldVol["volume_iops"].(int)
+		newIops := newVol["volume_iops"].(int)
+		if oldIops != newIops {
+			return true
+		}
+	}
+
+	return false
+}
+
+func isTieredProfile(profile string) bool {
+	switch profile {
+	case "general-purpose", "10iops-tier", "5iops-tier":
+		return true
+	default:
+		return false
+	}
+}
+
+// Helper function to compare volume tags
+func compareVolumeTags(old, new interface{}) bool {
+	if old == nil && new == nil {
+		return true
+	}
+	if old == nil || new == nil {
+		return false
+	}
+
+	oldSet := old.(*schema.Set)
+	newSet := new.(*schema.Set)
+
+	return oldSet.Len() == newSet.Len() && oldSet.Difference(newSet).Len() == 0
+}
+
+func prettifyResponse(response interface{}) string {
+	output, err := json.MarshalIndent(response, "", "    ")
+	if err == nil {
+		return fmt.Sprintf("%+v\n", string(output))
+	}
+	return fmt.Sprintf("Error : %#v", response)
+}
+
+func setVolumePrototypesInState(d *schema.ResourceData, instance *vpcv1.Instance, instanceC *vpcv1.VpcV1) ([]map[string]interface{}, error) {
+	if instance.VolumeAttachments == nil {
+		return nil, nil
+	}
+
+	// First get the config order
+	configVolumes := make(map[string]int) // maps attachment name to position
+	if configList, ok := d.GetOk("volume_prototypes"); ok {
+		for i, v := range configList.([]interface{}) {
+			vol := v.(map[string]interface{})
+			if name, ok := vol["name"].(string); ok {
+				configVolumes[name] = i
+			}
+		}
+	}
+
+	// Create a map for current volumes
+	currentVolumes := make(map[string]map[string]interface{})
+	maxPosition := -1
+
+	// Process all volumes
+	for _, volume := range instance.VolumeAttachments {
+		if *volume.ID != *instance.BootVolumeAttachment.ID {
+			vol := map[string]interface{}{}
+
+			if volume.Volume != nil {
+				getVolOptions := &vpcv1.GetVolumeOptions{
+					ID: volume.Volume.ID,
+				}
+
+				getInstanceVolumeAttachmentOptions := &vpcv1.GetInstanceVolumeAttachmentOptions{
+					InstanceID: core.StringPtr(d.Id()),
+					ID:         volume.ID,
+				}
+
+				volumeRef, _, err := instanceC.GetVolume(getVolOptions)
+				if err != nil {
+					vol["id"] = *volume.ID
+					vol["volume_id"] = *volume.Volume.ID
+					vol["name"] = *volume.Name
+					vol["volume_name"] = *volume.Volume.Name
+					vol["volume_crn"] = *volume.Volume.CRN
+					vol["volume_resource_type"] = *volume.Volume.ResourceType
+				} else {
+					vol["id"] = *volume.ID
+					vol["volume_id"] = *volume.Volume.ID
+					vol["name"] = *volume.Name
+					vol["volume_name"] = *volumeRef.Name
+					vol["volume_profile"] = *volumeRef.Profile.Name
+					vol["volume_iops"] = *volumeRef.Iops
+					vol["volume_capacity"] = *volumeRef.Capacity
+					vol["volume_crn"] = *volume.Volume.CRN
+					vol["volume_resource_type"] = *volume.Volume.ResourceType
+				}
+
+				volumeAttRef, _, err := instanceC.GetInstanceVolumeAttachment(getInstanceVolumeAttachmentOptions)
+				if err != nil {
+					vol["delete_volume_on_instance_delete"] = true
+				} else {
+					vol["delete_volume_on_instance_delete"] = volumeAttRef.DeleteVolumeOnInstanceDelete
+				}
+
+				currentVolumes[*volume.Name] = vol
+
+				// Track maximum position
+				if pos, exists := configVolumes[*volume.Name]; exists {
+					if pos > maxPosition {
+						maxPosition = pos
+					}
+				}
+			}
+		}
+	}
+
+	// Create ordered list based on config positions
+	orderedList := make([]map[string]interface{}, maxPosition+1)
+	unorderedVolumes := make([]map[string]interface{}, 0)
+
+	// First place volumes that exist in config
+	for name, vol := range currentVolumes {
+		if pos, exists := configVolumes[name]; exists {
+			orderedList[pos] = vol
+		} else {
+			unorderedVolumes = append(unorderedVolumes, vol)
+		}
+	}
+
+	// Remove nil entries and append any volumes not in config
+	finalList := make([]map[string]interface{}, 0)
+	for _, vol := range orderedList {
+		if vol != nil {
+			finalList = append(finalList, vol)
+		}
+	}
+	finalList = append(finalList, unorderedVolumes...)
+
+	return finalList, nil
 }

@@ -34,6 +34,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/contextbasedrestrictions"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/cos"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/database"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/db2"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/directlink"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/dnsservices"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/enterprise"
@@ -319,6 +320,7 @@ func Provider() *schema.Provider {
 			"ibm_database_tasks":                           database.DataSourceIBMDatabaseTasks(),
 			"ibm_database_backup":                          database.DataSourceIBMDatabaseBackup(),
 			"ibm_database_backups":                         database.DataSourceIBMDatabaseBackups(),
+			"ibm_db2":                                      db2.DataSourceIBMDb2Instance(),
 			"ibm_compute_bare_metal":                       classicinfrastructure.DataSourceIBMComputeBareMetal(),
 			"ibm_compute_image_template":                   classicinfrastructure.DataSourceIBMComputeImageTemplate(),
 			"ibm_compute_placement_group":                  classicinfrastructure.DataSourceIBMComputePlacementGroup(),
@@ -371,6 +373,7 @@ func Provider() *schema.Provider {
 			"ibm_iam_access_group_template_versions":       iamaccessgroup.DataSourceIBMIAMAccessGroupTemplateVersions(),
 			"ibm_iam_access_group_template_assignment":     iamaccessgroup.DataSourceIBMIAMAccessGroupTemplateAssignment(),
 			"ibm_iam_account_settings":                     iamidentity.DataSourceIBMIAMAccountSettings(),
+			"ibm_iam_effective_account_settings":           iamidentity.DataSourceIBMIamEffectiveAccountSettings(),
 			"ibm_iam_auth_token":                           iamidentity.DataSourceIBMIAMAuthToken(),
 			"ibm_iam_role_actions":                         iampolicy.DataSourceIBMIAMRoleAction(),
 			"ibm_iam_users":                                iamidentity.DataSourceIBMIAMUsers(),
@@ -817,13 +820,15 @@ func Provider() *schema.Provider {
 			"ibm_metrics_router_routes":  metricsrouter.DataSourceIBMMetricsRouterRoutes(),
 
 			// MQ on Cloud
-			"ibm_mqcloud_queue_manager_options":  mqcloud.DataSourceIbmMqcloudQueueManagerOptions(),
-			"ibm_mqcloud_queue_manager":          mqcloud.DataSourceIbmMqcloudQueueManager(),
-			"ibm_mqcloud_queue_manager_status":   mqcloud.DataSourceIbmMqcloudQueueManagerStatus(),
-			"ibm_mqcloud_application":            mqcloud.DataSourceIbmMqcloudApplication(),
-			"ibm_mqcloud_user":                   mqcloud.DataSourceIbmMqcloudUser(),
-			"ibm_mqcloud_truststore_certificate": mqcloud.DataSourceIbmMqcloudTruststoreCertificate(),
-			"ibm_mqcloud_keystore_certificate":   mqcloud.DataSourceIbmMqcloudKeystoreCertificate(),
+			"ibm_mqcloud_queue_manager_options":             mqcloud.DataSourceIbmMqcloudQueueManagerOptions(),
+			"ibm_mqcloud_queue_manager":                     mqcloud.DataSourceIbmMqcloudQueueManager(),
+			"ibm_mqcloud_queue_manager_status":              mqcloud.DataSourceIbmMqcloudQueueManagerStatus(),
+			"ibm_mqcloud_application":                       mqcloud.DataSourceIbmMqcloudApplication(),
+			"ibm_mqcloud_user":                              mqcloud.DataSourceIbmMqcloudUser(),
+			"ibm_mqcloud_truststore_certificate":            mqcloud.DataSourceIbmMqcloudTruststoreCertificate(),
+			"ibm_mqcloud_keystore_certificate":              mqcloud.DataSourceIbmMqcloudKeystoreCertificate(),
+			"ibm_mqcloud_virtual_private_endpoint_gateways": mqcloud.DataSourceIbmMqcloudVirtualPrivateEndpointGateways(),
+			"ibm_mqcloud_virtual_private_endpoint_gateway":  mqcloud.DataSourceIbmMqcloudVirtualPrivateEndpointGateway(),
 
 			// Security and Complaince Center(soon to be deprecated)
 			"ibm_scc_account_location":              scc.DataSourceIBMSccAccountLocation(),
@@ -1033,6 +1038,7 @@ func Provider() *schema.Provider {
 
 			"ibm_cis":                                 cis.ResourceIBMCISInstance(),
 			"ibm_database":                            database.ResourceIBMDatabaseInstance(),
+			"ibm_db2":                                 db2.ResourceIBMDb2Instance(),
 			"ibm_cis_domain":                          cis.ResourceIBMCISDomain(),
 			"ibm_cis_domain_settings":                 cis.ResourceIBMCISSettings(),
 			"ibm_cis_firewall":                        cis.ResourceIBMCISFirewallRecord(),
@@ -1461,11 +1467,12 @@ func Provider() *schema.Provider {
 			"ibm_metrics_router_settings": metricsrouter.ResourceIBMMetricsRouterSettings(),
 
 			// MQ on Cloud
-			"ibm_mqcloud_queue_manager":          mqcloud.ResourceIbmMqcloudQueueManager(),
-			"ibm_mqcloud_application":            mqcloud.ResourceIbmMqcloudApplication(),
-			"ibm_mqcloud_user":                   mqcloud.ResourceIbmMqcloudUser(),
-			"ibm_mqcloud_keystore_certificate":   mqcloud.ResourceIbmMqcloudKeystoreCertificate(),
-			"ibm_mqcloud_truststore_certificate": mqcloud.ResourceIbmMqcloudTruststoreCertificate(),
+			"ibm_mqcloud_queue_manager":                    mqcloud.ResourceIbmMqcloudQueueManager(),
+			"ibm_mqcloud_application":                      mqcloud.ResourceIbmMqcloudApplication(),
+			"ibm_mqcloud_user":                             mqcloud.ResourceIbmMqcloudUser(),
+			"ibm_mqcloud_keystore_certificate":             mqcloud.ResourceIbmMqcloudKeystoreCertificate(),
+			"ibm_mqcloud_truststore_certificate":           mqcloud.ResourceIbmMqcloudTruststoreCertificate(),
+			"ibm_mqcloud_virtual_private_endpoint_gateway": mqcloud.ResourceIbmMqcloudVirtualPrivateEndpointGateway(),
 
 			// Security and Compliance Center(soon to be deprecated)
 			"ibm_scc_account_settings":    scc.ResourceIBMSccAccountSettings(),
@@ -1857,11 +1864,12 @@ func Validator() validate.ValidatorDict {
 				"ibm_config_aggregator_settings":               configurationaggregator.ResourceIbmConfigAggregatorSettingsValidator(),
 
 				// MQ on Cloud
-				"ibm_mqcloud_queue_manager":          mqcloud.ResourceIbmMqcloudQueueManagerValidator(),
-				"ibm_mqcloud_application":            mqcloud.ResourceIbmMqcloudApplicationValidator(),
-				"ibm_mqcloud_user":                   mqcloud.ResourceIbmMqcloudUserValidator(),
-				"ibm_mqcloud_keystore_certificate":   mqcloud.ResourceIbmMqcloudKeystoreCertificateValidator(),
-				"ibm_mqcloud_truststore_certificate": mqcloud.ResourceIbmMqcloudTruststoreCertificateValidator(),
+				"ibm_mqcloud_queue_manager":                    mqcloud.ResourceIbmMqcloudQueueManagerValidator(),
+				"ibm_mqcloud_application":                      mqcloud.ResourceIbmMqcloudApplicationValidator(),
+				"ibm_mqcloud_user":                             mqcloud.ResourceIbmMqcloudUserValidator(),
+				"ibm_mqcloud_keystore_certificate":             mqcloud.ResourceIbmMqcloudKeystoreCertificateValidator(),
+				"ibm_mqcloud_truststore_certificate":           mqcloud.ResourceIbmMqcloudTruststoreCertificateValidator(),
+				"ibm_mqcloud_virtual_private_endpoint_gateway": mqcloud.ResourceIbmMqcloudVirtualPrivateEndpointGatewayValidator(),
 
 				"ibm_is_backup_policy":      vpc.ResourceIBMIsBackupPolicyValidator(),
 				"ibm_is_backup_policy_plan": vpc.ResourceIBMIsBackupPolicyPlanValidator(),
