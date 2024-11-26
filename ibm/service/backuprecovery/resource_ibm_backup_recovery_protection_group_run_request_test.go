@@ -56,7 +56,7 @@ func testAccCreateIbmBaasProtectionGroupRunRequest(groupName, runType string, ob
 		resource "ibm_backup_recovery_protection_group_run_request" "baas_protection_group_run_request_instance" {
 			x_ibm_tenant_id = "%s"
 			run_type = "%s"
-			group_id = data.ibm_backup_recovery_protection_groups.ibm_backup_recovery_protection_groups_instance.protection_groups.0.id
+			group_id = data.ibm_backup_recovery_protection_groups.ibm_backup_recovery_protection_groups_instance.protection_groups.0.group_id
 			lifecycle {
 				ignore_changes = ["x_ibm_tenant_id","run_type","group_id"]
 			}
