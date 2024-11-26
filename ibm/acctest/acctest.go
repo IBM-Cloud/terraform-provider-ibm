@@ -90,6 +90,7 @@ var (
 	ISResourceCrn                   string
 	ISCIDR                          string
 	ISCIDR2                         string
+	ISIPV4Address                   string
 	ISPublicSSHKeyFilePath          string
 	ISPrivateSSHKeyFilePath         string
 	ISAddressPrefixCIDR             string
@@ -763,6 +764,11 @@ func init() {
 	if ISCIDR2 == "" {
 		ISCIDR2 = "10.240.64.0/24"
 		fmt.Println("[INFO] Set the environment variable SL_CIDR_2 for testing ibm_is_subnet else it is set to default value '10.240.64.0/24'")
+	}
+	ISIPV4Address = os.Getenv("IS_IPV4_ADDRESS")
+	if ISIPV4Address == "" {
+		ISIPV4Address = "10.240.0.6"
+		fmt.Println("[INFO] Set the environment variable IS_IPV4_ADDRESS for testing ibm_is_instance else it is set to default value '10.240.0.6'")
 	}
 
 	AccountId = os.Getenv("IS_ACCOUNT_ID")
