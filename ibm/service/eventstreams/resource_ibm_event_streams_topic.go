@@ -380,6 +380,6 @@ func (tp accessTokenProvider) Token() (*sarama.AccessToken, error) {
 	if len(strings.Split(token, ".")) != 3 {
 		return nil, errors.New("IAMAccessToken is malformed")
 	}
-	log.Printf("[DEBUG] accessTokenProvider.Token():%s", token)
+	//log.Printf("[DEBUG] accessTokenProvider.Token():%s", token)
 	return &sarama.AccessToken{Token: token}, nil
 }
