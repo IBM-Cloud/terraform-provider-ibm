@@ -6,7 +6,6 @@ package mqcloud_test
 import (
 	"fmt"
 	"testing"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -31,7 +30,6 @@ func TestAccIbmMqcloudKeystoreCertificateBasic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			acc.TestAccPreCheckMqcloud(t)
-			time.Sleep(60 * time.Second) //This to allow for completion of certificate processing
 		},
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmMqcloudKeystoreCertificateDestroy,
