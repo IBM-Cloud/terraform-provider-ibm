@@ -171,11 +171,13 @@ func (d *DataSourceIsSshKey) Read(ctx context.Context, req datasource.ReadReques
 		data.Length = types.Int64Value(*keyfound.Length)
 		data.PublicKey = types.StringValue(*keyfound.PublicKey)
 		data.Type = types.StringValue(*keyfound.Type)
-		controller, _ := flex.GetBaseController(d.client)
-		resp.Diagnostics.AddError(
-			fmt.Sprintf("RC error %s", name),
-			fmt.Errorf("RC error %s", name).Error(),
-		)
+		controller, err := flex.GetBaseController(d.client)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				fmt.Sprintf("RC error %s", name),
+				err.Error(),
+			)
+		}
 		data.ResourceControllerUrl = types.StringValue(controller + "/vpc/compute/sshKeys")
 		tags, _ := flex.GetGlobalTagsElementsUsingCRN(d.client, *keyfound.CRN, "", isKeyUserTagType)
 		access, _ := flex.GetGlobalTagsElementsUsingCRN(d.client, *keyfound.CRN, "", isKeyAccessTagType)
