@@ -633,6 +633,9 @@ Review the argument references that you can specify for your resource.
     `offering_crn` conflicts with `version_crn`, both are mutually exclusive. `catalog_offering` and `image` id are mutually exclusive.
     `snapshot` conflicts with `image` id and `instance_template`
 
+~>**Select Availability** 
+Cluster Networks for VPC is available for select customers only. Contact IBM Support if you are interested in using this functionality. [About cluster networks](https://cloud.ibm.com/docs/vpc?topic=vpc-about-cluster-network)
+
 - `cluster_network_attachments` - (Optional, List) The cluster network attachments for this virtual server instance.The cluster network attachments are ordered for consistent instance configuration.
 
   Nested schema for **cluster_network_attachments**:

@@ -256,6 +256,7 @@ resource "ibm_is_instance_template" "is_instance_template" {
   keys = [ibm_is_ssh_key.example.id]
 }
 ```
+
 ## Argument reference
 Review the argument references that you can specify for your resource. 
 - `availability_policy_host_failure` - (Optional, String) The availability policy to use for this virtual server instance. The action to perform if the compute host experiences a failure. Supported values are `restart` and `stop`.
@@ -278,6 +279,8 @@ Review the argument references that you can specify for your resource.
     - `version_crn` - (Optional, Force new resource, String) The CRN for this version of a catalog offering. Identifies a version of a catalog offering by this unique property. Conflicts with `catalog_offering.0.offering_crn`
     - `plan_crn` - (Optional, String) The CRN for this catalog offering version's billing plan. If unspecified, no billing plan will be used (free). Must be specified for catalog offering versions that require a billing plan to be used.
 
+~>**Select Availability** 
+Cluster Networks for VPC is available for select customers only. Contact IBM Support if you are interested in using this functionality. [About cluster networks](https://cloud.ibm.com/docs/vpc?topic=vpc-about-cluster-network)
 - `cluster_network_attachments` - (Optional, List) The cluster network attachments to create for this virtual server instance. A cluster network attachment represents a device that is connected to a cluster network. The number of network attachments must match one of the values from the instance profile's `cluster_network_attachment_count` before the instance can be started.
 
   Nested schema for **cluster_network_attachments**:

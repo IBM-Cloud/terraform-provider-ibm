@@ -12,6 +12,10 @@ Create, update, and delete ClusterNetworkInterfaces with this resource.
 
 ## Example Usage
 
+~>**Select Availability** 
+Cluster Networks for VPC is available for select customers only. Contact IBM Support if you are interested in using this functionality. [About cluster networks](https://cloud.ibm.com/docs/vpc?topic=vpc-about-cluster-network)
+
+
 ```hcl
 resource "ibm_is_cluster_network_interface" "is_cluster_network_interface_instance" {
   cluster_network_id = "cluster_network_id"
@@ -64,7 +68,6 @@ After your resource is created, you can read values from the listed arguments an
 	- `more_info` - (String) Link to documentation about the reason for this lifecycle state.
 - `lifecycle_state` - (String) The lifecycle state of the cluster network interface. Allowable values are: `deleting`, `failed`, `pending`, `stable`, `suspended`, `updating`, `waiting`. 
 - `mac_address` - (String) The MAC address of the cluster network interface. May be absent if`lifecycle_state` is `pending`.
-- `protocol_state_filtering_mode` - (String) The protocol state filtering mode used for this cluster network interface.Protocol state filtering monitors each network connection flowing over this cluster network interface, and drops any packets that are invalid based on the current connection state and protocol. See [Protocol state filtering mode](https://cloud.ibm.com/docs/vpc?topic=vpc-vni-about#protocol-state-filtering) for more information.The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future. The default value is `enabled`. Allowable values are: `disabled`, `enabled`. The maximum length is `128` characters. 
 - `resource_type` - (String) The resource type. llowable values are: `cluster_network_interface`.
 - `target` - (List) The target of this cluster network interface.If absent, this cluster network interface is not attached to a target.The resources supported by this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.
 	Nested schema for **target**:
