@@ -1,3 +1,7 @@
+# 1.71.3(Nov 26, 2024)
+Bugfixes
+* fix: HOT FIX to include properties from issue 5579 ([5818](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5818))
+
 # 1.71.2(Nov 15, 2024)
 Bugfixes
 * Tags support config aggregator & Bug fix for settings api ([5783](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5783))
