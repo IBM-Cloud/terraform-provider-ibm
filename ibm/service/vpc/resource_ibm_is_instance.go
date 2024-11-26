@@ -4670,59 +4670,9 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 	}
 
 	// volume_prototypes
-	log.Printf("[INFO] UJJK setting volume prototypes")
 	volList, _ := setVolumePrototypesInState(d, instance, instanceC)
 	d.Set("volume_prototypes", volList)
-	// if instance.VolumeAttachments != nil {
-	// 	log.Printf("[INFO] UJJK setting volume prototypes VolumeAttachments is not nil")
 
-	// 	volList := make([]map[string]interface{}, 0)
-	// 	for _, volume := range instance.VolumeAttachments {
-	// 		if *volume.ID != *instance.BootVolumeAttachment.ID {
-	// 			vol := map[string]interface{}{}
-	// 			log.Printf("[INFO] UJJK vol is %s ", prettifyResponse(vol))
-	// 			if volume.Volume != nil {
-	// 				getVolOptions := &vpcv1.GetVolumeOptions{
-	// 					ID: volume.Volume.ID,
-	// 				}
-	// 				getInstanceVolumeAttachmentOptions := &vpcv1.GetInstanceVolumeAttachmentOptions{
-	// 					InstanceID: core.StringPtr(d.Id()),
-	// 					ID:         volume.ID,
-	// 				}
-	// 				volumeRef, _, err := instanceC.GetVolume(getVolOptions)
-	// 				if err != nil {
-	// 					vol["id"] = *volume.ID
-	// 					vol["volume_id"] = *volume.Volume.ID
-	// 					vol["name"] = *volume.Name
-	// 					vol["volume_name"] = *volume.Volume.Name
-	// 					vol["volume_crn"] = *volume.Volume.CRN
-	// 					vol["volume_crn"] = *volume.Volume.CRN
-	// 					vol["volume_resource_type"] = *volume.Volume.ResourceType
-	// 				} else {
-	// 					vol["id"] = *volume.ID
-	// 					vol["volume_id"] = *volume.Volume.ID
-	// 					vol["name"] = *volume.Name
-	// 					vol["volume_name"] = *volumeRef.Name
-	// 					vol["volume_profile"] = *volumeRef.Profile.Name
-	// 					vol["volume_iops"] = *volumeRef.Iops
-	// 					vol["volume_capacity"] = *volumeRef.Capacity
-	// 					vol["volume_crn"] = *volume.Volume.CRN
-	// 					vol["volume_resource_type"] = *volume.Volume.ResourceType
-	// 				}
-	// 				volumeAttRef, _, err := instanceC.GetInstanceVolumeAttachment(getInstanceVolumeAttachmentOptions)
-	// 				if err != nil {
-	// 					vol["delete_volume_on_instance_delete"] = true
-	// 				} else {
-	// 					vol["delete_volume_on_instance_delete"] = volumeAttRef.DeleteVolumeOnInstanceDelete
-	// 				}
-	// 				volList = append(volList, vol)
-	// 			}
-	// 			log.Printf("[INFO] UJJK vafter one iteration vollist is %s ", prettifyResponse(volList))
-	// 		}
-	// 	}
-	// 	log.Printf("[INFO] UJJK setting volume list is %s", prettifyResponse(volList))
-	// 	d.Set("volume_prototypes", volList)
-	// }
 	// catalog
 	if instance.CatalogOffering != nil {
 		versionCrn := *instance.CatalogOffering.Version.CRN
@@ -7239,10 +7189,7 @@ func diffSuppressVolumePrototypes(k, old, new string, d *schema.ResourceData) bo
 	oldList := o.([]interface{})
 	newList := n.([]interface{})
 
-	log.Printf("[DEBUG] UJJKG Old List length: %d, New List length: %d", len(oldList), len(newList))
-
 	if len(oldList) != len(newList) {
-		log.Printf("[DEBUG] UJJKG Length mismatch")
 		return false
 	}
 
@@ -7262,7 +7209,6 @@ func diffSuppressVolumePrototypes(k, old, new string, d *schema.ResourceData) bo
 		// Find corresponding new volume
 		newIndex, exists := volMap[attachmentName]
 		if !exists {
-			log.Printf("[DEBUG] UJJKG No matching volume found for attachment name: %s", attachmentName)
 			return false
 		}
 
@@ -7270,7 +7216,6 @@ func diffSuppressVolumePrototypes(k, old, new string, d *schema.ResourceData) bo
 
 		// Compare relevant fields
 		if !volumesEqual(oldVolMap, newVol) {
-			log.Printf("[DEBUG] UJJKG Volumes not equal for attachment name: %s", attachmentName)
 			return false
 		}
 	}
@@ -7294,21 +7239,18 @@ func volumesEqual(oldVol, newVol map[string]interface{}) bool {
 		newVal, newOk := newVol[field]
 
 		if oldOk != newOk {
-			log.Printf("[DEBUG] UJJKG Field existence mismatch for field: %s", field)
 			return false
 		}
 
 		if oldOk && newOk {
 			if field == "volume_tags" {
 				if !compareVolumeTags(oldVal, newVal) {
-					log.Printf("[DEBUG] UJJKG Tags not equal")
 					return false
 				}
 				continue
 			}
 
 			if !reflect.DeepEqual(oldVal, newVal) {
-				log.Printf("[DEBUG] UJJKG Values not equal for field: %s", field)
 				return false
 			}
 		}
@@ -7321,12 +7263,10 @@ func volumesEqual(oldVol, newVol map[string]interface{}) bool {
 		newIops, newOk := newVol["volume_iops"]
 
 		if oldOk != newOk {
-			log.Printf("[DEBUG] UJJKG IOPS existence mismatch")
 			return false
 		}
 
 		if oldOk && newOk && !reflect.DeepEqual(oldIops, newIops) {
-			log.Printf("[DEBUG] UJJKG IOPS values not equal")
 			return false
 		}
 	}
