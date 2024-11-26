@@ -103,12 +103,12 @@ func testAccCheckIbmBackupRecoveryDataSourceConnectionDestroy(s *terraform.State
 		getDataSourceConnectionsOptions := &backuprecoveryv1.GetDataSourceConnectionsOptions{}
 
 		getDataSourceConnectionsOptions.SetXIBMTenantID(tenantId)
-		getDataSourceConnectionsOptions.SetConnectionIds([]string{rs.Primary.ID})
+		getDataSourceConnectionsOptions.SetConnectionIds([]string{rs.Primary.Attributes["connection_id"]})
 
 		// Try to find the key
 		_, response, err := backupRecoveryClient.GetDataSourceConnections(getDataSourceConnectionsOptions)
 		if err == nil {
-			return fmt.Errorf("Data-Source Connection still exists: %s", rs.Primary.ID)
+			return fmt.Errorf("Data-Source Connection still exists: %s", rs.Primary.Attributes["connection_id"])
 		}
 		if strings.Contains(response.String(), "does not exist in organization") {
 			return nil

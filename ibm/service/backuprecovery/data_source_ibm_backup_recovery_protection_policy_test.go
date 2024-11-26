@@ -74,7 +74,7 @@ func testAccCheckIbmBackupRecoveryProtectionPolicyDataSourceConfigBasic(name str
 		}
 
 		data "ibm_backup_recovery_protection_policy" "baas_protection_policy_instance" {
-			protection_policy_id = ibm_backup_recovery_protection_policy.baas_protection_policy_instance.id
+			protection_policy_id = ibm_backup_recovery_protection_policy.baas_protection_policy_instance.policy_id
 			x_ibm_tenant_id = "%[1]s"
 		}
 

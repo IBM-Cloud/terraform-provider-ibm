@@ -141,7 +141,7 @@ func testAccCheckIbmBackupRecoveryProtectionGroupDestroy(s *terraform.State) err
 
 		getProtectionGroupByIdOptions := &backuprecoveryv1.GetProtectionGroupByIdOptions{}
 
-		getProtectionGroupByIdOptions.SetID(rs.Primary.ID)
+		getProtectionGroupByIdOptions.SetID(rs.Primary.Attributes["group_id"])
 		getProtectionGroupByIdOptions.SetXIBMTenantID(tenantId)
 
 		// Try to find the key

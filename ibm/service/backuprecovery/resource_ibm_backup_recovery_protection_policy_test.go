@@ -120,7 +120,7 @@ func testAccCheckIbmBackupRecoveryProtectionPolicyDestroy(s *terraform.State) er
 		getProtectionPolicyByIdOptions := &backuprecoveryv1.GetProtectionPolicyByIdOptions{}
 
 		getProtectionPolicyByIdOptions.SetXIBMTenantID(tenantId)
-		getProtectionPolicyByIdOptions.SetID(rs.Primary.ID)
+		getProtectionPolicyByIdOptions.SetID(rs.Primary.Attributes["policy_id"])
 
 		// Try to find the key
 		policyResponse, response, err := backupRecoveryClient.GetProtectionPolicyByID(getProtectionPolicyByIdOptions)

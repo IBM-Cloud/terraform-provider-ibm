@@ -93,8 +93,9 @@ func resourceIbmBackupRecoveryDataSourceConnectionCreate(context context.Context
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
-
-	d.SetId(*dataSourceConnection.ConnectionID)
+	tenantId := d.Get("x_ibm_tenant_id").(string)
+	connectionId := fmt.Sprintf("%s::%s", tenantId, *dataSourceConnection.ConnectionID)
+	d.SetId(connectionId)
 	d.Set("registration_token", dataSourceConnection.RegistrationToken)
 
 	return resourceIbmBackupRecoveryDataSourceConnectionRead(context, d, meta)
@@ -156,6 +157,13 @@ func resourceIbmBackupRecoveryDataSourceConnectionRead(context context.Context, 
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_data_source_connection", "read", "set-registration_token").GetDiag()
 		}
 	}
+
+	if !core.IsNil(dataSourceConnectionList.Connections[0].TenantID) {
+		if err = d.Set("x_ibm_tenant_id", dataSourceConnectionList.Connections[0].TenantID); err != nil {
+			err = fmt.Errorf("Error setting x_ibm_tenant_id: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_data_source_connection", "read", "set-x_ibm_tenant_id").GetDiag()
+		}
+	}
 	if !core.IsNil(dataSourceConnectionList.Connections[0].TenantID) {
 		if err = d.Set("tenant_id", dataSourceConnectionList.Connections[0].TenantID); err != nil {
 			err = fmt.Errorf("Error setting tenant_id: %s", err)
@@ -181,9 +189,14 @@ func resourceIbmBackupRecoveryDataSourceConnectionUpdate(context context.Context
 	}
 
 	patchDataSourceConnectionOptions := &backuprecoveryv1.PatchDataSourceConnectionOptions{}
-
-	patchDataSourceConnectionOptions.SetConnectionID(d.Id())
-	patchDataSourceConnectionOptions.SetXIBMTenantID(d.Get("x_ibm_tenant_id").(string))
+	tenantId := d.Get("x_ibm_tenant_id").(string)
+	connectionId := d.Id()
+	if strings.Contains(d.Id(), "::") {
+		tenantId = ParseId(d.Id(), "tenantId")
+		connectionId = ParseId(d.Id(), "id")
+	}
+	patchDataSourceConnectionOptions.SetConnectionID(connectionId)
+	patchDataSourceConnectionOptions.SetXIBMTenantID(tenantId)
 
 	hasChange := false
 
@@ -213,9 +226,14 @@ func resourceIbmBackupRecoveryDataSourceConnectionDelete(context context.Context
 	}
 
 	deleteDataSourceConnectionOptions := &backuprecoveryv1.DeleteDataSourceConnectionOptions{}
-
-	deleteDataSourceConnectionOptions.SetConnectionID(d.Id())
-	deleteDataSourceConnectionOptions.SetXIBMTenantID(d.Get("x_ibm_tenant_id").(string))
+	tenantId := d.Get("x_ibm_tenant_id").(string)
+	connectionId := d.Id()
+	if strings.Contains(d.Id(), "::") {
+		tenantId = ParseId(d.Id(), "tenantId")
+		connectionId = ParseId(d.Id(), "id")
+	}
+	deleteDataSourceConnectionOptions.SetConnectionID(connectionId)
+	deleteDataSourceConnectionOptions.SetXIBMTenantID(tenantId)
 
 	_, err = backupRecoveryClient.DeleteDataSourceConnectionWithContext(context, deleteDataSourceConnectionOptions)
 	if err != nil {

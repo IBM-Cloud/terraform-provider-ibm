@@ -18,7 +18,7 @@ import (
 )
 
 const (
-	tenantId string = "79mle1bk3m/"
+	tenantId string = "jhxqx715r9/"
 )
 
 func TestAccIbmBackupRecoveryDataSourceConnectionsDataSourceBasic(t *testing.T) {
@@ -54,7 +54,7 @@ func testAccCheckIbmBackupRecoveryDataSourceConnectionsDataSourceConfigBasic(con
 	
 	data "ibm_backup_recovery_data_source_connections" "baas_data_source_connections_instance" {
 		x_ibm_tenant_id = ibm_backup_recovery_data_source_connection.baas_data_source_connection_instance.x_ibm_tenant_id
-		connection_ids = [ibm_backup_recovery_data_source_connection.baas_data_source_connection_instance.id]
+		connection_ids = [ibm_backup_recovery_data_source_connection.baas_data_source_connection_instance.connection_id]
 	  }
 		`, tenantId, connectionName)
 }

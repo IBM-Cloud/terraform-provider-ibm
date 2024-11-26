@@ -122,7 +122,7 @@ func testAccCheckIbmBackupRecoverySourceRegistrationDestroy(s *terraform.State) 
 
 		getProtectionSourceRegistrationOptions := &backuprecoveryv1.GetProtectionSourceRegistrationOptions{}
 
-		num, _ := strconv.Atoi(rs.Primary.ID)
+		num, _ := strconv.Atoi(rs.Primary.Attributes["source_id"])
 
 		getProtectionSourceRegistrationOptions.SetXIBMTenantID(tenantIdRegister)
 		getProtectionSourceRegistrationOptions.SetID(int64(num))

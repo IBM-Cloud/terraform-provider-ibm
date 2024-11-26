@@ -97,7 +97,7 @@ func testAccCheckIbmBackupRecoveryProtectionGroupsDataSourceConfigBasic(name, en
 	}
 		data "ibm_backup_recovery_protection_groups" "baas_protection_groups_instance" {
 			x_ibm_tenant_id = "%[1]s"
-			ids = [ ibm_backup_recovery_protection_group.baas_protection_group_instance.id ]
+			ids = [ ibm_backup_recovery_protection_group.baas_protection_group_instance.group_id ]
 		}
 	`, tenantId, policyName, tenantId, name, environment, protectionType, objectId, includedPath)
 }
