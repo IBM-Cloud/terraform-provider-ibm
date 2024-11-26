@@ -66,7 +66,7 @@ func TestAccIbmSccInstanceSettingsAllArgs(t *testing.T) {
 func testAccCheckIbmSccInstanceSettingsConfigBasic(instanceID string) string {
 	return fmt.Sprintf(`
 		resource "ibm_scc_instance_settings" "scc_instance_settings_instance" {
-      instance_id = "%s"
+			instance_id = "%s"
 			event_notifications { }
 			object_storage { }
 		}
@@ -79,8 +79,7 @@ func testAccCheckIbmSccInstanceSettingsConfig(instanceID, enInstanceCRN, objStor
 			instance_id = "%s"
 			event_notifications {
 				instance_crn = "%s"
-        source_description = "This source is used by the scc instance"
-        source_name = "scc compliance"
+				source_name = "scc compliance"
 			}
 			object_storage {
 				instance_crn = "%s"

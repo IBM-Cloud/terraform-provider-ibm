@@ -46,7 +46,6 @@ func ResourceIbmSccInstanceSettings() *schema.Resource {
 						"source_name": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Computed:    true,
 							Description: "The name of the Event Notifications source connected Security and Compliance Center instance CRN.",
 						},
 						"updated_on": &schema.Schema{
@@ -192,6 +191,13 @@ func resourceIbmSccInstanceSettingsRead(context context.Context, d *schema.Resou
 		if err != nil {
 			return diag.FromErr(err)
 		}
+		if _, ok := eventNotificationsMap["source_name"]; !ok {
+			eventNotificationsData, enErr := resourceIbmSccInstanceSettingsMapToEventNotifications(d.Get("event_notifications.0").(map[string]interface{}))
+			if enErr == nil && core.StringNilMapper(eventNotificationsData.SourceName) != "" {
+				eventNotificationsMap["source_name"] = eventNotificationsData.SourceName
+				log.Print("[WARN] event_notifications.source_name grabbed from preexisting state\n")
+			}
+		}
 		if err = d.Set("event_notifications", []map[string]interface{}{eventNotificationsMap}); err != nil {
 			return diag.FromErr(flex.FmtErrorf("Error setting event_notifications: %s", err))
 		}
@@ -238,7 +244,6 @@ func resourceIbmSccInstanceSettingsUpdate(context context.Context, d *schema.Res
 		hasChange = true
 	}
 
-	log.Printf("[INFO] UpdateSettingsWithContext payload EventNotifications: %#v\n", updateSettingsOptions.EventNotifications)
 	if hasChange {
 		_, response, err := adminClient.UpdateSettingsWithContext(context, updateSettingsOptions)
 		if err != nil {
@@ -277,6 +282,9 @@ func resourceIbmSccInstanceSettingsMapToEventNotifications(modelMap map[string]i
 	}
 	if modelMap["source_description"] != nil && modelMap["source_description"].(string) != "" {
 		model.SourceDescription = core.StringPtr(modelMap["source_description"].(string))
+	}
+	if core.StringNilMapper(model.InstanceCrn) != "" && core.StringNilMapper(model.SourceName) == "" {
+		return model, errors.New("event_notifications.source_name needs to be defined along with event_notifications.instance_crn")
 	}
 	return model, nil
 }
