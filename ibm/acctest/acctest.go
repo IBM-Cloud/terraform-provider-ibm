@@ -23,111 +23,114 @@ const (
 )
 
 var (
-	AccountId                       string
-	AppIDTenantID                   string
-	AppIDTestUserEmail              string
-	BackupPolicyJobID               string
-	BackupPolicyID                  string
-	CfOrganization                  string
-	CfSpace                         string
-	CisDomainStatic                 string
-	CisDomainTest                   string
-	CisInstance                     string
-	CisResourceGroup                string
-	CloudShellAccountID             string
-	CosCRN                          string
-	BucketCRN                       string
-	ActivityTrackerInstanceCRN      string
-	MetricsMonitoringCRN            string
-	BucketName                      string
-	CosName                         string
-	Ibmid1                          string
-	Ibmid2                          string
-	IAMUser                         string
-	IAMAccountId                    string
-	IAMServiceId                    string
-	IAMTrustedProfileID             string
-	Datacenter                      string
-	MachineType                     string
-	trustedMachineType              string
-	PublicVlanID                    string
-	PrivateVlanID                   string
-	PrivateSubnetID                 string
-	PublicSubnetID                  string
-	SubnetID                        string
-	LbaasDatacenter                 string
-	LbaasSubnetId                   string
-	LbListerenerCertificateInstance string
-	IpsecDatacenter                 string
-	Customersubnetid                string
-	Customerpeerip                  string
-	DedicatedHostName               string
-	DedicatedHostID                 string
-	KubeVersion                     string
-	KubeUpdateVersion               string
-	Zone                            string
-	ZonePrivateVlan                 string
-	ZonePublicVlan                  string
-	ZoneUpdatePrivateVlan           string
-	ZoneUpdatePublicVlan            string
-	WorkerPoolSecondaryStorage      string
-	CsRegion                        string
-	ExtendedHardwareTesting         bool
-	err                             error
-	placementGroupName              string
-	CertCRN                         string
-	UpdatedCertCRN                  string
-	SecretCRN                       string
-	SecretCRN2                      string
-	EnterpriseCRN                   string
-	InstanceCRN                     string
-	SecretGroupID                   string
-	RegionName                      string
-	ISZoneName                      string
-	ISZoneName2                     string
-	ISZoneName3                     string
-	IsResourceGroupID               string
-	ISResourceCrn                   string
-	ISCIDR                          string
-	ISCIDR2                         string
-	ISPublicSSHKeyFilePath          string
-	ISPrivateSSHKeyFilePath         string
-	ISAddressPrefixCIDR             string
-	InstanceName                    string
-	InstanceProfileName             string
-	InstanceProfileNameUpdate       string
-	IsBareMetalServerProfileName    string
-	IsBareMetalServerImage          string
-	IsBareMetalServerImage2         string
-	DNSInstanceCRN                  string
-	DNSZoneID                       string
-	DNSInstanceCRN1                 string
-	DNSZoneID1                      string
-	DedicatedHostProfileName        string
-	DedicatedHostGroupID            string
-	InstanceDiskProfileName         string
-	DedicatedHostGroupFamily        string
-	DedicatedHostGroupClass         string
-	ShareProfileName                string
-	SourceShareCRN                  string
-	ShareEncryptionKey              string
-	VNIId                           string
-	FloatingIpID                    string
-	VolumeProfileName               string
-	VSIUnattachedBootVolumeID       string
-	VSIDataVolumeID                 string
-	ISRouteDestination              string
-	ISRouteNextHop                  string
-	ISSnapshotCRN                   string
-	WorkspaceID                     string
-	TemplateID                      string
-	ActionID                        string
-	JobID                           string
-	RepoURL                         string
-	RepoBranch                      string
-	imageName                       string
-	functionNamespace               string
-	HpcsInstanceID                  string
+	AccountId                          string
+	AppIDTenantID                      string
+	AppIDTestUserEmail                 string
+	BackupPolicyJobID                  string
+	BackupPolicyID                     string
+	CfOrganization                     string
+	CfSpace                            string
+	CisDomainStatic                    string
+	CisDomainTest                      string
+	CisInstance                        string
+	CisResourceGroup                   string
+	CloudShellAccountID                string
+	CosCRN                             string
+	BucketCRN                          string
+	ActivityTrackerInstanceCRN         string
+	MetricsMonitoringCRN               string
+	BucketName                         string
+	CosName                            string
+	Ibmid1                             string
+	Ibmid2                             string
+	IAMUser                            string
+	IAMAccountId                       string
+	IAMServiceId                       string
+	IAMTrustedProfileID                string
+	Datacenter                         string
+	MachineType                        string
+	trustedMachineType                 string
+	PublicVlanID                       string
+	PrivateVlanID                      string
+	PrivateSubnetID                    string
+	PublicSubnetID                     string
+	SubnetID                           string
+	LbaasDatacenter                    string
+	LbaasSubnetId                      string
+	LbListerenerCertificateInstance    string
+	IpsecDatacenter                    string
+	Customersubnetid                   string
+	Customerpeerip                     string
+	DedicatedHostName                  string
+	DedicatedHostID                    string
+	KubeVersion                        string
+	KubeUpdateVersion                  string
+	Zone                               string
+	ZonePrivateVlan                    string
+	ZonePublicVlan                     string
+	ZoneUpdatePrivateVlan              string
+	ZoneUpdatePublicVlan               string
+	WorkerPoolSecondaryStorage         string
+	CsRegion                           string
+	ExtendedHardwareTesting            bool
+	err                                error
+	placementGroupName                 string
+	CertCRN                            string
+	UpdatedCertCRN                     string
+	SecretCRN                          string
+	SecretCRN2                         string
+	EnterpriseCRN                      string
+	InstanceCRN                        string
+	SecretGroupID                      string
+	RegionName                         string
+	ISZoneName                         string
+	ISZoneName2                        string
+	ISZoneName3                        string
+	IsResourceGroupID                  string
+	ISResourceCrn                      string
+	ISCIDR                             string
+	ISCIDR2                            string
+	ISPublicSSHKeyFilePath             string
+	ISPrivateSSHKeyFilePath            string
+	ISAddressPrefixCIDR                string
+	ISClusterNetworkProfileName        string
+	ISInstanceGPUProfileName           string
+	ISClusterNetworkSubnetPrefixesCidr string
+	InstanceName                       string
+	InstanceProfileName                string
+	InstanceProfileNameUpdate          string
+	IsBareMetalServerProfileName       string
+	IsBareMetalServerImage             string
+	IsBareMetalServerImage2            string
+	DNSInstanceCRN                     string
+	DNSZoneID                          string
+	DNSInstanceCRN1                    string
+	DNSZoneID1                         string
+	DedicatedHostProfileName           string
+	DedicatedHostGroupID               string
+	InstanceDiskProfileName            string
+	DedicatedHostGroupFamily           string
+	DedicatedHostGroupClass            string
+	ShareProfileName                   string
+	SourceShareCRN                     string
+	ShareEncryptionKey                 string
+	VNIId                              string
+	FloatingIpID                       string
+	VolumeProfileName                  string
+	VSIUnattachedBootVolumeID          string
+	VSIDataVolumeID                    string
+	ISRouteDestination                 string
+	ISRouteNextHop                     string
+	ISSnapshotCRN                      string
+	WorkspaceID                        string
+	TemplateID                         string
+	ActionID                           string
+	JobID                              string
+	RepoURL                            string
+	RepoBranch                         string
+	imageName                          string
+	functionNamespace                  string
+	HpcsInstanceID                     string
 )
 
 // MQ on Cloud
@@ -769,6 +772,23 @@ func init() {
 	if AccountId == "" {
 		AccountId = "fee82deba12e4c0fb69c3b09d1f12345"
 		fmt.Println("[INFO] Set the environment variable IS_ACCOUNT_ID for testing private_path_service_gateway_account_policy else it is set to default value 'fee82deba12e4c0fb69c3b09d1f12345'")
+	}
+
+	ISClusterNetworkProfileName = os.Getenv("IS_CLUSTER_NETWORK_PROFILE_NAME")
+	if ISClusterNetworkProfileName == "" {
+		ISClusterNetworkProfileName = "h100"
+		fmt.Println("[INFO] Set the environment variable IS_CLUSTER_NETWORK_PROFILE_NAME for testing cluster_network_profile else it is set to default value 'h100'")
+	}
+	ISInstanceGPUProfileName = os.Getenv("IS_INSTANCE_GPU_PROFILE_NAME")
+	if ISInstanceGPUProfileName == "" {
+		ISInstanceGPUProfileName = "gx3d-160x1792x8h100"
+		fmt.Println("[INFO] Set the environment variable IS_INSTANCE_GPU_PROFILE_NAME for testing cluster_network_attachments else it is set to default value 'gx3d-160x1792x8h100'")
+	}
+
+	ISClusterNetworkSubnetPrefixesCidr = os.Getenv("IS_CLUSTER_NETWORK_SUBNET_PREFIXES_CIDR")
+	if ISClusterNetworkSubnetPrefixesCidr == "" {
+		ISClusterNetworkSubnetPrefixesCidr = "10.1.0.0/24"
+		fmt.Println("[INFO] Set the environment variable IS_CLUSTER_NETWORK_SUBNET_PREFIXES_CIDR for testing cluster_network else it is set to default value '10.1.0.0/24'")
 	}
 
 	ISAddressPrefixCIDR = os.Getenv("SL_ADDRESS_PREFIX_CIDR")
