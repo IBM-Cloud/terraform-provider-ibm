@@ -373,12 +373,12 @@ type accessTokenProvider struct {
 func (tp accessTokenProvider) Token() (*sarama.AccessToken, error) {
 	token := tp.clientSession.Config.IAMAccessToken
 	if len(token) == 0 {
-		return errors.New("IAMAccessToken is required")
+		return nil, errors.New("IAMAccessToken is required")
 	}
 	token = strings.TrimPrefix(token, "Bearer")
 	token = strings.Trim(token, " ")
 	if len(strings.Split(token, ".")) != 3 {
-		return errors.New("IAMAccessToken is malformed")
+		return nil, errors.New("IAMAccessToken is malformed")
 	}
 	log.Printf("[DEBUG] accessTokenProvider.Token():%s", token)
 	return &sarama.AccessToken{Token: token}, nil
