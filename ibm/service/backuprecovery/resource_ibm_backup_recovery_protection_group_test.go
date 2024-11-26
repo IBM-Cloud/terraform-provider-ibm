@@ -25,7 +25,7 @@ func TestAccIbmBackupRecoveryProtectionGroupBasic(t *testing.T) {
 	includedPath := "/data2/data/"
 	includedPathUpdate := "/data1/"
 	protectionType := "kFile"
-	objectId := 217
+	objectId := 3
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },

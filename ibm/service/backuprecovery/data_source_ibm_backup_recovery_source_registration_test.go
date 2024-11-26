@@ -19,7 +19,7 @@ import (
 
 func TestAccIbmBackupRecoverySourceRegistrationDataSourceBasic(t *testing.T) {
 	// environment := "kPhysical"
-	objectId := 217
+	objectId := 3
 	// endpoint := "172.26.1.24"
 	// hostType := "kLinux"
 	// physicalType := "kHost"
@@ -33,7 +33,8 @@ func TestAccIbmBackupRecoverySourceRegistrationDataSourceBasic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.ibm_backup_recovery_source_registration.baas_source_registration_instance", "x_ibm_tenant_id", tenantId),
 					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_source_registration.baas_source_registration_instance", "environment"),
-					resource.TestCheckResourceAttr("data.ibm_backup_recovery_source_registration.baas_source_registration_instance", "id", strconv.Itoa(objectId)),
+					resource.TestCheckResourceAttr("data.ibm_backup_recovery_source_registration.baas_source_registration_instance", "id", fmt.Sprintf("%s::%d", tenantId, objectId)),
+					resource.TestCheckResourceAttr("data.ibm_backup_recovery_source_registration.baas_source_registration_instance", "source_id", strconv.Itoa(objectId)),
 					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_source_registration.baas_source_registration_instance", "last_refreshed_time_msecs"),
 					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_source_registration.baas_source_registration_instance", "source_registration_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_source_registration.baas_source_registration_instance", "connections.#"),

@@ -21,7 +21,7 @@ import (
 func TestAccIbmBackupRecoveryProtectionGroupDataSourceBasic(t *testing.T) {
 	groupName := fmt.Sprintf("tf_groupname_%d", acctest.RandIntRange(10, 100))
 	policyName := fmt.Sprintf("tf_policyname_%d", acctest.RandIntRange(10, 100))
-	objectId := 217
+	objectId := 3
 	environment := "kPhysical"
 	includedPath := "/data2/data/"
 	protectionType := "kFile"
@@ -33,6 +33,7 @@ func TestAccIbmBackupRecoveryProtectionGroupDataSourceBasic(t *testing.T) {
 				Config: testAccCheckIbmBackupRecoveryProtectionGroupDataSourceConfigBasic(groupName, environment, includedPath, protectionType, policyName, objectId),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_protection_group.baas_protection_group_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_protection_group.baas_protection_group_instance", "group_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_protection_group.baas_protection_group_instance", "name"),
 					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_protection_group.baas_protection_group_instance", "physical_params.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_protection_group.baas_protection_group_instance", "physical_params.0.file_protection_type_params.#"),

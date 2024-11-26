@@ -17,15 +17,15 @@ import (
 )
 
 var (
-	tenantIdRegister = "79mle1bk3m/"
+	tenantIdRegister = "jhxqx715r9/"
 )
 
 func TestAccIbmBackupRecoverySourceRegistrationBasic(t *testing.T) {
 	var conf backuprecoveryv1.SourceRegistrationReponseParams
 
 	environment := "kPhysical"
-	connectionId := "7754198299738915743"
-	endpoint := "172.26.1.11"
+	connectionId := "6456884682673709176"
+	endpoint := "172.26.1.13"
 	hostType := "kLinux"
 	physicalType := "kHost"
 	applications := ""

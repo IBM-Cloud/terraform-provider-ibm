@@ -17,9 +17,9 @@ import (
 )
 
 func TestAccIbmBackupRecoveryUpdateProtectionGroupRunRequestBasic(t *testing.T) {
-	objectId := 217
+	objectId := 3
 	runType := "kRegular"
-	groupName := "terra-test-group-1" // or can use "tf-group-5" //id: 5901263190628181:1725393921826:9414
+	groupName := "terra-test-group-4" // or can use "tf-group-5" //id: 5901263190628181:1725393921826:9414
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
@@ -139,12 +139,12 @@ func testAccCreateIbmBaasProtectionGroupRunCancelUpdateRequestConfigBasic(runTyp
 
 	data "ibm_backup_recovery_protection_group_runs" "example_runs" {
 		x_ibm_tenant_id = "%[1]s"
-		protection_group_id = data.ibm_backup_recovery_protection_groups.baas_protection_group_existing_instance.protection_groups.0.group_id
+		protection_group_id = data.ibm_backup_recovery_protection_groups.baas_protection_group_existing_instance.protection_groups.0.id
 	}
 
 	resource "ibm_backup_recovery_perform_action_on_protection_group_run_request" "baas_perform_action_on_updated_protection_group_run_request_instance" {
 		x_ibm_tenant_id = "%[1]s"
-		group_id = data.ibm_backup_recovery_protection_groups.baas_protection_group_existing_instance.protection_groups.0.group_id
+		group_id = data.ibm_backup_recovery_protection_groups.baas_protection_group_existing_instance.protection_groups.0.id
 		action = "Cancel"
 		cancel_params {
 			run_id = data.ibm_backup_recovery_protection_group_runs.example_runs.runs.0.id

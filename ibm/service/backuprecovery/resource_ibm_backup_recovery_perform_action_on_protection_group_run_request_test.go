@@ -17,9 +17,9 @@ import (
 )
 
 func TestAccIbmBackupRecoveryPerformActionOnProtectionGroupRunRequestBasic(t *testing.T) {
-	objectId := 217
+	objectId := 3
 	runType := "kRegular"
-	groupName := "terra-test-group-1" //"tf-group-5"
+	groupName := "terra-test-group-4" //"tf-group-5"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
@@ -55,7 +55,7 @@ func testAccCheckIbmBackupRecoveryProtectionGroupRunRequest(groupName, runType s
 		resource "ibm_backup_recovery_protection_group_run_request" "baas_protection_group_run_request_instance" {
 			x_ibm_tenant_id = "%s"
 			run_type = "%s"
-			group_id = data.ibm_backup_recovery_protection_groups.ibm_backup_recovery_protection_groups_instance.protection_groups.0.group_id
+			group_id = data.ibm_backup_recovery_protection_groups.ibm_backup_recovery_protection_groups_instance.protection_groups.0.id
 			lifecycle {
 				ignore_changes = ["x_ibm_tenant_id","run_type","group_id"]
 			}

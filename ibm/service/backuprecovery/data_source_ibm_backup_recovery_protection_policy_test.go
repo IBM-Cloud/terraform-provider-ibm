@@ -31,6 +31,7 @@ func TestAccIbmBackupRecoveryProtectionPolicyDataSourceBasic(t *testing.T) {
 				Config: testAccCheckIbmBackupRecoveryProtectionPolicyDataSourceConfigBasic(name, duration),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_protection_policy.baas_protection_policy_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_protection_policy.baas_protection_policy_instance", "policy_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_protection_policy.baas_protection_policy_instance", "x_ibm_tenant_id"),
 					resource.TestCheckResourceAttr("data.ibm_backup_recovery_protection_policy.baas_protection_policy_instance", "name", name),
 					resource.TestCheckResourceAttr("data.ibm_backup_recovery_protection_policy.baas_protection_policy_instance", "backup_policy.0.regular.0.retention.0.duration", strconv.Itoa(duration)),

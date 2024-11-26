@@ -1393,6 +1393,14 @@ func resourceIbmBackupRecoverySourceRegistrationUpdate(context context.Context, 
 			updateProtectionSourceRegistrationOptions.SetEncryptionKey(d.Get("encryption_key").(string))
 		}
 
+		if _, ok := d.GetOk("connection_id"); ok {
+			connId, err := strconv.ParseInt(d.Get("connection_id").(string), 10, 64)
+			if err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_source_registration", "create", "parse-connection-id").GetDiag()
+			}
+			updateProtectionSourceRegistrationOptions.SetConnectionID(connId)
+		}
+
 		if !d.HasChange("data_source_connection_id") {
 			if _, ok := d.GetOk("connection_id"); ok {
 				connId, err := strconv.ParseInt(d.Get("connection_id").(string), 10, 64)
@@ -1507,7 +1515,11 @@ func resourceIbmBackupRecoverySourceRegistrationDelete(context context.Context, 
 func ResourceIbmBackupRecoverySourceRegistrationMapToConnectionConfig(modelMap map[string]interface{}) (*backuprecoveryv1.ConnectionConfig, error) {
 	model := &backuprecoveryv1.ConnectionConfig{}
 	if modelMap["connection_id"] != nil {
-		model.ConnectionID = core.Int64Ptr(int64(modelMap["connection_id"].(int)))
+		ConnectionID, err := strconv.ParseInt(modelMap["connection_id"].(string), 10, 64)
+		if err != nil {
+			return model, err
+		}
+		model.ConnectionID = &ConnectionID
 	}
 	if modelMap["entity_id"] != nil {
 		model.EntityID = core.Int64Ptr(int64(modelMap["entity_id"].(int)))
