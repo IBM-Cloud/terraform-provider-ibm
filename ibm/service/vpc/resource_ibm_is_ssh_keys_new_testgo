@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
@@ -20,8 +20,8 @@ func TestAccIBMIsSSHKey_RSA(t *testing.T) {
 	var sshKeyName = fmt.Sprintf("tf-acc-test-rsa-%d", time.Now().Unix())
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { acctest.TestAccFrameworkPreCheck(t) },
-		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
+		PreCheck:                 func() { acc.TestAccFrameworkPreCheck(t) },
+		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccIBMIsSSHKeyConfigRSA(sshKeyName),
@@ -77,8 +77,8 @@ func TestAccIBMIsSSHKey_ED25519(t *testing.T) {
 
 // Configuration generation functions
 func testAccIBMIsSSHKeyConfigRSA(name string) string {
-	return acctest.ConfigCompose(
-		acctest.ConfigureProvider(acctest.Region()),
+	return acc.ConfigCompose(
+		acc.ConfigureProvider(acctest.Region()),
 		fmt.Sprintf(`
 			resource "ibm_is_ssh_key_new" "rsa" {
 				name       = %q
