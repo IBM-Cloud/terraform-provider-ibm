@@ -78,7 +78,7 @@ func testAccCheckIbmBackupRecoveryProtectionGroupDataSourceConfigBasic(name, env
 
 		resource "ibm_backup_recovery_protection_group" "baas_protection_group_instance" {
 			x_ibm_tenant_id = "%s"
-			policy_id = ibm_backup_recovery_protection_policy.baas_protection_policy_instance.id
+			policy_id = ibm_backup_recovery_protection_policy.baas_protection_policy_instance.policy_id
 			name = "%s"
 			environment = "%s"
 			physical_params {
