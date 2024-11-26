@@ -39,6 +39,8 @@ Nested schema for **event_notifications**:
 	* `source_id` - (Computed, String) The connected Security and Compliance Center instance CRN.
 	  * Constraints: The maximum length is `512` characters. The minimum length is `1` character. The value must match regular expression `/([A-Za-z0-9]+(:[A-Za-z0-9]+)+)/`.
 	* `updated_on` - (Optional, String) The date when the Event Notifications connection was updated.
+	* `source_description` - (Optional,Computed, String) The description of the Event Notifications connection source.
+	* `source_name` - (Optional,Computed, String) The name of the Event Notifications connection source.
 * `object_storage` - (Optional, List) The Cloud Object Storage settings.
 Nested schema for **object_storage**:
 	* `bucket` - (Optional, String) The connected Cloud Object Storage bucket name.

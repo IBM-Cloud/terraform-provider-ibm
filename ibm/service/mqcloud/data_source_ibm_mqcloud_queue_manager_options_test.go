@@ -2,7 +2,7 @@
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.90.0-5aad763d-20240506-203857
+ * IBM OpenAPI Terraform Generator Version: 3.95.2-120e65bc-20240924-152329
  */
 
 package mqcloud_test
@@ -18,7 +18,7 @@ import (
 
 func TestAccIbmMqcloudQueueManagerOptionsDataSourceBasic(t *testing.T) {
 	t.Parallel()
-	service_instance_guid := acc.MqcloudInstanceID
+	service_instance_guid := acc.MqcloudDeploymentID
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheckMqcloud(t) },
