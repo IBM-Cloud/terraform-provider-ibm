@@ -2,6 +2,7 @@ package vpc_test
 
 import (
 	"fmt"
+	"log"
 	"testing"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
@@ -15,6 +16,7 @@ const (
 )
 
 func TestAccVPCIsSshKeyNewDatasource(t *testing.T) {
+	log.Printf("[INFO] UJJK Inside test file")
 	dataSourceAddress := "data.ibm_is_ssh_key_new.this"
 	name1 := fmt.Sprintf("tfssh-name-%d", 10)
 	// 	publicKey := strings.TrimSpace(`

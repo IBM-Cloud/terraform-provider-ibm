@@ -5,8 +5,9 @@ package secretsmanager_test
 
 import (
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"testing"
+
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )

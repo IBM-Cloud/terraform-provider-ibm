@@ -12,9 +12,9 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 func TestAccIBMCisCertificateUpload_Basic(t *testing.T) {

@@ -13,9 +13,9 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	dlProviderV2 "github.com/IBM/networking-go-sdk/directlinkproviderv2"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 func TestAccIBMDLProviderGateway_basic(t *testing.T) {

@@ -5,10 +5,12 @@ package acctest
 
 import (
 	"context"
+	"log"
 	"os"
 	"sync"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/provider"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/vpc"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 )
 
@@ -38,6 +40,7 @@ var testAccProviderFrameworkConfigure sync.Once
 
 func protoV6ProviderFactoriesInit(ctx context.Context, providerNames ...string) map[string]func() (tfprotov6.ProviderServer, error) {
 	// Initialize logging
+	log.Printf("[INFO] UJJK context is %v", vpc.BeautifyResponse(ctx))
 	if testlogger := os.Getenv("TF_LOG"); testlogger != "" {
 		os.Setenv("IBMCLOUD_BLUEMIX_GO_TRACE", "true")
 	}

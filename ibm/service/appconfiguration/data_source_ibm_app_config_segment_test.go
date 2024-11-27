@@ -5,11 +5,12 @@ package appconfiguration_test
 
 import (
 	"fmt"
-	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 )
 
 func TestAccIbmAppConfigSegmentDataSource(t *testing.T) {

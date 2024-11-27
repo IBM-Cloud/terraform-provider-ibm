@@ -5,14 +5,15 @@ package iamaccessgroup_test
 
 import (
 	"fmt"
-	iamaccessgroups "github.com/IBM/platform-services-go-sdk/iamaccessgroupsv2"
 	"testing"
+
+	iamaccessgroups "github.com/IBM/platform-services-go-sdk/iamaccessgroupsv2"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 func TestAccIBMIAMAccessGroupAccountSettingsBasic(t *testing.T) {
