@@ -2,7 +2,7 @@
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.90.0-5aad763d-20240506-203857
+ * IBM OpenAPI Terraform Generator Version: 3.95.2-120e65bc-20240924-152329
  */
 
 package mqcloud_test
@@ -22,7 +22,7 @@ import (
 
 func TestAccIbmMqcloudApplicationDataSourceBasic(t *testing.T) {
 	t.Parallel()
-	applicationDetailsServiceInstanceGuid := acc.MqcloudInstanceID
+	applicationDetailsServiceInstanceGuid := acc.MqcloudDeploymentID
 	applicationDetailsName := "appdsbasic"
 
 	resource.Test(t, resource.TestCase{
@@ -57,6 +57,7 @@ func testAccCheckIbmMqcloudApplicationDataSourceConfigBasic(applicationDetailsSe
 }
 
 func TestDataSourceIbmMqcloudApplicationApplicationDetailsToMap(t *testing.T) {
+	t.Parallel()
 	checkResult := func(result map[string]interface{}) {
 		model := make(map[string]interface{})
 		model["id"] = "testString"

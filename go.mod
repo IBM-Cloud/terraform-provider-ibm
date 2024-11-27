@@ -5,13 +5,13 @@ go 1.22.4
 toolchain go1.22.5
 
 require (
-	github.com/IBM-Cloud/bluemix-go v0.0.0-20241113164343-2c8987e9d7fc
+	github.com/IBM-Cloud/bluemix-go v0.0.0-20241117121028-a3be206688b3
 	github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20240725064144-454a2ae23113
 	github.com/IBM-Cloud/power-go-client v1.8.3
 	github.com/IBM/apigateway-go-sdk v0.0.0-20210714141226-a5d5d49caaca
 	github.com/IBM/appconfiguration-go-admin-sdk v0.3.0
 	github.com/IBM/appid-management-go-sdk v0.0.0-20210908164609-dd0e0eaf732f
-	github.com/IBM/cloud-databases-go-sdk v0.7.0
+	github.com/IBM/cloud-databases-go-sdk v0.7.1
 	github.com/IBM/cloudant-go-sdk v0.8.0
 	github.com/IBM/code-engine-go-sdk v0.0.0-20240808131715-b9d168602dac
 	github.com/IBM/configuration-aggregator-go-sdk v0.0.2
@@ -29,7 +29,7 @@ require (
 	github.com/IBM/keyprotect-go-client v0.15.1
 	github.com/IBM/logs-go-sdk v0.3.0
 	github.com/IBM/logs-router-go-sdk v1.0.5
-	github.com/IBM/mqcloud-go-sdk v0.1.0
+	github.com/IBM/mqcloud-go-sdk v0.2.0
 	github.com/IBM/networking-go-sdk v0.49.0
 	github.com/IBM/platform-services-go-sdk v0.70.0
 	github.com/IBM/project-go-sdk v0.3.5
@@ -40,7 +40,7 @@ require (
 	github.com/IBM/secrets-manager-go-sdk/v2 v2.0.7
 	github.com/IBM/vmware-go-sdk v0.1.2
 	github.com/IBM/vpc-beta-go-sdk v0.8.0
-	github.com/IBM/vpc-go-sdk v0.62.0
+	github.com/IBM/vpc-go-sdk v0.63.1
 	github.com/ScaleFT/sshkeys v0.0.0-20200327173127-6142f742bca5
 	github.com/akamai/AkamaiOPEN-edgegrid-golang v1.2.2
 	github.com/akamai/AkamaiOPEN-edgegrid-golang/v5 v5.0.0

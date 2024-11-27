@@ -37,7 +37,7 @@ func TestAccIBMEDBDatabaseInstanceBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "adminuser", "admin"),
 					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "49152"),
 					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "61440"),
-					resource.TestCheckResourceAttr(name, "service_endpoints", "public"),
+					resource.TestCheckResourceAttr(name, "service_endpoints", "public-and-private"),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "1"),
 					resource.TestCheckResourceAttr(name, "users.#", "1"),
 					resource.TestCheckResourceAttr(name, "tags.#", "1"),
@@ -159,6 +159,7 @@ func testAccCheckIBMDatabaseInstanceEDBMinimal(databaseResourceGroup string, nam
 		plan              = "standard"
 		location          = "%[3]s"
 		service_endpoints = "public-and-private"
+
 		group {
 			group_id = "member"
 			host_flavor {
