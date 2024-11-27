@@ -2210,9 +2210,9 @@ func dataSourceIbmBackupRecoveryRead(context context.Context, d *schema.Resource
 	}
 
 	getRecoveryByIdOptions := &backuprecoveryv1.GetRecoveryByIdOptions{}
-
+	tenantId := d.Get("x_ibm_tenant_id").(string)
 	getRecoveryByIdOptions.SetID(d.Get("recovery_id").(string))
-	getRecoveryByIdOptions.SetXIBMTenantID(d.Get("x_ibm_tenant_id").(string))
+	getRecoveryByIdOptions.SetXIBMTenantID(tenantId)
 
 	recovery, _, err := backupRecoveryClient.GetRecoveryByIDWithContext(context, getRecoveryByIdOptions)
 	if err != nil {
@@ -2220,8 +2220,8 @@ func dataSourceIbmBackupRecoveryRead(context context.Context, d *schema.Resource
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
-
-	d.SetId(*getRecoveryByIdOptions.ID)
+	recoveryId := fmt.Sprintf("%s::%s", tenantId, d.Get("recovery_id").(string))
+	d.SetId(recoveryId)
 
 	if !core.IsNil(recovery.Name) {
 		if err = d.Set("name", recovery.Name); err != nil {

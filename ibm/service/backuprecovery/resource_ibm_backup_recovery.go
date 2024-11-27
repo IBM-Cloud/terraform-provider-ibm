@@ -11,6 +11,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -50,6 +51,11 @@ func ResourceIbmBackupRecovery() *schema.Resource {
 				Required: true,
 				// ForceNew:    true,
 				Description: "Specifies the name of the Recovery.",
+			},
+			"recovery_id": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Recovery ID",
 			},
 			"snapshot_environment": &schema.Schema{
 				Type:     schema.TypeString,
@@ -2442,8 +2448,8 @@ func resourceIbmBackupRecoveryCreate(context context.Context, d *schema.Resource
 	}
 
 	createRecoveryOptions := &backuprecoveryv1.CreateRecoveryOptions{}
-
-	createRecoveryOptions.SetXIBMTenantID(d.Get("x_ibm_tenant_id").(string))
+	tenantId := d.Get("x_ibm_tenant_id").(string)
+	createRecoveryOptions.SetXIBMTenantID(tenantId)
 	createRecoveryOptions.SetName(d.Get("name").(string))
 	createRecoveryOptions.SetSnapshotEnvironment(d.Get("snapshot_environment").(string))
 	if _, ok := d.GetOk("physical_params"); ok {
@@ -2471,7 +2477,8 @@ func resourceIbmBackupRecoveryCreate(context context.Context, d *schema.Resource
 		return tfErr.GetDiag()
 	}
 
-	d.SetId(*recovery.ID)
+	recoveryId := fmt.Sprintf("%s::%s", tenantId, *recovery.ID)
+	d.SetId(recoveryId)
 
 	return resourceIbmBackupRecoveryRead(context, d, meta)
 }
@@ -2485,9 +2492,14 @@ func resourceIbmBackupRecoveryRead(context context.Context, d *schema.ResourceDa
 	}
 
 	getRecoveryByIdOptions := &backuprecoveryv1.GetRecoveryByIdOptions{}
-
-	getRecoveryByIdOptions.SetID(d.Id())
-	getRecoveryByIdOptions.SetXIBMTenantID(d.Get("x_ibm_tenant_id").(string))
+	tenantId := d.Get("x_ibm_tenant_id").(string)
+	recoveryId := d.Id()
+	if strings.Contains(d.Id(), "::") {
+		tenantId = ParseId(d.Id(), "tenantId")
+		recoveryId = ParseId(d.Id(), "id")
+	}
+	getRecoveryByIdOptions.SetID(recoveryId)
+	getRecoveryByIdOptions.SetXIBMTenantID(tenantId)
 
 	recovery, response, err := backupRecoveryClient.GetRecoveryByIDWithContext(context, getRecoveryByIdOptions)
 	if err != nil {
@@ -2503,6 +2515,14 @@ func resourceIbmBackupRecoveryRead(context context.Context, d *schema.ResourceDa
 	if err = d.Set("name", recovery.Name); err != nil {
 		err = fmt.Errorf("Error setting name: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_recovery", "read", "set-name").GetDiag()
+	}
+	if err = d.Set("x_ibm_tenant_id", tenantId); err != nil {
+		err = fmt.Errorf("Error setting x_ibm_tenant_id: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_recovery", "read", "set-x_ibm_tenant_id").GetDiag()
+	}
+	if err = d.Set("recovery_id", recoveryId); err != nil {
+		err = fmt.Errorf("Error setting recovery_id: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_recovery", "read", "set-recovery_id").GetDiag()
 	}
 	if err = d.Set("snapshot_environment", recovery.SnapshotEnvironment); err != nil {
 		err = fmt.Errorf("Error setting snapshot_environment: %s", err)

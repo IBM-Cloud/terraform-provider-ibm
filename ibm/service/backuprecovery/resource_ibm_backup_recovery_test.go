@@ -19,7 +19,7 @@ import (
 func TestAccIbmBackupRecoveryBasic(t *testing.T) {
 	name := fmt.Sprintf("tf_recovery_name_%d", acctest.RandIntRange(10, 100))
 	snapshotEnvironment := "kPhysical"
-	objectId := 217
+	objectId := 3
 	targetenvironment := "kPhysical"
 	absolutePath := "/data/"
 	restoreEntityType := "kRegular"
@@ -92,7 +92,7 @@ func testAccCheckIbmBackupRecoveryExists(n string) resource.TestCheckFunc {
 
 		getRecoveryByIdOptions := &backuprecoveryv1.GetRecoveryByIdOptions{}
 
-		getRecoveryByIdOptions.SetID(rs.Primary.ID)
+		getRecoveryByIdOptions.SetID(rs.Primary.Attributes["recovery_id"])
 		getRecoveryByIdOptions.SetXIBMTenantID(tenantId)
 
 		_, _, err = backupRecoveryClient.GetRecoveryByID(getRecoveryByIdOptions)

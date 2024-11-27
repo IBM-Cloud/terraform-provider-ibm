@@ -15,7 +15,7 @@ import (
 
 func TestAccIbmBackupRecoverySearchIndexedObjectDataSourceBasic(t *testing.T) {
 	objectType := "Files"
-	objectId := 217
+	objectId := 3
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
