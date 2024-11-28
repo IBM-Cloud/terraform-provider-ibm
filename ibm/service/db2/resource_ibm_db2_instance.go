@@ -7,8 +7,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"log"
 	"os"
+	"reflect"
 	"strconv"
 	"strings"
 	"time"
@@ -17,6 +19,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/resourcecontroller"
+	"github.com/IBM/cloud-db2-go-sdk/db2saasv1"
 	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
@@ -213,6 +216,89 @@ func resourceIBMDb2InstanceCreate(d *schema.ResourceData, meta interface{}) erro
 		return fmt.Errorf("[ERROR] Error waiting for create resource instance (%s) to be succeeded: %s", d.Id(), err)
 	}
 
+	log.Printf("Instance ID %s", *instance.ID)
+	log.Printf("Instance CRN %s", *instance.CRN)
+	log.Printf("Instance URL %s", *instance.URL)
+	log.Printf("Instance DashboardURL %s", *instance.DashboardURL)
+
+	//Create client for db2SaasV1
+	db2SaasV1Client, err := meta.(conns.ClientSession).DB2SaasV1()
+	if err != nil {
+		return err
+	}
+
+	if whitelistConfigRaw, ok := d.GetOk("whitelist_config"); ok {
+		if whitelistConfigRaw == nil || reflect.ValueOf(whitelistConfigRaw).IsNil() {
+			fmt.Println("No whitelisting config provided; skipping.")
+		} else {
+			whitelistConfig := whitelistConfigRaw.([]interface{})[0].(map[string]interface{})
+			fmt.Println(whitelistConfig)
+			fmt.Println(whitelistConfig["ip_addresses"].([]interface{}))
+
+			ipAddress := make([]db2saasv1.IpAddress, 0, len(whitelistConfig["ip_addresses"].([]interface{})))
+
+			for _, ip := range ipAddress {
+				if err = validateIPAddress(ip); err != nil {
+					return err
+				}
+			}
+
+			input := &db2saasv1.PostDb2SaasWhitelistOptions{
+				XDeploymentID: core.StringPtr(*instance.CRN),
+				IpAddresses:   ipAddress,
+			}
+
+			result, response, err := db2SaasV1Client.PostDb2SaasWhitelist(input)
+			if err != nil {
+				log.Printf("Error when posting whitelist to DB2Saas: %s", err)
+			} else {
+				log.Printf("StatusCode of response %d", response.StatusCode)
+				log.Printf("Success result %v", result)
+			}
+		}
+	}
+
+	if autoscaleConfigRaw, ok := d.GetOk("autoscale_config"); ok {
+		if autoscaleConfigRaw == nil || reflect.ValueOf(autoscaleConfigRaw).IsNil() {
+			fmt.Println("No autoscale config provided; skipping.")
+		} else {
+			autoscalingConfig := autoscaleConfigRaw.([]interface{})[0].(map[string]interface{})
+			fmt.Println(autoscalingConfig)
+
+			autoScalingThreshold, err := strconv.Atoi(autoscalingConfig["auto_scaling_threshold"].(string))
+			if err != nil {
+				return err
+			}
+
+			autoScalingOverTimePeriod, err := strconv.Atoi(autoscalingConfig["auto_scaling_over_time_period"].(string))
+			if err != nil {
+				return err
+			}
+
+			autoScalingPauseLimit, err := strconv.Atoi(autoscalingConfig["auto_scaling_pause_limit"].(string))
+			if err != nil {
+				return err
+			}
+
+			input := &db2saasv1.PutDb2SaasAutoscaleOptions{
+				XDeploymentID:             core.StringPtr(*instance.CRN),
+				AutoScalingEnabled:        core.StringPtr("YES"),
+				AutoScalingAllowPlanLimit: core.StringPtr("YES"),
+				AutoScalingThreshold:      core.Int64Ptr(int64(autoScalingThreshold)),
+				AutoScalingOverTimePeriod: core.Float64Ptr(float64(autoScalingOverTimePeriod)),
+				AutoScalingPauseLimit:     core.Int64Ptr(int64(autoScalingPauseLimit)),
+			}
+
+			result, response, err := db2SaasV1Client.PutDb2SaasAutoscale(input)
+			if err != nil {
+				log.Printf("Error when posting whitelist to DB2Saas: %s", err)
+			} else {
+				log.Printf("StatusCode of response %d", response.StatusCode)
+				log.Printf("Success result %v", result)
+			}
+		}
+	}
+
 	v := os.Getenv("IC_ENV_TAGS")
 	if _, ok := d.GetOk("tags"); ok || v != "" {
 		oldList, newList := d.GetChange("tags")
@@ -258,4 +344,16 @@ func waitForResourceInstanceCreate(d *schema.ResourceData, meta interface{}) (in
 	}
 
 	return stateConf.WaitForStateContext(context.Background())
+}
+
+func validateIPAddress(ip db2saasv1.IpAddress) error {
+	if ip.Address == nil || *ip.Address == "" {
+		return fmt.Errorf("[ERROR] IP address is required")
+	}
+
+	if ip.Description == nil || *ip.Description == "" {
+		return fmt.Errorf("[ERROR] IP address is required")
+	}
+
+	return nil
 }

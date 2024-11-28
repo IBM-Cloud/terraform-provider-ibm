@@ -12,6 +12,7 @@ require (
 	github.com/IBM/appconfiguration-go-admin-sdk v0.3.0
 	github.com/IBM/appid-management-go-sdk v0.0.0-20210908164609-dd0e0eaf732f
 	github.com/IBM/cloud-databases-go-sdk v0.7.1
+	github.com/IBM/cloud-db2-go-sdk v0.0.0-20241128080537-85cc19b5d1b2
 	github.com/IBM/cloudant-go-sdk v0.8.0
 	github.com/IBM/code-engine-go-sdk v0.0.0-20240808131715-b9d168602dac
 	github.com/IBM/configuration-aggregator-go-sdk v0.0.2
