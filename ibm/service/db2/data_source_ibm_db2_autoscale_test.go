@@ -35,15 +35,15 @@ func TestAccIBMDb2AutoscaleDataSourceBasic(t *testing.T) {
 func testAccCheckDb2AutoscaleDataSourceBasic() string {
 	return fmt.Sprintf(`
 data "ibm_db2_autoscale" "test" {
-auto_scaling_allow_plan_limit = "%[1]t"
-auto_scaling_enabled = "%[1]f"
-auto_scaling_max_storage = "%[1]d"
-auto_scaling_over_time_period = "%[1]d"
-auto_scaling_pause_limit = "%[1]d"
-auto_scaling_threshold = "%[1]d"
-storage_unit = "%[1]s"
-storage_utilization_percentage = "%[1]d"
-support_auto_scaling = "%[1]t"
+		auto_scaling_allow_plan_limit = "%[1]t"
+		auto_scaling_enabled = "%[1]f"
+		auto_scaling_max_storage = "%[1]d"
+		auto_scaling_over_time_period = "%[1]d"
+		auto_scaling_pause_limit = "%[1]d"
+		auto_scaling_threshold = "%[1]d"
+		storage_unit = "%[1]s"
+		storage_utilization_percentage = "%[1]d"
+		support_auto_scaling = "%[1]t"
 }
 `)
 }
