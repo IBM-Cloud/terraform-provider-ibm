@@ -277,6 +277,60 @@ func DataSourceIBMIsBackupPolicyJobs() *schema.Resource {
 								},
 							},
 						},
+						"source_share": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The source share this backup was created from (may be[deleted](https://cloud.ibm.com/apidocs/vpc#deleted-resources)).",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"crn": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The CRN for this volume.",
+									},
+									"deleted": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "If present, this property indicates the referenced resource has been deleted and providessome supplementary information.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"more_info": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Link to documentation about deleted resources.",
+												},
+											},
+										},
+									},
+									"href": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The URL for this volume.",
+									},
+									"id": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The unique identifier for this volume.",
+									},
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The unique user-defined name for this volume.",
+									},
+								},
+							},
+						},
+						"match_resource_type": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "A resource type this backup policy applies to. Resources that have both a matching type and a matching user tag will be subject to the backup policy.",
+						},
+						"included_content": &schema.Schema{
+							Type:        schema.TypeSet,
+							Computed:    true,
+							Set:         schema.HashString,
+							Description: "The included content for backups created using this policy",
+						},
 						"status": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -559,8 +613,24 @@ func dataSourceBackupPolicyJobCollectionJobsToMap(jobsItemIntf vpcv1.BackupPolic
 				sourceVolumeList = append(sourceVolumeList, sourceVolumeMap)
 				jobsMap["source_instance"] = sourceVolumeList
 			}
+		case "*vpcv1.BackupPolicyJobSourceShareReference":
+			{
+				jobSource := jobsItem.Source.(*vpcv1.BackupPolicyJobSourceShareReference)
+				sourceShareList := []map[string]interface{}{}
+				sourceShareMap := dataShareBackupPolicyJobSourceShareReferenceToMap(jobSource)
+				sourceShareList = append(sourceShareList, sourceShareMap)
+				jobsMap["source_share"] = sourceShareList
+			}
 		}
 	}
+	if jobsItem.MatchResourceType != nil {
+		matchResourceType := *jobsItem.MatchResourceType
+		jobsMap["match_resource_type"] = matchResourceType
+	}
+	if jobsItem.IncludedContent != nil {
+		jobsMap["included_content"] = jobsItem.IncludedContent
+	}
+
 	if jobsItem.Status != nil {
 		jobsMap["status"] = jobsItem.Status
 	}
@@ -583,7 +653,23 @@ func dataSourceBackupPolicyJobCollectionJobsToMap(jobsItemIntf vpcv1.BackupPolic
 	}
 	return jobsMap
 }
-
+func dataShareBackupPolicyJobSourceShareReferenceToMap(model *vpcv1.BackupPolicyJobSourceShareReference) map[string]interface{} {
+	modelMap := make(map[string]interface{})
+	modelMap["crn"] = *model.CRN
+	if model.Deleted != nil {
+		deletedMap := ResourceIBMIsShareShareReferenceDeletedToMap(model.Deleted)
+		modelMap["deleted"] = []map[string]interface{}{deletedMap}
+	}
+	modelMap["href"] = *model.Href
+	modelMap["id"] = *model.ID
+	modelMap["name"] = *model.Name
+	if model.Remote != nil {
+		remoteMap := ResourceIBMIsShareShareRemoteToMap(model.Remote)
+		modelMap["remote"] = []map[string]interface{}{remoteMap}
+	}
+	modelMap["resource_type"] = *model.ResourceType
+	return modelMap
+}
 func AccountReferenceToMap(model *vpcv1.AccountReference) map[string]interface{} {
 	modelMap := make(map[string]interface{})
 	modelMap["id"] = *model.ID

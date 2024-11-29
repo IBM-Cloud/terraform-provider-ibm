@@ -24,7 +24,6 @@ resource "ibm_is_share_snapshot" "is_share_snapshot_instance" {
 You can specify the following arguments for this resource.
 
 * `name` - (Optional, String) The name for this share snapshot. The name is unique across all snapshots for the file share.
-  * Constraints: The maximum length is `63` characters. The minimum length is `1` character. The value must match regular expression `/^-?([a-z]|[a-z][-a-z0-9]*[a-z0-9]|[0-9][-a-z0-9]*([a-z]|[-a-z][-a-z0-9]*[a-z0-9]))$/`.
 * `share_id` - (Required, Forces new resource, String) The file share identifier.
   * Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-z_]+$/`.
 * `user_tags` - (Optional, List) The [user tags](https://cloud.ibm.com/apidocs/tagging#types-of-tags) associated with this share snapshot.
