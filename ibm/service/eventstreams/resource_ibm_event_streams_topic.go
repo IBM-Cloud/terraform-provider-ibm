@@ -306,7 +306,7 @@ func createSaramaAdminClient(d *schema.ResourceData, meta interface{}) (sarama.C
 		config.Net.SASL.AuthIdentity = instanceCRN
 	}
 	config.Admin.Timeout = adminClientTimeout
-	err = validateToken(bxSession.Config.IAMAccessToken)
+	_, err = validateToken(bxSession.Config.IAMAccessToken)
 	if err == nil {
 		config.Net.SASL.Mechanism = sarama.SASLTypeOAuth
 		config.Net.SASL.TokenProvider = accessTokenProvider{clientSession: bxSession}
@@ -372,23 +372,22 @@ type accessTokenProvider struct {
 
 // Token() implements sarama.AccessTokenProvider interface for sasl.mechanism=OAUTHBEARER
 func (tp accessTokenProvider) Token() (*sarama.AccessToken, error) {
-	token := tp.clientSession.Config.IAMAccessToken
-	err := validateToken(token)
+	token, err := validateToken(tp.clientSession.Config.IAMAccessToken)
 	if err != nil {
-		log.Printf("[DEBUG] error accessTokenProvider.Token():%s", err)
+		log.Printf("[DEBUG] accessTokenProvider.Token() error:%s", err)
 		return nil, err
 	}
-	return &sarama.AccessToken{Token: strings.Trim(strings.TrimPrefix(token, "Bearer"), " ")}, nil
+	return &sarama.AccessToken{Token: token}, nil
 }
 
-func validateToken(token string) error {
+func validateToken(token string) (string, error) {
 	if len(token) == 0 {
-		return errors.New("IAMAccessToken is required")
+		return "", errors.New("IAMAccessToken is required")
 	}
 	token = strings.TrimPrefix(token, "Bearer")
 	token = strings.Trim(token, " ")
 	if len(strings.Split(token, ".")) != 3 {
-		return errors.New("IAMAccessToken is malformed")
+		return "", errors.New("IAMAccessToken is malformed")
 	}
-	return nil
+	return token, nil
 }
