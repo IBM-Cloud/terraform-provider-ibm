@@ -222,7 +222,7 @@ func resourceIBMDb2InstanceCreate(d *schema.ResourceData, meta interface{}) erro
 	log.Printf("Instance DashboardURL %s", *instance.DashboardURL)
 
 	//Create client for db2SaasV1
-	db2SaasV1Client, err := meta.(conns.ClientSession).DB2SaasV1()
+	db2SaasV1Client, err := meta.(conns.ClientSession).Db2saasV1()
 	if err != nil {
 		return err
 	}

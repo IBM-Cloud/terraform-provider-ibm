@@ -1,0 +1,104 @@
+// Copyright IBM Corp. 2024 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
+/*
+ * IBM OpenAPI Terraform Generator Version: 3.96.0-d6dec9d7-20241008-212902
+ */
+
+package db2_test
+
+import (
+	"fmt"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/db2"
+	"testing"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
+	_ "github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/db2"
+	"github.com/IBM/cloud-db2-go-sdk/db2saasv1"
+	"github.com/IBM/go-sdk-core/v5/core"
+	"github.com/stretchr/testify/assert"
+)
+
+func TestAccIbmDb2SaasConnectionInfoDataSourceBasic(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIbmDb2SaasConnectionInfoDataSourceConfigBasic(),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("data.ibm_db2_saas_connection_info.db2_saas_connection_info_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_db2_saas_connection_info.db2_saas_connection_info_instance", "deployment_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_db2_saas_connection_info.db2_saas_connection_info_instance", "x_deployment_id"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIbmDb2SaasConnectionInfoDataSourceConfigBasic() string {
+	return fmt.Sprintf(`
+		data "ibm_db2_saas_connection_info" "db2_saas_connection_info_instance" {
+			deployment_id = "deployment_id"
+			x-deployment-id = "x-deployment-id"
+		}
+	`)
+}
+
+func TestDataSourceIbmDb2SaasConnectionInfoSuccessConnectionInfoPublicToMap(t *testing.T) {
+	checkResult := func(result map[string]interface{}) {
+		model := make(map[string]interface{})
+		model["hostname"] = "84792aeb-2a9c-4dee-bfad-2e529f16945d-useast-private.bt1ibm.dev.db2.ibmappdomain.cloud"
+		model["database_name"] = "bluedb"
+		model["host_ros"] = "84792aeb-2a9c-4dee-bfad-2e529f16945d-useast-private.bt1ibm.dev.db2.ibmappdomain.cloud:30515"
+		model["certificate_base64"] = "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURIVENDQWdXZ0F3SUJBZ0lVTGRpR1U2QzdZajMwcS9VUVB3ek5ka2YyakJjd0RRWUpLb1pJaHZjTkFRRUwKQlFBd0hqRWNNQm9HQTFVRUF3d1RTVUpOSUVOc2IzVmtJRVJoZEdGaVlYTmxjekFlRncweU1EQTRNRFl3T1RReQpNVEZhRncwek1EQTRNRFF3T1RReU1URmFNQjR4SERBYUJnTlZCQU1NRTBsQ1RTQkRiRzkxWkNCRVlYUmhZbUZ6ClpYTXdnZ0VpTUEwR0NTcUdTSWIzRFFFQkFRVUFBNElCRHdBd2dnRUtBb0lCQVFDb1NIdS9TWkd5NHc0bHB0elQKbFVRQTV6Q0krTldhblQ0czAvTXFkQmJwRW9FWjYxLy9VQVFPaHVTUG85M05obG1NQWZUWENpUi9jVkxuQmxBMQpuZnEzcC9pWm1VMnJwSUxnUmdLeTdsNEZSMVVPaGlRa3RnN3d6Q0J1M2k0bTRJQkZ0NVVvRng5djl6eFkrK0tSCnNnYXhmK28yMEoxLzZBSHFwem5GaWJuTDdLcGlZMUs1c25BdHFwTUVsNHMyR3dlZXQ0dEFjZ3hRSlRVR3hvamsKUDMvUmtxSUI1RFBNSXJ0ZFMrWWpBdlM0alBpREVRT0FvZDg5aDBOays3bkpldllJT0lRVTN0OC81YlNYRDFFVwp3bmRqdHlkeC95Qlo5YlZ4bms4eWI1S1NCVUNpaHJsL1AxVmdNdStLb2w2M0ZZMmdSbndwb3FEOVRNWkJkeTRYCk5PRUZBZ01CQUFHalV6QlJNQjBHQTFVZERnUVdCQlNldmNpblMvR0VwdmlmZkQ0ZUtPU0FNSGljUmpBZkJnTlYKSFNNRUdEQVdnQlNldmNpblMvR0VwdmlmZkQ0ZUtPU0FNSGljUmpBUEJnTlZIUk1CQWY4RUJUQURBUUgvTUEwRwpDU3FHU0liM0RRRUJDd1VBQTRJQkFRQk1XRHV2Z0JKVk5JYUp2NkFzL3FybWZKbVJObU80clhVcXhiTXdJdEZ1Ciswb1RIOTZMWU1OSjgyS1hXOFc1K0ZUOXJ2TjdzQzhRQzBYVzFIWkM4dlgvdE96dmluL1lqVW5nUlducUFBQXEKL0U4TnRtMFpuMEs4cnRzanJtaklLKzlwNjRObE1ENWJjcUpDMGZFSkpBQVpBSUozejRNSHhsTDhnc0plS0JyOApvcWhhejJOaXJtSEZ3Z3RDc0htVlI4UCt5TUtrN24xVlhlcmpHYWhORkQ2MzhGRnRoSHNvNmV0NGQ5NEpLTXFPCmt1cWhFOCtMcTZlalRWUTRYdldaUG4wVWlZQkVpTjFsT1JaZ0h5d3JvNjJ5Z2dFekhCaXF5dEI2SEN6TllyYXoKVElQUTNGanhGQXNYU3NhVzZPL2VteERNSDN4ZUZ5WmRZWWw5bGMxSnFVWW4KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo="
+		model["ssl_port"] = "30450"
+		model["ssl"] = true
+		model["database_version"] = "11.5.0"
+
+		assert.Equal(t, result, model)
+	}
+
+	model := new(db2saasv1.SuccessConnectionInfoPublic)
+	model.Hostname = core.StringPtr("84792aeb-2a9c-4dee-bfad-2e529f16945d-useast-private.bt1ibm.dev.db2.ibmappdomain.cloud")
+	model.DatabaseName = core.StringPtr("bluedb")
+	model.HostRos = core.StringPtr("84792aeb-2a9c-4dee-bfad-2e529f16945d-useast-private.bt1ibm.dev.db2.ibmappdomain.cloud:30515")
+	model.CertificateBase64 = core.StringPtr("LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURIVENDQWdXZ0F3SUJBZ0lVTGRpR1U2QzdZajMwcS9VUVB3ek5ka2YyakJjd0RRWUpLb1pJaHZjTkFRRUwKQlFBd0hqRWNNQm9HQTFVRUF3d1RTVUpOSUVOc2IzVmtJRVJoZEdGaVlYTmxjekFlRncweU1EQTRNRFl3T1RReQpNVEZhRncwek1EQTRNRFF3T1RReU1URmFNQjR4SERBYUJnTlZCQU1NRTBsQ1RTQkRiRzkxWkNCRVlYUmhZbUZ6ClpYTXdnZ0VpTUEwR0NTcUdTSWIzRFFFQkFRVUFBNElCRHdBd2dnRUtBb0lCQVFDb1NIdS9TWkd5NHc0bHB0elQKbFVRQTV6Q0krTldhblQ0czAvTXFkQmJwRW9FWjYxLy9VQVFPaHVTUG85M05obG1NQWZUWENpUi9jVkxuQmxBMQpuZnEzcC9pWm1VMnJwSUxnUmdLeTdsNEZSMVVPaGlRa3RnN3d6Q0J1M2k0bTRJQkZ0NVVvRng5djl6eFkrK0tSCnNnYXhmK28yMEoxLzZBSHFwem5GaWJuTDdLcGlZMUs1c25BdHFwTUVsNHMyR3dlZXQ0dEFjZ3hRSlRVR3hvamsKUDMvUmtxSUI1RFBNSXJ0ZFMrWWpBdlM0alBpREVRT0FvZDg5aDBOays3bkpldllJT0lRVTN0OC81YlNYRDFFVwp3bmRqdHlkeC95Qlo5YlZ4bms4eWI1S1NCVUNpaHJsL1AxVmdNdStLb2w2M0ZZMmdSbndwb3FEOVRNWkJkeTRYCk5PRUZBZ01CQUFHalV6QlJNQjBHQTFVZERnUVdCQlNldmNpblMvR0VwdmlmZkQ0ZUtPU0FNSGljUmpBZkJnTlYKSFNNRUdEQVdnQlNldmNpblMvR0VwdmlmZkQ0ZUtPU0FNSGljUmpBUEJnTlZIUk1CQWY4RUJUQURBUUgvTUEwRwpDU3FHU0liM0RRRUJDd1VBQTRJQkFRQk1XRHV2Z0JKVk5JYUp2NkFzL3FybWZKbVJObU80clhVcXhiTXdJdEZ1Ciswb1RIOTZMWU1OSjgyS1hXOFc1K0ZUOXJ2TjdzQzhRQzBYVzFIWkM4dlgvdE96dmluL1lqVW5nUlducUFBQXEKL0U4TnRtMFpuMEs4cnRzanJtaklLKzlwNjRObE1ENWJjcUpDMGZFSkpBQVpBSUozejRNSHhsTDhnc0plS0JyOApvcWhhejJOaXJtSEZ3Z3RDc0htVlI4UCt5TUtrN24xVlhlcmpHYWhORkQ2MzhGRnRoSHNvNmV0NGQ5NEpLTXFPCmt1cWhFOCtMcTZlalRWUTRYdldaUG4wVWlZQkVpTjFsT1JaZ0h5d3JvNjJ5Z2dFekhCaXF5dEI2SEN6TllyYXoKVElQUTNGanhGQXNYU3NhVzZPL2VteERNSDN4ZUZ5WmRZWWw5bGMxSnFVWW4KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=")
+	model.SslPort = core.StringPtr("30450")
+	model.Ssl = core.BoolPtr(true)
+	model.DatabaseVersion = core.StringPtr("11.5.0")
+
+	result, err := db2.DataSourceIbmDb2SaasConnectionInfoSuccessConnectionInfoPublicToMap(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestDataSourceIbmDb2SaasConnectionInfoSuccessConnectionInfoPrivateToMap(t *testing.T) {
+	checkResult := func(result map[string]interface{}) {
+		model := make(map[string]interface{})
+		model["hostname"] = "84792aeb-2a9c-4dee-bfad-2e529f16945d-useast.bt1ibm.dev.db2.ibmappdomain.cloud"
+		model["database_name"] = "bluedb"
+		model["host_ros"] = "84792aeb-2a9c-4dee-bfad-2e529f16945d-useast.bt1ibm.dev.db2.ibmappdomain.cloud:30515"
+		model["certificate_base64"] = "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURIVENDQWdXZ0F3SUJBZ0lVTGRpR1U2QzdZajMwcS9VUVB3ek5ka2YyakJjd0RRWUpLb1pJaHZjTkFRRUwKQlFBd0hqRWNNQm9HQTFVRUF3d1RTVUpOSUVOc2IzVmtJRVJoZEdGaVlYTmxjekFlRncweU1EQTRNRFl3T1RReQpNVEZhRncwek1EQTRNRFF3T1RReU1URmFNQjR4SERBYUJnTlZCQU1NRTBsQ1RTQkRiRzkxWkNCRVlYUmhZbUZ6ClpYTXdnZ0VpTUEwR0NTcUdTSWIzRFFFQkFRVUFBNElCRHdBd2dnRUtBb0lCQVFDb1NIdS9TWkd5NHc0bHB0elQKbFVRQTV6Q0krTldhblQ0czAvTXFkQmJwRW9FWjYxLy9VQVFPaHVTUG85M05obG1NQWZUWENpUi9jVkxuQmxBMQpuZnEzcC9pWm1VMnJwSUxnUmdLeTdsNEZSMVVPaGlRa3RnN3d6Q0J1M2k0bTRJQkZ0NVVvRng5djl6eFkrK0tSCnNnYXhmK28yMEoxLzZBSHFwem5GaWJuTDdLcGlZMUs1c25BdHFwTUVsNHMyR3dlZXQ0dEFjZ3hRSlRVR3hvamsKUDMvUmtxSUI1RFBNSXJ0ZFMrWWpBdlM0alBpREVRT0FvZDg5aDBOays3bkpldllJT0lRVTN0OC81YlNYRDFFVwp3bmRqdHlkeC95Qlo5YlZ4bms4eWI1S1NCVUNpaHJsL1AxVmdNdStLb2w2M0ZZMmdSbndwb3FEOVRNWkJkeTRYCk5PRUZBZ01CQUFHalV6QlJNQjBHQTFVZERnUVdCQlNldmNpblMvR0VwdmlmZkQ0ZUtPU0FNSGljUmpBZkJnTlYKSFNNRUdEQVdnQlNldmNpblMvR0VwdmlmZkQ0ZUtPU0FNSGljUmpBUEJnTlZIUk1CQWY4RUJUQURBUUgvTUEwRwpDU3FHU0liM0RRRUJDd1VBQTRJQkFRQk1XRHV2Z0JKVk5JYUp2NkFzL3FybWZKbVJObU80clhVcXhiTXdJdEZ1Ciswb1RIOTZMWU1OSjgyS1hXOFc1K0ZUOXJ2TjdzQzhRQzBYVzFIWkM4dlgvdE96dmluL1lqVW5nUlducUFBQXEKL0U4TnRtMFpuMEs4cnRzanJtaklLKzlwNjRObE1ENWJjcUpDMGZFSkpBQVpBSUozejRNSHhsTDhnc0plS0JyOApvcWhhejJOaXJtSEZ3Z3RDc0htVlI4UCt5TUtrN24xVlhlcmpHYWhORkQ2MzhGRnRoSHNvNmV0NGQ5NEpLTXFPCmt1cWhFOCtMcTZlalRWUTRYdldaUG4wVWlZQkVpTjFsT1JaZ0h5d3JvNjJ5Z2dFekhCaXF5dEI2SEN6TllyYXoKVElQUTNGanhGQXNYU3NhVzZPL2VteERNSDN4ZUZ5WmRZWWw5bGMxSnFVWW4KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo="
+		model["ssl_port"] = "30450"
+		model["ssl"] = true
+		model["database_version"] = "11.5.0"
+
+		assert.Equal(t, result, model)
+	}
+
+	model := new(db2saasv1.SuccessConnectionInfoPrivate)
+	model.Hostname = core.StringPtr("84792aeb-2a9c-4dee-bfad-2e529f16945d-useast.bt1ibm.dev.db2.ibmappdomain.cloud")
+	model.DatabaseName = core.StringPtr("bluedb")
+	model.HostRos = core.StringPtr("84792aeb-2a9c-4dee-bfad-2e529f16945d-useast.bt1ibm.dev.db2.ibmappdomain.cloud:30515")
+	model.CertificateBase64 = core.StringPtr("LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURIVENDQWdXZ0F3SUJBZ0lVTGRpR1U2QzdZajMwcS9VUVB3ek5ka2YyakJjd0RRWUpLb1pJaHZjTkFRRUwKQlFBd0hqRWNNQm9HQTFVRUF3d1RTVUpOSUVOc2IzVmtJRVJoZEdGaVlYTmxjekFlRncweU1EQTRNRFl3T1RReQpNVEZhRncwek1EQTRNRFF3T1RReU1URmFNQjR4SERBYUJnTlZCQU1NRTBsQ1RTQkRiRzkxWkNCRVlYUmhZbUZ6ClpYTXdnZ0VpTUEwR0NTcUdTSWIzRFFFQkFRVUFBNElCRHdBd2dnRUtBb0lCQVFDb1NIdS9TWkd5NHc0bHB0elQKbFVRQTV6Q0krTldhblQ0czAvTXFkQmJwRW9FWjYxLy9VQVFPaHVTUG85M05obG1NQWZUWENpUi9jVkxuQmxBMQpuZnEzcC9pWm1VMnJwSUxnUmdLeTdsNEZSMVVPaGlRa3RnN3d6Q0J1M2k0bTRJQkZ0NVVvRng5djl6eFkrK0tSCnNnYXhmK28yMEoxLzZBSHFwem5GaWJuTDdLcGlZMUs1c25BdHFwTUVsNHMyR3dlZXQ0dEFjZ3hRSlRVR3hvamsKUDMvUmtxSUI1RFBNSXJ0ZFMrWWpBdlM0alBpREVRT0FvZDg5aDBOays3bkpldllJT0lRVTN0OC81YlNYRDFFVwp3bmRqdHlkeC95Qlo5YlZ4bms4eWI1S1NCVUNpaHJsL1AxVmdNdStLb2w2M0ZZMmdSbndwb3FEOVRNWkJkeTRYCk5PRUZBZ01CQUFHalV6QlJNQjBHQTFVZERnUVdCQlNldmNpblMvR0VwdmlmZkQ0ZUtPU0FNSGljUmpBZkJnTlYKSFNNRUdEQVdnQlNldmNpblMvR0VwdmlmZkQ0ZUtPU0FNSGljUmpBUEJnTlZIUk1CQWY4RUJUQURBUUgvTUEwRwpDU3FHU0liM0RRRUJDd1VBQTRJQkFRQk1XRHV2Z0JKVk5JYUp2NkFzL3FybWZKbVJObU80clhVcXhiTXdJdEZ1Ciswb1RIOTZMWU1OSjgyS1hXOFc1K0ZUOXJ2TjdzQzhRQzBYVzFIWkM4dlgvdE96dmluL1lqVW5nUlducUFBQXEKL0U4TnRtMFpuMEs4cnRzanJtaklLKzlwNjRObE1ENWJjcUpDMGZFSkpBQVpBSUozejRNSHhsTDhnc0plS0JyOApvcWhhejJOaXJtSEZ3Z3RDc0htVlI4UCt5TUtrN24xVlhlcmpHYWhORkQ2MzhGRnRoSHNvNmV0NGQ5NEpLTXFPCmt1cWhFOCtMcTZlalRWUTRYdldaUG4wVWlZQkVpTjFsT1JaZ0h5d3JvNjJ5Z2dFekhCaXF5dEI2SEN6TllyYXoKVElQUTNGanhGQXNYU3NhVzZPL2VteERNSDN4ZUZ5WmRZWWw5bGMxSnFVWW4KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=")
+	model.SslPort = core.StringPtr("30450")
+	model.Ssl = core.BoolPtr(true)
+	model.DatabaseVersion = core.StringPtr("11.5.0")
+
+	result, err := db2.DataSourceIbmDb2SaasConnectionInfoSuccessConnectionInfoPrivateToMap(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}

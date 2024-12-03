@@ -234,7 +234,7 @@ type ClientSession interface {
 	CloudDatabasesV5() (*clouddatabasesv5.CloudDatabasesV5, error)
 	IAMPolicyManagementV1API() (*iampolicymanagement.IamPolicyManagementV1, error)
 	IAMAccessGroupsV2() (*iamaccessgroups.IamAccessGroupsV2, error)
-	DB2SaasV1() (*db2saasv1.Db2saasV1, error)
+	Db2saasV1() (*db2saasv1.Db2saasV1, error)
 	MccpAPI() (mccpv2.MccpServiceAPI, error)
 	ResourceCatalogAPI() (catalog.ResourceCatalogAPI, error)
 	ResourceManagementAPIv2() (managementv2.ResourceManagementAPIv2, error)
