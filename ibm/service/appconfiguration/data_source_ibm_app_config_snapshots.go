@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"strconv"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM/appconfiguration-go-admin-sdk/appconfigurationv1"
@@ -152,7 +153,7 @@ func dataSourceIbmAppConfigSnapshotsRead(d *schema.ResourceData, meta interface{
 
 	appconfigClient, err := getAppConfigClient(meta, guid)
 	if err != nil {
-		return fmt.Errorf("getAppConfigClient failed %s", err)
+		return flex.FmtErrorf("getAppConfigClient failed %s", err)
 	}
 
 	options := &appconfigurationv1.ListSnapshotsOptions{}
@@ -191,7 +192,7 @@ func dataSourceIbmAppConfigSnapshotsRead(d *schema.ResourceData, meta interface{
 		result, response, err := appconfigClient.ListSnapshots(options)
 		shapshotsList = result
 		if err != nil {
-			return fmt.Errorf("ListSnapshots failed %s\n%s", err, response)
+			return flex.FmtErrorf("ListSnapshots failed %s\n%s", err, response)
 		}
 		if isLimit {
 			offset = 0
@@ -211,22 +212,22 @@ func dataSourceIbmAppConfigSnapshotsRead(d *schema.ResourceData, meta interface{
 	if shapshotsList.Snapshot != nil {
 		err = d.Set("git_config", dataSourceFeaturesListFlattenSnapshots(shapshotsList.Snapshot))
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error setting git_config %s", err)
+			return flex.FmtErrorf("[ERROR] Error setting git_config %s", err)
 		}
 	}
 	if shapshotsList.TotalCount != nil {
 		if err = d.Set("total_count", shapshotsList.TotalCount); err != nil {
-			return fmt.Errorf("[ERROR] Error setting total_count: %s", err)
+			return flex.FmtErrorf("[ERROR] Error setting total_count: %s", err)
 		}
 	}
 	if shapshotsList.Limit != nil {
 		if err = d.Set("limit", shapshotsList.Limit); err != nil {
-			return fmt.Errorf("[ERROR] Error setting limit: %s", err)
+			return flex.FmtErrorf("[ERROR] Error setting limit: %s", err)
 		}
 	}
 	if shapshotsList.Offset != nil {
 		if err = d.Set("offset", shapshotsList.Offset); err != nil {
-			return fmt.Errorf("[ERROR] Error setting offset: %s", err)
+			return flex.FmtErrorf("[ERROR] Error setting offset: %s", err)
 		}
 	}
 

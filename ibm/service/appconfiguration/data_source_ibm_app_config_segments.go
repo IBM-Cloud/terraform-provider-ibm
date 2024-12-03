@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"strconv"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM/appconfiguration-go-admin-sdk/appconfigurationv1"
@@ -175,7 +176,7 @@ func dataSourceIbmAppConfigSegmentsRead(d *schema.ResourceData, meta interface{}
 
 	appconfigClient, err := getAppConfigClient(meta, guid)
 	if err != nil {
-		return fmt.Errorf("getAppConfigClient failed %s", err)
+		return flex.FmtErrorf("getAppConfigClient failed %s", err)
 	}
 
 	options := &appconfigurationv1.ListSegmentsOptions{}
@@ -214,8 +215,8 @@ func dataSourceIbmAppConfigSegmentsRead(d *schema.ResourceData, meta interface{}
 		result, response, err := appconfigClient.ListSegments(options)
 		segmentsList = result
 		if err != nil {
-			log.Printf("[DEBUG] ListSegments failed %s\n%s", err, response)
-			return fmt.Errorf("ListSegments failed %s\n%s", err, response)
+			log.Printf("[ERROR] ListSegments failed %s\n%s", err, response)
+			return flex.FmtErrorf("ListSegments failed %s\n%s", err, response)
 		}
 		if isLimit {
 			offset = 0
@@ -235,22 +236,22 @@ func dataSourceIbmAppConfigSegmentsRead(d *schema.ResourceData, meta interface{}
 	if segmentsList.Segments != nil {
 		err = d.Set("segments", dataSourceSegmentsListFlattenSegments(segmentsList.Segments))
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error setting segments %s", err)
+			return flex.FmtErrorf("[ERROR] Error setting segments %s", err)
 		}
 	}
 	if segmentsList.Limit != nil {
 		if err = d.Set("limit", segmentsList.Limit); err != nil {
-			return fmt.Errorf("[ERROR] Error setting limit: %s", err)
+			return flex.FmtErrorf("[ERROR] Error setting limit: %s", err)
 		}
 	}
 	if segmentsList.Offset != nil {
 		if err = d.Set("offset", segmentsList.Offset); err != nil {
-			return fmt.Errorf("[ERROR] Error setting offset: %s", err)
+			return flex.FmtErrorf("[ERROR] Error setting offset: %s", err)
 		}
 	}
 	if segmentsList.TotalCount != nil {
 		if err = d.Set("total_count", segmentsList.TotalCount); err != nil {
-			return fmt.Errorf("[ERROR] Error setting total_count: %s", err)
+			return flex.FmtErrorf("[ERROR] Error setting total_count: %s", err)
 		}
 	}
 	return nil
