@@ -2,7 +2,6 @@ package appconfiguration
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/appconfiguration-go-admin-sdk/appconfigurationv1"
@@ -93,7 +92,7 @@ func resourceIbmIbmAppConfigSegmentCreate(d *schema.ResourceData, meta interface
 	guid := d.Get("guid").(string)
 	appconfigClient, err := getAppConfigClient(meta, guid)
 	if err != nil {
-		return err
+		return flex.FmtErrorf(fmt.Sprintf("%s", err))
 	}
 	options := &appconfigurationv1.CreateSegmentOptions{}
 	options.SetName(d.Get("name").(string))
@@ -112,7 +111,7 @@ func resourceIbmIbmAppConfigSegmentCreate(d *schema.ResourceData, meta interface
 			value := e.(map[string]interface{})
 			segmentRulesItem, err := resourceIbmAppConfigMapToSegmentRule(value)
 			if err != nil {
-				return err
+				return flex.FmtErrorf(fmt.Sprintf("%s", err))
 			}
 			segmentRules = append(segmentRules, segmentRulesItem)
 		}
@@ -122,7 +121,6 @@ func resourceIbmIbmAppConfigSegmentCreate(d *schema.ResourceData, meta interface
 	segment, response, err := appconfigClient.CreateSegment(options)
 
 	if err != nil {
-		log.Printf("CreateSegment failed %s\n%s", err, response)
 		return flex.FmtErrorf("CreateSegment failed %s\n%s", err, response)
 	}
 	d.SetId(fmt.Sprintf("%s/%s", guid, *segment.SegmentID))
@@ -153,7 +151,7 @@ func resourceIbmIbmAppConfigSegmentRead(d *schema.ResourceData, meta interface{}
 
 	appconfigClient, err := getAppConfigClient(meta, parts[0])
 	if err != nil {
-		return err
+		return flex.FmtErrorf(fmt.Sprintf("%s", err))
 	}
 
 	options := &appconfigurationv1.GetSegmentOptions{}
@@ -236,7 +234,7 @@ func resourceIbmIbmAppConfigSegmentUpdate(d *schema.ResourceData, meta interface
 	}
 	appconfigClient, err := getAppConfigClient(meta, parts[0])
 	if err != nil {
-		return err
+		return flex.FmtErrorf(fmt.Sprintf("%s", err))
 	}
 	options := &appconfigurationv1.UpdateSegmentOptions{}
 
@@ -259,7 +257,7 @@ func resourceIbmIbmAppConfigSegmentUpdate(d *schema.ResourceData, meta interface
 				value := e.(map[string]interface{})
 				segmentRulesItem, err := resourceIbmAppConfigMapToSegmentRule(value)
 				if err != nil {
-					return err
+					return flex.FmtErrorf(fmt.Sprintf("%s", err))
 				}
 				segmentRules = append(segmentRules, segmentRulesItem)
 			}
@@ -268,8 +266,7 @@ func resourceIbmIbmAppConfigSegmentUpdate(d *schema.ResourceData, meta interface
 
 		_, response, err := appconfigClient.UpdateSegment(options)
 		if err != nil {
-			log.Printf("[ERROR] UpdateSegment %s\n%s", err, response)
-			return err
+			return flex.FmtErrorf("[ERROR] UpdateSegment %s\n%s", err, response)
 		}
 		return resourceIbmIbmAppConfigSegmentRead(d, meta)
 	}
@@ -283,7 +280,7 @@ func resourceIbmIbmAppConfigSegmentDelete(d *schema.ResourceData, meta interface
 	}
 	appconfigClient, err := getAppConfigClient(meta, parts[0])
 	if err != nil {
-		return err
+		return flex.FmtErrorf(fmt.Sprintf("%s", err))
 	}
 
 	options := &appconfigurationv1.DeleteSegmentOptions{}

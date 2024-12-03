@@ -2,7 +2,6 @@ package appconfiguration
 
 import (
 	"fmt"
-	"log"
 	"net/url"
 	"reflect"
 	"strconv"
@@ -215,8 +214,7 @@ func dataSourceIbmAppConfigSegmentsRead(d *schema.ResourceData, meta interface{}
 		result, response, err := appconfigClient.ListSegments(options)
 		segmentsList = result
 		if err != nil {
-			log.Printf("[ERROR] ListSegments failed %s\n%s", err, response)
-			return flex.FmtErrorf("ListSegments failed %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] ListSegments failed %s\n%s", err, response)
 		}
 		if isLimit {
 			offset = 0

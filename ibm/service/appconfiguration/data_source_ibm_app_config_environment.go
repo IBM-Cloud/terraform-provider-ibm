@@ -5,7 +5,6 @@ package appconfiguration
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -78,7 +77,7 @@ func dataSourceIbmAppConfigEnvironmentRead(d *schema.ResourceData, meta interfac
 
 	appconfigClient, err := getAppConfigClient(meta, guid)
 	if err != nil {
-		return err
+		return flex.FmtErrorf(fmt.Sprintf("%s", err))
 	}
 
 	options := &appconfigurationv1.GetEnvironmentOptions{}
@@ -89,8 +88,7 @@ func dataSourceIbmAppConfigEnvironmentRead(d *schema.ResourceData, meta interfac
 	}
 	result, response, err := appconfigClient.GetEnvironment(options)
 	if err != nil {
-		log.Printf("GetEnvironment failed %s\n%s", err, response)
-		return err
+		return flex.FmtErrorf("GetEnvironment failed %s\n%s", err, response, err)
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", guid, *result.EnvironmentID))

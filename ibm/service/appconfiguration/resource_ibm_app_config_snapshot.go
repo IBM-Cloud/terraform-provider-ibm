@@ -6,8 +6,6 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/appconfiguration-go-admin-sdk/appconfigurationv1"
 
-	"log"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -138,7 +136,7 @@ func resourceIbmIbmAppConfigSnapshotCreate(d *schema.ResourceData, meta interfac
 	guid := d.Get("guid").(string)
 	appconfigClient, err := getAppConfigClient(meta, guid)
 	if err != nil {
-		return err
+		return flex.FmtErrorf(fmt.Sprintf("%s", err))
 	}
 	options := &appconfigurationv1.CreateGitconfigOptions{}
 
@@ -168,7 +166,7 @@ func resourceIbmIbmAppConfigSnapshotUpdate(d *schema.ResourceData, meta interfac
 	}
 	appconfigClient, err := getAppConfigClient(meta, parts[0])
 	if err != nil {
-		return err
+		return flex.FmtErrorf(fmt.Sprintf("%s", err))
 	}
 
 	if ok := d.HasChanges("action"); ok {
@@ -176,8 +174,7 @@ func resourceIbmIbmAppConfigSnapshotUpdate(d *schema.ResourceData, meta interfac
 		option.SetGitConfigID(parts[1])
 		_, response, err := appconfigClient.PromoteGitconfig(option)
 		if err != nil {
-			log.Printf("[ERROR] PromoteGitconfig %s\n%s", err, response)
-			return err
+			return flex.FmtErrorf("[ERROR] PromoteGitconfig %s\n%s", err, response)
 		}
 		return resourceIbmIbmAppConfigSnapshotRead(d, meta)
 	} else {
@@ -207,8 +204,7 @@ func resourceIbmIbmAppConfigSnapshotUpdate(d *schema.ResourceData, meta interfac
 			}
 			_, response, err := appconfigClient.UpdateGitconfig(options)
 			if err != nil {
-				log.Printf("[ERROR] UpdateGitconfig %s\n%s", err, response)
-				return err
+				return flex.FmtErrorf("[ERROR] UpdateGitconfig %s\n%s", err, response)
 			}
 			return resourceIbmIbmAppConfigSnapshotRead(d, meta)
 		}
@@ -223,7 +219,7 @@ func resourceIbmIbmAppConfigSnapshotRead(d *schema.ResourceData, meta interface{
 	}
 	appconfigClient, err := getAppConfigClient(meta, parts[0])
 	if err != nil {
-		return err
+		return flex.FmtErrorf(fmt.Sprintf("%s", err))
 	}
 	if len(parts) != 2 {
 		return flex.FmtErrorf("Kindly check the id")
@@ -289,7 +285,7 @@ func resourceIbmIbmAppConfigSnapshotDelete(d *schema.ResourceData, meta interfac
 	}
 	appconfigClient, err := getAppConfigClient(meta, parts[0])
 	if err != nil {
-		return err
+		return flex.FmtErrorf(fmt.Sprintf("%s", err))
 	}
 
 	options := &appconfigurationv1.DeleteGitconfigOptions{}

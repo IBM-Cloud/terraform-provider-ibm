@@ -4,7 +4,7 @@
 package appconfiguration
 
 import (
-	"log"
+	"fmt"
 	"net/url"
 	"reflect"
 	"strconv"
@@ -165,7 +165,7 @@ func dataSourceIbmAppConfigEnvironmentsRead(d *schema.ResourceData, meta interfa
 
 	appconfigClient, err := getAppConfigClient(meta, guid)
 	if err != nil {
-		return err
+		return flex.FmtErrorf(fmt.Sprintf("%s", err))
 	}
 
 	options := &appconfigurationv1.ListEnvironmentsOptions{}
@@ -198,8 +198,7 @@ func dataSourceIbmAppConfigEnvironmentsRead(d *schema.ResourceData, meta interfa
 		result, response, err := appconfigClient.ListEnvironments(options)
 		environmentList = result
 		if err != nil {
-			log.Printf("[ERROR] Listing Environments failed %s\n%s", err, response)
-			return err
+			return flex.FmtErrorf("[ERROR] Listing Environments failed %s\n%s", err, response)
 		}
 		if isLimit {
 			offset = 0

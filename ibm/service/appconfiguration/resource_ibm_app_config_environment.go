@@ -74,11 +74,11 @@ func ResourceIBMAppConfigEnvironment() *schema.Resource {
 func getAppConfigClient(meta interface{}, guid string) (*appconfigurationv1.AppConfigurationV1, error) {
 	appconfigClient, err := meta.(conns.ClientSession).AppConfigurationV1()
 	if err != nil {
-		return nil, err
+		return nil, flex.FmtErrorf(fmt.Sprintf("%s", err))
 	}
 	bluemixSession, err := meta.(conns.ClientSession).BluemixSession()
 	if err != nil {
-		return nil, err
+		return nil, flex.FmtErrorf(fmt.Sprintf("%s", err))
 	}
 	appConfigURL := fmt.Sprintf("https://%s.apprapp.cloud.ibm.com/apprapp/feature/v1/instances/%s", bluemixSession.Config.Region, guid)
 	url := conns.EnvFallBack([]string{"IBMCLOUD_APP_CONFIG_API_ENDPOINT"}, appConfigURL)
@@ -90,7 +90,7 @@ func resourceEnvironmentCreate(d *schema.ResourceData, meta interface{}) error {
 	guid := d.Get("guid").(string)
 	appconfigClient, err := getAppConfigClient(meta, guid)
 	if err != nil {
-		return err
+		return flex.FmtErrorf(fmt.Sprintf("%s", err))
 	}
 	options := &appconfigurationv1.CreateEnvironmentOptions{}
 
@@ -123,7 +123,7 @@ func resourceEnvironmentUpdate(d *schema.ResourceData, meta interface{}) error {
 		}
 		appconfigClient, err := getAppConfigClient(meta, parts[0])
 		if err != nil {
-			return err
+			return flex.FmtErrorf(fmt.Sprintf("%s", err))
 		}
 
 		options := &appconfigurationv1.UpdateEnvironmentOptions{}
@@ -156,7 +156,7 @@ func resourceEnvironmentRead(d *schema.ResourceData, meta interface{}) error {
 	}
 	appconfigClient, err := getAppConfigClient(meta, parts[0])
 	if err != nil {
-		return err
+		return flex.FmtErrorf(fmt.Sprintf("%s", err))
 	}
 
 	options := &appconfigurationv1.GetEnvironmentOptions{}
@@ -221,7 +221,7 @@ func resourceEnvironmentDelete(d *schema.ResourceData, meta interface{}) error {
 
 	appconfigClient, err := getAppConfigClient(meta, parts[0])
 	if err != nil {
-		return err
+		return flex.FmtErrorf(fmt.Sprintf("%s", err))
 	}
 
 	options := &appconfigurationv1.DeleteEnvironmentOptions{}

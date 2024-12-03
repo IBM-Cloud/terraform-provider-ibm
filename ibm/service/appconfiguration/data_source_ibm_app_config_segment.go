@@ -2,7 +2,6 @@ package appconfiguration
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/appconfiguration-go-admin-sdk/appconfigurationv1"
@@ -134,7 +133,7 @@ func dataSourceIbmAppConfigSegmentRead(d *schema.ResourceData, meta interface{})
 
 	appconfigClient, err := getAppConfigClient(meta, guid)
 	if err != nil {
-		return err
+		return flex.FmtErrorf(fmt.Sprintf("%s", err))
 	}
 
 	options := &appconfigurationv1.GetSegmentOptions{}
@@ -150,8 +149,7 @@ func dataSourceIbmAppConfigSegmentRead(d *schema.ResourceData, meta interface{})
 
 	result, response, err := appconfigClient.GetSegment(options)
 	if err != nil {
-		log.Printf("[ERROR] GetSegment failed %s\n%s", err, response)
-		return err
+		return flex.FmtErrorf("[ERROR] GetSegment failed %s\n%s", err, response)
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", guid, *result.SegmentID))

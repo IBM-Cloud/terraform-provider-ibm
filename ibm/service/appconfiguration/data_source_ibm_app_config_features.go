@@ -5,7 +5,6 @@ package appconfiguration
 
 import (
 	"fmt"
-	"log"
 	"net/url"
 	"reflect"
 	"strconv"
@@ -283,7 +282,7 @@ func dataSourceIbmAppConfigFeaturesRead(d *schema.ResourceData, meta interface{}
 
 	appconfigClient, err := getAppConfigClient(meta, guid)
 	if err != nil {
-		return err
+		return flex.FmtErrorf(fmt.Sprintf("%s", err))
 	}
 
 	options := &appconfigurationv1.ListFeaturesOptions{}
@@ -335,8 +334,7 @@ func dataSourceIbmAppConfigFeaturesRead(d *schema.ResourceData, meta interface{}
 		result, response, err := appconfigClient.ListFeatures(options)
 		featuresList = result
 		if err != nil {
-			log.Printf("[ERROR] Listing Features failed %s\n%s", err, response)
-			return err
+			return flex.FmtErrorf("[ERROR] Listing Features failed %s\n%s", err, response)
 		}
 		if isLimit {
 			offset = 0

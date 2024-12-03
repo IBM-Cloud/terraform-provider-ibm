@@ -5,7 +5,6 @@ package appconfiguration
 
 import (
 	"fmt"
-	"log"
 	"strconv"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -173,7 +172,7 @@ func dataSourceIbmAppConfigFeatureRead(d *schema.ResourceData, meta interface{})
 
 	appconfigClient, err := getAppConfigClient(meta, guid)
 	if err != nil {
-		return err
+		return flex.FmtErrorf(fmt.Sprintf("%s", err))
 	}
 
 	options := &appconfigurationv1.GetFeatureOptions{}
@@ -187,8 +186,7 @@ func dataSourceIbmAppConfigFeatureRead(d *schema.ResourceData, meta interface{})
 
 	result, response, err := appconfigClient.GetFeature(options)
 	if err != nil {
-		log.Printf("[ERROR] GetFeature failed %s\n%s", err, response)
-		return err
+		return flex.FmtErrorf("[ERROR] GetFeature failed %s\n%s", err, response)
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s/%s", guid, *options.EnvironmentID, *result.FeatureID))

@@ -5,7 +5,6 @@ package appconfiguration
 
 import (
 	"fmt"
-	"log"
 	"strconv"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -167,7 +166,7 @@ func resourceIbmIbmAppConfigFeatureCreate(d *schema.ResourceData, meta interface
 	guid := d.Get("guid").(string)
 	appconfigClient, err := getAppConfigClient(meta, guid)
 	if err != nil {
-		return err
+		return flex.FmtErrorf(fmt.Sprintf("%s", err))
 	}
 	options := &appconfigurationv1.CreateFeatureOptions{}
 	options.SetType(d.Get("type").(string))
@@ -195,7 +194,7 @@ func resourceIbmIbmAppConfigFeatureCreate(d *schema.ResourceData, meta interface
 			value := e.(map[string]interface{})
 			segmentRulesItem, err := resourceIbmAppConfigFeatureMapToSegmentRule(d, value)
 			if err != nil {
-				return err
+				return flex.FmtErrorf(fmt.Sprintf("%s", err))
 			}
 			segmentRules = append(segmentRules, segmentRulesItem)
 		}
@@ -214,8 +213,7 @@ func resourceIbmIbmAppConfigFeatureCreate(d *schema.ResourceData, meta interface
 	feature, response, err := appconfigClient.CreateFeature(options)
 
 	if err != nil {
-		log.Printf("CreateFeature failed %s\n%s", err, response)
-		return err
+		return flex.FmtErrorf("CreateFeature failed %s\n%s", err, response)
 	}
 	d.SetId(fmt.Sprintf("%s/%s/%s", guid, *options.EnvironmentID, *feature.FeatureID))
 	return resourceIbmIbmAppConfigFeatureRead(d, meta)
@@ -228,7 +226,7 @@ func resourceIbmIbmAppConfigFeatureUpdate(d *schema.ResourceData, meta interface
 	}
 	appconfigClient, err := getAppConfigClient(meta, parts[0])
 	if err != nil {
-		return err
+		return flex.FmtErrorf(fmt.Sprintf("%s", err))
 	}
 
 	options := &appconfigurationv1.UpdateFeatureOptions{}
@@ -255,7 +253,7 @@ func resourceIbmIbmAppConfigFeatureUpdate(d *schema.ResourceData, meta interface
 				value := e.(map[string]interface{})
 				segmentRulesItem, err := resourceIbmAppConfigFeatureMapToSegmentRule(d, value)
 				if err != nil {
-					return err
+					return flex.FmtErrorf(fmt.Sprintf("%s", err))
 				}
 				segmentRules = append(segmentRules, segmentRulesItem)
 			}
@@ -273,8 +271,7 @@ func resourceIbmIbmAppConfigFeatureUpdate(d *schema.ResourceData, meta interface
 
 		_, response, err := appconfigClient.UpdateFeature(options)
 		if err != nil {
-			log.Printf("[ERROR] UpdateFeature %s\n%s", err, response)
-			return err
+			return flex.FmtErrorf("[ERROR] UpdateFeature %s\n%s", err, response)
 		}
 		return resourceIbmIbmAppConfigFeatureRead(d, meta)
 	}
@@ -288,7 +285,7 @@ func resourceIbmIbmAppConfigFeatureRead(d *schema.ResourceData, meta interface{}
 	}
 	appconfigClient, err := getAppConfigClient(meta, parts[0])
 	if err != nil {
-		return err
+		return flex.FmtErrorf(fmt.Sprintf("%s", err))
 	}
 
 	options := &appconfigurationv1.GetFeatureOptions{}
@@ -420,7 +417,7 @@ func resourceIbmIbmAppConfigFeatureDelete(d *schema.ResourceData, meta interface
 	}
 	appconfigClient, err := getAppConfigClient(meta, parts[0])
 	if err != nil {
-		return err
+		return flex.FmtErrorf(fmt.Sprintf("%s", err))
 	}
 
 	options := &appconfigurationv1.DeleteFeatureOptions{}

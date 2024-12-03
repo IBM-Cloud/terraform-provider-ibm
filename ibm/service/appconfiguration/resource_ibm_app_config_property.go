@@ -5,7 +5,6 @@ package appconfiguration
 
 import (
 	"fmt"
-	"log"
 	"strconv"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -185,7 +184,7 @@ func resourceIbmIbmAppConfigPropertyCreate(d *schema.ResourceData, meta interfac
 			value := e.(map[string]interface{})
 			segmentRulesItem, err := resourceIbmAppConfigPropertyMapToSegmentRule(d, value)
 			if err != nil {
-				return err
+				return flex.FmtErrorf(fmt.Sprintf("%s", err))
 			}
 			segmentRules = append(segmentRules, segmentRulesItem)
 		}
@@ -351,7 +350,7 @@ func resourceIbmIbmAppConfigPropertyUpdate(d *schema.ResourceData, meta interfac
 				value := e.(map[string]interface{})
 				segmentRulesItem, err := resourceIbmAppConfigPropertyMapToSegmentRule(d, value)
 				if err != nil {
-					return err
+					return flex.FmtErrorf(fmt.Sprintf("%s", err))
 				}
 				segmentRules = append(segmentRules, segmentRulesItem)
 			}
@@ -388,8 +387,7 @@ func resourceIbmIbmAppConfigPropertyDelete(d *schema.ResourceData, meta interfac
 			d.SetId("")
 			return nil
 		}
-		log.Printf("[ERROR] DeleteProperty failed %s\n%s", err, response)
-		return err
+		return flex.FmtErrorf("[ERROR] DeleteProperty failed %s\n%s", err, response)
 	}
 
 	d.SetId("")
