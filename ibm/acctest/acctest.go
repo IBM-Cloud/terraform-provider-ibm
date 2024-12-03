@@ -424,6 +424,13 @@ var (
 	PcsIamServiceRegistrationId                       string
 )
 
+// For cluster
+var (
+	ISClusterNetworkProfileName        string
+	ISInstanceGPUProfileName           string
+	ISClusterNetworkSubnetPrefixesCidr string
+)
+
 func init() {
 	testlogger := os.Getenv("TF_LOG")
 	if testlogger != "" {
@@ -778,6 +785,23 @@ func init() {
 	if AccountId == "" {
 		AccountId = "fee82deba12e4c0fb69c3b09d1f12345"
 		fmt.Println("[INFO] Set the environment variable IS_ACCOUNT_ID for testing private_path_service_gateway_account_policy else it is set to default value 'fee82deba12e4c0fb69c3b09d1f12345'")
+	}
+
+	ISClusterNetworkProfileName = os.Getenv("IS_CLUSTER_NETWORK_PROFILE_NAME")
+	if ISClusterNetworkProfileName == "" {
+		ISClusterNetworkProfileName = "h100"
+		fmt.Println("[INFO] Set the environment variable IS_CLUSTER_NETWORK_PROFILE_NAME for testing cluster_network_profile else it is set to default value 'h100'")
+	}
+	ISInstanceGPUProfileName = os.Getenv("IS_INSTANCE_GPU_PROFILE_NAME")
+	if ISInstanceGPUProfileName == "" {
+		ISInstanceGPUProfileName = "gx3d-160x1792x8h100"
+		fmt.Println("[INFO] Set the environment variable IS_INSTANCE_GPU_PROFILE_NAME for testing cluster_network_attachments else it is set to default value 'gx3d-160x1792x8h100'")
+	}
+
+	ISClusterNetworkSubnetPrefixesCidr = os.Getenv("IS_CLUSTER_NETWORK_SUBNET_PREFIXES_CIDR")
+	if ISClusterNetworkSubnetPrefixesCidr == "" {
+		ISClusterNetworkSubnetPrefixesCidr = "10.1.0.0/24"
+		fmt.Println("[INFO] Set the environment variable IS_CLUSTER_NETWORK_SUBNET_PREFIXES_CIDR for testing cluster_network else it is set to default value '10.1.0.0/24'")
 	}
 
 	ISAddressPrefixCIDR = os.Getenv("SL_ADDRESS_PREFIX_CIDR")
