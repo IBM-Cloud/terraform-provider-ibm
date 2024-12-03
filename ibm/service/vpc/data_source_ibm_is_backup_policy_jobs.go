@@ -328,6 +328,7 @@ func DataSourceIBMIsBackupPolicyJobs() *schema.Resource {
 						"included_content": &schema.Schema{
 							Type:        schema.TypeSet,
 							Computed:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString},
 							Set:         schema.HashString,
 							Description: "The included content for backups created using this policy",
 						},

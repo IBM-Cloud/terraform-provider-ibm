@@ -33,7 +33,7 @@ func TestAccIBMIsShareSnapshotBasic(t *testing.T) {
 				Config: testAccCheckIBMIsShareSnapshotConfigBasic(shareID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIsShareSnapshotExists("ibm_is_share_snapshot.is_share_snapshot_instance", conf),
-					resource.TestCheckResourceAttr("ibm_is_share_snapshot.is_share_snapshot_instance", "share_id", shareID),
+					resource.TestCheckResourceAttr("ibm_is_share_snapshot.is_share_snapshot_instance", "share", shareID),
 				),
 			},
 		},
@@ -42,28 +42,29 @@ func TestAccIBMIsShareSnapshotBasic(t *testing.T) {
 
 func TestAccIBMIsShareSnapshotAllArgs(t *testing.T) {
 	var conf vpcv1.ShareSnapshot
-	shareID := fmt.Sprintf("tf_share_id_%d", acctest.RandIntRange(10, 100))
-	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-
+	name := fmt.Sprintf("tf-name-share-snapshot%d", acctest.RandIntRange(10, 100))
+	shareName := fmt.Sprintf("tf-name-share%d", acctest.RandIntRange(10, 100))
+	nameUpdate := fmt.Sprintf("tf-name-%d", acctest.RandIntRange(10, 100))
+	userTag1 := "tfp-share-tag-1"
+	userTag2 := "tfp-share-tag-2"
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMIsShareSnapshotDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIsShareSnapshotConfig(shareID, name),
+				Config: testAccCheckIBMIsShareSnapshotConfig(shareName, name, userTag1),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIsShareSnapshotExists("ibm_is_share_snapshot.is_share_snapshot_instance", conf),
-					resource.TestCheckResourceAttr("ibm_is_share_snapshot.is_share_snapshot_instance", "share_id", shareID),
 					resource.TestCheckResourceAttr("ibm_is_share_snapshot.is_share_snapshot_instance", "name", name),
+					resource.TestCheckResourceAttrSet("ibm_is_share_snapshot.is_share_snapshot_instance", "user_tags.#"),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIBMIsShareSnapshotConfig(shareID, nameUpdate),
+				Config: testAccCheckIBMIsShareSnapshotConfig(shareName, nameUpdate, userTag2),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_is_share_snapshot.is_share_snapshot_instance", "share_id", shareID),
 					resource.TestCheckResourceAttr("ibm_is_share_snapshot.is_share_snapshot_instance", "name", nameUpdate),
+					resource.TestCheckResourceAttrSet("ibm_is_share_snapshot.is_share_snapshot_instance", "user_tags.#"),
 				),
 			},
 			resource.TestStep{
@@ -78,20 +79,20 @@ func TestAccIBMIsShareSnapshotAllArgs(t *testing.T) {
 func testAccCheckIBMIsShareSnapshotConfigBasic(shareID string) string {
 	return fmt.Sprintf(`
 		resource "ibm_is_share_snapshot" "is_share_snapshot_instance" {
-			share_id = "%s"
+			share = "%s"
 		}
 	`, shareID)
 }
 
-func testAccCheckIBMIsShareSnapshotConfig(shareID string, name string) string {
-	return fmt.Sprintf(`
+func testAccCheckIBMIsShareSnapshotConfig(shareName string, name, tags string) string {
+	return testAccCheckIbmIsShareConfigBasic(shareName) + fmt.Sprintf(`
 
 		resource "ibm_is_share_snapshot" "is_share_snapshot_instance" {
-			share_id = "%s"
+			share = ibm_is_share.is_share.id
 			name = "%s"
-			user_tags = "FIXME"
+			user_tags = ["%s"]
 		}
-	`, shareID, name)
+	`, name, tags)
 }
 
 func testAccCheckIBMIsShareSnapshotExists(n string, obj vpcv1.ShareSnapshot) resource.TestCheckFunc {

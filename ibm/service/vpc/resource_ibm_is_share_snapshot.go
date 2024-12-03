@@ -31,11 +31,11 @@ func ResourceIBMIsShareSnapshot() *schema.Resource {
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
-			"share_id": &schema.Schema{
+			"share": &schema.Schema{
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_is_share_snapshot", "share_id"),
+				ValidateFunc: validate.InvokeValidator("ibm_is_share_snapshot", "share"),
 				Description:  "The file share identifier.",
 			},
 			"name": &schema.Schema{
@@ -233,14 +233,10 @@ func ResourceIBMIsShareSnapshot() *schema.Resource {
 					},
 				},
 			},
-			"is_share_snapshot_id": &schema.Schema{
+			"share_snapshot": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The unique identifier for this share snapshot.",
-			},
-			"etag": &schema.Schema{
-				Type:     schema.TypeString,
-				Computed: true,
 			},
 		},
 	}
@@ -250,7 +246,7 @@ func ResourceIBMIsShareSnapshotValidator() *validate.ResourceValidator {
 	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
-			Identifier:                 "share_id",
+			Identifier:                 "share",
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Required:                   true,
@@ -284,7 +280,7 @@ func resourceIBMIsShareSnapshotCreate(context context.Context, d *schema.Resourc
 
 	createShareSnapshotOptions := &vpcv1.CreateShareSnapshotOptions{}
 
-	createShareSnapshotOptions.SetShareID(d.Get("share_id").(string))
+	createShareSnapshotOptions.SetShareID(d.Get("share").(string))
 	if _, ok := d.GetOk("name"); ok {
 		createShareSnapshotOptions.SetName(d.Get("name").(string))
 	}
@@ -350,16 +346,18 @@ func resourceIBMIsShareSnapshotRead(context context.Context, d *schema.ResourceD
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_share_snapshot", "read", "set-user_tags").GetDiag()
 		}
 	}
+	backupPolicyPlanMap := make(map[string]interface{}, 1)
 	if !core.IsNil(shareSnapshot.BackupPolicyPlan) {
-		backupPolicyPlanMap, err := ResourceIBMIsShareSnapshotBackupPolicyPlanReferenceToMap(shareSnapshot.BackupPolicyPlan)
+		backupPolicyPlanMap, err = ResourceIBMIsShareSnapshotBackupPolicyPlanReferenceToMap(shareSnapshot.BackupPolicyPlan)
 		if err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_share_snapshot", "read", "backup_policy_plan-to-map").GetDiag()
 		}
-		if err = d.Set("backup_policy_plan", []map[string]interface{}{backupPolicyPlanMap}); err != nil {
-			err = fmt.Errorf("Error setting backup_policy_plan: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_share_snapshot", "read", "set-backup_policy_plan").GetDiag()
-		}
 	}
+	if err = d.Set("backup_policy_plan", []map[string]interface{}{backupPolicyPlanMap}); err != nil {
+		err = fmt.Errorf("Error setting backup_policy_plan: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_share_snapshot", "read", "set-backup_policy_plan").GetDiag()
+	}
+
 	if !core.IsNil(shareSnapshot.CapturedAt) {
 		if err = d.Set("captured_at", flex.DateTimeToString(shareSnapshot.CapturedAt)); err != nil {
 			err = fmt.Errorf("Error setting captured_at: %s", err)
@@ -428,12 +426,9 @@ func resourceIBMIsShareSnapshotRead(context context.Context, d *schema.ResourceD
 		err = fmt.Errorf("Error setting zone: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_share_snapshot", "read", "set-zone").GetDiag()
 	}
-	if err = d.Set("is_share_snapshot_id", shareSnapshot.ID); err != nil {
-		err = fmt.Errorf("Error setting is_share_snapshot_id: %s", err)
+	if err = d.Set("share_snapshot", shareSnapshot.ID); err != nil {
+		err = fmt.Errorf("Error setting share_snapshot: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_share_snapshot", "read", "set-is_share_snapshot_id").GetDiag()
-	}
-	if err = d.Set("etag", response.Headers.Get("Etag")); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting etag: %s", err), "ibm_is_share_snapshot", "read", "set-etag").GetDiag()
 	}
 
 	return nil
@@ -459,10 +454,25 @@ func resourceIBMIsShareSnapshotUpdate(context context.Context, d *schema.Resourc
 
 	hasChange := false
 
+	getShareSnapshotOptions := &vpcv1.GetShareSnapshotOptions{}
+
+	getShareSnapshotOptions.SetShareID(parts[0])
+	getShareSnapshotOptions.SetID(parts[1])
+
+	_, response, err := vpcClient.GetShareSnapshotWithContext(context, getShareSnapshotOptions)
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetShareSnapshotWithContext failed: %s", err.Error()), "ibm_is_share_snapshot", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+	}
 	patchVals := &vpcv1.ShareSnapshotPatch{}
-	if d.HasChange("share_id") {
+	if d.HasChange("share") {
 		errMsg := fmt.Sprintf("Cannot update resource property \"%s\" with the ForceNew annotation."+
-			" The resource must be re-created to update this property.", "share_id")
+			" The resource must be re-created to update this property.", "share")
 		return flex.DiscriminatedTerraformErrorf(nil, errMsg, "ibm_is_share_snapshot", "update", "share_id-forces-new").GetDiag()
 	}
 	if d.HasChange("name") {
@@ -479,16 +489,10 @@ func resourceIBMIsShareSnapshotUpdate(context context.Context, d *schema.Resourc
 		patchVals.UserTags = userTags
 		hasChange = true
 	}
-	updateShareSnapshotOptions.SetIfMatch(d.Get("etag").(string))
+	updateShareSnapshotOptions.SetIfMatch(response.Headers.Get("Etag"))
 
 	if hasChange {
 		updateShareSnapshotOptions.ShareSnapshotPatch, _ = patchVals.AsPatch()
-
-		// Fields with `nil` values are omitted from the generic map,
-		// so we need to re-add them to support removing arguments.
-		if _, exists := d.GetOk("name"); d.HasChange("name") && !exists {
-			updateShareSnapshotOptions.ShareSnapshotPatch["name"] = nil
-		}
 		if _, exists := d.GetOk("user_tags"); d.HasChange("user_tags") && !exists {
 			updateShareSnapshotOptions.ShareSnapshotPatch["user_tags"] = nil
 		}

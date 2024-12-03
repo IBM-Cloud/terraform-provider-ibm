@@ -26,12 +26,12 @@ func DataSourceIBMIsShareSnapshots() *schema.Resource {
 		ReadContext: dataSourceIBMIsShareSnapshotsRead,
 
 		Schema: map[string]*schema.Schema{
-			"share_id": &schema.Schema{
+			"share": &schema.Schema{
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				Description: "The file share identifier, or `-` to wildcard all accessible file shares.",
 			},
-			"backup_policy_plan_id": &schema.Schema{
+			"backup_policy_plan": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "Filters the collection to backup policy jobs with a `backup_policy_plan.id` property matching the specified identifier.",
@@ -40,12 +40,6 @@ func DataSourceIBMIsShareSnapshots() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "Filters the collection to resources with a `name` property matching the exact specified name.",
-			},
-			"sort": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				Default:     "-created_at",
-				Description: "Sorts the returned collection by the specified property name in ascending order. A `-` may be prepended to the name to sort in descending order. For example, the value `-created_at` sorts the collection by the `created_at` property in descending order, and the value `name` sorts it by the `name` property in ascending order.",
 			},
 			"snapshots": &schema.Schema{
 				Type:        schema.TypeList,
