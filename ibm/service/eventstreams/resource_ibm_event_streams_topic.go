@@ -280,6 +280,7 @@ func createSaramaAdminClient(d *schema.ResourceData, meta interface{}) (sarama.C
 	var adminClient sarama.ClusterAdmin
 	var ok bool
 	if adminClient, ok = clientPool[instanceCRN]; ok {
+		log.Printf("[DEBUG] createSaramaAdminClient got client from pool for instance %s", instanceCRN)
 		return adminClient, instanceCRN, nil
 	}
 	instance, err := getInstanceDetails(instanceCRN, meta)
@@ -305,16 +306,15 @@ func createSaramaAdminClient(d *schema.ResourceData, meta interface{}) (sarama.C
 		config.Net.SASL.AuthIdentity = instanceCRN
 	}
 	config.Admin.Timeout = adminClientTimeout
-	apiKey := bxSession.Config.BluemixAPIKey
-	if len(apiKey) > 0 {
-		config.Net.SASL.User = "token"
-		config.Net.SASL.Password = apiKey
-		config.Net.SASL.Mechanism = sarama.SASLTypePlaintext
-		log.Printf("[DEBUG] createSaramaAdminClient configured SASL mechanism=PLAIN")
-	} else {
+	if len(bxSession.Config.IAMAccessToken) > 0 {
 		config.Net.SASL.Mechanism = sarama.SASLTypeOAuth
 		config.Net.SASL.TokenProvider = accessTokenProvider{clientSession: bxSession}
 		log.Printf("[DEBUG] createSaramaAdminClient configured SASL mechanism=OAUTHBEARER")
+	} else {
+		config.Net.SASL.User = "token"
+		config.Net.SASL.Password = bxSession.Config.BluemixAPIKey
+		config.Net.SASL.Mechanism = sarama.SASLTypePlaintext
+		log.Printf("[DEBUG] createSaramaAdminClient configured SASL mechanism=PLAIN")
 	}
 	adminClient, err = sarama.NewClusterAdmin(brokerAddress, config)
 	if err != nil {
