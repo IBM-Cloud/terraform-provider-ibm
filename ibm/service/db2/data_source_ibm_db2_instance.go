@@ -4,8 +4,11 @@
 package db2
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/IBM/cloud-db2-go-sdk/db2saasv1"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"log"
 	"net/url"
 	"reflect"
@@ -38,6 +41,172 @@ func DataSourceIBMDb2Instance() *schema.Resource {
 		Description: "Cross Regional backups can be stored across multiple regions in a zone. Regional backups are stored in only specific region.",
 		Optional:    true,
 		Type:        schema.TypeString,
+	}
+
+	riSchema["autoscaling_config"] = &schema.Schema{
+		Description: "Autoscaling configurations of the created db2 instance",
+		Optional:    true,
+		Type:        schema.TypeList,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"auto_scaling_enabled": &schema.Schema{
+					Type:        schema.TypeBool,
+					Computed:    true,
+					Description: "Indicates if automatic scaling is enabled or not.",
+				},
+				"auto_scaling_allow_plan_limit": &schema.Schema{
+					Type:        schema.TypeBool,
+					Computed:    true,
+					Description: "Indicates the maximum number of scaling actions that are allowed within a specified time period.",
+				},
+				"auto_scaling_max_storage": &schema.Schema{
+					Type:        schema.TypeInt,
+					Computed:    true,
+					Description: "The maximum limit for automatically increasing storage capacity to handle growing data needs.",
+				},
+				"auto_scaling_over_time_period": &schema.Schema{
+					Type:        schema.TypeInt,
+					Computed:    true,
+					Description: "Defines the time period over which auto-scaling adjustments are monitored and applied.",
+				},
+				"auto_scaling_pause_limit": &schema.Schema{
+					Type:        schema.TypeInt,
+					Computed:    true,
+					Description: "Specifies the duration to pause auto-scaling actions after a scaling event has occurred.",
+				},
+				"auto_scaling_threshold": &schema.Schema{
+					Type:        schema.TypeInt,
+					Computed:    true,
+					Description: "Specifies the resource utilization level that triggers an auto-scaling.",
+				},
+				"storage_unit": &schema.Schema{
+					Type:        schema.TypeString,
+					Computed:    true,
+					Description: "Specifies the unit of measurement for storage capacity.",
+				},
+				"storage_utilization_percentage": &schema.Schema{
+					Type:        schema.TypeInt,
+					Computed:    true,
+					Description: "Represents the percentage of total storage capacity currently in use.",
+				},
+				"support_auto_scaling": &schema.Schema{
+					Type:        schema.TypeBool,
+					Computed:    true,
+					Description: "Indicates whether a system or service can automatically adjust resources based on demand.",
+				},
+			},
+		},
+	}
+
+	riSchema["whitelist_config"] = &schema.Schema{
+		Description: "Whitelists configurations of the created db2 instance",
+		Optional:    true,
+		Type:        schema.TypeList,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"ip_addresses": &schema.Schema{
+					Type:        schema.TypeList,
+					Computed:    true,
+					Description: "List of IP addresses.",
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"address": &schema.Schema{
+								Type:        schema.TypeString,
+								Computed:    true,
+								Description: "The IP address, in IPv4/ipv6 format.",
+							},
+							"description": &schema.Schema{
+								Type:        schema.TypeString,
+								Computed:    true,
+								Description: "Description of the IP address.",
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	riSchema["connectioninfo_config"] = &schema.Schema{
+		Description: "Connection info configurations of the created db2 instance",
+		Optional:    true,
+		Type:        schema.TypeList,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"public": &schema.Schema{
+					Type:     schema.TypeList,
+					Computed: true,
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"hostname": &schema.Schema{
+								Type:     schema.TypeString,
+								Computed: true,
+							},
+							"database_name": &schema.Schema{
+								Type:     schema.TypeString,
+								Computed: true,
+							},
+							"host_ros": &schema.Schema{
+								Type:     schema.TypeString,
+								Computed: true,
+							},
+							"certificate_base64": &schema.Schema{
+								Type:     schema.TypeString,
+								Computed: true,
+							},
+							"ssl_port": &schema.Schema{
+								Type:     schema.TypeString,
+								Computed: true,
+							},
+							"ssl": &schema.Schema{
+								Type:     schema.TypeBool,
+								Computed: true,
+							},
+							"database_version": &schema.Schema{
+								Type:     schema.TypeString,
+								Computed: true,
+							},
+						},
+					},
+				},
+				"private": &schema.Schema{
+					Type:     schema.TypeList,
+					Computed: true,
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"hostname": &schema.Schema{
+								Type:     schema.TypeString,
+								Computed: true,
+							},
+							"database_name": &schema.Schema{
+								Type:     schema.TypeString,
+								Computed: true,
+							},
+							"host_ros": &schema.Schema{
+								Type:     schema.TypeString,
+								Computed: true,
+							},
+							"certificate_base64": &schema.Schema{
+								Type:     schema.TypeString,
+								Computed: true,
+							},
+							"ssl_port": &schema.Schema{
+								Type:     schema.TypeString,
+								Computed: true,
+							},
+							"ssl": &schema.Schema{
+								Type:     schema.TypeBool,
+								Computed: true,
+							},
+							"database_version": &schema.Schema{
+								Type:     schema.TypeString,
+								Computed: true,
+							},
+						},
+					},
+				},
+			},
+		},
 	}
 
 	return &schema.Resource{
@@ -213,6 +382,119 @@ func dataSourceIBMDb2InstanceRead(d *schema.ResourceData, meta interface{}) erro
 	d.Set("instance_type", instance.Parameters["instance_type"])
 	d.Set("backup_location", instance.Parameters["backup_location"])
 
-	return nil
+	//appending whitelist ips config
+	db2saasClient, err := meta.(conns.ClientSession).Db2saasV1()
+	if err != nil {
+		log.Printf("[ERROR] Error retrieving db2saas client: %s", err)
+	}
 
+	getDb2SaasWhitelistOptions := &db2saasv1.GetDb2SaasWhitelistOptions{}
+
+	getDb2SaasWhitelistOptions.SetXDeploymentID(d.Get("x_deployment_id").(string))
+
+	successGetWhitelistIPs, _, err := db2saasClient.GetDb2SaasWhitelistWithContext(context.Background(), getDb2SaasWhitelistOptions)
+	if err != nil {
+		log.Printf("[ERROR] Error retrieving db2saas whitelist: %s", err)
+	}
+
+	d.SetId(dataSourceIbmDb2SaasWhitelistID(d))
+
+	ipAddresses := []map[string]interface{}{}
+	for _, ipAddressesItem := range successGetWhitelistIPs.IpAddresses {
+		ipAddressesItemMap, err := DataSourceIbmDb2SaasWhitelistIpAddressToMap(&ipAddressesItem) // #nosec G601
+		if err != nil {
+			log.Printf("[ERROR] Error converting ip addresses to map: %s", err)
+		}
+		ipAddresses = append(ipAddresses, ipAddressesItemMap)
+	}
+	if err = d.Set("ip_addresses", ipAddresses); err != nil {
+		return fmt.Errorf("[ERROR] Error setting instance ip addresses: %s", err)
+	}
+
+	//append autoscale config
+	getDb2SaasAutoscaleOptions := &db2saasv1.GetDb2SaasAutoscaleOptions{}
+
+	getDb2SaasAutoscaleOptions.SetXDeploymentID(d.Get("x_deployment_id").(string))
+
+	successAutoScaling, _, err := db2saasClient.GetDb2SaasAutoscaleWithContext(context.Background(), getDb2SaasAutoscaleOptions)
+	if err != nil {
+		log.Printf("[ERROR] Error retrieving db2saas autoscale: %s", err)
+	}
+
+	d.SetId(dataSourceIbmDb2SaasAutoscaleID(d))
+
+	if err = d.Set("auto_scaling_allow_plan_limit", successAutoScaling.AutoScalingAllowPlanLimit); err != nil {
+		return fmt.Errorf("[ERROR] Error setting instance auto scaling allow plan limit: %s", err)
+	}
+
+	if err = d.Set("auto_scaling_enabled", successAutoScaling.AutoScalingEnabled); err != nil {
+		return fmt.Errorf("[ERROR] Error setting instance auto scaling enabled: %s", err)
+	}
+
+	if err = d.Set("auto_scaling_max_storage", flex.IntValue(successAutoScaling.AutoScalingMaxStorage)); err != nil {
+		return fmt.Errorf("[ERROR] Error setting instance auto scaling max_storage: %s", err)
+	}
+
+	if err = d.Set("auto_scaling_over_time_period", flex.IntValue(successAutoScaling.AutoScalingOverTimePeriod)); err != nil {
+		return fmt.Errorf("[ERROR] Error setting instance auto scaling over_time_period: %s", err)
+	}
+
+	if err = d.Set("auto_scaling_pause_limit", flex.IntValue(successAutoScaling.AutoScalingPauseLimit)); err != nil {
+		return fmt.Errorf("[ERROR] Error setting instance auto scaling pause limit: %s", err)
+	}
+
+	if err = d.Set("auto_scaling_threshold", flex.IntValue(successAutoScaling.AutoScalingThreshold)); err != nil {
+		return fmt.Errorf("[ERROR] Error setting instance auto scaling threshold: %s", err)
+	}
+
+	if err = d.Set("storage_unit", successAutoScaling.StorageUnit); err != nil {
+		return fmt.Errorf("[ERROR] Error setting instance storage unit: %s", err)
+	}
+
+	if err = d.Set("storage_utilization_percentage", flex.IntValue(successAutoScaling.StorageUtilizationPercentage)); err != nil {
+		return fmt.Errorf("[ERROR] Error setting instance storage utilization percentage: %s", err)
+	}
+
+	if err = d.Set("support_auto_scaling", successAutoScaling.SupportAutoScaling); err != nil {
+		return fmt.Errorf("[ERROR] Error setting instance support auto scaling: %s", err)
+	}
+
+	//appending connectioninfo config
+	getDb2SaasConnectionInfoOptions := &db2saasv1.GetDb2SaasConnectionInfoOptions{}
+
+	getDb2SaasConnectionInfoOptions.SetDeploymentID(d.Get("deployment_id").(string))
+	getDb2SaasConnectionInfoOptions.SetXDeploymentID(d.Get("x_deployment_id").(string))
+
+	successConnectionInfo, _, err := db2saasClient.GetDb2SaasConnectionInfoWithContext(context.Background(), getDb2SaasConnectionInfoOptions)
+	if err != nil {
+		log.Printf("[ERROR] Error retrieving db2saas connection info: %s", err)
+	}
+
+	d.SetId(dataSourceIbmDb2SaasConnectionInfoID(d))
+
+	if !core.IsNil(successConnectionInfo.Public) {
+		public := []map[string]interface{}{}
+		publicMap, err := DataSourceIbmDb2SaasConnectionInfoSuccessConnectionInfoPublicToMap(successConnectionInfo.Public)
+		if err != nil {
+			log.Printf("[ERROR] Error converting public connection info to map: %s", err)
+		}
+		public = append(public, publicMap)
+		if err = d.Set("public", public); err != nil {
+			return fmt.Errorf("[ERROR] Error setting instance public: %s", err)
+		}
+	}
+
+	if !core.IsNil(successConnectionInfo.Private) {
+		private := []map[string]interface{}{}
+		privateMap, err := DataSourceIbmDb2SaasConnectionInfoSuccessConnectionInfoPrivateToMap(successConnectionInfo.Private)
+		if err != nil {
+			log.Printf("[ERROR] Error converting private connection info to map: %s", err)
+		}
+		private = append(private, privateMap)
+		if err = d.Set("private", private); err != nil {
+			return fmt.Errorf("[ERROR] Error setting instance private: %s", err)
+		}
+	}
+
+	return nil
 }
