@@ -8,6 +8,7 @@ import (
 	"reflect"
 	"strconv"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM/appconfiguration-go-admin-sdk/appconfigurationv1"
@@ -150,7 +151,7 @@ func dataSourceIbmAppConfigCollectionsRead(d *schema.ResourceData, meta interfac
 
 	appconfigClient, err := getAppConfigClient(meta, guid)
 	if err != nil {
-		return fmt.Errorf("getAppConfigClient failed %s", err)
+		return flex.FmtErrorf("getAppConfigClient failed %s", err)
 	}
 
 	options := &appconfigurationv1.ListCollectionsOptions{}
@@ -205,7 +206,7 @@ func dataSourceIbmAppConfigCollectionsRead(d *schema.ResourceData, meta interfac
 		result, response, err := appconfigClient.ListCollections(options)
 		collectionsList = result
 		if err != nil {
-			return fmt.Errorf("ListCollections failed %s\n%s", err, response)
+			return flex.FmtErrorf("ListCollections failed %s\n%s", err, response)
 		}
 		if isLimit {
 			offset = 0
@@ -225,22 +226,22 @@ func dataSourceIbmAppConfigCollectionsRead(d *schema.ResourceData, meta interfac
 	if collectionsList.Collections != nil {
 		err = d.Set("collections", dataSourceCollectionListFlattenCollections(collectionsList.Collections))
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error setting collections %s", err)
+			return flex.FmtErrorf("[ERROR] Error setting collections %s", err)
 		}
 	}
 	if collectionsList.Limit != nil {
 		if err = d.Set("limit", collectionsList.Limit); err != nil {
-			return fmt.Errorf("[ERROR] Error setting limit: %s", err)
+			return flex.FmtErrorf("[ERROR] Error setting limit: %s", err)
 		}
 	}
 	if collectionsList.Offset != nil {
 		if err = d.Set("offset", collectionsList.Offset); err != nil {
-			return fmt.Errorf("[ERROR] Error setting offset: %s", err)
+			return flex.FmtErrorf("[ERROR] Error setting offset: %s", err)
 		}
 	}
 	if collectionsList.TotalCount != nil {
 		if err = d.Set("total_count", collectionsList.TotalCount); err != nil {
-			return fmt.Errorf("[ERROR] Error setting total_count: %s", err)
+			return flex.FmtErrorf("[ERROR] Error setting total_count: %s", err)
 		}
 	}
 
