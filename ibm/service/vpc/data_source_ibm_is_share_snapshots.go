@@ -265,9 +265,14 @@ func dataSourceIBMIsShareSnapshotsRead(context context.Context, d *schema.Resour
 
 	listShareSnapshotsOptions := &vpcv1.ListShareSnapshotsOptions{}
 
-	listShareSnapshotsOptions.SetShareID(d.Get("share").(string))
-	if _, ok := d.GetOk("backup_policy_plan_id"); ok {
-		listShareSnapshotsOptions.SetBackupPolicyPlanID(d.Get("backup_policy_plan_id").(string))
+	if shareIntf, ok := d.GetOk("share"); ok {
+		listShareSnapshotsOptions.SetShareID(shareIntf.(string))
+	} else {
+		listShareSnapshotsOptions.SetShareID("-")
+	}
+
+	if _, ok := d.GetOk("backup_policy_plan"); ok {
+		listShareSnapshotsOptions.SetBackupPolicyPlanID(d.Get("backup_policy_plan").(string))
 	}
 	if _, ok := d.GetOk("name"); ok {
 		listShareSnapshotsOptions.SetName(d.Get("name").(string))

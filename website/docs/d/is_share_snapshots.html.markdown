@@ -16,6 +16,8 @@ Provides a read-only data source to retrieve information about a ShareSnapshotCo
 data "ibm_is_share_snapshots" "example" {
 	share = ibm_is_share_snapshot.is_share_snapshot_instance.share_id
 }
+
+// Retrieve all the snapshots from all the shares
 data "ibm_is_share_snapshots" "example1" {
 }
 ```
@@ -24,9 +26,9 @@ data "ibm_is_share_snapshots" "example1" {
 
 You can specify the following arguments for this data source.
 
-- `backup_policy_plan_id` - (Optional, String) Filters the collection to backup policy jobs with a `backup_policy_plan.id` property matching the specified identifier.
+- `backup_policy_plan` - (Optional, String) Filters the collection to backup policy jobs with a `backup_policy_plan.id` property matching the specified identifier.
 - `name` - (Optional, String) Filters the collection to resources with a `name` property matching the exact specified name.
-- `share_id` - (Optional, String) The file share identifier.
+- `share` - (Optional, String) The file share identifier.
 
 ## Attribute Reference
 
