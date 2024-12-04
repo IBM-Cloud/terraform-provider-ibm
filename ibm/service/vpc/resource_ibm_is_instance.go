@@ -220,6 +220,7 @@ func ResourceIBMISInstance() *schema.Resource {
 			"cluster_network_attachments": &schema.Schema{
 				Type:        schema.TypeList,
 				Optional:    true,
+				Computed:    true,
 				Description: "The cluster network attachments for this virtual server instance.The cluster network attachments are ordered for consistent instance configuration.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -4913,15 +4914,17 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-cluster_network_attachments")
 		}
 	}
+	clusterNetwork := make([]map[string]interface{}, 0)
 	if !core.IsNil(instance.ClusterNetwork) {
 		clusterNetworkMap, err := ResourceIBMIsInstanceClusterNetworkReferenceToMap(instance.ClusterNetwork)
 		if err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "cluster_network-to-map")
 		}
-		if err = d.Set("cluster_network", []map[string]interface{}{clusterNetworkMap}); err != nil {
-			err = fmt.Errorf("Error setting cluster_network: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-cluster_network")
-		}
+		clusterNetwork = []map[string]interface{}{clusterNetworkMap}
+	}
+	if err = d.Set("cluster_network", clusterNetwork); err != nil {
+		err = fmt.Errorf("Error setting cluster_network: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-cluster_network")
 	}
 	if !core.IsNil(instance.ConfidentialComputeMode) {
 		if err = d.Set("confidential_compute_mode", instance.ConfidentialComputeMode); err != nil {
