@@ -1082,10 +1082,26 @@ func resourceIbmIsShareCreate(context context.Context, d *schema.ResourceData, m
 		}
 		sharePrototype.EncryptionKey = encryptionKeyIdentity
 	}
-	if sizeIntf, ok := d.GetOk("size"); ok {
-
-		size := int64(sizeIntf.(int))
-		sharePrototype.Size = &size
+	if resgrp, ok := d.GetOk("resource_group"); ok {
+		resgrpstr := resgrp.(string)
+		resourceGroup := &vpcv1.ResourceGroupIdentity{
+			ID: &resgrpstr,
+		}
+		sharePrototype.ResourceGroup = resourceGroup
+	}
+	_, snapshotOk := d.GetOk("source_snapshot")
+	_, sizeOk := d.GetOk("size")
+	if snapshotOk || sizeOk {
+		if sourceSnapshotIntf, snapOk := d.GetOk("source_snapshot"); snapOk {
+			if len(sourceSnapshotIntf.([]interface{})) > 0 {
+				SourceSnapshotModel := ResourceIBMIsShareMapToShareSourceSnapshotPrototype(sourceSnapshotIntf.([]interface{})[0].(map[string]interface{}))
+				sharePrototype.SourceSnapshot = SourceSnapshotModel
+			}
+		}
+		if sizeIntf, sizeIntfOk := d.GetOk("size"); sizeIntfOk {
+			size := int64(sizeIntf.(int))
+			sharePrototype.Size = &size
+		}
 
 		initial_owner := &vpcv1.ShareInitialOwner{}
 		if initialOwnerIntf, ok := d.GetOk("initial_owner"); ok {
@@ -1099,13 +1115,7 @@ func resourceIbmIsShareCreate(context context.Context, d *schema.ResourceData, m
 				initial_owner.Uid = &initialOwnerUID
 			}
 		}
-		if resgrp, ok := d.GetOk("resource_group"); ok {
-			resgrpstr := resgrp.(string)
-			resourceGroup := &vpcv1.ResourceGroupIdentity{
-				ID: &resgrpstr,
-			}
-			sharePrototype.ResourceGroup = resourceGroup
-		}
+
 		if replicaShareIntf, ok := d.GetOk("replica_share"); ok {
 			replicaShareMap := replicaShareIntf.([]interface{})[0].(map[string]interface{})
 			replicaShare := &vpcv1.SharePrototypeShareContext{}
@@ -1196,12 +1206,6 @@ func resourceIbmIsShareCreate(context context.Context, d *schema.ResourceData, m
 		if len(originShare.([]interface{})) > 0 {
 			OriginShareModel := ResourceIBMIsShareMapToShareIdentity(originShare.([]interface{})[0].(map[string]interface{}))
 			sharePrototype.OriginShare = OriginShareModel
-		}
-	} else if _, ok := d.GetOk("source_snapshot"); ok {
-		sourceSnapshotIntf := d.Get("source_snapshot")
-		if len(sourceSnapshotIntf.([]interface{})) > 0 {
-			SourceSnapshotModel := ResourceIBMIsShareMapToShareSourceSnapshotPrototype(sourceSnapshotIntf.([]interface{})[0].(map[string]interface{}))
-			sharePrototype.SourceSnapshot = SourceSnapshotModel
 		}
 	}
 	if snapshotDirVisibleIntf, ok := d.GetOkExists("snapshot_directory_visible"); ok {
