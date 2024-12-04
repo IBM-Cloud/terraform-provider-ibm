@@ -1626,3 +1626,433 @@ data "ibm_is_reservations" "example" {
 data "ibm_is_reservation" "example" {
   identifier = ibm_is_reservation.example.id
 }
+
+// cluster examples
+# =============================================================================================================
+variable prefix {
+  default = "test-cluster"
+}
+variable is_instances_resource_group_id {
+  default = "efhiorho4388yf348y83yvchrc083h0r30c"
+}
+variable region {
+  default = "us-east"
+}
+variable is_instances_name {
+  default = "test-vsi"
+}
+data "ibm_is_cluster_network_profile" "is_cluster_network_profile_instance" {
+  name = "h100"
+}
+data "ibm_is_cluster_network_profiles" "is_cluster_network_profiles_instance" {
+}
+# Create VPC
+resource "ibm_is_vpc" "is_vpc" {
+  name = "${var.prefix}-vpc"
+}
+resource "ibm_is_vpc" "is_vpc2" {
+  name = "${var.prefix}-vpc2"
+}
+
+# # # Create Subnet
+resource "ibm_is_subnet" "is_subnet" {
+  name                     = "${var.prefix}-subnet"
+  vpc                      = ibm_is_vpc.is_vpc.id
+  total_ipv4_address_count = 64
+  zone                     = "${var.region}-3"
+}
+
+data ibm_is_instance_profile is_instance_profile_instance{
+  name = "gx3d-160x1792x8h100"
+}
+data ibm_is_instance_profiles is_instance_profiles_instance{
+}
+data "ibm_is_image" "is_image" {
+  name = "ibm-ubuntu-20-04-6-minimal-amd64-6"
+}
+resource "ibm_is_cluster_network" "is_cluster_network_instance" {
+  name = "${var.prefix}-cluster"
+  profile = "h100"
+  resource_group  = var.is_instances_resource_group_id
+  subnet_prefixes {
+    cidr = "10.1.0.0/24"
+  }
+  vpc {
+    id = ibm_is_vpc.is_vpc.id
+  }
+  zone = "${var.region}-3"
+}
+resource "ibm_is_cluster_network" "is_cluster_network_instance" {
+  name = "${var.prefix}-cluster-updated"
+  profile = "h100"
+  subnet_prefixes {
+    cidr = "10.0.0.0/24"
+  }
+  vpc {
+    id = ibm_is_vpc.is_vpc.id
+  }
+  zone = ibm_is_subnet.is_subnet.zone
+}
+resource "ibm_is_cluster_network_subnet" "is_cluster_network_subnet_instance" {
+  cluster_network_id = ibm_is_cluster_network.is_cluster_network_instance.id
+  name = "${var.prefix}-cluster-subnet"
+  total_ipv4_address_count = 64
+}
+
+resource "ibm_is_cluster_network_subnet_reserved_ip" "is_cluster_network_subnet_reserved_ip_instance" {
+  cluster_network_id = ibm_is_cluster_network.is_cluster_network_instance.id
+  cluster_network_subnet_id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
+  address = "10.1.0.4"
+  name = "${var.prefix}-cluster-subnet-r-ip"
+}
+
+resource "ibm_is_cluster_network_interface" "is_cluster_network_interface_instance" {
+  cluster_network_id = ibm_is_cluster_network.is_cluster_network_instance.id
+  name = "${var.prefix}-cluster-ni"
+  primary_ip {
+    id = ibm_is_cluster_network_subnet_reserved_ip.is_cluster_network_subnet_reserved_ip_instance.cluster_network_subnet_reserved_ip_id
+  }
+  subnet {
+    id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
+  }
+}
+
+resource "ibm_is_instance_template" "is_instance_template" {
+  name    = "${var.prefix}-cluster-it"
+  image   = data.ibm_is_image.is_image.id
+  profile = "gx3d-160x1792x8h100"
+  primary_network_attachment {
+    name = "my-pna-it"
+    virtual_network_interface {
+      auto_delete = true
+      subnet      = ibm_is_subnet.is_subnet.id
+    }
+  }
+  cluster_network_attachments {
+    cluster_network_interface{
+      id = ibm_is_cluster_network_interface.is_cluster_network_interface_instance.cluster_network_interface_id
+    }
+  }
+  cluster_network_attachments {
+    cluster_network_interface{
+      id = ibm_is_cluster_network_interface.is_cluster_network_interface_instance.cluster_network_interface_id
+    }
+  }
+  cluster_network_attachments {
+    cluster_network_interface{
+      id = ibm_is_cluster_network_interface.is_cluster_network_interface_instance.cluster_network_interface_id
+    }
+  }
+  cluster_network_attachments {
+    cluster_network_interface{
+      id = ibm_is_cluster_network_interface.is_cluster_network_interface_instance.cluster_network_interface_id
+    }
+  }
+  cluster_network_attachments {
+    cluster_network_interface{
+      id = ibm_is_cluster_network_interface.is_cluster_network_interface_instance.cluster_network_interface_id
+    }
+  }
+  cluster_network_attachments {
+    cluster_network_interface{
+      id = ibm_is_cluster_network_interface.is_cluster_network_interface_instance.cluster_network_interface_id
+    }
+  }
+  cluster_network_attachments {
+    cluster_network_interface{
+      id = ibm_is_cluster_network_interface.is_cluster_network_interface_instance.cluster_network_interface_id
+    }
+  }
+  cluster_network_attachments {
+    cluster_network_interface{
+      id = ibm_is_cluster_network_interface.is_cluster_network_interface_instance.cluster_network_interface_id
+    }
+  }
+  vpc  = ibm_is_vpc.is_vpc.id
+  zone = ibm_is_subnet.is_subnet.zone
+  keys = [ibm_is_ssh_key.is_key.id]
+}
+resource "ibm_is_ssh_key" "is_key" {
+  name       = "my-key"
+  public_key = file("~/.ssh/id_ed25519.pub")
+  type       = "ed25519"
+}
+
+resource "ibm_is_instance" "is_instance" {
+  name    = "${var.prefix}-cluster-ins"
+  image   = data.ibm_is_image.is_image.id
+  profile = "gx3d-160x1792x8h100"
+  primary_network_interface {
+    subnet = ibm_is_subnet.is_subnet.id
+  }
+  cluster_network_attachments {
+    cluster_network_interface{
+      auto_delete = true
+      name = "cna-1"
+      subnet {
+        id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
+      }
+    }
+  }
+  cluster_network_attachments {
+    cluster_network_interface{
+      auto_delete = true
+      name = "cna-2"
+      subnet {
+        id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
+      }
+    }
+  }
+  cluster_network_attachments {
+    cluster_network_interface{
+      auto_delete = true
+      name = "cna-3"
+      subnet {
+        id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
+      }
+    }
+  }
+  cluster_network_attachments {
+    cluster_network_interface{
+      auto_delete = true
+      name = "cna-4"
+      subnet {
+        id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
+      }
+    }
+  }
+  cluster_network_attachments {
+    cluster_network_interface{
+      auto_delete = true
+      name = "cna-5"
+      subnet {
+        id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
+      }
+    }
+  }
+  cluster_network_attachments {
+    cluster_network_interface{
+      auto_delete = true
+      name = "cna-6"
+      subnet {
+        id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
+      }
+    }
+  }
+  cluster_network_attachments {
+    cluster_network_interface{
+      auto_delete = true
+      name = "cna-7"
+      subnet {
+        id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
+      }
+    }
+  }
+  cluster_network_attachments {
+    cluster_network_interface{
+      auto_delete = true
+      name = "cna-8"
+      subnet {
+        id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
+      }
+    }
+  }
+  vpc  = ibm_is_vpc.is_vpc.id
+  zone = ibm_is_subnet.is_subnet.zone
+  keys = [ibm_is_ssh_key.is_key.id]
+}
+
+resource "ibm_is_instance_action" "is_instance_stop_before" {
+	  action = "stop"
+	  instance = ibm_is_instance.is_instance.id
+}
+
+resource "ibm_is_instance_cluster_network_attachment" "is_instance_cluster_network_attachment_instance" {
+	  depends_on = [ibm_is_instance_action.is_instance_stop_before]
+    instance_id = ibm_is_instance.is_instance.id
+    before {
+      id = ibm_is_instance.is_instance.cluster_network_attachments.0.id
+    }
+    cluster_network_interface {
+      name = "my-cluster-network-interface"
+      subnet {
+        id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
+      }
+    }
+    name = "cna-9"
+}
+resource "ibm_is_instance_cluster_network_attachment" "is_instance_cluster_network_attachment_instance10" {
+	  depends_on = [ibm_is_instance_action.is_instance_stop_before]
+    instance_id = ibm_is_instance.is_instance.id
+    before {
+      id = ibm_is_instance_cluster_network_attachment.is_instance_cluster_network_attachment_instance.instance_cluster_network_attachment_id
+    }
+    cluster_network_interface {
+      name = "my-cluster-network-interface-10"
+      subnet {
+        id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
+      }
+    }
+    name = "cna-10"
+}
+resource "ibm_is_instance_cluster_network_attachment" "is_instance_cluster_network_attachment_instance11" {
+	  depends_on = [ibm_is_instance_action.is_instance_stop_before]
+    instance_id = ibm_is_instance.is_instance.id
+    before {
+      id = ibm_is_instance_cluster_network_attachment.is_instance_cluster_network_attachment_instance10.instance_cluster_network_attachment_id
+}
+    cluster_network_interface {
+      name = "my-cluster-network-interface-11"
+      subnet {
+        id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
+      }
+    }
+    name = "cna-11"
+}
+resource "ibm_is_instance_cluster_network_attachment" "is_instance_cluster_network_attachment_instance12" {
+	  depends_on = [ibm_is_instance_action.is_instance_stop_before]
+    instance_id = ibm_is_instance.is_instance.id
+    before {
+      id = ibm_is_instance_cluster_network_attachment.is_instance_cluster_network_attachment_instance11.instance_cluster_network_attachment_id
+}
+    cluster_network_interface {
+      name = "my-cluster-network-interface12"
+      subnet {
+        id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
+      }
+    }
+    name = "cna-12"
+}
+resource "ibm_is_instance_cluster_network_attachment" "is_instance_cluster_network_attachment_instance13" {
+	  depends_on = [ibm_is_instance_action.is_instance_stop_before]
+    instance_id = ibm_is_instance.is_instance.id
+    before {
+      id = ibm_is_instance_cluster_network_attachment.is_instance_cluster_network_attachment_instance12.instance_cluster_network_attachment_id
+    }
+    cluster_network_interface {
+      name = "my-cluster-network-interface13"
+      subnet {
+        id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
+      }
+    }
+    name = "cna-13"
+}
+resource "ibm_is_instance_cluster_network_attachment" "is_instance_cluster_network_attachment_instance14" {
+	  depends_on = [ibm_is_instance_action.is_instance_stop_before]
+    instance_id = ibm_is_instance.is_instance.id
+    before {
+      id = ibm_is_instance_cluster_network_attachment.is_instance_cluster_network_attachment_instance13.instance_cluster_network_attachment_id
+    }
+    cluster_network_interface {
+      name = "my-cluster-network-interface14"
+      subnet {
+        id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
+      }
+    }
+    name = "cna-149"
+}
+resource "ibm_is_instance_cluster_network_attachment" "is_instance_cluster_network_attachment_instance15" {
+	  depends_on = [ibm_is_instance_action.is_instance_stop_before]
+    instance_id = ibm_is_instance.is_instance.id
+    before {
+      id = ibm_is_instance_cluster_network_attachment.is_instance_cluster_network_attachment_instance14.instance_cluster_network_attachment_id
+    }
+    cluster_network_interface {
+      name = "my-cluster-network-interface15"
+      subnet {
+        id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
+      }
+    }
+    name = "cna-15"
+}
+resource "ibm_is_instance_cluster_network_attachment" "is_instance_cluster_network_attachment_instance16" {
+	  depends_on = [ibm_is_instance_action.is_instance_stop_before]
+    instance_id = ibm_is_instance.is_instance.id
+    before {
+      id = ibm_is_instance_cluster_network_attachment.is_instance_cluster_network_attachment_instance15.instance_cluster_network_attachment_id
+    }
+    cluster_network_interface {
+      name = "my-cluster-network-interface16"
+      subnet {
+        id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
+      }
+    }
+    name = "cna-16"
+}
+resource "ibm_is_instance_action" "is_instance_start_after" {
+	  # depends_on = [ibm_is_instance_cluster_network_attachment.is_instance_cluster_network_attachment_instance16]
+	  action = "start"
+	  instance = ibm_is_instance.is_instance.id
+}
+resource "ibm_is_instance_action" "is_instance_stop_update" {
+	  # depends_on = [ibm_is_instance_cluster_network_attachment.is_instance_cluster_network_attachment_instance16]
+	  action = "stop"
+	  instance = ibm_is_instance.is_instance.id
+}
+
+data "ibm_is_cluster_network" "is_cluster_network_instance" {
+  cluster_network_id = ibm_is_cluster_network.is_cluster_network_instance.id
+}
+data "ibm_is_cluster_networks" "is_cluster_networks_instance" {
+}
+
+data "ibm_is_cluster_network_interface" "is_cluster_network_interface_instance" {
+  cluster_network_id = ibm_is_cluster_network.is_cluster_network_instance.id
+  cluster_network_interface_id = ibm_is_cluster_network_interface.is_cluster_network_interface_instance.cluster_network_interface_id
+}
+data "ibm_is_cluster_network_interfaces" "is_cluster_network_interfaces_instance" {
+  cluster_network_id = ibm_is_cluster_network.is_cluster_network_instance.id
+}
+
+data "ibm_is_cluster_network_subnet" "is_cluster_network_subnet_instance" {
+  cluster_network_id = ibm_is_cluster_network.is_cluster_network_instance.id
+  cluster_network_subnet_id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
+}
+data "ibm_is_cluster_network_subnets" "is_cluster_network_subnets_instance" {
+  cluster_network_id = ibm_is_cluster_network.is_cluster_network_instance.id
+}
+data "ibm_is_cluster_network_subnet_reserved_ip" "is_cluster_network_subnet_reserved_ip_instance" {
+  cluster_network_id = ibm_is_cluster_network.is_cluster_network_instance.id
+  cluster_network_subnet_id =ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
+  cluster_network_subnet_reserved_ip_id = ibm_is_cluster_network_subnet_reserved_ip.is_cluster_network_subnet_reserved_ip_instance.cluster_network_subnet_reserved_ip_id
+
+}
+data "ibm_is_cluster_network_subnet_reserved_ips" "is_cluster_network_subnet_reserved_ips_instance" {
+  cluster_network_id = ibm_is_cluster_network.is_cluster_network_instance.id
+  cluster_network_subnet_id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
+}
+
+data "ibm_is_instance_template" "is_instance_template_instance" {
+  name = ibm_is_instance_template.is_instance_template.name
+}
+data "ibm_is_instance" "is_instance_instance" {
+  name = ibm_is_instance.is_instance.name
+}
+data "ibm_is_instances" "is_instances_instance" {
+}
+data "ibm_is_instance_cluster_network_attachment" "is_instance_cluster_network_attachment_instance" {
+  instance_id = ibm_is_instance.is_instance.id
+  instance_cluster_network_attachment_id = ibm_is_instance.is_instance.cluster_network_attachments.0.id
+}
+data "ibm_is_instance_cluster_network_attachments" "is_instance_cluster_network_attachments_instance" {
+  instance_id = ibm_is_instance.is_instance.id
+}
+data "ibm_is_instances" "is_instances_instance" {
+  # resource_group_id = var.is_instances_resource_group_id
+  name = var.is_instances_name
+  # cluster_network_id = var.is_instances_cluster_network_id
+  # cluster_network_crn = var.is_instances_cluster_network_crn
+  # cluster_network_name = var.is_instances_cluster_network_name
+  # dedicated_host_id = var.is_instances_dedicated_host_id
+  # dedicated_host_crn = var.is_instances_dedicated_host_crn
+  # dedicated_host_name = var.is_instances_dedicated_host_name
+  # placement_group_id = var.is_instances_placement_group_id
+  # placement_group_crn = var.is_instances_placement_group_crn
+  # placement_group_name = var.is_instances_placement_group_name
+  # reservation_id = var.is_instances_reservation_id
+  # reservation_crn = var.is_instances_reservation_crn
+  # reservation_name = var.is_instances_reservation_name
+  # vpc_id = var.is_instances_vpc_id
+  # vpc_crn = var.is_instances_vpc_crn
+  # vpc_name = var.is_instances_vpc_name
+}

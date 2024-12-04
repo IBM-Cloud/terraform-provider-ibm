@@ -141,6 +141,7 @@ func resourceIbmOnboardingRegistrationCreate(context context.Context, d *schema.
 	}
 
 	createRegistrationOptions := &partnercentersellv1.CreateRegistrationOptions{}
+
 	createRegistrationOptions.SetAccountID(d.Get("account_id").(string))
 	createRegistrationOptions.SetCompanyName(d.Get("company_name").(string))
 	primaryContactModel, err := ResourceIbmOnboardingRegistrationMapToPrimaryContact(d.Get("primary_contact.0").(map[string]interface{}))

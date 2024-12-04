@@ -53,7 +53,7 @@ func TestAccIbmSccProfileAttachmentAllArgs(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmSccProfileAttachmentExists("ibm_scc_profile_attachment.scc_profile_attachment_instance", conf),
 					resource.TestCheckResourceAttr(
-						"ibm_scc_profile_attachment.scc_profile_attachment_instance", "attachment_parameters.#", "5"),
+						"ibm_scc_profile_attachment.scc_profile_attachment_instance", "attachment_parameters.#", "6"),
 				),
 			},
 			resource.TestStep{
@@ -62,7 +62,7 @@ func TestAccIbmSccProfileAttachmentAllArgs(t *testing.T) {
 					testAccCheckIbmSccProfileAttachmentExists("ibm_scc_profile_attachment.scc_profile_attachment_instance", conf),
 					// verify if all attachment_parameters are stored in the state
 					resource.TestCheckResourceAttr(
-						"ibm_scc_profile_attachment.scc_profile_attachment_instance", "attachment_parameters.#", "5"),
+						"ibm_scc_profile_attachment.scc_profile_attachment_instance", "attachment_parameters.#", "6"),
 					// verify the changes to rule-7c5f6385-67e4-4edf-bec8-c722558b2dec
 					resource.TestCheckResourceAttr(
 						"ibm_scc_profile_attachment.scc_profile_attachment_instance", "attachment_parameters.0.assessment_id", "rule-7c5f6385-67e4-4edf-bec8-c722558b2dec"),
@@ -70,19 +70,19 @@ func TestAccIbmSccProfileAttachmentAllArgs(t *testing.T) {
 						"ibm_scc_profile_attachment.scc_profile_attachment_instance", "attachment_parameters.0.parameter_value", "23"),
 					// verify the changes to rule-9653d2c7-6290-4128-a5a3-65487ba40370
 					resource.TestCheckResourceAttr(
-						"ibm_scc_profile_attachment.scc_profile_attachment_instance", "attachment_parameters.1.assessment_id", "rule-9653d2c7-6290-4128-a5a3-65487ba40370"),
+						"ibm_scc_profile_attachment.scc_profile_attachment_instance", "attachment_parameters.2.assessment_id", "rule-9653d2c7-6290-4128-a5a3-65487ba40370"),
 					resource.TestCheckResourceAttr(
-						"ibm_scc_profile_attachment.scc_profile_attachment_instance", "attachment_parameters.1.parameter_value", "1234"),
+						"ibm_scc_profile_attachment.scc_profile_attachment_instance", "attachment_parameters.2.parameter_value", "1234"),
 					// verify the changes to rule-e16fcfea-fe21-4d30-a721-423611481fea
 					resource.TestCheckResourceAttr(
-						"ibm_scc_profile_attachment.scc_profile_attachment_instance", "attachment_parameters.2.assessment_id", "rule-e16fcfea-fe21-4d30-a721-423611481fea"),
+						"ibm_scc_profile_attachment.scc_profile_attachment_instance", "attachment_parameters.3.assessment_id", "rule-e16fcfea-fe21-4d30-a721-423611481fea"),
 					resource.TestCheckResourceAttr(
-						"ibm_scc_profile_attachment.scc_profile_attachment_instance", "attachment_parameters.2.parameter_value", "['1.2', '1.3']"),
+						"ibm_scc_profile_attachment.scc_profile_attachment_instance", "attachment_parameters.3.parameter_value", "['1.2', '1.3']"),
 					// verify the changes to rule-f1e80ee7-88d5-4bf2-b42f-c863bb24601c
 					resource.TestCheckResourceAttr(
-						"ibm_scc_profile_attachment.scc_profile_attachment_instance", "attachment_parameters.3.assessment_id", "rule-f1e80ee7-88d5-4bf2-b42f-c863bb24601c"),
+						"ibm_scc_profile_attachment.scc_profile_attachment_instance", "attachment_parameters.4.assessment_id", "rule-f1e80ee7-88d5-4bf2-b42f-c863bb24601c"),
 					resource.TestCheckResourceAttr(
-						"ibm_scc_profile_attachment.scc_profile_attachment_instance", "attachment_parameters.3.parameter_value", "4000"),
+						"ibm_scc_profile_attachment.scc_profile_attachment_instance", "attachment_parameters.4.parameter_value", "4000"),
 				),
 			},
 			resource.TestStep{
@@ -181,85 +181,93 @@ func testAccCheckIbmSccProfileAttachmentConfigBasic(instanceID string) string {
 
 func testAccCheckIbmSccProfileAttachmentConfig(instanceID string) string {
 	return fmt.Sprintf(`
-	locals {
-		scc_profiles_map = tomap(merge([
-			for i , cl in data.ibm_scc_profiles.scc_profiles.profiles :
-			{(cl.profile_name) = "${cl.id}"}  if cl.latest == true && cl.profile_type == "predefined"
-		]...))
-	}
+    locals {
+      scc_profiles_map = tomap(merge([
+        for i , cl in data.ibm_scc_profiles.scc_profiles.profiles :
+        {(cl.profile_name) = "${cl.id}"}  if cl.latest == true && cl.profile_type == "predefined"
+      ]...))
+    }
 
-	data "ibm_scc_profiles" "scc_profiles" {
-		instance_id = "%s"
-	}
+    data "ibm_scc_profiles" "scc_profiles" {
+      instance_id = "%s"
+    }
 
     data "ibm_iam_account_settings" "iam_account_settings" {
     }
 
     resource "ibm_scc_profile_attachment" "scc_profile_attachment_instance" {
-		instance_id = "%s"
-		profile_id = local.scc_profiles_map["CIS IBM Cloud Foundations Benchmark v1.1.0"]
-		name = "profile_attachment_name"
-		description = "scc_profile_attachment_description"
-			scope {
-				environment = "ibm-cloud"	
-				properties {
-					name = "scope_id"
-					value = data.ibm_iam_account_settings.iam_account_settings.account_id
-				}
-				properties {
-					name = "scope_type"
-					value = "account"
-				}
-			}
-			schedule = "every_30_days"
-			status = "disabled"
-			notifications {
-				enabled = false
-				controls {
-					failed_control_ids = []
-					threshold_limit = 14
-				}
-			}
-		attachment_parameters {
-			parameter_value = "['1.2', '1.3']"
-			assessment_id = "rule-e16fcfea-fe21-4d30-a721-423611481fea"
-        	assessment_type = "automated"
-			parameter_display_name = "IBM Cloud Internet Services TLS version"
-			parameter_name = "tls_version"
-			parameter_type = "string_list"
-		}
-		attachment_parameters {
-			parameter_value = "22"
-			assessment_id = "rule-f9137be8-2490-4afb-8cd5-a201cb167eb2"
-			assessment_type = "automated"
-			parameter_display_name = "Network ACL rule for allowed IPs to SSH port"
-			parameter_name = "ssh_port"
-			parameter_type = "numeric"
-		}
-		attachment_parameters {
-			parameter_value = "3389"
-			assessment_id = "rule-9653d2c7-6290-4128-a5a3-65487ba40370"
-			assessment_type = "automated"
-			parameter_display_name = "Security group rule RDP allow port number"
-			parameter_name = "rdp_port"
-			parameter_type = "numeric"
-		}
-		attachment_parameters {
-			parameter_value = "22"
-			assessment_id = "rule-7c5f6385-67e4-4edf-bec8-c722558b2dec"
-			assessment_type = "automated"
-			parameter_display_name = "Security group rule SSH allow port number"
-			parameter_name = "ssh_port"
-			parameter_type = "numeric"
-		}
-		attachment_parameters {
-			parameter_value = "3389"
-			assessment_id = "rule-f1e80ee7-88d5-4bf2-b42f-c863bb24601c"
-			assessment_type = "automated"
-			parameter_display_name = "Disallowed IPs for ingress to RDP port"
-			parameter_name = "rdp_port"
-			parameter_type = "numeric"
-		}
+      instance_id = "%s"
+      profile_id = local.scc_profiles_map["CIS IBM Cloud Foundations Benchmark v1.1.0"]
+      name = "profile_attachment_name"
+      description = "scc_profile_attachment_description"
+        scope {
+          environment = "ibm-cloud"	
+          properties {
+            name = "scope_id"
+            value = data.ibm_iam_account_settings.iam_account_settings.account_id
+          }
+          properties {
+            name = "scope_type"
+            value = "account"
+          }
+        }
+      schedule = "every_30_days"
+      status = "disabled"
+      notifications {
+        enabled = false
+        controls {
+          failed_control_ids = []
+          threshold_limit = 14
+        }
+      }
+      attachment_parameters {
+        parameter_value = "['1.2', '1.3']"
+        assessment_id = "rule-e16fcfea-fe21-4d30-a721-423611481fea"
+        assessment_type = "automated"
+        parameter_display_name = "IBM Cloud Internet Services TLS version"
+        parameter_name = "tls_version"
+        parameter_type = "string_list"
+      }
+      attachment_parameters {
+        parameter_value = "22"
+        assessment_id = "rule-f9137be8-2490-4afb-8cd5-a201cb167eb2"
+        assessment_type = "automated"
+        parameter_display_name = "Network ACL rule for allowed IPs to SSH port"
+        parameter_name = "ssh_port"
+        parameter_type = "numeric"
+      }
+      attachment_parameters {
+        parameter_value = "3389"
+        assessment_id = "rule-9653d2c7-6290-4128-a5a3-65487ba40370"
+        assessment_type = "automated"
+        parameter_display_name = "Security group rule RDP allow port number"
+        parameter_name = "rdp_port"
+        parameter_type = "numeric"
+      }
+      attachment_parameters {
+        parameter_value = "22"
+        assessment_id = "rule-7c5f6385-67e4-4edf-bec8-c722558b2dec"
+        assessment_type = "automated"
+        parameter_display_name = "Security group rule SSH allow port number"
+        parameter_name = "ssh_port"
+        parameter_type = "numeric"
+      }
+      attachment_parameters {
+        parameter_value = "3389"
+        assessment_id = "rule-f1e80ee7-88d5-4bf2-b42f-c863bb24601c"
+        assessment_type = "automated"
+        parameter_display_name = "Disallowed IPs for ingress to RDP port"
+        parameter_name = "rdp_port"
+        parameter_type = "numeric"
+      }
+      attachment_parameters {
+        parameter_value = "['default']"
+        assessment_id = "rule-96527f89-1867-4581-b923-1400e04661e0"
+        assessment_type = "automated"
+        parameter_display_name = "Exclude the default security groups"
+        parameter_name = "exclude_default_security_groups"
+        parameter_type = "string_list"
+      }
 	}
 	`, instanceID, instanceID)
 }
@@ -267,16 +275,16 @@ func testAccCheckIbmSccProfileAttachmentConfig(instanceID string) string {
 // Returns a terraform change where the attachment_parameters are modified slightly.
 func testAccCheckIbmSccProfileAttachmentConfigChange(instanceID string) string {
 	return fmt.Sprintf(`
-	locals {
-		scc_profiles_map = tomap(merge([
-			for i , cl in data.ibm_scc_profiles.scc_profiles.profiles :
-			{(cl.profile_name) = "${cl.id}"}  if cl.latest == true && cl.profile_type == "predefined"
-		]...))
-	}
+    locals {
+      scc_profiles_map = tomap(merge([
+        for i , cl in data.ibm_scc_profiles.scc_profiles.profiles :
+        {(cl.profile_name) = "${cl.id}"}  if cl.latest == true && cl.profile_type == "predefined"
+      ]...))
+    }
 
-	data "ibm_scc_profiles" "scc_profiles" {
-		instance_id = "%s"
-	}
+    data "ibm_scc_profiles" "scc_profiles" {
+      instance_id = "%s"
+    }
 
     data "ibm_iam_account_settings" "iam_account_settings" {
     }
@@ -297,19 +305,19 @@ func testAccCheckIbmSccProfileAttachmentConfigChange(instanceID string) string {
 					value = "account"
 				}
 			}
-			schedule = "every_30_days"
-			status = "disabled"
-			notifications {
-				enabled = false
-				controls {
-					failed_control_ids = []
-					threshold_limit = 14
-				}
-			}
+    schedule = "every_30_days"
+    status = "disabled"
+    notifications {
+      enabled = false
+      controls {
+        failed_control_ids = []
+        threshold_limit = 14
+      }
+    }
 		attachment_parameters {
 			parameter_value = "['1.2', '1.3']"
 			assessment_id = "rule-e16fcfea-fe21-4d30-a721-423611481fea"
-        	assessment_type = "automated"
+      assessment_type = "automated"
 			parameter_display_name = "IBM Cloud Internet Services TLS version"
 			parameter_name = "tls_version"
 			parameter_type = "string_list"
@@ -346,6 +354,14 @@ func testAccCheckIbmSccProfileAttachmentConfigChange(instanceID string) string {
 			parameter_name = "rdp_port"
 			parameter_type = "numeric"
 		}
+    attachment_parameters {
+      parameter_value = "['default']"
+      assessment_id = "rule-96527f89-1867-4581-b923-1400e04661e0"
+      assessment_type = "automated"
+      parameter_display_name = "Exclude the default security groups"
+      parameter_name = "exclude_default_security_groups"
+      parameter_type = "string_list"
+    }
 	}
 	`, instanceID, instanceID)
 }

@@ -3,14 +3,14 @@ layout: "ibm"
 page_title: "IBM : ibm_mqcloud_queue_manager_options"
 description: |-
   Get information about mqcloud_queue_manager_options
-subcategory: "MQ on Cloud"
+subcategory: "MQaaS"
 ---
 
 # ibm_mqcloud_queue_manager_options
 
 Provides a read-only data source to retrieve information about mqcloud_queue_manager_options. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
 
-> **Note:** The MQ on Cloud Terraform provider access is restricted to users of the reserved deployment plan.
+> **Note:** The MQaaS Terraform provider access is restricted to users of the reserved deployment, reserved capacity, and reserved capacity subscription plans.
 
 ## Example Usage
 
@@ -24,7 +24,7 @@ data "ibm_mqcloud_queue_manager_options" "mqcloud_queue_manager_options" {
 
 You can specify the following arguments for this data source.
 
-* `service_instance_guid` - (Required, Forces new resource, String) The GUID that uniquely identifies the MQ on Cloud service instance.
+* `service_instance_guid` - (Required, Forces new resource, String) The GUID that uniquely identifies the MQaaS service instance.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/`.
 
 ## Attribute Reference

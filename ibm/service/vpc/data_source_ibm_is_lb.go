@@ -402,7 +402,7 @@ func lbGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 			if lb.Logging != nil && lb.Logging.Datapath != nil {
 				d.Set(isLBLogging, *lb.Logging.Datapath.Active)
 			}
-			if *lb.IsPublic {
+			if lb.IsPublic != nil && *lb.IsPublic {
 				d.Set(isLBType, "public")
 			} else if lb.IsPrivatePath != nil && *lb.IsPrivatePath {
 				d.Set(isLBType, "private_path")

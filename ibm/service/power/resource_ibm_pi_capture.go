@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	st "github.com/IBM-Cloud/power-go-client/clients/instance"
@@ -196,7 +197,10 @@ func resourceIBMPICaptureCreate(ctx context.Context, d *schema.ResourceData, met
 		imageClient := st.NewIBMPIImageClient(ctx, sess, cloudInstanceID)
 		imagedata, err := imageClient.Get(capturename)
 		if err != nil {
-			log.Printf("Error on get of ibm pi capture (%s) while applying pi_user_tags: %s", capturename, err)
+			if strings.Contains(err.Error(), NotFound) {
+				d.SetId("")
+			}
+			return diag.Errorf("Error on get of ibm pi capture (%s) while applying pi_user_tags: %s", capturename, err)
 		}
 		if imagedata.Crn != "" {
 			oldList, newList := d.GetChange(Arg_UserTags)

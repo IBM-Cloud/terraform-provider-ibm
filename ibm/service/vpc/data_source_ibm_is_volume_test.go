@@ -49,6 +49,60 @@ func TestAccIBMISVolumeDatasource_basic(t *testing.T) {
 		},
 	})
 }
+func TestAccIBMISVolumeDatasourceIdnetifier_basic(t *testing.T) {
+	name := fmt.Sprintf("tf-vol-%d", acctest.RandIntRange(10, 100))
+	zone := acc.ISZoneName
+	resName := "data.ibm_is_volume.testacc_dsvol"
+	resNameId := "data.ibm_is_volume.testacc_dsvolidentifier"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISVolumeDataSourceWithIdentifierConfig(name, zone),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						resName, "name", name),
+					resource.TestCheckResourceAttr(
+						resName, "zone", zone),
+					resource.TestCheckResourceAttrSet(
+						resName, "active"),
+					resource.TestCheckResourceAttrSet(
+						resName, "attachment_state"),
+					resource.TestCheckResourceAttrSet(
+						resName, "bandwidth"),
+					resource.TestCheckResourceAttrSet(
+						resName, "busy"),
+					resource.TestCheckResourceAttrSet(
+						resName, "created_at"),
+					resource.TestCheckResourceAttrSet(
+						resName, "resource_group"),
+					resource.TestCheckResourceAttrSet(
+						resName, "profile"),
+					resource.TestCheckResourceAttr(
+						resNameId, "name", name),
+					resource.TestCheckResourceAttr(
+						resNameId, "zone", zone),
+					resource.TestCheckResourceAttrSet(
+						resNameId, "active"),
+					resource.TestCheckResourceAttrSet(
+						resNameId, "attachment_state"),
+					resource.TestCheckResourceAttrSet(
+						resNameId, "bandwidth"),
+					resource.TestCheckResourceAttrSet(
+						resNameId, "busy"),
+					resource.TestCheckResourceAttrSet(
+						resNameId, "created_at"),
+					resource.TestCheckResourceAttrSet(
+						resNameId, "resource_group"),
+					resource.TestCheckResourceAttrSet(
+						resNameId, "profile"),
+				),
+			},
+		},
+	})
+}
 func TestAccIBMISVolumeDatasource_Sdp(t *testing.T) {
 	name := fmt.Sprintf("tf-vol-%d", acctest.RandIntRange(10, 100))
 	zone := "eu-gb-1"
@@ -192,6 +246,22 @@ func testAccCheckIBMISVolumeDataSourceConfig(name, zone string) string {
 	data "ibm_is_volume" "testacc_dsvol" {
 		name = ibm_is_volume.testacc_volume.name
 	}`, name, zone)
+}
+func testAccCheckIBMISVolumeDataSourceWithIdentifierConfig(name, zone string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_volume" "testacc_volume"{
+		name = "%s"
+		profile = "10iops-tier"
+		zone = "%s"
+	}
+	data "ibm_is_volume" "testacc_dsvol" {
+		name = ibm_is_volume.testacc_volume.name
+	}
+	data "ibm_is_volume" "testacc_dsvolidentifier" {
+		identifier = ibm_is_volume.testacc_volume.id
+	}
+		
+	`, name, zone)
 }
 func testAccCheckIBMISVolumeDataSourceSdpConfig(name, zone string) string {
 	return fmt.Sprintf(`

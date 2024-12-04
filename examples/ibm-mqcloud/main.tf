@@ -5,24 +5,24 @@ provider "ibm" {
 // Provision mqcloud_queue_manager resource instance
 resource "ibm_mqcloud_queue_manager" "mqcloud_queue_manager_instance" {
   service_instance_guid = var.mqcloud_queue_manager_service_instance_guid
-  name                  = var.mqcloud_queue_manager_name
-  display_name          = var.mqcloud_queue_manager_display_name
-  location              = var.mqcloud_queue_manager_location
-  size                  = var.mqcloud_queue_manager_size
-  version               = var.mqcloud_queue_manager_version
+  name = var.mqcloud_queue_manager_name
+  display_name = var.mqcloud_queue_manager_display_name
+  location = var.mqcloud_queue_manager_location
+  size = var.mqcloud_queue_manager_size
+  version = var.mqcloud_queue_manager_version
 }
 
 // Provision mqcloud_application resource instance
 resource "ibm_mqcloud_application" "mqcloud_application_instance" {
   service_instance_guid = var.mqcloud_application_service_instance_guid
-  name                  = var.mqcloud_application_name
+  name = var.mqcloud_application_name
 }
 
 // Provision mqcloud_user resource instance
 resource "ibm_mqcloud_user" "mqcloud_user_instance" {
   service_instance_guid = var.mqcloud_user_service_instance_guid
-  name                  = var.mqcloud_user_name
-  email                 = var.mqcloud_user_email
+  name = var.mqcloud_user_name
+  email = var.mqcloud_user_email
 }
 
 // Provision mqcloud_keystore_certificate resource instance
@@ -30,6 +30,8 @@ resource "ibm_mqcloud_keystore_certificate" "mqcloud_keystore_certificate_instan
   service_instance_guid = var.mqcloud_keystore_certificate_service_instance_guid
   queue_manager_id      = var.mqcloud_keystore_certificate_queue_manager_id
   label                 = var.mqcloud_keystore_certificate_label
+  certificate_file      = var.mqcloud_keystore_certificate_certificate_file
+
   certificate_file      = var.mqcloud_keystore_certificate_certificate_file
 
   config {
@@ -44,9 +46,17 @@ resource "ibm_mqcloud_keystore_certificate" "mqcloud_keystore_certificate_instan
 // Provision mqcloud_truststore_certificate resource instance
 resource "ibm_mqcloud_truststore_certificate" "mqcloud_truststore_certificate_instance" {
   service_instance_guid = var.mqcloud_truststore_certificate_service_instance_guid
-  queue_manager_id      = var.mqcloud_truststore_certificate_queue_manager_id
-  label                 = var.mqcloud_truststore_certificate_label
-  certificate_file      = var.mqcloud_truststore_certificate_certificate_file
+  queue_manager_id = var.mqcloud_truststore_certificate_queue_manager_id
+  label = var.mqcloud_truststore_certificate_label
+  certificate_file = var.mqcloud_truststore_certificate_certificate_file
+}
+
+// Provision mqcloud_virtual_private_endpoint_gateway resource instance
+resource "ibm_mqcloud_virtual_private_endpoint_gateway" "mqcloud_virtual_private_endpoint_gateway_instance" {
+  service_instance_guid = var.mqcloud_virtual_private_endpoint_gateway_service_instance_guid
+  trusted_profile = var.mqcloud_virtual_private_endpoint_gateway_trusted_profile
+  name = var.mqcloud_virtual_private_endpoint_gateway_name
+  target_crn = var.mqcloud_virtual_private_endpoint_gateway_target_crn
 }
 
 // Data source is not linked to a resource instance
@@ -117,5 +127,27 @@ data "ibm_mqcloud_keystore_certificate" "mqcloud_keystore_certificate_instance" 
   service_instance_guid = var.data_mqcloud_keystore_certificate_service_instance_guid
   queue_manager_id = var.data_mqcloud_keystore_certificate_queue_manager_id
   label = var.data_mqcloud_keystore_certificate_label
+}
+*/
+
+// Data source is not linked to a resource instance
+// Uncomment if an existing data source instance exists
+/*
+// Create mqcloud_virtual_private_endpoint_gateways data source
+data "ibm_mqcloud_virtual_private_endpoint_gateways" "mqcloud_virtual_private_endpoint_gateways_instance" {
+  service_instance_guid = var.mqcloud_virtual_private_endpoint_gateways_service_instance_guid
+  trusted_profile = var.mqcloud_virtual_private_endpoint_gateways_trusted_profile
+  name = var.mqcloud_virtual_private_endpoint_gateways_name
+}
+*/
+
+// Data source is not linked to a resource instance
+// Uncomment if an existing data source instance exists
+/*
+// Create mqcloud_virtual_private_endpoint_gateway data source
+data "ibm_mqcloud_virtual_private_endpoint_gateway" "mqcloud_virtual_private_endpoint_gateway_instance" {
+  service_instance_guid = var.data_mqcloud_virtual_private_endpoint_gateway_service_instance_guid
+  virtual_private_endpoint_gateway_guid = var.data_mqcloud_virtual_private_endpoint_gateway_virtual_private_endpoint_gateway_guid
+  trusted_profile = var.data_mqcloud_virtual_private_endpoint_gateway_trusted_profile
 }
 */
