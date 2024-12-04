@@ -13,10 +13,10 @@ Provides a read-only data source to retrieve information about a ShareSnapshotCo
 ## Example Usage
 
 ```hcl
-data "ibm_is_share_snapshots" "is_share_snapshots" {
-	name = ibm_is_share_snapshot.is_share_snapshot_instance.name
-	share_id = ibm_is_share_snapshot.is_share_snapshot_instance.share_id
-	sort = "name"
+data "ibm_is_share_snapshots" "example" {
+	share = ibm_is_share_snapshot.is_share_snapshot_instance.share_id
+}
+data "ibm_is_share_snapshots" "example1" {
 }
 ```
 
