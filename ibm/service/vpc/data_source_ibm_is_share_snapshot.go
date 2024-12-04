@@ -25,12 +25,12 @@ func DataSourceIBMIsShareSnapshot() *schema.Resource {
 		ReadContext: dataSourceIBMIsShareSnapshotRead,
 
 		Schema: map[string]*schema.Schema{
-			"share_id": &schema.Schema{
+			"share": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The file share identifier.",
 			},
-			"is_share_snapshot_id": &schema.Schema{
+			"share_snapshot": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The share snapshot identifier.",
@@ -246,8 +246,8 @@ func dataSourceIBMIsShareSnapshotRead(context context.Context, d *schema.Resourc
 
 	getShareSnapshotOptions := &vpcv1.GetShareSnapshotOptions{}
 
-	getShareSnapshotOptions.SetShareID(d.Get("share_id").(string))
-	getShareSnapshotOptions.SetID(d.Get("is_share_snapshot_id").(string))
+	getShareSnapshotOptions.SetShareID(d.Get("share").(string))
+	getShareSnapshotOptions.SetID(d.Get("share_snapshot").(string))
 
 	shareSnapshot, _, err := vpcClient.GetShareSnapshotWithContext(context, getShareSnapshotOptions)
 	if err != nil {

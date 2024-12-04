@@ -32,8 +32,8 @@ func TestAccIBMIsShareSnapshotDataSourceBasic(t *testing.T) {
 				Config: testAccCheckIBMIsShareSnapshotDataSourceConfigBasic(shareSnapshotShareID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_is_share_snapshot.is_share_snapshot_instance", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_share_snapshot.is_share_snapshot_instance", "share_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_share_snapshot.is_share_snapshot_instance", "is_share_snapshot_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_share_snapshot.is_share_snapshot_instance", "share"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_share_snapshot.is_share_snapshot_instance", "share_snapshot"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_share_snapshot.is_share_snapshot_instance", "created_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_share_snapshot.is_share_snapshot_instance", "crn"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_share_snapshot.is_share_snapshot_instance", "fingerprint"),
@@ -63,8 +63,8 @@ func TestAccIBMIsShareSnapshotDataSourceAllArgs(t *testing.T) {
 				Config: testAccCheckIBMIsShareSnapshotDataSourceConfig(shareSnapshotShareID, shareSnapshotName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_is_share_snapshot.is_share_snapshot_instance", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_share_snapshot.is_share_snapshot_instance", "share_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_share_snapshot.is_share_snapshot_instance", "is_share_snapshot_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_share_snapshot.is_share_snapshot_instance", "share"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_share_snapshot.is_share_snapshot_instance", "share_snapshot"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_share_snapshot.is_share_snapshot_instance", "backup_policy_plan.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_share_snapshot.is_share_snapshot_instance", "captured_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_share_snapshot.is_share_snapshot_instance", "created_at"),
@@ -92,12 +92,12 @@ func TestAccIBMIsShareSnapshotDataSourceAllArgs(t *testing.T) {
 func testAccCheckIBMIsShareSnapshotDataSourceConfigBasic(shareSnapshotShareID string) string {
 	return fmt.Sprintf(`
 		resource "ibm_is_share_snapshot" "is_share_snapshot_instance" {
-			share_id = "%s"
+			share = "%s"
 		}
 
 		data "ibm_is_share_snapshot" "is_share_snapshot_instance" {
-			share_id = ibm_is_share_snapshot.is_share_snapshot_instance.share_id
-			is_share_snapshot_id = ibm_is_share_snapshot.is_share_snapshot_instance.is_share_snapshot_id
+			share = ibm_is_share_snapshot.is_share_snapshot_instance.share
+			share_snapshot = ibm_is_share_snapshot.is_share_snapshot_instance.share_snapshot
 		}
 	`, shareSnapshotShareID)
 }
@@ -105,14 +105,14 @@ func testAccCheckIBMIsShareSnapshotDataSourceConfigBasic(shareSnapshotShareID st
 func testAccCheckIBMIsShareSnapshotDataSourceConfig(shareSnapshotShareID string, shareSnapshotName string) string {
 	return fmt.Sprintf(`
 		resource "ibm_is_share_snapshot" "is_share_snapshot_instance" {
-			share_id = "%s"
+			share = "%s"
 			name = "%s"
 			user_tags = "FIXME"
 		}
 
 		data "ibm_is_share_snapshot" "is_share_snapshot_instance" {
-			share_id = ibm_is_share_snapshot.is_share_snapshot_instance.share_id
-			is_share_snapshot_id = ibm_is_share_snapshot.is_share_snapshot_instance.is_share_snapshot_id
+			share = ibm_is_share_snapshot.is_share_snapshot_instance.share
+			share_snapshot = ibm_is_share_snapshot.is_share_snapshot_instance.share_snapshot
 		}
 	`, shareSnapshotShareID, shareSnapshotName)
 }
