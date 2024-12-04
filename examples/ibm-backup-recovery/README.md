@@ -37,6 +37,7 @@ The following data sources are supported:
 * ibm_backup_recovery_search_protected_objects
 * ibm_backup_recovery_source_registrations
 * ibm_backup_recovery_source_registration
+* ibm_backup_recovery_protection_sources
 
 
 ## Usage
@@ -1324,6 +1325,88 @@ data "ibm_backup_recovery_download_indexed_files" "backup_recovery_download_inde
 | start_offset | Specifies the start offset of file chunk to be downloaded. | `number` | false |
 | length | Specifies the length of bytes to download. This can not be greater than 8MB (8388608 byets). | `number` | false |
 
+### Data source: ibm_backup_recovery_protection_sources
+
+```hcl
+data "ibm_backup_recovery_protection_sources" "backup_recovery_protection_sources_instance" {
+  x_ibm_tenant_id = var.backup_recovery_protection_sources_x_ibm_tenant_id
+  exclude_office365_types = var.backup_recovery_protection_sources_exclude_office365_types
+  get_teams_channels = var.backup_recovery_protection_sources_get_teams_channels
+  after_cursor_entity_id = var.backup_recovery_protection_sources_after_cursor_entity_id
+  before_cursor_entity_id = var.backup_recovery_protection_sources_before_cursor_entity_id
+  node_id = var.backup_recovery_protection_sources_node_id
+  page_size = var.backup_recovery_protection_sources_page_size
+  has_valid_mailbox = var.backup_recovery_protection_sources_has_valid_mailbox
+  has_valid_onedrive = var.backup_recovery_protection_sources_has_valid_onedrive
+  is_security_group = var.backup_recovery_protection_sources_is_security_group
+  backup_recovery_protection_sources_id = var.backup_recovery_protection_sources_backup_recovery_protection_sources_id
+  num_levels = var.backup_recovery_protection_sources_num_levels
+  exclude_types = var.backup_recovery_protection_sources_exclude_types
+  exclude_aws_types = var.backup_recovery_protection_sources_exclude_aws_types
+  exclude_kubernetes_types = var.backup_recovery_protection_sources_exclude_kubernetes_types
+  include_datastores = var.backup_recovery_protection_sources_include_datastores
+  include_networks = var.backup_recovery_protection_sources_include_networks
+  include_vm_folders = var.backup_recovery_protection_sources_include_vm_folders
+  include_sfdc_fields = var.backup_recovery_protection_sources_include_sfdc_fields
+  include_system_v_apps = var.backup_recovery_protection_sources_include_system_v_apps
+  environments = var.backup_recovery_protection_sources_environments
+  environment = var.backup_recovery_protection_sources_environment
+  include_entity_permission_info = var.backup_recovery_protection_sources_include_entity_permission_info
+  sids = var.backup_recovery_protection_sources_sids
+  include_source_credentials = var.backup_recovery_protection_sources_include_source_credentials
+  encryption_key = var.backup_recovery_protection_sources_encryption_key
+  include_object_protection_info = var.backup_recovery_protection_sources_include_object_protection_info
+  prune_non_critical_info = var.backup_recovery_protection_sources_prune_non_critical_info
+  prune_aggregation_info = var.backup_recovery_protection_sources_prune_aggregation_info
+  request_initiator_type = var.backup_recovery_protection_sources_request_initiator_type
+  use_cached_data = var.backup_recovery_protection_sources_use_cached_data
+  all_under_hierarchy = var.backup_recovery_protection_sources_all_under_hierarchy
+}
+```
+
+#### Inputs
+
+| Name | Description | Type | Required |
+|------|-------------|------|---------|
+| x_ibm_tenant_id | Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified. | `string` | true |
+| exclude_office365_types | Specifies the Object types to be filtered out for Office 365 that match the passed in types such as 'kDomain', 'kOutlook', 'kMailbox', etc. For example, set this parameter to 'kMailbox' to exclude Mailbox Objects from being returned. | `list(string)` | false |
+| get_teams_channels | Filter policies by a list of policy ids. | `bool` | false |
+| after_cursor_entity_id | Specifies the entity id starting from which the items are to be returned. | `number` | false |
+| before_cursor_entity_id | Specifies the entity id upto which the items are to be returned. | `number` | false |
+| node_id | Specifies the entity id for the Node at any level within the Source entity hierarchy whose children are to be paginated. | `number` | false |
+| page_size | Specifies the maximum number of entities to be returned within the page. | `number` | false |
+| has_valid_mailbox | If set to true, users with valid mailbox will be returned. | `bool` | false |
+| has_valid_onedrive | If set to true, users with valid onedrive will be returned. | `bool` | false |
+| is_security_group | If set to true, Groups which are security enabled will be returned. | `bool` | false |
+| backup_recovery_protection_sources_id | Return the Object subtree for the passed in Protection Source id. | `number` | false |
+| num_levels | Specifies the expected number of levels from the root node to be returned in the entity hierarchy response. | `number` | false |
+| exclude_types | Filter out the Object types (and their subtrees) that match the passed in types such as 'kVCenter', 'kFolder', 'kDatacenter', 'kComputeResource', 'kResourcePool', 'kDatastore', 'kHostSystem', 'kVirtualMachine', etc. For example, set this parameter to 'kResourcePool' to exclude Resource Pool Objects from being returned. | `list(string)` | false |
+| exclude_aws_types | Specifies the Object types to be filtered out for AWS that match the passed in types such as 'kEC2Instance', 'kRDSInstance', 'kAuroraCluster', 'kTag', 'kAuroraTag', 'kRDSTag', kS3Bucket, kS3Tag. For example, set this parameter to 'kEC2Instance' to exclude ec2 instance from being returned. | `list(string)` | false |
+| exclude_kubernetes_types | Specifies the Object types to be filtered out for Kubernetes that match the passed in types such as 'kService'. For example, set this parameter to 'kService' to exclude services from being returned. | `list(string)` | false |
+| include_datastores | Set this parameter to true to also return kDatastore object types found in the Source in addition to their Object subtrees. By default, datastores are not returned. | `bool` | false |
+| include_networks | Set this parameter to true to also return kNetwork object types found in the Source in addition to their Object subtrees. By default, network objects are not returned. | `bool` | false |
+| include_vm_folders | Set this parameter to true to also return kVMFolder object types found in the Source in addition to their Object subtrees. By default, VM folder objects are not returned. | `bool` | false |
+| include_sfdc_fields | Set this parameter to true to also return fields of the object found in the Source in addition to their Object subtrees. By default, Sfdc object fields are not returned. | `bool` | false |
+| include_system_v_apps | Set this parameter to true to also return system VApp object types found in the Source in addition to their Object subtrees. By default, VM folder objects are not returned. | `bool` | false |
+| environments | Return only Protection Sources that match the passed in environment type such as 'kVMware', 'kSQL', 'kView' 'kPhysical', 'kPuppeteer', 'kPure', 'kNetapp', 'kGenericNas', 'kHyperV', 'kAcropolis', or 'kAzure'. For example, set this parameter to 'kVMware' to only return the Sources (and their Object subtrees) found in the 'kVMware' (VMware vCenter Server) environment. | `list(string)` | false |
+| environment | This field is deprecated. Use environments instead. | `string` | false |
+| include_entity_permission_info | If specified, then a list of entites with permissions assigned to them are returned. | `bool` | false |
+| sids | Filter the object subtree for the sids given in the list. | `list(string)` | false |
+| include_source_credentials | If specified, then crednetial for the registered sources will be included. Credential is first encrypted with internal key and then reencrypted with user supplied 'encryption_key'. | `bool` | false |
+| encryption_key | Key to be used to encrypt the source credential. If include_source_credentials is set to true this key must be specified. | `string` | false |
+| include_object_protection_info | If specified, the object protection of entities(if any) will be returned. | `bool` | false |
+| prune_non_critical_info | Specifies whether to prune non critical info within entities. Incase of VMs, virtual disk information will be pruned. Incase of Office365, metadata about user entities will be pruned. This can be used to limit the size of the response by caller. | `bool` | false |
+| prune_aggregation_info | Specifies whether to prune the aggregation information about the number of entities protected/unprotected. | `bool` | false |
+| request_initiator_type | Specifies the type of the request. Possible values are UIUser and UIAuto, which means the request is triggered by user or is an auto refresh request. Services like magneto will use this to determine the priority of the requests, so that it can more intelligently handle overload situations by prioritizing higher priority requests. | `string` | false |
+| use_cached_data | Specifies whether we can serve the GET request to the read replica cache. setting this to true ensures that the API request is served to the read replica. setting this to false will serve the request to the master. | `bool` | false |
+| all_under_hierarchy | AllUnderHierarchy specifies if objects of all the tenants under the hierarchy of the logged in user's organization should be returned. | `bool` | false |
+
+#### Outputs
+
+| Name | Description |
+|------|-------------|
+| protection_sources | Specifies list of protection sources. |
+
 ## Assumptions
 
 1. End user has connector endpoint URL
@@ -1349,7 +1432,7 @@ OR
 }
 ```
 
-### Resources with Incomplete CRUD Operations
+### Resources with incomplete CRUD operations
 This service includes certain resources that do not have fully implemented CRUD (Create, Read, Update, Delete) operations due to limitations in the underlying APIs. Specifically:
 
 #### Protection Group Run:
@@ -1379,6 +1462,37 @@ Some resources in this service do not support update or delete operations due to
 
 **Important:** When managing resources that lack complete CRUD operations, users should exercise caution and consider the limitations described above. Manual intervention may be required to manage these resources in the backend if updates or deletions are necessary.**
 
+
+### Import
+Backup and recovery resources can be imported by using the id. The ID is formed using tenantID and resourceId.
+`id = <tenantId>::<resourceId>`. 
+
+#### Syntax
+```
+import {
+	to = <ibm_backup_recovery_resource>
+	id = "<tenantId>:<resourceId>"
+}
+```
+
+#### Example
+```
+resource "ibm_backup_recovery_data_source_connection" "baas_data_source_connection_instance" {
+	x_ibm_tenant_id = "jhxqx715r9/"
+	connection_name = "terraform-conn-1"
+}
+
+import {
+	to = ibm_backup_recovery_data_source_connection.baas_data_source_connection_instance
+	id = "jhxqx715r9/::3309023926479362560"
+}
+```
+#### List of resources that support import:
+- ibm_backup_recovery_data_source_connection
+- ibm_backup_recovery_protection_group
+- ibm_backup_recovery_protection_policy
+- ibm_backup_recovery
+- ibm_backup_recovery_source_registration
 
 ## Requirements
 
