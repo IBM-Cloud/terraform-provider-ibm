@@ -382,117 +382,123 @@ func dataSourceIBMDb2InstanceRead(d *schema.ResourceData, meta interface{}) erro
 	d.Set("instance_type", instance.Parameters["instance_type"])
 	d.Set("backup_location", instance.Parameters["backup_location"])
 
-	//appending whitelist ips config
 	db2saasClient, err := meta.(conns.ClientSession).Db2saasV1()
 	if err != nil {
 		log.Printf("[ERROR] Error retrieving db2saas client: %s", err)
 	}
 
-	getDb2SaasWhitelistOptions := &db2saasv1.GetDb2SaasWhitelistOptions{}
+	//appending whitelist ips config
+	if _, ok := d.GetOk("whitelist_config"); ok {
+		getDb2SaasWhitelistOptions := &db2saasv1.GetDb2SaasWhitelistOptions{}
 
-	getDb2SaasWhitelistOptions.SetXDeploymentID(d.Get("x_deployment_id").(string))
+		getDb2SaasWhitelistOptions.SetXDeploymentID(d.Get("x_deployment_id").(string))
 
-	successGetWhitelistIPs, _, err := db2saasClient.GetDb2SaasWhitelistWithContext(context.Background(), getDb2SaasWhitelistOptions)
-	if err != nil {
-		log.Printf("[ERROR] Error retrieving db2saas whitelist: %s", err)
-	}
-
-	d.SetId(dataSourceIbmDb2SaasWhitelistID(d))
-
-	ipAddresses := []map[string]interface{}{}
-	for _, ipAddressesItem := range successGetWhitelistIPs.IpAddresses {
-		ipAddressesItemMap, err := DataSourceIbmDb2SaasWhitelistIpAddressToMap(&ipAddressesItem) // #nosec G601
+		successGetWhitelistIPs, _, err := db2saasClient.GetDb2SaasWhitelistWithContext(context.Background(), getDb2SaasWhitelistOptions)
 		if err != nil {
-			log.Printf("[ERROR] Error converting ip addresses to map: %s", err)
+			log.Printf("[ERROR] Error retrieving db2saas whitelist: %s", err)
 		}
-		ipAddresses = append(ipAddresses, ipAddressesItemMap)
-	}
-	if err = d.Set("ip_addresses", ipAddresses); err != nil {
-		return fmt.Errorf("[ERROR] Error setting instance ip addresses: %s", err)
+
+		d.SetId(dataSourceIbmDb2SaasWhitelistID(d))
+
+		ipAddresses := []map[string]interface{}{}
+		for _, ipAddressesItem := range successGetWhitelistIPs.IpAddresses {
+			ipAddressesItemMap, err := DataSourceIbmDb2SaasWhitelistIpAddressToMap(&ipAddressesItem) // #nosec G601
+			if err != nil {
+				log.Printf("[ERROR] Error converting ip addresses to map: %s", err)
+			}
+			ipAddresses = append(ipAddresses, ipAddressesItemMap)
+		}
+		if err = d.Set("ip_addresses", ipAddresses); err != nil {
+			return fmt.Errorf("[ERROR] Error setting instance ip addresses: %s", err)
+		}
 	}
 
 	//append autoscale config
-	getDb2SaasAutoscaleOptions := &db2saasv1.GetDb2SaasAutoscaleOptions{}
+	if _, ok := d.GetOk("autoscaling_config"); ok {
+		getDb2SaasAutoscaleOptions := &db2saasv1.GetDb2SaasAutoscaleOptions{}
 
-	getDb2SaasAutoscaleOptions.SetXDeploymentID(d.Get("x_deployment_id").(string))
+		getDb2SaasAutoscaleOptions.SetXDeploymentID(d.Get("x_deployment_id").(string))
 
-	successAutoScaling, _, err := db2saasClient.GetDb2SaasAutoscaleWithContext(context.Background(), getDb2SaasAutoscaleOptions)
-	if err != nil {
-		log.Printf("[ERROR] Error retrieving db2saas autoscale: %s", err)
-	}
+		successAutoScaling, _, err := db2saasClient.GetDb2SaasAutoscaleWithContext(context.Background(), getDb2SaasAutoscaleOptions)
+		if err != nil {
+			log.Printf("[ERROR] Error retrieving db2saas autoscale: %s", err)
+		}
 
-	d.SetId(dataSourceIbmDb2SaasAutoscaleID(d))
+		d.SetId(dataSourceIbmDb2SaasAutoscaleID(d))
 
-	if err = d.Set("auto_scaling_allow_plan_limit", successAutoScaling.AutoScalingAllowPlanLimit); err != nil {
-		return fmt.Errorf("[ERROR] Error setting instance auto scaling allow plan limit: %s", err)
-	}
+		if err = d.Set("auto_scaling_allow_plan_limit", successAutoScaling.AutoScalingAllowPlanLimit); err != nil {
+			return fmt.Errorf("[ERROR] Error setting instance auto scaling allow plan limit: %s", err)
+		}
 
-	if err = d.Set("auto_scaling_enabled", successAutoScaling.AutoScalingEnabled); err != nil {
-		return fmt.Errorf("[ERROR] Error setting instance auto scaling enabled: %s", err)
-	}
+		if err = d.Set("auto_scaling_enabled", successAutoScaling.AutoScalingEnabled); err != nil {
+			return fmt.Errorf("[ERROR] Error setting instance auto scaling enabled: %s", err)
+		}
 
-	if err = d.Set("auto_scaling_max_storage", flex.IntValue(successAutoScaling.AutoScalingMaxStorage)); err != nil {
-		return fmt.Errorf("[ERROR] Error setting instance auto scaling max_storage: %s", err)
-	}
+		if err = d.Set("auto_scaling_max_storage", flex.IntValue(successAutoScaling.AutoScalingMaxStorage)); err != nil {
+			return fmt.Errorf("[ERROR] Error setting instance auto scaling max_storage: %s", err)
+		}
 
-	if err = d.Set("auto_scaling_over_time_period", flex.IntValue(successAutoScaling.AutoScalingOverTimePeriod)); err != nil {
-		return fmt.Errorf("[ERROR] Error setting instance auto scaling over_time_period: %s", err)
-	}
+		if err = d.Set("auto_scaling_over_time_period", flex.IntValue(successAutoScaling.AutoScalingOverTimePeriod)); err != nil {
+			return fmt.Errorf("[ERROR] Error setting instance auto scaling over_time_period: %s", err)
+		}
 
-	if err = d.Set("auto_scaling_pause_limit", flex.IntValue(successAutoScaling.AutoScalingPauseLimit)); err != nil {
-		return fmt.Errorf("[ERROR] Error setting instance auto scaling pause limit: %s", err)
-	}
+		if err = d.Set("auto_scaling_pause_limit", flex.IntValue(successAutoScaling.AutoScalingPauseLimit)); err != nil {
+			return fmt.Errorf("[ERROR] Error setting instance auto scaling pause limit: %s", err)
+		}
 
-	if err = d.Set("auto_scaling_threshold", flex.IntValue(successAutoScaling.AutoScalingThreshold)); err != nil {
-		return fmt.Errorf("[ERROR] Error setting instance auto scaling threshold: %s", err)
-	}
+		if err = d.Set("auto_scaling_threshold", flex.IntValue(successAutoScaling.AutoScalingThreshold)); err != nil {
+			return fmt.Errorf("[ERROR] Error setting instance auto scaling threshold: %s", err)
+		}
 
-	if err = d.Set("storage_unit", successAutoScaling.StorageUnit); err != nil {
-		return fmt.Errorf("[ERROR] Error setting instance storage unit: %s", err)
-	}
+		if err = d.Set("storage_unit", successAutoScaling.StorageUnit); err != nil {
+			return fmt.Errorf("[ERROR] Error setting instance storage unit: %s", err)
+		}
 
-	if err = d.Set("storage_utilization_percentage", flex.IntValue(successAutoScaling.StorageUtilizationPercentage)); err != nil {
-		return fmt.Errorf("[ERROR] Error setting instance storage utilization percentage: %s", err)
-	}
+		if err = d.Set("storage_utilization_percentage", flex.IntValue(successAutoScaling.StorageUtilizationPercentage)); err != nil {
+			return fmt.Errorf("[ERROR] Error setting instance storage utilization percentage: %s", err)
+		}
 
-	if err = d.Set("support_auto_scaling", successAutoScaling.SupportAutoScaling); err != nil {
-		return fmt.Errorf("[ERROR] Error setting instance support auto scaling: %s", err)
+		if err = d.Set("support_auto_scaling", successAutoScaling.SupportAutoScaling); err != nil {
+			return fmt.Errorf("[ERROR] Error setting instance support auto scaling: %s", err)
+		}
 	}
 
 	//appending connectioninfo config
-	getDb2SaasConnectionInfoOptions := &db2saasv1.GetDb2SaasConnectionInfoOptions{}
+	if _, ok := d.GetOk("connectioninfo_config"); ok {
+		getDb2SaasConnectionInfoOptions := &db2saasv1.GetDb2SaasConnectionInfoOptions{}
 
-	getDb2SaasConnectionInfoOptions.SetDeploymentID(d.Get("deployment_id").(string))
-	getDb2SaasConnectionInfoOptions.SetXDeploymentID(d.Get("x_deployment_id").(string))
+		getDb2SaasConnectionInfoOptions.SetDeploymentID(d.Get("deployment_id").(string))
+		getDb2SaasConnectionInfoOptions.SetXDeploymentID(d.Get("x_deployment_id").(string))
 
-	successConnectionInfo, _, err := db2saasClient.GetDb2SaasConnectionInfoWithContext(context.Background(), getDb2SaasConnectionInfoOptions)
-	if err != nil {
-		log.Printf("[ERROR] Error retrieving db2saas connection info: %s", err)
-	}
-
-	d.SetId(dataSourceIbmDb2SaasConnectionInfoID(d))
-
-	if !core.IsNil(successConnectionInfo.Public) {
-		public := []map[string]interface{}{}
-		publicMap, err := DataSourceIbmDb2SaasConnectionInfoSuccessConnectionInfoPublicToMap(successConnectionInfo.Public)
+		successConnectionInfo, _, err := db2saasClient.GetDb2SaasConnectionInfoWithContext(context.Background(), getDb2SaasConnectionInfoOptions)
 		if err != nil {
-			log.Printf("[ERROR] Error converting public connection info to map: %s", err)
+			log.Printf("[ERROR] Error retrieving db2saas connection info: %s", err)
 		}
-		public = append(public, publicMap)
-		if err = d.Set("public", public); err != nil {
-			return fmt.Errorf("[ERROR] Error setting instance public: %s", err)
-		}
-	}
 
-	if !core.IsNil(successConnectionInfo.Private) {
-		private := []map[string]interface{}{}
-		privateMap, err := DataSourceIbmDb2SaasConnectionInfoSuccessConnectionInfoPrivateToMap(successConnectionInfo.Private)
-		if err != nil {
-			log.Printf("[ERROR] Error converting private connection info to map: %s", err)
+		d.SetId(dataSourceIbmDb2SaasConnectionInfoID(d))
+
+		if !core.IsNil(successConnectionInfo.Public) {
+			public := []map[string]interface{}{}
+			publicMap, err := DataSourceIbmDb2SaasConnectionInfoSuccessConnectionInfoPublicToMap(successConnectionInfo.Public)
+			if err != nil {
+				log.Printf("[ERROR] Error converting public connection info to map: %s", err)
+			}
+			public = append(public, publicMap)
+			if err = d.Set("public", public); err != nil {
+				return fmt.Errorf("[ERROR] Error setting instance public: %s", err)
+			}
 		}
-		private = append(private, privateMap)
-		if err = d.Set("private", private); err != nil {
-			return fmt.Errorf("[ERROR] Error setting instance private: %s", err)
+
+		if !core.IsNil(successConnectionInfo.Private) {
+			private := []map[string]interface{}{}
+			privateMap, err := DataSourceIbmDb2SaasConnectionInfoSuccessConnectionInfoPrivateToMap(successConnectionInfo.Private)
+			if err != nil {
+				log.Printf("[ERROR] Error converting private connection info to map: %s", err)
+			}
+			private = append(private, privateMap)
+			if err = d.Set("private", private); err != nil {
+				return fmt.Errorf("[ERROR] Error setting instance private: %s", err)
+			}
 		}
 	}
 
