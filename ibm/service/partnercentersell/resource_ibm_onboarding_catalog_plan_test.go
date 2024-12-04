@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
@@ -23,6 +24,7 @@ func TestAccIbmOnboardingCatalogPlanBasic(t *testing.T) {
 	var conf partnercentersellv1.GlobalCatalogPlan
 	productID := acc.PcsOnboardingProductWithCatalogProduct
 	catalogProductID := acc.PcsOnboardingCatalogProductId
+	objectId := fmt.Sprintf("test-object-id-terraform-%d", acctest.RandIntRange(10, 100))
 	name := "test-plan-name-terraform"
 	active := "true"
 	disabled := "false"
@@ -38,7 +40,7 @@ func TestAccIbmOnboardingCatalogPlanBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIbmOnboardingCatalogPlanDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmOnboardingCatalogPlanConfigBasic(productID, catalogProductID, name, active, disabled, kind),
+				Config: testAccCheckIbmOnboardingCatalogPlanConfigBasic(productID, catalogProductID, name, active, disabled, kind, objectId),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmOnboardingCatalogPlanExists("ibm_onboarding_catalog_plan.onboarding_catalog_plan_instance", conf),
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_plan.onboarding_catalog_plan_instance", "product_id", productID),
@@ -50,7 +52,7 @@ func TestAccIbmOnboardingCatalogPlanBasic(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmOnboardingCatalogPlanConfigBasic(productID, catalogProductID, nameUpdate, activeUpdate, disabledUpdate, kindUpdate),
+				Config: testAccCheckIbmOnboardingCatalogPlanConfigBasic(productID, catalogProductID, nameUpdate, activeUpdate, disabledUpdate, kindUpdate, objectId),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_plan.onboarding_catalog_plan_instance", "product_id", productID),
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_plan.onboarding_catalog_plan_instance", "catalog_product_id", catalogProductID),
@@ -68,6 +70,7 @@ func TestAccIbmOnboardingCatalogPlanAllArgs(t *testing.T) {
 	var conf partnercentersellv1.GlobalCatalogPlan
 	productID := acc.PcsOnboardingProductWithCatalogProduct
 	catalogProductID := acc.PcsOnboardingCatalogProductId
+	objectId := fmt.Sprintf("test-object-id-terraform-%d", acctest.RandIntRange(10, 100))
 	env := "current"
 	name := "test-plan-name-terraform"
 	active := "true"
@@ -85,7 +88,7 @@ func TestAccIbmOnboardingCatalogPlanAllArgs(t *testing.T) {
 		CheckDestroy: testAccCheckIbmOnboardingCatalogPlanDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmOnboardingCatalogPlanConfig(productID, catalogProductID, env, name, active, disabled, kind),
+				Config: testAccCheckIbmOnboardingCatalogPlanConfig(productID, catalogProductID, env, name, active, disabled, kind, objectId),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmOnboardingCatalogPlanExists("ibm_onboarding_catalog_plan.onboarding_catalog_plan_instance", conf),
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_plan.onboarding_catalog_plan_instance", "product_id", productID),
@@ -98,7 +101,7 @@ func TestAccIbmOnboardingCatalogPlanAllArgs(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmOnboardingCatalogPlanConfig(productID, catalogProductID, envUpdate, nameUpdate, activeUpdate, disabledUpdate, kindUpdate),
+				Config: testAccCheckIbmOnboardingCatalogPlanConfig(productID, catalogProductID, envUpdate, nameUpdate, activeUpdate, disabledUpdate, kindUpdate, objectId),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_plan.onboarding_catalog_plan_instance", "product_id", productID),
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_plan.onboarding_catalog_plan_instance", "catalog_product_id", catalogProductID),
@@ -121,7 +124,7 @@ func TestAccIbmOnboardingCatalogPlanAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmOnboardingCatalogPlanConfigBasic(productID string, catalogProductID string, name string, active string, disabled string, kind string) string {
+func testAccCheckIbmOnboardingCatalogPlanConfigBasic(productID string, catalogProductID string, name string, active string, disabled string, kind string, objectId string) string {
 	return fmt.Sprintf(`
 		resource "ibm_onboarding_catalog_plan" "onboarding_catalog_plan_instance" {
 			product_id = "%s"
@@ -130,6 +133,7 @@ func testAccCheckIbmOnboardingCatalogPlanConfigBasic(productID string, catalogPr
 			active = %s
 			disabled = %s
 			kind = "%s"
+			object_id = "%s"
 			tags = ["tag"]
 			object_provider {
 				name = "name"
@@ -141,12 +145,16 @@ func testAccCheckIbmOnboardingCatalogPlanConfigBasic(productID string, catalogPr
                     type = "paid"
                     origin = "pricing_catalog"
                 }
+				plan {
+					allow_internal_users = true
+					bindable = false
+				}
             }
 		}
-	`, productID, catalogProductID, name, active, disabled, kind)
+	`, productID, catalogProductID, name, active, disabled, kind, objectId)
 }
 
-func testAccCheckIbmOnboardingCatalogPlanConfig(productID string, catalogProductID string, env string, name string, active string, disabled string, kind string) string {
+func testAccCheckIbmOnboardingCatalogPlanConfig(productID string, catalogProductID string, env string, name string, active string, disabled string, kind string, objectId string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_onboarding_catalog_plan" "onboarding_catalog_plan_instance" {
@@ -157,6 +165,7 @@ func testAccCheckIbmOnboardingCatalogPlanConfig(productID string, catalogProduct
 			active = %s
 			disabled = %s
 			kind = "%s"
+			object_id = "%s"
 			overview_ui {
 				en {
 					display_name = "display_name"
@@ -175,20 +184,13 @@ func testAccCheckIbmOnboardingCatalogPlanConfig(productID string, catalogProduct
 					type = "paid"
 					origin = "global_catalog"
 				}
-				service {
-					rc_provisionable = true
-					iam_compatible = true
-					bindable = true
-					plan_updateable = true
-					service_key_supported = true
-				}
 				plan {
 					allow_internal_users = true
-					bindable = true
+					bindable = false
 				}
 			}
 		}
-	`, productID, catalogProductID, env, name, active, disabled, kind)
+	`, productID, catalogProductID, env, name, active, disabled, kind, objectId)
 }
 
 func testAccCheckIbmOnboardingCatalogPlanExists(n string, obj partnercentersellv1.GlobalCatalogPlan) resource.TestCheckFunc {

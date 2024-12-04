@@ -120,6 +120,9 @@ Review the argument references that you can specify for your resource.
   **&#x2022;** `access_tags` must be in the format `key:value`.
 - `address_prefix_management` - (Optional, Forces new resource, String) Indicates whether a default address prefix should be created automatically `auto` or manually `manual` for each zone in this VPC. Default value is `auto`.
 - `classic_access` - (Optional, Bool) Specify if you want to create a VPC that can connect to classic infrastructure resources. Enter **true** to set up private network connectivity from your VPC to classic infrastructure resources that are created in the same IBM Cloud account, and **false** to disable this access. If you choose to not set up this access, you cannot enable it after the VPC is created. Make sure to review the [prerequisites](https://cloud.ibm.com/docs/vpc-on-classic-network?topic=vpc-on-classic-setting-up-access-to-your-classic-infrastructure-from-vpc#vpc-prerequisites) before you create a VPC with classic infrastructure access. Note that you can enable one VPC for classic infrastructure access per IBM Cloud account only.
+
+  ~> **Note:** 
+    `classic_access` is deprecated. Use [Transit Gateway](https://cloud.ibm.com/docs/transit-gateway) with Classic as a spoke/connection.
 - `default_network_acl_name` - (Optional, String) Enter the name of the default network access control list (ACL).
 - `default_security_group_name` - (Optional, String) Enter the name of the default security group.
 - `default_routing_table_name` - (Optional, String) Enter the name of the default routing table.

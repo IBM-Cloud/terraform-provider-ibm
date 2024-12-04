@@ -222,6 +222,19 @@ func DataSourceIBMIBMIsVPCRoutingTable() *schema.Resource {
 					},
 				},
 			},
+			rtTags: {
+				Type:     schema.TypeSet,
+				Computed: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+				Set:      flex.ResourceIBMVPCHash,
+			},
+			rtAccessTags: {
+				Type:        schema.TypeSet,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         flex.ResourceIBMVPCHash,
+				Description: "List of access tags",
+			},
 		},
 	}
 }
@@ -380,6 +393,20 @@ func dataSourceIBMIBMIsVPCRoutingTableRead(context context.Context, d *schema.Re
 	if err = d.Set(rtResourceGroup, resourceGroupList); err != nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error setting resource group %s", err))
 	}
+
+	tags, err := flex.GetGlobalTagsUsingCRN(meta, *routingTable.CRN, "", rtUserTagType)
+	if err != nil {
+		log.Printf(
+			"An error occured during reading of routing table (%s) tags : %s", d.Id(), err)
+	}
+	d.Set(rtTags, tags)
+
+	accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *routingTable.CRN, "", rtAccessTagType)
+	if err != nil {
+		log.Printf(
+			"An error occured during reading of routing table (%s) access tags: %s", d.Id(), err)
+	}
+	d.Set(rtAccessTags, accesstags)
 
 	return nil
 }

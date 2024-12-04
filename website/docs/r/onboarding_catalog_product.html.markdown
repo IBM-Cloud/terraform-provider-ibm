@@ -262,6 +262,7 @@ Nested schema for **metadata**:
 			  * Constraints: The maximum length is `2083` characters. The minimum length is `0` characters.
 * `name` - (Required, String) The programmatic name of this product.
   * Constraints: The value must match regular expression `/^[a-z0-9\\-.]+$/`.
+* `object_id` - (Optional, String) The desired ID of the global catalog object.
 * `object_provider` - (Required, List) The provider or owner of the product.
 Nested schema for **object_provider**:
 	* `email` - (Optional, String) The email address of the provider.

@@ -420,9 +420,11 @@ func lbCreate(d *schema.ResourceData, meta interface{}, name, lbType, rg string,
 	}
 
 	options := &vpcv1.CreateLoadBalancerOptions{
-		IsPublic:      &isPublic,
-		IsPrivatePath: &isPrivatePath,
-		Name:          &name,
+		IsPublic: &isPublic,
+		Name:     &name,
+	}
+	if isPrivatePath {
+		options.IsPrivatePath = &isPrivatePath
 	}
 
 	if dnsIntf, ok := d.GetOk("dns"); ok {
@@ -572,7 +574,7 @@ func lbGet(d *schema.ResourceData, meta interface{}, id string) error {
 		d.Set("dns", nil)
 	}
 	d.Set(isLBName, *lb.Name)
-	if *lb.IsPublic {
+	if lb.IsPublic != nil && *lb.IsPublic {
 		d.Set(isLBType, "public")
 	} else {
 		if lb.IsPrivatePath != nil && *lb.IsPrivatePath {

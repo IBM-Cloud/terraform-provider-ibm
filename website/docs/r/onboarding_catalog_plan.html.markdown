@@ -27,13 +27,13 @@ resource "ibm_onboarding_catalog_plan" "onboarding_catalog_plan_instance" {
 				en {
 					bullets {
 						description = "description"
-						description_i18n = { "key" = "anything as a string" }
+						description_i18n = { "key" = "inner" }
 						title = "title"
-						title_i18n = { "key" = "anything as a string" }
+						title_i18n = { "key" = "inner" }
 					}
 					media {
 						caption = "caption"
-						caption_i18n = { "key" = "anything as a string" }
+						caption_i18n = { "key" = "inner" }
 						thumbnail = "thumbnail"
 						type = "image"
 						url = "url"
@@ -108,7 +108,7 @@ Nested schema for **metadata**:
 		* `origin` - (Optional, String) The source of the pricing information: global_catalog or pricing_catalog.
 		  * Constraints: Allowable values are: `global_catalog`, `pricing_catalog`.
 		* `type` - (Optional, String) The type of the pricing plan.
-		  * Constraints: Allowable values are: `free`, `paid`, `Free`, `Paid`, `subscription`, `Subscription`.
+		  * Constraints: Allowable values are: `free`, `paid`, `subscription`.
 	* `rc_compatible` - (Optional, Boolean) Whether the object is compatible with the resource controller service.
 	* `service` - (Optional, List) The global catalog metadata of the service.
 	Nested schema for **service**:
@@ -166,6 +166,7 @@ Nested schema for **metadata**:
 			  * Constraints: The maximum length is `2083` characters. The minimum length is `0` characters.
 * `name` - (Required, String) The programmatic name of this plan.
   * Constraints: The value must match regular expression `/^[a-z0-9\\-.]+$/`.
+* `object_id` - (Optional, String) The desired ID of the global catalog object.
 * `object_provider` - (Required, List) The provider or owner of the product.
 Nested schema for **object_provider**:
 	* `email` - (Optional, String) The email address of the provider.
@@ -197,7 +198,7 @@ You can import the `ibm_onboarding_catalog_plan` resource by using `id`.
 The `id` property can be formed from `product_id`, `catalog_product_id`, and `catalog_plan_id` in the following format:
 
 <pre>
-&lt;product_id&gt;/&lt;catalog_product_id&gt;/&lt;catalog_plan_id&gt;
+product_id/catalog_product_id/catalog_plan_id
 </pre>
 * `product_id`: A string. The unique ID of the product.
 * `catalog_product_id`: A string. The unique ID of this global catalog product.
