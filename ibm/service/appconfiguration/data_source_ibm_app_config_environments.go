@@ -343,7 +343,7 @@ func dataSourceEnvironmentListURLToMap(urlItem interface{}) (urlMap map[string]i
 	urlMap = map[string]interface{}{}
 
 	hrefUrl := urlItem.(appconfigurationv1.PaginatedListFirst).Href
-	if hrefUrl!= nil {
+	if hrefUrl != nil {
 		urlMap["href"] = hrefUrl
 	}
 
