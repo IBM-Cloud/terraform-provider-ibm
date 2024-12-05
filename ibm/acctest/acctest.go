@@ -240,6 +240,7 @@ var (
 	Pi_spp_placement_group_id         string
 	Pi_storage_connection             string
 	Pi_target_storage_tier            string
+	Pi_virtual_serial_number          string
 	Pi_volume_clone_task_id           string
 	Pi_volume_group_id                string
 	Pi_volume_group_name              string
@@ -1320,6 +1321,12 @@ func init() {
 	if Pi_volume_clone_task_id == "" {
 		Pi_volume_clone_task_id = "terraform-test-volume-clone-task-id"
 		fmt.Println("[INFO] Set the environment variable PI_VOLUME_CLONE_TASK_ID for testing Pi_volume_clone_task_id resource else it is set to default value 'terraform-test-volume-clone-task-id'")
+	}
+
+	Pi_virtual_serial_number = os.Getenv("PI_VIRTUAL_SERIAL_NUMBER")
+	if Pi_virtual_serial_number == "" {
+		Pi_virtual_serial_number = "terraform_test_power"
+		fmt.Println("[INFO] Set the environment variable PI_VIRTUAL_SERIAL_NUMBER for testing ibm_pi_virtual_serial_number data source else it is set to default value 'terraform-test-power'")
 	}
 
 	Pi_resource_group_id = os.Getenv("PI_RESOURCE_GROUP_ID")
