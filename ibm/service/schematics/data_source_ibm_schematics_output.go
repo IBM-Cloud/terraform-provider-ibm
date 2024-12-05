@@ -76,7 +76,7 @@ func dataSourceIBMSchematicsOutputRead(d *schema.ResourceData, meta interface{})
 
 	outputValuesList, response, err := schematicsClient.GetWorkspaceOutputs(getWorkspaceOutputsOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s and response:\n%s", err, response), "ibm_cloud", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsOutputRead GetWorkspaceOutputs failed with error: %s and response:\n%s", err, response), "ibm_schematics_output", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return err
 	}
