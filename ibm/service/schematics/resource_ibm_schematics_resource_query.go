@@ -137,7 +137,7 @@ func ResourceIBMSchematicsResourceQueryValidator() *validate.ResourceValidator {
 func resourceIBMSchematicsResourceQueryCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	schematicsClient, err := meta.(conns.ClientSession).SchematicsV1()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed: %s", err.Error()), "ibm_cloud", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceIBMSchematicsResourceQueryCreate schematicsClient initialization failed: %s", err.Error()), "ibm_schematics_resource_query", "create")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -169,7 +169,7 @@ func resourceIBMSchematicsResourceQueryCreate(context context.Context, d *schema
 	resourceQueryRecord, response, err := schematicsClient.CreateResourceQueryWithContext(context, createResourceQueryOptions)
 	if err != nil {
 
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s and response:\n%s", err, response), "ibm_cloud", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceIBMSchematicsResourceQueryCreate CreateResourceQueryWithContext failed with error: %s and response:\n%s", err, response), "ibm_schematics_resource_query", "create")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -223,7 +223,7 @@ func resourceIBMSchematicsResourceQueryMapToResourceQueryParam(resourceQueryPara
 func resourceIBMSchematicsResourceQueryRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	schematicsClient, err := meta.(conns.ClientSession).SchematicsV1()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed: %s", err.Error()), "ibm_cloud", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceIBMSchematicsResourceQueryRead schematicsClient initialization failed: %s", err.Error()), "ibm_schematics_resource_query", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -244,17 +244,17 @@ func resourceIBMSchematicsResourceQueryRead(context context.Context, d *schema.R
 			return nil
 		}
 
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s and response:\n%s", err, response), "ibm_cloud", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceIBMSchematicsResourceQueryRead GetResourcesQueryWithContext failed with error: %s and response:\n%s", err, response), "ibm_schematics_resource_query", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 	if err = d.Set("type", resourceQueryRecord.Type); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceIBMSchematicsResourceQueryRead failed with error: %s", err), "ibm_schematics_resource_query", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 	if err = d.Set("name", resourceQueryRecord.Name); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceIBMSchematicsResourceQueryRead failed with error: %s", err), "ibm_schematics_resource_query", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -265,28 +265,28 @@ func resourceIBMSchematicsResourceQueryRead(context context.Context, d *schema.R
 			queries = append(queries, queriesItemMap)
 		}
 		if err = d.Set("queries", queries); err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceIBMSchematicsResourceQueryRead failed with error: %s", err), "ibm_schematics_resource_query", "read")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
 	}
 	if err = d.Set("created_at", flex.DateTimeToString(resourceQueryRecord.CreatedAt)); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceIBMSchematicsResourceQueryRead failed with error: %s", err), "ibm_schematics_resource_query", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 	if err = d.Set("created_by", resourceQueryRecord.CreatedBy); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceIBMSchematicsResourceQueryRead failed with error: %s", err), "ibm_schematics_resource_query", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 	if err = d.Set("updated_at", flex.DateTimeToString(resourceQueryRecord.UpdatedAt)); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceIBMSchematicsResourceQueryRead failed with error: %s", err), "ibm_schematics_resource_query", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 	if err = d.Set("updated_by", resourceQueryRecord.UpdatedBy); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceIBMSchematicsResourceQueryRead failed with error: %s", err), "ibm_schematics_resource_query", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -335,7 +335,7 @@ func resourceIBMSchematicsResourceQueryResourceQueryParamToMap(resourceQueryPara
 func resourceIBMSchematicsResourceQueryUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	schematicsClient, err := meta.(conns.ClientSession).SchematicsV1()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed: %s", err.Error()), "ibm_cloud", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceIBMSchematicsResourceQueryUpdate schematicsClient initialization failed: %s", err.Error()), "ibm_schematics_resource_query", "update")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -367,7 +367,7 @@ func resourceIBMSchematicsResourceQueryUpdate(context context.Context, d *schema
 	_, response, err := schematicsClient.ReplaceResourcesQueryWithContext(context, replaceResourcesQueryOptions)
 	if err != nil {
 
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s and response:\n%s", err, response), "ibm_cloud", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceIBMSchematicsResourceQueryUpdate ReplaceResourcesQueryWithContext failed with error: %s and response:\n%s", err, response), "ibm_schematics_resource_query", "update")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -378,7 +378,7 @@ func resourceIBMSchematicsResourceQueryUpdate(context context.Context, d *schema
 func resourceIBMSchematicsResourceQueryDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	schematicsClient, err := meta.(conns.ClientSession).SchematicsV1()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed: %s", err.Error()), "ibm_cloud", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceIBMSchematicsResourceQueryDelete schematicsClient initialization failed: %s", err.Error()), "ibm_schematics_resource_query", "delete")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -395,7 +395,7 @@ func resourceIBMSchematicsResourceQueryDelete(context context.Context, d *schema
 	response, err := schematicsClient.DeleteResourcesQueryWithContext(context, deleteResourcesQueryOptions)
 	if err != nil {
 
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s and response:\n%s", err, response), "ibm_cloud", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceIBMSchematicsResourceQueryDelete DeleteResourcesQueryWithContext failed with error: %s and response:\n%s", err, response), "ibm_schematics_resource_query", "delete")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
