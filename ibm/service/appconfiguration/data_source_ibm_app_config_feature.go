@@ -181,7 +181,7 @@ func dataSourceIbmAppConfigFeatureRead(d *schema.ResourceData, meta interface{})
 	options.SetFeatureID(d.Get("feature_id").(string))
 
 	if _, ok := d.GetOk("includes"); ok {
-		options.SetInclude(d.Get("includes").(string))
+		options.SetInclude(d.Get("includes").([]string))
 	}
 
 	result, response, err := appconfigClient.GetFeature(options)

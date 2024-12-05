@@ -158,7 +158,7 @@ func dataSourceIbmAppConfigPropertyRead(d *schema.ResourceData, meta interface{}
 	options.SetPropertyID(d.Get("property_id").(string))
 
 	if _, ok := d.GetOk("include"); ok {
-		options.SetInclude(d.Get("include").(string))
+		options.SetInclude(d.Get("include").([]string))
 	}
 
 	property, response, err := appconfigClient.GetProperty(options)

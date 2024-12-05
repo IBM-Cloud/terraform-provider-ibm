@@ -353,7 +353,7 @@ func dataSourceCollectionsListGetNext(next interface{}) int64 {
 	return convertedVal
 }
 
-func dataSourceCollectionListFlattenPagination(result appconfigurationv1.PageHrefResponse) (finalList []map[string]interface{}) {
+func dataSourceCollectionListFlattenPagination(result appconfigurationv1.PaginatedListFirst) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
 	finalMap := dataSourceCollectionsListURLToMap(result)
 	finalList = append(finalList, finalMap)
@@ -361,7 +361,7 @@ func dataSourceCollectionListFlattenPagination(result appconfigurationv1.PageHre
 	return finalList
 }
 
-func dataSourceCollectionsListURLToMap(urlItem appconfigurationv1.PageHrefResponse) (urlMap map[string]interface{}) {
+func dataSourceCollectionsListURLToMap(urlItem appconfigurationv1.PaginatedListFirst) (urlMap map[string]interface{}) {
 	urlMap = map[string]interface{}{}
 
 	if urlItem.Href != nil {
