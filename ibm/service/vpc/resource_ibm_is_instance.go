@@ -4920,7 +4920,7 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 		if err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "cluster_network-to-map")
 		}
-		clusterNetwork = []map[string]interface{}{clusterNetworkMap}
+		clusterNetwork = append(clusterNetwork, clusterNetworkMap)
 	}
 	if err = d.Set("cluster_network", clusterNetwork); err != nil {
 		err = fmt.Errorf("Error setting cluster_network: %s", err)
