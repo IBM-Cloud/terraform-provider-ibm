@@ -331,7 +331,7 @@ func dataSourceEnvironmentListGetNext(next interface{}) int64 {
 	return convertedVal
 }
 
-func dataSourceEnvironmentListFlattenPagination(result appconfigurationv1.PageHrefResponse) (finalList []map[string]interface{}) {
+func dataSourceEnvironmentListFlattenPagination(result interface{}) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
 	finalMap := dataSourceEnvironmentListURLToMap(result)
 	finalList = append(finalList, finalMap)
@@ -339,11 +339,12 @@ func dataSourceEnvironmentListFlattenPagination(result appconfigurationv1.PageHr
 	return finalList
 }
 
-func dataSourceEnvironmentListURLToMap(urlItem appconfigurationv1.PageHrefResponse) (urlMap map[string]interface{}) {
+func dataSourceEnvironmentListURLToMap(urlItem interface{}) (urlMap map[string]interface{}) {
 	urlMap = map[string]interface{}{}
 
-	if urlItem.Href != nil {
-		urlMap["href"] = urlItem.Href
+	hrefUrl := urlItem.(appconfigurationv1.PaginatedListFirst).Href
+	if hrefUrl!= nil {
+		urlMap["href"] = hrefUrl
 	}
 
 	return urlMap

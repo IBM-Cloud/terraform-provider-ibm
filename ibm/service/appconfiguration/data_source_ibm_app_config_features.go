@@ -569,15 +569,16 @@ func dataSourceListFeaturesSegmentRulesRulesToMap(rule appconfigurationv1.Target
 	return ruleMap
 }
 
-func dataSourceFeatureListFlattenPagination(result appconfigurationv1.PageHrefResponse) (finalList []map[string]interface{}) {
+func dataSourceFeatureListFlattenPagination(result interface{}) (finalList []map[string]interface{}) {
+	pageResult := result.(appconfigurationv1.PaginatedListFirst)
 	finalList = []map[string]interface{}{}
-	finalMap := dataSourceFeatureListURLToMap(result)
+	finalMap := dataSourceFeatureListURLToMap(pageResult)
 	finalList = append(finalList, finalMap)
 
 	return finalList
 }
 
-func dataSourceFeatureListURLToMap(urlItem appconfigurationv1.PageHrefResponse) (urlMap map[string]interface{}) {
+func dataSourceFeatureListURLToMap(urlItem appconfigurationv1.PaginatedListFirst) (urlMap map[string]interface{}) {
 	urlMap = map[string]interface{}{}
 
 	if urlItem.Href != nil {
