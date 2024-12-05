@@ -88,7 +88,7 @@ func dataSourceIbmAppConfigEnvironmentRead(d *schema.ResourceData, meta interfac
 	}
 	result, response, err := appconfigClient.GetEnvironment(options)
 	if err != nil {
-		return flex.FmtErrorf("GetEnvironment failed %s\n%s", err, response, err)
+		return flex.FmtErrorf("GetEnvironment failed %s\n%s", err, response)
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", guid, *result.EnvironmentID))
