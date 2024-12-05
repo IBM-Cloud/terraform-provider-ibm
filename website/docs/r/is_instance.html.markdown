@@ -917,6 +917,16 @@ In addition to all argument reference list, you can access the following attribu
 - `id` - (String) The ID of the instance.
 - `memory`- (Integer) The amount of memory that is allocated to the instance in gigabytes.
 - `numa_count` - (Integer) The number of NUMA nodes this instance is provisioned on. This property may be absent if the instance's status is not running.
+- `network_attachments` - (List) The network attachments list for this virtual server instance.
+    Nested schema for **network_attachments**:
+
+    - `primary_ip` - (List) The primary IP address to bind to the network interface. This can be specified using an existing reserved IP, or a prototype object for a new reserved IP.
+
+        Nested scheme for `primary_ip`:
+        - `auto_delete` - (Bool) Indicates whether this reserved IP member will be automatically deleted when either target is deleted, or the reserved IP is unbound.
+        - `address` - (String) The IP address of the reserved IP. 
+        - `name`- (String) The user-defined or system-provided name for this reserved IP
+        - `id`- (String) The unique identifier for this reserved IP.
 - `network_interfaces`- (List of Strings) A list of more network interfaces that are attached to the instance.
 
   Nested scheme for `network_interfaces`:
@@ -933,6 +943,16 @@ In addition to all argument reference list, you can access the following attribu
       - `name`- (String) The user-defined or system-provided name for this reserved IP
       - `reserved_ip`- (String) The unique identifier for this reserved IP
   - `primary_ipv4_address` - (String, Deprecated) The primary IPv4 address. Same as `primary_ip.[0].address`
+- `primary_network_attachment` - (List) The primary network attachment for this virtual server instance.
+    Nested schema for **primary_network_attachment**:
+
+    - `primary_ip` - (List) The primary IP address to bind to the network interface. This can be specified using an existing reserved IP, or a prototype object for a new reserved IP.
+
+        Nested scheme for `primary_ip`:
+        - `auto_delete` - (Bool) Indicates whether this reserved IP member will be automatically deleted when either target is deleted, or the reserved IP is unbound.
+        - `address` - (String) The IP address of the reserved IP. 
+        - `name`- (String) The user-defined or system-provided name for this reserved IP
+        - `id`- (String) The unique identifier for this reserved IP.
 - `primary_network_interface`- (List of Strings) A list of primary network interfaces that are attached to the instance.
 
   Nested scheme for `primary_network_interface`:

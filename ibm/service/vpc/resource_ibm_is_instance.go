@@ -7440,7 +7440,7 @@ func resourceIBMIsInstancePrimaryIPReferenceToMap(model *vpcv1.ReservedIPReferen
 	modelMap["id"] = model.ID
 	modelMap["name"] = model.Name
 	if model.ResourceType != nil {
-		modelMap["resource_type"] = *model.ResourceType
+		modelMap["resource_type"] = model.ResourceType
 	}
 	return modelMap, nil
 }
