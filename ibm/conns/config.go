@@ -91,7 +91,8 @@ import (
 	"github.com/IBM/vpc-go-sdk/common"
 	vpc "github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/apache/openwhisk-client-go/whisk"
-	jwt "github.com/golang-jwt/jwt"
+	"github.com/golang-jwt/jwt"
+
 	slsession "github.com/softlayer/softlayer-go/session"
 
 	"github.com/IBM/configuration-aggregator-go-sdk/configurationaggregatorv1"
