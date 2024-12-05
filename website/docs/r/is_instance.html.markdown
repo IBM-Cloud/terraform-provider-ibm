@@ -639,7 +639,7 @@ Cluster Networks for VPC is available for select customers only. Contact IBM Sup
 - `cluster_network_attachments` - (Optional, List) The cluster network attachments for this virtual server instance.The cluster network attachments are ordered for consistent instance configuration.
 
   Nested schema for **cluster_network_attachments**:
-	- `name` - (Required, String) The name for this instance cluster network attachment. The name is unique across all network attachments for the instance.
+	- `name` - (Required, String) The name for this instance cluster network attachment. The name is unique across all network attachments for the instance. (`name` is a apply once attribute, changing it will not be detected by terraform)
   - `cluster_network_interface` - (Required, List) The cluster network interface for this instance cluster network attachment.
     
       Nested schema for **cluster_network_interface**:
