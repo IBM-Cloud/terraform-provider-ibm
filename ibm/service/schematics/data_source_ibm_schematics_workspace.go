@@ -638,7 +638,7 @@ func SchematicsEndpointURL(region, meta interface{}) (string, bool, error) {
 func dataSourceIBMSchematicsWorkspaceRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	schematicsClient, err := meta.(conns.ClientSession).SchematicsV1()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed: %s", err.Error()), "ibm_cloud", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsWorkspaceRead schematicsClient initialization failed: %s", err.Error()), "ibm_schematics_workspace", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -657,7 +657,7 @@ func dataSourceIBMSchematicsWorkspaceRead(context context.Context, d *schema.Res
 	workspaceResponse, response, err := schematicsClient.GetWorkspaceWithContext(context, getWorkspaceOptions)
 	if err != nil {
 
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s and response:\n%s", err, response), "ibm_cloud", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsWorkspaceRead GetWorkspaceWithContext failed with error: %s and response:\n%s", err, response), "ibm_schematics_workspace", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -667,49 +667,49 @@ func dataSourceIBMSchematicsWorkspaceRead(context context.Context, d *schema.Res
 	if workspaceResponse.CatalogRef != nil {
 		err = d.Set("catalog_ref", dataSourceWorkspaceResponseFlattenCatalogRef(*workspaceResponse.CatalogRef))
 		if err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsWorkspaceRead failed with error: %s", err), "ibm_schematics_workspace", "read")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
 	}
 	if err = d.Set("created_at", flex.DateTimeToString(workspaceResponse.CreatedAt)); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsWorkspaceRead failed with error: %s", err), "ibm_schematics_workspace", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 	if err = d.Set("created_by", workspaceResponse.CreatedBy); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsWorkspaceRead failed with error: %s", err), "ibm_schematics_workspace", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 	if err = d.Set("crn", workspaceResponse.Crn); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsWorkspaceRead failed with error: %s", err), "ibm_schematics_workspace", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 	if err = d.Set("description", workspaceResponse.Description); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsWorkspaceRead failed with error: %s", err), "ibm_schematics_workspace", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 
 	if err = d.Set("last_health_check_at", flex.DateTimeToString(workspaceResponse.LastHealthCheckAt)); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsWorkspaceRead failed with error: %s", err), "ibm_schematics_workspace", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 	if err = d.Set("location", workspaceResponse.Location); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsWorkspaceRead failed with error: %s", err), "ibm_schematics_workspace", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 	if err = d.Set("name", workspaceResponse.Name); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsWorkspaceRead failed with error: %s", err), "ibm_schematics_workspace", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 	if err = d.Set("resource_group", workspaceResponse.ResourceGroup); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsWorkspaceRead failed with error: %s", err), "ibm_schematics_workspace", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -717,7 +717,7 @@ func dataSourceIBMSchematicsWorkspaceRead(context context.Context, d *schema.Res
 	if workspaceResponse.RuntimeData != nil {
 		err = d.Set("runtime_data", dataSourceWorkspaceResponseFlattenRuntimeData(workspaceResponse.RuntimeData))
 		if err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsWorkspaceRead failed with error: %s", err), "ibm_schematics_workspace", "read")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
@@ -726,13 +726,13 @@ func dataSourceIBMSchematicsWorkspaceRead(context context.Context, d *schema.Res
 	if workspaceResponse.SharedData != nil {
 		err = d.Set("shared_data", dataSourceWorkspaceResponseFlattenSharedData(*workspaceResponse.SharedData))
 		if err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsWorkspaceRead failed with error: %s", err), "ibm_schematics_workspace", "read")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
 	}
 	if err = d.Set("status", workspaceResponse.Status); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsWorkspaceRead failed with error: %s", err), "ibm_schematics_workspace", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -741,32 +741,32 @@ func dataSourceIBMSchematicsWorkspaceRead(context context.Context, d *schema.Res
 		templateData := dataSourceWorkspaceResponseFlattenTemplateData(workspaceResponse.TemplateData)
 
 		if err = d.Set("template_env_settings", templateData[0]["env_values"]); err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsWorkspaceRead failed with error: %s", err), "ibm_schematics_workspace", "read")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
 		if err = d.Set("template_git_folder", templateData[0]["folder"]); err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsWorkspaceRead failed with error: %s", err), "ibm_schematics_workspace", "read")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
 		if err = d.Set("template_init_state_file", templateData[0]["init_state_file"]); err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsWorkspaceRead failed with error: %s", err), "ibm_schematics_workspace", "read")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
 		if err = d.Set("template_type", templateData[0]["type"]); err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsWorkspaceRead failed with error: %s", err), "ibm_schematics_workspace", "read")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
 		if err = d.Set("template_uninstall_script_name", templateData[0]["uninstall_script_name"]); err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsWorkspaceRead failed with error: %s", err), "ibm_schematics_workspace", "read")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
 		if err = d.Set("template_values", templateData[0]["values"]); err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsWorkspaceRead failed with error: %s", err), "ibm_schematics_workspace", "read")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
@@ -775,13 +775,13 @@ func dataSourceIBMSchematicsWorkspaceRead(context context.Context, d *schema.Res
 			fmt.Println(fmt.Errorf("[ERROR] Error reading template_values_metadata %s", err))
 		}
 		if err = d.Set("template_inputs", templateData[0]["variablestore"]); err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsWorkspaceRead failed with error: %s", err), "ibm_schematics_workspace", "read")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
 	}
 	if err = d.Set("template_ref", workspaceResponse.TemplateRef); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsWorkspaceRead failed with error: %s", err), "ibm_schematics_workspace", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -789,32 +789,32 @@ func dataSourceIBMSchematicsWorkspaceRead(context context.Context, d *schema.Res
 	if workspaceResponse.TemplateRepo != nil {
 		templateRepoMap := dataSourceWorkspaceResponseFlattenTemplateRepo(*workspaceResponse.TemplateRepo)
 		if err = d.Set("template_git_branch", templateRepoMap[0]["branch"]); err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsWorkspaceRead failed with error: %s", err), "ibm_schematics_workspace", "read")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
 		if err = d.Set("template_git_release", templateRepoMap[0]["release"]); err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsWorkspaceRead failed with error: %s", err), "ibm_schematics_workspace", "read")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
 		if err = d.Set("template_git_repo_sha_value", templateRepoMap[0]["repo_sha_value"]); err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsWorkspaceRead failed with error: %s", err), "ibm_schematics_workspace", "read")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
 		if err = d.Set("template_git_repo_url", templateRepoMap[0]["repo_url"]); err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsWorkspaceRead failed with error: %s", err), "ibm_schematics_workspace", "read")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
 		if err = d.Set("template_git_url", templateRepoMap[0]["url"]); err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsWorkspaceRead failed with error: %s", err), "ibm_schematics_workspace", "read")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
 		if err = d.Set("template_git_has_uploadedgitrepotar", templateRepoMap[0]["has_uploadedgitrepotar"]); err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsWorkspaceRead failed with error: %s", err), "ibm_schematics_workspace", "read")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
@@ -824,13 +824,13 @@ func dataSourceIBMSchematicsWorkspaceRead(context context.Context, d *schema.Res
 	}*/
 	if workspaceResponse.UpdatedAt != nil {
 		if err = d.Set("updated_at", workspaceResponse.UpdatedAt.String()); err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsWorkspaceRead failed with error: %s", err), "ibm_schematics_workspace", "read")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
 	}
 	if err = d.Set("updated_by", workspaceResponse.UpdatedBy); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsWorkspaceRead failed with error: %s", err), "ibm_schematics_workspace", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -838,42 +838,42 @@ func dataSourceIBMSchematicsWorkspaceRead(context context.Context, d *schema.Res
 	if workspaceResponse.WorkspaceStatus != nil {
 		workspaceStatusMap := dataSourceWorkspaceResponseFlattenWorkspaceStatus(*workspaceResponse.WorkspaceStatus)
 		if err = d.Set("is_frozen", workspaceStatusMap[0]["frozen"]); err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsWorkspaceRead failed with error: %s", err), "ibm_schematics_workspace", "read")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
 		if err = d.Set("frozen", workspaceStatusMap[0]["frozen"]); err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsWorkspaceRead failed with error: %s", err), "ibm_schematics_workspace", "read")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
 		if err = d.Set("frozen_at", workspaceStatusMap[0]["frozen_at"]); err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsWorkspaceRead failed with error: %s", err), "ibm_schematics_workspace", "read")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
 		if err = d.Set("frozen_by", workspaceStatusMap[0]["frozen_by"]); err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsWorkspaceRead failed with error: %s", err), "ibm_schematics_workspace", "read")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
 		if err = d.Set("is_locked", workspaceStatusMap[0]["locked"]); err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsWorkspaceRead failed with error: %s", err), "ibm_schematics_workspace", "read")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
 		if err = d.Set("locked", workspaceStatusMap[0]["locked"]); err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsWorkspaceRead failed with error: %s", err), "ibm_schematics_workspace", "read")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
 		if err = d.Set("locked_by", workspaceStatusMap[0]["locked_by"]); err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsWorkspaceRead failed with error: %s", err), "ibm_schematics_workspace", "read")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
 		if err = d.Set("locked_time", workspaceStatusMap[0]["locked_time"]); err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsWorkspaceRead failed with error: %s", err), "ibm_schematics_workspace", "read")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
@@ -882,12 +882,12 @@ func dataSourceIBMSchematicsWorkspaceRead(context context.Context, d *schema.Res
 	if workspaceResponse.WorkspaceStatusMsg != nil {
 		workspaceStatusMsgMap := dataSourceWorkspaceResponseFlattenWorkspaceStatusMsg(*workspaceResponse.WorkspaceStatusMsg)
 		if err = d.Set("status_code", workspaceStatusMsgMap[0]["status_code"]); err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsWorkspaceRead failed with error: %s", err), "ibm_schematics_workspace", "read")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
 		if err = d.Set("status_msg", workspaceStatusMsgMap[0]["status_msg"]); err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsWorkspaceRead failed with error: %s", err), "ibm_schematics_workspace", "read")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
@@ -895,7 +895,7 @@ func dataSourceIBMSchematicsWorkspaceRead(context context.Context, d *schema.Res
 
 	controller, err := flex.GetBaseController(meta)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed: %s", err.Error()), "ibm_cloud", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsWorkspaceRead failed: %s", err.Error()), "ibm_schematics_workspace", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}

@@ -947,7 +947,7 @@ func DataSourceIBMSchematicsAction() *schema.Resource {
 func dataSourceIBMSchematicsActionRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	schematicsClient, err := meta.(conns.ClientSession).SchematicsV1()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed: %s", err.Error()), "ibm_cloud", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsActionRead schematicsClient initialization failed: %s", err.Error()), "ibm_schematics_action", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -965,29 +965,29 @@ func dataSourceIBMSchematicsActionRead(context context.Context, d *schema.Resour
 	action, response, err := schematicsClient.GetActionWithContext(context, getActionOptions)
 	if err != nil {
 
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s and response:\n%s", err, response), "ibm_cloud", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsActionRead GetActionWithContext failed with error: %s and response:\n%s", err, response), "ibm_schematics_action", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 
 	d.SetId(*getActionOptions.ActionID)
 	if err = d.Set("name", action.Name); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsActionRead failed with error: %s", err), "ibm_schematics_action", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 	if err = d.Set("description", action.Description); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsActionRead failed with error: %s", err), "ibm_schematics_action", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 	if err = d.Set("location", action.Location); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsActionRead failed with error: %s", err), "ibm_schematics_action", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 	if err = d.Set("resource_group", action.ResourceGroup); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsActionRead failed with error: %s", err), "ibm_schematics_action", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -995,13 +995,13 @@ func dataSourceIBMSchematicsActionRead(context context.Context, d *schema.Resour
 	if action.UserState != nil {
 		err = d.Set("user_state", dataSourceActionFlattenUserState(*action.UserState))
 		if err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsActionRead failed with error: %s", err), "ibm_schematics_action", "read")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
 	}
 	if err = d.Set("source_readme_url", action.SourceReadmeURL); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsActionRead failed with error: %s", err), "ibm_schematics_action", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -1009,23 +1009,23 @@ func dataSourceIBMSchematicsActionRead(context context.Context, d *schema.Resour
 	if action.Source != nil {
 		err = d.Set("source", dataSourceActionFlattenSource(*action.Source))
 		if err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsActionRead failed with error: %s", err), "ibm_schematics_action", "read")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
 	}
 	if err = d.Set("source_type", action.SourceType); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsActionRead failed with error: %s", err), "ibm_schematics_action", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 	if err = d.Set("command_parameter", action.CommandParameter); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsActionRead failed with error: %s", err), "ibm_schematics_action", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 	if err = d.Set("inventory", action.Inventory); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsActionRead failed with error: %s", err), "ibm_schematics_action", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -1033,7 +1033,7 @@ func dataSourceIBMSchematicsActionRead(context context.Context, d *schema.Resour
 	if action.Credentials != nil {
 		err = d.Set("credentials", dataSourceActionFlattenCredentials(action.Credentials))
 		if err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsActionRead failed with error: %s", err), "ibm_schematics_action", "read")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
@@ -1042,7 +1042,7 @@ func dataSourceIBMSchematicsActionRead(context context.Context, d *schema.Resour
 	if action.Bastion != nil {
 		err = d.Set("bastion", dataSourceActionFlattenBastion(*action.Bastion))
 		if err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsActionRead failed with error: %s", err), "ibm_schematics_action", "read")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
@@ -1051,13 +1051,13 @@ func dataSourceIBMSchematicsActionRead(context context.Context, d *schema.Resour
 	if action.BastionCredential != nil {
 		err = d.Set("bastion_credential", dataSourceActionFlattenBastionCredential(*action.BastionCredential))
 		if err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsActionRead failed with error: %s", err), "ibm_schematics_action", "read")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
 	}
 	if err = d.Set("targets_ini", action.TargetsIni); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsActionRead failed with error: %s", err), "ibm_schematics_action", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -1065,7 +1065,7 @@ func dataSourceIBMSchematicsActionRead(context context.Context, d *schema.Resour
 	if action.Inputs != nil {
 		err = d.Set("action_inputs", dataSourceActionFlattenInputs(action.Inputs))
 		if err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsActionRead failed with error: %s", err), "ibm_schematics_action", "read")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
@@ -1074,7 +1074,7 @@ func dataSourceIBMSchematicsActionRead(context context.Context, d *schema.Resour
 	if action.Outputs != nil {
 		err = d.Set("action_outputs", dataSourceActionFlattenOutputs(action.Outputs))
 		if err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsActionRead failed with error: %s", err), "ibm_schematics_action", "read")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
@@ -1083,63 +1083,63 @@ func dataSourceIBMSchematicsActionRead(context context.Context, d *schema.Resour
 	if action.Settings != nil {
 		err = d.Set("settings", dataSourceActionFlattenSettings(action.Settings))
 		if err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsActionRead failed with error: %s", err), "ibm_schematics_action", "read")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
 	}
 	if err = d.Set("id", action.ID); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsActionRead failed with error: %s", err), "ibm_schematics_action", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 	if err = d.Set("crn", action.Crn); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsActionRead failed with error: %s", err), "ibm_schematics_action", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 	if err = d.Set("account", action.Account); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsActionRead failed with error: %s", err), "ibm_schematics_action", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 	if err = d.Set("source_created_at", flex.DateTimeToString(action.SourceCreatedAt)); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsActionRead failed with error: %s", err), "ibm_schematics_action", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 	if err = d.Set("source_created_by", action.SourceCreatedBy); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsActionRead failed with error: %s", err), "ibm_schematics_action", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 	if err = d.Set("source_updated_at", flex.DateTimeToString(action.SourceUpdatedAt)); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsActionRead failed with error: %s", err), "ibm_schematics_action", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 	if err = d.Set("source_updated_by", action.SourceUpdatedBy); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsActionRead failed with error: %s", err), "ibm_schematics_action", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 	if err = d.Set("created_at", flex.DateTimeToString(action.CreatedAt)); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsActionRead failed with error: %s", err), "ibm_schematics_action", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 	if err = d.Set("created_by", action.CreatedBy); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsActionRead failed with error: %s", err), "ibm_schematics_action", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 	if err = d.Set("updated_at", flex.DateTimeToString(action.UpdatedAt)); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsActionRead failed with error: %s", err), "ibm_schematics_action", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 	if err = d.Set("updated_by", action.UpdatedBy); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsActionRead failed with error: %s", err), "ibm_schematics_action", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -1147,7 +1147,7 @@ func dataSourceIBMSchematicsActionRead(context context.Context, d *schema.Resour
 	if action.State != nil {
 		err = d.Set("state", dataSourceActionFlattenState(*action.State))
 		if err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsActionRead failed with error: %s", err), "ibm_schematics_action", "read")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
@@ -1156,7 +1156,7 @@ func dataSourceIBMSchematicsActionRead(context context.Context, d *schema.Resour
 	if action.SysLock != nil {
 		err = d.Set("sys_lock", dataSourceActionFlattenSysLock(*action.SysLock))
 		if err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsActionRead failed with error: %s", err), "ibm_schematics_action", "read")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}

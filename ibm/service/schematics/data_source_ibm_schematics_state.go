@@ -59,7 +59,7 @@ func DataSourceIBMSchematicsState() *schema.Resource {
 func dataSourceIBMSchematicsStateRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	schematicsClient, err := meta.(conns.ClientSession).SchematicsV1()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed: %s", err.Error()), "ibm_cloud", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsStateRead schematicsClient initialization failed: %s", err.Error()), "ibm_schematics_state", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -79,7 +79,7 @@ func dataSourceIBMSchematicsStateRead(context context.Context, d *schema.Resourc
 	_, response, _ := schematicsClient.GetWorkspaceTemplateStateWithContext(context, getWorkspaceTemplateStateOptions)
 	if response.StatusCode != 200 {
 
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s and response:\n%s", err, response), "ibm_cloud", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsStateRead GetWorkspaceTemplateStateWithContext failed with error: %s and response:\n%s", err, response), "ibm_schematics_state", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -100,7 +100,7 @@ func dataSourceIBMSchematicsStateRead(context context.Context, d *schema.Resourc
 
 	stateByte, err := json.MarshalIndent(stateStore, "", "")
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed: %s", err.Error()), "ibm_cloud", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsStateRead failed: %s", err.Error()), "ibm_schematics_state", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -110,7 +110,7 @@ func dataSourceIBMSchematicsStateRead(context context.Context, d *schema.Resourc
 
 	controller, err := flex.GetBaseController(meta)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed: %s", err.Error()), "ibm_cloud", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsStateRead failed: %s", err.Error()), "ibm_schematics_state", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}

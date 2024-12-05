@@ -70,7 +70,7 @@ func dataSourceIbmSchematicsAgentHealthRead(context context.Context, d *schema.R
 
 	schematicsClient, err := meta.(conns.ClientSession).SchematicsV1()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed: %s", err.Error()), "ibm_cloud", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIbmSchematicsAgentHealthRead schematicsClient initialization failed: %s", err.Error()), "ibm_schematics_agent_health", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -87,7 +87,7 @@ func dataSourceIbmSchematicsAgentHealthRead(context context.Context, d *schema.R
 			return nil
 		}
 
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s and response:\n%s", err, response), "ibm_cloud", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIbmSchematicsAgentHealthRead GetAgentDataWithContext failed with error: %s and response:\n%s", err, response), "ibm_schematics_agent_health", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -96,44 +96,44 @@ func dataSourceIbmSchematicsAgentHealthRead(context context.Context, d *schema.R
 	if agentData.RecentHealthJob != nil {
 
 		if err = d.Set("agent_id", getAgentDataOptions.AgentID); err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIbmSchematicsAgentHealthRead failed with error: %s", err), "ibm_schematics_agent_health", "read")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
 		if err = d.Set("job_id", agentData.RecentHealthJob.JobID); err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIbmSchematicsAgentHealthRead failed with error: %s", err), "ibm_schematics_agent_health", "read")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		} else if agentData.RecentHealthJob.JobID != nil {
 			d.SetId(fmt.Sprintf("%s", *agentData.RecentHealthJob.JobID))
 		}
 		if err = d.Set("updated_at", flex.DateTimeToString(agentData.RecentHealthJob.UpdatedAt)); err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIbmSchematicsAgentHealthRead failed with error: %s", err), "ibm_schematics_agent_health", "read")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
 		if err = d.Set("updated_by", agentData.RecentHealthJob.UpdatedBy); err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIbmSchematicsAgentHealthRead failed with error: %s", err), "ibm_schematics_agent_health", "read")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
 		if err = d.Set("agent_version", agentData.Version); err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIbmSchematicsAgentHealthRead failed with error: %s", err), "ibm_schematics_agent_health", "read")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
 		if err = d.Set("status_code", agentData.RecentHealthJob.StatusCode); err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIbmSchematicsAgentHealthRead failed with error: %s", err), "ibm_schematics_agent_health", "read")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
 		if err = d.Set("status_message", agentData.RecentHealthJob.StatusMessage); err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIbmSchematicsAgentHealthRead failed with error: %s", err), "ibm_schematics_agent_health", "read")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
 		if err = d.Set("log_url", agentData.RecentHealthJob.LogURL); err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIbmSchematicsAgentHealthRead failed with error: %s", err), "ibm_schematics_agent_health", "read")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
