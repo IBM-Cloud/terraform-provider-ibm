@@ -97,6 +97,11 @@ func DataSourceIBMPIHosts() *schema.Resource {
 							Description: "Link to host group resource.",
 							Type:        schema.TypeMap,
 						},
+						Attr_HostReference: {
+							Computed:    true,
+							Description: "Current physical ID of the host.",
+							Type:        schema.TypeInt,
+						},
 						Attr_State: {
 							Computed:    true,
 							Description: "State of the host (up/down).",
@@ -150,6 +155,9 @@ func dataSourceIBMPIHostsRead(ctx context.Context, d *schema.ResourceData, meta 
 			}
 			if host.HostGroup != nil {
 				hs[Attr_HostGroup] = hostGroupToMap(host.HostGroup)
+			}
+			if host.HostReference != 0 {
+				hs[Attr_HostReference] = host.HostReference
 			}
 			if host.State != "" {
 				hs[Attr_State] = host.State
