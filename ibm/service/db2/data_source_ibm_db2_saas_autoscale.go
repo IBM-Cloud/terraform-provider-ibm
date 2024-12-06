@@ -16,9 +16,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
+	"github.com/IBM/cloud-db2-go-sdk/db2saasv1"
+
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.com/IBM/cloud-db2-go-sdk/db2saasv1"
 )
 
 func DataSourceIbmDb2SaasAutoscale() *schema.Resource {
@@ -26,7 +27,7 @@ func DataSourceIbmDb2SaasAutoscale() *schema.Resource {
 		ReadContext: dataSourceIbmDb2SaasAutoscaleRead,
 
 		Schema: map[string]*schema.Schema{
-			"x_deployment_id": &schema.Schema{
+			"x_db_profile": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "CRN deployment id.",
@@ -90,7 +91,7 @@ func dataSourceIbmDb2SaasAutoscaleRead(context context.Context, d *schema.Resour
 
 	getDb2SaasAutoscaleOptions := &db2saasv1.GetDb2SaasAutoscaleOptions{}
 
-	getDb2SaasAutoscaleOptions.SetXDeploymentID(d.Get("x_deployment_id").(string))
+	getDb2SaasAutoscaleOptions.SetXDbProfile(d.Get("x_db_profile").(string))
 
 	successAutoScaling, _, err := db2saasClient.GetDb2SaasAutoscaleWithContext(context, getDb2SaasAutoscaleOptions)
 	if err != nil {

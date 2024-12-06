@@ -16,9 +16,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
+	"github.com/IBM/cloud-db2-go-sdk/db2saasv1"
+
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.com/IBM/cloud-db2-go-sdk/db2saasv1"
 	"github.com/IBM/go-sdk-core/v5/core"
 )
 
@@ -50,14 +51,6 @@ func DataSourceIbmDb2SaasConnectionInfo() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"host_ros": &schema.Schema{
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"certificate_base64": &schema.Schema{
-							Type:     schema.TypeString,
-							Computed: true,
-						},
 						"ssl_port": &schema.Schema{
 							Type:     schema.TypeString,
 							Computed: true,
@@ -86,14 +79,6 @@ func DataSourceIbmDb2SaasConnectionInfo() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"host_ros": &schema.Schema{
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"certificate_base64": &schema.Schema{
-							Type:     schema.TypeString,
-							Computed: true,
-						},
 						"ssl_port": &schema.Schema{
 							Type:     schema.TypeString,
 							Computed: true,
@@ -103,6 +88,22 @@ func DataSourceIbmDb2SaasConnectionInfo() *schema.Resource {
 							Computed: true,
 						},
 						"database_version": &schema.Schema{
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"private_service_name": &schema.Schema{
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"cloud_service_offering": &schema.Schema{
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"vpe_service_crn": &schema.Schema{
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"db_vpc_endpoint_service": &schema.Schema{
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -175,12 +176,6 @@ func DataSourceIbmDb2SaasConnectionInfoSuccessConnectionInfoPublicToMap(model *d
 	if model.DatabaseName != nil {
 		modelMap["database_name"] = *model.DatabaseName
 	}
-	if model.HostRos != nil {
-		modelMap["host_ros"] = *model.HostRos
-	}
-	if model.CertificateBase64 != nil {
-		modelMap["certificate_base64"] = *model.CertificateBase64
-	}
 	if model.SslPort != nil {
 		modelMap["ssl_port"] = *model.SslPort
 	}
@@ -201,12 +196,6 @@ func DataSourceIbmDb2SaasConnectionInfoSuccessConnectionInfoPrivateToMap(model *
 	if model.DatabaseName != nil {
 		modelMap["database_name"] = *model.DatabaseName
 	}
-	if model.HostRos != nil {
-		modelMap["host_ros"] = *model.HostRos
-	}
-	if model.CertificateBase64 != nil {
-		modelMap["certificate_base64"] = *model.CertificateBase64
-	}
 	if model.SslPort != nil {
 		modelMap["ssl_port"] = *model.SslPort
 	}
@@ -215,6 +204,18 @@ func DataSourceIbmDb2SaasConnectionInfoSuccessConnectionInfoPrivateToMap(model *
 	}
 	if model.DatabaseVersion != nil {
 		modelMap["database_version"] = *model.DatabaseVersion
+	}
+	if model.PrivateServiceName != nil {
+		modelMap["private_service_name"] = *model.PrivateServiceName
+	}
+	if model.CloudServiceOffering != nil {
+		modelMap["cloud_service_offering"] = *model.CloudServiceOffering
+	}
+	if model.VpeServiceCrn != nil {
+		modelMap["vpe_service_crn"] = *model.VpeServiceCrn
+	}
+	if model.DbVpcEndpointService != nil {
+		modelMap["db_vpc_endpoint_service"] = *model.DbVpcEndpointService
 	}
 	return modelMap, nil
 }

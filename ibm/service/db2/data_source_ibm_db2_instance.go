@@ -146,14 +146,6 @@ func DataSourceIBMDb2Instance() *schema.Resource {
 								Type:     schema.TypeString,
 								Computed: true,
 							},
-							"host_ros": &schema.Schema{
-								Type:     schema.TypeString,
-								Computed: true,
-							},
-							"certificate_base64": &schema.Schema{
-								Type:     schema.TypeString,
-								Computed: true,
-							},
 							"ssl_port": &schema.Schema{
 								Type:     schema.TypeString,
 								Computed: true,
@@ -182,14 +174,6 @@ func DataSourceIBMDb2Instance() *schema.Resource {
 								Type:     schema.TypeString,
 								Computed: true,
 							},
-							"host_ros": &schema.Schema{
-								Type:     schema.TypeString,
-								Computed: true,
-							},
-							"certificate_base64": &schema.Schema{
-								Type:     schema.TypeString,
-								Computed: true,
-							},
 							"ssl_port": &schema.Schema{
 								Type:     schema.TypeString,
 								Computed: true,
@@ -199,6 +183,22 @@ func DataSourceIBMDb2Instance() *schema.Resource {
 								Computed: true,
 							},
 							"database_version": &schema.Schema{
+								Type:     schema.TypeString,
+								Computed: true,
+							},
+							"private_service_name": &schema.Schema{
+								Type:     schema.TypeString,
+								Computed: true,
+							},
+							"cloud_service_offering": &schema.Schema{
+								Type:     schema.TypeString,
+								Computed: true,
+							},
+							"vpe_service_crn": &schema.Schema{
+								Type:     schema.TypeString,
+								Computed: true,
+							},
+							"db_vpc_endpoint_service": &schema.Schema{
 								Type:     schema.TypeString,
 								Computed: true,
 							},
@@ -417,7 +417,7 @@ func dataSourceIBMDb2InstanceRead(d *schema.ResourceData, meta interface{}) erro
 	if _, ok := d.GetOk("autoscaling_config"); ok {
 		getDb2SaasAutoscaleOptions := &db2saasv1.GetDb2SaasAutoscaleOptions{}
 
-		getDb2SaasAutoscaleOptions.SetXDeploymentID(d.Get("x_deployment_id").(string))
+		getDb2SaasAutoscaleOptions.SetXDbProfile(d.Get("x_db_profile").(string))
 
 		successAutoScaling, _, err := db2saasClient.GetDb2SaasAutoscaleWithContext(context.Background(), getDb2SaasAutoscaleOptions)
 		if err != nil {
@@ -427,39 +427,39 @@ func dataSourceIBMDb2InstanceRead(d *schema.ResourceData, meta interface{}) erro
 		d.SetId(dataSourceIbmDb2SaasAutoscaleID(d))
 
 		if err = d.Set("auto_scaling_allow_plan_limit", successAutoScaling.AutoScalingAllowPlanLimit); err != nil {
-			return fmt.Errorf("[ERROR] Error setting instance auto scaling allow plan limit: %s", err)
+			return fmt.Errorf("[ERROR] Error setting instance auto_scaling_allow_plan_limit: %s", err)
 		}
 
 		if err = d.Set("auto_scaling_enabled", successAutoScaling.AutoScalingEnabled); err != nil {
-			return fmt.Errorf("[ERROR] Error setting instance auto scaling enabled: %s", err)
+			return fmt.Errorf("[ERROR] Error setting instance auto_scaling_enabled: %s", err)
 		}
 
 		if err = d.Set("auto_scaling_max_storage", flex.IntValue(successAutoScaling.AutoScalingMaxStorage)); err != nil {
-			return fmt.Errorf("[ERROR] Error setting instance auto scaling max_storage: %s", err)
+			return fmt.Errorf("[ERROR] Error setting instance auto_scaling_max_storage: %s", err)
 		}
 
 		if err = d.Set("auto_scaling_over_time_period", flex.IntValue(successAutoScaling.AutoScalingOverTimePeriod)); err != nil {
-			return fmt.Errorf("[ERROR] Error setting instance auto scaling over_time_period: %s", err)
+			return fmt.Errorf("[ERROR] Error setting instance auto_scaling_over_time_period: %s", err)
 		}
 
 		if err = d.Set("auto_scaling_pause_limit", flex.IntValue(successAutoScaling.AutoScalingPauseLimit)); err != nil {
-			return fmt.Errorf("[ERROR] Error setting instance auto scaling pause limit: %s", err)
+			return fmt.Errorf("[ERROR] Error setting instance auto_scaling_pause_limit: %s", err)
 		}
 
 		if err = d.Set("auto_scaling_threshold", flex.IntValue(successAutoScaling.AutoScalingThreshold)); err != nil {
-			return fmt.Errorf("[ERROR] Error setting instance auto scaling threshold: %s", err)
+			return fmt.Errorf("[ERROR] Error setting instance auto_scaling_threshold: %s", err)
 		}
 
 		if err = d.Set("storage_unit", successAutoScaling.StorageUnit); err != nil {
-			return fmt.Errorf("[ERROR] Error setting instance storage unit: %s", err)
+			return fmt.Errorf("[ERROR] Error setting instance storage_unit: %s", err)
 		}
 
 		if err = d.Set("storage_utilization_percentage", flex.IntValue(successAutoScaling.StorageUtilizationPercentage)); err != nil {
-			return fmt.Errorf("[ERROR] Error setting instance storage utilization percentage: %s", err)
+			return fmt.Errorf("[ERROR] Error setting instance storage_utilization_percentage: %s", err)
 		}
 
 		if err = d.Set("support_auto_scaling", successAutoScaling.SupportAutoScaling); err != nil {
-			return fmt.Errorf("[ERROR] Error setting instance support auto scaling: %s", err)
+			return fmt.Errorf("[ERROR] Error setting instance support_auto_scaling: %s", err)
 		}
 	}
 
@@ -472,7 +472,7 @@ func dataSourceIBMDb2InstanceRead(d *schema.ResourceData, meta interface{}) erro
 
 		successConnectionInfo, _, err := db2saasClient.GetDb2SaasConnectionInfoWithContext(context.Background(), getDb2SaasConnectionInfoOptions)
 		if err != nil {
-			log.Printf("[ERROR] Error retrieving db2saas connection info: %s", err)
+			log.Printf("[ERROR] Error retrieving connection info: %s", err)
 		}
 
 		d.SetId(dataSourceIbmDb2SaasConnectionInfoID(d))

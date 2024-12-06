@@ -58,6 +58,75 @@ func ResourceIBMDb2Instance() *schema.Resource {
 		Type:        schema.TypeString,
 	}
 
+	riSchema["autoscale_config"] = &schema.Schema{
+		Description: "Autoscaling configurations of created Db2 instance",
+		Optional:    true,
+		Type:        schema.TypeList,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"auto_scaling_allow_plan_limit": &schema.Schema{
+					Type:        schema.TypeBool,
+					Computed:    true,
+					Optional:    true,
+					Description: "Indicates the maximum number of scaling actions that are allowed within a specified time period.",
+				},
+				"auto_scaling_enabled": &schema.Schema{
+					Type:        schema.TypeBool,
+					Computed:    true,
+					Optional:    true,
+					Description: "Indicates if automatic scaling is enabled or not.",
+				},
+				"auto_scaling_over_time_period": &schema.Schema{
+					Type:        schema.TypeInt,
+					Computed:    true,
+					Optional:    true,
+					Description: "Defines the time period over which auto-scaling adjustments are monitored and applied.",
+				},
+				"auto_scaling_pause_limit": &schema.Schema{
+					Type:        schema.TypeInt,
+					Computed:    true,
+					Optional:    true,
+					Description: "Specifies the duration to pause auto-scaling actions after a scaling event has occurred.",
+				},
+				"auto_scaling_threshold": &schema.Schema{
+					Type:        schema.TypeInt,
+					Computed:    true,
+					Optional:    true,
+					Description: "Specifies the resource utilization level that triggers an auto-scaling.",
+				},
+			},
+		},
+	}
+
+	riSchema["whitelist_config"] = &schema.Schema{
+		Description: "Whitelists configurations of created Db2 instance",
+		Optional:    true,
+		Type:        schema.TypeList,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"ip_addresses": &schema.Schema{
+					Type:        schema.TypeList,
+					Computed:    true,
+					Description: "List of IP addresses.",
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"address": &schema.Schema{
+								Type:        schema.TypeString,
+								Computed:    true,
+								Description: "The IP address, in IPv4/ipv6 format.",
+							},
+							"description": &schema.Schema{
+								Type:        schema.TypeString,
+								Computed:    true,
+								Description: "Description of the IP address.",
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
 	return &schema.Resource{
 		Create:   resourceIBMDb2InstanceCreate,
 		Read:     resourcecontroller.ResourceIBMResourceInstanceRead,
@@ -280,10 +349,16 @@ func resourceIBMDb2InstanceCreate(d *schema.ResourceData, meta interface{}) erro
 				return err
 			}
 
+			if len(autoscalingConfig) > 1 {
+				autoscalingConfig["auto_scaling_enabled"] = true
+			} else {
+				autoscalingConfig["auto_scaling_enabled"] = false
+			}
+
 			input := &db2saasv1.PutDb2SaasAutoscaleOptions{
-				XDeploymentID:             core.StringPtr(*instance.CRN),
-				AutoScalingEnabled:        core.StringPtr("YES"),
-				AutoScalingAllowPlanLimit: core.StringPtr("YES"),
+				XDbProfile:                core.StringPtr(*instance.CRN),
+				AutoScalingEnabled:        core.StringPtr(autoscalingConfig["auto_scaling_enabled"].(string)),
+				AutoScalingAllowPlanLimit: core.StringPtr(autoscalingConfig["auto_scaling_allow_plan_limit"].(string)),
 				AutoScalingThreshold:      core.Int64Ptr(int64(autoScalingThreshold)),
 				AutoScalingOverTimePeriod: core.Float64Ptr(float64(autoScalingOverTimePeriod)),
 				AutoScalingPauseLimit:     core.Int64Ptr(int64(autoScalingPauseLimit)),

@@ -25,7 +25,7 @@ func TestAccIbmDb2SaasAutoscaleDataSourceBasic(t *testing.T) {
 				Config: testAccCheckIbmDb2SaasAutoscaleDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_db2_saas_autoscale.db2_saas_autoscale_instance", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_db2_saas_autoscale.db2_saas_autoscale_instance", "x_deployment_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_db2_saas_autoscale.db2_saas_autoscale_instance", "x_db_profile"),
 					resource.TestCheckResourceAttrSet("data.ibm_db2_saas_autoscale.db2_saas_autoscale_instance", "auto_scaling_allow_plan_limit"),
 					resource.TestCheckResourceAttrSet("data.ibm_db2_saas_autoscale.db2_saas_autoscale_instance", "auto_scaling_enabled"),
 					resource.TestCheckResourceAttrSet("data.ibm_db2_saas_autoscale.db2_saas_autoscale_instance", "auto_scaling_max_storage"),
@@ -44,7 +44,7 @@ func TestAccIbmDb2SaasAutoscaleDataSourceBasic(t *testing.T) {
 func testAccCheckIbmDb2SaasAutoscaleDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		data "ibm_db2_saas_autoscale" "db2_saas_autoscale_instance" {
-			x-deployment-id = "x-deployment-id"
+			x-db-profile = "x-db-profile"
 		}
 	`)
 }

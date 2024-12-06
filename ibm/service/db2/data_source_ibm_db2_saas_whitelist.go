@@ -16,9 +16,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
+	"github.com/IBM/cloud-db2-go-sdk/db2saasv1"
+
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.com/IBM/cloud-db2-go-sdk/db2saasv1"
 )
 
 func DataSourceIbmDb2SaasWhitelist() *schema.Resource {

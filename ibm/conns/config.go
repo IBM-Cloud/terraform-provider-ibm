@@ -669,6 +669,10 @@ type clientSession struct {
 	// Logs Routing
 	ibmCloudLogsRoutingClient    *ibmcloudlogsroutingv0.IBMCloudLogsRoutingV0
 	ibmCloudLogsRoutingClientErr error
+
+	// db2 saas
+	db2saasClient    *db2saasv1.Db2saasV1
+	db2saasClientErr error
 }
 
 // Usage Reports
@@ -801,6 +805,11 @@ func (sess clientSession) ICDAPI() (icdv4.ICDServiceAPI, error) {
 // The IBM Cloud Databases API
 func (session clientSession) CloudDatabasesV5() (*clouddatabasesv5.CloudDatabasesV5, error) {
 	return session.cloudDatabasesClient, session.cloudDatabasesClientErr
+}
+
+// IBM Db2 SaaS on Cloud REST API
+func (session clientSession) Db2saasV1() (*db2saasv1.Db2saasV1, error) {
+	return session.db2saasClient, session.db2saasClientErr
 }
 
 // MccpAPI provides Multi Cloud Controller Proxy APIs ...
@@ -2413,6 +2422,27 @@ func (c *Config) ClientSession() (interface{}, error) {
 		})
 	} else {
 		session.configurationAggregatorClientErr = fmt.Errorf("Error occurred while constructing 'Configuration Aggregator' service client: %q", err)
+	}
+
+	// Construct an instance of the 'IBM Db2 SaaS on Cloud REST API' service.
+	if session.db2saasClientErr == nil {
+		// Construct the service options.
+		db2saasClientOptions := &db2saasv1.Db2saasV1Options{
+			Authenticator: authenticator,
+		}
+
+		// Construct the service client.
+		session.db2saasClient, err = db2saasv1.NewDb2saasV1(db2saasClientOptions)
+		if err == nil {
+			// Enable retries for API calls
+			session.db2saasClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+			// Add custom header for analytics
+			session.db2saasClient.SetDefaultHeaders(gohttp.Header{
+				"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+			})
+		} else {
+			session.db2saasClientErr = fmt.Errorf("Error occurred while constructing 'IBM Db2 SaaS on Cloud REST API' service client: %q", err)
+		}
 	}
 
 	// CIS Service instances starts here.
