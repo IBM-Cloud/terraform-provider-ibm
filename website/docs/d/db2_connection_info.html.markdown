@@ -1,12 +1,12 @@
 ---
 subcategory: "Db2 SaaS"
 layout: "ibm"
-page_title: "IBM : ibm_db2_saas_connection_info"
+page_title: "IBM : ibm_db2_connection_info"
 description: |-
   Get Information about Connection info of IBM Db2 SaaS instance.
 ---
 
-# ibm_db2_saas_connection_info
+# ibm_db2_connection_info
 
 Retrieve information about connection info of an existing [IBM Db2 SaaS Instance](https://cloud.ibm.com/docs/Db2onCloud).
 
