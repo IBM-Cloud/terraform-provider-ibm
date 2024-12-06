@@ -2751,6 +2751,19 @@ func ApplyOnce(k, o, n string, d *schema.ResourceData) bool {
 	}
 	return true
 }
+
+func ApplyOnlyOnce(k, o, n string, d *schema.ResourceData) bool {
+	// For new resources, allow the first value to be set
+	if len(d.Id()) == 0 {
+		return false
+	}
+
+	// For existing resources, don't allow changes (keep the original value)
+	if o == "" {
+		return false
+	}
+	return true
+}
 func GetTagsUsingCRN(meta interface{}, resourceCRN string) (*schema.Set, error) {
 	// Move the API to use globalsearch API instead of globalTags API due to rate limit
 	taggingResult, err := GetGlobalTagsUsingSearchAPI(meta, resourceCRN, "", "user")
