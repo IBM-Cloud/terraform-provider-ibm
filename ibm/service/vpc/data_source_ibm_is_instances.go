@@ -1523,14 +1523,15 @@ func instancesList(d *schema.ResourceData, meta interface{}) error {
 			catalogList = append(catalogList, catalogMap)
 			l[isInstanceCatalogOffering] = catalogList
 		}
-
+		clusterNetwork := []map[string]interface{}{}
 		if instance.ClusterNetwork != nil {
 			clusterNetworkMap, err := DataSourceIBMIsInstancesClusterNetworkReferenceToMap(instance.ClusterNetwork)
 			if err != nil {
 				return err
 			}
-			l["cluster_network"] = []map[string]interface{}{clusterNetworkMap}
+			clusterNetwork = append(clusterNetwork, clusterNetworkMap)
 		}
+		l["cluster_network"] = clusterNetwork
 		clusterNetworkAttachments := []map[string]interface{}{}
 		for _, clusterNetworkAttachmentsItem := range instance.ClusterNetworkAttachments {
 			clusterNetworkAttachmentsItemMap, err := DataSourceIBMIsInstancesInstanceClusterNetworkAttachmentReferenceToMap(&clusterNetworkAttachmentsItem) // #nosec G601
