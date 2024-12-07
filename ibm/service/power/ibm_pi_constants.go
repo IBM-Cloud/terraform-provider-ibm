@@ -105,6 +105,7 @@ const (
 	Arg_VirtualOpticalDevice                = "pi_virtual_optical_device"
 	Arg_VolumeCloneName                     = "pi_volume_clone_name"
 	Arg_VolumeCloneTaskID                   = "pi_volume_clone_task_id"
+	Arg_VolumeGroupAction                   = "pi_volume_group_action"
 	Arg_VolumeGroupID                       = "pi_volume_group_id"
 	Arg_VolumeGroupName                     = "pi_volume_group_name"
 	Arg_VolumeID                            = "pi_volume_id"
@@ -333,6 +334,7 @@ const (
 	Attr_ReservedCore                       = "reserved_core"
 	Attr_ReservedCores                      = "reserved_cores"
 	Attr_ReservedMemory                     = "reserved_memory"
+	Attr_Reset                              = "reset"
 	Attr_ResultsOnboardedVolumes            = "results_onboarded_volumes"
 	Attr_ResultsVolumeOnboardingFailures    = "results_volume_onboarding_failures"
 	Attr_Rules                              = "rules"
@@ -348,6 +350,7 @@ const (
 	Attr_SharedProcessorPools               = "shared_processor_pools"
 	Attr_Size                               = "size"
 	Attr_SnapshotID                         = "snapshot_id"
+	Attr_Source                             = "source"
 	Attr_SourceChecksum                     = "source_checksum"
 	Attr_SourceIP                           = "source_ip"
 	Attr_SourcePort                         = "source_port"
@@ -360,11 +363,13 @@ const (
 	Attr_SPPPlacementGroupPolicy            = "policy"
 	Attr_SPPPlacementGroups                 = "spp_placement_groups"
 	Attr_SSHKey                             = "ssh_key"
+	Attr_Start                              = "start"
 	Attr_StartTime                          = "start_time"
 	Attr_State                              = "state"
 	Attr_Status                             = "status"
 	Attr_StatusDescriptionErrors            = "status_description_errors"
 	Attr_StatusDetail                       = "status_detail"
+	Attr_Stop                               = "stop"
 	Attr_StorageConnection                  = "storage_connection"
 	Attr_StoragePool                        = "storage_pool"
 	Attr_StoragePoolAffinity                = "storage_pool_affinity"
@@ -452,6 +457,7 @@ const (
 	Allow                     = "allow"
 	AntiAffinity              = "anti-affinity"
 	Attach                    = "attach"
+	Aux                       = "aux"
 	BYOL                      = "byol"
 	Capped                    = "capped"
 	Critical                  = "CRITICAL"
@@ -476,6 +482,7 @@ const (
 	L2                        = "L2"
 	L3BGP                     = "L3BGP"
 	L3Static                  = "L3Static"
+	Master                    = "master"
 	MaxVolumeSupport          = "maxVolumeSupport"
 	NAG                       = "network-address-group"
 	Netweaver                 = "Netweaver"
@@ -554,10 +561,6 @@ const (
 	Timeout_Warning = 60 * time.Second
 
 	// TODO: Second Half Cleanup, remove extra variables
-
-	// IBM PI Volume Group
-	PIVolumeGroupAction = "pi_volume_group_action"
-	PIVolumeGroupID     = "pi_volume_group_id"
 
 	// VPN
 	PIVPNConnectionId                         = "connection_id"
