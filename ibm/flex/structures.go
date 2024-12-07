@@ -1342,6 +1342,13 @@ func IntValue(i64 *int64) (i int) {
 	return
 }
 
+func Float64Value(f32 *float32) (f float64) {
+	if f32 != nil {
+		f = float64(*f32)
+	}
+	return
+}
+
 func StringValue(strPtr *string) (_ string) {
 	if strPtr != nil {
 		return *strPtr
