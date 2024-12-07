@@ -75,15 +75,15 @@ func testAccCheckIbmAppConfigSegmentExists(n string, obj appconfigurationv1.Segm
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return flex.FmtErrorf("Not found: %s", n)
 		}
 		parts, err := flex.IdParts(rs.Primary.ID)
 		if err != nil {
-			return err
+			return flex.FmtErrorf(fmt.Sprintf("%s", err))
 		}
 		appconfigClient, err := getAppConfigClient(acc.TestAccProvider.Meta(), parts[0])
 		if err != nil {
-			return err
+			return flex.FmtErrorf(fmt.Sprintf("%s", err))
 		}
 
 		options := &appconfigurationv1.GetSegmentOptions{}
@@ -92,7 +92,7 @@ func testAccCheckIbmAppConfigSegmentExists(n string, obj appconfigurationv1.Segm
 
 		result, _, err := appconfigClient.GetSegment(options)
 		if err != nil {
-			return err
+			return flex.FmtErrorf(fmt.Sprintf("%s", err))
 		}
 
 		obj = *result
@@ -108,11 +108,11 @@ func testAccCheckIbmAppConfigSegmentDestroy(s *terraform.State) error {
 		}
 		parts, err := flex.IdParts(rs.Primary.ID)
 		if err != nil {
-			return err
+			return flex.FmtErrorf(fmt.Sprintf("%s", err))
 		}
 		appconfigClient, err := getAppConfigClient(acc.TestAccProvider.Meta(), parts[0])
 		if err != nil {
-			return err
+			return flex.FmtErrorf(fmt.Sprintf("%s", err))
 		}
 		options := &appconfigurationv1.GetSegmentOptions{}
 
@@ -122,9 +122,9 @@ func testAccCheckIbmAppConfigSegmentDestroy(s *terraform.State) error {
 		_, response, err := appconfigClient.GetSegment(options)
 
 		if err == nil {
-			return fmt.Errorf("Segment still exists: %s", rs.Primary.ID)
+			return flex.FmtErrorf("Segment still exists: %s", rs.Primary.ID)
 		} else if response.StatusCode != 404 {
-			return fmt.Errorf("[ERROR] Error checking for Segment (%s) has been destroyed: %s", rs.Primary.ID, err)
+			return flex.FmtErrorf("[ERROR] Error checking for Segment (%s) has been destroyed: %s", rs.Primary.ID, err)
 		}
 	}
 
