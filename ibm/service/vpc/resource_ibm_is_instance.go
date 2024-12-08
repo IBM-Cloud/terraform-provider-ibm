@@ -834,6 +834,55 @@ func ResourceIBMISInstance() *schema.Resource {
 							Computed:    true,
 							Description: "The resource type.",
 						},
+						// primary_ip for consistency
+						"primary_ip": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The primary IP address of the virtual network interface for the network attachment.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"address": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The IP address.If the address has not yet been selected, the value will be `0.0.0.0`.This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.",
+									},
+									"deleted": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"more_info": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Link to documentation about deleted resources.",
+												},
+											},
+										},
+									},
+									"href": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The URL for this reserved IP.",
+									},
+									"id": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The unique identifier for this reserved IP.",
+									},
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The name for this reserved IP. The name is unique across all reserved IPs in a subnet.",
+									},
+									"resource_type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The resource type.",
+									},
+								},
+							},
+						},
 						"id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -1198,7 +1247,55 @@ func ResourceIBMISInstance() *schema.Resource {
 								},
 							},
 						},
-
+						// primary_ip for consistency
+						"primary_ip": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The primary IP address of the virtual network interface for the network attachment.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"address": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The IP address.If the address has not yet been selected, the value will be `0.0.0.0`.This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.",
+									},
+									"deleted": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"more_info": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Link to documentation about deleted resources.",
+												},
+											},
+										},
+									},
+									"href": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The URL for this reserved IP.",
+									},
+									"id": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The unique identifier for this reserved IP.",
+									},
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The name for this reserved IP. The name is unique across all reserved IPs in a subnet.",
+									},
+									"resource_type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The resource type.",
+									},
+								},
+							},
+						},
 						"virtual_network_interface": &schema.Schema{
 							Type:        schema.TypeList,
 							MaxItems:    1,
@@ -7257,6 +7354,10 @@ func resourceIBMIsInstanceInstanceNetworkAttachmentReferenceToMap(model *vpcv1.I
 		vniMap["name"] = pna.VirtualNetworkInterface.Name
 		vniMap["resource_type"] = pna.VirtualNetworkInterface.ResourceType
 	}
+	if model.PrimaryIP != nil {
+		primaryipmap, _ := resourceIBMIsInstancePrimaryIPReferenceToMap(model.PrimaryIP)
+		modelMap["primary_ip"] = []map[string]interface{}{primaryipmap}
+	}
 	getVirtualNetworkInterfaceOptions := &vpcv1.GetVirtualNetworkInterfaceOptions{
 		ID: pna.VirtualNetworkInterface.ID,
 	}
@@ -7330,6 +7431,24 @@ func resourceIBMIsInstanceReservedIPReferenceToMap(model *vpcv1.ReservedIPRefere
 	modelMap["name"] = model.Name
 	if model.ResourceType != nil {
 		modelMap["resource_type"] = *model.ResourceType
+	}
+	return modelMap, nil
+}
+func resourceIBMIsInstancePrimaryIPReferenceToMap(model *vpcv1.ReservedIPReference) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["address"] = model.Address
+	if model.Deleted != nil {
+		deletedMap, err := resourceIBMIsInstanceReservedIPReferenceDeletedToMap(model.Deleted)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["deleted"] = []map[string]interface{}{deletedMap}
+	}
+	modelMap["href"] = model.Href
+	modelMap["id"] = model.ID
+	modelMap["name"] = model.Name
+	if model.ResourceType != nil {
+		modelMap["resource_type"] = model.ResourceType
 	}
 	return modelMap, nil
 }
