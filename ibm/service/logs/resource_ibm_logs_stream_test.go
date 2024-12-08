@@ -5,18 +5,17 @@ package logs_test
 
 import (
 	"fmt"
+	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/logs"
-	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/observability-c/dragonlog-logs-go-sdk/logsv0"
-	"github.com/stretchr/testify/assert"
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM/logs-go-sdk/logsv0"
 )
 
 func TestAccIbmLogsStreamBasic(t *testing.T) {
@@ -27,7 +26,7 @@ func TestAccIbmLogsStreamBasic(t *testing.T) {
 	dpxlExpressionUpdate := fmt.Sprintf("tf_dpxl_expression_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		PreCheck:     func() { acc.TestAccPreCheckCloudLogs(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmLogsStreamDestroy,
 		Steps: []resource.TestStep{
@@ -62,7 +61,7 @@ func TestAccIbmLogsStreamAllArgs(t *testing.T) {
 	compressionTypeUpdate := "gzip"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		PreCheck:     func() { acc.TestAccPreCheckCloudLogs(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmLogsStreamDestroy,
 		Steps: []resource.TestStep{
@@ -97,26 +96,30 @@ func TestAccIbmLogsStreamAllArgs(t *testing.T) {
 func testAccCheckIbmLogsStreamConfigBasic(name string, dpxlExpression string) string {
 	return fmt.Sprintf(`
 		resource "ibm_logs_stream" "logs_stream_instance" {
-			name = "%s"
-			dpxl_expression = "%s"
+			instance_id      = "%s"
+			region           = "%s"
+			name 			 = "%s"
+			dpxl_expression  = "%s"
 		}
-	`, name, dpxlExpression)
+	`, acc.LogsInstanceId, acc.LogsInstanceRegion, name, dpxlExpression)
 }
 
 func testAccCheckIbmLogsStreamConfig(name string, isActive string, dpxlExpression string, compressionType string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_logs_stream" "logs_stream_instance" {
-			name = "%s"
-			is_active = %s
-			dpxl_expression = "%s"
+			instance_id      = "%s"
+			region           = "%s"
+			name             = "%s"
+			is_active        = %s
+			dpxl_expression  = "%s"
 			compression_type = "%s"
 			ibm_event_streams {
 				brokers = "kafka01.example.com:9093"
-				topic = "live.screen"
+				topic   = "live.screen"
 			}
 		}
-	`, name, isActive, dpxlExpression, compressionType)
+	`, acc.LogsInstanceId, acc.LogsInstanceRegion, name, isActive, dpxlExpression, compressionType)
 }
 
 func testAccCheckIbmLogsStreamExists(n string, obj logsv0.Stream) resource.TestCheckFunc {
@@ -131,17 +134,26 @@ func testAccCheckIbmLogsStreamExists(n string, obj logsv0.Stream) resource.TestC
 		if err != nil {
 			return err
 		}
+		logsClient = getTestClientWithLogsInstanceEndpoint(logsClient)
+
+		resourceID, err := flex.IdParts(rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+		streamsIDInt, _ := strconv.ParseInt(resourceID[2], 10, 64)
 
 		getEventStreamTargetsOptions := &logsv0.GetEventStreamTargetsOptions{}
-
-		getEventStreamTargetsOptions.SetID(rs.Primary.ID)
 
 		stream, _, err := logsClient.GetEventStreamTargets(getEventStreamTargetsOptions)
 		if err != nil {
 			return err
 		}
-
-		obj = *stream
+		for _, stream := range stream.Streams {
+			if stream.ID == &streamsIDInt {
+				obj = stream
+				return nil
+			}
+		}
 		return nil
 	}
 }
@@ -151,60 +163,27 @@ func testAccCheckIbmLogsStreamDestroy(s *terraform.State) error {
 	if err != nil {
 		return err
 	}
+	logsClient = getTestClientWithLogsInstanceEndpoint(logsClient)
+
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "ibm_logs_stream" {
 			continue
 		}
 
 		getEventStreamTargetsOptions := &logsv0.GetEventStreamTargetsOptions{}
-
-		getEventStreamTargetsOptions.SetID(rs.Primary.ID)
-
+		resourceID, err := flex.IdParts(rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+		streamsIDInt, _ := strconv.ParseInt(resourceID[2], 10, 64)
 		// Try to find the key
-		_, response, err := logsClient.GetEventStreamTargets(getEventStreamTargetsOptions)
-
-		if err == nil {
-			return fmt.Errorf("logs_stream still exists: %s", rs.Primary.ID)
-		} else if response.StatusCode != 404 {
-			return fmt.Errorf("Error checking for logs_stream (%s) has been destroyed: %s", rs.Primary.ID, err)
+		streams, _, _ := logsClient.GetEventStreamTargets(getEventStreamTargetsOptions)
+		for _, stream := range streams.Streams {
+			if stream.ID == &streamsIDInt {
+				return fmt.Errorf("logs_streams still exists: %s", rs.Primary.ID)
+			}
 		}
 	}
 
 	return nil
-}
-
-func TestResourceIbmLogsStreamIbmEventStreamsToMap(t *testing.T) {
-	checkResult := func(result map[string]interface{}) {
-		model := make(map[string]interface{})
-		model["brokers"] = "kafka01.example.com:9093"
-		model["topic"] = "live.screen"
-
-		assert.Equal(t, result, model)
-	}
-
-	model := new(logsv0.IbmEventStreams)
-	model.Brokers = core.StringPtr("kafka01.example.com:9093")
-	model.Topic = core.StringPtr("live.screen")
-
-	result, err := logs.ResourceIbmLogsStreamIbmEventStreamsToMap(model)
-	assert.Nil(t, err)
-	checkResult(result)
-}
-
-func TestResourceIbmLogsStreamMapToIbmEventStreams(t *testing.T) {
-	checkResult := func(result *logsv0.IbmEventStreams) {
-		model := new(logsv0.IbmEventStreams)
-		model.Brokers = core.StringPtr("kafka01.example.com:9093")
-		model.Topic = core.StringPtr("live.screen")
-
-		assert.Equal(t, result, model)
-	}
-
-	model := make(map[string]interface{})
-	model["brokers"] = "kafka01.example.com:9093"
-	model["topic"] = "live.screen"
-
-	result, err := logs.ResourceIbmLogsStreamMapToIbmEventStreams(model)
-	assert.Nil(t, err)
-	checkResult(result)
 }

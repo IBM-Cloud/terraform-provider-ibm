@@ -3,7 +3,7 @@
 
 /*
  * IBM OpenAPI Terraform Generator Version: 3.96.0-d6dec9d7-20241008-212902
-*/
+ */
 
 package logs
 
@@ -11,6 +11,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -18,7 +19,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/observability-c/dragonlog-logs-go-sdk/logsv0"
+	"github.com/IBM/logs-go-sdk/logsv0"
 )
 
 func DataSourceIbmLogsStream() *schema.Resource {
@@ -30,6 +31,11 @@ func DataSourceIbmLogsStream() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The name of the Event stream.",
+			},
+			"logs_streams_id": &schema.Schema{
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The ID of the Event stream.",
 			},
 			"is_active": &schema.Schema{
 				Type:        schema.TypeBool,
@@ -86,59 +92,70 @@ func dataSourceIbmLogsStreamRead(context context.Context, d *schema.ResourceData
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
+	region := getLogsInstanceRegion(logsClient, d)
+	instanceId := d.Get("instance_id").(string)
+	logsClient = getClientWithLogsInstanceEndpoint(logsClient, instanceId, region, getLogsInstanceEndpointType(logsClient, d))
+
+	streamsID, _ := strconv.ParseInt(d.Get("logs_streams_id").(string), 10, 64)
 
 	getEventStreamTargetsOptions := &logsv0.GetEventStreamTargetsOptions{}
 
-	stream, _, err := logsClient.GetEventStreamTargetsWithContext(context, getEventStreamTargetsOptions)
+	streams, _, err := logsClient.GetEventStreamTargetsWithContext(context, getEventStreamTargetsOptions)
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetEventStreamTargetsWithContext failed: %s", err.Error()), "(Data) ibm_logs_stream", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
+	if streams != nil {
+		for _, stream := range streams.Streams {
+			if stream.ID == &streamsID {
 
-	d.SetId(*stream.ID)
+				d.SetId(fmt.Sprintf("%d", *stream.ID))
 
-	if err = d.Set("name", stream.Name); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_logs_stream", "read", "set-name").GetDiag()
-	}
+				if err = d.Set("name", stream.Name); err != nil {
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_logs_stream", "read", "set-name").GetDiag()
+				}
 
-	if !core.IsNil(stream.IsActive) {
-		if err = d.Set("is_active", stream.IsActive); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting is_active: %s", err), "(Data) ibm_logs_stream", "read", "set-is_active").GetDiag()
-		}
-	}
+				if !core.IsNil(stream.IsActive) {
+					if err = d.Set("is_active", stream.IsActive); err != nil {
+						return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting is_active: %s", err), "(Data) ibm_logs_stream", "read", "set-is_active").GetDiag()
+					}
+				}
 
-	if err = d.Set("dpxl_expression", stream.DpxlExpression); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting dpxl_expression: %s", err), "(Data) ibm_logs_stream", "read", "set-dpxl_expression").GetDiag()
-	}
+				if err = d.Set("dpxl_expression", stream.DpxlExpression); err != nil {
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting dpxl_expression: %s", err), "(Data) ibm_logs_stream", "read", "set-dpxl_expression").GetDiag()
+				}
 
-	if !core.IsNil(stream.CreatedAt) {
-		if err = d.Set("created_at", flex.DateTimeToString(stream.CreatedAt)); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting created_at: %s", err), "(Data) ibm_logs_stream", "read", "set-created_at").GetDiag()
-		}
-	}
+				if !core.IsNil(stream.CreatedAt) {
+					if err = d.Set("created_at", flex.DateTimeToString(stream.CreatedAt)); err != nil {
+						return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting created_at: %s", err), "(Data) ibm_logs_stream", "read", "set-created_at").GetDiag()
+					}
+				}
 
-	if !core.IsNil(stream.UpdatedAt) {
-		if err = d.Set("updated_at", flex.DateTimeToString(stream.UpdatedAt)); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting updated_at: %s", err), "(Data) ibm_logs_stream", "read", "set-updated_at").GetDiag()
-		}
-	}
+				if !core.IsNil(stream.UpdatedAt) {
+					if err = d.Set("updated_at", flex.DateTimeToString(stream.UpdatedAt)); err != nil {
+						return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting updated_at: %s", err), "(Data) ibm_logs_stream", "read", "set-updated_at").GetDiag()
+					}
+				}
 
-	if !core.IsNil(stream.CompressionType) {
-		if err = d.Set("compression_type", stream.CompressionType); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting compression_type: %s", err), "(Data) ibm_logs_stream", "read", "set-compression_type").GetDiag()
-		}
-	}
+				if !core.IsNil(stream.CompressionType) {
+					if err = d.Set("compression_type", stream.CompressionType); err != nil {
+						return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting compression_type: %s", err), "(Data) ibm_logs_stream", "read", "set-compression_type").GetDiag()
+					}
+				}
 
-	if !core.IsNil(stream.IbmEventStreams) {
-		ibmEventStreams := []map[string]interface{}{}
-		ibmEventStreamsMap, err := DataSourceIbmLogsStreamIbmEventStreamsToMap(stream.IbmEventStreams)
-		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_logs_stream", "read", "ibm_event_streams-to-map").GetDiag()
-		}
-		ibmEventStreams = append(ibmEventStreams, ibmEventStreamsMap)
-		if err = d.Set("ibm_event_streams", ibmEventStreams); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting ibm_event_streams: %s", err), "(Data) ibm_logs_stream", "read", "set-ibm_event_streams").GetDiag()
+				if !core.IsNil(stream.IbmEventStreams) {
+					ibmEventStreams := []map[string]interface{}{}
+					ibmEventStreamsMap, err := DataSourceIbmLogsStreamIbmEventStreamsToMap(stream.IbmEventStreams)
+					if err != nil {
+						return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_logs_stream", "read", "ibm_event_streams-to-map").GetDiag()
+					}
+					ibmEventStreams = append(ibmEventStreams, ibmEventStreamsMap)
+					if err = d.Set("ibm_event_streams", ibmEventStreams); err != nil {
+						return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting ibm_event_streams: %s", err), "(Data) ibm_logs_stream", "read", "set-ibm_event_streams").GetDiag()
+					}
+				}
+			}
 		}
 	}
 

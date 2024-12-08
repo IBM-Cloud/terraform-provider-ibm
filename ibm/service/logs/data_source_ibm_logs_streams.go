@@ -3,7 +3,7 @@
 
 /*
  * IBM OpenAPI Terraform Generator Version: 3.96.0-d6dec9d7-20241008-212902
-*/
+ */
 
 package logs
 
@@ -18,7 +18,7 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.com/observability-c/dragonlog-logs-go-sdk/logsv0"
+	"github.com/IBM/logs-go-sdk/logsv0"
 )
 
 func DataSourceIbmLogsStreams() *schema.Resource {
@@ -100,6 +100,9 @@ func dataSourceIbmLogsStreamsRead(context context.Context, d *schema.ResourceDat
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
+	region := getLogsInstanceRegion(logsClient, d)
+	instanceId := d.Get("instance_id").(string)
+	logsClient = getClientWithLogsInstanceEndpoint(logsClient, instanceId, region, getLogsInstanceEndpointType(logsClient, d))
 
 	getEventStreamTargetsOptions := &logsv0.GetEventStreamTargetsOptions{}
 

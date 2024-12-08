@@ -3,7 +3,7 @@
 
 /*
  * IBM OpenAPI Terraform Generator Version: 3.96.0-d6dec9d7-20241008-212902
-*/
+ */
 
 package logs_test
 
@@ -14,10 +14,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/logs"
-	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/observability-c/dragonlog-logs-go-sdk/logsv0"
-	"github.com/stretchr/testify/assert"
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
@@ -26,7 +22,7 @@ func TestAccIbmLogsStreamDataSourceBasic(t *testing.T) {
 	streamDpxlExpression := fmt.Sprintf("tf_dpxl_expression_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		PreCheck:  func() { acc.TestAccPreCheckCloudLogs(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
@@ -48,7 +44,7 @@ func TestAccIbmLogsStreamDataSourceAllArgs(t *testing.T) {
 	streamCompressionType := "unspecified"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		PreCheck:  func() { acc.TestAccPreCheckCloudLogs(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
@@ -71,53 +67,43 @@ func TestAccIbmLogsStreamDataSourceAllArgs(t *testing.T) {
 func testAccCheckIbmLogsStreamDataSourceConfigBasic(streamName string, streamDpxlExpression string) string {
 	return fmt.Sprintf(`
 		resource "ibm_logs_stream" "logs_stream_instance" {
-			name = "%s"
-			dpxl_expression = "%s"
+			instance_id      = "%s"
+			region           = "%s"
+			name 			 = "%s"
+			dpxl_expression  = "%s"
 		}
 
 		data "ibm_logs_stream" "logs_stream_instance" {
+			instance_id      = "%[1]s"
+			region           = "%[2]s"
 			depends_on = [
 				ibm_logs_stream.logs_stream_instance
 			]
 		}
-	`, streamName, streamDpxlExpression)
+	`, acc.LogsInstanceId, acc.LogsInstanceRegion, streamName, streamDpxlExpression)
 }
 
 func testAccCheckIbmLogsStreamDataSourceConfig(streamName string, streamIsActive string, streamDpxlExpression string, streamCompressionType string) string {
 	return fmt.Sprintf(`
 		resource "ibm_logs_stream" "logs_stream_instance" {
-			name = "%s"
-			is_active = %s
-			dpxl_expression = "%s"
+			instance_id      = "%s"
+			region           = "%s"
+			name             = "%s"
+			is_active        = %s
+			dpxl_expression  = "%s"
 			compression_type = "%s"
 			ibm_event_streams {
 				brokers = "kafka01.example.com:9093"
-				topic = "live.screen"
+				topic   = "live.screen"
 			}
 		}
 
 		data "ibm_logs_stream" "logs_stream_instance" {
+			instance_id      = "%[1]s"
+			region           = "%[2]s"
 			depends_on = [
 				ibm_logs_stream.logs_stream_instance
 			]
 		}
-	`, streamName, streamIsActive, streamDpxlExpression, streamCompressionType)
-}
-
-func TestDataSourceIbmLogsStreamIbmEventStreamsToMap(t *testing.T) {
-	checkResult := func(result map[string]interface{}) {
-		model := make(map[string]interface{})
-		model["brokers"] = "kafka01.example.com:9093"
-		model["topic"] = "live.screen"
-
-		assert.Equal(t, result, model)
-	}
-
-	model := new(logsv0.IbmEventStreams)
-	model.Brokers = core.StringPtr("kafka01.example.com:9093")
-	model.Topic = core.StringPtr("live.screen")
-
-	result, err := logs.DataSourceIbmLogsStreamIbmEventStreamsToMap(model)
-	assert.Nil(t, err)
-	checkResult(result)
+	`, acc.LogsInstanceId, acc.LogsInstanceRegion, streamName, streamIsActive, streamDpxlExpression, streamCompressionType)
 }
