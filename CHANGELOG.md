@@ -1,3 +1,76 @@
+# 1.72.0 (Dec 08, 2024)
+Features
+* Support for Db2 SaaS
+    - **Resources**
+        - ibm_db2
+    - **Datasources**
+        - ibm_db2
+* Support for IAM
+    - **Datasources**
+        - ibm_iam_effective_account_settings
+* Support for MQaaS
+    - **Datasources**
+        - ibm_mqcloud_virtual_private_endpoint_gateway
+* Support for VPC
+    - **Datasources**
+        - ibm_is_cluster_network
+        - ibm_is_cluster_networks
+        - ibm_is_cluster_network_interface
+        - ibm_is_cluster_network_interfaces
+        - ibm_is_cluster_network_profile
+        - ibm_is_cluster_network_profiles
+        - ibm_is_cluster_network_subnet
+        - ibm_is_cluster_network_subnets
+        - ibm_is_cluster_network_subnet_reserved_ip
+        - ibm_is_cluster_network_subnet_reserved_ips
+        - ibm_is_instance_cluster_network_attachment
+        - ibm_is_instance_cluster_network_attachments
+    - **Resources**
+        - ibm_is_cluster_network_interface
+        - ibm_is_cluster_network_subnet_reserved_ip
+        - ibm_is_cluster_network_subnet
+        - ibm_is_cluster_network
+        - ibm_is_instance_cluster_network_attachment
+
+* Support for Power System
+    - **Datasources**
+        - ibm_pi_network_peers
+
+Enhancements
+* Add version validation ([5791](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5791))
+* Refactor shared-processor-pool resource ([5796](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5796))
+* Refactor Cloud Connection Network Attach ([5781](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5781))
+* Import a resource provisioned with key_protect_id and key_protect_instance attributes set ([5798](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5798))
+* enable commit while creating template/version ([5797](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5797))
+* ListClassicWorkers => ListAllWorkers ([5784](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5784))
+* chore: update mirroring example doc ([5767](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5767))
+* Update resource_instance.html.markdown ([5806](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5806))
+* fix(cloud-databases): Refactor tests Part 1 ([5810](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5810))
+* feat(BM-Reservations-Automatic-Attachment): Baremetal Server Reservations and Reservations Automatic Attachment ([5805](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5805)) 
+* Support enable secure-by-default ([5751](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5751)) 
+* Added support for volume_prototypes on ibm_is_instance resource ([5777](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5777)) 
+* ODF 4.16 terraform support ([5789](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5789)) 
+* Add Chenai to the doc ([5813](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5813)) 
+* ibm_pag_instance should force a new instance when parameters_json are updated ([5807](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5807))
+* Add power private datacenter capabilities ([5833](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5833))
+* fixed instance, instance template documents, alignment ([5850](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5850))
+* fix: instance cluster network attachment update ([5853](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5853))
+* Custom Diff User Tags ([5844](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5844))
+* added primary_ip refernce to nac for consistency ([5847](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5847))
+
+BugFixes
+* ICD: Promote read replicas ([5738](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5738))
+* docs(pps): Remove SA notes fpr private path service gateway feature ([5788](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5788))
+* Fix sap profile datasource warning ([5779](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5779))
+* fixed documents for is datasources ([5782](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5782))
+* fix: eventstreams sarama clientid ([5802](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5802))
+* fix(ibm_is_image): 404 error fix on datasource ([5769](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5769))
+* fix(ibm_is_share): 404 error fix on datasource ([5770](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5770))
+* fix(ibm_is_snapshot): 404 error fix on datasource ([5771](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5771))
+* vol fix for snapshot crn ([5815](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5815))
+* fix: adjust validation for Code Engine application scale_concurrency_target ([5792](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5792))
+
+
 # 1.72.0-beta0(Nov 27, 2024)
 Features
 * Support for Db2 SaaS
