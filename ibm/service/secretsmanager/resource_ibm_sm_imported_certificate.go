@@ -61,14 +61,14 @@ func ResourceIbmSmImportedCertificate() *schema.Resource {
 			"secret_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "A v4 UUID identifier.",
+				Description: "A UUID identifier.",
 			},
 			"secret_group_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
 				ForceNew:    true,
-				Description: "A v4 UUID identifier, or `default` secret group.",
+				Description: "A UUID identifier, or `default` secret group.",
 			},
 			"secret_type": &schema.Schema{
 				Type:        schema.TypeString,
