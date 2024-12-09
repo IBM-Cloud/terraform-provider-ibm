@@ -1251,7 +1251,7 @@ func ResourceIbmLogsAlert() *schema.Resource {
 			},
 			"notification_groups": &schema.Schema{
 				Type:        schema.TypeList,
-				Required:    true,
+				Optional:    true,
 				Description: "Alert notification groups.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
