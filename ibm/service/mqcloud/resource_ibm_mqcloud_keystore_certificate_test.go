@@ -21,15 +21,16 @@ import (
 )
 
 func TestAccIbmMqcloudKeystoreCertificateBasic(t *testing.T) {
-	t.Parallel()
 	var conf mqcloudv1.KeyStoreCertificateDetails
-	serviceInstanceGuid := acc.MqcloudInstanceID
+	serviceInstanceGuid := acc.MqcloudDeploymentID
 	queueManagerID := acc.MqcloudQueueManagerID
 	label := fmt.Sprintf("tf_label_%d", acctest.RandIntRange(10, 100))
 	certificateFile := acc.MqcloudKSCertFilePath
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheckMqcloud(t) },
+		PreCheck: func() {
+			acc.TestAccPreCheckMqcloud(t)
+		},
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmMqcloudKeystoreCertificateDestroy,
 		Steps: []resource.TestStep{

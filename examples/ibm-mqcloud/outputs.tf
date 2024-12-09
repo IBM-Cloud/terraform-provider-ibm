@@ -28,3 +28,9 @@ output "ibm_mqcloud_truststore_certificate" {
   value       = ibm_mqcloud_truststore_certificate.mqcloud_truststore_certificate_instance
   description = "mqcloud_truststore_certificate resource instance"
 }
+// This output allows mqcloud_virtual_private_endpoint_gateway data to be referenced by other resources and the terraform CLI
+// Modify this output if only certain data should be exposed
+output "ibm_mqcloud_virtual_private_endpoint_gateway" {
+  value       = ibm_mqcloud_virtual_private_endpoint_gateway.mqcloud_virtual_private_endpoint_gateway_instance
+  description = "mqcloud_virtual_private_endpoint_gateway resource instance"
+}

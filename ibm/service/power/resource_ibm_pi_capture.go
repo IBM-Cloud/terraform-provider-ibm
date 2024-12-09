@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	st "github.com/IBM-Cloud/power-go-client/clients/instance"
@@ -18,6 +19,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -37,6 +39,11 @@ func ResourceIBMPICapture() *schema.Resource {
 			Delete: schema.DefaultTimeout(50 * time.Minute),
 			Update: schema.DefaultTimeout(60 * time.Minute),
 		},
+		CustomizeDiff: customdiff.Sequence(
+			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
+				return flex.ResourcePowerUserTagsCustomizeDiff(diff)
+			},
+		),
 
 		Schema: map[string]*schema.Schema{
 
@@ -107,6 +114,7 @@ func ResourceIBMPICapture() *schema.Resource {
 				Description: "Cloud Storage Image Path (bucket-name [/folder/../..])",
 			},
 			Arg_UserTags: {
+				Computed:    true,
 				Description: "List of user tags attached to the resource.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Optional:    true,
@@ -196,7 +204,10 @@ func resourceIBMPICaptureCreate(ctx context.Context, d *schema.ResourceData, met
 		imageClient := st.NewIBMPIImageClient(ctx, sess, cloudInstanceID)
 		imagedata, err := imageClient.Get(capturename)
 		if err != nil {
-			log.Printf("Error on get of ibm pi capture (%s) while applying pi_user_tags: %s", capturename, err)
+			if strings.Contains(err.Error(), NotFound) {
+				d.SetId("")
+			}
+			return diag.Errorf("Error on get of ibm pi capture (%s) while applying pi_user_tags: %s", capturename, err)
 		}
 		if imagedata.Crn != "" {
 			oldList, newList := d.GetChange(Arg_UserTags)

@@ -148,6 +148,7 @@ func resourceIbmConfigAggregatorSettingsCreate(context context.Context, d *schem
 		}
 		replaceSettingsOptions.SetAdditionalScope(additionalScope)
 	}
+	_, _, err = configurationAggregatorClient.ReplaceSettings(replaceSettingsOptions)
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ReplaceSettingsWithContext failed: %s", err.Error()), "ibm_config_aggregator_settings", "create")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())

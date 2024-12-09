@@ -18,6 +18,7 @@ resource "ibm_app_config_feature" "app_config_feature" {
   name = "name"
   type = "type"
   tags = "tags"
+  format="format"
   feature_id = "feature_id"
   enabled_value = "enabled_value"
   environment_id = "environment_id"
@@ -33,6 +34,7 @@ Review the argument reference that you can specify for your resource.
 - `guid` - (Required, String) The GUID of the App Configuration service. Fetch GUID from the service instance credentials section of the dashboard.
 - `environment_id` - (Required, String) The environment ID.
 - `name` - (Required, String) The feature name.
+- `format` - Format of the property (TEXT, JSON, YAML) and this is a required attribute when TYPE STRING is used, not required for BOOLEAN and NUMERIC types.
 - `feature_id` - (Required, String) The feature ID.
 - `type` - (Required, String) The feature type. Supported values are **BOOLEAN**, **STRING**, or **NUMERIC**.
 - `enabled_value` - (Required, String) The value of the feature when it is enabled. The value can be **BOOLEAN**, **STRING**, or **NUMERIC** value as per the `type` attribute.
