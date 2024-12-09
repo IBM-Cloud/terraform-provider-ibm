@@ -59,7 +59,7 @@ variable "sm_imported_certificate_labels" {
   default     = [ "my-label" ]
 }
 variable "sm_imported_certificate_secret_group_id" {
-  description = "A v4 UUID identifier, or `default` secret group."
+  description = "A UUID identifier, or `default` secret group."
   type        = string
   default     = "default"
 }
@@ -106,7 +106,7 @@ variable "sm_public_certificate_labels" {
   default     = [ "my-label" ]
 }
 variable "sm_public_certificate_secret_group_id" {
-  description = "A v4 UUID identifier, or `default` secret group."
+  description = "A UUID identifier, or `default` secret group."
   type        = string
   default     = "default"
 }
@@ -140,7 +140,7 @@ variable "sm_kv_secret_labels" {
   default     = [ "my-label" ]
 }
 variable "sm_kv_secret_secret_group_id" {
-  description = "A v4 UUID identifier, or `default` secret group."
+  description = "A UUID identifier, or `default` secret group."
   type        = string
   default     = "default"
 }
@@ -172,7 +172,7 @@ variable "sm_iam_credentials_secret_labels" {
   default     = [ "my-label" ]
 }
 variable "sm_iam_credentials_secret_secret_group_id" {
-  description = "A v4 UUID identifier, or `default` secret group."
+  description = "A UUID identifier, or `default` secret group."
   type        = string
   default     = "default"
 }
@@ -214,7 +214,7 @@ variable "sm_service_credentials_secret_labels" {
   default     = [ "my-label" ]
 }
 variable "sm_service_credentials_secret_secret_group_id" {
-  description = "A v4 UUID identifier, or `default` secret group."
+  description = "A UUID identifier, or `default` secret group."
   type        = string
   default     = "default"
 }
@@ -267,7 +267,7 @@ variable "sm_arbitrary_secret_labels" {
   default     = [ "my-label" ]
 }
 variable "sm_arbitrary_secret_secret_group_id" {
-  description = "A v4 UUID identifier, or `default` secret group."
+  description = "A UUID identifier, or `default` secret group."
   type        = string
   default     = "default"
 }
@@ -304,7 +304,7 @@ variable "sm_username_password_secret_labels" {
   default     = [ "my-label" ]
 }
 variable "sm_username_password_secret_secret_group_id" {
-  description = "A v4 UUID identifier, or `default` secret group."
+  description = "A UUID identifier, or `default` secret group."
   type        = string
   default     = "default"
 }
@@ -346,7 +346,7 @@ variable "sm_private_certificate_labels" {
   default     = [ "my-label" ]
 }
 variable "sm_private_certificate_secret_group_id" {
-  description = "A v4 UUID identifier, or `default` secret group."
+  description = "A UUID identifier, or `default` secret group."
   type        = string
   default     = "default"
 }

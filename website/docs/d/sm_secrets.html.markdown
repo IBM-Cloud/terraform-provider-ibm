@@ -65,7 +65,7 @@ Nested scheme for **secrets**:
 	* `dns` - (String) The name that is assigned to the DNS provider configuration.
 	* `downloaded` - (Boolean) Indicates whether the secret data that is associated with a secret version was retrieved in a call to the service API.
 	* `expiration_date` - (String) The date a secret is expired. The date format follows RFC 3339.
-	* `id` - (String) A v4 UUID identifier.
+	* `id` - (String) A UUID identifier.
 	  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/`.
 	* `intermediate_included` - (Boolean) Indicates whether the certificate was imported with an associated intermediate certificate.
 	* `issuance_info` - (List) Issuance information that is associated with your certificate.
@@ -110,7 +110,7 @@ Nested scheme for **secrets**:
 		* `rotate_keys` - (Boolean) Determines whether Secrets Manager rotates the private key for your public certificate automatically.Default is `false`. If it is set to `true`, the service generates and stores a new private key for your rotated certificate.
 		* `unit` - (String) The units for the secret rotation time interval.
 		  * Constraints: Allowable values are: `day`, `month`.
-	* `secret_group_id` - (String) A v4 UUID identifier, or `default` secret group.
+	* `secret_group_id` - (String) A UUID identifier, or `default` secret group.
 	  * Constraints: The maximum length is `36` characters. The minimum length is `7` characters. The value must match regular expression `/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|default)$/`.
 	* `secret_type` - (String) The secret type. Supported types are arbitrary, certificates (imported, public, and private), IAM credentials, key-value, and user credentials.
 	  * Constraints: Allowable values are: `arbitrary`, `imported_cert`, `public_cert`, `iam_credentials`, `kv`, `username_password`, `private_cert`.
