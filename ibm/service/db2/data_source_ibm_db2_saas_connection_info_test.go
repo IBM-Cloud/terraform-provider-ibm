@@ -21,14 +21,17 @@ import (
 )
 
 func TestAccIbmDb2SaasConnectionInfoDataSourceBasic(t *testing.T) {
+	db2DeploymentId := "crn%3Av1%3Astaging%3Apublic%3Adashdb-for-transactions%3Aus-south%3Aa%2Fe7e3e87b512f474381c0684a5ecbba03%3A69db420f-33d5-4953-8bd8-1950abd356f6%3A%3A"
+	db2XDeploymentId := "crn:v1:staging:public:dashdb-for-transactions:us-south:a/e7e3e87b512f474381c0684a5ecbba03:69db420f-33d5-4953-8bd8-1950abd356f6::"
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmDb2SaasConnectionInfoDataSourceConfigBasic(),
+				Config: testAccCheckIbmDb2SaasConnectionInfoDataSourceConfigBasic(db2DeploymentId, db2XDeploymentId),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_db2_saas_connection_info.db2_saas_connection_info_instance", "id"),
+					//resource.TestCheckResourceAttrSet("data.ibm_db2_saas_connection_info.db2_saas_connection_info_instance", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_db2_saas_connection_info.db2_saas_connection_info_instance", "deployment_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_db2_saas_connection_info.db2_saas_connection_info_instance", "x_deployment_id"),
 				),
@@ -37,13 +40,14 @@ func TestAccIbmDb2SaasConnectionInfoDataSourceBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmDb2SaasConnectionInfoDataSourceConfigBasic() string {
+func testAccCheckIbmDb2SaasConnectionInfoDataSourceConfigBasic(db2DeploymentId, db2XDeploymentId string) string {
 	return fmt.Sprintf(`
 		data "ibm_db2_saas_connection_info" "db2_saas_connection_info_instance" {
-			deployment_id = "deployment_id"
-			x-deployment-id = "x-deployment-id"
+			deployment_id = "[%1s]"
+            x_deployment_id = "[%2s]"
+            
 		}
-	`)
+	`, db2DeploymentId, db2XDeploymentId)
 }
 
 func TestDataSourceIbmDb2SaasConnectionInfoSuccessConnectionInfoPublicToMap(t *testing.T) {

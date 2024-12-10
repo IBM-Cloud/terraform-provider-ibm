@@ -431,6 +431,13 @@ var (
 	ISClusterNetworkSubnetPrefixesCidr string
 )
 
+// For db2 saas
+var (
+	Db2DeploymentId  string
+	Db2XDeploymentId string
+	Db2XDbProfile    string
+)
+
 func init() {
 	testlogger := os.Getenv("TF_LOG")
 	if testlogger != "" {
@@ -2055,6 +2062,24 @@ func init() {
 	PcsIamServiceRegistrationId = os.Getenv("PCS_IAM_REGISTRATION_ID")
 	if PcsIamServiceRegistrationId == "" {
 		fmt.Println("[WARN] Set the environment variable PCS_IAM_TEGISTRATION_ID for testing iam_onboarding resource else tests will fail if this is not set correctly")
+	}
+
+	Db2XDeploymentId = os.Getenv("DB2_X_DEPLOYMENT_ID")
+	if Db2XDeploymentId == "" {
+		Db2XDeploymentId = "crn:v1:staging:public:dashdb-for-transactions:us-south:a/e7e3e87b512f474381c0684a5ecbba03:69db420f-33d5-4953-8bd8-1950abd356f6::"
+		fmt.Println("[INFO] Set the environment variable DB2_X_DEPLOYMENT_ID for testing ibm_cloud_databases else it is set to default value 'crn:v1:staging:public:dashdb-for-transactions:us-south:a/e7e3e87b512f474381c0684a5ecbba03:69db420f-33d5-4953-8bd8-1950abd356f6::'")
+	}
+
+	Db2XDbProfile = os.Getenv("DB2_X_DB_PROFILE")
+	if Db2XDbProfile == "" {
+		Db2XDbProfile = "crn:v1:staging:public:dashdb-for-transactions:us-south:a/e7e3e87b512f474381c0684a5ecbba03:69db420f-33d5-4953-8bd8-1950abd356f6::"
+		fmt.Println("[INFO] Set the environment variable DB2_X_DB_PROFILE for testing ibm_cloud_databases else it is set to default value 'crn:v1:staging:public:dashdb-for-transactions:us-south:a/e7e3e87b512f474381c0684a5ecbba03:69db420f-33d5-4953-8bd8-1950abd356f6::'")
+	}
+
+	Db2DeploymentId = os.Getenv("DB2_DEPLOYMENT_ID")
+	if Db2DeploymentId == "" {
+		Db2DeploymentId = "crn%3Av1%3Astaging%3Apublic%3Adashdb-for-transactions%3Aus-south%3Aa%2Fe7e3e87b512f474381c0684a5ecbba03%3A69db420f-33d5-4953-8bd8-1950abd356f6%3A%3A"
+		fmt.Println("[INFO] Set the environment variable DB2_DEPLOYMENT_ID for testing ibm_cloud_databases else it is set to default value 'crn:v1:staging:public:dashdb-for-transactions:us-south:a/e7e3e87b512f474381c0684a5ecbba03:69db420f-33d5-4953-8bd8-1950abd356f6::'")
 	}
 }
 

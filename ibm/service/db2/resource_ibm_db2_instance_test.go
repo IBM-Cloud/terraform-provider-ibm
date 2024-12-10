@@ -135,6 +135,10 @@ func testAccCheckIBMDb2InstanceBasic(databaseResourceGroup string, testName stri
 		high_availability = "no"
 		backup_location   = "us"
 		tags              = ["one:two"]
+		//disk_encryption_instance_crn = "none"
+		//disk_encryption_key_crn = "none"
+		//oracle_compatibility = "no"
+		//subscription_id = "abc"
 
 		parameters_json   = <<EOF
 		{
@@ -150,48 +154,6 @@ func testAccCheckIBMDb2InstanceBasic(databaseResourceGroup string, testName stri
 			delete = "30m"
 		}
 	}
-
-	`, databaseResourceGroup, testName)
-}
-
-func testAccCheckIBMDb2InstanceAddWhitelist(databaseResourceGroup string, testName string) string {
-	return fmt.Sprintf(`
-	
-    data "ibm_resource_group" "group" {
-		name = "%[1]s"
-	}
-
-	resource "ibm_db2" "%[2]s" {
-		name              = "%[2]s"
-		service           = "dashdb-for-transactions"
-		plan              = "performance" 
-		location          = "us-east"
-		resource_group_id = data.ibm_resource_group.group.id
-		service_endpoints = "public-and-private"
-		instance_type     = ""
-		high_availability = "no"
-		backup_location   = "us"
-		tags              = ["one:two"]
-
-		parameters_json   = <<EOF
-		{
-			"disk_encryption_instance_crn": "none",
-			"disk_encryption_key_crn": "none",
-			"oracle_compatibility": "no"
-		}
-		EOF
-
-		timeouts {
-			create = "720m"
-			update = "30m"
-			delete = "30m"
-		}
-	}
-
-	resource "ibm_db2_whitelist_ips" "%[2]s" {
-
-}
-
 
 	`, databaseResourceGroup, testName)
 }

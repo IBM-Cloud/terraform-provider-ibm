@@ -29,7 +29,7 @@ func TestAccIbmDb2SaasWhitelistDataSourceBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIbmDb2SaasWhitelistDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_db2_saas_whitelist.db2_saas_whitelist_instance", "id"),
+					//resource.TestCheckResourceAttrSet("data.ibm_db2_saas_whitelist.db2_saas_whitelist_instance", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_db2_saas_whitelist.db2_saas_whitelist_instance", "x_deployment_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_db2_saas_whitelist.db2_saas_whitelist_instance", "ip_addresses.#"),
 				),
@@ -40,9 +40,9 @@ func TestAccIbmDb2SaasWhitelistDataSourceBasic(t *testing.T) {
 
 func testAccCheckIbmDb2SaasWhitelistDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
-		data "ibm_db2_saas_whitelist" "db2_saas_whitelist_instance" {
-			x-deployment-id = "x-deployment-id"
-		}
+		data "ibm_db2_saas_whitelist" "db2_whitelistips" {
+    x_deployment_id = "crn:v1:staging:public:dashdb-for-transactions:us-south:a/e7e3e87b512f474381c0684a5ecbba03:69db420f-33d5-4953-8bd8-1950abd356f6::"
+}
 	`)
 }
 

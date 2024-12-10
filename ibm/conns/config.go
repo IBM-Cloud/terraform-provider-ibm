@@ -2427,7 +2427,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	// Construct an instance of the 'IBM Db2 SaaS on Cloud REST API' service.
 	if session.db2saasClientErr == nil {
 		// Construct the service options.
+		defaultServiceEndpoint := "https://us-south.db2.saas.ibm.com/dbapi/v4"
 		db2saasClientOptions := &db2saasv1.Db2saasV1Options{
+			URL:           EnvFallBack([]string{"IBMCLOUD_DB2_API_ENDPOINT"}, defaultServiceEndpoint),
 			Authenticator: authenticator,
 		}
 
