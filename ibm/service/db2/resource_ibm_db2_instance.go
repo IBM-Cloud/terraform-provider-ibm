@@ -58,6 +58,30 @@ func ResourceIBMDb2Instance() *schema.Resource {
 		Type:        schema.TypeString,
 	}
 
+	riSchema["disk_encryption_instance_crn"] = &schema.Schema{
+		Description: "Cross Regional disk encryption crn",
+		Optional:    true,
+		Type:        schema.TypeString,
+	}
+
+	riSchema["disk_encryption_crn"] = &schema.Schema{
+		Description: "Cross Regional disk encryption crn",
+		Optional:    true,
+		Type:        schema.TypeString,
+	}
+
+	riSchema["oracle_compatibility"] = &schema.Schema{
+		Description: "Indicates whether is has compatibility for oracle or not",
+		Optional:    true,
+		Type:        schema.TypeString,
+	}
+
+	riSchema["subscription_id"] = &schema.Schema{
+		Description: "Subscription ID",
+		Optional:    true,
+		Type:        schema.TypeString,
+	}
+
 	riSchema["autoscale_config"] = &schema.Schema{
 		Description: "Autoscaling configurations of created Db2 instance",
 		Optional:    true,
@@ -236,6 +260,22 @@ func resourceIBMDb2InstanceCreate(d *schema.ResourceData, meta interface{}) erro
 		params["backup-locations"] = backupLocation.(string)
 	}
 
+	if diskEncryptionInstanceCrn, ok := d.GetOk("disk_encryption_instance_crn"); ok {
+		params["disk_encryption_instance_crn"] = diskEncryptionInstanceCrn.(string)
+	}
+
+	if diskEncryptionKeyCrn, ok := d.GetOk("disk_encryption_key_crn"); ok {
+		params["disk_encryption_key_crn"] = diskEncryptionKeyCrn.(string)
+	}
+
+	if oracleCompatibility, ok := d.GetOk("oracle_compatibility"); ok {
+		params["oracle_compatibility"] = oracleCompatibility.(string)
+	}
+
+	if subscriptionId, ok := d.GetOk("subscription_id"); ok {
+		params["subscription_id"] = subscriptionId.(string)
+	}
+
 	if parameters, ok := d.GetOk("parameters"); ok {
 		temp := parameters.(map[string]interface{})
 		for k, v := range temp {
@@ -263,6 +303,7 @@ func resourceIBMDb2InstanceCreate(d *schema.ResourceData, meta interface{}) erro
 		}
 
 	}
+
 	if s, ok := d.GetOk("parameters_json"); ok {
 		json.Unmarshal([]byte(s.(string)), &params)
 	}
