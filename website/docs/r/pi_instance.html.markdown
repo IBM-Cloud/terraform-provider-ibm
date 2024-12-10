@@ -108,6 +108,7 @@ Review the argument references that you can specify for your resource.
 - `pi_replication_policy` - (Optional, String) The replication policy that you want to use, either `affinity`, `anti-affinity` or `none`. If this parameter is not set, `none` is used by default.
 - `pi_replication_scheme` - (Optional, String) The replication scheme that you want to set, either `prefix` or `suffix`.
 - `pi_replication_sites` - (Optional, List) Indicates the replication sites of the boot volume.
+- `pi_retain_virtual_serial_number` - (Optional, Boolean) Indicates whether attached virtual serial number will be reserved when serial assigned to instance is changed, removed, or instance is deleted. If using `ibm_pi_virtual_serial_number` resource, will unassign and unreserved virtual serial number attached to instance if set to false. Default value is `false`.
 - `pi_sap_profile_id` - (Optional, String) SAP Profile ID for the amount of cores and memory.
   - Required only when creating SAP instances.
 - `pi_sap_deployment_type` - (Optional, String) Custom SAP deployment type information (For Internal Use Only).
@@ -122,6 +123,13 @@ Review the argument references that you can specify for your resource.
 - `pi_user_tags` - (Optional, List) The user tags attached to this resource.
 - `pi_virtual_cores_assigned`  - (Optional, Integer) Specify the number of virtual cores to be assigned.
 - `pi_virtual_optical_device` - (Optional, String) Virtual Machine's Cloud Initialization Virtual Optical Device.
+- `pi_virtual_serial_number` - (Optional, List)  Virtual Serial Number information. If using `ibm_pi_virtual_serial_number` resource to manage a virtual serial number assigned to this instance, it is strongly recommended to ignore changes in this argument using the `ignore_changes` meta-argument in the `lifecycle`.
+  
+  Nested scheme for `pi_virtual_serial_number`:
+    - `description` - (String, Optional) Description of virtual serial number.
+    - `serial` - (String, Required) Provide an existing reserved Virtual Serial Number or specify 'auto-assign' for auto generated Virtual Serial Number.
+      
+      ~> **Note** When set to "auto-assign", changes to `serial` outside of terraform will not be detected. In addition, if a new generated virtual serial number is needed, the old serial must be removed before a new one is generated.
 - `pi_volume_ids` - (Optional, List of String) The list of volume IDs that you want to attach to the instance during creation.
 
 ## Attribute reference
