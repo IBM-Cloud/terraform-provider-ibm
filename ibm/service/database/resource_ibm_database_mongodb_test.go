@@ -84,8 +84,8 @@ func TestAccIBMDatabaseInstanceMongodbImport(t *testing.T) {
 	t.Parallel()
 	databaseResourceGroup := "default"
 	var databaseInstanceOne string
+
 	serviceName := fmt.Sprintf("tf-Mongo-%d", acctest.RandIntRange(10, 100))
-	//serviceName := "test_acc"
 	resourceName := "ibm_database." + serviceName
 
 	resource.Test(t, resource.TestCase{
@@ -108,7 +108,7 @@ func TestAccIBMDatabaseInstanceMongodbImport(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
-					"wait_time_minutes"},
+					"wait_time_minutes", "deletion_protection"},
 			},
 		},
 	})

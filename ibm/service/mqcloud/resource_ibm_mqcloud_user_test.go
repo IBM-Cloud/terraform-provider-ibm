@@ -20,7 +20,7 @@ import (
 func TestAccIbmMqcloudUserBasic(t *testing.T) {
 	t.Parallel()
 	var conf mqcloudv1.UserDetails
-	serviceInstanceGuid := acc.MqcloudInstanceID
+	serviceInstanceGuid := acc.MqcloudDeploymentID
 	name := fmt.Sprintf("tfname%d", acctest.RandIntRange(10, 100))
 	email := fmt.Sprintf("tfemail%d@ibm.com", acctest.RandIntRange(10, 100))
 

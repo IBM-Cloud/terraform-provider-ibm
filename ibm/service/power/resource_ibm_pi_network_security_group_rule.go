@@ -421,7 +421,7 @@ func resourceIBMPINetworkSecurityGroupRuleRead(ctx context.Context, d *schema.Re
 		if err != nil {
 			log.Printf("Error on get of network security group (%s) user_tags: %s", nsgID, err)
 		}
-		d.Set(Arg_UserTags, userTags)
+		d.Set(Attr_UserTags, userTags)
 	}
 
 	if len(networkSecurityGroup.Members) > 0 {

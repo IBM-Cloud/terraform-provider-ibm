@@ -31,17 +31,17 @@ resource "ibm_resource_instance" "es_instance_2" {
   resource_group_id = data.ibm_resource_group.group.id
 
   parameters = {
-     throughput            = "300"
-     storage_size          = "4096"
-     service-endpoints     = "private"
-     private_ip_allowlist  = "[10.0.0.0/32,10.0.0.1/32]"
-     metrics               = "[topic,consumers]"
+    throughput           = "300"
+    storage_size         = "4096"
+    service-endpoints    = "private"
+    private_ip_allowlist = "[10.0.0.0/32,10.0.0.1/32]"
+    metrics              = "[topic,consumers]"
   }
 
   timeouts {
-     create = "330m" # 5.5h
-     update = "210m" # 3.5h
-     delete = "1h"
+    create = "330m" # 5.5h
+    update = "210m" # 3.5h
+    delete = "1h"
   }
 }
 
@@ -74,8 +74,8 @@ data "ibm_resource_instance" "es_instance_4" {
 
 resource "ibm_event_streams_schema" "es_schema" {
   resource_instance_id = data.ibm_resource_instance.es_instance_4.id
-  schema_id = "tf_schema"
-  schema = <<SCHEMA
+  schema_id            = "tf_schema"
+  schema               = <<SCHEMA
    {
            "type": "record",
            "name": "record_name",
@@ -107,10 +107,10 @@ data "ibm_resource_instance" "es_instance_source" {
 }
 # setup s2s at service level for mirroring to work
 resource "ibm_iam_authorization_policy" "service-policy" {
-  source_service_name         = "messagehub"
-  target_service_name         = "messagehub"
-  roles                       = ["Reader"]
-  description                 = "test mirroring setup via terraform"
+  source_service_name = "messagehub"
+  target_service_name = "messagehub"
+  roles               = ["Reader"]
+  description         = "test mirroring setup via terraform"
 }
 
 resource "ibm_resource_instance" "es_instance_target" {
@@ -125,6 +125,26 @@ resource "ibm_resource_instance" "es_instance_target" {
         source_crn   = data.ibm_resource_instance.es_instance_source.id
         source_alias = "source-alias"
         target_alias = "target-alias"
+        options = {
+          topic_name_transform = {
+            type = "rename"
+            rename = {
+              add_prefix    = "add_prefix"
+              add_suffix    = "add_suffix"
+              remove_prefix = "remove_prefix"
+              remove_suffix = "remove_suffix"
+            }
+          }
+          group_id_transform = {
+            type = "rename"
+            rename = {
+              add_prefix    = "add_prefix"
+              add_suffix    = "add_suffix"
+              remove_prefix = "remove_prefix"
+              remove_suffix = "remove_suffix"
+            }
+          }
+        }
       }
     }
   )

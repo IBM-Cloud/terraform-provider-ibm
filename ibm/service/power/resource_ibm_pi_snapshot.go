@@ -14,6 +14,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -31,6 +32,11 @@ func ResourceIBMPISnapshot() *schema.Resource {
 			Update: schema.DefaultTimeout(60 * time.Minute),
 			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
+		CustomizeDiff: customdiff.Sequence(
+			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
+				return flex.ResourcePowerUserTagsCustomizeDiff(diff)
+			},
+		),
 
 		Schema: map[string]*schema.Schema{
 
@@ -59,6 +65,7 @@ func ResourceIBMPISnapshot() *schema.Resource {
 				ValidateFunc: validation.NoZeroValues,
 			},
 			Arg_UserTags: {
+				Computed:    true,
 				Description: "The user tags attached to this resource.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Optional:    true,

@@ -5,7 +5,7 @@ variable "ibmcloud_api_key" {
 
 // Resource arguments for mqcloud_queue_manager
 variable "mqcloud_queue_manager_service_instance_guid" {
-  description = "The GUID that uniquely identifies the MQ on Cloud service instance."
+  description = "The GUID that uniquely identifies the MQaaS service instance."
   type        = string
   default     = "Service Instance ID"
 }
@@ -37,7 +37,7 @@ variable "mqcloud_queue_manager_version" {
 
 // Resource arguments for mqcloud_application
 variable "mqcloud_application_service_instance_guid" {
-  description = "The GUID that uniquely identifies the MQ on Cloud service instance."
+  description = "The GUID that uniquely identifies the MQaaS service instance."
   type        = string
   default     = "Service Instance ID"
 }
@@ -49,7 +49,7 @@ variable "mqcloud_application_name" {
 
 // Resource arguments for mqcloud_user
 variable "mqcloud_user_service_instance_guid" {
-  description = "The GUID that uniquely identifies the MQ on Cloud service instance."
+  description = "The GUID that uniquely identifies the MQaaS service instance."
   type        = string
   default     = "Service Instance ID"
 }
@@ -66,7 +66,7 @@ variable "mqcloud_user_email" {
 
 // Resource arguments for mqcloud_keystore_certificate
 variable "mqcloud_keystore_certificate_service_instance_guid" {
-  description = "The GUID that uniquely identifies the MQ on Cloud service instance."
+  description = "The GUID that uniquely identifies the MQaaS service instance."
   type        = string
   default     = "Service Instance ID"
 }
@@ -85,6 +85,7 @@ variable "mqcloud_keystore_certificate_certificate_file" {
   type        = string
   default     = "SGVsbG8gd29ybGQ="
 }
+
 variable "mqcloud_keystore_certificate_config_ams_channel_name" {
   description = "A channel's information that is configured with this certificate."
   type        = string
@@ -93,7 +94,7 @@ variable "mqcloud_keystore_certificate_config_ams_channel_name" {
 
 // Resource arguments for mqcloud_truststore_certificate
 variable "mqcloud_truststore_certificate_service_instance_guid" {
-  description = "The GUID that uniquely identifies the MQ on Cloud service instance."
+  description = "The GUID that uniquely identifies the MQaaS service instance."
   type        = string
   default     = "Service Instance ID"
 }
@@ -113,16 +114,38 @@ variable "mqcloud_truststore_certificate_certificate_file" {
   default     = "SGVsbG8gd29ybGQ="
 }
 
+// Resource arguments for mqcloud_virtual_private_endpoint_gateway
+variable "mqcloud_virtual_private_endpoint_gateway_service_instance_guid" {
+  description = "The GUID that uniquely identifies the MQaaS service instance."
+  type        = string
+  default     = "Service Instance ID"
+}
+variable "mqcloud_virtual_private_endpoint_gateway_trusted_profile" {
+  description = "The CRN of the trusted profile to assume for this request."
+  type        = string
+  default     = "CRN of Trusted Profile"
+}
+variable "mqcloud_virtual_private_endpoint_gateway_name" {
+  description = "The name of the virtual private endpoint gateway, created by the user."
+  type        = string
+  default     = "vpe-gateway1-to-vpe-gateway2"
+}
+variable "mqcloud_virtual_private_endpoint_gateway_target_crn" {
+  description = "The CRN of the reserved capacity service instance the user is trying to connect to."
+  type        = string
+  default     = "Virtual Private Endpoint CRN"
+}
+
 // Data source arguments for mqcloud_queue_manager_options
 variable "mqcloud_queue_manager_options_service_instance_guid" {
-  description = "The GUID that uniquely identifies the MQ on Cloud service instance."
+  description = "The GUID that uniquely identifies the MQaaS service instance."
   type        = string
   default     = "Service Instance ID"
 }
 
 // Data source arguments for mqcloud_queue_manager
 variable "data_mqcloud_queue_manager_service_instance_guid" {
-  description = "The GUID that uniquely identifies the MQ on Cloud service instance."
+  description = "The GUID that uniquely identifies the MQaaS service instance."
   type        = string
   default     = "Service Instance ID"
 }
@@ -134,7 +157,7 @@ variable "data_mqcloud_queue_manager_name" {
 
 // Data source arguments for mqcloud_queue_manager_status
 variable "mqcloud_queue_manager_status_service_instance_guid" {
-  description = "The GUID that uniquely identifies the MQ on Cloud service instance."
+  description = "The GUID that uniquely identifies the MQaaS service instance."
   type        = string
   default     = "Service Instance ID"
 }
@@ -146,7 +169,7 @@ variable "mqcloud_queue_manager_status_queue_manager_id" {
 
 // Data source arguments for mqcloud_application
 variable "data_mqcloud_application_service_instance_guid" {
-  description = "The GUID that uniquely identifies the MQ on Cloud service instance."
+  description = "The GUID that uniquely identifies the MQaaS service instance."
   type        = string
   default     = "Service Instance ID"
 }
@@ -158,7 +181,7 @@ variable "data_mqcloud_application_name" {
 
 // Data source arguments for mqcloud_user
 variable "data_mqcloud_user_service_instance_guid" {
-  description = "The GUID that uniquely identifies the MQ on Cloud service instance."
+  description = "The GUID that uniquely identifies the MQaaS service instance."
   type        = string
   default     = "Service Instance ID"
 }
@@ -170,7 +193,7 @@ variable "data_mqcloud_user_name" {
 
 // Data source arguments for mqcloud_truststore_certificate
 variable "data_mqcloud_truststore_certificate_service_instance_guid" {
-  description = "The GUID that uniquely identifies the MQ on Cloud service instance."
+  description = "The GUID that uniquely identifies the MQaaS service instance."
   type        = string
   default     = "Service Instance ID"
 }
@@ -187,7 +210,7 @@ variable "data_mqcloud_truststore_certificate_label" {
 
 // Data source arguments for mqcloud_keystore_certificate
 variable "data_mqcloud_keystore_certificate_service_instance_guid" {
-  description = "The GUID that uniquely identifies the MQ on Cloud service instance."
+  description = "The GUID that uniquely identifies the MQaaS service instance."
   type        = string
   default     = "Service Instance ID"
 }
@@ -200,4 +223,38 @@ variable "data_mqcloud_keystore_certificate_label" {
   description = "Certificate label in queue manager store."
   type        = string
   default     = "label"
+}
+
+// Data source arguments for mqcloud_virtual_private_endpoint_gateways
+variable "mqcloud_virtual_private_endpoint_gateways_service_instance_guid" {
+  description = "The GUID that uniquely identifies the MQaaS service instance."
+  type        = string
+  default     = "a2b4d4bc-dadb-4637-bcec-9b7d1e723af8"
+}
+variable "mqcloud_virtual_private_endpoint_gateways_trusted_profile" {
+  description = "The CRN of the trusted profile to assume for this request."
+  type        = string
+  default     = "crn:v1:staging:public:mq-eude-stackname:eu-de:::endpoint:qm1.private.stackname.mq2.test.appdomain.cloud"
+}
+variable "mqcloud_virtual_private_endpoint_gateways_name" {
+  description = "The name of the virtual private endpoint gateway, created by the user."
+  type        = string
+  default     = "name"
+}
+
+// Data source arguments for mqcloud_virtual_private_endpoint_gateway
+variable "data_mqcloud_virtual_private_endpoint_gateway_service_instance_guid" {
+  description = "The GUID that uniquely identifies the MQaaS service instance."
+  type        = string
+  default     = "a2b4d4bc-dadb-4637-bcec-9b7d1e723af8"
+}
+variable "data_mqcloud_virtual_private_endpoint_gateway_virtual_private_endpoint_gateway_guid" {
+  description = "The id of the virtual private endpoint gateway."
+  type        = string
+  default     = "r010-ebab3c08-c9a8-40c4-8869-61c09ddf7b44"
+}
+variable "data_mqcloud_virtual_private_endpoint_gateway_trusted_profile" {
+  description = "The CRN of the trusted profile to assume for this request."
+  type        = string
+  default     = "crn:v1:staging:public:mq-eude-stackname:eu-de:::endpoint:qm1.private.stackname.mq2.test.appdomain.cloud"
 }

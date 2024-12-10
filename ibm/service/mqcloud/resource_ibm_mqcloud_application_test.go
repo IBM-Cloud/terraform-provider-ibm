@@ -19,7 +19,7 @@ import (
 func TestAccIbmMqcloudApplicationBasic(t *testing.T) {
 	t.Parallel()
 	var conf mqcloudv1.ApplicationDetails
-	serviceInstanceGuid := acc.MqcloudInstanceID
+	serviceInstanceGuid := acc.MqcloudDeploymentID
 	name := "appbasic"
 
 	resource.Test(t, resource.TestCase{

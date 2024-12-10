@@ -372,9 +372,9 @@ func getLbs(d *schema.ResourceData, meta interface{}) error {
 		lbInfo[ProvisioningStatus] = *lb.ProvisioningStatus
 
 		lbInfo[CreatedAt] = lb.CreatedAt.String()
-		if *lb.IsPublic {
+		if lb.IsPublic != nil && *lb.IsPublic {
 			lbInfo[isLBType] = "public"
-		} else if *lb.IsPrivatePath {
+		} else if lb.IsPrivatePath != nil && *lb.IsPrivatePath {
 			lbInfo[isLBType] = "private_path"
 		} else {
 			lbInfo[isLBType] = "private"
