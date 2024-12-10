@@ -1196,19 +1196,13 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 
 		if remoteLeader, ok := d.GetOk("remote_leader_id"); ok {
 			if remoteLeaderStr, ok := remoteLeader.(string); ok {
-				groupsResponse, _ := getGroups(remoteLeaderStr, meta)
-				currentGroups := normalizeGroups(groupsResponse)
+				nodeCount = sourceFormationNodeCount(remoteLeaderStr, initialNodeCount, groups, meta)
+			}
+		}
+		if pitrLeader, ok := d.GetOk("point_in_time_recovery_deployment_id"); ok {
+			if pitrLeaderStr, ok := pitrLeader.(string); ok {
+				nodeCount = sourceFormationNodeCount(pitrLeaderStr, initialNodeCount, groups, meta)
 
-				for _, g := range groups {
-					var currentGroup *Group
-
-					for _, cg := range currentGroups {
-						if cg.ID == g.ID {
-							currentGroup = &cg
-							nodeCount = currentGroup.Members.Allocation
-						}
-					}
-				}
 			}
 		}
 
@@ -2981,6 +2975,24 @@ func getCpuEnforcementRatios(service string, plan string, hostFlavor string, met
 	}
 
 	return nil, 0, 0
+}
+
+func sourceFormationNodeCount(leaderStr string, initNodeCount int, groups []*Group, meta interface{}) (members int) {
+	groupsResponse, _ := getGroups(leaderStr, meta)
+	currentGroups := normalizeGroups(groupsResponse)
+
+	for _, g := range groups {
+		var currentGroup *Group
+
+		for _, cg := range currentGroups {
+			if cg.ID == g.ID {
+				currentGroup = &cg
+				return currentGroup.Members.Allocation
+			}
+		}
+	}
+
+	return initNodeCount
 }
 
 func validateUsersDiff(_ context.Context, diff *schema.ResourceDiff, meta interface{}) (err error) {
