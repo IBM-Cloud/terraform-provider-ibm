@@ -1977,7 +1977,6 @@ func Validator() validate.ValidatorDict {
 				"ibm_resource_key":                                   resourcecontroller.ResourceIBMResourceKeyValidator(),
 				"ibm_is_virtual_endpoint_gateway":                    vpc.ResourceIBMISEndpointGatewayValidator(),
 				"ibm_resource_tag":                                   globaltagging.ResourceIBMResourceTagValidator(),
-				"ibm_resource_access_tag":                            globaltagging.ResourceIBMResourceAccessTagValidator(),
 				"ibm_iam_access_tag":                                 globaltagging.ResourceIBMIamAccessTagValidator(),
 				"ibm_satellite_location":                             satellite.ResourceIBMSatelliteLocationValidator(),
 				"ibm_satellite_cluster":                              satellite.ResourceIBMSatelliteClusterValidator(),
