@@ -50,6 +50,77 @@ func TestAccIBMISInstanceDataSource_basic(t *testing.T) {
 		},
 	})
 }
+func TestAccIBMISInstanceDS_BasicCluster(t *testing.T) {
+
+	vpcname := fmt.Sprintf("tfins-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tfins-subnet-%d", acctest.RandIntRange(10, 100))
+	sshname := fmt.Sprintf("tfins-ssh-%d", acctest.RandIntRange(10, 100))
+	// instanceName := fmt.Sprintf("tfins-name-%d", acctest.RandIntRange(10, 100))
+	instanceName := "eu-de-test-cluster-ins"
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISInstanceDataSourceClusterConfig(vpcname, subnetname, sshname, instanceName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("data.ibm_is_instance.is_instance_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_instance.is_instance_instance", "access_tags.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_instance.is_instance_instance", "availability_policy_host_failure"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_instance.is_instance_instance", "bandwidth"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_instance.is_instance_instance", "boot_volume.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_instance.is_instance_instance", "cluster_network.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_instance.is_instance_instance", "cluster_network_attachments.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_instance.is_instance_instance", "cluster_network_attachments.0.href"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_instance.is_instance_instance", "cluster_network_attachments.0.id"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_instance.is_instance_instance", "cluster_network_attachments.0.name"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_instance.is_instance_instance", "cluster_network_attachments.0.resource_type"),
+					resource.TestCheckResourceAttr("data.ibm_is_instance.is_instance_instance", "name", instanceName),
+					resource.TestCheckResourceAttrSet("data.ibm_is_instance.is_instance_instance", "cluster_network_attachments.0.resource_type"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_instance.is_instance_instance", "confidential_compute_mode"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_instance.is_instance_instance", "crn"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_instance.is_instance_instance", "disks.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_instance.is_instance_instance", "disks.0.created_at"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_instance.is_instance_instance", "disks.0.href"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_instance.is_instance_instance", "disks.0.id"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_instance.is_instance_instance", "disks.0.interface_type"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_instance.is_instance_instance", "disks.0.resource_type"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_instance.is_instance_instance", "disks.0.size"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_instance.is_instance_instance", "enable_secure_boot"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_instance.is_instance_instance", "gpu.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_instance.is_instance_instance", "keys.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_instance.is_instance_instance", "keys.0.id"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_instance.is_instance_instance", "keys.0.name"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_instance.is_instance_instance", "image"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_instance.is_instance_instance", "lifecycle_reasons.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_instance.is_instance_instance", "lifecycle_state"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_instance.is_instance_instance", "memory"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_instance.is_instance_instance", "metadata_service.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_instance.is_instance_instance", "metadata_service_enabled"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_instance.is_instance_instance", "name"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_instance.is_instance_instance", "network_attachments.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_instance.is_instance_instance", "network_interfaces.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_instance.is_instance_instance", "primary_network_attachment.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_instance.is_instance_instance", "primary_network_interface.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_instance.is_instance_instance", "profile"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_instance.is_instance_instance", "reservation_affinity.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_instance.is_instance_instance", "resource_group"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_instance.is_instance_instance", "status"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_instance.is_instance_instance", "status_reasons.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_instance.is_instance_instance", "status_reasons.0.more_info"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_instance.is_instance_instance", "total_network_bandwidth"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_instance.is_instance_instance", "total_volume_bandwidth"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_instance.is_instance_instance", "vcpu.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_instance.is_instance_instance", "volume_attachments.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_instance.is_instance_instance", "volume_attachments.0.id"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_instance.is_instance_instance", "volume_attachments.0.name"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_instance.is_instance_instance", "vpc"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_instance.is_instance_instance", "zone"),
+				),
+			},
+		},
+	})
+}
 
 func TestAccIBMISInstanceDataSourceWithCatalogOffering(t *testing.T) {
 
@@ -250,6 +321,12 @@ data "ibm_is_instance" "ds_instance" {
   private_key = file("./test-fixtures/.ssh/id_rsa")
   passphrase  = ""
 }`, vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, sshname, instanceName, acc.IsWinImage, acc.InstanceProfileName, acc.ISZoneName)
+}
+func testAccCheckIBMISInstanceDataSourceClusterConfig(vpcname, subnetname, sshname, instanceName string) string {
+	return fmt.Sprintf(`
+		data "ibm_is_instance" "is_instance_instance" {
+			name        = "eu-de-test-cluster-ins"
+		}`)
 }
 
 func testAccCheckIBMISInstanceDataSourceConfigWithCatalogOffering(vpcname, subnetname, sshname, instanceName, planCrn, versionCrn string) string {

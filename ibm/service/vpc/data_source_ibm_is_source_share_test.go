@@ -5,6 +5,7 @@ package vpc_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
@@ -53,4 +54,26 @@ func testAccCheckIbmIsSourceShareDataSourceConfigBasic(vpcname, vpcname1, shareN
 			share_replica = ibm_is_share.replica.id
 		}
 	`)
+}
+func TestAccIbmIsSourceShareDataSource404(t *testing.T) {
+	srId := "8843-5fr454ft-f6-4565-9555-5f889f5f3f7777"
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccCheckIbmIsSourceShareDataSourceConfig404(srId),
+				ExpectError: regexp.MustCompile("GetShareSourceWithContext failed"),
+			},
+		},
+	})
+}
+
+func testAccCheckIbmIsSourceShareDataSourceConfig404(srId string) string {
+	return fmt.Sprintf(`
+		
+		data "ibm_is_source_share" "test" {
+			share_replica = "%s"
+		}
+	`, srId)
 }

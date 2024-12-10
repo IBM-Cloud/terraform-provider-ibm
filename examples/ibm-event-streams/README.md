@@ -18,7 +18,7 @@ The following `"ibm_resource_instance"` arguments are required:
 
 - `resource_group_id`: The ID of the resource group in which the instance will be provisioned. For more information about resource groups, see [Managing resource groups](https://cloud.ibm.com/docs/account?topic=account-rgs).
 
-The `parameters` argument is optional and provides additional provision or update options. Supported parameters are:
+The `parameters/parameters_json` argument is optional and provides additional provision or update options. Supported parameters are:
 
 - `throughput`: One of `"150"` (the default), `"300"`, `"450"`. The maximum capacity in MB/s for producing or consuming messages. For more information see [Scaling Enterprise plan capacity](https://cloud.ibm.com/docs/EventStreams?topic=EventStreams-ES_scaling_capacity). *Note:* See [Scaling combinations](https://cloud.ibm.com/docs/EventStreams?topic=EventStreams-ES_scaling_capacity#ES_scaling_combinations) for allowed combinations of `throughput` and `storage_size`.
     - Example:  `throughput  =  "300"`
@@ -37,6 +37,41 @@ The `parameters` argument is optional and provides additional provision or updat
 
 - `kms_key_crn`: The CRN (as a string) of a customer-managed root key provisioned with an IBM Cloud Key Protect or Hyper Protect Crypto Service. If provided, this key is used to encrypt all data at rest. For more information on customer-managed encryption, see [Managing encryption in Event Streams](https://cloud.ibm.com/docs/EventStreams?topic=EventStreams-managing_encryption).
     - Example:  `kms_key_crn  =  "crn:v1:prod:public:kms:us-south:a/6db1b0d0b5c54ee5c201552547febcd8:20adf7eb-e095-4dec-08cf-0b7d81e32db6:key:3fa9d921-d3b6-3516-a1ec-d54e27e7638b"`
+
+- `mirroring`: To enable mirroring in the cluster using `parameters_json`. For enterprise instance only. If defined `source_crn` (source cluster CRN as a string), `source_alias` (alias for source cluster as a string), `target_alias` (alias for target cluster as a string) are required. `options` are optional. 
+    - Example: 
+  
+```terraform
+  parameters_json = jsonencode(
+    {
+      mirroring = {
+        source_crn   = data.ibm_resource_instance.es_instance_source.id
+        source_alias = "source-alias"
+        target_alias = "target-alias"
+        options = {
+          topic_name_transform = {
+            type = "rename"
+            rename = {
+              add_prefix    = "add_prefix"
+              add_suffix    = "add_suffix"
+              remove_prefix = "remove_prefix"
+              remove_suffix = "remove_suffix"
+            }
+          }
+          group_id_transform = {
+            type = "rename"
+            rename = {
+              add_prefix    = "add_prefix"
+              add_suffix    = "add_suffix"
+              remove_prefix = "remove_prefix"
+              remove_suffix = "remove_suffix"
+            }
+          }
+        }
+      }
+    }
+  )
+```
 
 The `timeouts` argument is used to specify how long the IBM Cloud terraform provider will wait for the provision, update, or deprovision of the service instance. Values of 15 minutes are sufficient for standard and lite plans. For enterprise plans:
 - Use "3h" for create. Add an additional 1 hour for each level of non-default throughput, and an additional 30 minutes for each level of non-default storage size. For example with `throughput = "300"` (one level over default) and `storage_size = "8192"` (three levels over default), use 3 hours + 1 * 1 hour + 3 * 30 minutes = 5.5 hours.
@@ -160,7 +195,34 @@ resource "ibm_resource_tag" "tag_example_on_es" {
 }
 ```
 
-#### Scenario 6: Connect to an existing Event Streams instance and its topics.
+#### Scenario 6: Set default and user quotas on an existing Event Streams instance.
+
+This code sets the default quota to 32768 bytes/second for producers and 16384 bytes/second for consumers.
+It sets a quota for user `iam-ServiceId-00001111-2222-3333-4444-555566667777` to 65536 bytes/second for producers and no limit (-1) for consumers.
+For more information on quotas, see [Setting Kafka quotas](https://cloud.ibm.com/docs/EventStreams?topic=EventStreams-enabling_kafka_quotas).
+
+```terraform
+data "ibm_resource_instance" "es_instance_6" {
+  name              = "terraform-integration-6"
+  resource_group_id = data.ibm_resource_group.group.id
+}
+
+resource "ibm_event_streams_quota" "default_quota" {
+  resource_instance_id = data.ibm_resource_instance.es_instance_6.id
+  entity               = "default"
+  producer_byte_rate   = 32768
+  consumer_byte_rate   = 16384
+}
+
+resource "ibm_event_streams_quota" "user00001111_quota" {
+  resource_instance_id = data.ibm_resource_instance.es_instance_6.id
+  entity               = "iam-ServiceId-00001111-2222-3333-4444-555566667777"
+  producer_byte_rate   = 65536
+  consumer_byte_rate   = -1
+}
+```
+
+#### Scenario 7: Connect to an existing Event Streams instance and its topics.
 
 This scenario uses a fictitious `"kafka_consumer_app"` resource to demonstrate how a consumer application could be configured.
 The resource uses three configuration properties:
@@ -177,22 +239,93 @@ The topic names can be provided as strings, or can be taken from topic data sour
 
 ```terraform
 # Use an existing instance
-data "ibm_resource_instance" "es_instance_6" {
-  name              = "terraform-integration-6"
+data "ibm_resource_instance" "es_instance_7" {
+  name              = "terraform-integration-7"
   resource_group_id = data.ibm_resource_group.group.id
 }
 
 # Use an existing topic on that instance
-data "ibm_event_streams_topic" "es_topic_6" {
-  resource_instance_id = data.ibm_resource_instance.es_instance_6.id
+data "ibm_event_streams_topic" "es_topic_7" {
+  resource_instance_id = data.ibm_resource_instance.es_instance_7.id
   name                 = "my-es-topic"
 }
 
 # The FICTITIOUS consumer application, configured with brokers, API key, and topics
 resource "kafka_consumer_app" "es_kafka_app" {
-  bootstrap_server = lookup(data.ibm_resource_instance.es_instance_4.extensions, "kafka_brokers_sasl", [])
+  bootstrap_server = lookup(data.ibm_resource_instance.es_instance_7.extensions, "kafka_brokers_sasl", [])
   apikey           = var.es_reader_api_key
-  topics           = [data.ibm_event_streams_topic.es_topic_4.name]
+  topics           = [data.ibm_event_streams_topic.es_topic_7.name]
+}
+```
+#### Scenario 8: Create a target Event Streams service instance with mirroring enabled and its mirroring config
+```terraform
+data "ibm_resource_instance" "es_instance_source" {
+  name              = "terraform-integration-source"
+  resource_group_id = data.ibm_resource_group.group.id
+}
+# setup s2s at service level for mirroring to work
+resource "ibm_iam_authorization_policy" "service-policy" {
+  source_service_name = "messagehub"
+  target_service_name = "messagehub"
+  roles               = ["Reader"]
+  description         = "test mirroring setup via terraform"
+}
+
+resource "ibm_resource_instance" "es_instance_target" {
+  name              = "terraform-integration-target"
+  service           = "messagehub"
+  plan              = "enterprise-3nodes-2tb"
+  location          = "us-south"
+  resource_group_id = data.ibm_resource_group.group.id
+  parameters_json = jsonencode(
+    {
+      mirroring = {
+        source_crn   = data.ibm_resource_instance.es_instance_source.id
+        source_alias = "source-alias"
+        target_alias = "target-alias"
+        options = {
+          topic_name_transform = {
+            type = "rename"
+            rename = {
+              add_prefix    = "add_prefix"
+              add_suffix    = "add_suffix"
+              remove_prefix = "remove_prefix"
+              remove_suffix = "remove_suffix"
+            }
+          }
+          group_id_transform = {
+            type = "rename"
+            rename = {
+              add_prefix    = "add_prefix"
+              add_suffix    = "add_suffix"
+              remove_prefix = "remove_prefix"
+              remove_suffix = "remove_suffix"
+            }
+          }
+        }
+      }
+    }
+  )
+  timeouts {
+    create = "3h"
+    update = "1h"
+    delete = "15m"
+  }
+}
+# Configure a service-to-service binding between both instances to allow both instances to communicate.
+resource "ibm_iam_authorization_policy" "instance_policy" {
+  source_service_name         = "messagehub"
+  source_resource_instance_id = ibm_resource_instance.es_instance_target.guid
+  target_service_name         = "messagehub"
+  target_resource_instance_id = data.ibm_resource_instance.es_instance_source.guid
+  roles                       = ["Reader"]
+  description                 = "test mirroring setup via terraform"
+}
+
+# Select some topics from the source cluster to mirror.
+resource "ibm_event_streams_mirroring_config" "es_mirroring_config" {
+  resource_instance_id     = ibm_resource_instance.es_instance_target.id
+  mirroring_topic_patterns = ["topicA", "topicB"]
 }
 ```
 

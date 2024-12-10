@@ -15,7 +15,8 @@ import (
 
 func TestAccIbmAppConfigFeaturesDataSourceBasic(t *testing.T) {
 	environmentID := "dev"
-	featureType := "BOOLEAN"
+	featureType := "STRING"
+	featureFormat := "TEXT"
 	tags := "development feature"
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	featureID := fmt.Sprintf("tf_feature_id_%d", acctest.RandIntRange(10, 100))
@@ -27,7 +28,7 @@ func TestAccIbmAppConfigFeaturesDataSourceBasic(t *testing.T) {
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIbmAppConfigFeaturesDataSourceConfigBasic(instanceName, name, environmentID, featureID, featureType, description, tags),
+				Config: testAccCheckIbmAppConfigFeaturesDataSourceConfigBasic(instanceName, name, environmentID, featureID, featureType, featureFormat, description, tags),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_app_config_features.app_config_features_data2", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_app_config_features.app_config_features_data2", "first.#"),
@@ -44,7 +45,7 @@ func TestAccIbmAppConfigFeaturesDataSourceBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmAppConfigFeaturesDataSourceConfigBasic(instanceName, name, environmentID, featureID, featureType, description, tags string) string {
+func testAccCheckIbmAppConfigFeaturesDataSourceConfigBasic(instanceName, name, environmentID, featureID, featureType, featureFormat, description, tags string) string {
 	return fmt.Sprintf(`
 		resource "ibm_resource_instance" "app_config_terraform_test487" {
 			name     = "%s"
@@ -59,6 +60,7 @@ func testAccCheckIbmAppConfigFeaturesDataSourceConfigBasic(instanceName, name, e
 			environment_id  = "%s"
 			feature_id     	= "%s"
 			type           	= "%s"
+			format="%s"
 			enabled_value  	= true
 			disabled_value 	= false
 			description    	= "%s"
@@ -71,5 +73,5 @@ func testAccCheckIbmAppConfigFeaturesDataSourceConfigBasic(instanceName, name, e
 			guid          = ibm_app_config_feature.app_config_feature_resource2.guid
 			environment_id = ibm_app_config_feature.app_config_feature_resource2.environment_id
 		}
-		`, instanceName, name, environmentID, featureID, featureType, description, tags)
+		`, instanceName, name, environmentID, featureID, featureType, featureFormat, description, tags)
 }

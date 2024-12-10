@@ -8,8 +8,6 @@ subcategory: "Schematics"
 
 # ibm_schematics_policy
 
-~> **Beta:** This resource is in Beta, and is subject to change.
-
 Provides a read-only data source for schematics_policy. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
 ## Example Usage

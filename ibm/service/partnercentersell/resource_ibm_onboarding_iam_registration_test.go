@@ -51,6 +51,7 @@ func TestAccIbmOnboardingIamRegistrationAllArgs(t *testing.T) {
 	enabled := "true"
 	serviceType := "platform_service"
 	envUpdate := "current"
+	roleDisplayNameUpdate := fmt.Sprintf("random-%d", acctest.RandIntRange(10, 100))
 	nameUpdate := acc.PcsIamServiceRegistrationId
 	enabledUpdate := "true"
 	serviceTypeUpdate := "service"
@@ -61,7 +62,7 @@ func TestAccIbmOnboardingIamRegistrationAllArgs(t *testing.T) {
 		CheckDestroy: testAccCheckIbmOnboardingIamRegistrationDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmOnboardingIamRegistrationConfig(productID, env, name, enabled, serviceType, iamRegistrationRole, roleDisplayName),
+				Config: testAccCheckIbmOnboardingIamRegistrationConfig(productID, env, name, enabled, serviceType, iamRegistrationRole, roleDisplayName, acc.PcsIamServiceRegistrationId),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmOnboardingIamRegistrationExists("ibm_onboarding_iam_registration.onboarding_iam_registration_instance", conf),
 					resource.TestCheckResourceAttr("ibm_onboarding_iam_registration.onboarding_iam_registration_instance", "product_id", productID),
@@ -72,7 +73,7 @@ func TestAccIbmOnboardingIamRegistrationAllArgs(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmOnboardingIamRegistrationConfig(productID, envUpdate, nameUpdate, enabledUpdate, serviceTypeUpdate, iamRegistrationRole, roleDisplayName),
+				Config: testAccCheckIbmOnboardingIamRegistrationConfig(productID, envUpdate, nameUpdate, enabledUpdate, serviceTypeUpdate, iamRegistrationRole, roleDisplayNameUpdate, acc.PcsIamServiceRegistrationId),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_onboarding_iam_registration.onboarding_iam_registration_instance", "product_id", productID),
 					resource.TestCheckResourceAttr("ibm_onboarding_iam_registration.onboarding_iam_registration_instance", "env", envUpdate),
@@ -105,7 +106,7 @@ func testAccCheckIbmOnboardingIamRegistrationConfigBasic(productID string, name 
 	`, productID, name, name)
 }
 
-func testAccCheckIbmOnboardingIamRegistrationConfig(productID string, env string, name string, enabled string, serviceType string, iamRegistrationRole string, roleDisplayName string) string {
+func testAccCheckIbmOnboardingIamRegistrationConfig(productID string, env string, name string, enabled string, serviceType string, iamRegistrationRole string, roleDisplayName string, iamRegistrationID string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_onboarding_iam_registration" "onboarding_iam_registration_instance" {
@@ -242,7 +243,7 @@ func testAccCheckIbmOnboardingIamRegistrationConfig(productID string, env string
 					default = "%s"
 				}
 				options {
-					access_policy = { "key" = "inner" }
+					access_policy = true
 					policy_type = [ "access" ]
 				}
 			}
@@ -255,8 +256,16 @@ func testAccCheckIbmOnboardingIamRegistrationConfig(productID string, env string
 					}
 				}
 			}
+			supported_anonymous_accesses {
+				attributes {
+					account_id = "account_id"
+					service_name = "%s"
+					additional_properties = { "testString" = "additionalProps" }
+				}
+				roles = [ "%s" ]
+			}
 		}
-	`, productID, env, name, enabled, serviceType, iamRegistrationRole, name, name, iamRegistrationRole, iamRegistrationRole, roleDisplayName)
+	`, productID, env, name, enabled, serviceType, iamRegistrationRole, name, name, iamRegistrationRole, iamRegistrationRole, roleDisplayName, iamRegistrationID, iamRegistrationRole)
 }
 
 func testAccCheckIbmOnboardingIamRegistrationExists(n string, obj partnercentersellv1.IamServiceRegistration) resource.TestCheckFunc {
@@ -518,6 +527,7 @@ func TestResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedAnon
 		iamServiceRegistrationSupportedAnonymousAccessAttributesModel := make(map[string]interface{})
 		iamServiceRegistrationSupportedAnonymousAccessAttributesModel["account_id"] = "testString"
 		iamServiceRegistrationSupportedAnonymousAccessAttributesModel["service_name"] = "testString"
+		iamServiceRegistrationSupportedAnonymousAccessAttributesModel["additional_properties"] = map[string]interface{}{"key1": "testString"}
 
 		model := make(map[string]interface{})
 		model["attributes"] = []map[string]interface{}{iamServiceRegistrationSupportedAnonymousAccessAttributesModel}
@@ -529,6 +539,7 @@ func TestResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedAnon
 	iamServiceRegistrationSupportedAnonymousAccessAttributesModel := new(partnercentersellv1.IamServiceRegistrationSupportedAnonymousAccessAttributes)
 	iamServiceRegistrationSupportedAnonymousAccessAttributesModel.AccountID = core.StringPtr("testString")
 	iamServiceRegistrationSupportedAnonymousAccessAttributesModel.ServiceName = core.StringPtr("testString")
+	iamServiceRegistrationSupportedAnonymousAccessAttributesModel.AdditionalProperties = map[string]string{"key1": "testString"}
 
 	model := new(partnercentersellv1.IamServiceRegistrationSupportedAnonymousAccess)
 	model.Attributes = iamServiceRegistrationSupportedAnonymousAccessAttributesModel
@@ -544,6 +555,7 @@ func TestResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedAnon
 		model := make(map[string]interface{})
 		model["account_id"] = "testString"
 		model["service_name"] = "testString"
+		model["additional_properties"] = map[string]interface{}{"key1": "testString"}
 
 		assert.Equal(t, result, model)
 	}
@@ -551,6 +563,7 @@ func TestResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedAnon
 	model := new(partnercentersellv1.IamServiceRegistrationSupportedAnonymousAccessAttributes)
 	model.AccountID = core.StringPtr("testString")
 	model.ServiceName = core.StringPtr("testString")
+	model.AdditionalProperties = map[string]string{"key1": "testString"}
 
 	result, err := partnercentersell.ResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedAnonymousAccessAttributesToMap(model)
 	assert.Nil(t, err)
@@ -1158,7 +1171,7 @@ func TestResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedRole
 		iamServiceRegistrationDisplayNameObjectModel["zh_cn"] = "testString"
 
 		supportedRoleOptionsModel := make(map[string]interface{})
-		supportedRoleOptionsModel["access_policy"] = map[string]interface{}{"key1": "testString"}
+		supportedRoleOptionsModel["access_policy"] = true
 		supportedRoleOptionsModel["policy_type"] = []string{"access"}
 		supportedRoleOptionsModel["account_type"] = "enterprise"
 
@@ -1198,7 +1211,7 @@ func TestResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedRole
 	iamServiceRegistrationDisplayNameObjectModel.ZhCn = core.StringPtr("testString")
 
 	supportedRoleOptionsModel := new(partnercentersellv1.SupportedRoleOptions)
-	supportedRoleOptionsModel.AccessPolicy = map[string]string{"key1": "testString"}
+	supportedRoleOptionsModel.AccessPolicy = core.BoolPtr(true)
 	supportedRoleOptionsModel.PolicyType = []string{"access"}
 	supportedRoleOptionsModel.AccountType = core.StringPtr("enterprise")
 
@@ -1216,7 +1229,7 @@ func TestResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedRole
 func TestResourceIbmOnboardingIamRegistrationSupportedRoleOptionsToMap(t *testing.T) {
 	checkResult := func(result map[string]interface{}) {
 		model := make(map[string]interface{})
-		model["access_policy"] = map[string]interface{}{"key1": "testString"}
+		model["access_policy"] = true
 		model["policy_type"] = []string{"access"}
 		model["account_type"] = "enterprise"
 
@@ -1224,7 +1237,7 @@ func TestResourceIbmOnboardingIamRegistrationSupportedRoleOptionsToMap(t *testin
 	}
 
 	model := new(partnercentersellv1.SupportedRoleOptions)
-	model.AccessPolicy = map[string]string{"key1": "testString"}
+	model.AccessPolicy = core.BoolPtr(true)
 	model.PolicyType = []string{"access"}
 	model.AccountType = core.StringPtr("enterprise")
 
@@ -2140,7 +2153,7 @@ func TestResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupporte
 		iamServiceRegistrationDisplayNameObjectModel.ZhCn = core.StringPtr("testString")
 
 		supportedRoleOptionsModel := new(partnercentersellv1.SupportedRoleOptions)
-		supportedRoleOptionsModel.AccessPolicy = map[string]string{"key1": "testString"}
+		supportedRoleOptionsModel.AccessPolicy = core.BoolPtr(true)
 		supportedRoleOptionsModel.PolicyType = []string{"access"}
 		supportedRoleOptionsModel.AccountType = core.StringPtr("enterprise")
 
@@ -2180,7 +2193,7 @@ func TestResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupporte
 	iamServiceRegistrationDisplayNameObjectModel["zh_cn"] = "testString"
 
 	supportedRoleOptionsModel := make(map[string]interface{})
-	supportedRoleOptionsModel["access_policy"] = map[string]interface{}{"key1": "testString"}
+	supportedRoleOptionsModel["access_policy"] = true
 	supportedRoleOptionsModel["policy_type"] = []interface{}{"access"}
 	supportedRoleOptionsModel["account_type"] = "enterprise"
 
@@ -2198,7 +2211,7 @@ func TestResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupporte
 func TestResourceIbmOnboardingIamRegistrationMapToSupportedRoleOptions(t *testing.T) {
 	checkResult := func(result *partnercentersellv1.SupportedRoleOptions) {
 		model := new(partnercentersellv1.SupportedRoleOptions)
-		model.AccessPolicy = map[string]string{"key1": "testString"}
+		model.AccessPolicy = core.BoolPtr(true)
 		model.PolicyType = []string{"access"}
 		model.AccountType = core.StringPtr("enterprise")
 
@@ -2206,7 +2219,7 @@ func TestResourceIbmOnboardingIamRegistrationMapToSupportedRoleOptions(t *testin
 	}
 
 	model := make(map[string]interface{})
-	model["access_policy"] = map[string]interface{}{"key1": "testString"}
+	model["access_policy"] = true
 	model["policy_type"] = []interface{}{"access"}
 	model["account_type"] = "enterprise"
 

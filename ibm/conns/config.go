@@ -93,6 +93,8 @@ import (
 	jwt "github.com/golang-jwt/jwt"
 	slsession "github.com/softlayer/softlayer-go/session"
 
+	"github.com/IBM/configuration-aggregator-go-sdk/configurationaggregatorv1"
+
 	bluemix "github.com/IBM-Cloud/bluemix-go"
 	"github.com/IBM-Cloud/bluemix-go/api/account/accountv1"
 	"github.com/IBM-Cloud/bluemix-go/api/account/accountv2"
@@ -117,9 +119,10 @@ import (
 	bxsession "github.com/IBM-Cloud/bluemix-go/session"
 	ibmpisession "github.com/IBM-Cloud/power-go-client/ibmpisession"
 	codeengine "github.com/IBM/code-engine-go-sdk/codeenginev2"
-	"github.com/IBM/continuous-delivery-go-sdk/cdtektonpipelinev2"
-	"github.com/IBM/continuous-delivery-go-sdk/cdtoolchainv2"
+	"github.com/IBM/continuous-delivery-go-sdk/v2/cdtektonpipelinev2"
+	"github.com/IBM/continuous-delivery-go-sdk/v2/cdtoolchainv2"
 	"github.com/IBM/event-notifications-go-admin-sdk/eventnotificationsv1"
+	"github.com/IBM/eventstreams-go-sdk/pkg/adminrestv1"
 	"github.com/IBM/eventstreams-go-sdk/pkg/schemaregistryv1"
 	"github.com/IBM/ibm-hpcs-uko-sdk/ukov4"
 	"github.com/IBM/logs-go-sdk/logsv0"
@@ -220,6 +223,7 @@ type ClientSession interface {
 	ContainerAPI() (containerv1.ContainerServiceAPI, error)
 	VpcContainerAPI() (containerv2.ContainerServiceAPI, error)
 	ContainerRegistryV1() (*containerregistryv1.ContainerRegistryV1, error)
+	ConfigurationAggregatorV1() (*configurationaggregatorv1.ConfigurationAggregatorV1, error)
 	FunctionClient() (*whisk.Client, error)
 	GlobalSearchAPI() (globalsearchv2.GlobalSearchServiceAPI, error)
 	GlobalTaggingAPI() (globaltaggingv3.GlobalTaggingServiceAPI, error)
@@ -299,6 +303,7 @@ type ClientSession interface {
 	AtrackerV2() (*atrackerv2.AtrackerV2, error)
 	MetricsRouterV3() (*metricsrouterv3.MetricsRouterV3, error)
 	ESschemaRegistrySession() (*schemaregistryv1.SchemaregistryV1, error)
+	ESadminRestSession() (*adminrestv1.AdminrestV1, error)
 	ContextBasedRestrictionsV1() (*contextbasedrestrictionsv1.ContextBasedRestrictionsV1, error)
 	SecurityAndComplianceCenterV3() (*scc.SecurityAndComplianceCenterApiV3, error)
 	CdToolchainV2() (*cdtoolchainv2.CdToolchainV2, error)
@@ -326,6 +331,9 @@ type clientSession struct {
 
 	accountV1ConfigErr     error
 	bmxAccountv1ServiceAPI accountv1.AccountServiceAPI
+
+	configurationAggregatorClient    *configurationaggregatorv1.ConfigurationAggregatorV1
+	configurationAggregatorClientErr error
 
 	bmxUserDetails  *UserConfig
 	bmxUserFetchErr error
@@ -614,6 +622,9 @@ type clientSession struct {
 	esSchemaRegistryClient *schemaregistryv1.SchemaregistryV1
 	esSchemaRegistryErr    error
 
+	esAdminRestClient *adminrestv1.AdminrestV1
+	esAdminRestErr    error
+
 	// Security and Compliance Center (SCC)
 	securityAndComplianceCenterClient    *scc.SecurityAndComplianceCenterApiV3
 	securityAndComplianceCenterClientErr error
@@ -665,6 +676,11 @@ func (session clientSession) UsageReportsV4() (*usagereportsv4.UsageReportsV4, e
 
 func (session clientSession) PartnerCenterSellV1() (*partnercentersellv1.PartnerCenterSellV1, error) {
 	return session.partnerCenterSellClient, session.partnerCenterSellClientErr
+}
+
+// Configuration Aggregator
+func (session clientSession) ConfigurationAggregatorV1() (*configurationaggregatorv1.ConfigurationAggregatorV1, error) {
+	return session.configurationAggregatorClient, session.configurationAggregatorClientErr
 }
 
 // AppIDAPI provides AppID Service APIs ...
@@ -1212,6 +1228,10 @@ func (session clientSession) ESschemaRegistrySession() (*schemaregistryv1.Schema
 	return session.esSchemaRegistryClient, session.esSchemaRegistryErr
 }
 
+func (session clientSession) ESadminRestSession() (*adminrestv1.AdminrestV1, error) {
+	return session.esAdminRestClient, session.esAdminRestErr
+}
+
 // Security and Compliance center Admin API
 func (session clientSession) SecurityAndComplianceCenterV3() (*scc.SecurityAndComplianceCenterApiV3, error) {
 	return session.securityAndComplianceCenterClient, session.securityAndComplianceCenterClientErr
@@ -1242,7 +1262,7 @@ func (session clientSession) ProjectV1() (*project.ProjectV1, error) {
 	return session.projectClient, session.projectClientErr
 }
 
-// MQ on Cloud
+// MQaaS
 func (session clientSession) MqcloudV1() (*mqcloudv1.MqcloudV1, error) {
 	if session.mqcloudClientErr != nil {
 		sessionMqcloudClient := session.mqcloudClient
@@ -1547,20 +1567,10 @@ func (c *Config) ClientSession() (interface{}, error) {
 
 	var authenticator core.Authenticator
 
-	if c.BluemixAPIKey != "" || sess.BluemixSession.Config.IAMRefreshToken != "" {
-		if c.BluemixAPIKey != "" {
-			authenticator = &core.IamAuthenticator{
-				ApiKey: c.BluemixAPIKey,
-				URL:    EnvFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, iamURL),
-			}
-		} else {
-			// Construct the IamAuthenticator with the IAM refresh token.
-			authenticator = &core.IamAuthenticator{
-				RefreshToken: sess.BluemixSession.Config.IAMRefreshToken,
-				ClientId:     "bx",
-				ClientSecret: "bx",
-				URL:          EnvFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, iamURL),
-			}
+	if c.BluemixAPIKey != "" {
+		authenticator = &core.IamAuthenticator{
+			ApiKey: c.BluemixAPIKey,
+			URL:    EnvFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, "https://iam.cloud.ibm.com") + "/identity/token",
 		}
 	} else if strings.HasPrefix(sess.BluemixSession.Config.IAMAccessToken, "Bearer") {
 		authenticator = &core.BearerTokenAuthenticator{
@@ -2379,6 +2389,28 @@ func (c *Config) ClientSession() (interface{}, error) {
 		// session.transitgatewayAPI.SetDefaultHeaders(gohttp.Header{
 		// 	"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		// })
+	}
+
+	// Construct an instance of the 'Configuration Aggregator' service.
+	var configBaseURL string
+	configBaseURL = ContructEndpoint(fmt.Sprintf("%s.apprapp", c.Region), cloudEndpoint)
+
+	configurationAggregatorClientOptions := &configurationaggregatorv1.ConfigurationAggregatorV1Options{
+		Authenticator: authenticator,
+		URL:           configBaseURL,
+	}
+
+	// Construct the service client.
+	session.configurationAggregatorClient, err = configurationaggregatorv1.NewConfigurationAggregatorV1(configurationAggregatorClientOptions)
+	if err == nil {
+		// Enable retries for API calls
+		session.configurationAggregatorClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.configurationAggregatorClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	} else {
+		session.configurationAggregatorClientErr = fmt.Errorf("Error occurred while constructing 'Configuration Aggregator' service client: %q", err)
 	}
 
 	// CIS Service instances starts here.
@@ -3325,6 +3357,20 @@ func (c *Config) ClientSession() (interface{}, error) {
 		})
 	}
 
+	esAdminRestV1Options := &adminrestv1.AdminrestV1Options{
+		Authenticator: authenticator,
+	}
+	session.esAdminRestClient, err = adminrestv1.NewAdminrestV1(esAdminRestV1Options)
+	if err != nil {
+		session.esAdminRestErr = fmt.Errorf("[ERROR] Error occured while configuring Event Streams admin rest: %q", err)
+	}
+	if session.esAdminRestClient != nil && session.esAdminRestClient.Service != nil {
+		session.esAdminRestClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.esAdminRestClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	}
+
 	// Construct an "options" struct for creating the service client.
 	var cdToolchainClientURL string
 	if c.Visibility == "private" || c.Visibility == "public-and-private" {
@@ -3392,7 +3438,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.cdTektonPipelineClientErr = fmt.Errorf("Error occurred while configuring CD Tekton Pipeline service: %q", err)
 	}
 
-	// MQ Cloud Service Configuration
+	// MQaaS Service Configuration
 	mqCloudURL := ContructEndpoint(fmt.Sprintf("api.%s.mq2", c.Region), cloudEndpoint)
 	if c.Visibility == "private" || c.Visibility == "public-and-private" {
 		mqCloudURL = ContructEndpoint(fmt.Sprintf("api.private.%s.mq2", c.Region), cloudEndpoint)
@@ -3407,7 +3453,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		URL:            EnvFallBack([]string{"IBMCLOUD_MQCLOUD_CONFIG_ENDPOINT"}, mqCloudURL),
 	}
 
-	// Construct the service client for MQ Cloud.
+	// Construct the service client for MQaaS.
 	session.mqcloudClient, err = mqcloudv1.NewMqcloudV1(mqcloudClientOptions)
 	if err == nil {
 		// Enable retries for API calls
@@ -3417,7 +3463,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
 	} else {
-		session.mqcloudClientErr = fmt.Errorf("Error occurred while configuring MQ on Cloud service: %q", err)
+		session.mqcloudClientErr = fmt.Errorf("Error occurred while configuringMQaaS service: %q", err)
 	}
 
 	// VMware as a Service

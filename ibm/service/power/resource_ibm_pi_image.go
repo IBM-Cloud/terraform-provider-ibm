@@ -11,6 +11,7 @@ import (
 
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
@@ -29,12 +30,19 @@ func ResourceIBMPIImage() *schema.Resource {
 		CreateContext: resourceIBMPIImageCreate,
 		ReadContext:   resourceIBMPIImageRead,
 		DeleteContext: resourceIBMPIImageDelete,
+		UpdateContext: resourceIBMPIImageUpdate,
 		Importer:      &schema.ResourceImporter{},
 
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(60 * time.Minute),
 			Delete: schema.DefaultTimeout(60 * time.Minute),
+			Update: schema.DefaultTimeout(60 * time.Minute),
 		},
+		CustomizeDiff: customdiff.Sequence(
+			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
+				return flex.ResourcePowerUserTagsCustomizeDiff(diff)
+			},
+		),
 
 		Schema: map[string]*schema.Schema{
 			helpers.PICloudInstanceId: {
@@ -188,8 +196,21 @@ func ResourceIBMPIImage() *schema.Resource {
 					},
 				},
 			},
+			Arg_UserTags: {
+				Computed:    true,
+				Description: "The user tags attached to this resource.",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Optional:    true,
+				Set:         schema.HashString,
+				Type:        schema.TypeSet,
+			},
 
 			// Computed Attribute
+			Attr_CRN: {
+				Computed:    true,
+				Description: "The CRN of this resource.",
+				Type:        schema.TypeString,
+			},
 			"image_id": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -219,6 +240,9 @@ func resourceIBMPIImageCreate(ctx context.Context, d *schema.ResourceData, meta 
 			ImageID:   imageid,
 			Source:    &source,
 		}
+		if tags, ok := d.GetOk(Arg_UserTags); ok {
+			body.UserTags = flex.FlattenSet(tags.(*schema.Set))
+		}
 		imageResponse, err := client.Create(body)
 		if err != nil {
 			return diag.FromErr(err)
@@ -232,6 +256,16 @@ func resourceIBMPIImageCreate(ctx context.Context, d *schema.ResourceData, meta 
 			log.Printf("[DEBUG]  err %s", err)
 			return diag.FromErr(err)
 		}
+
+		if _, ok := d.GetOk(Arg_UserTags); ok {
+			if imageResponse.Crn != "" {
+				oldList, newList := d.GetChange(Arg_UserTags)
+				err := flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, string(imageResponse.Crn), "", UserTagType)
+				if err != nil {
+					log.Printf("Error on update of pi image (%s) pi_user_tags during creation: %s", *IBMPIImageID, err)
+				}
+			}
+		}
 	}
 
 	// COS image import
@@ -240,6 +274,7 @@ func resourceIBMPIImageCreate(ctx context.Context, d *schema.ResourceData, meta 
 		bucketImageFileName := d.Get(helpers.PIImageBucketFileName).(string)
 		bucketRegion := d.Get(helpers.PIImageBucketRegion).(string)
 		bucketAccess := d.Get(helpers.PIImageBucketAccess).(string)
+
 		body := &models.CreateCosImageImportJob{
 			ImageName:     &imageName,
 			BucketName:    &bucketName,
@@ -297,6 +332,9 @@ func resourceIBMPIImageCreate(ctx context.Context, d *schema.ResourceData, meta 
 			}
 			body.ImportDetails = &importDetailsModel
 		}
+		if tags, ok := d.GetOk(Arg_UserTags); ok {
+			body.UserTags = flex.FlattenSet(tags.(*schema.Set))
+		}
 		imageResponse, err := client.CreateCosImage(body)
 		if err != nil {
 			return diag.FromErr(err)
@@ -312,6 +350,16 @@ func resourceIBMPIImageCreate(ctx context.Context, d *schema.ResourceData, meta 
 		image, err := client.Get(imageName)
 		if err != nil {
 			return diag.FromErr(err)
+		}
+
+		if _, ok := d.GetOk(Arg_UserTags); ok {
+			if image.Crn != "" {
+				oldList, newList := d.GetChange(Arg_UserTags)
+				err := flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, string(image.Crn), "", UserTagType)
+				if err != nil {
+					log.Printf("Error on update of pi image (%s) pi_user_tags during creation: %s", *image.ImageID, err)
+				}
+			}
 		}
 		d.SetId(fmt.Sprintf("%s/%s", cloudInstanceID, *image.ImageID))
 	}
@@ -345,10 +393,37 @@ func resourceIBMPIImageRead(ctx context.Context, d *schema.ResourceData, meta in
 	}
 
 	imageid := *imagedata.ImageID
+	if imagedata.Crn != "" {
+		d.Set(Attr_CRN, imagedata.Crn)
+		tags, err := flex.GetGlobalTagsUsingCRN(meta, string(imagedata.Crn), "", UserTagType)
+		if err != nil {
+			log.Printf("Error on get of image (%s) pi_user_tags: %s", *imagedata.ImageID, err)
+		}
+		d.Set(Arg_UserTags, tags)
+	}
 	d.Set("image_id", imageid)
 	d.Set(helpers.PICloudInstanceId, cloudInstanceID)
 
 	return nil
+}
+
+func resourceIBMPIImageUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	_, imageID, err := splitID(d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if d.HasChange(Arg_UserTags) {
+		if crn, ok := d.GetOk(Attr_CRN); ok {
+			oldList, newList := d.GetChange(Arg_UserTags)
+			err := flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, crn.(string), "", UserTagType)
+			if err != nil {
+				log.Printf("Error on update of pi image (%s) pi_user_tags: %s", imageID, err)
+			}
+		}
+	}
+
+	return resourceIBMPIImageRead(ctx, d, meta)
 }
 
 func resourceIBMPIImageDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

@@ -2,7 +2,7 @@
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.90.0-5aad763d-20240506-203857
+ * IBM OpenAPI Terraform Generator Version: 3.95.2-120e65bc-20240924-152329
  */
 
 package mqcloud_test
@@ -23,7 +23,7 @@ import (
 
 func TestAccIbmMqcloudUserDataSourceBasic(t *testing.T) {
 	t.Parallel()
-	userDetailsServiceInstanceGuid := acc.MqcloudInstanceID
+	userDetailsServiceInstanceGuid := acc.MqcloudDeploymentID
 	userDetailsName := fmt.Sprintf("tfname%d", acctest.RandIntRange(10, 100))
 	userDetailsEmail := fmt.Sprintf("tfemail%d@ibm.com", acctest.RandIntRange(10, 100))
 

@@ -35,6 +35,14 @@ You can access the following attribute references after your data source is crea
 - `profiles` - (List)  Lists all server volume profiles in the region.
 
   Nested scheme for `profiles`:
+  - `adjustable_capacity_states` - (List) 
+    Nested schema for **adjustable_capacity_states**:
+    - `type` - (String) The type for this profile field.
+    - `values` - (List) The attachment states that support adjustable capacity for a volume with this profile. Allowable list items are: `attached`, `unattached`, `unusable`. 
+  - `adjustable_iops_states` - (List) 
+    Nested schema for **adjustable_iops_states**:
+    - `type` - (String) The type for this profile field.
+    - `values` - (List) The attachment states that support adjustable IOPS for a volume with this profile. Allowable list items are: `attached`, `unattached`, `unusable`.
 	- `name` - (String) The name of the virtual server volume profile.
 	- `family` - (String) The family of the virtual server volume profile.
 

@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2022 All Rights Reserved.
+// Copyright IBM Corp. 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package contextbasedrestrictions_test
@@ -8,13 +8,12 @@ import (
 	"os"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM/platform-services-go-sdk/contextbasedrestrictionsv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccIBMCbrRuleBasic(t *testing.T) {
@@ -29,7 +28,7 @@ func TestAccIBMCbrRuleBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIBMCbrRuleConfigBasic(accountID),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMCbrRuleExists("ibm_cbr_rule.cbr_rule", conf),
+					testAccCheckIBMCbrRuleExists("ibm_cbr_rule.cbr_rule_instance", conf),
 				),
 			},
 		},
@@ -52,20 +51,20 @@ func TestAccIBMCbrRuleAllArgs(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIBMCbrRuleConfig(description, enforcementMode, accountID),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMCbrRuleExists("ibm_cbr_rule.cbr_rule", conf),
-					resource.TestCheckResourceAttr("ibm_cbr_rule.cbr_rule", "description", description),
-					resource.TestCheckResourceAttr("ibm_cbr_rule.cbr_rule", "enforcement_mode", enforcementMode),
+					testAccCheckIBMCbrRuleExists("ibm_cbr_rule.cbr_rule_instance", conf),
+					resource.TestCheckResourceAttr("ibm_cbr_rule.cbr_rule_instance", "description", description),
+					resource.TestCheckResourceAttr("ibm_cbr_rule.cbr_rule_instance", "enforcement_mode", enforcementMode),
 				),
 			},
 			resource.TestStep{
 				Config: testAccCheckIBMCbrRuleConfigUpdate(descriptionUpdate, enforcementModeUpdate, accountID),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_cbr_rule.cbr_rule", "description", descriptionUpdate),
-					resource.TestCheckResourceAttr("ibm_cbr_rule.cbr_rule", "enforcement_mode", enforcementModeUpdate),
+					resource.TestCheckResourceAttr("ibm_cbr_rule.cbr_rule_instance", "description", descriptionUpdate),
+					resource.TestCheckResourceAttr("ibm_cbr_rule.cbr_rule_instance", "enforcement_mode", enforcementModeUpdate),
 				),
 			},
 			resource.TestStep{
-				ResourceName:      "ibm_cbr_rule.cbr_rule",
+				ResourceName:      "ibm_cbr_rule.cbr_rule_instance",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -85,7 +84,7 @@ func testAccCheckIBMCbrRuleConfigBasic(accountID string) string {
 			}
 		}
 
-		resource "ibm_cbr_rule" "cbr_rule" {
+		resource "ibm_cbr_rule" "cbr_rule_instance" {
   			description = "test rule config basic"
   			contexts {
     			attributes {
@@ -124,7 +123,7 @@ func testAccCheckIBMCbrRuleConfig(description string, enforcementMode string, ac
 			}
 		}
 
-		resource "ibm_cbr_rule" "cbr_rule" {
+		resource "ibm_cbr_rule" "cbr_rule_instance" {
 			description = "%s"
 			contexts {
     			attributes {
@@ -170,7 +169,7 @@ func testAccCheckIBMCbrRuleConfigUpdate(description string, enforcementMode stri
 			}
 		}
 
-		resource "ibm_cbr_rule" "cbr_rule" {
+		resource "ibm_cbr_rule" "cbr_rule_instance" {
 			description = "%s"
 			contexts {
 				attributes {

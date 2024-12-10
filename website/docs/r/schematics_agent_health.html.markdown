@@ -8,8 +8,6 @@ subcategory: "Schematics"
 
 # ibm_schematics_agent_health
 
-~> **Beta:** This resource is in Beta, and is subject to change.
-
 Provides a resource for schematics_agent_health. This allows schematics_agent_health to be created, updated and deleted.
 
 ## Example Usage
