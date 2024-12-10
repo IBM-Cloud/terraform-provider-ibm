@@ -7,10 +7,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/IBM/go-sdk-core/v5/core"
 	"log"
 	"os"
-	"reflect"
 	"strconv"
 	"strings"
 	"time"
@@ -58,73 +56,28 @@ func ResourceIBMDb2Instance() *schema.Resource {
 		Type:        schema.TypeString,
 	}
 
-	riSchema["autoscale_config"] = &schema.Schema{
-		Description: "Autoscaling configurations of created Db2 instance",
+	riSchema["disk_encryption_instance_crn"] = &schema.Schema{
+		Description: "Cross Regional disk encryption crn",
 		Optional:    true,
-		Type:        schema.TypeList,
-		Elem: &schema.Resource{
-			Schema: map[string]*schema.Schema{
-				"auto_scaling_allow_plan_limit": &schema.Schema{
-					Type:        schema.TypeBool,
-					Computed:    true,
-					Optional:    true,
-					Description: "Indicates the maximum number of scaling actions that are allowed within a specified time period.",
-				},
-				"auto_scaling_enabled": &schema.Schema{
-					Type:        schema.TypeBool,
-					Computed:    true,
-					Optional:    true,
-					Description: "Indicates if automatic scaling is enabled or not.",
-				},
-				"auto_scaling_over_time_period": &schema.Schema{
-					Type:        schema.TypeInt,
-					Computed:    true,
-					Optional:    true,
-					Description: "Defines the time period over which auto-scaling adjustments are monitored and applied.",
-				},
-				"auto_scaling_pause_limit": &schema.Schema{
-					Type:        schema.TypeInt,
-					Computed:    true,
-					Optional:    true,
-					Description: "Specifies the duration to pause auto-scaling actions after a scaling event has occurred.",
-				},
-				"auto_scaling_threshold": &schema.Schema{
-					Type:        schema.TypeInt,
-					Computed:    true,
-					Optional:    true,
-					Description: "Specifies the resource utilization level that triggers an auto-scaling.",
-				},
-			},
-		},
+		Type:        schema.TypeString,
 	}
 
-	riSchema["whitelist_config"] = &schema.Schema{
-		Description: "Whitelists configurations of created Db2 instance",
+	riSchema["disk_encryption_crn"] = &schema.Schema{
+		Description: "Cross Regional disk encryption crn",
 		Optional:    true,
-		Type:        schema.TypeList,
-		Elem: &schema.Resource{
-			Schema: map[string]*schema.Schema{
-				"ip_addresses": &schema.Schema{
-					Type:        schema.TypeList,
-					Computed:    true,
-					Description: "List of IP addresses.",
-					Elem: &schema.Resource{
-						Schema: map[string]*schema.Schema{
-							"address": &schema.Schema{
-								Type:        schema.TypeString,
-								Computed:    true,
-								Description: "The IP address, in IPv4/ipv6 format.",
-							},
-							"description": &schema.Schema{
-								Type:        schema.TypeString,
-								Computed:    true,
-								Description: "Description of the IP address.",
-							},
-						},
-					},
-				},
-			},
-		},
+		Type:        schema.TypeString,
+	}
+
+	riSchema["oracle_compatibility"] = &schema.Schema{
+		Description: "Indicates whether is has compatibility for oracle or not",
+		Optional:    true,
+		Type:        schema.TypeString,
+	}
+
+	riSchema["subscription_id"] = &schema.Schema{
+		Description: "Subscription ID",
+		Optional:    true,
+		Type:        schema.TypeString,
 	}
 
 	return &schema.Resource{
@@ -236,6 +189,22 @@ func resourceIBMDb2InstanceCreate(d *schema.ResourceData, meta interface{}) erro
 		params["backup-locations"] = backupLocation.(string)
 	}
 
+	if diskEncryptionInstanceCrn, ok := d.GetOk("disk_encryption_instance_crn"); ok {
+		params["disk_encryption_instance_crn"] = diskEncryptionInstanceCrn.(string)
+	}
+
+	if diskEncryptionKeyCrn, ok := d.GetOk("disk_encryption_key_crn"); ok {
+		params["disk_encryption_key_crn"] = diskEncryptionKeyCrn.(string)
+	}
+
+	if oracleCompatibility, ok := d.GetOk("oracle_compatibility"); ok {
+		params["oracle_compatibility"] = oracleCompatibility.(string)
+	}
+
+	if subscriptionId, ok := d.GetOk("subscription_id"); ok {
+		params["subscription_id"] = subscriptionId.(string)
+	}
+
 	if parameters, ok := d.GetOk("parameters"); ok {
 		temp := parameters.(map[string]interface{})
 		for k, v := range temp {
@@ -263,6 +232,7 @@ func resourceIBMDb2InstanceCreate(d *schema.ResourceData, meta interface{}) erro
 		}
 
 	}
+
 	if s, ok := d.GetOk("parameters_json"); ok {
 		json.Unmarshal([]byte(s.(string)), &params)
 	}
@@ -289,90 +259,6 @@ func resourceIBMDb2InstanceCreate(d *schema.ResourceData, meta interface{}) erro
 	log.Printf("Instance CRN %s", *instance.CRN)
 	log.Printf("Instance URL %s", *instance.URL)
 	log.Printf("Instance DashboardURL %s", *instance.DashboardURL)
-
-	//Create client for db2SaasV1
-	db2SaasV1Client, err := meta.(conns.ClientSession).Db2saasV1()
-	if err != nil {
-		return err
-	}
-
-	if whitelistConfigRaw, ok := d.GetOk("whitelist_config"); ok {
-		if whitelistConfigRaw == nil || reflect.ValueOf(whitelistConfigRaw).IsNil() {
-			fmt.Println("No whitelisting config provided; skipping.")
-		} else {
-			whitelistConfig := whitelistConfigRaw.([]interface{})[0].(map[string]interface{})
-			fmt.Println(whitelistConfig)
-			fmt.Println(whitelistConfig["ip_addresses"].([]interface{}))
-
-			ipAddress := make([]db2saasv1.IpAddress, 0, len(whitelistConfig["ip_addresses"].([]interface{})))
-
-			for _, ip := range ipAddress {
-				if err = validateIPAddress(ip); err != nil {
-					return err
-				}
-			}
-
-			input := &db2saasv1.PostDb2SaasWhitelistOptions{
-				XDeploymentID: core.StringPtr(*instance.CRN),
-				IpAddresses:   ipAddress,
-			}
-
-			result, response, err := db2SaasV1Client.PostDb2SaasWhitelist(input)
-			if err != nil {
-				log.Printf("Error when posting whitelist to DB2Saas: %s", err)
-			} else {
-				log.Printf("StatusCode of response %d", response.StatusCode)
-				log.Printf("Success result %v", result)
-			}
-		}
-	}
-
-	if autoscaleConfigRaw, ok := d.GetOk("autoscale_config"); ok {
-		if autoscaleConfigRaw == nil || reflect.ValueOf(autoscaleConfigRaw).IsNil() {
-			fmt.Println("No autoscale config provided; skipping.")
-		} else {
-			autoscalingConfig := autoscaleConfigRaw.([]interface{})[0].(map[string]interface{})
-			fmt.Println(autoscalingConfig)
-
-			autoScalingThreshold, err := strconv.Atoi(autoscalingConfig["auto_scaling_threshold"].(string))
-			if err != nil {
-				return err
-			}
-
-			autoScalingOverTimePeriod, err := strconv.Atoi(autoscalingConfig["auto_scaling_over_time_period"].(string))
-			if err != nil {
-				return err
-			}
-
-			autoScalingPauseLimit, err := strconv.Atoi(autoscalingConfig["auto_scaling_pause_limit"].(string))
-			if err != nil {
-				return err
-			}
-
-			if len(autoscalingConfig) > 1 {
-				autoscalingConfig["auto_scaling_enabled"] = true
-			} else {
-				autoscalingConfig["auto_scaling_enabled"] = false
-			}
-
-			input := &db2saasv1.PutDb2SaasAutoscaleOptions{
-				XDbProfile:                core.StringPtr(*instance.CRN),
-				AutoScalingEnabled:        core.StringPtr(autoscalingConfig["auto_scaling_enabled"].(string)),
-				AutoScalingAllowPlanLimit: core.StringPtr(autoscalingConfig["auto_scaling_allow_plan_limit"].(string)),
-				AutoScalingThreshold:      core.Int64Ptr(int64(autoScalingThreshold)),
-				AutoScalingOverTimePeriod: core.Float64Ptr(float64(autoScalingOverTimePeriod)),
-				AutoScalingPauseLimit:     core.Int64Ptr(int64(autoScalingPauseLimit)),
-			}
-
-			result, response, err := db2SaasV1Client.PutDb2SaasAutoscale(input)
-			if err != nil {
-				log.Printf("Error when posting whitelist to DB2Saas: %s", err)
-			} else {
-				log.Printf("StatusCode of response %d", response.StatusCode)
-				log.Printf("Success result %v", result)
-			}
-		}
-	}
 
 	v := os.Getenv("IC_ENV_TAGS")
 	if _, ok := d.GetOk("tags"); ok || v != "" {
