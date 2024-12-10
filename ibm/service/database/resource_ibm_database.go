@@ -141,7 +141,6 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 			resourceIBMDatabaseInstanceDiff,
 			validateGroupsDiff,
 			validateUsersDiff,
-			validateVersionDiff,
 			validateRemoteLeaderIDDiff),
 
 		Importer: &schema.ResourceImporter{},
@@ -1187,6 +1186,7 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 	if group, ok := d.GetOk("group"); ok {
 		groups := expandGroups(group.(*schema.Set).List())
 		var memberGroup *Group
+		var nodeCount = initialNodeCount
 		for _, g := range groups {
 			if g.ID == "member" {
 				memberGroup = g
@@ -1194,17 +1194,35 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 			}
 		}
 
+		if remoteLeader, ok := d.GetOk("remote_leader_id"); ok {
+			if remoteLeaderStr, ok := remoteLeader.(string); ok {
+				groupsResponse, _ := getGroups(remoteLeaderStr, meta)
+				currentGroups := normalizeGroups(groupsResponse)
+
+				for _, g := range groups {
+					var currentGroup *Group
+
+					for _, cg := range currentGroups {
+						if cg.ID == g.ID {
+							currentGroup = &cg
+							nodeCount = currentGroup.Members.Allocation
+						}
+					}
+				}
+			}
+		}
+
 		if memberGroup != nil {
 			if memberGroup.Memory != nil {
-				params.Memory = memberGroup.Memory.Allocation * initialNodeCount
+				params.Memory = memberGroup.Memory.Allocation * nodeCount
 			}
 
 			if memberGroup.Disk != nil {
-				params.Disk = memberGroup.Disk.Allocation * initialNodeCount
+				params.Disk = memberGroup.Disk.Allocation * nodeCount
 			}
 
 			if memberGroup.CPU != nil {
-				params.CPU = memberGroup.CPU.Allocation * initialNodeCount
+				params.CPU = memberGroup.CPU.Allocation * nodeCount
 			}
 
 			if memberGroup.HostFlavor != nil {
