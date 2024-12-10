@@ -1186,6 +1186,7 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 	if group, ok := d.GetOk("group"); ok {
 		groups := expandGroups(group.(*schema.Set).List())
 		var memberGroup *Group
+		var nodeCount = initialNodeCount
 		for _, g := range groups {
 			if g.ID == "member" {
 				memberGroup = g
@@ -1193,17 +1194,29 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 			}
 		}
 
+		if remoteLeader, ok := d.GetOk("remote_leader_id"); ok {
+			if remoteLeaderStr, ok := remoteLeader.(string); ok {
+				nodeCount = sourceFormationNodeCount(remoteLeaderStr, initialNodeCount, groups, meta)
+			}
+		}
+		if pitrLeader, ok := d.GetOk("point_in_time_recovery_deployment_id"); ok {
+			if pitrLeaderStr, ok := pitrLeader.(string); ok {
+				nodeCount = sourceFormationNodeCount(pitrLeaderStr, initialNodeCount, groups, meta)
+
+			}
+		}
+
 		if memberGroup != nil {
 			if memberGroup.Memory != nil {
-				params.Memory = memberGroup.Memory.Allocation * initialNodeCount
+				params.Memory = memberGroup.Memory.Allocation * nodeCount
 			}
 
 			if memberGroup.Disk != nil {
-				params.Disk = memberGroup.Disk.Allocation * initialNodeCount
+				params.Disk = memberGroup.Disk.Allocation * nodeCount
 			}
 
 			if memberGroup.CPU != nil {
-				params.CPU = memberGroup.CPU.Allocation * initialNodeCount
+				params.CPU = memberGroup.CPU.Allocation * nodeCount
 			}
 
 			if memberGroup.HostFlavor != nil {
@@ -2962,6 +2975,24 @@ func getCpuEnforcementRatios(service string, plan string, hostFlavor string, met
 	}
 
 	return nil, 0, 0
+}
+
+func sourceFormationNodeCount(leaderStr string, initNodeCount int, groups []*Group, meta interface{}) (members int) {
+	groupsResponse, _ := getGroups(leaderStr, meta)
+	currentGroups := normalizeGroups(groupsResponse)
+
+	for _, g := range groups {
+		var currentGroup *Group
+
+		for _, cg := range currentGroups {
+			if cg.ID == g.ID {
+				currentGroup = &cg
+				return currentGroup.Members.Allocation
+			}
+		}
+	}
+
+	return initNodeCount
 }
 
 func validateUsersDiff(_ context.Context, diff *schema.ResourceDiff, meta interface{}) (err error) {
