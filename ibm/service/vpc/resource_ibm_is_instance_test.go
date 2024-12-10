@@ -3488,72 +3488,80 @@ func testAccCheckIBMISInstanceClusterNetworkAttachmentConfig(vpcname, clustersub
 				}
 			}
 			cluster_network_attachments {
+				name = "cna-1"
 				cluster_network_interface{
 					auto_delete = true
-					name = "cna-1"
+					name = "cni-1"
 					subnet {
 						id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
 					}
 				}
 			}
 			cluster_network_attachments {
+				name = "cna-2"
 				cluster_network_interface{
 					auto_delete = true
-					name = "cna-2"
+					name = "cni-2"
 					subnet {
 						id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
 					}
 				}
 			}
 			cluster_network_attachments {
+				name = "cna-3"
 				cluster_network_interface{
 					auto_delete = true
-					name = "cna-3"
+					name = "cni-3"
 					subnet {
 						id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
 					}
 				}
 			}
 			cluster_network_attachments {
+				name = "cna-4"
 				cluster_network_interface{
 					auto_delete = true
-					name = "cna-4"
+					name = "cni-4"
 					subnet {
 						id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
 					}
 				}
 			}
 			cluster_network_attachments {
+				name = "cna-5"
 				cluster_network_interface{
 					auto_delete = true
-					name = "cna-5"
+					name = "cni-5"
 					subnet {
 						id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
 					}
 				}
 			}
 			cluster_network_attachments {
+				name = "cna-6"
 				cluster_network_interface{
 					auto_delete = true
-					name = "cna-6"
+					name = "cni-6"
 					subnet {
 						id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
 					}
 				}
 			}
 			cluster_network_attachments {
+				name = "cna-7"
 				cluster_network_interface{
 					auto_delete = true
-					name = "cna-7"
+					name = "cni-7"
 					subnet {
 						id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
 					}
 				}
 			}
 			cluster_network_attachments {
+				name = "cna-8"
 				cluster_network_interface{
 					auto_delete = true
-					name = "cna-8"
+					name = "cni-8"
 					subnet {
 						id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
 					}
@@ -3564,4 +3572,95 @@ func testAccCheckIBMISInstanceClusterNetworkAttachmentConfig(vpcname, clustersub
 			keys      = [ibm_is_ssh_key.is_sshkey.id]
 		}
 	`, vpcname, acc.ISClusterNetworkProfileName, acc.ISZoneName, clustersubnetname, clustersubnetreservedipname, clusternetworkinterfacename, subnetName, acc.ISZoneName, sshKeyName, publicKey, instanceName, acc.IsImage, acc.ISInstanceGPUProfileName)
+}
+
+func TestAccIBMISInstance_primary_ip_consistency(t *testing.T) {
+	var instance string
+	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tf-instnace-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tf-subnet-%d", acctest.RandIntRange(10, 100))
+	publicKey := strings.TrimSpace(`
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
+`)
+	sshname := fmt.Sprintf("tf-ssh-%d", acctest.RandIntRange(10, 100))
+	userData1 := "a"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISInstancePrimaryIpConsistencyConfig(vpcname, subnetname, sshname, publicKey, name, userData1),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISInstanceExists("ibm_is_instance.testacc_instance", instance),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "user_data", userData1),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "zone", acc.ISZoneName),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance.testacc_instance", "vcpu.#"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance.testacc_instance", "vcpu.0.manufacturer"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance.testacc_instance", "primary_network_attachment.#"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance.testacc_instance", "primary_network_attachment.0.primary_ip.#"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance.testacc_instance", "primary_network_attachment.0.primary_ip.0.address"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance.testacc_instance", "network_attachments.#"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance.testacc_instance", "network_attachments.0.primary_ip.#"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance.testacc_instance", "network_attachments.0.primary_ip.0.address"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMISInstancePrimaryIpConsistencyConfig(vpcname, subnetname, sshname, publicKey, name, userData string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	  }
+	  
+	  resource "ibm_is_subnet" "testacc_subnet" {
+		name            = "%s"
+		vpc             = ibm_is_vpc.testacc_vpc.id
+		zone            = "%s"
+		ipv4_cidr_block = "%s"
+	  }
+	  
+	  resource "ibm_is_ssh_key" "testacc_sshkey" {
+		name       = "%s"
+		public_key = "%s"
+	  }
+	  
+	  resource "ibm_is_instance" "testacc_instance" {
+		name    = "%s"
+		image   = "%s"
+		profile = "%s"
+		primary_network_attachment {
+			name = "example-primarynetwork-att"
+			virtual_network_interface {
+				auto_delete = true
+				subnet = ibm_is_subnet.testacc_subnet.id
+			}
+		}
+		user_data = "%s"
+		vpc  = ibm_is_vpc.testacc_vpc.id
+		zone = "%s"
+		keys = [ibm_is_ssh_key.testacc_sshkey.id]
+		network_attachments {
+			name = "example-network-att"
+			virtual_network_interface {
+				auto_delete = true
+				subnet      = ibm_is_subnet.testacc_subnet.id
+			}
+		}
+	  }`, vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, sshname, publicKey, name, acc.IsImage, acc.InstanceProfileName, userData, acc.ISZoneName)
 }

@@ -4,6 +4,7 @@
 package power_test
 
 import (
+	"fmt"
 	"testing"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
@@ -25,6 +26,28 @@ func TestAccIBMPIDatacentersDataSourceBasic(t *testing.T) {
 	})
 }
 
+func TestAccIBMPIDatacentersDataSourcePrivate(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMPIDatacentersDataSourcePrivateConfig(),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("data.ibm_pi_datacenters.test", "id"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMPIDatacentersDataSourceConfig() string {
 	return `data "ibm_pi_datacenters" "test" {}`
+}
+
+func testAccCheckIBMPIDatacentersDataSourcePrivateConfig() string {
+	return fmt.Sprintf(`
+	data "ibm_pi_datacenters" "test" {
+		pi_cloud_instance_id = "%s"
+	}`, acc.Pi_cloud_instance_id)
 }
