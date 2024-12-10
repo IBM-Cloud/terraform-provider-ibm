@@ -17,7 +17,7 @@ import (
 )
 
 func TestAccIbmBackupRecoveryProtectionGroupRunRequestBasic(t *testing.T) {
-	objectId := 3
+	objectId := 18
 	runType := "kRegular"
 	groupName := "terra-test-group-4" //"tf-group-5"
 

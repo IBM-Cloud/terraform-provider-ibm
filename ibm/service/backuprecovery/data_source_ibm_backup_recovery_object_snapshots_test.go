@@ -18,7 +18,7 @@ import (
 )
 
 func TestAccIbmBackupRecoveryObjectSnapshotsDataSourceBasic(t *testing.T) {
-	objectId := 3
+	objectId := 18
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,

@@ -23,7 +23,7 @@ func TestAccIbmBackupRecoverySourceRegistrationsDataSourceBasic(t *testing.T) {
 	// hostType := "kLinux"
 	// physicalType := "kHost"
 
-	objectId := 3
+	objectId := 18
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,

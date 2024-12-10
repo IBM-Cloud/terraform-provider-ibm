@@ -25,7 +25,7 @@ func TestAccIbmBackupRecoverySourceRegistrationBasic(t *testing.T) {
 
 	environment := "kPhysical"
 	connectionId := "6456884682673709176"
-	endpoint := "172.26.1.13"
+	endpoint := "172.26.1.21"
 	hostType := "kLinux"
 	physicalType := "kHost"
 	applications := ""
