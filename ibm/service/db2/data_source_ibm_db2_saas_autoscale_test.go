@@ -24,17 +24,16 @@ func TestAccIbmDb2SaasAutoscaleDataSourceBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIbmDb2SaasAutoscaleDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
-					//resource.TestCheckResourceAttrSet("data.ibm_db2_saas_autoscale.db2_saas_autoscale_instance", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_db2_saas_autoscale.db2_saas_autoscale_instance", "x_db_profile"),
-					resource.TestCheckResourceAttrSet("data.ibm_db2_saas_autoscale.db2_saas_autoscale_instance", "auto_scaling_allow_plan_limit"),
-					resource.TestCheckResourceAttrSet("data.ibm_db2_saas_autoscale.db2_saas_autoscale_instance", "auto_scaling_enabled"),
-					resource.TestCheckResourceAttrSet("data.ibm_db2_saas_autoscale.db2_saas_autoscale_instance", "auto_scaling_max_storage"),
-					resource.TestCheckResourceAttrSet("data.ibm_db2_saas_autoscale.db2_saas_autoscale_instance", "auto_scaling_over_time_period"),
-					resource.TestCheckResourceAttrSet("data.ibm_db2_saas_autoscale.db2_saas_autoscale_instance", "auto_scaling_pause_limit"),
-					resource.TestCheckResourceAttrSet("data.ibm_db2_saas_autoscale.db2_saas_autoscale_instance", "auto_scaling_threshold"),
-					resource.TestCheckResourceAttrSet("data.ibm_db2_saas_autoscale.db2_saas_autoscale_instance", "storage_unit"),
-					resource.TestCheckResourceAttrSet("data.ibm_db2_saas_autoscale.db2_saas_autoscale_instance", "storage_utilization_percentage"),
-					resource.TestCheckResourceAttrSet("data.ibm_db2_saas_autoscale.db2_saas_autoscale_instance", "support_auto_scaling"),
+					resource.TestCheckResourceAttrSet("data.ibm_db2_saas_autoscale.Db2-v0-test-public", "x_db_profile"),
+					resource.TestCheckResourceAttrSet("data.ibm_db2_saas_autoscale.Db2-v0-test-public", "auto_scaling_allow_plan_limit"),
+					resource.TestCheckResourceAttrSet("data.ibm_db2_saas_autoscale.Db2-v0-test-public", "auto_scaling_enabled"),
+					resource.TestCheckResourceAttrSet("data.ibm_db2_saas_autoscale.Db2-v0-test-public", "auto_scaling_max_storage"),
+					resource.TestCheckResourceAttrSet("data.ibm_db2_saas_autoscale.Db2-v0-test-public", "auto_scaling_over_time_period"),
+					resource.TestCheckResourceAttrSet("data.ibm_db2_saas_autoscale.Db2-v0-test-public", "auto_scaling_pause_limit"),
+					resource.TestCheckResourceAttrSet("data.ibm_db2_saas_autoscale.Db2-v0-test-public", "auto_scaling_threshold"),
+					resource.TestCheckResourceAttrSet("data.ibm_db2_saas_autoscale.Db2-v0-test-public", "storage_unit"),
+					resource.TestCheckResourceAttrSet("data.ibm_db2_saas_autoscale.Db2-v0-test-public", "storage_utilization_percentage"),
+					resource.TestCheckResourceAttrSet("data.ibm_db2_saas_autoscale.Db2-v0-test-public", "support_auto_scaling"),
 				),
 			},
 		},
@@ -43,8 +42,8 @@ func TestAccIbmDb2SaasAutoscaleDataSourceBasic(t *testing.T) {
 
 func testAccCheckIbmDb2SaasAutoscaleDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
-		 data "ibm_db2_saas_autoscale" "db2_autoscale" {
-    x_db_profile = "crn:v1:staging:public:dashdb-for-transactions:us-south:a/e7e3e87b512f474381c0684a5ecbba03:69db420f-33d5-4953-8bd8-1950abd356f6::"
+		 data "ibm_db2_saas_autoscale" "Db2-v0-test-public" {
+    x_db_profile = "crn:v1:staging:public:dashdb-for-transactions:us-east:a/e7e3e87b512f474381c0684a5ecbba03:f9455c22-07af-4a86-b9df-f02fd4774471::"
 }
 	`)
 }
