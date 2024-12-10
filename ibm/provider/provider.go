@@ -1407,7 +1407,7 @@ func Provider() *schema.Provider {
 			"ibm_satellite_cluster_worker_pool_zone_attachment": satellite.ResourceIbmSatelliteClusterWorkerPoolZoneAttachment(),
 
 			// Added for Resource Tag
-			"ibm_resource_tag":        globaltagging.ResourceIBMResourceTag(),
+			"ibm_resource_tag": globaltagging.ResourceIBMResourceTag(),
 
 			// Added for Iam Access Tag
 			"ibm_iam_access_tag": globaltagging.ResourceIBMIamAccessTag(),
