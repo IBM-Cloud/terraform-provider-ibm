@@ -841,8 +841,8 @@ func init() {
 	IsImage = os.Getenv("IS_IMAGE")
 	if IsImage == "" {
 		// IsImage = "fc538f61-7dd6-4408-978c-c6b85b69fe76" // for classic infrastructure
-		IsImage = "r006-907911a7-0ffe-467e-8821-3cc9a0d82a39" // for next gen infrastructure ibm-centos-7-9-minimal-amd64-10 image
-		fmt.Println("[INFO] Set the environment variable IS_IMAGE for testing ibm_is_instance, ibm_is_floating_ip else it is set to default value 'r006-907911a7-0ffe-467e-8821-3cc9a0d82a39'")
+		IsImage = "r006-587a041d-9246-44f0-980b-56a327cf5bd7" // for next gen infrastructure ibm-ubuntu-24-04-6-minimal-amd64-1 us-south
+		fmt.Println("[INFO] Set the environment variable IS_IMAGE for testing ibm_is_instance, ibm_is_floating_ip else it is set to default value 'r006-587a041d-9246-44f0-980b-56a327cf5bd7'")
 	}
 
 	IsImage2 = os.Getenv("IS_IMAGE2")

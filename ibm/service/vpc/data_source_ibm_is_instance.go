@@ -1344,16 +1344,16 @@ func instanceGetByName(d *schema.ResourceData, meta interface{}, name string) er
 
 	// cluster changes
 
+	clusterNetwork := []map[string]interface{}{}
 	if !core.IsNil(instance.ClusterNetwork) {
-		clusterNetwork := []map[string]interface{}{}
 		clusterNetworkMap, err := DataSourceIBMIsInstanceClusterNetworkReferenceToMap(instance.ClusterNetwork)
 		if err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instance", "read", "cluster_network-to-map")
 		}
 		clusterNetwork = append(clusterNetwork, clusterNetworkMap)
-		if err = d.Set("cluster_network", clusterNetwork); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting cluster_network: %s", err), "(Data) ibm_is_instance", "read", "set-cluster_network")
-		}
+	}
+	if err = d.Set("cluster_network", clusterNetwork); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting cluster_network: %s", err), "(Data) ibm_is_instance", "read", "set-cluster_network")
 	}
 
 	clusterNetworkAttachments := []map[string]interface{}{}
