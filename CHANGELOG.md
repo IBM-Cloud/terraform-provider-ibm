@@ -1,3 +1,7 @@
+# 1.72.1 (Dec 10, 2024)
+BugFixes
+* Breaking change fix Revert "Add version validation ([5859](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5859))
+
 # 1.72.0 (Dec 08, 2024)
 Features
 * Support for Db2 SaaS
@@ -9,8 +13,11 @@ Features
     - **Datasources**
         - ibm_iam_effective_account_settings
 * Support for MQaaS
+    -**Resources**
+        - ibm_mqcloud_virtual_private_endpoint_gateway
     - **Datasources**
         - ibm_mqcloud_virtual_private_endpoint_gateway
+        - ibm_mqcloud_virtual_private_endpoint_gateways
 * Support for VPC
     - **Datasources**
         - ibm_is_cluster_network
@@ -82,8 +89,11 @@ Features
     - **Datasources**
         - ibm_iam_effective_account_settings
 * Support for MQaaS
+    -**Resources**
+        - ibm_mqcloud_virtual_private_endpoint_gateway
     - **Datasources**
         - ibm_mqcloud_virtual_private_endpoint_gateway
+        - ibm_mqcloud_virtual_private_endpoint_gateways
 * Support for VPC
     - **Datasources**
         - ibm_is_cluster_network
