@@ -8,13 +8,9 @@ subcategory: "VPC infrastructure"
 
 # ibm_is_cluster_network_interface
 
-Create, update, and delete ClusterNetworkInterfaces with this resource.
+Create, update, and delete ClusterNetworkInterfaces with this resource. [About cluster networks](https://cloud.ibm.com/docs/vpc?topic=vpc-about-cluster-network)
 
 ## Example Usage
-
-~>**Select Availability** 
-Cluster Networks for VPC is available for select customers only. Contact IBM Support if you are interested in using this functionality. [About cluster networks](https://cloud.ibm.com/docs/vpc?topic=vpc-about-cluster-network)
-
 
 ```hcl
 resource "ibm_is_cluster_network_interface" "is_cluster_network_interface_instance" {
