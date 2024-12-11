@@ -322,7 +322,7 @@ func Provider() *schema.Provider {
 			"ibm_database_backups":                         database.DataSourceIBMDatabaseBackups(),
 			"ibm_db2":                                      db2.DataSourceIBMDb2Instance(),
 			"ibm_db2_connection_info":                      db2.DataSourceIbmDb2ConnectionInfo(),
-			"ibm_db2_whitelist":                            db2.DataSourceIbmDb2Whitelist(),
+			"ibm_db2_whitelist_ip":                         db2.DataSourceIbmDb2Whitelist(),
 			"ibm_db2_autoscale":                            db2.DataSourceIbmDb2Autoscale(),
 			"ibm_compute_bare_metal":                       classicinfrastructure.DataSourceIBMComputeBareMetal(),
 			"ibm_compute_image_template":                   classicinfrastructure.DataSourceIBMComputeImageTemplate(),

@@ -1,19 +1,19 @@
 ---
 subcategory: "Db2 SaaS"
 layout: "ibm"
-page_title: "IBM : ibm_db2_whitelist_ips"
+page_title: "IBM : ibm_db2_whitelist_ip_ips"
 description: |-
   Get Information about Whitelisted IPs of IBM Db2 instance.
 ---
 
-# ibm_db2_whitelist_ips
+# ibm_db2_whitelist_ip_ips
 
 Retrieve information about Whitelisted IPs of an existing [IBM Db2 Instance](https://cloud.ibm.com/docs/Db2onCloud).
 
 ## Example Usage
 
 ```hcl
-data "ibm_db2_whitelist" "db2_whitelistips" {
+data "ibm_db2_whitelist_ip" "db2_whitelistips" {
     x_deployment_id = "<crn>"
 }
 ```

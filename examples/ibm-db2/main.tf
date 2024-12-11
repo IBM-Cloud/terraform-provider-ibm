@@ -38,7 +38,7 @@ resource "ibm_db2" "db2_instance" {
 # }
 #
 //Db2 SaaS Whitelist IPs
-# data "ibm_db2_whitelist" "db2_whitelistips" {
+# data "ibm_db2_whitelist_ip" "db2_whitelistips" {
 #     x_deployment_id = "crn:v1:staging:public:dashdb-for-transactions:us-east:a/e7e3e87b512f474381c0684a5ecbba03:f9455c22-07af-4a86-b9df-f02fd4774471::"
 # }
 

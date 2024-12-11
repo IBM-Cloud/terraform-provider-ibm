@@ -58,7 +58,7 @@ func DataSourceIbmDb2Whitelist() *schema.Resource {
 func dataSourceIbmDb2WhitelistRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	db2saasClient, err := meta.(conns.ClientSession).Db2saasV1()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_db2_whitelist", "read", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_db2_whitelist_ip", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -69,7 +69,7 @@ func dataSourceIbmDb2WhitelistRead(context context.Context, d *schema.ResourceDa
 
 	successGetWhitelistIPs, _, err := db2saasClient.GetDb2SaasWhitelistWithContext(context, getDb2SaasWhitelistOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetDb2SaasWhitelistWithContext failed: %s", err.Error()), "(Data) ibm_db2_whitelist", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetDb2SaasWhitelistWithContext failed: %s", err.Error()), "(Data) ibm_db2_whitelist_ip", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -80,12 +80,12 @@ func dataSourceIbmDb2WhitelistRead(context context.Context, d *schema.ResourceDa
 	for _, ipAddressesItem := range successGetWhitelistIPs.IpAddresses {
 		ipAddressesItemMap, err := DataSourceIbmDb2WhitelistIpAddressToMap(&ipAddressesItem) // #nosec G601
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_db2_whitelist", "read", "ip_addresses-to-map").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_db2_whitelist_ip", "read", "ip_addresses-to-map").GetDiag()
 		}
 		ipAddresses = append(ipAddresses, ipAddressesItemMap)
 	}
 	if err = d.Set("ip_addresses", ipAddresses); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting ip_addresses: %s", err), "(Data) ibm_db2_whitelist", "read", "set-ip_addresses").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting ip_addresses: %s", err), "(Data) ibm_db2_whitelist_ip", "read", "set-ip_addresses").GetDiag()
 	}
 
 	return nil
