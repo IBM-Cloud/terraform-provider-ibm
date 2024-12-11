@@ -16,7 +16,7 @@ import (
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
-func TestAccIbmDb2SaasConnectionInfoDataSourceBasic(t *testing.T) {
+func TestAccIbmDb2ConnectionInfoDataSourceBasic(t *testing.T) {
 	db2DeploymentId := "crn%3Av1%3Astaging%3Apublic%3Adashdb-for-transactions%3Aus-east%3Aa%2Fe7e3e87b512f474381c0684a5ecbba03%3Af9455c22-07af-4a86-b9df-f02fd4774471%3A%3A"
 
 	resource.Test(t, resource.TestCase{
@@ -24,19 +24,19 @@ func TestAccIbmDb2SaasConnectionInfoDataSourceBasic(t *testing.T) {
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmDb2SaasConnectionInfoDataSourceConfigBasic(db2DeploymentId),
+				Config: testAccCheckIbmDb2ConnectionInfoDataSourceConfigBasic(db2DeploymentId),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_db2_saas_connection_info.db2_saas_connection_info_instance", "deployment_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_db2_saas_connection_info.db2_saas_connection_info_instance", "x_deployment_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_db2_connection_info.db2_connection_info_instance", "deployment_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_db2_connection_info.db2_connection_info_instance", "x_deployment_id"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckIbmDb2SaasConnectionInfoDataSourceConfigBasic(db2DeploymentId string) string {
+func testAccCheckIbmDb2ConnectionInfoDataSourceConfigBasic(db2DeploymentId string) string {
 	return fmt.Sprintf(`
-		data "ibm_db2_saas_connection_info" "db2_saas_connection_info_instance" {
+		data "ibm_db2_connection_info" "db2_connection_info_instance" {
 			deployment_id = "%[1]s"
             x_deployment_id = "crn:v1:staging:public:dashdb-for-transactions:us-east:a/e7e3e87b512f474381c0684a5ecbba03:f9455c22-07af-4a86-b9df-f02fd4774471::"
             

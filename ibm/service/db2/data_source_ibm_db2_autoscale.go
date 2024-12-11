@@ -22,9 +22,9 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 )
 
-func DataSourceIbmDb2SaasAutoscale() *schema.Resource {
+func DataSourceIbmDb2Autoscale() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIbmDb2SaasAutoscaleRead,
+		ReadContext: dataSourceIbmDb2AutoscaleRead,
 
 		Schema: map[string]*schema.Schema{
 			"x_db_profile": &schema.Schema{
@@ -81,10 +81,10 @@ func DataSourceIbmDb2SaasAutoscale() *schema.Resource {
 	}
 }
 
-func dataSourceIbmDb2SaasAutoscaleRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIbmDb2AutoscaleRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	db2saasClient, err := meta.(conns.ClientSession).Db2saasV1()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_db2_saas_autoscale", "read", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_db2_autoscale", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -95,53 +95,53 @@ func dataSourceIbmDb2SaasAutoscaleRead(context context.Context, d *schema.Resour
 
 	successAutoScaling, _, err := db2saasClient.GetDb2SaasAutoscaleWithContext(context, getDb2SaasAutoscaleOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetDb2SaasAutoscaleWithContext failed: %s", err.Error()), "(Data) ibm_db2_saas_autoscale", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetDb2SaasAutoscaleWithContext failed: %s", err.Error()), "(Data) ibm_db2_autoscale", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 
-	d.SetId(dataSourceIbmDb2SaasAutoscaleID(d))
+	d.SetId(dataSourceIbmDb2AutoscaleID(d))
 
 	if err = d.Set("auto_scaling_allow_plan_limit", successAutoScaling.AutoScalingAllowPlanLimit); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting auto_scaling_allow_plan_limit: %s", err), "(Data) ibm_db2_saas_autoscale", "read", "set-auto_scaling_allow_plan_limit").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting auto_scaling_allow_plan_limit: %s", err), "(Data) ibm_db2_autoscale", "read", "set-auto_scaling_allow_plan_limit").GetDiag()
 	}
 
 	if err = d.Set("auto_scaling_enabled", successAutoScaling.AutoScalingEnabled); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting auto_scaling_enabled: %s", err), "(Data) ibm_db2_saas_autoscale", "read", "set-auto_scaling_enabled").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting auto_scaling_enabled: %s", err), "(Data) ibm_db2_autoscale", "read", "set-auto_scaling_enabled").GetDiag()
 	}
 
 	if err = d.Set("auto_scaling_max_storage", flex.IntValue(successAutoScaling.AutoScalingMaxStorage)); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting auto_scaling_max_storage: %s", err), "(Data) ibm_db2_saas_autoscale", "read", "set-auto_scaling_max_storage").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting auto_scaling_max_storage: %s", err), "(Data) ibm_db2_autoscale", "read", "set-auto_scaling_max_storage").GetDiag()
 	}
 
 	if err = d.Set("auto_scaling_over_time_period", flex.IntValue(successAutoScaling.AutoScalingOverTimePeriod)); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting auto_scaling_over_time_period: %s", err), "(Data) ibm_db2_saas_autoscale", "read", "set-auto_scaling_over_time_period").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting auto_scaling_over_time_period: %s", err), "(Data) ibm_db2_autoscale", "read", "set-auto_scaling_over_time_period").GetDiag()
 	}
 
 	if err = d.Set("auto_scaling_pause_limit", flex.IntValue(successAutoScaling.AutoScalingPauseLimit)); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting auto_scaling_pause_limit: %s", err), "(Data) ibm_db2_saas_autoscale", "read", "set-auto_scaling_pause_limit").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting auto_scaling_pause_limit: %s", err), "(Data) ibm_db2_autoscale", "read", "set-auto_scaling_pause_limit").GetDiag()
 	}
 
 	if err = d.Set("auto_scaling_threshold", flex.IntValue(successAutoScaling.AutoScalingThreshold)); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting auto_scaling_threshold: %s", err), "(Data) ibm_db2_saas_autoscale", "read", "set-auto_scaling_threshold").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting auto_scaling_threshold: %s", err), "(Data) ibm_db2_autoscale", "read", "set-auto_scaling_threshold").GetDiag()
 	}
 
 	if err = d.Set("storage_unit", successAutoScaling.StorageUnit); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting storage_unit: %s", err), "(Data) ibm_db2_saas_autoscale", "read", "set-storage_unit").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting storage_unit: %s", err), "(Data) ibm_db2_autoscale", "read", "set-storage_unit").GetDiag()
 	}
 
 	if err = d.Set("storage_utilization_percentage", flex.IntValue(successAutoScaling.StorageUtilizationPercentage)); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting storage_utilization_percentage: %s", err), "(Data) ibm_db2_saas_autoscale", "read", "set-storage_utilization_percentage").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting storage_utilization_percentage: %s", err), "(Data) ibm_db2_autoscale", "read", "set-storage_utilization_percentage").GetDiag()
 	}
 
 	if err = d.Set("support_auto_scaling", successAutoScaling.SupportAutoScaling); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting support_auto_scaling: %s", err), "(Data) ibm_db2_saas_autoscale", "read", "set-support_auto_scaling").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting support_auto_scaling: %s", err), "(Data) ibm_db2_autoscale", "read", "set-support_auto_scaling").GetDiag()
 	}
 
 	return nil
 }
 
 // dataSourceIbmDb2SaasAutoscaleID returns a reasonable ID for the list.
-func dataSourceIbmDb2SaasAutoscaleID(d *schema.ResourceData) string {
+func dataSourceIbmDb2AutoscaleID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }

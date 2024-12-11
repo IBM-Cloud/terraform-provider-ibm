@@ -3,17 +3,17 @@ subcategory: "Db2 SaaS"
 layout: "ibm"
 page_title: "IBM : ibm_db2_connection_info"
 description: |-
-  Get Information about Connection info of IBM Db2 SaaS instance.
+  Get Information about Connection info of IBM Db2 instance.
 ---
 
 # ibm_db2_connection_info
 
-Retrieve information about connection info of an existing [IBM Db2 SaaS Instance](https://cloud.ibm.com/docs/Db2onCloud).
+Retrieve information about connection info of an existing [IBM Db2 Instance](https://cloud.ibm.com/docs/Db2onCloud).
 
 ## Example Usage
 
 ```hcl
-data "ibm_db2_saas_connection_info" "db2_connection_info" {
+data "ibm_db2_connection_info" "db2_connection_info" {
     deployment_id = "<encoded_crn>"
     x_deployment_id = "<crn>"
 }

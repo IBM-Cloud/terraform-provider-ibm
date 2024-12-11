@@ -23,9 +23,9 @@ import (
 	"github.com/IBM/go-sdk-core/v5/core"
 )
 
-func DataSourceIbmDb2SaasConnectionInfo() *schema.Resource {
+func DataSourceIbmDb2ConnectionInfo() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIbmDb2SaasConnectionInfoRead,
+		ReadContext: dataSourceIbmDb2ConnectionInfoRead,
 
 		Schema: map[string]*schema.Schema{
 			"deployment_id": &schema.Schema{
@@ -114,10 +114,10 @@ func DataSourceIbmDb2SaasConnectionInfo() *schema.Resource {
 	}
 }
 
-func dataSourceIbmDb2SaasConnectionInfoRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIbmDb2ConnectionInfoRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	db2saasClient, err := meta.(conns.ClientSession).Db2saasV1()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_db2_saas_connection_info", "read", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_db2_connection_info", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -129,34 +129,34 @@ func dataSourceIbmDb2SaasConnectionInfoRead(context context.Context, d *schema.R
 
 	successConnectionInfo, _, err := db2saasClient.GetDb2SaasConnectionInfoWithContext(context, getDb2SaasConnectionInfoOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetDb2SaasConnectionInfoWithContext failed: %s", err.Error()), "(Data) ibm_db2_saas_connection_info", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetDb2SaasConnectionInfoWithContext failed: %s", err.Error()), "(Data) ibm_db2_connection_info", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 
-	d.SetId(dataSourceIbmDb2SaasConnectionInfoID(d))
+	d.SetId(dataSourceIbmDb2ConnectionInfoID(d))
 
 	if !core.IsNil(successConnectionInfo.Public) {
 		public := []map[string]interface{}{}
-		publicMap, err := DataSourceIbmDb2SaasConnectionInfoSuccessConnectionInfoPublicToMap(successConnectionInfo.Public)
+		publicMap, err := DataSourceIbmDb2ConnectionInfoSuccessConnectionInfoPublicToMap(successConnectionInfo.Public)
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_db2_saas_connection_info", "read", "public-to-map").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_db2_connection_info", "read", "public-to-map").GetDiag()
 		}
 		public = append(public, publicMap)
 		if err = d.Set("public", public); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting public: %s", err), "(Data) ibm_db2_saas_connection_info", "read", "set-public").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting public: %s", err), "(Data) ibm_db2_connection_info", "read", "set-public").GetDiag()
 		}
 	}
 
 	if !core.IsNil(successConnectionInfo.Private) {
 		private := []map[string]interface{}{}
-		privateMap, err := DataSourceIbmDb2SaasConnectionInfoSuccessConnectionInfoPrivateToMap(successConnectionInfo.Private)
+		privateMap, err := DataSourceIbmDb2ConnectionInfoSuccessConnectionInfoPrivateToMap(successConnectionInfo.Private)
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_db2_saas_connection_info", "read", "private-to-map").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_db2_connection_info", "read", "private-to-map").GetDiag()
 		}
 		private = append(private, privateMap)
 		if err = d.Set("private", private); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting private: %s", err), "(Data) ibm_db2_saas_connection_info", "read", "set-private").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting private: %s", err), "(Data) ibm_db2_connection_info", "read", "set-private").GetDiag()
 		}
 	}
 
@@ -164,11 +164,11 @@ func dataSourceIbmDb2SaasConnectionInfoRead(context context.Context, d *schema.R
 }
 
 // dataSourceIbmDb2SaasConnectionInfoID returns a reasonable ID for the list.
-func dataSourceIbmDb2SaasConnectionInfoID(d *schema.ResourceData) string {
+func dataSourceIbmDb2ConnectionInfoID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
 
-func DataSourceIbmDb2SaasConnectionInfoSuccessConnectionInfoPublicToMap(model *db2saasv1.SuccessConnectionInfoPublic) (map[string]interface{}, error) {
+func DataSourceIbmDb2ConnectionInfoSuccessConnectionInfoPublicToMap(model *db2saasv1.SuccessConnectionInfoPublic) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Hostname != nil {
 		modelMap["hostname"] = *model.Hostname
@@ -188,7 +188,7 @@ func DataSourceIbmDb2SaasConnectionInfoSuccessConnectionInfoPublicToMap(model *d
 	return modelMap, nil
 }
 
-func DataSourceIbmDb2SaasConnectionInfoSuccessConnectionInfoPrivateToMap(model *db2saasv1.SuccessConnectionInfoPrivate) (map[string]interface{}, error) {
+func DataSourceIbmDb2ConnectionInfoSuccessConnectionInfoPrivateToMap(model *db2saasv1.SuccessConnectionInfoPrivate) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Hostname != nil {
 		modelMap["hostname"] = *model.Hostname

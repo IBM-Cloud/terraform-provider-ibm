@@ -22,9 +22,9 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 )
 
-func DataSourceIbmDb2SaasWhitelist() *schema.Resource {
+func DataSourceIbmDb2Whitelist() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIbmDb2SaasWhitelistRead,
+		ReadContext: dataSourceIbmDb2WhitelistRead,
 
 		Schema: map[string]*schema.Schema{
 			"x_deployment_id": &schema.Schema{
@@ -55,10 +55,10 @@ func DataSourceIbmDb2SaasWhitelist() *schema.Resource {
 	}
 }
 
-func dataSourceIbmDb2SaasWhitelistRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIbmDb2WhitelistRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	db2saasClient, err := meta.(conns.ClientSession).Db2saasV1()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_db2_saas_whitelist", "read", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_db2_whitelist", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -69,34 +69,34 @@ func dataSourceIbmDb2SaasWhitelistRead(context context.Context, d *schema.Resour
 
 	successGetWhitelistIPs, _, err := db2saasClient.GetDb2SaasWhitelistWithContext(context, getDb2SaasWhitelistOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetDb2SaasWhitelistWithContext failed: %s", err.Error()), "(Data) ibm_db2_saas_whitelist", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetDb2SaasWhitelistWithContext failed: %s", err.Error()), "(Data) ibm_db2_whitelist", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 
-	d.SetId(dataSourceIbmDb2SaasWhitelistID(d))
+	d.SetId(dataSourceIbmDb2WhitelistID(d))
 
 	ipAddresses := []map[string]interface{}{}
 	for _, ipAddressesItem := range successGetWhitelistIPs.IpAddresses {
-		ipAddressesItemMap, err := DataSourceIbmDb2SaasWhitelistIpAddressToMap(&ipAddressesItem) // #nosec G601
+		ipAddressesItemMap, err := DataSourceIbmDb2WhitelistIpAddressToMap(&ipAddressesItem) // #nosec G601
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_db2_saas_whitelist", "read", "ip_addresses-to-map").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_db2_whitelist", "read", "ip_addresses-to-map").GetDiag()
 		}
 		ipAddresses = append(ipAddresses, ipAddressesItemMap)
 	}
 	if err = d.Set("ip_addresses", ipAddresses); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting ip_addresses: %s", err), "(Data) ibm_db2_saas_whitelist", "read", "set-ip_addresses").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting ip_addresses: %s", err), "(Data) ibm_db2_whitelist", "read", "set-ip_addresses").GetDiag()
 	}
 
 	return nil
 }
 
 // dataSourceIbmDb2SaasWhitelistID returns a reasonable ID for the list.
-func dataSourceIbmDb2SaasWhitelistID(d *schema.ResourceData) string {
+func dataSourceIbmDb2WhitelistID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
 
-func DataSourceIbmDb2SaasWhitelistIpAddressToMap(model *db2saasv1.IpAddress) (map[string]interface{}, error) {
+func DataSourceIbmDb2WhitelistIpAddressToMap(model *db2saasv1.IpAddress) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["address"] = *model.Address
 	modelMap["description"] = *model.Description

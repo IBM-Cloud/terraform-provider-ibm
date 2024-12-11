@@ -3,17 +3,17 @@ subcategory: "Db2 SaaS"
 layout: "ibm"
 page_title: "IBM : ibm_db2_autoscale"
 description: |-
-  Get Information about Autoscale configurations of IBM Db2 SaaS instance.
+  Get Information about Autoscale configurations of IBM Db2 instance.
 ---
 
 # ibm_db2_autoscale
 
-Retrieve information about Autoscale configurations of an existing [IBM Db2 SaaS Instance](https://cloud.ibm.com/docs/Db2onCloud).
+Retrieve information about Autoscale configurations of an existing [IBM Db2 Instance](https://cloud.ibm.com/docs/Db2onCloud).
 
 ## Example Usage
 
 ```hcl
-data "ibm_db2_saas_autoscale" "db2_autoscale" {
+data "ibm_db2_autoscale" "db2_autoscale" {
     x_db_profile = "<crn>"
 }
 ```
