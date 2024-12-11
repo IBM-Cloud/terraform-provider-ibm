@@ -39,7 +39,21 @@ func TestAccIBMDb2InstanceBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "plan", "performance"),
 					resource.TestCheckResourceAttr(name, "location", "us-east"),
 					resource.TestCheckResourceAttr(name, "service_endpoints", "public-and-private"),
-					resource.TestCheckResourceAttr(name, "instance_type", ""),
+				),
+			},
+			{
+
+				Config: testAccCheckIBMDb2InstanceFullyspecified(databaseResourceGroup, testName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMDb2InstanceExists(name, &databaseInstanceOne),
+					resource.TestCheckResourceAttr(name, "name", testName),
+					resource.TestCheckResourceAttr(name, "service", "dashdb-for-transactions"),
+					resource.TestCheckResourceAttr(name, "plan", "performance"),
+					resource.TestCheckResourceAttr(name, "location", "us-east"),
+					resource.TestCheckResourceAttr(name, "service_endpoints", "public-and-private"),
+					resource.TestCheckResourceAttr(name, "instance_type", "bx2.4x16"),
+					resource.TestCheckResourceAttr(name, "high_availability", "no"),
+					resource.TestCheckResourceAttr(name, "backup_location", "no"),
 					resource.TestCheckResourceAttr(name, "tags.#", "1"),
 				),
 			},
@@ -131,7 +145,31 @@ func testAccCheckIBMDb2InstanceBasic(databaseResourceGroup string, testName stri
 		location          = "us-east"
 		resource_group_id = data.ibm_resource_group.group.id
 		service_endpoints = "public-and-private"
-		instance_type     = ""
+
+		timeouts {
+			create = "720m"
+			update = "30m"
+			delete = "30m"
+		}
+	}
+	`, databaseResourceGroup, testName)
+}
+
+func testAccCheckIBMDb2InstanceFullyspecified(databaseResourceGroup string, testName string) string {
+	return fmt.Sprintf(`
+	
+    data "ibm_resource_group" "group" {
+		name = "%[1]s"
+	}
+
+	resource "ibm_db2" "%[2]s" {
+		name              = "%[2]s"
+		service           = "dashdb-for-transactions"
+		plan              = "performance" 
+		location          = "us-east"
+		resource_group_id = data.ibm_resource_group.group.id
+		service_endpoints = "public-and-private"
+		instance_type     = "bx2.4x16"
 		high_availability = "no"
 		backup_location   = "us"
 		tags              = ["one:two"]
@@ -140,12 +178,17 @@ func testAccCheckIBMDb2InstanceBasic(databaseResourceGroup string, testName stri
 		oracle_compatibility = "no"
 		subscription_id = "abc"
 
+		parameters_json   = <<EOF
+			{
+				"backup_encryption_key_crn": "none"
+			}
+  		EOF
+
 		timeouts {
 			create = "720m"
 			update = "30m"
 			delete = "30m"
 		}
 	}
-
 	`, databaseResourceGroup, testName)
 }
