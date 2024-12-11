@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	v2 "github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
@@ -241,7 +241,7 @@ func waitForALBCertDelete(d *schema.ResourceData, meta interface{}, timeout stri
 		namespace = parts[2]
 	}
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{"deleting"},
 		Target:  []string{"deleted"},
 		Refresh: func() (interface{}, string, error) {
@@ -354,7 +354,7 @@ func waitForContainerALBCert(d *schema.ResourceData, meta interface{}, timeout s
 		namespace = parts[2]
 	}
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{"creating"},
 		Target:  []string{"done"},
 		Refresh: func() (interface{}, string, error) {

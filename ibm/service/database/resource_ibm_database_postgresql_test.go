@@ -16,6 +16,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 
 	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
@@ -314,7 +315,7 @@ func testAccDatabaseInstanceManuallyDeleteUnwrapped(s *terraform.State, tfDataba
 		return fmt.Errorf("[ERROR] Error deleting resource instance: %s %s", err, response)
 	}
 
-	_ = &resource.StateChangeConf{
+	_ = &retry.StateChangeConf{
 		Pending: []string{databaseInstanceProgressStatus, databaseInstanceInactiveStatus, databaseInstanceSuccessStatus},
 		Target:  []string{databaseInstanceRemovedStatus},
 		Refresh: func() (interface{}, string, error) {

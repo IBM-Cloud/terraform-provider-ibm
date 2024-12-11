@@ -18,7 +18,7 @@ import (
 	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/bluemix-go/models"
@@ -779,7 +779,7 @@ func waitForHPCSInstanceCreate(d *schema.ResourceData, meta interface{}) (interf
 		ID: &instanceID,
 	}
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{resourcecontroller.RsInstanceProgressStatus, resourcecontroller.RsInstanceInactiveStatus, resourcecontroller.RsInstanceProvisioningStatus},
 		Target:  []string{resourcecontroller.RsInstanceSuccessStatus},
 		Refresh: func() (interface{}, string, error) {
@@ -813,7 +813,7 @@ func waitForHPCSInstanceUpdate(d *schema.ResourceData, meta interface{}) (interf
 		ID: &instanceID,
 	}
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{resourcecontroller.RsInstanceProgressStatus, resourcecontroller.RsInstanceInactiveStatus},
 		Target:  []string{resourcecontroller.RsInstanceSuccessStatus},
 		Refresh: func() (interface{}, string, error) {
@@ -846,7 +846,7 @@ func waitForHPCSInstanceDelete(d *schema.ResourceData, meta interface{}) (interf
 	resourceInstanceGet := rc.GetResourceInstanceOptions{
 		ID: &instanceID,
 	}
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{resourcecontroller.RsInstanceProgressStatus, resourcecontroller.RsInstanceInactiveStatus, resourcecontroller.RsInstanceSuccessStatus},
 		Target:  []string{resourcecontroller.RsInstanceRemovedStatus, resourcecontroller.RsInstanceReclamation},
 		Refresh: func() (interface{}, string, error) {

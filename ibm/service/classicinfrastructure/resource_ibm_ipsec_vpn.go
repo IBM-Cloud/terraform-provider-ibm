@@ -13,7 +13,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/softlayer/softlayer-go/datatypes"
 	"github.com/softlayer/softlayer-go/filter"
@@ -251,7 +251,7 @@ func resourceIBMIPSecVpnCreate(d *schema.ResourceData, meta interface{}) error {
 
 func findIPSecVpnByOrderID(sess *session.Session, orderID int, d *schema.ResourceData) (datatypes.Network_Tunnel_Module_Context, error) {
 	filterPath := "networkTunnelContexts.billingItem.orderItem.order.id"
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{"pending"},
 		Target:  []string{"complete"},
 		Refresh: func() (interface{}, string, error) {

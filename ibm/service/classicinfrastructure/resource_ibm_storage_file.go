@@ -15,7 +15,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/softlayer/softlayer-go/datatypes"
 	"github.com/softlayer/softlayer-go/filter"
@@ -702,7 +702,7 @@ func buildStorageProductOrderContainer(
 func findStorageByOrderId(sess *session.Session, orderId int, timeout time.Duration) (datatypes.Network_Storage, error) {
 	filterPath := "networkStorage.billingItem.orderItem.order.id"
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{"pending"},
 		Target:  []string{"complete"},
 		Refresh: func() (interface{}, string, error) {
@@ -754,7 +754,7 @@ func WaitForStorageAvailable(d *schema.ResourceData, meta interface{}) (interfac
 		return nil, fmt.Errorf("[ERROR] The storage ID %s must be numeric", d.Id())
 	}
 	sess := meta.(conns.ClientSession).SoftLayerSession()
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{"retry", "provisioning"},
 		Target:  []string{"available"},
 		Refresh: func() (interface{}, string, error) {
@@ -1526,7 +1526,7 @@ func WaitForStorageUpdate(d *schema.ResourceData, meta interface{}) (interface{}
 	size := d.Get("capacity").(int)
 	iops := d.Get("iops").(float64)
 	sess := meta.(conns.ClientSession).SoftLayerSession()
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{"provisioning"},
 		Target:  []string{"available"},
 		Refresh: func() (interface{}, string, error) {

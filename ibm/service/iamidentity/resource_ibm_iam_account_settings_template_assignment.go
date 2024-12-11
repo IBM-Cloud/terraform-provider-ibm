@@ -6,11 +6,11 @@ package iamidentity
 import (
 	"context"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"log"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -605,7 +605,7 @@ func resourceIBMAccountSettingsTemplateAssignmentEnityHistoryRecordToMap(model *
 	return modelMap, nil
 }
 
-func isAccountSettingsAssignmentRemoved(id string, meta interface{}) resource.StateRefreshFunc {
+func isAccountSettingsAssignmentRemoved(id string, meta interface{}) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		iamIdentityClient, err := meta.(conns.ClientSession).IAMIdentityV1API()
 
@@ -627,7 +627,7 @@ func isAccountSettingsAssignmentRemoved(id string, meta interface{}) resource.St
 	}
 }
 
-func isAccountSettingsTemplateAssigned(id string, meta interface{}) resource.StateRefreshFunc {
+func isAccountSettingsTemplateAssigned(id string, meta interface{}) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 
 		iamIdentityClient, err := meta.(conns.ClientSession).IAMIdentityV1API()

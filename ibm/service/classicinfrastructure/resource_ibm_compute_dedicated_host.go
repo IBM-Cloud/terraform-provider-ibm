@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/softlayer/softlayer-go/datatypes"
 	"github.com/softlayer/softlayer-go/filter"
@@ -300,7 +300,7 @@ func findDedicatedHostByOrderID(d *datatypes.Hardware, r *schema.ResourceData, m
 
 	log.Printf("Waiting for dedicated host (%s) to have to be provisioned", hostname)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{"retry", "pending"},
 		Target:  []string{"provisioned"},
 		Refresh: func() (interface{}, string, error) {

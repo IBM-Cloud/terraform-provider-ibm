@@ -11,7 +11,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -219,7 +219,7 @@ func waitForCISCertificateOrderDelete(d *schema.ResourceData, meta interface{}) 
 	cisClient.Crn = core.StringPtr(crn)
 	cisClient.ZoneIdentifier = core.StringPtr(zoneID)
 	opt := cisClient.NewGetCustomCertificateOptions(certificateID)
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{cisCertificateOrderDeletePending},
 		Target:  []string{cisCertificateOrderDeleted},
 		Refresh: func() (interface{}, string, error) {

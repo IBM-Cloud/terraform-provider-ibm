@@ -13,7 +13,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/softlayer/softlayer-go/datatypes"
 	"github.com/softlayer/softlayer-go/filter"
@@ -500,7 +500,7 @@ func buildLbaasLBProductOrderContainer(d *schema.ResourceData, sess *session.Ses
 func findLbaasLBByOrderId(sess *session.Session, name string, d *schema.ResourceData) (*datatypes.Network_LBaaS_LoadBalancer, error) {
 
 	isIDSet := false
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{lbPending},
 		Target:  []string{lbActive},
 		Refresh: func() (interface{}, string, error) {
@@ -552,7 +552,7 @@ func waitForLbaasLBAvailable(d *schema.ResourceData, meta interface{}) (interfac
 	sess := meta.(conns.ClientSession).SoftLayerSession()
 	service := services.GetNetworkLBaaSLoadBalancerService(sess)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{lbUpdatePening},
 		Target:  []string{lbActive},
 		Refresh: func() (interface{}, string, error) {
@@ -582,7 +582,7 @@ func waitForLbaasLBDelete(d *schema.ResourceData, meta interface{}) (interface{}
 	sess := meta.(conns.ClientSession).SoftLayerSession()
 	service := services.GetNetworkLBaaSLoadBalancerService(sess)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{lbDeletePending},
 		Target:  []string{lbDeleted},
 		Refresh: func() (interface{}, string, error) {

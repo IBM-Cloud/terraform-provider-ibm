@@ -14,7 +14,7 @@ import (
 	"github.com/IBM/ibm-cos-sdk-go/service/s3"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	validation "github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -419,16 +419,16 @@ func resourceIBMCOSBucketLifecycleConfigurationRead(ctx context.Context, d *sche
 	var output *s3.GetBucketLifecycleConfigurationOutput
 
 	// Adding a retry to overcome the NoSuchLifecycleConfiguration error as it takes time for the lifecycle rules to  get applied.
-	err = resource.Retry(lifecycleConfigurationRulesSteadyTimeout, func() *resource.RetryError {
+	err = retry.Retry(lifecycleConfigurationRulesSteadyTimeout, func() *retry.RetryError {
 		var err error
 		output, err = s3Client.GetBucketLifecycleConfiguration(getLifecycleConfigurationInput)
 
 		if d.IsNewResource() && err != nil && strings.Contains(err.Error(), "NoSuchLifecycleConfiguration: The lifecycle configuration does not exist") {
 
-			return resource.RetryableError(err)
+			return retry.RetryableError(err)
 		}
 		if err != nil {
-			return resource.NonRetryableError(err)
+			return retry.NonRetryableError(err)
 		}
 		return nil
 	})

@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/softlayer/softlayer-go/datatypes"
 	"github.com/softlayer/softlayer-go/filter"
@@ -107,7 +107,7 @@ func WaitForOrderCompletion(
 	log.Printf("Waiting for billing order %d to have zero active transactions", receipt.OrderId)
 	var billingOrderItem *datatypes.Billing_Order_Item
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{"", "in progress"},
 		Target:  []string{"complete"},
 		Refresh: func() (interface{}, string, error) {

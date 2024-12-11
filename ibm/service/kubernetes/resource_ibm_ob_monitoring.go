@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	v2 "github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
@@ -161,15 +161,15 @@ func resourceIBMMonitoringCreate(d *schema.ResourceData, meta interface{}) error
 	}
 
 	var monitoring v2.MonitoringCreateResponse
-	err = resource.Retry(10*time.Minute, func() *resource.RetryError {
+	err = retry.Retry(10*time.Minute, func() *retry.RetryError {
 		var err error
 		monitoring, err = client.Monitoring().CreateMonitoringConfig(params, targetEnv)
 		if err != nil {
 			log.Printf("[DEBUG] monitoring Instance err %s", err)
 			if strings.Contains(err.Error(), "The user doesn't have enough privileges to perform this action") || strings.Contains(err.Error(), "A logging or monitoring configuration for this cluster already exists. To use a different configuration, delete the existing configuration and try again") {
-				return resource.RetryableError(err)
+				return retry.RetryableError(err)
 			}
-			return resource.NonRetryableError(err)
+			return retry.NonRetryableError(err)
 		}
 
 		return nil

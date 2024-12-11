@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	homedir "github.com/mitchellh/go-homedir"
 
@@ -189,19 +189,19 @@ func dataSourceIBMContainerClusterConfigRead(d *schema.ResourceData, meta interf
 			// For the Network config we need to gather the certs so we must override the admin value
 			var calicoConfigFilePath string
 			var clusterKeyDetails v1.ClusterKeyInfo
-			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+			err = retry.Retry(5*time.Minute, func() *retry.RetryError {
 				var err error
 				calicoConfigFilePath, clusterKeyDetails, err = csAPI.StoreConfigDetail(name, configDir, admin || true, network, targetEnv, endpointType)
 				if err != nil {
 					log.Printf("[DEBUG] Failed to fetch cluster config err %s", err)
 					if strings.Contains(err.Error(), "Could not login to openshift account runtime error:") {
-						return resource.RetryableError(err)
+						return retry.RetryableError(err)
 					}
 					if intermittentUserLookupFailure, _ := regexp.MatchString("Error: lookup of user for \"(.+)\" failed", err.Error()); intermittentUserLookupFailure {
 						// Intermittent error resulting from synchronisation delay
-						return resource.RetryableError(err)
+						return retry.RetryableError(err)
 					}
-					return resource.NonRetryableError(err)
+					return retry.NonRetryableError(err)
 				}
 				return nil
 			})
@@ -221,19 +221,19 @@ func dataSourceIBMContainerClusterConfigRead(d *schema.ResourceData, meta interf
 
 		} else {
 			var clusterKeyDetails v1.ClusterKeyInfo
-			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+			err = retry.Retry(5*time.Minute, func() *retry.RetryError {
 				var err error
 				clusterKeyDetails, err = csAPI.GetClusterConfigDetail(name, configDir, admin, targetEnv, endpointType)
 				if err != nil {
 					log.Printf("[DEBUG] Failed to fetch cluster config err %s", err)
 					if strings.Contains(err.Error(), "Could not login to openshift account runtime error:") {
-						return resource.RetryableError(err)
+						return retry.RetryableError(err)
 					}
 					if intermittentUserLookupFailure, _ := regexp.MatchString("Error: lookup of user for \"(.+)\" failed", err.Error()); intermittentUserLookupFailure {
 						// Intermittent error resulting from synchronisation delay
-						return resource.RetryableError(err)
+						return retry.RetryableError(err)
 					}
-					return resource.NonRetryableError(err)
+					return retry.NonRetryableError(err)
 				}
 				return nil
 			})

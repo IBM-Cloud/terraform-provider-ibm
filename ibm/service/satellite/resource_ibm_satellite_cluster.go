@@ -19,6 +19,7 @@ import (
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/jinzhu/copier"
 )
@@ -834,13 +835,13 @@ func waitForLocationNormal(location string, d *schema.ResourceData, meta interfa
 			var instance *kubernetesserviceapiv1.MultishiftGetController
 			var response *core.DetailedResponse
 			var err error
-			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+			err = retry.Retry(5*time.Minute, func() *retry.RetryError {
 				instance, response, err = satClient.GetSatelliteLocation(getSatLocOptions)
 				if err != nil || instance == nil {
 					if response != nil && response.StatusCode == 404 {
-						return resource.RetryableError(err)
+						return retry.RetryableError(err)
 					}
-					return resource.NonRetryableError(err)
+					return retry.NonRetryableError(err)
 				}
 				return nil
 			})

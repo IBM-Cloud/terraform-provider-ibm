@@ -14,6 +14,7 @@ import (
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/softlayer/softlayer-go/datatypes"
@@ -262,7 +263,7 @@ resource "ibm_compute_user" "testuser" {
     has_api_key = false
 }`, testAccRandomEmail, testAccRandomUser, testAccUserPassword)
 
-var testAccRandomEmail = resource.UniqueId() + "@example.com"
+var testAccRandomEmail = id.UniqueId() + "@example.com"
 var testAccRandomUser = testGetAccountId() + "_" + testAccRandomEmail
 var testAccUserPassword = "Softlayer2017!"
 var apiKeyRegexp, _ = regexp.Compile(`\w+`)

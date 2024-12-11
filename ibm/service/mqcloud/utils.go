@@ -13,9 +13,9 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 
 	"github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
 	"github.com/IBM/mqcloud-go-sdk/mqcloudv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -41,7 +41,7 @@ func waitForQmStatusUpdate(context context.Context, d *schema.ResourceData, meta
 		return "", err
 	}
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{qmCreating},
 		Target:  []string{qmStatus},
 		Refresh: func() (interface{}, string, error) {
@@ -80,7 +80,7 @@ func waitForQueueManagerToDelete(context context.Context, d *schema.ResourceData
 		return false, err
 	}
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{isQueueManagerDeleting},
 		Target:  []string{isQueueManagerDeleteDone},
 		Refresh: func() (interface{}, string, error) {

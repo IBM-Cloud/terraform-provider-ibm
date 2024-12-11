@@ -13,7 +13,7 @@ import (
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/softlayer/softlayer-go/datatypes"
 	"github.com/softlayer/softlayer-go/filter"
@@ -277,7 +277,7 @@ func findVPXPriceItems(version string, speed int, plan string, ipCount int, meta
 func findVPXByOrderId(orderId int, meta interface{}) (datatypes.Network_Application_Delivery_Controller, error) {
 	service := services.GetAccountService(meta.(conns.ClientSession).SoftLayerSession())
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{"pending"},
 		Target:  []string{"complete"},
 		Refresh: func() (interface{}, string, error) {
