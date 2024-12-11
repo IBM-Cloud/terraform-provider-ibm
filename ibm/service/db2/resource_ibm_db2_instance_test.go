@@ -36,7 +36,7 @@ func TestAccIBMDb2InstanceBasic(t *testing.T) {
 					testAccCheckIBMDb2InstanceExists(name, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "dashdb-for-transactions"),
-					resource.TestCheckResourceAttr(name, "plan", "performance"),
+					resource.TestCheckResourceAttr(name, "plan", "performance-dev"),
 					resource.TestCheckResourceAttr(name, "location", "us-east"),
 					resource.TestCheckResourceAttr(name, "service_endpoints", "public-and-private"),
 					resource.TestCheckResourceAttr(name, "instance_type", ""),
@@ -127,7 +127,7 @@ func testAccCheckIBMDb2InstanceBasic(databaseResourceGroup string, testName stri
 	resource "ibm_db2" "%[2]s" {
 		name              = "%[2]s"
 		service           = "dashdb-for-transactions"
-		plan              = "performance" 
+		plan              = "performance-dev" 
 		location          = "us-east"
 		resource_group_id = data.ibm_resource_group.group.id
 		service_endpoints = "public-and-private"
@@ -135,18 +135,10 @@ func testAccCheckIBMDb2InstanceBasic(databaseResourceGroup string, testName stri
 		high_availability = "no"
 		backup_location   = "us"
 		tags              = ["one:two"]
-		//disk_encryption_instance_crn = "none"
-		//disk_encryption_key_crn = "none"
-		//oracle_compatibility = "no"
-		//subscription_id = "abc"
-
-		parameters_json   = <<EOF
-		{
-			"disk_encryption_instance_crn": "none",
-			"disk_encryption_key_crn": "none",
-			"oracle_compatibility": "no"
-		}
-		EOF
+		disk_encryption_instance_crn = "none"
+		disk_encryption_key_crn = "none"
+		oracle_compatibility = "no"
+		subscription_id = "abc"
 
 		timeouts {
 			create = "720m"

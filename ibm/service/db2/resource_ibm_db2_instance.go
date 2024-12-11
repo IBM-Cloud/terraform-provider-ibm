@@ -17,7 +17,6 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/resourcecontroller"
-	"github.com/IBM/cloud-db2-go-sdk/db2saasv1"
 	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
@@ -62,7 +61,7 @@ func ResourceIBMDb2Instance() *schema.Resource {
 		Type:        schema.TypeString,
 	}
 
-	riSchema["disk_encryption_crn"] = &schema.Schema{
+	riSchema["disk_encryption_key_crn"] = &schema.Schema{
 		Description: "Cross Regional disk encryption crn",
 		Optional:    true,
 		Type:        schema.TypeString,
@@ -305,16 +304,4 @@ func waitForResourceInstanceCreate(d *schema.ResourceData, meta interface{}) (in
 	}
 
 	return stateConf.WaitForStateContext(context.Background())
-}
-
-func validateIPAddress(ip db2saasv1.IpAddress) error {
-	if ip.Address == nil || *ip.Address == "" {
-		return fmt.Errorf("[ERROR] IP address is required")
-	}
-
-	if ip.Description == nil || *ip.Description == "" {
-		return fmt.Errorf("[ERROR] IP address is required")
-	}
-
-	return nil
 }

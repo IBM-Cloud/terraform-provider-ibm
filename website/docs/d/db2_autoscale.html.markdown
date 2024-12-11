@@ -14,7 +14,7 @@ Retrieve information about Autoscale configurations of an existing [IBM Db2 SaaS
 
 ```hcl
 data "ibm_db2_saas_autoscale" "db2_autoscale" {
-    x_db_profile = "<crn>>"
+    x_db_profile = "<crn>"
 }
 ```
 
