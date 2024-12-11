@@ -1,12 +1,12 @@
 ---
 subcategory: "Db2 SaaS"
 layout: "ibm"
-page_title: "IBM : ibm_db2_whitelist_ip_ips"
+page_title: "IBM : ibm_db2_whitelist_ip"
 description: |-
   Get Information about Whitelisted IPs of IBM Db2 instance.
 ---
 
-# ibm_db2_whitelist_ip_ips
+# ibm_db2_whitelist_ip
 
 Retrieve information about Whitelisted IPs of an existing [IBM Db2 Instance](https://cloud.ibm.com/docs/Db2onCloud).
 
