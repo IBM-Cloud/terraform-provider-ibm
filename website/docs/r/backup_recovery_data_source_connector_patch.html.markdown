@@ -8,7 +8,7 @@ subcategory: "IBM Backup Recovery API"
 
 # ibm_backup_recovery_data_source_connector_patch
 
-Create, update, and delete Data-Source Connectors with this resource.
+Update, and delete Data-Source Connectors with this resource.
 
 ## Example Usage
 
