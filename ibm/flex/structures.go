@@ -46,8 +46,8 @@ import (
 	"github.com/go-openapi/strfmt"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/softlayer/softlayer-go/datatypes"
 	"github.com/softlayer/softlayer-go/sl"
 
@@ -2714,7 +2714,7 @@ func UpdateGlobalTagsUsingCRN(oldList, newList interface{}, meta interface{}, re
 func WaitForTagsAvailable(meta interface{}, resourceID, resourceType, tagType string, desired *schema.Set, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for tag attachment (%s) to be successful.", resourceID)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"pending"},
 		Target:     []string{"success", "error"},
 		Refresh:    tagsRefreshFunc(meta, resourceID, resourceType, tagType, desired),
@@ -2725,7 +2725,7 @@ func WaitForTagsAvailable(meta interface{}, resourceID, resourceType, tagType st
 	return stateConf.WaitForState()
 }
 
-func tagsRefreshFunc(meta interface{}, resourceID, resourceType, tagType string, desired *schema.Set) resource.StateRefreshFunc {
+func tagsRefreshFunc(meta interface{}, resourceID, resourceType, tagType string, desired *schema.Set) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		tags, err := GetGlobalTagsUsingCRN(meta, resourceID, resourceType, tagType)
 		if err != nil {
