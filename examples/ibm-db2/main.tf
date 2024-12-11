@@ -22,20 +22,23 @@ resource "ibm_db2" "db2_instance" {
 
  }
 
-data "ibm_db2_connection_info" "db2_connection_info" {
-    deployment_id = "crn%3Av1%3Astaging%3Apublic%3Adashdb-for-transactions%3Aus-east%3Aa%2Fe7e3e87b512f474381c0684a5ecbba03%3Af9455c22-07af-4a86-b9df-f02fd4774471%3A%3A"
-    x_deployment_id = "crn:v1:staging:public:dashdb-for-transactions:us-east:a/e7e3e87b512f474381c0684a5ecbba03:f9455c22-07af-4a86-b9df-f02fd4774471::"
-}
+//Db2 SaaS Connection Info
+# data "ibm_db2_connection_info" "db2_connection_info" {
+#     deployment_id = "crn%3Av1%3Astaging%3Apublic%3Adashdb-for-transactions%3Aus-east%3Aa%2Fe7e3e87b512f474381c0684a5ecbba03%3Af9455c22-07af-4a86-b9df-f02fd4774471%3A%3A"
+#     x_deployment_id = "crn:v1:staging:public:dashdb-for-transactions:us-east:a/e7e3e87b512f474381c0684a5ecbba03:f9455c22-07af-4a86-b9df-f02fd4774471::"
+# }
+#
+//Db2 SaaS Autoscale
+# data "ibm_db2_autoscale" "db2_autoscale" {
+#     x_db_profile = "crn%3Av1%3Astaging%3Apublic%3Adashdb-for-transactions%3Aus-east%3Aa%2Fe7e3e87b512f474381c0684a5ecbba03%3Af9455c22-07af-4a86-b9df-f02fd4774471%3A%3A"
+# }
+#
+//Db2 SaaS Whitelist IPs
+# data "ibm_db2_whitelist" "db2_whitelistips" {
+#     x_deployment_id = "crn:v1:staging:public:dashdb-for-transactions:us-east:a/e7e3e87b512f474381c0684a5ecbba03:f9455c22-07af-4a86-b9df-f02fd4774471::"
+# }
 
-data "ibm_db2_autoscale" "db2_autoscale" {
-    x_db_profile = "crn%3Av1%3Astaging%3Apublic%3Adashdb-for-transactions%3Aus-east%3Aa%2Fe7e3e87b512f474381c0684a5ecbba03%3Af9455c22-07af-4a86-b9df-f02fd4774471%3A%3A"
-}
-
-data "ibm_db2_whitelist" "db2_whitelistips" {
-    x_deployment_id = "crn:v1:staging:public:dashdb-for-transactions:us-east:a/e7e3e87b512f474381c0684a5ecbba03:f9455c22-07af-4a86-b9df-f02fd4774471::"
-}
-
-//DataSource reading existing instance
+//DataSource reading existing Db2 SaaS instance
 # data "ibm_db2" "db2_instance" {
 #   name              = "dDb2-v0-test-public"
 #   resource_group_id = data.ibm_resource_group.group.id
