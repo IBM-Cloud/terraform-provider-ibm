@@ -14,7 +14,7 @@ Retrieve information about Autoscale configurations of an existing [IBM Db2 Inst
 
 ```hcl
 data "ibm_db2_autoscale" "db2_autoscale" {
-    x_db_profile = "<crn>"
+    x_db_profile = "<encoded_crn>"
 }
 ```
 
@@ -22,7 +22,7 @@ data "ibm_db2_autoscale" "db2_autoscale" {
 
 Review the argument reference that you can specify for your data source.
 
-* `x_db_profile` - (Required, String) ID of the instance this autoscale relates to.
+* `x_db_profile` - (Required, String) Encoded CRN of the instance this autoscale relates to.
 
 ## Attribute Reference
 

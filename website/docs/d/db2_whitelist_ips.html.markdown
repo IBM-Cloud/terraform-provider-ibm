@@ -22,7 +22,7 @@ data "ibm_db2_whitelist" "db2_whitelistips" {
 
 Review the argument reference that you can specify for your data source.
 
-* `x_deployment_id` - (Required, String) ID of the instance this whitelisted IPs relates to.
+* `x_deployment_id` - (Required, String) CRN of the instance this whitelisted IPs relates to.
 
 ## Attribute Reference
 

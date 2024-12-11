@@ -36,7 +36,7 @@ func TestAccIBMDb2InstanceBasic(t *testing.T) {
 					testAccCheckIBMDb2InstanceExists(name, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "dashdb-for-transactions"),
-					resource.TestCheckResourceAttr(name, "plan", "performance-dev"),
+					resource.TestCheckResourceAttr(name, "plan", "performance"),
 					resource.TestCheckResourceAttr(name, "location", "us-east"),
 					resource.TestCheckResourceAttr(name, "service_endpoints", "public-and-private"),
 					resource.TestCheckResourceAttr(name, "instance_type", ""),
@@ -127,7 +127,7 @@ func testAccCheckIBMDb2InstanceBasic(databaseResourceGroup string, testName stri
 	resource "ibm_db2" "%[2]s" {
 		name              = "%[2]s"
 		service           = "dashdb-for-transactions"
-		plan              = "performance-dev" 
+		plan              = "performance" 
 		location          = "us-east"
 		resource_group_id = data.ibm_resource_group.group.id
 		service_endpoints = "public-and-private"

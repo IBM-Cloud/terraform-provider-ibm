@@ -17,12 +17,14 @@ import (
 )
 
 func TestAccIbmDb2AutoscaleDataSourceBasic(t *testing.T) {
+	xDbProfile := "crn%3Av1%3Astaging%3Apublic%3Adashdb-for-transactions%3Aus-east%3Aa%2Fe7e3e87b512f474381c0684a5ecbba03%3Af9455c22-07af-4a86-b9df-f02fd4774471%3A%3A"
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmDb2AutoscaleDataSourceConfigBasic(),
+				Config: testAccCheckIbmDb2AutoscaleDataSourceConfigBasic(xDbProfile),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_db2_autoscale.Db2-v0-test-public", "x_db_profile"),
 					resource.TestCheckResourceAttrSet("data.ibm_db2_autoscale.Db2-v0-test-public", "auto_scaling_allow_plan_limit"),
@@ -40,10 +42,10 @@ func TestAccIbmDb2AutoscaleDataSourceBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmDb2AutoscaleDataSourceConfigBasic() string {
+func testAccCheckIbmDb2AutoscaleDataSourceConfigBasic(xDbProfile string) string {
 	return fmt.Sprintf(`
 		 data "ibm_db2_autoscale" "Db2-v0-test-public" {
-    x_db_profile = "crn:v1:staging:public:dashdb-for-transactions:us-east:a/e7e3e87b512f474381c0684a5ecbba03:f9455c22-07af-4a86-b9df-f02fd4774471::"
+    x_db_profile = "%[1]s"
 }
-	`)
+	`, xDbProfile)
 }

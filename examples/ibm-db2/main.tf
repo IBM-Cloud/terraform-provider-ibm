@@ -4,9 +4,9 @@ data "ibm_resource_group" "group" {
 
 //Db2 SaaS Instance Creation
 resource "ibm_db2" "db2_instance" {
-  name              = "demo-db2"
+  name              = "demo-db2-v8"
   service           = "dashdb-for-transactions"
-  plan              = "performance" 
+  plan              = "performance"
   location          = var.region
   resource_group_id = data.ibm_resource_group.group.id
   service_endpoints = "public-and-private"
@@ -14,24 +14,30 @@ resource "ibm_db2" "db2_instance" {
   high_availability = "yes"
   backup_location   = "us"
 
-  parameters_json   = <<EOF
-    {
-        "disk_encryption_instance_crn": "none",
-        "disk_encryption_key_crn": "none",
-        "oracle_compatibility": "no"
-    }
-  EOF
-
   timeouts {
     create = "720m"
     update = "60m"
     delete = "30m"
   }
+
+ }
+
+data "ibm_db2_connection_info" "db2_connection_info" {
+    deployment_id = "crn%3Av1%3Astaging%3Apublic%3Adashdb-for-transactions%3Aus-east%3Aa%2Fe7e3e87b512f474381c0684a5ecbba03%3Af9455c22-07af-4a86-b9df-f02fd4774471%3A%3A"
+    x_deployment_id = "crn:v1:staging:public:dashdb-for-transactions:us-east:a/e7e3e87b512f474381c0684a5ecbba03:f9455c22-07af-4a86-b9df-f02fd4774471::"
 }
 
-# //DataSource reading existing instance
+data "ibm_db2_autoscale" "db2_autoscale" {
+    x_db_profile = "crn%3Av1%3Astaging%3Apublic%3Adashdb-for-transactions%3Aus-east%3Aa%2Fe7e3e87b512f474381c0684a5ecbba03%3Af9455c22-07af-4a86-b9df-f02fd4774471%3A%3A"
+}
+
+data "ibm_db2_whitelist" "db2_whitelistips" {
+    x_deployment_id = "crn:v1:staging:public:dashdb-for-transactions:us-east:a/e7e3e87b512f474381c0684a5ecbba03:f9455c22-07af-4a86-b9df-f02fd4774471::"
+}
+
+//DataSource reading existing instance
 # data "ibm_db2" "db2_instance" {
-#   name              = "demo-db2"
+#   name              = "dDb2-v0-test-public"
 #   resource_group_id = data.ibm_resource_group.group.id
 #   location          = var.region
 #   service           = "dashdb-for-transactions"

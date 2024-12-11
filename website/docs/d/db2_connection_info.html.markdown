@@ -23,8 +23,8 @@ data "ibm_db2_connection_info" "db2_connection_info" {
 
 Review the argument reference that you can specify for your data source.
 
-* `deployment_id` - (Required, String) Encoded ID of the instance this connection info relates to.
-* `x_deployment_id` - (Required, String) ID of the instance this connection info relates to.
+* `deployment_id` - (Required, String) Encoded CRN of the instance this connection info relates to.
+* `x_deployment_id` - (Required, String) CRN of the instance this connection info relates to.
 
 ## Attribute Reference
 

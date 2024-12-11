@@ -30,7 +30,7 @@ func DataSourceIbmDb2Autoscale() *schema.Resource {
 			"x_db_profile": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "CRN deployment id.",
+				Description: "Encoded CRN deployment id.",
 			},
 			"auto_scaling_allow_plan_limit": &schema.Schema{
 				Type:        schema.TypeBool,
