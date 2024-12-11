@@ -1578,10 +1578,20 @@ func (c *Config) ClientSession() (interface{}, error) {
 
 	var authenticator core.Authenticator
 
-	if c.BluemixAPIKey != "" {
-		authenticator = &core.IamAuthenticator{
-			ApiKey: c.BluemixAPIKey,
-			URL:    EnvFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, "https://iam.cloud.ibm.com") + "/identity/token",
+	if c.BluemixAPIKey != "" || sess.BluemixSession.Config.IAMRefreshToken != "" {
+		if c.BluemixAPIKey != "" {
+			authenticator = &core.IamAuthenticator{
+				ApiKey: c.BluemixAPIKey,
+				URL:    EnvFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, iamURL),
+			}
+		} else {
+			// Construct the IamAuthenticator with the IAM refresh token.
+			authenticator = &core.IamAuthenticator{
+				RefreshToken: sess.BluemixSession.Config.IAMRefreshToken,
+				ClientId:     "bx",
+				ClientSecret: "bx",
+				URL:          EnvFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, iamURL),
+			}
 		}
 	} else if strings.HasPrefix(sess.BluemixSession.Config.IAMAccessToken, "Bearer") {
 		authenticator = &core.BearerTokenAuthenticator{
