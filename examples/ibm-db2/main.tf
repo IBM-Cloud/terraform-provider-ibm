@@ -13,6 +13,10 @@ resource "ibm_db2" "db2_instance" {
   instance_type     = "bx2.4x16"
   high_availability = "yes"
   backup_location   = "us"
+  disk_encryption_instance_crn = "none"
+  disk_encryption_key_crn = "none"
+  oracle_compatibility = "no"
+  subscription_id = ""
 
   timeouts {
     create = "720m"
