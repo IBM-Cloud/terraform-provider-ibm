@@ -2990,7 +2990,6 @@ func getCpuEnforcementRatios(service string, plan string, hostFlavor string, met
 	return nil, 0, 0
 }
 
-
 func getMemberGroup(instanceCRN string, meta interface{}) (*Group, error) {
 	groupsResponse, err := getGroups(instanceCRN, meta)
 
