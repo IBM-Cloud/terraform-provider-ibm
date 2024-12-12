@@ -22,8 +22,6 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/appid"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/atracker"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/backuprecovery"
-
-	// "github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/backuprecovery"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/catalogmanagement"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/cdtektonpipeline"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/cdtoolchain"
