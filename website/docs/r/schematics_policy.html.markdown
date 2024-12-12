@@ -8,8 +8,6 @@ subcategory: "Schematics"
 
 # ibm_schematics_policy
 
-~> **Beta:** This resource is in Beta, and is subject to change.
-
 Provides a resource for schematics_policy. This allows schematics_policy to be created, updated and deleted.
 
 ## Example Usage

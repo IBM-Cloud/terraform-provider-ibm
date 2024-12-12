@@ -241,11 +241,11 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				Description: "The configuration schema in JSON format",
 			},
 			"version": {
-				Description:      "The database version to provision if specified",
-				Type:             schema.TypeString,
-				Optional:         true,
-				Computed:         true,
-				DiffSuppressFunc: flex.ApplyOnce,
+				Description: "The database version to provision if specified",
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				ForceNew:    true,
 			},
 			"service_endpoints": {
 				Description:  "Types of the service endpoints. Possible values are 'public', 'private', 'public-and-private'.",
@@ -2989,6 +2989,7 @@ func getCpuEnforcementRatios(service string, plan string, hostFlavor string, met
 
 	return nil, 0, 0
 }
+
 
 func getMemberGroup(instanceCRN string, meta interface{}) (*Group, error) {
 	groupsResponse, err := getGroups(instanceCRN, meta)
