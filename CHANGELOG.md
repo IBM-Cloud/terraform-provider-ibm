@@ -1,3 +1,7 @@
+# 1.72.2 (Dec 11, 2024)
+BugFixes
+* Fix the issue of loading IAM endpoints either for stage or file ([5866](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/5866))
+
 # 1.72.1 (Dec 10, 2024)
 BugFixes
 * Breaking change fix Revert "Add version validation ([5859](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5859))
