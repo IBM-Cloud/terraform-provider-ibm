@@ -59,7 +59,7 @@ func DataSourceIBMDb2Instance() *schema.Resource {
 	}
 
 	riSchema["subscription_id"] = &schema.Schema{
-		Description: "Subscription ID",
+		Description: "For PerformanceSubscription plans a Subscription ID is required. It is not required for Performance plans.",
 		Optional:    true,
 		Type:        schema.TypeString,
 	}

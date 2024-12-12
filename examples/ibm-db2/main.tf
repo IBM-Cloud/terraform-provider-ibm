@@ -16,7 +16,6 @@ resource "ibm_db2" "db2_instance" {
   disk_encryption_instance_crn = "none"
   disk_encryption_key_crn = "none"
   oracle_compatibility = "no"
-  subscription_id = ""
 
   timeouts {
     create = "720m"

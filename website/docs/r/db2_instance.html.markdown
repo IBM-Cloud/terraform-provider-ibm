@@ -90,7 +90,7 @@ Review the argument reference that you can specify for your resource.
 - `disk_encryption_instance_crn` - (Optional, String) Please ensure Databases for Db2 has been authorized to access the selected KMS instance.
 - `disk_encryption_key_crn` - (Optional, String) Warning: deleting this key will result in the loss of all data stored in this Db2 instance.
 - `oracle_compatibility` - (Optional, String) If you require Oracle compatibility, please choose this option(YES/NO).
-- `subscription_id` - (Optional, String) ID which is required for subscription plan example PerformanceSubscription.
+- `subscription_id` - (Optional, String) ID which is required for subscription plans, for example: PerformanceSubscription.
 - `parameters_json` - (Optional, JSON) Parameters to create Db2 SaaS instance. The value must be a JSON string.
 
   Nested scheme for `parameters_json`:

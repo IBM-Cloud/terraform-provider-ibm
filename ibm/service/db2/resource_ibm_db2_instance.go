@@ -32,6 +32,7 @@ const (
 	RsInstanceRemovedStatus       = "removed"
 	RsInstanceReclamation         = "pending_reclamation"
 	RsInstanceUpdateSuccessStatus = "succeeded"
+	PerformanceSubscription       = "PerformanceSubscription"
 )
 
 func ResourceIBMDb2Instance() *schema.Resource {
@@ -74,7 +75,7 @@ func ResourceIBMDb2Instance() *schema.Resource {
 	}
 
 	riSchema["subscription_id"] = &schema.Schema{
-		Description: "Subscription ID",
+		Description: "For PerformanceSubscription plans a Subscription ID is required. It is not required for Performance plans.",
 		Optional:    true,
 		Type:        schema.TypeString,
 	}
@@ -200,8 +201,12 @@ func resourceIBMDb2InstanceCreate(d *schema.ResourceData, meta interface{}) erro
 		params["oracle_compatibility"] = oracleCompatibility.(string)
 	}
 
-	if subscriptionId, ok := d.GetOk("subscription_id"); ok {
-		params["subscription_id"] = subscriptionId.(string)
+	if plan == PerformanceSubscription {
+		if subscriptionId, ok := d.GetOk("subscription_id"); ok {
+			params["subscription_id"] = subscriptionId.(string)
+		} else {
+			return fmt.Errorf("[ERROR] Missing required field 'subscription_id' while creating an instance for plan: %s", plan)
+		}
 	}
 
 	if parameters, ok := d.GetOk("parameters"); ok {

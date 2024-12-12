@@ -53,7 +53,7 @@ func TestAccIBMDb2InstanceBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "service_endpoints", "public-and-private"),
 					resource.TestCheckResourceAttr(name, "instance_type", "bx2.4x16"),
 					resource.TestCheckResourceAttr(name, "high_availability", "no"),
-					resource.TestCheckResourceAttr(name, "backup_location", "no"),
+					resource.TestCheckResourceAttr(name, "backup_location", "us"),
 					resource.TestCheckResourceAttr(name, "tags.#", "1"),
 				),
 			},
@@ -176,7 +176,6 @@ func testAccCheckIBMDb2InstanceFullyspecified(databaseResourceGroup string, test
 		disk_encryption_instance_crn = "none"
 		disk_encryption_key_crn = "none"
 		oracle_compatibility = "no"
-		subscription_id = "abc"
 
 		parameters_json   = <<EOF
 			{
