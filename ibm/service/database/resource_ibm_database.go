@@ -3009,16 +3009,6 @@ func getMemberGroup(instanceCRN string, meta interface{}) (*Group, error) {
 	return nil, nil
 }
 
-func validateVersionDiff(_ context.Context, diff *schema.ResourceDiff, meta interface{}) (err error) {
-	version, configVersion := diff.GetChange("version")
-
-	if version != configVersion {
-		return fmt.Errorf("[ERROR] The version in your configuration file (%s) does not match the version of your remote instance (%s). Make sure that you have the same version in your configuration as the version on the remote instance. Learn more about the versioning policy here: https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-versioning-policy ", configVersion, version)
-	}
-
-	return nil
-}
-
 func validateUsersDiff(_ context.Context, diff *schema.ResourceDiff, meta interface{}) (err error) {
 	service := diff.Get("service").(string)
 
