@@ -1603,14 +1603,6 @@ func resourceIBMDatabaseInstanceRead(context context.Context, d *schema.Resource
 		if endpoint, ok := instance.Parameters["service-endpoints"]; ok {
 			d.Set("service_endpoints", endpoint)
 		}
-
-		if encryptionInstance, ok := instance.Parameters["disk_encryption_instance_crn"]; ok {
-			d.Set("key_protect_instance", encryptionInstance)
-		}
-
-		if encryptionKey, ok := instance.Parameters["disk_encryption_key_crn"]; ok {
-			d.Set("key_protect_key", encryptionKey)
-		}
 	}
 
 	d.Set(flex.ResourceName, *instance.Name)

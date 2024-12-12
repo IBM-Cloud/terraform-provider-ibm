@@ -276,7 +276,7 @@ func TestAccIBMDatabaseInstanceElasticsearchPlatinumImport(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
-					"wait_time_minutes", "plan_validation", "deletion_protection"},
+					"wait_time_minutes", "plan_validation"},
 			},
 		},
 	})

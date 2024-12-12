@@ -101,7 +101,7 @@ func TestAccIBMDatabaseInstanceEtcdImport(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
-					"wait_time_minutes", "deletion_protection"},
+					"wait_time_minutes"},
 			},
 		},
 	})
