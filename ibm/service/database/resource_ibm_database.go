@@ -818,7 +818,7 @@ func ResourceIBMICDValidator() *validate.ResourceValidator {
 			Identifier:                 "service",
 			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
 			Type:                       validate.TypeString,
-			AllowedValues:              "databases-for-etcd, databases-for-postgresql-development-12, databases-for-redis, databases-for-elasticsearch, databases-for-mongodb, messages-for-rabbitmq, databases-for-mysql, databases-for-enterprisedb",
+			AllowedValues:              "databases-for-etcd, databases-for-postgresql, databases-for-redis, databases-for-elasticsearch, databases-for-mongodb, messages-for-rabbitmq, databases-for-mysql, databases-for-enterprisedb",
 			Required:                   true})
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
