@@ -5,6 +5,7 @@ package vpc_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
@@ -35,6 +36,19 @@ func TestAccIbmIsShareDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_is_share.is_share", "size"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_share.is_share", "zone"),
 				),
+			},
+		},
+	})
+}
+func TestAccIbmIsShareDataSource404(t *testing.T) {
+	shareId := "8843-5fr454ft-f6-4565-9555-5f889f5f3f7777"
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccCheckIbmIsShareDataSourceConfig404(shareId),
+				ExpectError: regexp.MustCompile("GetShareWithContext failed"),
 			},
 		},
 	})
@@ -92,6 +106,13 @@ func testAccCheckIbmIsShareDataSourceConfigBasic(name string) string {
 			share = ibm_is_share.is_share.id
 		}
 	`, name, acc.ShareProfileName)
+}
+func testAccCheckIbmIsShareDataSourceConfig404(id string) string {
+	return fmt.Sprintf(`
+		data "ibm_is_share" "is_share" {
+			share = "%s"
+		}
+	`, id)
 }
 
 func testAccCheckIbmIsShareDataSourceConfig(vpcName, shareName string, shareSize int, shareTargetName string) string {

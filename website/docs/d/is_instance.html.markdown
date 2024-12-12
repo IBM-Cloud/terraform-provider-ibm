@@ -127,7 +127,24 @@ In addition to all argument reference list, you can access the following attribu
     - `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.
 		  Nested schema for `deleted`:
         - `more_info`  - (String) Link to documentation about deleted resources.
-   
+
+- `cluster_network` - (List) If present, the cluster network that this virtual server instance resides in.
+  Nested schema for **cluster_network**:
+	- `crn` - (String) The CRN for this cluster network.
+	- `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
+	  Nested schema for **deleted**:
+		- `more_info` - (String) Link to documentation about deleted resources.
+	- `href` - (String) The URL for this cluster network.
+	- `id` - (String) The unique identifier for this cluster network.
+	- `name` - (String) The name for this cluster network. The name must not be used by another cluster network in the region.
+	- `resource_type` - (String) The resource type.
+- `cluster_network_attachments` - (List) The cluster network attachments for this virtual server instance.The cluster network attachments are ordered for consistent instance configuration.
+  Nested schema for **cluster_network_attachments**:
+	- `href` - (String) The URL for this instance cluster network attachment.
+	- `id` - (String) The unique identifier for this instance cluster network attachment.
+	- `name` - (String) The name for this instance cluster network attachment. The name is unique across all network attachments for the instance.
+	- `resource_type` - (String) The resource type.
+
 - `confidential_compute_mode` - (String) The confidential compute mode to use for this virtual server instance.If unspecified, the default confidential compute mode from the profile will be used. 
 - `crn` - (String) The CRN of the instance.
 - `disks` - (List) Collection of the instance's disks. Nested `disks` blocks has the following structure:
@@ -148,6 +165,13 @@ In addition to all argument reference list, you can access the following attribu
   - `manufacture` - (String) The manufacturer of the GPU.
   - `memory`- (Integer) The amount of memory that was allocated to the GPU.
   - `model` - (String) The model of the GPU. 
+- `health_reasons` - (List) The reasons for the current health_state (if any).
+
+    Nested scheme for `health_reasons`:
+    - `code` - (String) A snake case string succinctly identifying the reason for this health state.
+    - `message` - (String) An explanation of the reason for this health state.
+    - `more_info` - (String) Link to documentation about the reason for this health state.
+- `health_state` - (String) The health of this resource.
 - `id` - (String) The ID that was assigned to the Virtual Servers for VPC instance.
 - `image` - (String) The ID of the virtual server image that is used in the instance.
 - `keys`- (List) A list of SSH keys that were added to the instance during creation.

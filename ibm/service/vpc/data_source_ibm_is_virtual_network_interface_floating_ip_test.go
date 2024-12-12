@@ -5,6 +5,7 @@ package vpc_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -37,6 +38,22 @@ func TestAccIBMIsVirtualNetworkInterfaceFloatingIPDataSourceBasic(t *testing.T) 
 		},
 	})
 }
+func TestAccIBMIsVirtualNetworkInterfaceFloatingIPDataSource404(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccCheckIBMIsVirtualNetworkInterfaceFloatingIPDataSourceConfigVNI404(),
+				ExpectError: regexp.MustCompile("GetVirtualNetworkInterfaceFloatingIPWithContext failed"),
+			},
+			{
+				Config:      testAccCheckIBMIsVirtualNetworkInterfaceFloatingIPDataSourceConfigFIP404(),
+				ExpectError: regexp.MustCompile("GetVirtualNetworkInterfaceFloatingIPWithContext failed"),
+			},
+		},
+	})
+}
 
 func testAccCheckIBMIsVirtualNetworkInterfaceFloatingIPDataSourceConfigBasic(vpcname, subnetname, vniname, floatingipname string) string {
 	return testAccCheckIBMIsVirtualNetworkInterfaceFloatingIPConfigBasic(vpcname, subnetname, vniname, floatingipname) + fmt.Sprintf(`
@@ -45,4 +62,20 @@ func testAccCheckIBMIsVirtualNetworkInterfaceFloatingIPDataSourceConfigBasic(vpc
 			floating_ip = ibm_is_virtual_network_interface_floating_ip.testacc_vni_floatingip.floating_ip
 		}
 	`)
+}
+func testAccCheckIBMIsVirtualNetworkInterfaceFloatingIPDataSourceConfigVNI404() string {
+	return fmt.Sprintf(`
+		data "ibm_is_virtual_network_interface_floating_ip" "is_floating_ip" {
+			virtual_network_interface = "%s"
+			floating_ip = "%s"
+		}
+	`, acc.VNIId, acc.VNIId)
+}
+func testAccCheckIBMIsVirtualNetworkInterfaceFloatingIPDataSourceConfigFIP404() string {
+	return fmt.Sprintf(`
+		data "ibm_is_virtual_network_interface_floating_ip" "is_floating_ip" {
+			virtual_network_interface = "%s"
+			floating_ip = "%s"
+		}
+	`, acc.FloatingIpID, acc.FloatingIpID)
 }

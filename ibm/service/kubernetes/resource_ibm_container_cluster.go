@@ -11,16 +11,15 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-
 	v1 "github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 const (
@@ -980,7 +979,7 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 		// with major and minor updates.
 		updateAllWorkers := d.Get("update_all_workers").(bool)
 		if updateAllWorkers || d.HasChange("patch_version") || d.HasChange("retry_patch_version") {
-			workerFields, err := wrkAPI.List(clusterID, targetEnv)
+			workerFields, err := csClientV2.Workers().ListAllWorkers(clusterID, false, targetEnvV2)
 			if err != nil {
 				return fmt.Errorf("[ERROR] Error retrieving workers for cluster: %s", err)
 			}
@@ -988,11 +987,16 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 			waitForWorkerUpdate := d.Get("wait_for_worker_update").(bool)
 
 			for _, w := range workerFields {
+				workerPool, err := csClient.WorkerPools().GetWorkerPool(clusterID, w.PoolID, targetEnv)
+				if err != nil {
+					return fmt.Errorf("[ERROR] Error retrieving worker pool: %s", err)
+				}
+
 				/*kubeversion update done if
 				1. There is a change in Major.Minor version
 				2. Therese is a change in patch_version & Traget kube patch version and patch_version are same
 				*/
-				if w.KubeVersion != w.TargetVersion {
+				if w.KubeVersion.Actual != w.KubeVersion.Target || w.LifeCycle.ActualOperatingSystem != workerPool.OperatingSystem {
 					params := v1.WorkerUpdateParam{
 						Action: "update",
 					}

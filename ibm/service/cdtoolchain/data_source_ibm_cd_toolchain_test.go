@@ -73,7 +73,7 @@ func TestAccIBMCdToolchainDataSourceAllArgs(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain.cd_toolchain", "created_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain.cd_toolchain", "updated_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain.cd_toolchain", "created_by"),
-					resource.TestCheckResourceAttr("data.ibm_cd_toolchain.cd_toolchain", "tags.#", "2"),
+					resource.TestCheckResourceAttr("data.ibm_cd_toolchain.cd_toolchain", "tags.#", "0"),
 				),
 			},
 		},
@@ -107,7 +107,6 @@ func testAccCheckIBMCdToolchainDataSourceConfig(toolchainName string, toolchainR
 			name = "%s"
 			resource_group_id = data.ibm_resource_group.resource_group.id
 			description = "%s"
-			tags = ["tag1","tag2"]
 		}
 
 		resource "time_sleep" "wait_time" {

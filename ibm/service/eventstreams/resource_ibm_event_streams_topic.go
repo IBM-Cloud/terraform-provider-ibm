@@ -7,7 +7,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"os"
 	"slices"
 	"strings"
 	"time"
@@ -127,8 +126,9 @@ func resourceIBMEventStreamsTopicCreate(context context.Context, d *schema.Resou
 	log.Printf("[DEBUG] resourceIBMEventStreamsTopicCreate")
 	adminClient, instanceCRN, err := createSaramaAdminClient(d, meta)
 	if err != nil {
-		log.Printf("[DEBUG] resourceIBMEventStreamsTopicCreate createSaramaAdminClient err %s", err)
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceIBMEventStreamsTopicCreate createSaramaAdminClient: %s", err), "ibm_event_streams_topic", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	topicName := d.Get("name").(string)
 	partitions := d.Get("partitions").(int)
@@ -144,8 +144,9 @@ func resourceIBMEventStreamsTopicCreate(context context.Context, d *schema.Resou
 			if kafkaErr != nil && kafkaErr.Err == sarama.ErrTopicAlreadyExists {
 				exists, err := resourceIBMEventStreamsTopicExists(context, d, meta)
 				if err != nil {
-					log.Printf("[DEBUG] resourceIBMEventStreamsTopicCreate resourceIBMEventStreamsTopicExists: %s, err %s", topicName, err)
-					return diag.FromErr(err)
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceIBMEventStreamsTopicCreate resourceIBMEventStreamsTopicExists %s: %s", topicName, err), "ibm_event_streams_topic", "create")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
 				if exists {
 					d.SetId(getTopicID(instanceCRN, topicName))
@@ -153,8 +154,9 @@ func resourceIBMEventStreamsTopicCreate(context context.Context, d *schema.Resou
 				}
 			}
 		}
-		log.Printf("[ERROR] resourceIBMEventStreamsTopicCreate CreateTopic: %s, err %s", topicName, err)
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceIBMEventStreamsTopicCreate CreateTopic %s: %s", topicName, err), "ibm_event_streams_topic", "create")
+		log.Printf("[ERROR]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	log.Printf("[INFO] resourceIBMEventStreamsTopicCreate CreateTopic: topic is %s, detail is %v", topicName, topicDetail)
 	d.SetId(getTopicID(instanceCRN, topicName))
@@ -165,15 +167,17 @@ func resourceIBMEventStreamsTopicRead(context context.Context, d *schema.Resourc
 	log.Printf("[DEBUG] resourceIBMEventStreamsTopicRead")
 	adminClient, instanceCRN, err := createSaramaAdminClient(d, meta)
 	if err != nil {
-		log.Printf("[DEBUG] resourceIBMEventStreamsTopicRead createSaramaAdminClient err %s", err)
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceIBMEventStreamsTopicRead createSaramaAdminClient: %s", err), "ibm_event_streams_topic", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	topicID := d.Id()
 	topicName := getTopicName(topicID)
 	topics, err := adminClient.ListTopics()
 	if err != nil {
-		log.Printf("[DEBUG] resourceIBMEventStreamsTopicRead ListTopics err %s", err)
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceIBMEventStreamsTopicRead ListTopics: %s", err), "ibm_event_streams_topic", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	for name, detail := range topics {
 		if name == topicName {
@@ -201,8 +205,9 @@ func resourceIBMEventStreamsTopicUpdate(context context.Context, d *schema.Resou
 	log.Printf("[DEBUG] resourceIBMEventStreamsTopicUpdate")
 	adminClient, _, err := createSaramaAdminClient(d, meta)
 	if err != nil {
-		log.Printf("[DEBUG] resourceIBMEventStreamsTopicUpdate createSaramaAdminClient err %s", err)
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceIBMEventStreamsTopicUpdate createSaramaAdminClient: %s", err), "ibm_event_streams_topic", "update")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	topicName := d.Get("name").(string)
 	if d.HasChange("partitions") {
@@ -212,8 +217,9 @@ func resourceIBMEventStreamsTopicUpdate(context context.Context, d *schema.Resou
 		log.Printf("[INFO]resourceIBMEventStreamsTopicUpdate Updating partitions from %d to %d", oldPartitions, newPartitions)
 		err = adminClient.CreatePartitions(topicName, int32(newPartitions), nil, false)
 		if err != nil {
-			log.Printf("[DEBUG]resourceIBMEventStreamsTopicUpdate CreatePartitions err %s", err)
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceIBMEventStreamsTopicUpdate CreatePartitions: %s", err), "ibm_event_streams_topic", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		d.Set("partitions", int32(newPartitions))
 		log.Printf("[INFO]resourceIBMEventStreamsTopicUpdate partitions is set to %d", newPartitions)
@@ -223,8 +229,9 @@ func resourceIBMEventStreamsTopicUpdate(context context.Context, d *schema.Resou
 		configEntries := config2TopicDetail(config)
 		err = adminClient.AlterConfig(sarama.TopicResource, topicName, configEntries, false)
 		if err != nil {
-			log.Printf("[DEBUG]resourceIBMEventStreamsTopicUpdate AlterConfig err %s", err)
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceIBMEventStreamsTopicUpdate AlterConfig: %s", err), "ibm_event_streams_topic", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		d.Set("config", topicDetail2Config(configEntries))
 		log.Printf("[INFO]resourceIBMEventStreamsTopicUpdate config is set to %v", topicDetail2Config(configEntries))
@@ -236,8 +243,9 @@ func resourceIBMEventStreamsTopicDelete(context context.Context, d *schema.Resou
 	log.Printf("[DEBUG] resourceIBMEventStreamsTopicDelete")
 	adminClient, _, err := createSaramaAdminClient(d, meta)
 	if err != nil {
-		log.Printf("[DEBUG] resourceIBMEventStreamsTopicDelete createSaramaAdminClient err %s", err)
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceIBMEventStreamsTopicDelete createSaramaAdminClient: %s", err), "ibm_event_streams_topic", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	topicName := d.Get("name").(string)
 	err = adminClient.DeleteTopic(topicName)
@@ -249,8 +257,9 @@ func resourceIBMEventStreamsTopicDelete(context context.Context, d *schema.Resou
 				return nil
 			}
 		}
-		log.Printf("[DEBUG] resourceIBMEventStreamsTopicDelete DeleteTopic err %s", err)
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceIBMEventStreamsTopicDelete DeleteClient: %s", err), "ibm_event_streams_topic", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	d.SetId("")
 	log.Printf("[INFO]resourceIBMEventStreamsTopicDelete topic %s deleted", topicName)
@@ -295,7 +304,7 @@ func createSaramaAdminClient(d *schema.ResourceData, meta interface{}) (sarama.C
 	tenantID := strings.TrimPrefix(strings.Split(adminURL, ".")[0], "https://")
 
 	config := sarama.NewConfig()
-	config.ClientID, _ = os.Hostname()
+	config.ClientID = "terraform-provider-ibm"
 	config.Net.SASL.Enable = true
 	if tenantID != "" && tenantID != "admin" {
 		config.Net.SASL.AuthIdentity = tenantID

@@ -38,6 +38,7 @@ In addition to all argument references list, you can access the following attrib
 - `name` - (String) Feature name.
 - `description` - (String) Feature description.
 - `type` - (String) Type of the feature (BOOLEAN, STRING, NUMERIC).
+- `format` - Format of the property (TEXT, JSON, YAML) and this is a required attribute when TYPE STRING is used, not required for BOOLEAN and NUMERIC types.
 - `enabled_value` - (String) Value of the feature when it is enabled. The value can be Boolean, String or a Numeric value as per the `type` attribute.
 - `disabled_value` - (String) Value of the feature when it is disabled. The value can be Boolean, String or a Numeric value as per the `type` attribute.
 - `enabled` - (String) The state of the feature flag.

@@ -43,6 +43,32 @@ func TestAccIBMISSubnetRoutingTableAttachment_basic(t *testing.T) {
 	})
 }
 
+func TestAccIBMISSubnetRoutingTableAttachment_CRNSupport(t *testing.T) {
+	var subnetRT string
+	rtname := fmt.Sprintf("tfrt-%d", acctest.RandIntRange(10, 100))
+	vpcname := fmt.Sprintf("tfvpc-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tfsubnet-vpc-%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: checkSubnetRoutingTableAttachmentDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMISSubnetRoutingTableAttachmentCRNConfig(rtname, subnetname, vpcname, acc.ISZoneName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISSubnetRoutingTableAttachmentExists("ibm_is_subnet_routing_table_attachment.attach", subnetRT),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_subnet_routing_table_attachment.attach", "lifecycle_state"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_subnet_routing_table_attachment.attach", "crn"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_subnet_routing_table_attachment.attach", "id"),
+				),
+			},
+		},
+	})
+}
+
 func checkSubnetRoutingTableAttachmentDestroy(s *terraform.State) error {
 
 	sess, _ := acc.TestAccProvider.Meta().(conns.ClientSession).VpcV1API()
@@ -110,6 +136,32 @@ func testAccCheckIBMISSubnetRoutingTableAttachmentConfig(rtname, subnetname, vpc
 		depends_on = [ibm_is_vpc_routing_table.testacc_vpc_routing_table, ibm_is_subnet.testacc_subnet]
 		subnet      = ibm_is_subnet.testacc_subnet.id
 		routing_table = ibm_is_vpc_routing_table.testacc_vpc_routing_table.routing_table
+	  }
+
+	`, vpcname, rtname, subnetname, zone)
+}
+
+func testAccCheckIBMISSubnetRoutingTableAttachmentCRNConfig(rtname, subnetname, vpcname, zone string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	}
+	resource "ibm_is_vpc_routing_table" "testacc_vpc_routing_table" {
+		vpc = ibm_is_vpc.testacc_vpc.id
+		name = "%s"
+	}
+
+	resource "ibm_is_subnet" "testacc_subnet" {
+		name = "%s"
+		vpc = ibm_is_vpc.testacc_vpc.id
+		zone = "%s"
+		total_ipv4_address_count  = 16
+	}
+
+	resource "ibm_is_subnet_routing_table_attachment" "attach" {
+		depends_on = [ibm_is_vpc_routing_table.testacc_vpc_routing_table, ibm_is_subnet.testacc_subnet]
+		subnet      = ibm_is_subnet.testacc_subnet.id
+		routing_table = ibm_is_vpc_routing_table.testacc_vpc_routing_table.crn
 	  }
 
 	`, vpcname, rtname, subnetname, zone)

@@ -80,7 +80,8 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 		CustomizeDiff: customdiff.All(
 			resourceIBMDatabaseInstanceDiff,
 			validateGroupsDiff,
-			validateUsersDiff),
+			validateUsersDiff,
+			validateRemoteLeaderIDDiff),
 
 		Importer: &schema.ResourceImporter{},
 
@@ -198,10 +199,14 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				Optional:    true,
 			},
 			"remote_leader_id": {
-				Description:      "The CRN of leader database",
-				Type:             schema.TypeString,
-				Optional:         true,
-				DiffSuppressFunc: flex.ApplyOnce,
+				Description: "The CRN of leader database",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
+			"skip_initial_backup": {
+				Description: "Option to skip the initial backup when promoting a read-only replica. Skipping the initial backup means that your replica becomes available more quickly, but there is no immediate backup available.",
+				Type:        schema.TypeBool,
+				Optional:    true,
 			},
 			"key_protect_instance": {
 				Description: "The CRN of Key protect instance",
@@ -742,6 +747,13 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 					},
 				},
 			},
+			flex.DeletionProtection: {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Whether Terraform will be prevented from destroying the instance",
+			},
+
 			flex.ResourceName: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -773,6 +785,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 		},
 	}
 }
+
 func ResourceIBMICDValidator() *validate.ResourceValidator {
 
 	validateSchema := make([]validate.ValidateSchema, 0)
@@ -1531,6 +1544,13 @@ func resourceIBMDatabaseInstanceRead(context context.Context, d *schema.Resource
 			d.Set("service_endpoints", endpoint)
 		}
 
+		if encryptionInstance, ok := instance.Parameters["disk_encryption_instance_crn"]; ok {
+			d.Set("key_protect_instance", encryptionInstance)
+		}
+
+		if encryptionKey, ok := instance.Parameters["disk_encryption_key_crn"]; ok {
+			d.Set("key_protect_key", encryptionKey)
+		}
 	}
 
 	d.Set(flex.ResourceName, *instance.Name)
@@ -2065,6 +2085,37 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 					return diag.FromErr(fmt.Errorf(
 						"[ERROR] Error waiting for database (%s) logical replication slot (%s) delete task to complete: %s", icdId, *deleteLogicalReplicationSlotOptions.Name, err))
 				}
+			}
+		}
+	}
+
+	if d.HasChange("remote_leader_id") {
+		remoteLeaderId := d.Get("remote_leader_id").(string)
+
+		if remoteLeaderId == "" {
+			skipInitialBackup := false
+			if skip, ok := d.GetOk("skip_initial_backup"); ok {
+				skipInitialBackup = skip.(bool)
+			}
+
+			promoteReadOnlyReplicaOptions := &clouddatabasesv5.PromoteReadOnlyReplicaOptions{
+				ID: &instanceID,
+				Promotion: map[string]interface{}{
+					"skip_initial_backup": skipInitialBackup,
+				},
+			}
+
+			promoteReadReplicaResponse, response, err := cloudDatabasesClient.PromoteReadOnlyReplica(promoteReadOnlyReplicaOptions)
+
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("[ERROR] Error promoting read replica: %s\n%s", err, response))
+			}
+
+			taskID := *promoteReadReplicaResponse.Task.ID
+			_, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
+
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("[ERROR] Error promoting read replica: %s", err))
 			}
 		}
 	}

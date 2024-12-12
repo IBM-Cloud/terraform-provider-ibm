@@ -5,10 +5,12 @@ package power
 
 import (
 	"context"
+	"log"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -35,7 +37,8 @@ func DataSourceIBMPINetwork() *schema.Resource {
 			// Attributes
 			Attr_AccessConfig: {
 				Computed:    true,
-				Description: "The network communication configuration option of the network (for satellite locations only).",
+				Deprecated:  "This field is deprecated please use peer_id instead.",
+				Description: "The network communication configuration option of the network (for on prem locations only). Use `peer_id` instead.",
 				Type:        schema.TypeString,
 			},
 			Attr_AvailableIPCount: {
@@ -46,6 +49,11 @@ func DataSourceIBMPINetwork() *schema.Resource {
 			Attr_CIDR: {
 				Computed:    true,
 				Description: "The CIDR of the network.",
+				Type:        schema.TypeString,
+			},
+			Attr_CRN: {
+				Computed:    true,
+				Description: "The CRN of this resource.",
 				Type:        schema.TypeString,
 			},
 			Attr_DNS: {
@@ -76,6 +84,25 @@ func DataSourceIBMPINetwork() *schema.Resource {
 				Description: "The unique identifier or name of a network.",
 				Type:        schema.TypeString,
 			},
+			Attr_NetworkAddressTranslation: {
+				Computed:    true,
+				Description: "Contains the network address translation details (for on prem locations only).",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						Attr_SourceIP: {
+							Computed:    true,
+							Description: "source IP address.",
+							Type:        schema.TypeString,
+						},
+					},
+				},
+				Type: schema.TypeList,
+			},
+			Attr_PeerID: {
+				Computed:    true,
+				Description: "Network peer ID (for on prem locations only).",
+				Type:        schema.TypeString,
+			},
 			Attr_Type: {
 				Computed:    true,
 				Description: "The type of network.",
@@ -90,6 +117,13 @@ func DataSourceIBMPINetwork() *schema.Resource {
 				Computed:    true,
 				Description: "The percentage of IP addresses used.",
 				Type:        schema.TypeFloat,
+			},
+			Attr_UserTags: {
+				Computed:    true,
+				Description: "List of user tags attached to the resource.",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         schema.HashString,
+				Type:        schema.TypeSet,
 			},
 			Attr_VLanID: {
 				Computed:    true,
@@ -122,6 +156,14 @@ func dataSourceIBMPINetworkRead(ctx context.Context, d *schema.ResourceData, met
 	if networkdata.Cidr != nil {
 		d.Set(Attr_CIDR, networkdata.Cidr)
 	}
+	if networkdata.Crn != "" {
+		d.Set(Attr_CRN, networkdata.Crn)
+		tags, err := flex.GetGlobalTagsUsingCRN(meta, string(networkdata.Crn), "", UserTagType)
+		if err != nil {
+			log.Printf("Error on get of pi network (%s) user_tags: %s", *networkdata.NetworkID, err)
+		}
+		d.Set(Attr_UserTags, tags)
+	}
 	if len(networkdata.DNSServers) > 0 {
 		d.Set(Attr_DNS, networkdata.DNSServers)
 	}
@@ -131,6 +173,13 @@ func dataSourceIBMPINetworkRead(ctx context.Context, d *schema.ResourceData, met
 	if networkdata.Name != nil {
 		d.Set(Attr_Name, networkdata.Name)
 	}
+	networkAddressTranslation := []map[string]interface{}{}
+	if networkdata.NetworkAddressTranslation != nil {
+		natMap := networkAddressTranslationToMap(networkdata.NetworkAddressTranslation)
+		networkAddressTranslation = append(networkAddressTranslation, natMap)
+	}
+	d.Set(Attr_NetworkAddressTranslation, networkAddressTranslation)
+	d.Set(Attr_PeerID, networkdata.PeerID)
 	if networkdata.Type != nil {
 		d.Set(Attr_Type, networkdata.Type)
 	}

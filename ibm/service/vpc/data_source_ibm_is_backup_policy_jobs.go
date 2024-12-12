@@ -571,7 +571,7 @@ func dataSourceBackupPolicyJobCollectionJobsBackupPolicyPlanToMap(backupPolicyPl
 	return backupPolicyPlanMap
 }
 
-func dataSourceBackupPolicyJobCollectionBackupPolicyPlanDeletedToMap(deletedItem vpcv1.BackupPolicyPlanReferenceDeleted) (deletedMap map[string]interface{}) {
+func dataSourceBackupPolicyJobCollectionBackupPolicyPlanDeletedToMap(deletedItem vpcv1.Deleted) (deletedMap map[string]interface{}) {
 	deletedMap = map[string]interface{}{}
 
 	if deletedItem.MoreInfo != nil {
@@ -639,7 +639,7 @@ func dataSourceBackupPolicyJobCollectionJobsSourceInstanceToMap(sourceVolumeItem
 	return sourceVolumeMap
 }
 
-func dataSourceBackupPolicyJobCollectionSourceVolumeDeletedToMap(deletedItem vpcv1.VolumeReferenceDeleted) (deletedMap map[string]interface{}) {
+func dataSourceBackupPolicyJobCollectionSourceVolumeDeletedToMap(deletedItem vpcv1.Deleted) (deletedMap map[string]interface{}) {
 	deletedMap = map[string]interface{}{}
 
 	if deletedItem.MoreInfo != nil {
@@ -648,7 +648,7 @@ func dataSourceBackupPolicyJobCollectionSourceVolumeDeletedToMap(deletedItem vpc
 
 	return deletedMap
 }
-func dataSourceBackupPolicyJobCollectionSourceInstanceDeletedToMap(deletedItem vpcv1.InstanceReferenceDeleted) (deletedMap map[string]interface{}) {
+func dataSourceBackupPolicyJobCollectionSourceInstanceDeletedToMap(deletedItem vpcv1.Deleted) (deletedMap map[string]interface{}) {
 	deletedMap = map[string]interface{}{}
 
 	if deletedItem.MoreInfo != nil {
@@ -702,7 +702,7 @@ func dataSourceBackupPolicyJobCollectionJobsTargetSnapshotToMap(targetSnapshotIt
 	return targetSnapshotMap
 }
 
-func dataSourceBackupPolicyJobCollectionTargetSnapshotDeletedToMap(deletedItem vpcv1.SnapshotReferenceDeleted) (deletedMap map[string]interface{}) {
+func dataSourceBackupPolicyJobCollectionTargetSnapshotDeletedToMap(deletedItem vpcv1.Deleted) (deletedMap map[string]interface{}) {
 	deletedMap = map[string]interface{}{}
 
 	if deletedItem.MoreInfo != nil {
@@ -712,7 +712,7 @@ func dataSourceBackupPolicyJobCollectionTargetSnapshotDeletedToMap(deletedItem v
 	return deletedMap
 }
 
-func dataSourceBackupPolicyJobCollectionNextToMap(nextItem vpcv1.BackupPolicyJobCollectionNext) (nextMap map[string]interface{}) {
+func dataSourceBackupPolicyJobCollectionNextToMap(nextItem vpcv1.PageLink) (nextMap map[string]interface{}) {
 	nextMap = map[string]interface{}{}
 
 	if nextItem.Href != nil {

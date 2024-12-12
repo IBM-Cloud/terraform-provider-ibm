@@ -71,14 +71,30 @@ Review the argument references that you can specify for your resource.
   - `pi_starting_ip_address` - (Required, String) The staring ip address. **Note** if the `pi_gateway` or `pi_ipaddress_range` is not provided, it will calculate the value based on CIDR respectively.
 - `pi_network_jumbo` - (Deprecated, Optional, Bool) MTU Jumbo option of the network (for multi-zone locations only).
 - `pi_network_mtu` - (Optional, Integer) Maximum Transmission Unit option of the network, min size = 1450 & max size = 9000.
-- `pi_network_access_config` - (Optional, String) The network communication configuration option of the network (for satellite locations only).
+- `pi_network_access_config` - (Deprecated, Optional, String) The network communication configuration option of the network (for on-prem locations only). Please use `pi_network_peer`.
+- `pi_network_peer` - (Optional, List) Network peer information (for on-prem locations only). Max items: 1.
+
+  Nested schema for `pi_network_peer`:
+  - `id` - (Required, String) ID of the network peer.
+  - `network_address_translation` - (Optional, List) Contains the Network Address Translation Details. Max items: 1.
+  
+      Nested schema for `network_address_translation`:
+        - `source_ip` - (Optional, String) source IP address, required if network peer type is `L3BGP` or `L3STATIC` and if NAT is enabled.
+  - `type` - (Optional, String) Type of the network peer. Allowable values are: `L2`, `L3BGP`, `L3Static`.
+- `pi_user_tags` - (Optional, List) The user tags attached to this resource.
 
 ## Attribute reference
 
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
+- `crn` - (String) The CRN of this resource.
 - `id` - (String) The unique identifier of the network. The ID is composed of `<power_instance_id>/<network_id>`.
 - `network_id` - (String) The unique identifier of the network.
+- `network_address_translation` - (List) Contains the network address translation details (for on-prem locations only).
+
+    Nested schema for  `network_address_translation`:
+      - `source_ip` - (String) source IP address.
+- `peer_id` - (String) Network peer ID (for on-prem locations only).
 - `vlan_id` - (Integer) The ID of the VLAN that your network is attached to.
 
 ## Import

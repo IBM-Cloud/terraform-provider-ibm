@@ -56,6 +56,53 @@ resource "ibm_is_bare_metal_server" "example" {
   }
   vpc   = ibm_is_vpc.example.id
 }
+```
+### Reservation Example
+```terraform
+resource "ibm_is_reservation" "example" {
+  capacity {
+    total = 5
+  }
+  committed_use {
+    term = "one_year"
+  }
+  profile {
+    name          = "mx2d-metal-32x192"
+    resource_type = "bare_metal_server_profile"
+  }
+  zone = "us-east-3"
+  name = "reservation-name"
+}
+resource "ibm_is_vpc" "example" {
+  name = "example-vpc"
+}
+resource "ibm_is_subnet" "example" {
+  name            = "example-subnet"
+  vpc             = ibm_is_vpc.vpc.id
+  zone            = "us-south-3"
+  ipv4_cidr_block = "10.240.129.0/24"
+}
+resource "ibm_is_ssh_key" "example" {
+  name       = "example-ssh"
+  public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR"
+}
+resource "ibm_is_bare_metal_server" "example" {
+  profile = "mx2d-metal-32x192"
+  name    = "example-bms"
+  image   = "r134-31c8ca90-2623-48d7-8cf7-737be6fc4c3e"
+  zone    = "us-south-3"
+  keys    = [ibm_is_ssh_key.example.id]
+  primary_network_interface {
+    subnet     = ibm_is_subnet.example.id
+  }
+  reservation_affinity {
+    policy = "manual"
+    pool {
+      id = ibm_is_reservation.example.id
+    }
+  }
+  vpc   = ibm_is_vpc.example.id
+}
 
 ```
 ### Reserved ip example
@@ -141,6 +188,13 @@ Review the argument references that you can specify for your resource.
 - `bandwidth` - (Integer) The total bandwidth (in megabits per second) shared across the bare metal server's network interfaces. The specified value must match one of the bandwidth values in the bare metal server's profile.
 - `delete_type` - (Optional, String) Type of deletion on destroy. **soft** signals running operating system to quiesce and shutdown cleanly, **hard** immediately stop the server. By default its `hard`.
 - `enable_secure_boot` - (Optional, Boolean) Indicates whether secure boot is enabled. If enabled, the image must support secure boot or the server will fail to boot. Updating `enable_secure_boot` requires the server to be stopped and then it would be started.
+- `health_reasons` - (List) The reasons for the current health_state (if any).
+
+    Nested scheme for `health_reasons`:
+    - `code` - (String) A snake case string succinctly identifying the reason for this health state.
+    - `message` - (String) An explanation of the reason for this health state.
+    - `more_info` - (String) Link to documentation about the reason for this health state.
+- `health_state` - (String) The health of this resource.
 - `image` - (Required, String) ID of the image. ( On update of `image`, server will be [reinitialized](https://cloud.ibm.com/apidocs/vpc/latest#replace-bare-metal-server-initialization) if server is in stopped state, else server will be stopped and restarted during update )
 
   -> **NOTE:**
@@ -288,6 +342,31 @@ Review the argument references that you can specify for your resource.
     - `subnet` -  (Required, String) ID of the subnet to associate with.
 
 - `profile` - (Required, Forces new resource, String) The name the profile to use for this bare metal server. 
+- `reservation`- (List) The reservation used by this bare metal server. 
+  Nested scheme for `reservation`:
+  - `crn` - (String) The CRN for this reservation.
+  - `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.
+
+    Nested `deleted` blocks have the following structure: 
+    - `more_info` - (String) Link to documentation about deleted resources.
+  - `href` - (String) The URL for this reservation.
+  - `id` - (String) The unique identifier for this reservation.
+  - `name` - (string) The name for this reservation. The name is unique across all reservations in the region.
+  - `resource_type` - (string) The resource type.
+- `reservation_affinity`- (List) The bare metal server reservation affinity.
+
+  Nested scheme for `reservation_affinity`:
+  - `policy` - (String) The reservation affinity policy to use for this bare metal server.
+  - `pool` - (List) The pool of reservations available for use by this bare metal server.
+    Nested `pool` blocks have the following structure: 
+    - `crn` - (String) The CRN for this reservation.
+    - `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.
+      Nested `deleted` blocks have the following structure:
+      - `more_info` - (String) Link to documentation about deleted resources. 
+    - `href` - (String) The URL for this reservation.
+    - `id` - (String) The unique identifier for this reservation.
+    - `name` - (string) The name for this reservation. The name is unique across all reservations in the region.
+    - `resource_type` - (string) The resource type.
 - `resource_group` - (Optional, Forces new resource, String) The resource group ID for this bare metal server.
 - `trusted_platform_module` - (Optional, List) trusted platform module (TPM) configuration for the bare metals server
 
@@ -339,6 +418,16 @@ In addition to all argument reference list, you can access the following attribu
     - `subnet` -  (String) ID of the subnet to associate with.
     - `vlan` -  (Integer) Indicates the 802.1Q VLAN ID tag that must be used for all traffic on this interface. [ conflicts with `allowed_vlans`]
 
+- `reservation_affinity` - (Optional, List) The reservation affinity for the bare metal server
+  Nested scheme for `reservation_affinity`:
+  - `policy` - (Optional, String) The reservation affinity policy to use for this bare metal server.
+
+    ->**policy** 
+			&#x2022; disabled: Reservations will not be used
+      </br>&#x2022; manual: Reservations in pool will be available for use
+  - `pool` - (Optional, String) The pool of reservations available for use by this bare metal server. Specified reservations must have a status of active, and have the same profile and zone as this bare metal server. The pool must be empty if policy is disabled, and must not be empty if policy is manual.
+    Nested scheme for `pool`:
+    - `id` - The unique identifier for this reservation
 - `resource_type` - (String) The type of resource.
 - `firmware_update_type_available` - (String) The firmware update type available for the bare metal server.
   -> **Supported firmware update types** </br>&#x2022; none </br>&#x2022; optional </br>&#x2022; required

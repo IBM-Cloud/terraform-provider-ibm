@@ -13,6 +13,7 @@ import (
 
 	"github.com/apparentlymart/go-cidr/cidr"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -43,6 +44,11 @@ func ResourceIBMPINetwork() *schema.Resource {
 			Update: schema.DefaultTimeout(60 * time.Minute),
 			Delete: schema.DefaultTimeout(60 * time.Minute),
 		},
+		CustomizeDiff: customdiff.Sequence(
+			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
+				return flex.ResourcePowerUserTagsCustomizeDiff(diff)
+			},
+		),
 
 		Schema: map[string]*schema.Schema{
 			helpers.PINetworkType: {
@@ -94,8 +100,46 @@ func ResourceIBMPINetwork() *schema.Resource {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Computed:     true,
+				Deprecated:   "This field is deprecated please use pi_network_peer instead",
 				ValidateFunc: validate.ValidateAllowedStringValues([]string{"internal-only", "outbound-only", "bidirectional-static-route", "bidirectional-bgp", "bidirectional-l2out"}),
 				Description:  "PI network communication configuration",
+			},
+			Arg_NetworkPeer: {
+				Description: "Network peer information.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						Attr_ID: {
+							Description: "ID of the network peer.",
+							Required:    true,
+							Type:        schema.TypeString,
+						},
+						Attr_NetworkAddressTranslation: {
+							Description: "Contains the network address translation Details.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									Attr_SourceIP: {
+										Description: "source IP address, required if network peer type is L3BGP or L3STATIC and if NAT is enabled.",
+										Required:    true,
+										Type:        schema.TypeString,
+									},
+								},
+							},
+							MaxItems: 1,
+							Optional: true,
+							Type:     schema.TypeList,
+						},
+						Attr_Type: {
+							Description:  "Type of the network peer.",
+							Optional:     true,
+							Type:         schema.TypeString,
+							ValidateFunc: validate.ValidateAllowedStringValues([]string{L2, L3BGP, L3Static}),
+						},
+					},
+				},
+				ForceNew: true,
+				MaxItems: 1,
+				Optional: true,
+				Type:     schema.TypeList,
 			},
 			helpers.PICloudInstanceId: {
 				Type:        schema.TypeString,
@@ -122,12 +166,44 @@ func ResourceIBMPINetwork() *schema.Resource {
 					},
 				},
 			},
+			Arg_UserTags: {
+				Computed:    true,
+				Description: "The user tags attached to this resource.",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Optional:    true,
+				Set:         schema.HashString,
+				Type:        schema.TypeSet,
+			},
 
 			//Computed Attributes
+			Attr_CRN: {
+				Computed:    true,
+				Description: "The CRN of this resource.",
+				Type:        schema.TypeString,
+			},
 			"network_id": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "PI network ID",
+			},
+			Attr_NetworkAddressTranslation: {
+				Computed:    true,
+				Description: "Contains the Network Address Translation Details (for on-prem locations only).",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						Attr_SourceIP: {
+							Computed:    true,
+							Description: "source IP address, required if network peer type is L3BGP or L3STATIC and if NAT is enabled.",
+							Type:        schema.TypeString,
+						},
+					},
+				},
+				Type: schema.TypeList,
+			},
+			Attr_PeerID: {
+				Computed:    true,
+				Description: "Network Peer ID (for on-prem locations only).",
+				Type:        schema.TypeString,
 			},
 			"vlan_id": {
 				Type:        schema.TypeFloat,
@@ -146,7 +222,6 @@ func resourceIBMPINetworkCreate(ctx context.Context, d *schema.ResourceData, met
 	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
 	networkname := d.Get(helpers.PINetworkName).(string)
 	networktype := d.Get(helpers.PINetworkType).(string)
-
 	client := instance.NewIBMPINetworkClient(ctx, sess, cloudInstanceID)
 	var body = &models.NetworkCreate{
 		Type: &networktype,
@@ -158,7 +233,9 @@ func resourceIBMPINetworkCreate(ctx context.Context, d *schema.ResourceData, met
 			body.DNSServers = networkdns
 		}
 	}
-
+	if tags, ok := d.GetOk(Arg_UserTags); ok {
+		body.UserTags = flex.FlattenSet(tags.(*schema.Set))
+	}
 	if v, ok := d.GetOk(helpers.PINetworkJumbo); ok {
 		body.Jumbo = v.(bool)
 	}
@@ -168,6 +245,10 @@ func resourceIBMPINetworkCreate(ctx context.Context, d *schema.ResourceData, met
 	}
 	if v, ok := d.GetOk(helpers.PINetworkAccessConfig); ok {
 		body.AccessConfig = models.AccessConfig(v.(string))
+	}
+	if _, ok := d.GetOk(Arg_NetworkPeer); ok {
+		peerModel := networkMapToNetworkCreatePeer(d.Get(Arg_NetworkPeer + ".0").(map[string]interface{}))
+		body.Peer = peerModel
 	}
 
 	if networktype == DHCPVlan || networktype == Vlan {
@@ -198,17 +279,20 @@ func resourceIBMPINetworkCreate(ctx context.Context, d *schema.ResourceData, met
 		body.Gateway = gateway
 		body.Cidr = networkcidr
 	}
-	wsclient := instance.NewIBMPIWorkspacesClient(ctx, sess, cloudInstanceID)
-	wsData, err := wsclient.Get(cloudInstanceID)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	if wsData.Capabilities[PER] {
-		_, err = waitForPERWorkspaceActive(ctx, wsclient, cloudInstanceID, d.Timeout(schema.TimeoutRead))
+	if !sess.IsOnPrem() {
+		wsclient := instance.NewIBMPIWorkspacesClient(ctx, sess, cloudInstanceID)
+		wsData, err := wsclient.Get(cloudInstanceID)
 		if err != nil {
 			return diag.FromErr(err)
 		}
+		if wsData.Capabilities[PER] {
+			_, err = waitForPERWorkspaceActive(ctx, wsclient, cloudInstanceID, d.Timeout(schema.TimeoutRead))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
 	}
+
 	networkResponse, err := client.Create(body)
 	if err != nil {
 		return diag.FromErr(err)
@@ -221,6 +305,16 @@ func resourceIBMPINetworkCreate(ctx context.Context, d *schema.ResourceData, met
 	_, err = isWaitForIBMPINetworkAvailable(ctx, client, networkID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	if _, ok := d.GetOk(Arg_UserTags); ok {
+		if networkResponse.Crn != "" {
+			oldList, newList := d.GetChange(Arg_UserTags)
+			err := flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, string(networkResponse.Crn), "", UserTagType)
+			if err != nil {
+				log.Printf("Error on update of pi snapshot (%s) pi_user_tags during creation: %s", networkID, err)
+			}
+		}
 	}
 
 	return resourceIBMPINetworkRead(ctx, d, meta)
@@ -242,7 +336,14 @@ func resourceIBMPINetworkRead(ctx context.Context, d *schema.ResourceData, meta 
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
+	if networkdata.Crn != "" {
+		d.Set(Attr_CRN, networkdata.Crn)
+		tags, err := flex.GetGlobalTagsUsingCRN(meta, string(networkdata.Crn), "", UserTagType)
+		if err != nil {
+			log.Printf("Error on get of pi network (%s) pi_user_tags: %s", *networkdata.NetworkID, err)
+		}
+		d.Set(Arg_UserTags, tags)
+	}
 	d.Set("network_id", networkdata.NetworkID)
 	d.Set(helpers.PINetworkCidr, networkdata.Cidr)
 	d.Set(helpers.PINetworkDNS, networkdata.DNSServers)
@@ -253,6 +354,13 @@ func resourceIBMPINetworkRead(ctx context.Context, d *schema.ResourceData, meta 
 	d.Set(helpers.PINetworkMtu, networkdata.Mtu)
 	d.Set(helpers.PINetworkAccessConfig, networkdata.AccessConfig)
 	d.Set(helpers.PINetworkGateway, networkdata.Gateway)
+	d.Set(Attr_PeerID, networkdata.PeerID)
+	networkAddressTranslation := []map[string]interface{}{}
+	if networkdata.NetworkAddressTranslation != nil {
+		natMap := networkAddressTranslationToMap(networkdata.NetworkAddressTranslation)
+		networkAddressTranslation = append(networkAddressTranslation, natMap)
+	}
+	d.Set(Attr_NetworkAddressTranslation, networkAddressTranslation)
 	ipRangesMap := []map[string]interface{}{}
 	if networkdata.IPAddressRanges != nil {
 		for _, n := range networkdata.IPAddressRanges {
@@ -307,6 +415,16 @@ func resourceIBMPINetworkUpdate(ctx context.Context, d *schema.ResourceData, met
 		_, err = networkC.Update(networkID, body)
 		if err != nil {
 			return diag.FromErr(err)
+		}
+	}
+
+	if d.HasChange(Arg_UserTags) {
+		if crn, ok := d.GetOk(Attr_CRN); ok {
+			oldList, newList := d.GetChange(Arg_UserTags)
+			err := flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, crn.(string), "", UserTagType)
+			if err != nil {
+				log.Printf("Error on update of pi network (%s) pi_user_tags: %s", networkID, err)
+			}
 		}
 	}
 
@@ -487,4 +605,34 @@ func isPERWorkspaceRefreshFunc(client *instance.IBMPIWorkspacesClient, id string
 
 		return ws, State_Configuring, nil
 	}
+}
+func networkMapToNetworkCreatePeer(networkCreatePeerMap map[string]interface{}) *models.NetworkCreatePeer {
+	ncp := &models.NetworkCreatePeer{}
+	if networkCreatePeerMap[Attr_ID].(string) != "" {
+		id := networkCreatePeerMap[Attr_ID].(string)
+		ncp.ID = &id
+	}
+	if networkCreatePeerMap[Attr_NetworkAddressTranslation] != nil && len(networkCreatePeerMap[Attr_NetworkAddressTranslation].([]interface{})) > 0 {
+		networkAddressTranslationModel := natMapToNetworkAddressTranslation(networkCreatePeerMap[Attr_NetworkAddressTranslation].([]interface{})[0].(map[string]interface{}))
+		ncp.NetworkAddressTranslation = networkAddressTranslationModel
+	}
+	if networkCreatePeerMap[Attr_Type].(string) != "" {
+		ncp.Type = models.NetworkPeerType(networkCreatePeerMap[Attr_Type].(string))
+	}
+	return ncp
+}
+func natMapToNetworkAddressTranslation(networkAddressTranslationMap map[string]interface{}) *models.NetworkAddressTranslation {
+	nat := &models.NetworkAddressTranslation{}
+	if networkAddressTranslationMap[Attr_SourceIP].(string) != "" {
+		nat.SourceIP = networkAddressTranslationMap[Attr_SourceIP].(string)
+	}
+	return nat
+}
+
+func networkAddressTranslationToMap(nat *models.NetworkAddressTranslation) map[string]interface{} {
+	natMap := make(map[string]interface{})
+	if nat.SourceIP != "" {
+		natMap[Attr_SourceIP] = nat.SourceIP
+	}
+	return natMap
 }

@@ -53,11 +53,18 @@ In addition to all argument reference list, you can access the following attribu
 
   Nested scheme for `instance_volumes`:
   - `bootable`- (Boolean) Indicates if the volume is boot capable.
+  - `creation_date` - (String) Date of volume creation.
+  - `crn` - (String) The CRN of this resource.
+  - `freeze_time` - (String) Time of remote copy relationship.
   - `href` - (String) The hyper link of the volume.
   - `id` - (String) The unique identifier of the volume.
+  - `last_update_date` - (String) The date when the volume last updated.
   - `name` - (String) The name of the volume.
   - `pool` - (String) Volume pool, name of storage pool where the volume is located.
+  - `replication_enabled` - (Boolean) Indicates whether replication is enabled on the volume.
+  - `replication_sites` - (List) List of replication sites for volume replication.
   - `shareable` - (Boolean) Indicates if the volume is shareable between VMs.
   - `size` - (Integer) The size of this volume in GB.
   - `state` - (String) The state of the volume.
   - `type` - (String) The disk type that is used for this volume.
+  - `user_tags` - (List) List of user tags attached to the resource.

@@ -552,15 +552,8 @@ func dataSourceIbmIsShareRead(context context.Context, d *schema.ResourceData, m
 
 		shareItem, response, err := vpcClient.GetShareWithContext(context, getShareOptions)
 		if err != nil {
-			if response != nil {
-				if response.StatusCode == 404 {
-					d.SetId("")
-				}
-				log.Printf("[DEBUG] GetShareWithContext failed %s\n%s", err, response)
-				return nil
-			}
-			log.Printf("[DEBUG] GetShareWithContext failed %s\n", err)
-			return diag.FromErr(err)
+			log.Printf("[DEBUG] GetShareWithContext failed %s\n%s", err, response)
+			return diag.FromErr(fmt.Errorf("[ERROR] GetShareWithContext failed %s\n%s", err, response))
 		}
 		share = shareItem
 	} else if shareName != "" {
@@ -778,7 +771,7 @@ func dataSourceShareTargetsToMap(targetsItem vpcv1.ShareMountTargetReference) (t
 	return targetsMap
 }
 
-func dataSourceShareTargetsDeletedToMap(deletedItem vpcv1.ShareMountTargetReferenceDeleted) (deletedMap map[string]interface{}) {
+func dataSourceShareTargetsDeletedToMap(deletedItem vpcv1.Deleted) (deletedMap map[string]interface{}) {
 	deletedMap = map[string]interface{}{}
 
 	if deletedItem.MoreInfo != nil {
@@ -868,7 +861,7 @@ func dataSourceShareReplicaShareToMap(replicaShareItem vpcv1.ShareReference) (re
 	return replicaShareMap
 }
 
-func dataSourceShareReplicaShareDeletedToMap(deletedItem vpcv1.ShareReferenceDeleted) (deletedMap map[string]interface{}) {
+func dataSourceShareReplicaShareDeletedToMap(deletedItem vpcv1.Deleted) (deletedMap map[string]interface{}) {
 	deletedMap = map[string]interface{}{}
 
 	if deletedItem.MoreInfo != nil {
@@ -938,7 +931,7 @@ func dataSourceShareSourceShareToMap(sourceShareItem vpcv1.ShareReference) (sour
 	return sourceShareMap
 }
 
-func dataSourceShareSourceShareDeletedToMap(deletedItem vpcv1.ShareReferenceDeleted) (deletedMap map[string]interface{}) {
+func dataSourceShareSourceShareDeletedToMap(deletedItem vpcv1.Deleted) (deletedMap map[string]interface{}) {
 	deletedMap = map[string]interface{}{}
 
 	if deletedItem.MoreInfo != nil {

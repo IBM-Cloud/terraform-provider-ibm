@@ -8,8 +8,6 @@ subcategory: "Schematics"
 
 # ibm_schematics_agent
 
-~> **Beta:** This resource is in Beta, and is subject to change.
-
 Provides a resource for schematics_agent. This allows schematics_agent to be created, updated and deleted.
 
 ## Example Usage
@@ -35,6 +33,7 @@ resource "ibm_schematics_agent" "schematics_agent_instance" {
   schematics_location = "us-south"
   tags = ["agent-MyDevAgent"]
   version = "1.0.0"
+  run_destroy_resources = 1
 }
 ```
 
@@ -69,6 +68,7 @@ Nested scheme for **user_state**:
 	* `state` - (Optional, String) User-defined states  * `enable`  Agent is enabled by the user.  * `disable` Agent is disbaled by the user.
 	  * Constraints: Allowable values are: `enable`, `disable`.
 * `version` - (Required, String) Agent version.
+* `run_destroy_resources` - (Optional, Int) Argument which helps to run destroy resources job. Increment the value to destroy resources associated with agent deployment.
 
 ## Attribute Reference
 

@@ -31,17 +31,17 @@ resource "ibm_resource_instance" "es_instance_2" {
   resource_group_id = data.ibm_resource_group.group.id
 
   parameters = {
-     throughput            = "300"
-     storage_size          = "4096"
-     service-endpoints     = "private"
-     private_ip_allowlist  = "[10.0.0.0/32,10.0.0.1/32]"
-     metrics               = "[topic,consumers]"
+    throughput           = "300"
+    storage_size         = "4096"
+    service-endpoints    = "private"
+    private_ip_allowlist = "[10.0.0.0/32,10.0.0.1/32]"
+    metrics              = "[topic,consumers]"
   }
 
   timeouts {
-     create = "330m" # 5.5h
-     update = "210m" # 3.5h
-     delete = "1h"
+    create = "330m" # 5.5h
+    update = "210m" # 3.5h
+    delete = "1h"
   }
 }
 
@@ -74,8 +74,8 @@ data "ibm_resource_instance" "es_instance_4" {
 
 resource "ibm_event_streams_schema" "es_schema" {
   resource_instance_id = data.ibm_resource_instance.es_instance_4.id
-  schema_id = "tf_schema"
-  schema = <<SCHEMA
+  schema_id            = "tf_schema"
+  schema               = <<SCHEMA
    {
            "type": "record",
            "name": "record_name",
@@ -98,4 +98,74 @@ resource "ibm_resource_tag" "tag_example_on_es" {
   tags        = ["example:tag"]
   tag_type    = "access"
   resource_id = data.ibm_resource_instance.es_instance_5.id
+}
+
+#### Scenario 6: Create a target Event Streams service instance with mirroring enabled and its mirroring config
+data "ibm_resource_instance" "es_instance_source" {
+  name              = "terraform-integration-source"
+  resource_group_id = data.ibm_resource_group.group.id
+}
+# setup s2s at service level for mirroring to work
+resource "ibm_iam_authorization_policy" "service-policy" {
+  source_service_name = "messagehub"
+  target_service_name = "messagehub"
+  roles               = ["Reader"]
+  description         = "test mirroring setup via terraform"
+}
+
+resource "ibm_resource_instance" "es_instance_target" {
+  name              = "terraform-integration-target"
+  service           = "messagehub"
+  plan              = "enterprise-3nodes-2tb"
+  location          = "us-south"
+  resource_group_id = data.ibm_resource_group.group.id
+  parameters_json = jsonencode(
+    {
+      mirroring = {
+        source_crn   = data.ibm_resource_instance.es_instance_source.id
+        source_alias = "source-alias"
+        target_alias = "target-alias"
+        options = {
+          topic_name_transform = {
+            type = "rename"
+            rename = {
+              add_prefix    = "add_prefix"
+              add_suffix    = "add_suffix"
+              remove_prefix = "remove_prefix"
+              remove_suffix = "remove_suffix"
+            }
+          }
+          group_id_transform = {
+            type = "rename"
+            rename = {
+              add_prefix    = "add_prefix"
+              add_suffix    = "add_suffix"
+              remove_prefix = "remove_prefix"
+              remove_suffix = "remove_suffix"
+            }
+          }
+        }
+      }
+    }
+  )
+  timeouts {
+    create = "3h"
+    update = "1h"
+    delete = "15m"
+  }
+}
+# Configure a service-to-service binding between both instances to allow both instances to communicate.
+resource "ibm_iam_authorization_policy" "instance_policy" {
+  source_service_name         = "messagehub"
+  source_resource_instance_id = ibm_resource_instance.es_instance_target.guid
+  target_service_name         = "messagehub"
+  target_resource_instance_id = data.ibm_resource_instance.es_instance_source.guid
+  roles                       = ["Reader"]
+  description                 = "test mirroring setup via terraform"
+}
+
+# Select some topics from the source cluster to mirror.
+resource "ibm_event_streams_mirroring_config" "es_mirroring_config" {
+  resource_instance_id     = ibm_resource_instance.es_instance_target.id
+  mirroring_topic_patterns = ["topicA", "topicB"]
 }

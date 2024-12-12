@@ -37,7 +37,7 @@ func TestAccIBMEDBDatabaseInstanceBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "adminuser", "admin"),
 					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "49152"),
 					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "61440"),
-					resource.TestCheckResourceAttr(name, "service_endpoints", "public"),
+					resource.TestCheckResourceAttr(name, "service_endpoints", "public-and-private"),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "1"),
 					resource.TestCheckResourceAttr(name, "users.#", "1"),
 					resource.TestCheckResourceAttr(name, "tags.#", "1"),
@@ -83,6 +83,94 @@ func TestAccIBMEDBDatabaseInstanceBasic(t *testing.T) {
 			},
 		},
 	})
+}
+
+func TestAccIBMDatabaseInstanceEDBReadReplicaPromotion(t *testing.T) {
+	t.Parallel()
+
+	databaseResourceGroup := "default"
+
+	var sourceInstanceCRN string
+	var replicaInstanceCRN string
+
+	serviceName := fmt.Sprintf("tf-edb-%d", acctest.RandIntRange(10, 100))
+	readReplicaName := serviceName + "-replica"
+
+	sourceResource := "ibm_database." + serviceName
+	replicaReplicaResource := "ibm_database." + readReplicaName
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMDatabaseInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMDatabaseInstanceEDBMinimal(databaseResourceGroup, serviceName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMDatabaseInstanceExists(sourceResource, &sourceInstanceCRN),
+					resource.TestCheckResourceAttr(sourceResource, "name", serviceName),
+					resource.TestCheckResourceAttr(sourceResource, "service", "databases-for-enterprisedb"),
+					resource.TestCheckResourceAttr(sourceResource, "plan", "standard"),
+					resource.TestCheckResourceAttr(sourceResource, "location", acc.Region()),
+				),
+			},
+			{
+				Config: acc.ConfigCompose(
+					testAccCheckIBMDatabaseInstanceEDBMinimal(databaseResourceGroup, serviceName),
+					testAccCheckIBMDatabaseInstanceEDBMinimal_ReadReplica(databaseResourceGroup, serviceName)),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMDatabaseInstanceExists(replicaReplicaResource, &replicaInstanceCRN),
+					resource.TestCheckResourceAttr(replicaReplicaResource, "name", readReplicaName),
+					resource.TestCheckResourceAttr(replicaReplicaResource, "service", "databases-for-enterprisedb"),
+					resource.TestCheckResourceAttr(replicaReplicaResource, "plan", "standard"),
+					resource.TestCheckResourceAttr(replicaReplicaResource, "location", acc.Region()),
+				),
+			},
+			{
+				Config: acc.ConfigCompose(
+					testAccCheckIBMDatabaseInstanceEDBMinimal(databaseResourceGroup, serviceName),
+					testAccCheckIBMDatabaseInstanceEDBReadReplicaPromote(databaseResourceGroup, readReplicaName)),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMDatabaseInstanceExists(sourceResource, &sourceInstanceCRN),
+					testAccCheckIBMDatabaseInstanceExists(replicaReplicaResource, &replicaInstanceCRN),
+					resource.TestCheckResourceAttr(replicaReplicaResource, "name", readReplicaName),
+					resource.TestCheckResourceAttr(replicaReplicaResource, "service", "databases-for-enterprisedb"),
+					resource.TestCheckResourceAttr(replicaReplicaResource, "plan", "standard"),
+					resource.TestCheckResourceAttr(replicaReplicaResource, "location", acc.Region()),
+					resource.TestCheckResourceAttr(replicaReplicaResource, "remote_leader_id", ""),
+					resource.TestCheckResourceAttr(replicaReplicaResource, "skip_initial_backup", "true"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMDatabaseInstanceEDBMinimal(databaseResourceGroup string, name string) string {
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "test_acc" {
+		is_default = true
+		# name = "%[1]s"
+	}
+
+	resource "ibm_database" "%[2]s" {
+		resource_group_id = data.ibm_resource_group.test_acc.id
+		name              = "%[2]s"
+		service           = "databases-for-enterprisedb"
+		plan              = "standard"
+		location          = "%[3]s"
+		service_endpoints = "public-and-private"
+
+		group {
+			group_id = "member"
+			host_flavor {
+				id = "b3c.4x16.encrypted"
+			}
+			disk {
+			  allocation_mb = 20480
+			}
+		}
+	}
+	`, databaseResourceGroup, name, acc.Region())
 }
 
 func testAccCheckIBMDatabaseInstanceEDBBasic(databaseResourceGroup string, name string) string {
@@ -206,4 +294,53 @@ func testAccCheckIBMDatabaseInstanceEDBReduced(databaseResourceGroup string, nam
 		}
 	  }
 				`, databaseResourceGroup, name, acc.Region())
+}
+
+func testAccCheckIBMDatabaseInstanceEDBMinimal_ReadReplica(databaseResourceGroup string, name string) string {
+	return fmt.Sprintf(`
+	resource "ibm_database" "%[2]s-replica" {
+		resource_group_id = data.ibm_resource_group.test_acc.id
+		name                = "%[2]s-replica"
+		service             = "databases-for-enterprisedb"
+		plan                = "standard"
+		location            = "%[3]s"
+		service_endpoints   = "public-and-private"
+		remote_leader_id    = ibm_database.%[2]s.id
+
+		group {
+			group_id = "member"
+			host_flavor {
+				id = "b3c.4x16.encrypted"
+			}
+			disk {
+			  allocation_mb = 20480
+			}
+		}
+	}
+	`, databaseResourceGroup, name, acc.Region())
+}
+
+func testAccCheckIBMDatabaseInstanceEDBReadReplicaPromote(databaseResourceGroup string, readReplicaName string) string {
+	return fmt.Sprintf(`
+	resource "ibm_database" "%[2]s" {
+		resource_group_id = data.ibm_resource_group.test_acc.id
+		name                = "%[2]s"
+		service             = "databases-for-enterprisedb"
+		plan                = "standard"
+		location            = "%[3]s"
+		service_endpoints   = "public-and-private"
+		remote_leader_id    = ""
+		skip_initial_backup = true
+
+		group {
+			group_id = "member"
+			host_flavor {
+				id = "b3c.4x16.encrypted"
+			}
+			disk {
+			  allocation_mb = 20480
+			}
+		}
+	}
+	`, databaseResourceGroup, readReplicaName, acc.Region())
 }

@@ -47,6 +47,7 @@ In addition to all argument reference list, you can access the following attribu
 - `pvm_instances` - (List) List of power virtual server instances for the respective cloud instance.
 
   Nested scheme for `pvm_instances`:
+  - `crn` - (String) The CRN of this resource.
   - `fault` - (Map) Fault information, if any.
 
       Nested scheme for `fault`:
@@ -84,7 +85,9 @@ In addition to all argument reference list, you can access the following attribu
   - `shared_processor_pool`- (String) The name of the shared processor pool for the instance.
   - `shared_processor_pool_id` - (String)  The ID of the shared processor pool for the instance.
   - `status` - (String) The status of the instance.
+  - `storage_connection` - (String) The storage connection type for the instance
   - `storage_pool` - (String) The storage Pool where server is deployed.
   - `storage_pool_affinity` - (Boolean) Indicates if all volumes attached to the server must reside in the same storage pool.
   - `storage_type` - (String) The storage type where server is deployed.
+  - `user_tags` - (List) List of user tags attached to the resource.
   - `virtual_cores_assigned` - (Integer) The virtual cores that are assigned to the instance.

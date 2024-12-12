@@ -1,5 +1,4 @@
 ---
-
 subcategory: "Power Systems"
 layout: "ibm"
 page_title: "IBM: pi_image"
@@ -83,7 +82,7 @@ Review the argument references that you can specify for your resource.
 - `pi_image_bucket_access` - (Optional, String) Indicates if the bucket has public or private access. The default value is `public`.
 - `pi_image_bucket_file_name` - (Optional, String) Cloud Object Storage image filename
   - `pi_image_bucket_file_name` is required with `pi_image_bucket_name`
-- `pi_image_bucket_region` - (Optional, String) Cloud Object Storage region. Supported COS regions are: `au-syd`, `br-sao`, `ca-tor`, `eu-de`, `eu-es`, `eu-gb`, `jp-osa`, `jp-tok`, `us-east`, `us-south`.
+- `pi_image_bucket_region` - (Optional, String) Cloud Object Storage region. Supported COS regions are: `au-syd`, `br-sao`, `ca-tor`, `che01`, `eu-de`, `eu-es`, `eu-gb`, `jp-osa`, `jp-tok`, `us-east`, `us-south`.
   - `pi_image_bucket_region` is required with `pi_image_bucket_name`
 - `pi_image_secret_key` - (Optional, String, Sensitive) Cloud Object Storage secret key; required for buckets with private access.
   - `pi_image_secret_key` is required with `pi_image_access_key`
@@ -95,11 +94,13 @@ Review the argument references that you can specify for your resource.
   - `license_type` - (Required, String) Origin of the license of the product. Allowable value is: `byol`.
   - `product` - (Required, String) Product within the image.Allowable values are: `Hana`, `Netweaver`.
   - `vendor` - (Required, String) Vendor supporting the product. Allowable value is: `SAP`.
+- `pi_user_tags` - (Optional, List) The user tags attached to this resource.
 
 ## Attribute reference
 
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
+- `crn` - (String) The CRN of this resource.
 - `id` - (String) The unique identifier of an image. The ID is composed of `<pi_cloud_instance_id>/<image_id>`.
 - `image_id` - (String) The unique identifier of an image.
 

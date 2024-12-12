@@ -589,7 +589,7 @@ func dataSourceSecurityGroupCollectionSecurityGroupsRulesToMap(rulesItem vpcv1.S
 	return resultMap
 }
 
-func dataSourceSecurityGroupCollectionRemoteDeletedToMap(deletedItem *vpcv1.SecurityGroupReferenceDeleted) (resultMap map[string]interface{}) {
+func dataSourceSecurityGroupCollectionRemoteDeletedToMap(deletedItem *vpcv1.Deleted) (resultMap map[string]interface{}) {
 	resultMap = map[string]interface{}{}
 
 	if deletedItem.MoreInfo != nil {
@@ -654,7 +654,7 @@ func dataSourceSecurityGroupCollectionSecurityGroupsTargetsToMap(targetsItem vpc
 	return resultMap
 }
 
-func dataSourceSecurityGroupCollectionTargetsDeletedToMap(deletedItem *vpcv1.NetworkInterfaceReferenceTargetContextDeleted) (resultMap map[string]interface{}) {
+func dataSourceSecurityGroupCollectionTargetsDeletedToMap(deletedItem *vpcv1.Deleted) (resultMap map[string]interface{}) {
 	resultMap = map[string]interface{}{}
 
 	if deletedItem.MoreInfo != nil {
@@ -664,7 +664,7 @@ func dataSourceSecurityGroupCollectionTargetsDeletedToMap(deletedItem *vpcv1.Net
 	return resultMap
 }
 
-func dataSourceSecurityGroupCollectionTargetsDeleted2ToMap(deletedItem *vpcv1.LoadBalancerReferenceDeleted) (resultMap map[string]interface{}) {
+func dataSourceSecurityGroupCollectionTargetsDeleted2ToMap(deletedItem *vpcv1.Deleted) (resultMap map[string]interface{}) {
 	resultMap = map[string]interface{}{}
 
 	if deletedItem.MoreInfo != nil {
@@ -699,7 +699,7 @@ func dataSourceSecurityGroupCollectionSecurityGroupsVPCToMap(vpcItem *vpcv1.VPCR
 	return resultMap
 }
 
-func dataSourceSecurityGroupCollectionVPCDeletedToMap(deletedItem *vpcv1.VPCReferenceDeleted) (resultMap map[string]interface{}) {
+func dataSourceSecurityGroupCollectionVPCDeletedToMap(deletedItem *vpcv1.Deleted) (resultMap map[string]interface{}) {
 	resultMap = map[string]interface{}{}
 
 	if deletedItem.MoreInfo != nil {

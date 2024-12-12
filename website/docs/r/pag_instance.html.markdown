@@ -144,8 +144,8 @@ The `ibm_resource_instance` resource provides the following [Timeouts](https://w
 ## Argument reference
 Review the argument references that you can specify for your resource. 
 
-- `location` - (Required, String) Target location or environment to create the PAG instance.
-- `parameters_json` - (Required, String) Parameters to create PAG instance. The value must be a JSON string.
+- `location` - (Required, Forces new resource, String) Target location or environment to create the PAG instance.
+- `parameters_json` - (Required, Forces new resource, String) Parameters to create PAG instance. The value must be a JSON string.
 
   Nested scheme for `parameters_json`:
   - `cosinstance` - (Required, String) COS instance CRN to use for PAG.
