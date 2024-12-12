@@ -30,7 +30,7 @@ func TestValidateUserPassword(t *testing.T) {
 				Password: "-_Pizzapizzapizza123",
 				Type:     "database",
 			},
-			expectedError: "database user (testy) validation error:\npassword must not begin with a special character (~!@#$%^&*()=+[]{}|;:,.<>/?_-)",
+			expectedError: "database user (testy) validation error:\npassword must not begin with a special character (_-)",
 		},
 		{
 			user: DatabaseUser{
@@ -43,7 +43,7 @@ func TestValidateUserPassword(t *testing.T) {
 		{
 			user: DatabaseUser{
 				Username: "testy",
-				Password: "abcdABCD12345~!@#$%^&*()=+[]{}|;:,.<>/?_-",
+				Password: "abcd-ABCD-12345_coolguy",
 				Type:     "database",
 			},
 			expectedError: "",
@@ -51,7 +51,7 @@ func TestValidateUserPassword(t *testing.T) {
 		{
 			user: DatabaseUser{
 				Username: "testy",
-				Password: "£",
+				Password: "$",
 				Type:     "database",
 			},
 			expectedError: "database user (testy) validation error:\npassword must contain at least one lower case letter\npassword must contain at least one upper case letter\npassword must contain at least one number\npassword must not contain invalid characters",
@@ -67,7 +67,7 @@ func TestValidateUserPassword(t *testing.T) {
 		{
 			user: DatabaseUser{
 				Username: "testy",
-				Password: "password12345678$Password",
+				Password: "secure-Password12345$Password",
 				Type:     "ops_manager",
 			},
 			expectedError: "",
@@ -98,7 +98,7 @@ func TestValidateUserPassword(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
-		err := tc.user.ValidatePassword()
+		err := tc.user.validatePassword()
 		if tc.expectedError == "" {
 			if err != nil {
 				t.Logf("TestValidateUserPassword: %q, %q unexpected error: %q", tc.user.Username, tc.user.Password, err.Error())
@@ -180,7 +180,7 @@ func TestValidateRBACRole(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
-		err := tc.user.ValidateRBACRole()
+		err := tc.user.validateRBACRole()
 		if tc.expectedError == "" {
 			if err != nil {
 				t.Errorf("TestValidateRBACRole: %q, %q unexpected error: %q", tc.user.Username, *tc.user.Role, err.Error())

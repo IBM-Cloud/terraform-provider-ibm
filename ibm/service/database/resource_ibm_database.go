@@ -80,8 +80,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 		CustomizeDiff: customdiff.All(
 			resourceIBMDatabaseInstanceDiff,
 			validateGroupsDiff,
-			validateUsersDiff,
-			validateRemoteLeaderIDDiff),
+			validateUsersDiff),
 
 		Importer: &schema.ResourceImporter{},
 

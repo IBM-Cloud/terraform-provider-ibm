@@ -18,8 +18,9 @@ import (
 )
 
 const (
-	passwordSpecialChars      = "~!@#$%^&*()=+[]{}|;:,.<>/?_-"
-	redisRBACRoleRegexPattern = `[+-]@(?P<category>[a-z]+)`
+	databaseUserSpecialChars   = "_-"
+	opsManagerUserSpecialChars = "~!@#$%^&*()=+[]{}|;:,.<>/?_-"
+	redisRBACRoleRegexPattern  = `[+-]@(?P<category>[a-z]+)`
 )
 
 type DatabaseUser struct {
@@ -103,7 +104,7 @@ func validateUsersDiff(_ context.Context, diff *schema.ResourceDiff, meta interf
 		}
 
 		if change.isCreate() || change.isUpdate() {
-			err = change.New.ValidatePassword()
+			err = change.New.validatePassword()
 
 			if err != nil {
 				return err
@@ -112,9 +113,9 @@ func validateUsersDiff(_ context.Context, diff *schema.ResourceDiff, meta interf
 			// TODO: Use Capability API
 			// RBAC roles supported for Redis 6.0 and above
 			if (service == "databases-for-redis") && !(version > 0 && version < 6) {
-				err = change.New.ValidateRBACRole()
+				err = change.New.validateRBACRole()
 			} else if service == "databases-for-mongodb" && change.New.Type == "ops_manager" {
-				err = change.New.ValidateOpsManagerRole()
+				err = change.New.validateOpsManagerRole()
 			} else {
 				if change.New.Role != nil {
 					if *change.New.Role != "" {
@@ -323,13 +324,21 @@ func (u *DatabaseUser) isUpdatable() bool {
 	return u.Type != "ops_manager"
 }
 
-func (u *DatabaseUser) ValidatePassword() (err error) {
+func (u *DatabaseUser) validatePassword() (err error) {
 	var errs []error
+
+	var specialChars string
+	switch u.Type {
+	case "ops_manager":
+		specialChars = opsManagerUserSpecialChars
+	default:
+		specialChars = databaseUserSpecialChars
+	}
 
 	// Format for regexp
 	var specialCharPattern string
 	var bs strings.Builder
-	for i, c := range strings.Split(passwordSpecialChars, "") {
+	for i, c := range strings.Split(specialChars, "") {
 		if i > 0 {
 			bs.WriteByte('|')
 		}
@@ -347,12 +356,12 @@ func (u *DatabaseUser) ValidatePassword() (err error) {
 
 	if u.Type == "ops_manager" && !containsSpecialChar.MatchString(u.Password) {
 		errs = append(errs, fmt.Errorf(
-			"password must contain at least one special character (%s)", passwordSpecialChars))
+			"password must contain at least one special character (%s)", specialChars))
 	}
 
 	if u.Type == "database" && beginWithSpecialChar.MatchString(u.Password) {
 		errs = append(errs, fmt.Errorf(
-			"password must not begin with a special character (%s)", passwordSpecialChars))
+			"password must not begin with a special character (%s)", specialChars))
 	}
 
 	if !containsLower.MatchString(u.Password) {
@@ -378,7 +387,7 @@ func (u *DatabaseUser) ValidatePassword() (err error) {
 	return &databaseUserValidationError{user: u, errs: errs}
 }
 
-func (u *DatabaseUser) ValidateRBACRole() (err error) {
+func (u *DatabaseUser) validateRBACRole() (err error) {
 	var errs []error
 
 	if u.Role == nil || *u.Role == "" {
@@ -422,7 +431,7 @@ func (u *DatabaseUser) ValidateRBACRole() (err error) {
 	return &databaseUserValidationError{user: u, errs: errs}
 }
 
-func (u *DatabaseUser) ValidateOpsManagerRole() (err error) {
+func (u *DatabaseUser) validateOpsManagerRole() (err error) {
 	if u.Role == nil {
 		return
 	}
@@ -449,7 +458,7 @@ func (u *DatabaseUser) ValidateOpsManagerRole() (err error) {
 func DatabaseUserPasswordValidator(userType string) schema.SchemaValidateFunc {
 	return func(i interface{}, k string) (warnings []string, errors []error) {
 		user := &DatabaseUser{Username: "admin", Type: userType, Password: i.(string)}
-		err := user.ValidatePassword()
+		err := user.validatePassword()
 		if err != nil {
 			errors = append(errors, err)
 		}
