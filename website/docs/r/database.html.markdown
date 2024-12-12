@@ -733,6 +733,7 @@ Import requires a minimal Terraform config file to allow importing.
 ```terraform
 resource "ibm_database" "<your_database>" {
   name              = "<your_database_name>"
+}
 ```
 
 Run `terraform state show ibm_database.<your_database>` after import to retrieve the more values to be included in the resource config file. Observe the ICD exports the admin userid. It does not export any more user IDs and passwords that are configured on the instance. These values must be retrieved from an alternative source. If new passwords need to be configured or the connection string that is retrieved to use the service, a new users block must be defined to create new users. This limitation is due to a lack of ICD functionality.

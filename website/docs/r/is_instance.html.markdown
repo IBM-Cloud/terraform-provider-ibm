@@ -486,6 +486,94 @@ resource "ibm_is_instance" "example" {
   }
 }
 ```
+### Example to create an instance with cluster network attachments ###
+
+```terraform
+
+resource "ibm_is_instance" "is_instance" {
+  name    = "example-instance"
+  image   = data.ibm_is_image.example.id
+  profile = "gx3d-160x1792x8h100"
+  primary_network_interface {
+    subnet = ibm_is_subnet.example.id
+  }
+  cluster_network_attachments {
+    cluster_network_interface{
+      auto_delete = true
+      name = "cna-1"
+      subnet {
+        id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
+      }
+    }
+  }
+  cluster_network_attachments {
+    cluster_network_interface{
+      auto_delete = true
+      name = "cna-2"
+      subnet {
+        id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
+      }
+    }
+  }
+  cluster_network_attachments {
+    cluster_network_interface{
+      auto_delete = true
+      name = "cna-3"
+      subnet {
+        id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
+      }
+    }
+  }
+  cluster_network_attachments {
+    cluster_network_interface{
+      auto_delete = true
+      name = "cna-4"
+      subnet {
+        id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
+      }
+    }
+  }
+  cluster_network_attachments {
+    cluster_network_interface{
+      auto_delete = true
+      name = "cna-5"
+      subnet {
+        id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
+      }
+    }
+  }
+  cluster_network_attachments {
+    cluster_network_interface{
+      auto_delete = true
+      name = "cna-6"
+      subnet {
+        id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
+      }
+    }
+  }
+  cluster_network_attachments {
+    cluster_network_interface{
+      auto_delete = true
+      name = "cna-7"
+      subnet {
+        id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
+      }
+    }
+  }
+  cluster_network_attachments {
+    cluster_network_interface{
+      auto_delete = true
+      name = "cna-8"
+      subnet {
+        id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
+      }
+    }
+  }
+  vpc  = ibm_is_vpc.example.id
+  zone = ibm_is_subnet.example.zone
+  keys = [ibm_is_ssh_key.example.id]
+}
+```
 ## Timeouts
 
 The `ibm_is_instance` resource provides the following [[Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
@@ -544,6 +632,38 @@ Review the argument references that you can specify for your resource.
     ~> **Note:**
     `offering_crn` conflicts with `version_crn`, both are mutually exclusive. `catalog_offering` and `image` id are mutually exclusive.
     `snapshot` conflicts with `image` id and `instance_template`
+
+~>**Select Availability** 
+Cluster Networks for VPC is available for select customers only. Contact IBM Support if you are interested in using this functionality. [About cluster networks](https://cloud.ibm.com/docs/vpc?topic=vpc-about-cluster-network)
+
+- `cluster_network_attachments` - (Optional, List) The cluster network attachments for this virtual server instance.The cluster network attachments are ordered for consistent instance configuration.
+
+  Nested schema for **cluster_network_attachments**:
+	- `name` - (Required, String) The name for this instance cluster network attachment. The name is unique across all network attachments for the instance. (`name` is a apply once attribute, changing it will not be detected by terraform)
+  - `cluster_network_interface` - (Required, List) The cluster network interface for this instance cluster network attachment.
+    
+      Nested schema for **cluster_network_interface**:
+      - `id` - (Required, String) The unique identifier for this cluster network interface.
+      - `name` - (Required, String) The name for this cluster network interface. The name is unique across all interfaces in the cluster network.
+      - `primary_ip` - (Required, List) The primary IP for this cluster network interface.
+        
+          Nested schema for **primary_ip**:
+          - `address` - (Required, String) The IP address.If the address is pending allocation, the value will be `0.0.0.0`.This property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support IPv6 addresses in the future.
+          - `deleted` - (Optional, List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
+            
+          - `href` - (Required, String) The URL for this cluster network subnet reserved IP.
+          - `id` - (Required, String) The unique identifier for this cluster network subnet reserved IP.
+          - `name` - (Required, String) The name for this cluster network subnet reserved IP. The name is unique across all reserved IPs in a cluster network subnet.
+          - `resource_type` - (Computed, String) The resource type.
+      - `subnet` - (Required, List)
+        
+          Nested schema for **subnet**:
+          - `id` - (Required, String) The unique identifier for this cluster network subnet.
+
+  ~> **Note:** 
+  **&#x2022;** `cluster_network_attachments` updation requires the instance to be in stopped state. Use `action` attribute or `ibm_is_instance_action` resource accordingly to stop/start the instance.</br>
+  **&#x2022;** Using cluster_network_attachments in `ibm_is_instance` and `ibm_is_instance_cluster_network_attachment` resource together would result in changes shown in both resources alternatively, use either of them or use meta lifecycle argument `ignore_changes` on `cluster_network_attachments`</br>
+
 - `confidential_compute_mode` - (Optional, String) The confidential compute mode to use for this virtual server instance.If unspecified, the default confidential compute mode from the profile will be used. **Constraints: Allowable values are: `disabled`, `sgx`** {Select Availability}
 
   ~>**Note:** The confidential_compute_mode is `Select Availability` feature. Confidential computing with Intel SGX for VPC is available only in the US-South (Dallas) region.
@@ -735,7 +855,16 @@ Review the argument references that you can specify for your resource.
 - `tags` (Optional, Array of Strings) A list of tags that you want to add to your instance. Tags can help you find your instance more easily later.
 - `total_volume_bandwidth` - (Optional, Integer) The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes
 - `user_data` - (Optional, String) User data to transfer to the instance. For more information, about `user_data`, see [about user data](https://cloud.ibm.com/docs/vpc?topic=vpc-user-data).
-- `volumes`  (Optional, List) A comma separated list of volume IDs to attach to the instance.
+- `volumes`  (Optional, List) A comma separated list of volume IDs to attach to the instance. Mutually exclusive with `volume_prototypes`.
+- `volume_prototypes`- (List of Strings) A list of data volumes to attach to the instance. Mutually exclusive with `volumes`.
+
+  Nested scheme for `volume_prototypes`:
+  - `delete_volume_on_instance_delete` - (Bool) If set to **true**, automatically deletes the volumes that are attached to an instance. **Note** Setting this argument can bring some inconsistency in the volume resource, as the volumes is destroyed along with instances.
+  - `encryption` - (String) The type of encryption that is used for the volume prototype.
+  - `iops`- (Integer) The number of input and output operations per second of the volume prototype.
+  - `name` - (String) The name of the volume prototype.
+  - `profile` - (String) The profile of the volume prototype.
+  - `size`- (Integer) The capacity of the volume in gigabytes.
 - `vpc` - (Required, Forces new resource, String) The ID of the VPC where you want to create the instance. When using `instance_template`, `vpc` is not required.
 - `zone` - (Required, Forces new resource, String) The name of the VPC zone where you want to create the instance. When using `instance_template`, `zone` is not required.
 
@@ -760,6 +889,26 @@ In addition to all argument reference list, you can access the following attribu
     - `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.
 		  Nested schema for `deleted`:
       - `more_info`  - (String) Link to documentation about deleted resources.
+
+- `cluster_network_attachments` - (List) The cluster network attachments for this virtual server instance.The cluster network attachments are ordered for consistent instance configuration.
+    Nested schema for **cluster_network_attachments**:
+    - `href` - (String) The URL for this instance cluster network attachment.
+    - `id` - (String) The unique identifier for this instance cluster network attachment.
+    - `name` - (String) The name for this instance cluster network attachment. The name is unique across all network attachments for the instance.
+    - `resource_type` - (String) The resource type.
+
+
+- `cluster_network` - (List) If present, the cluster network that this virtual server instance resides in.
+  Nested schema for **cluster_network**:
+	- `crn` - (String) The CRN for this cluster network.
+	- `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
+	  Nested schema for **deleted**:
+		- `more_info` - (String) Link to documentation about deleted resources.
+	- `href` - (String) The URL for this cluster network.
+	- `id` - (String) The unique identifier for this cluster network.
+	- `name` - (String) The name for this cluster network. The name must not be used by another cluster network in the region.
+	- `resource_type` - (String) The resource type.
+
 - `crn` - (String) The CRN of the instance.
 - `disks` - (List of Strings) The collection of the instance's disks. Nested `disks` blocks have the following structure:
 
@@ -778,6 +927,13 @@ In addition to all argument reference list, you can access the following attribu
   - `manufacture` - (String) The manufacturer of the GPU.
   - `memory`- (Integer) The amount of memory of the GPU in gigabytes.
   - `model` - (String) The model of the GPU.
+- `health_reasons` - (List) The reasons for the current health_state (if any).
+
+    Nested scheme for `health_reasons`:
+    - `code` - (String) A snake case string succinctly identifying the reason for this health state.
+    - `message` - (String) An explanation of the reason for this health state.
+    - `more_info` - (String) Link to documentation about the reason for this health state.
+- `health_state` - (String) The health of this resource.
 - `placement_target` - The placement restrictions for the virtual server instance.
   - `crn` - The CRN of the placement target
   - `deleted` - If present, this property indicates the referenced resource has been deleted and providessome supplementary information.
@@ -789,6 +945,16 @@ In addition to all argument reference list, you can access the following attribu
 - `id` - (String) The ID of the instance.
 - `memory`- (Integer) The amount of memory that is allocated to the instance in gigabytes.
 - `numa_count` - (Integer) The number of NUMA nodes this instance is provisioned on. This property may be absent if the instance's status is not running.
+- `network_attachments` - (List) The network attachments list for this virtual server instance.
+    Nested schema for **network_attachments**:
+
+    - `primary_ip` - (List) The primary IP address to bind to the network interface. This can be specified using an existing reserved IP, or a prototype object for a new reserved IP.
+
+        Nested scheme for `primary_ip`:
+        - `auto_delete` - (Bool) Indicates whether this reserved IP member will be automatically deleted when either target is deleted, or the reserved IP is unbound.
+        - `address` - (String) The IP address of the reserved IP. 
+        - `name`- (String) The user-defined or system-provided name for this reserved IP
+        - `id`- (String) The unique identifier for this reserved IP.
 - `network_interfaces`- (List of Strings) A list of more network interfaces that are attached to the instance.
 
   Nested scheme for `network_interfaces`:
@@ -805,6 +971,16 @@ In addition to all argument reference list, you can access the following attribu
       - `name`- (String) The user-defined or system-provided name for this reserved IP
       - `reserved_ip`- (String) The unique identifier for this reserved IP
   - `primary_ipv4_address` - (String, Deprecated) The primary IPv4 address. Same as `primary_ip.[0].address`
+- `primary_network_attachment` - (List) The primary network attachment for this virtual server instance.
+    Nested schema for **primary_network_attachment**:
+
+    - `primary_ip` - (List) The primary IP address to bind to the network interface. This can be specified using an existing reserved IP, or a prototype object for a new reserved IP.
+
+        Nested scheme for `primary_ip`:
+        - `auto_delete` - (Bool) Indicates whether this reserved IP member will be automatically deleted when either target is deleted, or the reserved IP is unbound.
+        - `address` - (String) The IP address of the reserved IP. 
+        - `name`- (String) The user-defined or system-provided name for this reserved IP
+        - `id`- (String) The unique identifier for this reserved IP.
 - `primary_network_interface`- (List of Strings) A list of primary network interfaces that are attached to the instance.
 
   Nested scheme for `primary_network_interface`:

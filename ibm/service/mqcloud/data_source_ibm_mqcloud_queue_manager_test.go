@@ -2,7 +2,7 @@
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.90.0-5aad763d-20240506-203857
+ * IBM OpenAPI Terraform Generator Version: 3.95.2-120e65bc-20240924-152329
  */
 
 package mqcloud_test
@@ -24,7 +24,7 @@ import (
 
 func TestAccIbmMqcloudQueueManagerDataSourceBasic(t *testing.T) {
 	t.Parallel()
-	queueManagerDetailsServiceInstanceGuid := acc.MqcloudInstanceID
+	queueManagerDetailsServiceInstanceGuid := acc.MqcloudDeploymentID
 	queueManagerDetailsName := fmt.Sprintf("tf_queue_manager_ds_basic%d", acctest.RandIntRange(10, 100))
 	queueManagerDetailsLocation := acc.MqCloudQueueManagerLocation
 	queueManagerDetailsSize := "xsmall"
@@ -50,7 +50,7 @@ func TestAccIbmMqcloudQueueManagerDataSourceBasic(t *testing.T) {
 
 func TestAccIbmMqcloudQueueManagerDataSourceAllArgs(t *testing.T) {
 	t.Parallel()
-	queueManagerDetailsServiceInstanceGuid := acc.MqcloudInstanceID
+	queueManagerDetailsServiceInstanceGuid := acc.MqcloudDeploymentID
 	queueManagerDetailsName := fmt.Sprintf("tf_queue_manager_ds_allargs%d", acctest.RandIntRange(10, 100))
 	queueManagerDetailsDisplayName := queueManagerDetailsName
 	queueManagerDetailsLocation := acc.MqCloudQueueManagerLocation
@@ -124,6 +124,7 @@ func testAccCheckIbmMqcloudQueueManagerDataSourceConfig(queueManagerDetailsServi
 }
 
 func TestDataSourceIbmMqcloudQueueManagerQueueManagerDetailsToMap(t *testing.T) {
+	t.Parallel()
 	checkResult := func(result map[string]interface{}) {
 		model := make(map[string]interface{})
 		model["id"] = "testString"

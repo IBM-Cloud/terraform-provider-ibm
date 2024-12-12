@@ -23,7 +23,7 @@ provider "ibm" {
 ## Example usage
 
 ```terraform
-data "is_placement_group" "example" {
+data "ibm_is_placement_group" "example" {
   name = ibm_is_placement_group.example.name
 }
 ```
