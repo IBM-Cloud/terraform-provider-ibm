@@ -253,20 +253,6 @@ func resourceIbmBackupRecoveryPerformActionOnProtectionGroupRunRequestCreate(con
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_perform_action_on_protection_group_run_request", "read", "set-resume_params").GetDiag()
 		}
 	}
-	if !core.IsNil(performRunActionResponse.CancelParams) {
-		cancelParams := []map[string]interface{}{}
-		for _, cancelParamsItem := range performRunActionResponse.CancelParams {
-			cancelParamsItemMap, err := ResourceIbmBackupRecoveryPerformActionOnProtectionGroupRunRequestCancelProtectionGroupRunRequestToMap(&cancelParamsItem) // #nosec G601
-			if err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_perform_action_on_protection_group_run_request", "read", "cancel_params-to-map").GetDiag()
-			}
-			cancelParams = append(cancelParams, cancelParamsItemMap)
-		}
-		if err = d.Set("cancel_params", cancelParams); err != nil {
-			err = fmt.Errorf("Error setting cancel_params: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_perform_action_on_protection_group_run_request", "read", "set-cancel_params").GetDiag()
-		}
-	}
 	return resourceIbmBackupRecoveryPerformActionOnProtectionGroupRunRequestRead(context, d, meta)
 }
 
