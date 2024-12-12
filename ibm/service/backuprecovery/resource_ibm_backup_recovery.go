@@ -20,8 +20,8 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
+	"github.com/IBM/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 	validation "github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 )
 
 func ResourceIbmBackupRecovery() *schema.Resource {

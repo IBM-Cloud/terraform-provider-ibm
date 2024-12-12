@@ -20,7 +20,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go/backuprecoveryv1"
+	"github.com/IBM/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 )
 
 func ResourceIbmBackupRecoveryPerformActionOnProtectionGroupRunRequest() *schema.Resource {
@@ -142,7 +142,7 @@ func checkDiffResourceIbmBackupRecoveryPerformActionOnProtectionGroupRun(context
 
 	for fieldName := range ResourceIbmBackupRecoveryPerformActionOnProtectionGroupRunRequest().Schema {
 		if d.HasChange(fieldName) {
-			return fmt.Errorf("[ERROR] Resource ibm_backup_recovery_perform_action_on_protection_group_run_request cannot be updated.")
+			return fmt.Errorf("[ERROR] Resource ibm_backup_recovery_perform_action_on_protection_group_run_request cannot be updated. %s cannot be updated", fieldName)
 		}
 	}
 	return nil

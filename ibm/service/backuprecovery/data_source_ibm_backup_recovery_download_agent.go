@@ -21,7 +21,7 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go/backuprecoveryv1"
+	"github.com/IBM/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 )
 
 func DataSourceIbmBackupRecoveryDownloadAgent() *schema.Resource {

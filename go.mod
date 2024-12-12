@@ -22,6 +22,7 @@ require (
 	github.com/IBM/go-sdk-core v1.1.0
 	github.com/IBM/go-sdk-core/v3 v3.2.4
 	github.com/IBM/go-sdk-core/v5 v5.18.1
+	github.com/IBM/ibm-backup-recovery-sdk-go v1.0.0
 	github.com/IBM/ibm-cos-sdk-go v1.10.3
 	github.com/IBM/ibm-cos-sdk-go-config/v2 v2.1.0
 	github.com/IBM/ibm-hpcs-tke-sdk v0.0.0-20211109141421-a4b61b05f7d1
@@ -62,8 +63,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/rook/rook v1.11.4
 	github.com/softlayer/softlayer-go v1.0.3
-	github.com/stretchr/testify v1.9.0
-	github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go v1.0.2-0.20241115103525-58ab5f68dc44
+	github.com/stretchr/testify v1.10.0
 	golang.org/x/crypto v0.28.0
 	google.golang.org/grpc v1.57.1
 	google.golang.org/protobuf v1.34.1
