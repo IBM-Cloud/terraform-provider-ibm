@@ -77,6 +77,21 @@ func DataSourceIBMCISLogPushJobs() *schema.Resource {
 							Computed:    true,
 							Description: "The frequency at which CIS sends batches of logs to your destination",
 						},
+						cisLogpushLastComplete: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Records the last time for which logs have been successfully pushed.",
+						},
+						cisLogpushLastError: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Records the last time the job failed.",
+						},
+						cisLogpushErrorMessage: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The last failure message.",
+						},
 					},
 				},
 			},
@@ -126,14 +141,24 @@ func ResourceIBMCISLogpushJobsRead(d *schema.ResourceData, meta interface{}) err
 		logPushOpt[cisLogpushDataset] = *logpushObj.Dataset
 		logPushOpt[cisLogpushFreq] = *logpushObj.Frequency
 		logPushOpt[cisLogpushDestConf] = *logpushObj.DestinationConf
+		if logpushObj.LastComplete != nil {
+			logPushOpt[cisLogpushLastComplete] = *logpushObj.LastComplete
+		}
+		if logpushObj.LastError != nil {
+			logPushOpt[cisLogpushLastError] = *logpushObj.LastError
+		}
+		if logpushObj.ErrorMessage != nil {
+			logPushOpt[cisLogpushErrorMessage] = *logpushObj.ErrorMessage
+		}
+
 		logPushList = append(logPushList, logPushOpt)
 	}
-	d.SetId(dataSourceCISLogpushJobsCheckID(d))
+	d.SetId(dataSourceCISLogpushJobsCheckID())
 	d.Set(cisID, crn)
 	d.Set(cisDomainID, zoneID)
 	d.Set(cisLogpushJobs, logPushList)
 	return nil
 }
-func dataSourceCISLogpushJobsCheckID(d *schema.ResourceData) string {
+func dataSourceCISLogpushJobsCheckID() string {
 	return time.Now().UTC().String()
 }

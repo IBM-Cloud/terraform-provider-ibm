@@ -18,14 +18,17 @@ import (
 )
 
 const (
-	cisLogpushJobID    = "job_id"
-	cisLogpushName     = "name"
-	cisLogpushEnabled  = "enabled"
-	cisLogpullOpt      = "logpull_options"
-	cisLogdna          = "logdna"
-	cisLogpushDataset  = "dataset"
-	cisLogpushFreq     = "frequency"
-	cisLogpushDestConf = "destination_conf"
+	cisLogpushJobID        = "job_id"
+	cisLogpushName         = "name"
+	cisLogpushEnabled      = "enabled"
+	cisLogpullOpt          = "logpull_options"
+	cisLogdna              = "logdna"
+	cisLogpushDataset      = "dataset"
+	cisLogpushFreq         = "frequency"
+	cisLogpushDestConf     = "destination_conf"
+	cisLogpushLastComplete = "last_complete"
+	cisLogpushLastError    = "last_error"
+	cisLogpushErrorMessage = "error_message"
 )
 
 func ResourceIBMCISLogPushJob() *schema.Resource {
@@ -142,7 +145,7 @@ func ResourceIBMCISLogpushJobCreate(d *schema.ResourceData, meta interface{}) er
 		logpushJob.LogpullOptions = &logpullopt
 	}
 	if log, ok := d.GetOk(cisLogdna); ok {
-		var logDNA interface{}
+		var logDNA map[string]interface{}
 		json.Unmarshal([]byte(log.(string)), &logDNA)
 		logpushJob.Logdna = logDNA
 	}
@@ -177,11 +180,10 @@ func ResourceIBMCISLogpushJobRead(d *schema.ResourceData, meta interface{}) erro
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error Converting ConvertTfToCisThreeVar in Read")
 	}
-	JobID, _ := strconv.Atoi(logpushID)
 	sess.Crn = core.StringPtr(crn)
 	sess.ZoneID = core.StringPtr(zoneID)
 
-	opt := sess.NewGetLogpushJobV2Options(int64(JobID))
+	opt := sess.NewGetLogpushJobV2Options(logpushID)
 	result, response, err := sess.GetLogpushJobV2(opt)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
@@ -213,7 +215,6 @@ func ResourceIBMCISLogpushJobUpdate(d *schema.ResourceData, meta interface{}) er
 	sess.ZoneID = core.StringPtr(zoneID)
 
 	logpushID, zoneID, crn, _ := flex.ConvertTfToCisThreeVar(d.Id())
-	JobId, _ := strconv.Atoi(logpushID)
 
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error Converting ConvertTfToCisThreeVar in Update")
@@ -234,7 +235,7 @@ func ResourceIBMCISLogpushJobUpdate(d *schema.ResourceData, meta interface{}) er
 			updateLogpushJob.LogpullOptions = &logpullopt
 		}
 		if log, ok := d.GetOk(cisLogdna); ok {
-			var logDNA interface{}
+			var logDNA map[string]interface{}
 			json.Unmarshal([]byte(log.(string)), &logDNA)
 			updateLogpushJob.Logdna = logDNA
 		}
@@ -243,7 +244,7 @@ func ResourceIBMCISLogpushJobUpdate(d *schema.ResourceData, meta interface{}) er
 			updateLogpushJob.Frequency = &freq
 		}
 		options := &logpushjobsapiv1.UpdateLogpushJobV2Options{
-			JobID:                     core.Int64Ptr(int64(JobId)),
+			JobID:                     core.StringPtr(logpushID),
 			UpdateLogpushJobV2Request: updateLogpushJob,
 		}
 		result, resp, err := sess.UpdateLogpushJobV2(options)
@@ -264,11 +265,10 @@ func ResourceIBMCISLogpushJobDelete(d *schema.ResourceData, meta interface{}) er
 	sess.ZoneID = core.StringPtr(zoneID)
 
 	logpushID, zoneID, crn, _ := flex.ConvertTfToCisThreeVar(d.Id())
-	JobID, _ := strconv.Atoi(logpushID)
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error Converting ConvertTfToCisThreeVar in Delete")
 	}
-	opt := sess.NewDeleteLogpushJobV2Options(int64(JobID))
+	opt := sess.NewDeleteLogpushJobV2Options(logpushID)
 	_, response, err := sess.DeleteLogpushJobV2(opt)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
