@@ -98,7 +98,7 @@ func TestValidateUserPassword(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
-		err := tc.user.validatePassword()
+		err := tc.user.ValidatePassword()
 		if tc.expectedError == "" {
 			if err != nil {
 				t.Logf("TestValidateUserPassword: %q, %q unexpected error: %q", tc.user.Username, tc.user.Password, err.Error())
@@ -180,7 +180,7 @@ func TestValidateRBACRole(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
-		err := tc.user.validateRBACRole()
+		err := tc.user.ValidateRBACRole()
 		if tc.expectedError == "" {
 			if err != nil {
 				t.Errorf("TestValidateRBACRole: %q, %q unexpected error: %q", tc.user.Username, *tc.user.Role, err.Error())
