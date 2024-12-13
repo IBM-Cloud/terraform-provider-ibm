@@ -259,11 +259,6 @@ func resourceIBMDb2InstanceCreate(d *schema.ResourceData, meta interface{}) erro
 		return fmt.Errorf("[ERROR] Error waiting for create resource instance (%s) to be succeeded: %s", d.Id(), err)
 	}
 
-	log.Printf("Instance ID %s", *instance.ID)
-	log.Printf("Instance CRN %s", *instance.CRN)
-	log.Printf("Instance URL %s", *instance.URL)
-	log.Printf("Instance DashboardURL %s", *instance.DashboardURL)
-
 	v := os.Getenv("IC_ENV_TAGS")
 	if _, ok := d.GetOk("tags"); ok || v != "" {
 		oldList, newList := d.GetChange("tags")
