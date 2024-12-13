@@ -27,7 +27,7 @@ func DataSourceIbmDb2Autoscale() *schema.Resource {
 		ReadContext: dataSourceIbmDb2AutoscaleRead,
 
 		Schema: map[string]*schema.Schema{
-			"x_db_profile": &schema.Schema{
+			"deployment_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Encoded CRN deployment id.",
@@ -91,7 +91,7 @@ func dataSourceIbmDb2AutoscaleRead(context context.Context, d *schema.ResourceDa
 
 	getDb2SaasAutoscaleOptions := &db2saasv1.GetDb2SaasAutoscaleOptions{}
 
-	getDb2SaasAutoscaleOptions.SetXDbProfile(d.Get("x_db_profile").(string))
+	getDb2SaasAutoscaleOptions.SetXDbProfile(d.Get("deployment_id").(string))
 
 	successAutoScaling, _, err := db2saasClient.GetDb2SaasAutoscaleWithContext(context, getDb2SaasAutoscaleOptions)
 	if err != nil {

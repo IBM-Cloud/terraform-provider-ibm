@@ -33,7 +33,7 @@ resource "ibm_db2" "db2_instance" {
 #
 //Db2 SaaS Autoscale
 # data "ibm_db2_autoscale" "db2_autoscale" {
-#     x_db_profile = "crn%3Av1%3Astaging%3Apublic%3Adashdb-for-transactions%3Aus-east%3Aa%2Fe7e3e87b512f474381c0684a5ecbba03%3Af9455c22-07af-4a86-b9df-f02fd4774471%3A%3A"
+#     deployment_id = "crn%3Av1%3Astaging%3Apublic%3Adashdb-for-transactions%3Aus-east%3Aa%2Fe7e3e87b512f474381c0684a5ecbba03%3A8e3a219f-65d3-43cd-86da-b231d53732ef%3A%3A"
 # }
 #
 //Db2 SaaS Whitelist IPs

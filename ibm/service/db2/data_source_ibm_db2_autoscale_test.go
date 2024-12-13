@@ -17,7 +17,7 @@ import (
 )
 
 func TestAccIbmDb2AutoscaleDataSourceBasic(t *testing.T) {
-	xDbProfile := "crn%3Av1%3Astaging%3Apublic%3Adashdb-for-transactions%3Aus-east%3Aa%2Fe7e3e87b512f474381c0684a5ecbba03%3Af9455c22-07af-4a86-b9df-f02fd4774471%3A%3A"
+	xDbProfile := "crn%3Av1%3Astaging%3Apublic%3Adashdb-for-transactions%3Aus-east%3Aa%2Fe7e3e87b512f474381c0684a5ecbba03%3A8e3a219f-65d3-43cd-86da-b231d53732ef%3A%3A"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
@@ -26,7 +26,7 @@ func TestAccIbmDb2AutoscaleDataSourceBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIbmDb2AutoscaleDataSourceConfigBasic(xDbProfile),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_db2_autoscale.Db2-v0-test-public", "x_db_profile"),
+					resource.TestCheckResourceAttrSet("data.ibm_db2_autoscale.Db2-v0-test-public", "deployment_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_db2_autoscale.Db2-v0-test-public", "auto_scaling_allow_plan_limit"),
 					resource.TestCheckResourceAttrSet("data.ibm_db2_autoscale.Db2-v0-test-public", "auto_scaling_enabled"),
 					resource.TestCheckResourceAttrSet("data.ibm_db2_autoscale.Db2-v0-test-public", "auto_scaling_max_storage"),
@@ -45,7 +45,7 @@ func TestAccIbmDb2AutoscaleDataSourceBasic(t *testing.T) {
 func testAccCheckIbmDb2AutoscaleDataSourceConfigBasic(xDbProfile string) string {
 	return fmt.Sprintf(`
 		 data "ibm_db2_autoscale" "Db2-v0-test-public" {
-    x_db_profile = "%[1]s"
+    deployment_id = "%[1]s"
 }
 	`, xDbProfile)
 }
