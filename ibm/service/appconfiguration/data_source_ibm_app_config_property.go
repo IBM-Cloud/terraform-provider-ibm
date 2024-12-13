@@ -3,6 +3,7 @@ package appconfiguration
 import (
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -158,7 +159,8 @@ func dataSourceIbmAppConfigPropertyRead(d *schema.ResourceData, meta interface{}
 	options.SetPropertyID(d.Get("property_id").(string))
 
 	if _, ok := d.GetOk("include"); ok {
-		options.SetInclude(d.Get("include").([]string))
+		dataString := d.Get("include").(string)
+		options.SetInclude(strings.Split(dataString, ","))
 	}
 
 	property, response, err := appconfigClient.GetProperty(options)
