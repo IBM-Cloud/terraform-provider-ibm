@@ -185,7 +185,7 @@ func testAccCheckIBMDatabaseInstanceEDBBasic(databaseResourceGroup string, name 
 		service                      = "databases-for-enterprisedb"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "password12345678"
+		adminpassword                = "secure-Password12345"
 		group {
 			group_id = "member"
 			host_flavor {
@@ -199,7 +199,7 @@ func testAccCheckIBMDatabaseInstanceEDBBasic(databaseResourceGroup string, name 
 		tags                         = ["one:two"]
 		users {
 		  name     = "user123"
-		  password = "password12345678"
+		  password = "secure-Password12345"
 		}
 		allowlist {
 		  address     = "172.168.1.2/32"
@@ -226,7 +226,7 @@ func testAccCheckIBMDatabaseInstanceEDBFullyspecified(databaseResourceGroup stri
 		service                      = "databases-for-enterprisedb"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "password12345678"
+		adminpassword                = "secure-Password12345"
 		group {
 			group_id = "member"
 			host_flavor {
@@ -240,11 +240,11 @@ func testAccCheckIBMDatabaseInstanceEDBFullyspecified(databaseResourceGroup stri
 		tags                         = ["one:two"]
 		users {
 		  name     = "user123"
-		  password = "password12345678"
+		  password = "secure-Password12345"
 		}
 		users {
 		  name     = "user124"
-		  password = "password12345678"
+		  password = "secure-Password12345"
 		}
 		allowlist {
 		  address     = "172.168.1.2/32"
@@ -275,7 +275,7 @@ func testAccCheckIBMDatabaseInstanceEDBReduced(databaseResourceGroup string, nam
 		service                      = "databases-for-enterprisedb"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "password12345678"
+		adminpassword                = "secure-Password12345"
 		group {
 			group_id = "member"
 			host_flavor {

@@ -215,7 +215,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				ValidateFunc: validation.All(
-					validation.StringLenBetween(15, 32),
+					validation.StringLenBetween(15, 72),
 					DatabaseUserPasswordValidator("database"),
 				),
 				Sensitive: true,
@@ -1882,7 +1882,7 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 			if group.CPU != nil && group.CPU.Allocation*nodeCount != currentGroup.CPU.Allocation {
 				groupScaling.CPU = &clouddatabasesv5.GroupScalingCPU{AllocationCount: core.Int64Ptr(int64(group.CPU.Allocation * nodeCount))}
 			}
-			if group.HostFlavor != nil && group.HostFlavor.ID != currentGroup.HostFlavor.ID {
+			if group.HostFlavor != nil {
 				groupScaling.HostFlavor = &clouddatabasesv5.GroupScalingHostFlavor{ID: core.StringPtr(group.HostFlavor.ID)}
 			}
 
@@ -3251,7 +3251,8 @@ func (u *DatabaseUser) ValidatePassword() (err error) {
 
 	var allowedCharacters = regexp.MustCompile(fmt.Sprintf("^(?:[a-zA-Z0-9]|%s)+$", specialCharPattern))
 	var beginWithSpecialChar = regexp.MustCompile(fmt.Sprintf("^(?:%s)", specialCharPattern))
-	var containsLetter = regexp.MustCompile("[a-zA-Z]")
+	var containsLower = regexp.MustCompile("[a-z]")
+	var containsUpper = regexp.MustCompile("[A-Z]")
 	var containsNumber = regexp.MustCompile("[0-9]")
 	var containsSpecialChar = regexp.MustCompile(fmt.Sprintf("(?:%s)", specialCharPattern))
 
@@ -3265,8 +3266,12 @@ func (u *DatabaseUser) ValidatePassword() (err error) {
 			"password must not begin with a special character (%s)", specialChars))
 	}
 
-	if !containsLetter.MatchString(u.Password) {
-		errs = append(errs, errors.New("password must contain at least one letter"))
+	if !containsLower.MatchString(u.Password) {
+		errs = append(errs, errors.New("password must contain at least one lower case letter"))
+	}
+
+	if !containsUpper.MatchString(u.Password) {
+		errs = append(errs, errors.New("password must contain at least one upper case letter"))
 	}
 
 	if !containsNumber.MatchString(u.Password) {
