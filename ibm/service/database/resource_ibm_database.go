@@ -1177,40 +1177,8 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 		rsInst.ResourceGroup = &defaultRg
 	}
 
-	initialNodeCount, err := getInitialNodeCount(serviceName, plan, meta)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
 	params := Params{}
-	if group, ok := d.GetOk("group"); ok {
-		groups := expandGroups(group.(*schema.Set).List())
-		var memberGroup *Group
-		for _, g := range groups {
-			if g.ID == "member" {
-				memberGroup = g
-				break
-			}
-		}
 
-		if memberGroup != nil {
-			if memberGroup.Memory != nil {
-				params.Memory = memberGroup.Memory.Allocation * initialNodeCount
-			}
-
-			if memberGroup.Disk != nil {
-				params.Disk = memberGroup.Disk.Allocation * initialNodeCount
-			}
-
-			if memberGroup.CPU != nil {
-				params.CPU = memberGroup.CPU.Allocation * initialNodeCount
-			}
-
-			if memberGroup.HostFlavor != nil {
-				params.HostFlavor = memberGroup.HostFlavor.ID
-			}
-		}
-	}
 	if version, ok := d.GetOk("version"); ok {
 		params.Version = version.(string)
 	}
@@ -1246,6 +1214,64 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 
 	if offlineRestore, ok := d.GetOk("offline_restore"); ok {
 		params.OfflineRestore = offlineRestore.(bool)
+	}
+
+	var initialNodeCount int
+	var sourceCRN string
+
+	if params.PITRDeploymentID != "" {
+		sourceCRN = params.PITRDeploymentID
+	}
+
+	if params.RemoteLeaderID != "" {
+		sourceCRN = params.RemoteLeaderID
+	}
+
+	if sourceCRN != "" {
+		group, err := getMemberGroup(sourceCRN, meta)
+
+		if err != nil {
+			return diag.FromErr(
+				fmt.Errorf("[ERROR] Error fetching source formation group: %s", err)) // raise error
+		}
+
+		if group != nil {
+			initialNodeCount = group.Members.Allocation
+		}
+	} else {
+		initialNodeCount, err = getInitialNodeCount(serviceName, plan, meta)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	var memberGroup *Group
+
+	if group, ok := d.GetOk("group"); ok {
+		groups := expandGroups(group.(*schema.Set).List())
+
+		for _, g := range groups {
+			if g.ID == "member" {
+				memberGroup = g
+				break
+			}
+		}
+	}
+
+	if memberGroup != nil && memberGroup.Memory != nil {
+		params.Memory = memberGroup.Memory.Allocation * initialNodeCount
+	}
+
+	if memberGroup != nil && memberGroup.Disk != nil {
+		params.Disk = memberGroup.Disk.Allocation * initialNodeCount
+	}
+
+	if memberGroup != nil && memberGroup.CPU != nil {
+		params.CPU = memberGroup.CPU.Allocation * initialNodeCount
+	}
+
+	if memberGroup != nil && memberGroup.HostFlavor != nil {
+		params.HostFlavor = memberGroup.HostFlavor.ID
 	}
 
 	serviceEndpoint := d.Get("service_endpoints").(string)
@@ -2954,6 +2980,24 @@ func getCpuEnforcementRatios(service string, plan string, hostFlavor string, met
 	}
 
 	return nil, 0, 0
+}
+
+func getMemberGroup(instanceCRN string, meta interface{}) (*Group, error) {
+	groupsResponse, err := getGroups(instanceCRN, meta)
+
+	if err != nil {
+		return nil, err
+	}
+
+	currentGroups := normalizeGroups(groupsResponse)
+
+	for _, cg := range currentGroups {
+		if cg.ID == "member" {
+			return &cg, nil
+		}
+	}
+
+	return nil, nil
 }
 
 func validateUsersDiff(_ context.Context, diff *schema.ResourceDiff, meta interface{}) (err error) {
