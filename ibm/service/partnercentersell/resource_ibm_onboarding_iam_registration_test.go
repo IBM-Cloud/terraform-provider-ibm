@@ -968,7 +968,7 @@ func TestResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedAttr
 	supportedAttributesOptionsModel := new(partnercentersellv1.SupportedAttributesOptions)
 	supportedAttributesOptionsModel.Operators = []string{"stringEquals"}
 	supportedAttributesOptionsModel.Hidden = core.BoolPtr(true)
-	supportedAttributesOptionsModel.SupportedAttributes = []string{"testString"}
+	supportedAttributesOptionsModel.SupportedPatterns = []string{"testString"}
 	supportedAttributesOptionsModel.PolicyTypes = []string{"access"}
 	supportedAttributesOptionsModel.IsEmptyValueSupported = core.BoolPtr(true)
 	supportedAttributesOptionsModel.IsStringExistsFalseValueSupported = core.BoolPtr(true)
@@ -1077,7 +1077,7 @@ func TestResourceIbmOnboardingIamRegistrationSupportedAttributesOptionsToMap(t *
 	model := new(partnercentersellv1.SupportedAttributesOptions)
 	model.Operators = []string{"stringEquals"}
 	model.Hidden = core.BoolPtr(true)
-	model.SupportedAttributes = []string{"testString"}
+	model.SupportedPatterns = []string{"testString"}
 	model.PolicyTypes = []string{"access"}
 	model.IsEmptyValueSupported = core.BoolPtr(true)
 	model.IsStringExistsFalseValueSupported = core.BoolPtr(true)
@@ -1869,7 +1869,7 @@ func TestResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupporte
 		supportedAttributesOptionsModel := new(partnercentersellv1.SupportedAttributesOptions)
 		supportedAttributesOptionsModel.Operators = []string{"stringEquals"}
 		supportedAttributesOptionsModel.Hidden = core.BoolPtr(true)
-		supportedAttributesOptionsModel.SupportedAttributes = []string{"testString"}
+		supportedAttributesOptionsModel.SupportedPatterns = []string{"testString"}
 		supportedAttributesOptionsModel.PolicyTypes = []string{"access"}
 		supportedAttributesOptionsModel.IsEmptyValueSupported = core.BoolPtr(true)
 		supportedAttributesOptionsModel.IsStringExistsFalseValueSupported = core.BoolPtr(true)
@@ -2035,7 +2035,7 @@ func TestResourceIbmOnboardingIamRegistrationMapToSupportedAttributesOptions(t *
 		model := new(partnercentersellv1.SupportedAttributesOptions)
 		model.Operators = []string{"stringEquals"}
 		model.Hidden = core.BoolPtr(true)
-		model.SupportedAttributes = []string{"testString"}
+		model.SupportedPatterns = []string{"testString"}
 		model.PolicyTypes = []string{"access"}
 		model.IsEmptyValueSupported = core.BoolPtr(true)
 		model.IsStringExistsFalseValueSupported = core.BoolPtr(true)
