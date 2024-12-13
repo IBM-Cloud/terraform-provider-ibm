@@ -5,6 +5,7 @@ package cis
 
 import (
 	"log"
+	"strconv"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -35,6 +36,11 @@ func DataSourceIBMCISLogPushJobs() *schema.Resource {
 				Description:      "Associated CIS domain",
 				Required:         true,
 				DiffSuppressFunc: suppressDomainIDDiff,
+			},
+			cisLogpushJobID: {
+				Type:        schema.TypeInt,
+				Description: "ID of the Job",
+				Optional:    true,
 			},
 			cisLogpushJobs: {
 				Type:        schema.TypeList,
@@ -125,33 +131,65 @@ func ResourceIBMCISLogpushJobsRead(d *schema.ResourceData, meta interface{}) err
 	sess.Crn = core.StringPtr(crn)
 	zoneID, _, _ := flex.ConvertTftoCisTwoVar(d.Get(cisDomainID).(string))
 	sess.ZoneID = core.StringPtr(zoneID)
-	opt := sess.NewGetLogpushJobsV2Options()
-	result, resp, err := sess.GetLogpushJobsV2(opt)
-	if err != nil {
-		log.Printf("[WARN] List all Logpush jobs failed: %v\n", resp)
-		return err
-	}
+	jobId := d.Get(cisLogpushJobID).(int)
 	logPushList := make([]map[string]interface{}, 0)
-	for _, logpushObj := range result.Result {
+
+	if jobId != 0 {
+		opt := sess.NewGetLogpushJobV2Options(strconv.Itoa(jobId))
+		result, resp, err := sess.GetLogpushJobV2(opt)
+		if err != nil {
+			log.Printf("[WARN] Get Logpush job failed: %v\n", resp)
+			return err
+		}
 		logPushOpt := map[string]interface{}{}
-		logPushOpt[cisLogpushJobID] = int64(*logpushObj.ID)
-		logPushOpt[cisLogpushName] = *logpushObj.Name
-		logPushOpt[cisLogpullOpt] = *logpushObj.LogpullOptions
-		logPushOpt[cisLogpushEnabled] = *logpushObj.Enabled
-		logPushOpt[cisLogpushDataset] = *logpushObj.Dataset
-		logPushOpt[cisLogpushFreq] = *logpushObj.Frequency
-		logPushOpt[cisLogpushDestConf] = *logpushObj.DestinationConf
-		if logpushObj.LastComplete != nil {
-			logPushOpt[cisLogpushLastComplete] = *logpushObj.LastComplete
+		logPushOpt[cisLogpushJobID] = int64(*result.Result.ID)
+		logPushOpt[cisLogpushName] = *result.Result.Name
+		logPushOpt[cisLogpullOpt] = *result.Result.LogpullOptions
+		logPushOpt[cisLogpushEnabled] = *result.Result.Enabled
+		logPushOpt[cisLogpushDataset] = *result.Result.Dataset
+		logPushOpt[cisLogpushFreq] = *result.Result.Frequency
+		logPushOpt[cisLogpushDestConf] = *result.Result.DestinationConf
+		if result.Result.LastComplete != nil {
+			logPushOpt[cisLogpushLastComplete] = *result.Result.LastComplete
 		}
-		if logpushObj.LastError != nil {
-			logPushOpt[cisLogpushLastError] = *logpushObj.LastError
+		if result.Result.LastError != nil {
+			logPushOpt[cisLogpushLastError] = *result.Result.LastError
 		}
-		if logpushObj.ErrorMessage != nil {
-			logPushOpt[cisLogpushErrorMessage] = *logpushObj.ErrorMessage
+		if result.Result.ErrorMessage != nil {
+			logPushOpt[cisLogpushErrorMessage] = *result.Result.ErrorMessage
+		}
+		logPushList = append(logPushList, logPushOpt)
+
+	} else {
+
+		opt := sess.NewGetLogpushJobsV2Options()
+		result, resp, err := sess.GetLogpushJobsV2(opt)
+		if err != nil {
+			log.Printf("[WARN] List all Logpush jobs failed: %v\n", resp)
+			return err
 		}
 
-		logPushList = append(logPushList, logPushOpt)
+		for _, logpushObj := range result.Result {
+			logPushOpt := map[string]interface{}{}
+			logPushOpt[cisLogpushJobID] = int64(*logpushObj.ID)
+			logPushOpt[cisLogpushName] = *logpushObj.Name
+			logPushOpt[cisLogpullOpt] = *logpushObj.LogpullOptions
+			logPushOpt[cisLogpushEnabled] = *logpushObj.Enabled
+			logPushOpt[cisLogpushDataset] = *logpushObj.Dataset
+			logPushOpt[cisLogpushFreq] = *logpushObj.Frequency
+			logPushOpt[cisLogpushDestConf] = *logpushObj.DestinationConf
+			if logpushObj.LastComplete != nil {
+				logPushOpt[cisLogpushLastComplete] = *logpushObj.LastComplete
+			}
+			if logpushObj.LastError != nil {
+				logPushOpt[cisLogpushLastError] = *logpushObj.LastError
+			}
+			if logpushObj.ErrorMessage != nil {
+				logPushOpt[cisLogpushErrorMessage] = *logpushObj.ErrorMessage
+			}
+
+			logPushList = append(logPushList, logPushOpt)
+		}
 	}
 	d.SetId(dataSourceCISLogpushJobsCheckID())
 	d.Set(cisID, crn)
