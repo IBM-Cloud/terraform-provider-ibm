@@ -1339,7 +1339,7 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 			if g.CPU != nil && g.CPU.Allocation*nodeCount != currentGroup.CPU.Allocation {
 				groupScaling.CPU = &clouddatabasesv5.GroupScalingCPU{AllocationCount: core.Int64Ptr(int64(g.CPU.Allocation * nodeCount))}
 			}
-			if g.HostFlavor != nil && g.HostFlavor.ID != currentGroup.HostFlavor.ID {
+			if g.HostFlavor != nil {
 				groupScaling.HostFlavor = &clouddatabasesv5.GroupScalingHostFlavor{ID: core.StringPtr(g.HostFlavor.ID)}
 			}
 
