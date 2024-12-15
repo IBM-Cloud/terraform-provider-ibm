@@ -18,17 +18,23 @@ import (
 )
 
 const (
-	cisLogpushJobID        = "job_id"
-	cisLogpushName         = "name"
-	cisLogpushEnabled      = "enabled"
-	cisLogpullOpt          = "logpull_options"
-	cisLogdna              = "logdna"
-	cisLogpushDataset      = "dataset"
-	cisLogpushFreq         = "frequency"
-	cisLogpushDestConf     = "destination_conf"
-	cisLogpushLastComplete = "last_complete"
-	cisLogpushLastError    = "last_error"
-	cisLogpushErrorMessage = "error_message"
+	cisLogpushJobID                 = "job_id"
+	cisLogpushName                  = "name"
+	cisLogpushEnabled               = "enabled"
+	cisLogpullOpt                   = "logpull_options"
+	cisLogdna                       = "logdna"
+	cisLogPushCos                   = "cos"
+	cisLogpushCosOwnershipChallenge = "ownership_challenge"
+	cisLogPushIbmCl                 = "ibmcl"
+	cisLogPushIbmClInstanceId       = "instance_id"
+	cisLogPushIbmClRegion           = "region"
+	cisLogPushIbmClApiKey           = "api_key"
+	cisLogpushDataset               = "dataset"
+	cisLogpushFreq                  = "frequency"
+	cisLogpushDestConf              = "destination_conf"
+	cisLogpushLastComplete          = "last_complete"
+	cisLogpushLastError             = "last_error"
+	cisLogpushErrorMessage          = "error_message"
 )
 
 func ResourceIBMCISLogPushJob() *schema.Resource {
@@ -54,9 +60,10 @@ func ResourceIBMCISLogPushJob() *schema.Resource {
 				DiffSuppressFunc: suppressDomainIDDiff,
 			},
 			cisLogdna: {
-				Type:      schema.TypeString,
-				Required:  true,
-				Sensitive: true,
+				Type:          schema.TypeString,
+				Optional:      true,
+				Sensitive:     true,
+				ConflictsWith: []string{cisLogPushCos, cisLogPushIbmCl, cisLogpushDestConf},
 				StateFunc: func(v interface{}) string {
 					json, err := flex.NormalizeJSONString(v)
 					if err != nil {
@@ -66,6 +73,57 @@ func ResourceIBMCISLogPushJob() *schema.Resource {
 				},
 				Description: "Information to identify the LogDNA instance the data will be pushed.",
 			},
+			cisLogPushCos: {
+				Type:          schema.TypeString,
+				Optional:      true,
+				Sensitive:     true,
+				RequiredWith:  []string{cisLogpushCosOwnershipChallenge},
+				ConflictsWith: []string{cisLogdna, cisLogPushIbmCl, cisLogpushDestConf},
+				StateFunc: func(v interface{}) string {
+					json, err := flex.NormalizeJSONString(v)
+					if err != nil {
+						return fmt.Sprintf("%q", err.Error())
+					}
+					return json
+				},
+				Description: "Information to identify the COS bucket where the data will be pushed.",
+			},
+			cisLogpushCosOwnershipChallenge: {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Description:  "Ownership challenge token to prove destination ownership",
+				Sensitive:    true,
+				RequiredWith: []string{cisLogPushCos},
+			},
+			cisLogPushIbmCl: {
+				Type:          schema.TypeList,
+				Optional:      true,
+				Description:   "Information to identify the IBM cloud log instance the data will be pushed.",
+				MaxItems:      1,
+				Sensitive:     true,
+				ConflictsWith: []string{cisLogdna, cisLogPushCos, cisLogpushDestConf},
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						cisLogPushIbmClInstanceId: {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "ID of the IBM Cloud Logs instance where you want to send logs.",
+						},
+						cisLogPushIbmClRegion: {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Region where the IBM Cloud Logs instance is located.",
+						},
+						cisLogPushIbmClApiKey: {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Sensitive:   true,
+							Description: "IBM Cloud API key used to generate a token for pushing to your Cloud Logs instance.",
+						},
+					},
+				},
+			},
+
 			cisLogpushName: {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -97,9 +155,11 @@ func ResourceIBMCISLogPushJob() *schema.Resource {
 				Computed:    true,
 			},
 			cisLogpushDestConf: {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Uniquely identifies a resource (such as an s3 bucket) where data will be pushed.",
+				Type:          schema.TypeString,
+				Computed:      true,
+				Optional:      true,
+				ConflictsWith: []string{cisLogdna, cisLogPushCos, cisLogPushIbmCl},
+				Description:   "Uniquely identifies a resource (such as an s3 bucket) where data will be pushed.",
 			},
 		},
 	}
@@ -130,7 +190,7 @@ func ResourceIBMCISLogpushJobCreate(d *schema.ResourceData, meta interface{}) er
 	sess.Crn = core.StringPtr(crn)
 	sess.ZoneID = core.StringPtr(zoneID)
 
-	logpushJob := &logpushjobsapiv1.CreateLogpushJobV2RequestLogpushJobLogdnaReq{}
+	logpushJob := &logpushjobsapiv1.CreateLogpushJobV2Request{}
 
 	if a, ok := d.GetOk(cisLogpushName); ok {
 		name := a.(string)
@@ -149,6 +209,11 @@ func ResourceIBMCISLogpushJobCreate(d *schema.ResourceData, meta interface{}) er
 		json.Unmarshal([]byte(log.(string)), &logDNA)
 		logpushJob.Logdna = logDNA
 	}
+	if cos, ok := d.GetOk(cisLogPushCos); ok {
+		var logCos map[string]interface{}
+		json.Unmarshal([]byte(cos.(string)), &logCos)
+		logpushJob.Cos = logCos
+	}
 	if d, ok := d.GetOk(cisLogpushDataset); ok {
 		dataset := d.(string)
 		logpushJob.Dataset = &dataset
@@ -157,9 +222,22 @@ func ResourceIBMCISLogpushJobCreate(d *schema.ResourceData, meta interface{}) er
 		freq := f.(string)
 		logpushJob.Frequency = &freq
 	}
+	if f, ok := d.GetOk(cisLogpushCosOwnershipChallenge); ok {
+		ownChallenge := f.(string)
+		logpushJob.OwnershipChallenge = &ownChallenge
+	}
+	if f, ok := d.GetOk(cisLogpushDestConf); ok {
+		destConf := f.(string)
+		logpushJob.DestinationConf = &destConf
+	}
+	if f, ok := d.GetOk(cisLogPushIbmCl); ok {
+		logpushJob.Ibmcl = extractLogPushIbmClValues(f.([]interface{}))
+	}
+
 	options := &logpushjobsapiv1.CreateLogpushJobV2Options{
 		CreateLogpushJobV2Request: logpushJob,
 	}
+
 	result, response, err := sess.CreateLogpushJobV2(options)
 	if err != nil {
 		log.Printf("[DEBUG] Instance err %s\n%s", err, response)
@@ -214,7 +292,7 @@ func ResourceIBMCISLogpushJobUpdate(d *schema.ResourceData, meta interface{}) er
 	sess.Crn = core.StringPtr(crn)
 	sess.ZoneID = core.StringPtr(zoneID)
 
-	logpushID, zoneID, crn, _ := flex.ConvertTfToCisThreeVar(d.Id())
+	logpushID, zoneID, crn, err := flex.ConvertTfToCisThreeVar(d.Id())
 
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error Converting ConvertTfToCisThreeVar in Update")
@@ -278,4 +356,20 @@ func ResourceIBMCISLogpushJobDelete(d *schema.ResourceData, meta interface{}) er
 	}
 	d.SetId("")
 	return nil
+}
+
+func extractLogPushIbmClValues(cisLogPushIbmClList []interface{}) *logpushjobsapiv1.LogpushJobIbmclReqIbmcl {
+	cisLogPushIbmCl := cisLogPushIbmClList[0].(map[string]interface{})
+
+	instanceID := cisLogPushIbmCl[cisLogPushIbmClInstanceId].(string)
+	region := cisLogPushIbmCl[cisLogPushIbmClRegion].(string)
+	apiKey := cisLogPushIbmCl[cisLogPushIbmClApiKey].(string)
+
+	logPushIbmclReq := logpushjobsapiv1.LogpushJobIbmclReqIbmcl{
+		InstanceID: &instanceID,
+		Region:     &region,
+		ApiKey:     &apiKey,
+	}
+
+	return &logPushIbmclReq
 }
