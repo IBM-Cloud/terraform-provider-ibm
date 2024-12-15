@@ -65,7 +65,7 @@ resource "ibm_cis_logpush_job" "test" {
         frequency       = "low"
         ibmcl {
             instance_id = "604a309c-585c-4a42-955d-76239ccc1905"
-            api_key     = "zxzeNQI22dPwNVCcmS62YFL1tm9vaehY6C9jxdtn1EVK"
+            api_key     = "zxzeNQIxxxxxxxxxxxxxdtn1EVK"
             region      = "us-south"
         }
 }
