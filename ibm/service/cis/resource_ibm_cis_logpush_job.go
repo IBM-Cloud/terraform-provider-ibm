@@ -161,6 +161,21 @@ func ResourceIBMCISLogPushJob() *schema.Resource {
 				ConflictsWith: []string{cisLogdna, cisLogPushCos, cisLogPushIbmCl},
 				Description:   "Uniquely identifies a resource (such as an s3 bucket) where data will be pushed.",
 			},
+			cisLogpushLastComplete: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Records the last time for which logs have been successfully pushed.",
+			},
+			cisLogpushLastError: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Records the last time the job failed.",
+			},
+			cisLogpushErrorMessage: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The last failure message.",
+			},
 		},
 	}
 }
@@ -279,6 +294,15 @@ func ResourceIBMCISLogpushJobRead(d *schema.ResourceData, meta interface{}) erro
 	d.Set(cisLogpushFreq, *result.Result.Frequency)
 	d.Set(cisLogpullOpt, *result.Result.LogpullOptions)
 	d.Set(cisLogpushDestConf, *result.Result.DestinationConf)
+	if result.Result.LastComplete != nil {
+		d.Set(cisLogpushLastComplete, *result.Result.LastComplete)
+	}
+	if result.Result.LastError != nil {
+		d.Set(cisLogpushLastError, result.Result.LastError)
+	}
+	if result.Result.ErrorMessage != nil {
+		d.Set(cisLogpushErrorMessage, result.Result.ErrorMessage)
+	}
 	return nil
 }
 func ResourceIBMCISLogpushJobUpdate(d *schema.ResourceData, meta interface{}) error {
