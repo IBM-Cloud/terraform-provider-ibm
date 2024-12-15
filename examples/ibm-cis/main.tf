@@ -545,13 +545,14 @@ resource "ibm_cis_logpush_job" "test" {
 
 # COS
 resource "ibm_cis_logpush_job" "test" {
-    cis_id          = "crn:v1:staging:public:internet-svcs-ci:global:a/01652b251c3ae2787110a995d8db0135:1a9174b6-0106-417a-844b-c8eb43a72f63::"
-    domain_id       = "601b728b86e630c744c81740f72570c3"
-    name            = "MylogpushJob"
-    enabled         = false
-    logpull_options = "timestamps=rfc3339&timestamps=rfc3339"
-    dataset         = "http_requests"
-    frequency       = "high"
+    cis_id              = "crn:v1:staging:public:internet-svcs-ci:global:a/01652b251c3ae2787110a995d8db0135:1a9174b6-0106-417a-844b-c8eb43a72f63::"
+    domain_id           = "601b728b86e630c744c81740f72570c3"
+    name                = "MylogpushJob"
+    enabled             = false
+    logpull_options     = "timestamps=rfc3339&timestamps=rfc3339"
+    dataset             = "http_requests"
+    frequency           = "high"
+    ownership_challenge = "xxx"
     cos =<<COS
         {
           "bucket_name": "examplse.cistest-load.com",
