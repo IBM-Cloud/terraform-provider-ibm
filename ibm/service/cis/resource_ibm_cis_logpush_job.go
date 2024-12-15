@@ -254,7 +254,7 @@ func ResourceIBMCISLogpushJobRead(d *schema.ResourceData, meta interface{}) erro
 	if err != nil {
 		return err
 	}
-	logpushID, zoneID, crn, _ := flex.ConvertTfToCisThreeVar(d.Id())
+	logpushID, zoneID, crn, err := flex.ConvertTfToCisThreeVar(d.Id())
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error Converting ConvertTfToCisThreeVar in Read")
 	}
@@ -300,9 +300,13 @@ func ResourceIBMCISLogpushJobUpdate(d *schema.ResourceData, meta interface{}) er
 	if d.HasChange(cisLogpushEnabled) ||
 		d.HasChange(cisLogpullOpt) ||
 		d.HasChange(cisLogdna) ||
-		d.HasChange(cisLogpushFreq) {
+		d.HasChange(cisLogpushFreq) ||
+		d.HasChange(cisLogPushCos) ||
+		d.HasChange(cisLogPushIbmCl) ||
+		d.HasChange(cisLogpushCosOwnershipChallenge) ||
+		d.HasChange(cisLogpushDestConf) {
 
-		updateLogpushJob := &logpushjobsapiv1.UpdateLogpushJobV2RequestLogpushJobsUpdateLogdnaReq{}
+		updateLogpushJob := &logpushjobsapiv1.UpdateLogpushJobV2Request{}
 
 		if e, ok := d.GetOk(cisLogpushEnabled); ok {
 			enabled := e.(bool)
@@ -320,6 +324,24 @@ func ResourceIBMCISLogpushJobUpdate(d *schema.ResourceData, meta interface{}) er
 		if f, ok := d.GetOk(cisLogpushFreq); ok {
 			freq := f.(string)
 			updateLogpushJob.Frequency = &freq
+		}
+		if cos, ok := d.GetOk(cisLogPushCos); ok {
+			var logCos map[string]interface{}
+			json.Unmarshal([]byte(cos.(string)), &logCos)
+			updateLogpushJob.Cos = logCos
+		}
+		if f, ok := d.GetOk(cisLogpushCosOwnershipChallenge); ok {
+			ownChallenge := f.(string)
+			updateLogpushJob.OwnershipChallenge = &ownChallenge
+		}
+		if d.HasChange(cisLogpushDestConf) {
+			if f, ok := d.GetOk(cisLogpushDestConf); ok {
+				destConf := f.(string)
+				updateLogpushJob.DestinationConf = &destConf
+			}
+		}
+		if f, ok := d.GetOk(cisLogPushIbmCl); ok {
+			updateLogpushJob.Ibmcl = extractLogPushUpdateIbmClValues(f.([]interface{}))
 		}
 		options := &logpushjobsapiv1.UpdateLogpushJobV2Options{
 			JobID:                     core.StringPtr(logpushID),
@@ -342,7 +364,7 @@ func ResourceIBMCISLogpushJobDelete(d *schema.ResourceData, meta interface{}) er
 	sess.Crn = core.StringPtr(crn)
 	sess.ZoneID = core.StringPtr(zoneID)
 
-	logpushID, zoneID, crn, _ := flex.ConvertTfToCisThreeVar(d.Id())
+	logpushID, zoneID, crn, err := flex.ConvertTfToCisThreeVar(d.Id())
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error Converting ConvertTfToCisThreeVar in Delete")
 	}
@@ -366,6 +388,22 @@ func extractLogPushIbmClValues(cisLogPushIbmClList []interface{}) *logpushjobsap
 	apiKey := cisLogPushIbmCl[cisLogPushIbmClApiKey].(string)
 
 	logPushIbmclReq := logpushjobsapiv1.LogpushJobIbmclReqIbmcl{
+		InstanceID: &instanceID,
+		Region:     &region,
+		ApiKey:     &apiKey,
+	}
+
+	return &logPushIbmclReq
+}
+
+func extractLogPushUpdateIbmClValues(cisLogPushIbmClList []interface{}) *logpushjobsapiv1.LogpushJobsUpdateIbmclReqIbmcl {
+	cisLogPushIbmCl := cisLogPushIbmClList[0].(map[string]interface{})
+
+	instanceID := cisLogPushIbmCl[cisLogPushIbmClInstanceId].(string)
+	region := cisLogPushIbmCl[cisLogPushIbmClRegion].(string)
+	apiKey := cisLogPushIbmCl[cisLogPushIbmClApiKey].(string)
+
+	logPushIbmclReq := logpushjobsapiv1.LogpushJobsUpdateIbmclReqIbmcl{
 		InstanceID: &instanceID,
 		Region:     &region,
 		ApiKey:     &apiKey,
