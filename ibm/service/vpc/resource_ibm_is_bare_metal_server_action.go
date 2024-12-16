@@ -12,7 +12,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -306,7 +306,7 @@ func resourceIBMISBareMetalServerActionDelete(context context.Context, d *schema
 func isWaitForBareMetalServerActionAvailable(client *vpcv1.VpcV1, id string, timeout time.Duration, d *schema.ResourceData) (interface{}, error) {
 	log.Printf("Waiting for Bare Metal Server (%s) to be running.", id)
 	communicator := make(chan interface{})
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{isBareMetalServerStatusPending, isBareMetalServerActionStatusStarting},
 		Target:     []string{isBareMetalServerStatusRunning, isBareMetalServerStatusFailed},
 		Refresh:    isBareMetalServerActionRefreshFunc(client, id, d, communicator),
@@ -317,7 +317,7 @@ func isWaitForBareMetalServerActionAvailable(client *vpcv1.VpcV1, id string, tim
 	return stateConf.WaitForState()
 }
 
-func isBareMetalServerActionRefreshFunc(client *vpcv1.VpcV1, id string, d *schema.ResourceData, communicator chan interface{}) resource.StateRefreshFunc {
+func isBareMetalServerActionRefreshFunc(client *vpcv1.VpcV1, id string, d *schema.ResourceData, communicator chan interface{}) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		bmsgetoptions := &vpcv1.GetBareMetalServerOptions{
 			ID: &id,

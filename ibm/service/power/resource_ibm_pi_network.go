@@ -14,7 +14,6 @@ import (
 	"github.com/apparentlymart/go-cidr/cidr"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
@@ -460,7 +459,7 @@ func resourceIBMPINetworkDelete(ctx context.Context, d *schema.ResourceData, met
 }
 
 func isWaitForIBMPINetworkAvailable(ctx context.Context, client *instance.IBMPINetworkClient, id string, timeout time.Duration) (interface{}, error) {
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"retry", helpers.PINetworkProvisioning},
 		Target:     []string{"NETWORK_READY"},
 		Refresh:    isIBMPINetworkRefreshFunc(client, id),
@@ -472,7 +471,7 @@ func isWaitForIBMPINetworkAvailable(ctx context.Context, client *instance.IBMPIN
 	return stateConf.WaitForStateContext(ctx)
 }
 
-func isIBMPINetworkRefreshFunc(client *instance.IBMPINetworkClient, id string) resource.StateRefreshFunc {
+func isIBMPINetworkRefreshFunc(client *instance.IBMPINetworkClient, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		network, err := client.Get(id)
 		if err != nil {
@@ -500,7 +499,7 @@ func isWaitForIBMPINetworkDeleted(ctx context.Context, client *instance.IBMPINet
 	return stateConf.WaitForStateContext(ctx)
 }
 
-func isIBMPINetworkRefreshDeleteFunc(client *instance.IBMPINetworkClient, id string) resource.StateRefreshFunc {
+func isIBMPINetworkRefreshDeleteFunc(client *instance.IBMPINetworkClient, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		network, err := client.Get(id)
 		if err != nil {

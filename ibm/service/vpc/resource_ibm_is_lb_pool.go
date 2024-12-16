@@ -14,7 +14,8 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -684,7 +685,7 @@ func lbPoolExists(d *schema.ResourceData, meta interface{}, lbID, lbPoolID strin
 func isWaitForLBPoolActive(sess *vpcv1.VpcV1, lbId, lbPoolId string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for load balancer pool (%s) to be available.", lbPoolId)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{isLBPoolCreatePending, isLBPoolUpdatePending, isLBPoolMaintainancePending},
 		Target:     []string{isLBPoolActive, ""},
 		Refresh:    isLBPoolRefreshFunc(sess, lbId, lbPoolId),
@@ -696,7 +697,7 @@ func isWaitForLBPoolActive(sess *vpcv1.VpcV1, lbId, lbPoolId string, timeout tim
 	return stateConf.WaitForState()
 }
 
-func isLBPoolRefreshFunc(sess *vpcv1.VpcV1, lbId, lbPoolId string) resource.StateRefreshFunc {
+func isLBPoolRefreshFunc(sess *vpcv1.VpcV1, lbId, lbPoolId string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 
 		getlbpOptions := &vpcv1.GetLoadBalancerPoolOptions{
@@ -719,7 +720,7 @@ func isLBPoolRefreshFunc(sess *vpcv1.VpcV1, lbId, lbPoolId string) resource.Stat
 func isWaitForLBPoolDeleted(lbc *vpcv1.VpcV1, lbId, lbPoolId string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for  (%s) to be deleted.", lbPoolId)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{isLBPoolUpdatePending, isLBPoolMaintainancePending, isLBPoolDeletePending},
 		Target:     []string{isLBPoolDeleteDone, ""},
 		Refresh:    isLBPoolDeleteRefreshFunc(lbc, lbId, lbPoolId),
@@ -730,8 +731,8 @@ func isWaitForLBPoolDeleted(lbc *vpcv1.VpcV1, lbId, lbPoolId string, timeout tim
 
 	return stateConf.WaitForState()
 }
-
-func isLBPoolDeleteRefreshFunc(lbc *vpcv1.VpcV1, lbId, lbPoolId string) resource.StateRefreshFunc {
+retry.StateRefreshFunc
+func isLBPoolDeleteRefreshFunc(lbc *vpcv1.VpcV1, lbId, lbPoolId string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		log.Printf("[DEBUG] is lb pool delete function here")
 		getlbpOptions := &vpcv1.GetLoadBalancerPoolOptions{

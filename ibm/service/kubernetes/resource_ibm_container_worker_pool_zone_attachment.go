@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	v1 "github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
@@ -334,7 +334,7 @@ func WaitForWorkerZoneNormal(clusterNameOrID, workerPoolNameOrID, zone string, m
 		return nil, err
 	}
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"retry", workerProvisioning},
 		Target:     []string{workerNormal},
 		Refresh:    workerPoolZoneStateRefreshFunc(csClient.Workers(), clusterNameOrID, workerPoolNameOrID, zone, target),
@@ -346,7 +346,7 @@ func WaitForWorkerZoneNormal(clusterNameOrID, workerPoolNameOrID, zone string, m
 	return stateConf.WaitForState()
 }
 
-func workerPoolZoneStateRefreshFunc(client v1.Workers, instanceID, workerPoolNameOrID, zone string, target v1.ClusterTargetHeader) resource.StateRefreshFunc {
+func workerPoolZoneStateRefreshFunc(client v1.Workers, instanceID, workerPoolNameOrID, zone string, target v1.ClusterTargetHeader) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		workerFields, err := client.ListByWorkerPool(instanceID, workerPoolNameOrID, false, target)
 		if err != nil {
@@ -372,7 +372,7 @@ func WaitForWorkerZoneDeleted(clusterNameOrID, workerPoolNameOrID, zone string, 
 		return nil, err
 	}
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"deleting"},
 		Target:     []string{workerDeleteState},
 		Refresh:    workerPoolZoneDeleteStateRefreshFunc(csClient.Workers(), clusterNameOrID, workerPoolNameOrID, zone, target),
@@ -384,7 +384,7 @@ func WaitForWorkerZoneDeleted(clusterNameOrID, workerPoolNameOrID, zone string, 
 	return stateConf.WaitForState()
 }
 
-func workerPoolZoneDeleteStateRefreshFunc(client v1.Workers, instanceID, workerPoolNameOrID, zone string, target v1.ClusterTargetHeader) resource.StateRefreshFunc {
+func workerPoolZoneDeleteStateRefreshFunc(client v1.Workers, instanceID, workerPoolNameOrID, zone string, target v1.ClusterTargetHeader) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		workerFields, err := client.ListByWorkerPool(instanceID, workerPoolNameOrID, true, target)
 		if err != nil {
@@ -408,7 +408,7 @@ func waitForWorkerZoneALB(clusterNameOrID, zone string, meta interface{}, timeou
 		return nil, err
 	}
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"pending"},
 		Target:     []string{"ready"},
 		Refresh:    workerZoneALBStateRefreshFunc(csClient.Albs(), clusterNameOrID, zone, target),
@@ -420,7 +420,7 @@ func waitForWorkerZoneALB(clusterNameOrID, zone string, meta interface{}, timeou
 	return stateConf.WaitForState()
 }
 
-func workerZoneALBStateRefreshFunc(client v1.Albs, instanceID, zone string, target v1.ClusterTargetHeader) resource.StateRefreshFunc {
+func workerZoneALBStateRefreshFunc(client v1.Albs, instanceID, zone string, target v1.ClusterTargetHeader) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		// Get all ALBs associated with cluster
 		albs, err := client.ListClusterALBs(instanceID, target)

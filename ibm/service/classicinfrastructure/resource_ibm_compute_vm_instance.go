@@ -19,7 +19,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/softlayer/softlayer-go/datatypes"
 	"github.com/softlayer/softlayer-go/filter"
@@ -1742,7 +1742,7 @@ func WaitForUpgradeTransactionsToAppear(d *schema.ResourceData, meta interface{}
 		return nil, fmt.Errorf("[ERROR] The instance ID %s must be numeric", d.Id())
 	}
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{"retry", pendingUpgrade},
 		Target:  []string{inProgressUpgrade},
 		Refresh: func() (interface{}, string, error) {
@@ -1772,7 +1772,7 @@ func WaitForUpgradeTransactionsToAppear(d *schema.ResourceData, meta interface{}
 // WaitForNoActiveTransactions Wait for no active transactions
 func WaitForNoActiveTransactions(id int, d *schema.ResourceData, timeout time.Duration, meta interface{}) (interface{}, error) {
 	log.Printf("Waiting for server (%s) to have zero active transactions", d.Id())
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{"retry", activeTransaction},
 		Target:  []string{idleTransaction},
 		Refresh: func() (interface{}, string, error) {
@@ -1801,7 +1801,7 @@ func WaitForNoActiveTransactions(id int, d *schema.ResourceData, timeout time.Du
 func WaitForVirtualGuestAvailable(id int, d *schema.ResourceData, meta interface{}) (interface{}, error) {
 	log.Printf("Waiting for server (%s) to be available.", d.Id())
 	sess := meta.(conns.ClientSession).SoftLayerSession()
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"retry", virtualGuestProvisioning},
 		Target:     []string{virtualGuestAvailable},
 		Refresh:    virtualGuestStateRefreshFunc(sess, id, d),
@@ -1813,7 +1813,7 @@ func WaitForVirtualGuestAvailable(id int, d *schema.ResourceData, meta interface
 	return stateConf.WaitForState()
 }
 
-func virtualGuestStateRefreshFunc(sess *session.Session, instanceID int, d *schema.ResourceData) resource.StateRefreshFunc {
+func virtualGuestStateRefreshFunc(sess *session.Session, instanceID int, d *schema.ResourceData) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		// Check active transactions
 		publicNetwork := !d.Get("private_network_only").(bool)

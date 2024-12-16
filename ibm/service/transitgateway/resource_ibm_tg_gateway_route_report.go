@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/IBM/networking-go-sdk/transitgatewayapisv1"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -177,7 +177,7 @@ func resourceIBMTransitGatewayRouteReportCreate(d *schema.ResourceData, meta int
 func isWaitForTransitGatewayRouteReportAvailable(client *transitgatewayapisv1.TransitGatewayApisV1, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for transit gateway route report (%s) to be available.", id)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"retry", isTransitGatewayRouteReportPending},
 		Target:     []string{isTransitGatewayRouteReportDone, ""},
 		Refresh:    isTransitGatewayRouteReportRefreshFunc(client, id),
@@ -189,7 +189,7 @@ func isWaitForTransitGatewayRouteReportAvailable(client *transitgatewayapisv1.Tr
 	return stateConf.WaitForState()
 }
 
-func isTransitGatewayRouteReportRefreshFunc(client *transitgatewayapisv1.TransitGatewayApisV1, id string) resource.StateRefreshFunc {
+func isTransitGatewayRouteReportRefreshFunc(client *transitgatewayapisv1.TransitGatewayApisV1, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		parts, err := flex.IdParts(id)
 		if err != nil {

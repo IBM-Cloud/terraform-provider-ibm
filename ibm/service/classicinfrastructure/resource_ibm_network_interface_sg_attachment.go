@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/softlayer/softlayer-go/services"
 	slsession "github.com/softlayer/softlayer-go/session"
@@ -96,7 +96,7 @@ func resourceIBMNetworkInterfaceSGAttachmentCreate(d *schema.ResourceData, meta 
 			return fmt.Errorf("[ERROR] Could n't reboot the VSI %d", *guest.Id)
 		}
 		//Wait for security group to be ready again after reboot
-		stateConf := &resource.StateChangeConf{
+		stateConf := &retry.StateChangeConf{
 			Target:  []string{"true"},
 			Pending: []string{"false"},
 			Timeout: d.Timeout(schema.TimeoutCreate),
@@ -191,7 +191,7 @@ func decomposeNetworkSGAttachmentID(attachmentID string) (sgID, interfaceID int,
 	return
 }
 
-func securityGroupReadyRefreshStateFunc(sess *slsession.Session, ifcID int) resource.StateRefreshFunc {
+func securityGroupReadyRefreshStateFunc(sess *slsession.Session, ifcID int) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		ncs := services.GetVirtualGuestNetworkComponentService(sess)
 		ready, err := ncs.Id(ifcID).SecurityGroupsReady()
@@ -208,7 +208,7 @@ func WaitForVSAvailable(d *schema.ResourceData, meta interface{}, timeout time.D
 	interfaceID := d.Get("network_interface_id").(int)
 	log.Printf("Waiting for server (%d) to be available.", interfaceID)
 	sess := meta.(conns.ClientSession).SoftLayerSession()
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"retry", virtualGuestProvisioning},
 		Target:     []string{virtualGuestAvailable},
 		Refresh:    vsReadyRefreshStateFunc(sess, interfaceID),
@@ -220,7 +220,7 @@ func WaitForVSAvailable(d *schema.ResourceData, meta interface{}, timeout time.D
 	return stateConf.WaitForState()
 }
 
-func vsReadyRefreshStateFunc(sess *slsession.Session, ifcID int) resource.StateRefreshFunc {
+func vsReadyRefreshStateFunc(sess *slsession.Session, ifcID int) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		ncs := services.GetVirtualGuestNetworkComponentService(sess)
 		guest, err := ncs.Id(ifcID).GetGuest()

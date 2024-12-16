@@ -14,7 +14,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -976,7 +976,7 @@ func lbDelete(d *schema.ResourceData, meta interface{}, id string) error {
 func isWaitForLBDeleted(lbc *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for  (%s) to be deleted.", id)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"retry", isLBDeleting},
 		Target:     []string{isLBDeleted, "failed"},
 		Refresh:    isLBDeleteRefreshFunc(lbc, id),
@@ -988,7 +988,7 @@ func isWaitForLBDeleted(lbc *vpcv1.VpcV1, id string, timeout time.Duration) (int
 	return stateConf.WaitForState()
 }
 
-func isLBDeleteRefreshFunc(lbc *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
+func isLBDeleteRefreshFunc(lbc *vpcv1.VpcV1, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		log.Printf("[DEBUG] is lb delete function here")
 		getLoadBalancerOptions := &vpcv1.GetLoadBalancerOptions{
@@ -1034,7 +1034,7 @@ func lbExists(d *schema.ResourceData, meta interface{}, id string) (bool, error)
 func isWaitForLBAvailable(sess *vpcv1.VpcV1, lbId string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for load balancer (%s) to be available.", lbId)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"retry", isLBProvisioning, "update_pending"},
 		Target:     []string{isLBProvisioningDone, ""},
 		Refresh:    isLBRefreshFunc(sess, lbId),
@@ -1046,7 +1046,7 @@ func isWaitForLBAvailable(sess *vpcv1.VpcV1, lbId string, timeout time.Duration)
 	return stateConf.WaitForState()
 }
 
-func isLBRefreshFunc(sess *vpcv1.VpcV1, lbId string) resource.StateRefreshFunc {
+func isLBRefreshFunc(sess *vpcv1.VpcV1, lbId string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 
 		getlboptions := &vpcv1.GetLoadBalancerOptions{

@@ -14,7 +14,7 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/provider"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	terraformsdk "github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	terraformsdk "github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 const (

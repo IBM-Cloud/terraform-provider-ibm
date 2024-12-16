@@ -7,7 +7,7 @@ import (
 	"github.com/IBM-Cloud/container-services-go-sdk/kubernetesserviceapiv1"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -290,7 +290,7 @@ func resourceIBMContainerStorageAssignmentDelete(d *schema.ResourceData, meta in
 }
 
 func waitForAssignmentCreationStatus(getAssignmentOptions *kubernetesserviceapiv1.GetAssignmentOptions, meta interface{}, d *schema.ResourceData) (interface{}, error) {
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:        []string{"NotReady"},
 		Target:         []string{"Ready"},
 		Refresh:        assignmentCreationStatusRefreshFunc(getAssignmentOptions, meta),
@@ -302,7 +302,7 @@ func waitForAssignmentCreationStatus(getAssignmentOptions *kubernetesserviceapiv
 	return stateConf.WaitForState()
 }
 
-func assignmentCreationStatusRefreshFunc(getAssignmentOptions *kubernetesserviceapiv1.GetAssignmentOptions, meta interface{}) resource.StateRefreshFunc {
+func assignmentCreationStatusRefreshFunc(getAssignmentOptions *kubernetesserviceapiv1.GetAssignmentOptions, meta interface{}) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 
 		satClient, err := meta.(conns.ClientSession).SatelliteClientSession()
@@ -321,7 +321,7 @@ func assignmentCreationStatusRefreshFunc(getAssignmentOptions *kubernetesservice
 }
 
 func waitForAssignmentUpdateStatus(updateAssignmentOptions *kubernetesserviceapiv1.UpdateAssignmentOptions, meta interface{}, d *schema.ResourceData) (interface{}, error) {
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:        []string{"NotReady"},
 		Target:         []string{"Ready"},
 		Refresh:        assignmentUpdateStatusRefreshFunc(updateAssignmentOptions, meta),
@@ -333,7 +333,7 @@ func waitForAssignmentUpdateStatus(updateAssignmentOptions *kubernetesserviceapi
 	return stateConf.WaitForState()
 }
 
-func assignmentUpdateStatusRefreshFunc(updateAssignmentOptions *kubernetesserviceapiv1.UpdateAssignmentOptions, meta interface{}) resource.StateRefreshFunc {
+func assignmentUpdateStatusRefreshFunc(updateAssignmentOptions *kubernetesserviceapiv1.UpdateAssignmentOptions, meta interface{}) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 
 		satClient, err := meta.(conns.ClientSession).SatelliteClientSession()
@@ -353,7 +353,7 @@ func assignmentUpdateStatusRefreshFunc(updateAssignmentOptions *kubernetesservic
 }
 
 func waitForAssignmentDeletionStatus(removeAssignmentOptions *kubernetesserviceapiv1.RemoveAssignmentOptions, meta interface{}, d *schema.ResourceData) (interface{}, error) {
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:        []string{"NotReady"},
 		Target:         []string{"Ready"},
 		Refresh:        assignmentDeletionStatusRefreshFunc(removeAssignmentOptions, meta),
@@ -365,7 +365,7 @@ func waitForAssignmentDeletionStatus(removeAssignmentOptions *kubernetesservicea
 	return stateConf.WaitForState()
 }
 
-func assignmentDeletionStatusRefreshFunc(removeAssignmentOptions *kubernetesserviceapiv1.RemoveAssignmentOptions, meta interface{}) resource.StateRefreshFunc {
+func assignmentDeletionStatusRefreshFunc(removeAssignmentOptions *kubernetesserviceapiv1.RemoveAssignmentOptions, meta interface{}) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 
 		satClient, err := meta.(conns.ClientSession).SatelliteClientSession()

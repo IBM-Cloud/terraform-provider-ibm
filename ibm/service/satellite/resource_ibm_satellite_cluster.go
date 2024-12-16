@@ -18,7 +18,6 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/jinzhu/copier"
@@ -824,7 +823,7 @@ func waitForLocationNormal(location string, d *schema.ResourceData, meta interfa
 		return false, err
 	}
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{isLocationProvisioning},
 		Target:  []string{isLocationNormal},
 		Refresh: func() (interface{}, string, error) {
@@ -872,7 +871,7 @@ func waitForClusterToReady(cluster string, d *schema.ResourceData, meta interfac
 		return false, err
 	}
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{isCluterDeploying},
 		Target:  []string{isClusterNormal, isCluterDeployFailed},
 		Refresh: func() (interface{}, string, error) {
@@ -906,7 +905,7 @@ func waitForClusterToDelete(cluster string, d *schema.ResourceData, meta interfa
 		return false, err
 	}
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{isClusterDeleting},
 		Target:  []string{isClusterDeleteDone},
 		Refresh: func() (interface{}, string, error) {
@@ -937,7 +936,7 @@ func WaitForSatelliteWorkerVersionUpdate(d *schema.ResourceData, meta interface{
 		return nil, err
 	}
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{versionUpdating},
 		Target:  []string{workerNormal},
 		Refresh: func() (interface{}, string, error) {
@@ -978,7 +977,7 @@ func WaitForSatelliteClusterVersionUpdate(d *schema.ResourceData, meta interface
 	log.Printf("Waiting for satellite cluster (%s) version to be updated.", d.Id())
 	id := d.Id()
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:                   []string{"retry", versionUpdating},
 		Target:                    []string{clusterNormal},
 		Refresh:                   satelliteClusterVersionRefreshFunc(csClient.Clusters(), id, d, target),
@@ -991,7 +990,7 @@ func WaitForSatelliteClusterVersionUpdate(d *schema.ResourceData, meta interface
 	return stateConf.WaitForState()
 }
 
-func satelliteClusterVersionRefreshFunc(client v1.Clusters, instanceID string, d *schema.ResourceData, target v1.ClusterTargetHeader) resource.StateRefreshFunc {
+func satelliteClusterVersionRefreshFunc(client v1.Clusters, instanceID string, d *schema.ResourceData, target v1.ClusterTargetHeader) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		clusterFields, err := client.FindWithOutShowResourcesCompatible(instanceID, target)
 		if err != nil {

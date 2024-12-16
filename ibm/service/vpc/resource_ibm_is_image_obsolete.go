@@ -13,7 +13,8 @@ import (
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -211,7 +212,7 @@ func imgObsoleteCreate(context context.Context, d *schema.ResourceData, meta int
 func isWaitForImageObsolete(imageC *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for image (%s) to be obsolete.", id)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"retry", isImageProvisioning},
 		Target:     []string{isImageProvisioningDone, ""},
 		Refresh:    isImageObsoleteRefreshFunc(imageC, id),
@@ -221,8 +222,8 @@ func isWaitForImageObsolete(imageC *vpcv1.VpcV1, id string, timeout time.Duratio
 	}
 
 	return stateConf.WaitForState()
-}
-func isImageObsoleteRefreshFunc(imageC *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
+}retry.StateRefreshFunc
+func isImageObsoleteRefreshFunc(imageC *vpcv1.VpcV1, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		getimgoptions := &vpcv1.GetImageOptions{
 			ID: &id,

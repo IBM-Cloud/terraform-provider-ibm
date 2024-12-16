@@ -10,7 +10,7 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/networking-go-sdk/directlinkv1"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -223,7 +223,7 @@ func resourceIBMdlGatewayRouteReportCreate(d *schema.ResourceData, meta interfac
 
 func isWaitForDirectLinkGatewayRouteReportCompleted(client *directlinkv1.DirectLinkV1, ID string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for direct link route report to be completed for  (%s) ", ID)
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"retry", dlRouteReportPending},
 		Target:     []string{dlRouteReportComplete, ""},
 		Refresh:    isDirectLinkGatewayRouteReportRefreshFunc(client, ID),
@@ -233,7 +233,7 @@ func isWaitForDirectLinkGatewayRouteReportCompleted(client *directlinkv1.DirectL
 	}
 	return stateConf.WaitForState()
 }
-func isDirectLinkGatewayRouteReportRefreshFunc(client *directlinkv1.DirectLinkV1, ID string) resource.StateRefreshFunc {
+func isDirectLinkGatewayRouteReportRefreshFunc(client *directlinkv1.DirectLinkV1, ID string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 
 		parts, err := flex.IdParts(ID)

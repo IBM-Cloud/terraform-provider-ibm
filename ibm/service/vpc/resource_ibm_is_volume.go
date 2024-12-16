@@ -15,7 +15,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -1067,7 +1067,7 @@ func volDelete(d *schema.ResourceData, meta interface{}, id string) error {
 func isWaitForVolumeDeleted(vol *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for  (%s) to be deleted.", id)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"retry", isVolumeDeleting},
 		Target:     []string{"done", ""},
 		Refresh:    isVolumeDeleteRefreshFunc(vol, id),
@@ -1079,7 +1079,7 @@ func isWaitForVolumeDeleted(vol *vpcv1.VpcV1, id string, timeout time.Duration) 
 	return stateConf.WaitForState()
 }
 
-func isVolumeDeleteRefreshFunc(vol *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
+func isVolumeDeleteRefreshFunc(vol *vpcv1.VpcV1, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		volgetoptions := &vpcv1.GetVolumeOptions{
 			ID: &id,
@@ -1124,7 +1124,7 @@ func volExists(d *schema.ResourceData, meta interface{}, id string) (bool, error
 func isWaitForVolumeAvailable(client *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for Volume (%s) to be available.", id)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"retry", isVolumeProvisioning},
 		Target:     []string{isVolumeProvisioningDone, ""},
 		Refresh:    isVolumeRefreshFunc(client, id),
@@ -1136,7 +1136,7 @@ func isWaitForVolumeAvailable(client *vpcv1.VpcV1, id string, timeout time.Durat
 	return stateConf.WaitForState()
 }
 
-func isVolumeRefreshFunc(client *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
+func isVolumeRefreshFunc(client *vpcv1.VpcV1, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		volgetoptions := &vpcv1.GetVolumeOptions{
 			ID: &id,

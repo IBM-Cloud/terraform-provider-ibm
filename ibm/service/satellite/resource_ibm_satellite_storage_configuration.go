@@ -8,7 +8,7 @@ import (
 
 	"github.com/IBM-Cloud/container-services-go-sdk/kubernetesserviceapiv1"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"k8s.io/utils/strings/slices"
 )
@@ -468,7 +468,7 @@ func getDefinedStorageClasses(definedMaps []map[string]string, getMaps map[strin
 }
 
 func waitForStorageConfigurationStatus(getStorageConfigurationOptions *kubernetesserviceapiv1.GetStorageConfigurationOptions, meta interface{}, d *schema.ResourceData) (interface{}, error) {
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:        []string{"NotReady"},
 		Target:         []string{"Ready"},
 		Refresh:        storageConfigurationStatusRefreshFunc(getStorageConfigurationOptions, meta),
@@ -480,7 +480,7 @@ func waitForStorageConfigurationStatus(getStorageConfigurationOptions *kubernete
 	return stateConf.WaitForState()
 }
 
-func storageConfigurationStatusRefreshFunc(getStorageConfigurationOptions *kubernetesserviceapiv1.GetStorageConfigurationOptions, meta interface{}) resource.StateRefreshFunc {
+func storageConfigurationStatusRefreshFunc(getStorageConfigurationOptions *kubernetesserviceapiv1.GetStorageConfigurationOptions, meta interface{}) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 
 		satClient, err := meta.(conns.ClientSession).SatelliteClientSession()
@@ -499,7 +499,7 @@ func storageConfigurationStatusRefreshFunc(getStorageConfigurationOptions *kuber
 }
 
 func waitForStorageConfigurationDeletionStatus(getStorageConfigurationOptions *kubernetesserviceapiv1.GetStorageConfigurationOptions, meta interface{}, d *schema.ResourceData) (interface{}, error) {
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:        []string{"NotReady"},
 		Target:         []string{"Ready"},
 		Refresh:        storageConfigurationDeletionStatusRefreshFunc(getStorageConfigurationOptions, meta),
@@ -511,7 +511,7 @@ func waitForStorageConfigurationDeletionStatus(getStorageConfigurationOptions *k
 	return stateConf.WaitForState()
 }
 
-func storageConfigurationDeletionStatusRefreshFunc(getStorageConfigurationOptions *kubernetesserviceapiv1.GetStorageConfigurationOptions, meta interface{}) resource.StateRefreshFunc {
+func storageConfigurationDeletionStatusRefreshFunc(getStorageConfigurationOptions *kubernetesserviceapiv1.GetStorageConfigurationOptions, meta interface{}) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 
 		satClient, err := meta.(conns.ClientSession).SatelliteClientSession()

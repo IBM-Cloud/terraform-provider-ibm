@@ -13,7 +13,7 @@ import (
 
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
@@ -1100,7 +1100,7 @@ func vpcClient(meta interface{}) (*vpcv1.VpcV1, error) {
 func isWaitForLBDeleted(lbc *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for  (%s) to be deleted.", id)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"retry", "deleting"},
 		Target:     []string{"done", "failed"},
 		Refresh:    isLBDeleteRefreshFunc(lbc, id),
@@ -1112,7 +1112,7 @@ func isWaitForLBDeleted(lbc *vpcv1.VpcV1, id string, timeout time.Duration) (int
 	return stateConf.WaitForState()
 }
 
-func isLBDeleteRefreshFunc(lbc *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
+func isLBDeleteRefreshFunc(lbc *vpcv1.VpcV1, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		log.Printf("[DEBUG] is lb delete function here")
 		getLoadBalancerOptions := &vpcv1.GetLoadBalancerOptions{
@@ -1172,7 +1172,7 @@ func waitForVpcClusterDelete(d *schema.ResourceData, meta interface{}) (interfac
 		return nil, err
 	}
 	clusterID := d.Id()
-	deleteStateConf := &resource.StateChangeConf{
+	deleteStateConf := &retry.StateChangeConf{
 		Pending: []string{clusterDeletePending},
 		Target:  []string{clusterDeleted},
 		Refresh: func() (interface{}, string, error) {
@@ -1204,7 +1204,7 @@ func waitForVpcClusterOneWorkerAvailable(d *schema.ResourceData, meta interface{
 		return nil, err
 	}
 	clusterID := d.Id()
-	createStateConf := &resource.StateChangeConf{
+	createStateConf := &retry.StateChangeConf{
 		Pending: []string{deployRequested, deployInProgress},
 		Target:  []string{normal},
 		Refresh: func() (interface{}, string, error) {
@@ -1245,7 +1245,7 @@ func waitForVpcClusterState(d *schema.ResourceData, meta interface{}, waitForSta
 		return nil, err
 	}
 	clusterID := d.Id()
-	createStateConf := &resource.StateChangeConf{
+	createStateConf := &retry.StateChangeConf{
 		Pending: pendingState,
 		Target:  []string{waitForState},
 		Refresh: func() (interface{}, string, error) {
@@ -1281,7 +1281,7 @@ func waitForVpcClusterMasterAvailable(d *schema.ResourceData, meta interface{}, 
 		return nil, err
 	}
 	clusterID := d.Id()
-	createStateConf := &resource.StateChangeConf{
+	createStateConf := &retry.StateChangeConf{
 		Pending: []string{deployRequested, deployInProgress},
 		Target:  []string{ready},
 		Refresh: func() (interface{}, string, error) {
@@ -1316,7 +1316,7 @@ func waitForVpcClusterMasterKMSApply(d *schema.ResourceData, meta interface{}) (
 		return nil, err
 	}
 	clusterID := d.Id()
-	createStateConf := &resource.StateChangeConf{
+	createStateConf := &retry.StateChangeConf{
 		Pending: []string{deployRequested, deployInProgress},
 		Target:  []string{ready},
 		Refresh: func() (interface{}, string, error) {
@@ -1357,7 +1357,7 @@ func waitForVpcClusterIngressAvailable(d *schema.ResourceData, meta interface{},
 		return nil, err
 	}
 	clusterID := d.Id()
-	createStateConf := &resource.StateChangeConf{
+	createStateConf := &retry.StateChangeConf{
 		Pending: []string{deployRequested, deployInProgress},
 		Target:  []string{ready},
 		Refresh: func() (interface{}, string, error) {
@@ -1401,7 +1401,7 @@ func waitForVpcClusterVersionUpdate(d *schema.ResourceData, meta interface{}, ta
 	log.Printf("Waiting for cluster (%s) version to be updated.", d.Id())
 	id := d.Id()
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:                   []string{"retry", versionUpdating},
 		Target:                    []string{clusterNormal},
 		Refresh:                   vpcClusterVersionRefreshFunc(csClient.Clusters(), id, d, target),
@@ -1414,7 +1414,7 @@ func waitForVpcClusterVersionUpdate(d *schema.ResourceData, meta interface{}, ta
 	return stateConf.WaitForState()
 }
 
-func vpcClusterVersionRefreshFunc(client v2.Clusters, instanceID string, d *schema.ResourceData, target v2.ClusterTargetHeader) resource.StateRefreshFunc {
+func vpcClusterVersionRefreshFunc(client v2.Clusters, instanceID string, d *schema.ResourceData, target v2.ClusterTargetHeader) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		cls, err := client.GetCluster(instanceID, target)
 		if err != nil {
@@ -1439,7 +1439,7 @@ func waitForVpcClusterWokersVersionUpdate(d *schema.ResourceData, meta interface
 
 	log.Printf("Waiting for worker (%s) version to be updated.", workerID)
 	clusterID := d.Id()
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:                   []string{"retry", versionUpdating},
 		Target:                    []string{workerNormal},
 		Refresh:                   vpcClusterWorkersVersionRefreshFunc(csClient.Workers(), workerID, clusterID, target),
@@ -1452,7 +1452,7 @@ func waitForVpcClusterWokersVersionUpdate(d *schema.ResourceData, meta interface
 	return stateConf.WaitForState()
 }
 
-func vpcClusterWorkersVersionRefreshFunc(client v2.Workers, workerID, clusterID string, target v2.ClusterTargetHeader) resource.StateRefreshFunc {
+func vpcClusterWorkersVersionRefreshFunc(client v2.Workers, workerID, clusterID string, target v2.ClusterTargetHeader) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		worker, err := client.Get(clusterID, workerID, target)
 		if err != nil {
@@ -1474,7 +1474,7 @@ func waitForWorkerNodetoDelete(d *schema.ResourceData, meta interface{}, targetE
 	}
 
 	clusterID := d.Id()
-	deleteStateConf := &resource.StateChangeConf{
+	deleteStateConf := &retry.StateChangeConf{
 		Pending: []string{workerDeletePending},
 		Target:  []string{workerDeleteState},
 		Refresh: func() (interface{}, string, error) {
@@ -1502,7 +1502,7 @@ func waitForNewWorker(d *schema.ResourceData, meta interface{}, targetEnv v2.Clu
 	}
 
 	clusterID := d.Id()
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{"creating"},
 		Target:  []string{"created"},
 		Refresh: func() (interface{}, string, error) {

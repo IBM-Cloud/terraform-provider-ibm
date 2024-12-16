@@ -12,7 +12,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM/go-sdk-core/v5/core"
@@ -134,7 +134,7 @@ func resourceIbmIsShareReplicaOperationsCreate(context context.Context, d *schem
 func isWaitForShareReplicationJobDone(context context.Context, vpcClient *vpcv1.VpcV1, shareid string, d *schema.ResourceData, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for share (%s) to be available.", shareid)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"pending"},
 		Target:     []string{"active", "none"},
 		Refresh:    isShareReplicationJobRefreshFunc(context, vpcClient, shareid, d),
@@ -146,7 +146,7 @@ func isWaitForShareReplicationJobDone(context context.Context, vpcClient *vpcv1.
 	return stateConf.WaitForState()
 }
 
-func isShareReplicationJobRefreshFunc(context context.Context, vpcClient *vpcv1.VpcV1, shareid string, d *schema.ResourceData) resource.StateRefreshFunc {
+func isShareReplicationJobRefreshFunc(context context.Context, vpcClient *vpcv1.VpcV1, shareid string, d *schema.ResourceData) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		shareOptions := &vpcv1.GetShareOptions{}
 
@@ -182,7 +182,7 @@ func resourceIbmIsShareReplicaOperationsDelete(context context.Context, d *schem
 func isWaitForShareSplit(context context.Context, vpcClient *vpcv1.VpcV1, shareid string, d *schema.ResourceData, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for share (%s) to be available.", shareid)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"split_pending"},
 		Target:     []string{"none"},
 		Refresh:    isShareSplitRefreshFunc(context, vpcClient, shareid, d),
@@ -194,7 +194,7 @@ func isWaitForShareSplit(context context.Context, vpcClient *vpcv1.VpcV1, sharei
 	return stateConf.WaitForState()
 }
 
-func isShareSplitRefreshFunc(context context.Context, vpcClient *vpcv1.VpcV1, shareid string, d *schema.ResourceData) resource.StateRefreshFunc {
+func isShareSplitRefreshFunc(context context.Context, vpcClient *vpcv1.VpcV1, shareid string, d *schema.ResourceData) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		shareOptions := &vpcv1.GetShareOptions{}
 

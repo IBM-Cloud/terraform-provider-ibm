@@ -15,7 +15,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -614,7 +614,7 @@ func makeIBMISSecurityRuleSchema() map[string]*schema.Schema {
 func isWaitForTargetDeleted(client *vpcv1.VpcV1, sgId, targetId string, target vpcv1.SecurityGroupTargetReferenceIntf, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for Security group(%s) target(%s) to be deleted.", sgId, targetId)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"deleting"},
 		Target:     []string{"done", ""},
 		Refresh:    isTargetRefreshFunc(client, sgId, targetId, target),
@@ -626,7 +626,7 @@ func isWaitForTargetDeleted(client *vpcv1.VpcV1, sgId, targetId string, target v
 	return stateConf.WaitForState()
 }
 
-func isTargetRefreshFunc(client *vpcv1.VpcV1, sgId, targetId string, target vpcv1.SecurityGroupTargetReferenceIntf) resource.StateRefreshFunc {
+func isTargetRefreshFunc(client *vpcv1.VpcV1, sgId, targetId string, target vpcv1.SecurityGroupTargetReferenceIntf) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		targetgetoptions := &vpcv1.GetSecurityGroupTargetOptions{
 			SecurityGroupID: &sgId,
@@ -645,7 +645,7 @@ func isTargetRefreshFunc(client *vpcv1.VpcV1, sgId, targetId string, target vpcv
 func isWaitForSgCleanup(client *vpcv1.VpcV1, sgId string, targets []vpcv1.SecurityGroupTargetReferenceIntf, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for Security group(%s) target(%s) to be deleted.", sgId, targets)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"deleting"},
 		Target:     []string{"done", ""},
 		Refresh:    isSgRefreshFunc(client, sgId, targets),
@@ -657,7 +657,7 @@ func isWaitForSgCleanup(client *vpcv1.VpcV1, sgId string, targets []vpcv1.Securi
 	return stateConf.WaitForState()
 }
 
-func isSgRefreshFunc(client *vpcv1.VpcV1, sgId string, groups []vpcv1.SecurityGroupTargetReferenceIntf) resource.StateRefreshFunc {
+func isSgRefreshFunc(client *vpcv1.VpcV1, sgId string, groups []vpcv1.SecurityGroupTargetReferenceIntf) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		start := ""
 		allrecs := []vpcv1.SecurityGroupTargetReferenceIntf{}

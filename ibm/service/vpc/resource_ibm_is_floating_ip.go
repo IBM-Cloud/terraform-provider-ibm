@@ -16,7 +16,8 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -620,7 +621,7 @@ func fipExists(d *schema.ResourceData, meta interface{}, id string) (bool, error
 func isWaitForFloatingIPDeleted(fip *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for FloatingIP (%s) to be deleted.", id)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{isFloatingIPPending, isFloatingIPDeleting},
 		Target:     []string{"", isFloatingIPDeleted},
 		Refresh:    isFloatingIPDeleteRefreshFunc(fip, id),
@@ -632,7 +633,7 @@ func isWaitForFloatingIPDeleted(fip *vpcv1.VpcV1, id string, timeout time.Durati
 	return stateConf.WaitForState()
 }
 
-func isFloatingIPDeleteRefreshFunc(fip *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
+func isFloatingIPDeleteRefreshFunc(fip *vpcv1.VpcV1, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		log.Printf("[DEBUG] floating ip delete function here")
 		getfipoptions := &vpcv1.GetFloatingIPOptions{
@@ -652,7 +653,7 @@ func isFloatingIPDeleteRefreshFunc(fip *vpcv1.VpcV1, id string) resource.StateRe
 func isWaitForInstanceFloatingIP(floatingipC *vpcv1.VpcV1, id string, d *schema.ResourceData) (interface{}, error) {
 	log.Printf("Waiting for floating IP (%s) to be available.", id)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{isFloatingIPPending},
 		Target:     []string{isFloatingIPAvailable, ""},
 		Refresh:    isInstanceFloatingIPRefreshFunc(floatingipC, id),
@@ -663,8 +664,8 @@ func isWaitForInstanceFloatingIP(floatingipC *vpcv1.VpcV1, id string, d *schema.
 
 	return stateConf.WaitForState()
 }
-
-func isInstanceFloatingIPRefreshFunc(floatingipC *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
+retry.StateRefreshFunc
+func isInstanceFloatingIPRefreshFunc(floatingipC *vpcv1.VpcV1, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		getfipoptions := &vpcv1.GetFloatingIPOptions{
 			ID: &id,

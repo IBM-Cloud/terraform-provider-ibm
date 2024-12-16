@@ -10,7 +10,7 @@ import (
 	"time"
 
 	v2 "github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	templatev1 "github.com/openshift/api/template/v1"
 	templatev1client "github.com/openshift/client-go/template/clientset/versioned/typed/template/v1"
 	cephv1 "github.com/rook/rook/pkg/apis/ceph.rook.io/v1"
@@ -273,7 +273,7 @@ func executeTemplate(osdID string) error {
 }
 
 func waitForOdfDeploymentStatus(replicas int32, deploymentName string) (interface{}, error) {
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:        []string{"NotReady"},
 		Target:         []string{"Ready"},
 		Refresh:        odfDeploymentRefreshFunc(replicas, deploymentName),
@@ -285,7 +285,7 @@ func waitForOdfDeploymentStatus(replicas int32, deploymentName string) (interfac
 	return stateConf.WaitForState()
 }
 
-func odfDeploymentRefreshFunc(replicas int32, deploymentName string) resource.StateRefreshFunc {
+func odfDeploymentRefreshFunc(replicas int32, deploymentName string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		log.Println("Checking Deployment Status....")
 		deploymentsClient := clientSet.AppsV1().Deployments(odfNamespace)
@@ -303,7 +303,7 @@ func odfDeploymentRefreshFunc(replicas int32, deploymentName string) resource.St
 }
 
 func waitForCephClusterStatus() (interface{}, error) {
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:        []string{"NotReady"},
 		Target:         []string{"Ready"},
 		Refresh:        cephClusterRefreshFunc(),
@@ -315,7 +315,7 @@ func waitForCephClusterStatus() (interface{}, error) {
 	return stateConf.WaitForState()
 }
 
-func cephClusterRefreshFunc() resource.StateRefreshFunc {
+func cephClusterRefreshFunc() retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		scheme := runtime.NewScheme()
 		utilruntime.Must(cephv1.AddToScheme(scheme))
@@ -355,7 +355,7 @@ func cephClusterRefreshFunc() resource.StateRefreshFunc {
 }
 
 func waitForNodeCordonStatus(node string) (interface{}, error) {
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:        []string{"NotReady"},
 		Target:         []string{"Ready"},
 		Refresh:        nodeCordonRefreshFunc(node),
@@ -367,7 +367,7 @@ func waitForNodeCordonStatus(node string) (interface{}, error) {
 	return stateConf.WaitForState()
 }
 
-func nodeCordonRefreshFunc(node string) resource.StateRefreshFunc {
+func nodeCordonRefreshFunc(node string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		n, err := clientSet.CoreV1().Nodes().Get(context.Background(), node, metav1.GetOptions{})
 		if err != nil {
@@ -391,7 +391,7 @@ func nodeCordonRefreshFunc(node string) resource.StateRefreshFunc {
 }
 
 func waitForTemplateInstanceStatus(templateInstance *templatev1.TemplateInstance) (interface{}, error) {
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:        []string{"NotReady"},
 		Target:         []string{"Ready"},
 		Refresh:        templateInstanceRefreshFunc(templateInstance),
@@ -403,7 +403,7 @@ func waitForTemplateInstanceStatus(templateInstance *templatev1.TemplateInstance
 	return stateConf.WaitForState()
 }
 
-func templateInstanceRefreshFunc(templateInstance *templatev1.TemplateInstance) resource.StateRefreshFunc {
+func templateInstanceRefreshFunc(templateInstance *templatev1.TemplateInstance) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		for _, cond := range templateInstance.Status.Conditions {
 			// If the TemplateInstance contains a status condition

@@ -11,7 +11,8 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -495,7 +496,7 @@ func ParseVPCDNSTerraformID(s string) (string, string, error) {
 func isWaitForVpcDnsDeleted(sess *vpcv1.VpcV1, vpcid, id string, timeout time.Duration, dns *vpcv1.VpcdnsResolutionBinding) (interface{}, error) {
 	log.Printf("Waiting for vpc dns (%s) to be deleted.", id)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"deleting", "pending", "updating", "waiting"},
 		Target:     []string{"stable", "failed", "suspended", ""},
 		Refresh:    isVpcDnsDeleteRefreshFunc(sess, vpcid, id, dns),
@@ -507,7 +508,7 @@ func isWaitForVpcDnsDeleted(sess *vpcv1.VpcV1, vpcid, id string, timeout time.Du
 	return stateConf.WaitForState()
 }
 
-func isVpcDnsDeleteRefreshFunc(sess *vpcv1.VpcV1, vpcid, id string, dns *vpcv1.VpcdnsResolutionBinding) resource.StateRefreshFunc {
+func isVpcDnsDeleteRefreshFunc(sess *vpcv1.VpcV1, vpcid, id string, dns *vpcv1.VpcdnsResolutionBinding) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		getVPCDnsResolutionBindingOptions := &vpcv1.GetVPCDnsResolutionBindingOptions{}
 
@@ -531,7 +532,7 @@ func isVpcDnsDeleteRefreshFunc(sess *vpcv1.VpcV1, vpcid, id string, dns *vpcv1.V
 func isWaitForVpcDnsCreated(sess *vpcv1.VpcV1, vpcid, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for vpc dns (%s) to be created.", id)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"deleting", "pending", "updating", "waiting"},
 		Target:     []string{"stable", "failed", "suspended", ""},
 		Refresh:    isVpcDnsCreateRefreshFunc(sess, vpcid, id),
@@ -542,8 +543,8 @@ func isWaitForVpcDnsCreated(sess *vpcv1.VpcV1, vpcid, id string, timeout time.Du
 
 	return stateConf.WaitForState()
 }
-
-func isVpcDnsCreateRefreshFunc(sess *vpcv1.VpcV1, vpcid, id string) resource.StateRefreshFunc {
+retry.StateRefreshFunc
+func isVpcDnsCreateRefreshFunc(sess *vpcv1.VpcV1, vpcid, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		getVPCDnsResolutionBindingOptions := &vpcv1.GetVPCDnsResolutionBindingOptions{}
 

@@ -16,7 +16,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -173,7 +173,7 @@ func resourceIBMPIVolumeAttachDelete(ctx context.Context, d *schema.ResourceData
 func isWaitForIBMPIVolumeAttachAvailable(ctx context.Context, client *st.IBMPIVolumeClient, id, cloudInstanceID, pvmInstanceID string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for Volume (%s) to be available for attachment", id)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"retry", helpers.PIVolumeProvisioning},
 		Target:     []string{helpers.PIVolumeAllowableAttachStatus},
 		Refresh:    isIBMPIVolumeAttachRefreshFunc(client, id, cloudInstanceID, pvmInstanceID),
@@ -185,7 +185,7 @@ func isWaitForIBMPIVolumeAttachAvailable(ctx context.Context, client *st.IBMPIVo
 	return stateConf.WaitForStateContext(ctx)
 }
 
-func isIBMPIVolumeAttachRefreshFunc(client *st.IBMPIVolumeClient, id, cloudInstanceID, pvmInstanceID string) resource.StateRefreshFunc {
+func isIBMPIVolumeAttachRefreshFunc(client *st.IBMPIVolumeClient, id, cloudInstanceID, pvmInstanceID string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		vol, err := client.Get(id)
 		if err != nil {
@@ -203,7 +203,7 @@ func isIBMPIVolumeAttachRefreshFunc(client *st.IBMPIVolumeClient, id, cloudInsta
 func isWaitForIBMPIVolumeDetach(ctx context.Context, client *st.IBMPIVolumeClient, id, cloudInstanceID, pvmInstanceID string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for Volume (%s) to be available after detachment", id)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"detaching", helpers.PowerVolumeAttachDeleting},
 		Target:     []string{helpers.PIVolumeProvisioningDone},
 		Refresh:    isIBMPIVolumeDetachRefreshFunc(client, id, cloudInstanceID, pvmInstanceID),
@@ -215,7 +215,7 @@ func isWaitForIBMPIVolumeDetach(ctx context.Context, client *st.IBMPIVolumeClien
 	return stateConf.WaitForStateContext(ctx)
 }
 
-func isIBMPIVolumeDetachRefreshFunc(client *st.IBMPIVolumeClient, id, cloudInstanceID, pvmInstanceID string) resource.StateRefreshFunc {
+func isIBMPIVolumeDetachRefreshFunc(client *st.IBMPIVolumeClient, id, cloudInstanceID, pvmInstanceID string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		vol, err := client.Get(id)
 		if err != nil {
