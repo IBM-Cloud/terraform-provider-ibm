@@ -31,7 +31,7 @@ Review the argument reference that you can specify for your data source.
 
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
-- `id` - The unique identifier of the `cloudengine_en_destination`.
+- `id` - The unique identifier of the `codengine_en_destination`.
 
 - `name` - (String) Destination name.
 
@@ -43,6 +43,8 @@ In addition to all argument references listed, you can access the following attr
 
 - `type` - (String) Destination type ibmce.
 
+- `collect_failed_events` - (boolean) Toggle switch to enable collect failed event in Cloud Object Storage bucket.
+
 - `config` - (List) Payload describing a destination configuration.
   Nested scheme for **config**:
 
@@ -53,5 +55,15 @@ In addition to all argument references listed, you can access the following attr
   - `url` - (String) URL of code engine project.
 
   - `verb` - (String) HTTP method of code engine url. Allowable values are: `get`, `post`.
+
+  - `type` - (Optional, String) The code engine destination type . Allowable values are: `application`, `job`.
+
+  - `job_name` - (Optional, String) name of the code engine job.
+
+  - `project_crn` - (Optional, String) CRN of the code engine project.
+
+  - `custom_headers` - (Optional, String) Custom headers (Key-Value pair) for webhook call.
+
+  - `sensitive_headers` - (Optional, array) List of sensitive headers from custom headers.
 
 - `updated_at` - (String) Last updated time.

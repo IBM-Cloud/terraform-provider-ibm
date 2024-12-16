@@ -10,7 +10,7 @@ subcategory: "Security and Compliance Center"
 
 Retrieve information about a profile from a read-only data source. Then, you can reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
 
-~> NOTE: if you specify the `region` in the provider, that region will become the default URL. Else, exporting the environmental variable IBMCLOUD_SCC_API_ENDPOINT will override any URL(ex. `export IBMCLOUD_SCC_API_ENDPOINT=https://us-south.compliance.cloud.ibm.com`).
+~> NOTE: Security Compliance Center is a regional service. Please specify the IBM Cloud Provider attribute `region` to target another region. Else, exporting the environmental variable IBMCLOUD_SCC_API_ENDPOINT will also override which region is being targeted for all ibm providers(ex. `export IBMCLOUD_SCC_API_ENDPOINT=https://eu-es.compliance.cloud.ibm.com`).
 
 ## Example Usage
 
@@ -33,14 +33,14 @@ You can specify the following arguments for this data source.
 
 After your data source is created, you can read values from the following attributes.
 
-* `id` - The unique identifier of the scc_profile.
 * `attachments_count` - (Integer) The number of attachments related to this profile.
 
 * `control_parents_count` - (Integer) The number of parent controls for the profile.
 
 * `controls` - (List) The array of controls that are used to create the profile.
   * Constraints: The maximum length is `600` items. The minimum length is `0` items.
-Nested schema for **controls**:
+	
+	Nested schema for **controls**:
 	* `control_category` - (String) The control category.
 	  * Constraints: The maximum length is `512` characters. The minimum length is `2` characters. The value must match regular expression `/[A-Za-z0-9]+/`.
 	* `control_description` - (String) The control description.
@@ -64,7 +64,8 @@ Nested schema for **controls**:
 	* `control_requirement` - (Boolean) Is this a control that can be automated or manually evaluated.
 	* `control_specifications` - (List) The control specifications.
 	  * Constraints: The maximum length is `400` items. The minimum length is `0` items.
-	Nested schema for **control_specifications**:
+		
+		Nested schema for **control_specifications**:
 		* `assessments` - (List) The assessments.
 		  * Constraints: The maximum length is `10` items. The minimum length is `0` items.
 		Nested schema for **assessments**:
@@ -79,7 +80,8 @@ Nested schema for **controls**:
 			* `parameter_count` - (Integer) The parameter count.
 			* `parameters` - (List) The parameters.
 			  * Constraints: The maximum length is `512` items. The minimum length is `0` items.
-			Nested schema for **parameters**:
+			
+				Nested schema for **parameters**:
 				* `parameter_display_name` - (String) The parameter display name.
 				  * Constraints: The maximum length is `64` characters. The minimum length is `2` characters. The value must match regular expression `/^[a-zA-Z0-9_,'\\s\\-]*$/`.
 				* `parameter_name` - (String) The parameter name.
@@ -110,7 +112,8 @@ Nested schema for **controls**:
 
 * `default_parameters` - (List) The default parameters of the profile.
   * Constraints: The maximum length is `512` items. The minimum length is `0` items.
-Nested schema for **default_parameters**:
+
+	Nested schema for **default_parameters**:
 	* `assessment_id` - (String) The implementation ID of the parameter.
 	  * Constraints: The maximum length is `64` characters. The minimum length is `2` characters. The value must match regular expression `/[A-Za-z0-9]+/`.
 	* `assessment_type` - (String) The type of the implementation.

@@ -1,33 +1,34 @@
-// Copyright IBM Corp. 2022 All Rights Reserved.
+// Copyright IBM Corp. 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package contextbasedrestrictions_test
 
 import (
 	"fmt"
+	"os"
 	"testing"
-
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM/platform-services-go-sdk/contextbasedrestrictionsv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccIBMCbrRuleBasic(t *testing.T) {
 	var conf contextbasedrestrictionsv1.Rule
 
+	accountID, _ := getTestAccountAndZoneID()
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		PreCheck:     func() { acc.TestAccPreCheckCbr(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMCbrRuleDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMCbrRuleConfigBasic(),
+				Config: testAccCheckIBMCbrRuleConfigBasic(accountID),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMCbrRuleExists("ibm_cbr_rule.cbr_rule", conf),
+					testAccCheckIBMCbrRuleExists("ibm_cbr_rule.cbr_rule_instance", conf),
 				),
 			},
 		},
@@ -41,28 +42,29 @@ func TestAccIBMCbrRuleAllArgs(t *testing.T) {
 	descriptionUpdate := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
 	enforcementModeUpdate := "report"
 
+	accountID, _ := getTestAccountAndZoneID()
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		PreCheck:     func() { acc.TestAccPreCheckCbr(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMCbrRuleDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMCbrRuleConfig(description, enforcementMode),
+				Config: testAccCheckIBMCbrRuleConfig(description, enforcementMode, accountID),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMCbrRuleExists("ibm_cbr_rule.cbr_rule", conf),
-					resource.TestCheckResourceAttr("ibm_cbr_rule.cbr_rule", "description", description),
-					resource.TestCheckResourceAttr("ibm_cbr_rule.cbr_rule", "enforcement_mode", enforcementMode),
+					testAccCheckIBMCbrRuleExists("ibm_cbr_rule.cbr_rule_instance", conf),
+					resource.TestCheckResourceAttr("ibm_cbr_rule.cbr_rule_instance", "description", description),
+					resource.TestCheckResourceAttr("ibm_cbr_rule.cbr_rule_instance", "enforcement_mode", enforcementMode),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIBMCbrRuleConfig(descriptionUpdate, enforcementModeUpdate),
+				Config: testAccCheckIBMCbrRuleConfigUpdate(descriptionUpdate, enforcementModeUpdate, accountID),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_cbr_rule.cbr_rule", "description", descriptionUpdate),
-					resource.TestCheckResourceAttr("ibm_cbr_rule.cbr_rule", "enforcement_mode", enforcementModeUpdate),
+					resource.TestCheckResourceAttr("ibm_cbr_rule.cbr_rule_instance", "description", descriptionUpdate),
+					resource.TestCheckResourceAttr("ibm_cbr_rule.cbr_rule_instance", "enforcement_mode", enforcementModeUpdate),
 				),
 			},
 			resource.TestStep{
-				ResourceName:      "ibm_cbr_rule.cbr_rule",
+				ResourceName:      "ibm_cbr_rule.cbr_rule_instance",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -70,21 +72,30 @@ func TestAccIBMCbrRuleAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMCbrRuleConfigBasic() string {
+func testAccCheckIBMCbrRuleConfigBasic(accountID string) string {
 	return fmt.Sprintf(`
+		resource "ibm_cbr_zone" "cbr_zone" {
+			name = "Test Zone Data Source Config Basic"
+			description = "Test Zone Data Source Config Basic"
+			account_id = "%s"
+			addresses {
+				type = "ipRange"
+				value = "169.23.22.0-169.23.22.255"
+			}
+		}
 
-		resource "ibm_cbr_rule" "cbr_rule" {
+		resource "ibm_cbr_rule" "cbr_rule_instance" {
   			description = "test rule config basic"
   			contexts {
     			attributes {
       				name = "networkZoneId"
-      				value = "559052eb8f43302824e7ae490c0281eb"
+      				value = ibm_cbr_zone.cbr_zone.id
     			}
   			}
 			resources {
     			attributes {
       				name = "accountId"
-      				value = "12ab34cd56ef78ab90cd12ef34ab56cd"
+      				value = "%s"
     			}
     			attributes {
       				name = "serviceName"
@@ -97,24 +108,33 @@ func testAccCheckIBMCbrRuleConfigBasic() string {
   			}
 			enforcement_mode = "disabled"
 		}
-	`)
+	`, accountID, accountID)
 }
 
-func testAccCheckIBMCbrRuleConfig(description string, enforcementMode string) string {
+func testAccCheckIBMCbrRuleConfig(description string, enforcementMode string, accountID string) string {
 	return fmt.Sprintf(`
+		resource "ibm_cbr_zone" "cbr_zone" {
+			name = "Test Zone Data Source Config Basic"
+			description = "Test Zone Data Source Config Basic"
+			account_id = "%s"
+			addresses {
+				type = "ipRange"
+				value = "169.23.22.0-169.23.22.255"
+			}
+		}
 
-		resource "ibm_cbr_rule" "cbr_rule" {
+		resource "ibm_cbr_rule" "cbr_rule_instance" {
 			description = "%s"
 			contexts {
     			attributes {
       				name = "networkZoneId"
-      				value = "559052eb8f43302824e7ae490c0281eb"
+      				value = ibm_cbr_zone.cbr_zone.id
     			}
 			}
 			resources {
     			attributes {
       				name = "accountId"
-      				value = "12ab34cd56ef78ab90cd12ef34ab56cd"
+      				value = "%s"
     			}
     			attributes {
       				name = "serviceName"
@@ -133,7 +153,53 @@ func testAccCheckIBMCbrRuleConfig(description string, enforcementMode string) st
 			}
 			enforcement_mode = "%s"
 		}
-	`, description, enforcementMode)
+	`, accountID, description, accountID, enforcementMode)
+}
+
+func testAccCheckIBMCbrRuleConfigUpdate(description string, enforcementMode string, accountID string) string {
+	os.Setenv("IBMCLOUD_CONTEXT_BASED_RESTRICTIONS_ENDPOINT", "https://testing-2-eu-gb.network-policy.test.cloud.ibm.com")
+	return fmt.Sprintf(`
+		resource "ibm_cbr_zone" "cbr_zone" {
+			name = "Test Zone Data Source Config Basic"
+			description = "Test Zone Data Source Config Basic"
+			account_id = "%s"
+			addresses {
+				type = "ipRange"
+				value = "169.23.22.0-169.23.22.255"
+			}
+		}
+
+		resource "ibm_cbr_rule" "cbr_rule_instance" {
+			description = "%s"
+			contexts {
+				attributes {
+					name = "networkZoneId"
+					value = ibm_cbr_zone.cbr_zone.id
+				}
+			}
+			resources {
+				attributes {
+					name = "serviceName"
+					value = "containers-kubernetes"
+				}
+				attributes {
+					name = "accountId"
+					value = "%s"
+				}
+				tags {
+					name = "name"
+					value = "value"
+					operator = "stringEquals"
+				}
+			}
+			operations {
+				api_types {
+					api_type_id = "crn:v1:bluemix:public:containers-kubernetes::::api-type:management"
+				}
+			}
+			enforcement_mode = "%s"
+		}
+	`, accountID, description, accountID, enforcementMode)
 }
 
 func testAccCheckIBMCbrRuleExists(n string, obj contextbasedrestrictionsv1.Rule) resource.TestCheckFunc {

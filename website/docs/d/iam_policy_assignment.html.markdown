@@ -19,15 +19,23 @@ data "ibm_iam_policy_assignments" "policy_assignment" {
 
 ## Argument Reference
 
+## Timeouts section
+
+The resource includes default timeout settings for the following operations:
+
+* `create` - (Timeout) Defaults to 30 minutes.
+* `update` - (Timeout) Defaults to 30 minutes.
+* `delete` - (Timeout) Defaults to 30 minutes.
+
 
 ## Attribute Reference
 
 After your data source is created, you can read values from the following attributes.
 
 * `id` - The unique identifier of the policy_assignment.
-* `policy_assignments` - (List) List of policy assignments.
+* `assignments` - (List) List of policy assignments.
   * Constraints: The minimum length is `0` items.
-Nested schema for **policy_assignments**:
+Nested schema for **assignments**:
 	* `assignment_id` - (String) Passed in value to correlate with other assignments.
 	  * Constraints: The maximum length is `50` characters. The minimum length is `1` character.
 	* `created_at` - (String) The UTC timestamp when the policy assignment was created.
@@ -36,14 +44,6 @@ Nested schema for **policy_assignments**:
 	* `id` - (String) Policy assignment ID.
 	* `last_modified_at` - (String) The UTC timestamp when the policy assignment was last modified.
 	* `last_modified_by_id` - (String) The iam ID of the entity that last modified the policy assignment.
-	* `options` - (List) List of objects with required properties for a policy assignment.
-  		* Constraints: The maximum length is `5` items. The minimum length is `1` item.
-	Nested schema for **options**:
-        * `root_requester_id` - (String) The policy assignment requester id.
-        * `root_template_id` - (String) The template id where this policy is being assigned from.
-        * `root_template_version` - (String) The template version where this policy is being assigned from.
-        * `subject_id` - (String) The policy subject id.
-        * `subject_type` - (String) The policy subject type; either 'iam_id' or 'access_group_id'.
 	* `resources` - (List) Object for each account assigned.
 	  * Constraints: The minimum length is `1` item.
 	Nested schema for **resources**:
@@ -69,8 +69,14 @@ Nested schema for **policy_assignments**:
 				* `id` - (String) policy id.
 			* `status` - (String) The policy assignment status.
 		* `target` - (String) Account ID where resources are assigned.
-	* `target` - (String) assignment target id.
-	* `target_type` - (String) Assignment target type.
-	* `template_id` - (String) policy template id.
-	* `template_version` - (String) policy template version.
+	* `target` - (Map) assignment target details.
+	Nested schema for **target**:
+		* `id` - (String) The policy assignment target account id.
+		* `type` - (String) The target type.
+	* `template` - (Map) template details
+    Nested schema for **template**:
+		* `id` - (String) The policy assignment template id.
+		* `version` - (String) The orchestrator template version.
 	* `account_id` - (String) Enterprise account ID where template will be created.
+
+*Note*: Response will be in newer API format

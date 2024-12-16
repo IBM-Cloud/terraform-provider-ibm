@@ -541,8 +541,7 @@ func dataSourceIbmSchematicsAgentRead(context context.Context, d *schema.Resourc
 	}
 
 	getAgentDataOptions := &schematicsv1.GetAgentDataOptions{
-		XFeatureAgents: core.BoolPtr(true),
-		Profile:        core.StringPtr("detailed"),
+		Profile: core.StringPtr("detailed"),
 	}
 
 	getAgentDataOptions.SetAgentID(d.Get("agent_id").(string))
@@ -578,7 +577,11 @@ func dataSourceIbmSchematicsAgentRead(context context.Context, d *schema.Resourc
 	if err = d.Set("agent_location", agentData.AgentLocation); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting agent_location: %s", err))
 	}
-
+	if agentData.Tags != nil {
+		if err = d.Set("tags", agentData.Tags); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting tags: %s", err))
+		}
+	}
 	agentInfrastructure := []map[string]interface{}{}
 	if agentData.AgentInfrastructure != nil {
 		modelMap, err := dataSourceIbmSchematicsAgentAgentInfrastructureToMap(agentData.AgentInfrastructure)

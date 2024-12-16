@@ -57,6 +57,11 @@ func DataSourceIBMIBMIsVPCRoutingTableRoute() *schema.Resource {
 				Computed:    true,
 				Description: "The action to perform with a packet matching the route:- `delegate`: delegate to the system's built-in routes- `delegate_vpc`: delegate to the system's built-in routes, ignoring Internet-bound  routes- `deliver`: deliver the packet to the specified `next_hop`- `drop`: drop the packet.",
 			},
+			"advertise": &schema.Schema{
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Indicates whether this route will be advertised to the ingress sources specified by the `advertise_routes_to` routing table property.",
+			},
 			rtCreateAt: &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -271,6 +276,10 @@ func dataSourceIBMIBMIsVPCRoutingTableRouteRead(context context.Context, d *sche
 		return diag.FromErr(fmt.Errorf("[ERROR] Error setting action: %s", err))
 	}
 
+	if err = d.Set("advertise", route.Advertise); err != nil {
+		return diag.FromErr(fmt.Errorf("[ERROR] Error setting advertise: %s", err))
+	}
+
 	if err = d.Set(rtCreateAt, flex.DateTimeToString(route.CreatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error setting created_at: %s", err))
 	}
@@ -381,7 +390,7 @@ func dataSourceIBMIBMIsVPCRoutingTableRouteRouteNextHopToMap(model vpcv1.RouteNe
 	}
 }
 
-func dataSourceIBMIBMIsVPCRoutingTableRouteVPNGatewayConnectionReferenceDeletedToMap(model *vpcv1.VPNGatewayConnectionReferenceDeleted) (map[string]interface{}, error) {
+func dataSourceIBMIBMIsVPCRoutingTableRouteVPNGatewayConnectionReferenceDeletedToMap(model *vpcv1.Deleted) (map[string]interface{}, error) {
 	modelMap := map[string]interface{}{}
 	if model.MoreInfo != nil {
 		modelMap[rMoreInfo] = *model.MoreInfo

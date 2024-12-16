@@ -34,12 +34,11 @@ resource "ibm_cos_bucket" "standard-ams03" {
   activity_tracking {
     read_data_events     = true
     write_data_events    = true
-    activity_tracker_crn = ibm_resource_instance.activity_tracker.id
+    management_events    = true
   }
   metrics_monitoring {
     usage_metrics_enabled  = true
     request_metrics_enabled = true
-    metrics_monitoring_crn = ibm_resource_instance.metrics_monitor.id
   }
   allowed_ip = ["223.196.168.27", "223.196.161.38", "192.168.0.1"]
 }
@@ -298,7 +297,7 @@ resource "ibm_kms_key" "key" {
   force_delete = true
 }
 
-resource "ibm_cos_bucket" "hpcs-enabled" {
+resource "ibm_cos_bucket" "hpcs-enable" {
   depends_on           = [ibm_iam_authorization_policy.policy2]
   bucket_name          = var.bucket_name
   resource_instance_id = ibm_resource_instance.cos_instance.id
@@ -308,7 +307,7 @@ resource "ibm_cos_bucket" "hpcs-enabled" {
 }
 
 //HPCS - UKO plan
-resource "ibm_cos_bucket" "hpcs-uko-enabled" {
+resource "ibm_cos_bucket" "hpcs-uko-enable" {
   depends_on           = [ibm_iam_authorization_policy.policy2]
   bucket_name          = var.bucket_name
   resource_instance_id = ibm_resource_instance.cos_instance.id
@@ -387,7 +386,7 @@ resource ibm_cos_bucket_object_lock_configuration "objectlock" {
  bucket_crn      = ibm_cos_bucket.bucket.crn
  bucket_location = var.regional_loc
  object_lock_configuration{
-   object_lock_enabled = "Enabled"
+   object_lock_enable = "Enabled"
    object_lock_rule{
      default_retention{
         mode = "COMPLIANCE"
@@ -501,3 +500,146 @@ resource ibm_cos_bucket_website_configuration "website_configuration" {
 			 EOF
   }
 }
+
+
+#COS Lifecycle Configuration 
+
+# Adding lifecycle configuration with expiration and prefix filter.
+
+resource "ibm_cos_bucket" "cos_bucket_lifecycle_expiration" {
+  bucket_name           = var.bucket_name
+  resource_instance_id  = ibm_resource_instance.cos_instance.id
+  region_location       = var.regional_loc
+  storage_class         = var.standard_storage_class
+
+}
+resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle" {
+  bucket_crn = ibm_cos_bucket.cos_bucket.crn
+  bucket_location = ibm_cos_bucket.cos_bucket.region_location
+  lifecycle_rule {
+    expiration{
+      days = 1
+    }
+    filter {
+      prefix = "foo"
+    }  
+    rule_id = "id"
+    status = "enable"
+  
+  }
+}
+
+
+
+# Adding lifecycle configuration with transition.
+
+resource "ibm_cos_bucket" "cos_bucket_transition" {
+  bucket_name           = var.bucket_name
+  resource_instance_id  = ibm_resource_instance.cos_instance.id
+  region_location       = var.regional_loc
+  storage_class         = var.standard_storage_class
+
+}
+resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle_transition" {
+  bucket_crn = ibm_cos_bucket.cos_bucket.crn
+  bucket_location = ibm_cos_bucket.cos_bucket.region_location
+  lifecycle_rule {
+    transition{
+      days = 1
+      storage_class = "GLACIER"
+    }
+    filter {
+      prefix = ""
+    }  
+    rule_id = "id"
+    status = "enable"
+  
+  }
+}
+
+
+# Adding lifecycle configuration with abort incomplete multipart upload.
+
+resource "ibm_cos_bucket" "cos_bucket_abort_incomplete" {
+  bucket_name           = var.bucket_name
+  resource_instance_id  = ibm_resource_instance.cos_instance.id
+  region_location       = var.regional_loc
+  storage_class         = var.standard_storage_class
+
+}
+resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle_abort_incomplete" {
+  bucket_crn = ibm_cos_bucket.cos_bucket.crn
+  bucket_location = ibm_cos_bucket.cos_bucket.region_location
+  lifecycle_rule {
+    abort_incomplete_multipart_upload{
+      days_after_initiation = 1
+    }
+    filter {
+      prefix = ""
+    }  
+    rule_id = "id"
+    status = "enable"
+  
+  }
+}
+
+
+# Adding lifecycle configuration with non current version expiration.
+
+resource "ibm_cos_bucket" "cos_bucket_lifecycle_version_expiration" {
+  bucket_name           = var.bucket_name
+  resource_instance_id  = ibm_resource_instance.cos_instance.id
+  region_location       = var.regional_loc
+  storage_class         = var.standard_storage_class
+
+}
+resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle_new" {
+  bucket_crn = ibm_cos_bucket.cos_bucket.crn
+  bucket_location = ibm_cos_bucket.cos_bucket.region_location
+  lifecycle_rule {
+    noncurrent_version_expiration{
+			noncurrent_days = "1"
+		}
+    filter {
+      prefix = ""
+    }  
+    rule_id = "id"
+    status = "enable"
+  
+  }
+}
+
+# Adding lifecycle configuration with multiple rules
+
+resource "ibm_cos_bucket" "cos_bucket_lifecycle" {
+  bucket_name           = var.bucket_name
+  resource_instance_id  = ibm_resource_instance.cos_instance.id
+  region_location       = var.regional_loc
+  storage_class         = var.standard_storage_class
+}
+
+resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle_config" {
+  bucket_crn = ibm_cos_bucket.cos_bucket.crn
+  bucket_location = ibm_cos_bucket.cos_bucket.region_location
+  lifecycle_rule {
+    expiration{
+      days = 1
+    }
+    filter {
+      prefix = "foo"
+    }  
+    rule_id = "id"
+    status = "enable"
+  }
+    lifecycle_rule {
+    expiration{
+      days = 2
+    }
+    filter {
+      prefix = "bar"
+    }  
+    rule_id = "id2"
+    status = "enable"
+  }
+}
+

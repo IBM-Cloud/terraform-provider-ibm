@@ -1,5 +1,9 @@
-// Copyright IBM Corp. 2023 All Rights Reserved.
+// Copyright IBM Corp. 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
+
+/*
+ * IBM OpenAPI Terraform Generator Version: 3.92.1-44330004-20240620-143510
+ */
 
 package project_test
 
@@ -13,7 +17,7 @@ import (
 )
 
 func TestAccIbmProjectDataSourceBasic(t *testing.T) {
-	projectLocation := fmt.Sprintf("us-south")
+	projectLocation := "us-south"
 	projectResourceGroup := fmt.Sprintf("Default")
 
 	resource.Test(t, resource.TestCase{
@@ -27,10 +31,14 @@ func TestAccIbmProjectDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "project_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "crn"),
 					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "created_at"),
+					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "cumulative_needs_attention_view.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "location"),
 					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "resource_group_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "state"),
+					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "href"),
 					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "resource_group"),
+					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "configs.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "environments.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "definition.#"),
 				),
 			},
@@ -47,6 +55,8 @@ func testAccCheckIbmProjectDataSourceConfigBasic(projectLocation string, project
                 name = "acme-microservice"
                 description = "acme-microservice description"
                 destroy_on_delete = true
+                monitoring_enabled = true
+                auto_deploy = true
             }
 		}
 

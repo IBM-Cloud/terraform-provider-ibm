@@ -55,6 +55,8 @@ In addition to all argument references listed, you can access the following attr
 * `access_groups` - (List) Access Groups that you can use for an `iam_credentials` secret.Up to 10 Access Groups can be used for each secret.
   * Constraints: The list items must match regular expression `/^AccessGroupId-[a-z0-9-]+[a-z0-9]$/`. The maximum length is `10` items. The minimum length is `1` item.
 
+* `account_id` - (String) The ID of the account in which the IAM credentials are created. This field is omitted if the target account is the same as the account of the Secrets Manager instance.
+
 * `api_key` - (String) The API key that is generated for this secret. After the secret reaches the end of its lease (see the `ttl` field), the API key is deleted automatically.
   * Constraints: The maximum length is `60` characters. The minimum length is `5` characters. The value must match regular expression `/^(?:[A-Za-z0-9_\\-]{4})*(?:[A-Za-z0-9_\\-]{2}==|[A-Za-z0-9_\\-]{3}=)?$/`.
 
@@ -90,12 +92,11 @@ In addition to all argument references listed, you can access the following attr
 
 * `rotation` - (List) Determines whether Secrets Manager rotates your secrets automatically.
 Nested scheme for **rotation**:
-	* `auto_rotate` - (Boolean) Determines whether Secrets Manager rotates your secret automatically.Default is `false`. If `auto_rotate` is set to `true` the service rotates your secret based on the defined interval.
-	* `interval` - (Integer) The length of the secret rotation time interval.
-	  * Constraints: The minimum value is `1`.
-	* `rotate_keys` - (Boolean) Determines whether Secrets Manager rotates the private key for your public certificate automatically.Default is `false`. If it is set to `true`, the service generates and stores a new private key for your rotated certificate.
-	* `unit` - (String) The units for the secret rotation time interval.
-	  * Constraints: Allowable values are: `day`, `month`.
+    * `auto_rotate` - (Boolean) Determines whether Secrets Manager rotates your secret automatically.Default is `false`. If `auto_rotate` is set to `true` the service rotates your secret based on the defined interval.
+    * `interval` - (Integer) The length of the secret rotation time interval.
+      * Constraints: The minimum value is `1`.
+    * `unit` - (String) The units for the secret rotation time interval.
+      * Constraints: Allowable values are: `day`, `month`.
 
 * `secret_group_id` - (String) A v4 UUID identifier, or `default` secret group.
   * Constraints: The maximum length is `36` characters. The minimum length is `7` characters. The value must match regular expression `/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|default)$/`.
@@ -122,3 +123,4 @@ Nested scheme for **rotation**:
 * `versions_total` - (Integer) The number of versions of the secret.
   * Constraints: The maximum value is `50`. The minimum value is `0`.
 
+* `expiration_date` - (String) The date a secret is expired. The date format follows RFC 3339.

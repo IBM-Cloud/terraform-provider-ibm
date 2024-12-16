@@ -1,5 +1,4 @@
 ---
-
 subcategory: "Power Systems"
 layout: "ibm"
 page_title: "IBM: pi_workspaces"
@@ -19,7 +18,7 @@ data "ibm_pi_workspaces" "workspaces" {
 }
 ```
 
-## Notes
+### Notes
 
 - Please find [supported Regions](https://cloud.ibm.com/apidocs/power-cloud#endpoint) for endpoints.
 - If a Power cloud instance is provisioned at `lon04`, The provider level attributes should be as follows:
@@ -39,35 +38,41 @@ Example usage:
 
 Review the argument references that you can specify for your data source.
 
-- `pi_cloud_instance_id` - (Required, String) Cloud Instance ID of a PCloud Instance.
+- `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
 
 ## Attribute reference
 
 In addition to all argument reference listed, you can access the following attribute references after your data source is created.
 
-- `workspaces` - List of all Workspaces.
+- `workspaces` - (List) List of all Workspaces.
   Nested schema for `workspaces`
-  - `pi_workspace_capabilities` - (Map) Workspace Capabilities.
+  - `pi_workspace_capabilities` - (Map) Workspace Capabilities. Capabilities are `true` or `false`.
 
-    Nested schema for `pi_workspace_capabilities`; are (Bool) `true` or `false`:
-    - `cloud-connections` - (Bool) Cloud-connections capability.
-    - `custom-virtual-cores`- (Bool) Custom virtual cores capability.
-    - `power-edge-router` - (Bool) Power edge router capability.
-    - `transit-gateway-connection` - (Bool) Transit gateway connection capability.
-    - `vpn-connections`- (Bool) VPN-connections capability.
+      Some of `pi_workspace_capabilities` are:
+      - `cloud-connections`, `power-edge-router`, `power-vpn-connections`, `transit-gateway-connection`
 
-  - `pi_workspace_details` - (Map) Workspace information.
+  - `pi_workspace_details` - (List) Workspace information.
 
-     Nested schema for `pi_workspace_details`:
-    - `creation_date` - (String) Workspace creation date.
-    - `crn` - (String) Workspace crn.
+      Nested schema for `pi_workspace_details`:
+      - `creation_date` - (String) Date of workspace creation.
+      - `crn` - (String) Workspace crn.
+      - `network_security_groups` - (List) Network security groups configuration.
+        
+          Nested schema for `network_security_groups`:
+          - `state` - (String) The state of a network security groups configuration.
+      - `power_edge_router` - (List) Power Edge Router information.
+
+          Nested schema for `power_edge_router`:
+          - `migration_status` - (String) The migration status of a Power Edge Router.
+          - `status` - (String) The state of a Power Edge Router.
+          - `type` - (String) The Power Edge Router type.
   - `pi_workspace_id` - (String) Workspace ID.
   - `pi_workspace_location` - (Map) Workspace location.
 
-    Nested schema for `Workspace location`:
-    - `region` - (String) The Workspace location region zone.
-    - `type` - (String) The Workspace location region type.
-    - `url`- (String) The Workspace location region url.
-  - `pi_workspace_name` - (String) The Workspace name.
-  - `pi_workspace_status` - (String) The Workspace status, `ACTIVE` or `FAILED`.
-  - `pi_workspace_type` - (String) The Workspace type, `Public Cloud` or `Private Cloud`.
+        Nested schema for `Workspace location`:
+        - `region` - (String) Workspace location region zone.
+        - `type` - (String) Workspace location region type.
+        - `url`- (String) Workspace location region url.
+  - `pi_workspace_name` - (String) Workspace name.
+  - `pi_workspace_status` - (String) Workspace status, `active`, `critical`, `failed`, `provisioning`.
+  - `pi_workspace_type` - (String) Workspace type, `off-premises` or `on-premises`.

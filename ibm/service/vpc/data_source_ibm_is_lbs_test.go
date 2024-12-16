@@ -30,6 +30,9 @@ func TestAccIBMISLBSDatasource_basic(t *testing.T) {
 					testAccCheckIBMISLBExists("ibm_is_lb.testacc_lb", lb),
 					resource.TestCheckResourceAttr(
 						"data.ibm_is_lb.ds_lb", "name", name),
+					resource.TestCheckResourceAttrSet("data.ibm_is_lbs.test_lbs", "load_balancers.0.availability"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_lbs.test_lbs", "load_balancers.0.instance_groups_supported"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_lbs.test_lbs", "load_balancers.0.source_ip_session_persistence_supported"),
 				),
 			},
 			{
@@ -98,7 +101,11 @@ func testDSCheckIBMISLBSConfig(vpcname, subnetname, zone, cidr, name string) str
 	  }
 	  data "ibm_is_lb" "ds_lb" {
 		name = ibm_is_lb.testacc_lb.name
-	  }`, vpcname, subnetname, zone, cidr, name)
+	  }
+	  data "ibm_is_lbs" "test_lbs" {
+	  	depends_on = [ibm_is_lb.testacc_lb]
+	  }	
+	  `, vpcname, subnetname, zone, cidr, name)
 }
 func testDSCheckIBMISLBSDatasourceConfig() string {
 	// status filter defaults to empty

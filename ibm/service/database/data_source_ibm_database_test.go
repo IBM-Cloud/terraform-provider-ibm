@@ -13,7 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccIBMDatabaseDataSource_basic(t *testing.T) {
+func TestAccIBMDatabaseDataSourceBasic(t *testing.T) {
 	t.Parallel()
 	databaseResourceGroup := "default"
 	var databaseInstanceOne string
@@ -36,7 +36,7 @@ func TestAccIBMDatabaseDataSource_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(dataName, "plan", "standard"),
 					resource.TestCheckResourceAttr(dataName, "location", acc.Region()),
 					resource.TestCheckResourceAttr(dataName, "adminuser", "admin"),
-					resource.TestCheckResourceAttr(dataName, "groups.0.memory.0.allocation_mb", "2048"),
+					resource.TestCheckResourceAttr(dataName, "groups.0.memory.0.allocation_mb", "8192"),
 					resource.TestCheckResourceAttr(dataName, "groups.0.disk.0.allocation_mb", "10240"),
 					resource.TestCheckResourceAttr(dataName, "allowlist.#", "0"),
 					resource.TestCheckResourceAttr(dataName, "tags.#", "1"),
@@ -64,7 +64,16 @@ func testAccCheckIBMDatabaseDataSourceConfig(databaseResourceGroup string, name 
 		plan              = "standard"
 		location          = "%[3]s"
 		tags              = ["one:two"]
+		service_endpoints = "public"
+
+		group {
+			group_id = "member"
+
+			host_flavor {
+				id = "multitenant"
+			}
+		}
 	}
 
-				`, databaseResourceGroup, name, acc.Region())
+	`, databaseResourceGroup, name, acc.Region())
 }

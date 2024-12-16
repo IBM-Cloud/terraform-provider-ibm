@@ -45,11 +45,22 @@ In addition to all argument references listed, you can access the following attr
 	Nested scheme for **volumes**:
 	- `access_tags`  - (List) Access management tags associated for the volume.
 	- `active` - (Boolean) Indicates whether a running virtual server instance has an attachment to this volume.
+	- `adjustable_capacity_states` - (List) The attachment states that support adjustable capacity for this volume. Allowable list items are: `attached`, `unattached`, `unusable`. 
+	- `adjustable_iops_states` - (List) The attachment states that support adjustable IOPS for this volume. Allowable list items are: `attached`, `unattached`, `unusable`.
 	- `attachment_state` - (Boolean) The attachment state of the volume
 	- `bandwidth` - (Integer) The maximum bandwidth (in megabits per second) for the volume.
 	- `busy` - (Boolean) Indicates whether this volume is performing an operation that must be serialized. This must be `false` to perform an operation that is specified to require serialization.
 	- `capacity` - (Integer) The capacity to use for the volume (in gigabytes). The specified minimum and maximum capacity values for creating or updating volumes may expand in the future.
 	  - Constraints: The minimum value is `1`.
+	- `catalog_offering` - (List) The catalog offering this volume was created from. If a virtual server instance is provisioned with a boot_volume_attachment specifying this volume, the virtual server instance will use this volume's catalog offering, including its pricing plan.If absent, this volume was not created from a catalog offering.
+	  
+	  Nested scheme for `catalog_offering`:
+	    - `version_crn` - (String) The CRN for this version of a catalog offering
+		- `plan_crn` - (String) The CRN for this catalog offering version's billing plan
+		- `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.
+		
+		  Nested schema for `deleted`:
+		    - `more_info`  - (String) Link to documentation about deleted resources.
 	- `created_at` - (String) The date and time that the volume was created.
 	- `crn` - (String) The CRN for this volume.
 	- `encryption` - (String) The type of encryption used on the volume.

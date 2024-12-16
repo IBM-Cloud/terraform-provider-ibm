@@ -1,5 +1,9 @@
-// Copyright IBM Corp. 2023 All Rights Reserved.
+// Copyright IBM Corp. 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
+
+/*
+ * IBM OpenAPI Terraform Generator Version: 3.92.1-44330004-20240620-143510
+ */
 
 package project_test
 
@@ -26,6 +30,7 @@ func TestAccIbmProjectEnvironmentDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_project_environment.project_environment_instance", "project.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_project_environment.project_environment_instance", "created_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_project_environment.project_environment_instance", "modified_at"),
+					resource.TestCheckResourceAttrSet("data.ibm_project_environment.project_environment_instance", "href"),
 					resource.TestCheckResourceAttrSet("data.ibm_project_environment.project_environment_instance", "definition.#"),
 				),
 			},
@@ -42,6 +47,8 @@ func testAccCheckIbmProjectEnvironmentDataSourceConfigBasic() string {
                 name = "acme-microservice"
                 description = "acme-microservice description"
                 destroy_on_delete = true
+                monitoring_enabled = true
+                auto_deploy = true
             }
         }
 

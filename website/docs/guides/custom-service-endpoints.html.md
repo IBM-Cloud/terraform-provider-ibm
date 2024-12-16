@@ -14,10 +14,14 @@ The IBM Cloud Provider plug-in for Terraform can be configured to use non-defaul
 
 <!-- TOC depthFrom:2 -->
 
-- [Getting Started with custom service endpoints](#getting-started-with-custom-service-endpoints)
-- [Supported endpoint customizations](#supported-endpoint-customizations)
-- [File structure for endpoints file](#file-structure-for-endpoints-file)
-- [Prioritisation of endpoints](#prioritisation-of-endpoints)
+- [Customizing default cloud service endpoints](#customizing-default-cloud-service-endpoints)
+  - [Getting started with custom service endpoints](#getting-started-with-custom-service-endpoints)
+  - [Supported endpoint customizations](#supported-endpoint-customizations)
+  - [File structure for endpoints file](#file-structure-for-endpoints-file)
+  - [Prioritisation of endpoints](#prioritisation-of-endpoints)
+    - [1. Define service endpoints by using environment variables](#1-define-service-endpoints-by-using-environment-variables)
+    - [2. Define service endpoints by using an endpoints file](#2-define-service-endpoints-by-using-an-endpoints-file)
+    - [3. Use the default private or public service endpoint based on the `visibility` setting in the provider block](#3-use-the-default-private-or-public-service-endpoint-based-on-the-visibility-setting-in-the-provider-block)
 <!-- /TOC -->
 
 ## Getting started with custom service endpoints
@@ -53,6 +57,7 @@ provider "ibm" {
 |Container Registry|IBMCLOUD_CR_API_ENDPOINT|
 |Kubernetes Service|IBMCLOUD_CS_API_ENDPOINT|
 |Metrics Router| IBMCLOUD_METRICS_ROUTING_API_ENDPOINT|
+|MQ on Cloud| IBMCLOUD_MQCLOUD_CONFIG_ENDPOINT|
 |Direct Link|IBMCLOUD_DL_API_ENDPOINT|
 |Direct Link Provider|IBMCLOUD_DL_PROVIDER_API_ENDPOINT|
 |Enterprise Management|IBMCLOUD_ENTERPRISE_API_ENDPOINT|
@@ -78,6 +83,7 @@ provider "ibm" {
 |Transit Gateway|IBMCLOUD_TG_API_ENDPOINT|
 |UAA|IBMCLOUD_UAA_ENDPOINT|
 |User Management|IBMCLOUD_USER_MANAGEMENT_ENDPOINT|
+|Event Notifications|IBMCLOUD_EVENT_NOTIFICATIONS_API_ENDPOINT|
 
 ## File structure for endpoints file
 
@@ -129,6 +135,42 @@ To use public and private regional endpoints for a service, you must add these e
     }
 }
 ```
+**Note:** 
+
+The endpoints file accepts "public", "private" and "public-and-private" as visibility while COS resources support "public", "private" and "direct as endpoint-types. 
+Since endpoints file schema does not supprt "direct", users must define the url for "direct" endpoint-type under exisiting visibility type "private" for "IBMCLOUD_COS_CONFIG_ENDPOINT" and "IBMCLOUD_COS_ENDPOINT".
+The user cannot define urls for both private and direct endpoint-type simultaneously in the endpoints file under "private" field. 
+
+**Example**:
+
+```json
+{
+    "IBMCLOUD_COS_CONFIG_ENDPOINT":{
+        "public":{
+            "us-south":"https://config.cloud-object-storage.cloud.ibm.com/v1"
+        },
+        "private":{
+            "us-south":"https://config.direct.cloud-object-storage.cloud.ibm.com/v1"
+        }
+    }
+}
+```
+
+OR 
+
+```json
+{
+    "IBMCLOUD_COS_CONFIG_ENDPOINT":{
+        "public":{
+            "us-south":"https://config.cloud-object-storage.cloud.ibm.com/v1"
+        },
+        "private":{
+            "us-south":"https://config.private.cloud-object-storage.cloud.ibm.com/v1"
+        }
+    }
+}
+```
+
 
 ## Prioritisation of endpoints
 

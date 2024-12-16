@@ -5,7 +5,7 @@ terraform {
     }
     ibm = {
       source = "IBM-Cloud/ibm"
-      version = "1.56.0"
+      version = ">= 1.56.0"
     }
   }
 }
@@ -51,7 +51,9 @@ resource "kubernetes_manifest" "ocscluster_ocscluster_auto" {
       "osdSize" = var.osdSize,
       "osdStorageClassName" = var.osdStorageClassName,
       "workerNodes" = var.workerNodes==null ? null : split(",", var.workerNodes),
-      "encryptionInTransit" = var.encryptionInTransit
+      "encryptionInTransit" = var.encryptionInTransit,
+      "disableNoobaaLB" = var.disableNoobaaLB,
+      "taintNodes" = var.taintNodes
     }
   }
 

@@ -56,8 +56,27 @@ func DataSourceIBMEnSlackSubscription() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"attachment_color": {
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "attachment color code",
+						},
+						"template_id_notification": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The templete id for notification",
+						},
+						"channels": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "List of channels.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"id": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "channel id.",
+									},
+								},
+							},
 						},
 					},
 				},
@@ -137,5 +156,27 @@ func enSlackSubscriptionToMap(attributeItem *en.SubscriptionAttributes) (attribu
 		attributeMap["attachment_color"] = attributeItem.AttachmentColor
 	}
 
+	if attributeItem.TemplateIDNotification != nil {
+		attributeMap["template_id_notification"] = attributeItem.TemplateIDNotification
+	}
+
+	if attributeItem.Channels != nil {
+		channels := []map[string]interface{}{}
+		for _, channelsItem := range attributeItem.Channels {
+			channelsItemMap, err := dataSourceIBMEnSubscriptionChannelCreateAttributesToMap(&channelsItem)
+			if err != nil {
+				return attributeMap
+			}
+			channels = append(channels, channelsItemMap)
+		}
+		attributeMap["channels"] = channels
+	}
+
 	return attributeMap
+}
+
+func dataSourceIBMEnSubscriptionChannelCreateAttributesToMap(model *en.ChannelCreateAttributes) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["id"] = model.ID
+	return modelMap, nil
 }

@@ -31,7 +31,7 @@ resource "ibm_database" "<your_database>" {
   resource_group_id = data.ibm_resource_group.group.id
   tags              = ["tag1", "tag2"]
 
-  adminpassword                = "password12"
+  adminpassword                = "password12345678"
 
   group {
     group_id = "member"
@@ -51,7 +51,7 @@ resource "ibm_database" "<your_database>" {
 
   users {
     name     = "user123"
-    password = "password12"
+    password = "password12345678"
     type     = "database"
   }
 
@@ -83,7 +83,7 @@ resource "ibm_database" "<your_database>" {
   resource_group_id = data.ibm_resource_group.group.id
   tags              = ["tag1", "tag2"]
 
-  adminpassword                = "password12"
+  adminpassword                = "password12345678"
 
   group {
     group_id = "member"
@@ -98,6 +98,53 @@ resource "ibm_database" "<your_database>" {
 
     cpu {
       allocation_count = 3
+    }
+  }
+
+  users {
+    name     = "user123"
+    password = "password12345678"
+  }
+
+  allowlist {
+    address     = "172.168.1.1/32"
+    description = "desc"
+  }
+}
+
+output "ICD Etcd database connection string" {
+  value = "http://${ibm_database.test_acc.ibm_database_connection.icd_conn}"
+}
+
+```
+
+### Sample database instance by using `host_flavor` attribute
+An example to configure and deploy database by using `host_flavor` attribute.
+
+```terraform
+data "ibm_resource_group" "group" {
+  name = "<your_group>"
+}
+
+resource "ibm_database" "<your_database>" {
+  name              = "<your_database_name>"
+  plan              = "standard"
+  location          = "eu-gb"
+  service           = "databases-for-etcd"
+  resource_group_id = data.ibm_resource_group.group.id
+  tags              = ["tag1", "tag2"]
+
+  adminpassword                = "password12"
+
+  group {
+    group_id = "member"
+
+    host_flavor {
+      id = "b3c.8x32.encrypted"
+    }
+
+    disk {
+      allocation_mb = 256000
     }
   }
 
@@ -173,56 +220,7 @@ resource "ibm_database" "autoscale" {
     }
 }
 ```
-### Sample Cassandra database instance
-* Cassandra provisioning may require more time than the default timeout. A longer timeout value can be set with using the `timeouts` attribute.
 
-```terraform
-data "ibm_resource_group" "test_acc" {
-  is_default = true
-}
-
-resource "ibm_database" "cassandra" {
-  resource_group_id            = data.ibm_resource_group.test_acc.id
-  name                         = "test"
-  service                      = "databases-for-cassandra"
-  plan                         = "enterprise"
-  location                     = "us-south"
-  adminpassword                = "password12"
-
-  group {
-    group_id = "member"
-
-    memory {
-      allocation_mb = 24576
-    }
-
-    disk {
-      allocation_mb = 368640
-    }
-
-    cpu {
-      allocation_count = 6
-    }
-  }
-
-  users {
-    name      = "user123"
-    password  = "password12"
-    type      = "database"
-  }
-
-  allowlist {
-    address     = "172.168.1.2/32"
-    description = "desc1"
-  }
-
-  timeouts {
-    create = "120m"
-    update = "120m"
-    delete = "15m"
-  }
-}
-```
 ### Sample MongoDB Enterprise database instance
 * MongoDB Enterprise provisioning may require more time than the default timeout. A longer timeout value can be set with using the `timeouts` attribute.
 * Please make sure your resources meet minimum requirements of scaling. Please refer [docs](https://cloud.ibm.com/docs/databases-for-mongodb?topic=databases-for-mongodb-pricing#scaling-per-member) for more info.
@@ -239,7 +237,7 @@ resource "ibm_database" "mongodb" {
   service                      = "databases-for-mongodb"
   plan                         = "enterprise"
   location                     = "us-south"
-  adminpassword                = "password12"
+  adminpassword                = "password12345678"
 
   group {
     group_id = "member"
@@ -261,7 +259,7 @@ resource "ibm_database" "mongodb" {
 
   users {
     name      = "dbuser"
-    password  = "password12"
+    password  = "password12345678"
     type      = "database"
   }
 
@@ -300,7 +298,7 @@ resource "ibm_database" "mongodb_enterprise" {
   service           = "databases-for-mongodb"
   plan              = "enterprise"
   location          = "us-south"
-  adminpassword     = "password12"
+  adminpassword     = "password12345678"
   tags              = ["one:two"]
 
   group {
@@ -375,7 +373,7 @@ resource "ibm_database" "edb" {
   service                      = "databases-for-enterprisedb"
   plan                         = "standard"
   location                     = "us-south"
-  adminpassword                = "password12"
+  adminpassword                = "password12345678"
 
   group {
     group_id = "member"
@@ -397,7 +395,7 @@ resource "ibm_database" "edb" {
 
   users {
     name      = "user123"
-    password  = "password12"
+    password  = "password12345678"
     type      = "database"
   }
 
@@ -427,7 +425,7 @@ resource "ibm_database" "es" {
   service                      = "databases-for-elasticsearch"
   plan                         = "enterprise"
   location                     = "eu-gb"
-  adminpassword                = "password12"
+  adminpassword                = "password12345678"
   version                      = "7.17"
   group {
     group_id = "member"
@@ -446,7 +444,7 @@ resource "ibm_database" "es" {
   }
   users {
     name     = "user123"
-    password = "password12"
+    password = "password12345678"
   }
   allowlist {
     address     = "172.168.1.2/32"
@@ -473,7 +471,7 @@ resource "ibm_database" "es" {
   service                      = "databases-for-elasticsearch"
   plan                         = "platinum"
   location                     = "eu-gb"
-  adminpassword                = "password12"
+  adminpassword                = "password12345678"
   group {
     group_id = "member"
     members {
@@ -491,7 +489,7 @@ resource "ibm_database" "es" {
   }
   users {
     name     = "user123"
-    password = "password12"
+    password = "password12345678"
   }
   allowlist {
     address     = "172.168.1.2/32"
@@ -556,7 +554,7 @@ resource "ibm_database" "db" {
 
   users {
     name     = "repl"
-    password = "repl123456"
+    password = "repl12345password"
   }
 
   configuration                = <<CONFIGURATION
@@ -602,7 +600,7 @@ ICD create instance typically takes between 30 minutes to 45 minutes. Delete and
 ## Argument reference
 Review the argument reference that you can specify for your resource.
 
-- `adminpassword` - (Optional, String)  The password for the database administrator. If not specified, an empty string is provided for the password and the user ID cannot be used. In this case, more users must be specified in a `user` block.
+- `adminpassword` - (Optional, String)  The password for the database administrator. Password must be between 15 and 32 characters in length and contain a letter and a number. The only special characters allowed are `-_`.
 - `auto_scaling` (List , Optional) Configure rules to allow your database to automatically increase its resources. Single block of autoscaling is allowed at once.
 
    - Nested scheme for `auto_scaling`:
@@ -648,7 +646,7 @@ Review the argument reference that you can specify for your resource.
 - `location` - (Required, String) The location where you want to deploy your instance. The location must match the `region` parameter that you specify in the `provider` block of your  Terraform configuration file. The default value is `us-south`. Currently, supported regions are `us-south`, `us-east`, `eu-gb`, `eu-de`, `au-syd`, `jp-tok`, `oslo01`.
 - `group` - (Optional, Set) A set of group scaling values for the database. Multiple blocks are allowed. Can only be performed on is_adjustable=true groups. Values set are per-member. Values must be greater than or equal to the minimum size and must be a multiple of the step size.
   - Nested scheme for `group`:
-    - `group_id` - (Optional, String) The ID of the scaling group. Scaling group ID allowed values:  `member`, `analytics`, `bi_connector` or `search`. Read more about `analytics` and `bi_connector` [here](https://cloud.ibm.com/docs/databases-for-mongodb?topic=databases-for-mongodb-mongodbee-analytics). Read more about `search` [here](https://cloud.ibm.com/docs/databases-for-cassandra?topic=databases-for-cassandra-dse-search)
+    - `group_id` - (Optional, String) The ID of the scaling group. Scaling group ID allowed values:  `member`, `analytics`, or `bi_connector`. Read more about `analytics` and `bi_connector` [here](https://cloud.ibm.com/docs/databases-for-mongodb?topic=databases-for-mongodb-mongodbee-analytics).
 
 
     - `members` (Set, Optional)
@@ -667,24 +665,36 @@ Review the argument reference that you can specify for your resource.
       - Nested scheme for `cpu`:
         - `allocation_count` - (Optional, Integer) Allocated dedicated CPU per-member.
 
+    - `host_flavor` (Set, Optional)
+      - Nested scheme for `host_flavor`:
+        - `id` - (Optional, String) The hosting infrastructure identifier. Selecting `multitenant` places your database on a logically separated, multi-tenant machine. With this identifier, minimum resource configurations apply. Alternatively, setting the identifier to any of the following host sizes places your database on the specified host size with no other tenants.
+          - `b3c.4x16.encrypted`
+          - `b3c.8x32.encrypted`
+          - `m3c.8x64.encrypted`
+          - `b3c.16x64.encrypted`
+          - `b3c.32x128.encrypted`
+          - `m3c.30x240.encrypted`
+
 - `name` - (Required, String) A descriptive name that is used to identify the database instance. The name must not include spaces.
 - `offline_restore` - (Optional, Boolean) Enable or disable the Offline Restore option while performing a Point-in-time Recovery for MongoDB EE in a disaster recovery scenario when the source region is unavailable, see [Point-in-time Recovery](https://cloud.ibm.com/docs/databases-for-mongodb?topic=databases-for-mongodb-pitr&interface=api#pitr-offline-restore)
-- `plan` - (Required, Forces new resource, String) The name of the service plan that you choose for your instance. All databases use `standard`. `enterprise` is supported only for elasticsearch (`databases-for-elasticsearch`), cassandra (`databases-for-cassandra`), and mongodb(`databases-for-mongodb`). `platinum` is supported for elasticsearch (`databases-for-elasticsearch`).
+- `plan` - (Required, Forces new resource, String) The name of the service plan that you choose for your instance. All databases use `standard`. `enterprise` is supported only for elasticsearch (`databases-for-elasticsearch`), and mongodb(`databases-for-mongodb`). `platinum` is supported for elasticsearch (`databases-for-elasticsearch`).
 - `point_in_time_recovery_deployment_id` - (Optional, String) The ID of the source deployment that you want to recover back to.
 - `point_in_time_recovery_time` - (Optional, String) The timestamp in UTC format that you want to restore to. To retrieve the timestamp, run the `ibmcloud cdb postgresql earliest-pitr-timestamp <deployment name or CRN>` command. To restore to the latest available time, use a blank string `""` as the timestamp. For more information, see [Point-in-time Recovery](https://cloud.ibm.com/docs/databases-for-postgresql?topic=databases-for-postgresql-pitr).
-- `remote_leader_id` - (Optional, String) A CRN of the leader database to make the replica(read-only) deployment. The leader database is created by a database deployment with the same service ID. A read-only replica is set up to replicate all of your data from the leader deployment to the replica deployment by using asynchronous replication. For more information, see [Configuring Read-only Replicas](https://cloud.ibm.com/docs/databases-for-postgresql?topic=databases-for-postgresql-read-only-replicas).
+- `remote_leader_id` - (Optional, String) A CRN of the leader database to make the replica(read-only) deployment. The leader database is created by a database deployment with the same service ID. A read-only replica is set up to replicate all of your data from the leader deployment to the replica deployment by using asynchronous replication. Removing the `remote_leader_id` attribute from an existing read-only replica will promote the deployment to a standalone deployment. The deployment will restart and break its connection with the leader. This will disable all database users associated with this deployment. For more information, see [Configuring Read-only Replicas](https://cloud.ibm.com/docs/databases-for-postgresql?topic=databases-for-postgresql-read-only-replicas).
+- `skip_initial_backup` - (Optional, Boolean) Should only be set when promoting a read-only replica. By setting this value to `true`, you skip the initial backup that would normally be taken upon promotion. Skipping the initial backup means that your replica becomes available more quickly, but there is no immediate backup available. The default is `false`. For more information, see [Configuring Read-only Replicas]
 - `resource_group_id` - (Optional, Forces new resource, String)  The ID of the resource group where you want to create the instance. To retrieve this value, run `ibmcloud resource groups` or use the `ibm_resource_group` data source. If no value is provided, the `default` resource group is used.
-- `service` - (Required, Forces new resource, String) The type of Cloud Databases that you want to create. Only the following services are currently accepted: `databases-for-etcd`, `databases-for-postgresql`, `databases-for-redis`, `databases-for-elasticsearch`, `messages-for-rabbitmq`,`databases-for-mongodb`,`databases-for-mysql`, `databases-for-cassandra` and `databases-for-enterprisedb`.
-- `service_endpoints` - (Optional, String) Specify whether you want to enable the public, private, or both service endpoints. Supported values are `public`, `private`, or `public-and-private`. The default is `public`.
+- `service` - (Required, Forces new resource, String) The type of Cloud Databases that you want to create. Only the following services are currently accepted: `databases-for-etcd`, `databases-for-postgresql`, `databases-for-redis`, `databases-for-elasticsearch`, `messages-for-rabbitmq`,`databases-for-mongodb`,`databases-for-mysql`, and `databases-for-enterprisedb`.
+- `service_endpoints` - (Required, String) Specify whether you want to enable the public, private, or both service endpoints. Supported values are `public`, `private`, or `public-and-private`.
 - `tags` (Optional, Array of Strings) A list of tags that you want to add to your instance.
 - `version` - (Optional, Forces new resource, String) The version of the database to be provisioned. If omitted, the database is created with the most recent major and minor version.
+- `deletion_protection` - (Optional, Boolean) If the DB instance should have deletion protection within terraform enabled. This is not a property of the resource and does not prevent deletion outside of terraform. The database can't be deleted by terraform when this value is set to `true`. The default is `false`.
 - `users` - (Optional, List of Objects) A list of users that you want to create on the database. Multiple blocks are allowed.
 
   Nested scheme for `users`:
   - `name` - (Required, String) The user name to add to the database instance. The user name must be in the range 5 - 32 characters.
-  - `password` - (Required, String) The password for the user. The password must be in the range 10 - 32 characters. Users
+  - `password` - (Required, String) The password for the user. Passwords must be between 15 and 32 characters in length and contain a letter and a number. Users with an `ops_manager` user type must have a password containing a special character `~!@#$%^&*()=+[]{}|;:,.<>/?_-` as well as a letter and a number. Other user types may only use special characters `-_`.
   - `type` - (Optional, String) The type for the user. Examples: `database`, `ops_manager`, `read_only_replica`. The default value is `database`.
-  - `role` - (Optional, String) The role for the user. Only available for `ops_manager` user type. Examples: `group_read_only`, `group_data_access_admin`.
+  - `role` - (Optional, String) The role for the user. Only available for `ops_manager` user type or Redis 6.0 and above. Example roles for `ops_manager`: `group_read_only`, `group_data_access_admin`. For, Redis 6.0 and above, `role` must be in Redis ACL syntax for adding and removing command categories i.e. `+@category` or  `-@category`. Allowed command categories are `all`, `admin`, `read`, `write`. Example Redis `role`: `-@all +@read`
 
 - `allowlist` - (Optional, List of Objects) A list of allowed IP addresses for the database. Multiple blocks are allowed.
 
@@ -723,6 +733,7 @@ Import requires a minimal Terraform config file to allow importing.
 ```terraform
 resource "ibm_database" "<your_database>" {
   name              = "<your_database_name>"
+}
 ```
 
 Run `terraform state show ibm_database.<your_database>` after import to retrieve the more values to be included in the resource config file. Observe the ICD exports the admin userid. It does not export any more user IDs and passwords that are configured on the instance. These values must be retrieved from an alternative source. If new passwords need to be configured or the connection string that is retrieved to use the service, a new users block must be defined to create new users. This limitation is due to a lack of ICD functionality.

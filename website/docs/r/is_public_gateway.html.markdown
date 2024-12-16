@@ -58,7 +58,7 @@ Review the argument references that you can specify for your resource.
   **&#x2022;** For more information, about creating access tags, see [working with tags](https://cloud.ibm.com/docs/account?topic=account-tag&interface=ui#create-access-console).</br>
   **&#x2022;** You must have the access listed in the [Granting users access to tag resources](https://cloud.ibm.com/docs/account?topic=account-access) for `access_tags`</br>
   **&#x2022;** `access_tags` must be in the format `key:value`.
-- `floating_ip` - (Optional, List) A list of floating IP addresses that you want to assign to the public gateway.
+- `floating_ip` - (Optional, Map) A map of floating IP addresses that you want to assign to the public gateway.
 	- `id` - (Optional, String) The unique identifier of the floating IP address. If you specify this parameter, do not specify `address` at the same time. 
 	- `address` - (Optional, String) The floating IP address. If you specify this parameter, do not specify `id` at the same time.
 - `name` -  (Required, String) Enter a name for your public gateway.

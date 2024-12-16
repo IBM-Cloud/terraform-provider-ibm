@@ -23,6 +23,7 @@ const (
 )
 
 var (
+	AccountId                       string
 	AppIDTenantID                   string
 	AppIDTestUserEmail              string
 	BackupPolicyJobID               string
@@ -36,6 +37,8 @@ var (
 	CloudShellAccountID             string
 	CosCRN                          string
 	BucketCRN                       string
+	ActivityTrackerInstanceCRN      string
+	MetricsMonitoringCRN            string
 	BucketName                      string
 	CosName                         string
 	Ibmid1                          string
@@ -84,8 +87,10 @@ var (
 	ISZoneName2                     string
 	ISZoneName3                     string
 	IsResourceGroupID               string
+	ISResourceCrn                   string
 	ISCIDR                          string
 	ISCIDR2                         string
+	ISIPV4Address                   string
 	ISPublicSSHKeyFilePath          string
 	ISPrivateSSHKeyFilePath         string
 	ISAddressPrefixCIDR             string
@@ -94,6 +99,7 @@ var (
 	InstanceProfileNameUpdate       string
 	IsBareMetalServerProfileName    string
 	IsBareMetalServerImage          string
+	IsBareMetalServerImage2         string
 	DNSInstanceCRN                  string
 	DNSZoneID                       string
 	DNSInstanceCRN1                 string
@@ -104,7 +110,10 @@ var (
 	DedicatedHostGroupFamily        string
 	DedicatedHostGroupClass         string
 	ShareProfileName                string
+	SourceShareCRN                  string
+	ShareEncryptionKey              string
 	VNIId                           string
+	FloatingIpID                    string
 	VolumeProfileName               string
 	VSIUnattachedBootVolumeID       string
 	VSIDataVolumeID                 string
@@ -122,24 +131,52 @@ var (
 	HpcsInstanceID                  string
 )
 
+// MQ on Cloud
+var (
+	MqcloudConfigEndpoint                       string
+	MqcloudDeploymentID                         string
+	MqcloudCapacityID                           string
+	MqcloudQueueManagerID                       string
+	MqcloudKSCertFilePath                       string
+	MqcloudTSCertFilePath                       string
+	MqCloudQueueManagerLocation                 string
+	MqCloudQueueManagerVersion                  string
+	MqCloudQueueManagerVersionUpdate            string
+	MqCloudVirtualPrivateEndPointTargetCrn      string
+	MqCloudVirtualPrivateEndPointTrustedProfile string
+)
+
+// Logs
+var (
+	LogsInstanceId                      string
+	LogsInstanceRegion                  string
+	LogsEventNotificationInstanceId     string
+	LogsEventNotificationInstanceRegion string
+)
+
 // Secrets Manager
 var (
-	SecretsManagerInstanceID                                     string
-	SecretsManagerInstanceRegion                                 string
-	SecretsManagerENInstanceCrn                                  string
-	SecretsManagerIamCredentialsConfigurationApiKey              string
-	SecretsManagerIamCredentialsSecretServiceId                  string
-	SecretsManagerIamCredentialsSecretServiceAccessGroup         string
-	SecretsManagerPublicCertificateLetsEncryptEnvironment        string
-	SecretsManagerPublicCertificateLetsEncryptPrivateKey         string
-	SecretsManagerPublicCertificateCisCrn                        string
-	SecretsManagerPublicCertificateClassicInfrastructureUsername string
-	SecretsManagerPublicCertificateClassicInfrastructurePassword string
-	SecretsManagerPublicCertificateCommonName                    string
-	SecretsManagerValidateManualDnsCisZoneId                     string
-	SecretsManagerImportedCertificatePathToCertificate           string
-	SecretsManagerSecretType                                     string
-	SecretsManagerSecretID                                       string
+	SecretsManagerInstanceID                                                        string
+	SecretsManagerInstanceRegion                                                    string
+	SecretsManagerENInstanceCrn                                                     string
+	SecretsManagerIamCredentialsConfigurationApiKey                                 string
+	SecretsManagerIamCredentialsSecretServiceId                                     string
+	SecretsManagerIamCredentialsSecretServiceAccessGroup                            string
+	SecretsManagerPublicCertificateLetsEncryptEnvironment                           string
+	SecretsManagerPublicCertificateLetsEncryptPrivateKey                            string
+	SecretsManagerPublicCertificateCisCrn                                           string
+	SecretsManagerPublicCertificateClassicInfrastructureUsername                    string
+	SecretsManagerPublicCertificateClassicInfrastructurePassword                    string
+	SecretsManagerPublicCertificateCommonName                                       string
+	SecretsManagerValidateManualDnsCisZoneId                                        string
+	SecretsManagerImportedCertificatePathToCertificate                              string
+	SecretsManagerServiceCredentialsCosCrn                                          string
+	SecretsManagerPrivateCertificateConfigurationCryptoKeyIAMSecretServiceId        string
+	SecretsManagerPrivateCertificateConfigurationCryptoKeyProviderType              string
+	SecretsManagerPrivateCertificateConfigurationCryptoKeyProviderInstanceCrn       string
+	SecretsManagerPrivateCertificateConfigurationCryptoKeyProviderPrivateKeystoreId string
+	SecretsManagerSecretType                                                        string
+	SecretsManagerSecretID                                                          string
 )
 
 var (
@@ -172,34 +209,48 @@ var (
 // For Power Colo
 
 var (
-	Pi_image                        string
-	Pi_sap_image                    string
-	Pi_image_bucket_name            string
-	Pi_image_bucket_file_name       string
-	Pi_image_bucket_access_key      string
-	Pi_image_bucket_secret_key      string
-	Pi_image_bucket_region          string
-	Pi_key_name                     string
-	Pi_volume_name                  string
-	Pi_volume_id                    string
-	Pi_replication_volume_name      string
-	Pi_volume_onboarding_source_crn string
-	Pi_auxiliary_volume_name        string
-	Pi_volume_group_name            string
-	Pi_volume_group_id              string
-	Pi_volume_onboarding_id         string
-	Pi_network_name                 string
-	Pi_cloud_instance_id            string
-	Pi_instance_name                string
-	Pi_dhcp_id                      string
-	PiCloudConnectionName           string
-	PiSAPProfileID                  string
-	Pi_placement_group_name         string
-	Pi_spp_placement_group_id       string
-	PiStoragePool                   string
-	PiStorageType                   string
-	Pi_shared_processor_pool_id     string
-	Pi_resource_group_id            string
+	Pi_auxiliary_volume_name          string
+	Pi_cloud_instance_id              string
+	Pi_dhcp_id                        string
+	Pi_host_group_id                  string
+	Pi_host_id                        string
+	Pi_image                          string
+	Pi_image_bucket_access_key        string
+	Pi_image_bucket_file_name         string
+	Pi_image_bucket_name              string
+	Pi_image_bucket_region            string
+	Pi_image_bucket_secret_key        string
+	Pi_image_id                       string
+	Pi_instance_name                  string
+	Pi_key_name                       string
+	Pi_network_address_group_id       string
+	Pi_network_id                     string
+	Pi_network_interface_id           string
+	Pi_network_name                   string
+	Pi_network_security_group_id      string
+	Pi_network_security_group_rule_id string
+	Pi_placement_group_name           string
+	Pi_remote_id                      string
+	Pi_remote_type                    string
+	Pi_replication_volume_name        string
+	Pi_resource_group_id              string
+	Pi_sap_image                      string
+	Pi_shared_processor_pool_id       string
+	Pi_snapshot_id                    string
+	Pi_spp_placement_group_id         string
+	Pi_storage_connection             string
+	Pi_target_storage_tier            string
+	Pi_volume_clone_task_id           string
+	Pi_volume_group_id                string
+	Pi_volume_group_name              string
+	Pi_volume_id                      string
+	Pi_volume_name                    string
+	Pi_volume_onboarding_id           string
+	Pi_volume_onboarding_source_crn   string
+	PiCloudConnectionName             string
+	PiSAPProfileID                    string
+	PiStoragePool                     string
+	PiStorageType                     string
 )
 
 var (
@@ -214,7 +265,9 @@ var ISDelegegatedVPC string
 
 var (
 	IsImageName             string
+	IsImageName2            string
 	IsImage                 string
+	IsImage2                string
 	IsImageEncryptedDataKey string
 	IsImageEncryptionKey    string
 	IsWinImage              string
@@ -251,9 +304,13 @@ var Snapshot_month string
 // Secuity and Complinace Center
 var (
 	SccApiEndpoint            string
-	SccProviderTypeAttributes string
-	SccReportID               string
+	SccEventNotificationsCRN  string
 	SccInstanceID             string
+	SccObjectStorageCRN       string
+	SccObjectStorageBucket    string
+	SccProviderTypeAttributes string
+	SccProviderTypeID         string
+	SccReportID               string
 )
 
 // ROKS Cluster
@@ -315,6 +372,8 @@ var (
 	CeDomainMappingName string
 	CeTLSCert           string
 	CeTLSKey            string
+	CeTLSKeyFilePath    string
+	CeTLSCertFilePath   string
 )
 
 // Satellite tests
@@ -327,6 +386,50 @@ var IamIdentityAssignmentTargetAccountId string
 
 // Projects
 var ProjectsConfigApiKey string
+
+// For PAG
+var (
+	PagCosInstanceName         string
+	PagCosBucketName           string
+	PagCosBucketRegion         string
+	PagVpcName                 string
+	PagServicePlan             string
+	PagVpcSubnetNameInstance_1 string
+	PagVpcSubnetNameInstance_2 string
+	PagVpcSgInstance_1         string
+	PagVpcSgInstance_2         string
+)
+
+// For VMware as a Service
+var (
+	Vmaas_Directorsite_id      string
+	Vmaas_Directorsite_pvdc_id string
+)
+
+// For IAM Access Management
+var (
+	TargetAccountId    string
+	TargetEnterpriseId string
+)
+
+// For Partner Center Sell
+var (
+	PcsRegistrationAccountId                         string
+	PcsOnboardingProductWithApprovedProgrammaticName string
+	// one Onboarding product can only have one catalog product ever
+	PcsOnboardingProductWithApprovedProgrammaticName2 string
+	PcsOnboardingProductWithCatalogProduct            string
+	PcsOnboardingCatalogProductId                     string
+	PcsOnboardingCatalogPlanId                        string
+	PcsIamServiceRegistrationId                       string
+)
+
+// For cluster
+var (
+	ISClusterNetworkProfileName        string
+	ISInstanceGPUProfileName           string
+	ISClusterNetworkSubnetPrefixesCidr string
+)
 
 func init() {
 	testlogger := os.Getenv("TF_LOG")
@@ -473,6 +576,16 @@ func init() {
 		BucketCRN = ""
 		fmt.Println("[WARN] Set the environment variable IBM_COS_Bucket_CRN with a VALID BUCKET CRN for testing ibm_cos_bucket* resources")
 	}
+	ActivityTrackerInstanceCRN = os.Getenv("IBM_COS_ACTIVITY_TRACKER_CRN")
+	if ActivityTrackerInstanceCRN == "" {
+		ActivityTrackerInstanceCRN = ""
+		fmt.Println("[WARN] Set the environment variable IBM_COS_ACTIVITY_TRACKER_CRN with a VALID ACTIVITY TRACKER INSTANCE CRN in valid region for testing ibm_cos_bucket* resources")
+	}
+	MetricsMonitoringCRN = os.Getenv("IBM_COS_METRICS_MONITORING_CRN")
+	if MetricsMonitoringCRN == "" {
+		MetricsMonitoringCRN = ""
+		fmt.Println("[WARN] Set the environment variable IBM_COS_METRICS_MONITORING_CRN with a VALID METRICS MONITORING CRN for testing ibm_cos_bucket* resources")
+	}
 	BucketName = os.Getenv("IBM_COS_BUCKET_NAME")
 	if BucketName == "" {
 		BucketName = ""
@@ -511,7 +624,7 @@ func init() {
 
 	KubeVersion = os.Getenv("IBM_KUBE_VERSION")
 	if KubeVersion == "" {
-		KubeVersion = "1.18"
+		KubeVersion = "1.25.9"
 		fmt.Println("[WARN] Set the environment variable IBM_KUBE_VERSION for testing ibm_container_cluster resource else it is set to default value '1.18.14'")
 	}
 
@@ -662,7 +775,40 @@ func init() {
 		ISCIDR2 = "10.240.64.0/24"
 		fmt.Println("[INFO] Set the environment variable SL_CIDR_2 for testing ibm_is_subnet else it is set to default value '10.240.64.0/24'")
 	}
+	ISIPV4Address = os.Getenv("IS_IPV4_ADDRESS")
+	if ISIPV4Address == "" {
+		ISIPV4Address = "10.240.0.6"
+		fmt.Println("[INFO] Set the environment variable IS_IPV4_ADDRESS for testing ibm_is_instance else it is set to default value '10.240.0.6'")
+	}
 
+	AccountId = os.Getenv("IS_ACCOUNT_ID")
+	if AccountId == "" {
+		AccountId = "fee82deba12e4c0fb69c3b09d1f12345"
+		fmt.Println("[INFO] Set the environment variable IS_ACCOUNT_ID for testing private_path_service_gateway_account_policy else it is set to default value 'fee82deba12e4c0fb69c3b09d1f12345'")
+	}
+
+	ISClusterNetworkProfileName = os.Getenv("IS_CLUSTER_NETWORK_PROFILE_NAME")
+	if ISClusterNetworkProfileName == "" {
+		ISClusterNetworkProfileName = "h100"
+		fmt.Println("[INFO] Set the environment variable IS_CLUSTER_NETWORK_PROFILE_NAME for testing cluster_network_profile else it is set to default value 'h100'")
+	}
+	ISInstanceGPUProfileName = os.Getenv("IS_INSTANCE_GPU_PROFILE_NAME")
+	if ISInstanceGPUProfileName == "" {
+		ISInstanceGPUProfileName = "gx3d-160x1792x8h100"
+		fmt.Println("[INFO] Set the environment variable IS_INSTANCE_GPU_PROFILE_NAME for testing cluster_network_attachments else it is set to default value 'gx3d-160x1792x8h100'")
+	}
+
+	ISClusterNetworkSubnetPrefixesCidr = os.Getenv("IS_CLUSTER_NETWORK_SUBNET_PREFIXES_CIDR")
+	if ISClusterNetworkSubnetPrefixesCidr == "" {
+		ISClusterNetworkSubnetPrefixesCidr = "10.1.0.0/24"
+		fmt.Println("[INFO] Set the environment variable IS_CLUSTER_NETWORK_SUBNET_PREFIXES_CIDR for testing cluster_network else it is set to default value '10.1.0.0/24'")
+	}
+
+	ISAddressPrefixCIDR = os.Getenv("SL_ADDRESS_PREFIX_CIDR")
+	if ISAddressPrefixCIDR == "" {
+		ISAddressPrefixCIDR = "10.120.0.0/24"
+		fmt.Println("[INFO] Set the environment variable SL_ADDRESS_PREFIX_CIDR for testing ibm_is_vpc_address_prefix else it is set to default value '10.120.0.0/24'")
+	}
 	ISCIDR2 = os.Getenv("SL_CIDR_2")
 	if ISCIDR2 == "" {
 		ISCIDR2 = "10.240.64.0/24"
@@ -686,12 +832,23 @@ func init() {
 		IsResourceGroupID = "c01d34dff4364763476834c990398zz8"
 		fmt.Println("[INFO] Set the environment variable SL_RESOURCE_GROUP_ID for testing with different resource group id else it is set to default value 'c01d34dff4364763476834c990398zz8'")
 	}
+	ISResourceCrn = os.Getenv("IS_RESOURCE_INSTANCE_CRN")
+	if ISResourceCrn == "" {
+		ISResourceCrn = "crn:v1:bluemix:public:cloud-object-storage:global:a/fugeggfcgjebvrburvgurgvugfr:236764224-f48fu4-f4h84-9db3-4f94fh::"
+		fmt.Println("[INFO] Set the environment variable IS_RESOURCE_CRN for testing with created resource instance")
+	}
 
 	IsImage = os.Getenv("IS_IMAGE")
 	if IsImage == "" {
 		// IsImage = "fc538f61-7dd6-4408-978c-c6b85b69fe76" // for classic infrastructure
-		IsImage = "r006-907911a7-0ffe-467e-8821-3cc9a0d82a39" // for next gen infrastructure ibm-centos-7-9-minimal-amd64-10 image
-		fmt.Println("[INFO] Set the environment variable IS_IMAGE for testing ibm_is_instance, ibm_is_floating_ip else it is set to default value 'r006-907911a7-0ffe-467e-8821-3cc9a0d82a39'")
+		IsImage = "r006-587a041d-9246-44f0-980b-56a327cf5bd7" // for next gen infrastructure ibm-ubuntu-24-04-6-minimal-amd64-1 us-south
+		fmt.Println("[INFO] Set the environment variable IS_IMAGE for testing ibm_is_instance, ibm_is_floating_ip else it is set to default value 'r006-587a041d-9246-44f0-980b-56a327cf5bd7'")
+	}
+
+	IsImage2 = os.Getenv("IS_IMAGE2")
+	if IsImage2 == "" {
+		IsImage2 = "r134-f47cc24c-e020-4db5-ad96-1e5be8b5853b" // for next gen infrastructure ibm-centos-7-9-minimal-amd64-10 image
+		fmt.Println("[INFO] Set the environment variable IS_IMAGE2 for testing ibm_is_instance, ibm_is_floating_ip else it is set to default value 'r134-f47cc24c-e020-4db5-ad96-1e5be8b5853b'")
 	}
 
 	IsWinImage = os.Getenv("IS_WIN_IMAGE")
@@ -762,14 +919,20 @@ func init() {
 
 	IsBareMetalServerProfileName = os.Getenv("IS_BARE_METAL_SERVER_PROFILE")
 	if IsBareMetalServerProfileName == "" {
-		IsBareMetalServerProfileName = "bx2-metal-192x768" // for next gen infrastructure
-		fmt.Println("[INFO] Set the environment variable IS_BARE_METAL_SERVER_PROFILE for testing ibm_is_bare_metal_server resource else it is set to default value 'bx2-metal-192x768'")
+		IsBareMetalServerProfileName = "bx2-metal-96x384" // for next gen infrastructure
+		fmt.Println("[INFO] Set the environment variable IS_BARE_METAL_SERVER_PROFILE for testing ibm_is_bare_metal_server resource else it is set to default value 'bx2-metal-96x384'")
 	}
 
 	IsBareMetalServerImage = os.Getenv("IS_BARE_METAL_SERVER_IMAGE")
 	if IsBareMetalServerImage == "" {
 		IsBareMetalServerImage = "r006-2d1f36b0-df65-4570-82eb-df7ae5f778b1" // for next gen infrastructure
 		fmt.Println("[INFO] Set the environment variable IsBareMetalServerImage for testing ibm_is_bare_metal_server resource else it is set to default value 'r006-2d1f36b0-df65-4570-82eb-df7ae5f778b1'")
+	}
+
+	IsBareMetalServerImage2 = os.Getenv("IS_BARE_METAL_SERVER_IMAGE2")
+	if IsBareMetalServerImage2 == "" {
+		IsBareMetalServerImage2 = "r006-2d1f36b0-df65-4570-82eb-df7ae5f778b1" // for next gen infrastructure
+		fmt.Println("[INFO] Set the environment variable IsBareMetalServerImage2 for testing ibm_is_bare_metal_server resource else it is set to default value 'r006-2d1f36b0-df65-4570-82eb-df7ae5f778b1'")
 	}
 
 	DNSInstanceCRN = os.Getenv("IS_DNS_INSTANCE_CRN")
@@ -839,6 +1002,18 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable IS_SHARE_PROFILE for testing ibm_is_instance resource else it is set to default value 'tier-3iops'")
 	}
 
+	SourceShareCRN = os.Getenv("IS_SOURCE_SHARE_CRN")
+	if SourceShareCRN == "" {
+		SourceShareCRN = "crn:v1:staging:public:is:us-east-1:a/efe5afc483594adaa8325e2b4d1290df::share:r142-a106f162-86e4-4d7f-be75-193cc55a93e9" // for next gen infrastructure
+		fmt.Println("[INFO] Set the environment variable IS_SHARE_PROFILE for testing ibm_is_instance resource else it is set to default value")
+	}
+
+	ShareEncryptionKey = os.Getenv("IS_SHARE_ENCRYPTION_KEY")
+	if ShareEncryptionKey == "" {
+		ShareEncryptionKey = "crn:v1:staging:public:kms:us-south:a/efe5afc483594adaa8325e2b4d1290df:1be45161-6dae-44ca-b248-837f98004057:key:3dd21cc5-cc20-4f7c-bc62-8ec9a8a3d1bd" // for next gen infrastructure
+		fmt.Println("[INFO] Set the environment variable IS_SHARE_PROFILE for testing ibm_is_instance resource else it is set to default value")
+	}
+
 	VolumeProfileName = os.Getenv("IS_VOLUME_PROFILE")
 	if VolumeProfileName == "" {
 		VolumeProfileName = "general-purpose"
@@ -849,6 +1024,11 @@ func init() {
 	if VNIId == "" {
 		VNIId = "c93dc4c6-e85a-4da2-9ea6-f24576256122"
 		fmt.Println("[INFO] Set the environment variable IS_VIRTUAL_NETWORK_INTERFACE for testing ibm_is_virtual_network_interface else it is set to default value 'c93dc4c6-e85a-4da2-9ea6-f24576256122'")
+	}
+	FloatingIpID = os.Getenv("IS_FLOATING_IP")
+	if FloatingIpID == "" {
+		FloatingIpID = "r006-9fc3948f-1b01-406c-baa5-e86b185e559f"
+		fmt.Println("[INFO] Set the environment variable IS_FLOATING_IP for testing ibm_is_virtual_network_interface else it is set to default value 'r006-9fc3948f-1b01-406c-baa5-e86b185e559f'")
 	}
 
 	VSIUnattachedBootVolumeID = os.Getenv("IS_VSI_UNATTACHED_BOOT_VOLUME_ID")
@@ -927,7 +1107,13 @@ func init() {
 	Pi_image_bucket_region = os.Getenv("PI_IMAGE_BUCKET_REGION")
 	if Pi_image_bucket_region == "" {
 		Pi_image_bucket_region = "us-east"
-		fmt.Println("[INFO] Set the environment variable PI_IMAGE_BUCKET_REGION for testing ibm_pi_image_export resource else it is set to default value 'us-east'")
+		fmt.Println("[INFO] Set the environment variable PI_IMAGE_BUCKET_REGION for testing ibm_pi_image resource else it is set to default value 'us-east'")
+	}
+
+	Pi_image_id = os.Getenv("PI_IMAGE_ID")
+	if Pi_image_id == "" {
+		Pi_image_id = "IBMi-72-09-2924-11"
+		fmt.Println("[INFO] Set the environment variable PI_IMAGE_ID for testing ibm_pi_image resource else it is set to default value 'IBMi-72-09-2924-11'")
 	}
 
 	Pi_key_name = os.Getenv("PI_KEY_NAME")
@@ -940,6 +1126,40 @@ func init() {
 	if Pi_network_name == "" {
 		Pi_network_name = "terraform-test-power"
 		fmt.Println("[INFO] Set the environment variable PI_NETWORK_NAME for testing ibm_pi_network_name resource else it is set to default value 'terraform-test-power'")
+	}
+	Pi_network_id = os.Getenv("PI_NETWORK_ID")
+	if Pi_network_id == "" {
+		Pi_network_id = "terraform-test-power"
+		fmt.Println("[INFO] Set the environment variable PI_NETWORK_ID for testing ibm_pi_network_interface resource else it is set to default value 'terraform-test-power'")
+	}
+	Pi_network_interface_id = os.Getenv("PI_NETWORK_INTERFACE_ID")
+	if Pi_network_interface_id == "" {
+		Pi_network_interface_id = "terraform-test-power"
+		fmt.Println("[INFO] Set the environment variable PI_NETWORK_INTERFACE_ID for testing ibm_pi_network_interface resource else it is set to default value 'terraform-test-power'")
+	}
+
+	Pi_network_security_group_id = os.Getenv("PI_NETWORK_SECURITY_GROUP_ID")
+	if Pi_network_security_group_id == "" {
+		Pi_network_security_group_id = "terraform-test-power"
+		fmt.Println("[INFO] Set the environment variable PI_NETWORK_SECURITY_GROUP_ID for testing ibm_pi_network_security_group resource else it is set to default value 'terraform-test-power'")
+	}
+
+	Pi_network_security_group_rule_id = os.Getenv("PI_NETWORK_SECURITY_GROUP_RULE_ID")
+	if Pi_network_security_group_rule_id == "" {
+		Pi_network_security_group_rule_id = "terraform-test-power"
+		fmt.Println("[INFO] Set the environment variable PI_NETWORK_SECURITY_GROUP_RULE_ID for testing ibm_pi_network_security_group resource else it is set to default value 'terraform-test-power'")
+	}
+
+	Pi_network_security_group_id = os.Getenv("PI_NETWORK_SECURITY_GROUP_ID")
+	if Pi_network_security_group_id == "" {
+		Pi_network_security_group_id = "terraform-test-power"
+		fmt.Println("[INFO] Set the environment variable PI_NETWORK_SECURITY_GROUP_ID for testing ibm_pi_network_security_group resource else it is set to default value 'terraform-test-power'")
+	}
+
+	Pi_network_security_group_rule_id = os.Getenv("PI_NETWORK_SECURITY_GROUP_RULE_ID")
+	if Pi_network_security_group_rule_id == "" {
+		Pi_network_security_group_rule_id = "terraform-test-power"
+		fmt.Println("[INFO] Set the environment variable PI_NETWORK_SECURITY_GROUP_RULE_ID for testing ibm_pi_network_security_group resource else it is set to default value 'terraform-test-power'")
 	}
 
 	Pi_volume_name = os.Getenv("PI_VOLUME_NAME")
@@ -996,6 +1216,12 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable PI_CLOUDINSTANCE_ID for testing ibm_pi_image resource else it is set to default value 'd16705bd-7f1a-48c9-9e0e-1c17b71e7331'")
 	}
 
+	Pi_snapshot_id = os.Getenv("PI_SNAPSHOT_ID")
+	if Pi_snapshot_id == "" {
+		Pi_snapshot_id = "1ea33118-4c43-4356-bfce-904d0658de82"
+		fmt.Println("[INFO] Set the environment variable PI_SNAPSHOT_ID for testing ibm_pi_instance_snapshot data source else it is set to default value '1ea33118-4c43-4356-bfce-904d0658de82'")
+	}
+
 	Pi_instance_name = os.Getenv("PI_PVM_INSTANCE_NAME")
 	if Pi_instance_name == "" {
 		Pi_instance_name = "terraform-test-power"
@@ -1025,21 +1251,37 @@ func init() {
 		Pi_placement_group_name = "tf-pi-placement-group"
 		fmt.Println("[WARN] Set the environment variable PI_PLACEMENT_GROUP_NAME for testing ibm_pi_placement_group resource else it is set to default value 'tf-pi-placement-group'")
 	}
+
+	Pi_remote_id = os.Getenv("PI_REMOTE_ID")
+	if Pi_remote_id == "" {
+		Pi_remote_id = "terraform-test-power"
+		fmt.Println("[WARN] Set the environment variable PI_REMOTE_ID for testing ibm_pi_network_security_group resource else it is set to default value 'terraform-test-power'")
+	}
+
+	Pi_remote_type = os.Getenv("PI_REMOTE_TYPE")
+	if Pi_remote_type == "" {
+		Pi_remote_type = "terraform-test-power"
+		fmt.Println("[WARN] Set the environment variable PI_REMOTE_TYPE for testing ibm_pi_network_security_group resource else it is set to default value 'terraform-test-power'")
+	}
+
 	Pi_spp_placement_group_id = os.Getenv("PI_SPP_PLACEMENT_GROUP_ID")
 	if Pi_spp_placement_group_id == "" {
 		Pi_spp_placement_group_id = "tf-pi-spp-placement-group"
 		fmt.Println("[WARN] Set the environment variable PI_SPP_PLACEMENT_GROUP_ID for testing ibm_pi_spp_placement_group resource else it is set to default value 'tf-pi-spp-placement-group'")
 	}
+
 	PiStoragePool = os.Getenv("PI_STORAGE_POOL")
 	if PiStoragePool == "" {
 		PiStoragePool = "terraform-test-power"
 		fmt.Println("[INFO] Set the environment variable PI_STORAGE_POOL for testing ibm_pi_storage_pool_capacity else it is set to default value 'terraform-test-power'")
 	}
+
 	PiStorageType = os.Getenv("PI_STORAGE_TYPE")
 	if PiStorageType == "" {
 		PiStorageType = "terraform-test-power"
 		fmt.Println("[INFO] Set the environment variable PI_STORAGE_TYPE for testing ibm_pi_storage_type_capacity else it is set to default value 'terraform-test-power'")
 	}
+
 	// Added for resource capture instance testing
 	Pi_capture_storage_image_path = os.Getenv("PI_CAPTURE_STORAGE_IMAGE_PATH")
 	if Pi_capture_storage_image_path == "" {
@@ -1064,11 +1306,41 @@ func init() {
 		Pi_shared_processor_pool_id = "tf-pi-shared-processor-pool"
 		fmt.Println("[WARN] Set the environment variable PI_SHARED_PROCESSOR_POOL_ID for testing ibm_pi_shared_processor_pool resource else it is set to default value 'tf-pi-shared-processor-pool'")
 	}
+	Pi_storage_connection = os.Getenv("PI_STORAGE_CONNECTION")
+	if Pi_storage_connection == "" {
+		fmt.Println("[WARN] Set the environment variable PI_STORAGE_CONNECTION for testing pi_storage_connection resource else it is empty")
+	}
+	Pi_target_storage_tier = os.Getenv("PI_TARGET_STORAGE_TIER")
+	if Pi_target_storage_tier == "" {
+		Pi_target_storage_tier = "terraform-test-tier"
+		fmt.Println("[INFO] Set the environment variable PI_TARGET_STORAGE_TIER for testing Pi_target_storage_tier resource else it is set to default value 'terraform-test-tier'")
+	}
+
+	Pi_volume_clone_task_id = os.Getenv("PI_VOLUME_CLONE_TASK_ID")
+	if Pi_volume_clone_task_id == "" {
+		Pi_volume_clone_task_id = "terraform-test-volume-clone-task-id"
+		fmt.Println("[INFO] Set the environment variable PI_VOLUME_CLONE_TASK_ID for testing Pi_volume_clone_task_id resource else it is set to default value 'terraform-test-volume-clone-task-id'")
+	}
 
 	Pi_resource_group_id = os.Getenv("PI_RESOURCE_GROUP_ID")
 	if Pi_resource_group_id == "" {
 		Pi_resource_group_id = ""
 		fmt.Println("[WARN] Set the environment variable PI_RESOURCE_GROUP_ID for testing ibm_pi_workspace resource else it is set to default value ''")
+	}
+	Pi_host_group_id = os.Getenv("PI_HOST_GROUP_ID")
+	if Pi_host_group_id == "" {
+		Pi_host_group_id = ""
+		fmt.Println("[WARN] Set the environment variable PI_HOST_GROUP_ID for testing ibm_pi_host resource else it is set to default value ''")
+	}
+	Pi_host_id = os.Getenv("PI_HOST_ID")
+	if Pi_host_id == "" {
+		Pi_host_id = ""
+		fmt.Println("[WARN] Set the environment variable PI_HOST_ID for testing ibm_pi_host resource else it is set to default value ''")
+	}
+	Pi_network_address_group_id = os.Getenv("PI_NETWORK_ADDRESS_GROUP_ID")
+	if Pi_network_address_group_id == "" {
+		Pi_network_address_group_id = "terraform-test-power"
+		fmt.Println("[INFO] Set the environment variable PI_NETWORK_ADDRESS_GROUP_ID for testing ibm_pi_network_address_group data source else it is set to default value 'terraform-test-power'")
 	}
 
 	WorkspaceID = os.Getenv("SCHEMATICS_WORKSPACE_ID")
@@ -1128,6 +1400,12 @@ func init() {
 		// IsImageName = "ibm-ubuntu-18-04-2-minimal-amd64-1" // for classic infrastructure
 		IsImageName = "ibm-ubuntu-22-04-1-minimal-amd64-4" // for next gen infrastructure
 		fmt.Println("[INFO] Set the environment variable IS_IMAGE_NAME for testing data source ibm_is_image else it is set to default value `ibm-ubuntu-18-04-1-minimal-amd64-2`")
+	}
+
+	IsImageName2 = os.Getenv("IS_IMAGE_NAME2")
+	if IsImageName2 == "" {
+		IsImageName2 = "ibm-ubuntu-20-04-6-minimal-amd64-5" // for next gen infrastructure
+		fmt.Println("[INFO] Set the environment variable IS_IMAGE_NAME2 for testing data source ibm_is_image else it is set to default value `ibm-ubuntu-20-04-6-minimal-amd64-5`")
 	}
 	IsImageEncryptedDataKey = os.Getenv("IS_IMAGE_ENCRYPTED_DATA_KEY")
 	if IsImageEncryptedDataKey == "" {
@@ -1219,16 +1497,29 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_IMPORTED_CERTIFICATE_PATH_TO_CERTIFICATE for testing imported certificate's tests, else tests fail if not set correctly")
 	}
 
-	SecretsManagerSecretType = os.Getenv("SECRETS_MANAGER_SECRET_TYPE")
-	if SecretsManagerSecretType == "" {
-		SecretsManagerSecretType = "username_password"
-		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_SECRET_TYPE for testing data_source_ibm_secrets_manager_secrets_test, else it is set to default value. For data_source_ibm_secrets_manager_secret_test, tests will fail if this is not set correctly")
+	SecretsManagerServiceCredentialsCosCrn = os.Getenv("SECRETS_MANAGER_SERVICE_CREDENTIALS_COS_CRN")
+	if SecretsManagerServiceCredentialsCosCrn == "" {
+		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_SERVICE_CREDENTIALS_COS_CRN for testing service credentials' tests, else tests fail if not set correctly")
 	}
 
-	SecretsManagerSecretID = os.Getenv("SECRETS_MANAGER_SECRET_ID")
-	if SecretsManagerSecretID == "" {
-		// SecretsManagerSecretID = "644f4a69-0d17-198f-3b58-23f2746c706d"
-		fmt.Println("[WARN] Set the environment variable SECRETS_MANAGER_SECRET_ID for testing data_source_ibm_secrets_manager_secret_test else tests will fail if this is not set correctly")
+	SecretsManagerPrivateCertificateConfigurationCryptoKeyIAMSecretServiceId = os.Getenv("SECRETS_MANAGER_PRIVATE_CERTIFICATE_CONFIGURATION_CRYPTO_KEY_IAM_SECRET_SERVICE_ID")
+	if SecretsManagerPrivateCertificateConfigurationCryptoKeyIAMSecretServiceId == "" {
+		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_PRIVATE_CERTIFICATE_CONFIGURATION_CRYPTO_KEY_IAM_SECRET_SERVICE_ID for testing private certificate's configuration with crypto key tests, else tests fail if not set correctly")
+	}
+
+	SecretsManagerPrivateCertificateConfigurationCryptoKeyProviderType = os.Getenv("SECRETS_MANAGER_PRIVATE_CERTIFICATE_CONFIGURATION_CRYPTO_KEY_PROVIDER_TYPE")
+	if SecretsManagerPrivateCertificateConfigurationCryptoKeyProviderType == "" {
+		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_PRIVATE_CERTIFICATE_CONFIGURATION_CRYPTO_KEY_PROVIDER_TYPE for testing private certificate's configuration with crypto key tests, else tests fail if not set correctly")
+	}
+
+	SecretsManagerPrivateCertificateConfigurationCryptoKeyProviderInstanceCrn = os.Getenv("SECRETS_MANAGER_PRIVATE_CERTIFICATE_CONFIGURATION_CRYPTO_KEY_PROVIDER_INSTANCE_CRN")
+	if SecretsManagerPrivateCertificateConfigurationCryptoKeyProviderInstanceCrn == "" {
+		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_PRIVATE_CERTIFICATE_CONFIGURATION_CRYPTO_KEY_PROVIDER_INSTANCE_CRN for testing private certificate's configuration with crypto key tests, else tests fail if not set correctly")
+	}
+
+	SecretsManagerPrivateCertificateConfigurationCryptoKeyProviderPrivateKeystoreId = os.Getenv("SECRETS_MANAGER_PRIVATE_CERTIFICATE_CONFIGURATION_CRYPTO_KEY_PROVIDER_PRIVATE_KEYSTORE_ID")
+	if SecretsManagerPrivateCertificateConfigurationCryptoKeyProviderPrivateKeystoreId == "" {
+		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_PRIVATE_CERTIFICATE_CONFIGURATION_CRYPTO_KEY_PROVIDER_PRIVATE_KEYSTORE_ID for testing private certificate's configuration with crypto key tests, else tests fail if not set correctly")
 	}
 
 	Tg_cross_network_account_api_key = os.Getenv("IBM_TG_CROSS_ACCOUNT_API_KEY")
@@ -1349,6 +1640,16 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable SATELLITE_RESOURCE_INSTANCE_ID for ibm_cos_bucket satellite location resource or datasource else tests will fail if this is not set correctly")
 	}
 
+	ConfigAggregatorEndpoint := os.Getenv("IBMCLOUD_CONFIG_AGGREGATOR_ENDPOINT")
+	if ConfigAggregatorEndpoint == "" {
+		fmt.Println("[WARN] Set the environment variable IBMCLOUD_CONFIG_AGGREGATOR_ENDPOINT with a VALID SCC API ENDPOINT")
+	}
+
+	ConfigAggregatorInstanceID := os.Getenv("IBMCLOUD_CONFIG_AGGREGATOR_INSTANCE_ID")
+	if ConfigAggregatorInstanceID == "" {
+		fmt.Println("[WARN] Set the environment variable IBMCLOUD_CONFIG_AGGREGATOR_INSTANCE_ID with a VALID SCC INSTANCE ID")
+	}
+
 	SccInstanceID = os.Getenv("IBMCLOUD_SCC_INSTANCE_ID")
 	if SccInstanceID == "" {
 		fmt.Println("[WARN] Set the environment variable IBMCLOUD_SCC_INSTANCE_ID with a VALID SCC INSTANCE ID")
@@ -1369,6 +1670,26 @@ func init() {
 		fmt.Println("[WARN] Set the environment variable IBMCLOUD_SCC_PROVIDER_TYPE_ATTRIBUTES with a VALID SCC PROVIDER TYPE ATTRIBUTE")
 	}
 
+	SccProviderTypeID = os.Getenv("IBMCLOUD_SCC_PROVIDER_TYPE_ID")
+	if SccProviderTypeID == "" {
+		fmt.Println("[WARN] Set the environment variable IBMCLOUD_SCC_PROVIDER_TYPE_ID with a VALID SCC PROVIDER TYPE ID")
+	}
+
+	SccEventNotificationsCRN = os.Getenv("IBMCLOUD_SCC_EVENT_NOTIFICATION_CRN")
+	if SccEventNotificationsCRN == "" {
+		fmt.Println("[WARN] Set the environment variable IBMCLOUD_SCC_EVENT_NOTIFICATION_CRN")
+	}
+
+	SccObjectStorageCRN = os.Getenv("IBMCLOUD_SCC_OBJECT_STORAGE_CRN")
+	if SccObjectStorageCRN == "" {
+		fmt.Println("[WARN] Set the environment variable IBMCLOUD_SCC_OBJECT_STORAGE_CRN with a valid cloud object storage crn")
+	}
+
+	SccObjectStorageBucket = os.Getenv("IBMCLOUD_SCC_OBJECT_STORAGE_BUCKET")
+	if SccObjectStorageBucket == "" {
+		fmt.Println("[WARN] Set the environment variable IBMCLOUD_SCC_OBJECT_STORAGE_BUCKET with a valid cloud object storage bucket")
+	}
+
 	HostPoolID = os.Getenv("IBM_CONTAINER_DEDICATEDHOST_POOL_ID")
 	if HostPoolID == "" {
 		fmt.Println("[INFO] Set the environment variable IBM_CONTAINER_DEDICATEDHOST_POOL_ID for ibm_container_vpc_cluster resource to test dedicated host functionality")
@@ -1385,7 +1706,7 @@ func init() {
 	}
 
 	KmsAccountID = os.Getenv("IBM_KMS_ACCOUNT_ID")
-	if CrkID == "" {
+	if KmsAccountID == "" {
 		fmt.Println("[INFO] Set the environment variable IBM_KMS_ACCOUNT_ID for ibm_container_vpc_cluster resource or datasource else tests will fail if this is not set correctly")
 	}
 
@@ -1415,41 +1736,41 @@ func init() {
 	}
 
 	CdSlackChannelName = os.Getenv("IBM_CD_SLACK_CHANNEL_NAME")
-	if CdSecretsManagerInstanceName == "" {
+	if CdSlackChannelName == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_CD_SLACK_CHANNEL_NAME for testing CD resources, CD tests will fail if this is not set")
 	}
 	CdSlackTeamName = os.Getenv("IBM_CD_SLACK_TEAM_NAME")
-	if CdSecretsManagerInstanceName == "" {
+	if CdSlackTeamName == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_CD_SLACK_TEAM_NAME for testing CD resources, CD tests will fail if this is not set")
 	}
 	CdSlackWebhook = os.Getenv("IBM_CD_SLACK_WEBHOOK")
-	if CdSecretsManagerInstanceName == "" {
+	if CdSlackWebhook == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_CD_SLACK_WEBHOOK for testing CD resources, CD tests will fail if this is not set")
 	}
 
 	CdJiraProjectKey = os.Getenv("IBM_CD_JIRA_PROJECT_KEY")
-	if CdSecretsManagerInstanceName == "" {
+	if CdJiraProjectKey == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_CD_JIRA_PROJECT_KEY for testing CD resources, CD tests will fail if this is not set")
 	}
 	CdJiraApiUrl = os.Getenv("IBM_CD_JIRA_API_URL")
-	if CdSecretsManagerInstanceName == "" {
+	if CdJiraApiUrl == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_CD_JIRA_API_URL for testing CD resources, CD tests will fail if this is not set")
 	}
 	CdJiraUsername = os.Getenv("IBM_CD_JIRA_USERNAME")
-	if CdSecretsManagerInstanceName == "" {
+	if CdJiraUsername == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_CD_JIRA_USERNAME for testing CD resources, CD tests will fail if this is not set")
 	}
 	CdJiraApiToken = os.Getenv("IBM_CD_JIRA_API_TOKEN")
-	if CdSecretsManagerInstanceName == "" {
+	if CdJiraApiToken == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_CD_JIRA_API_TOKEN for testing CD resources, CD tests will fail if this is not set")
 	}
 
 	CdSaucelabsAccessKey = os.Getenv("IBM_CD_SAUCELABS_ACCESS_KEY")
-	if CdSecretsManagerInstanceName == "" {
+	if CdSaucelabsAccessKey == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_CD_SAUCELABS_ACCESS_KEY for testing CD resources, CD tests will fail if this is not set")
 	}
 	CdSaucelabsUsername = os.Getenv("IBM_CD_SAUCELABS_USERNAME")
-	if CdSecretsManagerInstanceName == "" {
+	if CdSaucelabsUsername == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_CD_SAUCELABS_USERNAME for testing CD resources, CD tests will fail if this is not set")
 	}
 
@@ -1558,9 +1879,182 @@ func init() {
 		fmt.Println("[WARN] Set the environment variable IBM_CODE_ENGINE_TLS_KEY with a TLS key in base64 format")
 	}
 
+	CeTLSKeyFilePath = os.Getenv("IBM_CODE_ENGINE_TLS_CERT_KEY_PATH")
+	if CeTLSKeyFilePath == "" {
+		CeTLSKeyFilePath = ""
+		fmt.Println("[WARN] Set the environment variable IBM_CODE_ENGINE_TLS_CERT_KEY_PATH to point to CERT KEY file path")
+	}
+
+	CeTLSCertFilePath = os.Getenv("IBM_CODE_ENGINE_TLS_CERT_PATH")
+	if CeTLSCertFilePath == "" {
+		CeTLSCertFilePath = ""
+		fmt.Println("[WARN] Set the environment variable IBM_CODE_ENGINE_TLS_CERT_PATH to point to CERT file path")
+	}
+
 	SatelliteSSHPubKey = os.Getenv("IBM_SATELLITE_SSH_PUB_KEY")
 	if SatelliteSSHPubKey == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_SATELLITE_SSH_PUB_KEY with a ssh public key or ibm_satellite_* tests may fail")
+	}
+
+	MqcloudConfigEndpoint = os.Getenv("IBMCLOUD_MQCLOUD_CONFIG_ENDPOINT")
+	if MqcloudConfigEndpoint == "" {
+		fmt.Println("[INFO] Set the environment variable IBMCLOUD_MQCLOUD_CONFIG_ENDPOINT for ibm_mqcloud service else tests will fail if this is not set correctly")
+	}
+
+	MqcloudDeploymentID = os.Getenv("IBM_MQCLOUD_DEPLOYMENT_ID")
+	if MqcloudDeploymentID == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_MQCLOUD_DEPLOYMENT_ID for ibm_mqcloud_queue_manager resource or datasource else tests will fail if this is not set correctly")
+	}
+	MqcloudCapacityID = os.Getenv("IBM_MQCLOUD_CAPACITY_ID")
+	if MqcloudCapacityID == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_MQCLOUD_DEPLOYMENT_ID for ibm_mqcloud_queue_manager resource or datasource else tests will fail if this is not set correctly")
+	}
+	MqcloudQueueManagerID = os.Getenv("IBM_MQCLOUD_QUEUEMANAGER_ID")
+	if MqcloudQueueManagerID == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_MQCLOUD_QUEUEMANAGER_ID for ibm_mqcloud_queue_manager resource or datasource else tests will fail if this is not set correctly")
+	}
+	MqcloudKSCertFilePath = os.Getenv("IBM_MQCLOUD_KS_CERT_PATH")
+	if MqcloudKSCertFilePath == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_MQCLOUD_KS_CERT_PATH for ibm_mqcloud_keystore_certificate resource or datasource else tests will fail if this is not set correctly")
+	}
+	MqcloudTSCertFilePath = os.Getenv("IBM_MQCLOUD_TS_CERT_PATH")
+	if MqcloudTSCertFilePath == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_MQCLOUD_TS_CERT_PATH for ibm_mqcloud_truststore_certificate resource or datasource else tests will fail if this is not set correctly")
+	}
+	MqCloudQueueManagerLocation = os.Getenv(("IBM_MQCLOUD_QUEUEMANAGER_LOCATION"))
+	if MqCloudQueueManagerLocation == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_MQCLOUD_QUEUEMANAGER_LOCATION for ibm_mqcloud_queue_manager resource or datasource else tests will fail if this is not set correctly")
+	}
+	MqCloudQueueManagerVersion = os.Getenv(("IBM_MQCLOUD_QUEUEMANAGER_VERSION"))
+	if MqCloudQueueManagerVersion == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_MQCLOUD_QUEUEMANAGER_VERSION for ibm_mqcloud_queue_manager resource or datasource else tests will fail if this is not set correctly")
+	}
+	MqCloudQueueManagerVersionUpdate = os.Getenv(("IBM_MQCLOUD_QUEUEMANAGER_VERSIONUPDATE"))
+	if MqCloudQueueManagerVersionUpdate == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_MQCLOUD_QUEUEMANAGER_VERSIONUPDATE for ibm_mqcloud_queue_manager resource or datasource else tests will fail if this is not set correctly")
+	}
+	MqCloudVirtualPrivateEndPointTargetCrn = os.Getenv(("IBM_MQCLOUD_TARGET_CRN"))
+	if MqCloudVirtualPrivateEndPointTargetCrn == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_MQCLOUD_TARGET_CRN for ibm_mqcloud_virtual_private_endpoint resource or datasource else tests will fail if this is not set correctly")
+	}
+	MqCloudVirtualPrivateEndPointTrustedProfile = os.Getenv(("IBM_MQCLOUD_TRUSTED_PROFILE"))
+	if MqCloudVirtualPrivateEndPointTrustedProfile == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_MQCLOUD_TRUSTED_PROFILE for ibm_mqcloud_virtual_private_endpoint resource or datasource else tests will fail if this is not set correctly")
+	}
+	LogsInstanceId = os.Getenv("IBMCLOUD_LOGS_SERVICE_INSTANCE_ID")
+	if LogsInstanceId == "" {
+		fmt.Println("[INFO] Set the environment variable IBMCLOUD_LOGS_SERVICE_INSTANCE_ID for testing cloud logs related operations")
+	}
+	LogsInstanceRegion = os.Getenv("IBMCLOUD_LOGS_SERVICE_INSTANCE_REGION")
+	if LogsInstanceRegion == "" {
+		fmt.Println("[INFO] Set the environment variable IBMCLOUD_LOGS_SERVICE_INSTANCE_REGION for testing cloud logs related operations")
+	}
+	LogsEventNotificationInstanceId = os.Getenv("IBMCLOUD_LOGS_SERVICE_EVENT_NOTIFICATIONS_INSTANCE_ID")
+	if LogsEventNotificationInstanceId == "" {
+		fmt.Println("[INFO] Set the environment variable IBMCLOUD_LOGS_SERVICE_EVENT_NOTIFICATIONS_INSTANCE_ID for testing cloud logs related operations")
+	}
+	LogsEventNotificationInstanceRegion = os.Getenv("IBMCLOUD_LOGS_SERVICE_EVENT_NOTIFICATIONS_INSTANCE_REGION")
+	if LogsEventNotificationInstanceRegion == "" {
+		fmt.Println("[INFO] Set the environment variable IBMCLOUD_LOGS_SERVICE_EVENT_NOTIFICATIONS_INSTANCE_REGION for testing cloud logs related operations")
+	}
+
+	PagCosInstanceName = os.Getenv("IBM_PAG_COS_INSTANCE_NAME")
+	if PagCosInstanceName == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_PAG_COS_INSTANCE_NAME for testing IBM PAG resource, the tests will fail if this is not set")
+	}
+
+	PagCosBucketName = os.Getenv("IBM_PAG_COS_BUCKET_NAME")
+	if PagCosBucketName == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_PAG_COS_BUCKET_NAME for testing IBM PAG resource, the tests will fail if this is not set")
+	}
+
+	PagCosBucketRegion = os.Getenv("IBM_PAG_COS_BUCKET_REGION")
+	if PagCosBucketRegion == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_PAG_COS_BUCKET_REGION for testing IBM PAG resource, the tests will fail if this is not set")
+	}
+
+	PagVpcName = os.Getenv("IBM_PAG_VPC_NAME")
+	if PagVpcName == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_PAG_VPC_NAME for testing IBM PAG resource, the tests will fail if this is not set")
+	}
+
+	PagServicePlan = os.Getenv("IBM_PAG_SERVICE_PLAN")
+	if PagServicePlan == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_PAG_SERVICE_PLAN for testing IBM PAG resource, the tests will fail if this is not set")
+	}
+
+	PagVpcSubnetNameInstance_1 = os.Getenv("IBM_PAG_VPC_SUBNET_INS_1")
+	if PagVpcSubnetNameInstance_1 == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_PAG_VPC_SUBNET_INS_1 for testing IBM PAG resource, the tests will fail if this is not set")
+	}
+
+	PagVpcSubnetNameInstance_2 = os.Getenv("IBM_PAG_VPC_SUBNET_INS_2")
+	if PagVpcSubnetNameInstance_2 == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_PAG_VPC_SUBNET_INS_2 for testing IBM PAG resource, the tests will fail if this is not set")
+	}
+	PagVpcSgInstance_1 = os.Getenv("IBM_PAG_VPC_SG_SUBNET_INS_1")
+	if PagVpcSubnetNameInstance_2 == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_PAG_VPC_SUBNET_INS_2 for testing IBM PAG resource, the tests will fail if this is not set")
+	}
+	PagVpcSgInstance_2 = os.Getenv("IBM_PAG_VPC_SG_SUBNET_INS_2")
+	if PagVpcSubnetNameInstance_2 == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_PAG_VPC_SUBNET_INS_2 for testing IBM PAG resource, the tests will fail if this is not set")
+	}
+
+	// For vmware as a service
+	Vmaas_Directorsite_id = os.Getenv("IBM_VMAAS_DS_ID")
+	if Vmaas_Directorsite_id == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_VMAAS_DS_ID for testing ibm_vmaas_vdc resource else tests will fail if this is not set correctly")
+	}
+
+	Vmaas_Directorsite_pvdc_id = os.Getenv("IBM_VMAAS_DS_PVDC_ID")
+	if Vmaas_Directorsite_pvdc_id == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_VMAAS_DS_PVDC_ID for testing ibm_vmaas_vdc resource else tests will fail if this is not set correctly")
+	}
+
+	TargetAccountId = os.Getenv("IBM_POLICY_ASSIGNMENT_TARGET_ACCOUNT_ID")
+	if TargetAccountId == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_POLICY_ASSIGNMENT_TARGET_ACCOUNT_ID for testing ibm_iam_policy_assignment resource else tests will fail if this is not set correctly")
+	}
+
+	TargetEnterpriseId = os.Getenv("IBM_POLICY_ASSIGNMENT_TARGET_ENTERPRISE_ID")
+	if TargetEnterpriseId == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_POLICY_ASSIGNMENT_TARGET_ENTERPRISE_ID for testing ibm_iam_policy_assignment resource else tests will fail if this is not set correctly")
+	}
+
+	PcsRegistrationAccountId = os.Getenv("PCS_REGISTRATION_ACCOUNT_ID")
+	if PcsRegistrationAccountId == "" {
+		fmt.Println("[WARN] Set the environment variable PCS_REGISTRATION_ACCOUNT_ID for testing iam_onboarding resource else tests will fail if this is not set correctly")
+	}
+
+	PcsOnboardingProductWithApprovedProgrammaticName = os.Getenv("PCS_PRODUCT_WITH_APPROVED_PROGRAMMATIC_NAME")
+	if PcsOnboardingProductWithApprovedProgrammaticName == "" {
+		fmt.Println("[WARN] Set the environment variable PCS_PRODUCT_WITH_APPROVED_PROGRAMMATIC_NAME for testing iam_onboarding resource else tests will fail if this is not set correctly")
+	}
+
+	PcsOnboardingProductWithApprovedProgrammaticName2 = os.Getenv("PCS_PRODUCT_WITH_APPROVED_PROGRAMMATIC_NAME_2")
+	if PcsOnboardingProductWithApprovedProgrammaticName2 == "" {
+		fmt.Println("[WARN] Set the environment variable PCS_PRODUCT_WITH_APPROVED_PROGRAMMATIC_NAME_2 for testing iam_onboarding resource else tests will fail if this is not set correctly")
+	}
+
+	PcsOnboardingProductWithCatalogProduct = os.Getenv("PCS_PRODUCT_WITH_CATALOG_PRODUCT")
+	if PcsOnboardingProductWithCatalogProduct == "" {
+		fmt.Println("[WARN] Set the environment variable PCS_PRODUCT_WITH_CATALOG_PRODUCT for testing iam_onboarding resource else tests will fail if this is not set correctly")
+	}
+
+	PcsOnboardingCatalogProductId = os.Getenv("PCS_CATALOG_PRODUCT")
+	if PcsOnboardingCatalogProductId == "" {
+		fmt.Println("[WARN] Set the environment variable PCS_CATALOG_PRODUCT for testing iam_onboarding resource else tests will fail if this is not set correctly")
+	}
+
+	PcsOnboardingCatalogPlanId = os.Getenv("PCS_CATALOG_PLAN")
+	if PcsIamServiceRegistrationId == "" {
+		fmt.Println("[WARN] Set the environment variable PCS_CATALOG_PLAN for testing iam_onboarding resource else tests will fail if this is not set correctly")
+	}
+
+	PcsIamServiceRegistrationId = os.Getenv("PCS_IAM_REGISTRATION_ID")
+	if PcsIamServiceRegistrationId == "" {
+		fmt.Println("[WARN] Set the environment variable PCS_IAM_TEGISTRATION_ID for testing iam_onboarding resource else tests will fail if this is not set correctly")
 	}
 }
 
@@ -1649,6 +2143,30 @@ func TestAccPreCheckCis(t *testing.T) {
 		t.Fatal("IBM_CIS_DOMAIN_TEST must be set for acceptance tests")
 	}
 }
+func TestAccPreCheckCloudLogs(t *testing.T) {
+	if v := os.Getenv("IC_API_KEY"); v == "" {
+		t.Fatal("IC_API_KEY must be set for acceptance tests")
+	}
+	if LogsInstanceId == "" {
+		t.Fatal("IBMCLOUD_LOGS_SERVICE_INSTANCE_ID must be set for acceptance tests")
+	}
+	if LogsInstanceRegion == "" {
+		t.Fatal("IBMCLOUD_LOGS_SERVICE_INSTANCE_REGION must be set for acceptance tests")
+	}
+	if LogsEventNotificationInstanceId == "" {
+		t.Fatal("IBMCLOUD_LOGS_SERVICE_EVENT_NOTIFICATIONS_INSTANCE_ID must be set for acceptance tests")
+	}
+	if LogsEventNotificationInstanceRegion == "" {
+		t.Fatal("IBMCLOUD_LOGS_SERVICE_EVENT_NOTIFICATIONS_INSTANCE_REGION must be set for acceptance tests")
+	}
+
+	testAccProviderConfigure.Do(func() {
+		diags := TestAccProvider.Configure(context.Background(), terraformsdk.NewResourceConfigRaw(nil))
+		if diags.HasError() {
+			t.Fatalf("configuring provider: %s", diags[0].Summary)
+		}
+	})
+}
 
 func TestAccPreCheckCloudShell(t *testing.T) {
 	TestAccPreCheck(t)
@@ -1733,11 +2251,11 @@ func TestAccPreCheckCodeEngine(t *testing.T) {
 	if CeDomainMappingName == "" {
 		t.Fatal("IBM_CODE_ENGINE_DOMAIN_MAPPING_NAME must be set for acceptance tests")
 	}
-	if CeTLSCert == "" {
-		t.Fatal("IBM_CODE_ENGINE_DOMAIN_MAPPING_TLS_CERT must be set for acceptance tests")
+	if CeTLSKeyFilePath == "" {
+		t.Fatal("IBM_CODE_ENGINE_TLS_CERT_KEY_PATH must be set for acceptance tests")
 	}
-	if CeTLSKey == "" {
-		t.Fatal("IBM_CODE_ENGINE_DOMAIN_MAPPING_TLS_KEY must be set for acceptance tests")
+	if CeTLSCertFilePath == "" {
+		t.Fatal("IBM_CODE_ENGINE_TLS_CERT_PATH must be set for acceptance tests")
 	}
 }
 
@@ -1754,7 +2272,11 @@ func TestAccPreCheckScc(t *testing.T) {
 	}
 
 	if SccProviderTypeAttributes == "" {
-		t.Fatal("IBMCLOUD_SCC_PROVIDER_TYPE_ATTRIBUTES missing. Set the environment variable IBMCLOUD_SCC_PROVIDER_TYPE_ATTRIBUTES with a VALID ATTRIBUTE")
+		t.Fatal("IBMCLOUD_SCC_PROVIDER_TYPE_ATTRIBUTES missing. Set the environment variable IBMCLOUD_SCC_PROVIDER_TYPE_ATTRIBUTES with a VALID SCC provider_type JSON object")
+	}
+
+	if SccProviderTypeID == "" {
+		t.Fatal("IBMCLOUD_SCC_PROVIDER_TYPE_ID missing. Set the environment variable IBMCLOUD_SCC_PROVIDER_TYPE_ID with a VALID SCC provider_type ID")
 	}
 
 	if SccInstanceID == "" {
@@ -1762,7 +2284,19 @@ func TestAccPreCheckScc(t *testing.T) {
 	}
 
 	if SccReportID == "" {
-		t.Fatal("IBMCLOUD_SCC_REPORT_ID missing. Set the environment variable IBMCLOUD_SCC_REPORT_ID with a VALID REPORT_ID")
+		t.Fatal("IBMCLOUD_SCC_REPORT_ID missing. Set the environment variable IBMCLOUD_SCC_REPORT_ID with a VALID SCC REPORT_ID")
+	}
+
+	if SccEventNotificationsCRN == "" {
+		t.Fatal("IBMCLOUD_SCC_EVENT_NOTIFICATION_CRN missing. Set the environment variable IBMCLOUD_SCC_EVENT_NOTIFICATION_CRN with a valid EN CRN")
+	}
+
+	if SccObjectStorageCRN == "" {
+		t.Fatal("IBMCLOUD_SCC_OBJECT_STORAGE_CRN missing. Set the environment variable IBMCLOUD_SCC_OBJECT_STORAGE_CRN with a valid COS CRN")
+	}
+
+	if SccObjectStorageBucket == "" {
+		t.Fatal("IBMCLOUD_SCC_OBJECT_STORAGE_CRN missing. Set the environment variable IBMCLOUD_SCC_OBJECT_STORAGE_BUCKET with a valid COS bucket")
 	}
 }
 
@@ -1770,6 +2304,86 @@ func TestAccPreCheckSatelliteSSH(t *testing.T) {
 	TestAccPreCheck(t)
 	if SatelliteSSHPubKey == "" {
 		t.Fatal("IBM_SATELLITE_SSH_PUB_KEY missing. Set the environment variable IBM_SATELLITE_SSH_PUB_KEY with a VALID ssh public key")
+	}
+}
+
+func TestAccPreCheckMqcloud(t *testing.T) {
+	TestAccPreCheck(t)
+	if MqcloudConfigEndpoint == "" {
+		t.Fatal("IBMCLOUD_MQCLOUD_CONFIG_ENDPOINT must be set for acceptance tests")
+	}
+	if MqcloudDeploymentID == "" {
+		t.Fatal("IBM_MQCLOUD_DEPLOYMENT_ID must be set for acceptance tests")
+	}
+	if MqcloudCapacityID == "" {
+		t.Fatal("IBM_MQCLOUD_CAPACITY_ID must be set for acceptance tests")
+	}
+	if MqcloudQueueManagerID == "" {
+		t.Fatal("IBM_MQCLOUD_QUEUEMANAGER_ID must be set for acceptance tests")
+	}
+	if MqcloudTSCertFilePath == "" {
+		t.Fatal("IBM_MQCLOUD_TS_CERT_PATH must be set for acceptance tests")
+	}
+	if MqcloudKSCertFilePath == "" {
+		t.Fatal("IBM_MQCLOUD_KS_CERT_PATH must be set for acceptance tests")
+	}
+	if MqCloudQueueManagerLocation == "" {
+		t.Fatal("IBM_MQCLOUD_QUEUEMANAGER_LOCATION must be set for acceptance tests")
+	}
+	if MqCloudQueueManagerVersion == "" {
+		t.Fatal("IBM_MQCLOUD_QUEUEMANAGER_VERSION must be set for acceptance tests")
+	}
+	if MqCloudQueueManagerVersionUpdate == "" {
+		t.Fatal("IBM_MQCLOUD_QUEUEMANAGER_VERSIONUPDATE must be set for acceptance tests")
+	}
+}
+
+func TestAccPreCheckCbr(t *testing.T) {
+	TestAccPreCheck(t)
+	IAMAccountId = os.Getenv("IBM_IAMACCOUNTID")
+	if IAMAccountId == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_IAMACCOUNTID for testing cbr related resources. Some tests for that resource will fail if this is not set correctly")
+	}
+	cbrEndpoint := os.Getenv("IBMCLOUD_CONTEXT_BASED_RESTRICTIONS_ENDPOINT")
+	if cbrEndpoint == "" {
+		fmt.Println("[WARN] Set the environment variable IBMCLOUD_CONTEXT_BASED_RESTRICTIONS_ENDPOINT for testing cbr related resources. Some tests for that resource will fail if this is not set correctly")
+	}
+}
+
+func TestAccPreCheckVMwareService(t *testing.T) {
+	if v := os.Getenv("IC_API_KEY"); v == "" {
+		t.Fatal("IC_API_KEY must be set for acceptance tests")
+	}
+	if Vmaas_Directorsite_id == "" {
+		t.Fatal("IBM_VMAAS_DS_ID must be set for acceptance tests")
+	}
+	if Vmaas_Directorsite_pvdc_id == "" {
+		t.Fatal("IBM_VMAAS_DS_PVDC_ID must be set for acceptance tests")
+	}
+}
+
+func TestAccPreCheckPartnerCenterSell(t *testing.T) {
+	TestAccPreCheck(t)
+	if PcsRegistrationAccountId == "" {
+		t.Fatal("PCS_REGISTRATION_ACCOUNT_ID must be set for acceptance tests")
+	}
+	if PcsOnboardingProductWithApprovedProgrammaticName == "" {
+		t.Fatal("PCS_PRODUCT_WITH_APPROVED_PROGRAMMATIC_NAME must be set for acceptance tests")
+	}
+	if PcsOnboardingProductWithApprovedProgrammaticName2 == "" {
+		t.Fatal("PCS_PRODUCT_WITH_APPROVED_PROGRAMMATIC_NAME_2 must be set for acceptance tests")
+	}
+	if PcsOnboardingProductWithCatalogProduct == "" {
+		t.Fatal("PCS_PRODUCT_WITH_CATALOG_PRODUCT must be set for acceptance tests")
+	}
+	if PcsOnboardingCatalogProductId == "" {
+		t.Fatal("PCS_CATALOG_PRODUCT must be set for acceptance tests")
+	}
+	if PcsOnboardingCatalogPlanId == "" {
+		t.Fatal("PCS_CATALOG_PLAN must be set for acceptance tests")
+	}
+	if PcsIamServiceRegistrationId == "" {
+		t.Fatal("PCS_IAM_REGISTRATION_ID must be set for acceptance tests")
 	}
 }
 

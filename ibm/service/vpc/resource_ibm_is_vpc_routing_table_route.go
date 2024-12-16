@@ -78,6 +78,12 @@ func ResourceIBMISVPCRoutingTableRoute() *schema.Resource {
 				Description:  "The action to perform with a packet matching the route.",
 				ValidateFunc: validate.InvokeValidator("ibm_is_vpc_routing_table_route", rAction),
 			},
+			"advertise": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Indicates whether this route will be advertised to the ingress sources specified by the `advertise_routes_to` routing table property.",
+			},
 			rName: {
 				Type:         schema.TypeString,
 				Optional:     true,
@@ -225,12 +231,12 @@ func resourceIBMISVPCRoutingTableRouteCreate(d *schema.ResourceData, meta interf
 	if add, ok := d.GetOk(rNextHop); ok {
 		item := add.(string)
 		if net.ParseIP(item) == nil {
-			nhConnectionID := &vpcv1.RoutePrototypeNextHopRouteNextHopPrototypeVPNGatewayConnectionIdentity{
+			nhConnectionID := &vpcv1.RouteNextHopPrototype{
 				ID: core.StringPtr(item),
 			}
 			createVpcRoutingTableRouteOptions.SetNextHop(nhConnectionID)
 		} else {
-			nh := &vpcv1.RoutePrototypeNextHopRouteNextHopPrototypeRouteNextHopIP{
+			nh := &vpcv1.RouteNextHopPrototype{
 				Address: core.StringPtr(item),
 			}
 			createVpcRoutingTableRouteOptions.SetNextHop(nh)
@@ -240,6 +246,11 @@ func resourceIBMISVPCRoutingTableRouteCreate(d *schema.ResourceData, meta interf
 	if action, ok := d.GetOk(rAction); ok {
 		routeAction := action.(string)
 		createVpcRoutingTableRouteOptions.SetAction(routeAction)
+	}
+
+	if advertiseVal, ok := d.GetOk("advertise"); ok {
+		advertise := advertiseVal.(bool)
+		createVpcRoutingTableRouteOptions.SetAdvertise(advertise)
 	}
 
 	if name, ok := d.GetOk(rName); ok {
@@ -282,6 +293,9 @@ func resourceIBMISVPCRoutingTableRouteRead(d *schema.ResourceData, meta interfac
 	}
 
 	d.Set(rID, *route.ID)
+	if route.Advertise != nil {
+		d.Set("Advertise", route.Advertise)
+	}
 	d.Set(rName, *route.Name)
 	d.Set(rDestination, *route.Destination)
 	if route.NextHop != nil {
@@ -329,6 +343,12 @@ func resourceIBMISVPCRoutingTableRouteUpdate(d *schema.ResourceData, meta interf
 
 	// Construct an instance of the RoutePatch model
 	routePatchModel := new(vpcv1.RoutePatch)
+	if d.HasChange("advertise") {
+		advertiseVal := d.Get("advertise").(bool)
+		routePatchModel.Advertise = &advertiseVal
+		hasChange = true
+
+	}
 	if d.HasChange(rName) {
 		name := d.Get(rName).(string)
 		routePatchModel.Name = &name

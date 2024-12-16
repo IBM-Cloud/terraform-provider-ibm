@@ -26,10 +26,31 @@ func TestAccIBMPIDatacenterDataSourceBasic(t *testing.T) {
 	})
 }
 
+func TestAccIBMPIDatacenterDataSourcePrivate(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMPIDatacenterDataSourcePrivateConfig(),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("data.ibm_pi_datacenter.test", "id"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMPIDatacenterDataSourceConfig() string {
-	return fmt.Sprintf(`
+	return `
 		data "ibm_pi_datacenter" "test" {
 			pi_datacenter_zone = "dal12"
-		}
-	`)
+		}`
+}
+
+func testAccCheckIBMPIDatacenterDataSourcePrivateConfig() string {
+	return fmt.Sprintf(`
+		data "ibm_pi_datacenter" "test" {
+			pi_cloud_instance_id = "%s"
+		}`, acc.Pi_cloud_instance_id)
 }

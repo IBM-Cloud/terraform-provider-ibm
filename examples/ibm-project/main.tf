@@ -4,7 +4,7 @@ provider "ibm" {
 
 // Provision project_config resource instance
 resource "ibm_project_config" "project_config_instance" {
-  project_id = ibm_project.project_instance.project_id
+  project_id = ibm_project.project_instance.id
   definition {
     name = "static-website-dev"
     description = "Website - development"
@@ -13,12 +13,8 @@ resource "ibm_project_config" "project_config_instance" {
       api_key = "<your_apikey_here>"
     }
     locator_id = "1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc.145be7c1-9ec4-4719-b586-584ee52fbed0-global"
-    input {
-      name = "app_repo_name"
-    }
-    setting {
-      name = "app_repo_name"
-      value = "static-website-dev-app-repo"
+    inputs = {
+      app_repo_name = "static-website-repo"
     }
   }
 }
@@ -31,12 +27,14 @@ resource "ibm_project" "project_instance" {
     name = "My static website"
     description = "Sample static website test using the IBM catalog deployable architecture"
     destroy_on_delete = true
+    monitoring_enabled = true
+    auto_deploy = true
   }
 }
 
 // Provision project_environment resource instance
 resource "ibm_project_environment" "project_environment_instance" {
-  project_id = ibm_project.project_instance.project_id
+  project_id = ibm_project.project_instance.id
   definition {
     name = "environment-stage"
     description = "environment for stage project"
@@ -49,7 +47,7 @@ resource "ibm_project_environment" "project_environment_instance" {
 
 // Create project_config data source
 data "ibm_project_config" "project_config_instance" {
-  project_id = ibm_project_config.project_config_instance.project_id
+  project_id = ibm_project.project_instance.id
   project_config_id = ibm_project_config.project_config_instance.project_config_id
 }
 
@@ -61,5 +59,5 @@ data "ibm_project" "project_instance" {
 // Create project_environment data source
 data "ibm_project_environment" "project_environment_instance" {
   project_id = ibm_project.project_instance.id
-  project_environment_id = var.project_environment_project_environment_id
+  project_environment_id = ibm_project_environment.project_environment_instance.project_environment_id
 }

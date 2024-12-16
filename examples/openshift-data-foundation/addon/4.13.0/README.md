@@ -1,4 +1,4 @@
-# [Tech Preview] Deploying and Managing Openshift Data Foundation
+# Deploying and Managing Openshift Data Foundation
 
 This example shows how to deploy and manage the Openshift Data Foundation (ODF) on IBM Cloud VPC based RedHat Openshift cluster. Note this template is still in development, so please be advised before using in production.
 
@@ -44,7 +44,7 @@ You do not have to change anything in the `ibm-odf-addon` and `ocscluster` folde
 To run this example on your Terminal, first download this directory i.e `examples/openshift-data-foundation/`
 
 ```bash
-$ cd addon
+$ cd addon/4.13.0
 ```
 
 ```bash
@@ -91,7 +91,7 @@ ignoreNoobaa = "false"
 numOfOsd = "1"
 ocsUpgrade = "false"
 osdDevicePaths = null
-osdSize = "250Gi"
+osdSize = "512Gi"
 osdStorageClassName = "ibmc-vpc-block-metro-10iops-tier"
 workerNodes = null
 encryptionInTransit = false
@@ -164,11 +164,12 @@ ocsUpgrade = "false" -> "true"
 | hpcsSecretName |  The HPCS secret name | `string` | no | null
 | hpcsServiceName | The HPCS service name | `string` | no | null
 | hpcsTokenUrl | The HPCS Token URL | `string` | no | null
-| ignoreNoobaa | Set to true if you do not want MultiCloudGateway | `string` | no | false
+| ignoreNoobaa | Set to true if you do not want MultiCloudGateway | `bool` | no | false
 | ocsUpgrade | Set to true to upgrade Ocscluster | `string` | no | false
 | osdDevicePaths | IDs of the disks to be used for OSD pods if using local disks or standard classic cluster | `string` | no | null
 | workerNodes | Provide the names of the worker nodes on which to install ODF. Leave blank to install ODF on all worker nodes | `string` | no | null
 | encryptionInTransit |To enable in-transit encryption. Enabling in-transit encryption does not affect the existing mapped or mounted volumes. After a volume is mapped/mounted, it retains the encryption settings that were used when it was initially mounted. To change the encryption settings for existing volumes, they must be remounted again one-by-one. | `bool` | no | false
+| disableNoobaaLB | Specify true to disable to NooBaa public load balancer. | `bool` | no | false
 
 Refer - https://cloud.ibm.com/docs/openshift?topic=openshift-deploy-odf-vpc&interface=ui#odf-vpc-param-ref
 

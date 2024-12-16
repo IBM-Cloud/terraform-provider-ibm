@@ -14,8 +14,8 @@ Provides a read-only data source to retrieve information about a cd_tekton_pipel
 
 ```hcl
 data "ibm_cd_tekton_pipeline_definition" "cd_tekton_pipeline_definition" {
-	definition_id = ibm_cd_tekton_pipeline_definition.cd_tekton_pipeline_definition.definition_id
-	pipeline_id = ibm_cd_tekton_pipeline_definition.cd_tekton_pipeline_definition.pipeline_id
+	definition_id = ibm_cd_tekton_pipeline_definition.cd_tekton_pipeline_definition_instance.definition_id
+	pipeline_id = ibm_cd_tekton_pipeline_definition.cd_tekton_pipeline_definition_instance.pipeline_id
 }
 ```
 
@@ -35,7 +35,6 @@ After your data source is created, you can read values from the following attrib
 * `id` - The unique identifier of the cd_tekton_pipeline_definition.
 * `href` - (String) API URL for interacting with the definition.
   * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
-
 * `source` - (List) Source repository containing the Tekton pipeline definition.
 Nested schema for **source**:
 	* `properties` - (List) Properties of the source, which define the URL of the repository and a branch or tag.

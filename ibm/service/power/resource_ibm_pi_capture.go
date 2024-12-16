@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	st "github.com/IBM-Cloud/power-go-client/clients/instance"
@@ -18,6 +19,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -29,12 +31,19 @@ func ResourceIBMPICapture() *schema.Resource {
 		CreateContext: resourceIBMPICaptureCreate,
 		ReadContext:   resourceIBMPICaptureRead,
 		DeleteContext: resourceIBMPICaptureDelete,
+		UpdateContext: resourceIBMPICaptureUpdate,
 		Importer:      &schema.ResourceImporter{},
 
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(75 * time.Minute),
 			Delete: schema.DefaultTimeout(50 * time.Minute),
+			Update: schema.DefaultTimeout(60 * time.Minute),
 		},
+		CustomizeDiff: customdiff.Sequence(
+			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
+				return flex.ResourcePowerUserTagsCustomizeDiff(diff)
+			},
+		),
 
 		Schema: map[string]*schema.Schema{
 
@@ -104,7 +113,20 @@ func ResourceIBMPICapture() *schema.Resource {
 				ForceNew:    true,
 				Description: "Cloud Storage Image Path (bucket-name [/folder/../..])",
 			},
+			Arg_UserTags: {
+				Computed:    true,
+				Description: "List of user tags attached to the resource.",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Optional:    true,
+				Set:         schema.HashString,
+				Type:        schema.TypeSet,
+			},
 			// Computed Attribute
+			Attr_CRN: {
+				Computed:    true,
+				Description: "The CRN of the resource.",
+				Type:        schema.TypeString,
+			},
 			"image_id": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -161,6 +183,10 @@ func resourceIBMPICaptureCreate(ctx context.Context, d *schema.ResourceData, met
 		}
 	}
 
+	if v, ok := d.GetOk(Arg_UserTags); ok {
+		captureBody.UserTags = flex.FlattenSet(v.(*schema.Set))
+	}
+
 	captureResponse, err := client.CaptureInstanceToImageCatalogV2(name, captureBody)
 
 	if err != nil {
@@ -173,6 +199,25 @@ func resourceIBMPICaptureCreate(ctx context.Context, d *schema.ResourceData, met
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
+	if _, ok := d.GetOk(Arg_UserTags); ok && capturedestination != cloudStorageDestination {
+		imageClient := st.NewIBMPIImageClient(ctx, sess, cloudInstanceID)
+		imagedata, err := imageClient.Get(capturename)
+		if err != nil {
+			if strings.Contains(err.Error(), NotFound) {
+				d.SetId("")
+			}
+			return diag.Errorf("Error on get of ibm pi capture (%s) while applying pi_user_tags: %s", capturename, err)
+		}
+		if imagedata.Crn != "" {
+			oldList, newList := d.GetChange(Arg_UserTags)
+			err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, string(imagedata.Crn), "", UserTagType)
+			if err != nil {
+				log.Printf("Error on update of pi capture (%s) pi_user_tags during creation: %s", *imagedata.ImageID, err)
+			}
+		}
+	}
+
 	return resourceIBMPICaptureRead(ctx, d, meta)
 }
 
@@ -197,12 +242,20 @@ func resourceIBMPICaptureRead(ctx context.Context, d *schema.ResourceData, meta 
 			case *p_cloud_images.PcloudCloudinstancesImagesGetNotFound:
 				log.Printf("[DEBUG] image does not exist %v", err)
 				d.SetId("")
-				return nil
+				return diag.Errorf("image does not exist %v", err)
 			}
 			log.Printf("[DEBUG] get image failed %v", err)
 			return diag.FromErr(err)
 		}
 		imageid := *imagedata.ImageID
+		if imagedata.Crn != "" {
+			d.Set(Attr_CRN, imagedata.Crn)
+			tags, err := flex.GetGlobalTagsUsingCRN(meta, string(imagedata.Crn), "", UserTagType)
+			if err != nil {
+				log.Printf("Error on get of ibm pi capture (%s) pi_user_tags: %s", *imagedata.ImageID, err)
+			}
+			d.Set(Arg_UserTags, tags)
+		}
 		d.Set("image_id", imageid)
 	}
 	d.Set(helpers.PICloudInstanceId, cloudInstanceID)
@@ -238,4 +291,25 @@ func resourceIBMPICaptureDelete(ctx context.Context, d *schema.ResourceData, met
 	}
 	d.SetId("")
 	return nil
+}
+
+func resourceIBMPICaptureUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	parts, err := flex.IdParts(d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	captureID := parts[1]
+	capturedestination := parts[2]
+
+	if capturedestination != cloudStorageDestination && d.HasChange(Arg_UserTags) {
+		if crn, ok := d.GetOk(Attr_CRN); ok {
+			oldList, newList := d.GetChange(Arg_UserTags)
+			err := flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, crn.(string), "", UserTagType)
+			if err != nil {
+				log.Printf("Error on update of pi capture (%s) pi_user_tags: %s", captureID, err)
+			}
+		}
+	}
+
+	return resourceIBMPICaptureRead(ctx, d, meta)
 }

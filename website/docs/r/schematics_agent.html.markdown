@@ -8,8 +8,6 @@ subcategory: "Schematics"
 
 # ibm_schematics_agent
 
-~> **Beta:** This resource is in Beta, and is subject to change.
-
 Provides a resource for schematics_agent. This allows schematics_agent to be created, updated and deleted.
 
 ## Example Usage
@@ -33,7 +31,9 @@ resource "ibm_schematics_agent" "schematics_agent_instance" {
   name = "MyDevAgent"
   resource_group = "Default"
   schematics_location = "us-south"
-  version = "1.0.0-beta2"
+  tags = ["agent-MyDevAgent"]
+  version = "1.0.0"
+  run_destroy_resources = 1
 }
 ```
 
@@ -50,15 +50,6 @@ Nested scheme for **agent_infrastructure**:
 	* `cos_instance_name` - (Optional, String) The COS instance name to store the agent logs.
 	* `infra_type` - (Optional, String) Type of target agent infrastructure.
 	  * Constraints: Allowable values are: `ibm_kubernetes`, `ibm_openshift`, `ibm_satellite`.
-* `agent_kpi` - (Optional, List) Schematics Agent key performance indicators.
-Nested scheme for **agent_kpi**:
-	* `application_indicators` - (Optional, List) Agent application key performance indicators.
-	* `availability_indicator` - (Optional, String) Overall availability indicator reported by the agent.
-	  * Constraints: Allowable values are: `available`, `unavailable`, `error`.
-	* `infra_indicators` - (Optional, List) Agent infrastructure key performance indicators.
-	* `lifecycle_indicator` - (Optional, String) Overall lifecycle indicator reported by the agents.
-	  * Constraints: Allowable values are: `consistent`, `inconsistent`, `obselete`.
-	* `percent_usage_indicator` - (Optional, String) Percentage usage of the agent resources.
 * `agent_location` - (Required, String) The location where agent is deployed in the user environment.
 * `agent_metadata` - (Optional, List) The metadata of an agent.
 Nested scheme for **agent_metadata**:
@@ -76,7 +67,8 @@ Nested scheme for **user_state**:
 	* `set_by` - (Computed, String) Name of the User who set the state of the Object.
 	* `state` - (Optional, String) User-defined states  * `enable`  Agent is enabled by the user.  * `disable` Agent is disbaled by the user.
 	  * Constraints: Allowable values are: `enable`, `disable`.
-* `version` - (Required, String) Agent version. Available Versions are 1.0.0-beta1, 1.0.0-beta2
+* `version` - (Required, String) Agent version.
+* `run_destroy_resources` - (Optional, Int) Argument which helps to run destroy resources job. Increment the value to destroy resources associated with agent deployment.
 
 ## Attribute Reference
 
@@ -84,6 +76,15 @@ In addition to all argument references listed, you can access the following attr
 
 * `id` - The unique identifier of the schematics_agent.
 * `agent_crn` - (String) The agent crn, obtained from the Schematics agent deployment configuration.
+* `agent_kpi` - (List) Schematics Agent key performance indicators.
+Nested scheme for **agent_kpi**:
+	* `application_indicators` - (List) Agent application key performance indicators.
+	* `availability_indicator` - (String) Overall availability indicator reported by the agent.
+	  * Constraints: Allowable values are: `available`, `unavailable`, `error`.
+	* `infra_indicators` - (List) Agent infrastructure key performance indicators.
+	* `lifecycle_indicator` - (String) Overall lifecycle indicator reported by the agents.
+	  * Constraints: Allowable values are: `consistent`, `inconsistent`, `obselete`.
+	* `percent_usage_indicator` - (String) Percentage usage of the agent resources.
 * `created_at` - (String) The agent creation date-time.
 * `creation_by` - (String) The email address of an user who created the agent.
 * `recent_deploy_job` - (List) Post-installations checks for Agent health.

@@ -40,14 +40,30 @@ resource "ibm_kms_instance_policies" "instance_policy" {
         enabled = true
     }
     key_create_import_access {
-      enable = true
+        enabled = true
     }
 }
 
 ```
 
 **NOTE** 
-- To create an instance policy, atleast one of the policy block as mentioned in the argument section is mandatory.
+- When setting `enabled=false`, you must not specify any other attributes for that policy. The below is an example of an invalid setting
+
+```terraform
+    key_create_import_access {
+        enabled = false
+        import_root_key = false
+    }
+```
+
+The extra attributes will be ignored and will not be updated, this can also cause state drift. Users are advised to only use the `enabled` attribute when disabling a policy
+
+```terraform
+    key_create_import_access {
+        enabled = false
+    }
+```
+
 
 - Policies `allowedIP` and `allowedNetwork` are not supported by instance_policies resource, and can be set using Context Based Restrictions (CBR).
 ## Argument reference
@@ -57,6 +73,8 @@ The following arguments are supported:
 
 
 - `instance_id` - (Required, String) The key-protect instance ID for creating policies.
+- `endpoint_type` - (Optional, String) The type of the public endpoint, or private endpoint to be used for creating keys.
+
 - `rotation` - (Optional,list) The Instance rotation time interval in months, with a minimum of 1, and a maximum of 12.
   Nested scheme for `rotation`:
 

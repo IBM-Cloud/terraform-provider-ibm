@@ -50,6 +50,24 @@ You can access the following attribute references after your data source is crea
       - `type` - (String) The type for this profile field.
       - `value` - (String) The value for this profile field.
       - `values` - (String) The permitted values for this profile field.
+
+  - `cluster_network_attachment_count` - (List) Nested `cluster_network_attachment_count` blocks have the following structure:
+
+      Nested schema for **cluster_network_attachment_count**:
+      - `default` - (Integer)
+      - `max` - (Integer) The maximum value for this profile field.
+      - `min` - (Integer) The minimum value for this profile field.
+      - `step` - (Integer)
+      - `type` - (String) The type for this profile field.
+      - `values` - (List) The permitted values for this profile field.
+
+  - `confidential_compute_modes` - (List) 
+
+      Nested schema for **confidential_compute_modes**:
+      - `default` - (String) The default confidential compute mode for this profile.
+      - `type` - (String) The type for this profile field.
+      - `values` - (List) The supported confidential compute modes.
+
   - `disks` - (List) Collection of the instance profile's disks. Nested `disks` blocks has the following structure.
 
       Nested scheme for `disks`:
@@ -108,6 +126,10 @@ You can access the following attribute references after your data source is crea
       Nested scheme for `gpu_model`:
       - `type` - (String) The type for this profile field.
       - `values` - (String) The permitted values for this profile field.
+  - `reservation_terms` - (List) Nested `reservation_terms` blocks have the following structure:
+      Nested scheme for `reservation_terms`:
+      - `type` - (String) The type for this profile field.
+      - `values` - (String) The supported committed use terms for a reservation using this profile.
   - `total_volume_bandwidth`  Nested `total_volume_bandwidth` blocks have the following structure:
       Nested scheme for `total_volume_bandwidth`:
       - `type` - The type for this profile field.
@@ -129,6 +151,14 @@ You can access the following attribute references after your data source is crea
     - `value` - (String) The value for this profile field.
     - `values` - (String) The permitted values for this profile field.
 
+    - `network_attachment_count` - (List) The number of network attachments supported on an instance with this profile
+
+        Nested scheme for `network_attachment_count`:
+        - `max` - (Integer) The maximum number of network attachments supported by an instance using this profile.
+        - `min` - (Integer) The minimum number of network attachments supported by an instance using this profile.
+        - `type` - (String) The type for this profile field, Ex: range or dependent.
+
+
   - `network_interface_count` - (List)
   
       Nested scheme for `network_interface_count`:
@@ -141,6 +171,21 @@ You can access the following attribute references after your data source is crea
       Nested scheme for `port_speed`:
       - `type` - (String) The type for this profile field.
       - `value` - (String) The value for this profile field.
+  - `secure_boot_modes` - (List)
+  
+      Nested schema for **secure_boot_modes**:
+      - `default` - (Boolean) The default secure boot mode for this profile.
+      - `type` - (String) The type for this profile field.
+      - `values` - (List) The supported `enable_secure_boot` values for an instance using   this profile.
+
+  - `supported_cluster_network_profiles` - (List) The cluster network profiles that support this instance profile.
+
+    Nested schema for **supported_cluster_network_profiles**:
+      - `href` - (String) The URL for this cluster network profile.
+      - `name` - (String) The globally unique name for this cluster network profile.
+      - `resource_type` - (String) The resource type.
+
+
   - `vcpu_architecture` - (List) Nested `vcpu_architecture` blocks have the following structure:
 
       Nested scheme for `vcpu_architecture`:

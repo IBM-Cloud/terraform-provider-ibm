@@ -20,7 +20,7 @@ data "ibm_resource_group" "group" {
 resource "ibm_resource_instance" "resource_instance" {
   name              = "test"
   service           = "cloud-object-storage"
-  plan              = "lite"
+  plan              = "standard"
   location          = "global"
   resource_group_id = data.ibm_resource_group.group.id
   tags              = ["tag1", "tag2"]
@@ -33,6 +33,24 @@ resource "ibm_resource_instance" "resource_instance" {
   }
 }
 ```
+
+## Example to provision a Cloud Logs instance
+```
+resource "ibm_resource_instance" "logs_instance" {
+  name     = "logs-instance"
+  service  = "logs"
+  plan     = "standard"
+  location = "eu-de"
+  parameters = {
+    retention_period        = "14"
+    logs_bucket_crn         = "crn:v1:bluemix:public:cloud-object-storage:global:a/4448261269a14562b839e0a3019ed980:f8b3176e-af8e-4e14-a2f9-7f82634e7f0b:bucket:logs-bucket"
+    logs_bucket_endpoint    = "s3.direct.eu-de.cloud-object-storage.appdomain.cloud"
+    metrics_bucket_crn      = "crn:v1:bluemix:public:cloud-object-storage:global:a/4448261269a14562b839e0a3019ed980:f8b3176e-af8e-4e14-a2f9-7f82634e7f0b:bucket:metrics-bucket"
+    metrics_bucket_endpoint = "s3.direct.eu-de.cloud-object-storage.appdomain.cloud"
+  }
+}
+```
+
 ### Example to provision a Hyper Protect DBaaS service instance
 The following example enables you to create a service instance of IBM Cloud Hyper Protect DBaaS for MongoDB. For detailed argument reference, see the tables in the [Hyper Protect DBaaS for MongoDB documentation](https://cloud.ibm.com/docs/hyper-protect-dbaas-for-mongodb?topic=hyper-protect-dbaas-for-mongodb-create-service&interface=cli#cli-create-service), or the [Hyper Protect DBaaS for PostgreSQL documentation](https://cloud.ibm.com/docs/hyper-protect-dbaas-for-postgresql?topic=hyper-protect-dbaas-for-postgresql-create-service&interface=cli#cli-create-service) to create PostgreSQL service instances.
 
@@ -132,6 +150,33 @@ resource "ibm_resource_instance" "instance" {
 }
 ```
 
+### Example to provision an OpenPages service instance
+The following example enables you to create a service instance of OpenPages. 
+
+```terraform
+data "ibm_resource_group" "group" {
+  name = "default"
+}
+resource "ibm_resource_instance" "openpages_instance" {
+  name              = "openpages-instance-1"
+  service           = "openpages"
+  plan              = "essentials"
+  location          = "global"
+  resource_group_id = data.ibm_resource_group.default_group.id
+  parameters_json   = <<EOF
+    {
+      "aws_region": "us-east-1",
+      "baseCurrency": "USD",
+      "selectedSolutions": ["ORM"]
+    }
+  EOF
+
+  timeouts {
+    create = "200m"
+  }
+}
+```
+
 ## Timeouts
 
 The `ibm_resource_instance` resource provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
@@ -172,8 +217,8 @@ In addition to all argument reference list, you can access the following attribu
 - `resource_group_crn` - (String) The long ID (full CRN) of the resource group.
 - `resource_id` - (String) The unique ID of the offering. This value is provided by and stored in the global catalog.
 - `resource_plan_id` - (String) The unique ID of the plan associated with the offering. This value is provided by and stored in the global catalog.
-- `resource_aliases_url` - (String) The relative path to the resource aliases for the instance.
-- `resource_bindings_url` - (String) The relative path to the resource bindings for the instance.
+- `resource_aliases_url` - (String, Deprecated) The relative path to the resource aliases for the instance. 
+- `resource_bindings_url` - (String, Deprecated) The relative path to the resource bindings for the instance.
 - `resource_keys_url` - (String)  The relative path to the resource keys for the instance.
 - `restored_at` - (Timestamp) The date when the instance under reclamation restored.
 - `restored_by` - (String) The subject who restored the instance back from reclamation.
@@ -186,3 +231,4 @@ In addition to all argument reference list, you can access the following attribu
 - `type` - (String) The type of the instance. For example, `service_instance`.
 - `update_at` - (Timestamp) The date when the instance last updated.
 - `update_by` - (String) The subject who updated the instance.
+- `onetime_credentials` - (Bool) A boolean that dictates if the onetime_credentials is true or false.

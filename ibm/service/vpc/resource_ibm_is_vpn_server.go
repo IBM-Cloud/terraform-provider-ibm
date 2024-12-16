@@ -791,7 +791,7 @@ func resourceIBMIsVPNServerReservedIPReferenceToMap(reservedIPReference vpcv1.Re
 	return reservedIPReferenceMap
 }
 
-func resourceIBMIsVPNServerReservedIPReferenceDeletedToMap(reservedIPReferenceDeleted vpcv1.ReservedIPReferenceDeleted) map[string]interface{} {
+func resourceIBMIsVPNServerReservedIPReferenceDeletedToMap(reservedIPReferenceDeleted vpcv1.Deleted) map[string]interface{} {
 	reservedIPReferenceDeletedMap := map[string]interface{}{}
 
 	reservedIPReferenceDeletedMap["more_info"] = reservedIPReferenceDeleted.MoreInfo
@@ -817,7 +817,7 @@ func resourceIBMIsVPNServerVPCReferenceToMap(vpcRef vpcv1.VPCReference) map[stri
 	return vpcMap
 }
 
-func resourceIBMIsVPNServerVPCReferenceDeletedToMap(vpcRefDeleted vpcv1.VPCReferenceDeleted) map[string]interface{} {
+func resourceIBMIsVPNServerVPCReferenceDeletedToMap(vpcRefDeleted vpcv1.Deleted) map[string]interface{} {
 	vpcRefDeletedMap := map[string]interface{}{}
 	vpcRefDeletedMap["more_info"] = vpcRefDeleted.MoreInfo
 	return vpcRefDeletedMap
@@ -1027,9 +1027,9 @@ func isWaitForVPNServerDeleted(context context.Context, sess *vpcv1.VpcV1, d *sc
 				if response != nil && response.StatusCode == 404 {
 					return vpnServer, isVPNServerStatusDeleted, nil
 				}
-				return vpnServer, isVPNServerStatusDeleting, fmt.Errorf("The VPC route %s failed to delete: %s\n%s", d.Id(), err, response)
+				return vpnServer, *vpnServer.LifecycleState, fmt.Errorf("The VPC vpn server %s failed to delete: %s\n%s", d.Id(), err, response)
 			}
-			return vpnServer, isVPNServerStatusDeleting, nil
+			return vpnServer, *vpnServer.LifecycleState, nil
 
 		},
 		Timeout:    d.Timeout(schema.TimeoutDelete),

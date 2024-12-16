@@ -48,15 +48,15 @@ If service-to-service authorization already exists in the specific COS bucket, t
 
 You can specify the following arguments for this resource.
 
-* `cos_bucket` - (Required, String) The name of the COS bucket to store the snapshot of the billing reports.
-* `cos_location` - (Required, String) Region of the COS instance.
-* `cos_reports_folder` - (Optional, String) The billing reports root folder to store the billing reports snapshots. Defaults to "IBMCloud-Billing-Reports".
+* `cos_bucket` - (Required, Forces new resource, String) The name of the COS bucket to store the snapshot of the billing reports.
+* `cos_location` - (Required, Forces new resource, String) Region of the COS instance.
+* `cos_reports_folder` - (Optional, Forces new resource, String) The billing reports root folder to store the billing reports snapshots. Defaults to "IBMCloud-Billing-Reports".
   * Constraints: The default value is `IBMCloud-Billing-Reports`.
-* `interval` - (Required, String) Frequency of taking the snapshot of the billing reports.
+* `interval` - (Required, Forces new resource, String) Frequency of taking the snapshot of the billing reports.
   * Constraints: Allowable values are: `daily`.
-* `report_types` - (Optional, List) The type of billing reports to take snapshot of. Possible values are [account_summary, enterprise_summary, account_resource_instance_usage].
+* `report_types` - (Optional, Forces new resource, List) The type of billing reports to take snapshot of. Possible values are [account_summary, enterprise_summary, account_resource_instance_usage].
   * Constraints: Allowable list items are: `account_summary`, `enterprise_summary`, `account_resource_instance_usage`.
-* `versioning` - (Optional, String) A new version of report is created or the existing report version is overwritten with every update.
+* `versioning` - (Optional, Forces new resource, String) A new version of report is created or the existing report version is overwritten with every update.
   * Constraints: The default value is `new`. Allowable values are: `new`, `overwrite`.
 
 ## Attribute Reference
@@ -103,9 +103,9 @@ Nested schema for **history**:
 You can import the `ibm_billing_report_snapshot` resource by using `account_id`. Account ID for which billing report snapshot is configured.
 
 # Syntax
-```
-$ terraform import ibm_billing_report_snapshot.billing_report_snapshot <account_id>
-```
+<pre>
+$ terraform import ibm_billing_report_snapshot.billing_report_snapshot &lt;account_id&gt;
+</pre>
 
 # Example
 ```

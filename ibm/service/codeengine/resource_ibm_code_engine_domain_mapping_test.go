@@ -4,12 +4,11 @@
 package codeengine_test
 
 import (
-	"encoding/base64"
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
@@ -17,11 +16,6 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/code-engine-go-sdk/codeenginev2"
-)
-
-const (
-	CeTlsCert = "IBM_CODE_ENGINE_TLS_CERT"
-	CeTlsKey  = "IBM_CODE_ENGINE_TLS_KEY"
 )
 
 func TestAccIbmCodeEngineDomainMappingBasic(t *testing.T) {
@@ -33,8 +27,8 @@ func TestAccIbmCodeEngineDomainMappingBasic(t *testing.T) {
 
 	projectID := acc.CeProjectId
 	domainMappingName := acc.CeDomainMappingName
-	domainMappingTLSKey := decodeBase64EnvVar(acc.CeTLSKey, CeTlsKey)
-	domainMappingTLSCert := decodeBase64EnvVar(acc.CeTLSCert, CeTlsCert)
+	domainMappingTLSKey, _ := os.ReadFile(acc.CeTLSKeyFilePath)
+	domainMappingTLSCert, _ := os.ReadFile(acc.CeTLSCertFilePath)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheckCodeEngine(t) },
@@ -42,7 +36,7 @@ func TestAccIbmCodeEngineDomainMappingBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIbmCodeEngineDomainMappingDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIbmCodeEngineDomainMappingConfigBasic(projectID, app1Name, app2Name, domainMappingTLSKey, domainMappingTLSCert, secretName, app1Name, domainMappingName, "app1_instance"),
+				Config: testAccCheckIbmCodeEngineDomainMappingConfigBasic(projectID, app1Name, app2Name, string(domainMappingTLSKey), string(domainMappingTLSCert), secretName, app1Name, domainMappingName, "app1_instance"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmCodeEngineDomainMappingExists("ibm_code_engine_domain_mapping.code_engine_domain_mapping_instance", conf),
 					resource.TestCheckResourceAttrSet("ibm_code_engine_domain_mapping.code_engine_domain_mapping_instance", "id"),
@@ -60,7 +54,7 @@ func TestAccIbmCodeEngineDomainMappingBasic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckIbmCodeEngineDomainMappingConfigBasic(projectID, app1Name, app2Name, domainMappingTLSKey, domainMappingTLSCert, secretName, app2Name, domainMappingName, "app2_instance"),
+				Config: testAccCheckIbmCodeEngineDomainMappingConfigBasic(projectID, app1Name, app2Name, string(domainMappingTLSKey), string(domainMappingTLSCert), secretName, app2Name, domainMappingName, "app2_instance"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("ibm_code_engine_domain_mapping.code_engine_domain_mapping_instance", "id"),
 					resource.TestCheckResourceAttrSet("ibm_code_engine_domain_mapping.code_engine_domain_mapping_instance", "href"),
@@ -80,7 +74,7 @@ func TestAccIbmCodeEngineDomainMappingBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmCodeEngineDomainMappingConfigBasic(projectID string, app1Name string, app2Name string, tlsKey string, tslCert string, secretName string, componentRefName string, domainMappingName string, dependsOn string) string {
+func testAccCheckIbmCodeEngineDomainMappingConfigBasic(projectID string, app1Name string, app2Name string, tlsKey string, tlsCert string, secretName string, componentRefName string, domainMappingName string, dependsOn string) string {
 	return fmt.Sprintf(`
 		data "ibm_code_engine_project" "code_engine_project_instance" {
 			project_id = "%s"
@@ -93,7 +87,9 @@ func testAccCheckIbmCodeEngineDomainMappingConfigBasic(projectID string, app1Nam
 
 			lifecycle {
 				ignore_changes = [
-					run_env_variables
+					run_env_variables,
+					probe_liveness,
+					probe_readiness
 				]
 			}
 		}
@@ -105,7 +101,9 @@ func testAccCheckIbmCodeEngineDomainMappingConfigBasic(projectID string, app1Nam
 
 			lifecycle {
 				ignore_changes = [
-					run_env_variables
+					run_env_variables,
+					probe_liveness,
+					probe_readiness
 				]
 			}
 		}
@@ -142,7 +140,7 @@ EOT
     			ibm_code_engine_app.code_engine_%s
   			]
 		}
-	`, projectID, app1Name, app2Name, tlsKey, tslCert, secretName, componentRefName, domainMappingName, dependsOn)
+	`, projectID, app1Name, app2Name, tlsKey, tlsCert, secretName, componentRefName, domainMappingName, dependsOn)
 }
 
 func testAccCheckIbmCodeEngineDomainMappingExists(n string, obj codeenginev2.DomainMapping) resource.TestCheckFunc {
@@ -209,13 +207,4 @@ func testAccCheckIbmCodeEngineDomainMappingDestroy(s *terraform.State) error {
 	}
 
 	return nil
-}
-
-func decodeBase64EnvVar(base64Text string, envVar string) string {
-	decodedText, err := base64.StdEncoding.DecodeString(base64Text)
-	if err != nil {
-		fmt.Printf("Error decoding environment variable %s: %s", envVar, err)
-		return ""
-	}
-	return string(decodedText)
 }

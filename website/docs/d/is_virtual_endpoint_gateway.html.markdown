@@ -38,7 +38,6 @@ In addition to the argument reference list, you can access the following attribu
 
 - `access_tags`  - (List) Access management tags associated for the virtual endpoint gateway.
 
--> **NOTE:** `allow_dns_resolution_binding` attribute is a select location availability, invitation only feature. In other regions value might not be present.
 - `allow_dns_resolution_binding` - (Bool) Indicates whether to allow this endpoint gateway to participate in DNS resolution bindings with a VPC that has dns.enable_hub set to true.
 - `created_at` - (Timestamp) The created date and time of the endpoint gateway.
 - `crn` - (String) The CRN for this endpoint gateway.
@@ -55,6 +54,7 @@ In addition to the argument reference list, you can access the following attribu
 - `target` - (List) The endpoint gateway target.
 
   Nested scheme for `target`:
+  - `crn` - (String) The target CRN.
   - `name` - (String) The target name.
   - `resource_type` - (String) The resource type of the subnet reserved IP.
 - `vpc` - (String) The VPC ID.

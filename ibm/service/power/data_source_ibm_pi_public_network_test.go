@@ -13,6 +13,7 @@ import (
 )
 
 func TestAccIBMPIPublicNetworkDataSource_basic(t *testing.T) {
+	publicNetworkResData := "data.ibm_pi_public_network.testacc_ds_public_network"
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
@@ -20,7 +21,7 @@ func TestAccIBMPIPublicNetworkDataSource_basic(t *testing.T) {
 			{
 				Config: testAccCheckIBMPIPublicNetworkDataSourceConfig(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_pi_public_network.testacc_ds_public_network", "id"),
+					resource.TestCheckResourceAttrSet(publicNetworkResData, "id"),
 				),
 			},
 		},
@@ -29,8 +30,7 @@ func TestAccIBMPIPublicNetworkDataSource_basic(t *testing.T) {
 
 func testAccCheckIBMPIPublicNetworkDataSourceConfig() string {
 	return fmt.Sprintf(`
-data "ibm_pi_public_network" "testacc_ds_public_network" {
-    pi_cloud_instance_id = "%s"
-}`, acc.Pi_cloud_instance_id)
-
+		data "ibm_pi_public_network" "testacc_ds_public_network" {
+			pi_cloud_instance_id = "%s"
+		}`, acc.Pi_cloud_instance_id)
 }

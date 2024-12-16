@@ -10,7 +10,7 @@ subcategory: "Security and Compliance Center"
 
 Create, update, and delete control libraries by using this resource.
 
-~> NOTE: if you specify the `region` in the provider, that region will become the default URL. Else, exporting the environmental variable IBMCLOUD_SCC_API_ENDPOINT will override any URL(ex. `export IBMCLOUD_SCC_API_ENDPOINT=https://us-south.compliance.cloud.ibm.com`).
+~> NOTE: Security Compliance Center is a regional service. Please specify the IBM Cloud Provider attribute `region` to target another region. Else, exporting the environmental variable IBMCLOUD_SCC_API_ENDPOINT will also override which region is being targeted for all ibm providers(ex. `export IBMCLOUD_SCC_API_ENDPOINT=https://eu-es.compliance.cloud.ibm.com`).
 
 ## Example Usage
 
@@ -161,19 +161,18 @@ After your resource is created, you can read values from the listed arguments an
 
 You can import the `ibm_scc_control_library` resource by using `id`.
 The `id` property can be formed from `instance_id` and `control_library_id` in the following format:
-
-```
+```bash
 <instance_id>/<control_library_id>
 ```
 * `instance_id`: A string. The instance ID.
 * `control_library_id`: A string. The control library ID.
 
 # Syntax
-```
+```bash
 $ terraform import ibm_scc_control_library.scc_control_library <instance_id>/<control_library_id>
 ```
 
 # Example
-```
+```bash
 $ terraform import ibm_scc_control_library.scc_control_library 00000000-1111-2222-3333-444444444444/f3517159-889e-4781-819a-89d89b747c85
 ```

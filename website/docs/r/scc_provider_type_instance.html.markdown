@@ -10,7 +10,7 @@ subcategory: "Security and Compliance Center"
 
 Create, update, and delete provider type instances with this resource.
 
-~> NOTE: if you specify the `region` in the provider, that region will become the default URL. Else, exporting the environmental variable IBMCLOUD_SCC_API_ENDPOINT will override any URL(ex. `export IBMCLOUD_SCC_API_ENDPOINT=https://us-south.compliance.cloud.ibm.com`).
+~> NOTE: Security Compliance Center is a regional service. Please specify the IBM Cloud Provider attribute `region` to target another region. Else, exporting the environmental variable IBMCLOUD_SCC_API_ENDPOINT will also override which region is being targeted for all ibm providers(ex. `export IBMCLOUD_SCC_API_ENDPOINT=https://eu-es.compliance.cloud.ibm.com`).
 
 ## Example Usage
 
@@ -48,14 +48,20 @@ After your resource is created, you can read values from the listed arguments an
 You can import the `ibm_scc_provider_type_instance` resource by using `id`.
 The `id` property can be formed from `instance_id`, `provider_type_id`, and `provider_type_instance_id` in the following format:
 
-```
-<provider_type_id>/<provider_type_instance_id>
+```bash
+<instance_id>/<provider_type_id>/<provider_type_instance_id>
 ```
 * `instance_id`: A string. The instance ID.
 * `provider_type_id`: A string. The provider type ID.
 * `provider_type_instance_id`: A string. The provider type instance ID.
 
 # Syntax
-```
+
+```bash
 $ terraform import ibm_scc_provider_type_instance.scc_provider_type_instance <instance_id>/<provider_type_id>/<provider_type_instance_id>
+```
+
+# Example
+```bash
+$ terraform import ibm_scc_provider_type_instance.scc_provider_type_instance 00000000-1111-2222-3333-444444444444/00000000-1111-2222-3333-444444444444/f3517159-889e-4781-819a-89d89b747c85
 ```

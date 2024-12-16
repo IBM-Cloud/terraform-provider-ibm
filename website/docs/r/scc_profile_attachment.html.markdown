@@ -10,7 +10,7 @@ subcategory: "Security and Compliance Center"
 
 Create, update, and delete profile attachments with this resource.
 
-~> NOTE: if you specify the `region` in the provider, that region will become the default URL. Else, exporting the environmental variable IBMCLOUD_SCC_API_ENDPOINT will override any URL(ex. `export IBMCLOUD_SCC_API_ENDPOINT=https://us-south.compliance.cloud.ibm.com`).
+~> NOTE: Security Compliance Center is a regional service. Please specify the IBM Cloud Provider attribute `region` to target another region. Else, exporting the environmental variable IBMCLOUD_SCC_API_ENDPOINT will also override which region is being targeted for all ibm providers(ex. `export IBMCLOUD_SCC_API_ENDPOINT=https://eu-es.compliance.cloud.ibm.com`).
 
 ## Example Usage
 
@@ -40,6 +40,13 @@ resource "ibm_scc_profile_attachment" "scc_profile_attachment_instance" {
       threshold_limit = 14
     }
   }
+  attachment_parameters {
+    parameter_value = "22"
+    assessment_id = "rule-this-is-a-fake-ruleid"
+    parameter_display_name = "Network ACL rule for allowed IPs to SSH port"
+    parameter_name = "ssh_port"
+    parameter_type = "numeric"
+	}
 }
 ```
 
@@ -64,20 +71,20 @@ Nested schema for **scope**:
 		  * Constraints: The maximum length is `64` characters. The minimum length is `2` characters. The value must match regular expression `/[A-Za-z0-9]+/`.
 		* `value` - (Required, String) The value of the property.
 		  * Constraints: The maximum length is `64` characters. The minimum length is `2` characters. The value must match regular expression `/[A-Za-z0-9]+/`.
-* `notifications` - (List) The request payload of the attachment notifications.
+* `notifications` - (Required, List) The configuration for setting up notifications if a scan fails. Requires event_notifications from the instance settings to be setup.
 Nested schema for **notifications**:
 	* `controls` - (List) The failed controls.
 	Nested schema for **controls**:
 		* `failed_control_ids` - (List) The failed control IDs.
 		  * Constraints: The list items must match regular expression `/^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-4[0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$|^$/`. The maximum length is `512` items. The minimum length is `0` items.
 		* `threshold_limit` - (Integer) The threshold limit.
-	* `enabled` - (Boolean) enabled notifications.
-* `attachment_parameters` - (List) The request payload of the attachment parameters.
+	* `enabled` - (Boolean) The flag to enable notifications. Set to true to enabled notifications, false to disable
+* `attachment_parameters` - (List) The attachment parameters required from the profile that the attachment is targeting. All parameters listed from the profile needs to be set.
 Nested schema for **attachment_parameters**:
-    * `parameter_name` - (String) The name of the parameter to target.
-    * `parameter_display_name` - (String) The display name of the parameter shown in the UI.
-    * `parameter_type` - (String) The type of the parameter value.
-    * `parameter_value` - (String) The value of the parameter.
+    * `parameter_name` - (Required, String) The name of the parameter to target.
+    * `parameter_display_name` - (Required, String) The display name of the parameter shown in the UI.
+    * `parameter_type` - (Required, String) The type of the parameter value.
+    * `parameter_value` - (Required, String) The value of the parameter.
     * `assessment_type` - (String) The type of assessment the parameter uses. 
 * `schedule` - (String) The schedule of an attachment evaluation.
   * Constraints: Allowable values are: `daily`, `every_7_days`, `every_30_days`.
@@ -96,7 +103,8 @@ After your resource is created, you can read values from the listed arguments an
   * Constraints: The maximum length is `32` characters. The minimum length is `32` characters. The value must match regular expression `/^[a-zA-Z0-9-]*$/`.
 * `attachment_parameters` - (List) The profile parameters for the attachment.
   * Constraints: The maximum length is `512` items. The minimum length is `0` items.
-Nested schema for **attachment_parameters**:
+
+  Nested schema for **attachment_parameters**:
 	* `assessment_id` - (String) The implementation ID of the parameter.
 	  * Constraints: The maximum length is `64` characters. The minimum length is `2` characters. The value must match regular expression `/[A-Za-z0-9]+/`.
 	* `assessment_type` - (String) The type of the implementation.
@@ -117,7 +125,8 @@ Nested schema for **attachment_parameters**:
 * `instance_id` - (String) The instance ID of the account that is associated to the attachment.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-4[0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$|^$/`.
 * `last_scan` - (List) The details of the last scan of an attachment.
-Nested schema for **last_scan**:
+
+  Nested schema for **last_scan**:
 	* `id` - (String) The ID of the last scan of an attachment.
 	  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[a-zA-Z0-9-]*$/`.
 	* `status` - (String) The status of the last scan of an attachment.
@@ -136,7 +145,7 @@ Nested schema for **last_scan**:
 You can import the `ibm_scc_profile_attachment` resource by using `id`.
 The `id` property can be formed from `instance_id`, `profiles_id`, and `attachment_id` in the following format:
 
-```
+```bash
 <instance_id>/<profile_id>/<attachment_id>
 ```
 * `instance_id`: A string. The instance ID.
@@ -144,6 +153,11 @@ The `id` property can be formed from `instance_id`, `profiles_id`, and `attachme
 * `attachment_id`: A string. The attachment ID.
 
 # Syntax
-```
+```bash
 $ terraform import ibm_scc_profile_attachment.scc_profile_attachment <instance_id>/<profile_id>/<attachment_id>
+```
+
+# Example
+```bash
+$ terraform import ibm_scc_profile_attachment.scc_profile_attachment 00000000-1111-2222-3333-444444444444/00000000-1111-2222-3333-444444444444/f3517159-889e-4781-819a-89d89b747c85
 ```

@@ -7,9 +7,11 @@ import (
 	"strings"
 	"testing"
 
-	st "github.com/IBM-Cloud/power-go-client/clients/instance"
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
+
+	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/power"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -33,15 +35,44 @@ func TestAccIBMPIWorkspaceBasic(t *testing.T) {
 	})
 }
 
+func TestAccIBMPIWorkspaceUserTags(t *testing.T) {
+	name := fmt.Sprintf("tf-pi-workspace-%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccIBMPIWorkspaceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMPIWorkspaceUserTagConfig(name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIWorkspaceExists("ibm_pi_workspace.powervs_service_instance"),
+					resource.TestCheckResourceAttrSet("ibm_pi_workspace.powervs_service_instance", "id"),
+					resource.TestCheckResourceAttr("ibm_pi_workspace.powervs_service_instance", "pi_user_tags.#", "2"),
+					resource.TestCheckTypeSetElemAttr("ibm_pi_workspace.powervs_service_instance", "pi_user_tags.*", "env:dev"),
+					resource.TestCheckTypeSetElemAttr("ibm_pi_workspace.powervs_service_instance", "pi_user_tags.*", "dataresidency:france"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMPIWorkspaceConfig(name string) string {
 	return fmt.Sprintf(`
-	 resource "ibm_pi_workspace" "powervs_service_instance" {
-		pi_name              = "%[1]s"
-		pi_datacenter        = "dal"
-		pi_resource_group_id = "%[2]s"
-		pi_plan              = "public"
-	  }
-	`, name, acc.Pi_resource_group_id)
+		resource "ibm_pi_workspace" "powervs_service_instance" {
+			pi_name              = "%[1]s"
+			pi_datacenter        = "dal12"
+			pi_resource_group_id = "%[2]s"
+		}`, name, acc.Pi_resource_group_id)
+}
+
+func testAccCheckIBMPIWorkspaceUserTagConfig(name string) string {
+	return fmt.Sprintf(`
+		resource "ibm_pi_workspace" "powervs_service_instance" {
+			pi_name              = "%[1]s"
+			pi_datacenter        = "dal12"
+			pi_resource_group_id = "%[2]s"
+			pi_user_tags = ["env:dev", "dataresidency:france"]
+		}`, name, acc.Pi_resource_group_id)
 }
 
 func testAccIBMPIWorkspaceDestroy(s *terraform.State) error {
@@ -54,10 +85,10 @@ func testAccIBMPIWorkspaceDestroy(s *terraform.State) error {
 			continue
 		}
 		cloudInstanceID := rs.Primary.ID
-		client := st.NewIBMPIWorkspacesClient(context.Background(), sess, cloudInstanceID)
+		client := instance.NewIBMPIWorkspacesClient(context.Background(), sess, cloudInstanceID)
 		workspace, resp, err := client.GetRC(cloudInstanceID)
 		if err == nil {
-			if *workspace.State == "active" {
+			if *workspace.State == power.State_Active {
 				return fmt.Errorf("Resource Instance still exists: %s", rs.Primary.ID)
 			}
 		} else {
@@ -71,7 +102,6 @@ func testAccIBMPIWorkspaceDestroy(s *terraform.State) error {
 
 func testAccCheckIBMPIWorkspaceExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-
 		rs, ok := s.RootModule().Resources[n]
 
 		if !ok {
@@ -88,7 +118,7 @@ func testAccCheckIBMPIWorkspaceExists(n string) resource.TestCheckFunc {
 		}
 
 		cloudInstanceID := rs.Primary.ID
-		client := st.NewIBMPIWorkspacesClient(context.Background(), sess, cloudInstanceID)
+		client := instance.NewIBMPIWorkspacesClient(context.Background(), sess, cloudInstanceID)
 		_, _, err = client.GetRC(cloudInstanceID)
 		if err != nil {
 			return err

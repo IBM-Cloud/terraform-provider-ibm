@@ -54,6 +54,7 @@ Review the argument references that you can specify for your resource.
 - `pi_network_name` - (Required, String) The network ID or name.
 - `pi_network_port_description` - (Optional, String) The description for the Network Port.
 - `pi_network_port_ipaddress` - (Optional, String) The requested ip address of this port.
+- `pi_user_tags` - (Optional, List) The user tags attached to this resource.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
@@ -61,14 +62,13 @@ In addition to all argument reference list, you can access the following attribu
 - `id` - (String) The unique identifier of the instance. The ID is composed of `<pi_cloud_instance_id>/<power_network_port_id>/<id>`.
 - `macaddress` - (String) The MAC address of the port.
 - `network_port_id` - (String) The ID of the port.
-- `portid` - (Deprecated, String) The ID of the port.
 - `public_ip` - (String) The public IP associated with the port.
 - `status` - (String) The status of the port.
 
 
 ## Import
 
-The `ibm_pi_network_port` resource can be imported by using `power_instance_id`, `pi_network_name`  and `port_id`.
+The `ibm_pi_network_port` resource can be imported by using `power_instance_id`, `pi_network_name`  and `network_port_id`.
 
 **Example**
 

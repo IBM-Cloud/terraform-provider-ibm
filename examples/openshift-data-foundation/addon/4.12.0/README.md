@@ -1,4 +1,4 @@
-# [Tech Preview] Deploying and Managing Openshift Data Foundation
+# Deploying and Managing Openshift Data Foundation
 
 This example shows how to deploy and manage the Openshift Data Foundation (ODF) on IBM Cloud VPC based RedHat Openshift cluster. Note this template is still in development, so please be advised before using in production.
 
@@ -44,7 +44,7 @@ You do not have to change anything in the `ibm-odf-addon` and `ocscluster` folde
 To run this example on your Terminal, first download this directory i.e `examples/openshift-data-foundation/`
 
 ```bash
-$ cd addon
+$ cd addon/4.12.0
 ```
 
 ```bash
@@ -91,7 +91,7 @@ ignoreNoobaa = "false"
 numOfOsd = "1"
 ocsUpgrade = "false"
 osdDevicePaths = null
-osdSize = "250Gi"
+osdSize = "512Gi"
 osdStorageClassName = "ibmc-vpc-block-metro-10iops-tier"
 workerNodes = null
 ```
