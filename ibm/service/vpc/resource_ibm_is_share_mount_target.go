@@ -13,7 +13,6 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
@@ -922,7 +921,7 @@ func WaitForVNIAvailable(vpcClient *vpcv1.VpcV1, vniId string, d *schema.Resourc
 
 	return stateConf.WaitForState()
 }
-retry.StateRefreshFunc
+
 func VNIRefreshFunc(vpcClient *vpcv1.VpcV1, vniId string, d *schema.ResourceData) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		getVNIOptions := &vpcv1.GetVirtualNetworkInterfaceOptions{
@@ -954,7 +953,7 @@ func WaitForTargetAvailable(context context.Context, vpcClient *vpcv1.VpcV1, sha
 
 	return stateConf.WaitForState()
 }
-retry.StateRefreshFunc
+
 func mountTargetRefreshFunc(context context.Context, vpcClient *vpcv1.VpcV1, shareid, targetid string, d *schema.ResourceData) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		shareTargetOptions := &vpcv1.GetShareMountTargetOptions{}

@@ -14,7 +14,6 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -733,7 +732,7 @@ func isWaitForVpnGatewayDeleted(vpnGateway *vpcv1.VpcV1, id string, timeout time
 
 	return stateConf.WaitForState()
 }
-retry.StateRefreshFunc
+
 func isVpnGatewayDeleteRefreshFunc(vpnGateway *vpcv1.VpcV1, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		getVpnGatewayOptions := &vpcv1.GetVPNGatewayOptions{

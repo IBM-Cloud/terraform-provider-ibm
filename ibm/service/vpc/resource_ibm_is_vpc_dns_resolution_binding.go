@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
@@ -543,7 +542,6 @@ func isWaitForVpcDnsCreated(sess *vpcv1.VpcV1, vpcid, id string, timeout time.Du
 
 	return stateConf.WaitForState()
 }
-retry.StateRefreshFunc
 func isVpcDnsCreateRefreshFunc(sess *vpcv1.VpcV1, vpcid, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		getVPCDnsResolutionBindingOptions := &vpcv1.GetVPCDnsResolutionBindingOptions{}

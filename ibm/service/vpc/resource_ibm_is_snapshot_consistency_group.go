@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
@@ -439,7 +438,7 @@ func isWaitForSnapshotConsistencyGroupUpdate(sess *vpcv1.VpcV1, id string, timeo
 	}
 	return stateConf.WaitForState()
 }
-retry.StateRefreshFunc
+
 func isSnapshotUpdateConsistencyGroupRefreshFunc(vpcClient *vpcv1.VpcV1, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		getSnapshotConsistencyGroupOptions := &vpcv1.GetSnapshotConsistencyGroupOptions{}
@@ -475,7 +474,7 @@ func isWaitForSnapshotConsistencyGroupDeleted(sess *vpcv1.VpcV1, id string, time
 
 	return stateConf.WaitForState()
 }
-retry.StateRefreshFunc
+
 func isSnapshotDeleteConsistencyGroupRefreshFunc(vpcClient *vpcv1.VpcV1, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		log.Printf("[DEBUG] Refresh function for Snapshot Consistency Group delete.")

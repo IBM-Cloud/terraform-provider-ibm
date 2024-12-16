@@ -15,7 +15,6 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -1015,7 +1014,7 @@ func isWaitForSnapshotUpdate(sess *vpcv1.VpcV1, id string, timeout time.Duration
 	}
 	return stateConf.WaitForState()
 }
-retry.StateRefreshFunc
+
 func isSnapshotUpdateRefreshFunc(sess *vpcv1.VpcV1, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		getSnapshotOptions := &vpcv1.GetSnapshotOptions{
@@ -1048,7 +1047,7 @@ func isWaitForCloneAvailable(sess *vpcv1.VpcV1, d *schema.ResourceData, id, zone
 	}
 	return stateConf.WaitForState()
 }
-retry.StateRefreshFunc
+
 func isSnapshotCloneRefreshFunc(sess *vpcv1.VpcV1, id, zoneName string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		getSnapshotCloneOptions := &vpcv1.GetSnapshotCloneOptions{
@@ -1070,7 +1069,7 @@ func isSnapshotCloneRefreshFunc(sess *vpcv1.VpcV1, id, zoneName string) retry.St
 		return clone, "false", nil
 	}
 }
-retry.StateRefreshFunc
+
 func isSnapshotCloneDeleteRefreshFunc(sess *vpcv1.VpcV1, id, zoneName string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		getSnapshotCloneOptions := &vpcv1.GetSnapshotCloneOptions{
@@ -1160,7 +1159,7 @@ func isWaitForSnapshotDeleted(sess *vpcv1.VpcV1, id string, timeout time.Duratio
 
 	return stateConf.WaitForState()
 }
-retry.StateRefreshFunc
+
 func isSnapshotDeleteRefreshFunc(sess *vpcv1.VpcV1, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		log.Printf("[DEBUG] Refresh function for Snapshot delete.")

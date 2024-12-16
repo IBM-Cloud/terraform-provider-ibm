@@ -11,7 +11,6 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
@@ -334,7 +333,7 @@ func isWaitForLbListenerPolicyRuleAvailable(vpc *vpcv1.VpcV1, id string, timeout
 
 	return stateConf.WaitForState()
 }
-retry.StateRefreshFunc
+
 func isLbListenerPolicyRuleRefreshFunc(vpc *vpcv1.VpcV1, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 
@@ -603,7 +602,7 @@ func isWaitForLbListnerPolicyRuleDeleted(vpc *vpcv1.VpcV1, id string, timeout ti
 
 	return stateConf.WaitForState()
 }
-retry.StateRefreshFunc
+
 func isLbListenerPolicyRuleDeleteRefreshFunc(vpc *vpcv1.VpcV1, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 
