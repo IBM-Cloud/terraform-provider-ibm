@@ -5,6 +5,7 @@ package vpc_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
@@ -30,6 +31,20 @@ func TestAccIBMISImageDataSource_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resName, "visibility"),
 					resource.TestCheckResourceAttrSet(resName, "status"),
 				),
+			},
+		},
+	})
+}
+func TestAccIBMISImageDataSource_id404(t *testing.T) {
+	imageId := "8843-5fr454ft-f6-4565-9555-5f889f5f3f7777"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccCheckIBMISImageDataSource404Config(imageId),
+				ExpectError: regexp.MustCompile("Error fetching image with id"),
 			},
 		},
 	})
@@ -169,6 +184,13 @@ func testAccCheckIBMISImageDataSourceConfig(imageName string) string {
 	data "ibm_is_image" "test1" {
 		name = ibm_is_image.isExampleImage.name
 	}`, acc.Image_cos_url, imageName, acc.Image_operating_system)
+}
+
+func testAccCheckIBMISImageDataSource404Config(imageId string) string {
+	return fmt.Sprintf(`
+	data "ibm_is_image" "test1" {
+		identifier = "%s"
+	}`, imageId)
 }
 
 func testAccCheckIBMISImageDataSourceAllConfig(imageName string) string {

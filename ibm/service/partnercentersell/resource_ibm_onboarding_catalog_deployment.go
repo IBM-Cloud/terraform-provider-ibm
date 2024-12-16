@@ -850,7 +850,7 @@ func ResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogDeploymentMetadata(
 		}
 		model.Service = ServiceModel
 	}
-	if modelMap["deployment"] != nil && len(modelMap["deployment"].([]interface{})) > 0 {
+	if modelMap["deployment"] != nil && len(modelMap["deployment"].([]interface{})) > 0 && modelMap["deployment"].([]interface{})[0] != nil {
 		DeploymentModel, err := ResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogMetadataDeployment(modelMap["deployment"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
@@ -1021,7 +1021,7 @@ func ResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogMetadataService(mod
 
 func ResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogMetadataDeployment(modelMap map[string]interface{}) (*partnercentersellv1.GlobalCatalogMetadataDeployment, error) {
 	model := &partnercentersellv1.GlobalCatalogMetadataDeployment{}
-	if modelMap["broker"] != nil && len(modelMap["broker"].([]interface{})) > 0 {
+	if modelMap["broker"] != nil && len(modelMap["broker"].([]interface{})) > 0 && modelMap["broker"].([]interface{})[0] != nil {
 		BrokerModel, err := ResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogMetadataDeploymentBroker(modelMap["broker"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
@@ -1507,13 +1507,13 @@ func ResourceIbmOnboardingCatalogDeploymentGlobalCatalogMetadataUIStringsContent
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["bullets"] = nil
 	} else if exists && patch["bullets"] != nil {
-		ResourceIbmOnboardingCatalogDeploymentCatalogHighlightItemAsPatch(patch["bullets"].([]interface{})[0].(map[string]interface{}), d)
+		ResourceIbmOnboardingCatalogDeploymentCatalogHighlightItemAsPatch(patch["bullets"].([]map[string]interface{})[0], d)
 	}
 	path = "metadata.0.ui.0.strings.0.en.0.media"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["media"] = nil
 	} else if exists && patch["media"] != nil {
-		ResourceIbmOnboardingCatalogDeploymentCatalogProductMediaItemAsPatch(patch["media"].([]interface{})[0].(map[string]interface{}), d)
+		ResourceIbmOnboardingCatalogDeploymentCatalogProductMediaItemAsPatch(patch["media"].([]map[string]interface{})[0], d)
 	}
 	path = "metadata.0.ui.0.strings.0.en.0.embeddable_dashboard"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {

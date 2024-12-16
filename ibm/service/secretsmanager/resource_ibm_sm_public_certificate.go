@@ -59,7 +59,7 @@ func ResourceIbmSmPublicCertificate() *schema.Resource {
 				ForceNew:    true,
 				Optional:    true,
 				Computed:    true,
-				Description: "A v4 UUID identifier, or `default` secret group.",
+				Description: "A UUID identifier, or `default` secret group.",
 			},
 			"labels": &schema.Schema{
 				Type:        schema.TypeList,
@@ -238,7 +238,7 @@ func ResourceIbmSmPublicCertificate() *schema.Resource {
 			"secret_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "A v4 UUID identifier.",
+				Description: "A UUID identifier.",
 			},
 			"locks_total": &schema.Schema{
 				Type:        schema.TypeInt,

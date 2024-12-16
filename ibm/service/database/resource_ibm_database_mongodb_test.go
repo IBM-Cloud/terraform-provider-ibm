@@ -84,8 +84,8 @@ func TestAccIBMDatabaseInstanceMongodbImport(t *testing.T) {
 	t.Parallel()
 	databaseResourceGroup := "default"
 	var databaseInstanceOne string
+
 	serviceName := fmt.Sprintf("tf-Mongo-%d", acctest.RandIntRange(10, 100))
-	//serviceName := "test_acc"
 	resourceName := "ibm_database." + serviceName
 
 	resource.Test(t, resource.TestCase{
@@ -108,7 +108,7 @@ func TestAccIBMDatabaseInstanceMongodbImport(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
-					"wait_time_minutes"},
+					"wait_time_minutes", "deletion_protection"},
 			},
 		},
 	})
@@ -126,7 +126,7 @@ func testAccCheckIBMDatabaseInstanceMongodbBasic(databaseResourceGroup string, n
 		service                      = "databases-for-mongodb"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "password12345678"
+		adminpassword                = "secure-Password12345"
 		service_endpoints            = "public"
 		group {
 			group_id = "member"
@@ -142,7 +142,7 @@ func testAccCheckIBMDatabaseInstanceMongodbBasic(databaseResourceGroup string, n
 		}
 		users {
 		  name     = "user123"
-		  password = "password12345678"
+		  password = "secure-Password12345"
 		}
 		allowlist {
 		  address     = "172.168.1.2/32"
@@ -164,7 +164,7 @@ func testAccCheckIBMDatabaseInstanceMongodbFullyspecified(databaseResourceGroup 
 		service                      = "databases-for-mongodb"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "password12345678"
+		adminpassword                = "secure-Password12345"
 		service_endpoints            = "public"
 		group {
 			group_id = "member"
@@ -180,11 +180,11 @@ func testAccCheckIBMDatabaseInstanceMongodbFullyspecified(databaseResourceGroup 
 		}
 		users {
 		  name     = "user123"
-		  password = "password12345678"
+		  password = "secure-Password12345"
 		}
 		users {
 		  name     = "user124"
-		  password = "password12345678"
+		  password = "secure-Password12345"
 		}
 		allowlist {
 		  address     = "172.168.1.2/32"
@@ -210,7 +210,7 @@ func testAccCheckIBMDatabaseInstanceMongodbReduced(databaseResourceGroup string,
 		service                      = "databases-for-mongodb"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "password12345678"
+		adminpassword                = "secure-Password12345"
 		service_endpoints            = "public"
 		group {
 			group_id = "member"

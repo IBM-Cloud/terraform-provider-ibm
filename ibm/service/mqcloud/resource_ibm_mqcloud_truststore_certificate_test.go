@@ -18,15 +18,16 @@ import (
 )
 
 func TestAccIbmMqcloudTruststoreCertificateBasic(t *testing.T) {
-	t.Parallel()
 	var conf mqcloudv1.TrustStoreCertificateDetails
-	serviceInstanceGuid := acc.MqcloudInstanceID
+	serviceInstanceGuid := acc.MqcloudDeploymentID
 	queueManagerID := acc.MqcloudQueueManagerID
 	label := fmt.Sprintf("tf_label_%d", acctest.RandIntRange(10, 100))
 	certificateFile := acc.MqcloudTSCertFilePath
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheckMqcloud(t) },
+		PreCheck: func() {
+			acc.TestAccPreCheckMqcloud(t)
+		},
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmMqcloudTruststoreCertificateDestroy,
 		Steps: []resource.TestStep{

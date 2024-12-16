@@ -5,6 +5,7 @@ package vpc_test
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -43,6 +44,21 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 					resource.TestCheckResourceAttrSet(snpName, "encryption"),
 					// resource.TestCheckResourceAttrSet(snpName, "captured_at"), // Commented as the attribute is optional.
 				),
+			},
+		},
+	})
+}
+func TestAccIBMISSnapshotDatasource_404(t *testing.T) {
+	snpId := "8843-5fr454ft-f6-4565-9555-5f889f5f3f7777"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISSnapshotDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:      testDSCheckIBMISSnapshotConfig404(snpId),
+				ExpectError: regexp.MustCompile("Error fetching snapshot with id"),
 			},
 		},
 	})
@@ -240,6 +256,13 @@ func testDSCheckIBMISSnapshotConfig(vpcname, subnetname, sshname, publicKey, vol
 		name 		= "%s"
 	}
 `, vpcname, subnetname, acc.ISZoneName, sshname, publicKey, name, acc.IsImage, acc.InstanceProfileName, acc.ISZoneName, sname, sname)
+}
+func testDSCheckIBMISSnapshotConfig404(sid string) string {
+	return fmt.Sprintf(`
+	data "ibm_is_snapshot" "ds_snapshot" {
+		identifier 		= "%s"
+	}
+`, sid)
 }
 func testDSCheckIBMISSnapshotClonesBasicConfig(vpcname, subnetname, sshname, publicKey, volname, name, sname string) string {
 	return fmt.Sprintf(`

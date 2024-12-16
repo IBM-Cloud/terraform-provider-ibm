@@ -35,6 +35,7 @@ func TestAccIBMIAMAccessGroupTemplateBasic(t *testing.T) {
 					testAccCheckIBMIAMAccessGroupTemplateVersionExists("ibm_iam_access_group_template.template", conf),
 					resource.TestCheckResourceAttr("ibm_iam_access_group_template.template", "name", name),
 					resource.TestCheckResourceAttr("ibm_iam_access_group_template.template", "group.0.name", agName),
+					resource.TestCheckResourceAttr("ibm_iam_access_group_template.template", "committed", "true"),
 				),
 			},
 		},
@@ -106,6 +107,7 @@ func testAccCheckIBMIAMAccessGroupTemplateConfigBasic(name string, agName string
 			group {
 				name = "%s"
 			}
+			committed = true
 		}
 	`, name, agName)
 }

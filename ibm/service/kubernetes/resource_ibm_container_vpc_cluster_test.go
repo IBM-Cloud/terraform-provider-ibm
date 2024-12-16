@@ -233,6 +233,48 @@ func TestAccIBMContainerVPCClusterUpdateDisableOutboundTrafficProtection(t *test
 	})
 }
 
+func TestAccIBMContainerVPCClusterEnableSecureByDefault(t *testing.T) {
+	name := fmt.Sprintf("tf-vpc-cluster-%d", acctest.RandIntRange(10, 100))
+	var conf *v2.ClusterInfo
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMContainerVpcClusterDestroy,
+		Steps: []resource.TestStep{
+			{
+				// First create a cluster with a version where Secure by Default is not available
+				Config: testAccCheckIBMContainerVpcClusterEnableSecureByDefault(name, "1.29", "null"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMContainerVpcExists("ibm_container_vpc_cluster.cluster", conf),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.cluster", "name", name),
+				),
+			},
+			{
+				// Then update it to a version where Secure by Default is available, but not applied by default
+				Config: testAccCheckIBMContainerVpcClusterEnableSecureByDefault(name, "1.30", "null"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMContainerVpcExists("ibm_container_vpc_cluster.cluster", conf),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.cluster", "name", name),
+				),
+			},
+			{
+				// Then enable it
+				Config: testAccCheckIBMContainerVpcClusterEnableSecureByDefault(name, "1.30", "true"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMContainerVpcExists("ibm_container_vpc_cluster.cluster", conf),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.cluster", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.cluster", "enable_secure_by_default", "true"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMContainerVpcClusterDestroy(s *terraform.State) error {
 	csClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).VpcContainerAPI()
 	if err != nil {
@@ -469,6 +511,61 @@ resource "ibm_container_vpc_cluster" "cluster" {
 	disable_outbound_traffic_protection = "%[3]s"
 
 }`, name, kubeVersion, disable_outbound_traffic_protection)
+}
+
+func testAccCheckIBMContainerVpcClusterEnableSecureByDefault(name, kubeVersion, enable_secure_by_default string) string {
+	return fmt.Sprintf(`
+data "ibm_resource_group" "resource_group" {
+	is_default = "true"
+	//name = "Default"
+}
+resource "ibm_is_vpc" "vpc" {
+	name = "%[1]s"
+}
+resource "ibm_is_subnet" "subnet" {
+	name                     = "%[1]s"
+	vpc                      = ibm_is_vpc.vpc.id
+	zone                     = "us-south-1"
+	total_ipv4_address_count = 256
+}
+resource "ibm_resource_instance" "kms_instance" {
+	name              = "%[1]s"
+	service           = "kms"
+	plan              = "tiered-pricing"
+	location          = "us-south"
+}
+
+resource "ibm_kms_key" "test" {
+	instance_id = ibm_resource_instance.kms_instance.guid
+	key_name = "%[1]s"
+	standard_key =  false
+	force_delete = true
+}
+resource "ibm_container_vpc_cluster" "cluster" {
+	name              = "%[1]s"
+	vpc_id            = ibm_is_vpc.vpc.id
+	flavor            = "cx2.2x4"
+	worker_count      = 1
+	kube_version      = "%[2]s"
+	wait_till         = "OneWorkerNodeReady"
+	resource_group_id = data.ibm_resource_group.resource_group.id
+	zones {
+			subnet_id = ibm_is_subnet.subnet.id
+			name      = "us-south-1"
+	}
+	kms_config {
+		instance_id = ibm_resource_instance.kms_instance.guid
+		crk_id = ibm_kms_key.test.key_id
+		private_endpoint = false
+	}
+	worker_labels = {
+	"test"  = "test-default-pool"
+	"test1" = "test-default-pool1"
+	"test2" = "test-default-pool2"
+	}
+	enable_secure_by_default = %[3]s
+
+}`, name, kubeVersion, enable_secure_by_default)
 }
 
 func testAccCheckIBMContainerVpcClusterDisableOutboundTrafficProtectionUpdate(name, disable_outbound_traffic_protection string) string {

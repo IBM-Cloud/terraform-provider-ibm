@@ -269,9 +269,11 @@ func ResourceIbmCodeEngineApp() *schema.Resource {
 				Description: "Optional maximum number of requests that can be processed concurrently per instance.",
 			},
 			"scale_concurrency_target": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Description: "Optional threshold of concurrent requests per instance at which one or more additional instances are created. Use this value to scale up instances based on concurrent number of requests. This option defaults to the value of the `scale_concurrency` option, if not specified.",
+				Type:         schema.TypeInt,
+				Optional:     true,
+				Default:      100,
+				ValidateFunc: validate.InvokeValidator("ibm_code_engine_app", "scale_concurrency_target"),
+				Description:  "Optional threshold of concurrent requests per instance at which one or more additional instances are created. Use this value to scale up instances based on concurrent number of requests. This option defaults to the value of the `scale_concurrency` option, if not specified.",
 			},
 			"scale_cpu_limit": {
 				Type:         schema.TypeString,
@@ -466,6 +468,14 @@ func ResourceIbmCodeEngineAppValidator() *validate.ResourceValidator {
 			AllowedValues:              "default, manager, none, reader, writer",
 			Regexp:                     `^(manager|reader|writer|none|default)$`,
 			MinValueLength:             0,
+		},
+		validate.ValidateSchema{
+			Identifier:                 "scale_concurrency_target",
+			ValidateFunctionIdentifier: validate.IntBetween,
+			Type:                       validate.TypeInt,
+			Optional:                   true,
+			MinValue:                   "1",
+			MaxValue:                   "1000",
 		},
 		validate.ValidateSchema{
 			Identifier:                 "scale_cpu_limit",

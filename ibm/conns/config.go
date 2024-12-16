@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/IBM/cloud-db2-go-sdk/db2saasv1"
 	"io"
 	"io/ioutil"
 	"log"
@@ -233,6 +234,7 @@ type ClientSession interface {
 	CloudDatabasesV5() (*clouddatabasesv5.CloudDatabasesV5, error)
 	IAMPolicyManagementV1API() (*iampolicymanagement.IamPolicyManagementV1, error)
 	IAMAccessGroupsV2() (*iamaccessgroups.IamAccessGroupsV2, error)
+	Db2saasV1() (*db2saasv1.Db2saasV1, error)
 	MccpAPI() (mccpv2.MccpServiceAPI, error)
 	ResourceCatalogAPI() (catalog.ResourceCatalogAPI, error)
 	ResourceManagementAPIv2() (managementv2.ResourceManagementAPIv2, error)
@@ -667,6 +669,10 @@ type clientSession struct {
 	// Logs Routing
 	ibmCloudLogsRoutingClient    *ibmcloudlogsroutingv0.IBMCloudLogsRoutingV0
 	ibmCloudLogsRoutingClientErr error
+
+	// db2 saas
+	db2saasClient    *db2saasv1.Db2saasV1
+	db2saasClientErr error
 }
 
 // Usage Reports
@@ -799,6 +805,11 @@ func (sess clientSession) ICDAPI() (icdv4.ICDServiceAPI, error) {
 // The IBM Cloud Databases API
 func (session clientSession) CloudDatabasesV5() (*clouddatabasesv5.CloudDatabasesV5, error) {
 	return session.cloudDatabasesClient, session.cloudDatabasesClientErr
+}
+
+// IBM Db2 SaaS on Cloud REST API
+func (session clientSession) Db2saasV1() (*db2saasv1.Db2saasV1, error) {
+	return session.db2saasClient, session.db2saasClientErr
 }
 
 // MccpAPI provides Multi Cloud Controller Proxy APIs ...
@@ -1262,7 +1273,7 @@ func (session clientSession) ProjectV1() (*project.ProjectV1, error) {
 	return session.projectClient, session.projectClientErr
 }
 
-// MQ on Cloud
+// MQaaS
 func (session clientSession) MqcloudV1() (*mqcloudv1.MqcloudV1, error) {
 	if session.mqcloudClientErr != nil {
 		sessionMqcloudClient := session.mqcloudClient
@@ -2423,6 +2434,29 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.configurationAggregatorClientErr = fmt.Errorf("Error occurred while constructing 'Configuration Aggregator' service client: %q", err)
 	}
 
+	// Construct an instance of the 'IBM Db2 SaaS on Cloud REST API' service.
+	if session.db2saasClientErr == nil {
+		// Construct the service options.
+		defaultServiceEndpoint := "https://us-south.db2.saas.ibm.com/dbapi/v4"
+		db2saasClientOptions := &db2saasv1.Db2saasV1Options{
+			URL:           EnvFallBack([]string{"IBMCLOUD_DB2_API_ENDPOINT"}, defaultServiceEndpoint),
+			Authenticator: authenticator,
+		}
+
+		// Construct the service client.
+		session.db2saasClient, err = db2saasv1.NewDb2saasV1(db2saasClientOptions)
+		if err == nil {
+			// Enable retries for API calls
+			session.db2saasClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+			// Add custom header for analytics
+			session.db2saasClient.SetDefaultHeaders(gohttp.Header{
+				"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+			})
+		} else {
+			session.db2saasClientErr = fmt.Errorf("Error occurred while constructing 'IBM Db2 SaaS on Cloud REST API' service client: %q", err)
+		}
+	}
+
 	// CIS Service instances starts here.
 	cisURL := ContructEndpoint("api.cis", cloudEndpoint)
 	if c.Visibility == "private" {
@@ -3448,7 +3482,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.cdTektonPipelineClientErr = fmt.Errorf("Error occurred while configuring CD Tekton Pipeline service: %q", err)
 	}
 
-	// MQ Cloud Service Configuration
+	// MQaaS Service Configuration
 	mqCloudURL := ContructEndpoint(fmt.Sprintf("api.%s.mq2", c.Region), cloudEndpoint)
 	if c.Visibility == "private" || c.Visibility == "public-and-private" {
 		mqCloudURL = ContructEndpoint(fmt.Sprintf("api.private.%s.mq2", c.Region), cloudEndpoint)
@@ -3463,7 +3497,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		URL:            EnvFallBack([]string{"IBMCLOUD_MQCLOUD_CONFIG_ENDPOINT"}, mqCloudURL),
 	}
 
-	// Construct the service client for MQ Cloud.
+	// Construct the service client for MQaaS.
 	session.mqcloudClient, err = mqcloudv1.NewMqcloudV1(mqcloudClientOptions)
 	if err == nil {
 		// Enable retries for API calls
@@ -3473,7 +3507,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
 	} else {
-		session.mqcloudClientErr = fmt.Errorf("Error occurred while configuring MQ on Cloud service: %q", err)
+		session.mqcloudClientErr = fmt.Errorf("Error occurred while configuringMQaaS service: %q", err)
 	}
 
 	// VMware as a Service

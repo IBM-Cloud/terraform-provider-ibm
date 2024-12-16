@@ -85,7 +85,7 @@ func testAccCheckIBMDatabaseInstanceMongoDBShardingBasic(databaseResourceGroup s
 		service                      = "databases-for-mongodb"
 		plan                         = "enterprise-sharding"
 		location                     = "%[3]s"
-		adminpassword                = "password12345678"
+		adminpassword                = "secure-Password12345"
 		group {
 			group_id = "member"
 			host_flavor {
@@ -98,7 +98,7 @@ func testAccCheckIBMDatabaseInstanceMongoDBShardingBasic(databaseResourceGroup s
 		service_endpoints            = "public"
 		users {
 		  name     = "user123"
-		  password = "password12345678"
+		  password = "secure-Password12345"
 		  type     = "database"
 		}
 		allowlist {
@@ -126,7 +126,7 @@ func testAccCheckIBMDatabaseInstanceMongoDBShardingFullyspecified(databaseResour
 		service                      = "databases-for-mongodb"
 		plan                         = "enterprise-sharding"
 		location                     = "%[3]s"
-		adminpassword                = "password12345678"
+		adminpassword                = "secure-Password12345"
 		group {
 			group_id = "member"
 			host_flavor {
@@ -139,12 +139,12 @@ func testAccCheckIBMDatabaseInstanceMongoDBShardingFullyspecified(databaseResour
 		service_endpoints            = "public"
 		users {
 		  name     = "user123"
-		  password = "password12345678"
+		  password = "secure-Password12345"
 		  type     = "database"
 		}
 		users {
 		  name     = "user124"
-		  password = "password$12password"
+		  password = "password$12Password"
 		  type     = "ops_manager"
 		}
 		allowlist {
@@ -176,7 +176,7 @@ func testAccCheckIBMDatabaseInstanceMongoDBShardingReduced(databaseResourceGroup
 		service                      = "databases-for-mongodb"
 		plan                         = "enterprise-sharding"
 		location                     = "%[3]s"
-		adminpassword                = "password12345678"
+		adminpassword                = "secure-Password12345"
 		group {
 			group_id = "member"
 			host_flavor {

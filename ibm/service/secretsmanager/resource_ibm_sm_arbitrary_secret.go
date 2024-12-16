@@ -79,7 +79,7 @@ func ResourceIbmSmArbitrarySecret() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 				ForceNew:    true,
-				Description: "A v4 UUID identifier, or `default` secret group.",
+				Description: "A UUID identifier, or `default` secret group.",
 			},
 
 			"version_custom_metadata": &schema.Schema{
@@ -111,7 +111,7 @@ func ResourceIbmSmArbitrarySecret() *schema.Resource {
 			"secret_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "A v4 UUID identifier.",
+				Description: "A UUID identifier.",
 			},
 			"locks_total": &schema.Schema{
 				Type:        schema.TypeInt,

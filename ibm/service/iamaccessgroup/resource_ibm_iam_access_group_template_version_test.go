@@ -36,6 +36,7 @@ func TestAccIBMIAMAccessGroupTemplateVersion(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_iam_access_group_template_version.template", "group.0.name", versionAGName),
 					resource.TestCheckResourceAttr("ibm_iam_access_group_template_version.template", "name", name),
 					resource.TestCheckResourceAttr("ibm_iam_access_group_template.template", "name", name),
+					resource.TestCheckResourceAttr("ibm_iam_access_group_template_version.template", "committed", "true"),
 				),
 			},
 		},
@@ -52,7 +53,7 @@ func TestAccIBMIAMAccessGroupTemplateVersionUpdateWithCommit(t *testing.T) {
 		CheckDestroy: testAccCheckIBMIAMAccessGroupTemplateVersionDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMIAMAccessGroupTemplateVersionConfigBasic(name, agName, versionAGName),
+				Config: testAccCheckIBMIAMAccessGroupTemplateVersionConfigBasicWithoutCommit(name, agName, versionAGName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIAMAccessGroupTemplateVersionExists("ibm_iam_access_group_template_version.template", conf),
 					resource.TestCheckResourceAttr("ibm_iam_access_group_template.template", "group.0.name", agName),
@@ -78,6 +79,34 @@ func TestAccIBMIAMAccessGroupTemplateVersionUpdateWithCommit(t *testing.T) {
 }
 
 func testAccCheckIBMIAMAccessGroupTemplateVersionConfigBasic(name string, agName string, versionAGName string) string {
+	return fmt.Sprintf(`
+		resource "ibm_iam_access_group_template" "template" {
+		name = "%s"
+		description = "Test Terraform Description"
+		group {
+			name = "%s"
+		}
+	}
+	
+	resource "ibm_iam_access_group_template_version" "template" {
+	  template_id = ibm_iam_access_group_template.template.template_id
+	  name = ibm_iam_access_group_template.template.name
+	  description = "Testing4"
+		group {
+			name = "%s"
+			assertions {
+				action_controls {
+					add    = false
+					remove = true
+				}
+			}
+		}
+		committed = true
+	}
+	`, name, agName, versionAGName)
+}
+
+func testAccCheckIBMIAMAccessGroupTemplateVersionConfigBasicWithoutCommit(name string, agName string, versionAGName string) string {
 	return fmt.Sprintf(`
 		resource "ibm_iam_access_group_template" "template" {
 		name = "%s"

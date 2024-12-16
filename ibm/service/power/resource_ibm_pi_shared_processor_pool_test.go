@@ -129,9 +129,9 @@ func testAccCheckIBMPISPPExists(n string) resource.TestCheckFunc {
 func testAccCheckIBMPISPPConfig(name string) string {
 	return fmt.Sprintf(`
 		resource "ibm_pi_shared_processor_pool" "power_shared_processor_pool" {
-			pi_cloud_instance_id	= "%[2]s"
-			pi_shared_processor_pool_host_group = "s922"
-			pi_shared_processor_pool_name = "%[1]s"
+			pi_cloud_instance_id                    = "%[2]s"
+			pi_shared_processor_pool_host_group     = "s922"
+			pi_shared_processor_pool_name           = "%[1]s"
 			pi_shared_processor_pool_reserved_cores = "1"
 		}`, name, acc.Pi_cloud_instance_id)
 }
@@ -139,11 +139,10 @@ func testAccCheckIBMPISPPConfig(name string) string {
 func testAccCheckIBMPISPPUserTagsConfig(name string, userTagsString string) string {
 	return fmt.Sprintf(`
 		resource "ibm_pi_shared_processor_pool" "power_shared_processor_pool" {
-			pi_cloud_instance_id	= "%[2]s"
-			pi_shared_processor_pool_host_group = "s922"
-			pi_shared_processor_pool_name = "%[1]s"
+			pi_cloud_instance_id                    = "%[2]s"
+			pi_shared_processor_pool_host_group     = "s922"
+			pi_shared_processor_pool_name           = "%[1]s"
 			pi_shared_processor_pool_reserved_cores = "1"
-			pi_user_tags = %[3]s
-
+			pi_user_tags                            = %[3]s
 		}`, name, acc.Pi_cloud_instance_id, userTagsString)
 }

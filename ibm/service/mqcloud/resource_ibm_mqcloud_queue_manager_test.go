@@ -20,7 +20,7 @@ import (
 func TestAccIbmMqcloudQueueManagerBasic(t *testing.T) {
 	t.Parallel()
 	var conf mqcloudv1.QueueManagerDetails
-	serviceInstanceGuid := acc.MqcloudInstanceID
+	serviceInstanceGuid := acc.MqcloudDeploymentID
 	name := fmt.Sprintf("tf_queue_manager_basic%d", acctest.RandIntRange(10, 100))
 	location := acc.MqCloudQueueManagerLocation
 	size := "xsmall"
@@ -47,7 +47,7 @@ func TestAccIbmMqcloudQueueManagerBasic(t *testing.T) {
 func TestAccIbmMqcloudQueueManagerAllArgs(t *testing.T) {
 	t.Parallel()
 	var conf mqcloudv1.QueueManagerDetails
-	serviceInstanceGuid := acc.MqcloudInstanceID
+	serviceInstanceGuid := acc.MqcloudDeploymentID
 	name := fmt.Sprintf("tf_queue_manager_allargs%d", acctest.RandIntRange(10, 100))
 	displayName := name
 	location := acc.MqCloudQueueManagerLocation
