@@ -9,9 +9,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -560,8 +559,8 @@ func resourceIBMTrustedProfileTemplateAssignmentDelete(context context.Context, 
 	return nil
 }
 
-func waitForAssignment(timeout time.Duration, meta interface{}, d *schema.ResourceData, refreshFn func(string, interface{}) resource.StateRefreshFunc) (interface{}, error) {
-	stateConf := &resource.StateChangeConf{
+func waitForAssignment(timeout time.Duration, meta interface{}, d *schema.ResourceData, refreshFn func(string, interface{}) retry.StateRefreshFunc) (interface{}, error) {
+	stateConf := &retry.StateChangeConf{
 		Pending:      []string{InProgress},
 		Target:       []string{complete},
 		Refresh:      refreshFn(d.Id(), meta),
@@ -573,7 +572,7 @@ func waitForAssignment(timeout time.Duration, meta interface{}, d *schema.Resour
 	return stateConf.WaitForState()
 }
 
-func isTrustedProfileAssignmentRemoved(id string, meta interface{}) resource.StateRefreshFunc {
+func isTrustedProfileAssignmentRemoved(id string, meta interface{}) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		iamIdentityClient, err := meta.(conns.ClientSession).IAMIdentityV1API()
 
@@ -594,7 +593,7 @@ func isTrustedProfileAssignmentRemoved(id string, meta interface{}) resource.Sta
 	}
 }
 
-func isTrustedProfileTemplateAssigned(id string, meta interface{}) resource.StateRefreshFunc {
+func isTrustedProfileTemplateAssigned(id string, meta interface{}) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 
 		iamIdentityClient, err := meta.(conns.ClientSession).IAMIdentityV1API()

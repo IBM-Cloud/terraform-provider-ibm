@@ -13,7 +13,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -895,7 +895,7 @@ func vpngwconDelete(d *schema.ResourceData, meta interface{}, gID, gConnID strin
 func isWaitForVPNGatewayConnectionDeleted(vpnGatewayConnection *vpcv1.VpcV1, gID, gConnID string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for VPNGatewayConnection (%s) to be deleted.", gConnID)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"retry", isVPNGatewayConnectionDeleting},
 		Target:     []string{"", isVPNGatewayConnectionDeleted},
 		Refresh:    isVPNGatewayConnectionDeleteRefreshFunc(vpnGatewayConnection, gID, gConnID),
@@ -907,7 +907,7 @@ func isWaitForVPNGatewayConnectionDeleted(vpnGatewayConnection *vpcv1.VpcV1, gID
 	return stateConf.WaitForState()
 }
 
-func isVPNGatewayConnectionDeleteRefreshFunc(vpnGatewayConnection *vpcv1.VpcV1, gID, gConnID string) resource.StateRefreshFunc {
+func isVPNGatewayConnectionDeleteRefreshFunc(vpnGatewayConnection *vpcv1.VpcV1, gID, gConnID string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		getVpnGatewayConnectionOptions := &vpcv1.GetVPNGatewayConnectionOptions{
 			VPNGatewayID: &gID,

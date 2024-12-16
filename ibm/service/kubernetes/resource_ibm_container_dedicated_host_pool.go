@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	v2 "github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
@@ -261,7 +261,7 @@ func waitForDedicatedHostPoolAvailable(ctx context.Context, dedicatedHostPoolAPI
 
 	log.Printf("[DEBUG] Waiting for the dedicated hostpool (%s) to be available.", hostPoolID)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{DedicatedHostPoolStateCreating},
 		Target:     []string{DedicatedHostPoolStateCreated},
 		Refresh:    dedicatedHostPoolStateRefreshFunc(dedicatedHostPoolAPI, hostPoolID, target),
@@ -277,7 +277,7 @@ func waitForDedicatedHostPoolRemove(ctx context.Context, dedicatedHostPoolAPI v2
 
 	log.Printf("[DEBUG] Waiting for the dedicated hostpool (%s) to be removed.", hostPoolID)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{DedicatedHostPoolStateCreated, DedicatedHostPoolStateDeleting},
 		Target:     []string{DedicatedHostPoolStateDeleted},
 		Refresh:    dedicatedHostPoolStateRefreshFunc(dedicatedHostPoolAPI, hostPoolID, target),
@@ -289,7 +289,7 @@ func waitForDedicatedHostPoolRemove(ctx context.Context, dedicatedHostPoolAPI v2
 	return stateConf.WaitForStateContext(ctx)
 }
 
-func dedicatedHostPoolStateRefreshFunc(dedicatedHostPoolAPI v2.DedicatedHostPool, hostPoolID string, target v2.ClusterTargetHeader) resource.StateRefreshFunc {
+func dedicatedHostPoolStateRefreshFunc(dedicatedHostPoolAPI v2.DedicatedHostPool, hostPoolID string, target v2.ClusterTargetHeader) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		dedicatedHostPool, err := dedicatedHostPoolAPI.GetDedicatedHostPool(hostPoolID, target)
 		if err != nil {

@@ -13,7 +13,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -247,7 +247,7 @@ func lbpMemberCreate(d *schema.ResourceData, meta interface{}, lbID, lbPoolID st
 func isWaitForLBPoolMemberAvailable(lbc *vpcv1.VpcV1, lbID, lbPoolID, lbPoolMemID string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for load balancer pool member(%s) to be available.", lbPoolMemID)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"create_pending", "update_pending", "maintenance_pending"},
 		Target:     []string{isLBPoolMemberActive, ""},
 		Refresh:    isLBPoolMemberRefreshFunc(lbc, lbID, lbPoolID, lbPoolMemID),
@@ -259,7 +259,7 @@ func isWaitForLBPoolMemberAvailable(lbc *vpcv1.VpcV1, lbID, lbPoolID, lbPoolMemI
 	return stateConf.WaitForState()
 }
 
-func isLBPoolMemberRefreshFunc(lbc *vpcv1.VpcV1, lbID, lbPoolID, lbPoolMemID string) resource.StateRefreshFunc {
+func isLBPoolMemberRefreshFunc(lbc *vpcv1.VpcV1, lbID, lbPoolID, lbPoolMemID string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 
 		getlbpmoptions := &vpcv1.GetLoadBalancerPoolMemberOptions{
@@ -545,7 +545,7 @@ func lbpmemberDelete(d *schema.ResourceData, meta interface{}, lbID, lbPoolID, l
 func isWaitForLBPoolMemberDeleted(lbc *vpcv1.VpcV1, lbID, lbPoolID, lbPoolMemID string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for  (%s) to be deleted.", lbPoolMemID)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{isLBPoolMemberDeletePending},
 		Target:     []string{isLBPoolMemberDeleted, ""},
 		Refresh:    isDeleteLBPoolMemberRefreshFunc(lbc, lbID, lbPoolID, lbPoolMemID),
@@ -557,7 +557,7 @@ func isWaitForLBPoolMemberDeleted(lbc *vpcv1.VpcV1, lbID, lbPoolID, lbPoolMemID 
 	return stateConf.WaitForState()
 }
 
-func isDeleteLBPoolMemberRefreshFunc(lbc *vpcv1.VpcV1, lbID, lbPoolID, lbPoolMemID string) resource.StateRefreshFunc {
+func isDeleteLBPoolMemberRefreshFunc(lbc *vpcv1.VpcV1, lbID, lbPoolID, lbPoolMemID string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 
 		getlbpmoptions := &vpcv1.GetLoadBalancerPoolMemberOptions{

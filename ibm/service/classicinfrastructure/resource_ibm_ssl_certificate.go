@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/softlayer/softlayer-go/datatypes"
 	"github.com/softlayer/softlayer-go/filter"
@@ -816,7 +816,7 @@ func buildSSLProductOrderContainer(d *schema.ResourceData, sess *session1.Sessio
 }
 
 func findSSLByOrderId(sess *session1.Session, orderId int) (datatypes.Security_Certificate_Request, error) {
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{"pending"},
 		Target:  []string{"complete"},
 		Refresh: func() (interface{}, string, error) {

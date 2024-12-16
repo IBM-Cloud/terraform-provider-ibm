@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	yaml "gopkg.in/yaml.v3"
 
@@ -722,7 +722,7 @@ func waitForContainerAddOns(d *schema.ResourceData, meta interface{}, cluster, t
 		return false, err
 	}
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{"pending", "updating", ""},
 		Target:  []string{"normal", "warning", "critical", "available"},
 		Refresh: func() (interface{}, string, error) {

@@ -6,12 +6,12 @@ package conns
 import (
 	"fmt"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 )
 
 // Used for retry logic on resource timeout.
 func IsResourceTimeoutError(err error) bool {
-	timeoutErr, ok := err.(*resource.TimeoutError)
+	timeoutErr, ok := err.(*retry.TimeoutError)
 	return ok && timeoutErr.LastError == nil
 }
 func GetPrivateServiceURLForRegion(region string) (string, error) {

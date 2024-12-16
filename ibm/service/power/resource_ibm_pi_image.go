@@ -12,7 +12,7 @@ import (
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	st "github.com/IBM-Cloud/power-go-client/clients/instance"
@@ -450,7 +450,7 @@ func resourceIBMPIImageDelete(ctx context.Context, d *schema.ResourceData, meta 
 func isWaitForIBMPIImageAvailable(ctx context.Context, client *st.IBMPIImageClient, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for Power Image (%s) to be available.", id)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"retry", helpers.PIImageQueStatus},
 		Target:     []string{helpers.PIImageActiveStatus},
 		Refresh:    isIBMPIImageRefreshFunc(ctx, client, id),
@@ -462,7 +462,7 @@ func isWaitForIBMPIImageAvailable(ctx context.Context, client *st.IBMPIImageClie
 	return stateConf.WaitForStateContext(ctx)
 }
 
-func isIBMPIImageRefreshFunc(ctx context.Context, client *st.IBMPIImageClient, id string) resource.StateRefreshFunc {
+func isIBMPIImageRefreshFunc(ctx context.Context, client *st.IBMPIImageClient, id string) retry.StateRefreshFunc {
 
 	log.Printf("Calling the isIBMPIImageRefreshFunc Refresh Function....")
 	return func() (interface{}, string, error) {
@@ -480,7 +480,7 @@ func isIBMPIImageRefreshFunc(ctx context.Context, client *st.IBMPIImageClient, i
 }
 
 func waitForIBMPIJobCompleted(ctx context.Context, client *st.IBMPIJobClient, jobID string, timeout time.Duration) (interface{}, error) {
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{helpers.JobStatusQueued, helpers.JobStatusReadyForProcessing, helpers.JobStatusInProgress, helpers.JobStatusRunning, helpers.JobStatusWaiting},
 		Target:  []string{helpers.JobStatusCompleted, helpers.JobStatusFailed},
 		Refresh: func() (interface{}, string, error) {

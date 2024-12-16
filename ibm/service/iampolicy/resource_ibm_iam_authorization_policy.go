@@ -14,7 +14,7 @@ import (
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -501,14 +501,14 @@ func resourceIBMIAMAuthorizationPolicyRead(d *schema.ResourceData, meta interfac
 
 	authorizationPolicy, resp, err := iampapClient.GetV2Policy(getPolicyOptions)
 
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
 		var err error
 		authorizationPolicy, resp, err = iampapClient.GetV2Policy(getPolicyOptions)
 		if err != nil || authorizationPolicy == nil {
 			if resp != nil && resp.StatusCode == 404 {
-				return resource.RetryableError(err)
+				return retry.RetryableError(err)
 			}
-			return resource.NonRetryableError(err)
+			return retry.NonRetryableError(err)
 		}
 		return nil
 	})

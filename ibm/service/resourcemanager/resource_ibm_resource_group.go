@@ -10,7 +10,6 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	rg "github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -234,13 +233,13 @@ func resourceIBMResourceGroupDelete(d *schema.ResourceData, meta interface{}) er
 				resp, err = rMgtClient.DeleteResourceGroup(&resourceGroupDelete)
 				if err != nil {
 					if resp != nil && resp.StatusCode == 500 {
-						return resource.RetryableError(err)
+						return retry.RetryableError(err)
 					}
 					if resp != nil && resp.StatusCode == 404 {
 						log.Printf("[WARN] Resource Group is not found")
 						return nil
 					}
-					return resource.NonRetryableError(err)
+					return retry.NonRetryableError(err)
 				}
 				return nil
 			})

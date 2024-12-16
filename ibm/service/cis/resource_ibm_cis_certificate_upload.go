@@ -13,7 +13,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
 	cissslv1 "github.com/IBM/networking-go-sdk/sslcertificateapiv1"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -348,7 +348,7 @@ func waitForCISCertificateUploadDelete(d *schema.ResourceData, meta interface{})
 	cisClient.ZoneIdentifier = core.StringPtr(zoneID)
 
 	opt := cisClient.NewGetCustomCertificateOptions(certID)
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{cisCertificateUploadDeletePending},
 		Target:  []string{cisCertificateUploadDeleted},
 		Refresh: func() (interface{}, string, error) {

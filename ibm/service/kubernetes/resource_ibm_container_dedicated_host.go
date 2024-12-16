@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	v2 "github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
@@ -392,7 +392,7 @@ func waitForDedicatedHostAvailable(ctx context.Context, dedicatedHostAPI v2.Dedi
 
 	log.Printf("[DEBUG] Waiting for the dedicated host (%s) for hostpool (%s) to be available.", hostID, hostPoolID)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{DedicatedHostStateCreatePending, DedicatedHostStateCreating},
 		Target:     []string{DedicatedHostStateCreated},
 		Refresh:    dedicatedHostStateRefreshFunc(dedicatedHostAPI, hostID, hostPoolID, target),
@@ -408,7 +408,7 @@ func waitForDedicatedHostRemove(ctx context.Context, dedicatedHostAPI v2.Dedicat
 
 	log.Printf("[DEBUG] Waiting for the dedicated host (%s) for hostpool (%s) to be removed.", hostID, hostPoolID)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{DedicatedHostStateCreated, DedicatedHostStateDeleting},
 		Target:     []string{DedicatedHostStateDeleted},
 		Refresh:    dedicatedHostStateRefreshFunc(dedicatedHostAPI, hostID, hostPoolID, target),
@@ -420,7 +420,7 @@ func waitForDedicatedHostRemove(ctx context.Context, dedicatedHostAPI v2.Dedicat
 	return stateConf.WaitForStateContext(ctx)
 }
 
-func dedicatedHostStateRefreshFunc(dedicatedHostAPI v2.DedicatedHost, hostID, hostPoolID string, target v2.ClusterTargetHeader) resource.StateRefreshFunc {
+func dedicatedHostStateRefreshFunc(dedicatedHostAPI v2.DedicatedHost, hostID, hostPoolID string, target v2.ClusterTargetHeader) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		dedicatedHost, err := dedicatedHostAPI.GetDedicatedHost(hostID, hostPoolID, target)
 		if err != nil {
@@ -438,7 +438,7 @@ func waitForDedicatedHostPlacement(ctx context.Context, dedicatedHostAPI v2.Dedi
 
 	pendingStr := strconv.FormatBool(!placement)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{pendingStr},
 		Target:     []string{placementStr},
 		Refresh:    dedicatedHostPlacementRefreshFunc(dedicatedHostAPI, hostID, hostPoolID, target),
@@ -450,7 +450,7 @@ func waitForDedicatedHostPlacement(ctx context.Context, dedicatedHostAPI v2.Dedi
 	return stateConf.WaitForStateContext(ctx)
 }
 
-func dedicatedHostPlacementRefreshFunc(dedicatedHostAPI v2.DedicatedHost, hostID, hostPoolID string, target v2.ClusterTargetHeader) resource.StateRefreshFunc {
+func dedicatedHostPlacementRefreshFunc(dedicatedHostAPI v2.DedicatedHost, hostID, hostPoolID string, target v2.ClusterTargetHeader) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		dedicatedHost, err := dedicatedHostAPI.GetDedicatedHost(hostID, hostPoolID, target)
 		if err != nil {

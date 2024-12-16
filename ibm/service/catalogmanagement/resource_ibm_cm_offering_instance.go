@@ -11,7 +11,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/platform-services-go-sdk/catalogmanagementv1"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -227,7 +227,7 @@ func waitUntilSuccess(d *schema.ResourceData, meta interface{}) (interface{}, er
 
 	getOfferingInstanceOptions.SetInstanceIdentifier(d.Id())
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{inProgress},
 		Target:  []string{success},
 		Refresh: func() (interface{}, string, error) {

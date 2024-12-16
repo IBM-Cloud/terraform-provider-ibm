@@ -15,9 +15,10 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 
 	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 )
@@ -180,7 +181,7 @@ func testAccCisInstanceManuallyDeleteUnwrapped(s *terraform.State, tfCisId *stri
 		return fmt.Errorf("[ERROR] Error deleting resource instance: %s %s", err, response)
 	}
 
-	_ = &resource.StateChangeConf{
+	_ = &retry.StateChangeConf{
 		Pending: []string{CisInstanceProgressStatus, CisInstanceInactiveStatus, CisInstanceSuccessStatus},
 		Target:  []string{CisInstanceRemovedStatus},
 		Refresh: func() (interface{}, string, error) {

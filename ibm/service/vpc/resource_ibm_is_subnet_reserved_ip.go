@@ -13,7 +13,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -376,7 +376,7 @@ func get(d *schema.ResourceData, meta interface{}) (*vpcv1.ReservedIP, error) {
 
 func isWaitForReservedIpAvailable(sess *vpcv1.VpcV1, subnetid, id string, timeout time.Duration, d *schema.ResourceData) (interface{}, error) {
 	log.Printf("Waiting for reseved ip (%s/%s) to be available.", subnetid, id)
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"pending"},
 		Target:     []string{"done", "failed", ""},
 		Refresh:    isReserveIpRefreshFunc(sess, subnetid, id, d),
@@ -387,7 +387,7 @@ func isWaitForReservedIpAvailable(sess *vpcv1.VpcV1, subnetid, id string, timeou
 	return stateConf.WaitForState()
 }
 
-func isReserveIpRefreshFunc(sess *vpcv1.VpcV1, subnetid, id string, d *schema.ResourceData) resource.StateRefreshFunc {
+func isReserveIpRefreshFunc(sess *vpcv1.VpcV1, subnetid, id string, d *schema.ResourceData) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		getreservedipOptions := &vpcv1.GetSubnetReservedIPOptions{
 			ID:       &id,

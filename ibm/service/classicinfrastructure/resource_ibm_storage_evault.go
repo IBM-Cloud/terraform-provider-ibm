@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/softlayer/softlayer-go/datatypes"
 	"github.com/softlayer/softlayer-go/filter"
@@ -320,7 +320,7 @@ func findEvaultStorageByOrderID(d *schema.ResourceData, meta interface{}, orderI
 	filterPath := "evaultNetworkStorage.billingItem.orderItem.order.id"
 	sess := meta.(conns.ClientSession).SoftLayerSession()
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{"pending"},
 		Target:  []string{"complete"},
 		Refresh: func() (interface{}, string, error) {
@@ -373,7 +373,7 @@ func WaitForEvaultAvailable(d *schema.ResourceData, meta interface{}, timeout st
 		return nil, fmt.Errorf("[ERROR] The evault ID %s must be numeric", d.Id())
 	}
 	sess := meta.(conns.ClientSession).SoftLayerSession()
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{"retry", "provisioning"},
 		Target:  []string{"available"},
 		Refresh: func() (interface{}, string, error) {

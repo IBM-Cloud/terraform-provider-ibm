@@ -17,7 +17,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -1271,7 +1271,7 @@ func waitForClusterDelete(d *schema.ResourceData, meta interface{}) (interface{}
 		return nil, err
 	}
 	clusterID := d.Id()
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{clusterDeletePending},
 		Target:  []string{clusterDeleted},
 		Refresh: func() (interface{}, string, error) {
@@ -1305,7 +1305,7 @@ func waitForClusterMasterAvailable(d *schema.ResourceData, meta interface{}, tim
 	}
 	clusterID := d.Id()
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{deployRequested, deployInProgress},
 		Target:  []string{ready},
 		Refresh: func() (interface{}, string, error) {
@@ -1338,7 +1338,7 @@ func waitForClusterState(d *schema.ResourceData, meta interface{}, waitForState 
 	}
 	clusterID := d.Id()
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: pendingState,
 		Target:  []string{waitForState},
 		Refresh: func() (interface{}, string, error) {
@@ -1376,7 +1376,7 @@ func waitForClusterOneWorkerAvailable(d *schema.ResourceData, meta interface{}, 
 	}
 	clusterID := d.Id()
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{"retry", "deploying", "provisioning"},
 		Target:  []string{normal},
 		Refresh: func() (interface{}, string, error) {
@@ -1432,7 +1432,7 @@ func WaitForWorkerAvailable(d *schema.ResourceData, meta interface{}, target v1.
 	log.Printf("Waiting for worker of the cluster (%s) to be available.", d.Id())
 	id := d.Id()
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"retry", workerProvisioning},
 		Target:     []string{workerNormal},
 		Refresh:    workerStateRefreshFunc(csClient.Workers(), id, target),
@@ -1444,7 +1444,7 @@ func WaitForWorkerAvailable(d *schema.ResourceData, meta interface{}, target v1.
 	return stateConf.WaitForState()
 }
 
-func workerStateRefreshFunc(client v1.Workers, instanceID string, target v1.ClusterTargetHeader) resource.StateRefreshFunc {
+func workerStateRefreshFunc(client v1.Workers, instanceID string, target v1.ClusterTargetHeader) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		workerFields, err := client.List(instanceID, target)
 		if err != nil {
@@ -1471,7 +1471,7 @@ func WaitForSubnetAvailable(d *schema.ResourceData, meta interface{}, target v1.
 	log.Printf("Waiting for Ingress Subdomain and secret being assigned.")
 	id := d.Id()
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"retry", workerProvisioning},
 		Target:     []string{workerNormal},
 		Refresh:    subnetStateRefreshFunc(csClient.Clusters(), id, d, target),
@@ -1483,7 +1483,7 @@ func WaitForSubnetAvailable(d *schema.ResourceData, meta interface{}, target v1.
 	return stateConf.WaitForState()
 }
 
-func subnetStateRefreshFunc(client v1.Clusters, instanceID string, d *schema.ResourceData, target v1.ClusterTargetHeader) resource.StateRefreshFunc {
+func subnetStateRefreshFunc(client v1.Clusters, instanceID string, d *schema.ResourceData, target v1.ClusterTargetHeader) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		cluster, err := client.FindWithOutShowResourcesCompatible(instanceID, target)
 		if err != nil {
@@ -1505,7 +1505,7 @@ func WaitForClusterVersionUpdate(d *schema.ResourceData, meta interface{}, targe
 	log.Printf("Waiting for cluster (%s) version to be updated.", d.Id())
 	id := d.Id()
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:                   []string{"retry", versionUpdating},
 		Target:                    []string{clusterNormal},
 		Refresh:                   clusterVersionRefreshFunc(csClient.Clusters(), id, d, target),
@@ -1518,7 +1518,7 @@ func WaitForClusterVersionUpdate(d *schema.ResourceData, meta interface{}, targe
 	return stateConf.WaitForState()
 }
 
-func clusterVersionRefreshFunc(client v1.Clusters, instanceID string, d *schema.ResourceData, target v1.ClusterTargetHeader) resource.StateRefreshFunc {
+func clusterVersionRefreshFunc(client v1.Clusters, instanceID string, d *schema.ResourceData, target v1.ClusterTargetHeader) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		clusterFields, err := client.FindWithOutShowResourcesCompatible(instanceID, target)
 		if err != nil {

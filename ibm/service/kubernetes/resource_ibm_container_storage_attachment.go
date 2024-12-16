@@ -12,7 +12,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -280,7 +280,7 @@ func waitforVolumetoAttach(d *schema.ResourceData, meta interface{}) (interface{
 	workerID := parts[1]
 	volumeAttachmentID := parts[2]
 
-	createStateConf := &resource.StateChangeConf{
+	createStateConf := &retry.StateChangeConf{
 		Pending: []string{volumeAttaching},
 		Target:  []string{volumeAttached},
 		Refresh: func() (interface{}, string, error) {
@@ -325,7 +325,7 @@ func waitForStorageAttachmentDelete(d *schema.ResourceData, meta interface{}) (i
 	workerID := parts[1]
 	volumeAttachmentID := parts[2]
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{"inprogress"},
 		Target:  []string{"removed"},
 		Refresh: func() (interface{}, string, error) {

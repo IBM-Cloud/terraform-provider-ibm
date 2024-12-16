@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -338,9 +338,9 @@ func resourceIBMIAMAccessGroupTemplateAssignmentDelete(context context.Context, 
 	return nil
 }
 
-func waitForAssignment(timeout time.Duration, meta interface{}, d *schema.ResourceData, refreshFn func(string, interface{}) resource.StateRefreshFunc) (interface{}, error) {
+func waitForAssignment(timeout time.Duration, meta interface{}, d *schema.ResourceData, refreshFn func(string, interface{}) retry.StateRefreshFunc) (interface{}, error) {
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:      []string{InProgress},
 		Target:       []string{complete},
 		Refresh:      refreshFn(d.Id(), meta),
@@ -352,7 +352,7 @@ func waitForAssignment(timeout time.Duration, meta interface{}, d *schema.Resour
 	return stateConf.WaitForState()
 }
 
-func isAccessGroupTemplateAssigned(id string, meta interface{}) resource.StateRefreshFunc {
+func isAccessGroupTemplateAssigned(id string, meta interface{}) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		iamAccessGroupsClient, err := meta.(conns.ClientSession).IAMAccessGroupsV2()
 		if err != nil {
@@ -389,7 +389,7 @@ func isAccessGroupTemplateAssigned(id string, meta interface{}) resource.StateRe
 	}
 }
 
-func isAccessGroupTemplateAssignmentDeleted(id string, meta interface{}) resource.StateRefreshFunc {
+func isAccessGroupTemplateAssignmentDeleted(id string, meta interface{}) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		iamAccessGroupsClient, err := meta.(conns.ClientSession).IAMAccessGroupsV2()
 		if err != nil {

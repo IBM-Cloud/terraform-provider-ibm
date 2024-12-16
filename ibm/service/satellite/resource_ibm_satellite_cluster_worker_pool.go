@@ -14,7 +14,7 @@ import (
 	"github.com/IBM-Cloud/container-services-go-sdk/kubernetesserviceapiv1"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -493,7 +493,7 @@ func WaitForSatelliteWorkerPoolAvailable(d *schema.ResourceData, meta interface{
 		return nil, err
 	}
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{"provision_pending"},
 		Target:  []string{workerPoolDesired},
 		Refresh: func() (interface{}, string, error) {
@@ -533,7 +533,7 @@ func WaitForSatelliteWorkerDelete(clusterNameOrID, workerPoolNameOrID string, me
 		return nil, err
 	}
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"deleting"},
 		Target:     []string{workerDeleteState},
 		Refresh:    satelliteWorkerPoolDeleteStateRefreshFunc(satClient, clusterNameOrID, workerPoolNameOrID, target),
@@ -545,7 +545,7 @@ func WaitForSatelliteWorkerDelete(clusterNameOrID, workerPoolNameOrID string, me
 	return stateConf.WaitForState()
 }
 
-func satelliteWorkerPoolDeleteStateRefreshFunc(satClient *kubernetesserviceapiv1.KubernetesServiceApiV1, clusterID, workerPoolNameOrID string, target v2.ClusterTargetHeader) resource.StateRefreshFunc {
+func satelliteWorkerPoolDeleteStateRefreshFunc(satClient *kubernetesserviceapiv1.KubernetesServiceApiV1, clusterID, workerPoolNameOrID string, target v2.ClusterTargetHeader) retry.StateRefreshFunc {
 
 	return func() (interface{}, string, error) {
 

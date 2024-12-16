@@ -14,7 +14,7 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/softlayer/softlayer-go/filter"
 
@@ -212,7 +212,7 @@ func resourceIBMComputePlacementGroupDelete(d *schema.ResourceData, meta interfa
 	)
 
 	//Wait till all the VMs are disconnected before trying to delete
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Target:     []string{noVms},
 		Pending:    []string{vmsStillOnPlacementGroup},
 		Timeout:    d.Timeout(schema.TimeoutDelete),

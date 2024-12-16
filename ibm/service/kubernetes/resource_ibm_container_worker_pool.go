@@ -10,7 +10,7 @@ import (
 	"time"
 
 	v2 "github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	v1 "github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
@@ -542,7 +542,7 @@ func WaitForWorkerNormal(clusterNameOrID, workerPoolNameOrID string, meta interf
 		return nil, err
 	}
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"retry", workerProvisioning},
 		Target:     []string{workerNormal},
 		Refresh:    workerPoolStateRefreshFunc(csClient.Workers(), clusterNameOrID, workerPoolNameOrID, target),
@@ -554,7 +554,7 @@ func WaitForWorkerNormal(clusterNameOrID, workerPoolNameOrID string, meta interf
 	return stateConf.WaitForState()
 }
 
-func workerPoolStateRefreshFunc(client v1.Workers, instanceID, workerPoolNameOrID string, target v1.ClusterTargetHeader) resource.StateRefreshFunc {
+func workerPoolStateRefreshFunc(client v1.Workers, instanceID, workerPoolNameOrID string, target v1.ClusterTargetHeader) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		workerFields, err := client.ListByWorkerPool(instanceID, workerPoolNameOrID, false, target)
 		if err != nil {
@@ -578,7 +578,7 @@ func WaitForWorkerDelete(clusterNameOrID, workerPoolNameOrID string, meta interf
 		return nil, err
 	}
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"deleting"},
 		Target:     []string{workerDeleteState},
 		Refresh:    workerPoolDeleteStateRefreshFunc(csClient.Workers(), clusterNameOrID, workerPoolNameOrID, target),
@@ -590,7 +590,7 @@ func WaitForWorkerDelete(clusterNameOrID, workerPoolNameOrID string, meta interf
 	return stateConf.WaitForState()
 }
 
-func workerPoolDeleteStateRefreshFunc(client v1.Workers, instanceID, workerPoolNameOrID string, target v1.ClusterTargetHeader) resource.StateRefreshFunc {
+func workerPoolDeleteStateRefreshFunc(client v1.Workers, instanceID, workerPoolNameOrID string, target v1.ClusterTargetHeader) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		workerFields, err := client.ListByWorkerPool(instanceID, "", true, target)
 		if err != nil {

@@ -10,13 +10,13 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
 	st "github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -211,7 +211,7 @@ func resourceIBMPINetworkPortAttachDelete(ctx context.Context, d *schema.Resourc
 func isWaitForIBMPINetworkportAvailable(ctx context.Context, client *st.IBMPINetworkClient, id string, networkname string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for Power Network (%s) that was created for Network Zone (%s) to be available.", id, networkname)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"retry", helpers.PINetworkProvisioning},
 		Target:     []string{"DOWN"},
 		Refresh:    isIBMPINetworkportRefreshFunc(client, id, networkname),
@@ -223,7 +223,7 @@ func isWaitForIBMPINetworkportAvailable(ctx context.Context, client *st.IBMPINet
 	return stateConf.WaitForStateContext(ctx)
 }
 
-func isIBMPINetworkportRefreshFunc(client *st.IBMPINetworkClient, id, networkname string) resource.StateRefreshFunc {
+func isIBMPINetworkportRefreshFunc(client *st.IBMPINetworkClient, id, networkname string) retry.StateRefreshFunc {
 
 	log.Printf("Calling the IsIBMPINetwork Refresh Function....with the following id (%s) for network port and following id (%s) for network name and waiting for network to be READY", id, networkname)
 	return func() (interface{}, string, error) {
@@ -243,7 +243,7 @@ func isIBMPINetworkportRefreshFunc(client *st.IBMPINetworkClient, id, networknam
 func isWaitForIBMPINetworkPortAttachAvailable(ctx context.Context, client *st.IBMPINetworkClient, id, networkname, instanceid string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for Power Network (%s) that was created for Network Zone (%s) to be available.", id, networkname)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"retry", helpers.PINetworkProvisioning},
 		Target:     []string{"ACTIVE"},
 		Refresh:    isIBMPINetworkPortAttachRefreshFunc(client, id, networkname, instanceid),
@@ -255,7 +255,7 @@ func isWaitForIBMPINetworkPortAttachAvailable(ctx context.Context, client *st.IB
 	return stateConf.WaitForStateContext(ctx)
 }
 
-func isIBMPINetworkPortAttachRefreshFunc(client *st.IBMPINetworkClient, id, networkname, instanceid string) resource.StateRefreshFunc {
+func isIBMPINetworkPortAttachRefreshFunc(client *st.IBMPINetworkClient, id, networkname, instanceid string) retry.StateRefreshFunc {
 
 	log.Printf("Calling the IsIBMPINetwork Refresh Function....with the following id (%s) for network port and following id (%s) for network name and waiting for network to be READY", id, networkname)
 	return func() (interface{}, string, error) {
