@@ -2,6 +2,7 @@ package cos
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -88,8 +89,14 @@ func resourceIBMCOSBackupPolicyCreate(ctx context.Context, d *schema.ResourceDat
 }
 
 func resourceIBMCOSBackupPolicyRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	bucketName := parseBackupPolicyID(d.Id(), "bucketName")
-	policyId := parseBackupPolicyID(d.Id(), "policyId")
+	bucketName, err := parseBackupPolicyID(d.Id(), "bucketName")
+	if err != nil {
+		return diag.Errorf("Failed to get bucket name from backup policy Id : %v", err)
+	}
+	policyId, err := parseBackupPolicyID(d.Id(), "policyId")
+	if err != nil {
+		return diag.Errorf("Failed to get policy name from backup policy Id :  %v", err)
+	}
 	rcClient, err := meta.(conns.ClientSession).CosConfigV1API()
 	if err != nil {
 		return diag.Errorf("Failed to create rc client %v", err)
@@ -119,8 +126,14 @@ func resourceIBMCOSBackupPolicyRead(ctx context.Context, d *schema.ResourceData,
 }
 
 func resourceIBMCOSBackupPolicyDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	bucketName := parseBackupPolicyID(d.Id(), "bucketName")
-	policyId := parseBackupPolicyID(d.Id(), "policyId")
+	bucketName, err := parseBackupPolicyID(d.Id(), "bucketName")
+	if err != nil {
+		return diag.Errorf("Failed to get bucket name from backup policy Id :  %v", err)
+	}
+	policyId, err := parseBackupPolicyID(d.Id(), "policyId")
+	if err != nil {
+		return diag.Errorf("Failed to get policy name from backup policy Id :  %v", err)
+	}
 	rcClient, err := meta.(conns.ClientSession).CosConfigV1API()
 	if err != nil {
 		return diag.Errorf("Failed to create rc client %v", err)
@@ -136,18 +149,18 @@ func resourceIBMCOSBackupPolicyDelete(ctx context.Context, d *schema.ResourceDat
 	return nil
 }
 
-func parseBackupPolicyID(id string, info string) string {
+func parseBackupPolicyID(id string, info string) (backupPolicy string, err error) {
 	if info == "bucketName" {
-		return strings.Split(id, ":")[0]
+		return strings.Split(id, ":")[0], nil
 	}
 	if info == "policyId" {
-		return strings.Split(id, ":")[1]
+		return strings.Split(id, ":")[1], nil
 	}
 	if info == "policyName" {
-		return strings.Split(id, ":")[2]
+		return strings.Split(id, ":")[2], nil
 	}
 	if info == "targebucketCrn" {
-		return strings.Split(id, ":target:")[1]
+		return strings.Split(id, ":target:")[1], nil
 	}
-	return ""
+	return "", errors.New("Backup policy ID is null")
 }
