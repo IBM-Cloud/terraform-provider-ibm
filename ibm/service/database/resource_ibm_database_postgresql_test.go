@@ -308,11 +308,10 @@ func testAccCheckIBMDatabaseInstancePostgresBasic(databaseResourceGroup string, 
 		service                      = "databases-for-postgresql"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "secure-Password12345"
+		adminpassword                = "password12345678"
 		service_endpoints            = "public"
 		group {
 			group_id = "member"
-
 			memory {
 			  allocation_mb = 4096
 			}
@@ -326,7 +325,7 @@ func testAccCheckIBMDatabaseInstancePostgresBasic(databaseResourceGroup string, 
 		tags                         = ["one:two"]
 		users {
 			name     = "user123"
-			password = "secure-Password12345"
+			password = "password12345678"
 		}
 		allowlist {
 			address     = "172.168.1.2/32"
@@ -360,7 +359,7 @@ func testAccCheckIBMDatabaseInstancePostgresFullyspecified(databaseResourceGroup
 		service                      = "databases-for-postgresql"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "secure-Password12345"
+		adminpassword                = "password12345678"
 		group {
 			group_id = "member"
 			memory {
@@ -380,15 +379,15 @@ func testAccCheckIBMDatabaseInstancePostgresFullyspecified(databaseResourceGroup
 		tags                         = ["one:two"]
 		users {
 			name     = "user123"
-			password = "secure-Password12345"
+			password = "password12345678"
 		}
 		users {
 			name     = "user124"
-			password = "secure-Password12345"
+			password = "password12345678"
 		}
 		users {
 			name     = "repl"
-			password = "repl123456Password"
+			password = "repl123456password"
 		}
 		configuration                   = <<CONFIGURATION
 		{
@@ -431,7 +430,7 @@ func testAccCheckIBMDatabaseInstancePostgresGroupBasic(databaseResourceGroup str
 		service                      = "databases-for-postgresql"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "secure-Password12345"
+		adminpassword                = "password12345678"
 		tags                         = ["one:two"]
 		group {
 			group_id = "member"
@@ -454,7 +453,7 @@ func testAccCheckIBMDatabaseInstancePostgresGroupBasic(databaseResourceGroup str
 		service_endpoints            = "public"
 		users {
 			name     = "user123"
-			password = "secure-Password12345"
+			password = "password12345678"
 		}
 		allowlist {
 			address     = "172.168.1.2/32"
@@ -476,7 +475,7 @@ func testAccCheckIBMDatabaseInstancePostgresGroupFullyspecified(databaseResource
 		service                      = "databases-for-postgresql"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "secure-Password12345"
+		adminpassword                = "password12345678"
 		service_endpoints            = "public-and-private"
 		tags                         = ["one:two"]
 		group {
@@ -499,11 +498,11 @@ func testAccCheckIBMDatabaseInstancePostgresGroupFullyspecified(databaseResource
 		}
 		users {
 			name     = "user123"
-			password = "secure-Password12345"
+			password = "password12345678"
 		}
 		users {
 			name     = "user124"
-			password = "secure-Password12345"
+			password = "password12345678"
 		}
 		allowlist {
 			address     = "172.168.1.2/32"
@@ -529,7 +528,7 @@ func testAccCheckIBMDatabaseInstancePostgresGroupReduced(databaseResourceGroup s
 		service                      = "databases-for-postgresql"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "secure-Password12345"
+		adminpassword                = "password12345678"
 		service_endpoints            = "public"
 		tags                         = ["one:two"]
 		group {
@@ -566,7 +565,7 @@ func testAccCheckIBMDatabaseInstancePostgresGroupScaleOut(databaseResourceGroup 
 		service                      = "databases-for-postgresql"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "secure-Password12345"
+		adminpassword                = "password12345678"
 		group {
 			group_id = "member"
 			members {
