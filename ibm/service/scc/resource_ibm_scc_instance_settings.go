@@ -34,7 +34,19 @@ func ResourceIbmSccInstanceSettings() *schema.Resource {
 						"instance_crn": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
+							Computed:    true,
 							Description: "The Event Notifications instance CRN.",
+						},
+						"source_description": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "The description of the source in Event Notifications connected Security and Compliance Center",
+						},
+						"source_name": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The name of the Event Notifications source connected Security and Compliance Center instance CRN.",
 						},
 						"updated_on": &schema.Schema{
 							Type:        schema.TypeString,
@@ -123,11 +135,8 @@ func resourceIbmSccInstanceSettingsCreate(context context.Context, d *schema.Res
 			return diag.FromErr(err)
 		}
 		eventNotificationsModel = eventNotificationsData
-		eventNotificationsModel.SourceName = core.StringPtr("compliance")
-		eventNotificationsModel.SourceDescription = core.StringPtr("This source is used for integration with IBM Cloud Security and Compliance Center.")
 	} else {
 		eventNotificationsModel = &securityandcompliancecenterapiv3.EventNotifications{}
-		eventNotificationsModel.InstanceCrn = core.StringPtr("")
 	}
 	updateSettingsOptions.SetEventNotifications(eventNotificationsModel)
 
@@ -139,8 +148,7 @@ func resourceIbmSccInstanceSettingsCreate(context context.Context, d *schema.Res
 		}
 		objectStorageModel = objectStorageData
 	} else {
-		objectStorageModel := &securityandcompliancecenterapiv3.ObjectStorage{}
-		objectStorageModel.InstanceCrn = core.StringPtr("")
+		objectStorageModel = &securityandcompliancecenterapiv3.ObjectStorage{}
 	}
 	updateSettingsOptions.SetObjectStorage(objectStorageModel)
 
@@ -183,6 +191,13 @@ func resourceIbmSccInstanceSettingsRead(context context.Context, d *schema.Resou
 		if err != nil {
 			return diag.FromErr(err)
 		}
+		if _, ok := eventNotificationsMap["source_name"]; !ok {
+			eventNotificationsData, enErr := resourceIbmSccInstanceSettingsMapToEventNotifications(d.Get("event_notifications.0").(map[string]interface{}))
+			if enErr == nil && core.StringNilMapper(eventNotificationsData.SourceName) != "" {
+				eventNotificationsMap["source_name"] = eventNotificationsData.SourceName
+				log.Print("[WARN] event_notifications.source_name grabbed from preexisting state\n")
+			}
+		}
 		if err = d.Set("event_notifications", []map[string]interface{}{eventNotificationsMap}); err != nil {
 			return diag.FromErr(flex.FmtErrorf("Error setting event_notifications: %s", err))
 		}
@@ -216,10 +231,6 @@ func resourceIbmSccInstanceSettingsUpdate(context context.Context, d *schema.Res
 		eventNotifications, err := resourceIbmSccInstanceSettingsMapToEventNotifications(d.Get("event_notifications.0").(map[string]interface{}))
 		if err != nil {
 			return diag.FromErr(err)
-		}
-		if eventNotifications.InstanceCrn != nil && *eventNotifications.InstanceCrn != "" {
-			eventNotifications.SourceName = core.StringPtr("compliance")
-			eventNotifications.SourceDescription = core.StringPtr("This source is used for integration with IBM Cloud Security and Compliance Center.")
 		}
 		updateSettingsOptions.SetEventNotifications(eventNotifications)
 		hasChange = true
@@ -265,6 +276,15 @@ func resourceIbmSccInstanceSettingsMapToEventNotifications(modelMap map[string]i
 	}
 	if modelMap["source_id"] != nil && modelMap["source_id"].(string) != "" {
 		model.SourceID = core.StringPtr(modelMap["source_id"].(string))
+	}
+	if modelMap["source_name"] != nil && modelMap["source_name"].(string) != "" {
+		model.SourceName = core.StringPtr(modelMap["source_name"].(string))
+	}
+	if modelMap["source_description"] != nil && modelMap["source_description"].(string) != "" {
+		model.SourceDescription = core.StringPtr(modelMap["source_description"].(string))
+	}
+	if core.StringNilMapper(model.InstanceCrn) != "" && core.StringNilMapper(model.SourceName) == "" {
+		return model, errors.New("event_notifications.source_name needs to be defined along with event_notifications.instance_crn")
 	}
 	return model, nil
 }

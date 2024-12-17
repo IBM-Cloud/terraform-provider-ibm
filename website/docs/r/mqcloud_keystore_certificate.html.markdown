@@ -3,14 +3,14 @@ layout: "ibm"
 page_title: "IBM : ibm_mqcloud_keystore_certificate"
 description: |-
   Manages mqcloud_keystore_certificate.
-subcategory: "MQ on Cloud"
+subcategory: "MQaaS"
 ---
 
 # ibm_mqcloud_keystore_certificate
 
 Create, update, and delete mqcloud_keystore_certificates with this resource.
 
-> **Note:** The MQ on Cloud Terraform provider access is restricted to users of the reserved deployment plan.
+> **Note:** The MQaaS Terraform provider access is restricted to users of the reserved deployment, reserved capacity, and reserved capacity subscription plans.
 
 ## Example Usage
 
@@ -20,7 +20,6 @@ resource "ibm_mqcloud_keystore_certificate" "mqcloud_keystore_certificate_instan
   label = "certlabel"
   queue_manager_id = var.queue_manager_id
   service_instance_guid = var.service_instance_guid
-
   config {
     ams {
       channels {
@@ -41,7 +40,7 @@ You can specify the following arguments for this resource.
   * Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9_.]*$/`.
 * `queue_manager_id` - (Required, Forces new resource, String) The id of the queue manager to retrieve its full details.
   * Constraints: The maximum length is `32` characters. The minimum length is `32` characters. The value must match regular expression `/^[0-9a-fA-F]{32}$/`.
-* `service_instance_guid` - (Required, Forces new resource, String) The GUID that uniquely identifies the MQ on Cloud service instance.
+* `service_instance_guid` - (Required, Forces new resource, String) The GUID that uniquely identifies the MQaaS service instance.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/`.
 
 ## Attribute Reference
@@ -85,7 +84,7 @@ The `id` property can be formed from `service_instance_guid`, `queue_manager_id`
 <pre>
 &lt;service_instance_guid&gt;/&lt;queue_manager_id&gt;/&lt;certificate_id&gt;
 </pre>
-* `service_instance_guid`: A string in the format `a2b4d4bc-dadb-4637-bcec-9b7d1e723af8`. The GUID that uniquely identifies the MQ on Cloud service instance.
+* `service_instance_guid`: A string in the format `a2b4d4bc-dadb-4637-bcec-9b7d1e723af8`. The GUID that uniquely identifies the MQaaS service instance.
 * `queue_manager_id`: A string in the format `b8e1aeda078009cf3db74e90d5d42328`. The id of the queue manager to retrieve its full details.
 * `certificate_id`: A string. ID of the certificate.
 

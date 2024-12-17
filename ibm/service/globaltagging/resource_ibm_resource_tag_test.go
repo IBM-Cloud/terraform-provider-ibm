@@ -88,7 +88,7 @@ func testAccCheckTagDestroy(n, tagType string, tagNames []string) resource.TestC
 		var resourceID string
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return flex.FmtErrorf("Not found: %s", n)
 		}
 		crnRegex := "^crn:v1(:[a-zA-Z0-9 \\-\\._~\\*\\+,;=!$&'\\(\\)\\/\\?#\\[\\]@]*){8}$|^[0-9]+$"
 		crn, err := regexp.Compile(crnRegex)
@@ -106,7 +106,7 @@ func testAccCheckTagDestroy(n, tagType string, tagNames []string) resource.TestC
 		}
 		results, errorGet := flex.GetTagsUsingResourceCRNFromTaggingApi(acc.TestAccProvider.Meta(), resourceID, "", tagType)
 		if errorGet != nil {
-			return fmt.Errorf("Error on get of resource tags (%s) : %s", resourceID, errorGet)
+			return flex.FmtErrorf("Error on get of resource tags (%s) : %s", resourceID, errorGet)
 		}
 		var taglist []string
 		for _, v := range results.List() {
@@ -115,7 +115,7 @@ func testAccCheckTagDestroy(n, tagType string, tagNames []string) resource.TestC
 		existingAccessTags := flex.NewStringSet(flex.ResourceIBMVPCHash, taglist)
 		for _, tagName := range tagNames {
 			if existingAccessTags.Contains(tagName) {
-				return fmt.Errorf("Tag still exists")
+				return flex.FmtErrorf("Tag still exists")
 			}
 		}
 		return nil
@@ -127,7 +127,7 @@ func testAccCheckTagOnExistingResourceDestroy(resourceCrn, n, tagType string, ta
 		var resourceID string
 		_, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return flex.FmtErrorf("Not found: %s", n)
 		}
 		crnRegex := "^crn:v1(:[a-zA-Z0-9 \\-\\._~\\*\\+,;=!$&'\\(\\)\\/\\?#\\[\\]@]*){8}$|^[0-9]+$"
 		crn, err := regexp.Compile(crnRegex)
@@ -137,11 +137,11 @@ func testAccCheckTagOnExistingResourceDestroy(resourceCrn, n, tagType string, ta
 		if crn.MatchString(resourceCrn) {
 			resourceID = resourceCrn
 		} else {
-			return fmt.Errorf("CRN not correct: %s", resourceCrn)
+			return flex.FmtErrorf("CRN not correct: %s", resourceCrn)
 		}
 		results, errorGet := flex.GetTagsUsingResourceCRNFromTaggingApi(acc.TestAccProvider.Meta(), resourceID, "", tagType)
 		if errorGet != nil {
-			return fmt.Errorf("Error on get of resource tags (%s) : %s", resourceID, errorGet)
+			return flex.FmtErrorf("Error on get of resource tags (%s) : %s", resourceID, errorGet)
 		}
 		var taglist []string
 		for _, v := range results.List() {
@@ -150,7 +150,7 @@ func testAccCheckTagOnExistingResourceDestroy(resourceCrn, n, tagType string, ta
 		existingAccessTags := flex.NewStringSet(flex.ResourceIBMVPCHash, taglist)
 		for _, tagName := range tagNames {
 			if existingAccessTags.Contains(tagName) {
-				return fmt.Errorf("Tag still exists")
+				return flex.FmtErrorf("Tag still exists")
 			}
 		}
 		return nil
@@ -162,7 +162,7 @@ func testAccCheckResourceTagExists(n string) resource.TestCheckFunc {
 		var resourceID string
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return flex.FmtErrorf("Not found: %s", n)
 		}
 		crnRegex := "^crn:v1(:[a-zA-Z0-9 \\-\\._~\\*\\+,;=!$&'\\(\\)\\/\\?#\\[\\]@]*){8}$|^[0-9]+$"
 		crn, err := regexp.Compile(crnRegex)

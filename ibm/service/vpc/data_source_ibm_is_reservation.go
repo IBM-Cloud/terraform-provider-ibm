@@ -349,17 +349,23 @@ func dataSourceIBMIsReservationRead(context context.Context, d *schema.ResourceD
 	return nil
 }
 
-func dataSourceReservationProfileToMap(profileItemIntf vpcv1.ReservationProfileIntf) (profileMap map[string]interface{}) {
-	profileMap = map[string]interface{}{}
-	profileItem := profileItemIntf.(*vpcv1.ReservationProfile)
-	if profileItem.Href != nil {
-		profileMap["href"] = profileItem.Href
+func dataSourceReservationProfileToMap(profileItem vpcv1.ReservationProfileIntf) (profileMap map[string]interface{}) {
+	var profile *vpcv1.ReservationProfile
+	if profileItem == nil {
+		return
 	}
-	if profileItem.Name != nil {
-		profileMap["name"] = profileItem.Name
+	if profile = profileItem.(*vpcv1.ReservationProfile); profile == nil {
+		return
 	}
-	if profileItem.ResourceType != nil {
-		profileMap["resource_type"] = profileItem.ResourceType
+
+	if profile.Href != nil {
+		profileMap["href"] = profile.Href
+	}
+	if profile.Name != nil {
+		profileMap["name"] = profile.Name
+	}
+	if profile.ResourceType != nil {
+		profileMap["resource_type"] = profile.ResourceType
 	}
 	return profileMap
 }

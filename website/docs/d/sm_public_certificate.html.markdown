@@ -130,7 +130,7 @@ Nested scheme for **rotation**:
 	* `auto_rotate` - (Boolean) Determines whether Secrets Manager rotates your secret automatically.Default is `false`.
 	* `rotate_keys` - (Boolean) Determines whether Secrets Manager rotates the private key for your public certificate automatically.Default is `false`. If it is set to `true`, the service generates and stores a new private key for your rotated certificate.
 
-* `secret_group_id` - (String) A v4 UUID identifier, or `default` secret group.
+* `secret_group_id` - (String) A UUID identifier, or `default` secret group.
   * Constraints: The maximum length is `36` characters. The minimum length is `7` characters. The value must match regular expression `/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|default)$/`.
 
 * `secret_type` - (String) The secret type. Supported types are arbitrary, certificates (imported, public, and private), IAM credentials, key-value, and user credentials.
