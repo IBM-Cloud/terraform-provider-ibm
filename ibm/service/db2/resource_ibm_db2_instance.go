@@ -32,6 +32,7 @@ const (
 	RsInstanceRemovedStatus       = "removed"
 	RsInstanceReclamation         = "pending_reclamation"
 	RsInstanceUpdateSuccessStatus = "succeeded"
+	PerformanceSubscription       = "PerformanceSubscription"
 )
 
 func ResourceIBMDb2Instance() *schema.Resource {
@@ -51,6 +52,30 @@ func ResourceIBMDb2Instance() *schema.Resource {
 
 	riSchema["backup_location"] = &schema.Schema{
 		Description: "Cross Regional backups can be stored across multiple regions in a zone. Regional backups are stored in only specific region.",
+		Optional:    true,
+		Type:        schema.TypeString,
+	}
+
+	riSchema["disk_encryption_instance_crn"] = &schema.Schema{
+		Description: "Cross Regional disk encryption crn",
+		Optional:    true,
+		Type:        schema.TypeString,
+	}
+
+	riSchema["disk_encryption_key_crn"] = &schema.Schema{
+		Description: "Cross Regional disk encryption crn",
+		Optional:    true,
+		Type:        schema.TypeString,
+	}
+
+	riSchema["oracle_compatibility"] = &schema.Schema{
+		Description: "Indicates whether is has compatibility for oracle or not",
+		Optional:    true,
+		Type:        schema.TypeString,
+	}
+
+	riSchema["subscription_id"] = &schema.Schema{
+		Description: "For PerformanceSubscription plans a Subscription ID is required. It is not required for Performance plans.",
 		Optional:    true,
 		Type:        schema.TypeString,
 	}
@@ -164,6 +189,26 @@ func resourceIBMDb2InstanceCreate(d *schema.ResourceData, meta interface{}) erro
 		params["backup-locations"] = backupLocation.(string)
 	}
 
+	if diskEncryptionInstanceCrn, ok := d.GetOk("disk_encryption_instance_crn"); ok {
+		params["disk_encryption_instance_crn"] = diskEncryptionInstanceCrn.(string)
+	}
+
+	if diskEncryptionKeyCrn, ok := d.GetOk("disk_encryption_key_crn"); ok {
+		params["disk_encryption_key_crn"] = diskEncryptionKeyCrn.(string)
+	}
+
+	if oracleCompatibility, ok := d.GetOk("oracle_compatibility"); ok {
+		params["oracle_compatibility"] = oracleCompatibility.(string)
+	}
+
+	if plan == PerformanceSubscription {
+		if subscriptionId, ok := d.GetOk("subscription_id"); ok {
+			params["subscription_id"] = subscriptionId.(string)
+		} else {
+			return fmt.Errorf("[ERROR] Missing required field 'subscription_id' while creating an instance for plan: %s", plan)
+		}
+	}
+
 	if parameters, ok := d.GetOk("parameters"); ok {
 		temp := parameters.(map[string]interface{})
 		for k, v := range temp {
@@ -191,6 +236,7 @@ func resourceIBMDb2InstanceCreate(d *schema.ResourceData, meta interface{}) erro
 		}
 
 	}
+
 	if s, ok := d.GetOk("parameters_json"); ok {
 		json.Unmarshal([]byte(s.(string)), &params)
 	}

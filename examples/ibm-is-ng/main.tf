@@ -1786,72 +1786,80 @@ resource "ibm_is_instance" "is_instance" {
     subnet = ibm_is_subnet.is_subnet.id
   }
   cluster_network_attachments {
-    cluster_network_interface{
-      auto_delete = true
       name = "cna-1"
+    cluster_network_interface{
+      auto_delete = true
+      name = "cni-1"
       subnet {
         id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
       }
     }
   }
   cluster_network_attachments {
-    cluster_network_interface{
-      auto_delete = true
       name = "cna-2"
+    cluster_network_interface{
+      auto_delete = true
+      name = "cni-2"
       subnet {
         id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
       }
     }
   }
   cluster_network_attachments {
+    name = "cna-3"
     cluster_network_interface{
       auto_delete = true
-      name = "cna-3"
+      name = "cni-3"
       subnet {
         id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
       }
     }
   }
   cluster_network_attachments {
-    cluster_network_interface{
-      auto_delete = true
       name = "cna-4"
+    cluster_network_interface{
+      auto_delete = true
+      name = "cni-4"
       subnet {
         id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
       }
     }
   }
   cluster_network_attachments {
-    cluster_network_interface{
-      auto_delete = true
       name = "cna-5"
+    cluster_network_interface{
+      auto_delete = true
+      name = "cni-5"
       subnet {
         id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
       }
     }
   }
   cluster_network_attachments {
-    cluster_network_interface{
-      auto_delete = true
       name = "cna-6"
+    cluster_network_interface{
+      auto_delete = true
+      name = "cni-6"
       subnet {
         id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
       }
     }
   }
   cluster_network_attachments {
-    cluster_network_interface{
-      auto_delete = true
       name = "cna-7"
+    cluster_network_interface{
+      auto_delete = true
+      name = "cni-7"
       subnet {
         id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
       }
     }
   }
   cluster_network_attachments {
+      name = "cna-8"
     cluster_network_interface{
       auto_delete = true
-      name = "cna-8"
+      name = "cni-8"
       subnet {
         id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
       }
