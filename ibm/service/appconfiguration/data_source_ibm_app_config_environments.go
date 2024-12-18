@@ -342,7 +342,13 @@ func dataSourceEnvironmentListFlattenPagination(result interface{}) (finalList [
 func dataSourceEnvironmentListURLToMap(urlItem interface{}) (urlMap map[string]interface{}) {
 	urlMap = map[string]interface{}{}
 
-	hrefUrl := urlItem.(appconfigurationv1.PaginatedListFirst).Href
+	var hrefUrl *string
+	switch urlItem := urlItem.(type) {
+	case appconfigurationv1.PaginatedListFirst:
+		hrefUrl = urlItem.Href
+	case *appconfigurationv1.PaginatedListLast:
+		hrefUrl = urlItem.Href
+	}
 	if hrefUrl != nil {
 		urlMap["href"] = hrefUrl
 	}
