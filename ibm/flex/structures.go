@@ -2758,6 +2758,19 @@ func ApplyOnce(k, o, n string, d *schema.ResourceData) bool {
 	}
 	return true
 }
+
+func ApplyOnlyOnce(k, o, n string, d *schema.ResourceData) bool {
+	// For new resources, allow the first value to be set
+	if len(d.Id()) == 0 {
+		return false
+	}
+
+	// For existing resources, don't allow changes (keep the original value)
+	if o == "" {
+		return false
+	}
+	return true
+}
 func GetTagsUsingCRN(meta interface{}, resourceCRN string) (*schema.Set, error) {
 	// Move the API to use globalsearch API instead of globalTags API due to rate limit
 	taggingResult, err := GetGlobalTagsUsingSearchAPI(meta, resourceCRN, "", "user")
@@ -2905,6 +2918,33 @@ func ResourceTagsCustomizeDiff(diff *schema.ResourceDiff) error {
 				fmt.Println("Suppresing the TAG diff ")
 				return diff.Clear("tags")
 			}
+		}
+	}
+	return nil
+}
+func ResourcePowerUserTagsCustomizeDiff(diff *schema.ResourceDiff) error {
+
+	if diff.Id() != "" && diff.HasChange("pi_user_tags") {
+		// power tags
+		o, n := diff.GetChange("pi_user_tags")
+		oldSet := o.(*schema.Set)
+		newSet := n.(*schema.Set)
+		removeInt := oldSet.Difference(newSet).List()
+		addInt := newSet.Difference(oldSet).List()
+		if v := os.Getenv("IC_ENV_TAGS"); v != "" {
+			s := strings.Split(v, ",")
+			if len(removeInt) == len(s) && len(addInt) == 0 {
+				fmt.Println("Suppresing the TAG diff ")
+				return diff.Clear("pi_user_tags")
+			}
+		}
+	}
+	return nil
+}
+func OnlyInUpdateDiff(resources []string, diff *schema.ResourceDiff) error {
+	for _, r := range resources {
+		if diff.HasChange(r) && diff.Id() == "" {
+			return fmt.Errorf("the %s can't be used at create time", r)
 		}
 	}
 	return nil
