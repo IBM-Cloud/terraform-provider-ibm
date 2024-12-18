@@ -1958,7 +1958,7 @@ You can import the `ibm_backup_recovery_protection_policy` resource by using `id
 ```
 import {
 	to = <ibm_backup_recovery_resource>
-	id = "<tenantId>:<policy_id>"
+	id = "<tenantId>::<policy_id>"
 }
 ```
 

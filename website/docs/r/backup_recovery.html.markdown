@@ -943,7 +943,7 @@ You can import the `ibm_backup_recovery` resource by using `id`. Specifies the i
 ```
 import {
 	to = <ibm_backup_recovery_resource>
-	id = "<tenantId>:<recovery_id>"
+	id = "<tenantId>:::<recovery_id>"
 }
 ```
 

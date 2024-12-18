@@ -1418,13 +1418,13 @@ data "ibm_backup_recovery_protection_sources" "backup_recovery_protection_source
 ### Backup Recovery Cluster URL can be set using environment variable or in endpoints.json respectively
 Example:  
 ```
-  export BACKUP_RECOVERY_ENDPOINT=https://brs-stage-us-south-02.backup-recovery.test.cloud.ibm.com/v2
+  export IBMCLOUD_BACKUP_RECOVERY_ENDPOINT=https://brs-stage-us-south-02.backup-recovery.test.cloud.ibm.com/v2
   export BACKUP_RECOVERY_CONNECTOR_ENDPOINT=https://1.2.3.4
 ```
 OR
 ```
   {
-    "BACKUP_RECOVERY_ENDPOINT" : {
+    "IBMCLOUD_BACKUP_RECOVERY_ENDPOINT" : {
         "public" : {
             "us-south": "https://brs-stage-us-south-01.backup-recovery.test.cloud.ibm.com/v2"
         }
@@ -1471,7 +1471,7 @@ Backup and recovery resources can be imported by using the id. The ID is formed 
 ```
 import {
 	to = <ibm_backup_recovery_resource>
-	id = "<tenantId>:<resourceId>"
+	id = "<tenantId>::<resourceId>"
 }
 ```
 

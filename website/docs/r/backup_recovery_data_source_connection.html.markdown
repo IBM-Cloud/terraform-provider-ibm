@@ -45,7 +45,7 @@ You can import the `ibm_backup_recovery_data_source_connection` resource by usin
 ```
 import {
 	to = <ibm_backup_recovery_resource>
-	id = "<tenantId>:<connection_id>"
+	id = "<tenantId>::<connection_id>"
 }
 ```
 

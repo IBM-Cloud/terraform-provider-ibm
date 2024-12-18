@@ -18,7 +18,6 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 	validation "github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -2414,29 +2413,6 @@ func checkDiffResourceIbmBackupRecovery(context context.Context, d *schema.Resou
 		}
 	}
 	return nil
-}
-
-func ResourceIbmBackupRecoveryValidator() *validate.ResourceValidator {
-	validateSchema := make([]validate.ValidateSchema, 0)
-	validateSchema = append(validateSchema,
-		validate.ValidateSchema{
-			Identifier:                 "request_initiator_type",
-			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
-			Type:                       validate.TypeString,
-			Optional:                   true,
-			AllowedValues:              "Helios, UIAuto, UIUser",
-		},
-		validate.ValidateSchema{
-			Identifier:                 "snapshot_environment",
-			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
-			Type:                       validate.TypeString,
-			Required:                   true,
-			AllowedValues:              "kPhysical, kSQL",
-		},
-	)
-
-	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_backup_recovery_recovery", Schema: validateSchema}
-	return &resourceValidator
 }
 
 func resourceIbmBackupRecoveryCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

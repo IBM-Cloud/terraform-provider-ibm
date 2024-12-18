@@ -33,9 +33,10 @@ func DataSourceIbmBackupRecoveryDataSourceConnectors() *schema.Resource {
 				Description: "Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified.",
 			},
 			"connector_ids": &schema.Schema{
-				Type:        schema.TypeList,
-				Optional:    true,
-				Description: "Specifies the unique IDs of the connectors which are to be fetched.",
+				Type:          schema.TypeList,
+				Optional:      true,
+				ConflictsWith: []string{"connection_id"},
+				Description:   "Specifies the unique IDs of the connectors which are to be fetched.",
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
@@ -49,9 +50,10 @@ func DataSourceIbmBackupRecoveryDataSourceConnectors() *schema.Resource {
 				},
 			},
 			"connection_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Specifies the ID of the connection, connectors belonging to which are to be fetched.",
+				Type:          schema.TypeString,
+				Optional:      true,
+				ConflictsWith: []string{"connector_ids"},
+				Description:   "Specifies the ID of the connection, connectors belonging to which are to be fetched.",
 			},
 			"connectors": &schema.Schema{
 				Type:     schema.TypeList,
@@ -188,17 +190,19 @@ func dataSourceIbmBackupRecoveryDataSourceConnectorsRead(context context.Context
 
 	d.SetId(dataSourceIbmBackupRecoveryDataSourceConnectorsID(d))
 
-	if !core.IsNil(dataSourceConnectorList.Connectors) {
-		connectors := []map[string]interface{}{}
-		for _, connectorsItem := range dataSourceConnectorList.Connectors {
-			connectorsItemMap, err := DataSourceIbmBackupRecoveryDataSourceConnectorsDataSourceConnectorToMap(&connectorsItem) // #nosec G601
-			if err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_data_source_connectors", "read", "connectors-to-map").GetDiag()
+	if !core.IsNil(dataSourceConnectorList) {
+		if !core.IsNil(dataSourceConnectorList.Connectors) {
+			connectors := []map[string]interface{}{}
+			for _, connectorsItem := range dataSourceConnectorList.Connectors {
+				connectorsItemMap, err := DataSourceIbmBackupRecoveryDataSourceConnectorsDataSourceConnectorToMap(&connectorsItem) // #nosec G601
+				if err != nil {
+					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_data_source_connectors", "read", "connectors-to-map").GetDiag()
+				}
+				connectors = append(connectors, connectorsItemMap)
 			}
-			connectors = append(connectors, connectorsItemMap)
-		}
-		if err = d.Set("connectors", connectors); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting connectors: %s", err), "(Data) ibm_backup_recovery_data_source_connectors", "read", "set-connectors").GetDiag()
+			if err = d.Set("connectors", connectors); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting connectors: %s", err), "(Data) ibm_backup_recovery_data_source_connectors", "read", "set-connectors").GetDiag()
+			}
 		}
 	}
 

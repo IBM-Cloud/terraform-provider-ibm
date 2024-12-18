@@ -1607,12 +1607,12 @@ func (c *Config) ClientSession() (interface{}, error) {
 	backupRecoveryURL := "https://brs-stage-us-south-02.backup-recovery.test.cloud.ibm.com/v2"
 
 	if fileMap != nil && c.Visibility != "public-and-private" {
-		backupRecoveryURL = fileFallBack(fileMap, c.Visibility, "BACKUP_RECOVERY_ENDPOINT", c.Region, backupRecoveryURL)
+		backupRecoveryURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_BACKUP_RECOVERY_ENDPOINT", c.Region, backupRecoveryURL)
 	}
 
 	backupRecoveryClientOptions := &backuprecoveryv1.BackupRecoveryV1Options{
 		Authenticator: authenticator,
-		URL:           EnvFallBack([]string{"BACKUP_RECOVERY_ENDPOINT"}, backupRecoveryURL),
+		URL:           EnvFallBack([]string{"IBMCLOUD_BACKUP_RECOVERY_ENDPOINT"}, backupRecoveryURL),
 	}
 	// Construct the service client.
 	session.backupRecoveryClient, err = backuprecoveryv1.NewBackupRecoveryV1(backupRecoveryClientOptions)

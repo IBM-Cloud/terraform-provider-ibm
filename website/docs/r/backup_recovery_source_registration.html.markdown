@@ -270,7 +270,7 @@ You can import the `ibm_backup_recovery_source_registration` resource by using `
 ```
 import {
 	to = <ibm_backup_recovery_resource>
-	id = "<tenantId>:<source_id>"
+	id = "<tenantId>::<source_id>"
 }
 ```
 
