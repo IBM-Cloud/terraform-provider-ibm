@@ -22,7 +22,7 @@ require (
 	github.com/IBM/go-sdk-core v1.1.0
 	github.com/IBM/go-sdk-core/v3 v3.2.4
 	github.com/IBM/go-sdk-core/v5 v5.18.1
-	github.com/IBM/ibm-backup-recovery-sdk-go v1.0.0
+	github.com/IBM/ibm-backup-recovery-sdk-go v1.0.1
 	github.com/IBM/ibm-cos-sdk-go v1.10.3
 	github.com/IBM/ibm-cos-sdk-go-config/v2 v2.1.0
 	github.com/IBM/ibm-hpcs-tke-sdk v0.0.0-20211109141421-a4b61b05f7d1
@@ -64,7 +64,7 @@ require (
 	github.com/rook/rook v1.11.4
 	github.com/softlayer/softlayer-go v1.0.3
 	github.com/stretchr/testify v1.10.0
-	golang.org/x/crypto v0.28.0
+	golang.org/x/crypto v0.31.0
 	gopkg.in/yaml.v3 v3.0.1
 	gotest.tools v2.2.0+incompatible
 	k8s.io/api v0.26.3
@@ -214,9 +214,9 @@ require (
 	golang.org/x/mod v0.19.0 // indirect
 	golang.org/x/net v0.30.0 // indirect
 	golang.org/x/oauth2 v0.7.0 // indirect
-	golang.org/x/sys v0.26.0 // indirect
-	golang.org/x/term v0.25.0 // indirect
-	golang.org/x/text v0.19.0 // indirect
+	golang.org/x/sys v0.28.0 // indirect
+	golang.org/x/term v0.27.0 // indirect
+	golang.org/x/text v0.21.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.2.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
