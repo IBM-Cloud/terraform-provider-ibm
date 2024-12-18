@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_backup_recovery_connection_registration_token"
 description: |-
   Manages backup_recovery_connection_registration_token.
-subcategory: "IBM Backup Recovery API"
+subcategory: "IBM Backup Recovery"
 ---
 
 # ibm_backup_recovery_connection_registration_token

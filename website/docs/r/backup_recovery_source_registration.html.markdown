@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_backup_recovery_source_registration"
 description: |-
   Manages backup_recovery_source_registration.
-subcategory: "IBM Backup Recovery API"
+subcategory: "IBM Backup Recovery"
 ---
 
 # ibm_backup_recovery_source_registration

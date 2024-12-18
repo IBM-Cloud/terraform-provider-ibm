@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_backup_recovery_protection_sources"
 description: |-
   Get information about Protection Sources Response
-subcategory: "IBM Backup Recovery API"
+subcategory: "IBM Backup Recovery"
 ---
 
 # ibm_backup_recovery_protection_sources

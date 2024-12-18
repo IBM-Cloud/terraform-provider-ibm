@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_backup_recovery_perform_action_on_protection_group_run_request"
 description: |-
   Manages backup_recovery_perform_action_on_protection_group_run_request.
-subcategory: "IBM Backup Recovery API"
+subcategory: "IBM Backup Recovery"
 ---
 
 # ibm_backup_recovery_perform_action_on_protection_group_run_request

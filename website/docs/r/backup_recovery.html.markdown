@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_backup_recovery"
 description: |-
   Manages Common Recovery Response Params..
-subcategory: "IBM Backup Recovery API"
+subcategory: "IBM Backup Recovery"
 ---
 
 # ibm_backup_recovery
@@ -943,7 +943,7 @@ You can import the `ibm_backup_recovery` resource by using `id`. Specifies the i
 ```
 import {
 	to = <ibm_backup_recovery_resource>
-	id = "<tenantId>:::<recovery_id>"
+	id = "<tenantId>::<recovery_id>"
 }
 ```
 
