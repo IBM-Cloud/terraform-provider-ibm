@@ -528,8 +528,9 @@ func dataSourceBackupPolicyJobCollectionJobsToMap(jobsItem vpcv1.BackupPolicyJob
 	log.Println(jobsItem.TargetSnapshots)
 	if jobsItem.TargetSnapshots != nil {
 		targetSnapshotList := []map[string]interface{}{}
-		for _, targetSnapshotsItem := range jobsItem.TargetSnapshots {
-			targetSnapshotMap := dataSourceBackupPolicyJobCollectionJobsTargetSnapshotToMap(targetSnapshotsItem)
+		for _, targetSnapshotsIntfItem := range jobsItem.TargetSnapshots {
+			targetSnapshotsItem := targetSnapshotsIntfItem.(*vpcv1.BackupPolicyTargetSnapshot)
+			targetSnapshotMap := dataSourceBackupPolicyJobCollectionJobsTargetSnapshotToMap(*targetSnapshotsItem)
 			targetSnapshotList = append(targetSnapshotList, targetSnapshotMap)
 		}
 		jobsMap["target_snapshot"] = targetSnapshotList
@@ -674,7 +675,7 @@ func dataSourceBackupPolicyJobCollectionJobsStatusReasonsToMap(statusReasonsItem
 	return statusReasonsMap
 }
 
-func dataSourceBackupPolicyJobCollectionJobsTargetSnapshotToMap(targetSnapshotItem vpcv1.SnapshotReference) (targetSnapshotMap map[string]interface{}) {
+func dataSourceBackupPolicyJobCollectionJobsTargetSnapshotToMap(targetSnapshotItem vpcv1.BackupPolicyTargetSnapshot) (targetSnapshotMap map[string]interface{}) {
 	targetSnapshotMap = map[string]interface{}{}
 
 	if targetSnapshotItem.CRN != nil {

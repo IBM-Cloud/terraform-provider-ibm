@@ -612,17 +612,18 @@ func dataSourceBackupPolicyJobStatusReasonsToMap(statusReasonsItem vpcv1.BackupP
 	return statusReasonsMap
 }
 
-func dataSourceBackupPolicyJobFlattenTargetSnapshot(result []vpcv1.SnapshotReference) (finalList []map[string]interface{}) {
+func dataSourceBackupPolicyJobFlattenTargetSnapshot(result []vpcv1.BackupPolicyTargetSnapshotIntf) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
-	for _, snapshotReferenceItem := range result {
-		finalMap := dataSourceBackupPolicyJobTargetSnapshotToMap(snapshotReferenceItem)
+	for _, snapshotReferenceIntfItem := range result {
+		snapshotReferenceItem := snapshotReferenceIntfItem.(*vpcv1.BackupPolicyTargetSnapshot)
+		finalMap := dataSourceBackupPolicyJobTargetSnapshotToMap(*snapshotReferenceItem)
 		finalList = append(finalList, finalMap)
 	}
 
 	return finalList
 }
 
-func dataSourceBackupPolicyJobTargetSnapshotToMap(targetSnapshotItem vpcv1.SnapshotReference) (targetSnapshotMap map[string]interface{}) {
+func dataSourceBackupPolicyJobTargetSnapshotToMap(targetSnapshotItem vpcv1.BackupPolicyTargetSnapshot) (targetSnapshotMap map[string]interface{}) {
 	targetSnapshotMap = map[string]interface{}{}
 
 	if targetSnapshotItem.CRN != nil {
