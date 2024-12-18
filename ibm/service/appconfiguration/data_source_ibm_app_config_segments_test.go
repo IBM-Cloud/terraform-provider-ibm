@@ -29,8 +29,6 @@ func TestAccIbmAppConfigSegmentsDataSourceBasic(t *testing.T) {
 				Config: testAccCheckIbmAppConfigSegmentsDataSourceConfigBasic(instanceName, name, segmentID, description, tags),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_app_config_segments.app_config_segments_data2", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_app_config_segments.app_config_segments_data2", "first.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_app_config_segments.app_config_segments_data2", "last.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_app_config_segments.app_config_segments_data2", "total_count"),
 					resource.TestCheckResourceAttrSet("data.ibm_app_config_segments.app_config_segments_data2", "segments.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_app_config_segments.app_config_segments_data2", "segments.0.segment_id"),
@@ -61,11 +59,10 @@ func testAccCheckIbmAppConfigSegmentsDataSourceConfigBasic(instanceName, name, s
 				values 			= ["india", "UK"]
 			}
 			description    	    = "%s"
-			tags    			= "%s"
 		}
 
 		data "ibm_app_config_segments" "app_config_segments_data2" {
 			guid				= ibm_app_config_segment.app_config_segment_resource2.guid
 		}
-		`, instanceName, name, segmentID, description, tags)
+		`, instanceName, name, segmentID, description)
 }

@@ -6,8 +6,6 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/appconfiguration-go-admin-sdk/appconfigurationv1"
 
-	"log"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -138,7 +136,7 @@ func resourceIbmIbmAppConfigSnapshotCreate(d *schema.ResourceData, meta interfac
 	guid := d.Get("guid").(string)
 	appconfigClient, err := getAppConfigClient(meta, guid)
 	if err != nil {
-		return err
+		return flex.FmtErrorf(fmt.Sprintf("%s", err))
 	}
 	options := &appconfigurationv1.CreateGitconfigOptions{}
 
@@ -155,7 +153,7 @@ func resourceIbmIbmAppConfigSnapshotCreate(d *schema.ResourceData, meta interfac
 	snapshot, response, err := appconfigClient.CreateGitconfig(options)
 
 	if err != nil {
-		return fmt.Errorf("CreateGitconfig failed %s\n%s", err, response)
+		return flex.FmtErrorf("CreateGitconfig failed %s\n%s", err, response)
 	}
 	d.SetId(fmt.Sprintf("%s/%s", guid, *snapshot.GitConfigID))
 	return resourceIbmIbmAppConfigSnapshotRead(d, meta)
@@ -168,7 +166,7 @@ func resourceIbmIbmAppConfigSnapshotUpdate(d *schema.ResourceData, meta interfac
 	}
 	appconfigClient, err := getAppConfigClient(meta, parts[0])
 	if err != nil {
-		return err
+		return flex.FmtErrorf(fmt.Sprintf("%s", err))
 	}
 
 	if ok := d.HasChanges("action"); ok {
@@ -176,8 +174,7 @@ func resourceIbmIbmAppConfigSnapshotUpdate(d *schema.ResourceData, meta interfac
 		option.SetGitConfigID(parts[1])
 		_, response, err := appconfigClient.PromoteGitconfig(option)
 		if err != nil {
-			log.Printf("[DEBUG] PromoteGitconfig %s\n%s", err, response)
-			return err
+			return flex.FmtErrorf("[ERROR] PromoteGitconfig %s\n%s", err, response)
 		}
 		return resourceIbmIbmAppConfigSnapshotRead(d, meta)
 	} else {
@@ -207,8 +204,7 @@ func resourceIbmIbmAppConfigSnapshotUpdate(d *schema.ResourceData, meta interfac
 			}
 			_, response, err := appconfigClient.UpdateGitconfig(options)
 			if err != nil {
-				log.Printf("[DEBUG] UpdateGitconfig %s\n%s", err, response)
-				return err
+				return flex.FmtErrorf("[ERROR] UpdateGitconfig %s\n%s", err, response)
 			}
 			return resourceIbmIbmAppConfigSnapshotRead(d, meta)
 		}
@@ -223,10 +219,10 @@ func resourceIbmIbmAppConfigSnapshotRead(d *schema.ResourceData, meta interface{
 	}
 	appconfigClient, err := getAppConfigClient(meta, parts[0])
 	if err != nil {
-		return err
+		return flex.FmtErrorf(fmt.Sprintf("%s", err))
 	}
 	if len(parts) != 2 {
-		return fmt.Errorf("Kindly check the id")
+		return flex.FmtErrorf("Kindly check the id")
 	}
 
 	options := &appconfigurationv1.GetGitconfigOptions{}
@@ -234,49 +230,49 @@ func resourceIbmIbmAppConfigSnapshotRead(d *schema.ResourceData, meta interface{
 
 	result, response, err := appconfigClient.GetGitconfig(options)
 	if err != nil {
-		return fmt.Errorf("[DEBUG] GetGitconfigs failed %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] GetGitconfigs failed %s\n%s", err, response)
 	}
 
 	d.Set("guid", parts[0])
 	d.Set("git_config_id", parts[1])
 	if result.GitConfigName != nil {
 		if err = d.Set("git_config_name", result.GitConfigName); err != nil {
-			return fmt.Errorf("[ERROR] Error setting git_config_name: %s", err)
+			return flex.FmtErrorf("[ERROR] Error setting git_config_name: %s", err)
 		}
 	}
 	if result.GitConfigID != nil {
 		if err = d.Set("git_config_id", result.GitConfigID); err != nil {
-			return fmt.Errorf("[ERROR] Error setting git_config_id: %s", err)
+			return flex.FmtErrorf("[ERROR] Error setting git_config_id: %s", err)
 		}
 	}
 	if result.GitURL != nil {
 		if err = d.Set("git_url", result.GitURL); err != nil {
-			return fmt.Errorf("[ERROR] Error setting git_url: %s", err)
+			return flex.FmtErrorf("[ERROR] Error setting git_url: %s", err)
 		}
 	}
 	if result.GitBranch != nil {
 		if err = d.Set("git_branch", result.GitBranch); err != nil {
-			return fmt.Errorf("[ERROR] Error setting git_branch: %s", err)
+			return flex.FmtErrorf("[ERROR] Error setting git_branch: %s", err)
 		}
 	}
 	if result.GitFilePath != nil {
 		if err = d.Set("git_file_path", result.GitFilePath); err != nil {
-			return fmt.Errorf("[ERROR] Error setting git_file_path: %s", err)
+			return flex.FmtErrorf("[ERROR] Error setting git_file_path: %s", err)
 		}
 	}
 	if result.CreatedTime != nil {
 		if err = d.Set("created_time", result.CreatedTime.String()); err != nil {
-			return fmt.Errorf("[ERROR] Error setting created_time: %s", err)
+			return flex.FmtErrorf("[ERROR] Error setting created_time: %s", err)
 		}
 	}
 	if result.UpdatedTime != nil {
 		if err = d.Set("updated_time", result.UpdatedTime.String()); err != nil {
-			return fmt.Errorf("[ERROR] Error setting updated_time: %s", err)
+			return flex.FmtErrorf("[ERROR] Error setting updated_time: %s", err)
 		}
 	}
 	if result.Href != nil {
 		if err = d.Set("href", result.Href); err != nil {
-			return fmt.Errorf("[ERROR] Error setting href: %s", err)
+			return flex.FmtErrorf("[ERROR] Error setting href: %s", err)
 		}
 	}
 	return nil
@@ -289,7 +285,7 @@ func resourceIbmIbmAppConfigSnapshotDelete(d *schema.ResourceData, meta interfac
 	}
 	appconfigClient, err := getAppConfigClient(meta, parts[0])
 	if err != nil {
-		return err
+		return flex.FmtErrorf(fmt.Sprintf("%s", err))
 	}
 
 	options := &appconfigurationv1.DeleteGitconfigOptions{}
@@ -301,7 +297,7 @@ func resourceIbmIbmAppConfigSnapshotDelete(d *schema.ResourceData, meta interfac
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[DEBUG] DeleteGitconfig failed %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] DeleteGitconfig failed %s\n%s", err, response)
 	}
 	d.SetId("")
 
