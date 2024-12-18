@@ -368,7 +368,11 @@ func dataSourceCollectionsListURLToMap(urlItem interface{}) (urlMap map[string]i
 	switch urlItem := urlItem.(type) {
 	case appconfigurationv1.PaginatedListFirst:
 		hrefUrl = urlItem.Href
-	case *appconfigurationv1.PaginatedListLast:
+	case appconfigurationv1.PaginatedListLast:
+		hrefUrl = urlItem.Href
+	case appconfigurationv1.PaginatedListNext:
+		hrefUrl = urlItem.Href
+	case appconfigurationv1.PaginatedListPrevious:
 		hrefUrl = urlItem.Href
 	}
 	if hrefUrl != nil {
