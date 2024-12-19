@@ -703,7 +703,6 @@ func TestAccIBMPIInstanceUpdateActiveState(t *testing.T) {
 					testAccCheckIBMPIInstanceExists(instanceRes),
 					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),
 				),
-				ExpectNonEmptyPlan: true,
 			},
 		},
 	})
@@ -731,7 +730,6 @@ func TestAccIBMPIInstanceUpdateStoppedState(t *testing.T) {
 					testAccCheckIBMPIInstanceExists(instanceRes),
 					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),
 				),
-				ExpectNonEmptyPlan: true,
 			},
 		},
 	})
