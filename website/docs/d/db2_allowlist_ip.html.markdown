@@ -1,19 +1,19 @@
 ---
 subcategory: "Db2 SaaS"
 layout: "ibm"
-page_title: "IBM : ibm_db2_whitelist_ip"
+page_title: "IBM : ibm_db2_allowlist_ip"
 description: |-
-  Get Information about Whitelisted IPs of IBM Db2 instance.
+  Get Information about allowed list of IPs of IBM Db2 instance.
 ---
 
-# ibm_db2_whitelist_ip
+# ibm_db2_allowlist_ip
 
-Retrieve information about Whitelisted IPs of an existing [IBM Db2 Instance](https://cloud.ibm.com/docs/Db2onCloud).
+Retrieve information about allowed list of IPs of an existing [IBM Db2 Instance](https://cloud.ibm.com/docs/Db2onCloud).
 
 ## Example Usage
 
 ```hcl
-data "ibm_db2_whitelist_ip" "db2_whitelistips" {
+data "ibm_db2_allowlist_ip" "db2_allowlistips" {
     x_deployment_id = "<crn>"
 }
 ```
@@ -22,7 +22,7 @@ data "ibm_db2_whitelist_ip" "db2_whitelistips" {
 
 Review the argument reference that you can specify for your data source.
 
-* `x_deployment_id` - (Required, String) CRN of the instance this whitelisted IPs relates to.
+* `x_deployment_id` - (Required, String) CRN of the instance this allowed list of IPs relates to.
 
 ## Attribute Reference
 
