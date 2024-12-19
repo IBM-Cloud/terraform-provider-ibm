@@ -19,6 +19,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -38,6 +39,11 @@ func ResourceIBMPICapture() *schema.Resource {
 			Delete: schema.DefaultTimeout(50 * time.Minute),
 			Update: schema.DefaultTimeout(60 * time.Minute),
 		},
+		CustomizeDiff: customdiff.Sequence(
+			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
+				return flex.ResourcePowerUserTagsCustomizeDiff(diff)
+			},
+		),
 
 		Schema: map[string]*schema.Schema{
 
@@ -108,6 +114,7 @@ func ResourceIBMPICapture() *schema.Resource {
 				Description: "Cloud Storage Image Path (bucket-name [/folder/../..])",
 			},
 			Arg_UserTags: {
+				Computed:    true,
 				Description: "List of user tags attached to the resource.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Optional:    true,

@@ -321,6 +321,9 @@ func Provider() *schema.Provider {
 			"ibm_database_backup":                          database.DataSourceIBMDatabaseBackup(),
 			"ibm_database_backups":                         database.DataSourceIBMDatabaseBackups(),
 			"ibm_db2":                                      db2.DataSourceIBMDb2Instance(),
+			"ibm_db2_connection_info":                      db2.DataSourceIbmDb2ConnectionInfo(),
+			"ibm_db2_whitelist_ip":                         db2.DataSourceIbmDb2Whitelist(),
+			"ibm_db2_autoscale":                            db2.DataSourceIbmDb2Autoscale(),
 			"ibm_compute_bare_metal":                       classicinfrastructure.DataSourceIBMComputeBareMetal(),
 			"ibm_compute_image_template":                   classicinfrastructure.DataSourceIBMComputeImageTemplate(),
 			"ibm_compute_placement_group":                  classicinfrastructure.DataSourceIBMComputePlacementGroup(),
@@ -687,6 +690,7 @@ func Provider() *schema.Provider {
 			"ibm_pi_network_address_groups":                 power.DataSourceIBMPINetworkAddressGroups(),
 			"ibm_pi_network_interface":                      power.DataSourceIBMPINetworkInterface(),
 			"ibm_pi_network_interfaces":                     power.DataSourceIBMPINetworkInterfaces(),
+			"ibm_pi_network_peers":                          power.DataSourceIBMPINetworkPeers(),
 			"ibm_pi_network_port":                           power.DataSourceIBMPINetworkPort(),
 			"ibm_pi_network_security_group":                 power.DataSourceIBMPINetworkSecurityGroup(),
 			"ibm_pi_network_security_groups":                power.DataSourceIBMPINetworkSecurityGroups(),
@@ -1474,8 +1478,7 @@ func Provider() *schema.Provider {
 			"ibm_satellite_cluster_worker_pool_zone_attachment": satellite.ResourceIbmSatelliteClusterWorkerPoolZoneAttachment(),
 
 			// Added for Resource Tag
-			"ibm_resource_tag":        globaltagging.ResourceIBMResourceTag(),
-			"ibm_resource_access_tag": globaltagging.ResourceIBMResourceAccessTag(),
+			"ibm_resource_tag": globaltagging.ResourceIBMResourceTag(),
 
 			// Added for Iam Access Tag
 			"ibm_iam_access_tag": globaltagging.ResourceIBMIamAccessTag(),
@@ -1981,7 +1984,6 @@ func Validator() validate.ValidatorDict {
 				"ibm_resource_key":                                   resourcecontroller.ResourceIBMResourceKeyValidator(),
 				"ibm_is_virtual_endpoint_gateway":                    vpc.ResourceIBMISEndpointGatewayValidator(),
 				"ibm_resource_tag":                                   globaltagging.ResourceIBMResourceTagValidator(),
-				"ibm_resource_access_tag":                            globaltagging.ResourceIBMResourceAccessTagValidator(),
 				"ibm_iam_access_tag":                                 globaltagging.ResourceIBMIamAccessTagValidator(),
 				"ibm_satellite_location":                             satellite.ResourceIBMSatelliteLocationValidator(),
 				"ibm_satellite_cluster":                              satellite.ResourceIBMSatelliteClusterValidator(),
