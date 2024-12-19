@@ -432,12 +432,12 @@ func dataSourceIBMIsBackupPolicyJobRead(context context.Context, d *schema.Resou
 	getBackupPolicyJobOptions.SetBackupPolicyID(d.Get("backup_policy_id").(string))
 	getBackupPolicyJobOptions.SetID(d.Get("identifier").(string))
 
-	backupPolicyJobIntf, response, err := vpcClient.GetBackupPolicyJobWithContext(context, getBackupPolicyJobOptions)
+	backupPolicyJob, response, err := vpcClient.GetBackupPolicyJobWithContext(context, getBackupPolicyJobOptions)
 	if err != nil {
 		log.Printf("[DEBUG] GetBackupPolicyJobWithContext failed %s\n%s", err, response)
 		return diag.FromErr(fmt.Errorf("GetBackupPolicyJobWithContext failed %s\n%s", err, response))
 	}
-	backupPolicyJob := backupPolicyJobIntf.(*vpcv1.BackupPolicyJob)
+
 	d.SetId(*backupPolicyJob.ID)
 	if err = d.Set("auto_delete", backupPolicyJob.AutoDelete); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting auto_delete: %s", err))
@@ -499,17 +499,6 @@ func dataSourceIBMIsBackupPolicyJobRead(context context.Context, d *schema.Resou
 			}
 		}
 
-	}
-
-	if backupPolicyJob.MatchResourceType != nil {
-		if err = d.Set("match_resource_type", backupPolicyJob.MatchResourceType); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting match_resource_type: %s", err))
-		}
-	}
-	if backupPolicyJob.IncludedContent != nil {
-		if err = d.Set("included_content", backupPolicyJob.IncludedContent); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting included_content: %s", err))
-		}
 	}
 
 	if err = d.Set("status", backupPolicyJob.Status); err != nil {

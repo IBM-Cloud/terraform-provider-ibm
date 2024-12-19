@@ -127,7 +127,6 @@ Nested `latest_sync` blocks have the following structure:
   - `name` - The unique user-defined name for this file share.
   - `resource_type` - The resource type.
 - `snapshot_count` - (Integer) The total number of snapshots for this share.
-- `snapshot_directory_visible` - (Boolean) Indicates whether the `.snapshot` directory will be visible at the `mount_path`. Each snapshot for this share will be accessible as a subdirectory under `.snapshot`, named with the snapshot's fingerprint.
 - `snapshot_size` - (Integer) The total size (in gigabytes) of snapshots used for this file share.
 - `source_snapshot` - (List) The snapshot from which this share was cloned.This property will be present when the share was created from a snapshot.The resources supported by this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in thefuture.
   Nested schema for **source_snapshot**:

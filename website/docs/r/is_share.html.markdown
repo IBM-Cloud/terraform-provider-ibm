@@ -230,7 +230,6 @@ The following arguments are supported:
   - `zone` - (Required, String)
 - `resource_group` - (Optional, String) The unique identifier for this resource group.
 - `replication_cron_spec` - (Optional, String) The cron specification for the file share replication schedule.
-- `snapshot_directory_visible` - (Optional, Boolean) Indicates whether the `.snapshot` directory will be visible at the `mount_path`. Each snapshot for this share will be accessible as a subdirectory under `.snapshot`, named with the snapshot's fingerprint.
 - `size` - (Required, Integer) The size of the file share rounded up to the next gigabyte.
 - `source_share` - (Optional, String) The ID of the source file share for this replica file share. The specified file share must not already have a replica, and must not be a replica.
 - `source_share_crn` - (Optional, String) The CRN of the source file share. 

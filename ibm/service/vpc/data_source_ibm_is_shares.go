@@ -508,11 +508,6 @@ func DataSourceIbmIsShares() *schema.Resource {
 							Computed:    true,
 							Description: "The total number of snapshots for this share.",
 						},
-						"snapshot_directory_visible": &schema.Schema{
-							Type:        schema.TypeBool,
-							Computed:    true,
-							Description: "Indicates whether the `.snapshot` directory will be visible at the `mount_path`. Each snapshot for this share will be accessible as a subdirectory under `.snapshot`, named with the snapshot's fingerprint.",
-						},
 						"snapshot_size": &schema.Schema{
 							Type:        schema.TypeInt,
 							Computed:    true,
@@ -761,9 +756,6 @@ func dataSourceShareCollectionSharesToMap(meta interface{}, sharesItem vpcv1.Sha
 	}
 	if sharesItem.SnapshotCount != nil {
 		sharesMap["snapshot_count"] = flex.IntValue(sharesItem.SnapshotCount)
-	}
-	if sharesItem.SnapshotDirectoryVisible != nil {
-		sharesMap["snapshot_directory_visible"] = sharesItem.SnapshotDirectoryVisible
 	}
 	if sharesItem.SnapshotSize != nil {
 		sharesMap["snapshot_size"] = flex.IntValue(sharesItem.SnapshotSize)

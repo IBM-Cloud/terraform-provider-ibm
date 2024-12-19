@@ -475,11 +475,7 @@ func resourceIBMIsShareSnapshotUpdate(context context.Context, d *schema.Resourc
 			" The resource must be re-created to update this property.", "share")
 		return flex.DiscriminatedTerraformErrorf(nil, errMsg, "ibm_is_share_snapshot", "update", "share_id-forces-new").GetDiag()
 	}
-	if d.HasChange("name") {
-		newName := d.Get("name").(string)
-		patchVals.Name = &newName
-		hasChange = true
-	}
+
 	if d.HasChange("user_tags") {
 		var userTags []string
 		for _, v := range d.Get("user_tags").([]interface{}) {

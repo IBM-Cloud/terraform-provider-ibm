@@ -537,11 +537,6 @@ func DataSourceIbmIsShare() *schema.Resource {
 				Computed:    true,
 				Description: "The total number of snapshots for this share.",
 			},
-			"snapshot_directory_visible": &schema.Schema{
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: "Indicates whether the `.snapshot` directory will be visible at the `mount_path`. Each snapshot for this share will be accessible as a subdirectory under `.snapshot`, named with the snapshot's fingerprint.",
-			},
 			"snapshot_size": &schema.Schema{
 				Type:        schema.TypeInt,
 				Computed:    true,
@@ -784,10 +779,6 @@ func dataSourceIbmIsShareRead(context context.Context, d *schema.ResourceData, m
 	}
 	if err = d.Set("snapshot_count", flex.IntValue(share.SnapshotCount)); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting snapshot_count: %s", err), "(Data) ibm_is_share", "read", "set-snapshot_count").GetDiag()
-	}
-
-	if err = d.Set("snapshot_directory_visible", share.SnapshotDirectoryVisible); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting snapshot_directory_visible: %s", err), "(Data) ibm_is_share", "read", "set-snapshot_directory_visible").GetDiag()
 	}
 
 	if err = d.Set("snapshot_size", flex.IntValue(share.SnapshotSize)); err != nil {

@@ -380,12 +380,6 @@ func ResourceIbmIsShare() *schema.Resource {
 								},
 							},
 						},
-						"snapshot_directory_visible": &schema.Schema{
-							Type:        schema.TypeBool,
-							Optional:    true,
-							Computed:    true,
-							Description: "Indicates whether the `.snapshot` directory will be visible at the `mount_path`. Each snapshot for this share will be accessible as a subdirectory under `.snapshot`, named with the snapshot's fingerprint.",
-						},
 						"mount_targets": &schema.Schema{
 							Type:        schema.TypeList,
 							Optional:    true,
@@ -576,12 +570,6 @@ func ResourceIbmIsShare() *schema.Resource {
 						},
 					},
 				},
-			},
-			"snapshot_directory_visible": &schema.Schema{
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Computed:    true,
-				Description: "Indicates whether the `.snapshot` directory will be visible at the `mount_path`. Each snapshot for this share will be accessible as a subdirectory under `.snapshot`, named with the snapshot's fingerprint.",
 			},
 			"source_share": &schema.Schema{
 				Type:          schema.TypeString,
@@ -1140,12 +1128,6 @@ func resourceIbmIsShareCreate(context context.Context, d *schema.ResourceData, m
 					Name: core.StringPtr(replicaShareMap["zone"].(string)),
 				}
 			}
-			if replicaShareMap["snapshot_directory_visible"] != nil {
-				if snapshotDirVisibleIntf, ok := replicaShareMap["snapshot_directory_visible"]; ok {
-					snapshotDirVisible := snapshotDirVisibleIntf.(bool)
-					replicaShare.SnapshotDirectoryVisible = &snapshotDirVisible
-				}
-			}
 
 			replicaTargets, ok := replicaShareMap["mount_targets"]
 			if ok {
@@ -1207,10 +1189,6 @@ func resourceIbmIsShareCreate(context context.Context, d *schema.ResourceData, m
 			OriginShareModel := ResourceIBMIsShareMapToShareIdentity(originShare.([]interface{})[0].(map[string]interface{}))
 			sharePrototype.OriginShare = OriginShareModel
 		}
-	}
-	if snapshotDirVisibleIntf, ok := d.GetOkExists("snapshot_directory_visible"); ok {
-		snapshotDirVisible := snapshotDirVisibleIntf.(bool)
-		sharePrototype.SnapshotDirectoryVisible = &snapshotDirVisible
 	}
 	if iopsIntf, ok := d.GetOk("iops"); ok {
 		iops := int64(iopsIntf.(int))
@@ -1500,12 +1478,6 @@ func resourceIbmIsShareRead(context context.Context, d *schema.ResourceData, met
 	}
 	if err = d.Set("resource_type", share.ResourceType); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting resource_type: %s", err))
-	}
-	if !core.IsNil(share.SnapshotDirectoryVisible) {
-		if err = d.Set("snapshot_directory_visible", share.SnapshotDirectoryVisible); err != nil {
-			err = fmt.Errorf("Error setting snapshot_directory_visible: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_share", "read", "set-snapshot_directory_visible").GetDiag()
-		}
 	}
 	if err = d.Set("snapshot_count", flex.IntValue(share.SnapshotCount)); err != nil {
 		err = fmt.Errorf("Error setting snapshot_count: %s", err)
@@ -1953,7 +1925,6 @@ func shareUpdate(vpcClient *vpcv1.VpcV1, context context.Context, d *schema.Reso
 	accessTagsSchema := ""
 	shareCRN := ""
 	replicationCronSpec := ""
-	shareDirVisible := ""
 
 	if shareType == "share" {
 		shareNameSchema = "name"
@@ -1964,7 +1935,6 @@ func shareUpdate(vpcClient *vpcv1.VpcV1, context context.Context, d *schema.Reso
 		accessTagsSchema = "access_tags"
 		shareCRN = "crn"
 		replicationCronSpec = "replication_cron_spec"
-		shareDirVisible = "snapshot_directory_visible"
 	} else {
 		shareNameSchema = "replica_share.0.name"
 		shareIopsSchema = "replica_share.0.iops"
@@ -1974,14 +1944,8 @@ func shareUpdate(vpcClient *vpcv1.VpcV1, context context.Context, d *schema.Reso
 		accessTagsSchema = "replica_share.0.access_tags"
 		shareCRN = "replica_share.0.crn"
 		replicationCronSpec = "replica_share.0.replication_cron_spec"
-		shareDirVisible = "replica_share.0.snapshot_directory_visible"
 	}
-	if d.HasChange(shareDirVisible) {
-		_, newShareDirVisible := d.GetChange(shareDirVisible)
-		snapDirVisible := newShareDirVisible.(bool)
-		sharePatchModel.SnapshotDirectoryVisible = &snapDirVisible
-		hasChange = true
-	}
+
 	if d.HasChange(shareNameSchema) {
 		name := d.Get(shareNameSchema).(string)
 		sharePatchModel.Name = &name
