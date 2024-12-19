@@ -5,11 +5,11 @@ package appconfiguration
 
 import (
 	"fmt"
-	"log"
 	"net/url"
 	"reflect"
 	"strconv"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM/appconfiguration-go-admin-sdk/appconfigurationv1"
@@ -282,7 +282,7 @@ func dataSourceIbmAppConfigFeaturesRead(d *schema.ResourceData, meta interface{}
 
 	appconfigClient, err := getAppConfigClient(meta, guid)
 	if err != nil {
-		return err
+		return flex.FmtErrorf(fmt.Sprintf("%s", err))
 	}
 
 	options := &appconfigurationv1.ListFeaturesOptions{}
@@ -334,8 +334,7 @@ func dataSourceIbmAppConfigFeaturesRead(d *schema.ResourceData, meta interface{}
 		result, response, err := appconfigClient.ListFeatures(options)
 		featuresList = result
 		if err != nil {
-			log.Printf("[DEBUG] ListFeatures failed %s\n%s", err, response)
-			return err
+			return flex.FmtErrorf("[ERROR] Listing Features failed %s\n%s", err, response)
 		}
 		if isLimit {
 			offset = 0
@@ -355,48 +354,48 @@ func dataSourceIbmAppConfigFeaturesRead(d *schema.ResourceData, meta interface{}
 	if featuresList.Features != nil {
 		err = d.Set("features", dataSourceFeaturesListFlattenFeatures(featuresList.Features))
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error setting features %s", err)
+			return flex.FmtErrorf("[ERROR] Error setting features %s", err)
 		}
 	}
 	if featuresList.TotalCount != nil {
 		if err = d.Set("total_count", featuresList.TotalCount); err != nil {
-			return fmt.Errorf("[ERROR] Error setting total_count: %s", err)
+			return flex.FmtErrorf("[ERROR] Error setting total_count: %s", err)
 		}
 	}
 	if featuresList.Limit != nil {
 		if err = d.Set("limit", featuresList.Limit); err != nil {
-			return fmt.Errorf("[ERROR] Error setting limit: %s", err)
+			return flex.FmtErrorf("[ERROR] Error setting limit: %s", err)
 		}
 	}
 	if featuresList.Offset != nil {
 		if err = d.Set("offset", featuresList.Offset); err != nil {
-			return fmt.Errorf("[ERROR] Error setting offset: %s", err)
+			return flex.FmtErrorf("[ERROR] Error setting offset: %s", err)
 		}
 	}
 	if featuresList.First != nil {
 		err = d.Set("first", dataSourceFeatureListFlattenPagination(*featuresList.First))
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error setting first %s", err)
+			return flex.FmtErrorf("[ERROR] Error setting first %s", err)
 		}
 	}
 
 	if featuresList.Previous != nil {
 		err = d.Set("previous", dataSourceFeatureListFlattenPagination(*featuresList.Previous))
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error setting previous %s", err)
+			return flex.FmtErrorf("[ERROR] Error setting previous %s", err)
 		}
 	}
 
 	if featuresList.Last != nil {
 		err = d.Set("last", dataSourceFeatureListFlattenPagination(*featuresList.Last))
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error setting last %s", err)
+			return flex.FmtErrorf("[ERROR] Error setting last %s", err)
 		}
 	}
 	if featuresList.Next != nil {
 		err = d.Set("next", dataSourceFeatureListFlattenPagination(*featuresList.Next))
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error setting next %s", err)
+			return flex.FmtErrorf("[ERROR] Error setting next %s", err)
 		}
 	}
 
@@ -570,7 +569,7 @@ func dataSourceListFeaturesSegmentRulesRulesToMap(rule appconfigurationv1.Target
 	return ruleMap
 }
 
-func dataSourceFeatureListFlattenPagination(result appconfigurationv1.PageHrefResponse) (finalList []map[string]interface{}) {
+func dataSourceFeatureListFlattenPagination(result interface{}) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
 	finalMap := dataSourceFeatureListURLToMap(result)
 	finalList = append(finalList, finalMap)
@@ -578,11 +577,22 @@ func dataSourceFeatureListFlattenPagination(result appconfigurationv1.PageHrefRe
 	return finalList
 }
 
-func dataSourceFeatureListURLToMap(urlItem appconfigurationv1.PageHrefResponse) (urlMap map[string]interface{}) {
+func dataSourceFeatureListURLToMap(urlItem interface{}) (urlMap map[string]interface{}) {
 	urlMap = map[string]interface{}{}
 
-	if urlItem.Href != nil {
-		urlMap["href"] = urlItem.Href
+	var hrefUrl *string
+	switch urlItem := urlItem.(type) {
+	case appconfigurationv1.PaginatedListFirst:
+		hrefUrl = urlItem.Href
+	case appconfigurationv1.PaginatedListLast:
+		hrefUrl = urlItem.Href
+	case appconfigurationv1.PaginatedListNext:
+		hrefUrl = urlItem.Href
+	case appconfigurationv1.PaginatedListPrevious:
+		hrefUrl = urlItem.Href
+	}
+	if hrefUrl != nil {
+		urlMap["href"] = hrefUrl
 	}
 
 	return urlMap
