@@ -33,10 +33,6 @@ resource "ibm_cloud_shell_account_settings" "cloud_shell_account_settings" {
   }
   regions {
   	enabled = true
-  	key = "jp-tok"
-  }
-  regions {
-  	enabled = true
   	key = "us-south"
   }
 }
