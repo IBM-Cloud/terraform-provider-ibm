@@ -230,7 +230,7 @@ func testAccCheckIbmSccControlLibraryExists(n string, obj securityandcompliancec
 
 		id := strings.Split(rs.Primary.ID, "/")
 		getControlLibraryOptions.SetInstanceID(id[0])
-		getControlLibraryOptions.SetControlLibrariesID(id[1])
+		getControlLibraryOptions.SetControlLibraryID(id[1])
 
 		controlLibrary, _, err := securityandcompliancecenterapiClient.GetControlLibrary(getControlLibraryOptions)
 		if err != nil {
@@ -256,7 +256,7 @@ func testAccCheckIbmSccControlLibraryDestroy(s *terraform.State) error {
 
 		id := strings.Split(rs.Primary.ID, "/")
 		getControlLibraryOptions.SetInstanceID(id[0])
-		getControlLibraryOptions.SetControlLibrariesID(id[1])
+		getControlLibraryOptions.SetControlLibraryID(id[1])
 
 		// Try to find the key
 		_, response, err := securityandcompliancecenterapiClient.GetControlLibrary(getControlLibraryOptions)

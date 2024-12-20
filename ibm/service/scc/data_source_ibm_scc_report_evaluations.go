@@ -321,12 +321,6 @@ func dataSourceIbmSccReportEvaluationsID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
 
-func dataSourceIbmSccReportEvaluationsPageHRefToMap(model *securityandcompliancecenterapiv3.PageHRef) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["href"] = model.Href
-	return modelMap, nil
-}
-
 func dataSourceIbmSccReportEvaluationsEvaluationToMap(model *securityandcompliancecenterapiv3.Evaluation) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.HomeAccountID != nil {
@@ -335,8 +329,8 @@ func dataSourceIbmSccReportEvaluationsEvaluationToMap(model *securityandcomplian
 	if model.ReportID != nil {
 		modelMap["report_id"] = model.ReportID
 	}
-	if model.ControlID != nil {
-		modelMap["control_id"] = model.ControlID
+	if model.ComponentName != nil {
+		modelMap["control_id"] = model.ComponentName
 	}
 	if model.ComponentID != nil {
 		modelMap["component_id"] = model.ComponentID
@@ -405,7 +399,7 @@ func dataSourceIbmSccReportEvaluationsAssessmentToMap(model *securityandcomplian
 	return modelMap, nil
 }
 
-func dataSourceIbmSccReportEvaluationsParameterInfoToMap(model *securityandcompliancecenterapiv3.ParameterInfo) (map[string]interface{}, error) {
+func dataSourceIbmSccReportEvaluationsParameterInfoToMap(model *securityandcompliancecenterapiv3.Parameter) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ParameterName != nil {
 		modelMap["parameter_name"] = model.ParameterName
@@ -430,8 +424,8 @@ func dataSourceIbmSccReportEvaluationsTargetInfoToMap(model *securityandcomplian
 	if model.AccountID != nil {
 		modelMap["account_id"] = model.AccountID
 	}
-	if model.ResourceCrn != nil {
-		modelMap["resource_crn"] = model.ResourceCrn
+	if model.ResourceCRN != nil {
+		modelMap["resource_crn"] = model.ResourceCRN
 	}
 	if model.ResourceName != nil {
 		modelMap["resource_name"] = model.ResourceName
@@ -442,7 +436,7 @@ func dataSourceIbmSccReportEvaluationsTargetInfoToMap(model *securityandcomplian
 	return modelMap, nil
 }
 
-func dataSourceIbmSccReportEvaluationsEvalDetailsToMap(model *securityandcompliancecenterapiv3.EvalDetails) (map[string]interface{}, error) {
+func dataSourceIbmSccReportEvaluationsEvalDetailsToMap(model *securityandcompliancecenterapiv3.EvaluationDetails) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Properties != nil {
 		properties := []map[string]interface{}{}
@@ -458,7 +452,7 @@ func dataSourceIbmSccReportEvaluationsEvalDetailsToMap(model *securityandcomplia
 	return modelMap, nil
 }
 
-func dataSourceIbmSccReportEvaluationsPropertyToMap(model *securityandcompliancecenterapiv3.Property) (map[string]interface{}, error) {
+func dataSourceIbmSccReportEvaluationsPropertyToMap(model *securityandcompliancecenterapiv3.EvaluationProperty) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Property != nil {
 		modelMap["property"] = model.Property
