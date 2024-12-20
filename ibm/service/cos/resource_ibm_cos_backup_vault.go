@@ -169,7 +169,7 @@ func resourceIBMCOSBackupVaultRead(ctx context.Context, d *schema.ResourceData, 
 	}
 	res, _, err := rcClient.GetBackupVault(getBucketBackupVaultOptions)
 	if err != nil {
-		return diag.Errorf("Error while reading he backup vault : %v", err)
+		return diag.Errorf("Error while reading the backup vault : %v", err)
 	}
 	if res != nil {
 

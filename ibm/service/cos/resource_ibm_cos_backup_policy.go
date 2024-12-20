@@ -107,8 +107,12 @@ func resourceIBMCOSBackupPolicyRead(ctx context.Context, d *schema.ResourceData,
 		PolicyID: aws.String(policyId),
 	}
 
-	res, _, err := rcClient.GetBackupPolicy(getBucketBackupPolicyOptions)
+	res, response, err := rcClient.GetBackupPolicy(getBucketBackupPolicyOptions)
 	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
 		return diag.Errorf("Error while reading the backup policy vault : %v", err)
 	}
 	if res != nil {
