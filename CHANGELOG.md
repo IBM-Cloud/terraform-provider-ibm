@@ -1,3 +1,19 @@
+# 1.73.0 (Dec 15, 2024)
+* Support for Db2 SaaS
+    - **Datasources**
+        - ibm_db2_connection_info
+        - ibm_db2_whitelist_ip
+        - ibm_db2_autoscale
+
+Enhancements
+* feat(Cloud Databases): Update Database Password Complexity Validation ([5701](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5701))
+
+BugFixes
+* fix(Cloud Databases): Key protect revert fix (#5870) ([5870](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5870))
+* fix(Cloud-Databases): RR & PITR Groups Attribute is Fixed for Source Formations with Multiple Members ([5871](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5871))
+* fix(Cloud Databases): send host flavor with scaling requests (#5874) ([5874](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5874))
+* Added 100 default capacity to the volume when no attributes is set ([5865](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5865))
+
 # 1.72.2 (Dec 11, 2024)
 BugFixes
 * Fix the issue of loading IAM endpoints either for stage or file ([5866](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/5866))
