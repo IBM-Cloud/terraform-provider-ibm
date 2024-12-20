@@ -5,7 +5,7 @@ package scc
 
 import (
 	"context"
-  "fmt"
+	"fmt"
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"

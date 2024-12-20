@@ -197,13 +197,13 @@ func dataSourceIbmSccControlLibraryToMap(controlLibrary *securityandcompliancece
 		modelMap["created_by"] = controlLibrary.CreatedBy
 	}
 	if controlLibrary.CreatedOn != nil {
-		modelMap["created_on"] = controlLibrary.CreatedOn
+		modelMap["created_on"] = controlLibrary.CreatedOn.String()
 	}
 	if controlLibrary.UpdatedBy != nil {
 		modelMap["updated_by"] = controlLibrary.UpdatedBy
 	}
 	if controlLibrary.UpdatedOn != nil {
-		modelMap["updated_on"] = controlLibrary.UpdatedOn
+		modelMap["updated_on"] = controlLibrary.UpdatedOn.String()
 	}
 	if controlLibrary.ControlsCount != nil {
 		modelMap["controls_count"] = controlLibrary.ControlsCount

@@ -2014,6 +2014,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_scc_profile":                scc.ResourceIbmSccProfileValidator(),
 				"ibm_scc_profile_attachment":     scc.ResourceIbmSccProfileAttachmentValidator(),
 				"ibm_scc_provider_type_instance": scc.ResourceIbmSccProviderTypeInstanceValidator(),
+				"ibm_scc_scope":                  scc.ResourceIbmSccScopeValidator(),
 
 				// Added for Toolchains
 				"ibm_cd_toolchain":                         cdtoolchain.ResourceIBMCdToolchainValidator(),

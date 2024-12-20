@@ -301,11 +301,12 @@ var Snapshot_date_from string
 var Snapshot_date_to string
 var Snapshot_month string
 
-// Secuity and Complinace Center
+// Security and Complinace Center
 var (
 	SccApiEndpoint            string
 	SccEventNotificationsCRN  string
 	SccInstanceID             string
+	SccAccountID              string
 	SccObjectStorageCRN       string
 	SccObjectStorageBucket    string
 	SccProviderTypeAttributes string
@@ -1655,6 +1656,11 @@ func init() {
 		fmt.Println("[WARN] Set the environment variable IBMCLOUD_SCC_INSTANCE_ID with a VALID SCC INSTANCE ID")
 	}
 
+	SccAccountID = os.Getenv("IBMCLOUD_SCC_ACCOUNT_ID")
+	if SccAccountID == "" {
+		fmt.Println("[WARN] Set the environment variable IBMCLOUD_SCC_ACCOUNT_ID with a VALID IAM ACCOUNT ID")
+	}
+
 	SccApiEndpoint = os.Getenv("IBMCLOUD_SCC_API_ENDPOINT")
 	if SccApiEndpoint == "" {
 		fmt.Println("[WARN] Set the environment variable IBMCLOUD_SCC_API_ENDPOINT with a VALID SCC API ENDPOINT")
@@ -2277,6 +2283,10 @@ func TestAccPreCheckScc(t *testing.T) {
 
 	if SccProviderTypeID == "" {
 		t.Fatal("IBMCLOUD_SCC_PROVIDER_TYPE_ID missing. Set the environment variable IBMCLOUD_SCC_PROVIDER_TYPE_ID with a VALID SCC provider_type ID")
+	}
+
+	if SccAccountID == "" {
+		t.Fatal("IBMCLOUD_SCC_ACCOUNT_ID missing. Set the environment variable IBMCLOUD_SCC_ACCOUNT_ID with a VALID IAM ACCOUNT ID")
 	}
 
 	if SccInstanceID == "" {

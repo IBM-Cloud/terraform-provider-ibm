@@ -316,7 +316,7 @@ func dataSourceIbmSccControlLibraryRead(context context.Context, d *schema.Resou
 		return diag.FromErr(flex.FmtErrorf("Error setting control_library_version: %s", err))
 	}
 
-	if err = d.Set("created_on", controlLibrary.CreatedOn); err != nil { 
+	if err = d.Set("created_on", flex.DateTimeToString(controlLibrary.CreatedOn)); err != nil {
 		return diag.FromErr(flex.FmtErrorf("Error setting created_on: %s", err))
 	}
 
@@ -324,7 +324,7 @@ func dataSourceIbmSccControlLibraryRead(context context.Context, d *schema.Resou
 		return diag.FromErr(flex.FmtErrorf("Error setting created_by: %s", err))
 	}
 
-	if err = d.Set("updated_on", controlLibrary.UpdatedOn); err != nil {
+	if err = d.Set("updated_on", flex.DateTimeToString(controlLibrary.UpdatedOn)); err != nil {
 		return diag.FromErr(flex.FmtErrorf("Error setting updated_on: %s", err))
 	}
 

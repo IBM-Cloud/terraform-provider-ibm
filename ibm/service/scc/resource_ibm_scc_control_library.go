@@ -693,7 +693,7 @@ func resourceIbmSccControlLibraryMapToControlPrototype(modelMap map[string]inter
 func resourceIbmSccControlLibraryMapToControlSpecificationPrototype(modelMap map[string]interface{}) (*securityandcompliancecenterapiv3.ControlSpecificationPrototype, error) {
 	model := &securityandcompliancecenterapiv3.ControlSpecificationPrototype{}
 	if modelMap["control_specification_description"] != nil && modelMap["control_specification_description"].(string) != "" {
-		model.ControlSpecificationDescription = core.StringPtr(modelMap["control_specification_description"].(string))
+		model.Description = core.StringPtr(modelMap["control_specification_description"].(string))
 	}
 	if modelMap["component_id"] != nil && modelMap["component_id"].(string) != "" {
 		model.ComponentID = core.StringPtr(modelMap["component_id"].(string))

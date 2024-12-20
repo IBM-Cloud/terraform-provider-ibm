@@ -59,46 +59,46 @@ func ResourceIbmSccScope() *schema.Resource {
 				Optional:    true,
 				MaxItems:    1,
 				Description: "A list of scopes/targets to exclude from a scope.",
-        Elem: &schema.Resource{
-          Schema: map[string]*schema.Schema{
-            "account_id": &schema.Schema{
-              Type:        schema.TypeString,
-              Optional:    true,
-              Description: "The ID of the account to target",
-              ConflictsWith: []string{
-                "properties.0.enterprise_id",
-                "properties.0.resource_group_id",
-                "properties.0.account_group_id"},
-            },
-            "enterprise_id": &schema.Schema{
-              Type:        schema.TypeString,
-              Optional:    true,
-              Description: "The ID of the enterprise to target",
-              ConflictsWith: []string{
-                "properties.0.account_id",
-                "properties.0.resource_group_id",
-                "properties.0.account_group_id"},
-            },
-            "resource_group_id": &schema.Schema{
-              Type:        schema.TypeString,
-              Optional:    true,
-              Description: "The ID of the resource group to target",
-              ConflictsWith: []string{
-                "properties.0.account_id",
-                "properties.0.enterprise_id",
-                "properties.0.account_group_id"},
-            },
-            "account_group_id": &schema.Schema{
-              Type:        schema.TypeString,
-              Optional:    true,
-              Description: "The ID of the account group to target",
-              ConflictsWith: []string{
-                "properties.0.account_id",
-                "properties.0.enterprise_id",
-                "properties.0.resource_group_id"},
-            },
-          },
-        },
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"account_id": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The ID of the account to target",
+							ConflictsWith: []string{
+								"properties.0.enterprise_id",
+								"properties.0.resource_group_id",
+								"properties.0.account_group_id"},
+						},
+						"enterprise_id": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The ID of the enterprise to target",
+							ConflictsWith: []string{
+								"properties.0.account_id",
+								"properties.0.resource_group_id",
+								"properties.0.account_group_id"},
+						},
+						"resource_group_id": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The ID of the resource group to target",
+							ConflictsWith: []string{
+								"properties.0.account_id",
+								"properties.0.enterprise_id",
+								"properties.0.account_group_id"},
+						},
+						"account_group_id": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The ID of the account group to target",
+							ConflictsWith: []string{
+								"properties.0.account_id",
+								"properties.0.enterprise_id",
+								"properties.0.resource_group_id"},
+						},
+					},
+				},
 			},
 			"exclusions": &schema.Schema{
 				Type:        schema.TypeList,
@@ -163,7 +163,7 @@ func ResourceIbmSccScope() *schema.Resource {
 	}
 }
 
-func ResourceIBMSccScopeValidator() *validate.ResourceValidator {
+func ResourceIbmSccScopeValidator() *validate.ResourceValidator {
 	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
@@ -226,29 +226,23 @@ func resourceIBMSccScopeCreate(context context.Context, d *schema.ResourceData, 
 	if _, ok := d.GetOk("environment"); ok {
 		createScopeOptions.SetEnvironment(d.Get("environment").(string))
 	}
-	props := []interface{}{}
+	var properties []securityandcompliancecenterapiv3.ScopePropertyIntf
 	if _, ok := d.GetOk("properties"); ok {
 		// Manual Change for scope properties
-    
-    if p, ok := d.Get("properties").(map[string]interface{}); ok {
-      scopeProps, err := scopeTypeValueToProperties(p)
-      if err != nil {
-        return diag.FromErr(fmt.Errorf("Scope validation failed %s", err))
-      }
-      props = append(props, scopeProps)
-    } else {
-      return diag.FromErr(fmt.Errorf("Cannot convert scope properties to map[string]interface{}"))
-    }
-		// Removal
-		// var properties []securityandcompliancecenterv3.ScopePropertyIntf
-		// for _, v := range d.Get("properties").([]interface{}) {
-		// 	value := v.(map[string]interface{})
-		// 	propertiesItem, err := resourceIBMSccScopeMapToScopeProperty(value)
-		// 	if err != nil {
-		// 		return diag.FromErr(err)
-		// 	}
-		// 	properties = append(properties, propertiesItem)
-		// }
+
+		if p, ok := d.Get("properties").([]interface{}); ok {
+			for _, property := range p {
+				scopeProps, err := scopeValuesToProperties(property.(map[string]interface{}))
+				if err != nil {
+					return diag.FromErr(fmt.Errorf("Scope validation failed %s", err))
+				}
+				properties = append(properties, scopeProps...)
+			}
+		} else {
+			pErr := d.Get("properties")
+			return diag.FromErr(fmt.Errorf("Cannot convert scope properties to []interface{}. Got %#v", pErr))
+		}
+		// End Manual Change
 	}
 	if _, ok := d.GetOk("exclusions"); ok {
 		exclusions := []securityandcompliancecenterapiv3.ScopePropertyExclusionItem{}
@@ -259,19 +253,14 @@ func resourceIBMSccScopeCreate(context context.Context, d *schema.ResourceData, 
 			}
 			exclusions = append(exclusions, *exclusionsItemModel)
 		}
-		props = append(props, exclusions)
+		scopePropertyExclusions := securityandcompliancecenterapiv3.ScopeProperty{
+			Exclusions: exclusions,
+		}
+		properties = append(properties, &scopePropertyExclusions)
 	}
-  var properties []securityandcompliancecenterapiv3.ScopePropertyIntf
-  for _, v := range d.Get("properties").([]interface{}) {
-    value := v.(map[string]interface{})
-    propertiesItem, err := resourceIBMSccScopeMapToScopeProperty(value)
-    if err != nil {
-      return diag.FromErr(err)
-    }
-    properties = append(properties, propertiesItem)
-  }
 	createScopeOptions.SetProperties(properties)
 
+	log.Printf("[DEBUG] CreateScopeWithContext payload\n%#v", createScopeOptions)
 	scope, response, err := securityAndComplianceCenterClient.CreateScopeWithContext(context, createScopeOptions)
 	if err != nil {
 		log.Printf("[DEBUG] CreateScopeWithContext failed %s\n%s", err, response)
@@ -327,19 +316,14 @@ func resourceIBMSccScopeRead(context context.Context, d *schema.ResourceData, me
 			return diag.FromErr(fmt.Errorf("Error setting environment: %s", err))
 		}
 	}
-	// if !core.IsNil(scope.Properties) {
-	// 	properties := []map[string]interface{}{}
-	// 	for _, propertiesItem := range scope.Properties {
-	// 		propertiesItemMap, err := resourceIBMSccScopeScopePropertyToMap(propertiesItem)
-	// 		if err != nil {
-	// 			return diag.FromErr(err)
-	// 		}
-	// 		properties = append(properties, propertiesItemMap)
-	// 	}
-	// 	if err = d.Set("properties", properties); err != nil {
-	// 		return diag.FromErr(fmt.Errorf("Error setting properties: %s", err))
-	// 	}
-	// }
+	if !core.IsNil(scope.Properties) {
+		// Manual Change
+		// TODO: Do a check if the property is scope_type or scope_id or exclusion
+		if properties, err := resourceIBMSccScopeScopePropertyToMap(scope.Properties, d); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting properties or exclusions: %s\n%#v", err, properties))
+		}
+		// End Manual Change
+	}
 	if err = d.Set("account_id", scope.AccountID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting account_id: %s", err))
 	}
@@ -435,33 +419,33 @@ func resourceIBMSccScopeDelete(context context.Context, d *schema.ResourceData, 
 }
 
 // scopeTypeValueToProperties will convert the custom terraform modification to accomadate to the API
-func scopeTypeValueToProperties(modelMap map[string]interface{}) ([]interface{}, error) {
-  
-	properties := []interface{}{}
-	scopeType := map[string]string{
-		"name": "scope_type",
+func scopeValuesToProperties(modelMap map[string]interface{}) ([]securityandcompliancecenterapiv3.ScopePropertyIntf, error) {
+
+	properties := []securityandcompliancecenterapiv3.ScopePropertyIntf{}
+	scopeType := securityandcompliancecenterapiv3.ScopePropertyScopeType{
+		Name: core.StringPtr("scope_type"),
 	}
-	scopeId := map[string]string{
-		"name": "scope_id",
+	scopeID := securityandcompliancecenterapiv3.ScopePropertyScopeID{
+		Name: core.StringPtr("scope_id"),
 	}
 	if id, ok := modelMap["account_id"]; ok {
-		scopeType["value"] = "account"
-		scopeId["value"] = id.(string)
+		scopeType.Value = core.StringPtr("account")
+		scopeID.Value = id.(string)
 	} else if id, ok := modelMap["enterprise_id"]; ok {
-		scopeType["value"] = "enterprise"
-		scopeId["value"] = id.(string)
+		scopeType.Value = core.StringPtr("enterprise")
+		scopeID.Value = id.(string)
 	} else if id, ok := modelMap["resource_group_id"]; ok {
-		scopeType["value"] = "resource_group"
-		scopeId["value"] = id.(string)
+		scopeType.Value = core.StringPtr("account.resource_group")
+		scopeID.Value = id.(string)
 	} else if id, ok := modelMap["account_group_id"]; ok {
-		scopeType["value"] = "account_group"
-		scopeId["value"] = id.(string)
+		scopeType.Value = core.StringPtr("enterprise.account_group")
+		scopeID.Value = id.(string)
 	} else {
-		err := errors.New("unsupported property type")
+		err := errors.New("unsupported scope property type")
 		return properties, err
 	}
-	properties = append(properties, scopeType)
-	properties = append(properties, scopeId)
+	properties = append(properties, &scopeType)
+	properties = append(properties, &scopeID)
 	return properties, nil
 }
 
@@ -536,37 +520,36 @@ func resourceIBMSccScopeMapToScopePropertyExclusions(modelMap map[string]interfa
 	return model, nil
 }
 
-func resourceIBMSccScopeScopePropertyToMap(model securityandcompliancecenterapiv3.ScopePropertyIntf) (map[string]interface{}, error) {
-	if _, ok := model.(*securityandcompliancecenterapiv3.ScopePropertyScopeID); ok {
-		return resourceIBMSccScopeScopePropertyScopeIDToMap(model.(*securityandcompliancecenterapiv3.ScopePropertyScopeID))
-	} else if _, ok := model.(*securityandcompliancecenterapiv3.ScopePropertyScopeType); ok {
-		return resourceIBMSccScopeScopePropertyScopeTypeToMap(model.(*securityandcompliancecenterapiv3.ScopePropertyScopeType))
-	} else if _, ok := model.(*securityandcompliancecenterapiv3.ScopePropertyExclusions); ok {
-		return resourceIBMSccScopeScopePropertyExclusionsToMap(model.(*securityandcompliancecenterapiv3.ScopePropertyExclusions))
-	} else if _, ok := model.(*securityandcompliancecenterapiv3.ScopeProperty); ok {
-		modelMap := make(map[string]interface{})
-		model := model.(*securityandcompliancecenterapiv3.ScopeProperty)
-		if model.Name != nil {
-			modelMap["name"] = model.Name
-		}
-		if model.Value != nil {
-			modelMap["value"] = model.Value
-		}
-		if model.Exclusions != nil {
+func resourceIBMSccScopeScopePropertyToMap(model []securityandcompliancecenterapiv3.ScopePropertyIntf, d *schema.ResourceData) ([]securityandcompliancecenterapiv3.ScopePropertyIntf, error) {
+	propertyScopeList := []interface{}{}
+	scopeType := ""
+	scopeId := ""
+	exclusions := []map[string]interface{}{}
+	for _, property := range model {
+		if exclusionProp, ok := property.(*securityandcompliancecenterapiv3.ScopePropertyExclusions); ok {
 			exclusions := []map[string]interface{}{}
-			for _, exclusionsItem := range model.Exclusions {
+			for _, exclusionsItem := range exclusionProp.Exclusions {
 				exclusionsItemMap, err := resourceIBMSccScopeScopePropertyExclusionItemToMap(&exclusionsItem)
 				if err != nil {
-					return modelMap, err
+					return model, err
 				}
 				exclusions = append(exclusions, exclusionsItemMap)
 			}
-			modelMap["exclusions"] = exclusions
+		} else if prop, ok := property.(*securityandcompliancecenterapiv3.ScopeProperty); ok {
+			// TODO: make the map for account_id or enterprise_id, resource_group_id, or account_group_id
+			if prop.Name != nil {
+			}
+			if prop.Value != nil {
+			}
+			// End TODO
+			return model, nil
+		} else {
+			return nil, fmt.Errorf("Unrecognized securityandcompliancecenterv3.ScopePropertyIntf subtype encountered")
 		}
-		return modelMap, nil
-	} else {
-		return nil, fmt.Errorf("Unrecognized securityandcompliancecenterv3.ScopePropertyIntf subtype encountered")
 	}
+	d.Set("properties", propertyScopeList)
+	d.Set("exclusions", exclusions)
+	return model, nil
 }
 
 func resourceIBMSccScopeScopePropertyExclusionItemToMap(model *securityandcompliancecenterapiv3.ScopePropertyExclusionItem) (map[string]interface{}, error) {

@@ -5,7 +5,7 @@ package scc
 
 import (
 	"context"
-  "fmt"
+	"fmt"
 	"log"
 	"time"
 
@@ -449,7 +449,7 @@ func dataSourceIbmSccLatestReportsReportToMap(model *securityandcompliancecenter
 		modelMap["group_id"] = model.GroupID
 	}
 	if model.CreatedOn != nil {
-		modelMap["created_on"] = model.CreatedOn
+		modelMap["created_on"] = model.CreatedOn.String()
 	}
 	if model.ScanTime != nil {
 		modelMap["scan_time"] = model.ScanTime

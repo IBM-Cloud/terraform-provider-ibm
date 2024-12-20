@@ -328,7 +328,6 @@ func dataSourceIbmSccReportControlsRead(context context.Context, d *schema.Resou
 
 	d.SetId(dataSourceIbmSccReportControlsID(d))
 
-
 	if err = d.Set("home_account_id", reportControls.HomeAccountID); err != nil {
 		return diag.FromErr(flex.FmtErrorf("Error setting home_account_id: %s", err))
 	}
@@ -350,7 +349,7 @@ func dataSourceIbmSccReportControlsRead(context context.Context, d *schema.Resou
 
 	getReportSummaryOptions.SetReportID(d.Get("report_id").(string))
 	getReportSummaryOptions.SetInstanceID(d.Get("instance_id").(string))
-  reportSummary, response, err := resultsClient.GetReportSummaryWithContext(context, getReportSummaryOptions)
+	reportSummary, response, err := resultsClient.GetReportSummaryWithContext(context, getReportSummaryOptions)
 
 	if err = d.Set("total_count", flex.IntValue(reportSummary.Controls.TotalCount)); err != nil {
 		return diag.FromErr(flex.FmtErrorf("Error setting total_count: %s", err))

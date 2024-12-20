@@ -1002,10 +1002,10 @@ func resourceIbmSccProfileAttachmentAttachmentParameterPrototypeToMap(model *sec
 		modelMap["parameter_type"] = flex.StringValue(model.ParameterType)
 	}
 	if model.ParameterValue != nil {
-    val, ok := model.ParameterValue.(string)
-    if ok {
-      modelMap["parameter_value"] = val 
-    }
+		val, ok := model.ParameterValue.(string)
+		if ok {
+			modelMap["parameter_value"] = val
+		}
 	}
 	return modelMap, nil
 }
