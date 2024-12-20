@@ -36,9 +36,12 @@ var (
 	CisResourceGroup                string
 	CloudShellAccountID             string
 	CosCRN                          string
+	CosBackupPolicyID               string
 	BucketCRN                       string
+	BackupVaultName                 string
 	ActivityTrackerInstanceCRN      string
 	MetricsMonitoringCRN            string
+	KmsKeyCrn                       string
 	BucketName                      string
 	CosName                         string
 	Ibmid1                          string
@@ -575,6 +578,22 @@ func init() {
 	if BucketCRN == "" {
 		BucketCRN = ""
 		fmt.Println("[WARN] Set the environment variable IBM_COS_Bucket_CRN with a VALID BUCKET CRN for testing ibm_cos_bucket* resources")
+	}
+	BackupVaultName = os.Getenv("IBM_COS_Backup_Vault")
+	if BackupVaultName == "" {
+		BackupVaultName = ""
+		fmt.Println("[WARN] Set the environment variable IBM_COS_Backup_Vault with a VALID BACKUP VAULT NAME  for testing ibm_cos_backup_vault* resources")
+	}
+	KmsKeyCrn = os.Getenv("IBM_KMS_KEY_CRN")
+	if KmsKeyCrn == "" {
+		KmsKeyCrn = ""
+		fmt.Println("[WARN] Set the environment variable IBM_KMS_KEY_CRN with a VALID key crn for a KP/HPCS root key")
+	}
+
+	CosBackupPolicyID = os.Getenv("IBM_COS_Backup_Policy_Id")
+	if CosBackupPolicyID == "" {
+		CosBackupPolicyID = ""
+		fmt.Println("[WARN] Set the environment variable IBM_COS_Backup_Policy_Id with a VALID POLICYS ID for testing ibm_cos_backup_policy* resources")
 	}
 	ActivityTrackerInstanceCRN = os.Getenv("IBM_COS_ACTIVITY_TRACKER_CRN")
 	if ActivityTrackerInstanceCRN == "" {
