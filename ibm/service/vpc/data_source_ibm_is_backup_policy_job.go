@@ -310,18 +310,6 @@ func DataSourceIBMIsBackupPolicyJob() *schema.Resource {
 					},
 				},
 			},
-			"match_resource_type": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "A resource type this backup policy applies to. Resources that have both a matching type and a matching user tag will be subject to the backup policy.",
-			},
-			"included_content": &schema.Schema{
-				Type:        schema.TypeSet,
-				Computed:    true,
-				Elem:        &schema.Schema{Type: schema.TypeString},
-				Set:         schema.HashString,
-				Description: "The included content for backups created using this policy",
-			},
 			"target_snapshot": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,

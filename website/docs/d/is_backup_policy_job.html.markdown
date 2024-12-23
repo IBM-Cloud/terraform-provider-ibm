@@ -42,7 +42,6 @@ Review the argument reference that you can specify for your data source.
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
 - `id` - The unique identifier of the BackupPolicyJob.
-- `included_content` - (List) The included content for backups created using this policy.
 - `auto_delete` - (Boolean) Indicates whether this backup policy job will be automatically deleted after it completes. At present, this is always `true`, but may be modifiable in the future.
 - `auto_delete_after` - (Integer) If `auto_delete` is `true`, the days after completion that this backup policy job will be deleted. This value may be modifiable in the future.
 - `backup_policy_plan` - (List) The backup policy plan operated this backup policy job (may be [deleted](https://cloud.ibm.com/apidocs/vpc#deleted-resources)).
@@ -61,7 +60,6 @@ In addition to all argument references listed, you can access the following attr
 - `href` - (String) The URL for this backup policy job.
 - `job_type` - (String) The type of backup policy job.The enumerated values for this property will expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the backup policy job on which the unexpected property value was encountered.
   - Constraints: Allowable values are: `creation`, `deletion`.
-- `match_resource_type` - (String) The resource type this backup policy will apply to.
 - `resource_type` - (String) The resource type.
 - `source_volume` - (List) The source volume this backup was created from (may be [deleted](https://cloud.ibm.com/apidocs/vpc#deleted-resources)).
 	

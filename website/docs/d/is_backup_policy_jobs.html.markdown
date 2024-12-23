@@ -64,7 +64,6 @@ In addition to all argument references listed, you can access the following attr
 	- `created_at` - (String) The date and time that the backup policy job was created.
 	- `href` - (String) The URL for this backup policy job.
 	- `id` - (String) The unique identifier for this backup policy job.
-	- `included_content` - (List) The included content for backups created using this policy.
 	- `source_instance` - (List) The source instance this backup was created from (may be [deleted](https://cloud.ibm.com/apidocs/vpc#deleted-resources)).
 	
 	 Nested scheme for `source_instance`:
@@ -78,7 +77,6 @@ In addition to all argument references listed, you can access the following attr
 	 - `name` - (String) The unique user-defined name for this virtual server instance.
 	 - `resource_type` - (String) The resource type.
 	- `job_type` - (String) The type of backup policy job.The enumerated values for this property will expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the backup policy job on which the unexpected property value was encountered.
-	- `match_resource_type` - (String) The resource type this backup policy will apply to.
 	- `resource_type` - (String) The resource type.
 	- `source_volume` - (List) The source volume this backup was created from (may be [deleted](https://cloud.ibm.com/apidocs/vpc#deleted-resources))
 		
