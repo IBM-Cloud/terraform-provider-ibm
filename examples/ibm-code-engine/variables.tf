@@ -156,6 +156,18 @@ variable "code_engine_secret_tls_crt_file_path" {
   type        = string
 }
 
+// Resource arguments for code_engine_allowed_outbound_destination
+variable "code_engine_allowed_outbound_destination_name" {
+  description = "The name of the allowed outbound destination."
+  type        = string
+  default     = "my-allowed-outbound-destination"
+}
+variable "code_engine_allowed_outbound_destination_cidr_block" {
+  description = "The IPv4 address range of the allowed outbound destination."
+  type        = string
+  default     = "192.68.3.0/24"
+}
+
 // Data source arguments for code_engine_project
 variable "code_engine_project_id" {
   description = "The ID of the project."

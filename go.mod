@@ -14,7 +14,7 @@ require (
 	github.com/IBM/cloud-databases-go-sdk v0.7.1
 	github.com/IBM/cloud-db2-go-sdk v0.0.0-20241206113855-40a65de39906
 	github.com/IBM/cloudant-go-sdk v0.8.0
-	github.com/IBM/code-engine-go-sdk v0.0.0-20240808131715-b9d168602dac
+	github.com/IBM/code-engine-go-sdk v0.0.0-20241217191651-e1821f8c58c3
 	github.com/IBM/configuration-aggregator-go-sdk v0.0.2
 	github.com/IBM/container-registry-go-sdk v1.1.0
 	github.com/IBM/continuous-delivery-go-sdk/v2 v2.0.2
@@ -22,7 +22,7 @@ require (
 	github.com/IBM/eventstreams-go-sdk v1.4.0
 	github.com/IBM/go-sdk-core v1.1.0
 	github.com/IBM/go-sdk-core/v3 v3.2.4
-	github.com/IBM/go-sdk-core/v5 v5.18.1
+	github.com/IBM/go-sdk-core/v5 v5.18.3
 	github.com/IBM/ibm-cos-sdk-go v1.10.3
 	github.com/IBM/ibm-cos-sdk-go-config/v2 v2.1.0
 	github.com/IBM/ibm-hpcs-tke-sdk v0.0.0-20211109141421-a4b61b05f7d1
@@ -63,7 +63,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/rook/rook/pkg/apis v0.0.0-20231204200402-5287527732f7
 	github.com/softlayer/softlayer-go v1.0.3
-	github.com/stretchr/testify v1.9.0
+	github.com/stretchr/testify v1.10.0
 	golang.org/x/crypto v0.31.0
 	gopkg.in/yaml.v3 v3.0.1
 	gotest.tools v2.2.0+incompatible
@@ -206,7 +206,7 @@ require (
 	go.uber.org/ratelimit v0.2.0 // indirect
 	go.uber.org/zap v1.27.0 // indirect
 	golang.org/x/mod v0.21.0 // indirect
-	golang.org/x/net v0.30.0 // indirect
+	golang.org/x/net v0.32.0 // indirect
 	golang.org/x/oauth2 v0.22.0 // indirect
 	golang.org/x/sync v0.10.0 // indirect
 	golang.org/x/sys v0.28.0 // indirect

@@ -125,6 +125,14 @@ resource "ibm_code_engine_function" "code_engine_function_instance" {
   code_reference = local.function_code_reference
 }
 
+// Provision code_engine_allowed_outbound_destination resource instance
+resource "ibm_code_engine_allowed_outbound_destination" "code_engine_allowed_outbound_destination_instance" {
+  project_id = ibm_code_engine_project.code_engine_project_instance.project_id
+  type       = "cidr_block"
+  name       =  var.code_engine_allowed_outbound_destination_name
+  cidr_block =  var.code_engine_allowed_outbound_destination_cidr_block
+}
+
 //////////////////
 // Data sources
 
@@ -179,6 +187,12 @@ data "ibm_code_engine_domain_mapping" "code_engine_domain_mapping_data" {
 data "ibm_code_engine_function" "code_engine_function_data" {
   project_id = data.ibm_code_engine_project.code_engine_project_data.project_id
   name       = var.code_engine_function_name
+}
+
+// Create code_engine_allowed_outbound_destination data source
+data "ibm_code_engine_allowed_outbound_destination" "code_engine_allowed_outbound_destination_data" {
+  project_id = data.ibm_code_engine_project.code_engine_project_data.project_id
+  name       = var.code_engine_allowed_outbound_destination_name
 }
 
 //////////////////
