@@ -2,7 +2,7 @@
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.98.0-8be2046a-20241205-162752
+ * IBM OpenAPI Terraform Generator Version: 3.97.0-0e90eab1-20241120-170029
  */
 
 package partnercentersell
@@ -470,14 +470,13 @@ func resourceIbmOnboardingResourceBrokerUpdate(context context.Context, d *schem
 	updateResourceBrokerOptions := &partnercentersellv1.UpdateResourceBrokerOptions{}
 
 	updateResourceBrokerOptions.SetBrokerID(d.Id())
+	if _, ok := d.GetOk("env"); ok {
+		updateResourceBrokerOptions.SetEnv(d.Get("env").(string))
+	}
 
 	hasChange := false
 
 	patchVals := &partnercentersellv1.BrokerPatch{}
-	if d.HasChange("env") {
-		updateResourceBrokerOptions.SetEnv(d.Get("env").(string))
-		hasChange = true
-	}
 	if d.HasChange("auth_username") {
 		newAuthUsername := d.Get("auth_username").(string)
 		patchVals.AuthUsername = &newAuthUsername
