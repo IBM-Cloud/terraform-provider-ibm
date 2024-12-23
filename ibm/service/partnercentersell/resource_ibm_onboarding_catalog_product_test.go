@@ -180,7 +180,7 @@ func testAccCheckIbmOnboardingCatalogProductConfigBasic(productID string, name s
 			}
 			metadata {
 				rc_compatible = false
-			}
+		}
 		}
 	`, productID, name, active, disabled, kind, objectId)
 }
@@ -195,7 +195,6 @@ func testAccCheckIbmOnboardingCatalogProductConfig(productID string, env string,
 			active = %s
 			disabled = %s
 			kind = "%s"
-			object_id = "%s"
 			overview_ui {
 				en {
 					display_name = "%s"
@@ -209,27 +208,31 @@ func testAccCheckIbmOnboardingCatalogProductConfig(productID string, env string,
 			}
 			object_provider {
 				name = "name"
-				email = "email@email.com"
+				email = "email"
 			}
 			metadata {
 				rc_compatible = "%s"
 				ui {
-				    strings {
-                		en {
-                    		bullets {
+					strings {
+						en {
+							bullets {
                         		title = "%s"
                         		description = "some1"
-                    		}
+							}
 							media {
                         		type = "youtube"
                         		url = "https://www.youtube.com/embed/HtkpMgNFYtE"
                         		caption = "%s"
                     		}
-                		}
-            		}
+						}
+					}
 					urls {
 						doc_url = "doc_url"
 						terms_url = "terms_url"
+						instructions_url = "instructions_url"
+						catalog_details_url = "catalog_details_url"
+						custom_create_page_url = "custom_create_page_url"
+						dashboard = "dashboard"
 					}
 					hidden = true
 					side_by_side_index = 1.0
@@ -282,7 +285,7 @@ func testAccCheckIbmOnboardingCatalogProductConfig(productID string, env string,
 										day = "%s"
 										start_time = "start_time"
 										end_time = "end_time"
-									}
+								}
 									times {
 										day = "2.0"
 										start_time = "start_time"
@@ -329,9 +332,9 @@ func testAccCheckIbmOnboardingCatalogProductUpdateConfig(productID string, env s
 			kind = "%s"
 			object_id = "%s"
 			overview_ui {
-				en {
+							en {
 					display_name = "%s"
-					description = "description"
+								description = "description"
 					long_description = "long_description"
 				}
 			}
@@ -342,7 +345,7 @@ func testAccCheckIbmOnboardingCatalogProductUpdateConfig(productID string, env s
 			object_provider {
 				name = "name"
 				email = "email@email.com"
-			}
+							}
 			metadata {
 				rc_compatible = "%s"
 				ui {
@@ -351,30 +354,30 @@ func testAccCheckIbmOnboardingCatalogProductUpdateConfig(productID string, env s
                     		bullets {
                         		title = "%s"
                         		description = "some1"
-                    		}
+							}
 							bullets {
                         		title = "newBullet"
                         		description = "some1"
-                    		}
+							}
 							media {
                         		type = "youtube"
                         		url = "https://www.youtube.com/embed/HtkpMgNFYtE"
                         		caption = "%s"
-                    		}
+							}
 							media {
                         		type = "youtube"
                         		url = "https://www.youtube.com/embed/HtkpMgNFYtE"
                         		caption = "newMedia"
-                    		}
-                		}
-            		}
+							}
+							}
+							}
 					urls {
 						doc_url = "doc_url"
 						terms_url = "terms_url"
-					}
+						}
 					hidden = true
 					side_by_side_index = 1.0
-				}
+					}
 				service {
 					rc_provisionable = true
 					iam_compatible = false
@@ -616,12 +619,54 @@ func TestResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataToMap(t 
 		globalCatalogMetadataUiModel["hidden"] = true
 		globalCatalogMetadataUiModel["side_by_side_index"] = float64(72.5)
 
-		globalCatalogMetadataServiceModel := make(map[string]interface{})
-		globalCatalogMetadataServiceModel["rc_provisionable"] = true
-		globalCatalogMetadataServiceModel["iam_compatible"] = true
-		globalCatalogMetadataServiceModel["bindable"] = true
-		globalCatalogMetadataServiceModel["plan_updateable"] = true
-		globalCatalogMetadataServiceModel["service_key_supported"] = true
+		globalCatalogMetadataServiceCustomParametersI18nFieldsModel := make(map[string]interface{})
+		globalCatalogMetadataServiceCustomParametersI18nFieldsModel["displayname"] = "testString"
+		globalCatalogMetadataServiceCustomParametersI18nFieldsModel["description"] = "testString"
+
+		globalCatalogMetadataServiceCustomParametersI18nModel := make(map[string]interface{})
+		globalCatalogMetadataServiceCustomParametersI18nModel["en"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+		globalCatalogMetadataServiceCustomParametersI18nModel["de"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+		globalCatalogMetadataServiceCustomParametersI18nModel["es"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+		globalCatalogMetadataServiceCustomParametersI18nModel["fr"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+		globalCatalogMetadataServiceCustomParametersI18nModel["it"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+		globalCatalogMetadataServiceCustomParametersI18nModel["ja"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+		globalCatalogMetadataServiceCustomParametersI18nModel["ko"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+		globalCatalogMetadataServiceCustomParametersI18nModel["pt_br"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+		globalCatalogMetadataServiceCustomParametersI18nModel["zh_tw"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+		globalCatalogMetadataServiceCustomParametersI18nModel["zh_cn"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+
+		globalCatalogMetadataServiceCustomParametersOptionsModel := make(map[string]interface{})
+		globalCatalogMetadataServiceCustomParametersOptionsModel["displayname"] = "testString"
+		globalCatalogMetadataServiceCustomParametersOptionsModel["value"] = "testString"
+		globalCatalogMetadataServiceCustomParametersOptionsModel["i18n"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersI18nModel}
+
+		globalCatalogMetadataServiceCustomParametersModel := make(map[string]interface{})
+		globalCatalogMetadataServiceCustomParametersModel["displayname"] = "testString"
+		globalCatalogMetadataServiceCustomParametersModel["name"] = "testString"
+		globalCatalogMetadataServiceCustomParametersModel["type"] = "text"
+		globalCatalogMetadataServiceCustomParametersModel["options"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersOptionsModel}
+		globalCatalogMetadataServiceCustomParametersModel["value"] = []string{"testString"}
+		globalCatalogMetadataServiceCustomParametersModel["layout"] = "testString"
+		globalCatalogMetadataServiceCustomParametersModel["associations"] = map[string]interface{}{"anyKey": "anyValue"}
+		globalCatalogMetadataServiceCustomParametersModel["validation_url"] = "testString"
+		globalCatalogMetadataServiceCustomParametersModel["options_url"] = "testString"
+		globalCatalogMetadataServiceCustomParametersModel["invalidmessage"] = "testString"
+		globalCatalogMetadataServiceCustomParametersModel["description"] = "testString"
+		globalCatalogMetadataServiceCustomParametersModel["required"] = true
+		globalCatalogMetadataServiceCustomParametersModel["pattern"] = "testString"
+		globalCatalogMetadataServiceCustomParametersModel["placeholder"] = "testString"
+		globalCatalogMetadataServiceCustomParametersModel["readonly"] = true
+		globalCatalogMetadataServiceCustomParametersModel["hidden"] = true
+		globalCatalogMetadataServiceCustomParametersModel["i18n"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersI18nModel}
+
+		globalCatalogProductMetadataServiceModel := make(map[string]interface{})
+		globalCatalogProductMetadataServiceModel["rc_provisionable"] = true
+		globalCatalogProductMetadataServiceModel["iam_compatible"] = true
+		globalCatalogProductMetadataServiceModel["bindable"] = true
+		globalCatalogProductMetadataServiceModel["plan_updateable"] = true
+		globalCatalogProductMetadataServiceModel["service_key_supported"] = true
+		globalCatalogProductMetadataServiceModel["unique_api_key"] = true
+		globalCatalogProductMetadataServiceModel["parameters"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersModel}
 
 		supportTimeIntervalModel := make(map[string]interface{})
 		supportTimeIntervalModel["value"] = float64(72.5)
@@ -678,7 +723,7 @@ func TestResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataToMap(t 
 		model := make(map[string]interface{})
 		model["rc_compatible"] = true
 		model["ui"] = []map[string]interface{}{globalCatalogMetadataUiModel}
-		model["service"] = []map[string]interface{}{globalCatalogMetadataServiceModel}
+		model["service"] = []map[string]interface{}{globalCatalogProductMetadataServiceModel}
 		model["other"] = []map[string]interface{}{globalCatalogProductMetadataOtherModel}
 
 		assert.Equal(t, result, model)
@@ -720,12 +765,54 @@ func TestResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataToMap(t 
 	globalCatalogMetadataUiModel.Hidden = core.BoolPtr(true)
 	globalCatalogMetadataUiModel.SideBySideIndex = core.Float64Ptr(float64(72.5))
 
-	globalCatalogMetadataServiceModel := new(partnercentersellv1.GlobalCatalogMetadataService)
-	globalCatalogMetadataServiceModel.RcProvisionable = core.BoolPtr(true)
-	globalCatalogMetadataServiceModel.IamCompatible = core.BoolPtr(true)
-	globalCatalogMetadataServiceModel.Bindable = core.BoolPtr(true)
-	globalCatalogMetadataServiceModel.PlanUpdateable = core.BoolPtr(true)
-	globalCatalogMetadataServiceModel.ServiceKeySupported = core.BoolPtr(true)
+	globalCatalogMetadataServiceCustomParametersI18nFieldsModel := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersI18nFields)
+	globalCatalogMetadataServiceCustomParametersI18nFieldsModel.Displayname = core.StringPtr("testString")
+	globalCatalogMetadataServiceCustomParametersI18nFieldsModel.Description = core.StringPtr("testString")
+
+	globalCatalogMetadataServiceCustomParametersI18nModel := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersI18n)
+	globalCatalogMetadataServiceCustomParametersI18nModel.En = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+	globalCatalogMetadataServiceCustomParametersI18nModel.De = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+	globalCatalogMetadataServiceCustomParametersI18nModel.Es = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+	globalCatalogMetadataServiceCustomParametersI18nModel.Fr = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+	globalCatalogMetadataServiceCustomParametersI18nModel.It = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+	globalCatalogMetadataServiceCustomParametersI18nModel.Ja = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+	globalCatalogMetadataServiceCustomParametersI18nModel.Ko = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+	globalCatalogMetadataServiceCustomParametersI18nModel.PtBr = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+	globalCatalogMetadataServiceCustomParametersI18nModel.ZhTw = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+	globalCatalogMetadataServiceCustomParametersI18nModel.ZhCn = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+
+	globalCatalogMetadataServiceCustomParametersOptionsModel := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersOptions)
+	globalCatalogMetadataServiceCustomParametersOptionsModel.Displayname = core.StringPtr("testString")
+	globalCatalogMetadataServiceCustomParametersOptionsModel.Value = core.StringPtr("testString")
+	globalCatalogMetadataServiceCustomParametersOptionsModel.I18n = globalCatalogMetadataServiceCustomParametersI18nModel
+
+	globalCatalogMetadataServiceCustomParametersModel := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParameters)
+	globalCatalogMetadataServiceCustomParametersModel.Displayname = core.StringPtr("testString")
+	globalCatalogMetadataServiceCustomParametersModel.Name = core.StringPtr("testString")
+	globalCatalogMetadataServiceCustomParametersModel.Type = core.StringPtr("text")
+	globalCatalogMetadataServiceCustomParametersModel.Options = []partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersOptions{*globalCatalogMetadataServiceCustomParametersOptionsModel}
+	globalCatalogMetadataServiceCustomParametersModel.Value = []string{"testString"}
+	globalCatalogMetadataServiceCustomParametersModel.Layout = core.StringPtr("testString")
+	globalCatalogMetadataServiceCustomParametersModel.Associations = map[string]interface{}{"anyKey": "anyValue"}
+	globalCatalogMetadataServiceCustomParametersModel.ValidationURL = core.StringPtr("testString")
+	globalCatalogMetadataServiceCustomParametersModel.OptionsURL = core.StringPtr("testString")
+	globalCatalogMetadataServiceCustomParametersModel.Invalidmessage = core.StringPtr("testString")
+	globalCatalogMetadataServiceCustomParametersModel.Description = core.StringPtr("testString")
+	globalCatalogMetadataServiceCustomParametersModel.Required = core.BoolPtr(true)
+	globalCatalogMetadataServiceCustomParametersModel.Pattern = core.StringPtr("testString")
+	globalCatalogMetadataServiceCustomParametersModel.Placeholder = core.StringPtr("testString")
+	globalCatalogMetadataServiceCustomParametersModel.Readonly = core.BoolPtr(true)
+	globalCatalogMetadataServiceCustomParametersModel.Hidden = core.BoolPtr(true)
+	globalCatalogMetadataServiceCustomParametersModel.I18n = globalCatalogMetadataServiceCustomParametersI18nModel
+
+	globalCatalogProductMetadataServiceModel := new(partnercentersellv1.GlobalCatalogProductMetadataService)
+	globalCatalogProductMetadataServiceModel.RcProvisionable = core.BoolPtr(true)
+	globalCatalogProductMetadataServiceModel.IamCompatible = core.BoolPtr(true)
+	globalCatalogProductMetadataServiceModel.Bindable = core.BoolPtr(true)
+	globalCatalogProductMetadataServiceModel.PlanUpdateable = core.BoolPtr(true)
+	globalCatalogProductMetadataServiceModel.ServiceKeySupported = core.BoolPtr(true)
+	globalCatalogProductMetadataServiceModel.UniqueApiKey = core.BoolPtr(true)
+	globalCatalogProductMetadataServiceModel.Parameters = []partnercentersellv1.GlobalCatalogMetadataServiceCustomParameters{*globalCatalogMetadataServiceCustomParametersModel}
 
 	supportTimeIntervalModel := new(partnercentersellv1.SupportTimeInterval)
 	supportTimeIntervalModel.Value = core.Float64Ptr(float64(72.5))
@@ -782,7 +869,7 @@ func TestResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataToMap(t 
 	model := new(partnercentersellv1.GlobalCatalogProductMetadata)
 	model.RcCompatible = core.BoolPtr(true)
 	model.Ui = globalCatalogMetadataUiModel
-	model.Service = globalCatalogMetadataServiceModel
+	model.Service = globalCatalogProductMetadataServiceModel
 	model.Other = globalCatalogProductMetadataOtherModel
 
 	result, err := partnercentersell.ResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataToMap(model)
@@ -1044,26 +1131,312 @@ func TestResourceIbmOnboardingCatalogProductGlobalCatalogMetadataUIUrlsToMap(t *
 	checkResult(result)
 }
 
-func TestResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceToMap(t *testing.T) {
+func TestResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataServiceToMap(t *testing.T) {
 	checkResult := func(result map[string]interface{}) {
+		globalCatalogMetadataServiceCustomParametersI18nFieldsModel := make(map[string]interface{})
+		globalCatalogMetadataServiceCustomParametersI18nFieldsModel["displayname"] = "testString"
+		globalCatalogMetadataServiceCustomParametersI18nFieldsModel["description"] = "testString"
+
+		globalCatalogMetadataServiceCustomParametersI18nModel := make(map[string]interface{})
+		globalCatalogMetadataServiceCustomParametersI18nModel["en"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+		globalCatalogMetadataServiceCustomParametersI18nModel["de"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+		globalCatalogMetadataServiceCustomParametersI18nModel["es"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+		globalCatalogMetadataServiceCustomParametersI18nModel["fr"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+		globalCatalogMetadataServiceCustomParametersI18nModel["it"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+		globalCatalogMetadataServiceCustomParametersI18nModel["ja"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+		globalCatalogMetadataServiceCustomParametersI18nModel["ko"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+		globalCatalogMetadataServiceCustomParametersI18nModel["pt_br"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+		globalCatalogMetadataServiceCustomParametersI18nModel["zh_tw"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+		globalCatalogMetadataServiceCustomParametersI18nModel["zh_cn"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+
+		globalCatalogMetadataServiceCustomParametersOptionsModel := make(map[string]interface{})
+		globalCatalogMetadataServiceCustomParametersOptionsModel["displayname"] = "testString"
+		globalCatalogMetadataServiceCustomParametersOptionsModel["value"] = "testString"
+		globalCatalogMetadataServiceCustomParametersOptionsModel["i18n"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersI18nModel}
+
+		globalCatalogMetadataServiceCustomParametersModel := make(map[string]interface{})
+		globalCatalogMetadataServiceCustomParametersModel["displayname"] = "testString"
+		globalCatalogMetadataServiceCustomParametersModel["name"] = "testString"
+		globalCatalogMetadataServiceCustomParametersModel["type"] = "text"
+		globalCatalogMetadataServiceCustomParametersModel["options"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersOptionsModel}
+		globalCatalogMetadataServiceCustomParametersModel["value"] = []string{"testString"}
+		globalCatalogMetadataServiceCustomParametersModel["layout"] = "testString"
+		globalCatalogMetadataServiceCustomParametersModel["associations"] = map[string]interface{}{"anyKey": "anyValue"}
+		globalCatalogMetadataServiceCustomParametersModel["validation_url"] = "testString"
+		globalCatalogMetadataServiceCustomParametersModel["options_url"] = "testString"
+		globalCatalogMetadataServiceCustomParametersModel["invalidmessage"] = "testString"
+		globalCatalogMetadataServiceCustomParametersModel["description"] = "testString"
+		globalCatalogMetadataServiceCustomParametersModel["required"] = true
+		globalCatalogMetadataServiceCustomParametersModel["pattern"] = "testString"
+		globalCatalogMetadataServiceCustomParametersModel["placeholder"] = "testString"
+		globalCatalogMetadataServiceCustomParametersModel["readonly"] = true
+		globalCatalogMetadataServiceCustomParametersModel["hidden"] = true
+		globalCatalogMetadataServiceCustomParametersModel["i18n"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersI18nModel}
+
 		model := make(map[string]interface{})
 		model["rc_provisionable"] = true
 		model["iam_compatible"] = true
 		model["bindable"] = true
 		model["plan_updateable"] = true
 		model["service_key_supported"] = true
+		model["unique_api_key"] = true
+		model["parameters"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersModel}
 
 		assert.Equal(t, result, model)
 	}
 
-	model := new(partnercentersellv1.GlobalCatalogMetadataService)
+	globalCatalogMetadataServiceCustomParametersI18nFieldsModel := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersI18nFields)
+	globalCatalogMetadataServiceCustomParametersI18nFieldsModel.Displayname = core.StringPtr("testString")
+	globalCatalogMetadataServiceCustomParametersI18nFieldsModel.Description = core.StringPtr("testString")
+
+	globalCatalogMetadataServiceCustomParametersI18nModel := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersI18n)
+	globalCatalogMetadataServiceCustomParametersI18nModel.En = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+	globalCatalogMetadataServiceCustomParametersI18nModel.De = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+	globalCatalogMetadataServiceCustomParametersI18nModel.Es = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+	globalCatalogMetadataServiceCustomParametersI18nModel.Fr = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+	globalCatalogMetadataServiceCustomParametersI18nModel.It = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+	globalCatalogMetadataServiceCustomParametersI18nModel.Ja = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+	globalCatalogMetadataServiceCustomParametersI18nModel.Ko = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+	globalCatalogMetadataServiceCustomParametersI18nModel.PtBr = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+	globalCatalogMetadataServiceCustomParametersI18nModel.ZhTw = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+	globalCatalogMetadataServiceCustomParametersI18nModel.ZhCn = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+
+	globalCatalogMetadataServiceCustomParametersOptionsModel := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersOptions)
+	globalCatalogMetadataServiceCustomParametersOptionsModel.Displayname = core.StringPtr("testString")
+	globalCatalogMetadataServiceCustomParametersOptionsModel.Value = core.StringPtr("testString")
+	globalCatalogMetadataServiceCustomParametersOptionsModel.I18n = globalCatalogMetadataServiceCustomParametersI18nModel
+
+	globalCatalogMetadataServiceCustomParametersModel := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParameters)
+	globalCatalogMetadataServiceCustomParametersModel.Displayname = core.StringPtr("testString")
+	globalCatalogMetadataServiceCustomParametersModel.Name = core.StringPtr("testString")
+	globalCatalogMetadataServiceCustomParametersModel.Type = core.StringPtr("text")
+	globalCatalogMetadataServiceCustomParametersModel.Options = []partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersOptions{*globalCatalogMetadataServiceCustomParametersOptionsModel}
+	globalCatalogMetadataServiceCustomParametersModel.Value = []string{"testString"}
+	globalCatalogMetadataServiceCustomParametersModel.Layout = core.StringPtr("testString")
+	globalCatalogMetadataServiceCustomParametersModel.Associations = map[string]interface{}{"anyKey": "anyValue"}
+	globalCatalogMetadataServiceCustomParametersModel.ValidationURL = core.StringPtr("testString")
+	globalCatalogMetadataServiceCustomParametersModel.OptionsURL = core.StringPtr("testString")
+	globalCatalogMetadataServiceCustomParametersModel.Invalidmessage = core.StringPtr("testString")
+	globalCatalogMetadataServiceCustomParametersModel.Description = core.StringPtr("testString")
+	globalCatalogMetadataServiceCustomParametersModel.Required = core.BoolPtr(true)
+	globalCatalogMetadataServiceCustomParametersModel.Pattern = core.StringPtr("testString")
+	globalCatalogMetadataServiceCustomParametersModel.Placeholder = core.StringPtr("testString")
+	globalCatalogMetadataServiceCustomParametersModel.Readonly = core.BoolPtr(true)
+	globalCatalogMetadataServiceCustomParametersModel.Hidden = core.BoolPtr(true)
+	globalCatalogMetadataServiceCustomParametersModel.I18n = globalCatalogMetadataServiceCustomParametersI18nModel
+
+	model := new(partnercentersellv1.GlobalCatalogProductMetadataService)
 	model.RcProvisionable = core.BoolPtr(true)
 	model.IamCompatible = core.BoolPtr(true)
 	model.Bindable = core.BoolPtr(true)
 	model.PlanUpdateable = core.BoolPtr(true)
 	model.ServiceKeySupported = core.BoolPtr(true)
+	model.UniqueApiKey = core.BoolPtr(true)
+	model.Parameters = []partnercentersellv1.GlobalCatalogMetadataServiceCustomParameters{*globalCatalogMetadataServiceCustomParametersModel}
 
-	result, err := partnercentersell.ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceToMap(model)
+	result, err := partnercentersell.ResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataServiceToMap(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceCustomParametersToMap(t *testing.T) {
+	checkResult := func(result map[string]interface{}) {
+		globalCatalogMetadataServiceCustomParametersI18nFieldsModel := make(map[string]interface{})
+		globalCatalogMetadataServiceCustomParametersI18nFieldsModel["displayname"] = "testString"
+		globalCatalogMetadataServiceCustomParametersI18nFieldsModel["description"] = "testString"
+
+		globalCatalogMetadataServiceCustomParametersI18nModel := make(map[string]interface{})
+		globalCatalogMetadataServiceCustomParametersI18nModel["en"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+		globalCatalogMetadataServiceCustomParametersI18nModel["de"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+		globalCatalogMetadataServiceCustomParametersI18nModel["es"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+		globalCatalogMetadataServiceCustomParametersI18nModel["fr"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+		globalCatalogMetadataServiceCustomParametersI18nModel["it"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+		globalCatalogMetadataServiceCustomParametersI18nModel["ja"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+		globalCatalogMetadataServiceCustomParametersI18nModel["ko"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+		globalCatalogMetadataServiceCustomParametersI18nModel["pt_br"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+		globalCatalogMetadataServiceCustomParametersI18nModel["zh_tw"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+		globalCatalogMetadataServiceCustomParametersI18nModel["zh_cn"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+
+		globalCatalogMetadataServiceCustomParametersOptionsModel := make(map[string]interface{})
+		globalCatalogMetadataServiceCustomParametersOptionsModel["displayname"] = "testString"
+		globalCatalogMetadataServiceCustomParametersOptionsModel["value"] = "testString"
+		globalCatalogMetadataServiceCustomParametersOptionsModel["i18n"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersI18nModel}
+
+		model := make(map[string]interface{})
+		model["displayname"] = "testString"
+		model["name"] = "testString"
+		model["type"] = "text"
+		model["options"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersOptionsModel}
+		model["value"] = []string{"testString"}
+		model["layout"] = "testString"
+		model["associations"] = map[string]interface{}{"anyKey": "anyValue"}
+		model["validation_url"] = "testString"
+		model["options_url"] = "testString"
+		model["invalidmessage"] = "testString"
+		model["description"] = "testString"
+		model["required"] = true
+		model["pattern"] = "testString"
+		model["placeholder"] = "testString"
+		model["readonly"] = true
+		model["hidden"] = true
+		model["i18n"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersI18nModel}
+
+		assert.Equal(t, result, model)
+	}
+
+	globalCatalogMetadataServiceCustomParametersI18nFieldsModel := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersI18nFields)
+	globalCatalogMetadataServiceCustomParametersI18nFieldsModel.Displayname = core.StringPtr("testString")
+	globalCatalogMetadataServiceCustomParametersI18nFieldsModel.Description = core.StringPtr("testString")
+
+	globalCatalogMetadataServiceCustomParametersI18nModel := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersI18n)
+	globalCatalogMetadataServiceCustomParametersI18nModel.En = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+	globalCatalogMetadataServiceCustomParametersI18nModel.De = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+	globalCatalogMetadataServiceCustomParametersI18nModel.Es = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+	globalCatalogMetadataServiceCustomParametersI18nModel.Fr = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+	globalCatalogMetadataServiceCustomParametersI18nModel.It = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+	globalCatalogMetadataServiceCustomParametersI18nModel.Ja = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+	globalCatalogMetadataServiceCustomParametersI18nModel.Ko = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+	globalCatalogMetadataServiceCustomParametersI18nModel.PtBr = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+	globalCatalogMetadataServiceCustomParametersI18nModel.ZhTw = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+	globalCatalogMetadataServiceCustomParametersI18nModel.ZhCn = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+
+	globalCatalogMetadataServiceCustomParametersOptionsModel := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersOptions)
+	globalCatalogMetadataServiceCustomParametersOptionsModel.Displayname = core.StringPtr("testString")
+	globalCatalogMetadataServiceCustomParametersOptionsModel.Value = core.StringPtr("testString")
+	globalCatalogMetadataServiceCustomParametersOptionsModel.I18n = globalCatalogMetadataServiceCustomParametersI18nModel
+
+	model := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParameters)
+	model.Displayname = core.StringPtr("testString")
+	model.Name = core.StringPtr("testString")
+	model.Type = core.StringPtr("text")
+	model.Options = []partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersOptions{*globalCatalogMetadataServiceCustomParametersOptionsModel}
+	model.Value = []string{"testString"}
+	model.Layout = core.StringPtr("testString")
+	model.Associations = map[string]interface{}{"anyKey": "anyValue"}
+	model.ValidationURL = core.StringPtr("testString")
+	model.OptionsURL = core.StringPtr("testString")
+	model.Invalidmessage = core.StringPtr("testString")
+	model.Description = core.StringPtr("testString")
+	model.Required = core.BoolPtr(true)
+	model.Pattern = core.StringPtr("testString")
+	model.Placeholder = core.StringPtr("testString")
+	model.Readonly = core.BoolPtr(true)
+	model.Hidden = core.BoolPtr(true)
+	model.I18n = globalCatalogMetadataServiceCustomParametersI18nModel
+
+	result, err := partnercentersell.ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceCustomParametersToMap(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceCustomParametersOptionsToMap(t *testing.T) {
+	checkResult := func(result map[string]interface{}) {
+		globalCatalogMetadataServiceCustomParametersI18nFieldsModel := make(map[string]interface{})
+		globalCatalogMetadataServiceCustomParametersI18nFieldsModel["displayname"] = "testString"
+		globalCatalogMetadataServiceCustomParametersI18nFieldsModel["description"] = "testString"
+
+		globalCatalogMetadataServiceCustomParametersI18nModel := make(map[string]interface{})
+		globalCatalogMetadataServiceCustomParametersI18nModel["en"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+		globalCatalogMetadataServiceCustomParametersI18nModel["de"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+		globalCatalogMetadataServiceCustomParametersI18nModel["es"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+		globalCatalogMetadataServiceCustomParametersI18nModel["fr"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+		globalCatalogMetadataServiceCustomParametersI18nModel["it"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+		globalCatalogMetadataServiceCustomParametersI18nModel["ja"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+		globalCatalogMetadataServiceCustomParametersI18nModel["ko"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+		globalCatalogMetadataServiceCustomParametersI18nModel["pt_br"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+		globalCatalogMetadataServiceCustomParametersI18nModel["zh_tw"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+		globalCatalogMetadataServiceCustomParametersI18nModel["zh_cn"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+
+		model := make(map[string]interface{})
+		model["displayname"] = "testString"
+		model["value"] = "testString"
+		model["i18n"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersI18nModel}
+
+		assert.Equal(t, result, model)
+	}
+
+	globalCatalogMetadataServiceCustomParametersI18nFieldsModel := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersI18nFields)
+	globalCatalogMetadataServiceCustomParametersI18nFieldsModel.Displayname = core.StringPtr("testString")
+	globalCatalogMetadataServiceCustomParametersI18nFieldsModel.Description = core.StringPtr("testString")
+
+	globalCatalogMetadataServiceCustomParametersI18nModel := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersI18n)
+	globalCatalogMetadataServiceCustomParametersI18nModel.En = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+	globalCatalogMetadataServiceCustomParametersI18nModel.De = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+	globalCatalogMetadataServiceCustomParametersI18nModel.Es = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+	globalCatalogMetadataServiceCustomParametersI18nModel.Fr = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+	globalCatalogMetadataServiceCustomParametersI18nModel.It = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+	globalCatalogMetadataServiceCustomParametersI18nModel.Ja = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+	globalCatalogMetadataServiceCustomParametersI18nModel.Ko = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+	globalCatalogMetadataServiceCustomParametersI18nModel.PtBr = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+	globalCatalogMetadataServiceCustomParametersI18nModel.ZhTw = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+	globalCatalogMetadataServiceCustomParametersI18nModel.ZhCn = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+
+	model := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersOptions)
+	model.Displayname = core.StringPtr("testString")
+	model.Value = core.StringPtr("testString")
+	model.I18n = globalCatalogMetadataServiceCustomParametersI18nModel
+
+	result, err := partnercentersell.ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceCustomParametersOptionsToMap(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceCustomParametersI18nToMap(t *testing.T) {
+	checkResult := func(result map[string]interface{}) {
+		globalCatalogMetadataServiceCustomParametersI18nFieldsModel := make(map[string]interface{})
+		globalCatalogMetadataServiceCustomParametersI18nFieldsModel["displayname"] = "testString"
+		globalCatalogMetadataServiceCustomParametersI18nFieldsModel["description"] = "testString"
+
+		model := make(map[string]interface{})
+		model["en"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+		model["de"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+		model["es"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+		model["fr"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+		model["it"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+		model["ja"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+		model["ko"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+		model["pt_br"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+		model["zh_tw"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+		model["zh_cn"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+
+		assert.Equal(t, result, model)
+	}
+
+	globalCatalogMetadataServiceCustomParametersI18nFieldsModel := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersI18nFields)
+	globalCatalogMetadataServiceCustomParametersI18nFieldsModel.Displayname = core.StringPtr("testString")
+	globalCatalogMetadataServiceCustomParametersI18nFieldsModel.Description = core.StringPtr("testString")
+
+	model := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersI18n)
+	model.En = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+	model.De = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+	model.Es = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+	model.Fr = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+	model.It = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+	model.Ja = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+	model.Ko = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+	model.PtBr = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+	model.ZhTw = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+	model.ZhCn = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+
+	result, err := partnercentersell.ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceCustomParametersI18nToMap(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceCustomParametersI18nFieldsToMap(t *testing.T) {
+	checkResult := func(result map[string]interface{}) {
+		model := make(map[string]interface{})
+		model["displayname"] = "testString"
+		model["description"] = "testString"
+
+		assert.Equal(t, result, model)
+	}
+
+	model := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersI18nFields)
+	model.Displayname = core.StringPtr("testString")
+	model.Description = core.StringPtr("testString")
+
+	result, err := partnercentersell.ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceCustomParametersI18nFieldsToMap(model)
 	assert.Nil(t, err)
 	checkResult(result)
 }
@@ -1662,12 +2035,54 @@ func TestResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadata(t 
 		globalCatalogMetadataUiModel.Hidden = core.BoolPtr(true)
 		globalCatalogMetadataUiModel.SideBySideIndex = core.Float64Ptr(float64(72.5))
 
-		globalCatalogMetadataServiceModel := new(partnercentersellv1.GlobalCatalogMetadataService)
-		globalCatalogMetadataServiceModel.RcProvisionable = core.BoolPtr(true)
-		globalCatalogMetadataServiceModel.IamCompatible = core.BoolPtr(true)
-		globalCatalogMetadataServiceModel.Bindable = core.BoolPtr(true)
-		globalCatalogMetadataServiceModel.PlanUpdateable = core.BoolPtr(true)
-		globalCatalogMetadataServiceModel.ServiceKeySupported = core.BoolPtr(true)
+		globalCatalogMetadataServiceCustomParametersI18nFieldsModel := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersI18nFields)
+		globalCatalogMetadataServiceCustomParametersI18nFieldsModel.Displayname = core.StringPtr("testString")
+		globalCatalogMetadataServiceCustomParametersI18nFieldsModel.Description = core.StringPtr("testString")
+
+		globalCatalogMetadataServiceCustomParametersI18nModel := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersI18n)
+		globalCatalogMetadataServiceCustomParametersI18nModel.En = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+		globalCatalogMetadataServiceCustomParametersI18nModel.De = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+		globalCatalogMetadataServiceCustomParametersI18nModel.Es = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+		globalCatalogMetadataServiceCustomParametersI18nModel.Fr = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+		globalCatalogMetadataServiceCustomParametersI18nModel.It = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+		globalCatalogMetadataServiceCustomParametersI18nModel.Ja = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+		globalCatalogMetadataServiceCustomParametersI18nModel.Ko = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+		globalCatalogMetadataServiceCustomParametersI18nModel.PtBr = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+		globalCatalogMetadataServiceCustomParametersI18nModel.ZhTw = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+		globalCatalogMetadataServiceCustomParametersI18nModel.ZhCn = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+
+		globalCatalogMetadataServiceCustomParametersOptionsModel := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersOptions)
+		globalCatalogMetadataServiceCustomParametersOptionsModel.Displayname = core.StringPtr("testString")
+		globalCatalogMetadataServiceCustomParametersOptionsModel.Value = core.StringPtr("testString")
+		globalCatalogMetadataServiceCustomParametersOptionsModel.I18n = globalCatalogMetadataServiceCustomParametersI18nModel
+
+		globalCatalogMetadataServiceCustomParametersModel := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParameters)
+		globalCatalogMetadataServiceCustomParametersModel.Displayname = core.StringPtr("testString")
+		globalCatalogMetadataServiceCustomParametersModel.Name = core.StringPtr("testString")
+		globalCatalogMetadataServiceCustomParametersModel.Type = core.StringPtr("text")
+		globalCatalogMetadataServiceCustomParametersModel.Options = []partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersOptions{*globalCatalogMetadataServiceCustomParametersOptionsModel}
+		globalCatalogMetadataServiceCustomParametersModel.Value = []string{"testString"}
+		globalCatalogMetadataServiceCustomParametersModel.Layout = core.StringPtr("testString")
+		globalCatalogMetadataServiceCustomParametersModel.Associations = map[string]interface{}{"anyKey": "anyValue"}
+		globalCatalogMetadataServiceCustomParametersModel.ValidationURL = core.StringPtr("testString")
+		globalCatalogMetadataServiceCustomParametersModel.OptionsURL = core.StringPtr("testString")
+		globalCatalogMetadataServiceCustomParametersModel.Invalidmessage = core.StringPtr("testString")
+		globalCatalogMetadataServiceCustomParametersModel.Description = core.StringPtr("testString")
+		globalCatalogMetadataServiceCustomParametersModel.Required = core.BoolPtr(true)
+		globalCatalogMetadataServiceCustomParametersModel.Pattern = core.StringPtr("testString")
+		globalCatalogMetadataServiceCustomParametersModel.Placeholder = core.StringPtr("testString")
+		globalCatalogMetadataServiceCustomParametersModel.Readonly = core.BoolPtr(true)
+		globalCatalogMetadataServiceCustomParametersModel.Hidden = core.BoolPtr(true)
+		globalCatalogMetadataServiceCustomParametersModel.I18n = globalCatalogMetadataServiceCustomParametersI18nModel
+
+		globalCatalogProductMetadataServiceModel := new(partnercentersellv1.GlobalCatalogProductMetadataService)
+		globalCatalogProductMetadataServiceModel.RcProvisionable = core.BoolPtr(true)
+		globalCatalogProductMetadataServiceModel.IamCompatible = core.BoolPtr(true)
+		globalCatalogProductMetadataServiceModel.Bindable = core.BoolPtr(true)
+		globalCatalogProductMetadataServiceModel.PlanUpdateable = core.BoolPtr(true)
+		globalCatalogProductMetadataServiceModel.ServiceKeySupported = core.BoolPtr(true)
+		globalCatalogProductMetadataServiceModel.UniqueApiKey = core.BoolPtr(true)
+		globalCatalogProductMetadataServiceModel.Parameters = []partnercentersellv1.GlobalCatalogMetadataServiceCustomParameters{*globalCatalogMetadataServiceCustomParametersModel}
 
 		supportTimeIntervalModel := new(partnercentersellv1.SupportTimeInterval)
 		supportTimeIntervalModel.Value = core.Float64Ptr(float64(72.5))
@@ -1724,7 +2139,7 @@ func TestResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadata(t 
 		model := new(partnercentersellv1.GlobalCatalogProductMetadata)
 		model.RcCompatible = core.BoolPtr(true)
 		model.Ui = globalCatalogMetadataUiModel
-		model.Service = globalCatalogMetadataServiceModel
+		model.Service = globalCatalogProductMetadataServiceModel
 		model.Other = globalCatalogProductMetadataOtherModel
 
 		assert.Equal(t, result, model)
@@ -1766,12 +2181,54 @@ func TestResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadata(t 
 	globalCatalogMetadataUiModel["hidden"] = true
 	globalCatalogMetadataUiModel["side_by_side_index"] = float64(72.5)
 
-	globalCatalogMetadataServiceModel := make(map[string]interface{})
-	globalCatalogMetadataServiceModel["rc_provisionable"] = true
-	globalCatalogMetadataServiceModel["iam_compatible"] = true
-	globalCatalogMetadataServiceModel["bindable"] = true
-	globalCatalogMetadataServiceModel["plan_updateable"] = true
-	globalCatalogMetadataServiceModel["service_key_supported"] = true
+	globalCatalogMetadataServiceCustomParametersI18nFieldsModel := make(map[string]interface{})
+	globalCatalogMetadataServiceCustomParametersI18nFieldsModel["displayname"] = "testString"
+	globalCatalogMetadataServiceCustomParametersI18nFieldsModel["description"] = "testString"
+
+	globalCatalogMetadataServiceCustomParametersI18nModel := make(map[string]interface{})
+	globalCatalogMetadataServiceCustomParametersI18nModel["en"] = []interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+	globalCatalogMetadataServiceCustomParametersI18nModel["de"] = []interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+	globalCatalogMetadataServiceCustomParametersI18nModel["es"] = []interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+	globalCatalogMetadataServiceCustomParametersI18nModel["fr"] = []interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+	globalCatalogMetadataServiceCustomParametersI18nModel["it"] = []interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+	globalCatalogMetadataServiceCustomParametersI18nModel["ja"] = []interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+	globalCatalogMetadataServiceCustomParametersI18nModel["ko"] = []interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+	globalCatalogMetadataServiceCustomParametersI18nModel["pt_br"] = []interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+	globalCatalogMetadataServiceCustomParametersI18nModel["zh_tw"] = []interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+	globalCatalogMetadataServiceCustomParametersI18nModel["zh_cn"] = []interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+
+	globalCatalogMetadataServiceCustomParametersOptionsModel := make(map[string]interface{})
+	globalCatalogMetadataServiceCustomParametersOptionsModel["displayname"] = "testString"
+	globalCatalogMetadataServiceCustomParametersOptionsModel["value"] = "testString"
+	globalCatalogMetadataServiceCustomParametersOptionsModel["i18n"] = []interface{}{globalCatalogMetadataServiceCustomParametersI18nModel}
+
+	globalCatalogMetadataServiceCustomParametersModel := make(map[string]interface{})
+	globalCatalogMetadataServiceCustomParametersModel["displayname"] = "testString"
+	globalCatalogMetadataServiceCustomParametersModel["name"] = "testString"
+	globalCatalogMetadataServiceCustomParametersModel["type"] = "text"
+	globalCatalogMetadataServiceCustomParametersModel["options"] = []interface{}{globalCatalogMetadataServiceCustomParametersOptionsModel}
+	globalCatalogMetadataServiceCustomParametersModel["value"] = []interface{}{"testString"}
+	globalCatalogMetadataServiceCustomParametersModel["layout"] = "testString"
+	globalCatalogMetadataServiceCustomParametersModel["associations"] = map[string]interface{}{"anyKey": "anyValue"}
+	globalCatalogMetadataServiceCustomParametersModel["validation_url"] = "testString"
+	globalCatalogMetadataServiceCustomParametersModel["options_url"] = "testString"
+	globalCatalogMetadataServiceCustomParametersModel["invalidmessage"] = "testString"
+	globalCatalogMetadataServiceCustomParametersModel["description"] = "testString"
+	globalCatalogMetadataServiceCustomParametersModel["required"] = true
+	globalCatalogMetadataServiceCustomParametersModel["pattern"] = "testString"
+	globalCatalogMetadataServiceCustomParametersModel["placeholder"] = "testString"
+	globalCatalogMetadataServiceCustomParametersModel["readonly"] = true
+	globalCatalogMetadataServiceCustomParametersModel["hidden"] = true
+	globalCatalogMetadataServiceCustomParametersModel["i18n"] = []interface{}{globalCatalogMetadataServiceCustomParametersI18nModel}
+
+	globalCatalogProductMetadataServiceModel := make(map[string]interface{})
+	globalCatalogProductMetadataServiceModel["rc_provisionable"] = true
+	globalCatalogProductMetadataServiceModel["iam_compatible"] = true
+	globalCatalogProductMetadataServiceModel["bindable"] = true
+	globalCatalogProductMetadataServiceModel["plan_updateable"] = true
+	globalCatalogProductMetadataServiceModel["service_key_supported"] = true
+	globalCatalogProductMetadataServiceModel["unique_api_key"] = true
+	globalCatalogProductMetadataServiceModel["parameters"] = []interface{}{globalCatalogMetadataServiceCustomParametersModel}
 
 	supportTimeIntervalModel := make(map[string]interface{})
 	supportTimeIntervalModel["value"] = float64(72.5)
@@ -1828,7 +2285,7 @@ func TestResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadata(t 
 	model := make(map[string]interface{})
 	model["rc_compatible"] = true
 	model["ui"] = []interface{}{globalCatalogMetadataUiModel}
-	model["service"] = []interface{}{globalCatalogMetadataServiceModel}
+	model["service"] = []interface{}{globalCatalogProductMetadataServiceModel}
 	model["other"] = []interface{}{globalCatalogProductMetadataOtherModel}
 
 	result, err := partnercentersell.ResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadata(model)
@@ -2090,17 +2547,99 @@ func TestResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataUIUrls(t *
 	checkResult(result)
 }
 
-func TestResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataService(t *testing.T) {
-	checkResult := func(result *partnercentersellv1.GlobalCatalogMetadataService) {
-		model := new(partnercentersellv1.GlobalCatalogMetadataService)
+func TestResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadataService(t *testing.T) {
+	checkResult := func(result *partnercentersellv1.GlobalCatalogProductMetadataService) {
+		globalCatalogMetadataServiceCustomParametersI18nFieldsModel := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersI18nFields)
+		globalCatalogMetadataServiceCustomParametersI18nFieldsModel.Displayname = core.StringPtr("testString")
+		globalCatalogMetadataServiceCustomParametersI18nFieldsModel.Description = core.StringPtr("testString")
+
+		globalCatalogMetadataServiceCustomParametersI18nModel := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersI18n)
+		globalCatalogMetadataServiceCustomParametersI18nModel.En = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+		globalCatalogMetadataServiceCustomParametersI18nModel.De = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+		globalCatalogMetadataServiceCustomParametersI18nModel.Es = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+		globalCatalogMetadataServiceCustomParametersI18nModel.Fr = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+		globalCatalogMetadataServiceCustomParametersI18nModel.It = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+		globalCatalogMetadataServiceCustomParametersI18nModel.Ja = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+		globalCatalogMetadataServiceCustomParametersI18nModel.Ko = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+		globalCatalogMetadataServiceCustomParametersI18nModel.PtBr = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+		globalCatalogMetadataServiceCustomParametersI18nModel.ZhTw = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+		globalCatalogMetadataServiceCustomParametersI18nModel.ZhCn = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+
+		globalCatalogMetadataServiceCustomParametersOptionsModel := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersOptions)
+		globalCatalogMetadataServiceCustomParametersOptionsModel.Displayname = core.StringPtr("testString")
+		globalCatalogMetadataServiceCustomParametersOptionsModel.Value = core.StringPtr("testString")
+		globalCatalogMetadataServiceCustomParametersOptionsModel.I18n = globalCatalogMetadataServiceCustomParametersI18nModel
+
+		globalCatalogMetadataServiceCustomParametersModel := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParameters)
+		globalCatalogMetadataServiceCustomParametersModel.Displayname = core.StringPtr("testString")
+		globalCatalogMetadataServiceCustomParametersModel.Name = core.StringPtr("testString")
+		globalCatalogMetadataServiceCustomParametersModel.Type = core.StringPtr("text")
+		globalCatalogMetadataServiceCustomParametersModel.Options = []partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersOptions{*globalCatalogMetadataServiceCustomParametersOptionsModel}
+		globalCatalogMetadataServiceCustomParametersModel.Value = []string{"testString"}
+		globalCatalogMetadataServiceCustomParametersModel.Layout = core.StringPtr("testString")
+		globalCatalogMetadataServiceCustomParametersModel.Associations = map[string]interface{}{"anyKey": "anyValue"}
+		globalCatalogMetadataServiceCustomParametersModel.ValidationURL = core.StringPtr("testString")
+		globalCatalogMetadataServiceCustomParametersModel.OptionsURL = core.StringPtr("testString")
+		globalCatalogMetadataServiceCustomParametersModel.Invalidmessage = core.StringPtr("testString")
+		globalCatalogMetadataServiceCustomParametersModel.Description = core.StringPtr("testString")
+		globalCatalogMetadataServiceCustomParametersModel.Required = core.BoolPtr(true)
+		globalCatalogMetadataServiceCustomParametersModel.Pattern = core.StringPtr("testString")
+		globalCatalogMetadataServiceCustomParametersModel.Placeholder = core.StringPtr("testString")
+		globalCatalogMetadataServiceCustomParametersModel.Readonly = core.BoolPtr(true)
+		globalCatalogMetadataServiceCustomParametersModel.Hidden = core.BoolPtr(true)
+		globalCatalogMetadataServiceCustomParametersModel.I18n = globalCatalogMetadataServiceCustomParametersI18nModel
+
+		model := new(partnercentersellv1.GlobalCatalogProductMetadataService)
 		model.RcProvisionable = core.BoolPtr(true)
 		model.IamCompatible = core.BoolPtr(true)
 		model.Bindable = core.BoolPtr(true)
 		model.PlanUpdateable = core.BoolPtr(true)
 		model.ServiceKeySupported = core.BoolPtr(true)
+		model.UniqueApiKey = core.BoolPtr(true)
+		model.Parameters = []partnercentersellv1.GlobalCatalogMetadataServiceCustomParameters{*globalCatalogMetadataServiceCustomParametersModel}
 
 		assert.Equal(t, result, model)
 	}
+
+	globalCatalogMetadataServiceCustomParametersI18nFieldsModel := make(map[string]interface{})
+	globalCatalogMetadataServiceCustomParametersI18nFieldsModel["displayname"] = "testString"
+	globalCatalogMetadataServiceCustomParametersI18nFieldsModel["description"] = "testString"
+
+	globalCatalogMetadataServiceCustomParametersI18nModel := make(map[string]interface{})
+	globalCatalogMetadataServiceCustomParametersI18nModel["en"] = []interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+	globalCatalogMetadataServiceCustomParametersI18nModel["de"] = []interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+	globalCatalogMetadataServiceCustomParametersI18nModel["es"] = []interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+	globalCatalogMetadataServiceCustomParametersI18nModel["fr"] = []interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+	globalCatalogMetadataServiceCustomParametersI18nModel["it"] = []interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+	globalCatalogMetadataServiceCustomParametersI18nModel["ja"] = []interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+	globalCatalogMetadataServiceCustomParametersI18nModel["ko"] = []interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+	globalCatalogMetadataServiceCustomParametersI18nModel["pt_br"] = []interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+	globalCatalogMetadataServiceCustomParametersI18nModel["zh_tw"] = []interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+	globalCatalogMetadataServiceCustomParametersI18nModel["zh_cn"] = []interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+
+	globalCatalogMetadataServiceCustomParametersOptionsModel := make(map[string]interface{})
+	globalCatalogMetadataServiceCustomParametersOptionsModel["displayname"] = "testString"
+	globalCatalogMetadataServiceCustomParametersOptionsModel["value"] = "testString"
+	globalCatalogMetadataServiceCustomParametersOptionsModel["i18n"] = []interface{}{globalCatalogMetadataServiceCustomParametersI18nModel}
+
+	globalCatalogMetadataServiceCustomParametersModel := make(map[string]interface{})
+	globalCatalogMetadataServiceCustomParametersModel["displayname"] = "testString"
+	globalCatalogMetadataServiceCustomParametersModel["name"] = "testString"
+	globalCatalogMetadataServiceCustomParametersModel["type"] = "text"
+	globalCatalogMetadataServiceCustomParametersModel["options"] = []interface{}{globalCatalogMetadataServiceCustomParametersOptionsModel}
+	globalCatalogMetadataServiceCustomParametersModel["value"] = []interface{}{"testString"}
+	globalCatalogMetadataServiceCustomParametersModel["layout"] = "testString"
+	globalCatalogMetadataServiceCustomParametersModel["associations"] = map[string]interface{}{"anyKey": "anyValue"}
+	globalCatalogMetadataServiceCustomParametersModel["validation_url"] = "testString"
+	globalCatalogMetadataServiceCustomParametersModel["options_url"] = "testString"
+	globalCatalogMetadataServiceCustomParametersModel["invalidmessage"] = "testString"
+	globalCatalogMetadataServiceCustomParametersModel["description"] = "testString"
+	globalCatalogMetadataServiceCustomParametersModel["required"] = true
+	globalCatalogMetadataServiceCustomParametersModel["pattern"] = "testString"
+	globalCatalogMetadataServiceCustomParametersModel["placeholder"] = "testString"
+	globalCatalogMetadataServiceCustomParametersModel["readonly"] = true
+	globalCatalogMetadataServiceCustomParametersModel["hidden"] = true
+	globalCatalogMetadataServiceCustomParametersModel["i18n"] = []interface{}{globalCatalogMetadataServiceCustomParametersI18nModel}
 
 	model := make(map[string]interface{})
 	model["rc_provisionable"] = true
@@ -2108,8 +2647,212 @@ func TestResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataService(t 
 	model["bindable"] = true
 	model["plan_updateable"] = true
 	model["service_key_supported"] = true
+	model["unique_api_key"] = true
+	model["parameters"] = []interface{}{globalCatalogMetadataServiceCustomParametersModel}
 
-	result, err := partnercentersell.ResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataService(model)
+	result, err := partnercentersell.ResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadataService(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataServiceCustomParameters(t *testing.T) {
+	checkResult := func(result *partnercentersellv1.GlobalCatalogMetadataServiceCustomParameters) {
+		globalCatalogMetadataServiceCustomParametersI18nFieldsModel := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersI18nFields)
+		globalCatalogMetadataServiceCustomParametersI18nFieldsModel.Displayname = core.StringPtr("testString")
+		globalCatalogMetadataServiceCustomParametersI18nFieldsModel.Description = core.StringPtr("testString")
+
+		globalCatalogMetadataServiceCustomParametersI18nModel := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersI18n)
+		globalCatalogMetadataServiceCustomParametersI18nModel.En = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+		globalCatalogMetadataServiceCustomParametersI18nModel.De = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+		globalCatalogMetadataServiceCustomParametersI18nModel.Es = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+		globalCatalogMetadataServiceCustomParametersI18nModel.Fr = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+		globalCatalogMetadataServiceCustomParametersI18nModel.It = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+		globalCatalogMetadataServiceCustomParametersI18nModel.Ja = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+		globalCatalogMetadataServiceCustomParametersI18nModel.Ko = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+		globalCatalogMetadataServiceCustomParametersI18nModel.PtBr = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+		globalCatalogMetadataServiceCustomParametersI18nModel.ZhTw = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+		globalCatalogMetadataServiceCustomParametersI18nModel.ZhCn = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+
+		globalCatalogMetadataServiceCustomParametersOptionsModel := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersOptions)
+		globalCatalogMetadataServiceCustomParametersOptionsModel.Displayname = core.StringPtr("testString")
+		globalCatalogMetadataServiceCustomParametersOptionsModel.Value = core.StringPtr("testString")
+		globalCatalogMetadataServiceCustomParametersOptionsModel.I18n = globalCatalogMetadataServiceCustomParametersI18nModel
+
+		model := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParameters)
+		model.Displayname = core.StringPtr("testString")
+		model.Name = core.StringPtr("testString")
+		model.Type = core.StringPtr("text")
+		model.Options = []partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersOptions{*globalCatalogMetadataServiceCustomParametersOptionsModel}
+		model.Value = []string{"testString"}
+		model.Layout = core.StringPtr("testString")
+		model.Associations = map[string]interface{}{"anyKey": "anyValue"}
+		model.ValidationURL = core.StringPtr("testString")
+		model.OptionsURL = core.StringPtr("testString")
+		model.Invalidmessage = core.StringPtr("testString")
+		model.Description = core.StringPtr("testString")
+		model.Required = core.BoolPtr(true)
+		model.Pattern = core.StringPtr("testString")
+		model.Placeholder = core.StringPtr("testString")
+		model.Readonly = core.BoolPtr(true)
+		model.Hidden = core.BoolPtr(true)
+		model.I18n = globalCatalogMetadataServiceCustomParametersI18nModel
+
+		assert.Equal(t, result, model)
+	}
+
+	globalCatalogMetadataServiceCustomParametersI18nFieldsModel := make(map[string]interface{})
+	globalCatalogMetadataServiceCustomParametersI18nFieldsModel["displayname"] = "testString"
+	globalCatalogMetadataServiceCustomParametersI18nFieldsModel["description"] = "testString"
+
+	globalCatalogMetadataServiceCustomParametersI18nModel := make(map[string]interface{})
+	globalCatalogMetadataServiceCustomParametersI18nModel["en"] = []interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+	globalCatalogMetadataServiceCustomParametersI18nModel["de"] = []interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+	globalCatalogMetadataServiceCustomParametersI18nModel["es"] = []interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+	globalCatalogMetadataServiceCustomParametersI18nModel["fr"] = []interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+	globalCatalogMetadataServiceCustomParametersI18nModel["it"] = []interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+	globalCatalogMetadataServiceCustomParametersI18nModel["ja"] = []interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+	globalCatalogMetadataServiceCustomParametersI18nModel["ko"] = []interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+	globalCatalogMetadataServiceCustomParametersI18nModel["pt_br"] = []interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+	globalCatalogMetadataServiceCustomParametersI18nModel["zh_tw"] = []interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+	globalCatalogMetadataServiceCustomParametersI18nModel["zh_cn"] = []interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+
+	globalCatalogMetadataServiceCustomParametersOptionsModel := make(map[string]interface{})
+	globalCatalogMetadataServiceCustomParametersOptionsModel["displayname"] = "testString"
+	globalCatalogMetadataServiceCustomParametersOptionsModel["value"] = "testString"
+	globalCatalogMetadataServiceCustomParametersOptionsModel["i18n"] = []interface{}{globalCatalogMetadataServiceCustomParametersI18nModel}
+
+	model := make(map[string]interface{})
+	model["displayname"] = "testString"
+	model["name"] = "testString"
+	model["type"] = "text"
+	model["options"] = []interface{}{globalCatalogMetadataServiceCustomParametersOptionsModel}
+	model["value"] = []interface{}{"testString"}
+	model["layout"] = "testString"
+	model["associations"] = map[string]interface{}{"anyKey": "anyValue"}
+	model["validation_url"] = "testString"
+	model["options_url"] = "testString"
+	model["invalidmessage"] = "testString"
+	model["description"] = "testString"
+	model["required"] = true
+	model["pattern"] = "testString"
+	model["placeholder"] = "testString"
+	model["readonly"] = true
+	model["hidden"] = true
+	model["i18n"] = []interface{}{globalCatalogMetadataServiceCustomParametersI18nModel}
+
+	result, err := partnercentersell.ResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataServiceCustomParameters(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataServiceCustomParametersOptions(t *testing.T) {
+	checkResult := func(result *partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersOptions) {
+		globalCatalogMetadataServiceCustomParametersI18nFieldsModel := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersI18nFields)
+		globalCatalogMetadataServiceCustomParametersI18nFieldsModel.Displayname = core.StringPtr("testString")
+		globalCatalogMetadataServiceCustomParametersI18nFieldsModel.Description = core.StringPtr("testString")
+
+		globalCatalogMetadataServiceCustomParametersI18nModel := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersI18n)
+		globalCatalogMetadataServiceCustomParametersI18nModel.En = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+		globalCatalogMetadataServiceCustomParametersI18nModel.De = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+		globalCatalogMetadataServiceCustomParametersI18nModel.Es = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+		globalCatalogMetadataServiceCustomParametersI18nModel.Fr = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+		globalCatalogMetadataServiceCustomParametersI18nModel.It = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+		globalCatalogMetadataServiceCustomParametersI18nModel.Ja = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+		globalCatalogMetadataServiceCustomParametersI18nModel.Ko = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+		globalCatalogMetadataServiceCustomParametersI18nModel.PtBr = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+		globalCatalogMetadataServiceCustomParametersI18nModel.ZhTw = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+		globalCatalogMetadataServiceCustomParametersI18nModel.ZhCn = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+
+		model := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersOptions)
+		model.Displayname = core.StringPtr("testString")
+		model.Value = core.StringPtr("testString")
+		model.I18n = globalCatalogMetadataServiceCustomParametersI18nModel
+
+		assert.Equal(t, result, model)
+	}
+
+	globalCatalogMetadataServiceCustomParametersI18nFieldsModel := make(map[string]interface{})
+	globalCatalogMetadataServiceCustomParametersI18nFieldsModel["displayname"] = "testString"
+	globalCatalogMetadataServiceCustomParametersI18nFieldsModel["description"] = "testString"
+
+	globalCatalogMetadataServiceCustomParametersI18nModel := make(map[string]interface{})
+	globalCatalogMetadataServiceCustomParametersI18nModel["en"] = []interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+	globalCatalogMetadataServiceCustomParametersI18nModel["de"] = []interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+	globalCatalogMetadataServiceCustomParametersI18nModel["es"] = []interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+	globalCatalogMetadataServiceCustomParametersI18nModel["fr"] = []interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+	globalCatalogMetadataServiceCustomParametersI18nModel["it"] = []interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+	globalCatalogMetadataServiceCustomParametersI18nModel["ja"] = []interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+	globalCatalogMetadataServiceCustomParametersI18nModel["ko"] = []interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+	globalCatalogMetadataServiceCustomParametersI18nModel["pt_br"] = []interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+	globalCatalogMetadataServiceCustomParametersI18nModel["zh_tw"] = []interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+	globalCatalogMetadataServiceCustomParametersI18nModel["zh_cn"] = []interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+
+	model := make(map[string]interface{})
+	model["displayname"] = "testString"
+	model["value"] = "testString"
+	model["i18n"] = []interface{}{globalCatalogMetadataServiceCustomParametersI18nModel}
+
+	result, err := partnercentersell.ResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataServiceCustomParametersOptions(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataServiceCustomParametersI18n(t *testing.T) {
+	checkResult := func(result *partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersI18n) {
+		globalCatalogMetadataServiceCustomParametersI18nFieldsModel := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersI18nFields)
+		globalCatalogMetadataServiceCustomParametersI18nFieldsModel.Displayname = core.StringPtr("testString")
+		globalCatalogMetadataServiceCustomParametersI18nFieldsModel.Description = core.StringPtr("testString")
+
+		model := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersI18n)
+		model.En = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+		model.De = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+		model.Es = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+		model.Fr = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+		model.It = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+		model.Ja = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+		model.Ko = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+		model.PtBr = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+		model.ZhTw = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+		model.ZhCn = globalCatalogMetadataServiceCustomParametersI18nFieldsModel
+
+		assert.Equal(t, result, model)
+	}
+
+	globalCatalogMetadataServiceCustomParametersI18nFieldsModel := make(map[string]interface{})
+	globalCatalogMetadataServiceCustomParametersI18nFieldsModel["displayname"] = "testString"
+	globalCatalogMetadataServiceCustomParametersI18nFieldsModel["description"] = "testString"
+
+	model := make(map[string]interface{})
+	model["en"] = []interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+	model["de"] = []interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+	model["es"] = []interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+	model["fr"] = []interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+	model["it"] = []interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+	model["ja"] = []interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+	model["ko"] = []interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+	model["pt_br"] = []interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+	model["zh_tw"] = []interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+	model["zh_cn"] = []interface{}{globalCatalogMetadataServiceCustomParametersI18nFieldsModel}
+
+	result, err := partnercentersell.ResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataServiceCustomParametersI18n(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataServiceCustomParametersI18nFields(t *testing.T) {
+	checkResult := func(result *partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersI18nFields) {
+		model := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersI18nFields)
+		model.Displayname = core.StringPtr("testString")
+		model.Description = core.StringPtr("testString")
+
+		assert.Equal(t, result, model)
+	}
+
+	model := make(map[string]interface{})
+	model["displayname"] = "testString"
+	model["description"] = "testString"
+
+	result, err := partnercentersell.ResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataServiceCustomParametersI18nFields(model)
 	assert.Nil(t, err)
 	checkResult(result)
 }

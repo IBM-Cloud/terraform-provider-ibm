@@ -161,7 +161,7 @@ func testAccCheckIbmOnboardingCatalogPlanConfigBasic(productID string, catalogPr
 					allow_internal_users = true
 					bindable = false
 				}
-            }
+			}
 		}
 	`, productID, catalogProductID, name, active, disabled, kind, objectId)
 }
@@ -201,12 +201,12 @@ func testAccCheckIbmOnboardingCatalogPlanConfig(productID string, catalogProduct
 					bindable = false
 				}
 				ui {
-            		strings {
-                		en {
-                    		bullets {
+					strings {
+						en {
+							bullets {
                         		title = "%s"
                         		description = "some1"
-                    		}
+							}
 							media {
                         		type = "youtube"
                         		url = "https://www.youtube.com/embed/HtkpMgNFYtE"
@@ -277,7 +277,7 @@ func testAccCheckIbmOnboardingCatalogPlanUpdateConfig(productID string, catalogP
                     		}
                 		}
             		}
-        		}
+				}
 			}
 		}
 	`, productID, catalogProductID, env, name, active, disabled, kind, objectId, overviewUiEn, rcCompatible, pricingType, allowInternalUsers, bulletTitleName, mediaCaption)
@@ -453,12 +453,12 @@ func TestResourceIbmOnboardingCatalogPlanGlobalCatalogPlanMetadataToMap(t *testi
 		globalCatalogMetadataUiModel["hidden"] = true
 		globalCatalogMetadataUiModel["side_by_side_index"] = float64(72.5)
 
-		globalCatalogMetadataServiceModel := make(map[string]interface{})
-		globalCatalogMetadataServiceModel["rc_provisionable"] = true
-		globalCatalogMetadataServiceModel["iam_compatible"] = true
-		globalCatalogMetadataServiceModel["bindable"] = true
-		globalCatalogMetadataServiceModel["plan_updateable"] = true
-		globalCatalogMetadataServiceModel["service_key_supported"] = true
+		globalCatalogPlanMetadataServiceModel := make(map[string]interface{})
+		globalCatalogPlanMetadataServiceModel["rc_provisionable"] = true
+		globalCatalogPlanMetadataServiceModel["iam_compatible"] = true
+		globalCatalogPlanMetadataServiceModel["bindable"] = true
+		globalCatalogPlanMetadataServiceModel["plan_updateable"] = true
+		globalCatalogPlanMetadataServiceModel["service_key_supported"] = true
 
 		globalCatalogMetadataPricingModel := make(map[string]interface{})
 		globalCatalogMetadataPricingModel["type"] = "free"
@@ -471,7 +471,7 @@ func TestResourceIbmOnboardingCatalogPlanGlobalCatalogPlanMetadataToMap(t *testi
 		model := make(map[string]interface{})
 		model["rc_compatible"] = true
 		model["ui"] = []map[string]interface{}{globalCatalogMetadataUiModel}
-		model["service"] = []map[string]interface{}{globalCatalogMetadataServiceModel}
+		model["service"] = []map[string]interface{}{globalCatalogPlanMetadataServiceModel}
 		model["pricing"] = []map[string]interface{}{globalCatalogMetadataPricingModel}
 		model["plan"] = []map[string]interface{}{globalCatalogPlanMetadataPlanModel}
 
@@ -514,12 +514,12 @@ func TestResourceIbmOnboardingCatalogPlanGlobalCatalogPlanMetadataToMap(t *testi
 	globalCatalogMetadataUiModel.Hidden = core.BoolPtr(true)
 	globalCatalogMetadataUiModel.SideBySideIndex = core.Float64Ptr(float64(72.5))
 
-	globalCatalogMetadataServiceModel := new(partnercentersellv1.GlobalCatalogMetadataService)
-	globalCatalogMetadataServiceModel.RcProvisionable = core.BoolPtr(true)
-	globalCatalogMetadataServiceModel.IamCompatible = core.BoolPtr(true)
-	globalCatalogMetadataServiceModel.Bindable = core.BoolPtr(true)
-	globalCatalogMetadataServiceModel.PlanUpdateable = core.BoolPtr(true)
-	globalCatalogMetadataServiceModel.ServiceKeySupported = core.BoolPtr(true)
+	globalCatalogPlanMetadataServiceModel := new(partnercentersellv1.GlobalCatalogPlanMetadataService)
+	globalCatalogPlanMetadataServiceModel.RcProvisionable = core.BoolPtr(true)
+	globalCatalogPlanMetadataServiceModel.IamCompatible = core.BoolPtr(true)
+	globalCatalogPlanMetadataServiceModel.Bindable = core.BoolPtr(true)
+	globalCatalogPlanMetadataServiceModel.PlanUpdateable = core.BoolPtr(true)
+	globalCatalogPlanMetadataServiceModel.ServiceKeySupported = core.BoolPtr(true)
 
 	globalCatalogMetadataPricingModel := new(partnercentersellv1.GlobalCatalogMetadataPricing)
 	globalCatalogMetadataPricingModel.Type = core.StringPtr("free")
@@ -532,7 +532,7 @@ func TestResourceIbmOnboardingCatalogPlanGlobalCatalogPlanMetadataToMap(t *testi
 	model := new(partnercentersellv1.GlobalCatalogPlanMetadata)
 	model.RcCompatible = core.BoolPtr(true)
 	model.Ui = globalCatalogMetadataUiModel
-	model.Service = globalCatalogMetadataServiceModel
+	model.Service = globalCatalogPlanMetadataServiceModel
 	model.Pricing = globalCatalogMetadataPricingModel
 	model.Plan = globalCatalogPlanMetadataPlanModel
 
@@ -795,7 +795,7 @@ func TestResourceIbmOnboardingCatalogPlanGlobalCatalogMetadataUIUrlsToMap(t *tes
 	checkResult(result)
 }
 
-func TestResourceIbmOnboardingCatalogPlanGlobalCatalogMetadataServiceToMap(t *testing.T) {
+func TestResourceIbmOnboardingCatalogPlanGlobalCatalogPlanMetadataServiceToMap(t *testing.T) {
 	checkResult := func(result map[string]interface{}) {
 		model := make(map[string]interface{})
 		model["rc_provisionable"] = true
@@ -807,14 +807,14 @@ func TestResourceIbmOnboardingCatalogPlanGlobalCatalogMetadataServiceToMap(t *te
 		assert.Equal(t, result, model)
 	}
 
-	model := new(partnercentersellv1.GlobalCatalogMetadataService)
+	model := new(partnercentersellv1.GlobalCatalogPlanMetadataService)
 	model.RcProvisionable = core.BoolPtr(true)
 	model.IamCompatible = core.BoolPtr(true)
 	model.Bindable = core.BoolPtr(true)
 	model.PlanUpdateable = core.BoolPtr(true)
 	model.ServiceKeySupported = core.BoolPtr(true)
 
-	result, err := partnercentersell.ResourceIbmOnboardingCatalogPlanGlobalCatalogMetadataServiceToMap(model)
+	result, err := partnercentersell.ResourceIbmOnboardingCatalogPlanGlobalCatalogPlanMetadataServiceToMap(model)
 	assert.Nil(t, err)
 	checkResult(result)
 }
@@ -957,12 +957,12 @@ func TestResourceIbmOnboardingCatalogPlanMapToGlobalCatalogPlanMetadata(t *testi
 		globalCatalogMetadataUiModel.Hidden = core.BoolPtr(true)
 		globalCatalogMetadataUiModel.SideBySideIndex = core.Float64Ptr(float64(72.5))
 
-		globalCatalogMetadataServiceModel := new(partnercentersellv1.GlobalCatalogMetadataService)
-		globalCatalogMetadataServiceModel.RcProvisionable = core.BoolPtr(true)
-		globalCatalogMetadataServiceModel.IamCompatible = core.BoolPtr(true)
-		globalCatalogMetadataServiceModel.Bindable = core.BoolPtr(true)
-		globalCatalogMetadataServiceModel.PlanUpdateable = core.BoolPtr(true)
-		globalCatalogMetadataServiceModel.ServiceKeySupported = core.BoolPtr(true)
+		globalCatalogPlanMetadataServiceModel := new(partnercentersellv1.GlobalCatalogPlanMetadataService)
+		globalCatalogPlanMetadataServiceModel.RcProvisionable = core.BoolPtr(true)
+		globalCatalogPlanMetadataServiceModel.IamCompatible = core.BoolPtr(true)
+		globalCatalogPlanMetadataServiceModel.Bindable = core.BoolPtr(true)
+		globalCatalogPlanMetadataServiceModel.PlanUpdateable = core.BoolPtr(true)
+		globalCatalogPlanMetadataServiceModel.ServiceKeySupported = core.BoolPtr(true)
 
 		globalCatalogMetadataPricingModel := new(partnercentersellv1.GlobalCatalogMetadataPricing)
 		globalCatalogMetadataPricingModel.Type = core.StringPtr("free")
@@ -975,7 +975,7 @@ func TestResourceIbmOnboardingCatalogPlanMapToGlobalCatalogPlanMetadata(t *testi
 		model := new(partnercentersellv1.GlobalCatalogPlanMetadata)
 		model.RcCompatible = core.BoolPtr(true)
 		model.Ui = globalCatalogMetadataUiModel
-		model.Service = globalCatalogMetadataServiceModel
+		model.Service = globalCatalogPlanMetadataServiceModel
 		model.Pricing = globalCatalogMetadataPricingModel
 		model.Plan = globalCatalogPlanMetadataPlanModel
 
@@ -1018,12 +1018,12 @@ func TestResourceIbmOnboardingCatalogPlanMapToGlobalCatalogPlanMetadata(t *testi
 	globalCatalogMetadataUiModel["hidden"] = true
 	globalCatalogMetadataUiModel["side_by_side_index"] = float64(72.5)
 
-	globalCatalogMetadataServiceModel := make(map[string]interface{})
-	globalCatalogMetadataServiceModel["rc_provisionable"] = true
-	globalCatalogMetadataServiceModel["iam_compatible"] = true
-	globalCatalogMetadataServiceModel["bindable"] = true
-	globalCatalogMetadataServiceModel["plan_updateable"] = true
-	globalCatalogMetadataServiceModel["service_key_supported"] = true
+	globalCatalogPlanMetadataServiceModel := make(map[string]interface{})
+	globalCatalogPlanMetadataServiceModel["rc_provisionable"] = true
+	globalCatalogPlanMetadataServiceModel["iam_compatible"] = true
+	globalCatalogPlanMetadataServiceModel["bindable"] = true
+	globalCatalogPlanMetadataServiceModel["plan_updateable"] = true
+	globalCatalogPlanMetadataServiceModel["service_key_supported"] = true
 
 	globalCatalogMetadataPricingModel := make(map[string]interface{})
 	globalCatalogMetadataPricingModel["type"] = "free"
@@ -1036,7 +1036,7 @@ func TestResourceIbmOnboardingCatalogPlanMapToGlobalCatalogPlanMetadata(t *testi
 	model := make(map[string]interface{})
 	model["rc_compatible"] = true
 	model["ui"] = []interface{}{globalCatalogMetadataUiModel}
-	model["service"] = []interface{}{globalCatalogMetadataServiceModel}
+	model["service"] = []interface{}{globalCatalogPlanMetadataServiceModel}
 	model["pricing"] = []interface{}{globalCatalogMetadataPricingModel}
 	model["plan"] = []interface{}{globalCatalogPlanMetadataPlanModel}
 
@@ -1299,9 +1299,9 @@ func TestResourceIbmOnboardingCatalogPlanMapToGlobalCatalogMetadataUIUrls(t *tes
 	checkResult(result)
 }
 
-func TestResourceIbmOnboardingCatalogPlanMapToGlobalCatalogMetadataService(t *testing.T) {
-	checkResult := func(result *partnercentersellv1.GlobalCatalogMetadataService) {
-		model := new(partnercentersellv1.GlobalCatalogMetadataService)
+func TestResourceIbmOnboardingCatalogPlanMapToGlobalCatalogPlanMetadataService(t *testing.T) {
+	checkResult := func(result *partnercentersellv1.GlobalCatalogPlanMetadataService) {
+		model := new(partnercentersellv1.GlobalCatalogPlanMetadataService)
 		model.RcProvisionable = core.BoolPtr(true)
 		model.IamCompatible = core.BoolPtr(true)
 		model.Bindable = core.BoolPtr(true)
@@ -1318,7 +1318,7 @@ func TestResourceIbmOnboardingCatalogPlanMapToGlobalCatalogMetadataService(t *te
 	model["plan_updateable"] = true
 	model["service_key_supported"] = true
 
-	result, err := partnercentersell.ResourceIbmOnboardingCatalogPlanMapToGlobalCatalogMetadataService(model)
+	result, err := partnercentersell.ResourceIbmOnboardingCatalogPlanMapToGlobalCatalogPlanMetadataService(model)
 	assert.Nil(t, err)
 	checkResult(result)
 }

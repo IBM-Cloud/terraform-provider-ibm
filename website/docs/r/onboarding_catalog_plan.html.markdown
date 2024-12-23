@@ -8,8 +8,6 @@ subcategory: "Partner Center Sell"
 
 # ibm_onboarding_catalog_plan
 
-**Note - Intended for internal use only. This resource is strictly experimental and subject to change without notice.**
-
 Create, update, and delete onboarding_catalog_plans with this resource.
 
 ## Example Usage
@@ -189,6 +187,8 @@ After your resource is created, you can read values from the listed arguments an
 
 * `id` - The unique identifier of the onboarding_catalog_plan.
 * `catalog_plan_id` - (String) The ID of a global catalog object.
+* `geo_tags` - (List) 
+  * Constraints: The list items must match regular expression `/./`. The maximum length is `1000` items. The minimum length is `0` items.
 * `url` - (String) The global catalog URL of your product.
 
 
@@ -198,7 +198,7 @@ You can import the `ibm_onboarding_catalog_plan` resource by using `id`.
 The `id` property can be formed from `product_id`, `catalog_product_id`, and `catalog_plan_id` in the following format:
 
 <pre>
-product_id/catalog_product_id/catalog_plan_id
+&lt;product_id&gt;/&lt;catalog_product_id&gt;/&lt;catalog_plan_id&gt;
 </pre>
 * `product_id`: A string. The unique ID of the product.
 * `catalog_product_id`: A string. The unique ID of this global catalog product.
@@ -206,5 +206,5 @@ product_id/catalog_product_id/catalog_plan_id
 
 # Syntax
 <pre>
-$ terraform import ibm_onboarding_catalog_plan.onboarding_catalog_plan product_id/catalog_product_id/catalog_plan_id;
+$ terraform import ibm_onboarding_catalog_plan.onboarding_catalog_plan &lt;product_id&gt;/&lt;catalog_product_id&gt;/&lt;catalog_plan_id&gt;
 </pre>

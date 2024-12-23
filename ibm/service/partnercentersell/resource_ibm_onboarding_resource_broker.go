@@ -2,7 +2,7 @@
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.97.0-0e90eab1-20241120-170029
+ * IBM OpenAPI Terraform Generator Version: 3.98.0-8be2046a-20241205-162752
  */
 
 package partnercentersell
@@ -470,13 +470,14 @@ func resourceIbmOnboardingResourceBrokerUpdate(context context.Context, d *schem
 	updateResourceBrokerOptions := &partnercentersellv1.UpdateResourceBrokerOptions{}
 
 	updateResourceBrokerOptions.SetBrokerID(d.Id())
-	if _, ok := d.GetOk("env"); ok {
-		updateResourceBrokerOptions.SetEnv(d.Get("env").(string))
-	}
 
 	hasChange := false
 
 	patchVals := &partnercentersellv1.BrokerPatch{}
+	if d.HasChange("env") {
+		updateResourceBrokerOptions.SetEnv(d.Get("env").(string))
+		hasChange = true
+	}
 	if d.HasChange("auth_username") {
 		newAuthUsername := d.Get("auth_username").(string)
 		patchVals.AuthUsername = &newAuthUsername
@@ -612,42 +613,62 @@ func ResourceIbmOnboardingResourceBrokerBrokerPatchAsPatch(patchVals *partnercen
 	path = "auth_username"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["auth_username"] = nil
+	} else if !exists {
+		delete(patch, "auth_username")
 	}
 	path = "auth_password"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["auth_password"] = nil
+	} else if !exists {
+		delete(patch, "auth_password")
 	}
 	path = "auth_scheme"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["auth_scheme"] = nil
+	} else if !exists {
+		delete(patch, "auth_scheme")
 	}
 	path = "resource_group_crn"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["resource_group_crn"] = nil
+	} else if !exists {
+		delete(patch, "resource_group_crn")
 	}
 	path = "state"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["state"] = nil
+	} else if !exists {
+		delete(patch, "state")
 	}
 	path = "broker_url"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["broker_url"] = nil
+	} else if !exists {
+		delete(patch, "broker_url")
 	}
 	path = "allow_context_updates"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["allow_context_updates"] = nil
+	} else if !exists {
+		delete(patch, "allow_context_updates")
 	}
 	path = "catalog_type"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["catalog_type"] = nil
+	} else if !exists {
+		delete(patch, "catalog_type")
 	}
 	path = "type"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["type"] = nil
+	} else if !exists {
+		delete(patch, "type")
 	}
 	path = "region"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["region"] = nil
+	} else if !exists {
+		delete(patch, "region")
 	}
 
 	return patch
