@@ -678,18 +678,28 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 	cores_enabled := checkCloudInstanceCapability(cloudInstance, CUSTOM_VIRTUAL_CORES)
 
 	if d.HasChanges(Arg_InstanceName, Arg_VirtualOpticalDevice) {
+		if d.HasChange(Arg_InstanceName) && d.HasChange(Arg_VirtualOpticalDevice) {
+			oldVOD, _ := d.GetChange(Arg_VirtualOpticalDevice)
+			d.Set(Arg_VirtualOpticalDevice, oldVOD)
+			return diag.Errorf("updates to %s and %s are mutually exclusive", Arg_InstanceName, Arg_VirtualOpticalDevice)
+		}
 		body := &models.PVMInstanceUpdate{}
 		if d.HasChange(Arg_InstanceName) {
 			body.ServerName = name
 		}
 		if d.HasChange(Arg_VirtualOpticalDevice) {
-			body.CloudInitialization.VirtualOpticalDevice = d.Get(Arg_VirtualOpticalDevice).(string)
+			body.CloudInitialization = &models.CloudInitialization{}
+			if vod, ok := d.GetOk(Arg_VirtualOpticalDevice); ok {
+				body.CloudInitialization.VirtualOpticalDevice = vod.(string)
+			} else {
+				body.CloudInitialization.VirtualOpticalDevice = Detach
+			}
 		}
 		_, err = client.Update(instanceID, body)
 		if err != nil {
 			return diag.Errorf("failed to update the lpar: %v", err)
 		}
-		_, err = isWaitForPIInstanceAvailable(ctx, client, instanceID, OK, d.Timeout(schema.TimeoutUpdate))
+		_, err = isWaitForPIInstanceAvailableOrShutoffAfterUpdate(ctx, client, instanceID, OK, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -785,16 +795,10 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 			if err != nil {
 				return diag.Errorf("failed to update the lpar with the change %v", err)
 			}
-			if strings.ToLower(instanceState) == State_Shutoff {
-				_, err = isWaitforPIInstanceUpdate(ctx, client, instanceID, d.Timeout(schema.TimeoutUpdate))
-				if err != nil {
-					return diag.FromErr(err)
-				}
-			} else {
-				_, err = isWaitForPIInstanceAvailable(ctx, client, instanceID, Arg_HealthStatus, d.Timeout(schema.TimeoutUpdate))
-				if err != nil {
-					return diag.FromErr(err)
-				}
+			instanceReadyStatus := d.Get(Arg_HealthStatus).(string)
+			_, err = isWaitForPIInstanceAvailableOrShutoffAfterUpdate(ctx, client, instanceID, instanceReadyStatus, d.Timeout(schema.TimeoutUpdate))
+			if err != nil {
+				return diag.FromErr(err)
 			}
 		}
 	}
@@ -1052,6 +1056,41 @@ func isPIInstanceRefreshFunc(client *instance.IBMPIInstanceClient, id, instanceR
 	}
 }
 
+func isWaitForPIInstanceAvailableOrShutoffAfterUpdate(ctx context.Context, client *instance.IBMPIInstanceClient, id string, instanceReadyStatus string, timeout time.Duration) (interface{}, error) {
+	log.Printf("Waiting for PIInstance (%s) to be available and active or shutoff ", id)
+
+	stateConf := &retry.StateChangeConf{
+		Pending:    []string{State_Updating, Warning},
+		Target:     []string{State_Active, OK, State_Shutoff},
+		Refresh:    isPIInstanceShutoffOrActiveAfterResourceChange(client, id, instanceReadyStatus),
+		Delay:      Timeout_Delay,
+		MinTimeout: 5 * time.Minute,
+		Timeout:    timeout,
+	}
+
+	return stateConf.WaitForStateContext(ctx)
+}
+
+func isPIInstanceShutoffOrActiveAfterResourceChange(client *instance.IBMPIInstanceClient, id string, instanceReadyStatus string) retry.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+
+		pvm, err := client.Get(id)
+		if err != nil {
+			return nil, "", err
+		}
+		if strings.ToLower(*pvm.Status) == State_Active && (pvm.Health.Status == instanceReadyStatus || pvm.Health.Status == OK) {
+			log.Printf("The lpar is now active after the resource change...")
+			return pvm, State_Active, nil
+		}
+		if strings.ToLower(*pvm.Status) == State_Shutoff && pvm.Health.Status == OK {
+			log.Printf("The lpar is now off after the resource change...")
+			return pvm, State_Shutoff, nil
+		}
+
+		return pvm, State_Updating, nil
+	}
+}
+
 func isWaitForPIInstancePlacementGroupAdd(ctx context.Context, client *instance.IBMPIPlacementGroupClient, pgID string, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for PIInstance Placement Group (%s) to be updated ", id)
 
@@ -1306,7 +1345,7 @@ func performChangeAndReboot(ctx context.Context, client *instance.IBMPIInstanceC
 		return fmt.Errorf("failed to update the lpar with the change, %s", updateErr)
 	}
 
-	_, err = isWaitforPIInstanceUpdate(ctx, client, id, d.Timeout(schema.TimeoutUpdate))
+	_, err = isWaitForPIInstanceShutoffAfterUpdate(ctx, client, id, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		return fmt.Errorf("failed to get an update from the Service after the resource change, %s", err)
 	}
@@ -1322,7 +1361,7 @@ func performChangeAndReboot(ctx context.Context, client *instance.IBMPIInstanceC
 
 }
 
-func isWaitforPIInstanceUpdate(ctx context.Context, client *instance.IBMPIInstanceClient, id string, timeout time.Duration) (interface{}, error) {
+func isWaitForPIInstanceShutoffAfterUpdate(ctx context.Context, client *instance.IBMPIInstanceClient, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for PIInstance (%s) to be ACTIVE or SHUTOFF AFTER THE RESIZE Due to DLPAR Operation ", id)
 
 	stateConf := &retry.StateChangeConf{
