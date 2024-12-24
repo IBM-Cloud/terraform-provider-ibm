@@ -114,5 +114,17 @@ The following attributes are exported:
       - `id` - (String) The unique identifier for this file share.
       - `name` - (String) The unique user-defined name for this file share.
       - `resource_type` - (String) The resource type.
+	- `snapshot_count` - (Integer) The total number of snapshots for this share.
+	- `snapshot_size` - (Integer) The total size (in gigabytes) of snapshots used for this file share.
+	- `source_snapshot` - (List) The snapshot from which this share was cloned.This property will be present when the share was created from a snapshot.The resources supported by this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in thefuture.
+		Nested schema for **source_snapshot**:
+		- `crn` - (String) The CRN for this share snapshot.
+		- `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
+			Nested schema for **deleted**:
+			- `more_info` - (String) Link to documentation about deleted resources.
+		- `href` - (String) The URL for this share snapshot.
+		- `id` - (String) The unique identifier for this share snapshot.
+		- `name` - (String) The name for this share snapshot. The name is unique across all snapshots for the file share.
+		- `resource_type` - (String) The resource type.
 - `total_count` - The total number of resources across all pages.
 
