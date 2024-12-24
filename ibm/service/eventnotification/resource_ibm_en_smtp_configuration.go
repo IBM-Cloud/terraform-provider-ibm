@@ -6,6 +6,7 @@ package eventnotification
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -189,7 +190,10 @@ func ResourceIBMEnSMTPConfigurationValidator() *validate.ResourceValidator {
 func resourceIBMEnSMTPConfigurationCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	eventNotificationsClient, err := meta.(conns.ClientSession).EventNotificationsApiV1()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_en_smtp_configuration", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+		// return diag.FromErr(err)
 	}
 
 	createSMTPConfigurationOptions := &en.CreateSMTPConfigurationOptions{}
@@ -203,7 +207,10 @@ func resourceIBMEnSMTPConfigurationCreate(context context.Context, d *schema.Res
 
 	smtpCreateResponse, _, err := eventNotificationsClient.CreateSMTPConfigurationWithContext(context, createSMTPConfigurationOptions)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateSMTPConfigurationWithContext failed: %s", err.Error()), "ibm_en_smtp_configuration", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+		// return diag.FromErr(err)
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", *createSMTPConfigurationOptions.InstanceID, *smtpCreateResponse.ID))
@@ -214,14 +221,19 @@ func resourceIBMEnSMTPConfigurationCreate(context context.Context, d *schema.Res
 func resourceIBMEnSMTPConfigurationRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	eventNotificationsClient, err := meta.(conns.ClientSession).EventNotificationsApiV1()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_en_smtp_configuration", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+		// return diag.FromErr(err)
 	}
 
 	getSMTPConfigurationOptions := &en.GetSMTPConfigurationOptions{}
 
 	parts, err := flex.SepIdParts(d.Id(), "/")
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_en_smtp_configuration", "update")
+		return tfErr.GetDiag()
+		// return diag.FromErr(err)
 	}
 
 	getSMTPConfigurationOptions.SetInstanceID(parts[0])
@@ -233,7 +245,10 @@ func resourceIBMEnSMTPConfigurationRead(context context.Context, d *schema.Resou
 			d.SetId("")
 			return nil
 		}
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetSMTPConfigurationWithContext failed: %s", err.Error()), "ibm_en_smtp_configuration", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+		// return diag.FromErr(err)
 	}
 
 	if err = d.Set("name", smtpConfiguration.Name); err != nil {
@@ -267,7 +282,10 @@ func resourceIBMEnSMTPConfigurationRead(context context.Context, d *schema.Resou
 func resourceIBMEnSMTPConfigurationUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	eventNotificationsClient, err := meta.(conns.ClientSession).EventNotificationsApiV1()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_en_smtp_configuration", "update")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+		// return diag.FromErr(err)
 	}
 
 	updateSMTPConfigurationOptions := &en.UpdateSMTPConfigurationOptions{}
@@ -275,7 +293,9 @@ func resourceIBMEnSMTPConfigurationUpdate(context context.Context, d *schema.Res
 
 	parts, err := flex.SepIdParts(d.Id(), "/")
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_en_smtp_configuration", "update")
+		return tfErr.GetDiag()
+		// return diag.FromErr(err)
 	}
 
 	updateSMTPConfigurationOptions.SetInstanceID(parts[0])
@@ -306,7 +326,10 @@ func resourceIBMEnSMTPConfigurationUpdate(context context.Context, d *schema.Res
 	if hasChange {
 		_, _, err = eventNotificationsClient.UpdateSMTPConfigurationWithContext(context, updateSMTPConfigurationOptions)
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateSMTPConfigurationWithContext failed: %s", err.Error()), "ibm_en_smtp_configuration", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+			// return diag.FromErr(err)
 		}
 	}
 
@@ -323,14 +346,19 @@ func resourceIBMEnSMTPConfigurationUpdate(context context.Context, d *schema.Res
 func resourceIBMEnSMTPConfigurationDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	eventNotificationsClient, err := meta.(conns.ClientSession).EventNotificationsApiV1()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_en_smtp_configuration", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+		// return diag.FromErr(err)
 	}
 
 	deleteSMTPConfigurationOptions := &en.DeleteSMTPConfigurationOptions{}
 
 	parts, err := flex.SepIdParts(d.Id(), "/")
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_en_smtp_configuration", "delete")
+		return tfErr.GetDiag()
+		// return diag.FromErr(err)
 	}
 
 	deleteSMTPConfigurationOptions.SetInstanceID(parts[0])
@@ -338,7 +366,10 @@ func resourceIBMEnSMTPConfigurationDelete(context context.Context, d *schema.Res
 
 	_, err = eventNotificationsClient.DeleteSMTPConfigurationWithContext(context, deleteSMTPConfigurationOptions)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteSMTPConfigurationWithContext: failed: %s", err.Error()), "ibm_en_smtp_configuration", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+		// return diag.FromErr(err)
 	}
 
 	d.SetId("")
