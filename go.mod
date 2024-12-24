@@ -63,7 +63,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/rook/rook/pkg/apis v0.0.0-20231204200402-5287527732f7
 	github.com/softlayer/softlayer-go v1.0.3
-	github.com/stretchr/testify v1.9.0
+	github.com/stretchr/testify v1.10.0
 	golang.org/x/crypto v0.31.0
 	gopkg.in/yaml.v3 v3.0.1
 	gotest.tools v2.2.0+incompatible
@@ -75,8 +75,6 @@ require (
 )
 
 require (
-	cloud.google.com/go/kms v1.10.1 // indirect
-	cloud.google.com/go/monitoring v1.13.0 // indirect
 	github.com/BurntSushi/toml v1.2.0 // indirect
 	github.com/Logicalis/asn1 v0.0.0-20190312173541-d60463189a56 // indirect
 	github.com/Masterminds/semver/v3 v3.2.1 // indirect
@@ -208,8 +206,7 @@ require (
 	go.uber.org/ratelimit v0.2.0 // indirect
 	go.uber.org/zap v1.27.0 // indirect
 	golang.org/x/mod v0.21.0 // indirect
-	gomodules.xyz/jsonpatch/v2 v2.2.0 // indirect
-	golang.org/x/net v0.30.0 // indirect
+	golang.org/x/net v0.31.0 // indirect
 	golang.org/x/oauth2 v0.22.0 // indirect
 	golang.org/x/sync v0.10.0 // indirect
 	golang.org/x/sys v0.28.0 // indirect
