@@ -339,12 +339,9 @@ func TestAccIbmIsShareFromShareSnapshot(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_is_share.is_share", "name", shareName),
 					resource.TestCheckResourceAttrSet("ibm_is_share.is_share", "id"),
 					resource.TestCheckResourceAttr("ibm_is_share.is_share", "allowed_transit_encryption_modes.0", tEMode1),
-					resource.TestCheckResourceAttr("ibm_is_share.is_share_accessor", "allowed_transit_encryption_modes.0", tEMode1),
 					resource.TestCheckResourceAttrSet("ibm_is_share.is_share", "accessor_binding_role"),
-					resource.TestCheckResourceAttrSet("ibm_is_share.is_share_accessor", "origin_share.0.crn"),
-					resource.TestCheckResourceAttrSet("ibm_is_share.is_share_accessor", "origin_share.0.id"),
-					resource.TestCheckResourceAttrSet("ibm_is_share.is_share_accessor", "origin_share.0.resource_type"),
-					resource.TestCheckResourceAttrSet("ibm_is_share.is_share_accessor", "origin_share.0.href"),
+					resource.TestCheckResourceAttrSet("ibm_is_share.is_share_from_snapshot", "source_snapshot.0.crn"),
+					resource.TestCheckResourceAttrSet("ibm_is_share.is_share_from_snapshot", "source_snapshot.0.name"),
 				),
 			},
 			{
@@ -355,14 +352,11 @@ func TestAccIbmIsShareFromShareSnapshot(t *testing.T) {
 					resource.TestCheckResourceAttrSet("ibm_is_share.is_share", "id"),
 					resource.TestCheckResourceAttrSet("ibm_is_share.is_share", "allowed_transit_encryption_modes.#"),
 					resource.TestCheckResourceAttr("ibm_is_share.is_share", "allowed_transit_encryption_modes.0", tEMode1),
-					resource.TestCheckResourceAttr("ibm_is_share.is_share_accessor", "allowed_transit_encryption_modes.0", tEMode1),
-					resource.TestCheckResourceAttr("ibm_is_share.is_share_accessor", "name", shareName1),
+					resource.TestCheckResourceAttr("ibm_is_share.is_share_from_snapshot", "name", shareName1),
 					resource.TestCheckResourceAttrSet("ibm_is_share.is_share", "accessor_binding_role"),
 					resource.TestCheckResourceAttrSet("ibm_is_share.is_share", "accessor_bindings.#"),
-					resource.TestCheckResourceAttrSet("ibm_is_share.is_share_accessor", "origin_share.0.crn"),
-					resource.TestCheckResourceAttrSet("ibm_is_share.is_share_accessor", "origin_share.0.id"),
-					resource.TestCheckResourceAttrSet("ibm_is_share.is_share_accessor", "origin_share.0.resource_type"),
-					resource.TestCheckResourceAttrSet("ibm_is_share.is_share_accessor", "origin_share.0.href"),
+					resource.TestCheckResourceAttrSet("ibm_is_share.is_share_from_snapshot", "source_snapshot.0.crn"),
+					resource.TestCheckResourceAttrSet("ibm_is_share.is_share_from_snapshot", "source_snapshot.0.name"),
 				),
 			},
 		},
@@ -456,13 +450,12 @@ func testAccCheckIbmIsShareConfigShareSnapshotConfig(vpcName, sname, tEMode, sha
 	resource "ibm_is_share_snapshot" "is_share_snapshot" {
 		share = ibm_is_share.is_share.id
 		name = "%s"
-		user_tags = ["tfp-acc-test-share-tag-1"]
+		tags = ["tfp-acc-test-share-tag-1"]
 	}
 	  resource "ibm_is_share" "is_share_from_snapshot" {
-		share_snapshot{
-			id = ibm_is_share_snapshot.is_share_snapshot.id
+		source_snapshot{
+			id = ibm_is_share_snapshot.is_share_snapshot.share_snapshot
 		}
-		zone    = "us-south-1"
 		size    = 220
 		name    = "%s"
 		profile = "dp2"

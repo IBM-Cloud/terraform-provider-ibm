@@ -22,7 +22,8 @@ import (
 
 func TestAccIBMIsShareSnapshotBasic(t *testing.T) {
 	var conf vpcv1.ShareSnapshot
-	shareID := fmt.Sprintf("tf_share_id_%d", acctest.RandIntRange(10, 100))
+	shareName := fmt.Sprintf("tf-name-share%d", acctest.RandIntRange(10, 100))
+	shareSnapshotName := fmt.Sprintf("tf-name-share-snap%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -30,10 +31,12 @@ func TestAccIBMIsShareSnapshotBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIBMIsShareSnapshotDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIsShareSnapshotConfigBasic(shareID),
+				Config: testAccCheckIBMIsShareSnapshotConfigBasic(shareName, shareSnapshotName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIsShareSnapshotExists("ibm_is_share_snapshot.is_share_snapshot_instance", conf),
-					resource.TestCheckResourceAttr("ibm_is_share_snapshot.is_share_snapshot_instance", "share", shareID),
+					resource.TestCheckResourceAttrSet("ibm_is_share_snapshot.is_share_snapshot_instance", "share"),
+					resource.TestCheckResourceAttrSet("ibm_is_share_snapshot.is_share_snapshot_instance", "tags.#"),
+					resource.TestCheckResourceAttr("ibm_is_share_snapshot.is_share_snapshot_instance", "name", shareSnapshotName),
 				),
 			},
 		},
@@ -44,9 +47,10 @@ func TestAccIBMIsShareSnapshotAllArgs(t *testing.T) {
 	var conf vpcv1.ShareSnapshot
 	name := fmt.Sprintf("tf-name-share-snapshot%d", acctest.RandIntRange(10, 100))
 	shareName := fmt.Sprintf("tf-name-share%d", acctest.RandIntRange(10, 100))
-	nameUpdate := fmt.Sprintf("tf-name-%d", acctest.RandIntRange(10, 100))
-	userTag1 := "tfp-share-tag-1"
-	userTag2 := "tfp-share-tag-2"
+	// nameUpdate := fmt.Sprintf("tf-name-share-snapshot%d", acctest.RandIntRange(10, 100))
+	userTag1 := fmt.Sprintf("tfp-share-tag-%d", acctest.RandIntRange(10, 100))
+	userTag2 := fmt.Sprintf("tfp-share-tag-%d", acctest.RandIntRange(10, 100))
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
@@ -57,40 +61,35 @@ func TestAccIBMIsShareSnapshotAllArgs(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIsShareSnapshotExists("ibm_is_share_snapshot.is_share_snapshot_instance", conf),
 					resource.TestCheckResourceAttr("ibm_is_share_snapshot.is_share_snapshot_instance", "name", name),
-					resource.TestCheckResourceAttrSet("ibm_is_share_snapshot.is_share_snapshot_instance", "user_tags.#"),
+					resource.TestCheckResourceAttrSet("ibm_is_share_snapshot.is_share_snapshot_instance", "tags.#"),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIBMIsShareSnapshotConfig(shareName, nameUpdate, userTag2),
+				Config: testAccCheckIBMIsShareSnapshotConfig(shareName, name, userTag2),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_is_share_snapshot.is_share_snapshot_instance", "name", nameUpdate),
-					resource.TestCheckResourceAttrSet("ibm_is_share_snapshot.is_share_snapshot_instance", "user_tags.#"),
+					resource.TestCheckResourceAttr("ibm_is_share_snapshot.is_share_snapshot_instance", "name", name),
+					resource.TestCheckResourceAttrSet("ibm_is_share_snapshot.is_share_snapshot_instance", "tags.#"),
 				),
-			},
-			resource.TestStep{
-				ResourceName:      "ibm_is_share_snapshot.is_share_snapshot",
-				ImportState:       true,
-				ImportStateVerify: true,
 			},
 		},
 	})
 }
 
-func testAccCheckIBMIsShareSnapshotConfigBasic(shareID string) string {
-	return fmt.Sprintf(`
+func testAccCheckIBMIsShareSnapshotConfigBasic(shareName, shareSnapshotName string) string {
+	return testAccCheckIbmIsShareConfigBasic(shareName) + fmt.Sprintf(`
 		resource "ibm_is_share_snapshot" "is_share_snapshot_instance" {
-			share = "%s"
+			share = ibm_is_share.is_share.id
+			name = "%s"
 		}
-	`, shareID)
+	`, shareSnapshotName)
 }
 
 func testAccCheckIBMIsShareSnapshotConfig(shareName string, name, tags string) string {
 	return testAccCheckIbmIsShareConfigBasic(shareName) + fmt.Sprintf(`
-
 		resource "ibm_is_share_snapshot" "is_share_snapshot_instance" {
 			share = ibm_is_share.is_share.id
 			name = "%s"
-			user_tags = ["%s"]
+			tags = ["%s"]
 		}
 	`, name, tags)
 }

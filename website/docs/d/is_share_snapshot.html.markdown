@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_is_share_snapshot"
 description: |-
   Get information about ShareSnapshot
-subcategory: "Virtual Private Cloud API"
+subcategory: "VPC infrastructure"
 ---
 
 # ibm_is_share_snapshot
@@ -13,9 +13,21 @@ Provides a read-only data source to retrieve information about a ShareSnapshot. 
 ## Example Usage
 
 ```hcl
+resource "ibm_is_share" "example" {
+	zone    = "us-south-1"
+	size    = 220
+	name    = "%s"
+	profile = "dp2"
+}
+
+resource "ibm_is_share_snapshot" "example" {
+  name = "my-example-share-snapshot"
+  share = ibm_is_share.example.id
+  tags = ["my-example-share-snapshot-tag"]
+}
 data "ibm_is_share_snapshot" "example" {
 	share_snapshot = ibm_is_share_snapshot.is_share_snapshot_instance.is_share_snapshot_id
-	share = ibm_is_share_snapshot.is_share_snapshot_instance.share_id
+	share = ibm_is_share.example.id
 }
 ```
 
@@ -30,6 +42,7 @@ You can specify the following arguments for this data source.
 
 After your data source is created, you can read values from the following attributes.
 
+- `access_tags`  - (Array of Strings) Access management tags associated with the snapshot.
 - `id` - The unique identifier of the ShareSnapshot.
 - `backup_policy_plan` - (List) If present, the backup policy plan which created this share snapshot.
 	Nested schema for **backup_policy_plan**:
@@ -66,7 +79,7 @@ After your data source is created, you can read values from the following attrib
 	- `code` - (String) A reason code for the status:- `encryption_key_deleted`: File share snapshot is unusable  because its `encryption_key` was deleted- `internal_error`: Internal error (contact IBM support)The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.
 	- `message` - (String) An explanation of the status reason.
 	- `more_info` - (String) Link to documentation about this status reason.
-- `user_tags` - (List) The [user tags](https://cloud.ibm.com/apidocs/tagging#types-of-tags) associated with this share snapshot.
+- `tags` - (List) The [user tags](https://cloud.ibm.com/apidocs/tagging#types-of-tags) associated with this share snapshot.
 - `zone` - (List) The zone this share snapshot resides in.
 	Nested schema for **zone**:
 	- `href` - (String) The URL for this zone.

@@ -11,8 +11,13 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
+	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -30,6 +35,18 @@ func ResourceIBMIsShareSnapshot() *schema.Resource {
 		DeleteContext: resourceIBMIsShareSnapshotDelete,
 		Importer:      &schema.ResourceImporter{},
 
+		CustomizeDiff: customdiff.All(
+			customdiff.Sequence(
+				func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
+					return flex.ResourceTagsCustomizeDiff(diff)
+				},
+			),
+			customdiff.Sequence(
+				func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
+					return flex.ResourceValidateAccessTags(diff, v)
+				}),
+		),
+
 		Schema: map[string]*schema.Schema{
 			"share": &schema.Schema{
 				Type:         schema.TypeString,
@@ -41,14 +58,25 @@ func ResourceIBMIsShareSnapshot() *schema.Resource {
 			"name": &schema.Schema{
 				Type:         schema.TypeString,
 				Optional:     true,
+				Computed:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_is_share_snapshot", "name"),
 				Description:  "The name for this share snapshot. The name is unique across all snapshots for the file share.",
 			},
-			"user_tags": &schema.Schema{
-				Type:        schema.TypeList,
+			"tags": &schema.Schema{
+				Type:        schema.TypeSet,
 				Optional:    true,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: validate.InvokeValidator("ibm_is_share_snapshot", "tags")},
+				Set:         flex.ResourceIBMVPCHash,
 				Description: "The [user tags](https://cloud.ibm.com/apidocs/tagging#types-of-tags) associated with this share snapshot.",
-				Elem:        &schema.Schema{Type: schema.TypeString},
+			},
+			"access_tags": {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: validate.InvokeValidator("ibm_is_share_snapshot", "access_tags")},
+				Set:         flex.ResourceIBMVPCHash,
+				Description: "List of access management tags",
 			},
 			"backup_policy_plan": &schema.Schema{
 				Type:        schema.TypeList,
@@ -255,6 +283,14 @@ func ResourceIBMIsShareSnapshotValidator() *validate.ResourceValidator {
 			MaxValueLength:             64,
 		},
 		validate.ValidateSchema{
+			Identifier:                 "tags",
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			Regexp:                     `^[A-Za-z0-9:_ .-]+$`,
+			MinValueLength:             1,
+			MaxValueLength:             128},
+		validate.ValidateSchema{
 			Identifier:                 "name",
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
@@ -262,6 +298,15 @@ func ResourceIBMIsShareSnapshotValidator() *validate.ResourceValidator {
 			Regexp:                     `^([a-z]|[a-z][-a-z0-9]*[a-z0-9]|[0-9][-a-z0-9]*([a-z]|[-a-z][-a-z0-9]*[a-z0-9]))$`,
 			MinValueLength:             1,
 			MaxValueLength:             63,
+		},
+		validate.ValidateSchema{
+			Identifier:                 "access_tags",
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			Regexp:                     `^([A-Za-z0-9_.-]|[A-Za-z0-9_.-][A-Za-z0-9_ .-]*[A-Za-z0-9_.-]):([A-Za-z0-9_.-]|[A-Za-z0-9_.-][A-Za-z0-9_ .-]*[A-Za-z0-9_.-])$`,
+			MinValueLength:             1,
+			MaxValueLength:             128,
 		},
 	)
 
@@ -284,15 +329,24 @@ func resourceIBMIsShareSnapshotCreate(context context.Context, d *schema.Resourc
 	if _, ok := d.GetOk("name"); ok {
 		createShareSnapshotOptions.SetName(d.Get("name").(string))
 	}
-	if _, ok := d.GetOk("user_tags"); ok {
-		var userTags []string
-		for _, v := range d.Get("user_tags").([]interface{}) {
-			userTagsItem := v.(string)
-			userTags = append(userTags, userTagsItem)
+	var userTags *schema.Set
+	if v, ok := d.GetOk("tags"); ok {
+		userTags = v.(*schema.Set)
+		if userTags != nil && userTags.Len() != 0 {
+			userTagsArray := make([]string, userTags.Len())
+			for i, userTag := range userTags.List() {
+				userTagStr := userTag.(string)
+				userTagsArray[i] = userTagStr
+			}
+			schematicTags := os.Getenv("IC_ENV_TAGS")
+			var envTags []string
+			if schematicTags != "" {
+				envTags = strings.Split(schematicTags, ",")
+				userTagsArray = append(userTagsArray, envTags...)
+			}
+			createShareSnapshotOptions.SetUserTags(userTagsArray)
 		}
-		createShareSnapshotOptions.SetUserTags(userTags)
 	}
-
 	shareSnapshot, _, err := vpcClient.CreateShareSnapshotWithContext(context, createShareSnapshotOptions)
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateShareSnapshotWithContext failed: %s", err.Error()), "ibm_is_share_snapshot", "create")
@@ -301,7 +355,18 @@ func resourceIBMIsShareSnapshotCreate(context context.Context, d *schema.Resourc
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", *createShareSnapshotOptions.ShareID, *shareSnapshot.ID))
-
+	_, err = isWaitForShareSnapshotAvailable(context, vpcClient, *createShareSnapshotOptions.ShareID, *shareSnapshot.ID, d, d.Timeout(schema.TimeoutCreate))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	if _, ok := d.GetOk("access_tags"); ok {
+		oldList, newList := d.GetChange(isSubnetAccessTags)
+		err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *shareSnapshot.CRN, "", isAccessTagType)
+		if err != nil {
+			log.Printf(
+				"[ERROR] Error on create of resource share snapshot (%s) access tags: %s", d.Id(), err)
+		}
+	}
 	return resourceIBMIsShareSnapshotRead(context, d, meta)
 }
 
@@ -341,9 +406,9 @@ func resourceIBMIsShareSnapshotRead(context context.Context, d *schema.ResourceD
 		}
 	}
 	if !core.IsNil(shareSnapshot.UserTags) {
-		if err = d.Set("user_tags", shareSnapshot.UserTags); err != nil {
-			err = fmt.Errorf("Error setting user_tags: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_share_snapshot", "read", "set-user_tags").GetDiag()
+		if err = d.Set("tags", shareSnapshot.UserTags); err != nil {
+			err = fmt.Errorf("Error setting tags: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_share_snapshot", "read", "set-tags").GetDiag()
 		}
 	}
 	backupPolicyPlanMap := make(map[string]interface{}, 1)
@@ -430,7 +495,12 @@ func resourceIBMIsShareSnapshotRead(context context.Context, d *schema.ResourceD
 		err = fmt.Errorf("Error setting share_snapshot: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_share_snapshot", "read", "set-is_share_snapshot_id").GetDiag()
 	}
-
+	accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *shareSnapshot.CRN, "", isAccessTagType)
+	if err != nil {
+		log.Printf(
+			"[ERROR] Error on get of resource share snapshot (%s) access tags: %s", d.Id(), err)
+	}
+	d.Set("access_tags", accesstags)
 	return nil
 }
 
@@ -470,27 +540,35 @@ func resourceIBMIsShareSnapshotUpdate(context context.Context, d *schema.Resourc
 		return tfErr.GetDiag()
 	}
 	patchVals := &vpcv1.ShareSnapshotPatch{}
-	if d.HasChange("share") {
-		errMsg := fmt.Sprintf("Cannot update resource property \"%s\" with the ForceNew annotation."+
-			" The resource must be re-created to update this property.", "share")
-		return flex.DiscriminatedTerraformErrorf(nil, errMsg, "ibm_is_share_snapshot", "update", "share_id-forces-new").GetDiag()
-	}
 
-	if d.HasChange("user_tags") {
-		var userTags []string
-		for _, v := range d.Get("user_tags").([]interface{}) {
-			userTagsItem := v.(string)
-			userTags = append(userTags, userTagsItem)
+	if d.HasChange("tags") {
+		var userTags *schema.Set
+		if v, ok := d.GetOk("tags"); ok {
+
+			userTags = v.(*schema.Set)
+			if userTags != nil && userTags.Len() != 0 {
+				userTagsArray := make([]string, userTags.Len())
+				for i, userTag := range userTags.List() {
+					userTagStr := userTag.(string)
+					userTagsArray[i] = userTagStr
+				}
+				schematicTags := os.Getenv("IC_ENV_TAGS")
+				var envTags []string
+				if schematicTags != "" {
+					envTags = strings.Split(schematicTags, ",")
+					userTagsArray = append(userTagsArray, envTags...)
+				}
+				patchVals.UserTags = userTagsArray
+				hasChange = true
+			}
 		}
-		patchVals.UserTags = userTags
-		hasChange = true
 	}
 	updateShareSnapshotOptions.SetIfMatch(response.Headers.Get("Etag"))
 
 	if hasChange {
 		updateShareSnapshotOptions.ShareSnapshotPatch, _ = patchVals.AsPatch()
-		if _, exists := d.GetOk("user_tags"); d.HasChange("user_tags") && !exists {
-			updateShareSnapshotOptions.ShareSnapshotPatch["user_tags"] = nil
+		if _, exists := d.GetOk("tags"); d.HasChange("tags") && !exists {
+			updateShareSnapshotOptions.ShareSnapshotPatch["tags"] = nil
 		}
 
 		_, _, err = vpcClient.UpdateShareSnapshotWithContext(context, updateShareSnapshotOptions)
@@ -499,8 +577,19 @@ func resourceIBMIsShareSnapshotUpdate(context context.Context, d *schema.Resourc
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
+		_, err = isWaitForShareSnapshotAvailable(context, vpcClient, parts[0], parts[1], d, d.Timeout(schema.TimeoutCreate))
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
-
+	if d.HasChange("access_tags") {
+		oldList, newList := d.GetChange("access_tags")
+		err := flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, d.Get(isSnapshotCRN).(string), "", isAccessTagType)
+		if err != nil {
+			log.Printf(
+				"[ERROR] Error on update of resource share snapshot (%s) access tags: %s", d.Id(), err)
+		}
+	}
 	return resourceIBMIsShareSnapshotRead(context, d, meta)
 }
 
@@ -605,4 +694,45 @@ func ResourceIBMIsShareSnapshotZoneReferenceToMap(model *vpcv1.ZoneReference) (m
 	modelMap["href"] = *model.Href
 	modelMap["name"] = *model.Name
 	return modelMap, nil
+}
+
+func isWaitForShareSnapshotAvailable(context context.Context, vpcClient *vpcv1.VpcV1, shareid string, shareSnapshotId string, d *schema.ResourceData, timeout time.Duration) (interface{}, error) {
+	log.Printf("Waiting for share snapshot (%s) to be available.", shareid)
+
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"updating", "pending", "waiting"},
+		Target:     []string{"available", "failed"},
+		Refresh:    isShareSnapshotRefreshFunc(context, vpcClient, shareid, shareSnapshotId, d),
+		Timeout:    timeout,
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+
+	return stateConf.WaitForState()
+}
+
+func isShareSnapshotRefreshFunc(context context.Context, vpcClient *vpcv1.VpcV1, shareid, shareSnapshotId string, d *schema.ResourceData) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		shareSnapOptions := &vpcv1.GetShareSnapshotOptions{}
+
+		shareSnapOptions.SetShareID(shareid)
+		shareSnapOptions.SetID(shareSnapshotId)
+
+		shareSnapshot, response, err := vpcClient.GetShareSnapshotWithContext(context, shareSnapOptions)
+		if err != nil {
+			return nil, "", fmt.Errorf("Error Getting share snapshot: %s\n%s", err, response)
+		}
+		d.Set("status", *shareSnapshot.Status)
+		if *shareSnapshot.Status == "available" || *shareSnapshot.Status == "failed" {
+
+			if *shareSnapshot.Status == "available" {
+				if _, ok := d.GetOk("tags"); ok && len(shareSnapshot.UserTags) == 0 {
+					return shareSnapshot, "pending", nil
+				}
+			}
+			return shareSnapshot, *shareSnapshot.Status, nil
+
+		}
+		return shareSnapshot, "pending", nil
+	}
 }
