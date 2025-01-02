@@ -257,6 +257,7 @@ func testAccCheckIbmOnboardingCatalogProductConfig(productID string, env string,
 					pc {
 						support {
 							url = "url"
+							process_i18n = {}
 							status_url = "status_url"
 							locations = [ "locations" ]
 							languages = [ "languages" ]
