@@ -76,15 +76,15 @@ func testAccCheckIbmAppConfigCollectionExists(n string, obj appconfigurationv1.C
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return flex.FmtErrorf("Not found: %s", n)
 		}
 		parts, err := flex.IdParts(rs.Primary.ID)
 		if err != nil {
-			return err
+			return flex.FmtErrorf(fmt.Sprintf("%s", err))
 		}
 		appconfigClient, err := getAppConfigClient(acc.TestAccProvider.Meta(), parts[0])
 		if err != nil {
-			return err
+			return flex.FmtErrorf(fmt.Sprintf("%s", err))
 		}
 
 		options := &appconfigurationv1.GetCollectionOptions{}
@@ -93,7 +93,7 @@ func testAccCheckIbmAppConfigCollectionExists(n string, obj appconfigurationv1.C
 
 		result, _, err := appconfigClient.GetCollection(options)
 		if err != nil {
-			return err
+			return flex.FmtErrorf(fmt.Sprintf("%s", err))
 		}
 
 		obj = *result
@@ -109,11 +109,11 @@ func testAccCheckIbmAppConfigCollectionDestroy(s *terraform.State) error {
 		}
 		parts, err := flex.IdParts(rs.Primary.ID)
 		if err != nil {
-			return err
+			return flex.FmtErrorf(fmt.Sprintf("%s", err))
 		}
 		appconfigClient, err := getAppConfigClient(acc.TestAccProvider.Meta(), parts[0])
 		if err != nil {
-			return err
+			return flex.FmtErrorf(fmt.Sprintf("%s", err))
 		}
 		options := &appconfigurationv1.GetCollectionOptions{}
 
@@ -123,9 +123,9 @@ func testAccCheckIbmAppConfigCollectionDestroy(s *terraform.State) error {
 		_, response, err := appconfigClient.GetCollection(options)
 
 		if err == nil {
-			return fmt.Errorf("Collection still exists: %s", rs.Primary.ID)
+			return flex.FmtErrorf("Collection still exists: %s", rs.Primary.ID)
 		} else if response.StatusCode != 404 {
-			return fmt.Errorf("[ERROR] Error checking for Collection (%s) has been destroyed: %s", rs.Primary.ID, err)
+			return flex.FmtErrorf("[ERROR] Error checking for Collection (%s) has been destroyed: %s", rs.Primary.ID, err)
 		}
 	}
 

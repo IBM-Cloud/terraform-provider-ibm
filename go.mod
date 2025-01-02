@@ -9,22 +9,23 @@ require (
 	github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20240725064144-454a2ae23113
 	github.com/IBM-Cloud/power-go-client v1.9.0
 	github.com/IBM/apigateway-go-sdk v0.0.0-20210714141226-a5d5d49caaca
-	github.com/IBM/appconfiguration-go-admin-sdk v0.3.0
+	github.com/IBM/appconfiguration-go-admin-sdk v0.4.4
 	github.com/IBM/appid-management-go-sdk v0.0.0-20210908164609-dd0e0eaf732f
 	github.com/IBM/cloud-databases-go-sdk v0.7.1
 	github.com/IBM/cloud-db2-go-sdk v0.0.0-20241206113855-40a65de39906
 	github.com/IBM/cloudant-go-sdk v0.8.0
-	github.com/IBM/code-engine-go-sdk v0.0.0-20240808131715-b9d168602dac
+	github.com/IBM/code-engine-go-sdk v0.0.0-20241217191651-e1821f8c58c3
 	github.com/IBM/configuration-aggregator-go-sdk v0.0.2
 	github.com/IBM/container-registry-go-sdk v1.1.0
 	github.com/IBM/continuous-delivery-go-sdk/v2 v2.0.2
-	github.com/IBM/event-notifications-go-admin-sdk v0.11.0
+	github.com/IBM/event-notifications-go-admin-sdk v0.12.0
 	github.com/IBM/eventstreams-go-sdk v1.4.0
 	github.com/IBM/go-sdk-core v1.1.0
 	github.com/IBM/go-sdk-core/v3 v3.2.4
-	github.com/IBM/go-sdk-core/v5 v5.18.1
-	github.com/IBM/ibm-cos-sdk-go v1.10.3
-	github.com/IBM/ibm-cos-sdk-go-config/v2 v2.1.0
+	github.com/IBM/go-sdk-core/v5 v5.18.3
+	github.com/IBM/ibm-backup-recovery-sdk-go v1.0.1
+	github.com/IBM/ibm-cos-sdk-go v1.12.0
+	github.com/IBM/ibm-cos-sdk-go-config/v2 v2.2.0
 	github.com/IBM/ibm-hpcs-tke-sdk v0.0.0-20211109141421-a4b61b05f7d1
 	github.com/IBM/ibm-hpcs-uko-sdk v0.0.20-beta
 	github.com/IBM/keyprotect-go-client v0.15.1
@@ -41,7 +42,7 @@ require (
 	github.com/IBM/secrets-manager-go-sdk/v2 v2.0.7
 	github.com/IBM/vmware-go-sdk v0.1.2
 	github.com/IBM/vpc-beta-go-sdk v0.8.0
-	github.com/IBM/vpc-go-sdk v0.63.1
+	github.com/IBM/vpc-go-sdk v0.64.0
 	github.com/ScaleFT/sshkeys v0.0.0-20200327173127-6142f742bca5
 	github.com/akamai/AkamaiOPEN-edgegrid-golang v1.2.2
 	github.com/akamai/AkamaiOPEN-edgegrid-golang/v5 v5.0.0
@@ -63,7 +64,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/rook/rook/pkg/apis v0.0.0-20231204200402-5287527732f7
 	github.com/softlayer/softlayer-go v1.0.3
-	github.com/stretchr/testify v1.9.0
+	github.com/stretchr/testify v1.10.0
 	golang.org/x/crypto v0.31.0
 	gopkg.in/yaml.v3 v3.0.1
 	gotest.tools v2.2.0+incompatible
@@ -211,17 +212,15 @@ require (
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/ratelimit v0.2.0 // indirect
 	go.uber.org/zap v1.27.0 // indirect
-	golang.org/x/mod v0.22.0 // indirect
+	golang.org/x/mod v0.21.0 // indirect
 	golang.org/x/net v0.32.0 // indirect
 	golang.org/x/oauth2 v0.22.0 // indirect
 	golang.org/x/sync v0.10.0 // indirect
 	golang.org/x/sys v0.28.0 // indirect
 	golang.org/x/term v0.27.0 // indirect
 	golang.org/x/text v0.21.0 // indirect
-	golang.org/x/time v0.5.0 // indirect
-	golang.org/x/tools v0.28.0 // indirect
-	golang.org/x/tools/cmd/cover v0.1.0-deprecated // indirect
-	golang.org/x/tools/go/vcs v0.1.0-deprecated // indirect
+	golang.org/x/time v0.3.0 // indirect
+	golang.org/x/tools v0.26.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240814211410-ddb44dafa142 // indirect
 	google.golang.org/grpc v1.67.1 // indirect
