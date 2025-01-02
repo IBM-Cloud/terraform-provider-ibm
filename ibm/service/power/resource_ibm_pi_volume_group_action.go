@@ -39,7 +39,7 @@ func ResourceIBMPIVolumeGroupAction() *schema.Resource {
 				ValidateFunc: validation.NoZeroValues,
 			},
 			Arg_VolumeGroupAction: {
-				Description: "Performs an action (start stop reset) on a volume group(one at a time).",
+				Description: "Performs an action (start stop reset ) on a volume group(one at a time).",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						Attr_Start: {
@@ -76,7 +76,7 @@ func ResourceIBMPIVolumeGroupAction() *schema.Resource {
 							Type:     schema.TypeList,
 						},
 						Attr_Reset: {
-							Description: "Performs reset action on the volume group to update its value.",
+							Description: "Performs reset action on the volume group to update its status value.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									Attr_Status: {
