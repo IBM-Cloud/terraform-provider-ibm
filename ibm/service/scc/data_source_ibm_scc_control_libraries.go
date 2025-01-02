@@ -161,7 +161,7 @@ func dataSourceIbmSccControlLibrariesRead(context context.Context, d *schema.Res
 	return nil
 }
 
-func dataSourceIbmSccControlLibraryToMap(controlLibrary *securityandcompliancecenterapiv3.ControlLibraryItem) (map[string]interface{}, error) {
+func dataSourceIbmSccControlLibraryToMap(controlLibrary *securityandcompliancecenterapiv3.ControlLibrary) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if controlLibrary.ID != nil {
 		modelMap["id"] = controlLibrary.ID
@@ -197,13 +197,13 @@ func dataSourceIbmSccControlLibraryToMap(controlLibrary *securityandcompliancece
 		modelMap["created_by"] = controlLibrary.CreatedBy
 	}
 	if controlLibrary.CreatedOn != nil {
-		modelMap["created_on"] = controlLibrary.CreatedOn.String()
+		modelMap["created_on"] = controlLibrary.CreatedOn
 	}
 	if controlLibrary.UpdatedBy != nil {
 		modelMap["updated_by"] = controlLibrary.UpdatedBy
 	}
 	if controlLibrary.UpdatedOn != nil {
-		modelMap["updated_on"] = controlLibrary.UpdatedOn.String()
+		modelMap["updated_on"] = controlLibrary.UpdatedOn
 	}
 	if controlLibrary.ControlsCount != nil {
 		modelMap["controls_count"] = controlLibrary.ControlsCount

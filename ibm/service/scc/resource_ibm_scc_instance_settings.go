@@ -128,7 +128,7 @@ func resourceIbmSccInstanceSettingsCreate(context context.Context, d *schema.Res
 	instance_id := d.Get("instance_id").(string)
 	updateSettingsOptions.SetInstanceID(instance_id)
 
-	var eventNotificationsModel *securityandcompliancecenterapiv3.EventNotifications
+	var eventNotificationsModel *securityandcompliancecenterapiv3.EventNotificationsPrototype
 	if _, ok := d.GetOk("event_notifications"); ok {
 		eventNotificationsData, err := resourceIbmSccInstanceSettingsMapToEventNotifications(d.Get("event_notifications.0").(map[string]interface{}))
 		if err != nil {
@@ -136,11 +136,11 @@ func resourceIbmSccInstanceSettingsCreate(context context.Context, d *schema.Res
 		}
 		eventNotificationsModel = eventNotificationsData
 	} else {
-		eventNotificationsModel = &securityandcompliancecenterapiv3.EventNotifications{}
+		eventNotificationsModel = &securityandcompliancecenterapiv3.EventNotificationsPrototype{}
 	}
 	updateSettingsOptions.SetEventNotifications(eventNotificationsModel)
 
-	var objectStorageModel *securityandcompliancecenterapiv3.ObjectStorage
+	var objectStorageModel *securityandcompliancecenterapiv3.ObjectStoragePrototype
 	if _, ok := d.GetOk("object_storage"); ok {
 		objectStorageData, err := resourceIbmSccInstanceSettingsMapToObjectStorage(d.Get("object_storage.0").(map[string]interface{}))
 		if err != nil {
@@ -148,7 +148,7 @@ func resourceIbmSccInstanceSettingsCreate(context context.Context, d *schema.Res
 		}
 		objectStorageModel = objectStorageData
 	} else {
-		objectStorageModel = &securityandcompliancecenterapiv3.ObjectStorage{}
+		objectStorageModel = &securityandcompliancecenterapiv3.ObjectStoragePrototype{}
 	}
 	updateSettingsOptions.SetObjectStorage(objectStorageModel)
 
@@ -262,20 +262,10 @@ func resourceIbmSccInstanceSettingsDelete(context context.Context, d *schema.Res
 	return nil
 }
 
-func resourceIbmSccInstanceSettingsMapToEventNotifications(modelMap map[string]interface{}) (*securityandcompliancecenterapiv3.EventNotifications, error) {
-	model := &securityandcompliancecenterapiv3.EventNotifications{}
+func resourceIbmSccInstanceSettingsMapToEventNotifications(modelMap map[string]interface{}) (*securityandcompliancecenterapiv3.EventNotificationsPrototype, error) {
+	model := &securityandcompliancecenterapiv3.EventNotificationsPrototype{}
 	if modelMap["instance_crn"] != nil && modelMap["instance_crn"].(string) != "" {
-		model.InstanceCrn = core.StringPtr(modelMap["instance_crn"].(string))
-	}
-	if modelMap["updated_on"] != nil {
-		dateTime, err := core.ParseDateTime(modelMap["updated_on"].(string))
-		if err != nil {
-			return model, err
-		}
-		model.UpdatedOn = &dateTime
-	}
-	if modelMap["source_id"] != nil && modelMap["source_id"].(string) != "" {
-		model.SourceID = core.StringPtr(modelMap["source_id"].(string))
+		model.InstanceCRN = core.StringPtr(modelMap["instance_crn"].(string))
 	}
 	if modelMap["source_name"] != nil && modelMap["source_name"].(string) != "" {
 		model.SourceName = core.StringPtr(modelMap["source_name"].(string))
@@ -283,17 +273,17 @@ func resourceIbmSccInstanceSettingsMapToEventNotifications(modelMap map[string]i
 	if modelMap["source_description"] != nil && modelMap["source_description"].(string) != "" {
 		model.SourceDescription = core.StringPtr(modelMap["source_description"].(string))
 	}
-	if core.StringNilMapper(model.InstanceCrn) != "" && core.StringNilMapper(model.SourceName) == "" {
+	if core.StringNilMapper(model.InstanceCRN) != "" && core.StringNilMapper(model.SourceName) == "" {
 		return model, errors.New("event_notifications.source_name needs to be defined along with event_notifications.instance_crn")
 	}
 	return model, nil
 }
 
-func resourceIbmSccInstanceSettingsMapToObjectStorage(modelMap map[string]interface{}) (*securityandcompliancecenterapiv3.ObjectStorage, error) {
-	model := &securityandcompliancecenterapiv3.ObjectStorage{}
+func resourceIbmSccInstanceSettingsMapToObjectStorage(modelMap map[string]interface{}) (*securityandcompliancecenterapiv3.ObjectStoragePrototype, error) {
+	model := &securityandcompliancecenterapiv3.ObjectStoragePrototype{}
 	instanceCrnSet := false
 	if modelMap["instance_crn"] != nil && modelMap["instance_crn"].(string) != "" {
-		model.InstanceCrn = core.StringPtr(modelMap["instance_crn"].(string))
+		model.InstanceCRN = core.StringPtr(modelMap["instance_crn"].(string))
 		instanceCrnSet = true
 	}
 	if modelMap["bucket"] != nil && modelMap["bucket"].(string) != "" {
@@ -303,26 +293,13 @@ func resourceIbmSccInstanceSettingsMapToObjectStorage(modelMap map[string]interf
 			return model, errors.New(`object_storage.instance_crn cannot be empty`)
 		}
 	}
-	if modelMap["bucket_location"] != nil && modelMap["bucket_location"].(string) != "" {
-		model.BucketLocation = core.StringPtr(modelMap["bucket_location"].(string))
-	}
-	if modelMap["bucket_endpoint"] != nil && modelMap["bucket_endpoint"].(string) != "" {
-		model.BucketEndpoint = core.StringPtr(modelMap["bucket_endpoint"].(string))
-	}
-	if modelMap["updated_on"] != nil {
-		dateTime, err := core.ParseDateTime(modelMap["updated_on"].(string))
-		if err != nil {
-			return model, err
-		}
-		model.UpdatedOn = &dateTime
-	}
 	return model, nil
 }
 
 func resourceIbmSccInstanceSettingsEventNotificationsToMap(model *securityandcompliancecenterapiv3.EventNotifications) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	if model.InstanceCrn != nil {
-		modelMap["instance_crn"] = model.InstanceCrn
+	if model.InstanceCRN != nil {
+		modelMap["instance_crn"] = model.InstanceCRN
 	}
 	if model.UpdatedOn != nil {
 		modelMap["updated_on"] = model.UpdatedOn.String()
@@ -341,8 +318,8 @@ func resourceIbmSccInstanceSettingsEventNotificationsToMap(model *securityandcom
 
 func resourceIbmSccInstanceSettingsObjectStorageToMap(model *securityandcompliancecenterapiv3.ObjectStorage) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	if model.InstanceCrn != nil {
-		modelMap["instance_crn"] = model.InstanceCrn
+	if model.InstanceCRN != nil {
+		modelMap["instance_crn"] = model.InstanceCRN
 	}
 	if model.Bucket != nil {
 		modelMap["bucket"] = model.Bucket

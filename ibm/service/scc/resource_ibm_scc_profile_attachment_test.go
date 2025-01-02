@@ -17,7 +17,7 @@ import (
 )
 
 func TestAccIbmSccProfileAttachmentBasic(t *testing.T) {
-	var conf securityandcompliancecenterapiv3.AttachmentItem
+	var conf securityandcompliancecenterapiv3.ProfileAttachment
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheckScc(t) },
@@ -35,7 +35,7 @@ func TestAccIbmSccProfileAttachmentBasic(t *testing.T) {
 }
 
 func TestAccIbmSccProfileAttachmentAllArgs(t *testing.T) {
-	var conf securityandcompliancecenterapiv3.AttachmentItem
+	var conf securityandcompliancecenterapiv3.ProfileAttachment
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheckScc(t) },
@@ -366,7 +366,7 @@ func testAccCheckIbmSccProfileAttachmentConfigChange(instanceID string) string {
 	`, instanceID, instanceID)
 }
 
-func testAccCheckIbmSccProfileAttachmentExists(n string, obj securityandcompliancecenterapiv3.AttachmentItem) resource.TestCheckFunc {
+func testAccCheckIbmSccProfileAttachmentExists(n string, obj securityandcompliancecenterapiv3.ProfileAttachment) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
