@@ -75,22 +75,9 @@ require (
 	sigs.k8s.io/controller-runtime v0.19.3
 )
 
-require (
-	github.com/BurntSushi/toml v1.2.0 // indirect
-	github.com/IBM-Cloud/bluemix-go v0.0.0-20240423071914-9e96525baef4
-	github.com/IBM/go-sdk-core v1.1.0
-	github.com/IBM/logs-go-sdk v0.1.1
-	github.com/IBM/mqcloud-go-sdk v0.0.4
-	github.com/IBM/sarama v1.41.2
-	github.com/IBM/vmware-go-sdk v0.1.2
-	github.com/stretchr/testify v1.9.0
-	k8s.io/utils v0.0.0-20230313181309-38a27ef9d749
-	sigs.k8s.io/controller-runtime v0.14.1
-)
+require github.com/BurntSushi/toml v1.2.0 // indirect
 
 require (
-	cloud.google.com/go/kms v1.10.1 // indirect
-	cloud.google.com/go/monitoring v1.13.0 // indirect
 	github.com/Logicalis/asn1 v0.0.0-20190312173541-d60463189a56 // indirect
 	github.com/Masterminds/semver/v3 v3.2.1 // indirect
 	github.com/PromonLogicalis/asn1 v0.0.0-20190312173541-d60463189a56 // indirect
@@ -233,11 +220,6 @@ require (
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240814211410-ddb44dafa142 // indirect
 	google.golang.org/grpc v1.67.1 // indirect
 	google.golang.org/protobuf v1.35.1 // indirect
-	gomodules.xyz/jsonpatch/v2 v2.2.0 // indirect
-	google.golang.org/appengine v1.6.7 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20230525234030-28d5490b6b19 // indirect
-	google.golang.org/grpc v1.57.1 // indirect
-	google.golang.org/protobuf v1.33.0 // indirect
 	gopkg.in/go-playground/validator.v9 v9.31.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
