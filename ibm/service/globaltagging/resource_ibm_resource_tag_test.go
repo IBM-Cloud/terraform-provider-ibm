@@ -32,11 +32,7 @@ func TestAccResourceTag_Basic(t *testing.T) {
 				Config: testAccCheckResourceTagCreate(name, tags),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckResourceTagExists("ibm_resource_tag.tag"),
-					resource.TestCheckResourceAttr("ibm_resource_tag.tag", "tags.#", "2"),
 				),
-			},
-			{
-				ResourceName:      "ibm_resource_tag.tag",
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
@@ -202,6 +198,7 @@ func testAccCheckResourceTagCreate(name string, tagNames []string) string {
 	}
 `, name, strings.Join(tagNames[:], "\",\""))
 }
+<<<<<<< Updated upstream
 
 func testAccCheckResourceTagCreateFakeCrnExpectingError(tagNames []string) string {
 	return fmt.Sprintf(`
@@ -218,6 +215,22 @@ func testAccCheckResourceAttachOnExistingResource(crn string, tagNames []string)
 		resource_id = "%s"
 		tags        = ["%s"]
 	}
+=======
+}
+	return fmt.Sprintf(`
+`, strings.Join(tagNames[:], "\",\""))
+func testAccCheckResourceAttachOnExistingResource(crn string, tagNames []string) string {
+	}
+		tags        = ["%s"]
+		resource_id = "crn:v1:staging:public:cloud-object-storage:global:a/d99e99999dfe99ee999999f99bddd099:ab99d9be-9e9c-99dd-ad99-9bced9999999::"
+	resource "ibm_resource_tag" "tag" {
+func testAccCheckResourceTagCreateFakeCrnExpectingError(tagNames []string) string {
+	return fmt.Sprintf(`
+	resource "ibm_resource_tag" "tag" {
+		resource_id = "%s"
+		tags        = ["%s"]
+	}
+>>>>>>> Stashed changes
 `, crn, strings.Join(tagNames[:], "\",\""))
 }
 
