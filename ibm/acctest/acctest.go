@@ -125,6 +125,7 @@ var (
 	ISSnapshotCRN                   string
 	WorkspaceID                     string
 	TemplateID                      string
+	AgentID                         string
 	ActionID                        string
 	JobID                           string
 	RepoURL                         string
@@ -1383,6 +1384,11 @@ func init() {
 	if ActionID == "" {
 		ActionID = "us-east.ACTION.action_pm.a4ffeec3"
 		fmt.Println("[INFO] Set the environment variable SCHEMATICS_ACTION_ID for testing schematics resources else it is set to default value")
+	}
+	AgentID = os.Getenv("SCHEMATICS_AGENT_ID")
+	if AgentID == "" {
+		AgentID = "agent-non-bnpp-prod-testing-130.soA.be6e"
+		fmt.Println("[INFO] Set the environment variable SCHEMATICS_AGENT_ID for testing schematics resources else it is set to default value")
 	}
 	JobID = os.Getenv("SCHEMATICS_JOB_ID")
 	if JobID == "" {
