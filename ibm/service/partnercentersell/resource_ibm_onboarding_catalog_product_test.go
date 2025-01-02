@@ -257,7 +257,6 @@ func testAccCheckIbmOnboardingCatalogProductConfig(productID string, env string,
 					pc {
 						support {
 							url = "url"
-							process_i18n = {}
 							status_url = "status_url"
 							locations = [ "locations" ]
 							languages = [ "languages" ]
@@ -304,7 +303,7 @@ func testAccCheckIbmOnboardingCatalogProductConfig(productID string, env string,
 								}
 								availability {
 									times {
-										day = "1.0"
+										day = "%s"
 										start_time = "start_time"
 										end_time = "end_time"
 									}

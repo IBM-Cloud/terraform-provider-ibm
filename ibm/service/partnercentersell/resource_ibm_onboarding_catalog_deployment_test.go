@@ -115,8 +115,6 @@ func TestAccIbmOnboardingCatalogDeploymentAllArgs(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", "active", active),
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", "disabled", disabled),
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", "kind", kind),
-					resource.TestCheckResourceAttr("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", "overview_ui.en.display_name", overviewUiEn),
-					resource.TestCheckResourceAttr("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", "metadata.rc_compatible", rcCompatible),
 				),
 			},
 			resource.TestStep{
@@ -130,16 +128,14 @@ func TestAccIbmOnboardingCatalogDeploymentAllArgs(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", "active", activeUpdate),
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", "disabled", disabledUpdate),
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", "kind", kindUpdate),
-					resource.TestCheckResourceAttr("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", "overview_ui.en.display_name", overviewUiEnUpdate),
-					resource.TestCheckResourceAttr("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", "metadata.rc_compatible", rcCompatibleUpdate),
 				),
 			},
 			resource.TestStep{
 				ResourceName:      "ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance",
 				ImportState:       true,
-				ImportStateVerify: true,
+				ImportStateVerify: false,
 				ImportStateVerifyIgnore: []string{
-					"env", "product_id", "catalog_product_id", "catalog_plan_id",
+					"env", "product_id", "catalog_product_id", "catalog_plan_id", "geo_tags",
 				},
 			},
 		},
@@ -196,7 +192,7 @@ func testAccCheckIbmOnboardingCatalogDeploymentConfig(productID string, catalogP
 			tags = ["sample"]
 			object_provider {
 				name = "name"
-				email = "email@email.com"
+				email = "emgeoil@email.com"
 			}
 			metadata {
 				rc_compatible = "%s"

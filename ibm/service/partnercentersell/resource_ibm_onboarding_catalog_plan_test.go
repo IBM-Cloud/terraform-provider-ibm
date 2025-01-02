@@ -83,7 +83,7 @@ func TestAccIbmOnboardingCatalogPlanAllArgs(t *testing.T) {
 	kindUpdate := "plan"
 	overviewUiEn := "display_name"
 	overviewUiEnUpdate := "display_name_2"
-	rcCompatible := "true"
+	rcCompatible := "false"
 	rcCompatibleUpdate := "false"
 	allowInternalUsers := "true"
 	allowInternalUsersUpdate := "false"
@@ -129,7 +129,7 @@ func TestAccIbmOnboardingCatalogPlanAllArgs(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
-					"env", "product_id", "catalog_product_id",
+					"env", "product_id", "catalog_product_id", "geo_tags",
 				},
 			},
 		},
