@@ -63,11 +63,11 @@ func dataSourceIbmDb2AllowListRead(context context.Context, d *schema.ResourceDa
 		return tfErr.GetDiag()
 	}
 
-	getDb2SaasAllowlistOptions := &db2saasv1.GetDb2SaasWhitelistOptions{}
+	getDb2SaasAllowlistOptions := &db2saasv1.GetDb2SaasAllowlistOptions{}
 
 	getDb2SaasAllowlistOptions.SetXDeploymentID(d.Get("x_deployment_id").(string))
 
-	successGetAllowlistIPs, _, err := db2saasClient.GetDb2SaasWhitelistWithContext(context, getDb2SaasAllowlistOptions)
+	successGetAllowlistIPs, _, err := db2saasClient.GetDb2SaasAllowlistWithContext(context, getDb2SaasAllowlistOptions)
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetDb2SaasWhitelistWithContext failed: %s", err.Error()), "(Data) ibm_db2_allowlist_ip", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())

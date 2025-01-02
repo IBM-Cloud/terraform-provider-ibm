@@ -40,7 +40,7 @@ func TestAccIbmDb2AllowlistDataSourceBasic(t *testing.T) {
 func testAccCheckIbmDb2AllowlistDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		data "ibm_db2_allowlist_ip" "db2_allowlistips" {
-    x_deployment_id = "crn:v1:staging:public:dashdb-for-transactions:us-east:a/e7e3e87b512f474381c0684a5ecbba03:f9455c22-07af-4a86-b9df-f02fd4774471::"
+    x_deployment_id = "crn:v1:staging:public:dashdb-for-transactions:us-east:a/e7e3e87b512f474381c0684a5ecbba03:9e570684-bd63-4e33-aee8-3c96041065ac::"
 }
 	`)
 }
