@@ -9,7 +9,7 @@ require (
 	github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20240725064144-454a2ae23113
 	github.com/IBM-Cloud/power-go-client v1.9.0
 	github.com/IBM/apigateway-go-sdk v0.0.0-20210714141226-a5d5d49caaca
-	github.com/IBM/appconfiguration-go-admin-sdk v0.3.0
+	github.com/IBM/appconfiguration-go-admin-sdk v0.4.4
 	github.com/IBM/appid-management-go-sdk v0.0.0-20210908164609-dd0e0eaf732f
 	github.com/IBM/cloud-databases-go-sdk v0.7.1
 	github.com/IBM/cloud-db2-go-sdk v0.0.0-20241206113855-40a65de39906
@@ -18,13 +18,14 @@ require (
 	github.com/IBM/configuration-aggregator-go-sdk v0.0.2
 	github.com/IBM/container-registry-go-sdk v1.1.0
 	github.com/IBM/continuous-delivery-go-sdk/v2 v2.0.2
-	github.com/IBM/event-notifications-go-admin-sdk v0.11.0
+	github.com/IBM/event-notifications-go-admin-sdk v0.12.0
 	github.com/IBM/eventstreams-go-sdk v1.4.0
 	github.com/IBM/go-sdk-core v1.1.0
 	github.com/IBM/go-sdk-core/v3 v3.2.4
 	github.com/IBM/go-sdk-core/v5 v5.18.3
-	github.com/IBM/ibm-cos-sdk-go v1.10.3
-	github.com/IBM/ibm-cos-sdk-go-config/v2 v2.1.0
+	github.com/IBM/ibm-backup-recovery-sdk-go v1.0.1
+	github.com/IBM/ibm-cos-sdk-go v1.12.0
+	github.com/IBM/ibm-cos-sdk-go-config/v2 v2.2.0
 	github.com/IBM/ibm-hpcs-tke-sdk v0.0.0-20211109141421-a4b61b05f7d1
 	github.com/IBM/ibm-hpcs-uko-sdk v0.0.20-beta
 	github.com/IBM/keyprotect-go-client v0.15.1
@@ -32,7 +33,7 @@ require (
 	github.com/IBM/logs-router-go-sdk v1.0.5
 	github.com/IBM/mqcloud-go-sdk v0.2.0
 	github.com/IBM/networking-go-sdk v0.49.0
-	github.com/IBM/platform-services-go-sdk v0.70.0
+	github.com/IBM/platform-services-go-sdk v0.71.1
 	github.com/IBM/project-go-sdk v0.3.5
 	github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5
 	github.com/IBM/sarama v1.41.2
@@ -41,7 +42,7 @@ require (
 	github.com/IBM/secrets-manager-go-sdk/v2 v2.0.7
 	github.com/IBM/vmware-go-sdk v0.1.2
 	github.com/IBM/vpc-beta-go-sdk v0.8.0
-	github.com/IBM/vpc-go-sdk v0.63.1
+	github.com/IBM/vpc-go-sdk v0.64.0
 	github.com/ScaleFT/sshkeys v0.0.0-20200327173127-6142f742bca5
 	github.com/akamai/AkamaiOPEN-edgegrid-golang v1.2.2
 	github.com/akamai/AkamaiOPEN-edgegrid-golang/v5 v5.0.0
@@ -212,7 +213,7 @@ require (
 	golang.org/x/sys v0.28.0 // indirect
 	golang.org/x/term v0.27.0 // indirect
 	golang.org/x/text v0.21.0 // indirect
-	golang.org/x/time v0.5.0 // indirect
+	golang.org/x/time v0.3.0 // indirect
 	golang.org/x/tools v0.26.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240814211410-ddb44dafa142 // indirect

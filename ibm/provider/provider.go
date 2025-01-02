@@ -21,6 +21,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/appconfiguration"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/appid"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/atracker"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/backuprecovery"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/catalogmanagement"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/cdtektonpipeline"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/cdtoolchain"
@@ -242,6 +243,29 @@ func Provider() *schema.Provider {
 			"ibm_config_aggregator_settings":       configurationaggregator.AddConfigurationAggregatorInstanceFields(configurationaggregator.DataSourceIbmConfigAggregatorSettings()),
 			"ibm_config_aggregator_resource_collection_status": configurationaggregator.AddConfigurationAggregatorInstanceFields(configurationaggregator.DataSourceIbmConfigAggregatorResourceCollectionStatus()),
 
+			// // BackupAndRecovery
+			"ibm_backup_recovery_agent_upgrade_tasks":      backuprecovery.DataSourceIbmBackupRecoveryAgentUpgradeTasks(),
+			"ibm_backup_recovery_download_agent":           backuprecovery.DataSourceIbmBackupRecoveryDownloadAgent(),
+			"ibm_backup_recovery_search_indexed_object":    backuprecovery.DataSourceIbmBackupRecoverySearchIndexedObject(),
+			"ibm_backup_recovery_object_snapshots":         backuprecovery.DataSourceIbmBackupRecoveryObjectSnapshots(),
+			"ibm_backup_recovery_connectors_metadata":      backuprecovery.DataSourceIbmBackupRecoveryConnectorsMetadata(),
+			"ibm_backup_recovery_data_source_connections":  backuprecovery.DataSourceIbmBackupRecoveryDataSourceConnections(),
+			"ibm_backup_recovery_data_source_connectors":   backuprecovery.DataSourceIbmBackupRecoveryDataSourceConnectors(),
+			"ibm_backup_recovery_search_objects":           backuprecovery.DataSourceIbmBackupRecoverySearchObjects(),
+			"ibm_backup_recovery_search_protected_objects": backuprecovery.DataSourceIbmBackupRecoverySearchProtectedObjects(),
+			"ibm_backup_recovery_protection_group":         backuprecovery.DataSourceIbmBackupRecoveryProtectionGroup(),
+			"ibm_backup_recovery_protection_groups":        backuprecovery.DataSourceIbmBackupRecoveryProtectionGroups(),
+			"ibm_backup_recovery_protection_group_runs":    backuprecovery.DataSourceIbmBackupRecoveryProtectionGroupRuns(),
+			"ibm_backup_recovery_protection_policies":      backuprecovery.DataSourceIbmBackupRecoveryProtectionPolicies(),
+			"ibm_backup_recovery_protection_policy":        backuprecovery.DataSourceIbmBackupRecoveryProtectionPolicy(),
+			"ibm_backup_recovery":                          backuprecovery.DataSourceIbmBackupRecovery(),
+			"ibm_backup_recoveries":                        backuprecovery.DataSourceIbmBackupRecoveries(),
+			"ibm_backup_recovery_download_files":           backuprecovery.DataSourceIbmBackupRecoveryDownloadFiles(),
+			"ibm_backup_recovery_source_registrations":     backuprecovery.DataSourceIbmBackupRecoverySourceRegistrations(),
+			"ibm_backup_recovery_source_registration":      backuprecovery.DataSourceIbmBackupRecoverySourceRegistration(),
+			"ibm_backup_recovery_download_indexed_files":   backuprecovery.DataSourceIbmBackupRecoveryDownloadIndexedFiles(),
+			"ibm_backup_recovery_protection_sources":       backuprecovery.DataSourceIbmBackupRecoveryProtectionSources(),
+
 			// // AppID
 			"ibm_appid_action_url":               appid.DataSourceIBMAppIDActionURL(),
 			"ibm_appid_apm":                      appid.DataSourceIBMAppIDAPM(),
@@ -357,6 +381,8 @@ func Provider() *schema.Provider {
 			"ibm_cr_namespaces":                            registry.DataIBMContainerRegistryNamespaces(),
 			"ibm_cloud_shell_account_settings":             cloudshell.DataSourceIBMCloudShellAccountSettings(),
 			"ibm_cos_bucket":                               cos.DataSourceIBMCosBucket(),
+			"ibm_cos_backup_vault":                         cos.DataSourceIBMCosBackupVault(),
+			"ibm_cos_backup_policy":                        cos.DataSourceIBMCosBackupPolicy(),
 			"ibm_cos_bucket_object":                        cos.DataSourceIBMCosBucketObject(),
 			"ibm_dns_domain_registration":                  classicinfrastructure.DataSourceIBMDNSDomainRegistration(),
 			"ibm_dns_domain":                               classicinfrastructure.DataSourceIBMDNSDomain(),
@@ -551,6 +577,8 @@ func Provider() *schema.Provider {
 			"ibm_is_share_profiles":              vpc.DataSourceIbmIsShareProfiles(),
 			"ibm_is_share_accessor_bindings":     vpc.DataSourceIBMIsShareAccessorBindings(),
 			"ibm_is_share_accessor_binding":      vpc.DataSourceIBMIsShareAccessorBinding(),
+			"ibm_is_share_snapshot":              vpc.DataSourceIBMIsShareSnapshot(),
+			"ibm_is_share_snapshots":             vpc.DataSourceIBMIsShareSnapshots(),
 			"ibm_is_virtual_network_interface":   vpc.DataSourceIBMIsVirtualNetworkInterface(),
 			"ibm_is_virtual_network_interfaces":  vpc.DataSourceIBMIsVirtualNetworkInterfaces(),
 
@@ -711,6 +739,8 @@ func Provider() *schema.Provider {
 			"ibm_pi_storage_types_capacity":                 power.DataSourceIBMPIStorageTypesCapacity(),
 			"ibm_pi_system_pools":                           power.DataSourceIBMPISystemPools(),
 			"ibm_pi_tenant":                                 power.DataSourceIBMPITenant(),
+			"ibm_pi_virtual_serial_number":                  power.DataSourceIBMPIVirtualSerialNumber(),
+			"ibm_pi_virtual_serial_numbers":                 power.DataSourceIBMPIVirtualSerialNumbers(),
 			"ibm_pi_volume_clone":                           power.DataSourceIBMPIVolumeClone(),
 			"ibm_pi_volume_flash_copy_mappings":             power.DataSourceIBMPIVolumeFlashCopyMappings(),
 			"ibm_pi_volume_group_details":                   power.DataSourceIBMPIVolumeGroupDetails(),
@@ -936,6 +966,7 @@ func Provider() *schema.Provider {
 			"ibm_en_metrics":                   eventnotification.DataSourceIBMEnMetrics(),
 			"ibm_en_smtp_allowed_ips":          eventnotification.DataSourceIBMEnSMTPAllowedIps(),
 			"ibm_en_webhook_template":          eventnotification.DataSourceIBMEnWebhookTemplate(),
+			"ibm_en_subscription_scheduler":    eventnotification.DataSourceIBMEnFCMSubscription(),
 
 			// Added for Toolchain
 			"ibm_cd_toolchain":                         cdtoolchain.DataSourceIBMCdToolchain(),
@@ -1016,6 +1047,20 @@ func Provider() *schema.Provider {
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
+			"ibm_backup_recovery_agent_upgrade_task":                             backuprecovery.ResourceIbmBackupRecoveryAgentUpgradeTask(),
+			"ibm_backup_recovery_protection_group_run_request":                   backuprecovery.ResourceIbmBackupRecoveryProtectionGroupRunRequest(),
+			"ibm_backup_recovery_data_source_connection":                         backuprecovery.ResourceIbmBackupRecoveryDataSourceConnection(),
+			"ibm_backup_recovery_data_source_connector_patch":                    backuprecovery.ResourceIbmBackupRecoveryDataSourceConnectorPatch(),
+			"ibm_backup_recovery_download_files_folders":                         backuprecovery.ResourceIbmBackupRecoveryDownloadFilesFolders(),
+			"ibm_backup_recovery_restore_points":                                 backuprecovery.ResourceIbmBackupRecoveryRestorePoints(),
+			"ibm_backup_recovery_perform_action_on_protection_group_run_request": backuprecovery.ResourceIbmBackupRecoveryPerformActionOnProtectionGroupRunRequest(),
+			"ibm_backup_recovery_protection_group":                               backuprecovery.ResourceIbmBackupRecoveryProtectionGroup(),
+			"ibm_backup_recovery_protection_policy":                              backuprecovery.ResourceIbmBackupRecoveryProtectionPolicy(),
+			"ibm_backup_recovery":                                                backuprecovery.ResourceIbmBackupRecovery(),
+			"ibm_backup_recovery_source_registration":                            backuprecovery.ResourceIbmBackupRecoverySourceRegistration(),
+			"ibm_backup_recovery_update_protection_group_run_request":            backuprecovery.ResourceIbmBackupRecoveryUpdateProtectionGroupRunRequest(),
+			"ibm_backup_recovery_connection_registration_token":                  backuprecovery.ResourceIbmBackupRecoveryConnectionRegistrationToken(),
+
 			"ibm_api_gateway_endpoint":              apigateway.ResourceIBMApiGatewayEndPoint(),
 			"ibm_api_gateway_endpoint_subscription": apigateway.ResourceIBMApiGatewayEndpointSubscription(),
 			"ibm_app":                               cloudfoundry.ResourceIBMApp(),
@@ -1143,6 +1188,8 @@ func Provider() *schema.Provider {
 			"ibm_cos_bucket_object_lock_configuration":     cos.ResourceIBMCOSBucketObjectlock(),
 			"ibm_cos_bucket_website_configuration":         cos.ResourceIBMCOSBucketWebsiteConfiguration(),
 			"ibm_cos_bucket_lifecycle_configuration":       cos.ResourceIBMCOSBucketLifecycleConfiguration(),
+			"ibm_cos_backup_vault":                         cos.ResourceIBMCOSBackupVault(),
+			"ibm_cos_backup_policy":                        cos.ResourceIBMCOSBackupPolicy(),
 			"ibm_dns_domain":                               classicinfrastructure.ResourceIBMDNSDomain(),
 			"ibm_dns_domain_registration_nameservers":      classicinfrastructure.ResourceIBMDNSDomainRegistrationNameservers(),
 			"ibm_dns_secondary":                            classicinfrastructure.ResourceIBMDNSSecondary(),
@@ -1256,6 +1303,7 @@ func Provider() *schema.Provider {
 			"ibm_is_share_replica_operations":              vpc.ResourceIbmIsShareReplicaOperations(),
 			"ibm_is_share_mount_target":                    vpc.ResourceIBMIsShareMountTarget(),
 			"ibm_is_share_delete_accessor_binding":         vpc.ResourceIbmIsShareDeleteAccessorBinding(),
+			"ibm_is_share_snapshot":                        vpc.ResourceIBMIsShareSnapshot(),
 			"ibm_is_subnet":                                vpc.ResourceIBMISSubnet(),
 			"ibm_is_reservation":                           vpc.ResourceIBMISReservation(),
 			"ibm_is_reservation_activate":                  vpc.ResourceIBMISReservationActivate(),
@@ -1374,6 +1422,7 @@ func Provider() *schema.Provider {
 			"ibm_pi_shared_processor_pool":           power.ResourceIBMPISharedProcessorPool(),
 			"ibm_pi_snapshot":                        power.ResourceIBMPISnapshot(),
 			"ibm_pi_spp_placement_group":             power.ResourceIBMPISPPPlacementGroup(),
+			"ibm_pi_virtual_serial_number":           power.ResourceIBMPIVirtualSerialNumber(),
 			"ibm_pi_volume_attach":                   power.ResourceIBMPIVolumeAttach(),
 			"ibm_pi_volume_clone":                    power.ResourceIBMPIVolumeClone(),
 			"ibm_pi_volume_group_action":             power.ResourceIBMPIVolumeGroupAction(),
@@ -1565,6 +1614,7 @@ func Provider() *schema.Provider {
 			"ibm_en_slack_template":            eventnotification.ResourceIBMEnSlackTemplate(),
 			"ibm_en_smtp_setting":              eventnotification.ResourceIBMEnSMTPSetting(),
 			"ibm_en_webhook_template":          eventnotification.ResourceIBMEnWebhookTemplate(),
+			"ibm_en_subscription_scheduler":    eventnotification.ResourceIBMEnFCMSubscription(),
 
 			// Added for Toolchain
 			"ibm_cd_toolchain":                         cdtoolchain.ResourceIBMCdToolchain(),
@@ -1953,6 +2003,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_is_share":                                       vpc.ResourceIbmIsShareValidator(),
 				"ibm_is_share_replica_operations":                    vpc.ResourceIbmIsShareReplicaOperationsValidator(),
 				"ibm_is_share_mount_target":                          vpc.ResourceIBMIsShareMountTargetValidator(),
+				"ibm_is_share_snapshot":                              vpc.ResourceIBMIsShareSnapshotValidator(),
 				"ibm_is_snapshot":                                    vpc.ResourceIBMISSnapshotValidator(),
 				"ibm_is_snapshot_consistency_group":                  vpc.ResourceIBMIsSnapshotConsistencyGroupValidator(),
 				"ibm_is_ssh_key":                                     vpc.ResourceIBMISSHKeyValidator(),

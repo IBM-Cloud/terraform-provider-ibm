@@ -36,9 +36,12 @@ var (
 	CisResourceGroup                string
 	CloudShellAccountID             string
 	CosCRN                          string
+	CosBackupPolicyID               string
 	BucketCRN                       string
+	BackupVaultName                 string
 	ActivityTrackerInstanceCRN      string
 	MetricsMonitoringCRN            string
+	KmsKeyCrn                       string
 	BucketName                      string
 	CosName                         string
 	Ibmid1                          string
@@ -240,6 +243,7 @@ var (
 	Pi_spp_placement_group_id         string
 	Pi_storage_connection             string
 	Pi_target_storage_tier            string
+	Pi_virtual_serial_number          string
 	Pi_volume_clone_task_id           string
 	Pi_volume_group_id                string
 	Pi_volume_group_name              string
@@ -575,6 +579,22 @@ func init() {
 	if BucketCRN == "" {
 		BucketCRN = ""
 		fmt.Println("[WARN] Set the environment variable IBM_COS_Bucket_CRN with a VALID BUCKET CRN for testing ibm_cos_bucket* resources")
+	}
+	BackupVaultName = os.Getenv("IBM_COS_Backup_Vault")
+	if BackupVaultName == "" {
+		BackupVaultName = ""
+		fmt.Println("[WARN] Set the environment variable IBM_COS_Backup_Vault with a VALID BACKUP VAULT NAME  for testing ibm_cos_backup_vault* resources")
+	}
+	KmsKeyCrn = os.Getenv("IBM_KMS_KEY_CRN")
+	if KmsKeyCrn == "" {
+		KmsKeyCrn = ""
+		fmt.Println("[WARN] Set the environment variable IBM_KMS_KEY_CRN with a VALID key crn for a KP/HPCS root key")
+	}
+
+	CosBackupPolicyID = os.Getenv("IBM_COS_Backup_Policy_Id")
+	if CosBackupPolicyID == "" {
+		CosBackupPolicyID = ""
+		fmt.Println("[WARN] Set the environment variable IBM_COS_Backup_Policy_Id with a VALID POLICYS ID for testing ibm_cos_backup_policy* resources")
 	}
 	ActivityTrackerInstanceCRN = os.Getenv("IBM_COS_ACTIVITY_TRACKER_CRN")
 	if ActivityTrackerInstanceCRN == "" {
@@ -1320,6 +1340,12 @@ func init() {
 	if Pi_volume_clone_task_id == "" {
 		Pi_volume_clone_task_id = "terraform-test-volume-clone-task-id"
 		fmt.Println("[INFO] Set the environment variable PI_VOLUME_CLONE_TASK_ID for testing Pi_volume_clone_task_id resource else it is set to default value 'terraform-test-volume-clone-task-id'")
+	}
+
+	Pi_virtual_serial_number = os.Getenv("PI_VIRTUAL_SERIAL_NUMBER")
+	if Pi_virtual_serial_number == "" {
+		Pi_virtual_serial_number = "terraform_test_power"
+		fmt.Println("[INFO] Set the environment variable PI_VIRTUAL_SERIAL_NUMBER for testing ibm_pi_virtual_serial_number data source else it is set to default value 'terraform-test-power'")
 	}
 
 	Pi_resource_group_id = os.Getenv("PI_RESOURCE_GROUP_ID")
