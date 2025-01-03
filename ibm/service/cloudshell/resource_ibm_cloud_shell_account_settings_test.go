@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2021 All Rights Reserved.
+// Copyright IBM Corp. 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package cloudshell_test
@@ -7,20 +7,33 @@ import (
 	"fmt"
 	"testing"
 
-	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
-
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/cloudshell"
+	"github.com/IBM/go-sdk-core/v5/core"
+	"github.com/IBM/platform-services-go-sdk/ibmcloudshellv1"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAccIBMCloudShellAccountSettingsBasic(t *testing.T) {
+	var conf ibmcloudshellv1.AccountSettings
+	accountID := fmt.Sprintf("tf_account_id_%d", acctest.RandIntRange(10, 100))
+
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheckCloudShell(t) },
-		Providers: acc.TestAccProviders,
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCloudShellAccountSettingsDestroy,
 		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckIBMCloudShellAccountSettingsConfigBasic(acc.CloudShellAccountID),
+			resource.TestStep{
+				Config: testAccCheckIBMCloudShellAccountSettingsConfigBasic(accountID),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_cloud_shell_account_settings.cloud_shell_account_settings", "account_id", acc.CloudShellAccountID),
+					testAccCheckIBMCloudShellAccountSettingsExists("ibm_cloud_shell_account_settings.cloud_shell_account_settings_instance", conf),
+					resource.TestCheckResourceAttr("ibm_cloud_shell_account_settings.cloud_shell_account_settings_instance", "account_id", accountID),
 				),
 			},
 		},
@@ -28,54 +41,47 @@ func TestAccIBMCloudShellAccountSettingsBasic(t *testing.T) {
 }
 
 func TestAccIBMCloudShellAccountSettingsAllArgs(t *testing.T) {
+	var conf ibmcloudshellv1.AccountSettings
+	accountID := fmt.Sprintf("tf_account_id_%d", acctest.RandIntRange(10, 100))
+	rev := fmt.Sprintf("tf_rev_%d", acctest.RandIntRange(10, 100))
 	defaultEnableNewFeatures := "false"
 	defaultEnableNewRegions := "true"
 	enabled := "false"
-	featureWebPreview := "false"
-	regionJpTok := "false"
+	revUpdate := fmt.Sprintf("tf_rev_%d", acctest.RandIntRange(10, 100))
 	defaultEnableNewFeaturesUpdate := "true"
 	defaultEnableNewRegionsUpdate := "false"
 	enabledUpdate := "true"
-	featureWebPreviewUpdate := "true"
-	regionJpTokUpdate := "true"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheckCloudShell(t) },
-		Providers: acc.TestAccProviders,
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCloudShellAccountSettingsDestroy,
 		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckIBMCloudShellAccountSettingsConfig("1", acc.CloudShellAccountID, defaultEnableNewFeatures, defaultEnableNewRegions, enabled, featureWebPreview, regionJpTok),
+			resource.TestStep{
+				Config: testAccCheckIBMCloudShellAccountSettingsConfig(accountID, rev, defaultEnableNewFeatures, defaultEnableNewRegions, enabled),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_cloud_shell_account_settings.cloud_shell_account_settings1", "id", fmt.Sprintf("ac-%s", acc.CloudShellAccountID)),
-					resource.TestCheckResourceAttr("ibm_cloud_shell_account_settings.cloud_shell_account_settings1", "account_id", acc.CloudShellAccountID),
-					resource.TestCheckResourceAttrSet("ibm_cloud_shell_account_settings.cloud_shell_account_settings1", "rev"),
-					resource.TestCheckResourceAttr("ibm_cloud_shell_account_settings.cloud_shell_account_settings1", "default_enable_new_features", defaultEnableNewFeatures),
-					resource.TestCheckResourceAttr("ibm_cloud_shell_account_settings.cloud_shell_account_settings1", "default_enable_new_regions", defaultEnableNewRegions),
-					resource.TestCheckResourceAttr("ibm_cloud_shell_account_settings.cloud_shell_account_settings1", "enabled", enabled),
-					resource.TestCheckResourceAttrSet("ibm_cloud_shell_account_settings.cloud_shell_account_settings1", "features.#"),
-					resource.TestCheckResourceAttr("ibm_cloud_shell_account_settings.cloud_shell_account_settings1", "features.1.enabled", featureWebPreview),
-					resource.TestCheckResourceAttr("ibm_cloud_shell_account_settings.cloud_shell_account_settings1", "features.1.key", "server.web_preview"),
-					resource.TestCheckResourceAttrSet("ibm_cloud_shell_account_settings.cloud_shell_account_settings1", "regions.#"),
-					resource.TestCheckResourceAttr("ibm_cloud_shell_account_settings.cloud_shell_account_settings1", "regions.1.enabled", regionJpTok),
-					resource.TestCheckResourceAttr("ibm_cloud_shell_account_settings.cloud_shell_account_settings1", "regions.1.key", "jp-tok"),
+					testAccCheckIBMCloudShellAccountSettingsExists("ibm_cloud_shell_account_settings.cloud_shell_account_settings_instance", conf),
+					resource.TestCheckResourceAttr("ibm_cloud_shell_account_settings.cloud_shell_account_settings_instance", "account_id", accountID),
+					resource.TestCheckResourceAttr("ibm_cloud_shell_account_settings.cloud_shell_account_settings_instance", "rev", rev),
+					resource.TestCheckResourceAttr("ibm_cloud_shell_account_settings.cloud_shell_account_settings_instance", "default_enable_new_features", defaultEnableNewFeatures),
+					resource.TestCheckResourceAttr("ibm_cloud_shell_account_settings.cloud_shell_account_settings_instance", "default_enable_new_regions", defaultEnableNewRegions),
+					resource.TestCheckResourceAttr("ibm_cloud_shell_account_settings.cloud_shell_account_settings_instance", "enabled", enabled),
 				),
 			},
-			{
-				Config: testAccCheckIBMCloudShellAccountSettingsConfig("2", acc.CloudShellAccountID, defaultEnableNewFeaturesUpdate, defaultEnableNewRegionsUpdate, enabledUpdate, featureWebPreviewUpdate, regionJpTokUpdate),
+			resource.TestStep{
+				Config: testAccCheckIBMCloudShellAccountSettingsConfig(accountID, revUpdate, defaultEnableNewFeaturesUpdate, defaultEnableNewRegionsUpdate, enabledUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_cloud_shell_account_settings.cloud_shell_account_settings2", "id", fmt.Sprintf("ac-%s", acc.CloudShellAccountID)),
-					resource.TestCheckResourceAttr("ibm_cloud_shell_account_settings.cloud_shell_account_settings2", "account_id", acc.CloudShellAccountID),
-					resource.TestCheckResourceAttrSet("ibm_cloud_shell_account_settings.cloud_shell_account_settings2", "rev"),
-					resource.TestCheckResourceAttr("ibm_cloud_shell_account_settings.cloud_shell_account_settings2", "default_enable_new_features", defaultEnableNewFeaturesUpdate),
-					resource.TestCheckResourceAttr("ibm_cloud_shell_account_settings.cloud_shell_account_settings2", "default_enable_new_regions", defaultEnableNewRegionsUpdate),
-					resource.TestCheckResourceAttr("ibm_cloud_shell_account_settings.cloud_shell_account_settings2", "enabled", enabledUpdate),
-					resource.TestCheckResourceAttrSet("ibm_cloud_shell_account_settings.cloud_shell_account_settings2", "features.#"),
-					resource.TestCheckResourceAttr("ibm_cloud_shell_account_settings.cloud_shell_account_settings2", "features.1.enabled", featureWebPreviewUpdate),
-					resource.TestCheckResourceAttr("ibm_cloud_shell_account_settings.cloud_shell_account_settings2", "features.1.key", "server.web_preview"),
-					resource.TestCheckResourceAttrSet("ibm_cloud_shell_account_settings.cloud_shell_account_settings2", "regions.#"),
-					resource.TestCheckResourceAttr("ibm_cloud_shell_account_settings.cloud_shell_account_settings2", "regions.1.enabled", regionJpTokUpdate),
-					resource.TestCheckResourceAttr("ibm_cloud_shell_account_settings.cloud_shell_account_settings2", "regions.1.key", "jp-tok"),
+					resource.TestCheckResourceAttr("ibm_cloud_shell_account_settings.cloud_shell_account_settings_instance", "account_id", accountID),
+					resource.TestCheckResourceAttr("ibm_cloud_shell_account_settings.cloud_shell_account_settings_instance", "rev", revUpdate),
+					resource.TestCheckResourceAttr("ibm_cloud_shell_account_settings.cloud_shell_account_settings_instance", "default_enable_new_features", defaultEnableNewFeaturesUpdate),
+					resource.TestCheckResourceAttr("ibm_cloud_shell_account_settings.cloud_shell_account_settings_instance", "default_enable_new_regions", defaultEnableNewRegionsUpdate),
+					resource.TestCheckResourceAttr("ibm_cloud_shell_account_settings.cloud_shell_account_settings_instance", "enabled", enabledUpdate),
 				),
+			},
+			resource.TestStep{
+				ResourceName:      "ibm_cloud_shell_account_settings.cloud_shell_account_settings",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -83,72 +89,167 @@ func TestAccIBMCloudShellAccountSettingsAllArgs(t *testing.T) {
 
 func testAccCheckIBMCloudShellAccountSettingsConfigBasic(accountID string) string {
 	return fmt.Sprintf(`
-	data "ibm_cloud_shell_account_settings" "account_settings" {
-		account_id = "%s"
-	}
-
-	resource "ibm_cloud_shell_account_settings" "cloud_shell_account_settings" {
-		account_id = "%s"
-		rev = data.ibm_cloud_shell_account_settings.account_settings.rev
-		default_enable_new_features = true
-		default_enable_new_regions = true
-		enabled = true
-		features {
-			enabled = true
-			key = "server.file_manager"
+		resource "ibm_cloud_shell_account_settings" "cloud_shell_account_settings_instance" {
+			account_id = "%s"
 		}
-		features {
-			enabled = false
-			key = "server.web_preview"
-		}
-		regions {
-			enabled = true
-			key = "eu-de"
-		}
-		regions {
-			enabled = true
-			key = "jp-tok"
-		}
-		regions {
-			enabled = false
-			key = "us-south"
-		}
-	}
-	`, accountID, accountID)
+	`, accountID)
 }
 
-func testAccCheckIBMCloudShellAccountSettingsConfig(suffix, accountID string, defaultEnableNewFeatures string, defaultEnableNewRegions string, enabled string, featureWebPreview string, regionJpTok string) string {
+func testAccCheckIBMCloudShellAccountSettingsConfig(accountID string, rev string, defaultEnableNewFeatures string, defaultEnableNewRegions string, enabled string) string {
 	return fmt.Sprintf(`
-	data "ibm_cloud_shell_account_settings" "account_settings%s" {
-		account_id = "%s"
+
+		resource "ibm_cloud_shell_account_settings" "cloud_shell_account_settings_instance" {
+			account_id = "%s"
+			rev = "%s"
+			default_enable_new_features = %s
+			default_enable_new_regions = %s
+			enabled = %s
+			features {
+				enabled = true
+				key = "key"
+			}
+			regions {
+				enabled = true
+				key = "key"
+			}
+		}
+	`, accountID, rev, defaultEnableNewFeatures, defaultEnableNewRegions, enabled)
+}
+
+func testAccCheckIBMCloudShellAccountSettingsExists(n string, obj ibmcloudshellv1.AccountSettings) resource.TestCheckFunc {
+
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("Not found: %s", n)
+		}
+
+		ibmCloudShellClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).IBMCloudShellV1()
+		if err != nil {
+			return err
+		}
+
+		getAccountSettingsOptions := &ibmcloudshellv1.GetAccountSettingsOptions{}
+
+		parts, err := flex.SepIdParts(rs.Primary.ID, "/")
+		if err != nil {
+			return err
+		}
+
+		getAccountSettingsOptions.SetAccountID(parts[0])
+		getAccountSettingsOptions.SetAccountID(parts[1])
+
+		accountSettings, _, err := ibmCloudShellClient.GetAccountSettings(getAccountSettingsOptions)
+		if err != nil {
+			return err
+		}
+
+		obj = *accountSettings
+		return nil
+	}
+}
+
+func testAccCheckIBMCloudShellAccountSettingsDestroy(s *terraform.State) error {
+	ibmCloudShellClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).IBMCloudShellV1()
+	if err != nil {
+		return err
+	}
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "ibm_cloud_shell_account_settings" {
+			continue
+		}
+
+		getAccountSettingsOptions := &ibmcloudshellv1.GetAccountSettingsOptions{}
+
+		parts, err := flex.SepIdParts(rs.Primary.ID, "/")
+		if err != nil {
+			return err
+		}
+
+		getAccountSettingsOptions.SetAccountID(parts[0])
+		getAccountSettingsOptions.SetAccountID(parts[1])
+
+		// Try to find the key
+		_, response, err := ibmCloudShellClient.GetAccountSettings(getAccountSettingsOptions)
+
+		if err == nil {
+			return fmt.Errorf("cloud_shell_account_settings still exists: %s", rs.Primary.ID)
+		} else if response.StatusCode != 404 {
+			return fmt.Errorf("Error checking for cloud_shell_account_settings (%s) has been destroyed: %s", rs.Primary.ID, err)
+		}
 	}
 
-	resource "ibm_cloud_shell_account_settings" "cloud_shell_account_settings%s" {
-		account_id = "%s"
-		rev = data.ibm_cloud_shell_account_settings.account_settings%s.rev
-		default_enable_new_features = %s
-		default_enable_new_regions = %s
-		enabled = %s
-		features {
-			enabled = true
-			key = "server.file_manager"
-		}
-		features {
-			enabled = %s
-			key = "server.web_preview"
-		}
-		regions {
-			enabled = true
-			key = "eu-de"
-		}
-		regions {
-			enabled = %s
-			key = "jp-tok"
-		}
-		regions {
-			enabled = false
-			key = "us-south"
-		}
+	return nil
+}
+
+func TestResourceIBMCloudShellAccountSettingsFeatureToMap(t *testing.T) {
+	checkResult := func(result map[string]interface{}) {
+		model := make(map[string]interface{})
+		model["enabled"] = true
+		model["key"] = "testString"
+
+		assert.Equal(t, result, model)
 	}
-	`, suffix, accountID, suffix, accountID, suffix, defaultEnableNewFeatures, defaultEnableNewRegions, enabled, featureWebPreview, regionJpTok)
+
+	model := new(ibmcloudshellv1.Feature)
+	model.Enabled = core.BoolPtr(true)
+	model.Key = core.StringPtr("testString")
+
+	result, err := cloudshell.ResourceIBMCloudShellAccountSettingsFeatureToMap(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestResourceIBMCloudShellAccountSettingsRegionSettingToMap(t *testing.T) {
+	checkResult := func(result map[string]interface{}) {
+		model := make(map[string]interface{})
+		model["enabled"] = true
+		model["key"] = "testString"
+
+		assert.Equal(t, result, model)
+	}
+
+	model := new(ibmcloudshellv1.RegionSetting)
+	model.Enabled = core.BoolPtr(true)
+	model.Key = core.StringPtr("testString")
+
+	result, err := cloudshell.ResourceIBMCloudShellAccountSettingsRegionSettingToMap(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestResourceIBMCloudShellAccountSettingsMapToFeature(t *testing.T) {
+	checkResult := func(result *ibmcloudshellv1.Feature) {
+		model := new(ibmcloudshellv1.Feature)
+		model.Enabled = core.BoolPtr(true)
+		model.Key = core.StringPtr("testString")
+
+		assert.Equal(t, result, model)
+	}
+
+	model := make(map[string]interface{})
+	model["enabled"] = true
+	model["key"] = "testString"
+
+	result, err := cloudshell.ResourceIBMCloudShellAccountSettingsMapToFeature(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestResourceIBMCloudShellAccountSettingsMapToRegionSetting(t *testing.T) {
+	checkResult := func(result *ibmcloudshellv1.RegionSetting) {
+		model := new(ibmcloudshellv1.RegionSetting)
+		model.Enabled = core.BoolPtr(true)
+		model.Key = core.StringPtr("testString")
+
+		assert.Equal(t, result, model)
+	}
+
+	model := make(map[string]interface{})
+	model["enabled"] = true
+	model["key"] = "testString"
+
+	result, err := cloudshell.ResourceIBMCloudShellAccountSettingsMapToRegionSetting(model)
+	assert.Nil(t, err)
+	checkResult(result)
 }
