@@ -240,6 +240,13 @@ func testAccCheckIbmOnboardingCatalogProductConfig(productID string, env string,
 				service {
 					rc_provisionable = true
 					iam_compatible = false
+					parameters {
+                		displayname = "test"
+                		name = "test"
+                		type = "text"
+                		value = ["test"]
+                		description = "test"
+            		}
 				}
 				other {
 				    composite {

@@ -129,7 +129,7 @@ func TestAccIbmOnboardingCatalogPlanAllArgs(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
-					"env", "product_id", "catalog_product_id", "geo_tags",
+					"env", "product_id", "catalog_product_id", "geo_tags", "object_id",
 				},
 			},
 		},

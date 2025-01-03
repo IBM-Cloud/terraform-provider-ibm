@@ -192,7 +192,7 @@ func testAccCheckIbmOnboardingCatalogDeploymentConfig(productID string, catalogP
 			tags = ["sample"]
 			object_provider {
 				name = "name"
-				email = "emgeoil@email.com"
+				email = "email@email.com"
 			}
 			metadata {
 				rc_compatible = "%s"
@@ -248,7 +248,7 @@ func testAccCheckIbmOnboardingCatalogDeploymentUpdateConfig(productID string, ca
 					long_description = "long_description"
 								}
 			}
-			tags = ["sample", "moreSample"]
+			tags = ["sample", "moresample"]
 			object_provider {
 				name = "name"
 				email = "email@email.com"
@@ -258,7 +258,7 @@ func testAccCheckIbmOnboardingCatalogDeploymentUpdateConfig(productID string, ca
 				service {
 				  	rc_provisionable = true
   					iam_compatible = "%s"
-								}
+				}
 				deployment {
 					broker {
 						name = "%s"
