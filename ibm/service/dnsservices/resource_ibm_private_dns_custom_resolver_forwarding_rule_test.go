@@ -18,23 +18,30 @@ func TestAccIBMPrivateDNSCustomResolverForwardingRule_basic(t *testing.T) {
 	match := "test.example.com"
 	vpcname := fmt.Sprintf("fr-vpc-%d", acctest.RandIntRange(10, 100))
 	subnetname := fmt.Sprintf("fr-subnet-name-%d", acctest.RandIntRange(10, 100))
+	viewName := "view-example-1"
+	viewDesc := "view-example-description"
+	viewExpression := "ipInRange(source.ip, '10.240.0.0/24') || ipInRange(source.ip, '10.240.1.0/24')"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIbmDnsCrForwardingRuleConfig(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, typeVar, match),
+				Config: testAccCheckIbmDnsCrForwardingRuleConfig(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, typeVar, match, viewName, viewDesc, viewExpression),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_dns_custom_resolver_forwarding_rule.dns_custom_resolver_forwarding_rule", "type", typeVar),
 					resource.TestCheckResourceAttr("ibm_dns_custom_resolver_forwarding_rule.dns_custom_resolver_forwarding_rule", "match", match),
+					resource.TestCheckResourceAttr("ibm_dns_custom_resolver_forwarding_rule.dns_custom_resolver_forwarding_rule", "views.#", "1"),
+					resource.TestCheckResourceAttr("ibm_dns_custom_resolver_forwarding_rule.dns_custom_resolver_forwarding_rule", "views.0.name", viewName),
+					resource.TestCheckResourceAttr("ibm_dns_custom_resolver_forwarding_rule.dns_custom_resolver_forwarding_rule", "views.0.description", viewDesc),
+					resource.TestCheckResourceAttr("ibm_dns_custom_resolver_forwarding_rule.dns_custom_resolver_forwarding_rule", "views.0.expression", viewExpression),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckIbmDnsCrForwardingRuleConfig(vpcname, subnetname, zone, cidr, typeVar, match string) string {
+func testAccCheckIbmDnsCrForwardingRuleConfig(vpcname, subnetname, zone, cidr, typeVar, match, viewName, viewDesc, viewExpression string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "rg" {
 		is_default	= true
@@ -75,6 +82,12 @@ func testAccCheckIbmDnsCrForwardingRuleConfig(vpcname, subnetname, zone, cidr, t
 		type = "%s"
 		match = "%s"
 		forward_to = ["168.20.22.122"]
+		views   {
+                name = "%s"
+                description = "%s"
+                expression = "%s"
+                forward_to = ["10.240.2.1"]
+        }
 	}		
-	`, vpcname, subnetname, zone, cidr, typeVar, match)
+	`, vpcname, subnetname, zone, cidr, typeVar, match, viewName, viewDesc, viewExpression)
 }

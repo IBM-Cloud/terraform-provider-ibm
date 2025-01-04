@@ -13,57 +13,62 @@ Provides a resource for ibm_dns_custom_resolver_forwarding_rule. This allows For
 ## Example usage
 
 ```terraform
-
-  	data "ibm_resource_group" "rg" {
-		is_default	= true
-	}
-	resource "ibm_is_vpc" "test-pdns-cr-vpc" {
-		name			= "test-pdns-custom-resolver-vpc"
-		resource_group	= data.ibm_resource_group.rg.id
-	}
-	resource "ibm_is_subnet" "test-pdns-cr-subnet1" {
-		name			= "test-pdns-cr-subnet1"
-		vpc				= ibm_is_vpc.test-pdns-cr-vpc.id
-		zone			= "us-south-1"
-		ipv4_cidr_block	= "10.240.0.0/24"
-		resource_group	= data.ibm_resource_group.rg.id
-	}
-	resource "ibm_is_subnet" "test-pdns-cr-subnet2" {
-		name			= "test-pdns-cr-subnet2"
-		vpc				= ibm_is_vpc.test-pdns-cr-vpc.id
-		zone			= "us-south-1"
-		ipv4_cidr_block	= "10.240.64.0/24"
-		resource_group	= data.ibm_resource_group.rg.id
-	}
-	resource "ibm_resource_instance" "test-pdns-cr-instance" {
-		name				= "test-pdns-cr-instance"
-		resource_group_id	= data.ibm_resource_group.rg.id
-		location			= "global"
-		service				= "dns-svcs"
-		plan				= "standard-dns"
-	}
-	resource "ibm_dns_custom_resolver" "test" {
-		name		= "test-customresolver"
-		instance_id = ibm_resource_instance.test-pdns-cr-instance.guid
-		description = "new test CR - TF"
-		enabled 	= true
-		locations {
-			subnet_crn	= ibm_is_subnet.test-pdns-cr-subnet1.crn
-			enabled		= true
-		}
-		locations {
-			subnet_crn	= ibm_is_subnet.test-pdns-cr-subnet2.crn
-			enabled     = true
-		}
-	}
-	resource "ibm_dns_custom_resolver_forwarding_rule" "dns_custom_resolver_forwarding_rule" {
-		instance_id		= ibm_resource_instance.test-pdns-cr-instance.guid
-		resolver_id		= ibm_dns_custom_resolver.test.custom_resolver_id
-		description		= "Test Fw Rule"
-		type			= "zone"
-		match			= "test.example.com"
-		forward_to		= ["168.20.22.122"]
-	}
+    data "ibm_resource_group" "rg" {
+        is_default = true
+    }
+    resource "ibm_is_vpc" "test-pdns-cr-vpc" {
+        name           = "test-pdns-custom-resolver-vpc"
+        resource_group = data.ibm_resource_group.rg.id
+    }
+    resource "ibm_is_subnet" "test-pdns-cr-subnet1" {
+        name            = "test-pdns-cr-subnet1"
+        vpc             = ibm_is_vpc.test-pdns-cr-vpc.id
+        zone            = "us-south-1"
+        ipv4_cidr_block = "10.240.0.0/24"
+        resource_group  = data.ibm_resource_group.rg.id
+    }
+    resource "ibm_is_subnet" "test-pdns-cr-subnet2" {
+        name            = "test-pdns-cr-subnet2"
+        vpc             = ibm_is_vpc.test-pdns-cr-vpc.id
+        zone            = "us-south-1"
+        ipv4_cidr_block = "10.240.64.0/24"
+        resource_group  = data.ibm_resource_group.rg.id
+    }
+    resource "ibm_resource_instance" "test-pdns-cr-instance" {
+        name                = "test-pdns-cr-instance"
+        resource_group_id   = data.ibm_resource_group.rg.id
+        location            = "global"
+        service             = "dns-svcs"
+        plan                = "standard-dns"
+    }
+    resource "ibm_dns_custom_resolver" "test" {
+        name        = "test-customresolver"
+        instance_id = ibm_resource_instance.test-pdns-cr-instance.guid
+        description = "new test CR - TF"
+        enabled     = true
+        locations {
+            subnet_crn = ibm_is_subnet.test-pdns-cr-subnet1.crn
+            enabled    = true
+        }
+        locations {
+            subnet_crn  = ibm_is_subnet.test-pdns-cr-subnet2.crn
+            enabled     = true
+        }
+    }
+    resource "ibm_dns_custom_resolver_forwarding_rule" "dns_custom_resolver_forwarding_rule" {
+        instance_id     = ibm_resource_instance.test-pdns-cr-instance.guid
+        resolver_id     = ibm_dns_custom_resolver.test.custom_resolver_id
+        description     = "Test Fw Rule"
+        type            = "zone"
+        match           = "test.example.com"
+        forward_to      = ["168.20.22.122"]
+        views   {
+            name        = "view-example-1"
+            description = "view example 1"
+            expression  = "ipInRange(source.ip, '10.240.0.0/24') || ipInRange(source.ip, '10.240.1.0/24')"
+            forward_to  = ["10.240.2.6","10.240.2.7"]
+        }
+    }
 ```
 
 ## Argument reference
@@ -74,9 +79,16 @@ Review the argument reference that you can specify for your resource.
 * `resolver_id` - (Required, String) The unique identifier of a custom resolver.
 * `description` - (Optional, String) Descriptive text of the forwarding rule.
 * `type` - (Optional, String) Type of the forwarding rule.
-  * Constraints: Allowable values is: zone.
+  * Constraints: Allowable values is: `zone`.
 * `match` - (Optional, String) The matching zone or hostname.
-* `forward_to` - (Optional, List) The upstream DNS servers will be forwarded to.
+* `forward_to` - (Optional, List) List of the upstream DNS servers that the matching DNS queries will be forwarded to.
+* `views` (Optional, List) List of views attached to the custom resolver.
+
+  Nested scheme for `views`:
+  * `name` - (Required, String) Name of the view.
+  * `description` - (optional, String) Description of the view.
+  * `expression` - (Required, String) Expression of the view.
+  * `forward_to` - (Required, List) List of the upstream DNS servers that the matching DNS queries will be forwarded to.
 
 ## Attribute reference
 
@@ -92,13 +104,14 @@ In addition to all argument reference list, you can access the following attribu
 You can import the `ibm_dns_custom_resolver_forwarding_rule` resource by using `id`.
 The `id` property can be formed from `rule_id`, `resolver_id`, and `instance_id` in the following format:
 
+```terraform
+terraform import ibm_dns_custom_resolver_forwarding_rule.ibm_dns_custom_resolver_forwarding_rule <rule_id>:<resolver_id>:<instance_id>
 ```
-<rule_id>:<resolver_id>:<instance_id>
-```
+
 * `rule_id`: A String. The unique identifier of a forwarding rule.
 * `resolver_id`: A String. The unique identifier of a custom resolver.
 * `instance_id`: A String. The GUID of the private DNS service instance.
 
-```
-$ terraform import ibm_dns_custom_resolver_forwarding_rule.ibm_dns_custom_resolver_forwarding_rule <rule_id>:<resolver_id>:<instance_id>
+```terraform
+terraform import ibm_dns_custom_resolver_forwarding_rule.ibm_dns_custom_resolver_forwarding_rule <rule_id>:<resolver_id>:<instance_id>
 ```
