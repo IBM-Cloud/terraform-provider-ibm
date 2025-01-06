@@ -146,7 +146,7 @@ func ResourceIBMPrivateDNSCustomResolver() *schema.Resource {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     false,
-				Description: "Whether a disruptive update is allowed for the custom resolver",
+				Description: "Whether a disruptive update is allowed for the custom resolver.",
 			},
 			pdnsCRForwardRules: {
 				Type:     schema.TypeList,
@@ -183,7 +183,7 @@ func ResourceIBMPrivateDNSCustomResolver() *schema.Resource {
 						},
 						pdnsCRFRViews: {
 							Type:        schema.TypeList,
-							Description: "An array of views used by forwarding rules",
+							Description: "An array of views used by forwarding rules.",
 							Optional:    true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
@@ -205,7 +205,7 @@ func ResourceIBMPrivateDNSCustomResolver() *schema.Resource {
 									pdnsCRFRVForwardTo: {
 										Type:        schema.TypeList,
 										Required:    true,
-										Description: "The upstream DNS servers that the matching DNS queries will be forwarded to..",
+										Description: "The upstream DNS servers that the matching DNS queries will be forwarded to.",
 										Elem:        &schema.Schema{Type: schema.TypeString},
 									},
 								},

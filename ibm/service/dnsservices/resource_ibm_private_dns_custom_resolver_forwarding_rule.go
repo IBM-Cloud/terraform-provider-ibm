@@ -84,7 +84,7 @@ func ResourceIBMPrivateDNSForwardingRule() *schema.Resource {
 			},
 			pdnsCRFRViews: {
 				Type:        schema.TypeList,
-				Description: "An array of views used by forwarding rules",
+				Description: "An array of views used by forwarding rules.",
 				Optional:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{

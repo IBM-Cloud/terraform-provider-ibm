@@ -107,7 +107,7 @@ In addition to all argument reference list, you can access the following attribu
     - `name` - (String) Name of the view.
     - `description` - (String) Description of the view.
     - `expression` - (String) Expression of the view.
-    - `forward_to` - (List) List of the upstream DNS servers that the matching DNS queries will be forwarded to
+    - `forward_to` - (List) List of the upstream DNS servers that the matching DNS queries will be forwarded to.
 
 ## Import
 
