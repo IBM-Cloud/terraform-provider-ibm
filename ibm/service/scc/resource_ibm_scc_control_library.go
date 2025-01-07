@@ -88,7 +88,7 @@ func ResourceIbmSccControlLibrary() *schema.Resource {
 						},
 						"control_id": {
 							Type:        schema.TypeString,
-							Computed:    true,
+							Optional:    true,
 							Description: "The ID of the control library that contains the profile.",
 						},
 						"control_description": {

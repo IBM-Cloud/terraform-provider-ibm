@@ -207,7 +207,7 @@ func dataSourceIbmSccReportRead(context context.Context, d *schema.ResourceData,
 		return diag.FromErr(flex.FmtErrorf("Error setting group_id: %s", err))
 	}
 
-	if err = d.Set("created_on", report.CreatedOn); err != nil {
+	if err = d.Set("created_on", flex.DateTimeToString(report.CreatedOn)); err != nil {
 		return diag.FromErr(flex.FmtErrorf("Error setting created_on: %s", err))
 	}
 

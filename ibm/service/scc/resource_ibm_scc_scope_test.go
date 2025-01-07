@@ -50,7 +50,6 @@ func TestAccIbmSccScopeAllArgs(t *testing.T) {
 	environment := "ibm-cloud"
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	descriptionUpdate := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
-	environmentUpdate := fmt.Sprintf("tf_environment_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheckScc(t) },
@@ -68,16 +67,16 @@ func TestAccIbmSccScopeAllArgs(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIBMSccScopeConfig(instanceID, nameUpdate, descriptionUpdate, environmentUpdate, scopeID),
+				Config: testAccCheckIBMSccScopeConfig(instanceID, nameUpdate, descriptionUpdate, environment, scopeID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_scc_scope.scc_scope_instance", "instance_id", instanceID),
 					resource.TestCheckResourceAttr("ibm_scc_scope.scc_scope_instance", "name", nameUpdate),
 					resource.TestCheckResourceAttr("ibm_scc_scope.scc_scope_instance", "description", descriptionUpdate),
-					resource.TestCheckResourceAttr("ibm_scc_scope.scc_scope_instance", "environment", environmentUpdate),
+					resource.TestCheckResourceAttr("ibm_scc_scope.scc_scope_instance", "environment", environment),
 				),
 			},
 			resource.TestStep{
-				ResourceName:      "ibm_scc_scope.scc_scope",
+				ResourceName:      "ibm_scc_scope.scc_scope_instance",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -96,6 +95,9 @@ func testAccCheckIBMSccScopeConfig(instanceID string, name string, description s
 			properties {
         account_id = "%s"
 			}
+      exclusions {
+        resource_group_id = "957934c8d570423299a92a7ca7acd334"
+      }
 		}
 	`, instanceID, name, description, environment, scopeId)
 }

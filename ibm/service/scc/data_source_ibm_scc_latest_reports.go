@@ -581,17 +581,6 @@ func dataSourceIbmSccLatestReportsScopePropertyToMap(model securityandcompliance
 		if model.Value != nil {
 			modelMap["value"] = model.Value
 		}
-		if model.Exclusions != nil {
-			exclusions := []map[string]interface{}{}
-			for _, exclusionsItem := range model.Exclusions {
-				exclusionsItemMap, err := resourceIBMSccScopeScopePropertyExclusionItemToMap(&exclusionsItem)
-				if err != nil {
-					return modelMap, err
-				}
-				exclusions = append(exclusions, exclusionsItemMap)
-			}
-			modelMap["exclusions"] = exclusions
-		}
 		return modelMap, nil
 	} else {
 		return nil, fmt.Errorf("Unrecognized securityandcompliancecenterv3.ScopePropertyIntf subtype encountered")

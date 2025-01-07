@@ -464,7 +464,7 @@ func dataSourceIbmSccReportEvaluationsPropertyToMap(model *securityandcompliance
 		modelMap["operator"] = model.Operator
 	}
 	if model.ExpectedValue != nil {
-		modelMap["expected_value"] = model.ExpectedValue
+		modelMap["expected_value"] = fmt.Sprintf("%v", model.ExpectedValue)
 	}
 	if model.FoundValue != nil {
 		// modelMap["found_value"] = model.FoundValue
