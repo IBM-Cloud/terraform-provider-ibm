@@ -9,8 +9,8 @@ import (
 	"log"
 	"sort"
 	"strings"
+	"time"
 
-	"github.com/IBM-Cloud/bluemix-go/models"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
@@ -165,7 +165,7 @@ func dataSourceIBMResourceKeyRead(d *schema.ResourceData, meta interface{}) erro
 	d.SetId(*key.ID)
 
 	if key.Credentials != nil && key.Credentials.Redacted != nil {
-		log.Printf("Credentials are redacted with code: %s.The User doesn't have the correct access to view the credentials. Refer to the API documentation for additional details.", key.Credentials.Redacted)
+		log.Printf("Credentials are redacted with code: %s.The User doesn't have the correct access to view the credentials. Refer to the API documentation for additional details.", *key.Credentials.Redacted)
 	}
 
 	if key.Credentials != nil && key.Credentials.IamRoleCRN != nil {
@@ -254,17 +254,17 @@ func getCRN(d *schema.ResourceData, meta interface{}) (*string, error) {
 
 }
 
-type resourceKeys []rc.ResourceKeys
+type resourceKeys []rc.ResourceKey
 
 func (k resourceKeys) Len() int { return len(k) }
 
 func (k resourceKeys) Swap(i, j int) { k[i], k[j] = k[j], k[i] }
 
 func (k resourceKeys) Less(i, j int) bool {
-	return (*k[i].CreatedAt).Before(*k[j].CreatedAt)
+	return (time.Time(*k[i].CreatedAt)).Before(time.Time(*k[j].CreatedAt))
 }
 
-func mostRecentResourceKey(keys resourceKeys) models.ServiceKey {
+func mostRecentResourceKey(keys resourceKeys) rc.ResourceKey {
 	sortedKeys := keys
 	sort.Sort(sortedKeys)
 	return sortedKeys[len(sortedKeys)-1]
