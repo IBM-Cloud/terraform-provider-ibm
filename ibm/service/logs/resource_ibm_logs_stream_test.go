@@ -21,10 +21,9 @@ import (
 func TestAccIbmLogsStreamBasic(t *testing.T) {
 	var conf logsv0.Stream
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	dpxlExpression := fmt.Sprintf("tf_dpxl_expression_%d", acctest.RandIntRange(10, 100))
+	dpxlExpression := "<v1>contains(kubernetes.labels.CX_AZ, 'eu-west-1')"
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	dpxlExpressionUpdate := fmt.Sprintf("tf_dpxl_expression_%d", acctest.RandIntRange(10, 100))
-
+	dpxlExpressionUpdate := "<v1>contains(kubernetes.labels.CX_AZ, 'eu-west-2')"
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheckCloudLogs(t) },
 		Providers:    acc.TestAccProviders,
@@ -53,11 +52,11 @@ func TestAccIbmLogsStreamAllArgs(t *testing.T) {
 	var conf logsv0.Stream
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	isActive := "false"
-	dpxlExpression := fmt.Sprintf("tf_dpxl_expression_%d", acctest.RandIntRange(10, 100))
-	compressionType := "unspecified"
+	dpxlExpression := "<v1>contains(kubernetes.labels.CX_AZ, 'eu-west-1')"
+	compressionType := "gzip"
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	isActiveUpdate := "true"
-	dpxlExpressionUpdate := fmt.Sprintf("tf_dpxl_expression_%d", acctest.RandIntRange(10, 100))
+	dpxlExpressionUpdate := "<v1>contains(kubernetes.labels.CX_AZ, 'eu-west-2')"
 	compressionTypeUpdate := "gzip"
 
 	resource.Test(t, resource.TestCase{
@@ -85,7 +84,7 @@ func TestAccIbmLogsStreamAllArgs(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				ResourceName:      "ibm_logs_stream.logs_stream",
+				ResourceName:      "ibm_logs_stream.logs_stream_instance",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -100,6 +99,11 @@ func testAccCheckIbmLogsStreamConfigBasic(name string, dpxlExpression string) st
 			region           = "%s"
 			name 			 = "%s"
 			dpxl_expression  = "%s"
+			compression_type = "gzip"
+			ibm_event_streams {
+				brokers = "kafka01.example.com:9093"
+				topic   = "live.screen"
+			}
 		}
 	`, acc.LogsInstanceId, acc.LogsInstanceRegion, name, dpxlExpression)
 }

@@ -66,6 +66,7 @@ func ResourceIbmLogsOutgoingWebhook() *schema.Resource {
 						"endpoint_type": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
+							Computed:    true,
 							Description: "The endpoint type of integration.",
 						},
 						"source_id": &schema.Schema{

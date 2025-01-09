@@ -19,7 +19,7 @@ import (
 
 func TestAccIbmLogsStreamsDataSourceBasic(t *testing.T) {
 	streamName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	streamDpxlExpression := fmt.Sprintf("tf_dpxl_expression_%d", acctest.RandIntRange(10, 100))
+	streamDpxlExpression := "<v1>contains(kubernetes.labels.CX_AZ, 'eu-west-1')"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheckCloudLogs(t) },
@@ -41,8 +41,8 @@ func TestAccIbmLogsStreamsDataSourceBasic(t *testing.T) {
 func TestAccIbmLogsStreamsDataSourceAllArgs(t *testing.T) {
 	streamName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	streamIsActive := "false"
-	streamDpxlExpression := fmt.Sprintf("tf_dpxl_expression_%d", acctest.RandIntRange(10, 100))
-	streamCompressionType := "unspecified"
+	streamDpxlExpression := "<v1>contains(kubernetes.labels.CX_AZ, 'eu-west-1')"
+	streamCompressionType := "gzip"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheckCloudLogs(t) },
@@ -73,6 +73,11 @@ func testAccCheckIbmLogsStreamsDataSourceConfigBasic(streamName string, streamDp
 			region           = "%s"
 			name = "%s"
 			dpxl_expression = "%s"
+			compression_type = "gzip"
+			ibm_event_streams {
+				brokers = "kafka01.example.com:9093"
+				topic   = "live.screen"
+			}
 		}
 
 		data "ibm_logs_streams" "logs_streams_instance" {

@@ -160,7 +160,7 @@ func resourceIbmLogsStreamCreate(context context.Context, d *schema.ResourceData
 
 	stream, _, err := logsClient.CreateEventStreamTargetWithContext(context, upsertEventStreamTargetOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpsertEventStreamTargetWithContext failed: %s", err.Error()), "ibm_logs_stream", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateEventStreamTargetWithContext failed: %s", err.Error()), "ibm_logs_stream", "create")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -201,7 +201,7 @@ func resourceIbmLogsStreamRead(context context.Context, d *schema.ResourceData, 
 		streamIds := make(map[int64]interface{}, 0)
 		for _, stream := range streamCollection.Streams {
 			streamIds[*stream.ID] = nil
-			if stream.ID == &streamsIDInt {
+			if *stream.ID == streamsIDInt {
 				if err = d.Set("streams_id", streamsID); err != nil {
 					return diag.FromErr(fmt.Errorf("Error setting rule_group_id: %s", err))
 				}

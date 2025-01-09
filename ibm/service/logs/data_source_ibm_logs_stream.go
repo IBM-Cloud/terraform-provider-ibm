@@ -107,9 +107,10 @@ func dataSourceIbmLogsStreamRead(context context.Context, d *schema.ResourceData
 		return tfErr.GetDiag()
 	}
 	if streams != nil {
+		streamIds := make(map[int64]interface{}, 0)
 		for _, stream := range streams.Streams {
-			if stream.ID == &streamsID {
-
+			streamIds[*stream.ID] = nil
+			if *stream.ID == streamsID {
 				d.SetId(fmt.Sprintf("%d", *stream.ID))
 
 				if err = d.Set("name", stream.Name); err != nil {
@@ -156,6 +157,10 @@ func dataSourceIbmLogsStreamRead(context context.Context, d *schema.ResourceData
 					}
 				}
 			}
+		}
+		if _, ok := streamIds[streamsID]; !ok {
+			d.SetId("")
+			return flex.TerraformErrorf(err, fmt.Sprintf("Stream ID (%d) not found ", streamsID), "(Data) ibm_logs_stream", "read").GetDiag()
 		}
 	}
 

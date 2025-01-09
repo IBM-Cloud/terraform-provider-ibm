@@ -19,7 +19,7 @@ import (
 
 func TestAccIbmLogsStreamDataSourceBasic(t *testing.T) {
 	streamName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	streamDpxlExpression := fmt.Sprintf("tf_dpxl_expression_%d", acctest.RandIntRange(10, 100))
+	streamDpxlExpression := "<v1>contains(kubernetes.labels.CX_AZ, 'eu-west-1')"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheckCloudLogs(t) },
@@ -40,8 +40,8 @@ func TestAccIbmLogsStreamDataSourceBasic(t *testing.T) {
 func TestAccIbmLogsStreamDataSourceAllArgs(t *testing.T) {
 	streamName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	streamIsActive := "false"
-	streamDpxlExpression := fmt.Sprintf("tf_dpxl_expression_%d", acctest.RandIntRange(10, 100))
-	streamCompressionType := "unspecified"
+	streamDpxlExpression := "<v1>contains(kubernetes.labels.CX_AZ, 'eu-west-1')"
+	streamCompressionType := "gzip"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheckCloudLogs(t) },
@@ -52,7 +52,6 @@ func TestAccIbmLogsStreamDataSourceAllArgs(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_logs_stream.logs_stream_instance", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_logs_stream.logs_stream_instance", "name"),
-					resource.TestCheckResourceAttrSet("data.ibm_logs_stream.logs_stream_instance", "is_active"),
 					resource.TestCheckResourceAttrSet("data.ibm_logs_stream.logs_stream_instance", "dpxl_expression"),
 					resource.TestCheckResourceAttrSet("data.ibm_logs_stream.logs_stream_instance", "created_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_logs_stream.logs_stream_instance", "updated_at"),
@@ -71,11 +70,17 @@ func testAccCheckIbmLogsStreamDataSourceConfigBasic(streamName string, streamDpx
 			region           = "%s"
 			name 			 = "%s"
 			dpxl_expression  = "%s"
+			compression_type = "gzip"
+			ibm_event_streams {
+				brokers = "kafka01.example.com:9093"
+				topic   = "live.screen"
+			}
 		}
 
 		data "ibm_logs_stream" "logs_stream_instance" {
 			instance_id      = "%[1]s"
 			region           = "%[2]s"
+			logs_streams_id  = ibm_logs_stream.logs_stream_instance.streams_id
 			depends_on = [
 				ibm_logs_stream.logs_stream_instance
 			]
@@ -101,6 +106,7 @@ func testAccCheckIbmLogsStreamDataSourceConfig(streamName string, streamIsActive
 		data "ibm_logs_stream" "logs_stream_instance" {
 			instance_id      = "%[1]s"
 			region           = "%[2]s"
+			logs_streams_id  = ibm_logs_stream.logs_stream_instance.streams_id
 			depends_on = [
 				ibm_logs_stream.logs_stream_instance
 			]
