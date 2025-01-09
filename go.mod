@@ -22,7 +22,7 @@ require (
 	github.com/IBM/eventstreams-go-sdk v1.4.0
 	github.com/IBM/go-sdk-core v1.1.0
 	github.com/IBM/go-sdk-core/v3 v3.2.4
-	github.com/IBM/go-sdk-core/v5 v5.18.3
+	github.com/IBM/go-sdk-core/v5 v5.18.5
 	github.com/IBM/ibm-backup-recovery-sdk-go v1.0.1
 	github.com/IBM/ibm-cos-sdk-go v1.12.0
 	github.com/IBM/ibm-cos-sdk-go-config/v2 v2.2.0
@@ -33,7 +33,7 @@ require (
 	github.com/IBM/logs-router-go-sdk v1.0.5
 	github.com/IBM/mqcloud-go-sdk v0.2.0
 	github.com/IBM/networking-go-sdk v0.49.0
-	github.com/IBM/platform-services-go-sdk v0.71.1
+	github.com/IBM/platform-services-go-sdk v0.73.0
 	github.com/IBM/project-go-sdk v0.3.5
 	github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5
 	github.com/IBM/sarama v1.41.2
@@ -65,7 +65,7 @@ require (
 	github.com/rook/rook/pkg/apis v0.0.0-20231204200402-5287527732f7
 	github.com/softlayer/softlayer-go v1.0.3
 	github.com/stretchr/testify v1.10.0
-	golang.org/x/crypto v0.31.0
+	golang.org/x/crypto v0.32.0
 	gopkg.in/yaml.v3 v3.0.1
 	gotest.tools v2.2.0+incompatible
 	k8s.io/api v0.31.1
@@ -207,11 +207,11 @@ require (
 	go.uber.org/ratelimit v0.2.0 // indirect
 	go.uber.org/zap v1.27.0 // indirect
 	golang.org/x/mod v0.21.0 // indirect
-	golang.org/x/net v0.32.0 // indirect
+	golang.org/x/net v0.34.0 // indirect
 	golang.org/x/oauth2 v0.22.0 // indirect
 	golang.org/x/sync v0.10.0 // indirect
-	golang.org/x/sys v0.28.0 // indirect
-	golang.org/x/term v0.27.0 // indirect
+	golang.org/x/sys v0.29.0 // indirect
+	golang.org/x/term v0.28.0 // indirect
 	golang.org/x/text v0.21.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 	golang.org/x/tools v0.26.0 // indirect
