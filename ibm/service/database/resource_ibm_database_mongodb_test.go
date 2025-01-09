@@ -126,7 +126,7 @@ func testAccCheckIBMDatabaseInstanceMongodbBasic(databaseResourceGroup string, n
 		service                      = "databases-for-mongodb"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "secure-Password12345"
+		adminpassword                = "password12345678"
 		service_endpoints            = "public"
 		group {
 			group_id = "member"
@@ -142,7 +142,7 @@ func testAccCheckIBMDatabaseInstanceMongodbBasic(databaseResourceGroup string, n
 		}
 		users {
 		  name     = "user123"
-		  password = "secure-Password12345"
+		  password = "password12345678"
 		}
 		allowlist {
 		  address     = "172.168.1.2/32"
@@ -164,7 +164,7 @@ func testAccCheckIBMDatabaseInstanceMongodbFullyspecified(databaseResourceGroup 
 		service                      = "databases-for-mongodb"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "secure-Password12345"
+		adminpassword                = "password12345678"
 		service_endpoints            = "public"
 		group {
 			group_id = "member"
@@ -180,11 +180,11 @@ func testAccCheckIBMDatabaseInstanceMongodbFullyspecified(databaseResourceGroup 
 		}
 		users {
 		  name     = "user123"
-		  password = "secure-Password12345"
+		  password = "password12345678"
 		}
 		users {
 		  name     = "user124"
-		  password = "secure-Password12345"
+		  password = "password12345678"
 		}
 		allowlist {
 		  address     = "172.168.1.2/32"
@@ -210,7 +210,7 @@ func testAccCheckIBMDatabaseInstanceMongodbReduced(databaseResourceGroup string,
 		service                      = "databases-for-mongodb"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "secure-Password12345"
+		adminpassword                = "password12345678"
 		service_endpoints            = "public"
 		group {
 			group_id = "member"

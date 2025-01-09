@@ -76,7 +76,7 @@ Review the argument reference that you can specify for your resource.
 
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 
-- `id` - (String) The unique identifier of the `webhook_en_destination`.
+- `id` - (String) The unique identifier of the `slack_en_destination`.
 - `destination_id` - (String) The unique identifier of the created destination.
 - `subscription_count` - (Integer) Number of subscriptions.
   - Constraints: The minimum value is `0`.

@@ -91,3 +91,9 @@ In addition to all argument reference list, you can access the following attribu
   - `storage_type` - (String) The storage type where server is deployed.
   - `user_tags` - (List) List of user tags attached to the resource.
   - `virtual_cores_assigned` - (Integer) The virtual cores that are assigned to the instance.
+  - `virtual_serial_number` - (List) Virtual serial number information
+
+    Nested scheme for `virtual_serial_number`:
+    - `description` - (String) Description for virtual serial number.
+    - `serial` - (String) Virtual serial number.
+

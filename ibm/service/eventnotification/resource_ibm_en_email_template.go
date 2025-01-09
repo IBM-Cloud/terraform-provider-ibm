@@ -6,6 +6,7 @@ package eventnotification
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -94,7 +95,10 @@ func ResourceIBMEnEmailTemplate() *schema.Resource {
 func resourceIBMEnEmailTemplateCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	enClient, err := meta.(conns.ClientSession).EventNotificationsApiV1()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_en_email_template", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+		// return diag.FromErr(err)
 	}
 
 	options := &en.CreateTemplateOptions{}
@@ -111,9 +115,12 @@ func resourceIBMEnEmailTemplateCreate(context context.Context, d *schema.Resourc
 	params := EmailTemplateParamsMap(d.Get("params.0").(map[string]interface{}))
 	options.SetParams(&params)
 
-	result, response, err := enClient.CreateTemplateWithContext(context, options)
+	result, _, err := enClient.CreateTemplateWithContext(context, options)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("CreateTemplateWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateTemplateWithContext failed: %s", err.Error()), "ibm_en_email_template", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+		// return diag.FromErr(fmt.Errorf("CreateTemplateWithContext failed %s\n%s", err, response))
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", *options.InstanceID, *result.ID))
@@ -124,14 +131,19 @@ func resourceIBMEnEmailTemplateCreate(context context.Context, d *schema.Resourc
 func resourceIBMEnEmailTemplateRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	enClient, err := meta.(conns.ClientSession).EventNotificationsApiV1()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_en_email_template", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+		// return diag.FromErr(err)
 	}
 
 	options := &en.GetTemplateOptions{}
 
 	parts, err := flex.SepIdParts(d.Id(), "/")
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_en_email_template", "read")
+		return tfErr.GetDiag()
+		// return diag.FromErr(err)
 	}
 
 	options.SetInstanceID(parts[0])
@@ -143,7 +155,10 @@ func resourceIBMEnEmailTemplateRead(context context.Context, d *schema.ResourceD
 			d.SetId("")
 			return nil
 		}
-		return diag.FromErr(fmt.Errorf("GetTemplateWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetTemplateWithContext failed: %s", err.Error()), "ibm_en_email_template", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+		// return diag.FromErr(fmt.Errorf("GetTemplateWithContext failed %s\n%s", err, response))
 	}
 
 	if err = d.Set("instance_guid", options.InstanceID); err != nil {
@@ -185,14 +200,19 @@ func resourceIBMEnEmailTemplateRead(context context.Context, d *schema.ResourceD
 func resourceIBMEnEmailTemplateUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	enClient, err := meta.(conns.ClientSession).EventNotificationsApiV1()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_en_email_template", "update")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+		// return diag.FromErr(err)
 	}
 
 	options := &en.ReplaceTemplateOptions{}
 
 	parts, err := flex.SepIdParts(d.Id(), "/")
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_en_email_template", "update")
+		return tfErr.GetDiag()
+		// return diag.FromErr(err)
 	}
 
 	options.SetInstanceID(parts[0])
@@ -208,9 +228,12 @@ func resourceIBMEnEmailTemplateUpdate(context context.Context, d *schema.Resourc
 		params := EmailTemplateParamsMap(d.Get("params.0").(map[string]interface{}))
 		options.SetParams(&params)
 
-		_, response, err := enClient.ReplaceTemplateWithContext(context, options)
+		_, _, err := enClient.ReplaceTemplateWithContext(context, options)
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("ReplaceTemplateWithContext failed %s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ReplaceTemplateWithContext failed: %s", err.Error()), "ibm_en_email_template", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+			// return diag.FromErr(fmt.Errorf("ReplaceTemplateWithContext failed %s\n%s", err, response))
 		}
 
 		return resourceIBMEnEmailTemplateRead(context, d, meta)
@@ -222,14 +245,19 @@ func resourceIBMEnEmailTemplateUpdate(context context.Context, d *schema.Resourc
 func resourceIBMEnEmailTemplateDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	enClient, err := meta.(conns.ClientSession).EventNotificationsApiV1()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_en_email_template", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+		// return diag.FromErr(err)
 	}
 
 	options := &en.DeleteTemplateOptions{}
 
 	parts, err := flex.SepIdParts(d.Id(), "/")
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_en_email_template", "delete")
+		return tfErr.GetDiag()
+		// return diag.FromErr(err)
 	}
 
 	options.SetInstanceID(parts[0])
@@ -241,7 +269,10 @@ func resourceIBMEnEmailTemplateDelete(context context.Context, d *schema.Resourc
 			d.SetId("")
 			return nil
 		}
-		return diag.FromErr(fmt.Errorf("DeleteTemplateWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteTemplateWithContext: %s", err.Error()), "ibm_en_email_template", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+		// return diag.FromErr(fmt.Errorf("DeleteTemplateWithContext failed %s\n%s", err, response))
 	}
 
 	d.SetId("")
