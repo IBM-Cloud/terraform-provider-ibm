@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_logs_stream"
 description: |-
   Manages logs_stream.
-subcategory: "Cloud Logs API"
+subcategory: "Cloud Logs"
 ---
 
 # ibm_logs_stream
@@ -14,11 +14,14 @@ Create, update, and delete logs_streams with this resource.
 
 ```hcl
 resource "ibm_logs_stream" "logs_stream_instance" {
+  instance_id = ibm_resource_instance.logs_instance.guid
+  region      = ibm_resource_instance.logs_instance.location
   compression_type = "gzip"
-  dpxl_expression = ")DPXL/1:version:1/50:payload:<v1>contains(kubernetes.labels.CX_AZ, 'eu-west-1')"
+  is_active = true
+  dpxl_expression = "<v1>contains(kubernetes.labels.CX_AZ, 'eu-west-1')"
   ibm_event_streams {
 		brokers = "kafka01.example.com:9093"
-		topic = "live.screen"
+		topic = "live.screen.v2"
   }
   name = "Live Screen"
 }
@@ -27,7 +30,8 @@ resource "ibm_logs_stream" "logs_stream_instance" {
 ## Argument Reference
 
 You can specify the following arguments for this resource.
-
+* `instance_id` - (Required, Forces new resource, String)  Cloud Logs Instance GUID.
+* `region` - (Optional, Forces new resource, String) Cloud Logs Instance Region.
 * `compression_type` - (Optional, String) The compression type of the stream.
   * Constraints: Allowable values are: `unspecified`, `gzip`.
 * `dpxl_expression` - (Required, String) The DPXL expression of the Event stream.
@@ -46,16 +50,17 @@ Nested schema for **ibm_event_streams**:
 
 After your resource is created, you can read values from the listed arguments and the following attributes.
 
-* `id` - The unique identifier of the logs_stream.
+* `id` - The unique identifier of the logs_stream resource.
+* `streams_id` - The unique identifier of the logs_stream.
 * `created_at` - (String) The creation time of the Event stream.
 * `updated_at` - (String) The update time of the Event stream.
 
 
 ## Import
 
-You can import the `ibm_logs_stream` resource by using `id`. The ID of the Event stream.
+You can import the `ibm_logs_stream` resource by using `id`. `id`. `id` combination of `region`, `instance_id` and `streams_id`.
 
 # Syntax
 <pre>
-$ terraform import ibm_logs_stream.logs_stream &lt;id&gt;
+$ terraform import ibm_logs_stream.logs_stream eu-gb/3dc02998-0b50-4ea8-b68a-4779d716fa1f/1;
 </pre>

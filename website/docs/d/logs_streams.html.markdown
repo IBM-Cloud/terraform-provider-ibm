@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_logs_streams"
 description: |-
   Get information about logs_streams
-subcategory: "Cloud Logs API"
+subcategory: "Cloud Logs"
 ---
 
 # ibm_logs_streams
@@ -14,9 +14,16 @@ Provides a read-only data source to retrieve information about logs_streams. You
 
 ```hcl
 data "ibm_logs_streams" "logs_streams" {
+	instance_id = ibm_resource_instance.logs_instance.guid
+  	region      = ibm_resource_instance.logs_instance.location
 }
 ```
 
+## Argument Reference
+
+You can specify the following arguments for this resource.
+* `instance_id` - (Required, Forces new resource, String)  Cloud Logs Instance GUID.
+* `region` - (Optional, Forces new resource, String) Cloud Logs Instance Region.
 
 ## Attribute Reference
 

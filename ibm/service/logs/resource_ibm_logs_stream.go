@@ -198,9 +198,11 @@ func resourceIbmLogsStreamRead(context context.Context, d *schema.ResourceData, 
 		return tfErr.GetDiag()
 	}
 	if streamCollection != nil {
+		streamIds := make(map[int64]interface{}, 0)
 		for _, stream := range streamCollection.Streams {
+			streamIds[*stream.ID] = nil
 			if stream.ID == &streamsIDInt {
-				if err = d.Set("stream_id", streamsID); err != nil {
+				if err = d.Set("streams_id", streamsID); err != nil {
 					return diag.FromErr(fmt.Errorf("Error setting rule_group_id: %s", err))
 				}
 				if err = d.Set("instance_id", instanceId); err != nil {
@@ -253,6 +255,10 @@ func resourceIbmLogsStreamRead(context context.Context, d *schema.ResourceData, 
 					}
 				}
 			}
+		}
+		if _, ok := streamIds[streamsIDInt]; !ok {
+			d.SetId("")
+			return nil
 		}
 	}
 
