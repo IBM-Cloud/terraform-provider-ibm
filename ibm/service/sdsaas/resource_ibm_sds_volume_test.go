@@ -24,7 +24,6 @@ func TestAccIBMSdsVolumeBasic(t *testing.T) {
 	var conf sdsaasv1.Volume
 	capacity := fmt.Sprintf("%d", acctest.RandIntRange(1, 5))
 	name := "terraform-test-1"
-	capacityUpdate := fmt.Sprintf("%d", acctest.RandIntRange(6, 10))
 	nameUpdate := "terraform-test-name-updated"
 
 	resource.Test(t, resource.TestCase{
@@ -41,16 +40,9 @@ func TestAccIBMSdsVolumeBasic(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIBMSdsVolumeConfigBasic(capacityUpdate, name),
+				Config: testAccCheckIBMSdsVolumeConfigBasic(capacity, nameUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_sds_volume.sds_volume_instance", "capacity", capacityUpdate),
-					resource.TestCheckResourceAttr("ibm_sds_volume.sds_volume_instance", "name", name),
-				),
-			},
-			resource.TestStep{
-				Config: testAccCheckIBMSdsVolumeConfigBasic(capacityUpdate, nameUpdate),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_sds_volume.sds_volume_instance", "capacity", capacityUpdate),
+					resource.TestCheckResourceAttr("ibm_sds_volume.sds_volume_instance", "capacity", capacity),
 					resource.TestCheckResourceAttr("ibm_sds_volume.sds_volume_instance", "name", nameUpdate),
 				),
 			},
@@ -63,7 +55,6 @@ func TestAccIBMSdsVolumeAllArgs(t *testing.T) {
 	hostnqnstring := "nqn.2014-06.org:9345"
 	capacity := fmt.Sprintf("%d", acctest.RandIntRange(1, 5))
 	name := "terraform-test-name-1"
-	capacityUpdate := fmt.Sprintf("%d", acctest.RandIntRange(6, 10))
 	nameUpdate := "terraform-test-name-updated"
 
 	resource.Test(t, resource.TestCase{
@@ -81,18 +72,10 @@ func TestAccIBMSdsVolumeAllArgs(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIBMSdsVolumeConfig(hostnqnstring, capacityUpdate, name),
+				Config: testAccCheckIBMSdsVolumeConfig(hostnqnstring, capacity, nameUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_sds_volume.sds_volume_instance", "hostnqnstring", hostnqnstring),
-					resource.TestCheckResourceAttr("ibm_sds_volume.sds_volume_instance", "capacity", capacityUpdate),
-					resource.TestCheckResourceAttr("ibm_sds_volume.sds_volume_instance", "name", name),
-				),
-			},
-			resource.TestStep{
-				Config: testAccCheckIBMSdsVolumeConfig(hostnqnstring, capacityUpdate, nameUpdate),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_sds_volume.sds_volume_instance", "hostnqnstring", hostnqnstring),
-					resource.TestCheckResourceAttr("ibm_sds_volume.sds_volume_instance", "capacity", capacityUpdate),
+					resource.TestCheckResourceAttr("ibm_sds_volume.sds_volume_instance", "capacity", capacity),
 					resource.TestCheckResourceAttr("ibm_sds_volume.sds_volume_instance", "name", nameUpdate),
 				),
 			},

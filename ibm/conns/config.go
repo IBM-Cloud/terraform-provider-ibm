@@ -8,7 +8,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/IBM/cloud-db2-go-sdk/db2saasv1"
 	"io"
 	"io/ioutil"
 	"log"
@@ -17,6 +16,8 @@ import (
 	"os"
 	"strings"
 	"time"
+
+	"github.com/IBM/cloud-db2-go-sdk/db2saasv1"
 
 	// Added code for the Power Colo Offering
 
@@ -679,15 +680,13 @@ type clientSession struct {
 	ibmCloudLogsRoutingClient    *ibmcloudlogsroutingv0.IBMCloudLogsRoutingV0
 	ibmCloudLogsRoutingClientErr error
 
-<<<<<<< HEAD
 	// db2 saas
 	db2saasClient    *db2saasv1.Db2saasV1
 	db2saasClientErr error
-=======
+
 	// Software Defined Storage
 	sdsaasClient    *sdsaasv1.SdsaasV1
 	sdsaasClientErr error
->>>>>>> f12d12b17 (Add SDSaaS to terraform provider)
 }
 
 // Usage Reports
@@ -1292,16 +1291,7 @@ func (session clientSession) ProjectV1() (*project.ProjectV1, error) {
 	return session.projectClient, session.projectClientErr
 }
 
-<<<<<<< HEAD
 // MQaaS
-=======
-// sdsaas
-func (session clientSession) SdsaasV1() (*sdsaasv1.SdsaasV1, error) {
-	return session.sdsaasClient, session.sdsaasClientErr
-}
-
-// MQ on Cloud
->>>>>>> f12d12b17 (Add SDSaaS to terraform provider)
 func (session clientSession) MqcloudV1() (*mqcloudv1.MqcloudV1, error) {
 	if session.mqcloudClientErr != nil {
 		sessionMqcloudClient := session.mqcloudClient
@@ -1309,6 +1299,11 @@ func (session clientSession) MqcloudV1() (*mqcloudv1.MqcloudV1, error) {
 		return session.mqcloudClient, session.mqcloudClientErr
 	}
 	return session.mqcloudClient.Clone(), nil
+}
+
+// sdsaas
+func (session clientSession) SdsaasV1() (*sdsaasv1.SdsaasV1, error) {
+	return session.sdsaasClient, session.sdsaasClientErr
 }
 
 // VMware as a Service API

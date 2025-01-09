@@ -79,11 +79,7 @@ resource "ibm_sds_host" "sds_host_instance" {
 
 ## Assumptions
 
-1. TODO
-
-## Notes
-
-1. TODO
+The `IBMCLOUD_SDS_ENDPOINT` is required to be set by the user before running the terraform commands. This is the endpoint provided to customers to perform operations against their service.
 
 ## Requirements
 
