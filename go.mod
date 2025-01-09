@@ -235,7 +235,7 @@ replace github.com/softlayer/softlayer-go v1.0.3 => github.com/IBM-Cloud/softlay
 
 replace github.com/dgrijalva/jwt-go v3.2.0+incompatible => github.com/golang-jwt/jwt v3.2.1+incompatible
 
-replace github.com/IBM/logs-go-sdk => github.com/IBM/logs-go-sdk v0.3.3-0.20241202154047-c3c397bcfe14
+replace github.com/IBM/logs-go-sdk => github.com/IBM/logs-go-sdk v0.3.3-0.20250108072353-7fa51eb5312b
 
 // add sdk changes.
 replace github.com/portworx/sched-ops v0.0.0-20200831185134-3e8010dc7056 => github.com/portworx/sched-ops v0.20.4-openstorage-rc3 // required by rook v1.7

@@ -140,7 +140,7 @@ func resourceIbmLogsStreamCreate(context context.Context, d *schema.ResourceData
 	instanceId := d.Get("instance_id").(string)
 	logsClient = getClientWithLogsInstanceEndpoint(logsClient, instanceId, region, getLogsInstanceEndpointType(logsClient, d))
 
-	upsertEventStreamTargetOptions := &logsv0.UpsertEventStreamTargetOptions{}
+	upsertEventStreamTargetOptions := &logsv0.CreateEventStreamTargetOptions{}
 
 	upsertEventStreamTargetOptions.SetName(d.Get("name").(string))
 	upsertEventStreamTargetOptions.SetDpxlExpression(d.Get("dpxl_expression").(string))
@@ -158,7 +158,7 @@ func resourceIbmLogsStreamCreate(context context.Context, d *schema.ResourceData
 		upsertEventStreamTargetOptions.SetIbmEventStreams(ibmEventStreamsModel)
 	}
 
-	stream, _, err := logsClient.UpsertEventStreamTargetWithContext(context, upsertEventStreamTargetOptions)
+	stream, _, err := logsClient.CreateEventStreamTargetWithContext(context, upsertEventStreamTargetOptions)
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpsertEventStreamTargetWithContext failed: %s", err.Error()), "ibm_logs_stream", "create")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
