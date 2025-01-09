@@ -68,6 +68,7 @@ const (
 	isBareMetalServerFirmwareUpdateTypeAvailable         = "firmware_update_type_available"
 	isBareMetalServerKeys                                = "keys"
 	isBareMetalServerUserData                            = "user_data"
+	isBareMetalServerDefaultTrustedProfile               = "default_trusted_profile"
 	isBareMetalServerNicName                             = "name"
 	isBareMetalServerNicPortSpeed                        = "port_speed"
 	isBareMetalServerNicAllowIPSpoofing                  = "allow_ip_spoofing"
@@ -86,6 +87,9 @@ const (
 	isBareMetalServerAccessTags                          = "access_tags"
 	isBareMetalServerUserTagType                         = "user"
 	isBareMetalServerAccessTagType                       = "access"
+	isBareMetalServerMetadataService                     = "metadata_service"
+	isBareMetalServerMetadataServiceEnabled              = "enabled"
+	isBareMetalServerMetadataServiceProtocol             = "protocol"
 )
 
 func ResourceIBMIsBareMetalServer() *schema.Resource {
@@ -162,6 +166,31 @@ func ResourceIBMIsBareMetalServer() *schema.Resource {
 							Set:         flex.ResourceIBMVPCHash,
 							Computed:    true,
 							Description: "The trusted platform module (TPM) mode:: disabled: No TPM functionality, tpm_2: TPM 2.0. The enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the unexpected property value was encountered. Enum: [ disabled, tpm_2 ]",
+						},
+					},
+				},
+			},
+
+			isBareMetalServerMetadataService: {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Computed:    true,
+				Description: "The metadata service configuration",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						isBareMetalServerMetadataServiceEnabled: {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Computed:    true,
+							Description: "Indicates whether the metadata service endpoint will be available to the bare metal server",
+						},
+
+						isBareMetalServerMetadataServiceProtocol: {
+							Type:         schema.TypeString,
+							Optional:     true,
+							Computed:     true,
+							Description:  "The communication protocol to use for the metadata service endpoint. Applies only when the metadata service is enabled.",
+							ValidateFunc: validate.InvokeValidator("ibm_is_bare_metal_server", isBareMetalServerMetadataServiceProtocol),
 						},
 					},
 				},
@@ -1078,6 +1107,44 @@ func ResourceIBMIsBareMetalServer() *schema.Resource {
 				Required:    true,
 				Description: "image id",
 			},
+
+			isBareMetalServerDefaultTrustedProfile: {
+				Type:     schema.TypeList,
+				Optional: true,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"auto_link": {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Computed:    true,
+							Description: "If set to true, the system will create a link to the specified target trusted profile during server creation. Regardless of whether a link is created by the system or manually using the IAM Identity service, it will be automatically deleted when the server is deleted.",
+						},
+						"target": {
+							Type:        schema.TypeList,
+							Optional:    true,
+							Computed:    true,
+							Description: "The default IAM trusted profile to use for this bare metal server",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"id": {
+										Type:        schema.TypeString,
+										Optional:    true,
+										Computed:    true,
+										Description: "The unique identifier for this trusted profile",
+									},
+									"crn": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The CRN for this trusted profile",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+
 			isBareMetalServerProfile: {
 				Type:        schema.TypeString,
 				ForceNew:    true,
@@ -1317,6 +1384,7 @@ func ResourceIBMIsBareMetalServerValidator() *validate.ResourceValidator {
 	bareMetalServerActions := "start, restart, stop"
 	tpmModes := "disabled, tpm_2"
 	interface_types := "pci, hipersocket"
+	metadataServiceProtocol := "https, http"
 	validateSchema := make([]validate.ValidateSchema, 1)
 
 	validateSchema = append(validateSchema,
@@ -1361,7 +1429,13 @@ func ResourceIBMIsBareMetalServerValidator() *validate.ResourceValidator {
 			Type:                       validate.TypeString,
 			Required:                   true,
 			AllowedValues:              tpmModes})
-
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 isBareMetalServerMetadataServiceProtocol,
+			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			AllowedValues:              metadataServiceProtocol})
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
 			Identifier:                 "accesstag",
@@ -1427,6 +1501,50 @@ func resourceIBMISBareMetalServerCreate(context context.Context, d *schema.Resou
 			userdatastr := userdata.(string)
 			options.Initialization.UserData = &userdatastr
 		}
+
+		if defaultTrustedProfile, ok := d.GetOk(isBareMetalServerDefaultTrustedProfile); ok {
+			defaultTrustedProfilePrototype := &vpcv1.BareMetalServerInitializationDefaultTrustedProfilePrototype{}
+			defaultTrustedProfileMap := defaultTrustedProfile.([]interface{})[0].(map[string]interface{})
+			if autoLinkIntf, ok := defaultTrustedProfileMap["auto_link"]; ok {
+				if autolink, ok := autoLinkIntf.(bool); ok {
+					defaultTrustedProfilePrototype.AutoLink = &autolink
+				}
+			}
+			if targetIntf, ok := defaultTrustedProfileMap["target"]; ok {
+				var newTarget *vpcv1.TrustedProfileIdentity
+				targetMap := targetIntf.([]interface{})[0].(map[string]interface{})
+				if idIntf, ok := targetMap["id"]; ok {
+					if id, ok := idIntf.(string); ok {
+						newTarget = &vpcv1.TrustedProfileIdentity{ID: &id}
+					}
+				}
+				if crnIntf, ok := targetMap["crn"]; ok {
+					if crn, ok := crnIntf.(string); ok {
+						newTarget = &vpcv1.TrustedProfileIdentity{CRN: &crn}
+					}
+					if newTarget != nil {
+						defaultTrustedProfilePrototype.Target = newTarget
+					}
+				}
+			}
+			options.Initialization.DefaultTrustedProfile = defaultTrustedProfilePrototype
+		}
+	}
+
+	if metadataServiceIntf, ok := d.GetOk(isBareMetalServerMetadataService); ok {
+		metadataService := &vpcv1.BareMetalServerMetadataServicePrototype{}
+		metadataServiceMap := metadataServiceIntf.([]interface{})[0].(map[string]interface{})
+		enabledIntf, ok := metadataServiceMap[isBareMetalServerMetadataServiceEnabled]
+		if ok {
+			enabled := enabledIntf.(bool)
+			metadataService.Enabled = &enabled
+		}
+		protocolIntf, ok := metadataServiceMap[isBareMetalServerMetadataServiceProtocol]
+		if ok && protocolIntf.(string) != "" {
+			protocol := protocolIntf.(string)
+			metadataService.Protocol = &protocol
+		}
+		options.MetadataService = metadataService
 	}
 
 	if name, ok := d.GetOk(isBareMetalServerName); ok {
@@ -2590,7 +2708,7 @@ func bareMetalServerUpdate(context context.Context, d *schema.ResourceData, meta
 	if err != nil {
 		return err
 	}
-	if d.HasChange("image") || d.HasChange("keys") || d.HasChange("user_data") {
+	if d.HasChange("image") || d.HasChange("keys") || d.HasChange("user_data") || d.HasChange("default_trusted_profile") {
 		stopServerIfStartingForInitialization := false
 		newImageId := d.Get("image").(string)
 		initializationPatch := &vpcv1.ReplaceBareMetalServerInitializationOptions{
@@ -2613,6 +2731,30 @@ func bareMetalServerUpdate(context context.Context, d *schema.ResourceData, meta
 				}
 			}
 			initializationPatch.Keys = keyobjs
+		}
+
+		defaultTrustedProfile := &vpcv1.BareMetalServerInitializationDefaultTrustedProfilePrototype{}
+		if d.HasChange("default_trusted_profile.0.auto_link") {
+			newAutoLink := d.Get("default_trusted_profile.0.auto_link").(bool)
+			defaultTrustedProfile.AutoLink = &newAutoLink
+		}
+
+		if d.HasChange("default_trusted_profile.0.target.0.id") {
+			newTargetID := d.Get("default_trusted_profile.0.target.0.id").(string)
+			defaultTrustedProfile.Target = &vpcv1.TrustedProfileIdentity{
+				ID: &newTargetID,
+			}
+		}
+
+		if d.HasChange("default_trusted_profile.0.target.0.crn") {
+			newTargetCRN := d.Get("default_trusted_profile.0.target.0.crn").(string)
+			defaultTrustedProfile.Target = &vpcv1.TrustedProfileIdentity{
+				CRN: &newTargetCRN,
+			}
+		}
+
+		if defaultTrustedProfile.AutoLink != nil || defaultTrustedProfile.Target != nil {
+			initializationPatch.DefaultTrustedProfile = defaultTrustedProfile
 		}
 
 		stopServerIfStartingForInitialization, err = resourceStopServerIfRunning(id, "hard", d, context, sess, stopServerIfStartingForInitialization)
@@ -3727,6 +3869,26 @@ func bareMetalServerUpdate(context context.Context, d *schema.ResourceData, meta
 		newEnableSecureBoot := d.Get(isBareMetalServerEnableSecureBoot).(bool)
 		bmsPatchModel.EnableSecureBoot = &newEnableSecureBoot
 		flag = true
+		isServerStopped, err = resourceStopServerIfRunning(id, "hard", d, context, sess, isServerStopped)
+		if err != nil {
+			return err
+		}
+	}
+
+	//MetadataService
+	if d.HasChange("metadata_service") {
+		bareMetalServerMetadataService := &vpcv1.BareMetalServerMetadataServicePatch{}
+		if d.HasChange("metadata_service.0.enabled") {
+			flag = true
+			metadataServiceEnabled := d.Get("metadata_service.0.enabled").(bool)
+			bareMetalServerMetadataService.Enabled = &metadataServiceEnabled
+		}
+		if d.HasChange("metadata_service.0.protocol") {
+			flag = true
+			metadataServiceProtocol := d.Get("metadata_service.0.protocol").(string)
+			bareMetalServerMetadataService.Protocol = &metadataServiceProtocol
+		}
+		bmsPatchModel.MetadataService = bareMetalServerMetadataService
 		isServerStopped, err = resourceStopServerIfRunning(id, "hard", d, context, sess, isServerStopped)
 		if err != nil {
 			return err

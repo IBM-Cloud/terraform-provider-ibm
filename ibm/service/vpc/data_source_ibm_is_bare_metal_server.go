@@ -76,6 +76,31 @@ func DataSourceIBMIsBareMetalServer() *schema.Resource {
 				},
 			},
 
+			isBareMetalServerMetadataService: {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Computed:    true,
+				Description: "The metadata service configuration",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						isBareMetalServerMetadataServiceEnabled: {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Computed:    true,
+							Description: "Indicates whether the metadata service endpoint will be available to the bare metal server",
+						},
+
+						isBareMetalServerMetadataServiceProtocol: {
+							Type:         schema.TypeString,
+							Optional:     true,
+							Computed:     true,
+							Description:  "The communication protocol to use for the metadata service endpoint. Applies only when the metadata service is enabled.",
+							ValidateFunc: validate.InvokeValidator("ibm_is_bare_metal_server", isBareMetalServerMetadataServiceProtocol),
+						},
+					},
+				},
+			},
+
 			isBareMetalServerBootTarget: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -1362,6 +1387,18 @@ func dataSourceIBMISBareMetalServerRead(context context.Context, d *schema.Resou
 		}
 		resList = append(resList, res)
 		d.Set(isReservation, resList)
+	}
+
+	if bms.MetadataService != nil {
+		metadataServiceList := make([]map[string]interface{}, 0)
+		metadataServiceMap := map[string]interface{}{}
+
+		metadataServiceMap[isBareMetalServerMetadataServiceEnabled] = *bms.MetadataService.Enabled
+		if bms.MetadataService.Protocol != nil {
+			metadataServiceMap[isBareMetalServerMetadataServiceProtocol] = *bms.MetadataService.Protocol
+		}
+		metadataServiceList = append(metadataServiceList, metadataServiceMap)
+		d.Set(isBareMetalServerMetadataService, metadataServiceList)
 	}
 
 	return nil
