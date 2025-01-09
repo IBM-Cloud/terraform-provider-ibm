@@ -1,3 +1,151 @@
+# 1.74.0 (Jan 09, 2025)
+* Support for Power System
+    - **Datasources**
+        - ibm_pi_virtual_serial_number
+        - ibm_pi_virtual_serial_numbers
+    - **Resources**
+        - ibm_pi_virtual_serial_number
+* Support for VPC
+    - **Datasources**
+        - ibm_is_share_snapshot
+        - ibm_is_share_snapshots
+    - **Resources**
+        - ibm_is_share_snapshot
+* Support for Backup Recovery
+    - **Datasources**
+         - ibm_backup_recovery_agent_upgrade_tasks
+         - ibm_backup_recovery_download_agent
+         - ibm_backup_recovery_search_indexed_object
+         - ibm_backup_recovery_object_snapshots
+         - ibm_backup_recovery_connectors_metadata
+         - ibm_backup_recovery_data_source_connections
+         - ibm_backup_recovery_data_source_connectors
+         - ibm_backup_recovery_search_objects
+         - ibm_backup_recovery_search_protected_objects
+         - ibm_backup_recovery_protection_group
+         - ibm_backup_recovery_protection_groups
+         - ibm_backup_recovery_protection_group_runs
+         - ibm_backup_recovery_protection_policies
+         - ibm_backup_recovery_protection_policy
+         - ibm_backup_recovery
+         - ibm_backup_recoveries
+         - ibm_backup_recovery_download_files
+         - ibm_backup_recovery_source_registrations
+         - ibm_backup_recovery_source_registration
+         - ibm_backup_recovery_download_indexed_files
+         - ibm_backup_recovery_protection_sources
+    - **Resources**
+        - ibm_backup_recovery_agent_upgrade_task
+        - ibm_backup_recovery_protection_group_run_request
+        - ibm_backup_recovery_data_source_connection
+        - ibm_backup_recovery_data_source_connector_patch
+        - ibm_backup_recovery_download_files_folders
+        - ibm_backup_recovery_restore_points
+        - ibm_backup_recovery_perform_action_on_protection_group_run_request
+        - ibm_backup_recovery_protection_group
+        - ibm_backup_recovery_protection_policy
+        - ibm_backup_recovery
+        - ibm_backup_recovery_source_registration
+        - ibm_backup_recovery_update_protection_group_run_request
+        - ibm_backup_recovery_connection_registration_token
+* Support for Code Engine
+    - **Datasources**
+        - ibm_code_engine_allowed_outbound_destination
+    - **Resources**
+        - ibm_code_engine_allowed_outbound_destination
+
+Enhancements
+* New logging mechanism globaltagging ([5858](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5858))
+* Secrets Manager docs update ([5857](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5857))
+* Fix vul issues on multiple indirect dependencies ([5877](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5877))
+* Power add host reference to host datasources ([5834](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5834))
+* fix(Cloud Databases): always include host flavor with scaling requests ([5882](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5882))
+* Fix supported patterns and extended tests ([5811](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5811))
+* Revert "feat(Cloud Databases): Update Database Password Complexity Validation" ([5880](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5880))
+* Remove SA notes for cluster networks for vpc ([5861](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5861))
+* Upgraded App Configuration go admin SDK to latest version, Replaced plain fmt error function with flex error function ([5883](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5883))
+* added enablement for error toolchain, added support for cron schedulerfor event-notifications resources ([5893](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5893))
+* Adding Changes for F1888 Object Expiration Filtering ([5768](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5768))
+* Diag Logging for schematics updated ([5851](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5851))
+
+BugFixes
+* fix(reservation): Reservation data source crash fix ([5879](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5879))
+* Fix hanging after name update when vm shutdown, fix null pointer error when updating VOD ([5881](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5881))
+
+# 1.74.0-beta0 (Jan 06, 2025)
+* Support for Power System
+    - **Datasources**
+        - ibm_pi_virtual_serial_number
+        - ibm_pi_virtual_serial_numbers
+    - **Resources**
+        - ibm_pi_virtual_serial_number
+* Support for VPC
+    - **Datasources**
+        - ibm_is_share_snapshot
+        - ibm_is_share_snapshots
+    - **Resources**
+        - ibm_is_share_snapshot
+* Support for Backup Recovery
+    - **Datasources**
+         - "ibm_backup_recovery_agent_upgrade_tasks"
+         - "ibm_backup_recovery_download_agent"    
+         - "ibm_backup_recovery_search_indexed_object"
+         - "ibm_backup_recovery_object_snapshots" 
+         - "ibm_backup_recovery_connectors_metadata"
+         - "ibm_backup_recovery_data_source_connections"
+         - "ibm_backup_recovery_data_source_connectors"
+         - "ibm_backup_recovery_search_objects"     
+         - "ibm_backup_recovery_search_protected_objects"
+         - "ibm_backup_recovery_protection_group"
+         - "ibm_backup_recovery_protection_groups"
+         - "ibm_backup_recovery_protection_group_runs"
+         - "ibm_backup_recovery_protection_policies"
+         - "ibm_backup_recovery_protection_policy"
+         - "ibm_backup_recovery"               
+         - "ibm_backup_recoveries"            
+         - "ibm_backup_recovery_download_files"      
+         - "ibm_backup_recovery_source_registrations"
+         - "ibm_backup_recovery_source_registration"
+         - "ibm_backup_recovery_download_indexed_files"
+         - "ibm_backup_recovery_protection_sources"
+    - **Resources**
+        - "ibm_backup_recovery_agent_upgrade_task"
+		- "ibm_backup_recovery_protection_group_run_request"
+		-	"ibm_backup_recovery_data_source_connection"
+		-	"ibm_backup_recovery_data_source_connector_patch"
+		-	"ibm_backup_recovery_download_files_folders"
+		-	"ibm_backup_recovery_restore_points"
+		-	"ibm_backup_recovery_perform_action_on_protection_group_run_request"
+		-	"ibm_backup_recovery_protection_group"
+		-	"ibm_backup_recovery_protection_policy"
+		-	"ibm_backup_recovery"
+		-	"ibm_backup_recovery_source_registration"
+		-	"ibm_backup_recovery_update_protection_group_run_request"
+		-	"ibm_backup_recovery_connection_registration_token"
+* Support for Code Engine
+    - **Datasources**
+        - ibm_code_engine_allowed_outbound_destination
+    - **Resources**
+        - ibm_code_engine_allowed_outbound_destination
+
+Enhancements
+* New logging mechanism globaltagging ([5858](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5858))
+* Secrets Manager docs update ([5857](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5857))
+* Fix vul issues on multiple indirect dependencies ([5877](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5877))
+* Power add host reference to host datasources ([5834](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5834))
+* fix(Cloud Databases): always include host flavor with scaling requests ([5882](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5882))
+* Fix supported patterns and extended tests ([5811](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5811))
+* Revert "feat(Cloud Databases): Update Database Password Complexity Validation" ([5880](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5880))
+* Remove SA notes for cluster networks for vpc ([5861](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5861))
+* Upgraded App Configuration go admin SDK to latest version, Replaced plain fmt error function with flex error function ([5883](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5883))
+* added enablement for error toolchain, added support for cron schedulerfor event-notifications resources ([5893](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5893))
+* Adding Changes for F1888 Object Expiration Filtering ([5768](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5768))
+* Diag Logging for schematics updated ([5851](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5851))
+
+BugFixes
+* fix(reservation): Reservation data source crash fix ([5879](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5879))
+* Fix hanging after name update when vm shutdown, fix null pointer error when updating VOD ([5881](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5881))
+
 # 1.73.0 (Dec 15, 2024)
 * Support for Db2 SaaS
     - **Datasources**

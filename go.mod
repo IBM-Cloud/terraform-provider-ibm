@@ -75,8 +75,9 @@ require (
 	sigs.k8s.io/controller-runtime v0.19.3
 )
 
+require github.com/BurntSushi/toml v1.2.0 // indirect
+
 require (
-	github.com/BurntSushi/toml v1.2.0 // indirect
 	github.com/Logicalis/asn1 v0.0.0-20190312173541-d60463189a56 // indirect
 	github.com/Masterminds/semver/v3 v3.2.1 // indirect
 	github.com/PromonLogicalis/asn1 v0.0.0-20190312173541-d60463189a56 // indirect
