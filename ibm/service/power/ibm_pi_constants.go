@@ -10,6 +10,8 @@ const (
 	Arg_AffinityVolume                      = "pi_affinity_volume"
 	Arg_AntiAffinityInstances               = "pi_anti_affinity_instances"
 	Arg_AntiAffinityVolumes                 = "pi_anti_affinity_volumes"
+	Arg_AuxiliaryVolumeName                 = "pi_auxiliary_volume_name"
+	Arg_AuxiliaryVolumes                    = "pi_auxiliary_volumes"
 	Arg_BootVolumeReplicationEnabled        = "pi_boot_volume_replication_enabled"
 	Arg_Cidr                                = "pi_cidr"
 	Arg_CloudConnectionID                   = "pi_cloud_connection_id"
@@ -25,6 +27,7 @@ const (
 	Arg_DhcpID                              = "pi_dhcp_id"
 	Arg_DhcpName                            = "pi_dhcp_name"
 	Arg_DhcpSnatEnabled                     = "pi_dhcp_snat_enabled"
+	Arg_DisplayName                         = "pi_display_name"
 	Arg_DNS                                 = "pi_dns"
 	Arg_DnsServer                           = "pi_dns_server"
 	Arg_EndingIPAddress                     = "pi_ending_ip_address"
@@ -65,6 +68,7 @@ const (
 	Arg_NetworkSecurityGroupMemberID        = "pi_network_security_group_member_id"
 	Arg_NetworkSecurityGroupRuleID          = "pi_network_security_group_rule_id"
 	Arg_NetworkType                         = "pi_network_type"
+	Arg_OnboardingVolumes                   = "pi_onboarding_volumes"
 	Arg_PinPolicy                           = "pi_pin_policy"
 	Arg_PlacementGroupID                    = "pi_placement_group_id"
 	Arg_PlacementGroupName                  = "pi_placement_group_name"
@@ -97,6 +101,7 @@ const (
 	Arg_SnapshotID                          = "pi_snapshot_id"
 	Arg_SnapShotName                        = "pi_snap_shot_name"
 	Arg_SnapshotName                        = "pi_snapshot_name"
+	Arg_SourceCRN                           = "pi_source_crn"
 	Arg_SourcePorts                         = "pi_source_ports"
 	Arg_SPPPlacementGroupID                 = "pi_spp_placement_group_id"
 	Arg_SPPPlacementGroupName               = "pi_spp_placement_group_name"
@@ -318,6 +323,7 @@ const (
 	Attr_NetworkSecurityGroupMemberID                = "network_security_group_member_id"
 	Attr_NetworkSecurityGroups                       = "network_security_groups"
 	Attr_NumberOfVolumes                             = "number_of_volumes"
+	Attr_OnboardingID                                = "onboarding_id"
 	Attr_Onboardings                                 = "onboardings"
 	Attr_OperatingSystem                             = "operating_system"
 	Attr_OSType                                      = "os_type"
@@ -615,6 +621,20 @@ const (
 	Timeout_Warning = 60 * time.Second
 
 	// TODO: Second Half Cleanup, remove extra variables
+
+	PIConsoleLanguageCode = "pi_language_code"
+	PIInstanceMigratable  = "pi_migratable"
+
+	// Volume Clone
+	PIVolumeCloneName   = "pi_volume_clone_name"
+	PIVolumeCloneTaskID = "pi_volume_clone_task_id"
+	PITargetStorageTier = "pi_target_storage_tier"
+
+	// IBM PI Volume Group
+	PIVolumeGroupID                   = "pi_volume_group_id"
+	PIVolumeGroupName                 = "pi_volume_group_name"
+	PIVolumeGroupConsistencyGroupName = "pi_consistency_group_name"
+	PIVolumeGroupAction               = "pi_volume_group_action"
 
 	// VPN
 	PIVPNConnectionId                         = "connection_id"
