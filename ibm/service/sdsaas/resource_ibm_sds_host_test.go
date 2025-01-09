@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2024 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package sdsaas_test
@@ -105,7 +105,7 @@ func testAccCheckIBMSdsHostConfig(name string, nqn string) string {
 		resource "ibm_sds_host" "sds_host_instance" {
 			name = "%s"
 			nqn = "%s"
-			volume_mappings {
+			volumes {
 				volume_name = ibm_sds_volume.sds_volume_instance.name
 				volume_id = ibm_sds_volume.sds_volume_instance.id
 			}

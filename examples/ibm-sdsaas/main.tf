@@ -21,11 +21,11 @@ resource "ibm_sds_host" "sds_host_instance" {
 
   name = var.sds_host_name
   nqn = var.sds_host_nqn
-  volume_mappings {
+  volumes {
     volume_id = ibm_sds_volume.sds_volume_instance_1.id
     volume_name = ibm_sds_volume.sds_volume_instance_1.name
   }
-  volume_mappings {
+  volumes {
     volume_id = ibm_sds_volume.sds_volume_instance_2.id
     volume_name = ibm_sds_volume.sds_volume_instance_2.name
   }

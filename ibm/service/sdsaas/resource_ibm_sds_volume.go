@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2024 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
@@ -48,7 +48,17 @@ func ResourceIBMSdsVolume() *schema.Resource {
 				ValidateFunc: validate.InvokeValidator("ibm_sds_volume", "name"),
 				Description:  "The name of the volume.",
 			},
-			"host_mappings": &schema.Schema{
+			"bandwidth": &schema.Schema{
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The maximum bandwidth (in megabits per second) for the volume.",
+			},
+			"created_at": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The date and time that the volume was created.",
+			},
+			"hosts": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "List of host details that volume is mapped to.",
@@ -75,10 +85,10 @@ func ResourceIBMSdsVolume() *schema.Resource {
 					},
 				},
 			},
-			"created_at": &schema.Schema{
-				Type:        schema.TypeString,
+			"iops": &schema.Schema{
+				Type:        schema.TypeInt,
 				Computed:    true,
-				Description: "The date and time that the volume was created.",
+				Description: "Iops The maximum I/O operations per second (IOPS) for this volume.",
 			},
 			"resource_type": &schema.Schema{
 				Type:        schema.TypeString,
@@ -190,24 +200,36 @@ func resourceIBMSdsVolumeRead(context context.Context, d *schema.ResourceData, m
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_sds_volume", "read", "set-name").GetDiag()
 		}
 	}
-	if !core.IsNil(volume.HostMappings) {
-		hostMappings := []map[string]interface{}{}
-		for _, hostMappingsItem := range volume.HostMappings {
-			hostMappingsItemMap, err := ResourceIBMSdsVolumeHostMappingToMap(&hostMappingsItem) // #nosec G601
-			if err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_sds_volume", "read", "host_mappings-to-map").GetDiag()
-			}
-			hostMappings = append(hostMappings, hostMappingsItemMap)
-		}
-		if err = d.Set("host_mappings", hostMappings); err != nil {
-			err = fmt.Errorf("Error setting host_mappings: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_sds_volume", "read", "set-host_mappings").GetDiag()
+	if !core.IsNil(volume.Bandwidth) {
+		if err = d.Set("bandwidth", flex.IntValue(volume.Bandwidth)); err != nil {
+			err = fmt.Errorf("Error setting bandwidth: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_sds_volume", "read", "set-bandwidth").GetDiag()
 		}
 	}
 	if !core.IsNil(volume.CreatedAt) {
 		if err = d.Set("created_at", volume.CreatedAt); err != nil {
 			err = fmt.Errorf("Error setting created_at: %s", err)
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_sds_volume", "read", "set-created_at").GetDiag()
+		}
+	}
+	if !core.IsNil(volume.Hosts) {
+		hosts := []map[string]interface{}{}
+		for _, hostsItem := range volume.Hosts {
+			hostsItemMap, err := ResourceIBMSdsVolumeHostMappingToMap(&hostsItem) // #nosec G601
+			if err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_sds_volume", "read", "hosts-to-map").GetDiag()
+			}
+			hosts = append(hosts, hostsItemMap)
+		}
+		if err = d.Set("hosts", hosts); err != nil {
+			err = fmt.Errorf("Error setting hosts: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_sds_volume", "read", "set-hosts").GetDiag()
+		}
+	}
+	if !core.IsNil(volume.Iops) {
+		if err = d.Set("iops", flex.IntValue(volume.Iops)); err != nil {
+			err = fmt.Errorf("Error setting iops: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_sds_volume", "read", "set-iops").GetDiag()
 		}
 	}
 	if !core.IsNil(volume.ResourceType) {

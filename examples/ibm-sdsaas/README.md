@@ -43,8 +43,10 @@ resource "ibm_sds_volume" "sds_volume_instance" {
 
 | Name | Description |
 |------|-------------|
-| host_mappings | List of host details that volume is mapped to. |
+| bandwidth | The maximum bandwidth (in megabits per second) for the volume. |
 | created_at | The date and time that the volume was created. |
+| hosts | List of host details that volume is mapped to. |
+| iops | Iops The maximum I/O operations per second (IOPS) for this volume. |
 | resource_type | The resource type of the volume. |
 | status | The current status of the volume. |
 | status_reasons | Reasons for the current status of the volume. |
@@ -55,7 +57,7 @@ resource "ibm_sds_volume" "sds_volume_instance" {
 resource "ibm_sds_host" "sds_host_instance" {
   name = var.sds_host_name
   nqn = var.sds_host_nqn
-  volume_mappings = var.sds_host_volume_mappings
+  volumes = var.sds_host_volumes
 }
 ```
 
@@ -66,19 +68,22 @@ resource "ibm_sds_host" "sds_host_instance" {
 | ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
 | name | The name for this host. The name must not be used by another host.  If unspecified, the name will be a hyphenated list of randomly-selected words. | `string` | false |
 | nqn | The NQN of the host configured in customer's environment. | `string` | true |
-| volume_mappings | The host-to-volume map. | `list()` | false |
+| volumes | The host-to-volume map. | `list()` | false |
 
 #### Outputs
 
 | Name | Description |
 |------|-------------|
 | created_at | The date and time that the host was created. |
-| service_instance_id | The service instance ID this host should be created in. |
 
 
 ## Assumptions
 
-The `IBMCLOUD_SDS_ENDPOINT` is required to be set by the user before running the terraform commands. This is the endpoint provided to customers to perform operations against their service.
+1. TODO
+
+## Notes
+
+1. TODO
 
 ## Requirements
 

@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2024 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
@@ -43,7 +43,7 @@ func ResourceIBMSdsHost() *schema.Resource {
 				ValidateFunc: validate.InvokeValidator("ibm_sds_host", "nqn"),
 				Description:  "The NQN of the host configured in customer's environment.",
 			},
-			"volume_mappings": &schema.Schema{
+			"volumes": &schema.Schema{
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "The host-to-volume map.",
@@ -116,11 +116,6 @@ func ResourceIBMSdsHost() *schema.Resource {
 				Computed:    true,
 				Description: "The date and time that the host was created.",
 			},
-			"service_instance_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The service instance ID this host should be created in.",
-			},
 		},
 	}
 }
@@ -166,17 +161,17 @@ func resourceIBMSdsHostCreate(context context.Context, d *schema.ResourceData, m
 	if _, ok := d.GetOk("name"); ok {
 		hostCreateOptions.SetName(d.Get("name").(string))
 	}
-	if _, ok := d.GetOk("volume_mappings"); ok {
-		var volumeMappings []sdsaasv1.VolumeMappingIdentity
-		for _, v := range d.Get("volume_mappings").([]interface{}) {
+	if _, ok := d.GetOk("volumes"); ok {
+		var volumes []sdsaasv1.VolumeMappingIdentity
+		for _, v := range d.Get("volumes").([]interface{}) {
 			value := v.(map[string]interface{})
-			volumeMappingsItem, err := ResourceIBMSdsHostMapToVolumeMappingIdentity(value)
+			volumesItem, err := ResourceIBMSdsHostMapToVolumeMappingIdentity(value)
 			if err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_sds_host", "create", "parse-volume_mappings").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_sds_host", "create", "parse-volumes").GetDiag()
 			}
-			volumeMappings = append(volumeMappings, *volumeMappingsItem)
+			volumes = append(volumes, *volumesItem)
 		}
-		hostCreateOptions.SetVolumeMappings(volumeMappings)
+		hostCreateOptions.SetVolumes(volumes)
 	}
 
 	host, _, err := sdsaasClient.HostCreateWithContext(context, hostCreateOptions)
@@ -224,30 +219,24 @@ func resourceIBMSdsHostRead(context context.Context, d *schema.ResourceData, met
 		err = fmt.Errorf("Error setting nqn: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_sds_host", "read", "set-nqn").GetDiag()
 	}
-	if !core.IsNil(host.VolumeMappings) {
-		volumeMappings := []map[string]interface{}{}
-		for _, volumeMappingsItem := range host.VolumeMappings {
-			volumeMappingsItemMap, err := ResourceIBMSdsHostVolumeMappingReferenceToMap(&volumeMappingsItem) // #nosec G601
+	if !core.IsNil(host.Volumes) {
+		volumes := []map[string]interface{}{}
+		for _, volumesItem := range host.Volumes {
+			volumesItemMap, err := ResourceIBMSdsHostVolumeMappingReferenceToMap(&volumesItem) // #nosec G601
 			if err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_sds_host", "read", "volume_mappings-to-map").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_sds_host", "read", "volumes-to-map").GetDiag()
 			}
-			volumeMappings = append(volumeMappings, volumeMappingsItemMap)
+			volumes = append(volumes, volumesItemMap)
 		}
-		if err = d.Set("volume_mappings", volumeMappings); err != nil {
-			err = fmt.Errorf("Error setting volume_mappings: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_sds_host", "read", "set-volume_mappings").GetDiag()
+		if err = d.Set("volumes", volumes); err != nil {
+			err = fmt.Errorf("Error setting volumes: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_sds_host", "read", "set-volumes").GetDiag()
 		}
 	}
 	if !core.IsNil(host.CreatedAt) {
 		if err = d.Set("created_at", host.CreatedAt); err != nil {
 			err = fmt.Errorf("Error setting created_at: %s", err)
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_sds_host", "read", "set-created_at").GetDiag()
-		}
-	}
-	if !core.IsNil(host.ServiceInstanceID) {
-		if err = d.Set("service_instance_id", host.ServiceInstanceID); err != nil {
-			err = fmt.Errorf("Error setting service_instance_id: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_sds_host", "read", "set-service_instance_id").GetDiag()
 		}
 	}
 
