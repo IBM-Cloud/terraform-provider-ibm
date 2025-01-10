@@ -15,7 +15,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
@@ -31,6 +30,11 @@ func ResourceIBMSdsHost() *schema.Resource {
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
+			"sds_endpoint": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The endpoint to use for operations",
+			},
 			"name": &schema.Schema{
 				Type:         schema.TypeString,
 				Optional:     true,
@@ -148,7 +152,8 @@ func ResourceIBMSdsHostValidator() *validate.ResourceValidator {
 }
 
 func resourceIBMSdsHostCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	sdsaasClient, err := meta.(conns.ClientSession).SdsaasV1()
+	endpoint := d.Get("sds_endpoint").(string)
+	sdsaasClient, err := getSDSConfigClient(meta, endpoint)
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_sds_host", "create", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
@@ -187,7 +192,8 @@ func resourceIBMSdsHostCreate(context context.Context, d *schema.ResourceData, m
 }
 
 func resourceIBMSdsHostRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	sdsaasClient, err := meta.(conns.ClientSession).SdsaasV1()
+	endpoint := d.Get("sds_endpoint").(string)
+	sdsaasClient, err := getSDSConfigClient(meta, endpoint)
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_sds_host", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
@@ -244,7 +250,8 @@ func resourceIBMSdsHostRead(context context.Context, d *schema.ResourceData, met
 }
 
 func resourceIBMSdsHostUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	sdsaasClient, err := meta.(conns.ClientSession).SdsaasV1()
+	endpoint := d.Get("sds_endpoint").(string)
+	sdsaasClient, err := getSDSConfigClient(meta, endpoint)
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_sds_host", "update", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
@@ -282,7 +289,8 @@ func resourceIBMSdsHostUpdate(context context.Context, d *schema.ResourceData, m
 }
 
 func resourceIBMSdsHostDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	sdsaasClient, err := meta.(conns.ClientSession).SdsaasV1()
+	endpoint := d.Get("sds_endpoint").(string)
+	sdsaasClient, err := getSDSConfigClient(meta, endpoint)
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_sds_host", "delete", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())

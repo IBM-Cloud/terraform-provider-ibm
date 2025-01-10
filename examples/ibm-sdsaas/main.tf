@@ -4,6 +4,8 @@ provider "ibm" {
 
 // Provision sds_volume resource instance
 resource "ibm_sds_volume" "sds_volume_instance_1" {
+  sds_endpoint = var.sds_endpoint
+
   hostnqnstring = var.sds_volume_hostnqnstring
   capacity = var.sds_volume_capacity
   name = var.sds_volume_name_1
@@ -11,6 +13,8 @@ resource "ibm_sds_volume" "sds_volume_instance_1" {
 
 // Provision sds_volume resource instance
 resource "ibm_sds_volume" "sds_volume_instance_2" {
+  sds_endpoint = var.sds_endpoint
+
   hostnqnstring = var.sds_volume_hostnqnstring
   capacity = var.sds_volume_capacity
   name = var.sds_volume_name_2
@@ -18,6 +22,7 @@ resource "ibm_sds_volume" "sds_volume_instance_2" {
 
 // Provision sds_host resource instance
 resource "ibm_sds_host" "sds_host_instance" {
+  sds_endpoint = var.sds_endpoint
 
   name = var.sds_host_name
   nqn = var.sds_host_nqn

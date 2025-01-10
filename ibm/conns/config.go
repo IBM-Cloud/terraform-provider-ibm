@@ -3611,7 +3611,6 @@ func (c *Config) ClientSession() (interface{}, error) {
 	if session.sdsaasClientErr == nil {
 		// Construct the service options.
 		sdsaasClientOptions := &sdsaasv1.SdsaasV1Options{
-			URL:           EnvFallBack([]string{"IBMCLOUD_SDS_ENDPOINT"}, ""),
 			Authenticator: authenticator,
 		}
 

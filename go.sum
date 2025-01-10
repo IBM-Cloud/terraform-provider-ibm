@@ -148,8 +148,8 @@ github.com/IBM/ibm-hpcs-uko-sdk v0.0.20-beta/go.mod h1:MLVNHMYoKsvovJZ4v1gQCpIYt
 github.com/IBM/keyprotect-go-client v0.5.1/go.mod h1:5TwDM/4FRJq1ZOlwQL1xFahLWQ3TveR88VmL1u3njyI=
 github.com/IBM/keyprotect-go-client v0.15.1 h1:m4qzqF5zOumRxKZ8s7vtK7A/UV/D278L8xpRG+WgT0s=
 github.com/IBM/keyprotect-go-client v0.15.1/go.mod h1:asXtHwL/4uCHA221Vd/7SkXEi2pcRHDzPyyksc1DthE=
-github.com/IBM/logs-go-sdk v0.3.0 h1:FHzTCCMyp9DvQGXgkppzcOPywC4ggt7x8xu0MR5h8xI=
-github.com/IBM/logs-go-sdk v0.3.0/go.mod h1:yv/GCXC4/p+MZEeXl4xjZAOMvDAVRwu61WyHZFKFXQM=
+github.com/IBM/logs-go-sdk v0.4.0 h1:CyUjm19EUtcJjf4mxsj6Rc7gkZDT8JEY5rLUIz8Eoag=
+github.com/IBM/logs-go-sdk v0.4.0/go.mod h1:yv/GCXC4/p+MZEeXl4xjZAOMvDAVRwu61WyHZFKFXQM=
 github.com/IBM/logs-router-go-sdk v1.0.5 h1:r0kC1+HfmSeQCD6zQTUp4PDI/zp4Ueo1Zo19ipHuNlw=
 github.com/IBM/logs-router-go-sdk v1.0.5/go.mod h1:tCN2vFgu5xG0ob9iJcxi5M4bJ6mWmu3nhmRPnvlwev0=
 github.com/IBM/mqcloud-go-sdk v0.2.0 h1:QOWk8ZGk0QfIL0MOGTKzNdM3Qe0Hk+ifAFtNSFQo5HU=
@@ -168,8 +168,8 @@ github.com/IBM/scc-go-sdk/v5 v5.4.1 h1:RXIuxOo9/hxkWyHCI69ae+KIJgSbXcAkJwTEl+fO3
 github.com/IBM/scc-go-sdk/v5 v5.4.1/go.mod h1:2xQTDgNXG5QMEfQxBDKB067z+5ha6OgcaKCTcdGDAo8=
 github.com/IBM/schematics-go-sdk v0.3.0 h1:Vwxw85SONflakiBsNHAfViKLyp9zJiH5/hh6SewOP5Q=
 github.com/IBM/schematics-go-sdk v0.3.0/go.mod h1:Tw2OSAPdpC69AxcwoyqcYYaGTTW6YpERF9uNEU+BFRQ=
-github.com/IBM/sds-go-sdk v0.0.3 h1:AlC2SOFdiD8hPHei7DIcwNLNq2ami3jDvb0MxZLpIE0=
-github.com/IBM/sds-go-sdk v0.0.3/go.mod h1:mUak/6lrP0H7Pr5XBoZfosPe92cmV4emWMI4amRvAhQ=
+github.com/IBM/sds-go-sdk v0.0.4 h1:zkkqDzc+TgFYU/BK4Oknv8cMBXJ08WKUu7yKCyzslvE=
+github.com/IBM/sds-go-sdk v0.0.4/go.mod h1:HcqZfsgKMqfFxbU1RcRfF934ls+vQY97oXPGPSoIWPg=
 github.com/IBM/secrets-manager-go-sdk/v2 v2.0.7 h1:5lKt1rHuKaAaiZtbPfsF8dgiko/gGbVgreiut3zU128=
 github.com/IBM/secrets-manager-go-sdk/v2 v2.0.7/go.mod h1:RglK3v6CPe3T1myRtQCD6z+nBygXvNJwufAon0qcZok=
 github.com/IBM/vmware-go-sdk v0.1.2 h1:5lKWFyInWz9e2hwGsoFTEoLa1jYkD30SReN0fQ10w9M=
@@ -1290,8 +1290,9 @@ go.opentelemetry.io/otel/trace v1.28.0/go.mod h1:jPyXzNPg6da9+38HEwElrQiHlVMTnVf
 go.opentelemetry.io/proto/otlp v0.7.0/go.mod h1:PqfVotwruBrMGOCsRd/89rSnXhoiJIqeYNgFYFoEGnI=
 go.uber.org/atomic v1.3.2/go.mod h1:gD2HeocX3+yG+ygLZcrzQJaqmWj9AIm7n08wl/qW/PE=
 go.uber.org/atomic v1.4.0/go.mod h1:gD2HeocX3+yG+ygLZcrzQJaqmWj9AIm7n08wl/qW/PE=
-go.uber.org/atomic v1.7.0 h1:ADUqmZGgLDDfbSL9ZmPxKTybcoEYHgpYfELNoN+7hsw=
 go.uber.org/atomic v1.7.0/go.mod h1:fEN4uk6kAWBTFdckzkM89CLk9XfWZrxpCo0nPH17wJc=
+go.uber.org/atomic v1.9.0 h1:ECmE8Bn/WFTYwEW/bpKD3M8VtR/zQVbavAoalC1PYyE=
+go.uber.org/atomic v1.9.0/go.mod h1:fEN4uk6kAWBTFdckzkM89CLk9XfWZrxpCo0nPH17wJc=
 go.uber.org/multierr v1.1.0/go.mod h1:wR5kodmAFQ0UK8QlbwjlSNy0Z68gJhDJUG5sjR94q/0=
 go.uber.org/multierr v1.11.0 h1:blXXJkSxSSfBVBlC76pxqeO+LN3aDfLQo+309xJstO0=
 go.uber.org/multierr v1.11.0/go.mod h1:20+QtiLqy0Nd6FdQB9TLXag12DsQkrbs3htMFfDN80Y=

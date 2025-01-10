@@ -1,6 +1,6 @@
 module github.com/IBM-Cloud/terraform-provider-ibm
 
-go 1.23.0
+go 1.22.5
 
 toolchain go1.23.2
 
@@ -29,7 +29,7 @@ require (
 	github.com/IBM/ibm-hpcs-tke-sdk v0.0.0-20211109141421-a4b61b05f7d1
 	github.com/IBM/ibm-hpcs-uko-sdk v0.0.20-beta
 	github.com/IBM/keyprotect-go-client v0.15.1
-	github.com/IBM/logs-go-sdk v0.3.0
+	github.com/IBM/logs-go-sdk v0.4.0
 	github.com/IBM/logs-router-go-sdk v1.0.5
 	github.com/IBM/mqcloud-go-sdk v0.2.0
 	github.com/IBM/networking-go-sdk v0.49.0
@@ -39,7 +39,7 @@ require (
 	github.com/IBM/sarama v1.41.2
 	github.com/IBM/scc-go-sdk/v5 v5.4.1
 	github.com/IBM/schematics-go-sdk v0.3.0
-	github.com/IBM/sds-go-sdk v0.0.3
+	github.com/IBM/sds-go-sdk v0.0.4
 	github.com/IBM/secrets-manager-go-sdk/v2 v2.0.7
 	github.com/IBM/vmware-go-sdk v0.1.2
 	github.com/IBM/vpc-beta-go-sdk v0.8.0
@@ -205,6 +205,7 @@ require (
 	go.opentelemetry.io/otel v1.28.0 // indirect
 	go.opentelemetry.io/otel/metric v1.28.0 // indirect
 	go.opentelemetry.io/otel/trace v1.28.0 // indirect
+	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/ratelimit v0.2.0 // indirect
 	go.uber.org/zap v1.27.0 // indirect
 	golang.org/x/mod v0.21.0 // indirect

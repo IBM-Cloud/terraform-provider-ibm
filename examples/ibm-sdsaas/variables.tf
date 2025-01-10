@@ -3,6 +3,12 @@ variable "ibmcloud_api_key" {
   type        = string
 }
 
+variable "sds_endpoint" {
+  description = "IBM SDS Endpoint"
+  type        = string
+  default     = "<endpoint>"
+}
+
 variable "sds_volume_hostnqnstring" {
   description = "The host nqn."
   type        = string

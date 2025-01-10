@@ -24,6 +24,7 @@ Run `terraform destroy` when you don't need these resources.
 
 ```hcl
 resource "ibm_sds_volume" "sds_volume_instance" {
+  sds_endpoint = var.sds_endpoint
   hostnqnstring = var.sds_volume_hostnqnstring
   capacity = var.sds_volume_capacity
   name = var.sds_volume_name
@@ -35,6 +36,7 @@ resource "ibm_sds_volume" "sds_volume_instance" {
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
 | ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
+| sds_endpoint | IBM Cloud Endpoint | `string` | false |
 | hostnqnstring | The host nqn. | `string` | false |
 | capacity | The capacity of the volume (in gigabytes). | `number` | true |
 | name | The name of the volume. | `string` | false |
@@ -55,6 +57,7 @@ resource "ibm_sds_volume" "sds_volume_instance" {
 
 ```hcl
 resource "ibm_sds_host" "sds_host_instance" {
+  sds_endpoint = var.sds_endpoint
   name = var.sds_host_name
   nqn = var.sds_host_nqn
   volumes = var.sds_host_volumes
@@ -66,6 +69,7 @@ resource "ibm_sds_host" "sds_host_instance" {
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
 | ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
+| sds_endpoint | IBM Cloud Endpoint | `string` | false |
 | name | The name for this host. The name must not be used by another host.  If unspecified, the name will be a hyphenated list of randomly-selected words. | `string` | false |
 | nqn | The NQN of the host configured in customer's environment. | `string` | true |
 | volumes | The host-to-volume map. | `list()` | false |
@@ -79,7 +83,7 @@ resource "ibm_sds_host" "sds_host_instance" {
 
 ## Assumptions
 
-The `IBMCLOUD_SDS_ENDPOINT` is required to be set by the user before running the terraform commands. This is the endpoint provided to customers to perform operations against their service.
+The `IBMCLOUD_SDS_ENDPOINT` can optionally be set instead of setting `sds_endpoint` in each of the resources. This is the endpoint provided to customers to perform operations against their service.
 
 ## Requirements
 
