@@ -107,7 +107,6 @@ func testAccCheckIbmSccProfileConfigBasic(instanceID string, profileName string,
 			latest = true
 			controls {
 				control_name = "control-name"
-				control_id = "1fa45e17-9322-4e6c-bbd6-1c51db08e790"
 				control_description = "control_description"
 				control_category = "control_category"
 				control_tags = [ "control_tags" ]
@@ -125,7 +124,7 @@ func testAccCheckIbmSccProfileConfigBasic(instanceID string, profileName string,
 						assessment_description = "assessment_description"
 						parameters {
 							parameter_display_name = "Sign out due to inactivity in seconds"
-                            parameter_name         = "session_invalidation_in_seconds"
+              parameter_name         = "session_invalidation_in_seconds"
 							parameter_type = "numeric"
 						}
 					}
@@ -164,7 +163,6 @@ func testAccCheckIbmSccProfileConfig(instanceID string, profileName string, prof
 			latest = true
 			controls {
 				control_name = "control-name"
-				control_id = "1fa45e17-9322-4e6c-bbd6-1c51db08e790"
 				control_description = "control_description"
 				control_category = "control_category"
 				control_tags = [ "control_tags" ]
@@ -182,7 +180,7 @@ func testAccCheckIbmSccProfileConfig(instanceID string, profileName string, prof
 						assessment_description = "assessment_description"
 						parameters {
 							parameter_display_name = "Sign out due to inactivity in seconds"
-                            parameter_name         = "session_invalidation_in_seconds"
+              parameter_name         = "session_invalidation_in_seconds"
 							parameter_type = "numeric"
 						}
 					}

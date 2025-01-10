@@ -275,7 +275,7 @@ func attachmentParametersSchemaSetFunc(keys ...string) schema.SchemaSetFunc {
 
 func stringHashcode(s string) int {
 	v := int(crc32.ChecksumIEEE([]byte(s)))
-	log.Printf("[DEBUG] attachmentParameterSchemaSet value %d\n", v)
+	log.Printf("[DEBUG] scc stringHashcode value %d\n", v)
 	if v >= 0 {
 		return v
 	}

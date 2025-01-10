@@ -105,7 +105,6 @@ func testAccCheckIbmSccProfileAttachmentConfigBasic(instanceID string) string {
 			latest = true
 			controls {
 				control_name = "control-name"
-				control_id = "1fa45e17-9322-4e6c-bbd6-1c51db08e790"
 				control_description = "control_description"
 				control_category = "control_category"
 				control_tags = [ "control_tags" ]

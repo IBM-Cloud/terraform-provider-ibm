@@ -5,6 +5,7 @@ package scc
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"math/big"
 	"strconv"
@@ -53,10 +54,10 @@ func ResourceIbmSccControlLibrary() *schema.Resource {
 				Description:  "The control library type.",
 			},
 			"version_group_label": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_scc_control_library", "version_group_label"),
-				Description:  "The version group label.",
+				Type:     schema.TypeString,
+				Computed: true,
+				// ValidateFunc: validate.InvokeValidator("ibm_scc_control_library", "version_group_label"),
+				Description: "The ID of the version update of the control library.",
 			},
 			"control_library_version": {
 				Type:         schema.TypeString,
@@ -153,11 +154,11 @@ func ResourceIbmSccControlLibrary() *schema.Resource {
 										Computed:    true,
 										Description: "The number of assessments.",
 									},
-
 									"assessments": {
 										Type:        schema.TypeSet,
 										Optional:    true,
 										Description: "The assessments.",
+										Set:         assessmentsSchemaSetFunc("assessment_id"),
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"assessment_id": {
@@ -449,16 +450,18 @@ func resourceIbmSccControlLibraryRead(context context.Context, d *schema.Resourc
 			return diag.FromErr(flex.FmtErrorf("Error setting controls_count: %s", err))
 		}
 	}
-	controls := []map[string]interface{}{}
-	for _, controlsItem := range controlLibrary.Controls {
-		controlsItemMap, err := resourceIbmSccControlLibraryControlsInControlLibToMap(&controlsItem)
-		if err != nil {
-			return diag.FromErr(err)
+	if !core.IsNil(controlLibrary.Controls) {
+		controls := []map[string]interface{}{}
+		for _, controlsItem := range controlLibrary.Controls {
+			controlsItemMap, err := resourceIbmSccControlLibraryControlsInControlLibToMap(&controlsItem)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			controls = append(controls, controlsItemMap)
 		}
-		controls = append(controls, controlsItemMap)
-	}
-	if err = d.Set("controls", controls); err != nil {
-		return diag.FromErr(flex.FmtErrorf("Error setting controls: %s", err))
+		if err = d.Set("controls", controls); err != nil {
+			return diag.FromErr(flex.FmtErrorf("Error setting controls: %s", err))
+		}
 	}
 	if !core.IsNil(controlLibrary.AccountID) {
 		if err = d.Set("account_id", controlLibrary.AccountID); err != nil {
@@ -538,16 +541,27 @@ func resourceIbmSccControlLibraryUpdate(context context.Context, d *schema.Resou
 		replaceCustomControlLibraryOptions.SetControlLibraryVersion(d.Get("control_library_version").(string))
 		hasChange = true
 	}
+	if d.HasChange("version_group_label") {
+		replaceCustomControlLibraryOptions.SetVersionGroupLabel(d.Get("version_group_label").(string))
+		hasChange = true
+	}
 
 	if hasChange {
+
 		if replaceCustomControlLibraryOptions.ControlLibraryName == nil {
 			replaceCustomControlLibraryOptions.SetControlLibraryName(d.Get("control_library_name").(string))
+		}
+		if replaceCustomControlLibraryOptions.VersionGroupLabel == nil {
+			replaceCustomControlLibraryOptions.SetVersionGroupLabel(d.Get("version_group_label").(string))
 		}
 		if replaceCustomControlLibraryOptions.ControlLibraryDescription == nil {
 			replaceCustomControlLibraryOptions.SetControlLibraryDescription(d.Get("control_library_description").(string))
 		}
 		if replaceCustomControlLibraryOptions.ControlLibraryVersion == nil {
-			replaceCustomControlLibraryOptions.SetControlLibraryDescription(d.Get("control_library_version").(string))
+			replaceCustomControlLibraryOptions.SetControlLibraryVersion(d.Get("control_library_version").(string))
+		}
+		if replaceCustomControlLibraryOptions.ControlLibraryType == nil {
+			replaceCustomControlLibraryOptions.SetControlLibraryType("custom")
 		}
 		if len(replaceCustomControlLibraryOptions.Controls) == 0 {
 			for _, controlsItem := range d.Get("controls").([]interface{}) {
@@ -602,6 +616,9 @@ func resourceIbmSccControlLibraryMapToControl(modelMap map[string]interface{}) (
 	if modelMap["control_description"] != nil && modelMap["control_description"].(string) != "" {
 		model.ControlDescription = core.StringPtr(modelMap["control_description"].(string))
 	}
+	if modelMap["control_id"] != nil && modelMap["control_id"].(string) != "" {
+		model.ControlID = core.StringPtr(modelMap["control_id"].(string))
+	}
 	if modelMap["control_category"] != nil && modelMap["control_category"].(string) != "" {
 		model.ControlCategory = core.StringPtr(modelMap["control_category"].(string))
 	}
@@ -646,6 +663,9 @@ func resourceIbmSccControlLibraryMapToControlPrototype(modelMap map[string]inter
 	model := &securityandcompliancecenterapiv3.ControlPrototype{}
 	if modelMap["control_name"] != nil && modelMap["control_name"].(string) != "" {
 		model.ControlName = core.StringPtr(modelMap["control_name"].(string))
+	}
+	if modelMap["control_id"] != nil && modelMap["control_id"].(string) != "" {
+		model.ID = core.StringPtr(modelMap["control_id"].(string))
 	}
 	if modelMap["control_description"] != nil && modelMap["control_description"].(string) != "" {
 		model.ControlDescription = core.StringPtr(modelMap["control_description"].(string))
@@ -692,6 +712,9 @@ func resourceIbmSccControlLibraryMapToControlPrototype(modelMap map[string]inter
 
 func resourceIbmSccControlLibraryMapToControlSpecificationPrototype(modelMap map[string]interface{}) (*securityandcompliancecenterapiv3.ControlSpecificationPrototype, error) {
 	model := &securityandcompliancecenterapiv3.ControlSpecificationPrototype{}
+	if modelMap["control_specification_id"] != nil && modelMap["control_specification_id"].(string) != "" {
+		model.ID = core.StringPtr(modelMap["control_specification_id"].(string))
+	}
 	if modelMap["control_specification_description"] != nil && modelMap["control_specification_description"].(string) != "" {
 		model.Description = core.StringPtr(modelMap["control_specification_description"].(string))
 	}
@@ -975,6 +998,7 @@ func resourceIbmSccControlLibraryMapToControlLibraryOptions(modelMap map[string]
 		model.Latest = core.BoolPtr(modelMap["latest"].(bool))
 	}
 	controls := []securityandcompliancecenterapiv3.ControlPrototype{}
+	// iterate through controls
 	for _, controlsItem := range modelMap["controls"].([]interface{}) {
 		controlsItemModel, err := resourceIbmSccControlLibraryMapToControlPrototype(controlsItem.(map[string]interface{}))
 		if err != nil {
@@ -986,6 +1010,7 @@ func resourceIbmSccControlLibraryMapToControlLibraryOptions(modelMap map[string]
 	return model, nil
 }
 
+// From the GET function, popularize the controls of a Control Library
 func resourceIbmSccControlLibraryControlsInControlLibToMap(model *securityandcompliancecenterapiv3.Control) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ControlName != nil {
@@ -1050,6 +1075,7 @@ func compareAssessmentSetFunc(v interface{}) int {
 	return val
 }
 
+// From the GET of a control library, popularize the control specifications in a control
 func resourceIbmSccControlLibraryControlSpecificationsToMap(model *securityandcompliancecenterapiv3.ControlSpecification) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
@@ -1074,18 +1100,52 @@ func resourceIbmSccControlLibraryControlSpecificationsToMap(model *securityandco
 		modelMap["assessments_count"] = flex.IntValue(model.AssessmentsCount)
 	}
 	if model.Assessments != nil {
-		assessments := []interface{}{}
+		assessmentSet := &schema.Set{
+			F: assessmentsSchemaSetFunc("assessment_id"),
+		}
 		for _, assessmentsItem := range model.Assessments {
 			assessmentsItemMap, err := resourceIbmSccControlLibraryImplementationToMap(&assessmentsItem)
 			if err != nil {
 				return modelMap, err
 			}
-			assessments = append(assessments, assessmentsItemMap)
+			assessmentSet.Add(assessmentsItemMap)
 		}
-		assessmentsList := schema.NewSet(compareAssessmentSetFunc, assessments)
-		modelMap["assessments"] = assessmentsList
+		modelMap["assessments"] = assessmentSet
 	}
 	return modelMap, nil
+}
+
+// assessmentsSchemaSetFunc determines how to hash the Assessments schema.Resource
+// It uses the assessment_id in order to determine if the assessment was present
+func assessmentsSchemaSetFunc(keys ...string) schema.SchemaSetFunc {
+	return func(v interface{}) int {
+		var str strings.Builder
+
+		if m, ok := v.(map[string]interface{}); ok {
+			for _, key := range keys {
+				if v, ok := m[key]; ok {
+					switch v := v.(type) {
+					case string:
+						str.WriteRune('-')
+						str.WriteString(v)
+					case *string:
+						str.WriteRune('-')
+						str.WriteString(*v)
+					case []interface{}:
+						str.WriteRune('-')
+						s := make([]string, len(v))
+						for i, v := range v {
+							s[i] = fmt.Sprint(v)
+						}
+						str.WriteString(fmt.Sprintf("[%s]", strings.Join(s, ",")))
+					}
+				}
+			}
+		}
+		log.Printf("[DEBUG] assessmentsSchemaSet hashcode string: %s\n", str.String())
+
+		return stringHashcode(str.String())
+	}
 }
 
 func resourceIbmSccControlLibraryImplementationToMap(model *securityandcompliancecenterapiv3.Assessment) (map[string]interface{}, error) {
