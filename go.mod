@@ -29,7 +29,7 @@ require (
 	github.com/IBM/ibm-hpcs-tke-sdk v0.0.0-20211109141421-a4b61b05f7d1
 	github.com/IBM/ibm-hpcs-uko-sdk v0.0.20-beta
 	github.com/IBM/keyprotect-go-client v0.15.1
-	github.com/IBM/logs-go-sdk v0.3.0
+	github.com/IBM/logs-go-sdk v0.4.0
 	github.com/IBM/logs-router-go-sdk v1.0.5
 	github.com/IBM/mqcloud-go-sdk v0.2.0
 	github.com/IBM/networking-go-sdk v0.49.0
@@ -234,8 +234,6 @@ require (
 replace github.com/softlayer/softlayer-go v1.0.3 => github.com/IBM-Cloud/softlayer-go v1.0.5-tf
 
 replace github.com/dgrijalva/jwt-go v3.2.0+incompatible => github.com/golang-jwt/jwt v3.2.1+incompatible
-
-replace github.com/IBM/logs-go-sdk => github.com/IBM/logs-go-sdk v0.3.3-0.20250108072353-7fa51eb5312b
 
 // add sdk changes.
 replace github.com/portworx/sched-ops v0.0.0-20200831185134-3e8010dc7056 => github.com/portworx/sched-ops v0.20.4-openstorage-rc3 // required by rook v1.7
