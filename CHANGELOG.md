@@ -1,3 +1,14 @@
+# 1.75.0-beta0 (Jan 10, 2025)
+* Support for Cloud logs
+    - **Datasources**
+        - ibm_logs_stream
+        - ibm_logs_streams
+    - **Resources**
+        - ibm_logs_stream
+* Support for Power System
+    - **Datasources**
+        - ibm_pi_instance_snapshot
+       
 # 1.74.0 (Jan 09, 2025)
 * Support for Power System
     - **Datasources**
