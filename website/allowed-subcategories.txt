@@ -12,6 +12,7 @@ Container Registry
 Configuration Aggregator
 Context Based Restrictions
 CD Tekton Pipeline
+Db2 SaaS
 Direct Link Gateway
 DNS Services
 Enterprise Management
@@ -19,6 +20,7 @@ Event Notifications
 Event Streams
 Functions
 Global Tagging
+IBM Backup Recovery
 IBM Cloud Shell
 Hyper Protect Crypto Service (HPCS)
 CD Toolchain
@@ -28,7 +30,7 @@ Key Management Service
 Kubernetes Service
 Logs Routing
 Metrics Router
-MQ on Cloud
+MQaaS
 Object Storage
 Partner Center Sell
 Power Systems

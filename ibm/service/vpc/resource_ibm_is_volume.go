@@ -470,79 +470,49 @@ func volCreate(d *schema.ResourceData, meta interface{}, volName, profile, zone 
 	if err != nil {
 		return err
 	}
-	options := &vpcv1.CreateVolumeOptions{
-		VolumePrototype: &vpcv1.VolumePrototype{
-			Name: &volName,
-			Zone: &vpcv1.ZoneIdentity{
-				Name: &zone,
-			},
-			Profile: &vpcv1.VolumeProfileIdentity{
-				Name: &profile,
-			},
+	options := &vpcv1.CreateVolumeOptions{}
+	volTemplate := &vpcv1.VolumePrototype{
+		Name: &volName,
+		Zone: &vpcv1.ZoneIdentity{
+			Name: &zone,
+		},
+		Profile: &vpcv1.VolumeProfileIdentity{
+			Name: &profile,
 		},
 	}
-	volTemplate := options.VolumePrototype.(*vpcv1.VolumePrototype)
 
-	var volCapacity int64
 	if sourceSnapsht, ok := d.GetOk(isVolumeSourceSnapshot); ok {
 		sourceSnapshot := sourceSnapsht.(string)
 		snapshotIdentity := &vpcv1.SnapshotIdentity{
 			ID: &sourceSnapshot,
 		}
 		volTemplate.SourceSnapshot = snapshotIdentity
-		getSnapshotOptions := &vpcv1.GetSnapshotOptions{
-			ID: &sourceSnapshot,
-		}
-		snapshot, response, err := sess.GetSnapshot(getSnapshotOptions)
-		if err != nil {
-			return fmt.Errorf("[ERROR] Error fetching snapshot %s\n%s", err, response)
-		}
-		if (response != nil && response.StatusCode == 404) || snapshot == nil {
-			return fmt.Errorf("[ERROR] No snapshot found with id %s", sourceSnapshot)
-		}
-		minimumCapacity := *snapshot.MinimumCapacity
 		if capacity, ok := d.GetOk(isVolumeCapacity); ok {
-			if int64(capacity.(int)) > minimumCapacity {
-				volCapacity = int64(capacity.(int))
-			} else {
-				volCapacity = minimumCapacity
+			if int64(capacity.(int)) > 0 {
+				volCapacity := int64(capacity.(int))
+				volTemplate.Capacity = &volCapacity
 			}
-			volTemplate.Capacity = &volCapacity
 		}
-	} else if sourceSnapshtCrn, ok := d.GetOk(isVolumeSourceSnapshot); ok {
+	} else if sourceSnapshtCrn, ok := d.GetOk(isVolumeSourceSnapshotCrn); ok {
 		sourceSnapshot := sourceSnapshtCrn.(string)
 
 		snapshotIdentity := &vpcv1.SnapshotIdentity{
 			CRN: &sourceSnapshot,
 		}
 		volTemplate.SourceSnapshot = snapshotIdentity
-		getSnapshotOptions := &vpcv1.GetSnapshotOptions{
-			ID: &sourceSnapshot,
-		}
-		snapshot, response, err := sess.GetSnapshot(getSnapshotOptions)
-		if err != nil {
-			return fmt.Errorf("[ERROR] Error fetching snapshot %s\n%s", err, response)
-		}
-		if (response != nil && response.StatusCode == 404) || snapshot == nil {
-			return fmt.Errorf("[ERROR] No snapshot found with id %s", sourceSnapshot)
-		}
-		minimumCapacity := *snapshot.MinimumCapacity
 		if capacity, ok := d.GetOk(isVolumeCapacity); ok {
-			if int64(capacity.(int)) > minimumCapacity {
-				volCapacity = int64(capacity.(int))
-			} else {
-				volCapacity = minimumCapacity
+			if int64(capacity.(int)) > 0 {
+				volCapacity := int64(capacity.(int))
+				volTemplate.Capacity = &volCapacity
 			}
+		}
+	} else if capacity, ok := d.GetOk(isVolumeCapacity); ok {
+		if int64(capacity.(int)) > 0 {
+			volCapacity := int64(capacity.(int))
 			volTemplate.Capacity = &volCapacity
 		}
 	} else {
-		if capacity, ok := d.GetOk(isVolumeCapacity); ok {
-			if int64(capacity.(int)) > 0 {
-				volCapacity = int64(capacity.(int))
-			}
-		} else {
-			volCapacity = 100
-		}
+		volCapacity := int64(100)
 		volTemplate.Capacity = &volCapacity
 	}
 
@@ -583,7 +553,7 @@ func volCreate(d *schema.ResourceData, meta interface{}, volName, profile, zone 
 			volTemplate.UserTags = userTagsArray
 		}
 	}
-
+	options.VolumePrototype = volTemplate
 	vol, response, err := sess.CreateVolume(options)
 	if err != nil {
 		return fmt.Errorf("[DEBUG] Create volume err %s\n%s", err, response)

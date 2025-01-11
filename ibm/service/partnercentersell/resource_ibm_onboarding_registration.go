@@ -2,7 +2,7 @@
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.96.0-d6dec9d7-20241008-212902
+ * IBM OpenAPI Terraform Generator Version: 3.97.0-0e90eab1-20241120-170029
  */
 
 package partnercentersell
@@ -141,6 +141,7 @@ func resourceIbmOnboardingRegistrationCreate(context context.Context, d *schema.
 	}
 
 	createRegistrationOptions := &partnercentersellv1.CreateRegistrationOptions{}
+
 	createRegistrationOptions.SetAccountID(d.Get("account_id").(string))
 	createRegistrationOptions.SetCompanyName(d.Get("company_name").(string))
 	primaryContactModel, err := ResourceIbmOnboardingRegistrationMapToPrimaryContact(d.Get("primary_contact.0").(map[string]interface{}))

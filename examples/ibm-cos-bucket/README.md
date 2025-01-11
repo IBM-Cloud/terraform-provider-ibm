@@ -622,5 +622,8 @@ resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle" {
 | days_after_initiatiob | Number of days after which incomplete multipart uploads are aborted. | `int` | No
 | id | Unique identifier for lifecycle rule. | `int` | Yes
 | status | Whether the rule is currently being applied. | `int` | Yes
+| object_size_greater_than | Expiration rule will be applicable to the objects having size greater than specified value of his argument. | `int` | No
+| object_size_less_than | Expiration rule will be applicable to the objects having size lesser than specified value of his argument. | `int` | No
+| tag | Expiration rule will be applicable to the objects having the key-value tags specified by this attribute. | `object` | Yes
 
 {: caption="inputs"}

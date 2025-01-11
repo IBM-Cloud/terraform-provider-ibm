@@ -62,7 +62,8 @@ resource "ibm_onboarding_iam_registration" "onboarding_iam_registration_instance
 		zh_tw = "zh_tw"
 		zh_cn = "zh_cn"
   }
-  name = "name"
+  enabled = true
+  name = "pet-store"
   product_id = ibm_onboarding_product.onboarding_product_instance.id
   resource_hierarchy_attribute {
 		key = "key"
@@ -72,6 +73,7 @@ resource "ibm_onboarding_iam_registration" "onboarding_iam_registration_instance
 		attributes {
 			account_id = "account_id"
 			service_name = "service_name"
+			additional_properties = { "key" = "inner" }
 		}
 		roles = [ "roles" ]
   }
@@ -80,7 +82,7 @@ resource "ibm_onboarding_iam_registration" "onboarding_iam_registration_instance
 		options {
 			operators = [ "stringEquals" ]
 			hidden = true
-			supported_attributes = [ "supported_attributes" ]
+			supported_patterns = [ "supported_patterns" ]
 			policy_types = [ "access" ]
 			is_empty_value_supported = true
 			is_string_exists_false_value_supported = true
@@ -315,8 +317,9 @@ Nested schema for **resource_hierarchy_attribute**:
 Nested schema for **supported_anonymous_accesses**:
 	* `attributes` - (Optional, List) The attributes for anonymous accesses.
 	Nested schema for **attributes**:
-		* `account_id` - (Optional, String) An account id.
-		* `service_name` - (Optional, String) The name of the service.
+		* `account_id` - (Required, String) An account id.
+		* `additional_properties` - (Required, Map) Additional properties the key must come from supported attributes.
+		* `service_name` - (Required, String) The name of the service.
 	* `roles` - (Optional, List) The roles of supported anonymous accesses.
 	  * Constraints: The list items must match regular expression `/^[ -~\\s]*$/`. The maximum length is `100` items. The minimum length is `0` items.
 * `supported_attributes` - (Optional, List) The list of supported attributes.
@@ -391,7 +394,7 @@ Nested schema for **supported_attributes**:
 			* `value` - (Optional, List) Hierarchy description value.
 			Nested schema for **value**:
 				* `key` - (Optional, String) Key.
-		* `supported_attributes` - (Optional, List) The list of supported patterns.
+		* `supported_patterns` - (Optional, List) The list of supported patterns.
 		  * Constraints: The maximum length is `100` items. The minimum length is `0` items.
 	* `ui` - (Optional, List) The user interface.
 	Nested schema for **ui**:
@@ -545,7 +548,7 @@ The `name` property can be formed from `product_id`, and `name` in the following
 &lt;product_id&gt;/&lt;name&gt;
 </pre>
 * `product_id`: A string. The unique ID of the product.
-* `name`: A string. The IAM registration name, which must be the programmatic name of the product.
+* `name`: A string in the format `pet-store`. The IAM registration name, which must be the programmatic name of the product.
 
 # Syntax
 <pre>

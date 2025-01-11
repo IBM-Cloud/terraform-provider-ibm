@@ -44,7 +44,7 @@ You can access the following attribute references after your data source is crea
 
 		Nested scheme for `access_modes`:
 		- `type` - (String) The type of access mode.
-		- `value` - (String) Access modes for this profile.
+		- `values` - (List of strings) Access modes for this profile.
 	- `availability` - (List) The availability mode for a load balancer with this profile
 
 		Nested scheme for `availability`:

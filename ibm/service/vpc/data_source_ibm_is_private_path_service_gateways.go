@@ -285,7 +285,7 @@ func dataSourceIBMIsPrivatePathServiceGatewaysID(d *schema.ResourceData) string 
 	return time.Now().UTC().String()
 }
 
-func dataSourceIBMIsPrivatePathServiceGatewaysPrivatePathServiceGatewayCollectionFirstToMap(model *vpcv1.PrivatePathServiceGatewayCollectionFirst) (map[string]interface{}, error) {
+func dataSourceIBMIsPrivatePathServiceGatewaysPrivatePathServiceGatewayCollectionFirstToMap(model *vpcv1.PageLink) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Href != nil {
 		modelMap["href"] = *model.Href
@@ -293,7 +293,7 @@ func dataSourceIBMIsPrivatePathServiceGatewaysPrivatePathServiceGatewayCollectio
 	return modelMap, nil
 }
 
-func dataSourceIBMIsPrivatePathServiceGatewaysPrivatePathServiceGatewayCollectionNextToMap(model *vpcv1.PrivatePathServiceGatewayCollectionNext) (map[string]interface{}, error) {
+func dataSourceIBMIsPrivatePathServiceGatewaysPrivatePathServiceGatewayCollectionNextToMap(model *vpcv1.PageLink) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Href != nil {
 		modelMap["href"] = *model.Href

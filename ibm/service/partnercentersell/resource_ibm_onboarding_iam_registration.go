@@ -2,7 +2,7 @@
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.96.0-d6dec9d7-20241008-212902
+ * IBM OpenAPI Terraform Generator Version: 3.97.0-0e90eab1-20241120-170029
  */
 
 package partnercentersell
@@ -338,13 +338,19 @@ func ResourceIbmOnboardingIamRegistration() *schema.Resource {
 								Schema: map[string]*schema.Schema{
 									"account_id": &schema.Schema{
 										Type:        schema.TypeString,
-										Optional:    true,
+										Required:    true,
 										Description: "An account id.",
 									},
 									"service_name": &schema.Schema{
 										Type:        schema.TypeString,
-										Optional:    true,
+										Required:    true,
 										Description: "The name of the service.",
+									},
+									"additional_properties": &schema.Schema{
+										Type:        schema.TypeMap,
+										Required:    true,
+										Description: "Additional properties the key must come from supported attributes.",
+										Elem:        &schema.Schema{Type: schema.TypeString},
 									},
 								},
 							},
@@ -387,7 +393,7 @@ func ResourceIbmOnboardingIamRegistration() *schema.Resource {
 										Optional:    true,
 										Description: "Optional opt-in if attribute is hidden from customers (customer can still use it if they found out themselves).",
 									},
-									"supported_attributes": &schema.Schema{
+									"supported_patterns": &schema.Schema{
 										Type:        schema.TypeList,
 										Optional:    true,
 										Description: "The list of supported patterns.",
@@ -1700,11 +1706,15 @@ func ResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupportedAno
 
 func ResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupportedAnonymousAccessAttributes(modelMap map[string]interface{}) (*partnercentersellv1.IamServiceRegistrationSupportedAnonymousAccessAttributes, error) {
 	model := &partnercentersellv1.IamServiceRegistrationSupportedAnonymousAccessAttributes{}
-	if modelMap["account_id"] != nil && modelMap["account_id"].(string) != "" {
-		model.AccountID = core.StringPtr(modelMap["account_id"].(string))
-	}
-	if modelMap["service_name"] != nil && modelMap["service_name"].(string) != "" {
-		model.ServiceName = core.StringPtr(modelMap["service_name"].(string))
+	model.AccountID = core.StringPtr(modelMap["account_id"].(string))
+	model.ServiceName = core.StringPtr(modelMap["service_name"].(string))
+	if modelMap["additional_properties"] != nil {
+		model.AdditionalProperties = make(map[string]string)
+		for key, value := range modelMap["additional_properties"].(map[string]interface{}) {
+			if str, ok := value.(string); ok {
+				model.AdditionalProperties[key] = str
+			}
+		}
 	}
 	return model, nil
 }
@@ -1757,12 +1767,12 @@ func ResourceIbmOnboardingIamRegistrationMapToSupportedAttributesOptions(modelMa
 	if modelMap["hidden"] != nil {
 		model.Hidden = core.BoolPtr(modelMap["hidden"].(bool))
 	}
-	if modelMap["supported_attributes"] != nil {
-		supportedAttributes := []string{}
-		for _, supportedAttributesItem := range modelMap["supported_attributes"].([]interface{}) {
-			supportedAttributes = append(supportedAttributes, supportedAttributesItem.(string))
+	if modelMap["supported_patterns"] != nil {
+		supportedPatterns := []string{}
+		for _, supportedPatternsItem := range modelMap["supported_patterns"].([]interface{}) {
+			supportedPatterns = append(supportedPatterns, supportedPatternsItem.(string))
 		}
-		model.SupportedAttributes = supportedAttributes
+		model.SupportedPatterns = supportedPatterns
 	}
 	if modelMap["policy_types"] != nil {
 		policyTypes := []string{}
@@ -2184,12 +2194,13 @@ func ResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedAnonymou
 
 func ResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedAnonymousAccessAttributesToMap(model *partnercentersellv1.IamServiceRegistrationSupportedAnonymousAccessAttributes) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	if model.AccountID != nil {
-		modelMap["account_id"] = *model.AccountID
+	modelMap["account_id"] = *model.AccountID
+	modelMap["service_name"] = *model.ServiceName
+	additionalProperties := make(map[string]interface{})
+	for k, v := range model.AdditionalProperties {
+		additionalProperties[k] = flex.Stringify(v)
 	}
-	if model.ServiceName != nil {
-		modelMap["service_name"] = *model.ServiceName
-	}
+	modelMap["additional_properties"] = additionalProperties
 	return modelMap, nil
 }
 
@@ -2237,8 +2248,8 @@ func ResourceIbmOnboardingIamRegistrationSupportedAttributesOptionsToMap(model *
 	if model.Hidden != nil {
 		modelMap["hidden"] = *model.Hidden
 	}
-	if model.SupportedAttributes != nil {
-		modelMap["supported_attributes"] = model.SupportedAttributes
+	if model.SupportedPatterns != nil {
+		modelMap["supported_patterns"] = model.SupportedPatterns
 	}
 	if model.PolicyTypes != nil {
 		modelMap["policy_types"] = model.PolicyTypes
@@ -2516,7 +2527,7 @@ func ResourceIbmOnboardingIamRegistrationIamServiceRegistrationPatchAsPatch(patc
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["actions"] = nil
 	} else if exists && patch["actions"] != nil {
-		ResourceIbmOnboardingIamRegistrationIamServiceRegistrationActionAsPatch(patch["actions"].([]interface{})[0].(map[string]interface{}), d)
+		ResourceIbmOnboardingIamRegistrationIamServiceRegistrationActionAsPatch(patch["actions"].([]map[string]interface{})[0], d)
 	}
 	path = "additional_policy_scopes"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
@@ -2540,25 +2551,25 @@ func ResourceIbmOnboardingIamRegistrationIamServiceRegistrationPatchAsPatch(patc
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["supported_anonymous_accesses"] = nil
 	} else if exists && patch["supported_anonymous_accesses"] != nil {
-		ResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedAnonymousAccessAsPatch(patch["supported_anonymous_accesses"].([]interface{})[0].(map[string]interface{}), d)
+		ResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedAnonymousAccessAsPatch(patch["supported_anonymous_accesses"].([]map[string]interface{})[0], d)
 	}
 	path = "supported_attributes"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["supported_attributes"] = nil
 	} else if exists && patch["supported_attributes"] != nil {
-		ResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedAttributeAsPatch(patch["supported_attributes"].([]interface{})[0].(map[string]interface{}), d)
+		ResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedAttributeAsPatch(patch["supported_attributes"].([]map[string]interface{})[0], d)
 	}
 	path = "supported_authorization_subjects"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["supported_authorization_subjects"] = nil
 	} else if exists && patch["supported_authorization_subjects"] != nil {
-		ResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedAuthorizationSubjectAsPatch(patch["supported_authorization_subjects"].([]interface{})[0].(map[string]interface{}), d)
+		ResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedAuthorizationSubjectAsPatch(patch["supported_authorization_subjects"].([]map[string]interface{})[0], d)
 	}
 	path = "supported_roles"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["supported_roles"] = nil
 	} else if exists && patch["supported_roles"] != nil {
-		ResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedRoleAsPatch(patch["supported_roles"].([]interface{})[0].(map[string]interface{}), d)
+		ResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedRoleAsPatch(patch["supported_roles"].([]map[string]interface{})[0], d)
 	}
 	path = "supported_network"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
@@ -2577,7 +2588,7 @@ func ResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedNetworkA
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["environment_attributes"] = nil
 	} else if exists && patch["environment_attributes"] != nil {
-		ResourceIbmOnboardingIamRegistrationEnvironmentAttributeAsPatch(patch["environment_attributes"].([]interface{})[0].(map[string]interface{}), d)
+		ResourceIbmOnboardingIamRegistrationEnvironmentAttributeAsPatch(patch["environment_attributes"].([]map[string]interface{})[0], d)
 	}
 }
 
@@ -2736,7 +2747,7 @@ func ResourceIbmOnboardingIamRegistrationSupportedAttributeUiInputDetailsAsPatch
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["values"] = nil
 	} else if exists && patch["values"] != nil {
-		ResourceIbmOnboardingIamRegistrationSupportedAttributeUiInputValueAsPatch(patch["values"].([]interface{})[0].(map[string]interface{}), d)
+		ResourceIbmOnboardingIamRegistrationSupportedAttributeUiInputValueAsPatch(patch["values"].([]map[string]interface{})[0], d)
 	}
 	path = "supported_attributes.0.ui.0.input_details.0.gst"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
@@ -2812,9 +2823,9 @@ func ResourceIbmOnboardingIamRegistrationSupportedAttributesOptionsAsPatch(patch
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["hidden"] = nil
 	}
-	path = "supported_attributes.0.options.0.supported_attributes"
+	path = "supported_attributes.0.options.0.supported_patterns"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
-		patch["supported_attributes"] = nil
+		patch["supported_patterns"] = nil
 	}
 	path = "supported_attributes.0.options.0.policy_types"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
@@ -2885,25 +2896,10 @@ func ResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedAnonymou
 	path = "supported_anonymous_accesses.0.attributes"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["attributes"] = nil
-	} else if exists && patch["attributes"] != nil {
-		ResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedAnonymousAccessAttributesAsPatch(patch["attributes"].(map[string]interface{}), d)
 	}
 	path = "supported_anonymous_accesses.0.roles"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["roles"] = nil
-	}
-}
-
-func ResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedAnonymousAccessAttributesAsPatch(patch map[string]interface{}, d *schema.ResourceData) {
-	var path string
-
-	path = "supported_anonymous_accesses.0.attributes.0.account_id"
-	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
-		patch["account_id"] = nil
-	}
-	path = "supported_anonymous_accesses.0.attributes.0.service_name"
-	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
-		patch["service_name"] = nil
 	}
 }
 

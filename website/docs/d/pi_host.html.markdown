@@ -50,14 +50,14 @@ After your data source is created, you can read values from the following attrib
 - `capacity` - (List) Capacities of the host.
   
     Nested schema for `capacity`:
-  - `available_core` - (Float) Number of cores currently available.
-  - `available_memory` - (Float) Amount of memory currently available (in GB).
-  - `reserved_core` - (Float) Number of cores reserved for system use.
-  - `reserved_memory` - (Float) Amount of memory reserved for system use (in GB).
-  - `total_core` - (Float) Total number of cores of the host.
-  - `total_memory` - (Float) Total amount of memory of the host (in GB).
-  - `used_core` - (Float) Number of cores in use on the host.
-  - `used_memory` - (Float) Amount of memory used on the host (in GB).
+    - `available_core` - (Float) Number of cores currently available.
+    - `available_memory` - (Float) Amount of memory currently available (in GB).
+    - `reserved_core` - (Float) Number of cores reserved for system use.
+    - `reserved_memory` - (Float) Amount of memory reserved for system use (in GB).
+    - `total_core` - (Float) Total number of cores of the host.
+    - `total_memory` - (Float) Total amount of memory of the host (in GB).
+    - `used_core` - (Float) Number of cores in use on the host.
+    - `used_memory` - (Float) Amount of memory used on the host (in GB).
 
 - `display_name` - (String) Name of the host.
 - `host_group` - (Map)  Information about the owning host group.
@@ -66,11 +66,8 @@ After your data source is created, you can read values from the following attrib
   - `access` - (String) Whether the host group is a primary or secondary host group.
   - `href` - (String) Link to the host group resource.
   - `name` - (String) Name of the host group.
-
+- `host_reference` - (Integer) Current physical ID of the host.
 - `state` - (String) State of the host `up` or `down`.
-  
 - `id` - (String) The unique identifier of the host.
-
 - `status` - (String) Status of the host `enabled` or `disabled`.
-
 - `sys_type` - (String) System type.

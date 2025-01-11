@@ -6,6 +6,7 @@ package vpc
 import (
 	"log"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -29,6 +30,10 @@ const (
 	isDefaultRTResourceGroupHref        = "href"
 	isDefaultRTResourceGroupId          = "id"
 	isDefaultRTResourceGroupName        = "name"
+	isDefaultRTTags                     = "tags"
+	isDefaultRTAccessTags               = "access_tags"
+	isDefaultRTAccessTagType            = "access"
+	isDefaultRTUserTagType              = "user"
 )
 
 func DataSourceIBMISVPCDefaultRoutingTable() *schema.Resource {
@@ -162,6 +167,19 @@ func DataSourceIBMISVPCDefaultRoutingTable() *schema.Resource {
 					},
 				},
 			},
+			isDefaultRTTags: {
+				Type:     schema.TypeSet,
+				Computed: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+				Set:      flex.ResourceIBMVPCHash,
+			},
+			isDefaultRTAccessTags: {
+				Type:        schema.TypeSet,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         flex.ResourceIBMVPCHash,
+				Description: "List of access tags",
+			},
 		},
 	}
 }
@@ -224,5 +242,19 @@ func dataSourceIBMISVPCDefaultRoutingTableGet(d *schema.ResourceData, meta inter
 	d.Set(isDefaultRTResourceGroup, resourceGroupList)
 	d.Set(isDefaultRTVpcID, vpcID)
 	d.SetId(*result.ID)
+
+	tags, err := flex.GetGlobalTagsUsingCRN(meta, *result.CRN, "", isDefaultRTUserTagType)
+	if err != nil {
+		log.Printf(
+			"An error occured during reading of default routing table (%s) tags : %s", d.Id(), err)
+	}
+	d.Set(isDefaultRTTags, tags)
+
+	accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *result.CRN, "", isDefaultRTAccessTagType)
+	if err != nil {
+		log.Printf(
+			"An error occured during reading of default routing table (%s) access tags: %s", d.Id(), err)
+	}
+	d.Set(isDefaultRTAccessTags, accesstags)
 	return nil
 }

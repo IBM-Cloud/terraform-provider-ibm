@@ -203,7 +203,7 @@ func dataSourceIBMIsPrivatePathServiceGatewayEndpointGatewayBindingsAccountRefer
 	return modelMap, nil
 }
 
-func dataSourceIBMIsPrivatePathServiceGatewayEndpointGatewayBindingsPrivatePathServiceGatewayEndpointGatewayBindingCollectionFirstToMap(model *vpcv1.PrivatePathServiceGatewayEndpointGatewayBindingCollectionFirst) (map[string]interface{}, error) {
+func dataSourceIBMIsPrivatePathServiceGatewayEndpointGatewayBindingsPrivatePathServiceGatewayEndpointGatewayBindingCollectionFirstToMap(model *vpcv1.PageLink) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Href != nil {
 		modelMap["href"] = *model.Href
@@ -211,7 +211,7 @@ func dataSourceIBMIsPrivatePathServiceGatewayEndpointGatewayBindingsPrivatePathS
 	return modelMap, nil
 }
 
-func dataSourceIBMIsPrivatePathServiceGatewayEndpointGatewayBindingsPrivatePathServiceGatewayEndpointGatewayBindingCollectionNextToMap(model *vpcv1.PrivatePathServiceGatewayEndpointGatewayBindingCollectionNext) (map[string]interface{}, error) {
+func dataSourceIBMIsPrivatePathServiceGatewayEndpointGatewayBindingsPrivatePathServiceGatewayEndpointGatewayBindingCollectionNextToMap(model *vpcv1.PageLink) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Href != nil {
 		modelMap["href"] = *model.Href
