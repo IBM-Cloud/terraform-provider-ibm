@@ -58,7 +58,7 @@ Nested scheme for **rotation**:
       * Constraints: The minimum value is `1`.
     * `unit` - (Optional, String) The units for the secret rotation time interval.
       * Constraints: Allowable values are: `day`, `month`.
-* `secret_group_id` - (Optional, Forces new resource, String) A v4 UUID identifier, or `default` secret group.
+* `secret_group_id` - (Optional, Forces new resource, String) A UUID identifier, or `default` secret group.
   * Constraints: The maximum length is `36` characters. The minimum length is `7` characters. The value must match regular expression `/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|default)$/`.
 * `ttl` - (Optional, Forces new resource, String) The time-to-live (TTL) to assign to the private certificate. The value can be supplied as a string duration with time unit suffix - `d` for days, `h` for hours, `m` for minutes, or `s` for seconds. For example, `2d` or `48h` or `172800s`.
 

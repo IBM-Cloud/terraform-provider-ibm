@@ -213,6 +213,25 @@ func DataSourceIBMPIInstances() *schema.Resource {
 							Description: "The virtual cores that are assigned to the instance.",
 							Type:        schema.TypeInt,
 						},
+						Attr_VirtualSerialNumber: {
+							Computed:    true,
+							Description: "Virtual Serial Number information",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									Attr_Description: {
+										Computed:    true,
+										Description: "Description of the Virtual Serial Number",
+										Type:        schema.TypeString,
+									},
+									Attr_Serial: {
+										Computed:    true,
+										Description: "Virtual serial number.",
+										Type:        schema.TypeString,
+									},
+								},
+							},
+							Type: schema.TypeList,
+						},
 					},
 				},
 				Type: schema.TypeList,
@@ -288,6 +307,10 @@ func flattenPvmInstances(list []*models.PVMInstanceReference, meta interface{}) 
 
 		if i.Fault != nil {
 			l[Attr_Fault] = flattenPvmInstanceFault(i.Fault)
+		}
+
+		if i.VirtualSerialNumber != nil {
+			l[Attr_VirtualSerialNumber] = flattenVirtualSerialNumberToList(i.VirtualSerialNumber)
 		}
 
 		result = append(result, l)

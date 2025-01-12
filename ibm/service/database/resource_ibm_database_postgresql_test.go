@@ -142,7 +142,7 @@ func TestAccIBMDatabaseInstancePostgresGroup(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
 					resource.TestCheckResourceAttr(name, "location", acc.Region()),
 					resource.TestCheckResourceAttr(name, "groups.0.count", "3"),
-					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "8192"),
+					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "24576"),
 					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "21504"),
 					resource.TestCheckResourceAttr(name, "groups.0.cpu.0.allocation_count", "9"),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "0"),

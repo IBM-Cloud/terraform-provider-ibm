@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
@@ -20,7 +19,6 @@ import (
 
 func TestAccIbmSchematicsAgentHealthBasic(t *testing.T) {
 	var conf *schematicsv1.AgentDataRecentHealthJob
-	agentID := fmt.Sprintf("tf_agent_id_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -28,10 +26,10 @@ func TestAccIbmSchematicsAgentHealthBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIbmSchematicsAgentHealthDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmSchematicsAgentHealthConfigBasic(agentID),
+				Config: testAccCheckIbmSchematicsAgentHealthConfigBasic(acc.AgentID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmSchematicsAgentHealthExists("ibm_schematics_agent_health.schematics_agent_health_instance", conf),
-					resource.TestCheckResourceAttr("ibm_schematics_agent_health.schematics_agent_health_instance", "agent_id", agentID),
+					resource.TestCheckResourceAttr("ibm_schematics_agent_health.schematics_agent_health_instance", "agent_id", acc.AgentID),
 				),
 			},
 		},

@@ -115,7 +115,7 @@ In addition to all argument references listed, you can access the following attr
       * `unit` - (String) The units for the secret rotation time interval.
           * Constraints: Allowable values are: `day`, `month`.
 
-* `secret_group_id` - (String) A v4 UUID identifier, or `default` secret group.
+* `secret_group_id` - (String) A UUID identifier, or `default` secret group.
     * Constraints: The maximum length is `36` characters. The minimum length is `7` characters. The value must match regular expression `/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|default)$/`.
 
 * `secret_type` - (String) The secret type. Supported types are arbitrary, certificates (imported, public, and private), IAM credentials, key-value, and user credentials.
