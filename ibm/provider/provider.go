@@ -2026,6 +2026,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_is_reservation":                                 vpc.ResourceIBMISReservationValidator(),
 				"ibm_kms_key_rings":                                  kms.ResourceIBMKeyRingValidator(),
 				"ibm_dns_glb_monitor":                                dnsservices.ResourceIBMPrivateDNSGLBMonitorValidator(),
+				"ibm_dns_custom_resolver":                            dnsservices.ResourceIBMPrivateDNSCustomResolverValidator(),
 				"ibm_dns_custom_resolver_forwarding_rule":            dnsservices.ResourceIBMPrivateDNSForwardingRuleValidator(),
 				"ibm_schematics_action":                              schematics.ResourceIBMSchematicsActionValidator(),
 				"ibm_schematics_job":                                 schematics.ResourceIBMSchematicsJobValidator(),
