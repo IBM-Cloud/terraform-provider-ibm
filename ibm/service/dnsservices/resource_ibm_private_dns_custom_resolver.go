@@ -40,6 +40,7 @@ const (
 	pdnsCustomResolverDegraded  = "DEGRADED"
 	pdnsCustomResolverHealthy   = "HEALTHY"
 	pdnsCRHighAvailability      = "high_availability"
+	pdnsResolverID              = "resolver_id"
 )
 
 func ResourceIBMPrivateDNSCustomResolver() *schema.Resource {
