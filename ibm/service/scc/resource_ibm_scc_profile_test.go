@@ -103,9 +103,9 @@ func testAccCheckIbmSccProfileConfigBasic(instanceID string, profileName string,
 			control_library_name = "control_library_name"
 			control_library_description = "control_library_description"
 			control_library_type = "custom"
-			version_group_label = "03354ab4-03be-41c0-a469-826fc0262e78"
 			latest = true
 			controls {
+        control_id ="0d4624f5-f5f6-44ed-9e09-6662e2f4106c"
 				control_name = "control-name"
 				control_description = "control_description"
 				control_category = "control_category"
@@ -159,9 +159,9 @@ func testAccCheckIbmSccProfileConfig(instanceID string, profileName string, prof
 			control_library_name = "control_library_name"
 			control_library_description = "control_library_description"
 			control_library_type = "custom"
-			version_group_label = "03354ab4-03be-41c0-a469-826fc0262e78"
 			latest = true
 			controls {
+        control_id ="0d4624f5-f5f6-44ed-9e09-6662e2f4106c"
 				control_name = "control-name"
 				control_description = "control_description"
 				control_category = "control_category"

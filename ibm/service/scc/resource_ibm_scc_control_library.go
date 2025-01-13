@@ -51,12 +51,11 @@ func ResourceIbmSccControlLibrary() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_scc_control_library", "control_library_type"),
-				Description:  "The control library type.",
+				Description:  "The control library type. This should be set to custom",
 			},
 			"version_group_label": {
-				Type:     schema.TypeString,
-				Computed: true,
-				// ValidateFunc: validate.InvokeValidator("ibm_scc_control_library", "version_group_label"),
+				Type:        schema.TypeString,
+				Computed:    true,
 				Description: "The ID of the version update of the control library.",
 			},
 			"control_library_version": {

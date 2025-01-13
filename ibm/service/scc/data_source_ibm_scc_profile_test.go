@@ -75,7 +75,6 @@ func testAccCheckIbmSccProfileDataSourceConfigBasic(instanceID string, profilePr
 			control_library_name = "control_library_name"
 			control_library_description = "control_library_description"
 			control_library_type = "custom"
-			version_group_label = "03354ab4-03be-41c0-a469-826fc0262e78"
 			latest = true
 			controls {
 				control_name = "control-name"
@@ -97,7 +96,7 @@ func testAccCheckIbmSccProfileDataSourceConfigBasic(instanceID string, profilePr
 						assessment_description = "assessment_description"
 						parameters {
 							parameter_display_name = "Sign out due to inactivity in seconds"
-                            parameter_name         = "session_invalidation_in_seconds"
+							parameter_name         = "session_invalidation_in_seconds"
 							parameter_type = "numeric"
 						}
 					}
@@ -136,7 +135,6 @@ func testAccCheckIbmSccProfileDataSourceConfig(instanceID string, profileProfile
 			control_library_name = "control_library_name"
 			control_library_description = "control_library_description"
 			control_library_type = "custom"
-			version_group_label = "03354ab4-03be-41c0-a469-826fc0262e78"
 			latest = true
 			controls {
 				control_name = "control-name"
@@ -158,7 +156,7 @@ func testAccCheckIbmSccProfileDataSourceConfig(instanceID string, profileProfile
 						assessment_description = "assessment_description"
 						parameters {
 							parameter_display_name = "Sign out due to inactivity in seconds"
-                            parameter_name         = "session_invalidation_in_seconds"
+							parameter_name         = "session_invalidation_in_seconds"
 							parameter_type = "numeric"
 						}
 					}

@@ -133,7 +133,7 @@ func testAccCheckIbmSccControlLibraryConfigBasic(instanceID string, controlLibra
 						assessment_description = "test 1"
 						parameters {
 							parameter_display_name = "Sign out due to inactivity in seconds"
-       				parameter_name         = "session_invalidation_in_seconds"
+							parameter_name         = "session_invalidation_in_seconds"
 							parameter_type         = "numeric"
 						}
 					}
@@ -144,7 +144,7 @@ func testAccCheckIbmSccControlLibraryConfigBasic(instanceID string, controlLibra
 						assessment_description = "test 2"
 						parameters {
 							parameter_display_name = "Maximum length of netmask bit that is considered as wide flow"
-       				parameter_name         = "netmask_bits_length"
+							parameter_name         = "netmask_bits_length"
 							parameter_type         = "numeric"
 						}
 					}
@@ -168,7 +168,7 @@ func testAccCheckIbmSccControlLibraryConfig(instanceID string, controlLibraryNam
 			control_library_name = "%s"
 			control_library_description = "%s"
 			control_library_type = "%s"
-      control_library_version = "%s"
+			control_library_version = "%s"
 			latest = %s
 			controls {
 				control_name = "control-name"
@@ -190,7 +190,7 @@ func testAccCheckIbmSccControlLibraryConfig(instanceID string, controlLibraryNam
 						assessment_description = "test 2"
 						parameters {
 							parameter_display_name = "Maximum length of netmask bit that is considered as wide flow"
-       				parameter_name         = "netmask_bits_length"
+							parameter_name         = "netmask_bits_length"
 							parameter_type         = "numeric"
 						}
 					}
@@ -201,7 +201,7 @@ func testAccCheckIbmSccControlLibraryConfig(instanceID string, controlLibraryNam
 						assessment_description = "test 1"
 						parameters {
 							parameter_display_name  = "Sign out due to inactivity in seconds"
-              parameter_name          = "session_invalidation_in_seconds"
+							parameter_name          = "session_invalidation_in_seconds"
 							parameter_type          = "numeric"
 						}
 					}
