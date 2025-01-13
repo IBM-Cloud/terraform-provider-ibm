@@ -96,20 +96,20 @@ Review the argument references that you can specify for your resource.
 - `logpull_options` - (Required, String) Configuration string.
 - `dataset` - (Optional, String) Dataset to be pulled,Option for dataset`http_requests`,`range_events`,`firewall_events`
 - `frequency` - (Optional, String) The frequency at which CIS sends batches of logs to your destination.`high`, `low`
-- `logdna` - (Optional, String) Information to identify the LogDNA instance the data will be pushed. Must provided in JSON format. Which need hostname,ingress_key and region (<https://cloud.ibm.com/docs/cis?topic=cis-logpush&interface=api>)
-- `cos` - (Optional, String) Information to identify the COS bucket where the data will be pushed. Must provided in JSON format. Which need bucket_name,id and region.
-- `ownership_challenge` - (Optional, String) Ownership challenge token to prove destination ownership. `cos` and `ownership_challenge` has to be used together.
+- `logdna` - (Optional, String) Information to identify the LogDNA instance where the data will be pushed. Must be provided in JSON format. `hostname`,`ingress_key` and `region` are required. (<https://cloud.ibm.com/docs/cis?topic=cis-logpush&interface=api>)
+- `cos` - (Optional, String) Information to identify the COS bucket where the data will be pushed. Must provided in JSON format. `bucket_name`,`id` and `region` are required.
+- `ownership_challenge` - (Optional, String) Ownership challenge token to prove destination ownership. `cos` and `ownership_challenge` must be used together.
 - `ibmcl` - (Optional, Map)
 
     Nested scheme of `ibmcl`:
-  - `instance_id` - (Required, String) ID of the IBM Cloud Logs instance where you want to send logs.
-  - `region` (Required, String) Region where the IBM Cloud Logs instance is located.
-  - `api_key` (Required, String) IBM Cloud API key used to generate a token for pushing to your Cloud Logs instance
+  - `instance_id` - (Required, String) ID of the IBM Cloud Log instance where you want to send logs.
+  - `region` (Required, String) Region where the IBM Cloud Log instance is located.
+  - `api_key` (Required, String) IBM Cloud API key used to generate a token for pushing to your IBM Cloud Log instance
 - `destination_conf` (Optional, String) Uniquely identifies a resource where data will be pushed. Additional configuration parameters supported by the destination may be included.
 
 ### Note
 
-Exactly one of the attribute must be used. `logdna`, `cos`, `ibmcl` and `destination_conf`.
+Exactly one must be used: `logdna`, `cos`, `ibmcl` or `destination_conf`.
 
 ## Attributes Reference
 
@@ -117,7 +117,7 @@ In addition to all argument reference list, you can access the following attribu
 
 - `id` - (String) The ID of logpush job resource. It is a combination of <`job-id`>:<`crn`> attributes concatenated with ":".
 - `job_id` - (String) Unique identifier for the each LogpushJob.
-- `last_complete` - (String) Records the last time for which logs have been successfully pushed.
+- `last_complete` - (String) Records the last time for which the logs have been successfully pushed.
 - `last_error` - (String) Records the last time the job failed.
 - `error_message` - (String) The last failure.
 

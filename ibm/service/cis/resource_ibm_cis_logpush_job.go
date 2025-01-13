@@ -91,14 +91,14 @@ func ResourceIBMCISLogPushJob() *schema.Resource {
 			cisLogpushCosOwnershipChallenge: {
 				Type:         schema.TypeString,
 				Optional:     true,
-				Description:  "Ownership challenge token to prove destination ownership",
+				Description:  "Ownership challenge token to prove destination ownership.",
 				Sensitive:    true,
 				RequiredWith: []string{cisLogPushCos},
 			},
 			cisLogPushIbmCl: {
 				Type:          schema.TypeList,
 				Optional:      true,
-				Description:   "Information to identify the IBM cloud log instance the data will be pushed.",
+				Description:   "Information to identify the IBM Cloud Log instance where the data will be pushed.",
 				MaxItems:      1,
 				Sensitive:     true,
 				ConflictsWith: []string{cisLogdna, cisLogPushCos, cisLogpushDestConf},
@@ -107,18 +107,18 @@ func ResourceIBMCISLogPushJob() *schema.Resource {
 						cisLogPushIbmClInstanceId: {
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "ID of the IBM Cloud Logs instance where you want to send logs.",
+							Description: "ID of the IBM Cloud Log instance where you want to send logs.",
 						},
 						cisLogPushIbmClRegion: {
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "Region where the IBM Cloud Logs instance is located.",
+							Description: "Region where the IBM Cloud Log instance is located.",
 						},
 						cisLogPushIbmClApiKey: {
 							Type:        schema.TypeString,
 							Optional:    true,
 							Sensitive:   true,
-							Description: "IBM Cloud API key used to generate a token for pushing to your Cloud Logs instance.",
+							Description: "IBM Cloud API key used to generate a token for pushing to your IBM Cloud Log instance.",
 						},
 					},
 				},
@@ -164,7 +164,7 @@ func ResourceIBMCISLogPushJob() *schema.Resource {
 			cisLogpushLastComplete: {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Records the last time for which logs have been successfully pushed.",
+				Description: "Records the last time that logs have been successfully pushed.",
 			},
 			cisLogpushLastError: {
 				Type:        schema.TypeString,
@@ -316,7 +316,7 @@ func ResourceIBMCISLogpushJobUpdate(d *schema.ResourceData, meta interface{}) er
 	sess.Crn = core.StringPtr(crn)
 	sess.ZoneID = core.StringPtr(zoneID)
 
-	logpushID, zoneID, crn, err := flex.ConvertTfToCisThreeVar(d.Id())
+	logpushID, _, _, err := flex.ConvertTfToCisThreeVar(d.Id())
 
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error Converting ConvertTfToCisThreeVar in Update")
@@ -388,7 +388,7 @@ func ResourceIBMCISLogpushJobDelete(d *schema.ResourceData, meta interface{}) er
 	sess.Crn = core.StringPtr(crn)
 	sess.ZoneID = core.StringPtr(zoneID)
 
-	logpushID, zoneID, crn, err := flex.ConvertTfToCisThreeVar(d.Id())
+	logpushID, _, _, err := flex.ConvertTfToCisThreeVar(d.Id())
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error Converting ConvertTfToCisThreeVar in Delete")
 	}
