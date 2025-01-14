@@ -58,6 +58,12 @@ func DataSourceIBMPINetworkPort() *schema.Resource {
 						},
 						Attr_Macaddress: {
 							Computed:    true,
+							Deprecated:  "Deprecated, use mac_address instead",
+							Description: "The MAC address of the port.",
+							Type:        schema.TypeString,
+						},
+						Attr_MacAddress: {
+							Computed:    true,
 							Description: "The MAC address of the port.",
 							Type:        schema.TypeString,
 						},
@@ -113,6 +119,7 @@ func flattenNetworkPorts(networkPorts []*models.NetworkPort) interface{} {
 			Attr_Href:        i.Href,
 			Attr_IPaddress:   *i.IPAddress,
 			Attr_Macaddress:  *i.MacAddress,
+			Attr_MacAddress:  *i.MacAddress,
 			Attr_PortID:      *i.PortID,
 			Attr_PublicIP:    i.ExternalIP,
 			Attr_Status:      *i.Status,

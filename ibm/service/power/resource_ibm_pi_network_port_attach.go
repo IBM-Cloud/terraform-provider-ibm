@@ -83,6 +83,12 @@ func ResourceIBMPINetworkPortAttach() *schema.Resource {
 				Description: "The MAC address of the port.",
 				Type:        schema.TypeString,
 			},
+			Attr_Macaddress: {
+				Computed:    true,
+				Deprecated:  "Deprecated, use mac_address instead",
+				Description: "The MAC address of the instance.",
+				Type:        schema.TypeString,
+			},
 			Attr_NetworkPortID: {
 				Computed:    true,
 				Description: "The ID of the port.",
@@ -181,6 +187,7 @@ func resourceIBMPINetworkPortAttachRead(ctx context.Context, d *schema.ResourceD
 	d.Set(Arg_NetworkPortDescription, networkdata.Description)
 	d.Set(Arg_NetworkPortIPAddress, networkdata.IPAddress)
 	d.Set(Attr_MacAddress, networkdata.MacAddress)
+	d.Set(Attr_Macaddress, networkdata.MacAddress)
 	d.Set(Attr_NetworkPortID, networkdata.PortID)
 	d.Set(Attr_PublicIP, networkdata.ExternalIP)
 	d.Set(Attr_Status, networkdata.Status)
@@ -189,7 +196,6 @@ func resourceIBMPINetworkPortAttachRead(ctx context.Context, d *schema.ResourceD
 }
 
 func resourceIBMPINetworkPortAttachDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-
 	log.Printf("Calling the network delete functions. ")
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
@@ -232,7 +238,6 @@ func isWaitForIBMPINetworkportAvailable(ctx context.Context, client *instance.IB
 }
 
 func isIBMPINetworkportRefreshFunc(client *instance.IBMPINetworkClient, id, networkname string) retry.StateRefreshFunc {
-
 	log.Printf("Calling the IsIBMPINetwork Refresh Function....with the following id (%s) for network port and following id (%s) for network name and waiting for network to be READY", id, networkname)
 	return func() (interface{}, string, error) {
 		network, err := client.GetPort(networkname, id)
@@ -265,7 +270,6 @@ func isWaitForIBMPINetworkPortAttachAvailable(ctx context.Context, client *insta
 }
 
 func isIBMPINetworkPortAttachRefreshFunc(client *instance.IBMPINetworkClient, id, networkname, instanceid string) retry.StateRefreshFunc {
-
 	log.Printf("Calling the IsIBMPINetwork Refresh Function....with the following id (%s) for network port and following id (%s) for network name and waiting for network to be READY", id, networkname)
 	return func() (interface{}, string, error) {
 		network, err := client.GetPort(networkname, id)

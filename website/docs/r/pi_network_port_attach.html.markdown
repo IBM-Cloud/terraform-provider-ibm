@@ -63,7 +63,8 @@ Review the argument references that you can specify for your resource.
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
 - `id` - (String) The unique identifier of the instance. The ID is composed of `<pi_cloud_instance_id>/<pi_network_name>/<network_port_id>`.
-- `macaddress` - (String) The MAC address of the port.
+- `mac_address` - (String) The MAC address of the instance.
+- `macaddress` - (String) The MAC address of the instance. Deprecated please use `mac_address` instead.
 - `network_port_id` - (String) The ID of the port.
 - `public_ip` - (String) The public IP associated with the port.
 - `status` - (String) The status of the port.

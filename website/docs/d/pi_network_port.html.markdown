@@ -52,7 +52,8 @@ In addition to all argument reference list, you can access the following attribu
   - `description` - (String) The description for the network port.
   - `href` - (String) Network port href.
   - `ipaddress` - (String) The IP address of the port.
-  - `macaddress` - (String) The MAC address of the port.
+  - `mac_address` - (String) The MAC address of the instance.
+  - `macaddress` - (String) The MAC address of the instance. Deprecated please use `mac_address` instead.
   - `portid` - (String) The ID of the port.
   - `public_ip`- (String) The public IP associated with the port.
   - `status` - (String) The status of the port.
