@@ -4051,65 +4051,65 @@ func resourceIBMBMSNicSet(v interface{}) int {
 	return conns.String(buf.String())
 }
 
-func resourceStopServerIfRunning(id, stoppingType string, d *schema.ResourceData, context context.Context, sess *vpcv1.VpcV1, isServerStopped bool) (bool, error) {
-	getBmsOptions := &vpcv1.GetBareMetalServerOptions{
-		ID: &id,
-	}
-	bms, response, err := sess.GetBareMetalServerWithContext(context, getBmsOptions)
-	if err != nil {
-		if response != nil && response.StatusCode == 404 {
-			return isServerStopped, nil
-		}
-		return isServerStopped, fmt.Errorf("[ERROR] Error Getting Bare Metal Server (%s): %s\n%s", id, err, response)
-	}
-	if *bms.Status == "running" {
+// func resourceStopServerIfRunning(id, stoppingType string, d *schema.ResourceData, context context.Context, sess *vpcv1.VpcV1, isServerStopped bool) (bool, error) {
+// 	getBmsOptions := &vpcv1.GetBareMetalServerOptions{
+// 		ID: &id,
+// 	}
+// 	bms, response, err := sess.GetBareMetalServerWithContext(context, getBmsOptions)
+// 	if err != nil {
+// 		if response != nil && response.StatusCode == 404 {
+// 			return isServerStopped, nil
+// 		}
+// 		return isServerStopped, fmt.Errorf("[ERROR] Error Getting Bare Metal Server (%s): %s\n%s", id, err, response)
+// 	}
+// 	if *bms.Status == "running" {
 
-		options := &vpcv1.StopBareMetalServerOptions{
-			ID:   bms.ID,
-			Type: &stoppingType,
-		}
+// 		options := &vpcv1.StopBareMetalServerOptions{
+// 			ID:   bms.ID,
+// 			Type: &stoppingType,
+// 		}
 
-		response, err := sess.StopBareMetalServerWithContext(context, options)
-		if err != nil && response != nil && response.StatusCode != 204 {
-			return isServerStopped, fmt.Errorf("[ERROR] Error stopping Bare Metal Server (%s): %s\n%s", id, err, response)
-		}
-		isServerStopped = true
-		isWaitForBareMetalServerActionStop(sess, d.Timeout(schema.TimeoutDelete), id, d)
-	}
-	return isServerStopped, nil
-}
+// 		response, err := sess.StopBareMetalServerWithContext(context, options)
+// 		if err != nil && response != nil && response.StatusCode != 204 {
+// 			return isServerStopped, fmt.Errorf("[ERROR] Error stopping Bare Metal Server (%s): %s\n%s", id, err, response)
+// 		}
+// 		isServerStopped = true
+// 		isWaitForBareMetalServerActionStop(sess, d.Timeout(schema.TimeoutDelete), id, d)
+// 	}
+// 	return isServerStopped, nil
+// }
 
-func resourceStartServerIfStopped(id, stoppingType string, d *schema.ResourceData, context context.Context, sess *vpcv1.VpcV1, isServerStopped bool) (bool, error) {
-	getBmsOptions := &vpcv1.GetBareMetalServerOptions{
-		ID: &id,
-	}
-	bms, response, err := sess.GetBareMetalServerWithContext(context, getBmsOptions)
-	if err != nil {
-		if response != nil && response.StatusCode == 404 {
-			return isServerStopped, nil
-		}
-		return isServerStopped, fmt.Errorf("[ERROR] Error Getting Bare Metal Server (%s): %s\n%s", id, err, response)
-	}
-	if *bms.Status == "stopped" {
+// func resourceStartServerIfStopped(id, stoppingType string, d *schema.ResourceData, context context.Context, sess *vpcv1.VpcV1, isServerStopped bool) (bool, error) {
+// 	getBmsOptions := &vpcv1.GetBareMetalServerOptions{
+// 		ID: &id,
+// 	}
+// 	bms, response, err := sess.GetBareMetalServerWithContext(context, getBmsOptions)
+// 	if err != nil {
+// 		if response != nil && response.StatusCode == 404 {
+// 			return isServerStopped, nil
+// 		}
+// 		return isServerStopped, fmt.Errorf("[ERROR] Error Getting Bare Metal Server (%s): %s\n%s", id, err, response)
+// 	}
+// 	if *bms.Status == "stopped" {
 
-		createbmsactoptions := &vpcv1.StartBareMetalServerOptions{
-			ID: &id,
-		}
-		response, err := sess.StartBareMetalServer(createbmsactoptions)
-		if err != nil {
-			if response != nil && response.StatusCode == 404 {
-				return isServerStopped, nil
-			}
-			return isServerStopped, fmt.Errorf("[ERROR] Error creating Bare Metal Server action start : %s\n%s", err, response)
-		}
-		isServerStopped = true
-		_, err = isWaitForBareMetalServerAvailable(sess, d.Id(), d.Timeout(schema.TimeoutUpdate), d)
-		if err != nil {
-			return isServerStopped, err
-		}
-	}
-	return isServerStopped, nil
-}
+// 		createbmsactoptions := &vpcv1.StartBareMetalServerOptions{
+// 			ID: &id,
+// 		}
+// 		response, err := sess.StartBareMetalServer(createbmsactoptions)
+// 		if err != nil {
+// 			if response != nil && response.StatusCode == 404 {
+// 				return isServerStopped, nil
+// 			}
+// 			return isServerStopped, fmt.Errorf("[ERROR] Error creating Bare Metal Server action start : %s\n%s", err, response)
+// 		}
+// 		isServerStopped = true
+// 		_, err = isWaitForBareMetalServerAvailable(sess, d.Id(), d.Timeout(schema.TimeoutUpdate), d)
+// 		if err != nil {
+// 			return isServerStopped, err
+// 		}
+// 	}
+// 	return isServerStopped, nil
+// }
 
 func resourceIBMIsBareMetalServerMapToBareMetalServerTrustedPlatformModulePrototype(modelMap map[string]interface{}) (*vpcv1.BareMetalServerTrustedPlatformModulePrototype, error) {
 	model := &vpcv1.BareMetalServerTrustedPlatformModulePrototype{}
@@ -4970,5 +4970,278 @@ func compareModifiedNacs(oldList, newList []interface{}, bareMetalServerId strin
 			}
 		}
 	}
+	return nil
+}
+
+// Function to handle stopping server if running during updates
+func resourceStopServerIfRunning(id, stoppingType string, d *schema.ResourceData, context context.Context, sess *vpcv1.VpcV1, isServerStopped bool) (bool, error) {
+	getBmsOptions := &vpcv1.GetBareMetalServerOptions{
+		ID: &id,
+	}
+	bms, response, err := sess.GetBareMetalServerWithContext(context, getBmsOptions)
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			return isServerStopped, nil
+		}
+		return isServerStopped, fmt.Errorf("[ERROR] Error Getting Bare Metal Server (%s): %s\n%s", id, err, response)
+	}
+	if *bms.Status == "running" {
+		options := &vpcv1.StopBareMetalServerOptions{
+			ID:   bms.ID,
+			Type: &stoppingType,
+		}
+
+		response, err := sess.StopBareMetalServerWithContext(context, options)
+		if err != nil && response != nil && response.StatusCode != 204 {
+			return isServerStopped, fmt.Errorf("[ERROR] Error stopping Bare Metal Server (%s): %s\n%s", id, err, response)
+		}
+		isServerStopped = true
+		_, err = isWaitForBareMetalServerActionStop(sess, d.Timeout(schema.TimeoutDelete), id, d)
+		if err != nil {
+			return isServerStopped, err
+		}
+	}
+	return isServerStopped, nil
+}
+
+// Function to handle starting server if stopped
+func resourceStartServerIfStopped(id, stoppingType string, d *schema.ResourceData, context context.Context, sess *vpcv1.VpcV1, isServerStopped bool) (bool, error) {
+	getBmsOptions := &vpcv1.GetBareMetalServerOptions{
+		ID: &id,
+	}
+	bms, response, err := sess.GetBareMetalServerWithContext(context, getBmsOptions)
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			return isServerStopped, nil
+		}
+		return isServerStopped, fmt.Errorf("[ERROR] Error Getting Bare Metal Server (%s): %s\n%s", id, err, response)
+	}
+	if *bms.Status == "stopped" {
+		createbmsactoptions := &vpcv1.StartBareMetalServerOptions{
+			ID: &id,
+		}
+		response, err := sess.StartBareMetalServer(createbmsactoptions)
+		if err != nil {
+			if response != nil && response.StatusCode == 404 {
+				return isServerStopped, nil
+			}
+			return isServerStopped, fmt.Errorf("[ERROR] Error creating Bare Metal Server action start : %s\n%s", err, response)
+		}
+		isServerStopped = false
+		_, err = isWaitForBareMetalServerAvailable(sess, id, d.Timeout(schema.TimeoutUpdate), d)
+		if err != nil {
+			return isServerStopped, err
+		}
+	}
+	return isServerStopped, nil
+}
+
+// Function to handle network interface updates
+func handleNetworkInterfaceUpdates(d *schema.ResourceData, meta interface{}, id string) error {
+	sess, err := vpcClient(meta)
+	if err != nil {
+		return err
+	}
+
+	if d.HasChange("network_interfaces") {
+		oldList, newList := d.GetChange("network_interfaces")
+		if oldList == nil {
+			oldList = new(schema.Set)
+		}
+		if newList == nil {
+			newList = new(schema.Set)
+		}
+		os := oldList.(*schema.Set)
+		ns := newList.(*schema.Set)
+
+		remove := os.Difference(ns).List()
+		add := ns.Difference(os).List()
+
+		// Check if PCI interfaces are involved
+		needsServerRestart := false
+		for _, rem := range remove {
+			oldNic := rem.(map[string]interface{})
+			if oldNic["interface_type"] == "pci" {
+				needsServerRestart = true
+				break
+			}
+		}
+		for _, newNic := range add {
+			newNicMap := newNic.(map[string]interface{})
+			if newNicMap["interface_type"] == "pci" {
+				needsServerRestart = true
+				break
+			}
+		}
+
+		isServerStopped := false
+		if needsServerRestart {
+			var err error
+			isServerStopped, err = resourceStopServerIfRunning(id, "hard", d, context.Background(), sess, isServerStopped)
+			if err != nil {
+				return err
+			}
+		}
+
+		// Handle removals
+		if len(remove) > 0 {
+			for _, rem := range remove {
+				oldNic := rem.(map[string]interface{})
+				networkId := oldNic["id"].(string)
+				removeBMSNic := &vpcv1.DeleteBareMetalServerNetworkInterfaceOptions{
+					BareMetalServerID: &id,
+					ID:                &networkId,
+				}
+				response, err := sess.DeleteBareMetalServerNetworkInterface(removeBMSNic)
+				if err != nil {
+					// Try to restore server state before returning error
+					if isServerStopped {
+						_, restartErr := resourceStartServerIfStopped(id, "hard", d, context.Background(), sess, isServerStopped)
+						if restartErr != nil {
+							return fmt.Errorf("Error removing network interface and restoring server state: %s\nOriginal error: %s", restartErr, err)
+						}
+					}
+					return fmt.Errorf("Error removing network interface: %s\n%s", err, response)
+				}
+			}
+		}
+
+		// Handle additions
+		if len(add) > 0 {
+			for _, newNic := range add {
+				nicMap := newNic.(map[string]interface{})
+				addNicOptions := &vpcv1.CreateBareMetalServerNetworkInterfaceOptions{
+					BareMetalServerID: &id,
+				}
+
+				// Configure network interface based on type
+				if nicMap["interface_type"] == "pci" {
+					err := configurePCINetworkInterface(nicMap, addNicOptions)
+					if err != nil {
+						// Restore server state before returning error
+						if isServerStopped {
+							_, restartErr := resourceStartServerIfStopped(id, "hard", d, context.Background(), sess, isServerStopped)
+							if restartErr != nil {
+								return fmt.Errorf("Error adding PCI interface and restoring server state: %s\nOriginal error: %s", restartErr, err)
+							}
+						}
+						return err
+					}
+				} else {
+					err := configureVLANNetworkInterface(nicMap, addNicOptions)
+					if err != nil {
+						return err
+					}
+				}
+
+				_, response, err := sess.CreateBareMetalServerNetworkInterface(addNicOptions)
+				if err != nil {
+					// Restore server state before returning error
+					if isServerStopped {
+						_, restartErr := resourceStartServerIfStopped(id, "hard", d, context.Background(), sess, isServerStopped)
+						if restartErr != nil {
+							return fmt.Errorf("Error adding network interface and restoring server state: %s\nOriginal error: %s", restartErr, err)
+						}
+					}
+					return fmt.Errorf("Error adding network interface: %s\n%s", err, response)
+				}
+			}
+		}
+
+		// Restore server state if it was stopped
+		if isServerStopped {
+			_, err = resourceStartServerIfStopped(id, "hard", d, context.Background(), sess, isServerStopped)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+// Helper function to configure PCI network interface
+func configurePCINetworkInterface(nicMap map[string]interface{}, options *vpcv1.CreateBareMetalServerNetworkInterfaceOptions) error {
+	interfaceType := "pci"
+	var nicobj = &vpcv1.BareMetalServerNetworkInterfacePrototypeBareMetalServerNetworkInterfaceByPciPrototype{}
+	nicobj.InterfaceType = &interfaceType
+
+	// Configure allowed VLANs
+	if allowedVlans, ok := nicMap["allowed_vlans"]; ok {
+		allowedVlansList := allowedVlans.(*schema.Set).List()
+		vlans := make([]int64, 0, len(allowedVlansList))
+		for _, vlan := range allowedVlansList {
+			vlans = append(vlans, int64(vlan.(int)))
+		}
+		nicobj.AllowedVlans = vlans
+	}
+
+	// Configure subnet
+	if subnet, ok := nicMap["subnet"]; ok {
+		subnetID := subnet.(string)
+		nicobj.Subnet = &vpcv1.SubnetIdentity{
+			ID: &subnetID,
+		}
+	}
+
+	// Configure security groups
+	if secGroups, ok := nicMap["security_groups"]; ok {
+		secGroupSet := secGroups.(*schema.Set)
+		if secGroupSet.Len() > 0 {
+			var secGroupObjs = make([]vpcv1.SecurityGroupIdentityIntf, secGroupSet.Len())
+			for i, sg := range secGroupSet.List() {
+				sgID := sg.(string)
+				secGroupObjs[i] = &vpcv1.SecurityGroupIdentity{
+					ID: &sgID,
+				}
+			}
+			nicobj.SecurityGroups = secGroupObjs
+		}
+	}
+
+	options.BareMetalServerNetworkInterfacePrototype = nicobj
+	return nil
+}
+
+// Helper function to configure VLAN network interface
+func configureVLANNetworkInterface(nicMap map[string]interface{}, options *vpcv1.CreateBareMetalServerNetworkInterfaceOptions) error {
+	interfaceType := "vlan"
+	var nicobj = &vpcv1.BareMetalServerNetworkInterfacePrototypeBareMetalServerNetworkInterfaceByVlanPrototype{}
+	nicobj.InterfaceType = &interfaceType
+
+	if vlan, ok := nicMap["vlan"]; ok {
+		vlanID := int64(vlan.(int))
+		nicobj.Vlan = &vlanID
+	}
+
+	if allowToFloat, ok := nicMap["allow_to_float"]; ok {
+		allow := allowToFloat.(bool)
+		nicobj.AllowInterfaceToFloat = &allow
+	}
+
+	// Configure subnet
+	if subnet, ok := nicMap["subnet"]; ok {
+		subnetID := subnet.(string)
+		nicobj.Subnet = &vpcv1.SubnetIdentity{
+			ID: &subnetID,
+		}
+	}
+
+	// Configure security groups
+	if secGroups, ok := nicMap["security_groups"]; ok {
+		secGroupSet := secGroups.(*schema.Set)
+		if secGroupSet.Len() > 0 {
+			var secGroupObjs = make([]vpcv1.SecurityGroupIdentityIntf, secGroupSet.Len())
+			for i, sg := range secGroupSet.List() {
+				sgID := sg.(string)
+				secGroupObjs[i] = &vpcv1.SecurityGroupIdentity{
+					ID: &sgID,
+				}
+			}
+			nicobj.SecurityGroups = secGroupObjs
+		}
+	}
+
+	options.BareMetalServerNetworkInterfacePrototype = nicobj
 	return nil
 }
