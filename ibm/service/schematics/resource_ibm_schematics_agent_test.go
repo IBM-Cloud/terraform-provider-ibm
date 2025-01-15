@@ -19,11 +19,11 @@ import (
 func TestAccIbmSchematicsAgentBasic(t *testing.T) {
 	var conf schematicsv1.AgentData
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	version := "1.0.0-prega"
+	version := "1.1.0"
 	schematicsLocation := "us-south"
 	agentLocation := "eu-de"
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	versionUpdate := "1.0.0"
+	versionUpdate := "1.2.0"
 	schematicsLocationUpdate := "us-east"
 	agentLocationUpdate := "eu-gb"
 
@@ -58,11 +58,11 @@ func TestAccIbmSchematicsAgentBasic(t *testing.T) {
 func TestAccIbmSchematicsAgentAllArgs(t *testing.T) {
 	var conf schematicsv1.AgentData
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	version := "1.0.0-prega"
+	version := "1.1.0"
 	schematicsLocation := "us-south"
 	agentLocation := "eu-de"
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	versionUpdate := "1.0.0"
+	versionUpdate := "1.2.0"
 	schematicsLocationUpdate := "us-east"
 	agentLocationUpdate := "eu-gb"
 	description := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))

@@ -180,7 +180,7 @@ func testAccCheckIBMDatabaseInstanceMysqlBasic(databaseResourceGroup string, nam
 		service                      = "databases-for-mysql"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "secure-Password12345"
+		adminpassword                = "password12345678"
 		group {
 			group_id = "member"
 			memory {
@@ -197,7 +197,7 @@ func testAccCheckIBMDatabaseInstanceMysqlBasic(databaseResourceGroup string, nam
 		tags                         = ["one:two"]
 		users {
 			name     = "user123"
-			password = "secure-Password12345"
+			password = "password12345678"
 		}
 		allowlist {
 			address     = "172.168.1.2/32"
@@ -224,7 +224,7 @@ func testAccCheckIBMDatabaseInstanceMysqlFullyspecified(databaseResourceGroup st
 		service                      = "databases-for-mysql"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "secure-Password12345"
+		adminpassword                = "password12345678"
 		group {
 			group_id = "member"
 			memory {
@@ -244,11 +244,11 @@ func testAccCheckIBMDatabaseInstanceMysqlFullyspecified(databaseResourceGroup st
 		tags                         = ["one:two"]
 		users {
 			name     = "user123"
-			password = "secure-Password12345"
+			password = "password12345678"
 		}
 		users {
 			name     = "user124"
-			password = "secure-Password12345"
+			password = "password12345678"
 		}
 		allowlist {
 			address     = "172.168.1.2/32"
