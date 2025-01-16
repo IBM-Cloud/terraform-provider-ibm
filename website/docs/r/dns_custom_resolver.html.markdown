@@ -74,6 +74,10 @@ Review the argument reference that you can specify for your resource.
 - `high_availability` - (Optional, Bool) High Availability is enabled by Default. To meet high availability status, configure custom resolvers with a minimum of two resolver locations.
 - `locations`- (Optional, List) The list of locations where this custom resolver is deployed.  A custom resolver can have a maximum of three locations, either within the same subnet or in different subnets.
 
+### Note
+
+Change in `location` order will cause `dns_server_ip` to change.
+
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your resource is created. 
 
