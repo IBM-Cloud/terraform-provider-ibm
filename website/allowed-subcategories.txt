@@ -40,6 +40,7 @@ Push Notifications
 Resource management
 Satellite
 Schematics
+sdsaas
 Secrets Manager
 Security and Compliance Center
 Transit Gateway
