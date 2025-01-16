@@ -214,7 +214,7 @@ func resourceIBMCloudShellAccountSettingsCreate(context context.Context, d *sche
 		return tfErr.GetDiag()
 	}
 
-	d.SetId(*accountSettings.AccountID)
+	d.SetId(*accountSettings.ID)
 
 	return resourceIBMCloudShellAccountSettingsRead(context, d, meta)
 }
