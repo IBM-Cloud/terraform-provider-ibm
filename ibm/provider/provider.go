@@ -1948,6 +1948,9 @@ func Validator() validate.ValidatorDict {
 				"ibm_hpcs_vault":                               hpcs.ResourceIbmVaultValidator(),
 				"ibm_config_aggregator_settings":               configurationaggregator.ResourceIbmConfigAggregatorSettingsValidator(),
 
+				// Cloudshell
+				"ibm_cloud_shell_account_settings": cloudshell.ResourceIBMCloudShellAccountSettingsValidator(),
+
 				// MQ on Cloud
 				"ibm_mqcloud_queue_manager":                    mqcloud.ResourceIbmMqcloudQueueManagerValidator(),
 				"ibm_mqcloud_application":                      mqcloud.ResourceIbmMqcloudApplicationValidator(),
