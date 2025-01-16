@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2021 All Rights Reserved.
+// Copyright IBM Corp. 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package cloudshell_test
@@ -7,9 +7,9 @@ import (
 	"fmt"
 	"testing"
 
-	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
 func TestAccIBMCloudShellAccountSettingsBasic(t *testing.T) {
@@ -17,7 +17,7 @@ func TestAccIBMCloudShellAccountSettingsBasic(t *testing.T) {
 		PreCheck:  func() { acc.TestAccPreCheckCloudShell(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
-			{
+			resource.TestStep{
 				Config: testAccCheckIBMCloudShellAccountSettingsConfigBasic(acc.CloudShellAccountID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_cloud_shell_account_settings.cloud_shell_account_settings", "account_id", acc.CloudShellAccountID),
@@ -32,21 +32,22 @@ func TestAccIBMCloudShellAccountSettingsAllArgs(t *testing.T) {
 	defaultEnableNewRegions := "true"
 	enabled := "false"
 	featureWebPreview := "false"
-	regionJpTok := "false"
+	regionUsSouth := "false"
+
 	defaultEnableNewFeaturesUpdate := "true"
 	defaultEnableNewRegionsUpdate := "false"
 	enabledUpdate := "true"
 	featureWebPreviewUpdate := "true"
-	regionJpTokUpdate := "true"
+	regionUsSouthUpdate := "true"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheckCloudShell(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckIBMCloudShellAccountSettingsConfig("1", acc.CloudShellAccountID, defaultEnableNewFeatures, defaultEnableNewRegions, enabled, featureWebPreview, regionJpTok),
+			resource.TestStep{
+				Config: testAccCheckIBMCloudShellAccountSettingsConfig("1", acc.CloudShellAccountID, defaultEnableNewFeatures, defaultEnableNewRegions, enabled, featureWebPreview, regionUsSouth),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_cloud_shell_account_settings.cloud_shell_account_settings1", "id", fmt.Sprintf("ac-%s", acc.CloudShellAccountID)),
+					resource.TestCheckResourceAttr("ibm_cloud_shell_account_settings.cloud_shell_account_settings1", "id", acc.CloudShellAccountID),
 					resource.TestCheckResourceAttr("ibm_cloud_shell_account_settings.cloud_shell_account_settings1", "account_id", acc.CloudShellAccountID),
 					resource.TestCheckResourceAttrSet("ibm_cloud_shell_account_settings.cloud_shell_account_settings1", "rev"),
 					resource.TestCheckResourceAttr("ibm_cloud_shell_account_settings.cloud_shell_account_settings1", "default_enable_new_features", defaultEnableNewFeatures),
@@ -56,14 +57,14 @@ func TestAccIBMCloudShellAccountSettingsAllArgs(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_cloud_shell_account_settings.cloud_shell_account_settings1", "features.1.enabled", featureWebPreview),
 					resource.TestCheckResourceAttr("ibm_cloud_shell_account_settings.cloud_shell_account_settings1", "features.1.key", "server.web_preview"),
 					resource.TestCheckResourceAttrSet("ibm_cloud_shell_account_settings.cloud_shell_account_settings1", "regions.#"),
-					resource.TestCheckResourceAttr("ibm_cloud_shell_account_settings.cloud_shell_account_settings1", "regions.1.enabled", regionJpTok),
-					resource.TestCheckResourceAttr("ibm_cloud_shell_account_settings.cloud_shell_account_settings1", "regions.1.key", "jp-tok"),
+					resource.TestCheckResourceAttr("ibm_cloud_shell_account_settings.cloud_shell_account_settings1", "regions.1.enabled", regionUsSouth),
+					resource.TestCheckResourceAttr("ibm_cloud_shell_account_settings.cloud_shell_account_settings1", "regions.1.key", "us-south"),
 				),
 			},
-			{
-				Config: testAccCheckIBMCloudShellAccountSettingsConfig("2", acc.CloudShellAccountID, defaultEnableNewFeaturesUpdate, defaultEnableNewRegionsUpdate, enabledUpdate, featureWebPreviewUpdate, regionJpTokUpdate),
+			resource.TestStep{
+				Config: testAccCheckIBMCloudShellAccountSettingsConfig("2", acc.CloudShellAccountID, defaultEnableNewFeaturesUpdate, defaultEnableNewRegionsUpdate, enabledUpdate, featureWebPreviewUpdate, regionUsSouthUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_cloud_shell_account_settings.cloud_shell_account_settings2", "id", fmt.Sprintf("ac-%s", acc.CloudShellAccountID)),
+					resource.TestCheckResourceAttr("ibm_cloud_shell_account_settings.cloud_shell_account_settings2", "id", acc.CloudShellAccountID),
 					resource.TestCheckResourceAttr("ibm_cloud_shell_account_settings.cloud_shell_account_settings2", "account_id", acc.CloudShellAccountID),
 					resource.TestCheckResourceAttrSet("ibm_cloud_shell_account_settings.cloud_shell_account_settings2", "rev"),
 					resource.TestCheckResourceAttr("ibm_cloud_shell_account_settings.cloud_shell_account_settings2", "default_enable_new_features", defaultEnableNewFeaturesUpdate),
@@ -73,8 +74,8 @@ func TestAccIBMCloudShellAccountSettingsAllArgs(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_cloud_shell_account_settings.cloud_shell_account_settings2", "features.1.enabled", featureWebPreviewUpdate),
 					resource.TestCheckResourceAttr("ibm_cloud_shell_account_settings.cloud_shell_account_settings2", "features.1.key", "server.web_preview"),
 					resource.TestCheckResourceAttrSet("ibm_cloud_shell_account_settings.cloud_shell_account_settings2", "regions.#"),
-					resource.TestCheckResourceAttr("ibm_cloud_shell_account_settings.cloud_shell_account_settings2", "regions.1.enabled", regionJpTokUpdate),
-					resource.TestCheckResourceAttr("ibm_cloud_shell_account_settings.cloud_shell_account_settings2", "regions.1.key", "jp-tok"),
+					resource.TestCheckResourceAttr("ibm_cloud_shell_account_settings.cloud_shell_account_settings2", "regions.1.enabled", regionUsSouthUpdate),
+					resource.TestCheckResourceAttr("ibm_cloud_shell_account_settings.cloud_shell_account_settings2", "regions.1.key", "us-south"),
 				),
 			},
 		},
@@ -107,48 +108,40 @@ func testAccCheckIBMCloudShellAccountSettingsConfigBasic(accountID string) strin
 		}
 		regions {
 			enabled = true
-			key = "jp-tok"
-		}
-		regions {
-			enabled = false
 			key = "us-south"
 		}
 	}
 	`, accountID, accountID)
 }
 
-func testAccCheckIBMCloudShellAccountSettingsConfig(suffix, accountID string, defaultEnableNewFeatures string, defaultEnableNewRegions string, enabled string, featureWebPreview string, regionJpTok string) string {
+func testAccCheckIBMCloudShellAccountSettingsConfig(suffix, accountID string, defaultEnableNewFeatures string, defaultEnableNewRegions string, enabled string, featureWebPreview string, regionUsSouth string) string {
 	return fmt.Sprintf(`
-	data "ibm_cloud_shell_account_settings" "account_settings%s" {
-		account_id = "%s"
-	}
+		data "ibm_cloud_shell_account_settings" "account_settings%s" {
+			account_id = "%s"
+		}
 
-	resource "ibm_cloud_shell_account_settings" "cloud_shell_account_settings%s" {
-		account_id = "%s"
-		rev = data.ibm_cloud_shell_account_settings.account_settings%s.rev
-		default_enable_new_features = %s
-		default_enable_new_regions = %s
-		enabled = %s
-		features {
-			enabled = true
-			key = "server.file_manager"
-		}
-		features {
+		resource "ibm_cloud_shell_account_settings" "cloud_shell_account_settings%s" {
+			account_id = "%s"
+			rev = data.ibm_cloud_shell_account_settings.account_settings%s.rev
+			default_enable_new_features = %s
+			default_enable_new_regions = %s
 			enabled = %s
-			key = "server.web_preview"
-		}
-		regions {
-			enabled = true
-			key = "eu-de"
-		}
-		regions {
-			enabled = %s
-			key = "jp-tok"
-		}
-		regions {
-			enabled = false
-			key = "us-south"
-		}
+			features {
+				enabled = true
+				key = "server.file_manager"
+			}
+			features {
+				enabled = %s
+				key = "server.web_preview"
+			}
+			regions {
+				enabled = true
+				key = "eu-de"
+			}
+			regions {
+				enabled = %s
+				key = "us-south"
+			}
 	}
-	`, suffix, accountID, suffix, accountID, suffix, defaultEnableNewFeatures, defaultEnableNewRegions, enabled, featureWebPreview, regionJpTok)
+	`, suffix, accountID, suffix, accountID, suffix, defaultEnableNewFeatures, defaultEnableNewRegions, enabled, featureWebPreview, regionUsSouth)
 }
