@@ -668,7 +668,7 @@ type clientSession struct {
 	mqcloudClient    *mqcloudv1.MqcloudV1
 	mqcloudClientErr error
 
-	// VMware as a Service
+	// VMware Cloud Foundation as a Service
 	vmwareClient    *vmwarev1.VmwareV1
 	vmwareClientErr error
 
@@ -3560,25 +3560,28 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.mqcloudClientErr = fmt.Errorf("Error occurred while configuringMQaaS service: %q", err)
 	}
 
-	// VMware as a Service
-	// Construct the service options.
-	vmwareURL := ContructEndpoint(fmt.Sprintf("api.%s.vmware", c.Region), cloudEndpoint+"/v1")
-	vmwareClientOptions := &vmwarev1.VmwareV1Options{
-		Authenticator: authenticator,
-		URL:           EnvFallBack([]string{"VMWARE_URL"}, vmwareURL),
-	}
+	// VMware Cloud Foundation as a Service
+	// Construct an instance of the 'VMware Cloud Foundation as a Service API' service.
+	if session.vmwareClientErr == nil {
+		// Construct the service options.
+		vmwareURL := ContructEndpoint(fmt.Sprintf("api.%s.vmware", c.Region), cloudEndpoint+"/v1")
+		vmwareClientOptions := &vmwarev1.VmwareV1Options{
+			Authenticator: authenticator,
+			URL:           EnvFallBack([]string{"VMWARE_URL"}, vmwareURL),
+		}
 
-	// Construct the service client.
-	session.vmwareClient, err = vmwarev1.NewVmwareV1(vmwareClientOptions)
-	if err == nil {
-		// Enable retries for API calls
-		session.vmwareClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
-		// Add custom header for analytics
-		session.vmwareClient.SetDefaultHeaders(gohttp.Header{
-			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
-		})
-	} else {
-		session.vmwareClientErr = fmt.Errorf("Error occurred while configuring VMware as a Service API service: %q", err)
+		// Construct the service client.
+		session.vmwareClient, err = vmwarev1.NewVmwareV1(vmwareClientOptions)
+		if err == nil {
+			// Enable retries for API calls
+			session.vmwareClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+			// Add custom header for analytics
+			session.vmwareClient.SetDefaultHeaders(gohttp.Header{
+				"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+			})
+		} else {
+			session.vmwareClientErr = fmt.Errorf("Error occurred while constructing 'VMware Cloud Foundation as a Service API' service client: %q", err)
+		}
 	}
 
 	// Construct the service options.
