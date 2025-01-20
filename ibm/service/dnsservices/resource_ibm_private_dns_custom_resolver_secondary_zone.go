@@ -104,12 +104,10 @@ func resourceIBMPrivateDNSSecondaryZoneCreate(ctx context.Context, d *schema.Res
 	enabled := d.Get(pdnsSecondaryZoneEnabled).(bool)
 	transferFrom := flex.ExpandStringList(d.Get(pdnsSecondaryZoneTransferFrom).([]interface{}))
 
-	createSecondaryZoneOptions := sess.NewCreateSecondaryZoneOptions(instanceID, resolverID)
+	createSecondaryZoneOptions := sess.NewCreateSecondaryZoneOptions(instanceID, resolverID, zone, transferFrom)
 
-	createSecondaryZoneOptions.SetZone(zone)
 	createSecondaryZoneOptions.SetDescription(description)
 	createSecondaryZoneOptions.SetEnabled(enabled)
-	createSecondaryZoneOptions.SetTransferFrom(transferFrom)
 
 	mk := "private_dns_secondary_zone_" + instanceID + resolverID
 	conns.IbmMutexKV.Lock(mk)

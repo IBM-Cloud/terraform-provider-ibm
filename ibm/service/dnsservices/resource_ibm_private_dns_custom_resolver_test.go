@@ -22,17 +22,19 @@ func TestAccIBMPrivateDNSCustomResolver_basic(t *testing.T) {
 	subnetname := fmt.Sprintf("cr-subnet-name-%d", acctest.RandIntRange(10, 100))
 	name := fmt.Sprintf("testpdnscustomresolver%s", acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum))
 	description := "new test CR - TF"
+	profile := "essential"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMPrivateDNSCustomResolverBasic(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, name, description),
+				Config: testAccCheckIBMPrivateDNSCustomResolverBasic(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, name, description, profile),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMPrivateDNSCustomResolverExists("ibm_dns_custom_resolver.test", resultprivatedns),
 					resource.TestCheckResourceAttr("ibm_dns_custom_resolver.test", "name", name),
 					resource.TestCheckResourceAttr("ibm_dns_custom_resolver.test", "description", description),
+					resource.TestCheckResourceAttr("ibm_dns_custom_resolver.test", "profile", profile),
 				),
 			},
 		},
@@ -45,16 +47,18 @@ func TestAccIBMPrivateDNSCustomResolverImport(t *testing.T) {
 	subnetname := fmt.Sprintf("cr-subnet-name-%d", acctest.RandIntRange(10, 100))
 	name := fmt.Sprintf("testpdnscustomresolver%s", acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum))
 	description := "new test CR - TF"
+	profile := "essential"
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMPrivateDNSCustomResolverBasic(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, name, description),
+				Config: testAccCheckIBMPrivateDNSCustomResolverBasic(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, name, description, profile),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMPrivateDNSCustomResolverExists("ibm_dns_custom_resolver.test", resultprivatedns),
 					resource.TestCheckResourceAttr("ibm_dns_custom_resolver.test", "name", name),
 					resource.TestCheckResourceAttr("ibm_dns_custom_resolver.test", "description", description),
+					resource.TestCheckResourceAttr("ibm_dns_custom_resolver.test", "profile", profile),
 				),
 			},
 			{
@@ -68,7 +72,7 @@ func TestAccIBMPrivateDNSCustomResolverImport(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMPrivateDNSCustomResolverBasic(vpcname, subnetname, zone, cidr, name, description string) string {
+func testAccCheckIBMPrivateDNSCustomResolverBasic(vpcname, subnetname, zone, cidr, name, description, profile string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "rg" {
 		is_default	= true
@@ -101,8 +105,9 @@ func testAccCheckIBMPrivateDNSCustomResolverBasic(vpcname, subnetname, zone, cid
 			subnet_crn	= ibm_is_subnet.test-pdns-cr-subnet1.crn
 			enabled		= true
 		}
+		profile = "%s"
 	}
-	`, vpcname, subnetname, zone, cidr, name, description)
+	`, vpcname, subnetname, zone, cidr, name, description, profile)
 }
 
 func testAccCheckIBMPrivateDNSCustomResolverExists(n string, result string) resource.TestCheckFunc {
