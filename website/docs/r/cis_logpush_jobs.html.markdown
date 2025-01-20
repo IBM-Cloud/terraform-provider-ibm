@@ -47,7 +47,8 @@ resource "ibm_cis_logpush_job" "test" {
             {
                 "bucket_name" = "examplse.cistest-load.com",
                 "id"          = "12bcxxxxxxxxxxxxa0b842f",
-                "region"      = "in-che"
+                "region"      = "in-che",
+                "use_daily_subfolder": true
         }
         COS
 }
@@ -97,7 +98,7 @@ Review the argument references that you can specify for your resource.
 - `dataset` - (Optional, String) Dataset to be pulled,Option for dataset`http_requests`,`range_events`,`firewall_events`
 - `frequency` - (Optional, String) The frequency at which CIS sends batches of logs to your destination.`high`, `low`
 - `logdna` - (Optional, String) Information to identify the LogDNA instance where the data will be pushed. Must be provided in JSON format. `hostname`,`ingress_key` and `region` are required. (<https://cloud.ibm.com/docs/cis?topic=cis-logpush&interface=api>)
-- `cos` - (Optional, String) Information to identify the COS bucket where the data will be pushed. Must provided in JSON format. `bucket_name`,`id` and `region` are required.
+- `cos` - (Optional, String) Information to identify the COS bucket where the data will be pushed. Must provided in JSON format. `bucket_name`,`id` and `region` are required. To separate logs into daily subfolders we can use the optional boolean attribute `use_daily_subfolder`.
 - `ownership_challenge` - (Optional, String) Ownership challenge token to prove destination ownership. `cos` and `ownership_challenge` must be used together.
 - `ibmcl` - (Optional, Map)
 
