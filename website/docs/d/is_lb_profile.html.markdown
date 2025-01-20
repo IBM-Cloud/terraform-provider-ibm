@@ -45,6 +45,8 @@ You can access the following attribute references after your data source is crea
 - `href` - (String) The URL for this load balancer profile.
 - `id` - (String) The id(`name`) for this load balancer profile.
 - `name` - (String) The name for this load balancer profile.
+- `reserved_ip_target_supported` - (Bool) The Reserved IP Target support for a load balancer with this profile.
+- `reserved_ip_type` - (String) The reserved ip type for this load balancer profile, one of [fixed, dependent]
 - `route_mode_supported` - (Bool) The route mode support for a load balancer with this profile.
 - `route_mode_type` - (String) The route mode type for this load balancer profile, one of [fixed, dependent]
 - `udp_supported` - (Bool) The UDP support for a load balancer with this profile.

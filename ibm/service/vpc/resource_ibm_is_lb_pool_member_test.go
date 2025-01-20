@@ -191,6 +191,51 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 	})
 }
 
+func TestAccIBMISLBPoolMember_basic_network_target_reservedIP(t *testing.T) {
+	var lb string
+
+	vpcname := fmt.Sprintf("tflbpm-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tflbpmc-name-%d", acctest.RandIntRange(10, 100))
+	resIpSubnetName := fmt.Sprintf("tflbpmc-name-%d", acctest.RandIntRange(10, 100))
+	nlbPoolName := fmt.Sprintf("tfnlbpoolc%d", acctest.RandIntRange(10, 100))
+
+	nlbName := fmt.Sprintf("tfnlbcreate%d", acctest.RandIntRange(10, 100))
+	nlbName1 := fmt.Sprintf("tfnlbupdate%d", acctest.RandIntRange(10, 100))
+
+	sshname := "terraform-test-ssh-key"
+	vsiName := fmt.Sprintf("tf-instance-%d", acctest.RandIntRange(10, 100))
+	publicKey := strings.TrimSpace(`
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
+`)
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISLBPoolMemberDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISLBPoolMemberIDConfigWithReservedIPTarget(
+					vpcname, subnetname, resIpSubnetName, acc.ISZoneName, acc.ISCIDR, sshname, publicKey, acc.IsImageName,
+					vsiName, nlbName, nlbPoolName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISLBPoolMemberExists("ibm_is_lb_pool_member.testacc_nlb_mem", lb),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_pool_member.testacc_nlb_mem", "weight", "20"),
+				),
+			},
+			{
+				Config: testAccCheckIBMISLBPoolMemberIDConfigWithReservedIPTarget(
+					vpcname, subnetname, resIpSubnetName, acc.ISZoneName, acc.ISCIDR, sshname, publicKey, acc.IsImageName,
+					vsiName, nlbName1, nlbPoolName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISLBPoolMemberExists("ibm_is_lb_pool_member.testacc_nlb_mem", lb),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_pool_member.testacc_nlb_mem", "port", "8080"),
+				),
+			},
+		},
+	})
+}
+
 // Weight set to zero from TF when it wasn't passed, must be kept blank so that backend could set it to default.
 // Function to validate if the weight is set to default as 50, when it is not provided in TF config.
 func TestAccIBMISLBPoolMember_basic_opt_weight_check(t *testing.T) {
@@ -462,4 +507,64 @@ func testAccCheckIBMISLBPoolMemberWeightConfig(vpcname, subnetname, zone, cidr, 
 		port 	=	"%s"
 		target_address = "%s"
 }`, vpcname, subnetname, zone, cidr, name, poolName, port, address)
+}
+
+func testAccCheckIBMISLBPoolMemberIDConfigWithReservedIPTarget(vpcname, subnetname, resIpSubnetName, zone, cidr, sshname, publickey,
+	isImageName, vsiName, nlbName, nlbPoolName string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	}
+	resource "ibm_is_subnet" "testacc_subnet" {
+		name = "%s"
+		vpc = "${ibm_is_vpc.testacc_vpc.id}"
+		zone = "%s"
+		ipv4_cidr_block = "%s"
+	}
+	resource "ibm_is_subnet_reserved_ip" "testacc_rip" {
+		subnet = ibm_is_subnet.testacc_subnet.id
+		name = "%s"
+	}	
+	resource "ibm_is_ssh_key" "testacc_sshkey" {
+		name       = "%s"
+		public_key = "%s"
+	}
+	data "ibm_is_image" "ds_image" {
+        name = "%s"
+    }
+	resource "ibm_is_instance" "testacc_instance" {
+		name    = "%s"
+		image   = data.ibm_is_image.ds_image.id
+		profile = "%s"
+		primary_network_interface {
+		  subnet     = ibm_is_subnet.testacc_subnet.id
+		}
+		vpc  = ibm_is_vpc.testacc_vpc.id
+		zone = "%s"
+		keys = [ibm_is_ssh_key.testacc_sshkey.id]
+	}
+	resource "ibm_is_lb" "testacc_NLB" {
+		name = "%s"
+		subnets = ["${ibm_is_subnet.testacc_subnet.id}"]
+		profile = "network-fixed"
+	}
+	resource "ibm_is_lb_pool" "testacc_nlb_pool" {
+		name = "%s"
+		lb = "${ibm_is_lb.testacc_NLB.id}"
+		algorithm      = "weighted_round_robin"
+        protocol       = "tcp"
+        health_delay   = 60
+        health_retries = 5
+        health_timeout = 30
+        health_type    = "tcp"
+	}
+	resource "ibm_is_lb_pool_member" "testacc_nlb_mem" {
+		lb = "${ibm_is_lb.testacc_NLB.id}"
+		pool = "${element(split("/",ibm_is_lb_pool.testacc_nlb_pool.id),1)}"
+		port = 8080
+        weight = 20
+		target_id = "${ibm_is_subnet_reserved_ip.testacc_subnet.id}"
+	}
+`, vpcname, subnetname, resIpSubnetName, zone, cidr, sshname, publickey, isImageName, vsiName,
+		acc.InstanceProfileName, zone, nlbName, nlbPoolName)
 }

@@ -47,6 +47,18 @@ resource "ibm_is_lb_pool_member" "example" {
 }
 ```
 
+### Sample to create a reserved ip as a member target for network load balancer.
+
+```terraform
+  resource "ibm_is_lb_pool_member" "example" {
+		lb        = ibm_is_lb.example.id
+    pool      = element(split("/", ibm_is_lb_pool.example.id), 1)
+    port      = 8080
+    weight    = 20
+    target_id = ibm_is_subnet_reserved_ip.example.id
+	}
+```
+
 ## Timeouts
 The `ibm_is_lb_pool_member` resource provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
