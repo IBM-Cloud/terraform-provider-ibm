@@ -12,6 +12,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -20,6 +21,69 @@ func DataSourceIBMISVPC() *schema.Resource {
 		Read: dataSourceIBMISVPCRead,
 
 		Schema: map[string]*schema.Schema{
+			"address_prefixes": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Collection of address prefixes.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"cidr": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The CIDR block for this prefix.",
+						},
+						"created_at": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The date and time that the prefix was created.",
+						},
+						"has_subnets": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Indicates whether subnets exist with addresses from this prefix.",
+						},
+						"href": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The URL for this address prefix.",
+						},
+						"id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The unique identifier for this address prefix.",
+						},
+						"is_default": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Indicates whether this is the default prefix for this zone in this VPC. If a default prefix was automatically created when the VPC was created, the prefix is automatically named using a hyphenated list of randomly-selected words, but may be updated with a user-specified name.",
+						},
+						"name": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The user-defined name for this address prefix. Names must be unique within the VPC the address prefix resides in.",
+						},
+						"zone": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The zone this address prefix resides in.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"href": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The URL for this zone.",
+									},
+									"name": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The globally unique name for this zone.",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
 			isVPCDefaultNetworkACL: {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -557,6 +621,15 @@ func vpcGetByNameOrId(d *schema.ResourceData, meta interface{}, name, id string)
 func setVpcDetails(d *schema.ResourceData, vpc *vpcv1.VPC, meta interface{}, sess *vpcv1.VpcV1) error {
 	if vpc != nil {
 		d.SetId(*vpc.ID)
+
+		addressPrefixes, diagError := GetAddressPrefixPaginatedList(context, d.Get("vpc").(string))
+		if diagError != nil {
+			return diagError
+		}
+		err = d.Set("address_prefixes", dataSourceAddressPrefixCollectionFlattenAddressPrefixes(addressPrefixes))
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("[ERROR] Error setting address_prefixes %s", err))
+		}
 		d.Set("identifier", *vpc.ID)
 		d.Set(isVPCName, *vpc.Name)
 		d.Set(isVPCClassicAccess, *vpc.ClassicAccess)

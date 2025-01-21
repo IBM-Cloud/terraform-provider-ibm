@@ -182,6 +182,21 @@ Review the argument references that you can specify for your resource.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
+- `address_prefixes` - (List) Collection of the address prefixes.
+
+  Nested `address_prefixes` blocks have the following structure:
+  - `created_at` - (Timestamp) The date and time that the prefix was created.
+  - `cidr` - (String) The CIDR block for this prefix.
+  - `has_subnets` - (String) Indicates whether subnets exist with addresses from this prefix.
+  - `href` - (String) The URL for this address prefix.
+  - `id` - (String) The unique identifier for this address prefix.
+  - `is_default` - (String) Indicates whether this is the default prefix for this zone in this VPC. If a default prefix was automatically created when the VPC was created, the prefix is automatically named using a hyphenated list of randomly-selected words, but may be updated with a user-specified name.
+  - `name` - (String) The user-defined name for this address prefix. Names must be unique within the VPC the address prefix resides in.
+  - `zone` - (List) The zone this address prefix resides in.
+  
+      Nested `zone` blocks have the following structure:
+      - `href` - (String) The URL for this zone.
+      - `name` - (String) The globally unique name for this zone.
 - `crn` - (String) The CRN of the VPC.
 - `cse_source_addresses`- (List) A list of the cloud service endpoints that are associated with your VPC, including their source IP address and zone.
 	- `address` - (String) The IP address of the cloud service endpoint.

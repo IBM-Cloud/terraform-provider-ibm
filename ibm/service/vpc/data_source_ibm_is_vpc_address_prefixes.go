@@ -98,20 +98,13 @@ func DataSourceIbmIsVpcAddressPrefixes() *schema.Resource {
 		},
 	}
 }
-
-func dataSourceIbmIsVpcAddressPrefixRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-
-	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
+func GetAddressPrefixPaginatedList(context context.Context, vpcClient *vpcv1.VpcV1, vpc string) ([]vpcv1.AddressPrefix, diag.Diagnostics) {
 	start := ""
 	allrecs := []vpcv1.AddressPrefix{}
 	for {
 		listVpcAddressPrefixesOptions := &vpcv1.ListVPCAddressPrefixesOptions{}
 
-		listVpcAddressPrefixesOptions.SetVPCID(d.Get("vpc").(string))
+		listVpcAddressPrefixesOptions.SetVPCID(vpc)
 
 		if start != "" {
 			listVpcAddressPrefixesOptions.Start = &start
@@ -119,13 +112,26 @@ func dataSourceIbmIsVpcAddressPrefixRead(context context.Context, d *schema.Reso
 		addressPrefixCollection, response, err := vpcClient.ListVPCAddressPrefixesWithContext(context, listVpcAddressPrefixesOptions)
 		if err != nil {
 			log.Printf("[DEBUG] ListVpcAddressPrefixesWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("ListVpcAddressPrefixesWithContext failed %s\n%s", err, response))
+			return nil, diag.FromErr(fmt.Errorf("ListVpcAddressPrefixesWithContext failed %s\n%s", err, response))
 		}
 		start = flex.GetNext(addressPrefixCollection.Next)
 		allrecs = append(allrecs, addressPrefixCollection.AddressPrefixes...)
 		if start == "" {
 			break
 		}
+	}
+	return allrecs, nil
+}
+func dataSourceIbmIsVpcAddressPrefixRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+
+	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	allrecs, diagError := GetAddressPrefixPaginatedList(context, vpcClient, d.Get("vpc").(string))
+	if diagError != nil {
+		return diagError
 	}
 
 	// Use the provided filter argument and construct a new list with only the requested resource(s)

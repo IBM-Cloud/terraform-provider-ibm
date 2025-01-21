@@ -40,6 +40,21 @@ You can access the following attribute references after your data source is crea
 
   Nested scheme for `vpcs`:
     - `access_tags`  - (List) Access management tags associated for the volume.
+    - `address_prefixes` - (List) Collection of the address prefixes.
+
+      Nested `address_prefixes` blocks have the following structure:
+      - `created_at` - (Timestamp) The date and time that the prefix was created.
+      - `cidr` - (String) The CIDR block for this prefix.
+      - `has_subnets` - (String) Indicates whether subnets exist with addresses from this prefix.
+      - `href` - (String) The URL for this address prefix.
+      - `id` - (String) The unique identifier for this address prefix.
+      - `is_default` - (String) Indicates whether this is the default prefix for this zone in this VPC. If a default prefix was automatically created when the VPC was created, the prefix is automatically named using a hyphenated list of randomly-selected words, but may be updated with a user-specified name.
+      - `name` - (String) The user-defined name for this address prefix. Names must be unique within the VPC the address prefix resides in.
+      - `zone` - (List) The zone this address prefix resides in.
+      
+          Nested `zone` blocks have the following structure:
+          - `href` - (String) The URL for this zone.
+          - `name` - (String) The globally unique name for this zone.
     - `available_ipv4_address_count`- (Integer) The number of IPv4 addresses in the subnet that are available for you to be used.
     - `classic_access`- (Bool) Indicates whether this VPC is connected to the Classic Infrastructure.
     
