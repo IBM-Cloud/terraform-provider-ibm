@@ -1450,7 +1450,6 @@ func Provider() *schema.Provider {
 
 			// Added for Custom Resolver
 			"ibm_dns_custom_resolver":                 dnsservices.ResourceIBMPrivateDNSCustomResolver(),
-			"ibm_dns_custom_resolver_location":        dnsservices.ResourceIBMPrivateDNSCRLocation(),
 			"ibm_dns_custom_resolver_forwarding_rule": dnsservices.ResourceIBMPrivateDNSForwardingRule(),
 			"ibm_dns_custom_resolver_secondary_zone":  dnsservices.ResourceIBMPrivateDNSSecondaryZone(),
 			"ibm_dns_linked_zone":                     dnsservices.ResourceIBMDNSLinkedZone(),
