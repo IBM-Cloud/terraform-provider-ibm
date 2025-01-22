@@ -262,6 +262,7 @@ var (
 	Pi_capture_storage_image_path       string
 	Pi_capture_cloud_storage_access_key string
 	Pi_capture_cloud_storage_secret_key string
+	Pi_capture_cloud_storage_region     string
 )
 
 var ISDelegegatedVPC string
@@ -1320,6 +1321,12 @@ func init() {
 	if Pi_capture_cloud_storage_secret_key == "" {
 		Pi_capture_cloud_storage_secret_key = "terraform-test-power"
 		fmt.Println("[INFO] Set the environment variable PI_CAPTURE_CLOUD_STORAGE_SECRET_KEY for testing Pi_capture_cloud_storage_secret_key resource else it is set to default value 'terraform-test-power'")
+	}
+
+	Pi_capture_cloud_storage_region = os.Getenv("PI_CAPTURE_CLOUD_STORAGE_REGION")
+	if Pi_capture_cloud_storage_region == "" {
+		Pi_capture_cloud_storage_region = "us-south"
+		fmt.Println("[INFO] Set the environment variable PI_CAPTURE_CLOUD_STORAGE_REGION for testing Pi_capture_cloud_storage_region resource else it is set to default value 'us-south'")
 	}
 
 	Pi_shared_processor_pool_id = os.Getenv("PI_SHARED_PROCESSOR_POOL_ID")
