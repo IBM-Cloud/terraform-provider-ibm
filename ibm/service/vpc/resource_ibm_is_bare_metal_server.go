@@ -15,7 +15,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
@@ -695,7 +694,7 @@ func ResourceIBMIsBareMetalServer() *schema.Resource {
 						isBareMetalServerNicName: {
 							Type:             schema.TypeString,
 							Required:         true,
-							DiffSuppressFunc: flex.ApplyOnce,
+							DiffSuppressFunc: flex.ApplyOnlyOnce,
 							Description:      "The user-defined name for this network interface. If unspecified, the name will be a hyphenated list of randomly-selected words",
 						},
 						isBareMetalServerNicPortSpeed: {
@@ -3781,12 +3780,62 @@ func isBareMetalServerRestart(bmsC *vpcv1.VpcV1, id string, d *schema.ResourceDa
 
 func resourceIBMBMSNicSet(v interface{}) int {
 	var buf bytes.Buffer
-	a := v.(map[string]interface{})
-	buf.WriteString(fmt.Sprintf("%s-", a["subnet"].(string)))
-	// buf.WriteString(fmt.Sprintf("%s-", a["name"].(string)))
-	buf.WriteString(fmt.Sprintf("%d-", a["vlan"].(int)))
-	buf.WriteString(fmt.Sprintf("%v-", a["allowed_vlans"].(*schema.Set)))
-	return conns.String(buf.String())
+	m := v.(map[string]interface{})
+
+	// Required fields first
+	if name, ok := m[isBareMetalServerNicName].(string); ok {
+		buf.WriteString(fmt.Sprintf("%s-", name))
+	}
+	if subnet, ok := m[isBareMetalServerNicSubnet].(string); ok {
+		buf.WriteString(fmt.Sprintf("%s-", subnet))
+	}
+
+	// Optional fields that affect the identity of the interface
+	if interfaceType, ok := m[isBareMetalServerNicInterfaceType].(string); ok {
+		buf.WriteString(fmt.Sprintf("%s-", interfaceType))
+	}
+	if allowIPSpoofing, ok := m[isBareMetalServerNicAllowIPSpoofing].(bool); ok {
+		buf.WriteString(fmt.Sprintf("%v-", allowIPSpoofing))
+	}
+	if enableInfraNat, ok := m[isBareMetalServerNicEnableInfraNAT].(bool); ok {
+		buf.WriteString(fmt.Sprintf("%v-", enableInfraNat))
+	}
+	if allowInterfaceToFloat, ok := m[isBareMetalServerNicAllowInterfaceToFloat].(bool); ok {
+		buf.WriteString(fmt.Sprintf("%v-", allowInterfaceToFloat))
+	}
+	if vlan, ok := m[isBareMetalServerNicVlan].(int); ok {
+		buf.WriteString(fmt.Sprintf("%d-", vlan))
+	}
+
+	// Handle security groups
+	if secGroups, ok := m[isBareMetalServerNicSecurityGroups].(*schema.Set); ok && secGroups != nil {
+		buf.WriteString(fmt.Sprintf("%v-", secGroups.List()))
+	}
+
+	// Handle allowed VLANs
+	if allowedVlans, ok := m[isBareMetalServerNicAllowedVlans].(*schema.Set); ok && allowedVlans != nil {
+		buf.WriteString(fmt.Sprintf("%v-", allowedVlans.List()))
+	}
+
+	// Handle primary IP if present
+	if primaryIP, ok := m[isBareMetalServerNicPrimaryIP].([]interface{}); ok && len(primaryIP) > 0 {
+		if pip := primaryIP[0].(map[string]interface{}); pip != nil {
+			if addr, ok := pip[isBareMetalServerNicIpAddress].(string); ok {
+				buf.WriteString(fmt.Sprintf("%s-", addr))
+			}
+			if autoDelete, ok := pip[isBareMetalServerNicIpAutoDelete].(bool); ok {
+				buf.WriteString(fmt.Sprintf("%v-", autoDelete))
+			}
+			if ipName, ok := pip[isBareMetalServerNicIpName].(string); ok {
+				buf.WriteString(fmt.Sprintf("%s-", ipName))
+			}
+			if ipID, ok := pip[isBareMetalServerNicIpID].(string); ok {
+				buf.WriteString(fmt.Sprintf("%s-", ipID))
+			}
+		}
+	}
+
+	return schema.HashString(buf.String())
 }
 
 // func resourceStopServerIfRunning(id, stoppingType string, d *schema.ResourceData, context context.Context, sess *vpcv1.VpcV1, isServerStopped bool) (bool, error) {
