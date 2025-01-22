@@ -612,42 +612,62 @@ func ResourceIbmOnboardingResourceBrokerBrokerPatchAsPatch(patchVals *partnercen
 	path = "auth_username"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["auth_username"] = nil
+	} else if !exists {
+		delete(patch, "auth_username")
 	}
 	path = "auth_password"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["auth_password"] = nil
+	} else if !exists {
+		delete(patch, "auth_password")
 	}
 	path = "auth_scheme"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["auth_scheme"] = nil
+	} else if !exists {
+		delete(patch, "auth_scheme")
 	}
 	path = "resource_group_crn"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["resource_group_crn"] = nil
+	} else if !exists {
+		delete(patch, "resource_group_crn")
 	}
 	path = "state"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["state"] = nil
+	} else if !exists {
+		delete(patch, "state")
 	}
 	path = "broker_url"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["broker_url"] = nil
+	} else if !exists {
+		delete(patch, "broker_url")
 	}
 	path = "allow_context_updates"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["allow_context_updates"] = nil
+	} else if !exists {
+		delete(patch, "allow_context_updates")
 	}
 	path = "catalog_type"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["catalog_type"] = nil
+	} else if !exists {
+		delete(patch, "catalog_type")
 	}
 	path = "type"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["type"] = nil
+	} else if !exists {
+		delete(patch, "type")
 	}
 	path = "region"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["region"] = nil
+	} else if !exists {
+		delete(patch, "region")
 	}
 
 	return patch

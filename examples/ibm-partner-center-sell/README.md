@@ -120,6 +120,7 @@ resource "ibm_onboarding_catalog_deployment" "onboarding_catalog_deployment_inst
 
 | Name | Description |
 |------|-------------|
+| geo_tags |  |
 | url | The global catalog URL of your product. |
 | catalog_deployment_id | The ID of a global catalog object. |
 
@@ -164,6 +165,7 @@ resource "ibm_onboarding_catalog_plan" "onboarding_catalog_plan_instance" {
 
 | Name | Description |
 |------|-------------|
+| geo_tags |  |
 | url | The global catalog URL of your product. |
 | catalog_plan_id | The ID of a global catalog object. |
 
@@ -208,6 +210,7 @@ resource "ibm_onboarding_catalog_product" "onboarding_catalog_product_instance" 
 
 | Name | Description |
 |------|-------------|
+| geo_tags |  |
 | url | The global catalog URL of your product. |
 | catalog_product_id | The ID of a global catalog object. |
 
