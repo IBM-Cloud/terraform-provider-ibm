@@ -78,6 +78,10 @@ Review the argument reference that you can specify for your resource.
 - `profile` - (Optional, String) The profile name of the custom resolver. Supported values are `ESSENTIAL`, `ADVANCED`, `PREMIER`. Default value is `ESSENTIAL`.
 - `allow_disruptive_updates` - (Optional, Boolean) Whether disruptive update is allowed for the custom resolver. Default value is false.
 
+### Note
+
+Change in `location` order will cause `dns_server_ip` to change.
+
 ## Attribute reference
 
 In addition to all argument reference list, you can access the following attribute references after your resource is created.

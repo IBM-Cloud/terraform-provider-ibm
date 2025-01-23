@@ -225,14 +225,6 @@ output "ibm_dns_custom_resolvers_output" {
   value = data.ibm_dns_custom_resolvers.test-cr.custom_resolvers
 }
 
-resource "ibm_dns_custom_resolver_location" "test" {
-  instance_id   = ibm_resource_instance.test-pdns-instance.guid
-  resolver_id   = ibm_dns_custom_resolver.test.custom_resolver_id
-  subnet_crn    = "crn:v1:staging:public:is:us-south-1:a/01652b251c3ae2787110a995d8db0135::subnet:0716-a094c4e8-02cd-4b04-858d-343"
-  enabled       = true
-  cr_enabled    = true
-} 
-
 resource "ibm_dns_custom_resolver_forwarding_rule" "test" {
   instance_id = ibm_resource_instance.test-pdns-instance.guid
   resolver_id = ibm_dns_custom_resolver.test.custom_resolver_id
