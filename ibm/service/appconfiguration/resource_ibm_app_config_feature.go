@@ -187,6 +187,9 @@ func resourceIbmIbmAppConfigFeatureCreate(d *schema.ResourceData, meta interface
 	if _, ok := d.GetOk("tags"); ok {
 		options.SetTags(d.Get("tags").(string))
 	}
+	if _, ok := d.GetOk("enabled"); ok {
+		options.SetEnabled(d.Get("enabled").(bool))
+	}
 
 	if _, ok := d.GetOk("segment_rules"); ok {
 		var segmentRules []appconfigurationv1.FeatureSegmentRule
@@ -240,6 +243,9 @@ func resourceIbmIbmAppConfigFeatureUpdate(d *schema.ResourceData, meta interface
 
 		if _, ok := d.GetOk("description"); ok {
 			options.SetDescription(d.Get("description").(string))
+		}
+		if _, ok := d.GetOk("enabled"); ok {
+			options.SetEnabled(d.Get("enabled").(bool))
 		}
 		if _, ok := d.GetOk("rollout_percentage"); ok {
 			options.SetRolloutPercentage(int64(d.Get("rollout_percentage").(int)))

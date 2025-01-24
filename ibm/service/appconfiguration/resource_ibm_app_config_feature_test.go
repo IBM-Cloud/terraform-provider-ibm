@@ -44,6 +44,7 @@ func TestAccIbmIbmAppConfigFeatureBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("ibm_app_config_feature.ibm_app_config_feature_resource1", "tags"),
 					resource.TestCheckResourceAttrSet("ibm_app_config_feature.ibm_app_config_feature_resource1", "feature_id"),
 					resource.TestCheckResourceAttrSet("ibm_app_config_feature.ibm_app_config_feature_resource1", "description"),
+					resource.TestCheckResourceAttrSet("ibm_app_config_feature.ibm_app_config_feature_resource1", "enabled"),
 					resource.TestCheckResourceAttrSet("ibm_app_config_feature.ibm_app_config_feature_resource1", "enabled_value"),
 					resource.TestCheckResourceAttrSet("ibm_app_config_feature.ibm_app_config_feature_resource1", "disabled_value"),
 					resource.TestCheckResourceAttrSet("ibm_app_config_feature.ibm_app_config_feature_resource1", "rollout_percentage"),
@@ -80,6 +81,7 @@ func testAccCheckIbmAppConfigFeatureConfigBasic(name, envName, featureID, featur
 			description    	    = "%s"
 			tags    		    = "%s"
 			rollout_percentage  = "80"
+			enabled             = false
 		}`, name, envName, featureID, featureType, description, tags)
 }
 
