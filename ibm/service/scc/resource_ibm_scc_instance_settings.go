@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"log"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -135,8 +136,6 @@ func resourceIbmSccInstanceSettingsCreate(context context.Context, d *schema.Res
 			return diag.FromErr(err)
 		}
 		eventNotificationsModel = eventNotificationsData
-	} else {
-		eventNotificationsModel = &securityandcompliancecenterapiv3.EventNotificationsPrototype{}
 	}
 	updateSettingsOptions.SetEventNotifications(eventNotificationsModel)
 
@@ -147,8 +146,6 @@ func resourceIbmSccInstanceSettingsCreate(context context.Context, d *schema.Res
 			return diag.FromErr(err)
 		}
 		objectStorageModel = objectStorageData
-	} else {
-		objectStorageModel = &securityandcompliancecenterapiv3.ObjectStoragePrototype{}
 	}
 	updateSettingsOptions.SetObjectStorage(objectStorageModel)
 
@@ -159,6 +156,8 @@ func resourceIbmSccInstanceSettingsCreate(context context.Context, d *schema.Res
 	}
 
 	d.SetId(instance_id)
+
+	time.Sleep(5 * time.Second)
 
 	return resourceIbmSccInstanceSettingsRead(context, d, meta)
 }
@@ -190,13 +189,6 @@ func resourceIbmSccInstanceSettingsRead(context context.Context, d *schema.Resou
 		eventNotificationsMap, err := resourceIbmSccInstanceSettingsEventNotificationsToMap(settings.EventNotifications)
 		if err != nil {
 			return diag.FromErr(err)
-		}
-		if _, ok := eventNotificationsMap["source_name"]; !ok {
-			eventNotificationsData, enErr := resourceIbmSccInstanceSettingsMapToEventNotifications(d.Get("event_notifications.0").(map[string]interface{}))
-			if enErr == nil && core.StringNilMapper(eventNotificationsData.SourceName) != "" {
-				eventNotificationsMap["source_name"] = eventNotificationsData.SourceName
-				log.Print("[WARN] event_notifications.source_name grabbed from preexisting state\n")
-			}
 		}
 		if err = d.Set("event_notifications", []map[string]interface{}{eventNotificationsMap}); err != nil {
 			return diag.FromErr(flex.FmtErrorf("Error setting event_notifications: %s", err))
@@ -251,6 +243,8 @@ func resourceIbmSccInstanceSettingsUpdate(context context.Context, d *schema.Res
 			return diag.FromErr(flex.FmtErrorf("UpdateSettingsWithContext failed %s\n%s", err, response))
 		}
 	}
+
+	time.Sleep(5 * time.Second)
 
 	return resourceIbmSccInstanceSettingsRead(context, d, meta)
 }

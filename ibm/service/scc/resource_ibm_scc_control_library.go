@@ -658,13 +658,13 @@ func resourceIbmSccControlLibraryMapToControl(modelMap map[string]interface{}) (
 	return model, nil
 }
 
-func resourceIbmSccControlLibraryMapToControlPrototype(modelMap map[string]interface{}) (*securityandcompliancecenterapiv3.ControlPrototype, error) {
-	model := &securityandcompliancecenterapiv3.ControlPrototype{}
+func resourceIbmSccControlLibraryMapToControlPrototype(modelMap map[string]interface{}) (*securityandcompliancecenterapiv3.Control, error) {
+	model := &securityandcompliancecenterapiv3.Control{}
 	if modelMap["control_name"] != nil && modelMap["control_name"].(string) != "" {
 		model.ControlName = core.StringPtr(modelMap["control_name"].(string))
 	}
 	if modelMap["control_id"] != nil && modelMap["control_id"].(string) != "" {
-		model.ID = core.StringPtr(modelMap["control_id"].(string))
+		model.ControlID = core.StringPtr(modelMap["control_id"].(string))
 	}
 	if modelMap["control_description"] != nil && modelMap["control_description"].(string) != "" {
 		model.ControlDescription = core.StringPtr(modelMap["control_description"].(string))
@@ -683,7 +683,7 @@ func resourceIbmSccControlLibraryMapToControlPrototype(modelMap map[string]inter
 		model.ControlTags = controlTags
 	}
 	if modelMap["control_specifications"] != nil {
-		controlSpecifications := []securityandcompliancecenterapiv3.ControlSpecificationPrototype{}
+		controlSpecifications := []securityandcompliancecenterapiv3.ControlSpecification{}
 		for _, controlSpecificationsItem := range modelMap["control_specifications"].([]interface{}) {
 			controlSpecificationsItemModel, err := resourceIbmSccControlLibraryMapToControlSpecificationPrototype(controlSpecificationsItem.(map[string]interface{}))
 			if err != nil {
@@ -709,8 +709,8 @@ func resourceIbmSccControlLibraryMapToControlPrototype(modelMap map[string]inter
 	return model, nil
 }
 
-func resourceIbmSccControlLibraryMapToControlSpecificationPrototype(modelMap map[string]interface{}) (*securityandcompliancecenterapiv3.ControlSpecificationPrototype, error) {
-	model := &securityandcompliancecenterapiv3.ControlSpecificationPrototype{}
+func resourceIbmSccControlLibraryMapToControlSpecificationPrototype(modelMap map[string]interface{}) (*securityandcompliancecenterapiv3.ControlSpecification, error) {
+	model := &securityandcompliancecenterapiv3.ControlSpecification{}
 	if modelMap["control_specification_id"] != nil && modelMap["control_specification_id"].(string) != "" {
 		model.ID = core.StringPtr(modelMap["control_specification_id"].(string))
 	}
@@ -724,7 +724,7 @@ func resourceIbmSccControlLibraryMapToControlSpecificationPrototype(modelMap map
 		model.Environment = core.StringPtr(modelMap["environment"].(string))
 	}
 	if modelMap["assessments"] != nil {
-		assessments := []securityandcompliancecenterapiv3.AssessmentPrototype{}
+		assessments := []securityandcompliancecenterapiv3.Assessment{}
 		for _, assessmentsItem := range modelMap["assessments"].(*schema.Set).List() {
 			assessmentsItemModel, err := resourceIbmSccControlLibraryMapToAssessmentPrototype(assessmentsItem.(map[string]interface{}))
 			if err != nil {
@@ -807,8 +807,8 @@ func resourceIbmSccControlLibraryMapToAssessment(modelMap map[string]interface{}
 	return model, nil
 }
 
-func resourceIbmSccControlLibraryMapToAssessmentPrototype(modelMap map[string]interface{}) (*securityandcompliancecenterapiv3.AssessmentPrototype, error) {
-	model := &securityandcompliancecenterapiv3.AssessmentPrototype{}
+func resourceIbmSccControlLibraryMapToAssessmentPrototype(modelMap map[string]interface{}) (*securityandcompliancecenterapiv3.Assessment, error) {
+	model := &securityandcompliancecenterapiv3.Assessment{}
 	if modelMap["assessment_id"] != nil && modelMap["assessment_id"].(string) != "" {
 		model.AssessmentID = core.StringPtr(modelMap["assessment_id"].(string))
 	}
@@ -996,7 +996,7 @@ func resourceIbmSccControlLibraryMapToControlLibraryOptions(modelMap map[string]
 	if modelMap["latest"] != nil {
 		model.Latest = core.BoolPtr(modelMap["latest"].(bool))
 	}
-	controls := []securityandcompliancecenterapiv3.ControlPrototype{}
+	controls := []securityandcompliancecenterapiv3.Control{}
 	// iterate through controls
 	for _, controlsItem := range modelMap["controls"].([]interface{}) {
 		controlsItemModel, err := resourceIbmSccControlLibraryMapToControlPrototype(controlsItem.(map[string]interface{}))

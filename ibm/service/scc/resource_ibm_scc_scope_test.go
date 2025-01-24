@@ -21,6 +21,7 @@ func TestAccIbmSccScopeBasic(t *testing.T) {
 	var conf securityandcompliancecenterapiv3.Scope
 	instanceID := acc.SccInstanceID
 	scopeID := acc.SccAccountID
+  resGrpID := acc.SccResourceGroupID
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	description := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
 	environment := "ibm-cloud"
@@ -31,7 +32,7 @@ func TestAccIbmSccScopeBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIBMSccScopeDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMSccScopeConfig(instanceID, name, description, environment, scopeID),
+				Config: testAccCheckIBMSccScopeConfig(instanceID, name, description, environment, scopeID, resGrpID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMSccScopeExists("ibm_scc_scope.scc_scope_instance", conf),
 					resource.TestCheckResourceAttr("ibm_scc_scope.scc_scope_instance", "instance_id", instanceID),
@@ -45,6 +46,7 @@ func TestAccIbmSccScopeAllArgs(t *testing.T) {
 	var conf securityandcompliancecenterapiv3.Scope
 	instanceID := acc.SccInstanceID
 	scopeID := acc.SccAccountID
+  resGrpID := acc.SccResourceGroupID
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	description := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
 	environment := "ibm-cloud"
@@ -57,7 +59,7 @@ func TestAccIbmSccScopeAllArgs(t *testing.T) {
 		CheckDestroy: testAccCheckIBMSccScopeDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMSccScopeConfig(instanceID, name, description, environment, scopeID),
+				Config: testAccCheckIBMSccScopeConfig(instanceID, name, description, environment, scopeID, resGrpID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMSccScopeExists("ibm_scc_scope.scc_scope_instance", conf),
 					resource.TestCheckResourceAttr("ibm_scc_scope.scc_scope_instance", "instance_id", instanceID),
@@ -67,7 +69,7 @@ func TestAccIbmSccScopeAllArgs(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIBMSccScopeConfig(instanceID, nameUpdate, descriptionUpdate, environment, scopeID),
+				Config: testAccCheckIBMSccScopeConfig(instanceID, nameUpdate, descriptionUpdate, environment, scopeID, resGrpID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_scc_scope.scc_scope_instance", "instance_id", instanceID),
 					resource.TestCheckResourceAttr("ibm_scc_scope.scc_scope_instance", "name", nameUpdate),
@@ -84,7 +86,7 @@ func TestAccIbmSccScopeAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMSccScopeConfig(instanceID string, name string, description string, environment string, scopeId string) string {
+func testAccCheckIBMSccScopeConfig(instanceID string, name string, description string, environment string, scopeId string, resource_group_id string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_scc_scope" "scc_scope_instance" {
@@ -99,7 +101,7 @@ func testAccCheckIBMSccScopeConfig(instanceID string, name string, description s
         resource_group_id = "957934c8d570423299a92a7ca7acd334"
       }
 		}
-	`, instanceID, name, description, environment, scopeId)
+	`, instanceID, name, description, environment, scopeId, resource_group_id)
 }
 
 func testAccCheckIBMSccScopeExists(n string, obj securityandcompliancecenterapiv3.Scope) resource.TestCheckFunc {
