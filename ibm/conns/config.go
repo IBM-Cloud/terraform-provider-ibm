@@ -3567,7 +3567,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		vmwareURL := ContructEndpoint(fmt.Sprintf("api.%s.vmware", c.Region), cloudEndpoint+"/v1")
 		vmwareClientOptions := &vmwarev1.VmwareV1Options{
 			Authenticator: authenticator,
-			URL:           EnvFallBack([]string{"VMWARE_URL"}, vmwareURL),
+			URL:           EnvFallBack([]string{"IBMCLOUD_VMWARE_URL"}, vmwareURL),
 		}
 
 		// Construct the service client.
