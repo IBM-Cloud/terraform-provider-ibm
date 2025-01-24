@@ -140,7 +140,7 @@ func ResourceIBMIbmAppConfigFeature() *schema.Resource {
 			},
 			"enabled": {
 				Type:        schema.TypeBool,
-				Computed:    true,
+				Optional:    true,
 				Description: "The state of the feature flag.",
 			},
 			"created_time": {
