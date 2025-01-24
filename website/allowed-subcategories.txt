@@ -20,6 +20,7 @@ Event Notifications
 Event Streams
 Functions
 Global Tagging
+IBM Backup Recovery
 IBM Cloud Shell
 Hyper Protect Crypto Service (HPCS)
 CD Toolchain
@@ -39,6 +40,7 @@ Push Notifications
 Resource management
 Satellite
 Schematics
+sdsaas
 Secrets Manager
 Security and Compliance Center
 Transit Gateway
