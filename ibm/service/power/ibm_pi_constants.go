@@ -94,6 +94,7 @@ const (
 	Arg_NetworkSecurityGroupRuleID           = "pi_network_security_group_rule_id"
 	Arg_NetworkType                          = "pi_network_type"
 	Arg_OnboardingVolumes                    = "pi_onboarding_volumes"
+	Arg_Parameters                           = "pi_parameters"
 	Arg_PinPolicy                            = "pi_pin_policy"
 	Arg_PlacementGroupID                     = "pi_placement_group_id"
 	Arg_PlacementGroupName                   = "pi_placement_group_name"

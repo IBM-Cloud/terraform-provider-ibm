@@ -52,6 +52,12 @@ func ResourceIBMPIWorkspace() *schema.Resource {
 				Type:         schema.TypeString,
 				ValidateFunc: validation.NoZeroValues,
 			},
+			Arg_Parameters: {
+				Description: "Parameters for workspace creation.",
+				ForceNew:    true,
+				Optional:    true,
+				Type:        schema.TypeMap,
+			},
 			Arg_Plan: {
 				Default:      Public,
 				Description:  "Plan associated with the offering; Valid values are public or private.",
@@ -103,9 +109,17 @@ func resourceIBMPIWorkspaceCreate(ctx context.Context, d *schema.ResourceData, m
 	resourceGroup := d.Get(Arg_ResourceGroupID).(string)
 	plan := d.Get(Arg_Plan).(string)
 
+	parameters := map[string]any{}
+	if v, ok := d.GetOk(Arg_Parameters); ok {
+		paramMap := v.(map[string]interface{})
+		for key, value := range paramMap {
+			paramMap[key] = value
+		}
+	}
+
 	// No need for cloudInstanceID because we are creating a workspace
 	client := instance.NewIBMPIWorkspacesClient(ctx, sess, "")
-	controller, _, err := client.Create(name, datacenter, resourceGroup, plan)
+	controller, _, err := client.Create(name, datacenter, resourceGroup, plan, parameters)
 	if err != nil {
 		log.Printf("[DEBUG] create workspace failed %v", err)
 		return diag.FromErr(err)
