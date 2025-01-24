@@ -88,15 +88,15 @@ func testAccCheckIbmAppConfigFeatureExists(n string, obj appconfigurationv1.Feat
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return flex.FmtErrorf("Not found: %s", n)
 		}
 		parts, err := flex.IdParts(rs.Primary.ID)
 		if err != nil {
-			return err
+			return flex.FmtErrorf(fmt.Sprintf("%s", err))
 		}
 		appconfigClient, err := getAppConfigClient(acc.TestAccProvider.Meta(), parts[0])
 		if err != nil {
-			return err
+			return flex.FmtErrorf(fmt.Sprintf("%s", err))
 		}
 
 		options := &appconfigurationv1.GetFeatureOptions{}
@@ -106,7 +106,7 @@ func testAccCheckIbmAppConfigFeatureExists(n string, obj appconfigurationv1.Feat
 
 		result, _, err := appconfigClient.GetFeature(options)
 		if err != nil {
-			return err
+			return flex.FmtErrorf(fmt.Sprintf("%s", err))
 		}
 
 		obj = *result
@@ -122,11 +122,11 @@ func testAccCheckIbmAppConfigFeatureDestroy(s *terraform.State) error {
 		}
 		parts, err := flex.IdParts(rs.Primary.ID)
 		if err != nil {
-			return err
+			return flex.FmtErrorf(fmt.Sprintf("%s", err))
 		}
 		appconfigClient, err := getAppConfigClient(acc.TestAccProvider.Meta(), parts[0])
 		if err != nil {
-			return err
+			return flex.FmtErrorf(fmt.Sprintf("%s", err))
 		}
 		options := &appconfigurationv1.GetFeatureOptions{}
 
@@ -137,9 +137,9 @@ func testAccCheckIbmAppConfigFeatureDestroy(s *terraform.State) error {
 		_, response, err := appconfigClient.GetFeature(options)
 
 		if err == nil {
-			return fmt.Errorf("Feature still exists: %s", rs.Primary.ID)
+			return flex.FmtErrorf("Feature still exists: %s", rs.Primary.ID)
 		} else if response.StatusCode != 404 {
-			return fmt.Errorf("[ERROR] Error checking for Feature (%s) has been destroyed: %s", rs.Primary.ID, err)
+			return flex.FmtErrorf("[ERROR] Error checking for Feature (%s) has been destroyed: %s", rs.Primary.ID, err)
 		}
 	}
 

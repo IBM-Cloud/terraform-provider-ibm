@@ -8,7 +8,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/IBM/cloud-db2-go-sdk/db2saasv1"
 	"io"
 	"io/ioutil"
 	"log"
@@ -17,6 +16,8 @@ import (
 	"os"
 	"strings"
 	"time"
+
+	"github.com/IBM/cloud-db2-go-sdk/db2saasv1"
 
 	// Added code for the Power Colo Offering
 
@@ -86,6 +87,7 @@ import (
 	project "github.com/IBM/project-go-sdk/projectv1"
 	"github.com/IBM/push-notifications-go-sdk/pushservicev1"
 	schematicsv1 "github.com/IBM/schematics-go-sdk/schematicsv1"
+	"github.com/IBM/sds-go-sdk/sdsaasv1"
 	"github.com/IBM/vmware-go-sdk/vmwarev1"
 	vpcbeta "github.com/IBM/vpc-beta-go-sdk/vpcbetav1"
 	"github.com/IBM/vpc-go-sdk/common"
@@ -125,6 +127,7 @@ import (
 	"github.com/IBM/event-notifications-go-admin-sdk/eventnotificationsv1"
 	"github.com/IBM/eventstreams-go-sdk/pkg/adminrestv1"
 	"github.com/IBM/eventstreams-go-sdk/pkg/schemaregistryv1"
+	"github.com/IBM/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 	"github.com/IBM/ibm-hpcs-uko-sdk/ukov4"
 	"github.com/IBM/logs-go-sdk/logsv0"
 	"github.com/IBM/platform-services-go-sdk/partnercentersellv1"
@@ -240,6 +243,7 @@ type ClientSession interface {
 	ResourceManagementAPIv2() (managementv2.ResourceManagementAPIv2, error)
 	ResourceControllerAPI() (controller.ResourceControllerAPI, error)
 	ResourceControllerAPIV2() (controllerv2.ResourceControllerAPIV2, error)
+	BackupRecoveryV1() (*backuprecoveryv1.BackupRecoveryV1, error)
 	IBMCloudLogsRoutingV0() (*ibmcloudlogsroutingv0.IBMCloudLogsRoutingV0, error)
 	SoftLayerSession() *slsession.Session
 	IBMPISession() (*ibmpisession.IBMPISession, error)
@@ -317,6 +321,7 @@ type ClientSession interface {
 	MqcloudV1() (*mqcloudv1.MqcloudV1, error)
 	VmwareV1() (*vmwarev1.VmwareV1, error)
 	LogsV0() (*logsv0.LogsV0, error)
+	SdsaasV1() (*sdsaasv1.SdsaasV1, error)
 }
 
 type clientSession struct {
@@ -564,8 +569,13 @@ type clientSession struct {
 	enterpriseManagementClientErr error
 
 	// Resource Controller Option
-	resourceControllerErr   error
-	resourceControllerAPI   *resourcecontroller.ResourceControllerV2
+	resourceControllerErr error
+	resourceControllerAPI *resourcecontroller.ResourceControllerV2
+
+	// BAAS service
+	backupRecoveryClient    *backuprecoveryv1.BackupRecoveryV1
+	backupRecoveryClientErr error
+
 	secretsManagerClient    *secretsmanagerv2.SecretsManagerV2
 	secretsManagerClientErr error
 
@@ -673,6 +683,10 @@ type clientSession struct {
 	// db2 saas
 	db2saasClient    *db2saasv1.Db2saasV1
 	db2saasClientErr error
+
+	// Software Defined Storage
+	sdsaasClient    *sdsaasv1.SdsaasV1
+	sdsaasClientErr error
 }
 
 // Usage Reports
@@ -1152,6 +1166,10 @@ func (sess clientSession) ResourceControllerV2API() (*resourcecontroller.Resourc
 	return sess.resourceControllerAPI, sess.resourceControllerErr
 }
 
+func (session clientSession) BackupRecoveryV1() (*backuprecoveryv1.BackupRecoveryV1, error) {
+	return session.backupRecoveryClient, session.backupRecoveryClientErr
+}
+
 // IBM Cloud Secrets Manager V2 Basic API
 func (session clientSession) SecretsManagerV2() (*secretsmanagerv2.SecretsManagerV2, error) {
 	return session.secretsManagerClient, session.secretsManagerClientErr
@@ -1283,6 +1301,11 @@ func (session clientSession) MqcloudV1() (*mqcloudv1.MqcloudV1, error) {
 	return session.mqcloudClient.Clone(), nil
 }
 
+// sdsaas
+func (session clientSession) SdsaasV1() (*sdsaasv1.SdsaasV1, error) {
+	return session.sdsaasClient, session.sdsaasClientErr
+}
+
 // VMware as a Service API
 func (session clientSession) VmwareV1() (*vmwarev1.VmwareV1, error) {
 	return session.vmwareClient, session.vmwareClientErr
@@ -1338,6 +1361,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.resourceControllerConfigErrv2 = errEmptyBluemixCredentials
 		session.enterpriseManagementClientErr = errEmptyBluemixCredentials
 		session.resourceControllerErr = errEmptyBluemixCredentials
+		session.backupRecoveryClientErr = errEmptyBluemixCredentials
 		session.catalogManagementClientErr = errEmptyBluemixCredentials
 		session.partnerCenterSellClientErr = errEmptyBluemixCredentials
 		session.ibmpiConfigErr = errEmptyBluemixCredentials
@@ -1434,7 +1458,6 @@ func (c *Config) ClientSession() (interface{}, error) {
 				return nil, fmt.Errorf("[ERROR] Error occured while refreshing the token: %q", err)
 			}
 		}
-
 	}
 	userConfig, err := fetchUserDetails(sess.BluemixSession, c.RetryCount, c.RetryDelay)
 	if err != nil {
@@ -1601,6 +1624,33 @@ func (c *Config) ClientSession() (interface{}, error) {
 		authenticator = &core.BearerTokenAuthenticator{
 			BearerToken: sess.BluemixSession.Config.IAMAccessToken,
 		}
+	}
+
+	// Construct the service options.
+	var backupRecoveryURL string
+
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		backupRecoveryURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_BACKUP_RECOVERY_ENDPOINT", c.Region, backupRecoveryURL)
+	}
+
+	backupRecoveryClientOptions := &backuprecoveryv1.BackupRecoveryV1Options{
+		Authenticator: authenticator,
+		URL:           EnvFallBack([]string{"IBMCLOUD_BACKUP_RECOVERY_ENDPOINT"}, backupRecoveryURL),
+	}
+	if backupRecoveryClientOptions.URL == "" {
+		session.backupRecoveryClientErr = fmt.Errorf("IBMCLOUD_BACKUP_RECOVERY_ENDPOINT not set in env or endpoints file")
+	}
+	// Construct the service client.
+	session.backupRecoveryClient, err = backuprecoveryv1.NewBackupRecoveryV1(backupRecoveryClientOptions)
+	if err == nil {
+		// Enable retries for API calls
+		session.backupRecoveryClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.backupRecoveryClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	} else {
+		session.backupRecoveryClientErr = fmt.Errorf("Error occurred while configuring IBM Backup recovery API service: %q", err)
 	}
 
 	projectEndpoint := project.DefaultServiceURL
@@ -3555,6 +3605,27 @@ func (c *Config) ClientSession() (interface{}, error) {
 		})
 	} else {
 		session.codeEngineClientErr = fmt.Errorf("Error occurred while configuring Code Engine service: %q", err)
+	}
+
+	// Construct an instance of the 'sdsaas' service.
+	if session.sdsaasClientErr == nil {
+		// Construct the service options.
+		sdsaasClientOptions := &sdsaasv1.SdsaasV1Options{
+			Authenticator: authenticator,
+		}
+
+		// Construct the service client.
+		session.sdsaasClient, err = sdsaasv1.NewSdsaasV1(sdsaasClientOptions)
+		if err == nil {
+			// Enable retries for API calls
+			session.sdsaasClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+			// Add custom header for analytics
+			session.sdsaasClient.SetDefaultHeaders(gohttp.Header{
+				"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+			})
+		} else {
+			session.sdsaasClientErr = fmt.Errorf("Error occurred while constructing 'sdsaas' service client: %q", err)
+		}
 	}
 
 	if os.Getenv("TF_LOG") != "" {

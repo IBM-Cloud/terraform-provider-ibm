@@ -12,10 +12,10 @@ Provides a read-only data source for forwarding rules. You can then reference th
 
 ## Example usage
 
-
+```terraform
 data "ibm_dns_custom_resolver_forwarding_rules" "test-fr" {
-	instance_id	= ibm_dns_custom_resolver.test.instance_id
-	resolver_id	= ibm_dns_custom_resolver.test.custom_resolver_id
+  instance_id = ibm_dns_custom_resolver.test.instance_id
+  resolver_id = ibm_dns_custom_resolver.test.custom_resolver_id
 }
 ```
 
@@ -32,14 +32,16 @@ In addition to the argument references list, you can access the following attrib
 
 - `forwarding_rules` (List) List of forwarding rules.
 
-	Nested scheme for `forwarding_rules`:
-	- `description` - (String) Descriptive text of the forwarding rule.
-	- `forward_to` - (String) The upstream DNS servers will be forwarded to.
-	- `match` - (String) The matching zone or hostname.
-	- `rule_id` - (String) Identifier of the forwarding rule.
-	- `type` - (String) Type of the forwarding rule.
+  Nested scheme for `forwarding_rules`:
+  - `description` - (String) Descriptive text of the forwarding rule.
+  - `forward_to` - (List) List of the upstream DNS servers that the matching DNS queries will be forwarded to.
+  - `match` - (String) The matching zone or hostname.
+  - `rule_id` - (String) Identifier of the forwarding rule.
+  - `type` - (String) Type of the forwarding rule.
+  - `views` (List) List of views attached to the custom resolver.
 
-	
-	
-	
-
+    Nested scheme for `views`:
+    - `name` - (String) Name of the view.
+    - `description` - (String) Description of the view.
+    - `expression` - (String) Expression of the view.
+    - `forward_to` - (List) List of upstream DNS servers that the matching DNS queries will be forwarded to.

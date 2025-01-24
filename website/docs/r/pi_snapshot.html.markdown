@@ -8,6 +8,8 @@ description: |-
 
 # ibm_pi_snapshot
 
+~> This resource is deprecated and will be removed in the next major version. Use `ibm_pi_instance_snapshot` resource instead.
+
 Creates, updates, deletes, and manages snapshots in the Power Virtual Server Cloud. For more information, about snapshots in the Power Virutal Server, see [snapshotting, cloning, and restoring](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-volume-snapshot-clone).
 
 ## Example usage
@@ -16,11 +18,11 @@ The following example enables you to create a snapshot:
 
 ```terraform
 resource "ibm_pi_snapshot" "testacc_snapshot"{
-  pi_cloud_instance_id = "<value of the cloud_instance_id>"
-  pi_description  = "Testing snapshot for instance"
-  pi_instance_name       = test-instance
-  pi_snap_shot_name       = test-snapshot
-  pi_volume_ids       = ["volumeid1","volumeid2"]
+  pi_cloud_instance_id  = "<value of the cloud_instance_id>"
+  pi_description        = "Testing snapshot for instance"
+  pi_instance_name      = test-instance
+  pi_snap_shot_name     = test-snapshot
+  pi_volume_ids         = ["volumeid1","volumeid2"]
 }
 ```
 

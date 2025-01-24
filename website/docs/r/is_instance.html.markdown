@@ -498,51 +498,57 @@ resource "ibm_is_instance" "is_instance" {
     subnet = ibm_is_subnet.example.id
   }
   cluster_network_attachments {
+    name = "cna-1"
     cluster_network_interface{
       auto_delete = true
-      name = "cna-1"
+      name = "cni-1"
       subnet {
         id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
       }
     }
   }
   cluster_network_attachments {
+    name = "cna-2"
     cluster_network_interface{
       auto_delete = true
-      name = "cna-2"
+      name = "cni-2"
       subnet {
         id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
       }
     }
   }
   cluster_network_attachments {
+    name = "cna-3"
     cluster_network_interface{
       auto_delete = true
-      name = "cna-3"
+      name = "cni-3"
       subnet {
         id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
       }
     }
   }
   cluster_network_attachments {
+    name = "cna-4"
     cluster_network_interface{
       auto_delete = true
-      name = "cna-4"
+      name = "cni-4"
       subnet {
         id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
       }
     }
   }
   cluster_network_attachments {
+    name = "cna-5"
     cluster_network_interface{
       auto_delete = true
-      name = "cna-5"
+      name = "cni-5"
       subnet {
         id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
       }
     }
   }
   cluster_network_attachments {
+    name = "cna-5"
     cluster_network_interface{
       auto_delete = true
       name = "cna-6"
@@ -552,18 +558,20 @@ resource "ibm_is_instance" "is_instance" {
     }
   }
   cluster_network_attachments {
+    name = "cna-7"
     cluster_network_interface{
       auto_delete = true
-      name = "cna-7"
+      name = "cni-7"
       subnet {
         id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
       }
     }
   }
   cluster_network_attachments {
+    name = "cna-8"
     cluster_network_interface{
       auto_delete = true
-      name = "cna-8"
+      name = "cni-8"
       subnet {
         id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
       }
@@ -633,10 +641,7 @@ Review the argument references that you can specify for your resource.
     `offering_crn` conflicts with `version_crn`, both are mutually exclusive. `catalog_offering` and `image` id are mutually exclusive.
     `snapshot` conflicts with `image` id and `instance_template`
 
-~>**Select Availability** 
-Cluster Networks for VPC is available for select customers only. Contact IBM Support if you are interested in using this functionality. [About cluster networks](https://cloud.ibm.com/docs/vpc?topic=vpc-about-cluster-network)
-
-- `cluster_network_attachments` - (Optional, List) The cluster network attachments for this virtual server instance.The cluster network attachments are ordered for consistent instance configuration.
+- `cluster_network_attachments` - (Optional, List) The cluster network attachments for this virtual server instance.The cluster network attachments are ordered for consistent instance configuration. [About cluster networks](https://cloud.ibm.com/docs/vpc?topic=vpc-about-cluster-network)
 
   Nested schema for **cluster_network_attachments**:
 	- `name` - (Required, String) The name for this instance cluster network attachment. The name is unique across all network attachments for the instance. (`name` is a apply once attribute, changing it will not be detected by terraform)

@@ -232,6 +232,25 @@ func DataSourceIBMPIInstance() *schema.Resource {
 				Description: "The virtual cores that are assigned to the instance.",
 				Type:        schema.TypeInt,
 			},
+			Attr_VirtualSerialNumber: {
+				Computed:    true,
+				Description: "Virtual Serial Number information",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						Attr_Description: {
+							Computed:    true,
+							Description: "Description of the Virtual Serial Number",
+							Type:        schema.TypeString,
+						},
+						Attr_Serial: {
+							Computed:    true,
+							Description: "Virtual serial number.",
+							Type:        schema.TypeString,
+						},
+					},
+				},
+				Type: schema.TypeList,
+			},
 			Attr_Volumes: {
 				Computed:    true,
 				Description: "List of volume IDs that are attached to the instance.",
@@ -310,6 +329,9 @@ func dataSourceIBMPIInstancesRead(ctx context.Context, d *schema.ResourceData, m
 	}
 	if powervmdata.Fault != nil {
 		d.Set(Attr_Fault, flattenPvmInstanceFault(powervmdata.Fault))
+	}
+	if powervmdata.VirtualSerialNumber != nil {
+		d.Set(Attr_VirtualSerialNumber, flattenVirtualSerialNumberToList(powervmdata.VirtualSerialNumber))
 	}
 
 	return nil

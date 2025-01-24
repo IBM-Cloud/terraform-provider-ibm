@@ -189,6 +189,8 @@ After your resource is created, you can read values from the listed arguments an
 
 * `id` - The unique identifier of the onboarding_catalog_plan.
 * `catalog_plan_id` - (String) The ID of a global catalog object.
+* `geo_tags` - (List) 
+  * Constraints: The list items must match regular expression `/./`. The maximum length is `1000` items. The minimum length is `0` items.
 * `url` - (String) The global catalog URL of your product.
 
 

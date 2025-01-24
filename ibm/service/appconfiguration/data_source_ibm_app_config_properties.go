@@ -8,6 +8,7 @@ import (
 	"reflect"
 	"strconv"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM/appconfiguration-go-admin-sdk/appconfigurationv1"
@@ -204,7 +205,7 @@ func dataSourceIbmAppConfigPropertiesRead(d *schema.ResourceData, meta interface
 
 	appconfigClient, err := getAppConfigClient(meta, guid)
 	if err != nil {
-		return fmt.Errorf("getAppConfigClient failed %s", err)
+		return flex.FmtErrorf("getAppConfigClient failed %s", err)
 	}
 
 	options := &appconfigurationv1.ListPropertiesOptions{}
@@ -261,7 +262,7 @@ func dataSourceIbmAppConfigPropertiesRead(d *schema.ResourceData, meta interface
 		result, response, err := appconfigClient.ListProperties(options)
 		propertiesList = result
 		if err != nil {
-			return fmt.Errorf("ListProperties failed %s\n%s", err, response)
+			return flex.FmtErrorf("ListProperties failed %s\n%s", err, response)
 		}
 		if isLimit {
 			offset = 0
@@ -281,22 +282,22 @@ func dataSourceIbmAppConfigPropertiesRead(d *schema.ResourceData, meta interface
 	if propertiesList.Properties != nil {
 		err = d.Set("properties", dataSourcePropertiesListFlattenProperties(propertiesList.Properties))
 		if err != nil {
-			return fmt.Errorf("error setting properties %s", err)
+			return flex.FmtErrorf("error setting properties %s", err)
 		}
 	}
 	if propertiesList.TotalCount != nil {
 		if err = d.Set("total_count", propertiesList.TotalCount); err != nil {
-			return fmt.Errorf("error setting total_count: %s", err)
+			return flex.FmtErrorf("error setting total_count: %s", err)
 		}
 	}
 	if propertiesList.Limit != nil {
 		if err = d.Set("limit", propertiesList.Limit); err != nil {
-			return fmt.Errorf("error setting limit: %s", err)
+			return flex.FmtErrorf("error setting limit: %s", err)
 		}
 	}
 	if propertiesList.Offset != nil {
 		if err = d.Set("offset", propertiesList.Offset); err != nil {
-			return fmt.Errorf("error setting offset: %s", err)
+			return flex.FmtErrorf("error setting offset: %s", err)
 		}
 	}
 
