@@ -962,3 +962,52 @@ func testAccCheckIBMISVPCNoSgAclRulesConfig(vpcname string) string {
 `, vpcname)
 
 }
+
+// default address prefixes
+
+func TestAccIBMISVPC_basicAddressPrefix(t *testing.T) {
+	var vpc string
+	name1 := fmt.Sprintf("terraformvpcuat-%d", acctest.RandIntRange(10, 100))
+	name2 := fmt.Sprintf("terraformvpcuat-%d", acctest.RandIntRange(10, 100))
+	apm := "manual"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISVPCDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISVPCConfig(name1),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISVPCExists("ibm_is_vpc.testacc_vpc", vpc),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpc.testacc_vpc", "name", name1),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpc.testacc_vpc", "default_network_acl_name", "dnwacln"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpc.testacc_vpc", "default_security_group_name", "dsgn"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpc.testacc_vpc", "default_routing_table_name", "drtn"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpc.testacc_vpc", "tags.#", "2"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpc.testacc_vpc", "default_address_prefixes.%"),
+				),
+			},
+			{
+				Config: testAccCheckIBMISVPCConfig1(name2, apm),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISVPCExists("ibm_is_vpc.testacc_vpc1", vpc),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpc.testacc_vpc1", "name", name2),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpc.testacc_vpc1", "tags.#", "2"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpc.testacc_vpc1", "cse_source_addresses.#"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpc.testacc_vpc1", "default_address_prefixes.#", "0"),
+				),
+			},
+		},
+	})
+}
