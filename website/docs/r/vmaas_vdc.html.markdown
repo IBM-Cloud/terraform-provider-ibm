@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_vmaas_vdc"
 description: |-
   Manages vmaas_vdc.
-subcategory: "VMware Cloud Foundation as a Service API"
+subcategory: "VCF as a Service API"
 ---
 
 # ibm_vmaas_vdc
