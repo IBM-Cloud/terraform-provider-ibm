@@ -2731,10 +2731,60 @@ func bareMetalServerUpdate(context context.Context, d *schema.ResourceData, meta
 
 		listOfNicsChanged, listOfNicsAdded, listOfNicsRemoved := compareNetworkInterfaces(oldInterfaces, newInterfaces, id)
 
+		// Check if any PCI-type NICs are being added or removed
+		requiresServerStop := false
+		for _, nic := range listOfNicsAdded {
+			if nic.BareMetalServerNetworkInterfacePrototype.(*vpcv1.BareMetalServerNetworkInterfacePrototypeBareMetalServerNetworkInterfaceByPciPrototype) != nil {
+				requiresServerStop = true
+				break
+			}
+		}
+		for _, nic := range listOfNicsRemoved {
+			if nic.ID != nil {
+				// Fetch the NIC details to check its type
+				getNicOptions := &vpcv1.GetBareMetalServerNetworkInterfaceOptions{
+					BareMetalServerID: core.StringPtr(id),
+					ID:                nic.ID,
+				}
+				nicDetails, _, err := sess.GetBareMetalServerNetworkInterface(getNicOptions)
+				if err != nil {
+					return fmt.Errorf("[ERROR] Error fetching NIC details: %s", err)
+				}
+				if nicDetails.(*vpcv1.BareMetalServerNetworkInterfaceByPci) != nil {
+					requiresServerStop = true
+					break
+				}
+			}
+		}
+
+		// Stop the server if required
+		if requiresServerStop {
+			isServerStopped, err := resourceStopServerIfRunning(id, "hard", d, context, sess, isServerStopped)
+			if err != nil {
+				return err
+			}
+		}
+
+		// Handle listOfNicsRemoved
+		for _, removeOptions := range listOfNicsRemoved {
+			_, err := sess.DeleteBareMetalServerNetworkInterface(removeOptions)
+			if err != nil {
+				return fmt.Errorf("[ERROR] Error while removing network interface(%s) of bare metal server(%s): %s", *removeOptions.ID, d.Id(), err)
+			}
+		}
+
+		// Handle listOfNicsAdded
+		for _, addOptions := range listOfNicsAdded {
+			_, _, err := sess.CreateBareMetalServerNetworkInterface(addOptions)
+			if err != nil {
+				return fmt.Errorf("[ERROR] Error while adding network interface to bare metal server(%s): %s", d.Id(), err)
+			}
+		}
+
 		// Handle listOfNicsChanged
 		for _, nic := range listOfNicsChanged {
 			updateNicOptions := &vpcv1.UpdateBareMetalServerNetworkInterfaceOptions{
-				BareMetalServerID: &id,
+				BareMetalServerID: core.StringPtr(id),
 				ID:                core.StringPtr(nic["id"].(string)),
 			}
 
@@ -2768,19 +2818,14 @@ func bareMetalServerUpdate(context context.Context, d *schema.ResourceData, meta
 			}
 		}
 
-		// Handle listOfNicsRemoved
-		for _, removeOptions := range listOfNicsRemoved {
-			_, err := sess.DeleteBareMetalServerNetworkInterface(removeOptions)
-			if err != nil {
-				return fmt.Errorf("[ERROR] Error while removing network interface(%s) of bare metal server(%s): %s", *removeOptions.ID, d.Id(), err)
+		// Restore server state if it was stopped
+		if requiresServerStop && isServerStopped {
+			startBmsOptions := &vpcv1.StartBareMetalServerOptions{
+				ID: core.StringPtr(id),
 			}
-		}
-
-		// Handle listOfNicsAdded
-		for _, addOptions := range listOfNicsAdded {
-			_, _, err := sess.CreateBareMetalServerNetworkInterface(addOptions)
+			_, err := sess.StartBareMetalServerWithContext(context, startBmsOptions)
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error while adding network interface to bare metal server(%s): %s", d.Id(), err)
+				return fmt.Errorf("[ERROR] Error starting bare metal server(%s): %s", id, err)
 			}
 		}
 	}
