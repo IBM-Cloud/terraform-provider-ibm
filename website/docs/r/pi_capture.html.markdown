@@ -62,31 +62,31 @@ resource "ibm_pi_capture" "test_capture" {
 ibm_pi_capture provides the following [timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
 - **create** - (Default 75 minutes) Used for creating capture instance.
-- **delete** - (Default 50 minutes) Used for deleting capture instance.
+- **update** - (Default 10 minutes) Used for updating capture instance.
+- **delete** - (Default 10 minutes) Used for deleting capture instance.
 
 ## Argument reference
 
 Review the argument references that you can specify for your resource.
 
-- `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
+- `pi_capture_cloud_storage_access_key`- (Optional, String) Cloud Storage Access key
+- `pi_capture_cloud_storage_region`- (Optional, String) The Cloud Object Storage region. Supported COS regions are: `au-syd`, `br-sao`, `ca-tor`, `eu-de`, `eu-es`, `eu-gb`, `jp-osa`, `jp-tok`, `us-east`, `us-south`.
+- `pi_capture_cloud_storage_secret_key`- (Optional, String) Cloud Storage Secret key
+- `pi_capture_destination`- (Required, String) Destination for the deployable image.`[image-catalog,cloud-storage,both]`
 - `pi_capture_name` - (Required, String) Name of the deployable image created for the captured PVMInstance.
-- `pi_instance_name` - (Required, String) The name of the instance.
-- `pi_capture_destination`- (Required, String) Destination for the deployable image.
-`[image-catalog,cloud-storage,both]`
+- `pi_capture_storage_image_path` - (Optional, String) Cloud Storage Image Path (bucket-name [/folder/../..])
 - `pi_capture_volume_ids`- (Optional, List of String)  List of Data volume IDs to include in the captured   PVMInstance.
-- `pi_capture_cloud_storage_region`- (Optional,String) The Cloud Object Storage region. Supported COS regions are: `au-syd`, `br-sao`, `ca-tor`, `che01`, `eu-de`, `eu-es`, `eu-gb`, `jp-osa`, `jp-tok`, `us-east`, `us-south`.
-- `pi_capture_cloud_storage_access_key`- (Optional,String) Cloud Storage Access key
-- `pi_capture_cloud_storage_secret_key`- (Optional,String) Cloud Storage Secret key
-- `pi_capture_storage_image_path` - (Optional,String) Cloud Storage Image Path (bucket-name [/folder/../..])
-- `pi_user_tags` - (Optional, List) List of user tags attached to the resource.
+- `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
+- `pi_instance_name` - (Required, String) The name of the instance.
+- `pi_user_tags` - (Optional, List of String) List of user tags attached to the resource.
 
 ## Attribute reference
 
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
 - `crn` - (String) The CRN of the resource.
-- `id` - (String) The image id of the capture instance. The ID is composed of `<pi_cloud_instance_id>/<pi_capture_name>/<pi_capture_destination>`.
-- `image_id` - (String) The image id of the capture instance.
+- `id` - (String) The image id of the instance capture. The ID is composed of `<pi_cloud_instance_id>/<pi_capture_name>/<pi_capture_destination>`.
+- `image_id` - (String) The image id of the instance capture.
 
 ## Import
 

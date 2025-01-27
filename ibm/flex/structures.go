@@ -1001,9 +1001,86 @@ func flattenLifecycleRuleFilter(filter *s3.LifecycleRuleFilter) []interface{} {
 		return []interface{}{}
 	}
 	m := make(map[string]interface{})
+	if filter.And != nil {
+		m["and"] = flattenLifecycleRuleFilterMemberAnd(filter.And)
+
+	}
+	if filter.ObjectSizeGreaterThan != nil && int(aws.Int64Value(filter.ObjectSizeGreaterThan)) > 0 {
+
+		m["object_size_greater_than"] = int(aws.Int64Value(filter.ObjectSizeGreaterThan))
+
+	}
+	if filter.ObjectSizeLessThan != nil && int(aws.Int64Value(filter.ObjectSizeLessThan)) > 0 {
+
+		m["object_size_less_than"] = int(aws.Int64Value(filter.ObjectSizeLessThan))
+
+	}
+	if filter.Tag != nil {
+		m["tag"] = flattenLifecycleRuleFilterMemberTag(filter.Tag)
+
+	}
 	if filter.Prefix != nil {
 		m["prefix"] = aws.String(*filter.Prefix)
 	}
+	return []interface{}{m}
+}
+func flattenLifecycleRuleFilterMemberAnd(andOp *s3.LifecycleRuleAndOperator) []interface{} {
+	if andOp == nil {
+		return []interface{}{}
+	}
+	m := map[string]interface{}{
+		"object_size_greater_than": andOp.ObjectSizeGreaterThan,
+		"object_size_less_than":    andOp.ObjectSizeLessThan,
+	}
+
+	if v := andOp.Prefix; v != nil {
+		m["prefix"] = aws.StringValue(v)
+	}
+
+	if v := andOp.Tags; v != nil {
+		m["tags"] = flattenMultipleTags(v)
+	}
+
+	return []interface{}{m}
+}
+
+func flattenMultipleTags(in []*s3.Tag) []map[string]interface{} {
+
+	tagSet := make([]map[string]interface{}, 0, len(in))
+	if in != nil {
+		for _, tagSetValue := range in {
+			tag := make(map[string]interface{})
+			if tagSetValue.Key != nil {
+				tag["key"] = *tagSetValue.Key
+			}
+			if tagSetValue.Value != nil {
+				tag["value"] = *tagSetValue.Value
+			}
+
+			tagSet = append(tagSet, tag)
+
+		}
+
+	}
+
+	return tagSet
+}
+
+func flattenLifecycleRuleFilterMemberTag(op *s3.Tag) []interface{} {
+	if op == nil {
+		return nil
+	}
+
+	m := make(map[string]interface{})
+
+	if v := op.Key; v != nil {
+		m["key"] = aws.StringValue(v)
+	}
+
+	if v := op.Value; v != nil {
+		m["value"] = aws.StringValue(v)
+	}
+
 	return []interface{}{m}
 }
 
@@ -1011,10 +1088,13 @@ func flattenAbortIncompleteMultipartUpload(abortIncompleteMultipartUploadInput *
 	if abortIncompleteMultipartUploadInput == nil {
 		return []interface{}{}
 	}
+
 	abortIncompleteMultipartUploadMap := make(map[string]interface{})
+
 	if abortIncompleteMultipartUploadInput.DaysAfterInitiation != nil {
 		abortIncompleteMultipartUploadMap["days_after_initiation"] = int(aws.Int64Value(abortIncompleteMultipartUploadInput.DaysAfterInitiation))
 	}
+
 	return []interface{}{abortIncompleteMultipartUploadMap}
 }
 
@@ -1026,8 +1106,9 @@ func LifecylceRuleGet(lifecycleRuleInput []*s3.LifecycleRule) []map[string]inter
 			if lifecyclerule.Status != nil {
 				if *lifecyclerule.Status == "Enabled" {
 					lifecycleRuleConfig["status"] = "enable"
-				} else {
+				} else if *lifecyclerule.Status == "Disabled" {
 					lifecycleRuleConfig["status"] = "disable"
+
 				}
 			}
 			if lifecyclerule.ID != nil {
@@ -1338,6 +1419,13 @@ func PtrToBool(b bool) *bool {
 func IntValue(i64 *int64) (i int) {
 	if i64 != nil {
 		i = int(*i64)
+	}
+	return
+}
+
+func Float64Value(f32 *float32) (f float64) {
+	if f32 != nil {
+		f = float64(*f32)
 	}
 	return
 }
