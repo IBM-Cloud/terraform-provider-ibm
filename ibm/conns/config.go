@@ -1655,7 +1655,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 
 	var backupRecoveryConnectorClientAuthenticator core.Authenticator
-	backupRecoveryConnectorClientAuthenticator = &core.BearerTokenAuthenticator{BearerToken: "token"}
+	backupRecoveryConnectorClientAuthenticator = &core.NoAuthAuthenticator{}
 
 	backupRecoveryConnectorClientOptions := &backupRecoveryConnector.BackupRecoveryV1ConnectorOptions{
 		ConnectorURL:  EnvFallBack([]string{"IBMCLOUD_BACKUP_RECOVERY_CONNECTOR_ENDPOINT"}, backupRecoveryConnectorURL),

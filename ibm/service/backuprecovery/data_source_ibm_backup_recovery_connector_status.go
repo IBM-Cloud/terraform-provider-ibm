@@ -31,7 +31,7 @@ func DataSourceIbmBackupRecoveryConnectorStatus() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
-				Description: "Token required to authenticate to the connector",
+				Description: "Token required to authenticate to the connector. Token can be obtained using ibm_backup_recovery_connector_access_token resource",
 			},
 			"cluster_connection_status": &schema.Schema{
 				Type:        schema.TypeList,
@@ -101,7 +101,7 @@ func dataSourceIbmBackupRecoveryConnectorStatusRead(context context.Context, d *
 	accessToken := d.Get("access_token").(string)
 	var auth core.Authenticator
 	auth = &core.BearerTokenAuthenticator{BearerToken: accessToken}
-	backupRecoveryConnectorClient.SetAuthenticator(&auth)
+	backupRecoveryConnectorClient.Service.Options.Authenticator = auth
 
 	getDataSourceConnectorStatusOptions := &backuprecoveryv1.GetDataSourceConnectorStatusOptions{}
 

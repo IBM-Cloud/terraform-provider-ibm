@@ -77,7 +77,7 @@ func dataSourceIbmBackupRecoveryConnectorLogsRead(context context.Context, d *sc
 	accessToken := d.Get("access_token").(string)
 	var auth core.Authenticator
 	auth = &core.BearerTokenAuthenticator{BearerToken: accessToken}
-	backupRecoveryConnectorClient.SetAuthenticator(&auth)
+	backupRecoveryConnectorClient.Service.Options.Authenticator = auth
 
 	getDataSourceConnectorLogsOptions := &backuprecoveryv1.GetDataSourceConnectorLogsOptions{}
 
