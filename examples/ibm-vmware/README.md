@@ -1,6 +1,6 @@
-# Examples for VMware as a Service API
+# Examples for VMware Cloud Foundation as a Service API
 
-These examples illustrate how to use the resources and data sources associated with VMware as a Service API.
+These examples illustrate how to use the resources and data sources associated with VMware Cloud Foundation as a Service API.
 
 The following resources are supported:
 * ibm_vmaas_vdc
@@ -20,7 +20,7 @@ $ terraform apply
 
 Run `terraform destroy` when you don't need these resources.
 
-## VMware as a Service API resources
+## VMware Cloud Foundation as a Service API resources
 
 ### Resource: ibm_vmaas_vdc
 
@@ -62,11 +62,12 @@ resource "ibm_vmaas_vdc" "vmaas_vdc_instance" {
 | edges | The VMware NSX-T networking edges deployed on the virtual data center (VDC). NSX-T edges are used for bridging virtualization networking to the physical public-internet and IBM private networking. |
 | status_reasons | Information about why the request to create the virtual data center (VDC) cannot be completed. |
 | ordered_at | The time that the virtual data center (VDC) is ordered. |
+| org_href | The URL of the organization that owns the VDC. |
 | org_name | The name of the VMware Cloud Director organization that contains this virtual data center (VDC). VMware Cloud Director organizations are used to create strong boundaries between VDCs. There is a complete isolation of user administration, networking, workloads, and VMware Cloud Director catalogs between different Director organizations. |
 | status | Determines the state of the virtual data center. |
 | type | Determines whether this virtual data center is in a single-tenant or multitenant Cloud Director site. |
 
-## VMware as a Service API data sources
+## VMware Cloud Foundation as a Service API data sources
 
 ### Data source: ibm_vmaas_vdc
 
@@ -98,6 +99,7 @@ data "ibm_vmaas_vdc" "vmaas_vdc_instance" {
 | status_reasons | Information about why the request to create the virtual data center (VDC) cannot be completed. |
 | name | A human readable ID for the virtual data center (VDC). |
 | ordered_at | The time that the virtual data center (VDC) is ordered. |
+| org_href | The URL of the organization that owns the VDC. |
 | org_name | The name of the VMware Cloud Director organization that contains this virtual data center (VDC). VMware Cloud Director organizations are used to create strong boundaries between VDCs. There is a complete isolation of user administration, networking, workloads, and VMware Cloud Director catalogs between different Director organizations. |
 | ram | The RAM usage limit on the virtual data center (VDC) in GB (1024^3 bytes). Supported for VDCs deployed on a multitenant Cloud Director site. This property is applicable when the resource pool type is reserved. |
 | status | Determines the state of the virtual data center. |
