@@ -27,6 +27,7 @@ func ResourceIbmBackupRecoveryConnectorAccessToken() *schema.Resource {
 		CreateContext: resourceIbmBackupRecoveryConnectorAccessTokenCreate,
 		ReadContext:   resourceIbmBackupRecoveryConnectorAccessTokenRead,
 		DeleteContext: resourceIbmBackupRecoveryConnectorAccessTokenDelete,
+		CustomizeDiff: checkDiffResourceIbmBackupRecoveryConnectorAccessToken,
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
@@ -66,6 +67,25 @@ func ResourceIbmBackupRecoveryConnectorAccessToken() *schema.Resource {
 			},
 		},
 	}
+}
+
+func checkDiffResourceIbmBackupRecoveryConnectorAccessToken(context context.Context, d *schema.ResourceDiff, meta interface{}) error {
+	// oldId, _ := d.GetChange("x_ibm_tenant_id")
+	// if oldId == "" {
+	// 	return nil
+	// }
+
+	// return if it's a new resource
+	if d.Id() == "" {
+		return nil
+	}
+
+	for fieldName := range ResourceIbmBackupRecoveryConnectorAccessToken().Schema {
+		if d.HasChange(fieldName) {
+			return fmt.Errorf("[ERROR] Resource ibm_backup_recovery_connector_access_token cannot be updated.")
+		}
+	}
+	return nil
 }
 
 func resourceIbmBackupRecoveryConnectorAccessTokenCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -135,6 +155,14 @@ func resourceIbmBackupRecoveryConnectorAccessTokenRead(context context.Context, 
 
 func resourceIbmBackupRecoveryConnectorAccessTokenDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// This resource does not support a "delete" operation.
+
+	var diags diag.Diagnostics
+	warning := diag.Diagnostic{
+		Severity: diag.Warning,
+		Summary:  "Delete Not Supported",
+		Detail:   "The resource definition will be only be removed from the terraform statefile. This resource cannot be deleted from the backend. ",
+	}
+	diags = append(diags, warning)
 	d.SetId("")
-	return nil
+	return diags
 }

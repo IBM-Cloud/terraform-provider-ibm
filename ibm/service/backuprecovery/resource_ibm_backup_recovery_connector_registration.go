@@ -28,7 +28,7 @@ func ResourceIbmBackupRecoveryConnectorRegistration() *schema.Resource {
 		ReadContext:   resourceIbmBackupRecoveryConnectorRegistrationRead,
 		DeleteContext: resourceIbmBackupRecoveryConnectorRegistrationDelete,
 		Importer:      &schema.ResourceImporter{},
-
+		CustomizeDiff: checkDiffResourceIbmBackupRecoveryConnectorRegistration,
 		Schema: map[string]*schema.Schema{
 			"connector_id": &schema.Schema{
 				Type:        schema.TypeInt,
@@ -50,6 +50,25 @@ func ResourceIbmBackupRecoveryConnectorRegistration() *schema.Resource {
 			},
 		},
 	}
+}
+
+func checkDiffResourceIbmBackupRecoveryConnectorRegistration(context context.Context, d *schema.ResourceDiff, meta interface{}) error {
+	// oldId, _ := d.GetChange("x_ibm_tenant_id")
+	// if oldId == "" {
+	// 	return nil
+	// }
+
+	// return if it's a new resource
+	if d.Id() == "" {
+		return nil
+	}
+
+	for fieldName := range ResourceIbmBackupRecoveryConnectorRegistration().Schema {
+		if d.HasChange(fieldName) {
+			return fmt.Errorf("[ERROR] Resource ibm_backup_recovery_connector_registration cannot be updated.")
+		}
+	}
+	return nil
 }
 
 func resourceIbmBackupRecoveryConnectorRegistrationCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -100,6 +119,14 @@ func resourceIbmBackupRecoveryConnectorRegistrationRead(context context.Context,
 
 func resourceIbmBackupRecoveryConnectorRegistrationDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// This resource does not support a "delete" operation.
+
+	var diags diag.Diagnostics
+	warning := diag.Diagnostic{
+		Severity: diag.Warning,
+		Summary:  "Delete Not Supported",
+		Detail:   "The resource definition will be only be removed from the terraform statefile. This resource cannot be deleted from the backend. ",
+	}
+	diags = append(diags, warning)
 	d.SetId("")
-	return nil
+	return diags
 }
