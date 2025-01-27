@@ -216,6 +216,7 @@ const (
 	Attr_DatacenterStatus                            = "pi_datacenter_status"
 	Attr_DatacenterType                              = "pi_datacenter_type"
 	Attr_Dedicated                                   = "dedicated"
+	Attr_DedicatedHostID                             = "dedicated_host_id"
 	Attr_Default                                     = "default"
 	Attr_DeleteOnTermination                         = "delete_on_termination"
 	Attr_DeploymentType                              = "deployment_type"
