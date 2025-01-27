@@ -113,7 +113,7 @@ func resourceIBMPIWorkspaceCreate(ctx context.Context, d *schema.ResourceData, m
 	if v, ok := d.GetOk(Arg_Parameters); ok {
 		paramMap := v.(map[string]interface{})
 		for key, value := range paramMap {
-			paramMap[key] = value
+			parameters[key] = value
 		}
 	}
 
