@@ -5988,7 +5988,8 @@ func compareNetworkInterfaces(old, new []interface{}, id string) ([]map[string]i
 	// Check for changes and additions
 	for name, newNic := range newMap {
 		if oldNic, ok := oldMap[name]; ok {
-			if !reflect.DeepEqual(oldNic, newNic) {
+			// Compare only user-configurable fields
+			if !compareNics(oldNic, newNic) {
 				listOfNicsChanged = append(listOfNicsChanged, newNic)
 			}
 		} else {
@@ -6003,7 +6004,7 @@ func compareNetworkInterfaces(old, new []interface{}, id string) ([]map[string]i
 		if _, ok := newMap[name]; !ok {
 			// NIC removed
 			removeOptions := &vpcv1.DeleteBareMetalServerNetworkInterfaceOptions{
-				BareMetalServerID: &id,
+				BareMetalServerID: core.StringPtr(id),
 				ID:                core.StringPtr(oldNic["id"].(string)),
 			}
 			listOfNicsRemoved = append(listOfNicsRemoved, removeOptions)
@@ -6011,6 +6012,27 @@ func compareNetworkInterfaces(old, new []interface{}, id string) ([]map[string]i
 	}
 
 	return listOfNicsChanged, listOfNicsAdded, listOfNicsRemoved
+}
+
+// Helper function to compare user-configurable fields
+func compareNics(oldNic, newNic map[string]interface{}) bool {
+	configurableFields := []string{
+		isBareMetalServerNicName,
+		isBareMetalServerNicAllowIPSpoofing,
+		isBareMetalServerNicEnableInfraNAT,
+		isBareMetalServerNicAllowedVlans,
+		isBareMetalServerNicSecurityGroups,
+		isBareMetalServerNicSubnet,
+		isBareMetalServerNicPrimaryIP,
+	}
+
+	for _, field := range configurableFields {
+		if !reflect.DeepEqual(oldNic[field], newNic[field]) {
+			return false
+		}
+	}
+
+	return true
 }
 
 func createAddNicOptions(nic map[string]interface{}, id string) *vpcv1.CreateBareMetalServerNetworkInterfaceOptions {
