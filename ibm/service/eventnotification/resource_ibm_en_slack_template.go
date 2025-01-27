@@ -207,7 +207,6 @@ func resourceIBMEnSlackTemplateUpdate(context context.Context, d *schema.Resourc
 	options.SetID(parts[1])
 
 	options.SetType(d.Get("type").(string))
-	log.Println(d)
 
 	if ok := d.HasChanges("name", "description", "params"); ok {
 		options.SetName(d.Get("name").(string))
