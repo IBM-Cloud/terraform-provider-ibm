@@ -49,7 +49,7 @@ The `ibm_pi_network` provides the following [Timeouts](https://www.terraform.io/
 Review the argument references that you can specify for your resource.
 
 - `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
-- `pi_instance_id` - (Optional, String) If supplied populated it attaches to the InstanceID, if empty detaches from InstanceID.
+- `pi_instance_id` - (Optional, String) If supplied populated it attaches to the instance ID, if empty detaches from the instance ID.
 - `pi_ip_address` - (Optional, String) The requested IP address of this network interface.
 - `pi_name` - (Optional, String) Name of the network interface.
 - `pi_network_id` - (Required, String) network id.
@@ -61,7 +61,7 @@ In addition to all argument reference list, you can access the following attribu
 
 - `crn` - (String) The network interface's crn.
 - `id` - (String) The unique identifier of the network interface resource. The ID is composed of `<cloud_instance_id>/<network_id>/<network_interface_id>`.
-- `instance` - (List) The attached instance to this Network Interface.
+- `instance` - (List) The attached instance to this network interface.
 
   Nested scheme for `instance`:
   - `href` - (String) Link to instance resource.
@@ -70,7 +70,8 @@ In addition to all argument reference list, you can access the following attribu
 - `mac_address` - (String) The mac address of the network interface.
 - `name` - (String) Name of the network interface (not unique or indexable).
 - `network_interface_id` - (String) The unique identifier of the network interface.
-- `network_security_group_id` - (String) ID of the Network Security Group the network interface will be added to.
+- `network_security_group_id` - (Deprecated, String) ID of the network security group the network interface will be added to. Please use network_security_group_ids instead.
+- `network_security_group_ids` - (List) List of network security groups that the network interface is a member of.
 - `status` - (String) The status of the network address group.
 
 ## Import

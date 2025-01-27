@@ -48,12 +48,12 @@ Review the argument references that you can specify for your data source.
 In addition to all argument reference listed, you can access the following attribute references after your data source is created.
 
 - `id` - (String) The unique identifier of the pi_network_interfaces.
-- `interfaces` - (List) network Interfaces.
+- `interfaces` - (List) Network interfaces.
   
   Nested scheme for `interfaces`:
   - `crn` - (String) The network interface's crn.
   - `id` - (String) The unique network interface id.
-  - `instance` - (List) The attached instance to this Network Interface.
+  - `instance` - (List) The attached instance to this network interface.
 
       Nested scheme for `instance`:
         - `href` - (String) Link to instance resource.
@@ -61,5 +61,6 @@ In addition to all argument reference listed, you can access the following attri
   - `ip_address` - (String) The ip address of this network interface.
   - `mac_address` - (String) The mac address of the network interface.
   - `name` - (String) Name of the network interface (not unique or indexable).
+  - `network_security_group_ids` - (List) List of network security groups that the network interface is a member of.
   - `status` - (String) The status of the network address group.
   - `user_tags` - (List) List of user tags attached to the resource.
