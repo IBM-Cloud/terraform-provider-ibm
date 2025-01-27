@@ -345,6 +345,7 @@ const (
 	Attr_NetworkPorts                                = "network_ports"
 	Attr_Networks                                    = "networks"
 	Attr_NetworkSecurityGroupID                      = "network_security_group_id"
+	Attr_NetworkSecurityGroupIDs                     = "network_security_group_ids"
 	Attr_NetworkSecurityGroupMemberID                = "network_security_group_member_id"
 	Attr_NetworkSecurityGroups                       = "network_security_groups"
 	Attr_NumberOfVolumes                             = "number_of_volumes"

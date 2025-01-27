@@ -8,14 +8,13 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 func DataSourceIBMPINetworkInterface() *schema.Resource {
@@ -39,7 +38,7 @@ func DataSourceIBMPINetworkInterface() *schema.Resource {
 				ValidateFunc: validation.NoZeroValues,
 			},
 			Arg_NetworkInterfaceID: {
-				Description:  "Network Interface ID.",
+				Description:  "Network interface ID.",
 				ForceNew:     true,
 				Required:     true,
 				Type:         schema.TypeString,
@@ -48,12 +47,12 @@ func DataSourceIBMPINetworkInterface() *schema.Resource {
 			// Attributes
 			Attr_CRN: {
 				Computed:    true,
-				Description: "The Network Interface's crn.",
+				Description: "The network interface's crn.",
 				Type:        schema.TypeString,
 			},
 			Attr_Instance: {
 				Computed:    true,
-				Description: "The attached instance to this Network Interface.",
+				Description: "The attached instance to this network interface.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						Attr_Href: {
@@ -92,8 +91,15 @@ func DataSourceIBMPINetworkInterface() *schema.Resource {
 			},
 			Attr_NetworkSecurityGroupID: {
 				Computed:    true,
-				Description: "ID of the Network Security Group the network interface will be added to.",
+				Deprecated:  "Deprecated, use network_security_group_ids instead.",
+				Description: "ID of the network security group the network interface will be added to.",
 				Type:        schema.TypeString,
+			},
+			Attr_NetworkSecurityGroupIDs: {
+				Computed:    true,
+				Description: "List of network security groups that the network interface is a member of.",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Type:        schema.TypeList,
 			},
 			Attr_Status: {
 				Computed:    true,
@@ -132,7 +138,7 @@ func dataSourceIBMPINetworkInterfaceRead(ctx context.Context, d *schema.Resource
 	d.Set(Attr_Name, networkInterface.Name)
 	d.Set(Attr_NetworkInterfaceID, *networkInterface.ID)
 	d.Set(Attr_NetworkSecurityGroupID, networkInterface.NetworkSecurityGroupID)
-
+	d.Set(Attr_NetworkSecurityGroupIDs, networkInterface.NetworkSecurityGroupIDs)
 	if networkInterface.Instance != nil {
 		instance := []map[string]interface{}{}
 		instanceMap := pvmInstanceToMap(networkInterface.Instance)
