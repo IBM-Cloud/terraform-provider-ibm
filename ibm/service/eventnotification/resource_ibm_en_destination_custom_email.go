@@ -11,11 +11,10 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
+	en "github.com/IBM/event-notifications-go-admin-sdk/eventnotificationsv1"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-
-	en "github.com/IBM/event-notifications-go-admin-sdk/eventnotificationsv1"
 )
 
 func ResourceIBMEnCustomEmailDestination() *schema.Resource {
@@ -54,9 +53,10 @@ func ResourceIBMEnCustomEmailDestination() *schema.Resource {
 				Description: "Whether to collect the failed event in Cloud Object Storage bucket",
 			},
 			"verification_type": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Verification Method spf/dkim.",
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validate.InvokeValidator("ibm_en_destination_custom_email", "verification_type"),
+				Description:  "Verification Method spf/dkim.",
 			},
 			"config": {
 				Type:        schema.TypeList,
