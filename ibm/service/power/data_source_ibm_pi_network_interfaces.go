@@ -97,7 +97,7 @@ func DataSourceIBMPINetworkInterfaces() *schema.Resource {
 							Computed:    true,
 							Description: "List of network security groups that the network interface is a member of.",
 							Elem:        &schema.Schema{Type: schema.TypeString},
-							Type:        schema.TypeList,
+							Type:        schema.TypeSet,
 						},
 						Attr_Status: {
 							Computed:    true,
