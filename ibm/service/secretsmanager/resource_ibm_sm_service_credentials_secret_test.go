@@ -18,7 +18,6 @@ import (
 
 var serviceCredentialsSecretName = "terraform-test-sc-secret"
 var modifiedServiceCredentialsSecretName = "modified-terraform-test-sc-secret"
-var serviceCredentialsParameters = `{"HMAC":"true"}`
 var serviceCredentialsParametersWithServiceId = `{"serviceid_crn": ibm_iam_service_id.ibm_iam_service_id_instance.crn}`
 var serviceCredentialsTtl = "172800"
 var modifiedServiceCredentialsTtl = "6048000"
@@ -95,39 +94,6 @@ func TestAccIbmSmServiceCredentialsSecretAllArgs(t *testing.T) {
 	})
 }
 
-func TestAccIbmSmServiceCredentialsSecretAllArgsWithExistingServiceId(t *testing.T) {
-	resourceName := "ibm_sm_service_credentials_secret.sm_service_credentials_secret_service_id"
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
-		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIbmSmServiceCredentialsSecretDestroy,
-		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: serviceCredentialsSecretConfigAllArgsWithExistingServiceId(),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmSmServiceCredentialsSecretCreated(resourceName),
-					resource.TestCheckResourceAttrSet(resourceName, "secret_id"),
-					resource.TestCheckResourceAttrSet(resourceName, "created_by"),
-					resource.TestCheckResourceAttrSet(resourceName, "created_at"),
-					resource.TestCheckResourceAttrSet(resourceName, "updated_at"),
-					resource.TestCheckResourceAttrSet(resourceName, "crn"),
-					resource.TestCheckResourceAttrSet(resourceName, "downloaded"),
-					resource.TestCheckResourceAttrSet(resourceName, "next_rotation_date"),
-					resource.TestCheckResourceAttr(resourceName, "state", "1"),
-					resource.TestCheckResourceAttr(resourceName, "versions_total", "1"),
-				),
-			},
-			resource.TestStep{
-				ResourceName:            resourceName,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"ttl"},
-			},
-		},
-	})
-}
-
 var serviceCredentialsSecretBasicConfigFormat = `
 		resource "ibm_sm_service_credentials_secret" "sm_service_credentials_secret_basic" {
 			instance_id   = "%s"
@@ -166,28 +132,6 @@ var serviceCredentialsSecretFullConfigFormat = `
 			rotation %s
 		}`
 
-var serviceCredentialsSecretFullConfigFormatWithExistingServiceId = `
-		resource "ibm_sm_service_credentials_secret" "sm_service_credentials_secret_service_id" {
-			instance_id   = "%s"
-  			region        = "%s"
-			name = "%s"
-  			description = "%s"
-  			labels = ["%s"]
-			source_service {
-				instance {
-					crn = "%s"
-				}
-				parameters = %s
-				role {
-					crn = "%s"
-				}
-			}
-			ttl = "%s"
-  			custom_metadata = %s
-			secret_group_id = "default"
-			rotation %s
-		}`
-
 func iamServiceIdConfig() string {
 	return fmt.Sprintf(`
 		resource "ibm_iam_service_id" "ibm_iam_service_id_instance" {
@@ -197,22 +141,17 @@ func iamServiceIdConfig() string {
 
 func serviceCredentialsSecretConfigBasic() string {
 	return fmt.Sprintf(serviceCredentialsSecretBasicConfigFormat, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion,
-		serviceCredentialsSecretName, acc.SecretsManagerServiceCredentialsCosCrn, serviceCredentialsRoleCrn, serviceCredentialsTtl)
+		serviceCredentialsSecretName, acc.SecretsManagerENInstanceCrn, serviceCredentialsRoleCrn, serviceCredentialsTtl)
 }
 
 func serviceCredentialsSecretConfigAllArgs() string {
-	return fmt.Sprintf(serviceCredentialsSecretFullConfigFormat, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion,
-		serviceCredentialsSecretName, description, label, acc.SecretsManagerServiceCredentialsCosCrn, serviceCredentialsParameters, serviceCredentialsRoleCrn, serviceCredentialsTtl, customMetadata, rotationPolicy)
-}
-
-func serviceCredentialsSecretConfigAllArgsWithExistingServiceId() string {
-	return iamServiceIdConfig() + fmt.Sprintf(serviceCredentialsSecretFullConfigFormatWithExistingServiceId, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion,
-		serviceCredentialsSecretName, description, label, acc.SecretsManagerServiceCredentialsCosCrn, serviceCredentialsParametersWithServiceId, serviceCredentialsRoleCrn, serviceCredentialsTtl, customMetadata, rotationPolicy)
+	return iamServiceIdConfig() + fmt.Sprintf(serviceCredentialsSecretFullConfigFormat, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion,
+		serviceCredentialsSecretName, description, label, acc.SecretsManagerENInstanceCrn, serviceCredentialsParametersWithServiceId, serviceCredentialsRoleCrn, serviceCredentialsTtl, customMetadata, rotationPolicy)
 }
 
 func serviceCredentialsSecretConfigUpdated() string {
-	return fmt.Sprintf(serviceCredentialsSecretFullConfigFormat, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion,
-		modifiedServiceCredentialsSecretName, modifiedDescription, modifiedLabel, acc.SecretsManagerServiceCredentialsCosCrn, serviceCredentialsParameters, serviceCredentialsRoleCrn,
+	return iamServiceIdConfig() + fmt.Sprintf(serviceCredentialsSecretFullConfigFormat, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion,
+		modifiedServiceCredentialsSecretName, modifiedDescription, modifiedLabel, acc.SecretsManagerENInstanceCrn, serviceCredentialsParametersWithServiceId, serviceCredentialsRoleCrn,
 		modifiedServiceCredentialsTtl, modifiedCustomMetadata, modifiedRotationPolicy)
 }
 
@@ -251,7 +190,7 @@ func testAccCheckIbmSmServiceCredentialsSecretCreated(n string) resource.TestChe
 		if err := verifyAttr(*secret.TTL, serviceCredentialsTtl, "ttl"); err != nil {
 			return err
 		}
-		if err := verifyAttr(*secret.SourceService.Instance.Crn, acc.SecretsManagerServiceCredentialsCosCrn, "source_service.Instance.Crn"); err != nil {
+		if err := verifyAttr(*secret.SourceService.Instance.Crn, acc.SecretsManagerENInstanceCrn, "source_service.Instance.Crn"); err != nil {
 			return err
 		}
 		if err := verifyAttr(*secret.SourceService.Role.Crn, serviceCredentialsRoleCrn, "source_service.Role.Crn"); err != nil {
