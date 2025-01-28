@@ -236,7 +236,7 @@ func resourceIbmIbmAppConfigFeatureUpdate(d *schema.ResourceData, meta interface
 	options.SetEnvironmentID(parts[1])
 	options.SetFeatureID(parts[2])
 
-	if ok := d.HasChanges("name", "enabled_value", "disabled_value", "description", "rollout_percentage", "tags", "segment_rules", "collections"); ok {
+	if ok := d.HasChanges("name", "enabled_value", "disabled_value", "description", "rollout_percentage", "tags", "segment_rules", "collections", "enabled"); ok {
 		options.SetName(d.Get("name").(string))
 		options.SetEnabledValue(d.Get("enabled_value").(string))
 		options.SetDisabledValue(d.Get("disabled_value").(string))
