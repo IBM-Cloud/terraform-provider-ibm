@@ -28,20 +28,21 @@ func ResourceIbmBackupRecoveryConnectorUpdateUser() *schema.Resource {
 		CreateContext: resourceIbmBackupRecoveryConnectorUpdateUserCreate,
 		ReadContext:   resourceIbmBackupRecoveryConnectorUpdateUserRead,
 		DeleteContext: resourceIbmBackupRecoveryConnectorUpdateUserDelete,
+		UpdateContext: resourceIbmBackupRecoveryConnectorUpdateUserUpdate,
 		Importer:      &schema.ResourceImporter{},
 		CustomizeDiff: checkDiffResourceIbmBackupRecoveryConnectorUpdateUser,
 		Schema: map[string]*schema.Schema{
 			"session_name_cookie": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				ForceNew:    true,
 				Description: "Specifies the session name cookie of the Cohesity user.",
 			},
 			"ad_user_info": &schema.Schema{
-				Type:        schema.TypeList,
-				MaxItems:    1,
-				Optional:    true,
-				ForceNew:    true,
+				Type:     schema.TypeList,
+				MaxItems: 1,
+				Optional: true,
+				Computed: true,
+				// ForceNew:    true
 				Description: "Specifies an AD User's information logged in using an active directory. This information is not stored on the Cluster.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -66,23 +67,25 @@ func ResourceIbmBackupRecoveryConnectorUpdateUser() *schema.Resource {
 				},
 			},
 			"additional_group_names": &schema.Schema{
-				Type:        schema.TypeList,
-				Optional:    true,
-				ForceNew:    true,
+				Type:     schema.TypeList,
+				Optional: true,
+				// ForceNew:    true
 				Description: "Specifies the names of additional groups this User may belong to.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 			"allow_dso_modify": &schema.Schema{
-				Type:        schema.TypeBool,
-				Optional:    true,
-				ForceNew:    true,
+				Type:     schema.TypeBool,
+				Optional: true,
+				Computed: true,
+				// ForceNew:    true
 				Description: "Specifies if the data security user can be modified by the admin users.",
 			},
 			"audit_log_settings": &schema.Schema{
-				Type:        schema.TypeList,
-				MaxItems:    1,
-				Optional:    true,
-				ForceNew:    true,
+				Type:     schema.TypeList,
+				MaxItems: 1,
+				Optional: true,
+				Computed: true,
+				// ForceNew:    true
 				Description: "AuditLogSettings specifies struct with audt log configuration. Make these settings in such a way that zero values are cluster default when bb is not present.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -95,15 +98,17 @@ func ResourceIbmBackupRecoveryConnectorUpdateUser() *schema.Resource {
 				},
 			},
 			"authentication_type": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
+				// ForceNew:    true
 				Description: "Specifies the authentication type of the user. 'kAuthLocal' implies authenticated user is a local user. 'kAuthAd' implies authenticated user is an Active Directory user. 'kAuthSalesforce' implies authenticated user is a Salesforce user. 'kAuthGoogle' implies authenticated user is a Google user. 'kAuthSso' implies authenticated user is an SSO user.",
 			},
 			"cluster_identifiers": &schema.Schema{
-				Type:        schema.TypeList,
-				Optional:    true,
-				ForceNew:    true,
+				Type:     schema.TypeList,
+				Optional: true,
+				Computed: true,
+				// ForceNew:    true
 				Description: "Specifies the list of clusters this user has access to. If this is not specified, access will be granted to all clusters.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -121,58 +126,66 @@ func ResourceIbmBackupRecoveryConnectorUpdateUser() *schema.Resource {
 				},
 			},
 			"created_time_msecs": &schema.Schema{
-				Type:        schema.TypeInt,
-				Optional:    true,
-				ForceNew:    true,
+				Type:     schema.TypeInt,
+				Optional: true,
+				Computed: true,
+				// ForceNew:    true
 				Description: "Specifies the epoch time in milliseconds when the user account was created on the Cohesity Cluster.",
 			},
 			"current_password": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
+				Type:     schema.TypeString,
+				Optional: true,
+				// ForceNew:    true
 				Description: "Specifies the current password when updating the password.",
 			},
 			"description": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
+				// ForceNew:    true
 				Description: "Specifies a description about the user.",
 			},
 			"domain": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
+				// ForceNew:    true
 				Description: "Specifies the fully qualified domain name (FQDN) of an Active Directory or LOCAL for the default LOCAL domain on the Cohesity Cluster. A user is uniquely identified by combination of the username and the domain.",
 			},
 			"effective_time_msecs": &schema.Schema{
-				Type:        schema.TypeInt,
-				Optional:    true,
-				ForceNew:    true,
+				Type:     schema.TypeInt,
+				Optional: true,
+				Computed: true,
+				// ForceNew:    true
 				Description: "Specifies the epoch time in milliseconds when the user becomes effective. Until that time, the user cannot log in.",
 			},
 			"email_address": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
+				// ForceNew:    true
 				Description: "Specifies the email address of the user.",
 			},
 			"expired_time_msecs": &schema.Schema{
-				Type:        schema.TypeInt,
-				Optional:    true,
-				ForceNew:    true,
+				Type:     schema.TypeInt,
+				Optional: true,
+				Computed: true,
+				// ForceNew:    true
 				Description: "Specifies the epoch time in milliseconds when the user becomes expired. After that, the user cannot log in.",
 			},
 			"force_password_change": &schema.Schema{
-				Type:        schema.TypeBool,
-				Optional:    true,
-				ForceNew:    true,
+				Type:     schema.TypeBool,
+				Optional: true,
+				Computed: true,
+				// ForceNew:    true
 				Description: "Specifies whether to force user to change password.",
 			},
 			"google_account": &schema.Schema{
-				Type:        schema.TypeList,
-				MaxItems:    1,
-				Optional:    true,
-				ForceNew:    true,
+				Type:     schema.TypeList,
+				MaxItems: 1,
+				Optional: true,
+				Computed: true,
+				// ForceNew:    true
 				Description: "Google Account Information of a Helios BaaS user.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -190,10 +203,11 @@ func ResourceIbmBackupRecoveryConnectorUpdateUser() *schema.Resource {
 				},
 			},
 			"idp_user_info": &schema.Schema{
-				Type:        schema.TypeList,
-				MaxItems:    1,
-				Optional:    true,
-				ForceNew:    true,
+				Type:     schema.TypeList,
+				MaxItems: 1,
+				Optional: true,
+				Computed: true,
+				// ForceNew:    true
 				Description: "Specifies an IdP User's information logged in using an IdP. This information is not stored on the Cluster.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -238,40 +252,46 @@ func ResourceIbmBackupRecoveryConnectorUpdateUser() *schema.Resource {
 				},
 			},
 			"intercom_messenger_token": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
+				// ForceNew:    true
 				Description: "Specifies the messenger token for intercom identity verification.",
 			},
 			"is_account_locked": &schema.Schema{
-				Type:        schema.TypeBool,
-				Optional:    true,
-				ForceNew:    true,
+				Type:     schema.TypeBool,
+				Optional: true,
+				Computed: true,
+				// ForceNew:    true
 				Description: "Specifies whether the user account is locked.",
 			},
 			"is_active": &schema.Schema{
-				Type:        schema.TypeBool,
-				Optional:    true,
-				ForceNew:    true,
+				Type:     schema.TypeBool,
+				Optional: true,
+				Computed: true,
+				// ForceNew:    true
 				Description: "IsActive specifies whether or not a user is active, or has been disactivated by the customer. The default behavior is 'true'.",
 			},
 			"last_successful_login_time_msecs": &schema.Schema{
-				Type:        schema.TypeInt,
-				Optional:    true,
-				ForceNew:    true,
+				Type:     schema.TypeInt,
+				Optional: true,
+				Computed: true,
+				// ForceNew:    true
 				Description: "Specifies the epoch time in milliseconds when the user was last logged in successfully.",
 			},
 			"last_updated_time_msecs": &schema.Schema{
-				Type:        schema.TypeInt,
-				Optional:    true,
-				ForceNew:    true,
+				Type:     schema.TypeInt,
+				Optional: true,
+				Computed: true,
+				// ForceNew:    true
 				Description: "Specifies the epoch time in milliseconds when the user account was last modified on the Cohesity Cluster.",
 			},
 			"mfa_info": &schema.Schema{
-				Type:        schema.TypeList,
-				MaxItems:    1,
-				Optional:    true,
-				ForceNew:    true,
+				Type:     schema.TypeList,
+				MaxItems: 1,
+				Optional: true,
+				Computed: true,
+				// ForceNew:    true
 				Description: "Specifies information about MFA.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -294,22 +314,24 @@ func ResourceIbmBackupRecoveryConnectorUpdateUser() *schema.Resource {
 				},
 			},
 			"mfa_methods": &schema.Schema{
-				Type:        schema.TypeList,
-				Optional:    true,
-				ForceNew:    true,
+				Type:     schema.TypeList,
+				Optional: true,
+				// ForceNew:    true
 				Description: "Specifies MFA methods that enabled on the cluster.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 			"object_class": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
+				// ForceNew:    true
 				Description: "Specifies object class of user, could be either user or group.",
 			},
 			"org_membership": &schema.Schema{
-				Type:        schema.TypeList,
-				Optional:    true,
-				ForceNew:    true,
+				Type:     schema.TypeList,
+				Optional: true,
+				Computed: true,
+				// ForceNew:    true
 				Description: "OrgMembership contains the list of all available tenantIds for this user to switch to. Only when creating the session user, this field is populated on the fly. We discover the tenantIds from various groups assigned to the users.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -348,16 +370,17 @@ func ResourceIbmBackupRecoveryConnectorUpdateUser() *schema.Resource {
 				},
 			},
 			"password": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
+				Type:     schema.TypeString,
+				Optional: true,
+				// ForceNew:    true
 				Description: "Specifies the password of this user.",
 			},
 			"preferences": &schema.Schema{
-				Type:        schema.TypeList,
-				MaxItems:    1,
-				Optional:    true,
-				ForceNew:    true,
+				Type:     schema.TypeList,
+				MaxItems: 1,
+				Optional: true,
+				Computed: true,
+				// ForceNew:    true
 				Description: "Specifies the preferences of this user.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -370,28 +393,31 @@ func ResourceIbmBackupRecoveryConnectorUpdateUser() *schema.Resource {
 				},
 			},
 			"previous_login_time_msecs": &schema.Schema{
-				Type:        schema.TypeInt,
-				Optional:    true,
-				ForceNew:    true,
+				Type:     schema.TypeInt,
+				Optional: true,
+				Computed: true,
+				// ForceNew:    true
 				Description: "Specifies the epoch time in milliseconds of previous user login.",
 			},
 			"primary_group_name": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
+				// ForceNew:    true
 				Description: "Specifies the name of the primary group of this User.",
 			},
 			"privilege_ids": &schema.Schema{
-				Type:        schema.TypeList,
-				Optional:    true,
-				ForceNew:    true,
+				Type:     schema.TypeList,
+				Optional: true,
+				// ForceNew:    true
 				Description: "Specifies the Cohesity privileges from the roles. This will be populated based on the union of all privileges in roles. Type for unique privilege Id values. All below enum values specify a value for all uniquely defined privileges in Cohesity.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 			"profiles": &schema.Schema{
-				Type:        schema.TypeList,
-				Optional:    true,
-				ForceNew:    true,
+				Type:     schema.TypeList,
+				Optional: true,
+				Computed: true,
+				// ForceNew:    true
 				Description: "Specifies the user profiles. NOTE:- Currently used for Helios.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -449,41 +475,47 @@ func ResourceIbmBackupRecoveryConnectorUpdateUser() *schema.Resource {
 				},
 			},
 			"restricted": &schema.Schema{
-				Type:        schema.TypeBool,
-				Optional:    true,
-				ForceNew:    true,
+				Type:     schema.TypeBool,
+				Optional: true,
+				Computed: true,
+				// ForceNew:    true
 				Description: "Whether the user is a restricted user. A restricted user can only view the objects he has permissions to.",
 			},
 			"roles": &schema.Schema{
-				Type:        schema.TypeList,
-				Optional:    true,
-				ForceNew:    true,
+				Type:     schema.TypeList,
+				Optional: true,
+				Computed: true,
+				// ForceNew:    true
 				Description: "Specifies the Cohesity roles to associate with the user such as such as 'Admin', 'Ops' or 'View'. The Cohesity roles determine privileges on the Cohesity Cluster for this user.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 			"s3_access_key_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
+				// ForceNew:    true
 				Description: "Specifies the S3 Account Access Key ID.",
 			},
 			"s3_account_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
+				// ForceNew:    true
 				Description: "Specifies the S3 Account Canonical User ID.",
 			},
 			"s3_secret_key": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
+				// ForceNew:    true
 				Description: "Specifies the S3 Account Secret Key.",
 			},
 			"salesforce_account": &schema.Schema{
-				Type:        schema.TypeList,
-				MaxItems:    1,
-				Optional:    true,
-				ForceNew:    true,
+				Type:     schema.TypeList,
+				MaxItems: 1,
+				Optional: true,
+				Computed: true,
+				// ForceNew:    true
 				Description: "Salesforce Account Information of a Helios user.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -536,16 +568,18 @@ func ResourceIbmBackupRecoveryConnectorUpdateUser() *schema.Resource {
 				},
 			},
 			"sid": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
+				// ForceNew:    true
 				Description: "Specifies the unique Security ID (SID) of the user. This field is mandatory in modifying user.",
 			},
 			"spog_context": &schema.Schema{
-				Type:        schema.TypeList,
-				MaxItems:    1,
-				Optional:    true,
-				ForceNew:    true,
+				Type:     schema.TypeList,
+				MaxItems: 1,
+				Optional: true,
+				Computed: true,
+				// ForceNew:    true
 				Description: "SpogContext specifies all of the information about the user and cluster which is performing action on this cluster.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -568,10 +602,11 @@ func ResourceIbmBackupRecoveryConnectorUpdateUser() *schema.Resource {
 				},
 			},
 			"subscription_info": &schema.Schema{
-				Type:        schema.TypeList,
-				MaxItems:    1,
-				Optional:    true,
-				ForceNew:    true,
+				Type:     schema.TypeList,
+				MaxItems: 1,
+				Optional: true,
+				Computed: true,
+				// ForceNew:    true
 				Description: "Extends this to have Helios, DRaaS and DSaaS.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -939,9 +974,10 @@ func ResourceIbmBackupRecoveryConnectorUpdateUser() *schema.Resource {
 				},
 			},
 			"tenant_accesses": &schema.Schema{
-				Type:        schema.TypeList,
-				Optional:    true,
-				ForceNew:    true,
+				Type:     schema.TypeList,
+				Optional: true,
+				Computed: true,
+				// ForceNew:    true
 				Description: "Specfies the Tenant Access for MCM User.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -967,6 +1003,7 @@ func ResourceIbmBackupRecoveryConnectorUpdateUser() *schema.Resource {
 						"created_time_msecs": &schema.Schema{
 							Type:        schema.TypeInt,
 							Optional:    true,
+							Computed:    true,
 							Description: "Specifies the epoch time in milliseconds when the tenant access was created.",
 						},
 						"effective_time_msecs": &schema.Schema{
@@ -1024,20 +1061,21 @@ func ResourceIbmBackupRecoveryConnectorUpdateUser() *schema.Resource {
 				},
 			},
 			"tenant_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
+				// ForceNew:    true
 				Description: "Specifies the effective Tenant ID of the user.",
 			},
 			"username": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
+				Type:     schema.TypeString,
+				Optional: true,
+				// ForceNew:    true
 				Description: "Specifies the login name of the user.",
 			},
 			"group_roles": &schema.Schema{
 				Type:        schema.TypeList,
-				Computed:    true,
+				Optional:    true,
 				Description: "Specifies the Cohesity roles to associate with the user' group. These roles can only be edited from group.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
@@ -1068,7 +1106,7 @@ func checkDiffResourceIbmBackupRecoveryConnectorUpdateUser(context context.Conte
 
 	for fieldName := range ResourceIbmBackupRecoveryConnectorUpdateUser().Schema {
 		if d.HasChange(fieldName) {
-			return fmt.Errorf("[ERROR] Resource ibm_backup_recovery_connector_update_user cannot be updated.")
+			return fmt.Errorf("[ERROR] Resource ibm_backup_recovery_connector_update_user cannot be updated :%s", fieldName)
 		}
 	}
 	return nil
@@ -1100,8 +1138,7 @@ func resourceIbmBackupRecoveryConnectorUpdateUserCreate(context context.Context,
 
 	updateUserOptions := &backuprecoveryv1.UpdateUserOptions{}
 
-	headerMap := map[string]string{"Cookie": d.Get("session_name_cookie").(string)}
-	updateUserOptions.SetHeaders(headerMap)
+	updateUserOptions.SetSessionName(d.Get("session_name_cookie").(string))
 
 	if _, ok := d.GetOk("ad_user_info"); ok {
 		adUserInfoModel, err := ResourceIbmBackupRecoveryConnectorUpdateUserMapToAdUserInfo(d.Get("ad_user_info.0").(map[string]interface{}))
@@ -1347,8 +1384,7 @@ func resourceIbmBackupRecoveryConnectorUpdateUserRead(context context.Context, d
 	username := strings.Split(d.Id(), ":")[1]
 	getUsersOptions := &backuprecoveryv1.GetUsersOptions{Usernames: []string{username}}
 
-	headerMap := map[string]string{"Cookie": d.Get("session_name_cookie").(string)}
-	getUsersOptions.SetHeaders(headerMap)
+	getUsersOptions.SetSessionName(d.Get("session_name_cookie").(string))
 
 	getUsersResponse, response, err := backupRecoveryClient.GetUsersWithContext(context, getUsersOptions)
 	if err != nil {
@@ -2595,4 +2631,17 @@ func ResourceIbmBackupRecoveryConnectorUpdateUserTenantAccessesToMap(model *back
 		modelMap["tenant_type"] = *model.TenantType
 	}
 	return modelMap, nil
+}
+
+func resourceIbmBackupRecoveryConnectorUpdateUserUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	// This resource does not support a "delete" operation.
+	var diags diag.Diagnostics
+	warning := diag.Diagnostic{
+		Severity: diag.Warning,
+		Summary:  "Resource update will only affect terraform state and not the actual backend resource",
+		Detail:   "Update operation for this resource is not supported and will only affect the terraform statefile. No changes will be made to the backend resource.",
+	}
+	diags = append(diags, warning)
+	// d.SetId("")
+	return diags
 }

@@ -17,25 +17,32 @@ import (
 )
 
 func TestAccIbmBackupRecoveryConnectorLogsDataSourceBasic(t *testing.T) {
+	username := "admin"
+	password := "newPassword7"
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmBackupRecoveryConnectorLogsDataSourceConfigBasic(),
+				Config: testAccCheckIbmBackupRecoveryConnectorLogsDataSourceConfigBasic(username, password),
 				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_connector_logs.backup_recovery_connector_logs_instance", "connector_logs.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_connector_logs.backup_recovery_connector_logs_instance", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_connector_logs.backup_recovery_connector_logs_instance", "x_ibm_tenant_id"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckIbmBackupRecoveryConnectorLogsDataSourceConfigBasic() string {
+func testAccCheckIbmBackupRecoveryConnectorLogsDataSourceConfigBasic(username, password string) string {
 	return fmt.Sprintf(`
+
+	resource "ibm_backup_recovery_connector_access_token" "backup_recovery_connector_access_token_instance" {
+		username = "%s"
+		password = "%s"
+	}
 		data "ibm_backup_recovery_connector_logs" "backup_recovery_connector_logs_instance" {
-			access_token = "access_token"
+			access_token = resource.ibm_backup_recovery_connector_access_token.backup_recovery_connector_access_token_instance.access_token
 		}
-	`)
+	`, username, password)
 }

@@ -1075,8 +1075,7 @@ func dataSourceIbmBackupRecoveryConnectorGetUsersRead(context context.Context, d
 
 	getUsersOptions := &backuprecoveryv1.GetUsersOptions{}
 
-	headerMap := map[string]string{"Cookie": d.Get("session_name_cookie").(string)}
-	getUsersOptions.SetHeaders(headerMap)
+	getUsersOptions.SetSessionName(d.Get("session_name_cookie").(string))
 
 	if _, ok := d.GetOk("tenant_ids"); ok {
 		var tenantIds []string
@@ -1124,7 +1123,6 @@ func dataSourceIbmBackupRecoveryConnectorGetUsersRead(context context.Context, d
 	if !core.IsNil(getUsersResponse) {
 		users := []map[string]interface{}{}
 		for _, usersItem := range getUsersResponse {
-			fmt.Println("usersItem:", usersItem.CurrentPassword, usersItem.Username)
 			usersItemMap, err := DataSourceIbmBackupRecoveryConnectorGetUsersUserDetailsToMap(&usersItem) // #nosec G601
 			if err != nil {
 				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_connector_get_users", "read", "users-to-map").GetDiag()

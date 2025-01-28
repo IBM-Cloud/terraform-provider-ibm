@@ -11,44 +11,35 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
 func TestAccIbmBackupRecoveryConnectorGetUsersDataSourceBasic(t *testing.T) {
-	userDetailsXIBMTenantID := fmt.Sprintf("tf_x_ibm_tenant_id_%d", acctest.RandIntRange(10, 100))
+	sessionNameCookie := "MTczNzk4MTgxMHxEWDhFQVFMX2dBQUJFQUVRQUFELUFZWF9nQUFKQm5OMGNtbHVad3dLQUFoMWMyVnlibUZ0WlFaemRISnBibWNNQndBRllXUnRhVzRHYzNSeWFXNW5EQWdBQm14dlkyRnNaUVp6ZEhKcGJtY01Cd0FGWlc0dGRYTUdjM1J5YVc1bkRBc0FDV0YxZEdndGRIbHdaUVp6ZEhKcGJtY01Bd0FCTVFaemRISnBibWNNQ2dBSWRYTmxjaTF6YVdRR2MzUnlhVzVuRENBQUhsTXRNUzB4TURBdE1qRXRNVEEyTnpJM05ESXRNemszTVRBeE5URXRNUVp6ZEhKcGJtY01Dd0FKYzJsa2N5MW9ZWE5vQm5OMGNtbHVad3d0QUN0MGIwSlBjV0ZLV1VkUldFNU1RWHBsWTNsTk9IVkxUbTl0YzB4UFZXZHNWVkJTTmpBMU1tUjJZa2hqQm5OMGNtbHVad3dIQUFWeWIyeGxjd1p6ZEhKcGJtY01FQUFPUTA5SVJWTkpWRmxmUVVSTlNVNEdjM1J5YVc1bkRCRUFEMlY0Y0dseVlYUnBiMjR0ZEdsdFpRWnpkSEpwYm1jTURBQUtNVGN6T0RBMk9ESXhNQVp6ZEhKcGJtY01EQUFLYVc0dFkyeDFjM1JsY2dSaWIyOXNBZ0lBQVFaemRISnBibWNNQ0FBR1pHOXRZV2x1Qm5OMGNtbHVad3dIQUFWTVQwTkJUQT09fPjantRCGr1LJDC_-6kSdwW-sLcWRqWdy8RAMldMkc5n"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmBackupRecoveryConnectorGetUsersDataSourceConfigBasic(userDetailsXIBMTenantID),
+				Config: testAccCheckIbmBackupRecoveryConnectorGetUsersDataSourceConfigBasic(sessionNameCookie),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_connector_get_users.backup_recovery_connector_get_users_instance", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_connector_get_users.backup_recovery_connector_get_users_instance", "x_ibm_tenant_id"),
+					resource.TestCheckResourceAttr("data.ibm_backup_recovery_connector_get_users.backup_recovery_connector_get_users_instance", "users.#", "1"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckIbmBackupRecoveryConnectorGetUsersDataSourceConfigBasic(userDetailsXIBMTenantID string) string {
+func testAccCheckIbmBackupRecoveryConnectorGetUsersDataSourceConfigBasic(sessionNameCookie string) string {
 	return fmt.Sprintf(`
-		resource "ibm_backup_recovery_connector_update_user" "backup_recovery_connector_update_user_instance" {
-			x_ibm_tenant_id = "%s"
-		}
 
 		data "ibm_backup_recovery_connector_get_users" "backup_recovery_connector_get_users_instance" {
-			x_ibm_tenant_id = ibm_backup_recovery_connector_update_user.backup_recovery_connector_update_user_instance.x_ibm_tenant_id
-			tenant_ids = [ "tenantIds" ]
-			all_under_hierarchy = true
-			usernames = [ "usernames" ]
-			email_addresses = [ "emailAddresses" ]
-			domain = ibm_backup_recovery_connector_update_user.backup_recovery_connector_update_user_instance.domain
-			partial_match = true
+			session_name_cookie = "%s"
+			usernames = ["admin"]
 		}
-	`, userDetailsXIBMTenantID)
+	`, sessionNameCookie)
 }
