@@ -2169,8 +2169,9 @@ func Validator() validate.ValidatorDict {
 
 				// Added for Event Notifications
 
-				"ibm_en_smtp_configuration": eventnotification.ResourceIBMEnSMTPConfigurationValidator(),
-				"ibm_en_smtp_user":          eventnotification.ResourceIBMEnSMTPUserValidator(),
+				"ibm_en_smtp_configuration":       eventnotification.ResourceIBMEnSMTPConfigurationValidator(),
+				"ibm_en_smtp_user":                eventnotification.ResourceIBMEnSMTPUserValidator(),
+				"ibm_en_destination_custom_email": eventnotification.ResourceIBMEnEmailDestinationValidator(),
 
 				// Added for VMware as a Service
 				"ibm_vmaas_vdc":             vmware.ResourceIbmVmaasVdcValidator(),

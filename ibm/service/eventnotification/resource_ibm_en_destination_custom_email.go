@@ -10,6 +10,7 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -151,6 +152,23 @@ func ResourceIBMEnCustomEmailDestination() *schema.Resource {
 			},
 		},
 	}
+}
+
+func ResourceIBMEnEmailDestinationValidator() *validate.ResourceValidator {
+	validateSchema := make([]validate.ValidateSchema, 0)
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "verification_type",
+			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			AllowedValues:              "spf,dkim",
+			MinValueLength:             1,
+		},
+	)
+
+	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_en_destination_custom_email", Schema: validateSchema}
+	return &resourceValidator
 }
 
 func resourceIBMEnCustomEmailDestinationCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

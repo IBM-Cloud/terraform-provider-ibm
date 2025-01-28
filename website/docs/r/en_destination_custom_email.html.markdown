@@ -17,7 +17,6 @@ resource "ibm_en_destination_custom_email" "custom_domain_en_destination" {
   instance_guid         = ibm_resource_instance.en_terraform_test_resource.guid
   name                  = "Custom Email EN Destination"
   type                  = "smtp_custom"
-  verification_type     = ""
   collect_failed_events = true
   description           = "Destination Custom Email for event notification"
     config {
