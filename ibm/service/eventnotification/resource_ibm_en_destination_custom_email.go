@@ -302,7 +302,7 @@ func resourceIBMEnCustomEmailDestinationUpdate(context context.Context, d *schem
 
 	options.SetInstanceID(parts[0])
 	options.SetID(parts[1])
-	verifyCustomEmailDestinationConfiguration.SetType(d.Get("verification_type").(string))
+
 	verifyCustomEmailDestinationConfiguration.SetInstanceID(parts[0])
 	verifyCustomEmailDestinationConfiguration.SetID(parts[1])
 	hasChangeverification := false
