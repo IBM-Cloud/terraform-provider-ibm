@@ -60,7 +60,6 @@ func testAccCheckIbmSmServiceCredentialsSecretDataSourceConfigBasic() string {
 			  	instance {
 					crn = "%s"
 				}
-				parameters = %s
 				role {
 					crn = "%s"
 				}
@@ -79,5 +78,5 @@ func testAccCheckIbmSmServiceCredentialsSecretDataSourceConfigBasic() string {
 			name = ibm_sm_service_credentials_secret.sm_service_credentials_secret_instance.name
 			secret_group_name = "default"
 		}
-	`, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion, serviceCredentialsTtl, acc.SecretsManagerServiceCredentialsCosCrn, serviceCredentialsParameters, serviceCredentialsRoleCrn, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion)
+	`, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion, serviceCredentialsTtl, acc.SecretsManagerENInstanceCrn, serviceCredentialsRoleCrn, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion)
 }
