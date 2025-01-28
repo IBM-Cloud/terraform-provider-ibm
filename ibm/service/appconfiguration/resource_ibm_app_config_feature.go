@@ -140,7 +140,7 @@ func ResourceIBMIbmAppConfigFeature() *schema.Resource {
 			},
 			"enabled": {
 				Type:        schema.TypeBool,
-				Computed:    true,
+				Optional:    true,
 				Description: "The state of the feature flag.",
 			},
 			"created_time": {
@@ -186,6 +186,9 @@ func resourceIbmIbmAppConfigFeatureCreate(d *schema.ResourceData, meta interface
 	}
 	if _, ok := d.GetOk("tags"); ok {
 		options.SetTags(d.Get("tags").(string))
+	}
+	if _, ok := d.GetOk("enabled"); ok {
+		options.SetEnabled(d.Get("enabled").(bool))
 	}
 
 	if _, ok := d.GetOk("segment_rules"); ok {
@@ -233,13 +236,16 @@ func resourceIbmIbmAppConfigFeatureUpdate(d *schema.ResourceData, meta interface
 	options.SetEnvironmentID(parts[1])
 	options.SetFeatureID(parts[2])
 
-	if ok := d.HasChanges("name", "enabled_value", "disabled_value", "description", "rollout_percentage", "tags", "segment_rules", "collections"); ok {
+	if ok := d.HasChanges("name", "enabled_value", "disabled_value", "description", "rollout_percentage", "tags", "segment_rules", "collections", "enabled"); ok {
 		options.SetName(d.Get("name").(string))
 		options.SetEnabledValue(d.Get("enabled_value").(string))
 		options.SetDisabledValue(d.Get("disabled_value").(string))
 
 		if _, ok := d.GetOk("description"); ok {
 			options.SetDescription(d.Get("description").(string))
+		}
+		if _, ok := d.GetOk("enabled"); ok {
+			options.SetEnabled(d.Get("enabled").(bool))
 		}
 		if _, ok := d.GetOk("rollout_percentage"); ok {
 			options.SetRolloutPercentage(int64(d.Get("rollout_percentage").(int)))
