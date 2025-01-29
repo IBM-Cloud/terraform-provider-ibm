@@ -8,7 +8,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/IBM/cloud-db2-go-sdk/db2saasv1"
 	"io"
 	"io/ioutil"
 	"log"
@@ -17,6 +16,8 @@ import (
 	"os"
 	"strings"
 	"time"
+
+	"github.com/IBM/cloud-db2-go-sdk/db2saasv1"
 
 	// Added code for the Power Colo Offering
 
@@ -1671,16 +1672,15 @@ func (c *Config) ClientSession() (interface{}, error) {
 	// Construct an "options" struct for creating the service client.
 	logsEndpoint := ContructEndpoint(fmt.Sprintf("api.%s.logs", c.Region), cloudEndpoint)
 
-	if fileMap != nil && c.Visibility != "public-and-private" {
-		logsEndpoint = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_LOGS_API_ENDPOINT", c.Region, logsEndpoint)
-	}
 	if c.Visibility == "private" || c.Visibility == "public-and-private" {
 		logsEndpoint = ContructEndpoint(fmt.Sprintf("api.private.%s.logs", c.Region), cloudEndpoint)
 	}
-
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		logsEndpoint = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_LOGS_API_ENDPOINT", c.Region, logsEndpoint)
+	}
 	logsClientOptions := &logsv0.LogsV0Options{
 		Authenticator: authenticator,
-		URL:           logsEndpoint,
+		URL:           EnvFallBack([]string{"IBMCLOUD_LOGS_API_ENDPOINT"}, logsEndpoint),
 	}
 
 	// Construct the service client.
