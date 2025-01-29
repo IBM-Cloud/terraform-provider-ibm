@@ -142,7 +142,7 @@ func ResourceIBMPINetworkInterface() *schema.Resource {
 			},
 			Attr_Status: {
 				Computed:    true,
-				Description: "The status of the network address group.",
+				Description: "The status of the network interface.",
 				Type:        schema.TypeString,
 			},
 		},

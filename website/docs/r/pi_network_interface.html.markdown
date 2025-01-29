@@ -72,7 +72,7 @@ In addition to all argument reference list, you can access the following attribu
 - `network_interface_id` - (String) The unique identifier of the network interface.
 - `network_security_group_id` - (Deprecated, String) ID of the network security group the network interface will be added to. Please use network_security_group_ids instead.
 - `network_security_group_ids` - (List) List of network security groups that the network interface is a member of.
-- `status` - (String) The status of the network address group.
+- `status` - (String) The status of the network interface.
 
 ## Import
 

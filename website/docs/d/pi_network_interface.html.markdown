@@ -60,5 +60,5 @@ In addition to all argument reference list, you can access the following attribu
 - `name` - (String) Name of the network interface (not unique or indexable).
 - `network_security_group_ids` - (List) List of network security groups that the network interface is a member of.
 - `network_interface_id` - (String) The unique identifier of the network interface.
-- `status` - (String) The status of the network address group.
+- `status` - (String) The status of the network interface.
 - `user_tags` - (List) List of user tags attached to the resource.
