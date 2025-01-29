@@ -52,6 +52,7 @@ func TestAccIbmCodeEngineAppBasic(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app_instance", "scale_memory_limit", "4G"),
 					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app_instance", "scale_min_instances", "0"),
 					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app_instance", "scale_request_timeout", "300"),
+					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app_instance", "computed_env_variables.#", "6"),
 				),
 			},
 			resource.TestStep{
@@ -73,6 +74,7 @@ func TestAccIbmCodeEngineAppBasic(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app_instance", "scale_memory_limit", "4G"),
 					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app_instance", "scale_min_instances", "0"),
 					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app_instance", "scale_request_timeout", "300"),
+					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app_instance", "computed_env_variables.#", "6"),
 				),
 			},
 		},
@@ -85,7 +87,7 @@ func TestAccIbmCodeEngineAppExtended(t *testing.T) {
 	imageReference := "icr.io/codeengine/helloworld"
 	imagePort := "8080"
 	managedDomainMappings := "local_public"
-	runAsUser := "0"
+	runAsUser := "10"
 	runServiceAccount := "default"
 	scaleConcurrency := fmt.Sprintf("%d", acctest.RandIntRange(50, 100))
 	scaleConcurrencyTarget := fmt.Sprintf("%d", acctest.RandIntRange(20, 50))
@@ -141,6 +143,7 @@ func TestAccIbmCodeEngineAppExtended(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app_instance", "scale_memory_limit", scaleMemoryLimit),
 					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app_instance", "scale_min_instances", scaleMinInstances),
 					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app_instance", "scale_request_timeout", scaleRequestTimeout),
+					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app_instance", "computed_env_variables.#", "6"),
 				),
 			},
 			resource.TestStep{
@@ -163,6 +166,7 @@ func TestAccIbmCodeEngineAppExtended(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app_instance", "scale_min_instances", scaleMinInstancesUpdate),
 					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app_instance", "scale_request_timeout", scaleRequestTimeoutUpdate),
 					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app_instance", "scale_request_timeout", scaleRequestTimeoutUpdate),
+					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app_instance", "computed_env_variables.#", "6"),
 				),
 			},
 			resource.TestStep{
@@ -187,7 +191,6 @@ func testAccCheckIbmCodeEngineAppConfigBasic(projectID string, imageReference st
 
 			lifecycle {
 				ignore_changes = [
-					run_env_variables,
 					probe_liveness,
 					probe_readiness
 				]
@@ -239,7 +242,6 @@ func testAccCheckIbmCodeEngineAppConfig(projectID string, configMapName string, 
 
 			lifecycle {
 				ignore_changes = [
-					run_env_variables,
 					probe_liveness,
 					probe_readiness
 				]

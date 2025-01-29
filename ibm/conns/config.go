@@ -184,6 +184,9 @@ type Config struct {
 	// Constant Retry Delay for API calls
 	RetryDelay time.Duration
 
+	// Code Engine date-based version
+	CodeEngineVersion string
+
 	// FunctionNameSpace ...
 	FunctionNameSpace string
 
@@ -3590,9 +3593,14 @@ func (c *Config) ClientSession() (interface{}, error) {
 	if fileMap != nil && c.Visibility != "public-and-private" {
 		codeEngineEndpoint = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_CODE_ENGINE_API_ENDPOINT", c.Region, codeEngineEndpoint)
 	}
+	ceVersion := "2025-01-10"
+	if c.CodeEngineVersion != "" {
+		ceVersion = c.CodeEngineVersion
+	}
 	codeEngineClientOptions := &codeengine.CodeEngineV2Options{
 		Authenticator: authenticator,
 		URL:           EnvFallBack([]string{"IBMCLOUD_CODE_ENGINE_API_ENDPOINT"}, codeEngineEndpoint),
+		Version:       &ceVersion,
 	}
 
 	// Construct the service client.

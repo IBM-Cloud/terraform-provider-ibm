@@ -47,6 +47,7 @@ func TestAccIbmCodeEngineFunctionBasic(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_code_engine_function.code_engine_function_instance", "scale_down_delay", "1"),
 					resource.TestCheckResourceAttr("ibm_code_engine_function.code_engine_function_instance", "scale_max_execution_time", "60"),
 					resource.TestCheckResourceAttr("ibm_code_engine_function.code_engine_function_instance", "scale_memory_limit", "4G"),
+					resource.TestCheckResourceAttr("ibm_code_engine_function.code_engine_function_instance", "computed_env_variables.#", "6"),
 				),
 			},
 			resource.TestStep{
@@ -63,6 +64,7 @@ func TestAccIbmCodeEngineFunctionBasic(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_code_engine_function.code_engine_function_instance", "scale_down_delay", "1"),
 					resource.TestCheckResourceAttr("ibm_code_engine_function.code_engine_function_instance", "scale_max_execution_time", "60"),
 					resource.TestCheckResourceAttr("ibm_code_engine_function.code_engine_function_instance", "scale_memory_limit", "4G"),
+					resource.TestCheckResourceAttr("ibm_code_engine_function.code_engine_function_instance", "computed_env_variables.#", "6"),
 				),
 			},
 		},
@@ -110,6 +112,7 @@ func TestAccIbmCodeEngineFunctionExtended(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_code_engine_function.code_engine_function_instance", "scale_down_delay", functionScaleDownDelay),
 					resource.TestCheckResourceAttr("ibm_code_engine_function.code_engine_function_instance", "scale_max_execution_time", functionScaleMaxExecutionTime),
 					resource.TestCheckResourceAttr("ibm_code_engine_function.code_engine_function_instance", "scale_memory_limit", functionScaleMemoryLimit),
+					resource.TestCheckResourceAttr("ibm_code_engine_function.code_engine_function_instance", "computed_env_variables.#", "6"),
 				),
 			},
 			resource.TestStep{
@@ -126,6 +129,7 @@ func TestAccIbmCodeEngineFunctionExtended(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_code_engine_function.code_engine_function_instance", "scale_down_delay", functionScaleDownDelayUpdate),
 					resource.TestCheckResourceAttr("ibm_code_engine_function.code_engine_function_instance", "scale_max_execution_time", functionScaleMaxExecutionTimeUpdate),
 					resource.TestCheckResourceAttr("ibm_code_engine_function.code_engine_function_instance", "scale_memory_limit", functionScaleMemoryLimitUpdate),
+					resource.TestCheckResourceAttr("ibm_code_engine_function.code_engine_function_instance", "computed_env_variables.#", "6"),
 				),
 			},
 		},
@@ -143,12 +147,6 @@ func testAccCheckIbmCodeEngineFunctionConfigBasic(projectID string, codeReferenc
 			code_reference = "%s"
 			name = "%s"
 			runtime = "%s"
-
-			lifecycle {
-				ignore_changes = [
-					run_env_variables
-				]
-			}
 		}
 	`, projectID, codeReference, name, runtime)
 }
@@ -173,12 +171,6 @@ func testAccCheckIbmCodeEngineFunctionConfig(projectID string, codeReference str
 				type  = "literal"
 				name  = "name"
 				value = "value"
-			}
-
-			lifecycle {
-				ignore_changes = [
-					run_env_variables
-				]
 			}
 		}
 	`, projectID, codeReference, managedDomainMappings, name, runtime, scaleCpuLimit, scaleDownDelay, scaleMaxExecutionTime, scaleMemoryLimit)

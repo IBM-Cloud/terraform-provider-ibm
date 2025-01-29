@@ -38,6 +38,27 @@ $ terraform apply
 
 Run `terraform destroy` when you don't need these resources.
 
+## Versioning
+
+If you want to use a specific version of Code Engine, you can do so using the `code_engine_version` argument in the IBM Cloud provider block. For example:
+
+```hcl
+provider "ibm" {
+  code_engine_version = var.code_engine_version
+}
+
+variable "code_engine_version" {
+  description = "The Code Engine date-based version string in the format 'YYYY-MM-DD'."
+  type        = string
+}
+```
+Create a terraform.tfvars file and specify the date-based version string in that file:
+
+```hcl
+code_engine_version = "2022-12-09"
+```
+When the API is updated with any breaking changes, the service introduces a new version date for the API. The API uses the most recent version on or before the date you specify. By default, if you do not specify a version, the latest version is used by the provider. You can find the available versions in the [API changelog](https://cloud.ibm.com/docs/codeengine?topic=codeengine-api-changelog#active-version-dates). 
+
 ## Code Engine resources
 
 ### Resource: ibm_code_engine_project
@@ -144,6 +165,7 @@ resource "ibm_code_engine_app" "code_engine_app_instance" {
 |------|-------------|
 | build | Reference to a build that is associated with the application. |
 | build_run | Reference to a build run that is associated with the application. |
+| computed_env_variables | References to config maps, secrets or literal values, which are defined and set by Code Engine and are exposed as environment variables in the application. |
 | created_at | The timestamp when the resource was created. |
 | endpoint | Optional URL to invoke the app. Depending on visibility,  this is accessible publicly or in the private network only. Empty in case 'managed_domain_mappings' is set to 'local'. |
 | endpoint_internal | The URL to the app that is only visible within the project. |
@@ -334,6 +356,7 @@ resource "ibm_code_engine_function" "code_engine_function_instance" {
 
 | Name | Description |
 |------|-------------|
+| computed_env_variables | References to config maps, secrets or literal values, which are defined and set by Code Engine and are exposed as environment variables in the function. |
 | created_at | The timestamp when the resource was created. |
 | endpoint | URL to invoke the function. |
 | endpoint_internal | URL to function that is only visible within the project. |
@@ -388,6 +411,7 @@ resource "ibm_code_engine_job" "code_engine_job_instance" {
 |------|-------------|
 | build | Reference to a build that is associated with the job. |
 | build_run | Reference to a build run that is associated with the job. |
+| computed_env_variables | References to config maps, secrets or literal values, which are defined and set by Code Engine and are exposed as environment variables in the job run. |
 | created_at | The timestamp when the resource was created. |
 | entity_tag | The version of the job instance, which is used to achieve optimistic locking. |
 | href | When you provision a new job,  a URL is created identifying the location of the instance. |
@@ -504,6 +528,7 @@ data "ibm_code_engine_app" "code_engine_app_instance" {
 |------|-------------|
 | build | Reference to a build that is associated with the application. |
 | build_run | Reference to a build run that is associated with the application. |
+| computed_env_variables | References to config maps, secrets or literal values, which are defined and set by Code Engine and are exposed as environment variables in the application. |
 | created_at | The timestamp when the resource was created. |
 | endpoint | Optional URL to invoke the app. Depending on visibility,  this is accessible publicly or in the private network only. Empty in case 'managed_domain_mappings' is set to 'local'. |
 | endpoint_internal | The URL to the app that is only visible within the project. |
@@ -686,6 +711,7 @@ data "ibm_code_engine_function" "code_engine_function_instance" {
 | code_main | Specifies the name of the function that should be invoked. |
 | code_reference | Specifies either a reference to a code bundle or the source code itself. To specify the source code, use the data URL scheme and include the source code as base64 encoded. The data URL scheme is defined in [RFC 2397](https://tools.ietf.org/html/rfc2397). |
 | code_secret | The name of the secret that is used to access the specified `code_reference`. The secret is used to authenticate with a non-public endpoint that is specified as`code_reference`. |
+| computed_env_variables | References to config maps, secrets or literal values, which are defined and set by Code Engine and are exposed as environment variables in the function. |
 | created_at | The timestamp when the resource was created. |
 | endpoint | URL to invoke the function. |
 | endpoint_internal | URL to function that is only visible within the project. |
@@ -726,6 +752,7 @@ data "ibm_code_engine_job" "code_engine_job_instance" {
 |------|-------------|
 | build | Reference to a build that is associated with the job. |
 | build_run | Reference to a build run that is associated with the job. |
+| computed_env_variables | References to config maps, secrets or literal values, which are defined and set by Code Engine and are exposed as environment variables in the job run. |
 | created_at | The timestamp when the resource was created. |
 | entity_tag | The version of the job instance, which is used to achieve optimistic locking. |
 | href | When you provision a new job,  a URL is created identifying the location of the instance. |

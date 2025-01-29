@@ -179,6 +179,12 @@ func Provider() *schema.Provider {
 				Description: "The retry count to set for API calls.",
 				DefaultFunc: schema.EnvDefaultFunc("MAX_RETRIES", 10),
 			},
+			"code_engine_version": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The Code Engine date-based version string in the format 'YYYY-MM-DD'.",
+				DefaultFunc: schema.EnvDefaultFunc("CODE_ENGINE_VERSION", nil),
+			},
 			"function_namespace": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -2354,6 +2360,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	region := d.Get("region").(string)
 	zone := d.Get("zone").(string)
 	retryCount := d.Get("max_retries").(int)
+	ceVersion := d.Get("code_engine_version").(string)
 	wskNameSpace := d.Get("function_namespace").(string)
 	riaasEndPoint := d.Get("riaas_endpoint").(string)
 
@@ -2377,6 +2384,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		RetryCount:           retryCount,
 		SoftLayerEndpointURL: softlayerEndpointUrl,
 		RetryDelay:           conns.RetryAPIDelay,
+		CodeEngineVersion:    ceVersion,
 		FunctionNameSpace:    wskNameSpace,
 		RiaasEndPoint:        riaasEndPoint,
 		IAMToken:             iamToken,
