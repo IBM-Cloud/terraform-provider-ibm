@@ -90,17 +90,19 @@ func dataSourceIbmBackupRecoveryConnectorLogsRead(context context.Context, d *sc
 
 	d.SetId(dataSourceIbmBackupRecoveryConnectorLogsID(d))
 
-	if !core.IsNil(dataSourceConnectorLogs.ConnectorLogs) {
-		connectorLogs := []map[string]interface{}{}
-		for _, connectorLogsItem := range dataSourceConnectorLogs.ConnectorLogs {
-			connectorLogsItemMap, err := DataSourceIbmBackupRecoveryConnectorLogsDataSourceConnectorLogToMap(&connectorLogsItem) // #nosec G601
-			if err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_connector_logs", "read", "connector_logs-to-map").GetDiag()
+	if !core.IsNil(dataSourceConnectorLogs) {
+		if !core.IsNil(dataSourceConnectorLogs.ConnectorLogs) {
+			connectorLogs := []map[string]interface{}{}
+			for _, connectorLogsItem := range dataSourceConnectorLogs.ConnectorLogs {
+				connectorLogsItemMap, err := DataSourceIbmBackupRecoveryConnectorLogsDataSourceConnectorLogToMap(&connectorLogsItem) // #nosec G601
+				if err != nil {
+					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_connector_logs", "read", "connector_logs-to-map").GetDiag()
+				}
+				connectorLogs = append(connectorLogs, connectorLogsItemMap)
 			}
-			connectorLogs = append(connectorLogs, connectorLogsItemMap)
-		}
-		if err = d.Set("connector_logs", connectorLogs); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting connector_logs: %s", err), "(Data) ibm_backup_recovery_connector_logs", "read", "set-connector_logs").GetDiag()
+			if err = d.Set("connector_logs", connectorLogs); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting connector_logs: %s", err), "(Data) ibm_backup_recovery_connector_logs", "read", "set-connector_logs").GetDiag()
+			}
 		}
 	}
 
