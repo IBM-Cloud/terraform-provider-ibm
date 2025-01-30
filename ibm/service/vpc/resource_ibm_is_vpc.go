@@ -1359,8 +1359,35 @@ func vpcUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasCha
 							}
 							_, response, err := sess.CreateVPCDnsResolutionBinding(createDnsBindings)
 							if err != nil {
+								exitError := false
 								log.Printf("[DEBUG] CreateVPCDnsResolutionBindingWithContext failed %s\n%s", err, response)
-								return fmt.Errorf("[ERROR] CreateVPCDnsResolutionBinding failed in vpc update resource %s\n%s", err, response)
+								if response.StatusCode == 400 && strings.Contains(err.Error(), "This VPC already contains DNS Resolution Bindings") {
+									listVPCDnsResolutionBindingOptions := &vpcv1.ListVPCDnsResolutionBindingsOptions{
+										VPCID: createDnsBindings.VPCID,
+									}
+
+									pager, err := sess.NewVPCDnsResolutionBindingsPager(listVPCDnsResolutionBindingOptions)
+									if err != nil {
+										return fmt.Errorf("[ERROR] Error getting VPC dns bindings in CreateVPCDnsResolutionBindingWithContext: %s", err)
+									}
+									var allResults []vpcv1.VpcdnsResolutionBinding
+									for pager.HasNext() {
+										nextPage, err := pager.GetNext()
+										if err != nil {
+											return fmt.Errorf("[ERROR] Error getting VPC dns bindings pager next in CreateVPCDnsResolutionBindingWithContext: %s", err)
+										}
+										allResults = append(allResults, nextPage...)
+									}
+									for _, binding := range allResults {
+										if *binding.VPC.ID == vpcId {
+											log.Printf("[DEBUG] CreateVPCDnsResolutionBindingWithContext failed but binding to same vpc exists %s\n%s", err, response)
+											exitError = true
+										}
+									}
+								}
+								if !exitError {
+									return fmt.Errorf("[ERROR] CreateVPCDnsResolutionBinding failed in vpc update resource %s\n%s", err, response)
+								}
 							}
 						}
 						if _, ok := d.GetOk("dns.0.resolver.0.dns_binding_name"); ok {
