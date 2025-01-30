@@ -74,7 +74,7 @@ resource "ibm_is_vpc" "example-system" {
 	name = "example-system-vpc"
 	dns {
 		enable_hub = false
-
+    type = "system"
     // uncommenting/patching vpc with below code would make the resolver type delegated
     # resolver {
 		# 	type = "delegated"
@@ -99,6 +99,21 @@ resource "ibm_is_vpc" "example-delegated" {
 	}
 }
 
+// to change from delegated to system (this removes the binding)
+
+resource "ibm_is_vpc" "example-delegated-to-system" {
+  // required : add a dependency on ibm dns custom resolver of the hub vpc
+	depends_on = [ ibm_dns_custom_resolver.example-hub ]
+	name = "example-hub-false-delegated"
+	dns {
+		enable_hub = false
+		resolver {
+			type = "system"
+			vpc_id = "null"
+			dns_binding_name = "null"
+		}
+	}
+}
 ```
 
 ## Timeouts
@@ -135,7 +150,7 @@ Review the argument references that you can specify for your resource.
     Nested scheme for `resolver`:
 
       - `dns_binding_id` - (String) The VPC dns binding id whose DNS resolver provides the DNS server addresses for this VPC. (If any)
-      - `dns_binding_name` - (Optional, String) The VPC dns binding name whose DNS resolver provides the DNS server addresses for this VPC. Only applicable for `delegated`, providing value would create binding with this name.
+      - `dns_binding_name` - (Optional, String) The VPC dns binding name whose DNS resolver provides the DNS server addresses for this VPC. Only applicable for `delegated`, providing value would create binding with this name. Providing "null" as name, would remove the binding.
 
         ~> **Note:** 
           `manual_servers` must be set if and only if `dns.resolver.type` is manual.
