@@ -1711,11 +1711,10 @@ func (c *Config) ClientSession() (interface{}, error) {
 	var logsrouterClientURL string
 	var logsrouterURLErr error
 
-	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		logsrouterClientURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_LOGS_ROUTING_API_ENDPOINT", c.Region, ibmcloudlogsroutingv0.DefaultServiceURL)
+	} else if c.Visibility == "private" || c.Visibility == "public-and-private" {
 		logsrouterClientURL, logsrouterURLErr = ibmcloudlogsroutingv0.GetServiceURLForRegion("private." + c.Region)
-		if err != nil && c.Visibility == "public-and-private" {
-			logsrouterClientURL, logsrouterURLErr = ibmcloudlogsroutingv0.GetServiceURLForRegion(c.Region)
-		}
 	} else {
 		logsrouterClientURL, logsrouterURLErr = ibmcloudlogsroutingv0.GetServiceURLForRegion(c.Region)
 	}

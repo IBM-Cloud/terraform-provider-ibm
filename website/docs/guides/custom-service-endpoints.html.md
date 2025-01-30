@@ -85,6 +85,7 @@ provider "ibm" {
 |UAA|IBMCLOUD_UAA_ENDPOINT|
 |User Management|IBMCLOUD_USER_MANAGEMENT_ENDPOINT|
 |Event Notifications|IBMCLOUD_EVENT_NOTIFICATIONS_API_ENDPOINT|
+|Logs Routing|IBMCLOUD_LOGS_ROUTING_API_ENDPOINT|
 
 ## File structure for endpoints file
 

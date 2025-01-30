@@ -123,3 +123,28 @@ data "ibm_logs_router_targets" "logs_router_targets_instance" {
 | Name | Version |
 |------|---------|
 | ibm | 1.13.1 |
+
+## Notes
+
+### The Logs Routing URL can be set in endpoints.json
+
+**Example**:
+
+```json
+{
+    "IBMCLOUD_LOGS_ROUTING_API_ENDPOINT":{
+        "public":{
+            "us-south":"<endpoint>",
+            "us-east":"<endpoint>",
+            "eu-gb":"<endpoint>",
+            "eu-de":"<endpoint>"
+        },
+        "private":{
+            "us-south":"<endpoint>",
+            "us-east":"<endpoint>",
+            "eu-gb":"<endpoint>",
+            "eu-de":"<endpoint>"
+        }
+    }
+}
+```
