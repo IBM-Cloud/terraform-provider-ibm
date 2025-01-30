@@ -137,7 +137,7 @@ func dataSourceIBMResourceKeyRead(d *schema.ResourceData, meta interface{}) erro
 			return err
 		}
 		for _, key := range keys.Resources {
-			if &key.CRN == &crn {
+			if *key.SourceCRN == *crn {
 				filteredKeys = append(filteredKeys, key)
 			}
 		}
