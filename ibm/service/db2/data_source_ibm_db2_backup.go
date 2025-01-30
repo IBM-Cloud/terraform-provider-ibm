@@ -21,9 +21,9 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 )
 
-func DataSourceIbmDb2SaasBackup() *schema.Resource {
+func DataSourceIbmDb2Backup() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIbmDb2SaasBackupRead,
+		ReadContext: dataSourceIbmDb2BackupRead,
 
 		Schema: map[string]*schema.Schema{
 			"deployment_id": &schema.Schema{
@@ -73,10 +73,10 @@ func DataSourceIbmDb2SaasBackup() *schema.Resource {
 	}
 }
 
-func dataSourceIbmDb2SaasBackupRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIbmDb2BackupRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	db2saasClient, err := meta.(conns.ClientSession).Db2saasV1()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_db2_saas_backup", "read", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_db2_backup", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -87,34 +87,34 @@ func dataSourceIbmDb2SaasBackupRead(context context.Context, d *schema.ResourceD
 
 	successGetBackups, _, err := db2saasClient.GetDb2SaasBackupWithContext(context, getDb2SaasBackupOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetDb2SaasBackupWithContext failed: %s", err.Error()), "(Data) ibm_db2_saas_backup", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetDb2SaasBackupWithContext failed: %s", err.Error()), "(Data) ibm_db2_backup", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 
-	d.SetId(dataSourceIbmDb2SaasBackupID(d))
+	d.SetId(dataSourceIbmDb2BackupID(d))
 
 	backups := []map[string]interface{}{}
 	for _, backupsItem := range successGetBackups.Backups {
-		backupsItemMap, err := DataSourceIbmDb2SaasBackupBackupToMap(&backupsItem) // #nosec G601
+		backupsItemMap, err := DataSourceIbmDb2BackupBackupToMap(&backupsItem) // #nosec G601
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_db2_saas_backup", "read", "backups-to-map").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_db2_backup", "read", "backups-to-map").GetDiag()
 		}
 		backups = append(backups, backupsItemMap)
 	}
 	if err = d.Set("backups", backups); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting backups: %s", err), "(Data) ibm_db2_saas_backup", "read", "set-backups").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting backups: %s", err), "(Data) ibm_db2_backup", "read", "set-backups").GetDiag()
 	}
 
 	return nil
 }
 
 // dataSourceIbmDb2SaasBackupID returns a reasonable ID for the list.
-func dataSourceIbmDb2SaasBackupID(d *schema.ResourceData) string {
+func dataSourceIbmDb2BackupID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
 
-func DataSourceIbmDb2SaasBackupBackupToMap(model *db2saasv1.Backup) (map[string]interface{}, error) {
+func DataSourceIbmDb2BackupBackupToMap(model *db2saasv1.Backup) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["id"] = *model.ID
 	modelMap["type"] = *model.Type

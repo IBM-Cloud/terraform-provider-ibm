@@ -20,30 +20,30 @@ import (
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
-func TestAccIbmDb2SaasTuneableParamDataSourceBasic(t *testing.T) {
+func TestAccIbmDb2TuneableParamDataSourceBasic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmDb2SaasTuneableParamDataSourceConfigBasic(),
+				Config: testAccCheckIbmDb2TuneableParamDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_db2_saas_tuneable_param.db2_saas_tuneable_param_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_db2_tuneable_param.db2_saas_tuneable_param_instance", "id"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckIbmDb2SaasTuneableParamDataSourceConfigBasic() string {
+func testAccCheckIbmDb2TuneableParamDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
-		data "ibm_db2_saas_tuneable_param" "db2_saas_tuneable_param_instance" {
+		data "ibm_db2_tuneable_param" "db2_saas_tuneable_param_instance" {
 		}
 	`)
 }
 
 
-func TestDataSourceIbmDb2SaasTuneableParamSuccessTuneableParamsTuneableParamToMap(t *testing.T) {
+func TestDataSourceIbmDb2TuneableParamSuccessTuneableParamsTuneableParamToMap(t *testing.T) {
 	checkResult := func(result map[string]interface{}) {
 		successTuneableParamsTuneableParamDbModel := make(map[string]interface{})
 		successTuneableParamsTuneableParamDbModel["act_sortmem_limit"] = "'NONE', 'range(10, 100)'"
@@ -394,12 +394,12 @@ func TestDataSourceIbmDb2SaasTuneableParamSuccessTuneableParamsTuneableParamToMa
 	model.Dbm = successTuneableParamsTuneableParamDbmModel
 	model.Registry = successTuneableParamsTuneableParamRegistryModel
 
-	result, err := db2.DataSourceIbmDb2SaasTuneableParamSuccessTuneableParamsTuneableParamToMap(model)
+	result, err := db2.DataSourceIbmDb2TuneableParamSuccessTuneableParamsTuneableParamToMap(model)
 	assert.Nil(t, err)
 	checkResult(result)
 }
 
-func TestDataSourceIbmDb2SaasTuneableParamSuccessTuneableParamsTuneableParamDbToMap(t *testing.T) {
+func TestDataSourceIbmDb2TuneableParamSuccessTuneableParamsTuneableParamDbToMap(t *testing.T) {
 	checkResult := func(result map[string]interface{}) {
 		model := make(map[string]interface{})
 		model["act_sortmem_limit"] = "'NONE', 'range(10, 100)'"
@@ -616,12 +616,12 @@ func TestDataSourceIbmDb2SaasTuneableParamSuccessTuneableParamsTuneableParamDbTo
 	model.WLMCPUSHARES = core.StringPtr("'range(1, 65535)'")
 	model.WLMCPUSHAREMODE = core.StringPtr("'HARD', 'SOFT'")
 
-	result, err := db2.DataSourceIbmDb2SaasTuneableParamSuccessTuneableParamsTuneableParamDbToMap(model)
+	result, err := db2.DataSourceIbmDb2TuneableParamSuccessTuneableParamsTuneableParamDbToMap(model)
 	assert.Nil(t, err)
 	checkResult(result)
 }
 
-func TestDataSourceIbmDb2SaasTuneableParamSuccessTuneableParamsTuneableParamDbmToMap(t *testing.T) {
+func TestDataSourceIbmDb2TuneableParamSuccessTuneableParamsTuneableParamDbmToMap(t *testing.T) {
 	checkResult := func(result map[string]interface{}) {
 		model := make(map[string]interface{})
 		model["comm_bandwidth"] = "'range(0.1, 100000)', '-1'"
@@ -690,12 +690,12 @@ func TestDataSourceIbmDb2SaasTuneableParamSuccessTuneableParamsTuneableParamDbmT
 	model.WLMDISPCPUSHARES = core.StringPtr("'NO', 'YES'")
 	model.WLMDISPMINUTIL = core.StringPtr("'range(0, 100)'")
 
-	result, err := db2.DataSourceIbmDb2SaasTuneableParamSuccessTuneableParamsTuneableParamDbmToMap(model)
+	result, err := db2.DataSourceIbmDb2TuneableParamSuccessTuneableParamsTuneableParamDbmToMap(model)
 	assert.Nil(t, err)
 	checkResult(result)
 }
 
-func TestDataSourceIbmDb2SaasTuneableParamSuccessTuneableParamsTuneableParamRegistryToMap(t *testing.T) {
+func TestDataSourceIbmDb2TuneableParamSuccessTuneableParamsTuneableParamRegistryToMap(t *testing.T) {
 	checkResult := func(result map[string]interface{}) {
 		model := make(map[string]interface{})
 		model["db2_bidi"] = "'YES', 'NO'"
@@ -760,7 +760,7 @@ func TestDataSourceIbmDb2SaasTuneableParamSuccessTuneableParamsTuneableParamRegi
 	model.DB2WLMSETTINGS = core.StringPtr("'-'")
 	model.DB2WORKLOAD = core.StringPtr("'1C', 'ANALYTICS', 'CM', 'COGNOS_CS', 'FILENET_CM', 'INFOR_ERP_LN', 'MAXIMO', 'MDM', 'SAP', 'TPM', 'WAS', 'WC', 'WP'")
 
-	result, err := db2.DataSourceIbmDb2SaasTuneableParamSuccessTuneableParamsTuneableParamRegistryToMap(model)
+	result, err := db2.DataSourceIbmDb2TuneableParamSuccessTuneableParamsTuneableParamRegistryToMap(model)
 	assert.Nil(t, err)
 	checkResult(result)
 }

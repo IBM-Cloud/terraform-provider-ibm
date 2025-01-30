@@ -20,7 +20,7 @@ import (
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
-func TestAccIbmDb2SaasBackupDataSourceBasic(t *testing.T) {
+func TestAccIbmDb2BackupDataSourceBasic(t *testing.T) {
 	xDbProfile := "crn%3Av1%3Astaging%3Apublic%3Adashdb-for-transactions%3Aus-east%3Aa%2Fe7e3e87b512f474381c0684a5ecbba03%3A8e3a219f-65d3-43cd-86da-b231d53732ef%3A%3A"
 
 	resource.Test(t, resource.TestCase{
@@ -28,27 +28,27 @@ func TestAccIbmDb2SaasBackupDataSourceBasic(t *testing.T) {
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmDb2SaasBackupDataSourceConfigBasic(xDbProfile),
+				Config: testAccCheckIbmDb2BackupDataSourceConfigBasic(xDbProfile),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_db2_saas_backup.db2_saas_backup_instance", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_db2_saas_backup.db2_saas_backup_instance", "x_db_profile"),
-					resource.TestCheckResourceAttrSet("data.ibm_db2_saas_backup.db2_saas_backup_instance", "backups.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_db2_backup.db2_saas_backup_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_db2_backup.db2_saas_backup_instance", "x_db_profile"),
+					resource.TestCheckResourceAttrSet("data.ibm_db2_backup.db2_saas_backup_instance", "backups.#"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckIbmDb2SaasBackupDataSourceConfigBasic(xDbProfile string) string {
+func testAccCheckIbmDb2BackupDataSourceConfigBasic(xDbProfile string) string {
 	return fmt.Sprintf(`
-		data "ibm_db2_saas_backup" "db2_saas_backup_instance" {
+		data "ibm_db2_backup" "db2_saas_backup_instance" {
 			x-db-profile = "%[1]s"
 		}
 	`,xDbProfile)
 }
 
 
-func TestDataSourceIbmDb2SaasBackupBackupToMap(t *testing.T) {
+func TestDataSourceIbmDb2BackupBackupToMap(t *testing.T) {
 	checkResult := func(result map[string]interface{}) {
 		model := make(map[string]interface{})
 		model["id"] = "crn:v1:staging:public:dashdb-for-transactions:us-east:a/e7e3e87b512f474381c0684a5ecbba03:84792aeb-2a9c-4dee-bfad-2e529f16945d::"
@@ -69,7 +69,7 @@ func TestDataSourceIbmDb2SaasBackupBackupToMap(t *testing.T) {
 	model.Size = core.Int64Ptr(4000000000)
 	model.Duration = core.Int64Ptr(131)
 
-	result, err := db2.DataSourceIbmDb2SaasBackupBackupToMap(model)
+	result, err := db2.DataSourceIbmDb2BackupBackupToMap(model)
 	assert.Nil(t, err)
 	checkResult(result)
 }

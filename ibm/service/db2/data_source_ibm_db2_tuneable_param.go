@@ -22,9 +22,9 @@ import (
 	"github.com/IBM/go-sdk-core/v5/core"
 )
 
-func DataSourceIbmDb2SaasTuneableParam() *schema.Resource {
+func DataSourceIbmDb2TuneableParam() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIbmDb2SaasTuneableParamRead,
+		ReadContext: dataSourceIbmDb2TuneableParamRead,
 
 		Schema: map[string]*schema.Schema{
 			"tuneable_param": &schema.Schema{
@@ -714,10 +714,10 @@ func DataSourceIbmDb2SaasTuneableParam() *schema.Resource {
 	}
 }
 
-func dataSourceIbmDb2SaasTuneableParamRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIbmDb2TuneableParamRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	db2saasClient, err := meta.(conns.ClientSession).Db2saasV1()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_db2_saas_tuneable_param", "read", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_db2_tuneable_param", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -726,22 +726,22 @@ func dataSourceIbmDb2SaasTuneableParamRead(context context.Context, d *schema.Re
 
 	successTuneableParams, _, err := db2saasClient.GetDb2SaasTuneableParamWithContext(context, getDb2SaasTuneableParamOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetDb2SaasTuneableParamWithContext failed: %s", err.Error()), "(Data) ibm_db2_saas_tuneable_param", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetDb2SaasTuneableParamWithContext failed: %s", err.Error()), "(Data) ibm_db2_tuneable_param", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 
-	d.SetId(dataSourceIbmDb2SaasTuneableParamID(d))
+	d.SetId(dataSourceIbmDb2TuneableParamID(d))
 
 	if !core.IsNil(successTuneableParams.TuneableParam) {
 		tuneableParam := []map[string]interface{}{}
-		tuneableParamMap, err := DataSourceIbmDb2SaasTuneableParamSuccessTuneableParamsTuneableParamToMap(successTuneableParams.TuneableParam)
+		tuneableParamMap, err := DataSourceIbmDb2TuneableParamSuccessTuneableParamsTuneableParamToMap(successTuneableParams.TuneableParam)
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_db2_saas_tuneable_param", "read", "tuneable_param-to-map").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ", "read", "tuneable_param-to-map").GetDiag()
 		}
 		tuneableParam = append(tuneableParam, tuneableParamMap)
 		if err = d.Set("tuneable_param", tuneableParam); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting tuneable_param: %s", err), "(Data) ibm_db2_saas_tuneable_param", "read", "set-tuneable_param").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting tuneable_param: %s", err), "(Data) ibm_db2_tuneable_param", "read", "set-tuneable_param").GetDiag()
 		}
 	}
 
@@ -749,28 +749,28 @@ func dataSourceIbmDb2SaasTuneableParamRead(context context.Context, d *schema.Re
 }
 
 // dataSourceIbmDb2SaasTuneableParamID returns a reasonable ID for the list.
-func dataSourceIbmDb2SaasTuneableParamID(d *schema.ResourceData) string {
+func dataSourceIbmDb2TuneableParamID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
 
-func DataSourceIbmDb2SaasTuneableParamSuccessTuneableParamsTuneableParamToMap(model *db2saasv1.SuccessTuneableParamsTuneableParam) (map[string]interface{}, error) {
+func DataSourceIbmDb2TuneableParamSuccessTuneableParamsTuneableParamToMap(model *db2saasv1.SuccessTuneableParamsTuneableParam) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Db != nil {
-		dbMap, err := DataSourceIbmDb2SaasTuneableParamSuccessTuneableParamsTuneableParamDbToMap(model.Db)
+		dbMap, err := DataSourceIbmDb2TuneableParamSuccessTuneableParamsTuneableParamDbToMap(model.Db)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["db"] = []map[string]interface{}{dbMap}
 	}
 	if model.Dbm != nil {
-		dbmMap, err := DataSourceIbmDb2SaasTuneableParamSuccessTuneableParamsTuneableParamDbmToMap(model.Dbm)
+		dbmMap, err := DataSourceIbmDb2TuneableParamSuccessTuneableParamsTuneableParamDbmToMap(model.Dbm)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["dbm"] = []map[string]interface{}{dbmMap}
 	}
 	if model.Registry != nil {
-		registryMap, err := DataSourceIbmDb2SaasTuneableParamSuccessTuneableParamsTuneableParamRegistryToMap(model.Registry)
+		registryMap, err := DataSourceIbmDb2TuneableParamSuccessTuneableParamsTuneableParamRegistryToMap(model.Registry)
 		if err != nil {
 			return modelMap, err
 		}
@@ -779,7 +779,7 @@ func DataSourceIbmDb2SaasTuneableParamSuccessTuneableParamsTuneableParamToMap(mo
 	return modelMap, nil
 }
 
-func DataSourceIbmDb2SaasTuneableParamSuccessTuneableParamsTuneableParamDbToMap(model *db2saasv1.SuccessTuneableParamsTuneableParamDb) (map[string]interface{}, error) {
+func DataSourceIbmDb2TuneableParamSuccessTuneableParamsTuneableParamDbToMap(model *db2saasv1.SuccessTuneableParamsTuneableParamDb) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ACTSORTMEMLIMIT != nil {
 		modelMap["act_sortmem_limit"] = *model.ACTSORTMEMLIMIT
@@ -1096,7 +1096,7 @@ func DataSourceIbmDb2SaasTuneableParamSuccessTuneableParamsTuneableParamDbToMap(
 	return modelMap, nil
 }
 
-func DataSourceIbmDb2SaasTuneableParamSuccessTuneableParamsTuneableParamDbmToMap(model *db2saasv1.SuccessTuneableParamsTuneableParamDbm) (map[string]interface{}, error) {
+func DataSourceIbmDb2TuneableParamSuccessTuneableParamsTuneableParamDbmToMap(model *db2saasv1.SuccessTuneableParamsTuneableParamDbm) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.COMMBANDWIDTH != nil {
 		modelMap["comm_bandwidth"] = *model.COMMBANDWIDTH
@@ -1191,7 +1191,7 @@ func DataSourceIbmDb2SaasTuneableParamSuccessTuneableParamsTuneableParamDbmToMap
 	return modelMap, nil
 }
 
-func DataSourceIbmDb2SaasTuneableParamSuccessTuneableParamsTuneableParamRegistryToMap(model *db2saasv1.SuccessTuneableParamsTuneableParamRegistry) (map[string]interface{}, error) {
+func DataSourceIbmDb2TuneableParamSuccessTuneableParamsTuneableParamRegistryToMap(model *db2saasv1.SuccessTuneableParamsTuneableParamRegistry) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.DB2BIDI != nil {
 		modelMap["db2_bidi"] = *model.DB2BIDI
