@@ -207,10 +207,11 @@ func ResourceIBMISVPC() *schema.Resource {
 										Description: "The VPC dns binding id whose DNS resolver provides the DNS server addresses for this VPC.",
 									},
 									"dns_binding_name": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Computed:    true,
-										Description: "The VPC dns binding name whose DNS resolver provides the DNS server addresses for this VPC.",
+										Type:             schema.TypeString,
+										Optional:         true,
+										DiffSuppressFunc: suppressNullDnsBindingName,
+										Computed:         true,
+										Description:      "The VPC dns binding name whose DNS resolver provides the DNS server addresses for this VPC.",
 									},
 									"vpc_id": &schema.Schema{
 										Type:             schema.TypeString,
@@ -1349,6 +1350,8 @@ func vpcUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasCha
 	isDnsResolverVPCCrnNull := false
 	isDnsResolverManualServerChange := false
 	isDnsResolverManualServerEtag := ""
+	deleteBinding := false
+	deleteDnsBindings := &vpcv1.DeleteVPCDnsResolutionBindingOptions{}
 	var dnsPatch *vpcv1.VpcdnsPatch
 	if d.HasChange(isVPCDns) {
 		dnsPatch = &vpcv1.VpcdnsPatch{}
@@ -1357,6 +1360,7 @@ func vpcUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasCha
 			dnsPatch.EnableHub = core.BoolPtr(newEH.(bool))
 		}
 		if d.HasChange("dns.0.resolver") {
+
 			_, newResolver := d.GetChange("dns.0.resolver")
 
 			if newResolver != nil && len(newResolver.([]interface{})) > 0 {
@@ -1390,9 +1394,66 @@ func vpcUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasCha
 
 				}
 				if d.HasChange("dns.0.resolver.0.type") {
-					_, newResolverType := d.GetChange("dns.0.resolver.0.type")
+					oldResolverType, newResolverType := d.GetChange("dns.0.resolver.0.type")
 					if newResolverType != nil && newResolverType.(string) != "" {
 						ResolverModel.Type = core.StringPtr(newResolverType.(string))
+					}
+					if oldResolverType != nil && newResolverType != nil && oldResolverType.(string) != "" && newResolverType.(string) != "" {
+						if oldResolverType.(string) == "system" && newResolverType.(string) == "delegated" {
+							vpcId := d.Get("dns.0.resolver.0.vpc_id").(string)
+							createDnsBindings := &vpcv1.CreateVPCDnsResolutionBindingOptions{
+								VPCID: core.StringPtr(d.Id()),
+								VPC: &vpcv1.VPCIdentity{
+									ID: &vpcId,
+								},
+							}
+							if bindingNameOk, ok := d.GetOk("dns.0.resolver.0.dns_binding_name"); ok {
+								bindingName := bindingNameOk.(string)
+								createDnsBindings.Name = &bindingName
+							}
+							_, response, err := sess.CreateVPCDnsResolutionBinding(createDnsBindings)
+							if err != nil {
+								exitError := false
+								log.Printf("[DEBUG] CreateVPCDnsResolutionBindingWithContext failed %s\n%s", err, response)
+								if response.StatusCode == 400 && strings.Contains(err.Error(), "This VPC already contains DNS Resolution Bindings") {
+									listVPCDnsResolutionBindingOptions := &vpcv1.ListVPCDnsResolutionBindingsOptions{
+										VPCID: createDnsBindings.VPCID,
+									}
+
+									pager, err := sess.NewVPCDnsResolutionBindingsPager(listVPCDnsResolutionBindingOptions)
+									if err != nil {
+										return fmt.Errorf("[ERROR] Error getting VPC dns bindings in CreateVPCDnsResolutionBindingWithContext: %s", err)
+									}
+									var allResults []vpcv1.VpcdnsResolutionBinding
+									for pager.HasNext() {
+										nextPage, err := pager.GetNext()
+										if err != nil {
+											return fmt.Errorf("[ERROR] Error getting VPC dns bindings pager next in CreateVPCDnsResolutionBindingWithContext: %s", err)
+										}
+										allResults = append(allResults, nextPage...)
+									}
+									for _, binding := range allResults {
+										if *binding.VPC.ID == vpcId {
+											log.Printf("[DEBUG] CreateVPCDnsResolutionBindingWithContext failed but binding to same vpc exists %s\n%s", err, response)
+											exitError = true
+										}
+									}
+								}
+								if !exitError {
+									return fmt.Errorf("[ERROR] CreateVPCDnsResolutionBinding failed in vpc update resource %s\n%s", err, response)
+								}
+							}
+						}
+						if _, ok := d.GetOk("dns.0.resolver.0.dns_binding_name"); ok {
+						}
+						if d.HasChange("dns.0.resolver.0.dns_binding_name") && d.Get("dns.0.resolver.0.dns_binding_name").(string) == "null" {
+							dnsid := d.Get("dns.0.resolver.0.dns_binding_id").(string)
+							deleteBinding = true
+							deleteDnsBindings = &vpcv1.DeleteVPCDnsResolutionBindingOptions{
+								VPCID: core.StringPtr(d.Id()),
+								ID:    &dnsid,
+							}
+						}
 					}
 				}
 				if d.HasChange("dns.0.resolver.0.vpc_id") {
@@ -1473,6 +1534,13 @@ func vpcUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasCha
 				}
 			} else {
 				return fmt.Errorf("[ERROR] Error Updating VPC : %s\n%s", err, response)
+			}
+		}
+		if deleteBinding && *deleteDnsBindings.VPCID != "" {
+			_, response, err := sess.DeleteVPCDnsResolutionBinding(deleteDnsBindings)
+			if err != nil {
+				log.Printf("[DEBUG] DeleteVPCDnsResolutionBindingWithContext failed %s\n%s", err, response)
+				return fmt.Errorf("[ERROR] DeleteVPCDnsResolutionBinding failed in vpc update resource %s\n%s", err, response)
 			}
 		}
 		if isDnsResolverVPCCrnNull || isDnsResolverVPCIDNull {
@@ -1664,6 +1732,13 @@ func suppressNullAddPrefix(k, old, new string, d *schema.ResourceData) bool {
 }
 
 func suppressNullVPC(k, old, new string, d *schema.ResourceData) bool {
+	if new != old && new == "null" && old == "" && d.Id() != "" {
+		return true
+	}
+	return false
+}
+
+func suppressNullDnsBindingName(k, old, new string, d *schema.ResourceData) bool {
 	if new != old && new == "null" && old == "" && d.Id() != "" {
 		return true
 	}
