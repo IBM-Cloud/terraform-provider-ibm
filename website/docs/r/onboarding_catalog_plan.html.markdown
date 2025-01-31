@@ -165,7 +165,7 @@ Nested schema for **metadata**:
 			* `terms_url` - (Optional, String) The URL for your product's end user license agreement.
 			  * Constraints: The maximum length is `2083` characters. The minimum length is `0` characters.
 * `name` - (Required, String) The programmatic name of this plan.
-  * Constraints: The value must match regular expression `/^[a-z0-9\\-.]+$/`.
+  * Constraints: The value must match regular expression `/^[a-zA-Z0-9\\-.]+$/`.
 * `object_id` - (Optional, String) The desired ID of the global catalog object.
 * `object_provider` - (Required, List) The provider or owner of the product.
 Nested schema for **object_provider**:
@@ -200,7 +200,7 @@ You can import the `ibm_onboarding_catalog_plan` resource by using `id`.
 The `id` property can be formed from `product_id`, `catalog_product_id`, and `catalog_plan_id` in the following format:
 
 <pre>
-product_id/catalog_product_id/catalog_plan_id
+&lt;product_id&gt;/&lt;catalog_product_id&gt;/&lt;catalog_plan_id&gt;
 </pre>
 * `product_id`: A string. The unique ID of the product.
 * `catalog_product_id`: A string. The unique ID of this global catalog product.
