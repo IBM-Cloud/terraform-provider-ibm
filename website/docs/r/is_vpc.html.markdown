@@ -201,6 +201,16 @@ In addition to all argument reference list, you can access the following attribu
 - `cse_source_addresses`- (List) A list of the cloud service endpoints that are associated with your VPC, including their source IP address and zone.
 	- `address` - (String) The IP address of the cloud service endpoint.
 	- `zone_name` - (String) The zone where the cloud service endpoint is located.
+- `default_address_prefixes` - (Map) A map of default address prefixes for each zone in the VPC. The keys are the zone names, and the values are the corresponding address prefixes.
+  Example:
+  ```hcl
+    default_address_prefixes    = {
+        "us-south-1" = "10.240.0.0/18"
+        "us-south-2" = "10.240.64.0/18"
+        "us-south-3" = "10.240.128.0/18"
+        "us-south-4" = "10.240.192.0/18"
+    }
+  ```
 - `default_security_group_crn` - (String) CRN of the default security group created and attached to the VPC. 
 - `default_security_group` - (String) The default security group ID created and attached to the VPC. 
 - `default_network_acl_crn`-  (String) CRN of the default network ACL ID created and attached to the VPC.

@@ -117,6 +117,15 @@ func ResourceIBMISVPC() *schema.Resource {
 		),
 
 		Schema: map[string]*schema.Schema{
+
+			"default_address_prefixes": {
+				Type: schema.TypeMap,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Computed:    true,
+				Description: "Default address prefixes for each zone.",
+			},
 			isVPCAddressPrefixManagement: {
 				Type:             schema.TypeString,
 				Optional:         true,
@@ -938,6 +947,51 @@ func vpcGet(d *schema.ResourceData, meta interface{}, id string) error {
 		return fmt.Errorf("[ERROR] Error getting VPC : %s\n%s", err, response)
 	}
 
+	// address prefixes
+
+	vpcID := id // Assuming the VPC ID is stored in the resource ID
+
+	// Fetch all address prefixes for the VPC
+	startAdd := ""
+	allRecs := []vpcv1.AddressPrefix{}
+	for {
+		listVpcAddressPrefixesOptions := &vpcv1.ListVPCAddressPrefixesOptions{
+			VPCID: &vpcID,
+		}
+
+		if startAdd != "" {
+			listVpcAddressPrefixesOptions.Start = &startAdd
+		}
+
+		addressPrefixCollection, response, err := sess.ListVPCAddressPrefixes(listVpcAddressPrefixesOptions)
+		if err != nil {
+			log.Printf("[DEBUG] ListVpcAddressPrefixesWithContext failed %s\n%s", err, response)
+			return fmt.Errorf("ListVpcAddressPrefixesWithContext failed %s\n%s", err, response)
+		}
+
+		allRecs = append(allRecs, addressPrefixCollection.AddressPrefixes...)
+		startAdd = flex.GetNext(addressPrefixCollection.Next)
+		if startAdd == "" {
+			break
+		}
+	}
+
+	// Process address prefixes
+	defaultAddressPrefixes := map[string]string{}
+
+	for _, prefix := range allRecs {
+		zoneName := *prefix.Zone.Name
+		cidr := *prefix.CIDR
+		// Populate default_address_prefixes
+		if *prefix.IsDefault {
+			defaultAddressPrefixes[zoneName] = cidr
+		}
+	}
+
+	// Set the default_address_prefixes attribute in the Terraform state
+	if err := d.Set("default_address_prefixes", defaultAddressPrefixes); err != nil {
+		return fmt.Errorf("error setting default_address_prefixes: %w", err)
+	}
 	d.Set(isVPCName, *vpc.Name)
 	d.Set(isVPCClassicAccess, *vpc.ClassicAccess)
 	d.Set(isVPCStatus, *vpc.Status)
