@@ -133,6 +133,13 @@ func ResourceIBMISLBListenerPolicy() *schema.Resource {
 				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_is_lb_listener_policy", isLBListenerPolicyAction),
 				Description:  "Policy Action",
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					// Suppress the change if the old value is 'forward' and new value is 'forward_to_pool'
+					if old == "forward" && new == "forward_to_pool" {
+						return true
+					}
+					return false
+				},
 			},
 
 			isLBListenerPolicyPriority: {
@@ -360,7 +367,7 @@ func ResourceIBMISLBListenerPolicy() *schema.Resource {
 func ResourceIBMISLBListenerPolicyValidator() *validate.ResourceValidator {
 
 	validateSchema := make([]validate.ValidateSchema, 0)
-	action := "forward, redirect, reject, https_redirect"
+	action := "forward_to_pool, forward_to_listener, redirect, reject, https_redirect"
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
 			Identifier:                 isLBListenerPolicyName,

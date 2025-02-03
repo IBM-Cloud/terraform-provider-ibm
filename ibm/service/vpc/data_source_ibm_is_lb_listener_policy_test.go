@@ -22,6 +22,7 @@ func TestAccIBMIsLbListenerPolicyDataSourceBasic(t *testing.T) {
 	protocol := "http"
 	port := "8080"
 	action := "forward"
+	//action := []string{"forward", "forward_pool", "forward_to_listener"}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
