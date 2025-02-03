@@ -152,6 +152,8 @@ github.com/IBM/logs-go-sdk v0.4.0 h1:CyUjm19EUtcJjf4mxsj6Rc7gkZDT8JEY5rLUIz8Eoag
 github.com/IBM/logs-go-sdk v0.4.0/go.mod h1:yv/GCXC4/p+MZEeXl4xjZAOMvDAVRwu61WyHZFKFXQM=
 github.com/IBM/logs-router-go-sdk v1.0.5 h1:r0kC1+HfmSeQCD6zQTUp4PDI/zp4Ueo1Zo19ipHuNlw=
 github.com/IBM/logs-router-go-sdk v1.0.5/go.mod h1:tCN2vFgu5xG0ob9iJcxi5M4bJ6mWmu3nhmRPnvlwev0=
+github.com/IBM/logs-router-go-sdk v1.0.7 h1:uQjQAAcQdo3XvhY6MC7HakhZaXIUsGfUmKj2d5vkjnY=
+github.com/IBM/logs-router-go-sdk v1.0.7/go.mod h1:tCN2vFgu5xG0ob9iJcxi5M4bJ6mWmu3nhmRPnvlwev0=
 github.com/IBM/mqcloud-go-sdk v0.2.0 h1:QOWk8ZGk0QfIL0MOGTKzNdM3Qe0Hk+ifAFtNSFQo5HU=
 github.com/IBM/mqcloud-go-sdk v0.2.0/go.mod h1:VZQKMtqmcdXKhmLhLiPuS/UHMs/5yo2tA/nD83cQt9E=
 github.com/IBM/networking-go-sdk v0.51.1 h1:xRlDFxSMejMmJ7JPFZ9cflL86uJpbqUzuL/1D/pP7/g=
