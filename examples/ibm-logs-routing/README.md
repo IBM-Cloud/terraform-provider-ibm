@@ -128,6 +128,9 @@ data "ibm_logs_router_targets" "logs_router_targets_instance" {
 
 ### The Logs Routing URL can be set in endpoints.json
 
+You can declare the service endpoints in a JSON file and either reference this file in your provider block by using the `endpoints_file_path` argument, or export the path to your file with the `IBMCLOUD_ENDPOINTS_FILE_PATH` or `IC_ENDPOINTS_FILE_PATH` environment variable.
+To use the provided endpoints file, set the visibility to either `public` or `pivate` by using the `IC_VISIBILITY` or `IBMCLOUD_VISIBILITY` environment variable, or by setting the `visibility` field in your provider block.
+
 **Example**:
 
 ```json
