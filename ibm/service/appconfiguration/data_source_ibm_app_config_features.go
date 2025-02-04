@@ -287,27 +287,27 @@ func dataSourceIbmAppConfigFeaturesRead(d *schema.ResourceData, meta interface{}
 
 	options := &appconfigurationv1.ListFeaturesOptions{}
 	options.SetEnvironmentID(d.Get("environment_id").(string))
-	if _, ok := d.GetOk("expand"); ok {
+	if _, ok := GetFieldExists(d,"expand"); ok {
 		options.SetExpand(d.Get("expand").(bool))
 	}
-	if _, ok := d.GetOk("tags"); ok {
+	if _, ok := GetFieldExists(d,"tags"); ok {
 		options.SetTags(d.Get("tags").(string))
 	}
-	if _, ok := d.GetOk("collections"); ok {
+	if _, ok := GetFieldExists(d,"collections"); ok {
 		collections := []string{}
 		for _, segmentsItem := range d.Get("collections").([]interface{}) {
 			collections = append(collections, segmentsItem.(string))
 		}
 		options.SetCollections(collections)
 	}
-	if _, ok := d.GetOk("segments"); ok {
+	if _, ok := GetFieldExists(d,"segments"); ok {
 		segments := []string{}
 		for _, segmentsItem := range d.Get("segments").([]interface{}) {
 			segments = append(segments, segmentsItem.(string))
 		}
 		options.SetSegments(segments)
 	}
-	if _, ok := d.GetOk("includes"); ok {
+	if _, ok := GetFieldExists(d,"includes"); ok {
 		includes := []string{}
 		for _, segmentsItem := range d.Get("includes").([]interface{}) {
 			includes = append(includes, segmentsItem.(string))
@@ -321,12 +321,12 @@ func dataSourceIbmAppConfigFeaturesRead(d *schema.ResourceData, meta interface{}
 	var isLimit bool
 	finalList := []appconfigurationv1.Feature{}
 
-	if _, ok := d.GetOk("limit"); ok {
+	if _, ok := GetFieldExists(d,"limit"); ok {
 		isLimit = true
 		limit = int64(d.Get("limit").(int))
 	}
 	options.SetLimit(limit)
-	if _, ok := d.GetOk("offset"); ok {
+	if _, ok := GetFieldExists(d,"offset"); ok {
 		offset = int64(d.Get("offset").(int))
 	}
 	for {
