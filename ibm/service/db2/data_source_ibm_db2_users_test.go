@@ -3,7 +3,7 @@
 
 /*
  * IBM OpenAPI Terraform Generator Version: 3.96.0-d6dec9d7-20241008-212902
-*/
+ */
 
 package db2_test
 
@@ -13,11 +13,11 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
-	"github.com/IBM/cloud-db2-go-sdk/db2saasv1"
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/db2"
+	"github.com/IBM/cloud-db2-go-sdk/db2saasv1"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/stretchr/testify/assert"
-	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
 func TestAccIbmDb2UsersDataSourceBasic(t *testing.T) {
@@ -58,7 +58,6 @@ func testAccCheckIbmDb2UsersDataSourceConfigBasic() string {
 		}
 	`)
 }
-
 
 func TestDataSourceIbmDb2UsersSuccessGetUserByIDAuthenticationToMap(t *testing.T) {
 	checkResult := func(result map[string]interface{}) {
