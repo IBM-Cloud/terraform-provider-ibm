@@ -1,3 +1,7 @@
+# 1.75.1 (Feb 04, 2025)
+Enhancements
+* Add Custom Endpoints to Logs Routing Service ([5961](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5961))
+
 # 1.75.0 (Jan 31, 2025)
 * Support for Cloud logs
     - **Datasources**
