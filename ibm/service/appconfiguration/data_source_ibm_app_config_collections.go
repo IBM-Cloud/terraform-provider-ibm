@@ -156,30 +156,30 @@ func dataSourceIbmAppConfigCollectionsRead(d *schema.ResourceData, meta interfac
 
 	options := &appconfigurationv1.ListCollectionsOptions{}
 
-	if _, ok := GetFieldExists(d,"expand"); ok {
+	if _, ok := GetFieldExists(d, "expand"); ok {
 		options.SetExpand(d.Get("expand").(bool))
 	}
-	if _, ok := GetFieldExists(d,"sort"); ok {
+	if _, ok := GetFieldExists(d, "sort"); ok {
 		options.SetExpand(d.Get("sort").(bool))
 	}
-	if _, ok := GetFieldExists(d,"tags"); ok {
+	if _, ok := GetFieldExists(d, "tags"); ok {
 		options.SetExpand(d.Get("tags").(bool))
 	}
-	if _, ok := GetFieldExists(d,"include"); ok {
+	if _, ok := GetFieldExists(d, "include"); ok {
 		includes := []string{}
 		for _, includeItem := range d.Get("include").([]interface{}) {
 			includes = append(includes, includeItem.(string))
 		}
 		options.SetInclude(includes)
 	}
-	if _, ok := GetFieldExists(d,"features"); ok {
+	if _, ok := GetFieldExists(d, "features"); ok {
 		features := []string{}
 		for _, featureItem := range d.Get("features").([]interface{}) {
 			features = append(features, featureItem.(string))
 		}
 		options.SetFeatures(features)
 	}
-	if _, ok := GetFieldExists(d,"properties"); ok {
+	if _, ok := GetFieldExists(d, "properties"); ok {
 		properties := []string{}
 		for _, propertieItem := range d.Get("properties").([]interface{}) {
 			properties = append(properties, propertieItem.(string))
@@ -193,12 +193,12 @@ func dataSourceIbmAppConfigCollectionsRead(d *schema.ResourceData, meta interfac
 	var isLimit bool
 	finalList := []appconfigurationv1.Collection{}
 
-	if _, ok := GetFieldExists(d,"limit"); ok {
+	if _, ok := GetFieldExists(d, "limit"); ok {
 		isLimit = true
 		limit = int64(d.Get("limit").(int))
 	}
 	options.SetLimit(limit)
-	if _, ok := GetFieldExists(d,"offset"); ok {
+	if _, ok := GetFieldExists(d, "offset"); ok {
 		offset = int64(d.Get("offset").(int))
 	}
 	for {
