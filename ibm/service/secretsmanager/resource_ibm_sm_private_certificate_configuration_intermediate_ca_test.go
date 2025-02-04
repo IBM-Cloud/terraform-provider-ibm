@@ -161,7 +161,7 @@ func privateCertificateIntermediateCAConfigAllArgs(maxTtl, crlExpiry, crlDisable
 			ttl = "5000000"
 			permitted_dns_domains = ["example.com"]
 			use_csr_values = true
-			max_path_length = 80
+			max_path_length = 10
 		}
 	`, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion, maxTtl, crlExpiry, crlDisable,
 		crlDistributionPointsEncoded, issuingCertificatesUrlsEncoded)

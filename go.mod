@@ -30,7 +30,7 @@ require (
 	github.com/IBM/ibm-hpcs-uko-sdk v0.0.20-beta
 	github.com/IBM/keyprotect-go-client v0.15.1
 	github.com/IBM/logs-go-sdk v0.4.0
-	github.com/IBM/logs-router-go-sdk v1.0.5
+	github.com/IBM/logs-router-go-sdk v1.0.7
 	github.com/IBM/mqcloud-go-sdk v0.2.0
 	github.com/IBM/networking-go-sdk v0.51.1
 	github.com/IBM/platform-services-go-sdk v0.73.0
@@ -41,7 +41,7 @@ require (
 	github.com/IBM/schematics-go-sdk v0.3.0
 	github.com/IBM/sds-go-sdk v0.0.4
 	github.com/IBM/secrets-manager-go-sdk/v2 v2.0.7
-	github.com/IBM/vmware-go-sdk v0.1.2
+	github.com/IBM/vmware-go-sdk v0.1.3
 	github.com/IBM/vpc-beta-go-sdk v0.8.0
 	github.com/IBM/vpc-go-sdk v0.64.0
 	github.com/ScaleFT/sshkeys v0.0.0-20200327173127-6142f742bca5
