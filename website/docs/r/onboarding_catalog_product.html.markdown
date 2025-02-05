@@ -260,7 +260,7 @@ Nested schema for **metadata**:
 				* `kind` - (Optional, String) The type of the composite child.
 				  * Constraints: Allowable values are: `service`, `platform_service`.
 				* `name` - (Optional, String) The name of the composite child.
-				  * Constraints: The maximum length is `100` characters. The minimum length is `2` characters. The value must match regular expression `/^[a-z0-9\\-.]+$/`.
+				  * Constraints: The maximum length is `100` characters. The minimum length is `2` characters. The value must match regular expression `/^[a-zA-Z0-9\\-.]+$/`.
 			* `composite_kind` - (Optional, String) The type of the composite service.
 			  * Constraints: Allowable values are: `service`, `platform_service`.
 			* `composite_tag` - (Optional, String) The tag used for the composite parent and its children.
@@ -528,7 +528,7 @@ Nested schema for **metadata**:
 			* `terms_url` - (Optional, String) The URL for your product's end user license agreement.
 			  * Constraints: The maximum length is `2083` characters. The minimum length is `0` characters.
 * `name` - (Required, String) The programmatic name of this product.
-  * Constraints: The value must match regular expression `/^[a-z0-9\\-.]+$/`.
+  * Constraints: The value must match regular expression `/^[a-zA-Z0-9\\-.]+$/`.
 * `object_id` - (Optional, String) The desired ID of the global catalog object.
 * `object_provider` - (Required, List) The provider or owner of the product.
 Nested schema for **object_provider**:
