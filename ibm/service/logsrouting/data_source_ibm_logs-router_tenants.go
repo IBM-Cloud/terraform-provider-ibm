@@ -151,6 +151,7 @@ func dataSourceIBMLogsRouterTenantsRead(context context.Context, d *schema.Resou
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
+	ibmCloudLogsRoutingClient, _, err = updateClientURLWithEndpoint(ibmCloudLogsRoutingClient, d)
 
 	listTenantsOptions := &ibmcloudlogsroutingv0.ListTenantsOptions{}
 
@@ -162,7 +163,7 @@ func dataSourceIBMLogsRouterTenantsRead(context context.Context, d *schema.Resou
 		listTenantsOptions.SetRegion(d.Get("region").(string))
 	}
 
-	tenantCollection, _, err := ibmCloudLogsRoutingClient.ListTenantsWithContext(context, listTenantsOptions)
+	tenantCollection, _, err := ibmCloudLogsRoutingClient.ListTenantsWithContextEndpoint(context, listTenantsOptions)
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListTenantsWithContext failed: %s", err.Error()), "(Data) ibm_logs_router_tenants", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())

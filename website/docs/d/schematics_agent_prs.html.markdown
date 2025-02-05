@@ -8,8 +8,6 @@ subcategory: "Schematics"
 
 # ibm_schematics_agent_prs
 
-~> **Beta:** This resource is in Beta, and is subject to change.
-
 Provides a read-only data source for schematics_agent_prs. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
 ## Example Usage

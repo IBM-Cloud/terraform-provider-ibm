@@ -509,6 +509,7 @@ data "ibm_cis_bot_analytics" "tests" {
 }
 
 # CIS Logpush Job
+# logdna
 resource "ibm_cis_logpush_job" "test" {
     cis_id          = data.ibm_cis.cis.id
     domain_id       = data.ibm_cis_domain.cis_domain.domain_id
@@ -519,16 +520,65 @@ resource "ibm_cis_logpush_job" "test" {
     frequency       = "high"
     logdna =<<LOG
         {
-                        "hostname": "cistest-load.com",
+            "hostname": "cistest-load.com",
             "ingress_key": "e2f7xxxxx73a251caxxxxxxxxxxxx",
             "region": "in-che"
         }
         LOG
 }
+
+# IBM Cloud Logs
+resource "ibm_cis_logpush_job" "test" {
+    cis_id          = "crn:v1:staging:public:internet-svcs-ci:global:a/01652b251c3ae2787110a995d8db0135:1a9174b6-0106-417a-844b-c8eb43a72f63::"
+    domain_id       = "601b728b86e630c744c81740f72570c3"
+    name            = "MylogpushJob"
+    enabled         = false
+    logpull_options = "timestamps=rfc3339&timestamps=rfc3339"
+    dataset         = "http_requests"
+    frequency       = "high"
+    ibmcl {
+        instance_id ="604a309c-585c-4a42-955d-76239ccc1905"
+        api_key = "zxzeNQI22dxxxxxxxxxxxxxtn1EVK"
+        region = "us-south"
+    }
+}
+
+# COS
+resource "ibm_cis_logpush_job" "test" {
+    cis_id              = "crn:v1:staging:public:internet-svcs-ci:global:a/01652b251c3ae2787110a995d8db0135:1a9174b6-0106-417a-844b-c8eb43a72f63::"
+    domain_id           = "601b728b86e630c744c81740f72570c3"
+    name                = "MylogpushJob"
+    enabled             = false
+    logpull_options     = "timestamps=rfc3339&timestamps=rfc3339"
+    dataset             = "http_requests"
+    frequency           = "high"
+    ownership_challenge = "xxx"
+    cos =<<COS
+        {
+          "bucket_name": "examplse.cistest-load.com",
+          "id": "e2f72cxxxxxxxxxxxxa0b87859e",
+          "region": "in-che"
+    }
+    COS
+}
+
+# Genral destination
+resource "ibm_cis_logpush_job" "test" {
+    cis_id          = "crn:v1:staging:public:internet-svcs-ci:global:a/01652b251c3ae2787110a995d8db0135:1a9174b6-0106-417a-844b-c8eb43a72f63::"
+    domain_id       = "601b728b86e630c744c81740f72570c3"
+    name            = "MylogpushJob"
+    enabled         = false
+    logpull_options = "timestamps=rfc3339&timestamps=rfc3339"
+    dataset         = "http_requests"
+    frequency       = "high"
+    destination_conf = "s3://mybucket/logs?region=us-west-2"
+}
 # CIS Logpush Job Data source
+
 data "ibm_cis_logpush_jobs" "test" {
     cis_id          = data.ibm_cis.cis.id
     domain_id       = data.ibm_cis_domain.cis_domain.domain_id
+    job_id          = data.ibm_cis_domain.job.job_id
 }
 
 #CIS MTLS instance

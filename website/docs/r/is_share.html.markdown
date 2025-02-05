@@ -233,6 +233,13 @@ The following arguments are supported:
 - `size` - (Required, Integer) The size of the file share rounded up to the next gigabyte.
 - `source_share` - (Optional, String) The ID of the source file share for this replica file share. The specified file share must not already have a replica, and must not be a replica.
 - `source_share_crn` - (Optional, String) The CRN of the source file share. 
+- `source_snapshot` - (List) The snapshot from which this share was cloned.This property will be present when the share was created from a snapshot.The resources supported by this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in thefuture.
+  Nested schema for **source_snapshot**:
+	- `crn` - (Optional, String) The CRN for this share snapshot.
+	- `id` - (Optional, String) The unique identifier for this share snapshot.
+
+  ~> **NOTE** 
+  `crn` and `id` are mutually exclusive for source_snapshot
 - `tags`  - (Optional, List of Strings) The list of user tags to attach to the share.
 - `zone` - (Required, string) The globally unique name for this zone.
 
@@ -351,6 +358,18 @@ Nested `latest_sync` blocks have the following structure:
   - `code` - A snake case string succinctly identifying the status reason.
   - `message` - An explanation of the status reason.
   - `more_info` - Link to documentation about this status reason.
+- `source_snapshot` - (List) The snapshot from which this share was cloned.This property will be present when the share was created from a snapshot.The resources supported by this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in thefuture.
+  Nested schema for **source_snapshot**:
+	- `crn` - (String) The CRN for this share snapshot.
+	- `deleted` - ( List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
+	  Nested schema for **deleted**:
+		- `more_info` - (Computed, String) Link to documentation about deleted resources.
+	- `href` - (String) The URL for this share snapshot.
+	- `id` - (String) The unique identifier for this share snapshot.
+	- `name` - (String) The name for this share snapshot. The name is unique across all snapshots for the file share.
+	- `resource_type` - (String) The resource type.
+- `snapshot_count` - (Integer) The total number of snapshots for this share.
+- `snapshot_size` - (Integer) The total size (in gigabytes) of snapshots used for this file share.
 - `tags`  - (String) User tags associated for to the share.
 
 

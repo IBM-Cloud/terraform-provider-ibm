@@ -35,7 +35,7 @@ func ResourceIBMPINetworkAddressGroup() *schema.Resource {
 		},
 		CustomizeDiff: customdiff.Sequence(
 			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
-				return flex.ResourceTagsCustomizeDiff(diff)
+				return flex.ResourcePowerUserTagsCustomizeDiff(diff)
 			},
 		),
 		Schema: map[string]*schema.Schema{
@@ -54,6 +54,7 @@ func ResourceIBMPINetworkAddressGroup() *schema.Resource {
 				ValidateFunc: validation.NoZeroValues,
 			},
 			Arg_UserTags: {
+				Computed:    true,
 				Description: "The user tags associated with this resource.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Optional:    true,

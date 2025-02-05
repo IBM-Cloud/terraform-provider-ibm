@@ -17,6 +17,13 @@ func DataSourceIBMPIDatacenters() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceIBMPIDatacentersRead,
 		Schema: map[string]*schema.Schema{
+			// Arguments
+			Arg_CloudInstanceID: {
+				Description: "The GUID of the service instance associated with an account.",
+				Optional:    true,
+				Type:        schema.TypeString,
+			},
+
 			// Attributes
 			Attr_Datacenters: {
 				Type:        schema.TypeList,
@@ -173,7 +180,11 @@ func dataSourceIBMPIDatacentersRead(ctx context.Context, d *schema.ResourceData,
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	client := instance.NewIBMPIDatacenterClient(ctx, sess, "")
+	cloudInstanceID := ""
+	if cloudInstance, ok := d.GetOk(Arg_CloudInstanceID); ok {
+		cloudInstanceID = cloudInstance.(string)
+	}
+	client := instance.NewIBMPIDatacenterClient(ctx, sess, cloudInstanceID)
 	datacentersData, err := client.GetAll()
 	if err != nil {
 		return diag.FromErr(err)

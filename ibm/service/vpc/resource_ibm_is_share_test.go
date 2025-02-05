@@ -316,6 +316,53 @@ func TestAccIbmIsShareOriginShare(t *testing.T) {
 	})
 }
 
+func TestAccIbmIsShareFromShareSnapshot(t *testing.T) {
+	var conf vpcv1.Share
+
+	// name := fmt.Sprintf("tf-fs-name-%d", acctest.RandIntRange(10, 100))
+	subnetName := fmt.Sprintf("tf-subnet-%d", acctest.RandIntRange(10, 100))
+	vpcname := fmt.Sprintf("tf-vpc-name-%d", acctest.RandIntRange(10, 100))
+	shareName := fmt.Sprintf("tf-share-%d", acctest.RandIntRange(10, 100))
+	shareName1 := fmt.Sprintf("tf-share1-%d", acctest.RandIntRange(10, 100))
+	shareSnapName := fmt.Sprintf("tf-share-snap-%d", acctest.RandIntRange(10, 100))
+	tEMode1 := "user_managed"
+	// tEMode2 := "none"
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIbmIsShareDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIbmIsShareConfigShareSnapshotConfig(vpcname, subnetName, tEMode1, shareName, shareSnapName, shareName1),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIbmIsShareExists("ibm_is_share.is_share", conf),
+					resource.TestCheckResourceAttr("ibm_is_share.is_share", "name", shareName),
+					resource.TestCheckResourceAttrSet("ibm_is_share.is_share", "id"),
+					resource.TestCheckResourceAttr("ibm_is_share.is_share", "allowed_transit_encryption_modes.0", tEMode1),
+					resource.TestCheckResourceAttrSet("ibm_is_share.is_share", "accessor_binding_role"),
+					resource.TestCheckResourceAttrSet("ibm_is_share.is_share_from_snapshot", "source_snapshot.0.crn"),
+					resource.TestCheckResourceAttrSet("ibm_is_share.is_share_from_snapshot", "source_snapshot.0.name"),
+				),
+			},
+			{
+				Config: testAccCheckIbmIsShareConfigShareSnapshotConfig(vpcname, subnetName, tEMode1, shareName, shareSnapName, shareName1),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIbmIsShareExists("ibm_is_share.is_share", conf),
+					resource.TestCheckResourceAttr("ibm_is_share.is_share", "name", shareName),
+					resource.TestCheckResourceAttrSet("ibm_is_share.is_share", "id"),
+					resource.TestCheckResourceAttrSet("ibm_is_share.is_share", "allowed_transit_encryption_modes.#"),
+					resource.TestCheckResourceAttr("ibm_is_share.is_share", "allowed_transit_encryption_modes.0", tEMode1),
+					resource.TestCheckResourceAttr("ibm_is_share.is_share_from_snapshot", "name", shareName1),
+					resource.TestCheckResourceAttrSet("ibm_is_share.is_share", "accessor_binding_role"),
+					resource.TestCheckResourceAttrSet("ibm_is_share.is_share", "accessor_bindings.#"),
+					resource.TestCheckResourceAttrSet("ibm_is_share.is_share_from_snapshot", "source_snapshot.0.crn"),
+					resource.TestCheckResourceAttrSet("ibm_is_share.is_share_from_snapshot", "source_snapshot.0.name"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIbmIsShareConfigVNIID(vpcName, sname, targetName, vniName, shareName string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "group" {
@@ -377,6 +424,43 @@ func testAccCheckIbmIsShareConfigOriginShareConfig(vpcName, sname, tEMode, share
 		
 	  }
 	`, vpcName, sname, acc.ISCIDR, tEMode, shareName, shareName1)
+}
+
+func testAccCheckIbmIsShareConfigShareSnapshotConfig(vpcName, sname, tEMode, shareName, shareSnapName, shareName1 string) string {
+	return fmt.Sprintf(`
+	
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	}
+	resource "ibm_is_subnet" "testacc_subnet" {
+		name = "%s"
+		vpc = ibm_is_vpc.testacc_vpc.id
+		zone = "us-south-1"
+		ipv4_cidr_block = "%s"
+	}
+	resource "ibm_is_share" "is_share" {
+		allowed_transit_encryption_modes = ["%s"]
+		zone    = "us-south-1"
+		size    = 220
+		name    = "%s"
+		profile = "dp2"
+		tags = ["tfp-acc-test-share-tag-1"]
+	  }
+	
+	resource "ibm_is_share_snapshot" "is_share_snapshot" {
+		share = ibm_is_share.is_share.id
+		name = "%s"
+		tags = ["tfp-acc-test-share-tag-1"]
+	}
+	  resource "ibm_is_share" "is_share_from_snapshot" {
+		source_snapshot{
+			id = ibm_is_share_snapshot.is_share_snapshot.share_snapshot
+		}
+		size    = 220
+		name    = "%s"
+		profile = "dp2"
+	  }
+	`, vpcName, sname, acc.ISCIDR, tEMode, shareName, shareSnapName, shareName1)
 }
 
 func testAccCheckIbmIsShareConfigBasic(name string) string {

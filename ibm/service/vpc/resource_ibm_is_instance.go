@@ -218,8 +218,10 @@ func ResourceIBMISInstance() *schema.Resource {
 
 			// cluster changes
 			"cluster_network_attachments": &schema.Schema{
-				Type:        schema.TypeList,
-				Optional:    true,
+				Type:     schema.TypeList,
+				Optional: true,
+				Computed: true,
+				// DiffSuppressFunc: diffSuppressClusterNetworkAttachment,
 				Description: "The cluster network attachments for this virtual server instance.The cluster network attachments are ordered for consistent instance configuration.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -235,7 +237,7 @@ func ResourceIBMISInstance() *schema.Resource {
 										Optional:              true,
 										Computed:              true,
 										DiffSuppressOnRefresh: true,
-										DiffSuppressFunc:      flex.ApplyOnce,
+										DiffSuppressFunc:      flex.ApplyOnlyOnce,
 										Description:           "Indicates whether this cluster network interface will be automatically deleted when `target` is deleted.",
 									},
 									"name": &schema.Schema{
@@ -273,7 +275,7 @@ func ResourceIBMISInstance() *schema.Resource {
 													Type:             schema.TypeBool,
 													Optional:         true,
 													Computed:         true,
-													DiffSuppressFunc: flex.ApplyOnce,
+													DiffSuppressFunc: flex.ApplyOnlyOnce,
 													Description:      "Indicates whether this cluster network subnet reserved IP member will be automatically deleted when either `target` is deleted, or the cluster network subnet reserved IP is unbound.",
 												},
 												"name": &schema.Schema{
@@ -323,10 +325,10 @@ func ResourceIBMISInstance() *schema.Resource {
 							},
 						},
 						"name": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Computed:    true,
-							Description: "The name for this cluster network attachment. Names must be unique within the instance the cluster network attachment resides in. If unspecified, the name will be a hyphenated list of randomly-selected words. Names starting with `ibm-` are reserved for provider-owned resources, and are not allowed.",
+							Type:             schema.TypeString,
+							Required:         true,
+							DiffSuppressFunc: flex.ApplyOnlyOnce,
+							Description:      "The name for this cluster network attachment. Names must be unique within the instance the cluster network attachment resides in. If unspecified, the name will be a hyphenated list of randomly-selected words. Names starting with `ibm-` are reserved for provider-owned resources, and are not allowed.",
 						},
 						"href": &schema.Schema{
 							Type:        schema.TypeString,
@@ -832,6 +834,55 @@ func ResourceIBMISInstance() *schema.Resource {
 							Computed:    true,
 							Description: "The resource type.",
 						},
+						// primary_ip for consistency
+						"primary_ip": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The primary IP address of the virtual network interface for the network attachment.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"address": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The IP address.If the address has not yet been selected, the value will be `0.0.0.0`.This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.",
+									},
+									"deleted": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"more_info": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Link to documentation about deleted resources.",
+												},
+											},
+										},
+									},
+									"href": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The URL for this reserved IP.",
+									},
+									"id": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The unique identifier for this reserved IP.",
+									},
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The name for this reserved IP. The name is unique across all reserved IPs in a subnet.",
+									},
+									"resource_type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The resource type.",
+									},
+								},
+							},
+						},
 						"id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -1196,7 +1247,55 @@ func ResourceIBMISInstance() *schema.Resource {
 								},
 							},
 						},
-
+						// primary_ip for consistency
+						"primary_ip": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The primary IP address of the virtual network interface for the network attachment.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"address": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The IP address.If the address has not yet been selected, the value will be `0.0.0.0`.This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.",
+									},
+									"deleted": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"more_info": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Link to documentation about deleted resources.",
+												},
+											},
+										},
+									},
+									"href": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The URL for this reserved IP.",
+									},
+									"id": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The unique identifier for this reserved IP.",
+									},
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The name for this reserved IP. The name is unique across all reserved IPs in a subnet.",
+									},
+									"resource_type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The resource type.",
+									},
+								},
+							},
+						},
 						"virtual_network_interface": &schema.Schema{
 							Type:        schema.TypeList,
 							MaxItems:    1,
@@ -4913,15 +5012,17 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-cluster_network_attachments")
 		}
 	}
+	clusterNetwork := make([]map[string]interface{}, 0)
 	if !core.IsNil(instance.ClusterNetwork) {
 		clusterNetworkMap, err := ResourceIBMIsInstanceClusterNetworkReferenceToMap(instance.ClusterNetwork)
 		if err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "cluster_network-to-map")
 		}
-		if err = d.Set("cluster_network", []map[string]interface{}{clusterNetworkMap}); err != nil {
-			err = fmt.Errorf("Error setting cluster_network: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-cluster_network")
-		}
+		clusterNetwork = append(clusterNetwork, clusterNetworkMap)
+	}
+	if err = d.Set("cluster_network", clusterNetwork); err != nil {
+		err = fmt.Errorf("Error setting cluster_network: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-cluster_network")
 	}
 	if !core.IsNil(instance.ConfidentialComputeMode) {
 		if err = d.Set("confidential_compute_mode", instance.ConfidentialComputeMode); err != nil {
@@ -5423,6 +5524,10 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 	// network attachments
 
 	err = handleVolumePrototypesUpdate(d, instanceC)
+	if err != nil {
+		return err
+	}
+	err = handleClusterNetworkAttachmentUpdate(d, instanceC)
 	if err != nil {
 		return err
 	}
@@ -7249,6 +7354,10 @@ func resourceIBMIsInstanceInstanceNetworkAttachmentReferenceToMap(model *vpcv1.I
 		vniMap["name"] = pna.VirtualNetworkInterface.Name
 		vniMap["resource_type"] = pna.VirtualNetworkInterface.ResourceType
 	}
+	if model.PrimaryIP != nil {
+		primaryipmap, _ := resourceIBMIsInstancePrimaryIPReferenceToMap(model.PrimaryIP)
+		modelMap["primary_ip"] = []map[string]interface{}{primaryipmap}
+	}
 	getVirtualNetworkInterfaceOptions := &vpcv1.GetVirtualNetworkInterfaceOptions{
 		ID: pna.VirtualNetworkInterface.ID,
 	}
@@ -7322,6 +7431,24 @@ func resourceIBMIsInstanceReservedIPReferenceToMap(model *vpcv1.ReservedIPRefere
 	modelMap["name"] = model.Name
 	if model.ResourceType != nil {
 		modelMap["resource_type"] = *model.ResourceType
+	}
+	return modelMap, nil
+}
+func resourceIBMIsInstancePrimaryIPReferenceToMap(model *vpcv1.ReservedIPReference) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["address"] = model.Address
+	if model.Deleted != nil {
+		deletedMap, err := resourceIBMIsInstanceReservedIPReferenceDeletedToMap(model.Deleted)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["deleted"] = []map[string]interface{}{deletedMap}
+	}
+	modelMap["href"] = model.Href
+	modelMap["id"] = model.ID
+	modelMap["name"] = model.Name
+	if model.ResourceType != nil {
+		modelMap["resource_type"] = model.ResourceType
 	}
 	return modelMap, nil
 }
@@ -8147,4 +8274,277 @@ func setVolumePrototypesInState(d *schema.ResourceData, instance *vpcv1.Instance
 	finalList = append(finalList, unorderedVolumes...)
 
 	return finalList, nil
+}
+
+// diffSuppressClusterNetworkAttachment handles comparing old and new cluster network attachments
+// to determine if there are actual changes that require an update
+func diffSuppressClusterNetworkAttachment(k, old, new string, d *schema.ResourceData) bool {
+	// If values are equal, no changes needed
+
+	if old == new {
+		return true
+	}
+
+	// Get the lists of old and new attachments
+	oldAttachments, newAttachments := []interface{}{}, []interface{}{}
+	if v, ok := d.GetOk("cluster_network_attachments"); ok {
+		newAttachments = v.([]interface{})
+	}
+	if v, ok := d.GetOk("cluster_network_attachments"); ok {
+		oldAttachments = v.([]interface{})
+	}
+
+	// If lengths differ, there are definitely changes
+	if len(oldAttachments) != len(newAttachments) {
+		return false
+	}
+
+	// Compare each attachment
+	for i := range oldAttachments {
+		oldAttach := oldAttachments[i].(map[string]interface{})
+		newAttach := newAttachments[i].(map[string]interface{})
+
+		// Compare cluster_network_interface
+		oldInterface := oldAttach["cluster_network_interface"].([]interface{})[0].(map[string]interface{})
+		newInterface := newAttach["cluster_network_interface"].([]interface{})[0].(map[string]interface{})
+
+		// Compare key properties
+		if !compareInterfaces(oldInterface, newInterface) {
+			return false
+		}
+	}
+
+	return true
+}
+
+// comparePrimaryIP compares primary IP configurations
+func comparePrimaryIP(old, new map[string]interface{}) bool {
+	return old["id"] == new["id"] &&
+		old["address"] == new["address"] &&
+		old["auto_delete"] == new["auto_delete"] &&
+		old["name"] == new["name"]
+}
+
+// compareSubnet compares subnet configurations
+func compareSubnet(old, new map[string]interface{}) bool {
+	return old["id"] == new["id"]
+}
+func handleClusterNetworkAttachmentUpdate(d *schema.ResourceData, instanceC *vpcv1.VpcV1) error {
+	if d.HasChange("cluster_network_attachments") {
+		old, new := d.GetChange("cluster_network_attachments")
+		oldAttachments := old.([]interface{})
+		newAttachments := new.([]interface{})
+
+		// Build maps for both old and new attachments by name
+		oldAttachMap := make(map[string]map[string]interface{})
+		newAttachMap := make(map[string]map[string]interface{})
+
+		// Map old attachments by name
+		for _, attachment := range oldAttachments {
+			attach := attachment.(map[string]interface{})
+			name := attach["name"].(string)
+			oldAttachMap[name] = attach
+		}
+
+		// Map new attachments by name and identify additions
+		toAdd := []map[string]interface{}{}
+		for _, attachment := range newAttachments {
+			attach := attachment.(map[string]interface{})
+			name := attach["name"].(string)
+			newAttachMap[name] = attach
+
+			// If name doesn't exist in old map, it's a new attachment
+			if _, exists := oldAttachMap[name]; !exists {
+				toAdd = append(toAdd, attach)
+			}
+		}
+
+		// Identify removals by checking old names not in new map
+		toRemove := []string{}
+		for name, attach := range oldAttachMap {
+			if _, exists := newAttachMap[name]; !exists {
+				if id, ok := attach["id"].(string); ok {
+					toRemove = append(toRemove, id)
+				}
+			}
+		}
+
+		// Process removals first
+		instanceID := d.Id()
+		for _, id := range toRemove {
+			deleteOptions := &vpcv1.DeleteInstanceClusterNetworkAttachmentOptions{
+				InstanceID: &instanceID,
+				ID:         &id,
+			}
+			_, _, err := instanceC.DeleteInstanceClusterNetworkAttachment(deleteOptions)
+			if err != nil {
+				return fmt.Errorf("error removing cluster network attachment: %v", err)
+			}
+		}
+
+		// Process additions
+		for _, attach := range toAdd {
+			createOptions := buildCreateClusterNetworkAttachmentOptions(d.Id(), attach)
+			_, _, err := instanceC.CreateClusterNetworkAttachment(createOptions)
+			if err != nil {
+				return fmt.Errorf("error adding cluster network attachment: %v", err)
+			}
+		}
+
+		// Identify and process updates for existing attachments
+		for name, newAttach := range newAttachMap {
+			if oldAttach, exists := oldAttachMap[name]; exists {
+				// Compare the interfaces to see if an update is needed
+				oldInterface := oldAttach["cluster_network_interface"].([]interface{})[0].(map[string]interface{})
+				newInterface := newAttach["cluster_network_interface"].([]interface{})[0].(map[string]interface{})
+
+				if !compareInterfaces(oldInterface, newInterface) {
+					updateOptions := buildUpdateClusterNetworkAttachmentOptions(d.Id(), newAttach)
+					_, _, err := instanceC.UpdateInstanceClusterNetworkAttachment(updateOptions)
+					if err != nil {
+						return fmt.Errorf("error updating cluster network attachment: %v", err)
+					}
+				}
+			}
+		}
+	}
+	return nil
+}
+
+// Helper function to compare interfaces
+func compareInterfaces(old, new map[string]interface{}) bool {
+	// Compare name
+	if old["name"] != new["name"] {
+		return false
+	}
+
+	// Compare auto_delete if present
+	oldAutoDelete, oldOk := old["auto_delete"].(bool)
+	newAutoDelete, newOk := new["auto_delete"].(bool)
+	if oldOk != newOk || (oldOk && oldAutoDelete != newAutoDelete) {
+		return false
+	}
+
+	// Compare primary_ip if present
+	oldPrimaryIP, oldOk := old["primary_ip"].([]interface{})
+	newPrimaryIP, newOk := new["primary_ip"].([]interface{})
+	if oldOk != newOk {
+		return false
+	}
+	if oldOk && newOk {
+		if len(oldPrimaryIP) != len(newPrimaryIP) {
+			return false
+		}
+		if len(oldPrimaryIP) > 0 && len(newPrimaryIP) > 0 {
+			oldIP := oldPrimaryIP[0].(map[string]interface{})
+			newIP := newPrimaryIP[0].(map[string]interface{})
+			if oldIP["address"] != newIP["address"] ||
+				oldIP["auto_delete"] != newIP["auto_delete"] ||
+				oldIP["name"] != newIP["name"] {
+				return false
+			}
+		}
+	}
+
+	// Compare subnet if present
+	oldSubnet, oldOk := old["subnet"].([]interface{})
+	newSubnet, newOk := new["subnet"].([]interface{})
+	if oldOk != newOk {
+		return false
+	}
+	if oldOk && newOk {
+		if len(oldSubnet) != len(newSubnet) {
+			return false
+		}
+		if len(oldSubnet) > 0 && len(newSubnet) > 0 {
+			oldSub := oldSubnet[0].(map[string]interface{})
+			newSub := newSubnet[0].(map[string]interface{})
+			if oldSub["id"] != newSub["id"] {
+				return false
+			}
+		}
+	}
+
+	return true
+}
+
+func buildCreateClusterNetworkAttachmentOptions(instanceID string, attachment map[string]interface{}) *vpcv1.CreateClusterNetworkAttachmentOptions {
+	networkInterface := attachment["cluster_network_interface"].([]interface{})[0].(map[string]interface{})
+
+	clusterNetworkInterface := &vpcv1.InstanceClusterNetworkAttachmentPrototypeClusterNetworkInterface{}
+
+	// if autoDelete, ok := networkInterface["auto_delete"].(bool); ok {
+	// 	clusterNetworkInterface.AutoDelete = &autoDelete
+	// }
+	if autoDelete, ok := networkInterface["auto_delete"]; ok {
+		// Convert interface{} to bool properly
+		autoDeletBool := false
+		switch v := autoDelete.(type) {
+		case bool:
+			autoDeletBool = v
+		case string:
+			autoDeletBool = v == "true"
+		}
+		clusterNetworkInterface.AutoDelete = &autoDeletBool
+	}
+
+	if name, ok := networkInterface["name"].(string); ok {
+		clusterNetworkInterface.Name = &name
+	}
+
+	if primaryIPList, ok := networkInterface["primary_ip"].([]interface{}); ok && len(primaryIPList) > 0 {
+		primaryIP := primaryIPList[0].(map[string]interface{})
+		primaryIPPrototype := &vpcv1.ClusterNetworkInterfacePrimaryIPPrototype{}
+
+		if address, ok := primaryIP["address"].(string); ok {
+			primaryIPPrototype.Address = &address
+		}
+		if autoDelete, ok := primaryIP["auto_delete"].(bool); ok {
+			primaryIPPrototype.AutoDelete = &autoDelete
+		}
+		if name, ok := primaryIP["name"].(string); ok {
+			primaryIPPrototype.Name = &name
+		}
+
+		clusterNetworkInterface.PrimaryIP = primaryIPPrototype
+	}
+
+	// Handle subnet if present
+	if subnetList, ok := networkInterface["subnet"].([]interface{}); ok && len(subnetList) > 0 {
+		subnet := subnetList[0].(map[string]interface{})
+		if id, ok := subnet["id"].(string); ok {
+			clusterNetworkInterface.Subnet = &vpcv1.ClusterNetworkSubnetIdentity{
+				ID: &id,
+			}
+		}
+	}
+
+	// Get attachment name
+	attachmentName := attachment["name"].(string)
+
+	// Create the options struct
+	createOptions := &vpcv1.CreateClusterNetworkAttachmentOptions{
+		InstanceID:              &instanceID,
+		Name:                    &attachmentName,
+		ClusterNetworkInterface: clusterNetworkInterface,
+	}
+
+	return createOptions
+}
+
+func buildUpdateClusterNetworkAttachmentOptions(instanceID string, attachment map[string]interface{}) *vpcv1.UpdateInstanceClusterNetworkAttachmentOptions {
+	networkInterface := attachment["cluster_network_interface"].([]interface{})[0].(map[string]interface{})
+	clusterNetworkInterface := &vpcv1.InstanceClusterNetworkAttachmentPatch{}
+
+	if name, ok := networkInterface["name"].(string); ok {
+		clusterNetworkInterface.Name = &name
+	}
+	clusterNetworkInterfaceAsPatch, _ := clusterNetworkInterface.AsPatch()
+	attachmentID := attachment["id"].(string)
+	updateOptions := &vpcv1.UpdateInstanceClusterNetworkAttachmentOptions{
+		InstanceID:                            &instanceID,
+		ID:                                    &attachmentID,
+		InstanceClusterNetworkAttachmentPatch: clusterNetworkInterfaceAsPatch,
+	}
+	return updateOptions
 }

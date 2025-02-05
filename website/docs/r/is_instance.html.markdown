@@ -498,51 +498,57 @@ resource "ibm_is_instance" "is_instance" {
     subnet = ibm_is_subnet.example.id
   }
   cluster_network_attachments {
+    name = "cna-1"
     cluster_network_interface{
       auto_delete = true
-      name = "cna-1"
+      name = "cni-1"
       subnet {
         id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
       }
     }
   }
   cluster_network_attachments {
+    name = "cna-2"
     cluster_network_interface{
       auto_delete = true
-      name = "cna-2"
+      name = "cni-2"
       subnet {
         id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
       }
     }
   }
   cluster_network_attachments {
+    name = "cna-3"
     cluster_network_interface{
       auto_delete = true
-      name = "cna-3"
+      name = "cni-3"
       subnet {
         id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
       }
     }
   }
   cluster_network_attachments {
+    name = "cna-4"
     cluster_network_interface{
       auto_delete = true
-      name = "cna-4"
+      name = "cni-4"
       subnet {
         id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
       }
     }
   }
   cluster_network_attachments {
+    name = "cna-5"
     cluster_network_interface{
       auto_delete = true
-      name = "cna-5"
+      name = "cni-5"
       subnet {
         id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
       }
     }
   }
   cluster_network_attachments {
+    name = "cna-5"
     cluster_network_interface{
       auto_delete = true
       name = "cna-6"
@@ -552,18 +558,20 @@ resource "ibm_is_instance" "is_instance" {
     }
   }
   cluster_network_attachments {
+    name = "cna-7"
     cluster_network_interface{
       auto_delete = true
-      name = "cna-7"
+      name = "cni-7"
       subnet {
         id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
       }
     }
   }
   cluster_network_attachments {
+    name = "cna-8"
     cluster_network_interface{
       auto_delete = true
-      name = "cna-8"
+      name = "cni-8"
       subnet {
         id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
       }
@@ -633,16 +641,33 @@ Review the argument references that you can specify for your resource.
     `offering_crn` conflicts with `version_crn`, both are mutually exclusive. `catalog_offering` and `image` id are mutually exclusive.
     `snapshot` conflicts with `image` id and `instance_template`
 
-~>**Select Availability** 
-Cluster Networks for VPC is available for select customers only. Contact IBM Support if you are interested in using this functionality. [About cluster networks](https://cloud.ibm.com/docs/vpc?topic=vpc-about-cluster-network)
-
-- `cluster_network_attachments` - (Optional, List) The cluster network attachments for this virtual server instance.The cluster network attachments are ordered for consistent instance configuration.
+- `cluster_network_attachments` - (Optional, List) The cluster network attachments for this virtual server instance.The cluster network attachments are ordered for consistent instance configuration. [About cluster networks](https://cloud.ibm.com/docs/vpc?topic=vpc-about-cluster-network)
 
   Nested schema for **cluster_network_attachments**:
-	- `href` - (Required, String) The URL for this instance cluster network attachment.
-	- `id` - (Required, String) The unique identifier for this instance cluster network attachment.
-	- `name` - (Required, String) The name for this instance cluster network attachment. The name is unique across all network attachments for the instance.
-	- `resource_type` - (Required, String) The resource type.
+	- `name` - (Required, String) The name for this instance cluster network attachment. The name is unique across all network attachments for the instance. (`name` is a apply once attribute, changing it will not be detected by terraform)
+  - `cluster_network_interface` - (Required, List) The cluster network interface for this instance cluster network attachment.
+    
+      Nested schema for **cluster_network_interface**:
+      - `id` - (Required, String) The unique identifier for this cluster network interface.
+      - `name` - (Required, String) The name for this cluster network interface. The name is unique across all interfaces in the cluster network.
+      - `primary_ip` - (Required, List) The primary IP for this cluster network interface.
+        
+          Nested schema for **primary_ip**:
+          - `address` - (Required, String) The IP address.If the address is pending allocation, the value will be `0.0.0.0`.This property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support IPv6 addresses in the future.
+          - `deleted` - (Optional, List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
+            
+          - `href` - (Required, String) The URL for this cluster network subnet reserved IP.
+          - `id` - (Required, String) The unique identifier for this cluster network subnet reserved IP.
+          - `name` - (Required, String) The name for this cluster network subnet reserved IP. The name is unique across all reserved IPs in a cluster network subnet.
+          - `resource_type` - (Computed, String) The resource type.
+      - `subnet` - (Required, List)
+        
+          Nested schema for **subnet**:
+          - `id` - (Required, String) The unique identifier for this cluster network subnet.
+
+  ~> **Note:** 
+  **&#x2022;** `cluster_network_attachments` updation requires the instance to be in stopped state. Use `action` attribute or `ibm_is_instance_action` resource accordingly to stop/start the instance.</br>
+  **&#x2022;** Using cluster_network_attachments in `ibm_is_instance` and `ibm_is_instance_cluster_network_attachment` resource together would result in changes shown in both resources alternatively, use either of them or use meta lifecycle argument `ignore_changes` on `cluster_network_attachments`</br>
 
 - `confidential_compute_mode` - (Optional, String) The confidential compute mode to use for this virtual server instance.If unspecified, the default confidential compute mode from the profile will be used. **Constraints: Allowable values are: `disabled`, `sgx`** {Select Availability}
 
@@ -870,6 +895,14 @@ In addition to all argument reference list, you can access the following attribu
 		  Nested schema for `deleted`:
       - `more_info`  - (String) Link to documentation about deleted resources.
 
+- `cluster_network_attachments` - (List) The cluster network attachments for this virtual server instance.The cluster network attachments are ordered for consistent instance configuration.
+    Nested schema for **cluster_network_attachments**:
+    - `href` - (String) The URL for this instance cluster network attachment.
+    - `id` - (String) The unique identifier for this instance cluster network attachment.
+    - `name` - (String) The name for this instance cluster network attachment. The name is unique across all network attachments for the instance.
+    - `resource_type` - (String) The resource type.
+
+
 - `cluster_network` - (List) If present, the cluster network that this virtual server instance resides in.
   Nested schema for **cluster_network**:
 	- `crn` - (String) The CRN for this cluster network.
@@ -917,6 +950,16 @@ In addition to all argument reference list, you can access the following attribu
 - `id` - (String) The ID of the instance.
 - `memory`- (Integer) The amount of memory that is allocated to the instance in gigabytes.
 - `numa_count` - (Integer) The number of NUMA nodes this instance is provisioned on. This property may be absent if the instance's status is not running.
+- `network_attachments` - (List) The network attachments list for this virtual server instance.
+    Nested schema for **network_attachments**:
+
+    - `primary_ip` - (List) The primary IP address to bind to the network interface. This can be specified using an existing reserved IP, or a prototype object for a new reserved IP.
+
+        Nested scheme for `primary_ip`:
+        - `auto_delete` - (Bool) Indicates whether this reserved IP member will be automatically deleted when either target is deleted, or the reserved IP is unbound.
+        - `address` - (String) The IP address of the reserved IP. 
+        - `name`- (String) The user-defined or system-provided name for this reserved IP
+        - `id`- (String) The unique identifier for this reserved IP.
 - `network_interfaces`- (List of Strings) A list of more network interfaces that are attached to the instance.
 
   Nested scheme for `network_interfaces`:
@@ -933,6 +976,16 @@ In addition to all argument reference list, you can access the following attribu
       - `name`- (String) The user-defined or system-provided name for this reserved IP
       - `reserved_ip`- (String) The unique identifier for this reserved IP
   - `primary_ipv4_address` - (String, Deprecated) The primary IPv4 address. Same as `primary_ip.[0].address`
+- `primary_network_attachment` - (List) The primary network attachment for this virtual server instance.
+    Nested schema for **primary_network_attachment**:
+
+    - `primary_ip` - (List) The primary IP address to bind to the network interface. This can be specified using an existing reserved IP, or a prototype object for a new reserved IP.
+
+        Nested scheme for `primary_ip`:
+        - `auto_delete` - (Bool) Indicates whether this reserved IP member will be automatically deleted when either target is deleted, or the reserved IP is unbound.
+        - `address` - (String) The IP address of the reserved IP. 
+        - `name`- (String) The user-defined or system-provided name for this reserved IP
+        - `id`- (String) The unique identifier for this reserved IP.
 - `primary_network_interface`- (List of Strings) A list of primary network interfaces that are attached to the instance.
 
   Nested scheme for `primary_network_interface`:

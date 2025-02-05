@@ -8,8 +8,6 @@ subcategory: "Schematics"
 
 # ibm_schematics_agent_prs
 
-~> **Beta:** This resource is in Beta, and is subject to change.
-
 Provides a resource for schematics_agent_prs. This allows schematics_agent_prs to be created, updated and deleted.
 
 ## Example Usage

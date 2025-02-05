@@ -487,6 +487,12 @@ func volCreate(d *schema.ResourceData, meta interface{}, volName, profile, zone 
 			ID: &sourceSnapshot,
 		}
 		volTemplate.SourceSnapshot = snapshotIdentity
+		if capacity, ok := d.GetOk(isVolumeCapacity); ok {
+			if int64(capacity.(int)) > 0 {
+				volCapacity := int64(capacity.(int))
+				volTemplate.Capacity = &volCapacity
+			}
+		}
 	} else if sourceSnapshtCrn, ok := d.GetOk(isVolumeSourceSnapshotCrn); ok {
 		sourceSnapshot := sourceSnapshtCrn.(string)
 
@@ -494,12 +500,20 @@ func volCreate(d *schema.ResourceData, meta interface{}, volName, profile, zone 
 			CRN: &sourceSnapshot,
 		}
 		volTemplate.SourceSnapshot = snapshotIdentity
-	}
-	if capacity, ok := d.GetOk(isVolumeCapacity); ok {
+		if capacity, ok := d.GetOk(isVolumeCapacity); ok {
+			if int64(capacity.(int)) > 0 {
+				volCapacity := int64(capacity.(int))
+				volTemplate.Capacity = &volCapacity
+			}
+		}
+	} else if capacity, ok := d.GetOk(isVolumeCapacity); ok {
 		if int64(capacity.(int)) > 0 {
 			volCapacity := int64(capacity.(int))
 			volTemplate.Capacity = &volCapacity
 		}
+	} else {
+		volCapacity := int64(100)
+		volTemplate.Capacity = &volCapacity
 	}
 
 	if key, ok := d.GetOk(isVolumeEncryptionKey); ok {
