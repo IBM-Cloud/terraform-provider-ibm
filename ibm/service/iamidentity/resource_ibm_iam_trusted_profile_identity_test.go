@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2023 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package iamidentity_test
@@ -28,14 +28,14 @@ func TestAccIBMIamTrustedProfileIdentityBasic(t *testing.T) {
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMIamTrustedProfileIdentityDestroy,
 		Steps: []resource.TestStep{
-			{
+			resource.TestStep{
 				Config: testAccCheckIBMIamTrustedProfileIdentityConfigBasic(profileID, identityType, identifier, typeVar),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMIamTrustedProfileIdentityExists("ibm_iam_trusted_profile_identity.iam_trusted_profile_identity", conf),
-					resource.TestCheckResourceAttr("ibm_iam_trusted_profile_identity.iam_trusted_profile_identity", "profile_id", profileID),
-					resource.TestCheckResourceAttr("ibm_iam_trusted_profile_identity.iam_trusted_profile_identity", "identity_type", identityType),
-					resource.TestCheckResourceAttr("ibm_iam_trusted_profile_identity.iam_trusted_profile_identity", "identifier", identifier),
-					resource.TestCheckResourceAttr("ibm_iam_trusted_profile_identity.iam_trusted_profile_identity", "type", typeVar),
+					testAccCheckIBMIamTrustedProfileIdentityExists("ibm_iam_trusted_profile_identity.iam_trusted_profile_identity_instance", conf),
+					resource.TestCheckResourceAttr("ibm_iam_trusted_profile_identity.iam_trusted_profile_identity_instance", "profile_id", profileID),
+					resource.TestCheckResourceAttr("ibm_iam_trusted_profile_identity.iam_trusted_profile_identity_instance", "identity_type", identityType),
+					resource.TestCheckResourceAttr("ibm_iam_trusted_profile_identity.iam_trusted_profile_identity_instance", "identifier", identifier),
+					resource.TestCheckResourceAttr("ibm_iam_trusted_profile_identity.iam_trusted_profile_identity_instance", "type", typeVar),
 				),
 			},
 		},

@@ -1,5 +1,9 @@
-// Copyright IBM Corp. 2023 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
+
+/*
+ * IBM OpenAPI Terraform Generator Version: 3.98.0-8be2046a-20241205-162752
+ */
 
 package iamidentity
 
@@ -13,6 +17,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
 )
 
@@ -75,37 +81,42 @@ func DataSourceIBMIamTrustedProfileIdentities() *schema.Resource {
 func dataSourceIBMIamTrustedProfileIdentitiesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamIdentityClient, err := meta.(conns.ClientSession).IAMIdentityV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_iam_trusted_profile_identities", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	getProfileIdentitiesOptions := &iamidentityv1.GetProfileIdentitiesOptions{}
 
 	getProfileIdentitiesOptions.SetProfileID(d.Get("profile_id").(string))
 
-	profileIdentitiesResponse, response, err := iamIdentityClient.GetProfileIdentitiesWithContext(context, getProfileIdentitiesOptions)
+	profileIdentitiesResponse, _, err := iamIdentityClient.GetProfileIdentitiesWithContext(context, getProfileIdentitiesOptions)
 	if err != nil {
-		log.Printf("[DEBUG] GetProfileIdentitiesWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetProfileIdentitiesWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetProfileIdentitiesWithContext failed: %s", err.Error()), "(Data) ibm_iam_trusted_profile_identities", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(dataSourceIBMIamTrustedProfileIdentitiesID(d))
 
-	if err = d.Set("entity_tag", profileIdentitiesResponse.EntityTag); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting entity_tag: %s", err))
-	}
-
-	identities := []map[string]interface{}{}
-	if profileIdentitiesResponse.Identities != nil {
-		for _, modelItem := range profileIdentitiesResponse.Identities {
-			modelMap, err := dataSourceIBMIamTrustedProfileIdentitiesProfileIdentityResponseToMap(&modelItem)
-			if err != nil {
-				return diag.FromErr(err)
-			}
-			identities = append(identities, modelMap)
+	if !core.IsNil(profileIdentitiesResponse.EntityTag) {
+		if err = d.Set("entity_tag", profileIdentitiesResponse.EntityTag); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting entity_tag: %s", err), "(Data) ibm_iam_trusted_profile_identities", "read", "set-entity_tag").GetDiag()
 		}
 	}
-	if err = d.Set("identities", identities); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting identities %s", err))
+
+	if !core.IsNil(profileIdentitiesResponse.Identities) {
+		identities := []map[string]interface{}{}
+		for _, identitiesItem := range profileIdentitiesResponse.Identities {
+			identitiesItemMap, err := DataSourceIBMIamTrustedProfileIdentitiesProfileIdentityResponseToMap(&identitiesItem) // #nosec G601
+			if err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_iam_trusted_profile_identities", "read", "identities-to-map").GetDiag()
+			}
+			identities = append(identities, identitiesItemMap)
+		}
+		if err = d.Set("identities", identities); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting identities: %s", err), "(Data) ibm_iam_trusted_profile_identities", "read", "set-identities").GetDiag()
+		}
 	}
 
 	return nil
@@ -116,16 +127,16 @@ func dataSourceIBMIamTrustedProfileIdentitiesID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
 
-func dataSourceIBMIamTrustedProfileIdentitiesProfileIdentityResponseToMap(model *iamidentityv1.ProfileIdentityResponse) (map[string]interface{}, error) {
+func DataSourceIBMIamTrustedProfileIdentitiesProfileIdentityResponseToMap(model *iamidentityv1.ProfileIdentityResponse) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["iam_id"] = model.IamID
-	modelMap["identifier"] = model.Identifier
-	modelMap["type"] = model.Type
+	modelMap["iam_id"] = *model.IamID
+	modelMap["identifier"] = *model.Identifier
+	modelMap["type"] = *model.Type
 	if model.Accounts != nil {
 		modelMap["accounts"] = model.Accounts
 	}
 	if model.Description != nil {
-		modelMap["description"] = model.Description
+		modelMap["description"] = *model.Description
 	}
 	return modelMap, nil
 }
