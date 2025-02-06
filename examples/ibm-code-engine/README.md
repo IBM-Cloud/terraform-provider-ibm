@@ -38,27 +38,6 @@ $ terraform apply
 
 Run `terraform destroy` when you don't need these resources.
 
-## Versioning
-
-If you want to use a specific version of Code Engine, you can do so using the `code_engine_version` argument in the IBM Cloud provider block. For example:
-
-```hcl
-provider "ibm" {
-  code_engine_version = var.code_engine_version
-}
-
-variable "code_engine_version" {
-  description = "The Code Engine date-based version string in the format 'YYYY-MM-DD'."
-  type        = string
-}
-```
-Create a terraform.tfvars file and specify the date-based version string in that file:
-
-```hcl
-code_engine_version = "2022-12-09"
-```
-When the API is updated with any breaking changes, the service introduces a new version date for the API. The API uses the most recent version on or before the date you specify. By default, if you do not specify a version, the latest version is used by the provider. You can find the available versions in the [API changelog](https://cloud.ibm.com/docs/codeengine?topic=codeengine-api-changelog#active-version-dates). 
-
 ## Code Engine resources
 
 ### Resource: ibm_code_engine_project

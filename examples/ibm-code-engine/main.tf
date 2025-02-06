@@ -1,7 +1,6 @@
 provider "ibm" {
-  ibmcloud_api_key    = var.ibmcloud_api_key
-  region              = var.ibmcloud_region
-  code_engine_version = var.code_engine_version
+  ibmcloud_api_key = var.ibmcloud_api_key
+  region           = var.ibmcloud_region
 }
 
 terraform {

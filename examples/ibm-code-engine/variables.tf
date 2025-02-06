@@ -8,12 +8,6 @@ variable "ibmcloud_region" {
   type        = string
 }
 
-variable "code_engine_version" {
-  description = "The Code Engine date-based version string in the format 'YYYY-MM-DD'."
-  type        = string
-  default     = "2025-01-10"
-}
-
 // Resource arguments for code_engine_project
 variable "code_engine_project_name" {
   description = "The name of the project."
