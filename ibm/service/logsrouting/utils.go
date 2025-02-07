@@ -4,16 +4,26 @@ import (
 	"log"
 	"strings"
 
+	bxsession "github.com/IBM-Cloud/bluemix-go/session"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM/logs-router-go-sdk/ibmcloudlogsroutingv0"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 // Clones the logs routing client and sets the correct URL. Public, private, or custom
-func updateClientURLWithEndpoint(logsRoutingClient *ibmcloudlogsroutingv0.IBMCloudLogsRoutingV0, d *schema.ResourceData) (*ibmcloudlogsroutingv0.IBMCloudLogsRoutingV0, string, error) {
+func updateClientURLWithEndpoint(logsRoutingClient *ibmcloudlogsroutingv0.IBMCloudLogsRoutingV0, d *schema.ResourceData, sess *bxsession.Session) (*ibmcloudlogsroutingv0.IBMCloudLogsRoutingV0, string, error) {
 
-	region := d.Get("region").(string)
+	var newServiceURL string
 	originalConfigServiceURL := logsRoutingClient.GetServiceURL()
-	newServiceURL := replaceRegion(originalConfigServiceURL, region)
+	endpointsFile := sess.Config.EndpointsFile
+	visibility := sess.Config.Visibility
+	region := d.Get("region").(string)
+
+	if endpointsFile != "" && visibility != "public-and-private" {
+		newServiceURL = conns.FileFallBack(endpointsFile, visibility, "IBMCLOUD_LOGS_ROUTING_API_ENDPOINT", region, originalConfigServiceURL)
+	} else {
+		newServiceURL = replaceRegion(originalConfigServiceURL, region)
+	}
 
 	newClient := &ibmcloudlogsroutingv0.IBMCloudLogsRoutingV0{
 		Service: logsRoutingClient.Service.Clone(),
