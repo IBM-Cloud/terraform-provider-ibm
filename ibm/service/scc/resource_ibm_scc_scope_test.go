@@ -21,7 +21,7 @@ func TestAccIbmSccScopeBasic(t *testing.T) {
 	var conf securityandcompliancecenterapiv3.Scope
 	instanceID := acc.SccInstanceID
 	scopeID := acc.SccAccountID
-  resGrpID := acc.SccResourceGroupID
+	resGrpID := acc.SccResourceGroupID
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	description := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
 	environment := "ibm-cloud"
@@ -46,7 +46,7 @@ func TestAccIbmSccScopeAllArgs(t *testing.T) {
 	var conf securityandcompliancecenterapiv3.Scope
 	instanceID := acc.SccInstanceID
 	scopeID := acc.SccAccountID
-  resGrpID := acc.SccResourceGroupID
+	resGrpID := acc.SccResourceGroupID
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	description := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
 	environment := "ibm-cloud"
@@ -98,7 +98,7 @@ func testAccCheckIBMSccScopeConfig(instanceID string, name string, description s
         account_id = "%s"
 			}
       exclusions {
-        resource_group_id = "957934c8d570423299a92a7ca7acd334"
+        resource_group_id = "%s"
       }
 		}
 	`, instanceID, name, description, environment, scopeId, resource_group_id)
