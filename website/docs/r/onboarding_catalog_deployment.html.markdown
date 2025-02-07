@@ -60,6 +60,111 @@ resource "ibm_onboarding_catalog_deployment" "onboarding_catalog_deployment_inst
 			bindable = true
 			plan_updateable = true
 			service_key_supported = true
+			parameters {
+				displayname = "displayname"
+				name = "name"
+				type = "text"
+				options {
+					displayname = "displayname"
+					value = "value"
+					i18n {
+						en {
+							displayname = "displayname"
+							description = "description"
+						}
+						de {
+							displayname = "displayname"
+							description = "description"
+						}
+						es {
+							displayname = "displayname"
+							description = "description"
+						}
+						fr {
+							displayname = "displayname"
+							description = "description"
+						}
+						it {
+							displayname = "displayname"
+							description = "description"
+						}
+						ja {
+							displayname = "displayname"
+							description = "description"
+						}
+						ko {
+							displayname = "displayname"
+							description = "description"
+						}
+						pt_br {
+							displayname = "displayname"
+							description = "description"
+						}
+						zh_tw {
+							displayname = "displayname"
+							description = "description"
+						}
+						zh_cn {
+							displayname = "displayname"
+							description = "description"
+						}
+					}
+				}
+				value = [ "value" ]
+				layout = "layout"
+				associations = { "key" = "anything as a string" }
+				validation_url = "validation_url"
+				options_url = "options_url"
+				invalidmessage = "invalidmessage"
+				description = "description"
+				required = true
+				pattern = "pattern"
+				placeholder = "placeholder"
+				readonly = true
+				hidden = true
+				i18n {
+					en {
+						displayname = "displayname"
+						description = "description"
+					}
+					de {
+						displayname = "displayname"
+						description = "description"
+					}
+					es {
+						displayname = "displayname"
+						description = "description"
+					}
+					fr {
+						displayname = "displayname"
+						description = "description"
+					}
+					it {
+						displayname = "displayname"
+						description = "description"
+					}
+					ja {
+						displayname = "displayname"
+						description = "description"
+					}
+					ko {
+						displayname = "displayname"
+						description = "description"
+					}
+					pt_br {
+						displayname = "displayname"
+						description = "description"
+					}
+					zh_tw {
+						displayname = "displayname"
+						description = "description"
+					}
+					zh_cn {
+						displayname = "displayname"
+						description = "description"
+					}
+				}
+			}
 		}
 		deployment {
 			broker {
@@ -122,6 +227,166 @@ Nested schema for **metadata**:
 	Nested schema for **service**:
 		* `bindable` - (Optional, Boolean) Deprecated. Controls the Connections tab on the Resource Details page.
 		* `iam_compatible` - (Optional, Boolean) Whether the service is compatible with the IAM service.
+		* `parameters` - (Optional, List)
+		  * Constraints: The maximum length is `1000` items. The minimum length is `0` items.
+		Nested schema for **parameters**:
+			* `associations` - (Optional, Map) A JSON structure to describe the interactions with pricing plans and/or other custom parameters.
+			* `description` - (Optional, String) The description of the parameter that is displayed to help users with the value of the parameter.
+			  * Constraints: The maximum length is `2000` characters. The minimum length is `1` character. The value must match regular expression `/^[ -~\\s]*$/`.
+			* `displayname` - (Optional, String) The display name for custom service parameters.
+			  * Constraints: The maximum length is `2000` characters. The minimum length is `1` character. The value must match regular expression `/^[ -~\\s]*$/`.
+			* `hidden` - (Optional, Boolean) Indicates whether the custom parameters is hidden required or not.
+			* `i18n` - (Optional, List) The description for the object.
+			Nested schema for **i18n**:
+				* `de` - (Optional, List) The translations for custom service parameter display name and description.
+				Nested schema for **de**:
+					* `description` - (Optional, String) The translations for custom service parameter description.
+					  * Constraints: The maximum length is `20000` characters. The minimum length is `0` characters. The value must match regular expression `/./`.
+					* `displayname` - (Optional, String) The translations for custom service parameter display name.
+					  * Constraints: The maximum length is `256` characters. The minimum length is `0` characters. The value must match regular expression `/./`.
+				* `en` - (Optional, List) The translations for custom service parameter display name and description.
+				Nested schema for **en**:
+					* `description` - (Optional, String) The translations for custom service parameter description.
+					  * Constraints: The maximum length is `20000` characters. The minimum length is `0` characters. The value must match regular expression `/./`.
+					* `displayname` - (Optional, String) The translations for custom service parameter display name.
+					  * Constraints: The maximum length is `256` characters. The minimum length is `0` characters. The value must match regular expression `/./`.
+				* `es` - (Optional, List) The translations for custom service parameter display name and description.
+				Nested schema for **es**:
+					* `description` - (Optional, String) The translations for custom service parameter description.
+					  * Constraints: The maximum length is `20000` characters. The minimum length is `0` characters. The value must match regular expression `/./`.
+					* `displayname` - (Optional, String) The translations for custom service parameter display name.
+					  * Constraints: The maximum length is `256` characters. The minimum length is `0` characters. The value must match regular expression `/./`.
+				* `fr` - (Optional, List) The translations for custom service parameter display name and description.
+				Nested schema for **fr**:
+					* `description` - (Optional, String) The translations for custom service parameter description.
+					  * Constraints: The maximum length is `20000` characters. The minimum length is `0` characters. The value must match regular expression `/./`.
+					* `displayname` - (Optional, String) The translations for custom service parameter display name.
+					  * Constraints: The maximum length is `256` characters. The minimum length is `0` characters. The value must match regular expression `/./`.
+				* `it` - (Optional, List) The translations for custom service parameter display name and description.
+				Nested schema for **it**:
+					* `description` - (Optional, String) The translations for custom service parameter description.
+					  * Constraints: The maximum length is `20000` characters. The minimum length is `0` characters. The value must match regular expression `/./`.
+					* `displayname` - (Optional, String) The translations for custom service parameter display name.
+					  * Constraints: The maximum length is `256` characters. The minimum length is `0` characters. The value must match regular expression `/./`.
+				* `ja` - (Optional, List) The translations for custom service parameter display name and description.
+				Nested schema for **ja**:
+					* `description` - (Optional, String) The translations for custom service parameter description.
+					  * Constraints: The maximum length is `20000` characters. The minimum length is `0` characters. The value must match regular expression `/./`.
+					* `displayname` - (Optional, String) The translations for custom service parameter display name.
+					  * Constraints: The maximum length is `256` characters. The minimum length is `0` characters. The value must match regular expression `/./`.
+				* `ko` - (Optional, List) The translations for custom service parameter display name and description.
+				Nested schema for **ko**:
+					* `description` - (Optional, String) The translations for custom service parameter description.
+					  * Constraints: The maximum length is `20000` characters. The minimum length is `0` characters. The value must match regular expression `/./`.
+					* `displayname` - (Optional, String) The translations for custom service parameter display name.
+					  * Constraints: The maximum length is `256` characters. The minimum length is `0` characters. The value must match regular expression `/./`.
+				* `pt_br` - (Optional, List) The translations for custom service parameter display name and description.
+				Nested schema for **pt_br**:
+					* `description` - (Optional, String) The translations for custom service parameter description.
+					  * Constraints: The maximum length is `20000` characters. The minimum length is `0` characters. The value must match regular expression `/./`.
+					* `displayname` - (Optional, String) The translations for custom service parameter display name.
+					  * Constraints: The maximum length is `256` characters. The minimum length is `0` characters. The value must match regular expression `/./`.
+				* `zh_cn` - (Optional, List) The translations for custom service parameter display name and description.
+				Nested schema for **zh_cn**:
+					* `description` - (Optional, String) The translations for custom service parameter description.
+					  * Constraints: The maximum length is `20000` characters. The minimum length is `0` characters. The value must match regular expression `/./`.
+					* `displayname` - (Optional, String) The translations for custom service parameter display name.
+					  * Constraints: The maximum length is `256` characters. The minimum length is `0` characters. The value must match regular expression `/./`.
+				* `zh_tw` - (Optional, List) The translations for custom service parameter display name and description.
+				Nested schema for **zh_tw**:
+					* `description` - (Optional, String) The translations for custom service parameter description.
+					  * Constraints: The maximum length is `20000` characters. The minimum length is `0` characters. The value must match regular expression `/./`.
+					* `displayname` - (Optional, String) The translations for custom service parameter display name.
+					  * Constraints: The maximum length is `256` characters. The minimum length is `0` characters. The value must match regular expression `/./`.
+			* `invalidmessage` - (Optional, String) The message that appears when the content of the text box is invalid.
+			  * Constraints: The maximum length is `2000` characters. The minimum length is `1` character. The value must match regular expression `/^[ -~\\s]*$/`.
+			* `layout` - (Optional, String) Specifies the layout of check box or radio input types. When unspecified, the default layout is horizontal.
+			  * Constraints: The maximum length is `2000` characters. The minimum length is `1` character. The value must match regular expression `/^[ -~\\s]*$/`.
+			* `name` - (Optional, String) The key of the parameter.
+			  * Constraints: The maximum length is `2000` characters. The minimum length is `1` character. The value must match regular expression `/^[ -~\\s]*$/`.
+			* `options` - (Optional, List)
+			  * Constraints: The maximum length is `1000` items. The minimum length is `0` items.
+			Nested schema for **options**:
+				* `displayname` - (Optional, String) The display name for custom service parameters.
+				  * Constraints: The maximum length is `2000` characters. The minimum length is `1` character. The value must match regular expression `/^[ -~\\s]*$/`.
+				* `i18n` - (Optional, List) The description for the object.
+				Nested schema for **i18n**:
+					* `de` - (Optional, List) The translations for custom service parameter display name and description.
+					Nested schema for **de**:
+						* `description` - (Optional, String) The translations for custom service parameter description.
+						  * Constraints: The maximum length is `20000` characters. The minimum length is `0` characters. The value must match regular expression `/./`.
+						* `displayname` - (Optional, String) The translations for custom service parameter display name.
+						  * Constraints: The maximum length is `256` characters. The minimum length is `0` characters. The value must match regular expression `/./`.
+					* `en` - (Optional, List) The translations for custom service parameter display name and description.
+					Nested schema for **en**:
+						* `description` - (Optional, String) The translations for custom service parameter description.
+						  * Constraints: The maximum length is `20000` characters. The minimum length is `0` characters. The value must match regular expression `/./`.
+						* `displayname` - (Optional, String) The translations for custom service parameter display name.
+						  * Constraints: The maximum length is `256` characters. The minimum length is `0` characters. The value must match regular expression `/./`.
+					* `es` - (Optional, List) The translations for custom service parameter display name and description.
+					Nested schema for **es**:
+						* `description` - (Optional, String) The translations for custom service parameter description.
+						  * Constraints: The maximum length is `20000` characters. The minimum length is `0` characters. The value must match regular expression `/./`.
+						* `displayname` - (Optional, String) The translations for custom service parameter display name.
+						  * Constraints: The maximum length is `256` characters. The minimum length is `0` characters. The value must match regular expression `/./`.
+					* `fr` - (Optional, List) The translations for custom service parameter display name and description.
+					Nested schema for **fr**:
+						* `description` - (Optional, String) The translations for custom service parameter description.
+						  * Constraints: The maximum length is `20000` characters. The minimum length is `0` characters. The value must match regular expression `/./`.
+						* `displayname` - (Optional, String) The translations for custom service parameter display name.
+						  * Constraints: The maximum length is `256` characters. The minimum length is `0` characters. The value must match regular expression `/./`.
+					* `it` - (Optional, List) The translations for custom service parameter display name and description.
+					Nested schema for **it**:
+						* `description` - (Optional, String) The translations for custom service parameter description.
+						  * Constraints: The maximum length is `20000` characters. The minimum length is `0` characters. The value must match regular expression `/./`.
+						* `displayname` - (Optional, String) The translations for custom service parameter display name.
+						  * Constraints: The maximum length is `256` characters. The minimum length is `0` characters. The value must match regular expression `/./`.
+					* `ja` - (Optional, List) The translations for custom service parameter display name and description.
+					Nested schema for **ja**:
+						* `description` - (Optional, String) The translations for custom service parameter description.
+						  * Constraints: The maximum length is `20000` characters. The minimum length is `0` characters. The value must match regular expression `/./`.
+						* `displayname` - (Optional, String) The translations for custom service parameter display name.
+						  * Constraints: The maximum length is `256` characters. The minimum length is `0` characters. The value must match regular expression `/./`.
+					* `ko` - (Optional, List) The translations for custom service parameter display name and description.
+					Nested schema for **ko**:
+						* `description` - (Optional, String) The translations for custom service parameter description.
+						  * Constraints: The maximum length is `20000` characters. The minimum length is `0` characters. The value must match regular expression `/./`.
+						* `displayname` - (Optional, String) The translations for custom service parameter display name.
+						  * Constraints: The maximum length is `256` characters. The minimum length is `0` characters. The value must match regular expression `/./`.
+					* `pt_br` - (Optional, List) The translations for custom service parameter display name and description.
+					Nested schema for **pt_br**:
+						* `description` - (Optional, String) The translations for custom service parameter description.
+						  * Constraints: The maximum length is `20000` characters. The minimum length is `0` characters. The value must match regular expression `/./`.
+						* `displayname` - (Optional, String) The translations for custom service parameter display name.
+						  * Constraints: The maximum length is `256` characters. The minimum length is `0` characters. The value must match regular expression `/./`.
+					* `zh_cn` - (Optional, List) The translations for custom service parameter display name and description.
+					Nested schema for **zh_cn**:
+						* `description` - (Optional, String) The translations for custom service parameter description.
+						  * Constraints: The maximum length is `20000` characters. The minimum length is `0` characters. The value must match regular expression `/./`.
+						* `displayname` - (Optional, String) The translations for custom service parameter display name.
+						  * Constraints: The maximum length is `256` characters. The minimum length is `0` characters. The value must match regular expression `/./`.
+					* `zh_tw` - (Optional, List) The translations for custom service parameter display name and description.
+					Nested schema for **zh_tw**:
+						* `description` - (Optional, String) The translations for custom service parameter description.
+						  * Constraints: The maximum length is `20000` characters. The minimum length is `0` characters. The value must match regular expression `/./`.
+						* `displayname` - (Optional, String) The translations for custom service parameter display name.
+						  * Constraints: The maximum length is `256` characters. The minimum length is `0` characters. The value must match regular expression `/./`.
+				* `value` - (Optional, String) The value for custom service parameters.
+				  * Constraints: The maximum length is `2000` characters. The minimum length is `1` character. The value must match regular expression `/./`.
+			* `options_url` - (Optional, String) The options URL for custom service parameters.
+			  * Constraints: The maximum length is `2083` characters. The minimum length is `1` character. The value must match regular expression `/^(?!mailto:)(?:(?:http|https|ftp):\/\/)(?:\\S+(?::\\S*)?@)?(?:(?:(?:[1-9]\\d?|1\\d\\d|2[01]\\d|22[0-3])(?:\\.(?:1?\\d{1,2}|2[0-4]\\d|25[0-5])){2}(?:\\.(?:[0-9]\\d?|1\\d\\d|2[0-4]\\d|25[0-4]))|(?:(?:[a-z\\u00a1-\\uffff0-9]+-?)*[a-z\\u00a1-\\uffff0-9]+)(?:\\.(?:[a-z\\u00a1-\\uffff0-9]+-?)*[a-z\\u00a1-\\uffff0-9]+)*(?:\\.(?:[a-z\\u00a1-\\uffff]{2,})))|localhost)(?::\\d{2,5})?(?:(\/|\\?|#)[^\\s]*)?$/`.
+			* `pattern` - (Optional, String) A regular expression that the value is checked against.
+			  * Constraints: The maximum length is `2000` characters. The minimum length is `1` character. The value must match regular expression `/./`.
+			* `placeholder` - (Optional, String) The placeholder text for custom parameters.
+			  * Constraints: The maximum length is `2000` characters. The minimum length is `1` character. The value must match regular expression `/^[ -~\\s]*$/`.
+			* `readonly` - (Optional, Boolean) A boolean value that indicates whether the value of the parameter is displayed only and cannot be changed by users. The default value is false.
+			* `required` - (Optional, Boolean) A boolean value that indicates whether the parameter must be entered in the IBM Cloud user interface.
+			* `type` - (Optional, String) The type of custom service parameters.
+			  * Constraints: Allowable values are: `text`, `textarea`, `dropdown`, `number`, `password`, `combo`, `checkbox`, `radio`, `multiselect`, `resource_group`, `vcenter_datastore`, `region`, `secret`, `cluster_namespace`.
+			* `validation_url` - (Optional, String) The validation URL for custom service parameters.
+			  * Constraints: The maximum length is `2083` characters. The minimum length is `1` character. The value must match regular expression `/^(?!mailto:)(?:(?:http|https|ftp):\/\/)(?:\\S+(?::\\S*)?@)?(?:(?:(?:[1-9]\\d?|1\\d\\d|2[01]\\d|22[0-3])(?:\\.(?:1?\\d{1,2}|2[0-4]\\d|25[0-5])){2}(?:\\.(?:[0-9]\\d?|1\\d\\d|2[0-4]\\d|25[0-4]))|(?:(?:[a-z\\u00a1-\\uffff0-9]+-?)*[a-z\\u00a1-\\uffff0-9]+)(?:\\.(?:[a-z\\u00a1-\\uffff0-9]+-?)*[a-z\\u00a1-\\uffff0-9]+)*(?:\\.(?:[a-z\\u00a1-\\uffff]{2,})))|localhost)(?::\\d{2,5})?(?:(\/|\\?|#)[^\\s]*)?$/`.
+			* `value` - (Optional, List)
+			  * Constraints: The list items must match regular expression `/^[ -~\\s]*$/`. The maximum length is `1000` items. The minimum length is `0` items.
 		* `plan_updateable` - (Optional, Boolean) Indicates plan update support and controls the Plan tab on the Resource Details page.
 		* `rc_provisionable` - (Optional, Boolean) Whether the service is provisionable by the resource controller service.
 		* `service_key_supported` - (Optional, Boolean) Indicates service credentials support and controls the Service Credential tab on Resource Details page.
@@ -173,7 +438,7 @@ Nested schema for **metadata**:
 			* `terms_url` - (Optional, String) The URL for your product's end user license agreement.
 			  * Constraints: The maximum length is `2083` characters. The minimum length is `0` characters.
 * `name` - (Required, String) The programmatic name of this deployment.
-  * Constraints: The value must match regular expression `/^[a-z0-9\\-.]+$/`.
+  * Constraints: The value must match regular expression `/^[a-zA-Z0-9\\-.]+$/`.
 * `object_id` - (Optional, String) The desired ID of the global catalog object.
 * `object_provider` - (Required, List) The provider or owner of the product.
 Nested schema for **object_provider**:
@@ -197,6 +462,8 @@ After your resource is created, you can read values from the listed arguments an
 
 * `id` - The unique identifier of the onboarding_catalog_deployment.
 * `catalog_deployment_id` - (String) The ID of a global catalog object.
+* `geo_tags` - (List) 
+  * Constraints: The list items must match regular expression `/./`. The maximum length is `1000` items. The minimum length is `0` items.
 * `url` - (String) The global catalog URL of your product.
 
 

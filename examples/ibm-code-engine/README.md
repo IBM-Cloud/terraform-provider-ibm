@@ -3,6 +3,7 @@
 These examples illustrate how to use the resources and data sources associated with Code Engine.
 
 The following resources are supported:
+* ibm_code_engine_allowed_outbound_destination
 * ibm_code_engine_app
 * ibm_code_engine_binding
 * ibm_code_engine_build
@@ -14,6 +15,7 @@ The following resources are supported:
 * ibm_code_engine_secret
 
 The following data sources are supported:
+* ibm_code_engine_allowed_outbound_destination
 * ibm_code_engine_app
 * ibm_code_engine_binding
 * ibm_code_engine_build
@@ -65,6 +67,32 @@ resource "ibm_code_engine_project" "code_engine_project_instance" {
 | region | The region for your project deployment. Possible values: `au-syd`, `br-sao`, `ca-tor`, `eu-de`, `eu-es`, `eu-gb`, `jp-osa`, `jp-tok`, `us-east`, `us-south`. |
 | resource_type | The type of the project. |
 | status | The current state of the project. For example, when the project is created and is ready for use, the status of the project is `active`. |
+
+### Resource: ibm_code_engine_allowed_outbound_destination
+
+```hcl
+resource "ibm_code_engine_allowed_outbound_destination" "code_engine_allowed_outbound_destination_instance" {
+  project_id = var.code_engine_allowed_outbound_destination_project_id
+  type       = var.code_engine_allowed_outbound_destination_type
+  cidr_block = var.code_engine_allowed_outbound_destination_cidr_block
+  name       = var.code_engine_allowed_outbound_destination_name
+}
+```
+
+#### Inputs
+
+| Name | Description | Type | Required |
+|------|-------------|------|---------|
+| project_id | The ID of the project. | `string` | true |
+| type | Specify the type of the allowed outbound destination. Allowed types are: 'cidr_block'. | `string` | true |
+| cidr_block | The IPv4 address range. | `string` | false |
+| name | The name of the CIDR block. | `string` | false |
+
+#### Outputs
+
+| Name | Description |
+|------|-------------|
+| entity_tag | The version of the allowed outbound destination, which is used to achieve optimistic locking. |
 
 ### Resource: ibm_code_engine_app
 
@@ -158,7 +186,7 @@ resource "ibm_code_engine_binding" "code_engine_binding_instance" {
 | href | When you provision a new binding,  a URL is created identifying the location of the instance. |
 | resource_type | The type of the binding. |
 | status | The current status of the binding. |
-| code_engine_binding_id | The ID of the binding. |
+| binding_id | The ID of the binding. |
 
 ### Resource: ibm_code_engine_build
 
@@ -276,9 +304,9 @@ resource "ibm_code_engine_domain_mapping" "code_engine_domain_mapping_instance" 
 
 ```hcl
 resource "ibm_code_engine_function" "code_engine_function_instance" {
-  project_id = var.code_engine_function_project_id
-  name = var.code_engine_function_name
-  runtime = var.code_engine_function_runtime
+  project_id     = var.code_engine_function_project_id
+  name           = var.code_engine_function_name
+  runtime        = var.code_engine_function_runtime
   code_reference = var.code_engine_function_code_reference
 }
 ```
@@ -430,6 +458,30 @@ data "ibm_code_engine_project" "code_engine_project_instance" {
 | resource_type | The type of the project. |
 | status | The current state of the project. For example, when the project is created and is ready for use, the status of the project is active. |
 
+### Data source: ibm_code_engine_allowed_outbound_destination
+
+```hcl
+data "ibm_code_engine_allowed_outbound_destination" "code_engine_allowed_outbound_destination_instance" {
+  project_id = var.data_code_engine_allowed_outbound_destination_project_id
+  name       = var.data_code_engine_allowed_outbound_destination_name
+}
+```
+
+#### Inputs
+
+| Name | Description | Type | Required |
+|------|-------------|------|---------|
+| project_id | The ID of the project. | `string` | true |
+| name | The name of your allowed outbound destination. | `string` | true |
+
+#### Outputs
+
+| Name | Description |
+|------|-------------|
+| entity_tag | The version of the allowed outbound destination, which is used to achieve optimistic locking. |
+| type | Specify the type of the allowed outbound destination. Allowed types are: 'cidr_block'. |
+| cidr_block | The IPv4 address range. |
+
 ### Data source: ibm_code_engine_app
 
 ```hcl
@@ -488,8 +540,8 @@ data "ibm_code_engine_app" "code_engine_app_instance" {
 
 ```hcl
 data "ibm_code_engine_binding" "code_engine_binding_instance" {
-  project_id             = var.data_code_engine_binding_project_id
-  code_engine_binding_id = var.data_code_engine_binding_code_engine_binding_id
+  project_id = var.data_code_engine_binding_project_id
+  binding_id = var.data_code_engine_binding_code_engine_binding_id
 }
 ```
 
@@ -498,7 +550,7 @@ data "ibm_code_engine_binding" "code_engine_binding_instance" {
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
 | project_id | The ID of the project. | `string` | true |
-| code_engine_binding_id | The id of your binding. | `string` | true |
+| binding_id | The id of your binding. | `string` | true |
 
 #### Outputs
 

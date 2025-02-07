@@ -32,14 +32,10 @@ resource "ibm_db2" "<your_database>" {
   instance_type     = "bx2.4x16"
   high_availability = "yes"
   backup_location   = "us"
-
-  parameters_json   = <<EOF
-    {
-        "disk_encryption_instance_crn": "none",
-        "disk_encryption_key_crn": "none",
-        "oracle_compatibility": "no"
-    }
-  EOF
+  disk_encryption_instance_crn = "none"
+  disk_encryption_key_crn = "none"
+  oracle_compatibility = "no"
+  subscription_id = "<id_of_subscription_plan>"
 
   timeouts {
     create = "720m"
@@ -80,7 +76,7 @@ Review the argument reference that you can specify for your resource.
 - `service` - (Required, Forces new resource, String) The type of Cloud Db2 SaaS that you want to create. Only the following services are currently accepted: `dashdb-for-transactions` only.
 - `service_endpoints` - (Required, String) Specify whether you want to enable the public, private, or both service endpoints. Supported values are `public`, `private`, or `public-and-private`.
 - `tags` - (Optional, Array of Strings) A list of tags that you want to add to your instance.
-- `high_availability` - (Optional, String) By default, it is `no`.if you want plaese change to `yes`
+- `high_availability` - (Optional, String) By default, it is `no`.if you want please change to `yes`
 - `backup_location` - (Optional, String) Cross Regional backups can be stored across multiple regions in a zone. Regional backups are stored in only one specific region.
 - `instance_type` - (Optional, String) The hosting infrastructure identifier.By Default `bx2.1x4` taken automatically. With this identifier, minimum resource configurations apply. Alternatively, setting the identifier to any of the following host sizes places your database on the specified host size with no other tenants.
           - `bx2.4x16`
@@ -91,12 +87,13 @@ Review the argument reference that you can specify for your resource.
           - `mx2.4x32`
           - `mx2.16x128`
           - `mx2.128x1024`
+- `disk_encryption_instance_crn` - (Optional, String) Please ensure Databases for Db2 has been authorized to access the selected KMS instance.
+- `disk_encryption_key_crn` - (Optional, String) Warning: deleting this key will result in the loss of all data stored in this Db2 instance.
+- `oracle_compatibility` - (Optional, String) If you require Oracle compatibility, please choose this option(YES/NO).
+- `subscription_id` - (Optional, String) ID which is required for subscription plans, for example: PerformanceSubscription.
 - `parameters_json` - (Optional, JSON) Parameters to create Db2 SaaS instance. The value must be a JSON string.
 
   Nested scheme for `parameters_json`:
-  - `disk_encryption_instance_crn` - (Optional, String) Please ensure Databases for Db2 has been authorized to access the selected KMS instance.
-  - `disk_encryption_key_crn` - (Optional, String) Warning: deleting this key will result in the loss of all data stored in this Db2 instance.
-  - `oracle_compatibility` - (Optional, String) If you require Oracle compatibility, please choose this option(YES/NO).
   - `backup_encryption_key_crn` -  (Optional, Forces new resource, String) The CRN of a key protect key, that you want to use for encrypting disk that holds deployment backups. A key protect CRN is in the format `crn:v1:<...>:key:`. `backup_encryption_key_crn` can be added only at the time of creation and no update support  are available.
 
 

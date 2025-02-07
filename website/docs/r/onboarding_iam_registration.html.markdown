@@ -82,7 +82,7 @@ resource "ibm_onboarding_iam_registration" "onboarding_iam_registration_instance
 		options {
 			operators = [ "stringEquals" ]
 			hidden = true
-			supported_attributes = [ "supported_attributes" ]
+			supported_patterns = [ "supported_patterns" ]
 			policy_types = [ "access" ]
 			is_empty_value_supported = true
 			is_string_exists_false_value_supported = true
@@ -202,7 +202,6 @@ resource "ibm_onboarding_iam_registration" "onboarding_iam_registration_instance
 		}
 		options {
 			access_policy = true
-			additional_properties_for_access_policy = { "key" = "inner" }
 			policy_type = [ "access" ]
 			account_type = "enterprise"
 		}
@@ -302,9 +301,9 @@ Nested schema for **display_name**:
 * `env` - (Optional, String) The environment to fetch this object from.
   * Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^[a-z]+$/`.
 * `name` - (Required, String) The IAM registration name, which must be the programmatic name of the product.
-  * Constraints: The value must match regular expression `/^[a-z0-9\\-.]+$/`.
+  * Constraints: The value must match regular expression `/^[a-zA-Z0-9\\-.]+$/`.
 * `parent_ids` - (Optional, List) The list of parent IDs for product access management.
-  * Constraints: The list items must match regular expression `/^[a-z0-9\\-.]+$/`. The maximum length is `100` items. The minimum length is `0` items.
+  * Constraints: The list items must match regular expression `/^[a-zA-Z0-9\\-.]+$/`. The maximum length is `100` items. The minimum length is `0` items.
 * `product_id` - (Required, Forces new resource, String) The unique ID of the product.
   * Constraints: The maximum length is `71` characters. The minimum length is `71` characters. The value must match regular expression `/^[a-zA-Z0-9]{32}:o:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/`.
 * `resource_hierarchy_attribute` - (Optional, List) The resource hierarchy key-value pair for composite services.
@@ -395,7 +394,7 @@ Nested schema for **supported_attributes**:
 			* `value` - (Optional, List) Hierarchy description value.
 			Nested schema for **value**:
 				* `key` - (Optional, String) Key.
-		* `supported_attributes` - (Optional, List) The list of supported patterns.
+		* `supported_patterns` - (Optional, List) The list of supported patterns.
 		  * Constraints: The maximum length is `100` items. The minimum length is `0` items.
 	* `ui` - (Optional, List) The user interface.
 	Nested schema for **ui**:
@@ -530,7 +529,6 @@ Nested schema for **supported_roles**:
 		* `access_policy` - (Required, Boolean) Optional opt-in to require access control on the role.
 		* `account_type` - (Optional, String) Optional opt-in to require checking account type when applying the role.
 		  * Constraints: Allowable values are: `enterprise`.
-		* `additional_properties_for_access_policy` - (Optional, Map) Additional properties for access policy.
 		* `policy_type` - (Optional, List) Optional opt-in to require checking policy type when applying the role.
 		  * Constraints: Allowable list items are: `access`, `authorization`, `authorization-delegated`. The list items must match regular expression `/^[ -~\\s]*$/`. The maximum length is `100` items. The minimum length is `0` items.
 
@@ -547,7 +545,7 @@ You can import the `ibm_onboarding_iam_registration` resource by using `name`.
 The `name` property can be formed from `product_id`, and `name` in the following format:
 
 <pre>
-&lt;product_id&gt;/&lt;name&gt;
+&lt;product_id/name
 </pre>
 * `product_id`: A string. The unique ID of the product.
 * `name`: A string in the format `pet-store`. The IAM registration name, which must be the programmatic name of the product.
