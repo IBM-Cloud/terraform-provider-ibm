@@ -80,6 +80,111 @@ resource "ibm_onboarding_catalog_deployment" "onboarding_catalog_deployment_inst
       bindable = true
       plan_updateable = true
       service_key_supported = true
+      parameters {
+        displayname = "displayname"
+        name = "name"
+        type = "text"
+        options {
+          displayname = "displayname"
+          value = "value"
+          i18n {
+            en {
+              displayname = "displayname"
+              description = "description"
+            }
+            de {
+              displayname = "displayname"
+              description = "description"
+            }
+            es {
+              displayname = "displayname"
+              description = "description"
+            }
+            fr {
+              displayname = "displayname"
+              description = "description"
+            }
+            it {
+              displayname = "displayname"
+              description = "description"
+            }
+            ja {
+              displayname = "displayname"
+              description = "description"
+            }
+            ko {
+              displayname = "displayname"
+              description = "description"
+            }
+            pt_br {
+              displayname = "displayname"
+              description = "description"
+            }
+            zh_tw {
+              displayname = "displayname"
+              description = "description"
+            }
+            zh_cn {
+              displayname = "displayname"
+              description = "description"
+            }
+          }
+        }
+        value = [ "value" ]
+        layout = "layout"
+        associations = { "key" = "anything as a string" }
+        validation_url = "validation_url"
+        options_url = "options_url"
+        invalidmessage = "invalidmessage"
+        description = "description"
+        required = true
+        pattern = "pattern"
+        placeholder = "placeholder"
+        readonly = true
+        hidden = true
+        i18n {
+          en {
+            displayname = "displayname"
+            description = "description"
+          }
+          de {
+            displayname = "displayname"
+            description = "description"
+          }
+          es {
+            displayname = "displayname"
+            description = "description"
+          }
+          fr {
+            displayname = "displayname"
+            description = "description"
+          }
+          it {
+            displayname = "displayname"
+            description = "description"
+          }
+          ja {
+            displayname = "displayname"
+            description = "description"
+          }
+          ko {
+            displayname = "displayname"
+            description = "description"
+          }
+          pt_br {
+            displayname = "displayname"
+            description = "description"
+          }
+          zh_tw {
+            displayname = "displayname"
+            description = "description"
+          }
+          zh_cn {
+            displayname = "displayname"
+            description = "description"
+          }
+        }
+      }
     }
     deployment {
       broker {
@@ -229,6 +334,112 @@ resource "ibm_onboarding_catalog_product" "onboarding_catalog_product_instance" 
       bindable = true
       plan_updateable = true
       service_key_supported = true
+      unique_api_key = true
+      parameters {
+        displayname = "displayname"
+        name = "name"
+        type = "text"
+        options {
+          displayname = "displayname"
+          value = "value"
+          i18n {
+            en {
+              displayname = "displayname"
+              description = "description"
+            }
+            de {
+              displayname = "displayname"
+              description = "description"
+            }
+            es {
+              displayname = "displayname"
+              description = "description"
+            }
+            fr {
+              displayname = "displayname"
+              description = "description"
+            }
+            it {
+              displayname = "displayname"
+              description = "description"
+            }
+            ja {
+              displayname = "displayname"
+              description = "description"
+            }
+            ko {
+              displayname = "displayname"
+              description = "description"
+            }
+            pt_br {
+              displayname = "displayname"
+              description = "description"
+            }
+            zh_tw {
+              displayname = "displayname"
+              description = "description"
+            }
+            zh_cn {
+              displayname = "displayname"
+              description = "description"
+            }
+          }
+        }
+        value = [ "value" ]
+        layout = "layout"
+        associations = { "key" = "anything as a string" }
+        validation_url = "validation_url"
+        options_url = "options_url"
+        invalidmessage = "invalidmessage"
+        description = "description"
+        required = true
+        pattern = "pattern"
+        placeholder = "placeholder"
+        readonly = true
+        hidden = true
+        i18n {
+          en {
+            displayname = "displayname"
+            description = "description"
+          }
+          de {
+            displayname = "displayname"
+            description = "description"
+          }
+          es {
+            displayname = "displayname"
+            description = "description"
+          }
+          fr {
+            displayname = "displayname"
+            description = "description"
+          }
+          it {
+            displayname = "displayname"
+            description = "description"
+          }
+          ja {
+            displayname = "displayname"
+            description = "description"
+          }
+          ko {
+            displayname = "displayname"
+            description = "description"
+          }
+          pt_br {
+            displayname = "displayname"
+            description = "description"
+          }
+          zh_tw {
+            displayname = "displayname"
+            description = "description"
+          }
+          zh_cn {
+            displayname = "displayname"
+            description = "description"
+          }
+        }
+      }
     }
     other {
       pc {
@@ -354,7 +565,7 @@ resource "ibm_onboarding_iam_registration" "onboarding_iam_registration_instance
     options {
       operators = [ "stringEquals" ]
       hidden = true
-      supported_attributes = [ "supported_attributes" ]
+      supported_patterns = [ "supported_patterns" ]
       policy_types = [ "access" ]
       is_empty_value_supported = true
       is_string_exists_false_value_supported = true

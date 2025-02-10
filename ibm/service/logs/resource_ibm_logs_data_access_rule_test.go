@@ -22,9 +22,9 @@ import (
 func TestAccIbmLogsDataAccessRuleBasic(t *testing.T) {
 	var conf logsv0.DataAccessRule
 	displayName := fmt.Sprintf("tf_display_name_%d", acctest.RandIntRange(10, 100))
-	defaultExpression := "<v1>true"
+	defaultExpression := "true"
 	displayNameUpdate := fmt.Sprintf("tf_display_name_%d", acctest.RandIntRange(10, 100))
-	defaultExpressionUpdate := "<v1>false"
+	defaultExpressionUpdate := "false"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheckCloudLogs(t) },

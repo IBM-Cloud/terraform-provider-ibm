@@ -68,6 +68,7 @@ After your data source is created, you can read values from the following attrib
         - `href` - (String) Link to the host group resource.
         - `name` - (String) Name of the host group.
   - `host_id` - (String)  ID of the host.
+  - `host_reference` - (Integer) Current physical ID of the host.
   - `id` - (String) The unique identifier of the pi_hosts.
   - `state` - (String) State of the host `up` or `down`.
   - `status` - (String) Status of the host `enabled` or `disabled`.

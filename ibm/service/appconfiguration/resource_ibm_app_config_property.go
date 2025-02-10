@@ -5,7 +5,6 @@ package appconfiguration
 
 import (
 	"fmt"
-	"log"
 	"strconv"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -150,7 +149,7 @@ func resourceIbmIbmAppConfigPropertyCreate(d *schema.ResourceData, meta interfac
 	guid := d.Get("guid").(string)
 	appconfigClient, err := getAppConfigClient(meta, guid)
 	if err != nil {
-		return fmt.Errorf("getAppConfigClient failed %s", err)
+		return flex.FmtErrorf("getAppConfigClient failed %s", err)
 	}
 
 	options := &appconfigurationv1.CreatePropertyOptions{}
@@ -185,7 +184,7 @@ func resourceIbmIbmAppConfigPropertyCreate(d *schema.ResourceData, meta interfac
 			value := e.(map[string]interface{})
 			segmentRulesItem, err := resourceIbmAppConfigPropertyMapToSegmentRule(d, value)
 			if err != nil {
-				return err
+				return flex.FmtErrorf(fmt.Sprintf("%s", err))
 			}
 			segmentRules = append(segmentRules, segmentRulesItem)
 		}
@@ -194,7 +193,7 @@ func resourceIbmIbmAppConfigPropertyCreate(d *schema.ResourceData, meta interfac
 
 	result, response, err := appconfigClient.CreateProperty(options)
 	if err != nil {
-		return fmt.Errorf("CreateProperty failed %s\n%s", err, response)
+		return flex.FmtErrorf("CreateProperty failed %s\n%s", err, response)
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s/%s", guid, *options.EnvironmentID, *result.PropertyID))
@@ -208,12 +207,12 @@ func resourceIbmIbmAppConfigPropertyRead(d *schema.ResourceData, meta interface{
 		return nil
 	}
 	if len(parts) != 3 {
-		return fmt.Errorf("Kindly check the id")
+		return flex.FmtErrorf("Kindly check the id")
 	}
 
 	appconfigClient, err := getAppConfigClient(meta, parts[0])
 	if err != nil {
-		return fmt.Errorf("getAppConfigClient failed %s", err)
+		return flex.FmtErrorf("getAppConfigClient failed %s", err)
 	}
 
 	options := &appconfigurationv1.GetPropertyOptions{}
@@ -226,7 +225,7 @@ func resourceIbmIbmAppConfigPropertyRead(d *schema.ResourceData, meta interface{
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
 		}
-		return fmt.Errorf("[DEBUG] GetProperty failed %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] GetProperty failed %s\n%s", err, response)
 	}
 
 	d.Set("guid", parts[0])
@@ -234,17 +233,17 @@ func resourceIbmIbmAppConfigPropertyRead(d *schema.ResourceData, meta interface{
 
 	if result.Name != nil {
 		if err = d.Set("name", result.Name); err != nil {
-			return fmt.Errorf("error setting name: %s", err)
+			return flex.FmtErrorf("error setting name: %s", err)
 		}
 	}
 	if result.PropertyID != nil {
 		if err = d.Set("property_id", result.PropertyID); err != nil {
-			return fmt.Errorf("error setting property_id: %s", err)
+			return flex.FmtErrorf("error setting property_id: %s", err)
 		}
 	}
 	if result.Type != nil {
 		if err = d.Set("type", result.Type); err != nil {
-			return fmt.Errorf("error setting type: %s", err)
+			return flex.FmtErrorf("error setting type: %s", err)
 		}
 	}
 	if result.Value != nil {
@@ -260,32 +259,32 @@ func resourceIbmIbmAppConfigPropertyRead(d *schema.ResourceData, meta interface{
 	}
 	if result.Description != nil {
 		if err = d.Set("description", result.Description); err != nil {
-			return fmt.Errorf("error setting description: %s", err)
+			return flex.FmtErrorf("error setting description: %s", err)
 		}
 	}
 	if result.Tags != nil {
 		if err = d.Set("tags", result.Tags); err != nil {
-			return fmt.Errorf("error setting tags: %s", err)
+			return flex.FmtErrorf("error setting tags: %s", err)
 		}
 	}
 	if result.SegmentExists != nil {
 		if err = d.Set("segment_exists", result.SegmentExists); err != nil {
-			return fmt.Errorf("error setting segment_exists: %s", err)
+			return flex.FmtErrorf("error setting segment_exists: %s", err)
 		}
 	}
 	if result.CreatedTime != nil {
 		if err = d.Set("created_time", result.CreatedTime.String()); err != nil {
-			return fmt.Errorf("error setting created_time: %s", err)
+			return flex.FmtErrorf("error setting created_time: %s", err)
 		}
 	}
 	if result.UpdatedTime != nil {
 		if err = d.Set("updated_time", result.UpdatedTime.String()); err != nil {
-			return fmt.Errorf("error setting updated_time: %s", err)
+			return flex.FmtErrorf("error setting updated_time: %s", err)
 		}
 	}
 	if result.Href != nil {
 		if err = d.Set("href", result.Href); err != nil {
-			return fmt.Errorf("error setting href: %s", err)
+			return flex.FmtErrorf("error setting href: %s", err)
 		}
 	}
 
@@ -296,7 +295,7 @@ func resourceIbmIbmAppConfigPropertyRead(d *schema.ResourceData, meta interface{
 			segmentRules = append(segmentRules, segmentRulesItemMap)
 		}
 		if err = d.Set("segment_rules", segmentRules); err != nil {
-			return fmt.Errorf("[ERROR] Error setting segment_rules: %s", err)
+			return flex.FmtErrorf("[ERROR] Error setting segment_rules: %s", err)
 		}
 	}
 	if result.Collections != nil {
@@ -306,7 +305,7 @@ func resourceIbmIbmAppConfigPropertyRead(d *schema.ResourceData, meta interface{
 			collections = append(collections, collectionsItemMap)
 		}
 		if err = d.Set("collections", collections); err != nil {
-			return fmt.Errorf("[ERROR] Error setting collections: %s", err)
+			return flex.FmtErrorf("[ERROR] Error setting collections: %s", err)
 		}
 	}
 	return nil
@@ -320,7 +319,7 @@ func resourceIbmIbmAppConfigPropertyUpdate(d *schema.ResourceData, meta interfac
 		}
 		appconfigClient, err := getAppConfigClient(meta, parts[0])
 		if err != nil {
-			return fmt.Errorf("getAppConfigClient failed %s", err)
+			return flex.FmtErrorf("getAppConfigClient failed %s", err)
 		}
 		options := &appconfigurationv1.UpdatePropertyOptions{}
 
@@ -351,7 +350,7 @@ func resourceIbmIbmAppConfigPropertyUpdate(d *schema.ResourceData, meta interfac
 				value := e.(map[string]interface{})
 				segmentRulesItem, err := resourceIbmAppConfigPropertyMapToSegmentRule(d, value)
 				if err != nil {
-					return err
+					return flex.FmtErrorf(fmt.Sprintf("%s", err))
 				}
 				segmentRules = append(segmentRules, segmentRulesItem)
 			}
@@ -359,7 +358,7 @@ func resourceIbmIbmAppConfigPropertyUpdate(d *schema.ResourceData, meta interfac
 		}
 		_, response, err := appconfigClient.UpdateProperty(options)
 		if err != nil {
-			return fmt.Errorf("UpdateProperty failed %s\n%s", err, response)
+			return flex.FmtErrorf("UpdateProperty failed %s\n%s", err, response)
 		}
 
 		return resourceIbmIbmAppConfigPropertyRead(d, meta)
@@ -374,7 +373,7 @@ func resourceIbmIbmAppConfigPropertyDelete(d *schema.ResourceData, meta interfac
 	}
 	appconfigClient, err := getAppConfigClient(meta, parts[0])
 	if err != nil {
-		return fmt.Errorf("getAppConfigClient failed %s", err)
+		return flex.FmtErrorf("getAppConfigClient failed %s", err)
 	}
 
 	options := &appconfigurationv1.DeletePropertyOptions{}
@@ -388,8 +387,7 @@ func resourceIbmIbmAppConfigPropertyDelete(d *schema.ResourceData, meta interfac
 			d.SetId("")
 			return nil
 		}
-		log.Printf("[DEBUG] DeleteProperty failed %s\n%s", err, response)
-		return err
+		return flex.FmtErrorf("[ERROR] DeleteProperty failed %s\n%s", err, response)
 	}
 
 	d.SetId("")
@@ -421,7 +419,7 @@ func resourceIbmAppConfigPropertyMapToSegmentRule(d *schema.ResourceData, segmen
 	case "NUMERIC":
 		v, err := strconv.ParseFloat(ruleValue, 64)
 		if err != nil {
-			return segmentRule, fmt.Errorf("'value' parameter in 'segment_rules' has wrong value: %s", err)
+			return segmentRule, flex.FmtErrorf("'value' parameter in 'segment_rules' has wrong value: %s", err)
 		}
 		segmentRule.Value = v
 	case "BOOLEAN":
@@ -430,7 +428,7 @@ func resourceIbmAppConfigPropertyMapToSegmentRule(d *schema.ResourceData, segmen
 		} else if ruleValue == "true" {
 			segmentRule.Value = true
 		} else {
-			return segmentRule, fmt.Errorf("'value' parameter in 'segment_rules' has wrong value")
+			return segmentRule, flex.FmtErrorf("'value' parameter in 'segment_rules' has wrong value")
 		}
 	}
 
