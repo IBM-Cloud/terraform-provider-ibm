@@ -191,3 +191,184 @@ func testAccCheckIBMDb2InstanceFullyspecified(databaseResourceGroup string, test
 	}
 	`, databaseResourceGroup, testName)
 }
+
+func TestAccIBMDb2InstanceAutoscale(t *testing.T) {
+	databaseResourceGroup := "Default"
+	var databaseInstanceOne string
+	rnd := fmt.Sprintf("tf-db2-%d", acctest.RandIntRange(10, 100))
+	testName := rnd
+	name := "ibm_db2." + testName
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMDb2InstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+
+				Config: testAccCheckIBMDb2InstanceAutoscale(databaseResourceGroup, testName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMDb2InstanceExists(name, &databaseInstanceOne),
+					resource.TestCheckResourceAttr(name, "name", testName),
+					resource.TestCheckResourceAttr(name, "service", "dashdb-for-transactions"),
+					resource.TestCheckResourceAttr(name, "plan", "performance"),
+					resource.TestCheckResourceAttr(name, "location", "us-east"),
+					resource.TestCheckResourceAttr(name, "service_endpoints", "public-and-private"),
+					resource.TestCheckResourceAttr(name, "autoscale_config.#","0"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMDb2InstanceAutoscale(databaseResourceGroup string, testName string) string {
+	return fmt.Sprintf(`
+	
+    data "ibm_resource_group" "group" {
+		name = "%[1]s"
+	}
+
+	resource "ibm_db2" "%[2]s" {
+		name              = "%[2]s"
+		service           = "dashdb-for-transactions"
+		plan              = "performance" 
+		location          = "us-east"
+		resource_group_id = data.ibm_resource_group.group.id
+		service_endpoints = "public-and-private"
+
+		timeouts {
+			create = "720m"
+			update = "30m"
+			delete = "30m"
+		}
+
+		autoscale_config  {
+    		auto_scaling_enabled = "true"
+    		auto_scaling_threshold = "60"
+    		auto_scaling_over_time_period = "15"
+    		auto_scaling_pause_limit = "70"
+   		}
+	}
+	`, databaseResourceGroup, testName)
+}
+
+func TestAccIBMDb2InstanceCustomSetting(t *testing.T) {
+	databaseResourceGroup := "Default"
+	var databaseInstanceOne string
+	rnd := fmt.Sprintf("tf-db2-%d", acctest.RandIntRange(10, 100))
+	testName := rnd
+	name := "ibm_db2." + testName
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMDb2InstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+
+				Config: testAccCheckIBMDb2InstanceCustomSetting(databaseResourceGroup, testName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMDb2InstanceExists(name, &databaseInstanceOne),
+					resource.TestCheckResourceAttr(name, "name", testName),
+					resource.TestCheckResourceAttr(name, "service", "dashdb-for-transactions"),
+					resource.TestCheckResourceAttr(name, "plan", "performance"),
+					resource.TestCheckResourceAttr(name, "location", "us-east"),
+					resource.TestCheckResourceAttr(name, "service_endpoints", "public-and-private"),
+					resource.TestCheckResourceAttr(name, "dbm_configuration.#","0"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMDb2InstanceCustomSetting(databaseResourceGroup string, testName string) string {
+	return fmt.Sprintf(`
+	
+    data "ibm_resource_group" "group" {
+		name = "%[1]s"
+	}
+
+	resource "ibm_db2" "%[2]s" {
+		name              = "%[2]s"
+		service           = "dashdb-for-transactions"
+		plan              = "performance" 
+		location          = "us-east"
+		resource_group_id = data.ibm_resource_group.group.id
+		service_endpoints = "public-and-private"
+
+		timeouts {
+			create = "720m"
+			update = "30m"
+			delete = "30m"
+		}
+
+		dbm_configuration {
+    		db {
+      			auto_reval = "IMMEDIATE"
+    		}
+    		dbm {
+      			multipartsizemb = "100"
+    		}
+    		registry {
+      		db2_alternate_authz_behaviour = "EXTERNAL_ROUTINE_DBADM"
+    	}
+  }
+	}
+	`, databaseResourceGroup, testName)
+}
+
+func TestAccIBMDb2InstanceBackupg(t *testing.T) {
+	databaseResourceGroup := "Default"
+	var databaseInstanceOne string
+	rnd := fmt.Sprintf("tf-db2-%d", acctest.RandIntRange(10, 100))
+	testName := rnd
+	name := "ibm_db2." + testName
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMDb2InstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+
+				Config: testAccCheckIBMDb2InstanceBackup(databaseResourceGroup, testName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMDb2InstanceExists(name, &databaseInstanceOne),
+					resource.TestCheckResourceAttr(name, "name", testName),
+					resource.TestCheckResourceAttr(name, "service", "dashdb-for-transactions"),
+					resource.TestCheckResourceAttr(name, "plan", "performance"),
+					resource.TestCheckResourceAttr(name, "location", "us-east"),
+					resource.TestCheckResourceAttr(name, "service_endpoints", "public-and-private"),
+					resource.TestCheckResourceAttr(name, "backup_config.#","0"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMDb2InstanceBackup(databaseResourceGroup string, testName string) string {
+	return fmt.Sprintf(`
+	
+    data "ibm_resource_group" "group" {
+		name = "%[1]s"
+	}
+
+	resource "ibm_db2" "%[2]s" {
+		name              = "%[2]s"
+		service           = "dashdb-for-transactions"
+		plan              = "performance" 
+		location          = "us-east"
+		resource_group_id = data.ibm_resource_group.group.id
+		service_endpoints = "public-and-private"
+
+		timeouts {
+			create = "720m"
+			update = "30m"
+			delete = "30m"
+		}
+
+		backup_config{}
+  }
+	}
+	`, databaseResourceGroup, testName)
+}

@@ -83,6 +83,728 @@ func ResourceIBMDb2Instance() *schema.Resource {
 		Type:        schema.TypeString,
 	}
 
+	riSchema["autoscale_config"] = &schema.Schema{
+		Description: "The db2 auto scaling config",
+		Optional:    true,
+		Type:        schema.TypeList,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"auto_scaling_threshold": {
+					Description: "The auto_scaling_threshold of the instance",
+					Optional:    true,
+					Type:        schema.TypeString,
+				},
+				"auto_scaling_over_time_period": {
+					Description: "The auto_scaling_over_time_period of the instance",
+					Optional:    true,
+					Type:        schema.TypeString,
+				},
+				"auto_scaling_enabled": {
+					Type:        schema.TypeBool,
+					Optional:    true,
+					Description: "Indicates if automatic scaling is enabled or not.",
+				},
+				"auto_scaling_allow_plan_limit": {
+					Type:        schema.TypeBool,
+					Optional:    true,
+					Description: "Indicates the maximum number of scaling actions that are allowed within a specified time period.",
+				},
+				"auto_scaling_pause_limit": {
+					Type:        schema.TypeInt,
+					Optional:    true,
+					Description: "Specifies the duration to pause auto-scaling actions after a scaling event has occurred.",
+				},
+			},
+		},
+	}
+
+	//riSchema["backup_config"] = &schema.Schema{}
+
+	riSchema["dbm_configuration"] = &schema.Schema{
+		Description: "Db and Dm configurations",
+		Optional:    true,
+		Type:        schema.TypeList,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"db": &schema.Schema{
+					Type:        schema.TypeList,
+					Optional:    true,
+					Description: "Tunable parameters related to the Db2 database instance.",
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"act_sortmem_limit": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"alt_collate": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"appgroup_mem_sz": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"applheapsz": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"appl_memory": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"app_ctl_heap_sz": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"archretrydelay": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"authn_cache_duration": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"autorestart": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"auto_cg_stats": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"auto_maint": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"auto_reorg": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"auto_reval": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"auto_runstats": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"auto_sampling": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"auto_stats_views": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"auto_stmt_stats": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"auto_tbl_maint": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"avg_appls": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"catalogcache_sz": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"chngpgs_thresh": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"cur_commit": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"database_memory": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"dbheap": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"db_collname": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"db_mem_thresh": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"ddl_compression_def": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"ddl_constraint_def": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"decflt_rounding": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"dec_arithmetic": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"dec_to_char_fmt": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"dft_degree": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"dft_extent_sz": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"dft_loadrec_ses": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"dft_mttb_types": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"dft_prefetch_sz": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"dft_queryopt": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"dft_refresh_age": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"dft_schemas_dcc": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"dft_sqlmathwarn": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"dft_table_org": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"dlchktime": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"enable_xmlchar": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"extended_row_sz": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"groupheap_ratio": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"indexrec": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"large_aggregation": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"locklist": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"locktimeout": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"logindexbuild": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"log_appl_info": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"log_ddl_stmts": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"log_disk_cap": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"maxappls": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"maxfilop": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"maxlocks": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"min_dec_div_3": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"mon_act_metrics": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"mon_deadlock": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"mon_lck_msg_lvl": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"mon_locktimeout": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"mon_lockwait": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"mon_lw_thresh": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"mon_obj_metrics": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"mon_pkglist_sz": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"mon_req_metrics": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"mon_rtn_data": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"mon_rtn_execlist": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"mon_uow_data": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"mon_uow_execlist": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"mon_uow_pkglist": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"nchar_mapping": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"num_freqvalues": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"num_iocleaners": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"num_ioservers": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"num_log_span": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"num_quantiles": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"opt_buffpage": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"opt_direct_wrkld": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"opt_locklist": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"opt_maxlocks": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"opt_sortheap": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"page_age_trgt_gcr": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"page_age_trgt_mcr": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"pckcachesz": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"pl_stack_trace": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"self_tuning_mem": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"seqdetect": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"sheapthres_shr": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"softmax": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"sortheap": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"sql_ccflags": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"stat_heap_sz": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"stmtheap": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"stmt_conc": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"string_units": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"systime_period_adj": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"trackmod": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"util_heap_sz": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"wlm_admission_ctrl": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"wlm_agent_load_trgt": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"wlm_cpu_limit": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"wlm_cpu_shares": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"wlm_cpu_share_mode": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+						},
+					},
+				},
+				"dbm": &schema.Schema{
+					Type:        schema.TypeList,
+					Optional:    true,
+					Description: "Tunable parameters related to the Db2 instance manager (dbm).",
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"comm_bandwidth": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"cpuspeed": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"dft_mon_bufpool": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"dft_mon_lock": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"dft_mon_sort": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"dft_mon_stmt": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"dft_mon_table": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"dft_mon_timestamp": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"dft_mon_uow": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"diaglevel": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"federated_async": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"indexrec": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"intra_parallel": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"keepfenced": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"max_connretries": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"max_querydegree": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"mon_heap_sz": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"multipartsizemb": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"notifylevel": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"num_initagents": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"num_initfenced": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"num_poolagents": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"resync_interval": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"rqrioblk": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"start_stop_time": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"util_impact_lim": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"wlm_dispatcher": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"wlm_disp_concur": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"wlm_disp_cpu_shares": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"wlm_disp_min_util": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+						},
+					},
+				},
+				"registry": &schema.Schema{
+					Type:        schema.TypeList,
+					Optional:    true,
+					Description: "Tunable parameters related to the Db2 registry.",
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"db2_bidi": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"db2_compopt": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"db2_lock_to_rb": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"db2_stmm": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"db2_alternate_authz_behaviour": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"db2_antijoin": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"db2_ats_enable": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"db2_deferred_prepare_semantics": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"db2_evaluncommitted": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"db2_extended_optimization": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"db2_index_pctfree_default": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"db2_inlist_to_nljn": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"db2_minimize_listprefetch": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"db2_object_table_entries": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"db2_optprofile": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"db2_optstats_log": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"db2_opt_max_temp_size": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"db2_parallel_io": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"db2_reduced_optimization": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"db2_selectivity": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"db2_skipdeleted": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"db2_skipinserted": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"db2_sync_release_lock_attributes": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"db2_truncate_reusestorage": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"db2_use_alternate_page_cleaning": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"db2_view_reopt_values": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"db2_wlm_settings": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"db2_workload": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
 	return &schema.Resource{
 		Create:   resourceIBMDb2InstanceCreate,
 		Read:     resourcecontroller.ResourceIBMResourceInstanceRead,
@@ -267,34 +989,34 @@ func resourceIBMDb2InstanceCreate(d *schema.ResourceData, meta interface{}) erro
 		return err
 	}
 
-	if allolistConfigRaw, ok := d.GetOk("allowlist_config"); ok {
-		if allolistConfigRaw == nil || reflect.ValueOf(allolistConfigRaw).IsNil() {
-			fmt.Println("No allowlisting config is provided, Skipping.")
-		} else {
-			allowelistConfig := allolistConfigRaw.([]interface{})[0].(map[string]interface{})
+	// if allolistConfigRaw, ok := d.GetOk("allowlist_config"); ok {
+	// 	if allolistConfigRaw == nil || reflect.ValueOf(allolistConfigRaw).IsNil() {
+	// 		fmt.Println("No allowlisting config is provided, Skipping.")
+	// 	} else {
+	// 		allowelistConfig := allolistConfigRaw.([]interface{})[0].(map[string]interface{})
 
-			ipAddress := make([]db2saasv1.IpAddress, 0, len(allowelistConfig["ip_addresses"].([]interface{})))
+	// 		ipAddress := make([]db2saasv1.IpAddress, 0, len(allowelistConfig["ip_addresses"].([]interface{})))
 
-			for _, ip := range ipAddress {
-				if err = validateIPAddress(ip); err != nil {
-					return err
-				}
-			}
+	// 		for _, ip := range ipAddress {
+	// 			if err = validateIPAddress(ip); err != nil {
+	// 				return err
+	// 			}
+	// 		}
 
-			input := &db2saasv1.PostDb2SaasAllowlistOptions{
-				XDeploymentID: core.StringPtr(*instance.CRN),
-				IpAddresses:   ipAddress,
-			}
+	// 		input := &db2saasv1.PostDb2SaasAllowlistOptions{
+	// 			XDeploymentID: core.StringPtr(*instance.CRN),
+	// 			IpAddresses:   ipAddress,
+	// 		}
 
-			result, response, err := db2SaasClient.PostDb2SaasAllowlist(input)
-			if err != nil {
-				log.Printf("Error while posting allowlist to DB2Saas: %s", err)
-			} else {
-				log.Printf("StatusCode of response %d", response.StatusCode)
-				log.Printf("Success result %v", result)
-			}
-		}
-	}
+	// 		result, response, err := db2SaasClient.PostDb2SaasAllowlist(input)
+	// 		if err != nil {
+	// 			log.Printf("Error while posting allowlist to DB2Saas: %s", err)
+	// 		} else {
+	// 			log.Printf("StatusCode of response %d", response.StatusCode)
+	// 			log.Printf("Success result %v", result)
+	// 		}
+	// 	}
+	// }
 
 	if autoscaleConfigRaw, ok := d.GetOk("autoscale_config"); ok {
 		if autoscaleConfigRaw == nil || reflect.ValueOf(autoscaleConfigRaw).IsNil() {
@@ -349,38 +1071,38 @@ func resourceIBMDb2InstanceCreate(d *schema.ResourceData, meta interface{}) erro
 
 	}
 
-	if userDetailsRaw, ok := d.GetOk("db2_userdetails"); ok {
-		if userDetailsRaw == nil || reflect.ValueOf(userDetailsRaw).IsNil() {
-			fmt.Println("No user details configs provided; skipping")
-		} else {
-			userDetais := userDetailsRaw.([]interface{})[0].(map[string]interface{})
-			fmt.Println(userDetailsRaw)
+	// if userDetailsRaw, ok := d.GetOk("db2_userdetails"); ok {
+	// 	if userDetailsRaw == nil || reflect.ValueOf(userDetailsRaw).IsNil() {
+	// 		fmt.Println("No user details configs provided; skipping")
+	// 	} else {
+	// 		userDetais := userDetailsRaw.([]interface{})[0].(map[string]interface{})
+	// 		fmt.Println(userDetailsRaw)
 
-			input := &db2saasv1.PostDb2SaasUserOptions{
-				XDeploymentID: core.StringPtr(*instance.CRN),
-				ID:            core.StringPtr(userDetais["id"].(string)),
-				Iam:           core.BoolPtr(userDetais["iam"].(bool)),
-				Ibmid:         core.StringPtr(userDetais["ibmid"].(string)),
-				Name:          core.StringPtr(userDetais["name"].(string)),
-				Password:      core.StringPtr(userDetais["password"].(string)),
-				Role:          core.StringPtr(userDetais["role"].(string)),
-				Email:         core.StringPtr(userDetais["email"].(string)),
-				Locked:        core.StringPtr(userDetais["locked"].(string)),
-				Authentication: &db2saasv1.CreateUserAuthentication{
-					Method:   core.StringPtr("internal"),
-					PolicyID: core.StringPtr("Default"),
-				},
-			}
+	// 		input := &db2saasv1.PostDb2SaasUserOptions{
+	// 			XDeploymentID: core.StringPtr(*instance.CRN),
+	// 			ID:            core.StringPtr(userDetais["id"].(string)),
+	// 			Iam:           core.BoolPtr(userDetais["iam"].(bool)),
+	// 			Ibmid:         core.StringPtr(userDetais["ibmid"].(string)),
+	// 			Name:          core.StringPtr(userDetais["name"].(string)),
+	// 			Password:      core.StringPtr(userDetais["password"].(string)),
+	// 			Role:          core.StringPtr(userDetais["role"].(string)),
+	// 			Email:         core.StringPtr(userDetais["email"].(string)),
+	// 			Locked:        core.StringPtr(userDetais["locked"].(string)),
+	// 			Authentication: &db2saasv1.CreateUserAuthentication{
+	// 				Method:   core.StringPtr("internal"),
+	// 				PolicyID: core.StringPtr("Default"),
+	// 			},
+	// 		}
 
-			result, response, err := db2SaasClient.PostDb2SaasUser(input)
-			if err != nil {
-				log.Printf("Error while posting users to DB2Saas: %s", err)
-			} else {
-				log.Printf("StatusCode of response %d", response.StatusCode)
-				log.Printf("Success result %v", result)
-			}
-		}
-	}
+	// 		result, response, err := db2SaasClient.PostDb2SaasUser(input)
+	// 		if err != nil {
+	// 			log.Printf("Error while posting users to DB2Saas: %s", err)
+	// 		} else {
+	// 			log.Printf("StatusCode of response %d", response.StatusCode)
+	// 			log.Printf("Success result %v", result)
+	// 		}
+	// 	}
+	// }
 
 	if backupConfigRaw, ok := d.GetOk("db2_backup"); ok {
 		if backupConfigRaw == nil || reflect.ValueOf(backupConfigRaw).IsNil() {
@@ -611,7 +1333,6 @@ func resourceIBMDb2InstanceCreate(d *schema.ResourceData, meta interface{}) erro
 				}
 
 			}
-
 			input := &db2saasv1.PostDb2SaasDbConfigurationOptions{
 				XDbProfile: core.StringPtr(*instance.CRN),
 				Registry:   registry,

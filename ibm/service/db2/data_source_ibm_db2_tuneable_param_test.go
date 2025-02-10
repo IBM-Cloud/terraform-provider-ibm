@@ -28,7 +28,7 @@ func TestAccIbmDb2TuneableParamDataSourceBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIbmDb2TuneableParamDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_db2_tuneable_param.db2_saas_tuneable_param_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_db2_tuneable_param.Db2-44-test-both", "id"),
 				),
 			},
 		},
@@ -37,7 +37,7 @@ func TestAccIbmDb2TuneableParamDataSourceBasic(t *testing.T) {
 
 func testAccCheckIbmDb2TuneableParamDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
-		data "ibm_db2_tuneable_param" "db2_saas_tuneable_param_instance" {
+		data "ibm_db2_tuneable_param" "Db2-44-test-both" {
 		}
 	`)
 }

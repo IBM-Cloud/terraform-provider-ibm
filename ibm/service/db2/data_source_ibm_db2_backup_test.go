@@ -21,7 +21,7 @@ import (
 )
 
 func TestAccIbmDb2BackupDataSourceBasic(t *testing.T) {
-	xDbProfile := "crn%3Av1%3Astaging%3Apublic%3Adashdb-for-transactions%3Aus-east%3Aa%2Fe7e3e87b512f474381c0684a5ecbba03%3A8e3a219f-65d3-43cd-86da-b231d53732ef%3A%3A"
+	xDbProfile := "crn%3Av1%3Astaging%3Apublic%3Adashdb-for-transactions%3Aus-south%3Aa%2Fe7e3e87b512f474381c0684a5ecbba03%3Af5c9359c-9a66-4087-9eda-0024c2603c92%3A%3A"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
@@ -30,9 +30,9 @@ func TestAccIbmDb2BackupDataSourceBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIbmDb2BackupDataSourceConfigBasic(xDbProfile),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_db2_backup.db2_saas_backup_instance", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_db2_backup.db2_saas_backup_instance", "x_db_profile"),
-					resource.TestCheckResourceAttrSet("data.ibm_db2_backup.db2_saas_backup_instance", "backups.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_db2_backup.Db2-44-test-both", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_db2_backup.Db2-44-test-both", "deployment_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_db2_backup.Db2-44-test-both", "backups.#"),
 				),
 			},
 		},
@@ -41,8 +41,8 @@ func TestAccIbmDb2BackupDataSourceBasic(t *testing.T) {
 
 func testAccCheckIbmDb2BackupDataSourceConfigBasic(xDbProfile string) string {
 	return fmt.Sprintf(`
-		data "ibm_db2_backup" "db2_saas_backup_instance" {
-			x-db-profile = "%[1]s"
+		data "ibm_db2_backup" "Db2-44-test-both" {
+			deployment_id = "%[1]s"
 		}
 	`, xDbProfile)
 }
