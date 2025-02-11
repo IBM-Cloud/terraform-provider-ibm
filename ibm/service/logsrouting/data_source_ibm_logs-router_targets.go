@@ -119,7 +119,15 @@ func dataSourceIBMLogsRouterTargetsRead(context context.Context, d *schema.Resou
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
-	ibmCloudLogsRoutingClient, _, err = updateClientURLWithEndpoint(ibmCloudLogsRoutingClient, d)
+
+	bxSession, err := meta.(conns.ClientSession).BluemixSession()
+	if err != nil {
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_logs_router_tenant", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+	}
+
+	ibmCloudLogsRoutingClient, _, err = updateClientURLWithEndpoint(ibmCloudLogsRoutingClient, d, bxSession)
 
 	listTenantTargetsOptions := &ibmcloudlogsroutingv0.ListTenantTargetsOptions{}
 
