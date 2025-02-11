@@ -47,12 +47,14 @@ You can specify the following arguments for this data source.
 In addition to all argument reference list, you can access the following attribute references after your data source is created.
 
 - `crn` - (String) The network security group's crn.
+- `default` - (Boolean) Indicates if the network security group is the default network security group in the workspace.
 
 - `members` - (List) The list of IPv4 addresses and\or network interfaces in the network security group.
 
   Nested schema for `members`:
   - `id` - (String) The id of the member in a network security group.
   - `mac_address` - (String) The mac address of a network interface included if the type is `network-interface`.
+  - `network_interface_id` - (String) The network ID of a network interface included if the type is `network-interface`.
   - `target` - (String) If `ipv4-address` type, then IPv4 address or if `network-interface` type, then network interface id.
   - `type` - (String) The type of member. Supported values are: `ipv4-address`, `network-interface`.
 
