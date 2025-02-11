@@ -2205,13 +2205,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	// GLOBAL TAGGING Service
 	globalTaggingEndpoint := "https://tags.global-search-tagging.cloud.ibm.com"
 	if c.Visibility == "private" || c.Visibility == "public-and-private" {
-		var globalTaggingRegion string
-		if c.Region != "us-south" && c.Region != "us-east" {
-			globalTaggingRegion = "us-south"
-		} else {
-			globalTaggingRegion = c.Region
-		}
-		globalTaggingEndpoint = ContructEndpoint(fmt.Sprintf("tags.private.%s", globalTaggingRegion), fmt.Sprintf("global-search-tagging.%s", cloudEndpoint))
+		globalTaggingEndpoint = ContructEndpoint("tags.private", fmt.Sprintf("global-search-tagging.%s", cloudEndpoint))
 	}
 	if fileMap != nil && c.Visibility != "public-and-private" {
 		globalTaggingEndpoint = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_GT_API_ENDPOINT", c.Region, globalTaggingEndpoint)
@@ -2234,13 +2228,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	// GLOBAL TAGGING Service
 	globalSearchEndpoint := "https://api.global-search-tagging.cloud.ibm.com"
 	if c.Visibility == "private" || c.Visibility == "public-and-private" {
-		var globalSearchRegion string
-		if c.Region != "us-south" && c.Region != "au-syd" && c.Region != "eu-gb" {
-			globalSearchRegion = "us-south"
-		} else {
-			globalSearchRegion = c.Region
-		}
-		globalSearchEndpoint = ContructEndpoint(fmt.Sprintf("api.private.%s", globalSearchRegion), fmt.Sprintf("global-search-tagging.%s", cloudEndpoint))
+		globalSearchEndpoint = ContructEndpoint("api.private", fmt.Sprintf("global-search-tagging.%s", cloudEndpoint))
 	}
 	if fileMap != nil && c.Visibility != "public-and-private" {
 		globalSearchEndpoint = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_GS_API_ENDPOINT", c.Region, searchv2.DefaultServiceURL)
