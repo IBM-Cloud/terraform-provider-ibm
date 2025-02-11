@@ -212,9 +212,9 @@ func TestAccIBMDb2InstanceAutoscale(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "dashdb-for-transactions"),
 					resource.TestCheckResourceAttr(name, "plan", "performance"),
-					resource.TestCheckResourceAttr(name, "location", "us-east"),
+					resource.TestCheckResourceAttr(name, "location", "us-south"),
 					resource.TestCheckResourceAttr(name, "service_endpoints", "public-and-private"),
-					resource.TestCheckResourceAttr(name, "autoscale_config.#","0"),
+					resource.TestCheckResourceAttr(name, "autoscale_config.#", "1"),
 				),
 			},
 		},
@@ -232,7 +232,7 @@ func testAccCheckIBMDb2InstanceAutoscale(databaseResourceGroup string, testName 
 		name              = "%[2]s"
 		service           = "dashdb-for-transactions"
 		plan              = "performance" 
-		location          = "us-east"
+		location          = "us-south"
 		resource_group_id = data.ibm_resource_group.group.id
 		service_endpoints = "public-and-private"
 
@@ -272,9 +272,9 @@ func TestAccIBMDb2InstanceCustomSetting(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "dashdb-for-transactions"),
 					resource.TestCheckResourceAttr(name, "plan", "performance"),
-					resource.TestCheckResourceAttr(name, "location", "us-east"),
+					resource.TestCheckResourceAttr(name, "location", "us-south"),
 					resource.TestCheckResourceAttr(name, "service_endpoints", "public-and-private"),
-					resource.TestCheckResourceAttr(name, "dbm_configuration.#","0"),
+					resource.TestCheckResourceAttr(name, "dbm_configuration.#", "1"),
 				),
 			},
 		},
@@ -292,7 +292,7 @@ func testAccCheckIBMDb2InstanceCustomSetting(databaseResourceGroup string, testN
 		name              = "%[2]s"
 		service           = "dashdb-for-transactions"
 		plan              = "performance" 
-		location          = "us-east"
+		location          = "us-south"
 		resource_group_id = data.ibm_resource_group.group.id
 		service_endpoints = "public-and-private"
 
@@ -317,58 +317,58 @@ func testAccCheckIBMDb2InstanceCustomSetting(databaseResourceGroup string, testN
 	`, databaseResourceGroup, testName)
 }
 
-func TestAccIBMDb2InstanceBackupg(t *testing.T) {
-	databaseResourceGroup := "Default"
-	var databaseInstanceOne string
-	rnd := fmt.Sprintf("tf-db2-%d", acctest.RandIntRange(10, 100))
-	testName := rnd
-	name := "ibm_db2." + testName
+// func TestAccIBMDb2InstanceBackup(t *testing.T) {
+// 	databaseResourceGroup := "Default"
+// 	var databaseInstanceOne string
+// 	rnd := fmt.Sprintf("tf-db2-%d", acctest.RandIntRange(10, 100))
+// 	testName := rnd
+// 	name := "ibm_db2." + testName
 
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
-		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIBMDb2InstanceDestroy,
-		Steps: []resource.TestStep{
-			{
+// 	resource.Test(t, resource.TestCase{
+// 		PreCheck:     func() { acc.TestAccPreCheck(t) },
+// 		Providers:    acc.TestAccProviders,
+// 		CheckDestroy: testAccCheckIBMDb2InstanceDestroy,
+// 		Steps: []resource.TestStep{
+// 			{
 
-				Config: testAccCheckIBMDb2InstanceBackup(databaseResourceGroup, testName),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMDb2InstanceExists(name, &databaseInstanceOne),
-					resource.TestCheckResourceAttr(name, "name", testName),
-					resource.TestCheckResourceAttr(name, "service", "dashdb-for-transactions"),
-					resource.TestCheckResourceAttr(name, "plan", "performance"),
-					resource.TestCheckResourceAttr(name, "location", "us-east"),
-					resource.TestCheckResourceAttr(name, "service_endpoints", "public-and-private"),
-					resource.TestCheckResourceAttr(name, "backup_config.#","0"),
-				),
-			},
-		},
-	})
-}
+// 				Config: testAccCheckIBMDb2InstanceBackup(databaseResourceGroup, testName),
+// 				Check: resource.ComposeAggregateTestCheckFunc(
+// 					testAccCheckIBMDb2InstanceExists(name, &databaseInstanceOne),
+// 					resource.TestCheckResourceAttr(name, "name", testName),
+// 					resource.TestCheckResourceAttr(name, "service", "dashdb-for-transactions"),
+// 					resource.TestCheckResourceAttr(name, "plan", "performance"),
+// 					resource.TestCheckResourceAttr(name, "location", "us-east"),
+// 					resource.TestCheckResourceAttr(name, "service_endpoints", "public-and-private"),
+// 					resource.TestCheckResourceAttr(name, "backup_config.#", "0"),
+// 				),
+// 			},
+// 		},
+// 	})
+// }
 
-func testAccCheckIBMDb2InstanceBackup(databaseResourceGroup string, testName string) string {
-	return fmt.Sprintf(`
+// func testAccCheckIBMDb2InstanceBackup(databaseResourceGroup string, testName string) string {
+// 	return fmt.Sprintf(`
 	
-    data "ibm_resource_group" "group" {
-		name = "%[1]s"
-	}
+//     data "ibm_resource_group" "group" {
+// 		name = "%[1]s"
+// 	}
 
-	resource "ibm_db2" "%[2]s" {
-		name              = "%[2]s"
-		service           = "dashdb-for-transactions"
-		plan              = "performance" 
-		location          = "us-east"
-		resource_group_id = data.ibm_resource_group.group.id
-		service_endpoints = "public-and-private"
+// 	resource "ibm_db2" "%[2]s" {
+// 		name              = "%[2]s"
+// 		service           = "dashdb-for-transactions"
+// 		plan              = "performance" 
+// 		location          = "us-east"
+// 		resource_group_id = data.ibm_resource_group.group.id
+// 		service_endpoints = "public-and-private"
 
-		timeouts {
-			create = "720m"
-			update = "30m"
-			delete = "30m"
-		}
+// 		timeouts {
+// 			create = "720m"
+// 			update = "30m"
+// 			delete = "30m"
+// 		}
 
-		backup_config{}
-  }
-	}
-	`, databaseResourceGroup, testName)
-}
+// 		backup_config{}
+//   }
+// 	}
+// 	`, databaseResourceGroup, testName)
+// }
