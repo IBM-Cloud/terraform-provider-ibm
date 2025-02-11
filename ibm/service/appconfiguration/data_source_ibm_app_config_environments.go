@@ -170,11 +170,11 @@ func dataSourceIbmAppConfigEnvironmentsRead(d *schema.ResourceData, meta interfa
 
 	options := &appconfigurationv1.ListEnvironmentsOptions{}
 
-	if _, ok := d.GetOk("expand"); ok {
+	if _, ok := GetFieldExists(d, "expand"); ok {
 		options.SetExpand(d.Get("expand").(bool))
 	}
 
-	if _, ok := d.GetOk("tags"); ok {
+	if _, ok := GetFieldExists(d, "tags"); ok {
 		options.SetTags(d.Get("tags").(string))
 	}
 
@@ -184,13 +184,13 @@ func dataSourceIbmAppConfigEnvironmentsRead(d *schema.ResourceData, meta interfa
 	finalList := []appconfigurationv1.Environment{}
 
 	var isLimit bool
-	if _, ok := d.GetOk("limit"); ok {
+	if _, ok := GetFieldExists(d, "limit"); ok {
 		isLimit = true
 		limit = int64(d.Get("limit").(int))
 	}
 	options.SetLimit(limit)
 
-	if _, ok := d.GetOk("offset"); ok {
+	if _, ok := GetFieldExists(d, "offset"); ok {
 		offset = int64(d.Get("offset").(int))
 	}
 	for {
