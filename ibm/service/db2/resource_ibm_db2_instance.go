@@ -119,8 +119,6 @@ func ResourceIBMDb2Instance() *schema.Resource {
 		},
 	}
 
-	//riSchema["backup_config"] = &schema.Schema{}
-
 	riSchema["dbm_configuration"] = &schema.Schema{
 		Description: "Db and Dm configurations",
 		Optional:    true,
@@ -990,35 +988,6 @@ func resourceIBMDb2InstanceCreate(d *schema.ResourceData, meta interface{}) erro
 		return err
 	}
 
-	// if allolistConfigRaw, ok := d.GetOk("allowlist_config"); ok {
-	// 	if allolistConfigRaw == nil || reflect.ValueOf(allolistConfigRaw).IsNil() {
-	// 		fmt.Println("No allowlisting config is provided, Skipping.")
-	// 	} else {
-	// 		allowelistConfig := allolistConfigRaw.([]interface{})[0].(map[string]interface{})
-
-	// 		ipAddress := make([]db2saasv1.IpAddress, 0, len(allowelistConfig["ip_addresses"].([]interface{})))
-
-	// 		for _, ip := range ipAddress {
-	// 			if err = validateIPAddress(ip); err != nil {
-	// 				return err
-	// 			}
-	// 		}
-
-	// 		input := &db2saasv1.PostDb2SaasAllowlistOptions{
-	// 			XDeploymentID: core.StringPtr(*instance.CRN),
-	// 			IpAddresses:   ipAddress,
-	// 		}
-
-	// 		result, response, err := db2SaasClient.PostDb2SaasAllowlist(input)
-	// 		if err != nil {
-	// 			log.Printf("Error while posting allowlist to DB2Saas: %s", err)
-	// 		} else {
-	// 			log.Printf("StatusCode of response %d", response.StatusCode)
-	// 			log.Printf("Success result %v", result)
-	// 		}
-	// 	}
-	// }
-
 	encodedCRN := url.QueryEscape(*instance.CRN)
 
 	if autoscaleConfigRaw, ok := d.GetOk("autoscale_config"); ok {
@@ -1081,61 +1050,6 @@ func resourceIBMDb2InstanceCreate(d *schema.ResourceData, meta interface{}) erro
 		}
 
 	}
-
-	// if userDetailsRaw, ok := d.GetOk("db2_userdetails"); ok {
-	// 	if userDetailsRaw == nil || reflect.ValueOf(userDetailsRaw).IsNil() {
-	// 		fmt.Println("No user details configs provided; skipping")
-	// 	} else {
-	// 		userDetais := userDetailsRaw.([]interface{})[0].(map[string]interface{})
-	// 		fmt.Println(userDetailsRaw)
-
-	// 		input := &db2saasv1.PostDb2SaasUserOptions{
-	// 			XDeploymentID: core.StringPtr(*instance.CRN),
-	// 			ID:            core.StringPtr(userDetais["id"].(string)),
-	// 			Iam:           core.BoolPtr(userDetais["iam"].(bool)),
-	// 			Ibmid:         core.StringPtr(userDetais["ibmid"].(string)),
-	// 			Name:          core.StringPtr(userDetais["name"].(string)),
-	// 			Password:      core.StringPtr(userDetais["password"].(string)),
-	// 			Role:          core.StringPtr(userDetais["role"].(string)),
-	// 			Email:         core.StringPtr(userDetais["email"].(string)),
-	// 			Locked:        core.StringPtr(userDetais["locked"].(string)),
-	// 			Authentication: &db2saasv1.CreateUserAuthentication{
-	// 				Method:   core.StringPtr("internal"),
-	// 				PolicyID: core.StringPtr("Default"),
-	// 			},
-	// 		}
-
-	// 		result, response, err := db2SaasClient.PostDb2SaasUser(input)
-	// 		if err != nil {
-	// 			log.Printf("Error while posting users to DB2Saas: %s", err)
-	// 		} else {
-	// 			log.Printf("StatusCode of response %d", response.StatusCode)
-	// 			log.Printf("Success result %v", result)
-	// 		}
-	// 	}
-	// }
-
-	// if backupConfigRaw, ok := d.GetOk("backup_config"); ok {
-	// 	if backupConfigRaw == nil || reflect.ValueOf(backupConfigRaw).IsNil() {
-	// 		fmt.Println("No backup configs provided; skipping.")
-	// 	} else {
-	// 		backupConfig := backupConfigRaw.([]interface{})[0].(map[string]interface{})
-	// 		fmt.Println(backupConfig)
-
-	// 		input := &db2saasv1.PostDb2SaasBackupOptions{
-	// 			XDbProfile: core.StringPtr(encodedCRN),
-	// 		}
-
-	// 		result, response, err := db2SaasClient.PostDb2SaasBackup(input)
-	// 		if err != nil {
-	// 			log.Printf("Error while posting backup to DB2Saas: %s", err)
-	// 		} else {
-	// 			log.Printf("StatusCode of response %d", response.StatusCode)
-	// 			log.Printf("Success result %v", result)
-	// 		}
-
-	// 	}
-	// }
 
 	if customSettingRaw, ok := d.GetOk("dbm_configuration"); ok {
 		if customSettingRaw == nil || reflect.ValueOf(customSettingRaw).IsNil() {
@@ -1417,16 +1331,6 @@ func waitForResourceInstanceCreate(d *schema.ResourceData, meta interface{}) (in
 	}
 
 	return stateConf.WaitForStateContext(context.Background())
-}
-
-func validateIPAddress(ip db2saasv1.IpAddress) error {
-	if ip.Address == nil || *ip.Address == "" {
-		return fmt.Errorf("[ERROR] IP address is required")
-	}
-	if ip.Description == nil || *ip.Description == "" {
-		return fmt.Errorf("[ERROR] IP address is required")
-	}
-	return nil
 }
 
 func checkStringNilValue(config map[string]interface{}, key string) *string {

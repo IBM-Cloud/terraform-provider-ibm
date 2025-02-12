@@ -14,7 +14,7 @@ Provides a read-only data source to retrieve information about a Backups of an e
 
 ```hcl
 data "ibm_db2_backup" "db2_backup" {
-	x_db_profile = "crn%3Av1%3Astaging%3Apublic%3Adashdb-for-transactions%3Aus-south%3Aa%2Fe7e3e87b512f474381c0684a5ecbba03%3A39269573-e43f-43e8-8b93-09f44c2ff875%3A%3A"
+	deployment_id = "crn%3Av1%3Astaging%3Apublic%3Adashdb-for-transactions%3Aus-south%3Aa%2Fe7e3e87b512f474381c0684a5ecbba03%3A39269573-e43f-43e8-8b93-09f44c2ff875%3A%3A"
 }
 ```
 
