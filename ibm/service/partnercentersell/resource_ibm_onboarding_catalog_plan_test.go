@@ -7,9 +7,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -24,7 +24,7 @@ func TestAccIbmOnboardingCatalogPlanBasic(t *testing.T) {
 	var conf partnercentersellv1.GlobalCatalogPlan
 	productID := acc.PcsOnboardingProductWithCatalogProduct
 	catalogProductID := acc.PcsOnboardingCatalogProductId
-	objectId := fmt.Sprintf("test-object-id-terraform-%d", acctest.RandIntRange(10, 100))
+	objectId := fmt.Sprintf("test-object-id-terraform-2-%d", acctest.RandIntRange(10, 100))
 	name := "test-plan-name-terraform"
 	active := "true"
 	disabled := "false"
@@ -70,7 +70,7 @@ func TestAccIbmOnboardingCatalogPlanAllArgs(t *testing.T) {
 	var conf partnercentersellv1.GlobalCatalogPlan
 	productID := acc.PcsOnboardingProductWithCatalogProduct
 	catalogProductID := acc.PcsOnboardingCatalogProductId
-	objectId := fmt.Sprintf("test-object-id-terraform-%d", acctest.RandIntRange(10, 100))
+	objectId := fmt.Sprintf("test-object-id-terraform-2-%d", acctest.RandIntRange(10, 100))
 	env := "current"
 	name := "test-plan-name-terraform"
 	active := "true"
@@ -156,10 +156,12 @@ func testAccCheckIbmOnboardingCatalogPlanConfigBasic(productID string, catalogPr
                 pricing {
                     type = "paid"
                     origin = "pricing_catalog"
+					sales_avenue = ["seller"]
                 }
 				plan {
 					allow_internal_users = true
-					bindable = false
+					provision_type = "ibm_cloud"
+					reservable = true
 				}
 			}
 		}
@@ -192,13 +194,27 @@ func testAccCheckIbmOnboardingCatalogPlanConfig(productID string, catalogProduct
 			}
 			metadata {
 				rc_compatible = "%s"
+    			other {
+      				resource_controller {
+        				subscription_provider_id = "crn:v1:staging:public:resource-controller::a/280d69caa3744c7b8e09878d4009c07a::resource-broker:17061cd2-911a-4c37-b8aa-991b99493d32"
+      				}
+    			}
 				pricing {
 					type = "%s"
 					origin = "global_catalog"
+					sales_avenue = [ "seller" ]
 				}
 				plan {
 					allow_internal_users = "%s"
-					bindable = false
+					reservable = true
+					provision_type = "ibm_cloud"
+				}
+				service {
+				    rc_provisionable = true
+      				iam_compatible = false
+				    bindable = true
+      				plan_updateable = true
+      				service_key_supported = true
 				}
 				ui {
 					strings {
@@ -245,14 +261,28 @@ func testAccCheckIbmOnboardingCatalogPlanUpdateConfig(productID string, catalogP
 				email = "email@email.com"
 			}
 			metadata {
+			    other {
+      				resource_controller {
+        				subscription_provider_id = "crn:v1:staging:public:resource-controller::a/280d69caa3744c7b8e09878d4009c07a::resource-broker:17061cd2-911a-4c37-b8aa-991b99493d32"
+      				}
+    			}
 				rc_compatible = "%s"
 				pricing {
 					type = "%s"
 					origin = "global_catalog"
+					sales_avenue = [ "catalog" ]
 				}
 				plan {
 					allow_internal_users = "%s"
-					bindable = false
+					reservable = true
+					provision_type = "ibm_cloud"
+				}
+				service {
+				    rc_provisionable = true
+      				iam_compatible = false
+				    bindable = true
+      				plan_updateable = true
+      				service_key_supported = true
 				}
 				ui {
             		strings {

@@ -7,9 +7,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -74,7 +74,7 @@ func TestAccIbmOnboardingCatalogDeploymentAllArgs(t *testing.T) {
 	productID := acc.PcsOnboardingProductWithCatalogProduct
 	catalogProductID := acc.PcsOnboardingCatalogProductId
 	catalogPlanID := acc.PcsOnboardingCatalogPlanId
-	objectId := fmt.Sprintf("test-object-id-terraform-%d", acctest.RandIntRange(10, 100))
+	objectId := fmt.Sprintf("test-object-id-terraform-2-%d", acctest.RandIntRange(10, 100))
 	env := "current"
 	name := "test-deployment-name-terraform"
 	active := "true"
@@ -100,7 +100,7 @@ func TestAccIbmOnboardingCatalogDeploymentAllArgs(t *testing.T) {
 		CheckDestroy: testAccCheckIbmOnboardingCatalogDeploymentDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmOnboardingCatalogDeploymentConfig(productID, catalogProductID, catalogPlanID, env, name, active, disabled, kind, objectId, overviewUiEn, rcCompatible, iamCompatible, deploymentBrokerName, bulletTitleName, mediaCaption),
+				Config: testAccCheckIbmOnboardingCatalogDeploymentConfig(productID, catalogProductID, catalogPlanID, env, name, active, disabled, kind, objectId, overviewUiEn, rcCompatible, iamCompatible, deploymentBrokerName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmOnboardingCatalogDeploymentExists("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", conf),
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", "product_id", productID),
@@ -114,7 +114,7 @@ func TestAccIbmOnboardingCatalogDeploymentAllArgs(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmOnboardingCatalogDeploymentUpdateConfig(productID, catalogProductID, catalogPlanID, envUpdate, nameUpdate, activeUpdate, disabledUpdate, kindUpdate, objectId, overviewUiEnUpdate, rcCompatibleUpdate, iamCompatibleUpdate, deploymentBrokerNameUpdate, bulletTitleNameUpdate, mediaCaptionUpdate),
+				Config: testAccCheckIbmOnboardingCatalogDeploymentUpdateConfig(productID, catalogProductID, catalogPlanID, envUpdate, nameUpdate, activeUpdate, disabledUpdate, kindUpdate, objectId, overviewUiEnUpdate, rcCompatibleUpdate, iamCompatibleUpdate, deploymentBrokerNameUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", "product_id", productID),
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", "catalog_product_id", catalogProductID),
@@ -155,13 +155,12 @@ func testAccCheckIbmOnboardingCatalogDeploymentConfigBasic(productID string, cat
 				email = "email@email.com"
 			}
 			metadata {
+                rc_compatible =	false
 				service {
 				  	rc_provisionable = true
   					iam_compatible = true
-		}
-                rc_compatible =	false
+				}
             }
-		
 		}
 	`, productID, catalogProductID, catalogPlanID, name, active, disabled, kind, objectId)
 }
@@ -191,10 +190,18 @@ func testAccCheckIbmOnboardingCatalogDeploymentConfig(productID string, catalogP
 				email = "email@email.com"
 			}
 			metadata {
-				rc_compatible = "%s"
+                rc_compatible =	"%s"
 				service {
-					rc_provisionable = true
+				  	rc_provisionable = true
   					iam_compatible = "%s"
+					service_key_supported = true
+					parameters {
+                		displayname = "test"
+                		name = "test"
+			    		type = "text"
+                		value = ["test"]
+                		description = "test"
+            		}
 				}
 				deployment {
 					broker {
@@ -205,7 +212,7 @@ func testAccCheckIbmOnboardingCatalogDeploymentConfig(productID string, catalogP
 					location_url = "https://globalcatalog.test.cloud.ibm.com/api/v1/ams03"
 					target_crn = "crn:v1:staging:public::ams03:::environment:staging-ams03"
 				}
-			}
+            }
 		}
 	`, productID, catalogProductID, catalogPlanID, env, name, active, disabled, kind, objectId, overviewUiEn, rcCompatible, iamCompatible, deploymentBrokerName)
 }
@@ -223,35 +230,49 @@ func testAccCheckIbmOnboardingCatalogDeploymentUpdateConfig(productID string, ca
 			kind = "%s"
 			object_id = "%s"
 			overview_ui {
-							en {
+				en {
 					display_name = "%s"
-								description = "description"
+					description = "description"
 					long_description = "long_description"
-							}
+				}
 			}
 			tags = ["sample", "moresample"]
 			object_provider {
 				name = "name"
 				email = "email@email.com"
-							}
+			}
 			metadata {
-				rc_compatible = "%s"
+                rc_compatible =	"%s"
 				service {
 				  	rc_provisionable = true
   					iam_compatible = "%s"
-							}
+					service_key_supported = false
+					parameters {
+                		displayname = "test"
+                		name = "test"
+			    		type = "text"
+                		value = ["test"]
+                		description = "test"
+            		}
+					parameters {
+                		displayname = "test2"
+                		name = "test2"
+			    		type = "text"
+                		value = ["test2"]
+                		description = "test2"
+            		}
+				}
 				deployment {
 					broker {
 						name = "%s"
 						guid = "guid"
-								}
+					}
 					location = "ams03"
 					location_url = "https://globalcatalog.test.cloud.ibm.com/api/v1/ams03"
 					target_crn = "crn:v1:staging:public::ams03:::environment:staging-ams03"
-							}
-					}
 				}
-			}
+            }
+	}
 	`, productID, catalogProductID, catalogPlanID, env, name, active, disabled, kind, objectId, overviewUiEn, rcCompatible, iamCompatible, deploymentBrokerName)
 }
 
