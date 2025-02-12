@@ -129,7 +129,7 @@ func testAccCheckIBMDatabaseInstanceRabbitmqBasic(databaseResourceGroup string, 
 		service                      = "messages-for-rabbitmq"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "password12345678"
+		adminpassword                = "secure-Password12345"
 		service_endpoints            = "public"
 		group {
 			group_id = "member"
@@ -145,7 +145,7 @@ func testAccCheckIBMDatabaseInstanceRabbitmqBasic(databaseResourceGroup string, 
 		}
 		users {
 			name     = "user123"
-			password = "password12345678"
+			password = "secure-Password12345"
 		}
 		allowlist {
 			address     = "172.168.1.2/32"
@@ -173,7 +173,7 @@ func testAccCheckIBMDatabaseInstanceRabbitmqFullyspecified(databaseResourceGroup
 		service                      = "messages-for-rabbitmq"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "password12345678"
+		adminpassword                = "secure-Password12345"
 		service_endpoints            = "public"
 		group {
 			group_id = "member"
@@ -189,11 +189,11 @@ func testAccCheckIBMDatabaseInstanceRabbitmqFullyspecified(databaseResourceGroup
 		}
 		users {
 			name     = "user123"
-			password = "password12345678"
+			password = "secure-Password12345"
 		}
 		users {
 			name     = "user124"
-			password = "password12345678"
+			password = "secure-Password12345"
 		}
 		allowlist {
 			address     = "172.168.1.2/32"
@@ -221,7 +221,7 @@ func testAccCheckIBMDatabaseInstanceRabbitmqReduced(databaseResourceGroup string
 		service                      = "messages-for-rabbitmq"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "password12345678"
+		adminpassword                = "secure-Password12345"
 		service_endpoints            = "public"
 		group {
 			group_id = "member"
