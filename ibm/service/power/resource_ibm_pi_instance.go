@@ -1727,7 +1727,7 @@ func createPVMInstance(d *schema.ResourceData, client *instance.IBMPIInstanceCli
 		SysType:                 systype,
 		ImageID:                 flex.PtrToString(imageid),
 		ProcType:                flex.PtrToString(processortype),
-		Replicants:              replicants,
+		Replicants:              &replicants,
 		UserData:                encodeBase64(userData),
 		ReplicantNamingScheme:   flex.PtrToString(replicationNamingScheme),
 		ReplicantAffinityPolicy: flex.PtrToString(replicationpolicy),

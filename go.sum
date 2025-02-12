@@ -95,8 +95,8 @@ github.com/IBM-Cloud/bluemix-go v0.0.0-20241117121028-a3be206688b3/go.mod h1:/7h
 github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20240725064144-454a2ae23113 h1:f2Erqfea1dKpaTFagTJM6W/wnD3JGq/Vn9URh8nuRwk=
 github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20240725064144-454a2ae23113/go.mod h1:xUQL9SGAjoZFd4GNjrjjtEpjpkgU7RFXRyHesbKTjiY=
 github.com/IBM-Cloud/ibm-cloud-cli-sdk v0.5.3/go.mod h1:RiUvKuHKTBmBApDMUQzBL14pQUGKcx/IioKQPIcRQjs=
-github.com/IBM-Cloud/power-go-client v1.9.0 h1:nnErpb/7TJQe8P7OfIlJPhSJVq5oyuCJlMje9Ry6XEY=
-github.com/IBM-Cloud/power-go-client v1.9.0/go.mod h1:UDyXeIKEp6r7yWUXYu3r0ZnFSlNZ2YeQTHwM2Tmlgv0=
+github.com/IBM-Cloud/power-go-client v1.10.0 h1:yBUHWwvNBmLkWpbZJQJEXoxBa1Dm+eJgMSbk9ljmXUU=
+github.com/IBM-Cloud/power-go-client v1.10.0/go.mod h1:UDyXeIKEp6r7yWUXYu3r0ZnFSlNZ2YeQTHwM2Tmlgv0=
 github.com/IBM-Cloud/softlayer-go v1.0.5-tf h1:koUAyF9b6X78lLLruGYPSOmrfY2YcGYKOj/Ug9nbKNw=
 github.com/IBM-Cloud/softlayer-go v1.0.5-tf/go.mod h1:6HepcfAXROz0Rf63krk5hPZyHT6qyx2MNvYyHof7ik4=
 github.com/IBM/apigateway-go-sdk v0.0.0-20210714141226-a5d5d49caaca h1:crniVcf+YcmgF03NmmfonXwSQ73oJF+IohFYBwknMxs=
@@ -150,8 +150,6 @@ github.com/IBM/keyprotect-go-client v0.15.1 h1:m4qzqF5zOumRxKZ8s7vtK7A/UV/D278L8
 github.com/IBM/keyprotect-go-client v0.15.1/go.mod h1:asXtHwL/4uCHA221Vd/7SkXEi2pcRHDzPyyksc1DthE=
 github.com/IBM/logs-go-sdk v0.4.0 h1:CyUjm19EUtcJjf4mxsj6Rc7gkZDT8JEY5rLUIz8Eoag=
 github.com/IBM/logs-go-sdk v0.4.0/go.mod h1:yv/GCXC4/p+MZEeXl4xjZAOMvDAVRwu61WyHZFKFXQM=
-github.com/IBM/logs-router-go-sdk v1.0.5 h1:r0kC1+HfmSeQCD6zQTUp4PDI/zp4Ueo1Zo19ipHuNlw=
-github.com/IBM/logs-router-go-sdk v1.0.5/go.mod h1:tCN2vFgu5xG0ob9iJcxi5M4bJ6mWmu3nhmRPnvlwev0=
 github.com/IBM/logs-router-go-sdk v1.0.7 h1:uQjQAAcQdo3XvhY6MC7HakhZaXIUsGfUmKj2d5vkjnY=
 github.com/IBM/logs-router-go-sdk v1.0.7/go.mod h1:tCN2vFgu5xG0ob9iJcxi5M4bJ6mWmu3nhmRPnvlwev0=
 github.com/IBM/mqcloud-go-sdk v0.2.0 h1:QOWk8ZGk0QfIL0MOGTKzNdM3Qe0Hk+ifAFtNSFQo5HU=
