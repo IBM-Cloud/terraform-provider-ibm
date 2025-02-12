@@ -4,8 +4,6 @@ go 1.22.4
 
 toolchain go1.22.5
 
-replace github.com/IBM/cloud-db2-go-sdk v0.2.2 => ../cloud-db2-go-sdk
-
 require (
 	github.com/IBM-Cloud/bluemix-go v0.0.0-20241117121028-a3be206688b3
 	github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20240725064144-454a2ae23113
@@ -14,7 +12,7 @@ require (
 	github.com/IBM/appconfiguration-go-admin-sdk v0.3.0
 	github.com/IBM/appid-management-go-sdk v0.0.0-20210908164609-dd0e0eaf732f
 	github.com/IBM/cloud-databases-go-sdk v0.7.1
-	github.com/IBM/cloud-db2-go-sdk v0.2.2
+	github.com/IBM/cloud-db2-go-sdk v0.2.3
 	github.com/IBM/cloudant-go-sdk v0.8.0
 	github.com/IBM/code-engine-go-sdk v0.0.0-20240808131715-b9d168602dac
 	github.com/IBM/configuration-aggregator-go-sdk v0.0.2
