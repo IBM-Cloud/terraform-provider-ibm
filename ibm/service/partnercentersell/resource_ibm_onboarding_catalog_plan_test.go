@@ -188,6 +188,7 @@ func testAccCheckIbmOnboardingCatalogPlanConfig(productID string, catalogProduct
 				}
 			}
 			tags = ["tag"]
+			pricing_tags = ["free"]
 			object_provider {
 				name = "name"
 				email = "email@email.com"
@@ -248,6 +249,7 @@ func testAccCheckIbmOnboardingCatalogPlanUpdateConfig(productID string, catalogP
 			disabled = %s
 			kind = "%s"
 			object_id = "%s"
+			pricing_tags = ["free"]
 			overview_ui {
 				en {
 					display_name = "%s"

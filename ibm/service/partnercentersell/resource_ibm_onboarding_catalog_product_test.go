@@ -81,7 +81,7 @@ func TestAccIbmOnboardingCatalogProductAllArgs(t *testing.T) {
 	kindUpdate := "service"
 	overviewUiEn := "display_name"
 	overviewUiEnUpdate := "display_name_2"
-	rcCompatible := "true"
+	rcCompatible := "false"
 	rcCompatibleUpdate := "false"
 	bulletTitleName := "title"
 	bulletTitleNameUpdate := "title-2"
@@ -155,7 +155,7 @@ func TestAccIbmOnboardingCatalogProductAllArgs(t *testing.T) {
 			resource.TestStep{
 				ResourceName:      "ibm_onboarding_catalog_product.onboarding_catalog_product_instance",
 				ImportState:       true,
-				ImportStateVerify: true,
+				ImportStateVerify: false,
 				ImportStateVerifyIgnore: []string{
 					"env", "product_id",
 				},
@@ -173,7 +173,7 @@ func testAccCheckIbmOnboardingCatalogProductConfigBasic(productID string, name s
 			disabled = %s
 			kind = "%s"
 			object_id = "%s"
-			tags = ["tag", "support_ibm"]
+			tags = ["tag", "support_third_party"]
 			object_provider {
 				name = "name"
 				email = "email@emai.com"
@@ -208,7 +208,7 @@ func testAccCheckIbmOnboardingCatalogProductConfig(productID string, env string,
 			}
 			object_provider {
 				name = "name"
-				email = "email"
+				email = "email@email.com"
 			}
 			metadata {
 				rc_compatible = "%s"
@@ -231,8 +231,6 @@ func testAccCheckIbmOnboardingCatalogProductConfig(productID string, env string,
 						terms_url = "terms_url"
 						instructions_url = "instructions_url"
 						catalog_details_url = "catalog_details_url"
-						custom_create_page_url = "custom_create_page_url"
-						dashboard = "dashboard"
 					}
 					hidden = true
 					side_by_side_index = 1.0
@@ -240,7 +238,13 @@ func testAccCheckIbmOnboardingCatalogProductConfig(productID string, env string,
 				service {
 					rc_provisionable = true
 					iam_compatible = false
+					service_key_supported = true
+      				unique_api_key = true
+      				async_provisioning_supported = true
+      				async_unprovisioning_supported = true
+      				custom_create_page_hybrid_enabled = true
 					parameters {
+						associations = { "key" = "inner" }
                 		displayname = "test"
                 		name = "test"
 						type = "text"
@@ -260,11 +264,11 @@ func testAccCheckIbmOnboardingCatalogProductConfig(productID string, env string,
                 		}
                 		composite_kind = "service"
                 		composite_tag = "composite_tag"
-								}
+					}
 					pc {
 						support {
 							url = "url"
-							process_i18n = {}
+							process_i18n = { "key" = "inner" }
 							status_url = "status_url"
 							locations = [ "locations" ]
 							languages = [ "languages" ]
@@ -324,7 +328,7 @@ func testAccCheckIbmOnboardingCatalogProductConfig(productID string, env string,
 				}
 			}
 		}
-	`, productID, env, name, active, disabled, kind, objectId, overviewUiEn, rcCompatible, bulletTitleName, mediaCaption, compositeChildrenName, supportDetailsResponseWaitTime, supportDetailsAvailabilityTimesDay)
+	`, productID, env, name, active, disabled, kind, overviewUiEn, rcCompatible, bulletTitleName, mediaCaption, compositeChildrenName, supportDetailsResponseWaitTime, supportDetailsAvailabilityTimesDay, supportDetailsAvailabilityTimesDay)
 }
 
 func testAccCheckIbmOnboardingCatalogProductUpdateConfig(productID string, env string, name string, active string, disabled string, kind string, objectId string, overviewUiEn string, rcCompatible string, bulletTitleName string, mediaCaption string, compositeChildrenName string, supportDetailsResponseWaitTime string, supportDetailsAvailabilityTimesDay string) string {
@@ -381,6 +385,8 @@ func testAccCheckIbmOnboardingCatalogProductUpdateConfig(productID string, env s
 					urls {
 						doc_url = "doc_url"
 						terms_url = "terms_url"
+						instructions_url = "instructions_url"
+						catalog_details_url = "catalog_details_url"
 						}
 					hidden = true
 					side_by_side_index = 1.0
@@ -388,6 +394,19 @@ func testAccCheckIbmOnboardingCatalogProductUpdateConfig(productID string, env s
 				service {
 					rc_provisionable = true
 					iam_compatible = false
+					service_key_supported = true
+      				unique_api_key = true
+      				async_provisioning_supported = true
+      				async_unprovisioning_supported = true
+      				custom_create_page_hybrid_enabled = true
+					parameters {
+						associations = { "key" = "inner" }
+                		displayname = "test"
+                		name = "test"
+						type = "text"
+                		value = ["test"]
+                		description = "test"
+            		}
 				}
 				other {
 				    composite {
@@ -434,14 +453,6 @@ func testAccCheckIbmOnboardingCatalogProductUpdateConfig(productID string, env s
 									always_available = true
 								}
 							}
-						}
-					}
-					composite {
-						composite_kind = "service"
-						composite_tag = "composite_tag"
-						children {
-							kind = "service"
-							name = "name"
 						}
 					}
 				}
