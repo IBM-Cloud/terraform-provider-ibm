@@ -28,12 +28,12 @@ func DataSourceIbmDb2TuneableParam() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"tuneable_param": &schema.Schema{
-				Type:     schema.TypeList,
+				Type:     schema.TypeSet,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"db": &schema.Schema{
-							Type:        schema.TypeList,
+							Type:        schema.TypeSet,
 							Computed:    true,
 							Description: "Tunable parameters related to the Db2 database instance.",
 							Elem: &schema.Resource{
@@ -458,7 +458,7 @@ func DataSourceIbmDb2TuneableParam() *schema.Resource {
 							},
 						},
 						"dbm": &schema.Schema{
-							Type:        schema.TypeList,
+							Type:        schema.TypeSet,
 							Computed:    true,
 							Description: "Tunable parameters related to the Db2 instance manager (dbm).",
 							Elem: &schema.Resource{
@@ -587,7 +587,7 @@ func DataSourceIbmDb2TuneableParam() *schema.Resource {
 							},
 						},
 						"registry": &schema.Schema{
-							Type:        schema.TypeList,
+							Type:        schema.TypeSet,
 							Computed:    true,
 							Description: "Tunable parameters related to the Db2 registry.",
 							Elem: &schema.Resource{
