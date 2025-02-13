@@ -35,8 +35,8 @@ data "ibm_is_share_snapshot" "example" {
 
 You can specify the following arguments for this data source.
 
-- `share_snapshot` - (Required, Forces new resource, String) The share snapshot identifier.
-- `share` - (Required, Forces new resource, String) The file share identifier.
+- `share_snapshot` - (Required, String) The share snapshot identifier.
+- `share` - (Required, String) The file share identifier.
 
 ## Attribute Reference
 
