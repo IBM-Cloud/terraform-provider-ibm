@@ -72,7 +72,7 @@ In addition to all argument reference list, you can access the following attribu
 
       Nested schema for `protocol`:
         - `icmp_type` - (String) If icmp type, a ICMP packet type affected by ICMP rules and if not present then all types are matched.
-        - `tcp_flags` - (List) If tcp type, the list of TCP flags and if not present then all flags are matched. Supported values are: `syn`, `ack`, `fin`, `rst`, `urg`, `psh`, `wnd`, `chk`, `seq`.
+        - `tcp_flags` - (List) If tcp type, the list of TCP flags and if not present then all flags are matched. Supported values are: `syn`, `ack`, `fin`, `rst`.
          Nested schema for `icmp_types`:
          - `flags` - (String) TCP flag.
         - `type` - (String) The protocol of the network traffic. Supported values are: `icmp`, `tcp`, `udp`, `all`.
