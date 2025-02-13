@@ -177,12 +177,6 @@ func testAccCheckIBMDb2InstanceFullyspecified(databaseResourceGroup string, test
 		disk_encryption_key_crn = "none"
 		oracle_compatibility = "no"
 
-		parameters_json   = <<EOF
-			{
-				"backup_encryption_key_crn": "none"
-			}
-  		EOF
-
 		timeouts {
 			create = "720m"
 			update = "30m"
