@@ -240,6 +240,10 @@ The following arguments are supported:
 
   ~> **NOTE** 
   `crn` and `id` are mutually exclusive for source_snapshot
+
+  ~> **NOTE** 
+  `source_snapshot` is mutually exclusive with `zone`, `source_share_crn`, `source_share`, `origin_share`
+
 - `tags`  - (Optional, List of Strings) The list of user tags to attach to the share.
 - `zone` - (Required, string) The globally unique name for this zone.
 
