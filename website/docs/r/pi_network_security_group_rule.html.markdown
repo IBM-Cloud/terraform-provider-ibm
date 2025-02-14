@@ -78,6 +78,11 @@ Review the argument references that you can specify for your resource.
     Nested schema for `pi_destination_port`:
       - `maximum` - (Optional, Int) The end of the port range, if applicable. If the value is not present then the default value of 65535 will be the maximum port number.
       - `minimum` - (Optional, Int) The start of the port range, if applicable. If the value is not present then the default value of 1 will be the minimum port number.
+- `pi_destination_ports` - (Deprecated, Optional, List) The list of destination port. Deprecated, please use `pi_destination_port`.
+
+    Nested schema for `pi_destination_ports`:
+      - `maximum` - (Optional, Int) The end of the port range, if applicable. If the value is not present then the default value of 65535 will be the maximum port number.
+      - `minimum` - (Optional, Int) The start of the port range, if applicable. If the value is not present then the default value of 1 will be the minimum port number.
 - `pi_network_security_group_id` - (Required, String) The unique identifier of the network security group.
 - `pi_network_security_group_rule_id` - (Optional, String) The network security group rule id to remove. Required if none of the other optional fields are provided.
 - `pi_protocol` - (Optional, List) The list of protocol. Required if `pi_network_security_group_rule_id` is not provided.
@@ -94,6 +99,11 @@ Review the argument references that you can specify for your resource.
 - `pi_source_port` - (Optional, List) List of source port
 
     Nested schema for `pi_source_port`:
+    - `maximum` - (Optional, Int) The end of the port range, if applicable. If the value is not present then the default value of 65535 will be the maximum port number.
+    - `minimum` - (Optional, Int) The start of the port range, if applicable. If the value is not present then the default value of 1 will be the minimum port number.
+- `pi_source_ports` - (Deprecated, Optional, List) List of source port. Deprecated, please use `pi_source_port`.
+
+    Nested schema for `pi_source_ports`:
     - `maximum` - (Optional, Int) The end of the port range, if applicable. If the value is not present then the default value of 65535 will be the maximum port number.
     - `minimum` - (Optional, Int) The start of the port range, if applicable. If the value is not present then the default value of 1 will be the minimum port number.
 
