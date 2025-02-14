@@ -268,7 +268,7 @@ func TestAccIBMDb2InstanceCustomSetting(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "plan", "performance"),
 					resource.TestCheckResourceAttr(name, "location", "us-south"),
 					resource.TestCheckResourceAttr(name, "service_endpoints", "public-and-private"),
-					resource.TestCheckResourceAttr(name, "dbm_configuration.#", "1"),
+					resource.TestCheckResourceAttr(name, "customsetting_config.#", "1"),
 				),
 			},
 		},
@@ -296,7 +296,7 @@ func testAccCheckIBMDb2InstanceCustomSetting(databaseResourceGroup string, testN
 			delete = "30m"
 		}
 
-		dbm_configuration {
+		customsetting_config {
     		db {
       			auto_reval = "IMMEDIATE"
     		}

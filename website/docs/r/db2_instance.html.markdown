@@ -83,7 +83,7 @@ resource "ibm_db2" "<your_database>" {
 }
 ```
 
-Sample Db2 SaaS instance using `dbm_configuration` attribute
+Sample Db2 SaaS instance using `customsetting_config` attribute
 
 ```terraform
 data "ibm_resource_group" "group" {
@@ -111,7 +111,7 @@ resource "ibm_db2" "<your_database>" {
     delete = "30m"
   }
 
-  dbm_configuration {
+  customsetting_config {
       db {
         act_sortmem_limit = "NONE"
         alt_collate = "IDENTITY_16BIT"
@@ -320,8 +320,8 @@ Review the argument reference that you can specify for your resource.
       - `auto_scaling_over_time_period` - (Optional, Integer) Defines the time period over which auto-scaling adjustments are monitored and applied.
       - `auto_scaling_pause_limit` - (Optional, Integer) Specifies the duration to pause auto-scaling actions after a scaling event has occurred.
       - `auto_scaling_allow_plan_limit` - (Optional, Boolean) Indicates the maximum number of scaling actions that are allowed within a specified time period.
-- `dbm_configuration` (Optional, Set) Indicates the custom configuration fields related to database which you want to set to Db2 SaaS instance.
-    Nested schema for `dbm_configuration`
+- `customsetting_config` (Optional, Set) Indicates the custom configuration fields related to database which you want to set to Db2 SaaS instance.
+    Nested schema for `customsetting_config`
       - `db` - (Optional, List) 
           Nested scheme for `db`
             * `act_sortmem_limit` - (Optional, String) Configures the sort memory limit for DB2. Valid values: range(10, 100)
