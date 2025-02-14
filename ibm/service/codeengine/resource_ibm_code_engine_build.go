@@ -97,7 +97,6 @@ func ResourceIbmCodeEngineBuild() *schema.Resource {
 			"strategy_spec_file": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				Default:      "Dockerfile",
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_build", "strategy_spec_file"),
 				Description:  "Optional path to the specification file that is used for build strategies for building an image.",
 			},
