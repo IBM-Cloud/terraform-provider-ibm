@@ -1568,6 +1568,7 @@ func Provider() *schema.Provider {
 			"ibm_scc_profile":                scc.ResourceIbmSccProfile(),
 			"ibm_scc_profile_attachment":     scc.ResourceIbmSccProfileAttachment(),
 			"ibm_scc_provider_type_instance": scc.ResourceIbmSccProviderTypeInstance(),
+			"ibm_scc_scope":                  scc.ResourceIbmSccScope(),
 
 			// Security Services
 			"ibm_pag_instance": pag.ResourceIBMPag(),
@@ -2079,6 +2080,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_scc_profile":                scc.ResourceIbmSccProfileValidator(),
 				"ibm_scc_profile_attachment":     scc.ResourceIbmSccProfileAttachmentValidator(),
 				"ibm_scc_provider_type_instance": scc.ResourceIbmSccProviderTypeInstanceValidator(),
+				"ibm_scc_scope":                  scc.ResourceIbmSccScopeValidator(),
 
 				// Added for Toolchains
 				"ibm_cd_toolchain":                         cdtoolchain.ResourceIBMCdToolchainValidator(),

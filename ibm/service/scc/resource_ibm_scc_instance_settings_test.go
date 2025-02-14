@@ -20,7 +20,7 @@ func TestAccIbmSccInstanceSettingsBasic(t *testing.T) {
 	var conf securityandcompliancecenterapiv3.Settings
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		PreCheck:     func() { acc.TestAccPreCheckScc(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmSccInstanceSettingsDestroy,
 		Steps: []resource.TestStep{
@@ -38,7 +38,7 @@ func TestAccIbmSccInstanceSettingsAllArgs(t *testing.T) {
 	var conf securityandcompliancecenterapiv3.Settings
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		PreCheck:     func() { acc.TestAccPreCheckScc(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmSccInstanceSettingsDestroy,
 		Steps: []resource.TestStep{

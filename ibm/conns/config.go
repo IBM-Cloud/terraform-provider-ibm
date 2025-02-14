@@ -1987,7 +1987,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 
 	// Construct the service client.
-	session.securityAndComplianceCenterClient, err = scc.NewSecurityAndComplianceCenterApiV3(sccApiClientOptions)
+	session.securityAndComplianceCenterClient, err = scc.NewSecurityAndComplianceCenterV3(sccApiClientOptions)
 	if err == nil {
 		// Enable retries for API calls
 		session.securityAndComplianceCenterClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
