@@ -163,6 +163,11 @@ variable "onboarding_catalog_plan_tags" {
   type        = list(string)
   default     = ["ibm_created"]
 }
+variable "onboarding_catalog_plan_pricing_tags" {
+  description = "A list of tags that carry information about the pricing information of your product."
+  type        = list(string)
+  default     = [ "pricing_tags" ]
+}
 
 // Resource arguments for onboarding_catalog_product
 variable "onboarding_catalog_product_product_id" {
