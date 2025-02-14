@@ -321,7 +321,11 @@ func dataSourceIBMIsShareSnapshotRead(context context.Context, d *schema.Resourc
 	if err = d.Set("status", shareSnapshot.Status); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting status: %s", err), "(Data) ibm_is_share_snapshot", "read", "set-status").GetDiag()
 	}
-
+	if shareSnapshot.UserTags != nil {
+		if err = d.Set("user_tags", shareSnapshot.UserTags); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting status: %s", err), "(Data) ibm_is_share_snapshot", "read", "set-user_tags").GetDiag()
+		}
+	}
 	statusReasons := []map[string]interface{}{}
 	if shareSnapshot.StatusReasons != nil {
 		for _, modelItem := range shareSnapshot.StatusReasons {
