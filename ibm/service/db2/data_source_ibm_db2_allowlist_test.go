@@ -21,31 +21,31 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestAccIbmDb2WhitelistDataSourceBasic(t *testing.T) {
+func TestAccIbmDb2AllowlistDataSourceBasic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmDb2WhitelistDataSourceConfigBasic(),
+				Config: testAccCheckIbmDb2AllowlistDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_db2_whitelist_ip.db2_whitelistips", "x_deployment_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_db2_whitelist_ip.db2_whitelistips", "ip_addresses.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_db2_allowlist_ip.db2_allowlistips", "x_deployment_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_db2_allowlist_ip.db2_allowlistips", "ip_addresses.#"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckIbmDb2WhitelistDataSourceConfigBasic() string {
+func testAccCheckIbmDb2AllowlistDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
-		data "ibm_db2_whitelist_ip" "db2_whitelistips" {
-    x_deployment_id = "crn:v1:staging:public:dashdb-for-transactions:us-east:a/e7e3e87b512f474381c0684a5ecbba03:f9455c22-07af-4a86-b9df-f02fd4774471::"
+		data "ibm_db2_allowlist_ip" "db2_allowlistips" {
+    x_deployment_id = "crn:v1:staging:public:dashdb-for-transactions:us-east:a/e7e3e87b512f474381c0684a5ecbba03:9e570684-bd63-4e33-aee8-3c96041065ac::"
 }
 	`)
 }
 
-func TestDataSourceIbmDb2WhitelistIpAddressToMap(t *testing.T) {
+func TestDataSourceIbmDb2AllowlistIpAddressToMap(t *testing.T) {
 	checkResult := func(result map[string]interface{}) {
 		model := make(map[string]interface{})
 		model["address"] = "127.0.0.1"
@@ -58,7 +58,7 @@ func TestDataSourceIbmDb2WhitelistIpAddressToMap(t *testing.T) {
 	model.Address = core.StringPtr("127.0.0.1")
 	model.Description = core.StringPtr("A sample IP address")
 
-	result, err := db2.DataSourceIbmDb2WhitelistIpAddressToMap(model)
+	result, err := db2.DataSourceIbmDb2AllowlistIpAddressToMap(model)
 	assert.Nil(t, err)
 	checkResult(result)
 }
