@@ -5,6 +5,8 @@ package eventstreams
 
 import (
 	"context"
+	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -16,7 +18,10 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/version"
+	"github.com/IBM/go-sdk-core/v5/core"
+	iamidentity "github.com/IBM/platform-services-go-sdk/iamidentityv1"
 	"github.com/IBM/sarama"
+	jwt "github.com/golang-jwt/jwt/v5"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -306,16 +311,17 @@ func createSaramaAdminClient(d *schema.ResourceData, meta interface{}) (sarama.C
 		config.Net.SASL.AuthIdentity = instanceCRN
 	}
 	config.Admin.Timeout = adminClientTimeout
-	_, err = validateToken(bxSession.Config.IAMAccessToken)
-	if err == nil {
-		config.Net.SASL.Mechanism = sarama.SASLTypeOAuth
-		config.Net.SASL.TokenProvider = accessTokenProvider{clientSession: bxSession}
-		log.Printf("[DEBUG] createSaramaAdminClient configured SASL mechanism=OAUTHBEARER")
-	} else {
+	if bxSession.Config.BluemixAPIKey != "" {
 		config.Net.SASL.User = "token"
 		config.Net.SASL.Password = bxSession.Config.BluemixAPIKey
 		config.Net.SASL.Mechanism = sarama.SASLTypePlaintext
 		log.Printf("[DEBUG] createSaramaAdminClient configured SASL mechanism=PLAIN")
+	} else if _, err = validateToken(bxSession.Config.IAMAccessToken); err == nil {
+		config.Net.SASL.Mechanism = sarama.SASLTypeOAuth
+		config.Net.SASL.TokenProvider = accessTokenProvider{clientSession: bxSession}
+		log.Printf("[DEBUG] createSaramaAdminClient configured SASL mechanism=OAUTHBEARER")
+	} else {
+		return nil, "", errors.New("either IBMCLOUD_API_KEY or IAM_TOKEN needs to be configured")
 	}
 	adminClient, err = sarama.NewClusterAdmin(brokerAddress, config)
 	if err != nil {
@@ -377,6 +383,19 @@ func (tp accessTokenProvider) Token() (*sarama.AccessToken, error) {
 		log.Printf("[DEBUG] accessTokenProvider.Token() error:%s", err)
 		return nil, err
 	}
+	if expired(token) {
+		authenticator := &core.IamAuthenticator{
+			RefreshToken: tp.clientSession.Config.IAMRefreshToken,
+			ClientId:     "bx",
+			ClientSecret: "bx",
+			URL:          conns.EnvFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, iamidentity.DefaultServiceURL),
+		}
+		token, err = authenticator.GetToken()
+		if err != nil {
+			log.Printf("[DEBUG] accessTokenProvider.authenticator.GetToken() error:%s", err)
+			return nil, err
+		}
+	}
 	return &sarama.AccessToken{Token: token}, nil
 }
 
@@ -390,4 +409,28 @@ func validateToken(token string) (string, error) {
 		return "", errors.New("IAMAccessToken is malformed")
 	}
 	return token, nil
+}
+
+func expired(token string) (expired bool) {
+	expired = true
+	tokenString, err := base64.RawURLEncoding.DecodeString(strings.Split(token, ".")[1])
+	if err != nil {
+		log.Printf("[DEBUG] expired.DecodeString() error:%s", err)
+		return
+	}
+	claims := jwt.RegisteredClaims{}
+	err = json.Unmarshal(tokenString, &claims)
+	if err != nil {
+		log.Printf("[DEBUG] expired.Unmarshal() error:%s", err)
+		return
+	}
+	if claims.ID == "" {
+		log.Printf("[DEBUG] expired.jit is empty")
+		return
+	}
+	if claims.ExpiresAt.IsZero() {
+		log.Printf("[DEBUG] expired.exp is zero")
+		return
+	}
+	return claims.ExpiresAt.Before(time.Now().Add(10 * time.Second))
 }
