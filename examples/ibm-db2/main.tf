@@ -6,7 +6,7 @@ data "ibm_resource_group" "group" {
 resource "ibm_db2" "db2_instance" {
 	name              = "demo-db2-v3"
 	service           = "dashdb-for-transactions"
-	plan              = "performance-dev"
+	plan              = "performance"
 	location          = var.region
 	resource_group_id = data.ibm_resource_group.group.id
 	service_endpoints = "public-and-private"
