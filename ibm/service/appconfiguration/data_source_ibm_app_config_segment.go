@@ -139,7 +139,7 @@ func dataSourceIbmAppConfigSegmentRead(d *schema.ResourceData, meta interface{})
 	options := &appconfigurationv1.GetSegmentOptions{}
 	options.SetSegmentID(d.Get("segment_id").(string))
 
-	if _, ok := d.GetOk("includes"); ok {
+	if _, ok := GetFieldExists(d, "includes"); ok {
 		includes := []string{}
 		for _, segmentsItem := range d.Get("includes").([]interface{}) {
 			includes = append(includes, segmentsItem.(string))
