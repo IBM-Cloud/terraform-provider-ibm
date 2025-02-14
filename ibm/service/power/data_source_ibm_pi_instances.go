@@ -41,6 +41,11 @@ func DataSourceIBMPIInstances() *schema.Resource {
 							Description: "The CRN of this resource.",
 							Type:        schema.TypeString,
 						},
+						Attr_DedicatedHostID: {
+							Computed:    true,
+							Description: "The dedicated host ID where the shared processor pool resides.",
+							Type:        schema.TypeString,
+						},
 						Attr_Fault: {
 							Computed:    true,
 							Description: "Fault information.",
@@ -267,6 +272,7 @@ func flattenPvmInstances(list []*models.PVMInstanceReference, meta interface{}) 
 	result := make([]map[string]interface{}, 0, len(list))
 	for _, i := range list {
 		l := map[string]interface{}{
+			Attr_DedicatedHostID:           i.DedicatedHostID,
 			Attr_LicenseRepositoryCapacity: i.LicenseRepositoryCapacity,
 			Attr_MaxMem:                    i.Maxmem,
 			Attr_MaxProc:                   i.Maxproc,

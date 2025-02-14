@@ -47,6 +47,7 @@ Review the argument references that you can specify for your data source.
 In addition to all argument reference list, you can access the following attribute references after your data source is created.
 
 - `crn` - (String) The CRN of this resource.
+- `dedicated_host_id` - (String) The dedicated host ID where the shared processor pool resides.
 - `deployment_type` - (String) The custom deployment type.
 - `fault` - (Map) Fault information, if any.
   

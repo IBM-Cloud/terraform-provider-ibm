@@ -23,6 +23,25 @@ import (
 	st "github.com/IBM-Cloud/power-go-client/clients/instance"
 )
 
+func TestAccIBMPIInstanceBasic(t *testing.T) {
+	instanceRes := "ibm_pi_instance.power_instance"
+	name := fmt.Sprintf("tf-pi-instance-%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPIInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMPIInstanceConfig(name, power.OK),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIInstanceExists(instanceRes),
+					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMPIInstanceConfig(name, instanceHealthStatus string) string {
 	return fmt.Sprintf(`
 	resource "ibm_pi_key" "key" {
@@ -66,6 +85,130 @@ func testAccCheckIBMPIInstanceConfig(name, instanceHealthStatus string) string {
 	`, acc.Pi_cloud_instance_id, name, acc.Pi_image, acc.Pi_network_name, instanceHealthStatus, acc.PiStorageType)
 }
 
+func TestAccIBMPIInstanceStorageConnection(t *testing.T) {
+	instanceRes := "ibm_pi_instance.power_instance"
+	name := fmt.Sprintf("tf-pi-instance-%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPIInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMPIInstanceStorageConnectionConfig(name, power.OK),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIInstanceExists(instanceRes),
+					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),
+					resource.TestCheckResourceAttr(instanceRes, "pi_storage_connection", acc.Pi_storage_connection),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMPIInstanceStorageConnectionConfig(name, instanceHealthStatus string) string {
+	return fmt.Sprintf(`
+	resource "ibm_pi_volume" "power_volume" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_volume_size       = 1
+		pi_volume_name       = "%[2]s"
+		pi_volume_type        = "tier3"
+	  }
+	resource "ibm_pi_instance" "power_instance" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_memory            = "2"
+		pi_processors        = "1"
+		pi_instance_name     = "%[2]s"
+		pi_proc_type         = "shared"
+		pi_image_id          = "%[3]s"
+		pi_sys_type          = "s922"
+		pi_network {
+		  network_id = "%[4]s"
+		}
+		pi_storage_connection = "%[5]s"
+		pi_health_status      = "%[6]s"
+		pi_volume_ids         = [ibm_pi_volume.power_volume.volume_id]
+	  }
+	`, acc.Pi_cloud_instance_id, name, acc.Pi_image, acc.Pi_network_name, acc.Pi_storage_connection, instanceHealthStatus)
+}
+
+func TestAccIBMPIInstanceDeploymentTarget(t *testing.T) {
+	instanceRes := "ibm_pi_instance.power_instance"
+	name := fmt.Sprintf("tf-pi-instance-%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPIInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMPIInstanceDeplomentTargetConfig(name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIInstanceExists(instanceRes),
+					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMPIInstanceDeplomentTargetConfig(name string) string {
+	return fmt.Sprintf(`
+	resource "ibm_pi_instance" "power_instance" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_memory            = "2"
+		pi_processors        = "1"
+		pi_instance_name     = "%[2]s"
+		pi_proc_type         = "shared"
+		pi_image_id          = "%[3]s"
+		pi_sys_type          = "s922"
+		pi_network {
+		  network_id = "%[4]s"
+		}
+		pi_deployment_target {
+			id = "308"
+			type = "host"
+		}
+	  }
+	`, acc.Pi_cloud_instance_id, name, acc.Pi_image, acc.Pi_network_name)
+}
+
+func TestAccIBMPIInstanceDeploymentType(t *testing.T) {
+	instanceRes := "ibm_pi_instance.power_instance"
+	name := fmt.Sprintf("tf-pi-instance-%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPIInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMPIInstanceDeploymentTypeConfig(name, power.OK, "EPIC", "e980"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIInstanceExists(instanceRes),
+					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMPIInstanceDeploymentTypeNoStorage(t *testing.T) {
+	instanceRes := "ibm_pi_instance.power_instance"
+	name := fmt.Sprintf("tf-pi-instance-%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPIInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMPIInstanceDeploymentTypeConfig(name, power.OK, "VMNoStorage", "s922"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIInstanceExists(instanceRes),
+					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMPIInstanceDeploymentTypeConfig(name, instanceHealthStatus, epic, systype string) string {
 	return fmt.Sprintf(`
 	resource "ibm_pi_key" "key" {
@@ -98,6 +241,40 @@ func testAccCheckIBMPIInstanceDeploymentTypeConfig(name, instanceHealthStatus, e
 		}
 	  }
 	`, acc.Pi_cloud_instance_id, name, acc.Pi_image, acc.Pi_network_name, instanceHealthStatus, epic, systype, acc.PiStorageType)
+}
+
+func TestAccIBMPIInstanceIBMiLicense(t *testing.T) {
+	instanceRes := "ibm_pi_instance.power_instance"
+	name := fmt.Sprintf("tf-pi-instance-%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPIInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMPIInstanceIBMiLicense(name, power.OK, true, 2),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIInstanceExists(instanceRes),
+					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),
+					resource.TestCheckResourceAttr(instanceRes, "status", strings.ToUpper(power.State_Active)),
+					resource.TestCheckResourceAttr(instanceRes, "pi_ibmi_css", "true"),
+					resource.TestCheckResourceAttr(instanceRes, "ibmi_rds", "true"),
+					resource.TestCheckResourceAttr(instanceRes, "pi_ibmi_rds_users", "2"),
+				),
+			},
+			{
+				Config: testAccCheckIBMPIInstanceIBMiLicense(name, power.OK, false, 0),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIInstanceExists(instanceRes),
+					testAccCheckIBMPIInstanceStatus(instanceRes, strings.ToUpper(power.State_Active)),
+					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),
+					resource.TestCheckResourceAttr(instanceRes, "pi_ibmi_css", "false"),
+					resource.TestCheckResourceAttr(instanceRes, "ibmi_rds", "false"),
+					resource.TestCheckResourceAttr(instanceRes, "pi_ibmi_rds_users", "0"),
+				),
+			},
+		},
+	})
 }
 
 func testAccCheckIBMPIInstanceIBMiLicense(name, instanceHealthStatus string, IBMiCSS bool, IBMiRDSUsers int) string {
@@ -133,6 +310,80 @@ func testAccCheckIBMPIInstanceIBMiLicense(name, instanceHealthStatus string, IBM
 				network_id = data.ibm_pi_network.power_networks.id
 			}
 		  }`, acc.Pi_cloud_instance_id, name, acc.Pi_image, acc.Pi_network_name, instanceHealthStatus, IBMiCSS, IBMiRDSUsers)
+}
+
+func TestAccIBMPIInstanceReplicant(t *testing.T) {
+	instanceRes := "ibm_pi_instance.power_instance"
+	name := fmt.Sprintf("tf-pi-instance-%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPIInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMPIInstanceReplicantConfig(name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIInstanceExists(instanceRes),
+					resource.TestCheckResourceAttr(instanceRes, "pi_replicants", "3"),
+					resource.TestCheckResourceAttr(instanceRes, "pi_replication_policy", power.Affinity),
+					resource.TestCheckResourceAttr(instanceRes, "pi_replication_scheme", "suffix"),
+				),
+				ExpectNonEmptyPlan: true,
+			},
+		},
+	})
+}
+
+func testAccCheckIBMPIInstanceReplicantConfig(name string) string {
+	return fmt.Sprintf(`
+	resource "ibm_pi_volume" "power_volume" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_volume_name       = "%[2]s"
+		pi_volume_shareable  = true
+		pi_volume_size       = 1
+		pi_volume_type        = "tier3"
+	  }
+	resource "ibm_pi_instance" "power_instance" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_image_id          = "%[3]s"
+		pi_instance_name     = "%[2]s"
+		pi_memory            = "2"
+		pi_proc_type         = "shared"
+		pi_processors        = "1"
+		pi_replicants         = 3
+		pi_replication_policy = "affinity"
+		pi_replication_scheme = "suffix"
+		pi_sys_type          = "s922"
+		pi_volume_ids        = [resource.ibm_pi_volume.power_volume.volume_id]
+		pi_network {
+			network_id = "%[4]s"
+		  }
+	  }
+	`, acc.Pi_cloud_instance_id, name, acc.Pi_image, acc.Pi_network_name)
+}
+
+func TestAccIBMPIInstanceNetwork(t *testing.T) {
+	instanceRes := "ibm_pi_instance.power_instance"
+	name := fmt.Sprintf("tf-pi-instance-%d", acctest.RandIntRange(10, 100))
+	privateNetIP := "192.168.17.253"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPIInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccIBMPIInstanceNetworkConfig(name, privateNetIP),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIInstanceExists(instanceRes),
+					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),
+					resource.TestCheckResourceAttrSet(instanceRes, "pi_network.0.network_id"),
+					resource.TestCheckResourceAttrSet(instanceRes, "pi_network.0.mac_address"),
+					resource.TestCheckResourceAttr(instanceRes, "pi_network.0.ip_address", privateNetIP),
+				),
+			},
+		},
+	})
 }
 
 func testAccIBMPIInstanceNetworkConfig(name, privateNetIP string) string {
@@ -172,6 +423,26 @@ func testAccIBMPIInstanceNetworkConfig(name, privateNetIP string) string {
 	`, acc.Pi_cloud_instance_id, name, privateNetIP, acc.Pi_image)
 }
 
+func TestAccIBMPIInstanceVTL(t *testing.T) {
+	instanceRes := "ibm_pi_instance.vtl_instance"
+	name := fmt.Sprintf("tf-pi-vtl-instance-%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPIInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccIBMPIInstanceVTLConfig(name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIInstanceExists(instanceRes),
+					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),
+					resource.TestCheckResourceAttr(instanceRes, "pi_license_repository_capacity", "3"),
+				),
+			},
+		},
+	})
+}
+
 func testAccIBMPIInstanceVTLConfig(name string) string {
 	return fmt.Sprintf(`
 	resource "ibm_pi_key" "vtl_key" {
@@ -203,360 +474,6 @@ func testAccIBMPIInstanceVTLConfig(name string) string {
 	  }
 	
 	`, acc.Pi_cloud_instance_id, name, acc.Pi_image)
-}
-
-func testAccCheckIBMPIInstanceReplicantConfig(name string) string {
-	return fmt.Sprintf(`
-	resource "ibm_pi_volume" "power_volume" {
-		pi_cloud_instance_id = "%[1]s"
-		pi_volume_name       = "%[2]s"
-		pi_volume_shareable  = true
-		pi_volume_size       = 1
-		pi_volume_type        = "tier3"
-	  }
-	resource "ibm_pi_instance" "power_instance" {
-		pi_cloud_instance_id = "%[1]s"
-		pi_image_id          = "%[3]s"
-		pi_instance_name     = "%[2]s"
-		pi_memory            = "2"
-		pi_proc_type         = "shared"
-		pi_processors        = "1"
-		pi_replicants         = 3
-		pi_replication_policy = "affinity"
-		pi_replication_scheme = "suffix"
-		pi_sys_type          = "s922"
-		pi_volume_ids        = [resource.ibm_pi_volume.power_volume.volume_id]
-		pi_network {
-			network_id = "%[4]s"
-		  }
-	  }
-	`, acc.Pi_cloud_instance_id, name, acc.Pi_image, acc.Pi_network_name)
-}
-
-func testAccCheckIBMPIInstanceDeplomentTargetConfig(name string) string {
-	return fmt.Sprintf(`
-	resource "ibm_pi_instance" "power_instance" {
-		pi_cloud_instance_id = "%[1]s"
-		pi_memory            = "2"
-		pi_processors        = "1"
-		pi_instance_name     = "%[2]s"
-		pi_proc_type         = "shared"
-		pi_image_id          = "%[3]s"
-		pi_sys_type          = "s922"
-		pi_network {
-		  network_id = "%[4]s"
-		}
-		pi_deployment_target {
-			id = "308"
-			type = "host"
-		}
-	  }
-	`, acc.Pi_cloud_instance_id, name, acc.Pi_image, acc.Pi_network_name)
-}
-
-func testAccCheckIBMPIInstanceUserTagsConfig(name, instanceHealthStatus string, userTagsString string) string {
-	return fmt.Sprintf(`
-	resource "ibm_pi_key" "key" {
-		pi_cloud_instance_id = "%[1]s"
-		pi_key_name          = "%[2]s"
-		pi_ssh_key           = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR"
-	  }
-	  data "ibm_pi_image" "power_image" {
-		pi_cloud_instance_id = "%[1]s"
-		pi_image_name        = "%[3]s"
-	  }
-	  data "ibm_pi_network" "power_networks" {
-		pi_cloud_instance_id = "%[1]s"
-		pi_network_name      = "%[4]s"
-	  }
-	  resource "ibm_pi_volume" "power_volume" {
-		pi_cloud_instance_id = "%[1]s"
-		pi_volume_name       = "%[2]s"
-		pi_volume_pool       = data.ibm_pi_image.power_image.storage_pool
-		pi_volume_shareable  = true
-		pi_volume_size       = 20
-		pi_volume_type       = "%[6]s"
-	  }
-	  resource "ibm_pi_instance" "power_instance" {
-		pi_cloud_instance_id  = "%[1]s"
-		pi_health_status      = "%[5]s"
-		pi_image_id           = data.ibm_pi_image.power_image.id
-		pi_instance_name      = "%[2]s"
-		pi_key_pair_name      = ibm_pi_key.key.name
-		pi_memory             = "2"
-		pi_proc_type          = "shared"
-		pi_processors         = "0.25"
-		pi_storage_pool       = data.ibm_pi_image.power_image.storage_pool
-		pi_storage_type       = "%[6]s"
-		pi_sys_type           = "s922"
-		pi_volume_ids         = [ibm_pi_volume.power_volume.volume_id]
-		pi_network {
-			network_id = data.ibm_pi_network.power_networks.id
-		}
-		pi_user_tags          = %[7]s
-	  }
-	`, acc.Pi_cloud_instance_id, name, acc.Pi_image, acc.Pi_network_name, instanceHealthStatus, acc.PiStorageType, userTagsString)
-}
-
-func testAccCheckIBMPIInstanceStorageConnectionConfig(name, instanceHealthStatus string) string {
-	return fmt.Sprintf(`
-	resource "ibm_pi_volume" "power_volume" {
-		pi_cloud_instance_id = "%[1]s"
-		pi_volume_size       = 1
-		pi_volume_name       = "%[2]s"
-		pi_volume_type        = "tier3"
-	  }
-	resource "ibm_pi_instance" "power_instance" {
-		pi_cloud_instance_id = "%[1]s"
-		pi_memory            = "2"
-		pi_processors        = "1"
-		pi_instance_name     = "%[2]s"
-		pi_proc_type         = "shared"
-		pi_image_id          = "%[3]s"
-		pi_sys_type          = "s922"
-		pi_network {
-		  network_id = "%[4]s"
-		}
-		pi_storage_connection = "%[5]s"
-		pi_health_status      = "%[6]s"
-		pi_volume_ids         = [ibm_pi_volume.power_volume.volume_id]
-	  }
-	`, acc.Pi_cloud_instance_id, name, acc.Pi_image, acc.Pi_network_name, acc.Pi_storage_connection, instanceHealthStatus)
-}
-func testAccCheckIBMPIInstanceDestroy(s *terraform.State) error {
-	sess, err := acc.TestAccProvider.Meta().(conns.ClientSession).IBMPISession()
-	if err != nil {
-		return err
-	}
-
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "ibm_pi_instance" {
-			continue
-		}
-
-		idArr, err := flex.IdParts(rs.Primary.ID)
-		if err != nil {
-			return err
-		}
-
-		cloudInstanceID := idArr[0]
-		for _, instanceID := range idArr[1:] {
-			client := st.NewIBMPIInstanceClient(context.Background(), sess, cloudInstanceID)
-			_, err = client.Get(instanceID)
-			if err == nil {
-				return fmt.Errorf("PI Instance still exists: %s", rs.Primary.ID)
-			}
-		}
-	}
-
-	return nil
-}
-
-func testAccCheckIBMPIInstanceExists(n string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[n]
-		if !ok {
-			return fmt.Errorf("Not found: %s", n)
-		}
-		if rs.Primary.ID == "" {
-			return errors.New("No Record ID is set")
-		}
-
-		sess, err := acc.TestAccProvider.Meta().(conns.ClientSession).IBMPISession()
-		if err != nil {
-			return err
-		}
-
-		idArr, err := flex.IdParts(rs.Primary.ID)
-		if err != nil {
-			return err
-		}
-
-		cloudInstanceID := idArr[0]
-		for _, instanceID := range idArr[1:] {
-			client := st.NewIBMPIInstanceClient(context.Background(), sess, cloudInstanceID)
-			_, err = client.Get(instanceID)
-			if err != nil {
-				return err
-			}
-		}
-
-		return nil
-	}
-}
-
-func TestAccIBMPIInstanceBasic(t *testing.T) {
-	instanceRes := "ibm_pi_instance.power_instance"
-	name := fmt.Sprintf("tf-pi-instance-%d", acctest.RandIntRange(10, 100))
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
-		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIBMPIInstanceDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckIBMPIInstanceConfig(name, power.Warning),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMPIInstanceExists(instanceRes),
-					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),
-				),
-			},
-		},
-	})
-}
-func TestAccIBMPIInstanceStorageConnection(t *testing.T) {
-	instanceRes := "ibm_pi_instance.power_instance"
-	name := fmt.Sprintf("tf-pi-instance-%d", acctest.RandIntRange(10, 100))
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
-		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIBMPIInstanceDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckIBMPIInstanceStorageConnectionConfig(name, power.OK),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMPIInstanceExists(instanceRes),
-					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),
-					resource.TestCheckResourceAttr(instanceRes, "pi_storage_connection", acc.Pi_storage_connection),
-				),
-			},
-		},
-	})
-}
-func TestAccIBMPIInstanceDeploymentTarget(t *testing.T) {
-	instanceRes := "ibm_pi_instance.power_instance"
-	name := fmt.Sprintf("tf-pi-instance-%d", acctest.RandIntRange(10, 100))
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
-		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIBMPIInstanceDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckIBMPIInstanceDeplomentTargetConfig(name),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMPIInstanceExists(instanceRes),
-					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),
-				),
-			},
-		},
-	})
-}
-func TestAccIBMPIInstanceDeploymentType(t *testing.T) {
-	instanceRes := "ibm_pi_instance.power_instance"
-	name := fmt.Sprintf("tf-pi-instance-%d", acctest.RandIntRange(10, 100))
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
-		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIBMPIInstanceDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckIBMPIInstanceDeploymentTypeConfig(name, power.OK, "EPIC", "e980"),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMPIInstanceExists(instanceRes),
-					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),
-				),
-			},
-		},
-	})
-}
-
-func TestAccIBMPIInstanceIBMiLicense(t *testing.T) {
-	instanceRes := "ibm_pi_instance.power_instance"
-	name := fmt.Sprintf("tf-pi-instance-%d", acctest.RandIntRange(10, 100))
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
-		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIBMPIInstanceDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckIBMPIInstanceIBMiLicense(name, power.OK, true, 2),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMPIInstanceExists(instanceRes),
-					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),
-					resource.TestCheckResourceAttr(instanceRes, "status", strings.ToUpper(power.State_Active)),
-					resource.TestCheckResourceAttr(instanceRes, "pi_ibmi_css", "true"),
-					resource.TestCheckResourceAttr(instanceRes, "ibmi_rds", "true"),
-					resource.TestCheckResourceAttr(instanceRes, "pi_ibmi_rds_users", "2"),
-				),
-			},
-			{
-				Config: testAccCheckIBMPIInstanceIBMiLicense(name, power.OK, false, 0),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMPIInstanceExists(instanceRes),
-					testAccCheckIBMPIInstanceStatus(instanceRes, strings.ToUpper(power.State_Active)),
-					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),
-					resource.TestCheckResourceAttr(instanceRes, "pi_ibmi_css", "false"),
-					resource.TestCheckResourceAttr(instanceRes, "ibmi_rds", "false"),
-					resource.TestCheckResourceAttr(instanceRes, "pi_ibmi_rds_users", "0"),
-				),
-			},
-		},
-	})
-}
-
-func TestAccIBMPIInstanceReplicant(t *testing.T) {
-	instanceRes := "ibm_pi_instance.power_instance"
-	name := fmt.Sprintf("tf-pi-instance-%d", acctest.RandIntRange(10, 100))
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
-		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIBMPIInstanceDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckIBMPIInstanceReplicantConfig(name),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMPIInstanceExists(instanceRes),
-					resource.TestCheckResourceAttr(instanceRes, "pi_replicants", "3"),
-					resource.TestCheckResourceAttr(instanceRes, "pi_replication_policy", power.Affinity),
-					resource.TestCheckResourceAttr(instanceRes, "pi_replication_scheme", "suffix"),
-				),
-				ExpectNonEmptyPlan: true,
-			},
-		},
-	})
-}
-
-func TestAccIBMPIInstanceNetwork(t *testing.T) {
-	instanceRes := "ibm_pi_instance.power_instance"
-	name := fmt.Sprintf("tf-pi-instance-%d", acctest.RandIntRange(10, 100))
-	privateNetIP := "192.168.17.253"
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
-		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIBMPIInstanceDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccIBMPIInstanceNetworkConfig(name, privateNetIP),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMPIInstanceExists(instanceRes),
-					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),
-					resource.TestCheckResourceAttrSet(instanceRes, "pi_network.0.network_id"),
-					resource.TestCheckResourceAttrSet(instanceRes, "pi_network.0.mac_address"),
-					resource.TestCheckResourceAttr(instanceRes, "pi_network.0.ip_address", privateNetIP),
-				),
-			},
-		},
-	})
-}
-
-func TestAccIBMPIInstanceVTL(t *testing.T) {
-	instanceRes := "ibm_pi_instance.vtl_instance"
-	name := fmt.Sprintf("tf-pi-vtl-instance-%d", acctest.RandIntRange(10, 100))
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
-		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIBMPIInstanceDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccIBMPIInstanceVTLConfig(name),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMPIInstanceExists(instanceRes),
-					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),
-					resource.TestCheckResourceAttr(instanceRes, "pi_license_repository_capacity", "3"),
-				),
-			},
-		},
-	})
 }
 
 func TestAccIBMPISAPInstance(t *testing.T) {
@@ -626,7 +543,7 @@ func TestAccIBMPIInstanceMixedStorage(t *testing.T) {
 		CheckDestroy: testAccCheckIBMPIInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccIBMPIInstanceMixedStorage(name, power.Warning),
+				Config: testAccIBMPIInstanceMixedStorage(name),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMPIInstanceExists(instanceRes),
 					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),
@@ -637,7 +554,7 @@ func TestAccIBMPIInstanceMixedStorage(t *testing.T) {
 	})
 }
 
-func testAccIBMPIInstanceMixedStorage(name, healthStatus string) string {
+func testAccIBMPIInstanceMixedStorage(name string) string {
 	return fmt.Sprintf(`
 	resource "ibm_pi_key" "key" {
 		pi_cloud_instance_id = "%[1]s"
@@ -813,63 +730,6 @@ func testAccCheckIBMPIStoppedInstanceConfigUpdate(name, instanceHealthStatus, pr
 	`, acc.Pi_cloud_instance_id, name, acc.Pi_image, acc.Pi_network_name, instanceHealthStatus, proc, memory, action)
 }
 
-func testAccCheckIBMPIInstanceStatus(n, status string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[n]
-		if !ok {
-			return fmt.Errorf("Not found: %s", n)
-		}
-		if rs.Primary.ID == "" {
-			return errors.New("No Record ID is set")
-		}
-
-		sess, err := acc.TestAccProvider.Meta().(conns.ClientSession).IBMPISession()
-		if err != nil {
-			return err
-		}
-
-		cloudInstanceID, instanceID, err := splitID(rs.Primary.ID)
-		if err == nil {
-			return err
-		}
-		client := st.NewIBMPIInstanceClient(context.Background(), sess, cloudInstanceID)
-
-		instance, err := client.Get(instanceID)
-		if err != nil {
-			return err
-		}
-
-		for {
-			if instance.Status != &status {
-				time.Sleep(2 * time.Minute)
-			} else {
-				break
-			}
-		}
-
-		return nil
-	}
-}
-
-func TestAccIBMPIInstanceDeploymentTypeNoStorage(t *testing.T) {
-	instanceRes := "ibm_pi_instance.power_instance"
-	name := fmt.Sprintf("tf-pi-instance-%d", acctest.RandIntRange(10, 100))
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
-		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIBMPIInstanceDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckIBMPIInstanceDeploymentTypeConfig(name, power.OK, "VMNoStorage", "s922"),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMPIInstanceExists(instanceRes),
-					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),
-				),
-			},
-		},
-	})
-}
-
 func TestAccIBMPIInstanceVirtualSerialNumber(t *testing.T) {
 	instanceRes := "ibm_pi_instance.power_instance"
 	name := fmt.Sprintf("tf-pi-instance-%d", acctest.RandIntRange(10, 100))
@@ -1019,4 +879,148 @@ func TestAccIBMPIInstanceUserTags(t *testing.T) {
 			},
 		},
 	})
+}
+
+func testAccCheckIBMPIInstanceUserTagsConfig(name, instanceHealthStatus string, userTagsString string) string {
+	return fmt.Sprintf(`
+	resource "ibm_pi_key" "key" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_key_name          = "%[2]s"
+		pi_ssh_key           = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR"
+	  }
+	  data "ibm_pi_image" "power_image" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_image_name        = "%[3]s"
+	  }
+	  data "ibm_pi_network" "power_networks" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_network_name      = "%[4]s"
+	  }
+	  resource "ibm_pi_volume" "power_volume" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_volume_name       = "%[2]s"
+		pi_volume_pool       = data.ibm_pi_image.power_image.storage_pool
+		pi_volume_shareable  = true
+		pi_volume_size       = 20
+		pi_volume_type       = "%[6]s"
+	  }
+	  resource "ibm_pi_instance" "power_instance" {
+		pi_cloud_instance_id  = "%[1]s"
+		pi_health_status      = "%[5]s"
+		pi_image_id           = data.ibm_pi_image.power_image.id
+		pi_instance_name      = "%[2]s"
+		pi_key_pair_name      = ibm_pi_key.key.name
+		pi_memory             = "2"
+		pi_proc_type          = "shared"
+		pi_processors         = "0.25"
+		pi_storage_pool       = data.ibm_pi_image.power_image.storage_pool
+		pi_storage_type       = "%[6]s"
+		pi_sys_type           = "s922"
+		pi_volume_ids         = [ibm_pi_volume.power_volume.volume_id]
+		pi_network {
+			network_id = data.ibm_pi_network.power_networks.id
+		}
+		pi_user_tags          = %[7]s
+	  }
+	`, acc.Pi_cloud_instance_id, name, acc.Pi_image, acc.Pi_network_name, instanceHealthStatus, acc.PiStorageType, userTagsString)
+}
+
+func testAccCheckIBMPIInstanceDestroy(s *terraform.State) error {
+	sess, err := acc.TestAccProvider.Meta().(conns.ClientSession).IBMPISession()
+	if err != nil {
+		return err
+	}
+
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "ibm_pi_instance" {
+			continue
+		}
+
+		idArr, err := flex.IdParts(rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+
+		cloudInstanceID := idArr[0]
+		for _, instanceID := range idArr[1:] {
+			client := st.NewIBMPIInstanceClient(context.Background(), sess, cloudInstanceID)
+			_, err = client.Get(instanceID)
+			if err == nil {
+				return fmt.Errorf("PI Instance still exists: %s", rs.Primary.ID)
+			}
+		}
+	}
+
+	return nil
+}
+
+func testAccCheckIBMPIInstanceExists(n string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("Not found: %s", n)
+		}
+		if rs.Primary.ID == "" {
+			return errors.New("No Record ID is set")
+		}
+
+		sess, err := acc.TestAccProvider.Meta().(conns.ClientSession).IBMPISession()
+		if err != nil {
+			return err
+		}
+
+		idArr, err := flex.IdParts(rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+
+		cloudInstanceID := idArr[0]
+		for _, instanceID := range idArr[1:] {
+			client := st.NewIBMPIInstanceClient(context.Background(), sess, cloudInstanceID)
+			_, err = client.Get(instanceID)
+			if err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}
+}
+
+func testAccCheckIBMPIInstanceStatus(n, status string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("Not found: %s", n)
+		}
+		if rs.Primary.ID == "" {
+			return errors.New("No Record ID is set")
+		}
+
+		sess, err := acc.TestAccProvider.Meta().(conns.ClientSession).IBMPISession()
+		if err != nil {
+			return err
+		}
+
+		cloudInstanceID, instanceID, err := splitID(rs.Primary.ID)
+		if err == nil {
+			return err
+		}
+		client := st.NewIBMPIInstanceClient(context.Background(), sess, cloudInstanceID)
+
+		instance, err := client.Get(instanceID)
+		if err != nil {
+			return err
+		}
+
+		for {
+			if instance.Status != &status {
+				time.Sleep(2 * time.Minute)
+			} else {
+				break
+			}
+		}
+
+		return nil
+	}
 }
