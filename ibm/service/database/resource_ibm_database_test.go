@@ -19,7 +19,7 @@ func TestValidateUserPassword(t *testing.T) {
 		{
 			user: DatabaseUser{
 				Username: "testy",
-				Password: "pizzapizzapizza",
+				Password: "Pizzapizzapizza",
 				Type:     "database",
 			},
 			expectedError: "database user (testy) validation error:\npassword must contain at least one number",
@@ -27,10 +27,10 @@ func TestValidateUserPassword(t *testing.T) {
 		{
 			user: DatabaseUser{
 				Username: "testy",
-				Password: "-_pizzapizzapizza",
+				Password: "-_Pizzapizzapizza123",
 				Type:     "database",
 			},
-			expectedError: "database user (testy) validation error:\npassword must not begin with a special character (_-)\npassword must contain at least one number",
+			expectedError: "database user (testy) validation error:\npassword must not begin with a special character (_-)",
 		},
 		{
 			user: DatabaseUser{
@@ -38,15 +38,15 @@ func TestValidateUserPassword(t *testing.T) {
 				Password: "111111111111111",
 				Type:     "database",
 			},
-			expectedError: "database user (testy) validation error:\npassword must contain at least one letter",
+			expectedError: "database user (testy) validation error:\npassword must contain at least one lower case letter\npassword must contain at least one upper case letter",
 		},
 		{
 			user: DatabaseUser{
 				Username: "testy",
-				Password: "$$$$$$$$$$$$$$a1",
+				Password: "abcd-ABCD-12345_coolguy",
 				Type:     "database",
 			},
-			expectedError: "database user (testy) validation error:\npassword must not contain invalid characters",
+			expectedError: "",
 		},
 		{
 			user: DatabaseUser{
@@ -54,12 +54,12 @@ func TestValidateUserPassword(t *testing.T) {
 				Password: "$",
 				Type:     "database",
 			},
-			expectedError: "database user (testy) validation error:\npassword must contain at least one letter\npassword must contain at least one number\npassword must not contain invalid characters",
+			expectedError: "database user (testy) validation error:\npassword must contain at least one lower case letter\npassword must contain at least one upper case letter\npassword must contain at least one number\npassword must not contain invalid characters",
 		},
 		{
 			user: DatabaseUser{
 				Username: "testy",
-				Password: "aaaaa11111aaaa",
+				Password: "aaaaa11111aaaaA",
 				Type:     "ops_manager",
 			},
 			expectedError: "database user (testy) validation error:\npassword must contain at least one special character (~!@#$%^&*()=+[]{}|;:,.<>/?_-)",
@@ -67,7 +67,7 @@ func TestValidateUserPassword(t *testing.T) {
 		{
 			user: DatabaseUser{
 				Username: "testy",
-				Password: "password12345678$password",
+				Password: "secure-Password12345$Password",
 				Type:     "ops_manager",
 			},
 			expectedError: "",
@@ -78,12 +78,12 @@ func TestValidateUserPassword(t *testing.T) {
 				Password: "~!@#$%^&*()=+[]{}|;:,.<>/?_-",
 				Type:     "ops_manager",
 			},
-			expectedError: "database user (testy) validation error:\npassword must contain at least one letter\npassword must contain at least one number",
+			expectedError: "database user (testy) validation error:\npassword must contain at least one lower case letter\npassword must contain at least one upper case letter\npassword must contain at least one number",
 		},
 		{
 			user: DatabaseUser{
 				Username: "testy",
-				Password: "~!@#$%^&*()=+[]{}|;:,.<>/?_-a1",
+				Password: "~!@#$%^&*()=+[]{}|;:,.<>/?_-aA1",
 				Type:     "ops_manager",
 			},
 			expectedError: "",
@@ -91,7 +91,7 @@ func TestValidateUserPassword(t *testing.T) {
 		{
 			user: DatabaseUser{
 				Username: "testy",
-				Password: "pizza1pizzapizza1",
+				Password: "Pizza1pizzapizza1",
 				Type:     "database",
 			},
 			expectedError: "",
@@ -101,7 +101,8 @@ func TestValidateUserPassword(t *testing.T) {
 		err := tc.user.ValidatePassword()
 		if tc.expectedError == "" {
 			if err != nil {
-				t.Errorf("TestValidateUserPassword: %q, %q unexpected error: %q", tc.user.Username, tc.user.Password, err.Error())
+				t.Logf("TestValidateUserPassword: %q, %q unexpected error: %q", tc.user.Username, tc.user.Password, err.Error())
+				t.Fail()
 			}
 		} else {
 			assert.Equal(t, tc.expectedError, err.Error())
