@@ -175,14 +175,13 @@ resource "ibm_db2" "db2_instance" {
 // 	  db2_view_reopt_values = "NO"
 // 	  db2_workload = "SAP"
 // 	}
-
-  }
+//  }
 
   timeouts {
-	  create = "720m"
-	  update = "60m"
-	  delete = "30m"
-	  }
+    create = "720m"
+    update = "60m"
+    delete = "30m"
+   }
 }
 
 //Db2 SaaS Connection Info
