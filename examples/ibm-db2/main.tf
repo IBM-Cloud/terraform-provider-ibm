@@ -31,7 +31,7 @@ resource "ibm_db2" "db2_instance" {
 //     auto_scaling_allow_plan_limit = "true"
 //   }
 
-//   dbm_configuration {
+//   customsetting_config {
 //       db {
 //         act_sortmem_limit = "NONE"
 //         alt_collate = "IDENTITY_16BIT"
@@ -210,10 +210,10 @@ resource "ibm_db2" "db2_instance" {
 # }
 
 //DataSource reading tuneable params of Db2 instance
-# data "ibm_db2_tuneable_param" "Db2-44-test-both" {
+# data "ibm_db2_tuneable_param" "Db2-kj-test-pub" {
 # }
 
 //DataSource reading backups of Db2 instance
-# data "ibm_db2_backup" "Db2-44-test-both" {
-#  deployment_id = "crn%3Av1%3Astaging%3Apublic%3Adashdb-for-transactions%3Aus-south%3Aa%2Fe7e3e87b512f474381c0684a5ecbba03%3Af5c9359c-9a66-4087-9eda-0024c2603c92%3A%3A"
+# data "ibm_db2_backup" "Db2-kj-test-pub" {
+#  deployment_id = "crn%3Av1%3Astaging%3Apublic%3Adashdb-for-transactions%3Aus-south%3Aa%2Fe7e3e87b512f474381c0684a5ecbba03%3A5d673016-3dbf-428c-8e59-e6ab82028b53%3A%3A"
 # }
