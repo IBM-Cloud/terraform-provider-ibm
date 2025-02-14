@@ -8,7 +8,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/IBM/cloud-db2-go-sdk/db2saasv1"
 	"io"
 	"io/ioutil"
 	"log"
