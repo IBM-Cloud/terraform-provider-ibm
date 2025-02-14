@@ -40,22 +40,22 @@ func DataSourceIBMPINetworkInterfaces() *schema.Resource {
 			// Attributes
 			Attr_Interfaces: {
 				Computed:    true,
-				Description: "Network Interfaces.",
+				Description: "Network interfaces.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						Attr_CRN: {
 							Computed:    true,
-							Description: "The Network Interface's crn.",
+							Description: "The network interface's crn.",
 							Type:        schema.TypeString,
 						},
 						Attr_ID: {
 							Computed:    true,
-							Description: "The unique Network Interface ID.",
+							Description: "The unique network interface ID.",
 							Type:        schema.TypeString,
 						},
 						Attr_Instance: {
 							Computed:    true,
-							Description: "The attached instance to this Network Interface.",
+							Description: "The attached instance to this network interface.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									Attr_Href: {
@@ -74,27 +74,34 @@ func DataSourceIBMPINetworkInterfaces() *schema.Resource {
 						},
 						Attr_IPAddress: {
 							Computed:    true,
-							Description: "The ip address of this Network Interface.",
+							Description: "The ip address of this network interface.",
 							Type:        schema.TypeString,
 						},
 						Attr_MacAddress: {
 							Computed:    true,
-							Description: "The mac address of the Network Interface.",
+							Description: "The mac address of the network interface.",
 							Type:        schema.TypeString,
 						},
 						Attr_Name: {
 							Computed:    true,
-							Description: "Name of the Network Interface (not unique or indexable).",
+							Description: "Name of the network interface (not unique or indexable).",
 							Type:        schema.TypeString,
 						},
 						Attr_NetworkSecurityGroupID: {
 							Computed:    true,
-							Description: "ID of the Network Security Group the network interface will be added to.",
+							Deprecated:  "Deprecated, use network_security_group_ids instead.",
+							Description: "ID of the network security group the network interface will be added to.",
 							Type:        schema.TypeString,
+						},
+						Attr_NetworkSecurityGroupIDs: {
+							Computed:    true,
+							Description: "List of network security groups that the network interface is a member of.",
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Type:        schema.TypeSet,
 						},
 						Attr_Status: {
 							Computed:    true,
-							Description: "The status of the network address group.",
+							Description: "The status of the network interface.",
 							Type:        schema.TypeString,
 						},
 						Attr_UserTags: {
@@ -148,6 +155,7 @@ func networkInterfaceToMap(netInterface *models.NetworkInterface, meta interface
 	interfaceMap[Attr_MacAddress] = netInterface.MacAddress
 	interfaceMap[Attr_Name] = netInterface.Name
 	interfaceMap[Attr_NetworkSecurityGroupID] = netInterface.NetworkSecurityGroupID
+	interfaceMap[Attr_NetworkSecurityGroupIDs] = netInterface.NetworkSecurityGroupIDs
 	if netInterface.Instance != nil {
 		pvmInstanceMap := pvmInstanceToMap(netInterface.Instance)
 		interfaceMap[Attr_Instance] = []map[string]interface{}{pvmInstanceMap}
