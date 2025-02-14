@@ -178,6 +178,11 @@ func ResourceIBMPINetworkSecurityGroupRule() *schema.Resource {
 				Description: "The network security group's crn.",
 				Type:        schema.TypeString,
 			},
+			Attr_Default: {
+				Computed:    true,
+				Description: "Indicates if the network security group is the default network security group in the workspace.",
+				Type:        schema.TypeBool,
+			},
 			Attr_Members: {
 				Computed:    true,
 				Description: "The list of IPv4 addresses and, or network interfaces in the network security group.",
@@ -191,6 +196,11 @@ func ResourceIBMPINetworkSecurityGroupRule() *schema.Resource {
 						Attr_MacAddress: {
 							Computed:    true,
 							Description: "The mac address of a network interface included if the type is network-interface.",
+							Type:        schema.TypeString,
+						},
+						Attr_NetworkInterfaceID: {
+							Computed:    true,
+							Description: "The network ID of a network interface included if the type is network-interface.",
 							Type:        schema.TypeString,
 						},
 						Attr_Target: {
@@ -385,10 +395,11 @@ func resourceIBMPINetworkSecurityGroupRuleCreate(ctx context.Context, d *schema.
 		networkSecurityGroupAddRule.SourcePorts = networkSecurityGroupRuleMapToPort(sourcePort)
 
 		networkSecurityGroup, err := nsgClient.AddRule(nsgID, &networkSecurityGroupAddRule)
-		ruleID := *networkSecurityGroup.ID
 		if err != nil {
 			return diag.FromErr(err)
 		}
+		ruleID := *networkSecurityGroup.ID
+
 		_, err = isWaitForIBMPINetworkSecurityGroupRuleAdd(ctx, nsgClient, nsgID, ruleID, d.Timeout(schema.TimeoutCreate))
 		if err != nil {
 			return diag.FromErr(err)
@@ -423,6 +434,7 @@ func resourceIBMPINetworkSecurityGroupRuleRead(ctx context.Context, d *schema.Re
 		}
 		d.Set(Attr_UserTags, userTags)
 	}
+	d.Set(Attr_Default, networkSecurityGroup.Default)
 
 	if len(networkSecurityGroup.Members) > 0 {
 		members := []map[string]interface{}{}

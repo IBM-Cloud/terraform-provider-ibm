@@ -104,7 +104,7 @@ func testAccCheckIBMPINetworkSecurityGroupRuleConfigAddRuleTCP() string {
 					flag = "syn"
 				}
 				tcp_flags {
-					flag = "psh"
+					flag = "fin"
 				}
 				type       = "tcp"
 			}

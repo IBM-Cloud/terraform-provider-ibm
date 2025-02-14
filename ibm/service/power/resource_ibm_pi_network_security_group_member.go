@@ -79,6 +79,11 @@ func ResourceIBMPINetworkSecurityGroupMember() *schema.Resource {
 				Description: "The network security group's crn.",
 				Type:        schema.TypeString,
 			},
+			Attr_Default: {
+				Computed:    true,
+				Description: "Indicates if the network security group is the default network security group in the workspace.",
+				Type:        schema.TypeBool,
+			},
 			Attr_Members: {
 				Computed:    true,
 				Description: "The list of IPv4 addresses and, or network interfaces in the network security group.",
@@ -92,6 +97,11 @@ func ResourceIBMPINetworkSecurityGroupMember() *schema.Resource {
 						Attr_MacAddress: {
 							Computed:    true,
 							Description: "The mac address of a network interface included if the type is network-interface.",
+							Type:        schema.TypeString,
+						},
+						Attr_NetworkInterfaceID: {
+							Computed:    true,
+							Description: "The network ID of a network interface included if the type is network-interface.",
 							Type:        schema.TypeString,
 						},
 						Attr_Target: {
@@ -303,6 +313,7 @@ func resourceIBMPINetworkSecurityGroupMemberRead(ctx context.Context, d *schema.
 		}
 		d.Set(Attr_UserTags, userTags)
 	}
+	d.Set(Attr_Default, networkSecurityGroup.Default)
 	if len(networkSecurityGroup.Members) > 0 {
 		members := []map[string]interface{}{}
 		for _, mbr := range networkSecurityGroup.Members {
