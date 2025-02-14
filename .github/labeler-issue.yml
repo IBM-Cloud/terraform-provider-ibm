@@ -36,6 +36,8 @@ service/Activity Tracker:
   - '((\*|-) ?`?|(data|resource) "?)ibm_atracker'
 service/App Configuration:
   - '((\*|-) ?`?|(data|resource) "?)ibm_app_config'
+service/App Configuration Evaluation:
+  - '((\*|-) ?`?|(data|resource) "?)ibm_app_config_evaluate_'
 service/APPID Management:
   - '((\*|-) ?`?|(data|resource) "?)ibm_appid'
 service/Catalog Management:

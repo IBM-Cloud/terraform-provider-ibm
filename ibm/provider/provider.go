@@ -19,6 +19,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/apigateway"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/appconfiguration"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/appconfigurationevaluation"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/appid"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/atracker"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/backuprecovery"
@@ -647,18 +648,24 @@ func Provider() *schema.Provider {
 			"ibm_kms_kmip_object":                    kms.DataSourceIBMKMSKMIPObject(),
 			"ibm_kms_kmip_objects":                   kms.DataSourceIBMKMSKMIPObjects(),
 			"ibm_pn_application_chrome":              pushnotification.DataSourceIBMPNApplicationChrome(),
-			"ibm_app_config_environment":             appconfiguration.DataSourceIBMAppConfigEnvironment(),
-			"ibm_app_config_environments":            appconfiguration.DataSourceIBMAppConfigEnvironments(),
-			"ibm_app_config_collection":              appconfiguration.DataSourceIBMAppConfigCollection(),
-			"ibm_app_config_collections":             appconfiguration.DataSourceIBMAppConfigCollections(),
-			"ibm_app_config_feature":                 appconfiguration.DataSourceIBMAppConfigFeature(),
-			"ibm_app_config_features":                appconfiguration.DataSourceIBMAppConfigFeatures(),
-			"ibm_app_config_property":                appconfiguration.DataSourceIBMAppConfigProperty(),
-			"ibm_app_config_properties":              appconfiguration.DataSourceIBMAppConfigProperties(),
-			"ibm_app_config_segment":                 appconfiguration.DataSourceIBMAppConfigSegment(),
-			"ibm_app_config_segments":                appconfiguration.DataSourceIBMAppConfigSegments(),
-			"ibm_app_config_snapshot":                appconfiguration.DataSourceIBMAppConfigSnapshot(),
-			"ibm_app_config_snapshots":               appconfiguration.DataSourceIBMAppConfigSnapshots(),
+
+			// Added for App Configuration
+			"ibm_app_config_environment":  appconfiguration.DataSourceIBMAppConfigEnvironment(),
+			"ibm_app_config_environments": appconfiguration.DataSourceIBMAppConfigEnvironments(),
+			"ibm_app_config_collection":   appconfiguration.DataSourceIBMAppConfigCollection(),
+			"ibm_app_config_collections":  appconfiguration.DataSourceIBMAppConfigCollections(),
+			"ibm_app_config_feature":      appconfiguration.DataSourceIBMAppConfigFeature(),
+			"ibm_app_config_features":     appconfiguration.DataSourceIBMAppConfigFeatures(),
+			"ibm_app_config_property":     appconfiguration.DataSourceIBMAppConfigProperty(),
+			"ibm_app_config_properties":   appconfiguration.DataSourceIBMAppConfigProperties(),
+			"ibm_app_config_segment":      appconfiguration.DataSourceIBMAppConfigSegment(),
+			"ibm_app_config_segments":     appconfiguration.DataSourceIBMAppConfigSegments(),
+			"ibm_app_config_snapshot":     appconfiguration.DataSourceIBMAppConfigSnapshot(),
+			"ibm_app_config_snapshots":    appconfiguration.DataSourceIBMAppConfigSnapshots(),
+
+			// Added for App Configuration evaluation
+			"ibm_app_config_evaluate_feature_flag": appconfigurationevaluation.DataSourceAppConfigEvaluateFeatureFlag(),
+			"ibm_app_config_evaluate_property":     appconfigurationevaluation.DataSourceAppConfigEvaluateProperty(),
 
 			"ibm_resource_quota":    resourcecontroller.DataSourceIBMResourceQuota(),
 			"ibm_resource_group":    resourcemanager.DataSourceIBMResourceGroup(),
@@ -2283,6 +2290,9 @@ func Validator() validate.ValidatorDict {
 				"ibm_iam_access_group_policy":    iampolicy.DataSourceIBMIAMAccessGroupPolicyValidator(),
 				"ibm_iam_service_policy":         iampolicy.DataSourceIBMIAMServicePolicyValidator(),
 				"ibm_iam_trusted_profile_policy": iampolicy.DataSourceIBMIAMTrustedProfilePolicyValidator(),
+
+				"ibm_app_config_evaluate_feature_flag": appconfigurationevaluation.DataSourceIBMAppConfigEvaluateFeatureFlagValidator(),
+				"ibm_app_config_evaluate_property":     appconfigurationevaluation.DataSourceIBMAppConfigEvaluatePropertyValidator(),
 			},
 		}
 	})
