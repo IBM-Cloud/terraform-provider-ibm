@@ -1,8 +1,8 @@
-// Copyright IBM Corp. 2024 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.96.0-d6dec9d7-20241008-212902
+ * IBM OpenAPI Terraform Generator Version: 3.99.0-d27cee72-20250129-204831
  */
 
 package partnercentersell
@@ -386,6 +386,11 @@ func ResourceIbmOnboardingCatalogPlan() *schema.Resource {
 					},
 				},
 			},
+			"geo_tags": &schema.Schema{
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+			},
 			"url": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -435,7 +440,7 @@ func ResourceIbmOnboardingCatalogPlanValidator() *validate.ResourceValidator {
 			ValidateFunctionIdentifier: validate.ValidateRegexp,
 			Type:                       validate.TypeString,
 			Required:                   true,
-			Regexp:                     `^[a-z0-9\-.]+$`,
+			Regexp:                     `^[a-zA-Z0-9\-.]+$`,
 		},
 		validate.ValidateSchema{
 			Identifier:                 "kind",
@@ -595,6 +600,12 @@ func resourceIbmOnboardingCatalogPlanRead(context context.Context, d *schema.Res
 		if err = d.Set("metadata", []map[string]interface{}{metadataMap}); err != nil {
 			err = fmt.Errorf("Error setting metadata: %s", err)
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_onboarding_catalog_plan", "read", "set-metadata").GetDiag()
+		}
+	}
+	if !core.IsNil(globalCatalogPlan.GeoTags) {
+		if err = d.Set("geo_tags", globalCatalogPlan.GeoTags); err != nil {
+			err = fmt.Errorf("Error setting geo_tags: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_onboarding_catalog_plan", "read", "set-geo_tags").GetDiag()
 		}
 	}
 	if !core.IsNil(globalCatalogPlan.URL) {
@@ -805,7 +816,7 @@ func ResourceIbmOnboardingCatalogPlanMapToGlobalCatalogPlanMetadata(modelMap map
 		model.Ui = UiModel
 	}
 	if modelMap["service"] != nil && len(modelMap["service"].([]interface{})) > 0 && modelMap["service"].([]interface{})[0] != nil {
-		ServiceModel, err := ResourceIbmOnboardingCatalogPlanMapToGlobalCatalogMetadataService(modelMap["service"].([]interface{})[0].(map[string]interface{}))
+		ServiceModel, err := ResourceIbmOnboardingCatalogPlanMapToGlobalCatalogPlanMetadataService(modelMap["service"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -967,8 +978,8 @@ func ResourceIbmOnboardingCatalogPlanMapToGlobalCatalogMetadataUIUrls(modelMap m
 	return model, nil
 }
 
-func ResourceIbmOnboardingCatalogPlanMapToGlobalCatalogMetadataService(modelMap map[string]interface{}) (*partnercentersellv1.GlobalCatalogMetadataService, error) {
-	model := &partnercentersellv1.GlobalCatalogMetadataService{}
+func ResourceIbmOnboardingCatalogPlanMapToGlobalCatalogPlanMetadataService(modelMap map[string]interface{}) (*partnercentersellv1.GlobalCatalogPlanMetadataService, error) {
+	model := &partnercentersellv1.GlobalCatalogPlanMetadataService{}
 	if modelMap["rc_provisionable"] != nil {
 		model.RcProvisionable = core.BoolPtr(modelMap["rc_provisionable"].(bool))
 	}
@@ -1059,7 +1070,7 @@ func ResourceIbmOnboardingCatalogPlanGlobalCatalogPlanMetadataToMap(model *partn
 		modelMap["ui"] = []map[string]interface{}{uiMap}
 	}
 	if model.Service != nil {
-		serviceMap, err := ResourceIbmOnboardingCatalogPlanGlobalCatalogMetadataServiceToMap(model.Service)
+		serviceMap, err := ResourceIbmOnboardingCatalogPlanGlobalCatalogPlanMetadataServiceToMap(model.Service)
 		if err != nil {
 			return modelMap, err
 		}
@@ -1218,7 +1229,7 @@ func ResourceIbmOnboardingCatalogPlanGlobalCatalogMetadataUIUrlsToMap(model *par
 	return modelMap, nil
 }
 
-func ResourceIbmOnboardingCatalogPlanGlobalCatalogMetadataServiceToMap(model *partnercentersellv1.GlobalCatalogMetadataService) (map[string]interface{}, error) {
+func ResourceIbmOnboardingCatalogPlanGlobalCatalogPlanMetadataServiceToMap(model *partnercentersellv1.GlobalCatalogPlanMetadataService) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.RcProvisionable != nil {
 		modelMap["rc_provisionable"] = *model.RcProvisionable
@@ -1267,282 +1278,382 @@ func ResourceIbmOnboardingCatalogPlanGlobalCatalogPlanPatchAsPatch(patchVals *pa
 	path = "active"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["active"] = nil
+	} else if !exists {
+		delete(patch, "active")
 	}
 	path = "disabled"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["disabled"] = nil
+	} else if !exists {
+		delete(patch, "disabled")
 	}
 	path = "overview_ui"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["overview_ui"] = nil
 	} else if exists && patch["overview_ui"] != nil {
-		ResourceIbmOnboardingCatalogPlanGlobalCatalogOverviewUIAsPatch(patch["overview_ui"].(map[string]interface{}), d)
+		ResourceIbmOnboardingCatalogPlanGlobalCatalogOverviewUIAsPatch(patch["overview_ui"].(map[string]interface{}), d, fmt.Sprintf("%s.0", path))
+	} else if !exists {
+		delete(patch, "overview_ui")
 	}
 	path = "tags"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["tags"] = nil
+	} else if !exists {
+		delete(patch, "tags")
 	}
 	path = "object_provider"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["object_provider"] = nil
 	} else if exists && patch["object_provider"] != nil {
-		ResourceIbmOnboardingCatalogPlanCatalogProductProviderAsPatch(patch["object_provider"].(map[string]interface{}), d)
+		ResourceIbmOnboardingCatalogPlanCatalogProductProviderAsPatch(patch["object_provider"].(map[string]interface{}), d, fmt.Sprintf("%s.0", path))
+	} else if !exists {
+		delete(patch, "object_provider")
 	}
 	path = "metadata"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["metadata"] = nil
 	} else if exists && patch["metadata"] != nil {
-		ResourceIbmOnboardingCatalogPlanGlobalCatalogPlanMetadataAsPatch(patch["metadata"].(map[string]interface{}), d)
+		ResourceIbmOnboardingCatalogPlanGlobalCatalogPlanMetadataAsPatch(patch["metadata"].(map[string]interface{}), d, fmt.Sprintf("%s.0", path))
+	} else if !exists {
+		delete(patch, "metadata")
 	}
 
 	return patch
 }
 
-func ResourceIbmOnboardingCatalogPlanGlobalCatalogPlanMetadataAsPatch(patch map[string]interface{}, d *schema.ResourceData) {
+func ResourceIbmOnboardingCatalogPlanGlobalCatalogPlanMetadataAsPatch(patch map[string]interface{}, d *schema.ResourceData, rootPath string) {
 	var path string
 
-	path = "metadata.0.rc_compatible"
+	path = rootPath + ".rc_compatible"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["rc_compatible"] = nil
+	} else if !exists {
+		delete(patch, "rc_compatible")
 	}
-	path = "metadata.0.ui"
+	path = rootPath + ".ui"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["ui"] = nil
 	} else if exists && patch["ui"] != nil {
-		ResourceIbmOnboardingCatalogPlanGlobalCatalogMetadataUIAsPatch(patch["ui"].(map[string]interface{}), d)
+		ResourceIbmOnboardingCatalogPlanGlobalCatalogMetadataUIAsPatch(patch["ui"].(map[string]interface{}), d, fmt.Sprintf("%s.0", path))
+	} else if !exists {
+		delete(patch, "ui")
 	}
-	path = "metadata.0.service"
+	path = rootPath + ".service"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["service"] = nil
 	} else if exists && patch["service"] != nil {
-		ResourceIbmOnboardingCatalogPlanGlobalCatalogMetadataServiceAsPatch(patch["service"].(map[string]interface{}), d)
+		ResourceIbmOnboardingCatalogPlanGlobalCatalogPlanMetadataServiceAsPatch(patch["service"].(map[string]interface{}), d, fmt.Sprintf("%s.0", path))
+	} else if !exists {
+		delete(patch, "service")
 	}
-	path = "metadata.0.pricing"
+	path = rootPath + ".pricing"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["pricing"] = nil
 	} else if exists && patch["pricing"] != nil {
-		ResourceIbmOnboardingCatalogPlanGlobalCatalogMetadataPricingAsPatch(patch["pricing"].(map[string]interface{}), d)
+		ResourceIbmOnboardingCatalogPlanGlobalCatalogMetadataPricingAsPatch(patch["pricing"].(map[string]interface{}), d, fmt.Sprintf("%s.0", path))
+	} else if !exists {
+		delete(patch, "pricing")
 	}
-	path = "metadata.0.plan"
+	path = rootPath + ".plan"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["plan"] = nil
 	} else if exists && patch["plan"] != nil {
-		ResourceIbmOnboardingCatalogPlanGlobalCatalogPlanMetadataPlanAsPatch(patch["plan"].(map[string]interface{}), d)
+		ResourceIbmOnboardingCatalogPlanGlobalCatalogPlanMetadataPlanAsPatch(patch["plan"].(map[string]interface{}), d, fmt.Sprintf("%s.0", path))
+	} else if !exists {
+		delete(patch, "plan")
 	}
 }
 
-func ResourceIbmOnboardingCatalogPlanGlobalCatalogPlanMetadataPlanAsPatch(patch map[string]interface{}, d *schema.ResourceData) {
+func ResourceIbmOnboardingCatalogPlanGlobalCatalogPlanMetadataPlanAsPatch(patch map[string]interface{}, d *schema.ResourceData, rootPath string) {
 	var path string
 
-	path = "metadata.0.plan.0.allow_internal_users"
+	path = rootPath + ".allow_internal_users"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["allow_internal_users"] = nil
+	} else if !exists {
+		delete(patch, "allow_internal_users")
 	}
-	path = "metadata.0.plan.0.bindable"
+	path = rootPath + ".bindable"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["bindable"] = nil
+	} else if !exists {
+		delete(patch, "bindable")
 	}
 }
 
-func ResourceIbmOnboardingCatalogPlanGlobalCatalogMetadataPricingAsPatch(patch map[string]interface{}, d *schema.ResourceData) {
+func ResourceIbmOnboardingCatalogPlanGlobalCatalogMetadataPricingAsPatch(patch map[string]interface{}, d *schema.ResourceData, rootPath string) {
 	var path string
 
-	path = "metadata.0.pricing.0.type"
+	path = rootPath + ".type"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["type"] = nil
+	} else if !exists {
+		delete(patch, "type")
 	}
-	path = "metadata.0.pricing.0.origin"
+	path = rootPath + ".origin"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["origin"] = nil
+	} else if !exists {
+		delete(patch, "origin")
 	}
 }
 
-func ResourceIbmOnboardingCatalogPlanGlobalCatalogMetadataServiceAsPatch(patch map[string]interface{}, d *schema.ResourceData) {
+func ResourceIbmOnboardingCatalogPlanGlobalCatalogPlanMetadataServiceAsPatch(patch map[string]interface{}, d *schema.ResourceData, rootPath string) {
 	var path string
 
-	path = "metadata.0.service.0.rc_provisionable"
+	path = rootPath + ".rc_provisionable"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["rc_provisionable"] = nil
+	} else if !exists {
+		delete(patch, "rc_provisionable")
 	}
-	path = "metadata.0.service.0.iam_compatible"
+	path = rootPath + ".iam_compatible"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["iam_compatible"] = nil
+	} else if !exists {
+		delete(patch, "iam_compatible")
 	}
-	path = "metadata.0.service.0.bindable"
+	path = rootPath + ".bindable"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["bindable"] = nil
+	} else if !exists {
+		delete(patch, "bindable")
 	}
-	path = "metadata.0.service.0.plan_updateable"
+	path = rootPath + ".plan_updateable"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["plan_updateable"] = nil
+	} else if !exists {
+		delete(patch, "plan_updateable")
 	}
-	path = "metadata.0.service.0.service_key_supported"
+	path = rootPath + ".service_key_supported"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["service_key_supported"] = nil
+	} else if !exists {
+		delete(patch, "service_key_supported")
 	}
 }
 
-func ResourceIbmOnboardingCatalogPlanGlobalCatalogMetadataUIAsPatch(patch map[string]interface{}, d *schema.ResourceData) {
+func ResourceIbmOnboardingCatalogPlanGlobalCatalogMetadataUIAsPatch(patch map[string]interface{}, d *schema.ResourceData, rootPath string) {
 	var path string
 
-	path = "metadata.0.ui.0.strings"
+	path = rootPath + ".strings"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["strings"] = nil
 	} else if exists && patch["strings"] != nil {
-		ResourceIbmOnboardingCatalogPlanGlobalCatalogMetadataUIStringsAsPatch(patch["strings"].(map[string]interface{}), d)
+		ResourceIbmOnboardingCatalogPlanGlobalCatalogMetadataUIStringsAsPatch(patch["strings"].(map[string]interface{}), d, fmt.Sprintf("%s.0", path))
+	} else if !exists {
+		delete(patch, "strings")
 	}
-	path = "metadata.0.ui.0.urls"
+	path = rootPath + ".urls"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["urls"] = nil
 	} else if exists && patch["urls"] != nil {
-		ResourceIbmOnboardingCatalogPlanGlobalCatalogMetadataUIUrlsAsPatch(patch["urls"].(map[string]interface{}), d)
+		ResourceIbmOnboardingCatalogPlanGlobalCatalogMetadataUIUrlsAsPatch(patch["urls"].(map[string]interface{}), d, fmt.Sprintf("%s.0", path))
+	} else if !exists {
+		delete(patch, "urls")
 	}
-	path = "metadata.0.ui.0.hidden"
+	path = rootPath + ".hidden"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["hidden"] = nil
+	} else if !exists {
+		delete(patch, "hidden")
 	}
-	path = "metadata.0.ui.0.side_by_side_index"
+	path = rootPath + ".side_by_side_index"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["side_by_side_index"] = nil
+	} else if !exists {
+		delete(patch, "side_by_side_index")
 	}
 }
 
-func ResourceIbmOnboardingCatalogPlanGlobalCatalogMetadataUIUrlsAsPatch(patch map[string]interface{}, d *schema.ResourceData) {
+func ResourceIbmOnboardingCatalogPlanGlobalCatalogMetadataUIUrlsAsPatch(patch map[string]interface{}, d *schema.ResourceData, rootPath string) {
 	var path string
 
-	path = "metadata.0.ui.0.urls.0.doc_url"
+	path = rootPath + ".doc_url"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["doc_url"] = nil
+	} else if !exists {
+		delete(patch, "doc_url")
 	}
-	path = "metadata.0.ui.0.urls.0.apidocs_url"
+	path = rootPath + ".apidocs_url"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["apidocs_url"] = nil
+	} else if !exists {
+		delete(patch, "apidocs_url")
 	}
-	path = "metadata.0.ui.0.urls.0.terms_url"
+	path = rootPath + ".terms_url"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["terms_url"] = nil
+	} else if !exists {
+		delete(patch, "terms_url")
 	}
-	path = "metadata.0.ui.0.urls.0.instructions_url"
+	path = rootPath + ".instructions_url"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["instructions_url"] = nil
+	} else if !exists {
+		delete(patch, "instructions_url")
 	}
-	path = "metadata.0.ui.0.urls.0.catalog_details_url"
+	path = rootPath + ".catalog_details_url"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["catalog_details_url"] = nil
+	} else if !exists {
+		delete(patch, "catalog_details_url")
 	}
-	path = "metadata.0.ui.0.urls.0.custom_create_page_url"
+	path = rootPath + ".custom_create_page_url"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["custom_create_page_url"] = nil
+	} else if !exists {
+		delete(patch, "custom_create_page_url")
 	}
-	path = "metadata.0.ui.0.urls.0.dashboard"
+	path = rootPath + ".dashboard"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["dashboard"] = nil
+	} else if !exists {
+		delete(patch, "dashboard")
 	}
 }
 
-func ResourceIbmOnboardingCatalogPlanGlobalCatalogMetadataUIStringsAsPatch(patch map[string]interface{}, d *schema.ResourceData) {
+func ResourceIbmOnboardingCatalogPlanGlobalCatalogMetadataUIStringsAsPatch(patch map[string]interface{}, d *schema.ResourceData, rootPath string) {
 	var path string
 
-	path = "metadata.0.ui.0.strings.0.en"
+	path = rootPath + ".en"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["en"] = nil
 	} else if exists && patch["en"] != nil {
-		ResourceIbmOnboardingCatalogPlanGlobalCatalogMetadataUIStringsContentAsPatch(patch["en"].(map[string]interface{}), d)
+		ResourceIbmOnboardingCatalogPlanGlobalCatalogMetadataUIStringsContentAsPatch(patch["en"].(map[string]interface{}), d, fmt.Sprintf("%s.0", path))
+	} else if !exists {
+		delete(patch, "en")
 	}
 }
 
-func ResourceIbmOnboardingCatalogPlanGlobalCatalogMetadataUIStringsContentAsPatch(patch map[string]interface{}, d *schema.ResourceData) {
+func ResourceIbmOnboardingCatalogPlanGlobalCatalogMetadataUIStringsContentAsPatch(patch map[string]interface{}, d *schema.ResourceData, rootPath string) {
 	var path string
 
-	path = "metadata.0.ui.0.strings.0.en.0.bullets"
+	path = rootPath + ".bullets"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["bullets"] = nil
 	} else if exists && patch["bullets"] != nil {
-		ResourceIbmOnboardingCatalogPlanCatalogHighlightItemAsPatch(patch["bullets"].([]map[string]interface{})[0], d)
+		bulletsList := patch["bullets"].([]map[string]interface{})
+		for i, bulletsItem := range bulletsList {
+			ResourceIbmOnboardingCatalogPlanCatalogHighlightItemAsPatch(bulletsItem, d, fmt.Sprintf("%s.%d", path, i))
+		}
+	} else if !exists {
+		delete(patch, "bullets")
 	}
-	path = "metadata.0.ui.0.strings.0.en.0.media"
+	path = rootPath + ".media"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["media"] = nil
 	} else if exists && patch["media"] != nil {
-		ResourceIbmOnboardingCatalogPlanCatalogProductMediaItemAsPatch(patch["media"].([]map[string]interface{})[0], d)
+		mediaList := patch["media"].([]map[string]interface{})
+		for i, mediaItem := range mediaList {
+			ResourceIbmOnboardingCatalogPlanCatalogProductMediaItemAsPatch(mediaItem, d, fmt.Sprintf("%s.%d", path, i))
+		}
+	} else if !exists {
+		delete(patch, "media")
 	}
-	path = "metadata.0.ui.0.strings.0.en.0.embeddable_dashboard"
+	path = rootPath + ".embeddable_dashboard"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["embeddable_dashboard"] = nil
+	} else if !exists {
+		delete(patch, "embeddable_dashboard")
 	}
 }
 
-func ResourceIbmOnboardingCatalogPlanCatalogProductMediaItemAsPatch(patch map[string]interface{}, d *schema.ResourceData) {
+func ResourceIbmOnboardingCatalogPlanCatalogProductMediaItemAsPatch(patch map[string]interface{}, d *schema.ResourceData, rootPath string) {
 	var path string
 
-	path = "metadata.0.ui.0.strings.0.en.0.media.0.caption_i18n"
+	path = rootPath + ".caption_i18n"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["caption_i18n"] = nil
+	} else if !exists {
+		delete(patch, "caption_i18n")
 	}
-	path = "metadata.0.ui.0.strings.0.en.0.media.0.thumbnail"
+	path = rootPath + ".thumbnail"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["thumbnail"] = nil
+	} else if !exists {
+		delete(patch, "thumbnail")
 	}
 }
 
-func ResourceIbmOnboardingCatalogPlanCatalogHighlightItemAsPatch(patch map[string]interface{}, d *schema.ResourceData) {
+func ResourceIbmOnboardingCatalogPlanCatalogHighlightItemAsPatch(patch map[string]interface{}, d *schema.ResourceData, rootPath string) {
 	var path string
 
-	path = "metadata.0.ui.0.strings.0.en.0.bullets.0.description"
+	path = rootPath + ".description"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["description"] = nil
+	} else if !exists {
+		delete(patch, "description")
 	}
-	path = "metadata.0.ui.0.strings.0.en.0.bullets.0.description_i18n"
+	path = rootPath + ".description_i18n"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["description_i18n"] = nil
+	} else if !exists {
+		delete(patch, "description_i18n")
 	}
-	path = "metadata.0.ui.0.strings.0.en.0.bullets.0.title"
+	path = rootPath + ".title"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["title"] = nil
+	} else if !exists {
+		delete(patch, "title")
 	}
-	path = "metadata.0.ui.0.strings.0.en.0.bullets.0.title_i18n"
+	path = rootPath + ".title_i18n"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["title_i18n"] = nil
+	} else if !exists {
+		delete(patch, "title_i18n")
 	}
 }
 
-func ResourceIbmOnboardingCatalogPlanCatalogProductProviderAsPatch(patch map[string]interface{}, d *schema.ResourceData) {
+func ResourceIbmOnboardingCatalogPlanCatalogProductProviderAsPatch(patch map[string]interface{}, d *schema.ResourceData, rootPath string) {
 	var path string
 
-	path = "object_provider.0.name"
+	path = rootPath + ".name"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["name"] = nil
+	} else if !exists {
+		delete(patch, "name")
 	}
-	path = "object_provider.0.email"
+	path = rootPath + ".email"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["email"] = nil
+	} else if !exists {
+		delete(patch, "email")
 	}
 }
 
-func ResourceIbmOnboardingCatalogPlanGlobalCatalogOverviewUIAsPatch(patch map[string]interface{}, d *schema.ResourceData) {
+func ResourceIbmOnboardingCatalogPlanGlobalCatalogOverviewUIAsPatch(patch map[string]interface{}, d *schema.ResourceData, rootPath string) {
 	var path string
 
-	path = "overview_ui.0.en"
+	path = rootPath + ".en"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["en"] = nil
 	} else if exists && patch["en"] != nil {
-		ResourceIbmOnboardingCatalogPlanGlobalCatalogOverviewUITranslatedContentAsPatch(patch["en"].(map[string]interface{}), d)
+		ResourceIbmOnboardingCatalogPlanGlobalCatalogOverviewUITranslatedContentAsPatch(patch["en"].(map[string]interface{}), d, fmt.Sprintf("%s.0", path))
+	} else if !exists {
+		delete(patch, "en")
 	}
 }
 
-func ResourceIbmOnboardingCatalogPlanGlobalCatalogOverviewUITranslatedContentAsPatch(patch map[string]interface{}, d *schema.ResourceData) {
+func ResourceIbmOnboardingCatalogPlanGlobalCatalogOverviewUITranslatedContentAsPatch(patch map[string]interface{}, d *schema.ResourceData, rootPath string) {
 	var path string
 
-	path = "overview_ui.0.en.0.display_name"
+	path = rootPath + ".display_name"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["display_name"] = nil
+	} else if !exists {
+		delete(patch, "display_name")
 	}
-	path = "overview_ui.0.en.0.description"
+	path = rootPath + ".description"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["description"] = nil
+	} else if !exists {
+		delete(patch, "description")
 	}
-	path = "overview_ui.0.en.0.long_description"
+	path = rootPath + ".long_description"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["long_description"] = nil
+	} else if !exists {
+		delete(patch, "long_description")
 	}
 }

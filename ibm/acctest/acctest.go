@@ -36,9 +36,12 @@ var (
 	CisResourceGroup                string
 	CloudShellAccountID             string
 	CosCRN                          string
+	CosBackupPolicyID               string
 	BucketCRN                       string
+	BackupVaultName                 string
 	ActivityTrackerInstanceCRN      string
 	MetricsMonitoringCRN            string
+	KmsKeyCrn                       string
 	BucketName                      string
 	CosName                         string
 	Ibmid1                          string
@@ -122,6 +125,7 @@ var (
 	ISSnapshotCRN                   string
 	WorkspaceID                     string
 	TemplateID                      string
+	AgentID                         string
 	ActionID                        string
 	JobID                           string
 	RepoURL                         string
@@ -240,6 +244,7 @@ var (
 	Pi_spp_placement_group_id         string
 	Pi_storage_connection             string
 	Pi_target_storage_tier            string
+	Pi_virtual_serial_number          string
 	Pi_volume_clone_task_id           string
 	Pi_volume_group_id                string
 	Pi_volume_group_name              string
@@ -257,6 +262,7 @@ var (
 	Pi_capture_storage_image_path       string
 	Pi_capture_cloud_storage_access_key string
 	Pi_capture_cloud_storage_secret_key string
+	Pi_capture_cloud_storage_region     string
 )
 
 var ISDelegegatedVPC string
@@ -575,6 +581,22 @@ func init() {
 	if BucketCRN == "" {
 		BucketCRN = ""
 		fmt.Println("[WARN] Set the environment variable IBM_COS_Bucket_CRN with a VALID BUCKET CRN for testing ibm_cos_bucket* resources")
+	}
+	BackupVaultName = os.Getenv("IBM_COS_Backup_Vault")
+	if BackupVaultName == "" {
+		BackupVaultName = ""
+		fmt.Println("[WARN] Set the environment variable IBM_COS_Backup_Vault with a VALID BACKUP VAULT NAME  for testing ibm_cos_backup_vault* resources")
+	}
+	KmsKeyCrn = os.Getenv("IBM_KMS_KEY_CRN")
+	if KmsKeyCrn == "" {
+		KmsKeyCrn = ""
+		fmt.Println("[WARN] Set the environment variable IBM_KMS_KEY_CRN with a VALID key crn for a KP/HPCS root key")
+	}
+
+	CosBackupPolicyID = os.Getenv("IBM_COS_Backup_Policy_Id")
+	if CosBackupPolicyID == "" {
+		CosBackupPolicyID = ""
+		fmt.Println("[WARN] Set the environment variable IBM_COS_Backup_Policy_Id with a VALID POLICYS ID for testing ibm_cos_backup_policy* resources")
 	}
 	ActivityTrackerInstanceCRN = os.Getenv("IBM_COS_ACTIVITY_TRACKER_CRN")
 	if ActivityTrackerInstanceCRN == "" {
@@ -1301,6 +1323,12 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable PI_CAPTURE_CLOUD_STORAGE_SECRET_KEY for testing Pi_capture_cloud_storage_secret_key resource else it is set to default value 'terraform-test-power'")
 	}
 
+	Pi_capture_cloud_storage_region = os.Getenv("PI_CAPTURE_CLOUD_STORAGE_REGION")
+	if Pi_capture_cloud_storage_region == "" {
+		Pi_capture_cloud_storage_region = "us-south"
+		fmt.Println("[INFO] Set the environment variable PI_CAPTURE_CLOUD_STORAGE_REGION for testing Pi_capture_cloud_storage_region resource else it is set to default value 'us-south'")
+	}
+
 	Pi_shared_processor_pool_id = os.Getenv("PI_SHARED_PROCESSOR_POOL_ID")
 	if Pi_shared_processor_pool_id == "" {
 		Pi_shared_processor_pool_id = "tf-pi-shared-processor-pool"
@@ -1320,6 +1348,12 @@ func init() {
 	if Pi_volume_clone_task_id == "" {
 		Pi_volume_clone_task_id = "terraform-test-volume-clone-task-id"
 		fmt.Println("[INFO] Set the environment variable PI_VOLUME_CLONE_TASK_ID for testing Pi_volume_clone_task_id resource else it is set to default value 'terraform-test-volume-clone-task-id'")
+	}
+
+	Pi_virtual_serial_number = os.Getenv("PI_VIRTUAL_SERIAL_NUMBER")
+	if Pi_virtual_serial_number == "" {
+		Pi_virtual_serial_number = "terraform_test_power"
+		fmt.Println("[INFO] Set the environment variable PI_VIRTUAL_SERIAL_NUMBER for testing ibm_pi_virtual_serial_number data source else it is set to default value 'terraform-test-power'")
 	}
 
 	Pi_resource_group_id = os.Getenv("PI_RESOURCE_GROUP_ID")
@@ -1357,6 +1391,11 @@ func init() {
 	if ActionID == "" {
 		ActionID = "us-east.ACTION.action_pm.a4ffeec3"
 		fmt.Println("[INFO] Set the environment variable SCHEMATICS_ACTION_ID for testing schematics resources else it is set to default value")
+	}
+	AgentID = os.Getenv("SCHEMATICS_AGENT_ID")
+	if AgentID == "" {
+		AgentID = "agent-non-bnpp-prod-testing-130.soA.be6e"
+		fmt.Println("[INFO] Set the environment variable SCHEMATICS_AGENT_ID for testing schematics resources else it is set to default value")
 	}
 	JobID = os.Getenv("SCHEMATICS_JOB_ID")
 	if JobID == "" {

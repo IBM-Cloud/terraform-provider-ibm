@@ -358,6 +358,8 @@ func dataSourceReservationProfileToMap(profileItem vpcv1.ReservationProfileIntf)
 		return
 	}
 
+	profileMap = make(map[string]interface{})
+
 	if profile.Href != nil {
 		profileMap["href"] = profile.Href
 	}

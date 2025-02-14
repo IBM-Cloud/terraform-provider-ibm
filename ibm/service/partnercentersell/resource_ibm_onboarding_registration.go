@@ -2,7 +2,7 @@
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.96.0-d6dec9d7-20241008-212902
+ * IBM OpenAPI Terraform Generator Version: 3.97.0-0e90eab1-20241120-170029
  */
 
 package partnercentersell
@@ -336,18 +336,26 @@ func ResourceIbmOnboardingRegistrationRegistrationPatchAsPatch(patchVals *partne
 	path = "company_name"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["company_name"] = nil
+	} else if !exists {
+		delete(patch, "company_name")
 	}
 	path = "primary_contact"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["primary_contact"] = nil
+	} else if !exists {
+		delete(patch, "primary_contact")
 	}
 	path = "default_private_catalog_id"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["default_private_catalog_id"] = nil
+	} else if !exists {
+		delete(patch, "default_private_catalog_id")
 	}
 	path = "provider_access_group"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["provider_access_group"] = nil
+	} else if !exists {
+		delete(patch, "provider_access_group")
 	}
 
 	return patch
