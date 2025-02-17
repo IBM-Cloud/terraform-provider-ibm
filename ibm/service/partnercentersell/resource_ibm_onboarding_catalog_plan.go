@@ -350,6 +350,7 @@ func ResourceIbmOnboardingCatalogPlan() *schema.Resource {
 									"unique_api_key": &schema.Schema{
 										Type:        schema.TypeBool,
 										Computed:    true,
+										Sensitive:   true,
 										Description: "Indicates whether the deployment uses a unique API key or not.",
 									},
 								},
