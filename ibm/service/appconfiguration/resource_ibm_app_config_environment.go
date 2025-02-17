@@ -96,13 +96,13 @@ func resourceEnvironmentCreate(d *schema.ResourceData, meta interface{}) error {
 
 	options.SetName(d.Get("name").(string))
 	options.SetEnvironmentID(d.Get("environment_id").(string))
-	if _, ok := d.GetOk("description"); ok {
+	if _, ok := GetFieldExists(d, "description"); ok {
 		options.SetDescription(d.Get("description").(string))
 	}
-	if _, ok := d.GetOk("tags"); ok {
+	if _, ok := GetFieldExists(d, "tags"); ok {
 		options.SetTags(d.Get("tags").(string))
 	}
-	if _, ok := d.GetOk("color_code"); ok {
+	if _, ok := GetFieldExists(d, "color_code"); ok {
 		options.SetColorCode(d.Get("color_code").(string))
 	}
 	_, response, err := appconfigClient.CreateEnvironment(options)
@@ -130,13 +130,13 @@ func resourceEnvironmentUpdate(d *schema.ResourceData, meta interface{}) error {
 
 		options.SetName(d.Get("name").(string))
 		options.SetEnvironmentID(d.Get("environment_id").(string))
-		if _, ok := d.GetOk("description"); ok {
+		if _, ok := GetFieldExists(d, "description"); ok {
 			options.SetDescription(d.Get("description").(string))
 		}
-		if _, ok := d.GetOk("tags"); ok {
+		if _, ok := GetFieldExists(d, "tags"); ok {
 			options.SetTags(d.Get("tags").(string))
 		}
-		if _, ok := d.GetOk("color_code"); ok {
+		if _, ok := GetFieldExists(d, "color_code"); ok {
 			options.SetColorCode(d.Get("color_code").(string))
 		}
 

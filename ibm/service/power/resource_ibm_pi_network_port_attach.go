@@ -105,6 +105,7 @@ func ResourceIBMPINetworkPortAttach() *schema.Resource {
 				Type:        schema.TypeString,
 			},
 		},
+		DeprecationMessage: "Resource ibm_pi_network_port_attach is deprecated. Use `ibm_pi_network_interface` resource instead.",
 	}
 
 }

@@ -55,6 +55,45 @@ func DataSourceIbmCodeEngineFunction() *schema.Resource {
 				Computed:    true,
 				Description: "The name of the secret that is used to access the specified `code_reference`. The secret is used to authenticate with a non-public endpoint that is specified as`code_reference`.",
 			},
+			"computed_env_variables": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "References to config maps, secrets or literal values, which are defined and set by Code Engine and are exposed as environment variables in the function.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"key": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The key to reference as environment variable.",
+						},
+						"name": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The name of the environment variable.",
+						},
+						"prefix": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "A prefix that can be added to all keys of a full secret or config map reference.",
+						},
+						"reference": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The name of the secret or config map.",
+						},
+						"type": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Specify the type of the environment variable.",
+						},
+						"value": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The literal value of the environment variable.",
+						},
+					},
+				},
+			},
 			"created_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -231,6 +270,20 @@ func dataSourceIbmCodeEngineFunctionRead(context context.Context, d *schema.Reso
 	if !core.IsNil(function.CodeSecret) {
 		if err = d.Set("code_secret", function.CodeSecret); err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting code_secret: %s", err), "(Data) ibm_code_engine_function", "read", "set-code_secret").GetDiag()
+		}
+	}
+
+	if !core.IsNil(function.ComputedEnvVariables) {
+		computedEnvVariables := []map[string]interface{}{}
+		for _, computedEnvVariablesItem := range function.ComputedEnvVariables {
+			computedEnvVariablesItemMap, err := DataSourceIbmCodeEngineFunctionEnvVarToMap(&computedEnvVariablesItem) // #nosec G601
+			if err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_code_engine_function", "read", "computed_env_variables-to-map").GetDiag()
+			}
+			computedEnvVariables = append(computedEnvVariables, computedEnvVariablesItemMap)
+		}
+		if err = d.Set("computed_env_variables", computedEnvVariables); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting computed_env_variables: %s", err), "(Data) ibm_code_engine_function", "read", "set-computed_env_variables").GetDiag()
 		}
 	}
 

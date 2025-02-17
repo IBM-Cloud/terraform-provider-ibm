@@ -8,6 +8,8 @@ description: |-
 
 # ibm_pi_network_port
 
+~> This resource is deprecated and will be removed in the next major version. Use `ibm_pi_network_interface` data source instead.
+
 Retrieve information about a network port in the Power Virtual Server Cloud. For more information, about networks in IBM power virtual server, see [adding or removing a public network](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-modifying-server#adding-removing-network).
 
 ## Example usage
