@@ -9,6 +9,8 @@ description: |-
 
 # ibm_pi_network_port_attach
 
+~> This resource is deprecated and will be removed in the next major version. Use `ibm_pi_network_interface` resource instead.
+
 Attaches a network port to a Power Systems Virtual Server instance. For more information, see [getting started with IBM Power Systems Virtual Servers](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-getting-started).
 
 ## Example usage
