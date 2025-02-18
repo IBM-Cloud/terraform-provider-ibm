@@ -123,6 +123,9 @@ func testAccCheckIBMPINetworkSecurityGroupRuleConfigAddRuleTCP() string {
 				tcp_flags {
 					flag = "syn"
 				}
+				tcp_flags {
+					flag = "fin"
+				}
 				type       = "tcp"
 			}
 			pi_remote {
