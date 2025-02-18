@@ -858,7 +858,8 @@ func Provider() *schema.Provider {
 			"ibm_cm_object":            catalogmanagement.DataSourceIBMCmObject(),
 
 			// Added for Resource Tag
-			"ibm_resource_tag": globaltagging.DataSourceIBMResourceTag(),
+			"ibm_resource_tag":   globaltagging.DataSourceIBMResourceTag(),
+			"ibm_iam_access_tag": globaltagging.DataSourceIBMIamAccessTag(),
 
 			// Atracker
 			"ibm_atracker_targets": atracker.DataSourceIBMAtrackerTargets(),
