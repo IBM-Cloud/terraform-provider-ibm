@@ -141,7 +141,9 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 			resourceIBMDatabaseInstanceDiff,
 			validateGroupsDiff,
 			validateUsersDiff,
-			validateRemoteLeaderIDDiff),
+			validateRemoteLeaderIDDiff,
+			validateVersionDiff,
+		),
 
 		Importer: &schema.ResourceImporter{},
 
@@ -241,11 +243,18 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				Description: "The configuration schema in JSON format",
 			},
 			"version": {
-				Description: "The database version to provision if specified",
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				ForceNew:    true,
+				Description:      "The database version to provision if specified",
+				Type:             schema.TypeString,
+				Optional:         true,
+				Computed:         true,
+				DiffSuppressFunc: flex.ApplyOnce,
+			},
+			"skip_backup": {
+				Description:      "Option to skip the backup when upgrading the version of your db.",
+				Type:             schema.TypeBool,
+				Optional:         true,
+				Computed:         true,
+				DiffSuppressFunc: flex.ApplyOnce,
 			},
 			"service_endpoints": {
 				Description:  "Types of the service endpoints. Possible values are 'public', 'private', 'public-and-private'.",
@@ -3125,6 +3134,25 @@ func validateRemoteLeaderIDDiff(_ context.Context, diff *schema.ResourceDiff, me
 
 	if remoteLeaderIdOk && (service != "databases-for-postgresql" && service != "databases-for-mysql" && service != "databases-for-enterprisedb") {
 		return fmt.Errorf("[ERROR] remote_leader_id is only supported for databases-for-postgresql, databases-for-enterprisedb and databases-for-mysql")
+	}
+
+	return nil
+}
+
+func validateVersionDiff(_ context.Context, diff *schema.ResourceDiff, meta interface{}) (err error) {
+	_, versionOk := diff.GetOk("version")
+	instanceID := diff.Id() // Does this check if something is provisioned or not?
+	oldVersion, newVersion := diff.GetChange("version")
+	// In place upgrade validation
+	if versionOk && instanceID != "" && oldVersion != newVersion {
+		backup, exists := diff.GetOk("skip_backup")
+		skipBackup := false // default
+
+		if exists {
+			skipBackup = backup.(bool)
+		}
+		newVersionStr, _ := newVersion.(string)
+		return validateVersion(instanceID, newVersionStr, skipBackup, meta)
 	}
 
 	return nil
