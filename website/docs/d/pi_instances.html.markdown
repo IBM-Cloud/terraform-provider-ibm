@@ -48,6 +48,7 @@ In addition to all argument reference list, you can access the following attribu
 
   Nested scheme for `pvm_instances`:
   - `crn` - (String) The CRN of this resource.
+  - `dedicated_host_id` - (String) The dedicated host ID where the shared processor pool resides.
   - `fault` - (Map) Fault information, if any.
 
       Nested scheme for `fault`:
@@ -96,4 +97,3 @@ In addition to all argument reference list, you can access the following attribu
     Nested scheme for `virtual_serial_number`:
     - `description` - (String) Description for virtual serial number.
     - `serial` - (String) Virtual serial number.
-
