@@ -1,5 +1,4 @@
 ---
-
 subcategory: "Power Systems"
 layout: "ibm"
 page_title: "IBM: pi_spp_placement_group"

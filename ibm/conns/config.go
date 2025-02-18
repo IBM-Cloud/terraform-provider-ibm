@@ -2206,7 +2206,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	globalTaggingEndpoint := "https://tags.global-search-tagging.cloud.ibm.com"
 	if c.Visibility == "private" || c.Visibility == "public-and-private" {
 		var globalTaggingRegion string
-		if c.Region != "us-south" && c.Region != "us-east" {
+		if c.Region != "us-south" && c.Region != "au-syd" && c.Region != "eu-gb" && c.Region != "eu-de" {
 			globalTaggingRegion = "us-south"
 		} else {
 			globalTaggingRegion = c.Region
@@ -2235,7 +2235,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	globalSearchEndpoint := "https://api.global-search-tagging.cloud.ibm.com"
 	if c.Visibility == "private" || c.Visibility == "public-and-private" {
 		var globalSearchRegion string
-		if c.Region != "us-south" && c.Region != "au-syd" && c.Region != "eu-gb" {
+		if c.Region != "us-south" && c.Region != "au-syd" && c.Region != "eu-gb" && c.Region != "eu-de" {
 			globalSearchRegion = "us-south"
 		} else {
 			globalSearchRegion = c.Region
@@ -3593,6 +3593,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	codeEngineClientOptions := &codeengine.CodeEngineV2Options{
 		Authenticator: authenticator,
 		URL:           EnvFallBack([]string{"IBMCLOUD_CODE_ENGINE_API_ENDPOINT"}, codeEngineEndpoint),
+		Version:       core.StringPtr("2025-01-10"),
 	}
 
 	// Construct the service client.

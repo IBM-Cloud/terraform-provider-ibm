@@ -47,7 +47,7 @@ Example usage:
 Review the argument references that you can specify for your resource.
 
 - `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
-- `pi_name` - (Required, String) The name of the Network Security Group.
+- `pi_name` - (Required, String) The name of the network security group.
 - `pi_user_tags` - (Optional, List) A list of tags.
 
 ## Attribute Reference
@@ -79,12 +79,12 @@ In addition to all argument reference list, you can access the following attribu
 
       Nested schema for `protocol`:
         - `icmp_type` - (String) If icmp type, a ICMP packet type affected by ICMP rules and if not present then all types are matched.
-        - `tcp_flags` - (String) If tcp type, the list of TCP flags and if not present then all flags are matched. Supported values are: `syn`, `ack`, `fin`, `rst`, `urg`, `psh`, `wnd`, `chk`, `seq`.
+        - `tcp_flags` - (String) If tcp type, the list of TCP flags and if not present then all flags are matched. Supported values are: `syn`, `ack`, `fin`, `rst`.
         - `type` - (String) The protocol of the network traffic. Supported values are: `icmp`, `tcp`, `udp`, `all`.
   - `remote` - (List) List of remote.
 
       Nested schema for `remote`:
-        - `id` - (String) The id of the remote network Address group or network security group the rules apply to. Not required for default-network-address-group.
+        - `id` - (String) The id of the remote network address group or network security group the rules apply to. Not required for default-network-address-group.
         - `type` - (String) The type of remote group the rules apply to. Supported values are: `network-security-group`, `network-address-group`, `default-network-address-group`.
   - `source_port` - (List) List of source port
 

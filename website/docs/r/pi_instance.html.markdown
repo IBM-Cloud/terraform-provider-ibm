@@ -104,7 +104,7 @@ Review the argument references that you can specify for your resource.
   - Required when not creating SAP instances. Conflicts with `pi_sap_profile_id`.
 - `pi_proc_type` - (Optional, String) The type of processor mode in which the VM will run with `shared`, `capped` or `dedicated`.
   - Required when not creating SAP instances. Conflicts with `pi_sap_profile_id`.
-- `pi_replicants` - (Optional, Integer) The number of instances that you want to provision with the same configuration. If this parameter is not set,  `1` is used by default.
+- `pi_replicants` - (Optional, Integer) The number of instances that you want to provision with the same configuration. If this parameter is not set, `1` is used by default.
 - `pi_replication_policy` - (Optional, String) The replication policy that you want to use, either `affinity`, `anti-affinity` or `none`. If this parameter is not set, `none` is used by default.
 - `pi_replication_scheme` - (Optional, String) The replication scheme that you want to set, either `prefix` or `suffix`.
 - `pi_replication_sites` - (Optional, List) Indicates the replication sites of the boot volume.
@@ -126,9 +126,9 @@ Review the argument references that you can specify for your resource.
 - `pi_virtual_serial_number` - (Optional, List)  Virtual Serial Number information. If using `ibm_pi_virtual_serial_number` resource to manage a virtual serial number assigned to this instance, it is strongly recommended to ignore changes in this argument using the `ignore_changes` meta-argument in the `lifecycle`.
   
   Nested scheme for `pi_virtual_serial_number`:
-    - `description` - (String, Optional) Description of virtual serial number.
-    - `serial` - (String, Required) Provide an existing reserved Virtual Serial Number or specify 'auto-assign' for auto generated Virtual Serial Number.
-      
+  - `description` - (String, Optional) Description of virtual serial number.
+  - `serial` - (String, Required) Provide an existing reserved Virtual Serial Number or specify 'auto-assign' for auto generated Virtual Serial Number.
+
       ~> **Note** When set to "auto-assign", changes to `serial` outside of terraform will not be detected. In addition, if a new generated virtual serial number is needed, the old serial must be removed before a new one is generated.
 - `pi_volume_ids` - (Optional, List of String) The list of volume IDs that you want to attach to the instance during creation.
 
@@ -137,6 +137,7 @@ Review the argument references that you can specify for your resource.
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
 - `crn` - (String) The CRN of this resource.
+- `dedicated_host_id` - (String) The dedicated host ID where the shared processor pool resides.
 - `fault` - (Map) Fault information, if any.
   
    Nested scheme for `fault`:
