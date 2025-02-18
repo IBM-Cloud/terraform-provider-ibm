@@ -55,12 +55,14 @@ func ResourceIbmSccProfileAttachment() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"environment": {
 							Type:        schema.TypeString,
-							Required:    true,
+							Optional:    true,
+							Computed:    true,
 							Description: "The environment that relates to this scope.",
 						},
 						"properties": {
 							Type:        schema.TypeList,
-							Required:    true,
+							Optional:    true,
+							Computed:    true,
 							Description: "The properties supported for scoping by this environment.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
@@ -76,6 +78,12 @@ func ResourceIbmSccProfileAttachment() *schema.Resource {
 									},
 								},
 							},
+						},
+						"id": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "The scope id to target.",
 						},
 					},
 				},
@@ -715,7 +723,6 @@ func resourceIbmSccProfileAttachmentMapToAttachmentsPrototype(modelMap map[strin
 
 func resourceIbmSccProfileAttachmentMapToMultiCloudScope(modelMap map[string]interface{}) (*securityandcompliancecenterapiv3.MultiCloudScopePayload, error) {
 	model := &securityandcompliancecenterapiv3.MultiCloudScopePayload{}
-	model.Environment = core.StringPtr(modelMap["environment"].(string))
 	properties := []securityandcompliancecenterapiv3.ScopePropertyIntf{}
 	for _, propertiesItem := range modelMap["properties"].([]interface{}) {
 		propertiesItemModel, err := resourceIbmSccProfileAttachmentMapToPropertyItem(propertiesItem.(map[string]interface{}))
@@ -725,6 +732,12 @@ func resourceIbmSccProfileAttachmentMapToMultiCloudScope(modelMap map[string]int
 		properties = append(properties, propertiesItemModel)
 	}
 	model.Properties = properties
+	if modelMap["environment"] != nil && modelMap["environment"].(string) != "" {
+		model.Environment = core.StringPtr(modelMap["environment"].(string))
+	}
+	if modelMap["id"] != nil && modelMap["id"].(string) != "" {
+		model.ID = core.StringPtr(modelMap["id"].(string))
+	}
 	return model, nil
 }
 
@@ -916,7 +929,9 @@ func resourceIbmSccProfileAttachmentMapToAttachmentPrototype(modelMap map[string
 
 func resourceIbmSccProfileAttachmentMultiCloudScopeToMap(model *securityandcompliancecenterapiv3.MultiCloudScopePayload) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["environment"] = model.Environment
+	if model.Environment != nil {
+		modelMap["environment"] = model.Environment
+	}
 	properties := []map[string]interface{}{}
 	for _, propertiesItem := range model.Properties {
 		propertiesItemMap, err := resourceIbmSccProfileAttachmentPropertyItemToMap(propertiesItem)
@@ -926,6 +941,9 @@ func resourceIbmSccProfileAttachmentMultiCloudScopeToMap(model *securityandcompl
 		properties = append(properties, propertiesItemMap)
 	}
 	modelMap["properties"] = properties
+	if model.ID != nil {
+		modelMap["id"] = model.ID
+	}
 	return modelMap, nil
 }
 
