@@ -13,14 +13,23 @@ Create, update, and delete scc_scopes with this resource.
 ## Example Usage
 
 ```hcl
-resource "ibm_scc_scope" "scc_scope_instance" {
-  description = "The scope that is defined for IBM resources."
+resource "ibm_scc_scope" "scc_account_scope" {
+  description = "This scope allows a profile attachment to target an IBM account"
   environment = "ibm-cloud"
-  instance_id = "acd7032c-15a3-484f-bf5b-67d41534d940"
-  name = "Sample Scope"
+  instance_id = "b36c26e9-477a-43a1-9c50-19aff8e5d760"
+  name        = "Sample account Scope"
   properties {
-		name = "scope_id"
-		value = "anything as a string"
+    enterprise_id = "8e042beeccee40748674442960b9eb34"
+  }
+}
+
+resource "ibm_scc_scope" "scc_ibm_facts_scope" {
+  description = "This scope allows a facts provider instance to be used in a profile attachment"
+  environment = "ibm-cloud"
+  instance_id = "b36c26e9-477a-43a1-9c50-19aff8e5d760"
+  name        = "Sample facts Scope"
+  properties {
+    ibm_facts_api_instance_id = ibm_scc_provider_type_instance.facts_provider_type_instance.provider_type_instance_id
   }
 }
 ```
@@ -39,10 +48,11 @@ You can specify the following arguments for this resource.
   * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9_,'\\s\\-\\.]*$/`.
 * `properties` - (Optional, List) The span for the scope to target.
 Nested schema for **properties**:
-    * `account_id` - (Optional, String) The ID of the IBM account ID.
-    * `enterprise_id` - (Optional, String) The ID of the IBM enterprise ID.
-    * `resource_group_id` - (Optional, String) The ID of the IBM resource group tied to an account
-    * `account_group_id` - (Optional, String) The ID of an account group tied to an enterprise
+    * `account_id` - (Optional, ForceNew, String) The ID of the IBM account ID.
+    * `enterprise_id` - (Optional, ForceNew, String) The ID of the IBM enterprise ID.
+    * `resource_group_id` - (Optional, ForceNew, String) The ID of the IBM resource group tied to an account
+    * `account_group_id` - (Optional, ForceNew, String) The ID of an account group tied to an enterprise
+    * `ibm_facts_api_instance_id` - (Optional, ForceNew, String) The ID of ibm_cloud_facts_api provider type instance
 
 * `exclusions` - (Optional, List) A list of scopes/targets to exclude from a scope.
 Nested schema for **exclusions**:
