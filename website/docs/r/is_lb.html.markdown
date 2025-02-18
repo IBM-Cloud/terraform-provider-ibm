@@ -131,6 +131,7 @@ In addition to all argument reference list, you can access the following attribu
 - `private_ips` - (String) The private IP addresses (Reserved IP address reference) assigned to this load balancer.
 - `status` - (String) The status of the load balancer.
 - `security_groups_supported`- (Bool) Indicates if this load balancer supports security groups.
+- `reserved_ip_target_supported`- (Bool) Indicates whether this load balancer supports members with reserved IP as target.
 - `source_ip_session_persistence_supported` - (Boolean) Indicates whether this load balancer supports source IP session persistence.
 - `udp_supported`- (Bool) Indicates whether this load balancer supports UDP.
 
