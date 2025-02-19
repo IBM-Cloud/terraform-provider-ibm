@@ -14,7 +14,7 @@ Create, update, and delete profile attachments with this resource.
 
 ## Example Usage
 
-Making a profile attachment using an IBM `account_id`:
+Making a profile attachment using an IBM `account_id`. **NOTE** This usage will create a scope that cannot be tracked by terraform:
 ```hcl
 resource "ibm_scc_profile_attachment" "scc_profile_attachment_instance" {
   profile_id = "a0bd1ee2-1ed3-407e-a2f4-ce7a1a38f54d"
@@ -51,7 +51,7 @@ resource "ibm_scc_profile_attachment" "scc_profile_attachment_instance" {
 }
 ```
 
-Full example of creating a profile attachment using `ibm_scc_scope`:
+Full example of creating a profile attachment using `ibm_scc_scope` using an enterprise scope and fact_provider scope to target a SOC2 profile:
 ```hcl
 # resource to make a provider_type_instance for the scope
 resource "ibm_scc_provider_type_instance" "facts_provider_type_instance" {
@@ -352,7 +352,7 @@ Nested schema for **notifications**:
 		  * Constraints: The list items must match regular expression `/^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-4[0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$|^$/`. The maximum length is `512` items. The minimum length is `0` items.
 		* `threshold_limit` - (Integer) The threshold limit.
 	* `enabled` - (Boolean) The flag to enable notifications. Set to true to enabled notifications, false to disable
-* `attachment_parameters` - (List) The attachment parameters required from the profile that the attachment is targeting. All parameters listed from the profile needs to be set.
+* `attachment_parameters` - (List) The attachment parameters required from the profile that the attachment is targeting. All parameters listed from the profile needs to be set. **NOTE**: All `attachment_parameters` must be defined; use `datasource.ibm_scc_profile` to see all necessary parameters.
 Nested schema for **attachment_parameters**:
     * `parameter_name` - (Required, String) The name of the parameter to target.
     * `parameter_display_name` - (Required, String) The display name of the parameter shown in the UI.
