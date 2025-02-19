@@ -2281,63 +2281,54 @@ func TestAccPreCheckScc(t *testing.T) {
 	TestAccPreCheck(t)
 	errList := make([]string, 0)
 	if SccApiEndpoint == "" {
-		// t.Fatal("IBMCLOUD_SCC_API_ENDPOINT missing. Set the environment variable IBMCLOUD_SCC_API_ENDPOINT with a VALID endpoint")
 		errList = append(errList,
 			"IBMCLOUD_SCC_API_ENDPOINT missing. Set the environment variable IBMCLOUD_SCC_API_ENDPOINT with a VALID endpoint")
 	}
 
 	if SccProviderTypeAttributes == "" {
-		// t.Fatal("IBMCLOUD_SCC_PROVIDER_TYPE_ATTRIBUTES missing. Set the environment variable IBMCLOUD_SCC_PROVIDER_TYPE_ATTRIBUTES with a VALID SCC provider_type JSON object")
 		errList = append(errList,
 			"IBMCLOUD_SCC_PROVIDER_TYPE_ATTRIBUTES missing. Set the environment variable IBMCLOUD_SCC_PROVIDER_TYPE_ATTRIBUTES with a VALID SCC provider_type JSON object")
 	}
 
 	if SccProviderTypeID == "" {
-		// t.Fatal("IBMCLOUD_SCC_PROVIDER_TYPE_ID missing. Set the environment variable IBMCLOUD_SCC_PROVIDER_TYPE_ID with a VALID SCC provider_type ID")
 		errList = append(errList,
 			"IBMCLOUD_SCC_PROVIDER_TYPE_ID missing. Set the environment variable IBMCLOUD_SCC_PROVIDER_TYPE_ID with a VALID SCC provider_type ID")
 	}
 
 	if SccAccountID == "" {
-		// t.Fatal("IBMCLOUD_SCC_ACCOUNT_ID missing. Set the environment variable IBMCLOUD_SCC_ACCOUNT_ID with a VALID IAM ACCOUNT ID")
 		errList = append(errList,
 			"IBMCLOUD_SCC_ACCOUNT_ID missing. Set the environment variable IBMCLOUD_SCC_ACCOUNT_ID with a VALID IAM ACCOUNT ID")
 	}
 
 	if SccInstanceID == "" {
-		// t.Fatal("IBMCLOUD_SCC_INSTANCE_ID missing. Set the environment variable IBMCLOUD_SCC_INSTANCE_ID with a VALID SCC INSTANCE ID")
 		errList = append(errList,
 			"IBMCLOUD_SCC_INSTANCE_ID missing. Set the environment variable IBMCLOUD_SCC_INSTANCE_ID with a VALID SCC INSTANCE ID")
 	}
 
 	if SccReportID == "" {
-		// t.Fatal("IBMCLOUD_SCC_REPORT_ID missing. Set the environment variable IBMCLOUD_SCC_REPORT_ID with a VALID SCC REPORT_ID")
 		errList = append(errList,
 			"IBMCLOUD_SCC_REPORT_ID missing. Set the environment variable IBMCLOUD_SCC_REPORT_ID with a VALID SCC REPORT_ID")
 	}
 
 	if SccEventNotificationsCRN == "" {
-		// t.Fatal("IBMCLOUD_SCC_EVENT_NOTIFICATION_CRN missing. Set the environment variable IBMCLOUD_SCC_EVENT_NOTIFICATION_CRN with a valid EN CRN")
 		errList = append(errList,
 			"IBMCLOUD_SCC_EVENT_NOTIFICATION_CRN missing. Set the environment variable IBMCLOUD_SCC_EVENT_NOTIFICATION_CRN with a valid EN CRN")
 	}
 
 	if SccObjectStorageCRN == "" {
-		// t.Fatal("IBMCLOUD_SCC_OBJECT_STORAGE_CRN missing. Set the environment variable IBMCLOUD_SCC_OBJECT_STORAGE_CRN with a valid COS CRN")
 		errList = append(errList,
 			"IBMCLOUD_SCC_OBJECT_STORAGE_CRN missing. Set the environment variable IBMCLOUD_SCC_OBJECT_STORAGE_CRN with a valid COS CRN")
 	}
 
 	if SccObjectStorageBucket == "" {
-		// t.Fatal("IBMCLOUD_SCC_OBJECT_STORAGE_CRN missing. Set the environment variable IBMCLOUD_SCC_OBJECT_STORAGE_BUCKET with a valid COS bucket")
 		errList = append(errList,
 			"IBMCLOUD_SCC_OBJECT_STORAGE_CRN missing. Set the environment variable IBMCLOUD_SCC_OBJECT_STORAGE_BUCKET with a valid COS bucket")
 	}
 	if SccResourceGroupID == "" {
-		// t.Fatal("IBMCLOUD_SCC_RESOURCE_GROUP_ID missing. Set the environment variable IBMCLOUD_SCC_RESOURCE_GROUP_ID with a valid IBM resource group id")
 		errList = append(errList,
 			"IBMCLOUD_SCC_RESOURCE_GROUP_ID missing. Set the environment variable IBMCLOUD_SCC_RESOURCE_GROUP_ID with a valid IBM resource group id")
 	}
+  // If the user did not define one of the variables, error out and do not continue with testing.
 	if len(errList) > 0 {
 		t.Fatal("error encounterd. Global variables missing:\n" + strings.Join(errList, "\n"))
 	}

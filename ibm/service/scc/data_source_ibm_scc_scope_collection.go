@@ -195,7 +195,6 @@ func dataSourceIbmSccScopeCollectionScopeItemToMap(model *securityandcompliancec
 			properties = append(properties, propertiesItemMap)
 		}
 		modelMap["properties"] = properties
-		log.Printf("[DEBUG] dataSourceIbmScopeItem modelMap[\"properties\"] = %#v", properties)
 	}
 	return modelMap, nil
 }

@@ -281,9 +281,9 @@ func attachmentParametersSchemaSetFunc(keys ...string) schema.SchemaSetFunc {
 	}
 }
 
+// stringHashcode will return an integer to use for unique keys in the Schema.Set
 func stringHashcode(s string) int {
 	v := int(crc32.ChecksumIEEE([]byte(s)))
-	log.Printf("[DEBUG] scc stringHashcode value %d\n", v)
 	if v >= 0 {
 		return v
 	}
