@@ -31,6 +31,8 @@ func TestAccIBMISLBListenerPolicy_basic(t *testing.T) {
 	port := "8080"
 	action := "forward"
 	priority2 := "2"
+	actionPool := "forward_to_pool"
+	actionListener := "forward_to_listener"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -39,6 +41,32 @@ func TestAccIBMISLBListenerPolicy_basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckIBMISLBListenerPolicyConfig(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, lbname, port, protocol, lblistenerpolicyname1, action, priority1),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISLBListenerPolicyExists("ibm_is_lb_listener_policy.testacc_lb_listener_policy", policyID),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb.testacc_LB", "name", lbname),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_listener_policy.testacc_lb_listener_policy", "name", lblistenerpolicyname1),
+
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_listener_policy.testacc_lb_listener_policy", "priority", priority1),
+				),
+			},
+			{
+				Config: testAccCheckIBMISLBListenerPolicyConfig(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, lbname, port, protocol, lblistenerpolicyname1, actionPool, priority1),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISLBListenerPolicyExists("ibm_is_lb_listener_policy.testacc_lb_listener_policy", policyID),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb.testacc_LB", "name", lbname),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_listener_policy.testacc_lb_listener_policy", "name", lblistenerpolicyname1),
+
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_listener_policy.testacc_lb_listener_policy", "priority", priority1),
+				),
+			},
+			{
+				Config: testAccCheckIBMISLBListenerPolicyConfig(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, lbname, port, protocol, lblistenerpolicyname1, actionListener, priority1),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMISLBListenerPolicyExists("ibm_is_lb_listener_policy.testacc_lb_listener_policy", policyID),
 					resource.TestCheckResourceAttr(

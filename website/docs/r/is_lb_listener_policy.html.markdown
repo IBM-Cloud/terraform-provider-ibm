@@ -167,7 +167,7 @@ The `ibm_is_lb_listener_policy` resource provides the following [Timeouts](https
 ## Argument reference
 Review the argument references that you can specify for your resource. 
 
-- `action` - (Required, Forces new resource, String) The action that you want to specify for your policy. Supported values are `forward`, `redirect`, `reject`, and `https_redirect`.
+- `action` - (Required, Forces new resource, String) The action that you want to specify for your policy. Supported values are `forward_to_pool`,`forward_to_listener`, `redirect`, `reject`, and `https_redirect`.
 - `lb` - (Required, Forces new resource, String) The ID of the load balancer for which you want to create a load balancer listener policy. 
 - `listener` - (Required, Forces new resource, String) The ID of the load balancer listener.
 - `name` - (Optional, String) The name for the load balancer policy. Names must be unique within a load balancer listener.
