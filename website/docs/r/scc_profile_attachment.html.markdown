@@ -51,7 +51,7 @@ resource "ibm_scc_profile_attachment" "scc_profile_attachment_instance" {
 }
 ```
 
-Full example of creating a profile attachment using `ibm_scc_scope` using an enterprise scope and fact_provider scope to target a SOC2 profile:
+Full example of creating a profile attachment using `ibm_scc_scope` with an enterprise scope and fact_provider scope to target a SOC2 profile:
 ```hcl
 # resource to make a provider_type_instance for the scope
 resource "ibm_scc_provider_type_instance" "facts_provider_type_instance" {
