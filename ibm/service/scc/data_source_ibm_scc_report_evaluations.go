@@ -90,7 +90,7 @@ func DataSourceIbmSccReportEvaluations() *schema.Resource {
 						"control_id": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The control ID.",
+							Description: "The control ID. (Deprecated field)",
 						},
 						"component_id": {
 							Type:        schema.TypeString,
