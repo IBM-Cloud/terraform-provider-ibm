@@ -248,6 +248,14 @@ func DataSourceIBMIsShareSnapshots() *schema.Resource {
 								},
 							},
 						},
+						"tags": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The [user tags](https://cloud.ibm.com/apidocs/tagging#types-of-tags) associated with this share snapshot.",
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+						},
 					},
 				},
 			},
@@ -364,6 +372,11 @@ func DataSourceIBMIsShareSnapshotsShareSnapshotToMap(model *vpcv1.ShareSnapshot)
 		return modelMap, err
 	}
 	modelMap["zone"] = []map[string]interface{}{zoneMap}
+
+	if model.UserTags != nil {
+		modelMap["tags"] = model.UserTags
+	}
+
 	return modelMap, nil
 }
 

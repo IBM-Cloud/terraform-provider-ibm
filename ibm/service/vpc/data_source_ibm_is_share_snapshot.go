@@ -231,6 +231,14 @@ func DataSourceIBMIsShareSnapshot() *schema.Resource {
 					},
 				},
 			},
+			"tags": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The [user tags](https://cloud.ibm.com/apidocs/tagging#types-of-tags) associated with this share snapshot.",
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
 		},
 	}
 }
@@ -321,7 +329,11 @@ func dataSourceIBMIsShareSnapshotRead(context context.Context, d *schema.Resourc
 	if err = d.Set("status", shareSnapshot.Status); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting status: %s", err), "(Data) ibm_is_share_snapshot", "read", "set-status").GetDiag()
 	}
-
+	if shareSnapshot.UserTags != nil {
+		if err = d.Set("tags", shareSnapshot.UserTags); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting status: %s", err), "(Data) ibm_is_share_snapshot", "read", "set-tags").GetDiag()
+		}
+	}
 	statusReasons := []map[string]interface{}{}
 	if shareSnapshot.StatusReasons != nil {
 		for _, modelItem := range shareSnapshot.StatusReasons {
