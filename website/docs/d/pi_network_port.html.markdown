@@ -12,7 +12,7 @@ description: |-
 
 Retrieve information about a network port in the Power Virtual Server Cloud. For more information, about networks in IBM power virtual server, see [adding or removing a public network](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-modifying-server#adding-removing-network).
 
-## Example usage
+## Example Usage
 
 ```terraform
 data "ibm_pi_network_port" "test-network-port" {
@@ -37,14 +37,14 @@ Example usage:
     }
   ```
 
-## Argument reference
+## Argument Reference
 
 Review the argument references that you can specify for your data source.
 
 - `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
 - `pi_network_name` - (Required, String) The unique identifier or name of a network.
 
-## Attribute reference
+## Attribute Reference
 
 In addition to all argument reference list, you can access the following attribute reference after your data source is created.
 
