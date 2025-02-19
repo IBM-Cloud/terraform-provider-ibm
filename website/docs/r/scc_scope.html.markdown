@@ -19,12 +19,22 @@ resource "ibm_scc_scope" "scc_account_scope" {
   instance_id = "b36c26e9-477a-43a1-9c50-19aff8e5d760"
   name        = "Sample account Scope"
   properties {
-    enterprise_id = "8e042beeccee40748674442960b9eb34"
+    account_id = "8e042beeccee40748674442960b9eb34"
+  }
+}
+
+resource "ibm_scc_scope" "scc_enterprise_scope" {
+  description = "This scope allows a profile attachment to target an IBM enterprise"
+  environment = "ibm-cloud"
+  instance_id = "b36c26e9-477a-43a1-9c50-19aff8e5d760"
+  name        = "Sample account Scope"
+  properties {
+    enterprise_id = "6a204bd89f3c8348afd5c77c717a097a"
   }
 }
 
 resource "ibm_scc_scope" "scc_ibm_facts_scope" {
-  description = "This scope allows a facts provider instance to be used in a profile attachment"
+  description = "This scope allows a profile attachment to target a facts provider instance"
   environment = "ibm-cloud"
   instance_id = "b36c26e9-477a-43a1-9c50-19aff8e5d760"
   name        = "Sample facts Scope"
@@ -53,6 +63,7 @@ Nested schema for **properties**:
     * `resource_group_id` - (Optional, ForceNew, String) The ID of the IBM resource group tied to an account
     * `account_group_id` - (Optional, ForceNew, String) The ID of an account group tied to an enterprise
     * `ibm_facts_api_instance_id` - (Optional, ForceNew, String) The ID of ibm_cloud_facts_api provider type instance
+      * Constraints: Using `ibm_facts_api_instance_id` is restricted to certain users. 
 
 * `exclusions` - (Optional, List) A list of scopes/targets to exclude from a scope.
 Nested schema for **exclusions**:

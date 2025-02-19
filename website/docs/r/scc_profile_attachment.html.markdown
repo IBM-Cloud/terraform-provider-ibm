@@ -61,14 +61,14 @@ resource "ibm_scc_provider_type_instance" "facts_provider_type_instance" {
   attributes       = {"source": "scc"}
 }
 
-# resource to make an account scope
-resource "ibm_scc_scope" "scc_account_scope" {
+# resource to make an enterprise scope
+resource "ibm_scc_scope" "scc_enterprise_scope" {
   description = "This scope targets an IBM account"
   environment = "ibm-cloud"
   instance_id = "f740da22-29e0-47fc-b768-73f0d5bb2955"
   name        = "Sample account Scope done from Terraform"
   properties {
-    enterprise_id = "9e35644352d2a496a006d229d6cc3edc"
+    enterprise_id = "fbf5d5bd0698cef3ab3b488559e08992"
   }
 }
 
@@ -100,7 +100,7 @@ resource "ibm_scc_profile_attachment" "scc-profile-attachment-instance" {
 
   # scope ID of the ibm account
   scope {
-    id = ibm_scc_scope.scc_account_scope.scope_id
+    id = ibm_scc_scope.scc_enterprise_scope.scope_id
   }
 
   attachment_parameters {
