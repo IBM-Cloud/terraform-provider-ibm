@@ -119,7 +119,7 @@ func ResourceIBMDb2Instance() *schema.Resource {
 		},
 	}
 
-	riSchema["customsetting_config"] = &schema.Schema{
+	riSchema["custom_setting_config"] = &schema.Schema{
 		Description: "Db and Dm configurations",
 		Optional:    true,
 		Type:        schema.TypeList,
@@ -1051,7 +1051,7 @@ func resourceIBMDb2InstanceCreate(d *schema.ResourceData, meta interface{}) erro
 
 	}
 
-	if customSettingRaw, ok := d.GetOk("customsetting_config"); ok {
+	if customSettingRaw, ok := d.GetOk("custom_setting_config"); ok {
 		if customSettingRaw == nil || reflect.ValueOf(customSettingRaw).IsNil() {
 			fmt.Println("No custom setting configs provided; skipping.")
 		} else {
