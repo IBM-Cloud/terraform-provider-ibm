@@ -698,7 +698,11 @@ func resourceIBMSccScopeScopePropertyScopeIDToMap(model *securityandcompliancece
 		modelMap["name"] = model.Name
 	}
 	if model.Value != nil {
-		modelMap["value"] = model.Value
+		if val, ok := model.Value.(string); !ok {
+			modelMap["value"] = fmt.Sprintf("%v", val)
+		} else {
+			modelMap["value"] = model.Value
+		}
 	}
 	return modelMap, nil
 }

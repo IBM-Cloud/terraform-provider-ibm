@@ -358,7 +358,11 @@ func dataSourceIbmSccReportScopePropertyToMap(model securityandcompliancecentera
 			modelMap["name"] = model.Name
 		}
 		if model.Value != nil {
-			modelMap["value"] = model.Value
+			if val, ok := model.Value.(string); !ok {
+				modelMap["value"] = fmt.Sprintf("%v", val)
+			} else {
+				modelMap["value"] = model.Value
+			}
 		}
 		if model.Exclusions != nil {
 			exclusions := []map[string]interface{}{}
