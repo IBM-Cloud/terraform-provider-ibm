@@ -14,7 +14,77 @@ Create, update, and delete profile attachments with this resource.
 
 ## Example Usage
 
-Making a profile attachment using an IBM `account_id`. **NOTE** This usage will create a scope that cannot be tracked by terraform:
+Making a profile attachment using an IBM `ibm_scc_scope`:
+```hcl
+## Local Variables
+locals {
+  scc_instance_id               = "f6939361-4f72-47a3-ae5e-0ee77a90ee31"
+  ibm_cloud_sample_profile_id   = "623ee808-2fcd-4700-8149-cc5500512ad7"
+}
+
+## Datasources
+
+# datasource to obtain information of a profile
+data "ibm_scc_profile" "sample_profile_id" {
+  instance_id = local.scc_instance_id
+  profile_id  = local.ibm_cloud_sample_profile_id
+}
+
+## Resources
+
+# resource to create a scope targeting an account
+resource "ibm_scc_scope" "scc_personal_account_scope" {
+  description = "An scope targeting an account, made using Terraform"
+  environment = "ibm-cloud"
+  name        = "Terraform sample resource group scope"
+  properties  = {
+    scope_type  = "account"
+    scope_id    = "7379262615a74cb3b9f346408a3e1694"
+  }
+  instance_id = local.scc_instance_id
+}
+
+# resource to create a profile attachment to a predefined profile
+resource "ibm_scc_profile_attachment" "cis-profile-attachment-instance" {
+  instance_id = local.scc_instance_id
+  name        = "tf-demo-profile-attach-demo"
+  description = "Sample Profile attachment using Terraform"
+  profile_id  = local.ibm_cloud_sample_profile_id
+
+  schedule = "every_7_days"
+  status   = "disabled"
+
+  # scope created by the resource ibm_scc_scope
+  scope {
+    id = ibm_scc_scope.scc_personal_account_scope.scope_id
+  }
+
+  # dynamically use the default parameters of a profile if there are any
+  dynamic "attachment_parameters" { 
+   for_each = data.ibm_scc_profile.sample_profile_id.default_parameters
+   content {
+      parameter_name         = attachment_parameters.value["parameter_name"]
+      parameter_display_name = attachment_parameters.value["parameter_display_name"]
+      parameter_type         = attachment_parameters.value["parameter_type"]
+      parameter_value        = attachment_parameters.value["parameter_default_value"]
+      assessment_type        = attachment_parameters.value["assessment_type"]
+      assessment_id          = attachment_parameters.value["assessment_id"]
+    }
+  }
+
+  notifications {
+    enabled = false
+    controls {
+      failed_control_ids = []
+      threshold_limit    = 10
+    }
+  }
+}
+```
+Making a profile attachment using an IBM `account_id`:
+
+**NOTE** This is considered legacy support and will be deprecated soon.
+
 ```hcl
 resource "ibm_scc_profile_attachment" "scc_profile_attachment_instance" {
   profile_id = "a0bd1ee2-1ed3-407e-a2f4-ce7a1a38f54d"
@@ -51,276 +121,6 @@ resource "ibm_scc_profile_attachment" "scc_profile_attachment_instance" {
 }
 ```
 
-Full example of creating a profile attachment using `ibm_scc_scope` with an enterprise scope and fact_provider scope to target a SOC2 profile:
-```hcl
-# resource to make a provider_type_instance for the scope
-resource "ibm_scc_provider_type_instance" "facts_provider_type_instance" {
-  name             = "ibm_facts_engine"
-  instance_id      = "f740da22-29e0-47fc-b768-73f0d5bb2955" #id of the provider_type_instance
-  provider_type_id = "19d0e3c118e9ccb6fa66abb26bfb1e60"     #id of the provider_type
-  attributes       = {"source": "scc"}
-}
-
-# resource to make an enterprise scope
-resource "ibm_scc_scope" "scc_enterprise_scope" {
-  description = "This scope targets an IBM account"
-  environment = "ibm-cloud"
-  instance_id = "f740da22-29e0-47fc-b768-73f0d5bb2955"
-  name        = "Sample account Scope done from Terraform"
-  properties {
-    enterprise_id = "fbf5d5bd0698cef3ab3b488559e08992"
-  }
-}
-
-# resource to make a facts_provider_type_instance
-resource "ibm_scc_scope" "scc_ibm_facts_scope" {
-  description = "This scope targets a facts provider type instance"
-  environment = "ibm-cloud"
-  instance_id = "f740da22-29e0-47fc-b768-73f0d5bb2955"
-  name        = "Sample facts Scope done from Terraform"
-  properties {
-    ibm_facts_api_instance_id = ibm_scc_provider_type_instance.facts_provider_type_instance.provider_type_instance_id
-  }
-}
-
-# resource to create a profile attachment
-resource "ibm_scc_profile_attachment" "scc-profile-attachment-instance" {
-  instance_id = "f740da22-29e0-47fc-b768-73f0d5bb2955"
-  name        = "tf-demo-ibm-SOC2-demo"
-  description = "This attachment targets the SCC IBM Cloud SOC2 profile using Terraform"
-  profile_id  = "9487feb1-f1d0-4ca4-86ef-3680368b284a"
-
-  schedule = "every_7_days"
-  status   = "enabled"
-
-  # scope ID of the ibm_facts_engine
-  scope {
-    id = ibm_scc_scope.scc_ibm_facts_scope.scope_id 
-  }
-
-  # scope ID of the ibm account
-  scope {
-    id = ibm_scc_scope.scc_enterprise_scope.scope_id
-  }
-
-  attachment_parameters {
-    assessment_type = "automated"
-    assessment_id = "rule-64b9c630-0308-43d0-a7bd-113a7baa1059"
-    parameter_name = "server_asset_excluded_role_list"
-    parameter_value = "['Ingress', 'Ingress IP']"
-    parameter_display_name = "Server asset excluded roles - Example: [\"server\",\"ingress\"]"
-    parameter_type = "string_list"
-  }
-
-  attachment_parameters {
-    assessment_type = "automated"
-    assessment_id = "rule-933c1885-1666-4f0d-b9f8-98ea151bad60"
-    parameter_name = "qradar_last_detected_on"
-    parameter_value = "3"
-    parameter_display_name = "Logs last detected within N days"
-    parameter_type = "numeric"
-  }
-
-  attachment_parameters {
-    assessment_type = "automated"
-    assessment_id = "rule-933c1885-1666-4f0d-b9f8-98ea151bad60"
-    parameter_name = "qradar_last_detected_on_for_warn"
-    parameter_value = "7"
-    parameter_display_name = "Logs last detected within N days for warning status"
-    parameter_type = "numeric"
-  }
-
-  attachment_parameters {
-    assessment_type = "automated"
-    assessment_id = "rule-c6b6b0de-36c6-49cc-93d4-e0970d43aeb5"
-    parameter_name = "pce_interval_limit"
-    parameter_value = "20"
-    parameter_display_name = "PCE creation interval check limit"
-    parameter_type = "numeric"
-  }
-
-  attachment_parameters {
-    assessment_type = "automated"
-    assessment_id = "rule-12070ae2-8843-4290-94a6-34f57a84911b"
-    parameter_name = "due_date_interval"
-    parameter_value = "30"
-    parameter_display_name = "Due Date interval Limit"
-    parameter_type = "numeric"
-  }
-
-  attachment_parameters {
-    assessment_type = "automated"
-    assessment_id = "rule-db92a4b5-edad-4731-a0c7-94fa65e7ead1"
-    parameter_name = "server_asset_excluded_role_list"
-    parameter_value = "['ingress', 'ingress ip']"
-    parameter_display_name = "Server asset excluded roles - Example: [\"server\",\"ingress\"]"
-    parameter_type = "string_list"
-  }
-
-  attachment_parameters {
-    assessment_type = "automated"
-    assessment_id = "rule-37513a2c-f9fb-4c42-9c9f-1d5f4f2d20a2"
-    parameter_name = "server_asset_excluded_role_list"
-    parameter_value = "['ingress', 'ingress ip']"
-    parameter_display_name = "Server asset excluded roles - Example: [\"server\",\"ingress\"]"
-    parameter_type = "string_list"
-  }
-
-  attachment_parameters {
-    assessment_type = "automated"
-    assessment_id = "rule-37513a2c-f9fb-4c42-9c9f-1d5f4f2d20a2"
-    parameter_name = "patch-due-date-start-interval"
-    parameter_value = "0"
-    parameter_display_name = "Days in past from current day"
-    parameter_type = "numeric"
-  }
-
-  attachment_parameters {
-    assessment_type = "automated"
-    assessment_id = "rule-37513a2c-f9fb-4c42-9c9f-1d5f4f2d20a2"
-    parameter_name = "patch-due-date-end-interval"
-    parameter_value = "7"
-    parameter_display_name = "Days in future from current day"
-    parameter_type = "numeric"
-  }
-
-  attachment_parameters {
-    assessment_type = "automated"
-    assessment_id = "rule-3ed5a784-cfd6-4cf2-8efd-7a19d52adcaa"
-    parameter_name = "close_category"
-    parameter_value = "['successful']"
-    parameter_display_name = "Close code for the change"
-    parameter_type = "string_list"
-  }
-
-  attachment_parameters {
-    assessment_type = "automated"
-    assessment_id = "rule-3ed5a784-cfd6-4cf2-8efd-7a19d52adcaa"
-    parameter_name = "service_environment"
-    parameter_value = "['production']"
-    parameter_display_name = "Choice of environment"
-    parameter_type = "string_list"
-  }
-
-  attachment_parameters {
-    assessment_type = "automated"
-    assessment_id = "rule-de3ebf60-8b94-4d09-8e60-98aefcd747fa"
-    parameter_name = "vmt-platform-high-timeline"
-    parameter_value = "15"
-    parameter_display_name = "Timeline for high severity vulnerability"
-    parameter_type = "numeric"
-  }
-
-  attachment_parameters {
-    assessment_type = "automated"
-    assessment_id = "rule-de3ebf60-8b94-4d09-8e60-98aefcd747fa"
-    parameter_name = "vmt-platform-due-date-start-interval"
-    parameter_value = "0"
-    parameter_display_name = "Days in past from current day"
-    parameter_type = "numeric"
-  }
-
-  attachment_parameters {
-    assessment_type = "automated"
-    assessment_id = "rule-de3ebf60-8b94-4d09-8e60-98aefcd747fa"
-    parameter_name = "vmt-platform-due-date-end-interval"
-    parameter_value = "7"
-    parameter_display_name = "Days in future from current day"
-    parameter_type = "numeric"
-  }
-
-  attachment_parameters {
-    assessment_type = "automated"
-    assessment_id = "rule-c3b77405-bd19-4b1e-a374-722200ac77fc"
-    parameter_name = "vmt-platform-medium-timeline"
-    parameter_value = "45"
-    parameter_display_name = "Timeline for medium severity vulnerability"
-    parameter_type = "numeric"
-  }
-
-  attachment_parameters {
-    assessment_type = "automated"
-    assessment_id = "rule-c3b77405-bd19-4b1e-a374-722200ac77fc"
-    parameter_name = "remote-vmt-due-date-start-interval"
-    parameter_value = "0"
-    parameter_display_name = "Days in past from current day"
-    parameter_type = "numeric"
-  }
-
-  attachment_parameters {
-    assessment_type = "automated"
-    assessment_id = "rule-c3b77405-bd19-4b1e-a374-722200ac77fc"
-    parameter_name = "remote-vmt-due-date-end-interval"
-    parameter_value = "7"
-    parameter_display_name = "Days in future from current day"
-    parameter_type = "numeric"
-  }
-
-  attachment_parameters {
-    assessment_type = "automated"
-    assessment_id = "rule-19d4a5e0-6727-40ad-8a41-13ea522bc83d"
-    parameter_name = "vmt-platform-low-timeline"
-    parameter_value = "45"
-    parameter_display_name = "Timeline for low severity vulnerability"
-    parameter_type = "numeric"
-  }
-
-  attachment_parameters {
-    assessment_type = "automated"
-    assessment_id = "rule-19d4a5e0-6727-40ad-8a41-13ea522bc83d"
-    parameter_name = "vmt-due-date-start-interval"
-    parameter_value = "0"
-    parameter_display_name = "Days in past from current day"
-    parameter_type = "numeric"
-  }
-
-  attachment_parameters {
-    assessment_type = "automated"
-    assessment_id = "rule-19d4a5e0-6727-40ad-8a41-13ea522bc83d"
-    parameter_name = "vmt-due-date-end-interval"
-    parameter_value = "7"
-    parameter_display_name = "Days in future from current day"
-    parameter_type = "numeric"
-  }
-
-  attachment_parameters {
-    assessment_type = "automated"
-    assessment_id = "rule-76d793eb-abef-44ca-be92-c7b8754226d0"
-    parameter_name = "vmt-platform-network-scan-frequency"
-    parameter_value = "7"
-    parameter_display_name = "Scan frequency for platform network scan"
-    parameter_type = "numeric"
-  }
-
-  attachment_parameters {
-    assessment_type = "automated"
-    assessment_id = "rule-7cacfc49-46a3-4aca-9c21-263e0ad40e94"
-    parameter_name = "server_asset_excluded_role_list"
-    parameter_value = "['ingress', 'ingress ip']"
-    parameter_display_name = "Server asset excluded roles - Example: [\"server\",\"ingress\"]"
-    parameter_type = "string_list"
-  }
-
-  attachment_parameters {
-    assessment_type = "automated"
-    assessment_id = "rule-903adad2-1989-4ce8-893e-dd43a56ab008"
-    parameter_name = "backup_interval"
-    parameter_value = "7"
-    parameter_display_name = "Expected backup interval to check in days"
-    parameter_type = "numeric"
-  }
-
-  notifications {
-    enabled = false
-
-    controls {
-      failed_control_ids = []
-      threshold_limit    = 10
-    }
-  }
-}
-```
-
 ## Argument Reference
 
 You can specify the following arguments for this resource.
@@ -329,7 +129,9 @@ You can specify the following arguments for this resource.
 * `profile_id` - (Required, Forces new resource, String) The profile ID.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/`.
 * `scope` - (List) The scope payload for the multi cloud feature.
-  * Constraints: The maximum length is `8` items. The minimum length is `0` items.
+  * Constraints: 
+    * The maximum length is `8` items. The minimum length is `0` items.
+  
   Nested schema for **scope**:
 	* `environment` - (String) The environment that relates to this scope.
 	  * Constraints: The maximum length is `64` characters. The minimum length is `2` characters. The value must match regular expression `/[A-Za-z0-9]+/`.
@@ -345,6 +147,7 @@ You can specify the following arguments for this resource.
   * `id` - (Optional, String) The ID of an `ibm_scc_scope` that is prexisiting
     * Constraints: `id` must not be used with `environment` and `properties`
 * `notifications` - (Required, List) The configuration for setting up notifications if a scan fails. Requires event_notifications from the instance settings to be setup.
+
 Nested schema for **notifications**:
 	* `controls` - (List) The failed controls.
 	Nested schema for **controls**:
@@ -353,6 +156,7 @@ Nested schema for **notifications**:
 		* `threshold_limit` - (Integer) The threshold limit.
 	* `enabled` - (Boolean) The flag to enable notifications. Set to true to enabled notifications, false to disable
 * `attachment_parameters` - (List) The attachment parameters required from the profile that the attachment is targeting. All parameters listed from the profile needs to be set. **NOTE**: All `attachment_parameters` must be defined; use `datasource.ibm_scc_profile` to see all necessary parameters.
+
 Nested schema for **attachment_parameters**:
     * `parameter_name` - (Required, String) The name of the parameter to target.
     * `parameter_display_name` - (Required, String) The display name of the parameter shown in the UI.

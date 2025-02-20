@@ -53,17 +53,22 @@ You can specify the following arguments for this resource.
 * `name` - (Optional, String) The scope name.
   * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9_,'\\s\\-\\.]*$/`.
 * `properties` - (Optional, Forces new resource, Map) The properties of the scope to target.
-  * Constraints: Two keys are needed to target a scope against an IBM account, resource group, enterprise account group, or enterprise
+  * Constraints: Two keys are needed to target a scope against an IBM account, resource group, enterprise account group, or enterprise: `scope_type` and `scope_id`.
 
-    Nested schema for **properties**:
+    Keys accepted in **properties**:
       * `scope_type` - (Optional, String) The type of target the scope will cover
-        * Constraints: Acceptable values are `account`, `account.resource_group`, `enterprise.account_group` or `enterprise`.
+        * Constraints: Acceptable values are:
+          * `account` - scope will target an IBM account
+          * `account.resource_group` - scope will target a resource_group of the account which owns the Security and Compliance Center instance specified in `instance_id`
+          * `enterprise.account_group` - targets an enterprise's account group
+          * `enterprise` - targets an IBM enterprise
       * `scope_id` - (Optional, String) The ID of the target defined in `scope_type`.
 * `exclusions` - (Optional, List) A list of scopes/targets to exclude from a scope.
   
   Nested schema for **exclusions**:
     * `scope_type` - (Required, String) The type of target to exclude from the scope
-      * Constraints: Acceptable values are `account`, `account.resource_group`, `enterprise.account_group` or `enterprise`.
+      * Constraints: Acceptable values are `account`, `account.resource_group`, or `enterprise.account_group`.
+      * Constraints: `net
     * `scope_id` - (Required, String) The ID of the target defined in `scope_type`.
 
 ## Attribute Reference
