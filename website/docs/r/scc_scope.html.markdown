@@ -12,6 +12,7 @@ Create, update, and delete scc_scopes with this resource.
 
 ## Example Usage
 
+To create a scope targeting an account
 ```hcl
 resource "ibm_scc_scope" "scc_account_scope" {
   description = "This scope allows a profile attachment to target an IBM account"
@@ -19,27 +20,22 @@ resource "ibm_scc_scope" "scc_account_scope" {
   instance_id = "b36c26e9-477a-43a1-9c50-19aff8e5d760"
   name        = "Sample account Scope"
   properties {
-    account_id = "8e042beeccee40748674442960b9eb34"
+    scope_id = "8e042beeccee40748674442960b9eb34"
+    scope_type = "account"
   }
 }
+```
 
+To create a scope targeting an enterprise
+```hcl
 resource "ibm_scc_scope" "scc_enterprise_scope" {
   description = "This scope allows a profile attachment to target an IBM enterprise"
   environment = "ibm-cloud"
   instance_id = "b36c26e9-477a-43a1-9c50-19aff8e5d760"
-  name        = "Sample account Scope"
-  properties {
-    enterprise_id = "6a204bd89f3c8348afd5c77c717a097a"
-  }
-}
-
-resource "ibm_scc_scope" "scc_ibm_facts_scope" {
-  description = "This scope allows a profile attachment to target a facts provider instance"
-  environment = "ibm-cloud"
-  instance_id = "b36c26e9-477a-43a1-9c50-19aff8e5d760"
-  name        = "Sample facts Scope"
-  properties {
-    ibm_facts_api_instance_id = ibm_scc_provider_type_instance.facts_provider_type_instance.provider_type_instance_id
+  name        = "Sample enterprise Scope"
+  properties  = {
+    scope_id   = "6a204bd89f3c8348afd5c77c717a097a"
+    scope_type = "enterprise"
   }
 }
 ```
@@ -56,20 +52,19 @@ You can specify the following arguments for this resource.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$/`.
 * `name` - (Optional, String) The scope name.
   * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9_,'\\s\\-\\.]*$/`.
-* `properties` - (Optional, List) The span for the scope to target.
-Nested schema for **properties**:
-    * `account_id` - (Optional, ForceNew, String) The ID of the IBM account ID.
-    * `enterprise_id` - (Optional, ForceNew, String) The ID of the IBM enterprise ID.
-    * `resource_group_id` - (Optional, ForceNew, String) The ID of the IBM resource group tied to an account
-    * `account_group_id` - (Optional, ForceNew, String) The ID of an account group tied to an enterprise
-    * `ibm_facts_api_instance_id` - (Optional, ForceNew, String) The ID of ibm_cloud_facts_api provider type instance
-      * Constraints: Using `ibm_facts_api_instance_id` is restricted to certain users. 
+* `properties` - (Optional, Forces new resource, Map) The properties of the scope to target.
+  * Constraints: Two keys are needed to target a scope against an IBM account, resource group, enterprise account group, or enterprise
 
+    Nested schema for **properties**:
+      * `scope_type` - (Optional, String) The type of target the scope will cover
+        * Constraints: Acceptable values are `account`, `account.resource_group`, `enterprise.account_group` or `enterprise`.
+      * `scope_id` - (Optional, String) The ID of the target defined in `scope_type`.
 * `exclusions` - (Optional, List) A list of scopes/targets to exclude from a scope.
-Nested schema for **exclusions**:
-    * `account_id` - (Optional, String) The account ID to exclude.
-    * `resource_group_id` - (Optional, String) The ID of the IBM resource group in an account to exclude
-    * `account_group_id` - (Optional, String) The ID of an account group in an enterprise.
+  
+  Nested schema for **exclusions**:
+    * `scope_type` - (Required, String) The type of target to exclude from the scope
+      * Constraints: Acceptable values are `account`, `account.resource_group`, `enterprise.account_group` or `enterprise`.
+    * `scope_id` - (Required, String) The ID of the target defined in `scope_type`.
 
 ## Attribute Reference
 
