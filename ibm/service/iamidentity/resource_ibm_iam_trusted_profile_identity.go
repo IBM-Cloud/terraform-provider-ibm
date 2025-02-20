@@ -1,5 +1,9 @@
-// Copyright IBM Corp. 2023 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
+
+/*
+ * IBM OpenAPI Terraform Generator Version: 3.98.0-8be2046a-20241205-162752
+ */
 
 package iamidentity
 
@@ -95,7 +99,9 @@ func ResourceIBMIamTrustedProfileIdentityValidator() *validate.ResourceValidator
 func resourceIBMIamTrustedProfileIdentityCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamIdentityClient, err := meta.(conns.ClientSession).IAMIdentityV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_identity", "create", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	setProfileIdentityOptions := &iamidentityv1.SetProfileIdentityOptions{}
@@ -116,10 +122,11 @@ func resourceIBMIamTrustedProfileIdentityCreate(context context.Context, d *sche
 		setProfileIdentityOptions.SetDescription(d.Get("description").(string))
 	}
 
-	profileIdentityResponse, response, err := iamIdentityClient.SetProfileIdentityWithContext(context, setProfileIdentityOptions)
+	profileIdentityResponse, _, err := iamIdentityClient.SetProfileIdentityWithContext(context, setProfileIdentityOptions)
 	if err != nil {
-		log.Printf("[DEBUG] SetProfileIdentityWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("SetProfileIdentityWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("SetProfileIdentityWithContext failed: %s", err.Error()), "ibm_iam_trusted_profile_identity", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(fmt.Sprintf("%s|%s|%s", *setProfileIdentityOptions.ProfileID, *setProfileIdentityOptions.IdentityType, *profileIdentityResponse.Identifier))
@@ -130,23 +137,21 @@ func resourceIBMIamTrustedProfileIdentityCreate(context context.Context, d *sche
 func resourceIBMIamTrustedProfileIdentityRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamIdentityClient, err := meta.(conns.ClientSession).IAMIdentityV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_identity", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	getProfileIdentityOptions := &iamidentityv1.GetProfileIdentityOptions{}
 
-	parts_to_use, original_err := flex.SepIdParts(d.Id(), "|")
-	if original_err != nil {
-		parts, err := flex.SepIdParts(d.Id(), "/") // compatability - can be removed in future release
-		if err != nil {
-			return diag.FromErr(original_err)
-		}
-		parts_to_use = parts
+	parts, err := flex.SepIdParts(d.Id(), "|")
+	if err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_identity", "read", "sep-id-parts").GetDiag()
 	}
 
-	getProfileIdentityOptions.SetProfileID(parts_to_use[0])
-	getProfileIdentityOptions.SetIdentityType(parts_to_use[1])
-	getProfileIdentityOptions.SetIdentifierID(parts_to_use[2])
+	getProfileIdentityOptions.SetProfileID(parts[0])
+	getProfileIdentityOptions.SetIdentityType(parts[1])
+	getProfileIdentityOptions.SetIdentifierID(parts[2])
 
 	profileIdentityResponse, response, err := iamIdentityClient.GetProfileIdentityWithContext(context, getProfileIdentityOptions)
 	if err != nil {
@@ -154,32 +159,39 @@ func resourceIBMIamTrustedProfileIdentityRead(context context.Context, d *schema
 			d.SetId("")
 			return nil
 		}
-		log.Printf("[DEBUG] GetProfileIdentityWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetProfileIdentityWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetProfileIdentityWithContext failed: %s", err.Error()), "ibm_iam_trusted_profile_identity", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(fmt.Sprintf("%s|%s|%s", *getProfileIdentityOptions.ProfileID, *getProfileIdentityOptions.IdentityType, *getProfileIdentityOptions.IdentifierID))
 
 	if err = d.Set("profile_id", getProfileIdentityOptions.ProfileID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting profile_id: %s", err))
+		err = fmt.Errorf("Error setting profile_id: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_identity", "read", "set-profile_id").GetDiag()
 	}
 	if err = d.Set("identity_type", getProfileIdentityOptions.IdentityType); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting identity_type: %s", err))
+		err = fmt.Errorf("Error setting identity_type: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_identity", "read", "set-identity_type").GetDiag()
 	}
 	if err = d.Set("identifier", profileIdentityResponse.Identifier); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting identifier: %s", err))
+		err = fmt.Errorf("Error setting identifier: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_identity", "read", "set-identifier").GetDiag()
 	}
 	if err = d.Set("type", profileIdentityResponse.Type); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting type: %s", err))
+		err = fmt.Errorf("Error setting type: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_identity", "read", "set-type").GetDiag()
 	}
 	if !core.IsNil(profileIdentityResponse.Accounts) {
 		if err = d.Set("accounts", profileIdentityResponse.Accounts); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting accounts: %s", err))
+			err = fmt.Errorf("Error setting accounts: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_identity", "read", "set-accounts").GetDiag()
 		}
 	}
 	if !core.IsNil(profileIdentityResponse.Description) {
 		if err = d.Set("description", profileIdentityResponse.Description); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting description: %s", err))
+			err = fmt.Errorf("Error setting description: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_identity", "read", "set-description").GetDiag()
 		}
 	}
 
@@ -189,28 +201,27 @@ func resourceIBMIamTrustedProfileIdentityRead(context context.Context, d *schema
 func resourceIBMIamTrustedProfileIdentityDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamIdentityClient, err := meta.(conns.ClientSession).IAMIdentityV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_identity", "delete", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	deleteProfileIdentityOptions := &iamidentityv1.DeleteProfileIdentityOptions{}
 
-	parts_to_use, original_err := flex.SepIdParts(d.Id(), "|")
-	if original_err != nil {
-		parts, err := flex.SepIdParts(d.Id(), "/") // compatability - remove in future release
-		if err != nil {
-			return diag.FromErr(original_err)
-		}
-		parts_to_use = parts
+	parts, err := flex.SepIdParts(d.Id(), "|")
+	if err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_identity", "delete", "sep-id-parts").GetDiag()
 	}
 
-	deleteProfileIdentityOptions.SetProfileID(parts_to_use[0])
-	deleteProfileIdentityOptions.SetIdentityType(parts_to_use[1])
-	deleteProfileIdentityOptions.SetIdentifierID(parts_to_use[2])
+	deleteProfileIdentityOptions.SetProfileID(parts[0])
+	deleteProfileIdentityOptions.SetIdentityType(parts[1])
+	deleteProfileIdentityOptions.SetIdentifierID(parts[2])
 
-	response, err := iamIdentityClient.DeleteProfileIdentityWithContext(context, deleteProfileIdentityOptions)
+	_, err = iamIdentityClient.DeleteProfileIdentityWithContext(context, deleteProfileIdentityOptions)
 	if err != nil {
-		log.Printf("[DEBUG] DeleteProfileIdentityWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("DeleteProfileIdentityWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteProfileIdentityWithContext failed: %s", err.Error()), "ibm_iam_trusted_profile_identity", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId("")
