@@ -2328,7 +2328,7 @@ func TestAccPreCheckScc(t *testing.T) {
 		errList = append(errList,
 			"IBMCLOUD_SCC_RESOURCE_GROUP_ID missing. Set the environment variable IBMCLOUD_SCC_RESOURCE_GROUP_ID with a valid IBM resource group id")
 	}
-  // If the user did not define one of the variables, error out and do not continue with testing.
+	// If the user did not define one of the variables, error out and do not continue with testing.
 	if len(errList) > 0 {
 		t.Fatal("error encounterd. Global variables missing:\n" + strings.Join(errList, "\n"))
 	}

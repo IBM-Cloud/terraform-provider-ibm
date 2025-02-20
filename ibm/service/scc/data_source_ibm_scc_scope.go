@@ -52,37 +52,11 @@ func DataSourceIbmSccScope() *schema.Resource {
 			},
 			// Manual Change: change name and value for scope_type and scope_id
 			"properties": &schema.Schema{
-				Type:        schema.TypeList,
+				Type:        schema.TypeMap,
 				Computed:    true,
 				Description: "A list of scopes/targets to exclude from a scope.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"account_id": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The ID of the account to target",
-						},
-						"enterprise_id": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The ID of the enterprise to target",
-						},
-						"resource_group_id": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The ID of the resource group to target",
-						},
-						"account_group_id": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The ID of the account group to target",
-						},
-						"ibm_facts_api_instance_id": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The Security and Compliance Center provider type instance ID to target",
-						},
-					},
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
 				},
 			},
 			"exclusions": &schema.Schema{
@@ -91,20 +65,15 @@ func DataSourceIbmSccScope() *schema.Resource {
 				Description: "A list of scopes/targets to exclude from a scope.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"account_id": &schema.Schema{
+						"scope_type": &schema.Schema{
 							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The ID of the account to exclude. Only works with the attribute properties.0.account_group_id set",
+							Optional:    true,
+							Description: "A target to exclude from the ibm_scc_scope.",
 						},
-						"resource_group_id": &schema.Schema{
+						"scope_id": &schema.Schema{
 							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The ID of the resource group to exclude. Only works with the attribute properties.0.account_id set",
-						},
-						"account_group_id": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The ID of the account group to exclude. Only works with the attribue properties.0.enterprise_id set",
+							Optional:    true,
+							Description: "The ID of the target.",
 						},
 					},
 				},
