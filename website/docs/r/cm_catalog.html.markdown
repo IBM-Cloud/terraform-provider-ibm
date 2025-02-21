@@ -26,6 +26,24 @@ resource "ibm_cm_catalog" "cm_catalog" {
 
 Review the argument reference that you can specify for your resource.
 
+* `catalog_filters` - (List, Optional) Filters for account and catalog filters.
+Nested schema for **catalog_filters**:
+	* `category_filters` - (List, Optional) Filter against offering properties.
+	Nested schema for **category_filters**:
+    	* `category_name` - (String, Required) Name of the category.
+    	* `include` -  (Boolean, Optional) Whether to include the category in the catalog filter.
+    	* `filter` - (List, Optional) Filter terms related to the category.
+		Nested schema for **filter**:
+			* `filter_terms` - (List, Optional) List of values to match against. If include is true, then if the offering has one of the values then the offering is included. If include is false, then if the offering has one of the values then the offering is excluded.
+	* `id_filters` - (List, Optional) Filter on offering ID's. There is an include filter and an exclule filter. Both can be set.
+	Nested schema for **id_filters**:
+		* `exclude` - (List, Optional) Offering filter terms.
+		Nested schema for **exclude**:
+			* `filter_terms` - (List, Optional) List of values to match against. If include is true, then if the offering has one of the values then the offering is included. If include is false, then if the offering has one of the values then the offering is excluded.
+		* `include` - (List, Optional) Offering filter terms.
+		Nested schema for **include**:
+			* `filter_terms` - (List, Optional) List of values to match against. If include is true, then if the offering has one of the values then the offering is included. If include is false, then if the offering has one of the values then the offering is excluded.
+	* `include_all` - (Boolean, Optional) -> true - Include all of the public catalog when filtering. Further settings will specifically exclude some offerings. false - Exclude all of the public catalog when filtering. Further settings will specifically include some offerings.
 * `catalog_icon_url` - (Optional, String) URL for an icon associated with this catalog.
 * `catalog_banner_url` - (Optional, String) URL for a banner image for this catalog.
 * `disabled` - (Optional, Boolean) Denotes whether a catalog is disabled.
