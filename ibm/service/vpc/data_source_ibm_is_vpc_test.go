@@ -87,13 +87,13 @@ func TestAccIBMISVPCDatasource_basicDefaultAddressPrefixes(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_is_vpc.ds_vpc", "default_security_group_name"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_vpc.ds_vpc", "default_routing_table_name"),
 					resource.TestCheckResourceAttr(
-						"ibm_is_vpc.ds_vpc", "default_address_prefixes.#", "0"),
+						"data.ibm_is_vpc.ds_vpc", "default_address_prefixes.#", "0"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_vpc.ds_vpc_by_id", "cse_source_addresses.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_vpc.ds_vpc_by_id", "default_network_acl_name"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_vpc.ds_vpc_by_id", "default_security_group_name"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_vpc.ds_vpc_by_id", "default_routing_table_name"),
 					resource.TestCheckResourceAttr(
-						"ibm_is_vpc.ds_vpc_by_id", "default_address_prefixes.#", "0"),
+						"data.ibm_is_vpc.ds_vpc_by_id", "default_address_prefixes.#", "0"),
 				),
 			},
 		},
