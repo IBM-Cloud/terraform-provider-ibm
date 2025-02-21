@@ -37,7 +37,6 @@ func TestAccIbmSccControlLibraryDataSourceAllArgs(t *testing.T) {
 	controlLibraryControlLibraryName := fmt.Sprintf("tf_control_library_name_%d", acctest.RandIntRange(10, 100))
 	controlLibraryControlLibraryDescription := fmt.Sprintf("tf_control_library_description_%d", acctest.RandIntRange(10, 100))
 	controlLibraryControlLibraryType := "custom"
-	// controlLibraryVersionGroupLabel := fmt.Sprintf("d755830f-1d83-4fab-b5d5-1dfb2b0dad1%d", acctest.RandIntRange(1, 9))
 	controlLibraryControlLibraryVersion := fmt.Sprintf("0.0.%d", acctest.RandIntRange(1, 100))
 	controlLibraryLatest := "true"
 
