@@ -36,7 +36,7 @@ func ResourceIbmSccScope() *schema.Resource {
 			},
 			"name": &schema.Schema{
 				Type:         schema.TypeString,
-				Optional:     true,
+				Required:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_scc_scope", "name"),
 				Description:  "The scope name.",
 			},
@@ -48,15 +48,15 @@ func ResourceIbmSccScope() *schema.Resource {
 			},
 			"environment": &schema.Schema{
 				Type:         schema.TypeString,
-				Optional:     true,
+				Required:     true,
+				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_scc_scope", "environment"),
 				Description:  "The scope environment. This value details what cloud provider the scope targets.",
 			},
 			// Manual Change: change name and value for scope_type and scope_id
 			"properties": &schema.Schema{
 				Type:     schema.TypeMap,
-				Optional: true,
-				Computed: true,
+				Required: true,
 				ForceNew: true,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
