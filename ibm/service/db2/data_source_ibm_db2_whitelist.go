@@ -22,9 +22,10 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 )
 
-func DataSourceIbmDb2Allowlist() *schema.Resource {
+func DataSourceIbmDb2Whitelist() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIbmDb2AllowListRead,
+		ReadContext:        dataSourceIbmDb2WhitelistRead,
+		DeprecationMessage: "This service is deprecated and replaced with `ibm_db2_allowlist_ip`",
 
 		Schema: map[string]*schema.Schema{
 			"x_deployment_id": &schema.Schema{
@@ -55,48 +56,48 @@ func DataSourceIbmDb2Allowlist() *schema.Resource {
 	}
 }
 
-func dataSourceIbmDb2AllowListRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIbmDb2WhitelistRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	db2saasClient, err := meta.(conns.ClientSession).Db2saasV1()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_db2_allowlist_ip", "read", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_db2_whitelist_ip", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 
-	getDb2SaasAllowlistOptions := &db2saasv1.GetDb2SaasAllowlistOptions{}
+	getDb2SaasWhitelistOptions := &db2saasv1.GetDb2SaasAllowlistOptions{}
 
-	getDb2SaasAllowlistOptions.SetXDeploymentID(d.Get("x_deployment_id").(string))
+	getDb2SaasWhitelistOptions.SetXDeploymentID(d.Get("x_deployment_id").(string))
 
-	successGetAllowlistIPs, _, err := db2saasClient.GetDb2SaasAllowlistWithContext(context, getDb2SaasAllowlistOptions)
+	successGetWhitelistIPs, _, err := db2saasClient.GetDb2SaasAllowlistWithContext(context, getDb2SaasWhitelistOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetDb2SaasAllowlistWithContext failed: %s", err.Error()), "(Data) ibm_db2_allowlist_ip", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetDb2SaasAllowlistWithContext failed: %s", err.Error()), "(Data) ibm_db2_whitelist_ip", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 
-	d.SetId(dataSourceIbmDb2AllowlistID(d))
+	d.SetId(dataSourceIbmDb2WhitelistID(d))
 
 	ipAddresses := []map[string]interface{}{}
-	for _, ipAddressesItem := range successGetAllowlistIPs.IpAddresses {
-		ipAddressesItemMap, err := DataSourceIbmDb2AllowlistIpAddressToMap(&ipAddressesItem) // #nosec G601
+	for _, ipAddressesItem := range successGetWhitelistIPs.IpAddresses {
+		ipAddressesItemMap, err := DataSourceIbmDb2WhitelistIpAddressToMap(&ipAddressesItem) // #nosec G601
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_db2_allowlist_ip", "read", "ip_addresses-to-map").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_db2_whitelist_ip", "read", "ip_addresses-to-map").GetDiag()
 		}
 		ipAddresses = append(ipAddresses, ipAddressesItemMap)
 	}
 	if err = d.Set("ip_addresses", ipAddresses); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting ip_addresses: %s", err), "(Data) ibm_db2_allowlist_ip", "read", "set-ip_addresses").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting ip_addresses: %s", err), "(Data) ibm_db2_whitelist_ip", "read", "set-ip_addresses").GetDiag()
 	}
 
 	return nil
 }
 
-// dataSourceIbmDb2SaasAllowlistID returns a reasonable ID for the list.
-func dataSourceIbmDb2AllowlistID(d *schema.ResourceData) string {
+// dataSourceIbmDb2SaasWhitelistID returns a reasonable ID for the list.
+func dataSourceIbmDb2WhitelistID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
 
-func DataSourceIbmDb2AllowlistIpAddressToMap(model *db2saasv1.IpAddress) (map[string]interface{}, error) {
+func DataSourceIbmDb2WhitelistIpAddressToMap(model *db2saasv1.IpAddress) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["address"] = *model.Address
 	modelMap["description"] = *model.Description

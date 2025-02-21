@@ -1,5 +1,3 @@
-# This data source name is deprecated as it's renamed to ibm_db2_allowlist_ip,and will be removed in the next major version, yet the functionality remains same.
-
 ---
 subcategory: "Db2 SaaS"
 layout: "ibm"
@@ -11,6 +9,9 @@ description: |-
 # ibm_db2_whitelist_ip
 
 Retrieve information about Whitelisted IPs of an existing [IBM Db2 Instance](https://cloud.ibm.com/docs/Db2onCloud).
+
+# DEPRECATED
+Datasource `ibm_db2_whitelist_ip` has now deprecated and replaced with `ibm_db2_allowlist_ip`, backend services will no longer available after 28th March 2025. This docs will be removed in coming release.
 
 ## Example Usage
 

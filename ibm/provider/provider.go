@@ -347,7 +347,7 @@ func Provider() *schema.Provider {
 			"ibm_database_backups":                         database.DataSourceIBMDatabaseBackups(),
 			"ibm_db2":                                      db2.DataSourceIBMDb2Instance(),
 			"ibm_db2_connection_info":                      db2.DataSourceIbmDb2ConnectionInfo(),
-			"ibm_db2_whitelist_ip":                         db2.DataSourceIbmDb2Allowlist(),
+			"ibm_db2_whitelist_ip":                         db2.DataSourceIbmDb2Whitelist(),
 			"ibm_db2_allowlist_ip":                         db2.DataSourceIbmDb2Allowlist(),
 			"ibm_db2_autoscale":                            db2.DataSourceIbmDb2Autoscale(),
 			"ibm_db2_backup":                               db2.DataSourceIbmDb2Backup(),
