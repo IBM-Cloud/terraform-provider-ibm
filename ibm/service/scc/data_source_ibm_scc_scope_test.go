@@ -40,8 +40,9 @@ func testAccCheckIbmSccScopeDataSourceConfigBasic(instanceID string, accountID s
     environment = "ibm-cloud"
     instance_id = "%s"
     name        = "%s"
-    properties {
-      account_id = "%s"
+    properties  = {
+      scope_id    = "%s"
+      scope_type  = "account"
     }
   }
 

@@ -390,9 +390,9 @@ func resourceIBMSccScopeExclusionMapToExclusionItem(modelMap map[string]interfac
 	for k, v := range modelMap {
 		switch k {
 		case "scope_type":
-			exclusionItem.ScopeType = v.(*string)
+			exclusionItem.ScopeType = core.StringPtr(v.(string))
 		case "scope_id":
-			exclusionItem.ScopeID = v.(*string)
+			exclusionItem.ScopeID = core.StringPtr(v.(string))
 		default:
 			err := fmt.Errorf("converting ExclusionItem failed, could not understand key:%s", k)
 			return &securityandcompliancecenterapiv3.ScopePropertyExclusionItem{}, err

@@ -94,11 +94,13 @@ func testAccCheckIBMSccScopeConfig(instanceID string, name string, description s
 			name = "%s"
 			description = "%s"
 			environment = "%s"
-			properties {
-        account_id = "%s"
+			properties  = {
+        scope_id    = "%s"
+        scope_type  = "account"
 			}
       exclusions {
-        resource_group_id = "%s"
+        scope_id   = "%s"
+        scope_type = "account.resource_group"
       }
 		}
 	`, instanceID, name, description, environment, scopeId, resource_group_id)
