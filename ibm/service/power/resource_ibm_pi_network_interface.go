@@ -52,18 +52,18 @@ func ResourceIBMPINetworkInterface() *schema.Resource {
 				ValidateFunc: validation.NoZeroValues,
 			},
 			Arg_InstanceID: {
-				Description: "If supplied populated it attaches to the InstanceID, if empty detaches from InstanceID.",
+				Description: "If supplied populated it attaches to the instance ID, if empty detaches from the instance ID.",
 				Optional:    true,
 				Type:        schema.TypeString,
 			},
 			Arg_IPAddress: {
-				Description: "The requested IP address of this Network Interface.",
+				Description: "The requested IP address of this network interface.",
 				ForceNew:    true,
 				Optional:    true,
 				Type:        schema.TypeString,
 			},
 			Arg_Name: {
-				Description: "Name of the Network Interface.",
+				Description: "Name of the network interface.",
 				Optional:    true,
 				Type:        schema.TypeString,
 			},
@@ -85,13 +85,13 @@ func ResourceIBMPINetworkInterface() *schema.Resource {
 			// Attributes
 			Attr_CRN: {
 				Computed:    true,
-				Description: "The Network Interface's crn.",
+				Description: "The network interface's crn.",
 				Type:        schema.TypeString,
 			},
 			Attr_Instance: {
 				Computed:    true,
 				Optional:    true,
-				Description: "The attached instance to this Network Interface.",
+				Description: "The attached instance to this network interface.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						Attr_Href: {
@@ -110,17 +110,17 @@ func ResourceIBMPINetworkInterface() *schema.Resource {
 			},
 			Attr_IPAddress: {
 				Computed:    true,
-				Description: "The ip address of this Network Interface.",
+				Description: "The ip address of this network interface.",
 				Type:        schema.TypeString,
 			},
 			Attr_MacAddress: {
 				Computed:    true,
-				Description: "The mac address of the Network Interface.",
+				Description: "The mac address of the network interface.",
 				Type:        schema.TypeString,
 			},
 			Attr_Name: {
 				Computed:    true,
-				Description: "Name of the Network Interface (not unique or indexable).",
+				Description: "Name of the network interface (not unique or indexable).",
 				Type:        schema.TypeString,
 			},
 			Attr_NetworkInterfaceID: {
@@ -130,12 +130,19 @@ func ResourceIBMPINetworkInterface() *schema.Resource {
 			},
 			Attr_NetworkSecurityGroupID: {
 				Computed:    true,
-				Description: "ID of the Network Security Group the network interface will be added to.",
+				Deprecated:  "Deprecated, use network_security_group_ids instead.",
+				Description: "ID of the network security group the network interface will be added to.",
 				Type:        schema.TypeString,
+			},
+			Attr_NetworkSecurityGroupIDs: {
+				Computed:    true,
+				Description: "List of network security groups that the network interface is a member of.",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Type:        schema.TypeSet,
 			},
 			Attr_Status: {
 				Computed:    true,
-				Description: "The status of the network address group.",
+				Description: "The status of the network interface.",
 				Type:        schema.TypeString,
 			},
 		},
@@ -220,6 +227,7 @@ func resourceIBMPINetworkInterfaceRead(ctx context.Context, d *schema.ResourceDa
 	d.Set(Attr_Name, networkInterface.Name)
 	d.Set(Attr_NetworkInterfaceID, networkInterface.ID)
 	d.Set(Attr_NetworkSecurityGroupID, networkInterface.NetworkSecurityGroupID)
+	d.Set(Attr_NetworkSecurityGroupIDs, networkInterface.NetworkSecurityGroupIDs)
 	if networkInterface.Instance != nil {
 		pvmInstance := []map[string]interface{}{}
 		instanceMap := pvmInstanceToMap(networkInterface.Instance)

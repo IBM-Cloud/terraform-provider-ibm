@@ -78,6 +78,11 @@ Review the argument references that you can specify for your resource.
     Nested schema for `pi_destination_port`:
       - `maximum` - (Optional, Int) The end of the port range, if applicable. If the value is not present then the default value of 65535 will be the maximum port number.
       - `minimum` - (Optional, Int) The start of the port range, if applicable. If the value is not present then the default value of 1 will be the minimum port number.
+- `pi_destination_ports` - (Deprecated, Optional, List) The list of destination port. Deprecated, please use `pi_destination_port`.
+
+    Nested schema for `pi_destination_ports`:
+      - `maximum` - (Optional, Int) The end of the port range, if applicable. If the value is not present then the default value of 65535 will be the maximum port number.
+      - `minimum` - (Optional, Int) The start of the port range, if applicable. If the value is not present then the default value of 1 will be the minimum port number.
 - `pi_network_security_group_id` - (Required, String) The unique identifier of the network security group.
 - `pi_network_security_group_rule_id` - (Optional, String) The network security group rule id to remove. Required if none of the other optional fields are provided.
 - `pi_protocol` - (Optional, List) The list of protocol. Required if `pi_network_security_group_rule_id` is not provided.
@@ -96,6 +101,11 @@ Review the argument references that you can specify for your resource.
     Nested schema for `pi_source_port`:
     - `maximum` - (Optional, Int) The end of the port range, if applicable. If the value is not present then the default value of 65535 will be the maximum port number.
     - `minimum` - (Optional, Int) The start of the port range, if applicable. If the value is not present then the default value of 1 will be the minimum port number.
+- `pi_source_ports` - (Deprecated, Optional, List) List of source port. Deprecated, please use `pi_source_port`.
+
+    Nested schema for `pi_source_ports`:
+    - `maximum` - (Optional, Int) The end of the port range, if applicable. If the value is not present then the default value of 65535 will be the maximum port number.
+    - `minimum` - (Optional, Int) The start of the port range, if applicable. If the value is not present then the default value of 1 will be the minimum port number.
 
 - `pi_name` - (Optional, String) The name of the network security group rule. Required if `pi_network_security_group_rule_id` is not provided.
 
@@ -104,12 +114,14 @@ Review the argument references that you can specify for your resource.
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
 - `crn` - (String) The network security group's crn.
+- `default` - (Boolean) Indicates if the network security group is the default network security group in the workspace.
 - `id` - (String) The unique identifier of the network security group resource. Composed of `<cloud_instance_id>/<network_security_group_id/rule_id>`
 - `members` - (List) The list of IPv4 addresses and\or network interfaces in the network security group.
 
     Nested schema for `members`:
   - `id` - (String) The id of the member in a network security group.
   - `mac_address` - (String) The mac address of a network interface included if the type is `network-interface`.
+  - `network_interface_id` - (String) The network ID of a network interface included if the type is `network-interface`.
   - `target` - (String) If `ipv4-address` type, then IPv4 address or if `network-interface` type, then network interface id.
   - `type` - (String) The type of member. Supported values are: `ipv4-address`, `network-interface`.
 

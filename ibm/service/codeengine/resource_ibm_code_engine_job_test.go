@@ -47,6 +47,7 @@ func TestAccIbmCodeEngineJobBasic(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job_instance", "scale_max_execution_time", "7200"),
 					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job_instance", "scale_memory_limit", "4G"),
 					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job_instance", "scale_retry_limit", "3"),
+					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job_instance", "computed_env_variables.#", "3"),
 				),
 			},
 			resource.TestStep{
@@ -63,6 +64,7 @@ func TestAccIbmCodeEngineJobBasic(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job_instance", "scale_max_execution_time", "7200"),
 					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job_instance", "scale_memory_limit", "4G"),
 					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job_instance", "scale_retry_limit", "3"),
+					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job_instance", "computed_env_variables.#", "3"),
 				),
 			},
 		},
@@ -116,6 +118,7 @@ func TestAccIbmCodeEngineJobExtended(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job_instance", "scale_max_execution_time", scaleMaxExecutionTime),
 					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job_instance", "scale_memory_limit", scaleMemoryLimit),
 					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job_instance", "scale_retry_limit", scaleRetryLimit),
+					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job_instance", "computed_env_variables.#", "3"),
 				),
 			},
 			resource.TestStep{
@@ -133,6 +136,7 @@ func TestAccIbmCodeEngineJobExtended(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job_instance", "scale_max_execution_time", scaleMaxExecutionTimeUpdate),
 					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job_instance", "scale_memory_limit", scaleMemoryLimitUpdate),
 					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job_instance", "scale_retry_limit", scaleRetryLimitUpdate),
+					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job_instance", "computed_env_variables.#", "3"),
 				),
 			},
 			resource.TestStep{
@@ -155,12 +159,6 @@ func testAccCheckIbmCodeEngineJobConfigBasic(projectID string, name string, imag
 			project_id = data.ibm_code_engine_project.code_engine_project_instance.project_id
 			name = "%s"
 			image_reference = "%s"
-
-			lifecycle {
-				ignore_changes = [
-					run_env_variables
-				]
-			}
 		}
 	`, projectID, name, imageReference)
 }
@@ -183,12 +181,6 @@ func testAccCheckIbmCodeEngineJobConfig(projectID string, name string, imageRefe
 			scale_max_execution_time = %s
 			scale_memory_limit = "%s"
 			scale_retry_limit = %s
-
-			lifecycle {
-				ignore_changes = [
-					run_env_variables
-				]
-			}
 		}
 	
 	`, projectID, name, imageReference, runAsUser, runMode, runServiceAccount, scaleCpuLimit, scaleEphemeralStorageLimit, scaleMaxExecutionTime, scaleMemoryLimit, scaleRetryLimit)
