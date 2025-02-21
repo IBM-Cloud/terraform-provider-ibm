@@ -11,7 +11,7 @@ description: |-
 Retrieve information about Whitelisted IPs of an existing [IBM Db2 Instance](https://cloud.ibm.com/docs/Db2onCloud).
 
 # DEPRECATED
-Datasource `ibm_db2_whitelist_ip` has now deprecated and replaced with `ibm_db2_allowlist_ip`, backend services will no longer available after 28th March 2025. This docs will be removed in coming release.
+Datasource `ibm_db2_whitelist_ip` has now deprecated and replaced with `ibm_db2_allowlist_ip`, backend services will no longer available after the next major release. This docs will be removed in coming release.
 
 ## Example Usage
 
