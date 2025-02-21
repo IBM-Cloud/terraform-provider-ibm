@@ -7,16 +7,17 @@ import (
 	"fmt"
 	"log"
 	"net/url"
+	"reflect"
 
 	"github.com/IBM/cloud-databases-go-sdk/clouddatabasesv5"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev2/controllerv2"
-	"github.com/IBM-Cloud/bluemix-go/models"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
+	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
+	rg "github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
 )
 
 func DataSourceIBMDatabaseInstance() *schema.Resource {
@@ -534,56 +535,63 @@ func DataSourceIBMDatabaseInstanceValidator() *validate.ResourceValidator {
 }
 
 func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{}) error {
-	rsConClient, err := meta.(conns.ClientSession).ResourceControllerAPIV2()
+	var instance rc.ResourceInstance
+	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return err
 	}
-	rsAPI := rsConClient.ResourceServiceInstanceV2()
-	name := d.Get("name").(string)
-
-	rsInstQuery := controllerv2.ServiceInstanceQuery{
-		Name: name,
-	}
-
-	if rsGrpID, ok := d.GetOk("resource_group_id"); ok {
-		rsInstQuery.ResourceGroupID = rsGrpID.(string)
-	} else {
-		defaultRg, err := flex.DefaultResourceGroup(meta)
-		if err != nil {
-			return err
-		}
-		rsInstQuery.ResourceGroupID = defaultRg
-	}
-
 	rsCatClient, err := meta.(conns.ClientSession).ResourceCatalogAPI()
 	if err != nil {
 		return err
 	}
 	rsCatRepo := rsCatClient.ResourceCatalog()
+	name := d.Get("name").(string)
+	resourceInstanceListOptions := rc.ListResourceInstancesOptions{
+		Name: &name,
+	}
+
+	if rsGrpID, ok := d.GetOk("resource_group_id"); ok {
+		rg := rsGrpID.(string)
+		resourceInstanceListOptions.ResourceGroupID = &rg
+	}
 
 	if service, ok := d.GetOk("service"); ok {
 
 		serviceOff, err := rsCatRepo.FindByName(service.(string), true)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error retrieving database offering: %s", err)
+			return fmt.Errorf("[ERROR] Error retrieving service offering: %s", err)
 		}
-
-		rsInstQuery.ServiceID = serviceOff[0].ID
+		resourceId := serviceOff[0].ID
+		resourceInstanceListOptions.ResourceID = &resourceId
 	}
 
-	var instances []models.ServiceInstanceV2
+	next_url := ""
+	var instances []rc.ResourceInstance
+	for {
+		if next_url != "" {
+			resourceInstanceListOptions.Start = &next_url
+		}
+		listInstanceResponse, resp, err := rsConClient.ListResourceInstances(&resourceInstanceListOptions)
+		if err != nil {
+			return fmt.Errorf("[ERROR] Error retrieving resource instance: %s with resp code: %s", err, resp)
+		}
+		next_url, err = getInstancesNext(listInstanceResponse.NextURL)
+		if err != nil {
+			return fmt.Errorf("[DEBUG] ListResourceInstances failed. Error occurred while parsing NextURL: %s", err)
 
-	instances, err = rsAPI.ListInstances(rsInstQuery)
-	if err != nil {
-		return err
+		}
+		instances = append(instances, listInstanceResponse.Resources...)
+		if next_url == "" {
+			break
+		}
 	}
-	var filteredInstances []models.ServiceInstanceV2
+	var filteredInstances []rc.ResourceInstance
 	var location string
 
 	if loc, ok := d.GetOk("location"); ok {
 		location = loc.(string)
 		for _, instance := range instances {
-			if flex.GetLocation(instance) == location {
+			if flex.GetLocationV2(instance) == location {
 				filteredInstances = append(filteredInstances, instance)
 			}
 		}
@@ -595,15 +603,13 @@ func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{})
 		return fmt.Errorf("[ERROR] No resource instance found with name [%s]\nIf not specified please specify more filters like resource_group_id if instance doesn't exists in default group, location or database", name)
 	}
 
-	var instance models.ServiceInstanceV2
-
 	if len(filteredInstances) > 1 {
 		return fmt.Errorf(
 			"More than one resource instance found with name matching [%s]\nIf not specified please specify more filters like resource_group_id if instance doesn't exists in default group, location or database", name)
 	}
 	instance = filteredInstances[0]
 
-	d.SetId(instance.ID)
+	d.SetId(*instance.ID)
 
 	tags, err := flex.GetTagsUsingCRN(meta, d.Id())
 	if err != nil {
@@ -616,31 +622,45 @@ func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{})
 	d.Set("status", instance.State)
 	d.Set("resource_group_id", instance.ResourceGroupID)
 	d.Set("location", instance.RegionID)
-	d.Set("guid", instance.Guid)
+	d.Set("guid", instance.GUID)
 
-	serviceOff, err := rsCatRepo.GetServiceName(instance.ServiceID)
+	serviceOff, err := rsCatRepo.GetServiceName(*instance.ResourceID)
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error retrieving service offering: %s", err)
 	}
 
 	d.Set("service", serviceOff)
 
-	servicePlan, err := rsCatRepo.GetServicePlanName(instance.ResourcePlanID)
+	servicePlan, err := rsCatRepo.GetServicePlanName(*instance.ResourcePlanID)
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error retrieving plan: %s", err)
 	}
 	d.Set("plan", servicePlan)
 
 	d.Set(flex.ResourceName, instance.Name)
-	d.Set(flex.ResourceCRN, instance.Crn.String())
+	d.Set(flex.ResourceCRN, instance.CRN)
 	d.Set(flex.ResourceStatus, instance.State)
-	d.Set(flex.ResourceGroupName, instance.ResourceGroupName)
+
+	rMgtClient, err := meta.(conns.ClientSession).ResourceManagerV2API()
+	if err != nil {
+		return err
+	}
+	GetResourceGroup := rg.GetResourceGroupOptions{
+		ID: instance.ResourceGroupID,
+	}
+	resourceGroup, resp, err := rMgtClient.GetResourceGroup(&GetResourceGroup)
+	if err != nil || resourceGroup == nil {
+		log.Printf("[ERROR] Error retrieving resource group: %s %s", err, resp)
+	}
+	if resourceGroup != nil && resourceGroup.Name != nil {
+		d.Set(flex.ResourceGroupName, resourceGroup.Name)
+	}
 
 	rcontroller, err := flex.GetBaseController(meta)
 	if err != nil {
 		return err
 	}
-	d.Set(flex.ResourceControllerURL, rcontroller+"/services/"+url.QueryEscape(instance.Crn.String()))
+	d.Set(flex.ResourceControllerURL, rcontroller+"/services/"+url.QueryEscape(*instance.CRN))
 
 	cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
 	if err != nil {
@@ -648,14 +668,14 @@ func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{})
 	}
 
 	getDeploymentInfoOptions := &clouddatabasesv5.GetDeploymentInfoOptions{
-		ID: core.StringPtr(instance.ID),
+		ID: instance.ID,
 	}
 	getDeploymentInfoResponse, response, err := cloudDatabasesClient.GetDeploymentInfo(getDeploymentInfoOptions)
 	if err != nil {
 		if response.StatusCode == 404 {
 			return fmt.Errorf("[ERROR] The database instance was not found in the region set for the Provider, or the default of us-south. Specify the correct region in the provider definition, or create a provider alias for the correct region. %v", err)
 		}
-		return fmt.Errorf("[ERROR] Error getting database config while updating adminpassword for: %s with error %s", instance.ID, err)
+		return fmt.Errorf("[ERROR] Error getting database config while updating adminpassword for: %s with error %s", *instance.ID, err)
 	}
 
 	deployment := getDeploymentInfoResponse.Deployment
@@ -669,7 +689,7 @@ func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{})
 	}
 
 	listDeploymentScalingGroupsOptions := &clouddatabasesv5.ListDeploymentScalingGroupsOptions{
-		ID: core.StringPtr(instance.ID),
+		ID: instance.ID,
 	}
 
 	groupList, _, err := cloudDatabasesClient.ListDeploymentScalingGroups(listDeploymentScalingGroupsOptions)
@@ -679,7 +699,7 @@ func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{})
 	d.Set("groups", flex.FlattenIcdGroups(groupList))
 
 	getAutoscalingConditionsOptions := &clouddatabasesv5.GetAutoscalingConditionsOptions{
-		ID:      &instance.ID,
+		ID:      instance.ID,
 		GroupID: core.StringPtr("member"),
 	}
 
@@ -690,7 +710,7 @@ func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{})
 	d.Set("auto_scaling", flattenAutoScalingGroup(*autoscalingGroup))
 
 	alEntry := &clouddatabasesv5.GetAllowlistOptions{
-		ID: &instance.ID,
+		ID: instance.ID,
 	}
 
 	allowlist, _, err := cloudDatabasesClient.GetAllowlist(alEntry)
@@ -700,6 +720,17 @@ func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{})
 	}
 
 	d.Set("allowlist", flex.FlattenAllowlist(allowlist.IPAddresses))
-
 	return nil
+}
+
+func getInstancesNext(next *string) (string, error) {
+	if reflect.ValueOf(next).IsNil() {
+		return "", nil
+	}
+	u, err := url.Parse(*next)
+	if err != nil {
+		return "", err
+	}
+	q := u.Query()
+	return q.Get("next_url"), nil
 }
