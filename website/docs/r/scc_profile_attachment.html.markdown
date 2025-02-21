@@ -83,7 +83,7 @@ resource "ibm_scc_profile_attachment" "cis-profile-attachment-instance" {
 ```
 Making a profile attachment using an IBM `account_id`:
 
-**NOTE** This is considered legacy support and will be deprecated soon.
+**NOTE**: This is considered legacy support and will be deprecated soon.
 
 ```hcl
 resource "ibm_scc_profile_attachment" "scc_profile_attachment_instance" {
