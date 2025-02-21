@@ -958,7 +958,7 @@ func ResourceIbmCodeEngineJobJobPatchAsPatch(patchVals *codeenginev2.JobPatch, d
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["run_env_variables"] = nil
 	} else if exists && patch["run_env_variables"] != nil {
-		ResourceIbmCodeEngineJobEnvVarPrototypeAsPatch(patch["run_env_variables"].([]interface{})[0].(map[string]interface{}), d)
+		ResourceIbmCodeEngineJobEnvVarPrototypeAsPatch(patch["run_env_variables"].(map[string]interface{}), d)
 	}
 	path = "run_mode"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
@@ -972,7 +972,7 @@ func ResourceIbmCodeEngineJobJobPatchAsPatch(patchVals *codeenginev2.JobPatch, d
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["run_volume_mounts"] = nil
 	} else if exists && patch["run_volume_mounts"] != nil {
-		ResourceIbmCodeEngineJobVolumeMountPrototypeAsPatch(patch["run_volume_mounts"].([]interface{})[0].(map[string]interface{}), d)
+		ResourceIbmCodeEngineJobVolumeMountPrototypeAsPatch(patch["run_volume_mounts"].(map[string]interface{}), d)
 	}
 	path = "scale_array_spec"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
