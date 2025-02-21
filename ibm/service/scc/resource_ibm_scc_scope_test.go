@@ -31,7 +31,7 @@ func TestAccIbmSccScopeBasic(t *testing.T) {
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMSccScopeDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMSccScopeConfig(instanceID, name, description, environment, scopeID, resGrpID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMSccScopeExists("ibm_scc_scope.scc_scope_instance", conf),
@@ -58,7 +58,7 @@ func TestAccIbmSccScopeAllArgs(t *testing.T) {
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMSccScopeDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMSccScopeConfig(instanceID, name, description, environment, scopeID, resGrpID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMSccScopeExists("ibm_scc_scope.scc_scope_instance", conf),
@@ -68,7 +68,7 @@ func TestAccIbmSccScopeAllArgs(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_scc_scope.scc_scope_instance", "environment", environment),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMSccScopeConfig(instanceID, nameUpdate, descriptionUpdate, environment, scopeID, resGrpID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_scc_scope.scc_scope_instance", "instance_id", instanceID),
@@ -77,7 +77,7 @@ func TestAccIbmSccScopeAllArgs(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_scc_scope.scc_scope_instance", "environment", environment),
 				),
 			},
-			resource.TestStep{
+			{
 				ResourceName:      "ibm_scc_scope.scc_scope_instance",
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -88,26 +88,24 @@ func TestAccIbmSccScopeAllArgs(t *testing.T) {
 
 func testAccCheckIBMSccScopeConfig(instanceID string, name string, description string, environment string, scopeId string, resource_group_id string) string {
 	return fmt.Sprintf(`
-
 		resource "ibm_scc_scope" "scc_scope_instance" {
 			instance_id = "%s"
 			name = "%s"
 			description = "%s"
 			environment = "%s"
 			properties  = {
-        scope_id    = "%s"
-        scope_type  = "account"
+				scope_id    = "%s"
+				scope_type  = "account"
 			}
-      exclusions {
-        scope_id   = "%s"
-        scope_type = "account.resource_group"
-      }
+			exclusions {
+				scope_id   = "%s"
+				scope_type = "account.resource_group"
+			}
 		}
 	`, instanceID, name, description, environment, scopeId, resource_group_id)
 }
 
 func testAccCheckIBMSccScopeExists(n string, obj securityandcompliancecenterapiv3.Scope) resource.TestCheckFunc {
-
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
