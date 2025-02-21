@@ -898,6 +898,8 @@ func Provider() *schema.Provider {
 			"ibm_scc_provider_type_collection": scc.DataSourceIbmSccProviderTypeCollection(),
 			"ibm_scc_provider_type_instance":   scc.DataSourceIbmSccProviderTypeInstance(),
 			"ibm_scc_latest_reports":           scc.DataSourceIbmSccLatestReports(),
+			"ibm_scc_scope":                    scc.DataSourceIbmSccScope(),
+			"ibm_scc_scope_collection":         scc.DataSourceIbmSccScopeCollection(),
 			"ibm_scc_report":                   scc.DataSourceIbmSccReport(),
 			"ibm_scc_report_controls":          scc.DataSourceIbmSccReportControls(),
 			"ibm_scc_report_evaluations":       scc.DataSourceIbmSccReportEvaluations(),
@@ -1569,6 +1571,7 @@ func Provider() *schema.Provider {
 			"ibm_scc_profile":                scc.ResourceIbmSccProfile(),
 			"ibm_scc_profile_attachment":     scc.ResourceIbmSccProfileAttachment(),
 			"ibm_scc_provider_type_instance": scc.ResourceIbmSccProviderTypeInstance(),
+			"ibm_scc_scope":                  scc.ResourceIbmSccScope(),
 
 			// Security Services
 			"ibm_pag_instance": pag.ResourceIBMPag(),
@@ -2080,6 +2083,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_scc_profile":                scc.ResourceIbmSccProfileValidator(),
 				"ibm_scc_profile_attachment":     scc.ResourceIbmSccProfileAttachmentValidator(),
 				"ibm_scc_provider_type_instance": scc.ResourceIbmSccProviderTypeInstanceValidator(),
+				"ibm_scc_scope":                  scc.ResourceIbmSccScopeValidator(),
 
 				// Added for Toolchains
 				"ibm_cd_toolchain":                         cdtoolchain.ResourceIBMCdToolchainValidator(),

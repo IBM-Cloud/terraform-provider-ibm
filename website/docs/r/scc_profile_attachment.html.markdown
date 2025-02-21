@@ -14,6 +14,77 @@ Create, update, and delete profile attachments with this resource.
 
 ## Example Usage
 
+Making a profile attachment using an IBM `ibm_scc_scope`:
+```hcl
+## Local Variables
+locals {
+  scc_instance_id               = "f6939361-4f72-47a3-ae5e-0ee77a90ee31"
+  ibm_cloud_sample_profile_id   = "623ee808-2fcd-4700-8149-cc5500512ad7"
+}
+
+## Datasources
+
+# datasource to obtain information of a profile
+data "ibm_scc_profile" "sample_profile_id" {
+  instance_id = local.scc_instance_id
+  profile_id  = local.ibm_cloud_sample_profile_id
+}
+
+## Resources
+
+# resource to create a scope targeting an account
+resource "ibm_scc_scope" "scc_personal_account_scope" {
+  description = "An scope targeting an account, made using Terraform"
+  environment = "ibm-cloud"
+  name        = "Terraform sample resource group scope"
+  properties  = {
+    scope_type  = "account"
+    scope_id    = "7379262615a74cb3b9f346408a3e1694"
+  }
+  instance_id = local.scc_instance_id
+}
+
+# resource to create a profile attachment to a predefined profile
+resource "ibm_scc_profile_attachment" "cis-profile-attachment-instance" {
+  instance_id = local.scc_instance_id
+  name        = "tf-demo-profile-attach-demo"
+  description = "Sample Profile attachment using Terraform"
+  profile_id  = local.ibm_cloud_sample_profile_id
+
+  schedule = "every_7_days"
+  status   = "disabled"
+
+  # scope created by the resource ibm_scc_scope
+  scope {
+    id = ibm_scc_scope.scc_personal_account_scope.scope_id
+  }
+
+  # dynamically use the default parameters of a profile if there are any
+  dynamic "attachment_parameters" { 
+   for_each = data.ibm_scc_profile.sample_profile_id.default_parameters
+   content {
+      parameter_name         = attachment_parameters.value["parameter_name"]
+      parameter_display_name = attachment_parameters.value["parameter_display_name"]
+      parameter_type         = attachment_parameters.value["parameter_type"]
+      parameter_value        = attachment_parameters.value["parameter_default_value"]
+      assessment_type        = attachment_parameters.value["assessment_type"]
+      assessment_id          = attachment_parameters.value["assessment_id"]
+    }
+  }
+
+  notifications {
+    enabled = false
+    controls {
+      failed_control_ids = []
+      threshold_limit    = 10
+    }
+  }
+}
+```
+Making a profile attachment using an IBM `account_id`:
+
+**NOTE**: This is considered legacy support and will be deprecated soon.
+
 ```hcl
 resource "ibm_scc_profile_attachment" "scc_profile_attachment_instance" {
   profile_id = "a0bd1ee2-1ed3-407e-a2f4-ce7a1a38f54d"
@@ -58,20 +129,25 @@ You can specify the following arguments for this resource.
 * `profile_id` - (Required, Forces new resource, String) The profile ID.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/`.
 * `scope` - (List) The scope payload for the multi cloud feature.
-  * Constraints: The maximum length is `8` items. The minimum length is `0` items.
-Nested schema for **scope**:
+  * Constraints: 
+    * The maximum length is `8` items. The minimum length is `0` items.
+  
+  Nested schema for **scope**:
 	* `environment` - (String) The environment that relates to this scope.
 	  * Constraints: The maximum length is `64` characters. The minimum length is `2` characters. The value must match regular expression `/[A-Za-z0-9]+/`.
 	* `properties` - (List) The properties supported for scoping by this environment.
 	  * Constraints: The maximum length is `8` items. The minimum length is `0` items.
-	Nested schema for **properties**:
-        -> NOTE: Defining the `scope_type` value must be either `account`, `account.resource_group`, `enterprise`, `enterprise.account` and `enterprise.account_group`."
-        -> NOTE: Defining the `scope_id` value will be the id of the `scope_type`(ex. `enterprise.account_group` will be the ID of the account_group within an enterprise)
+    Nested schema for **properties**:
+      ~> NOTE: Defining the `scope_type` value must be either `account`, `account.resource_group`, `enterprise`, `enterprise.account` and `enterprise.account_group`."
+      ~> NOTE: Defining the `scope_id` value will be the id of the `scope_type`(ex. `enterprise.account_group` will be the ID of the account_group within an enterprise)
 		* `name` - (Required, String) The name of the property.
 		  * Constraints: The maximum length is `64` characters. The minimum length is `2` characters. The value must match regular expression `/[A-Za-z0-9]+/`.
 		* `value` - (Required, String) The value of the property.
-		  * Constraints: The maximum length is `64` characters. The minimum length is `2` characters. The value must match regular expression `/[A-Za-z0-9]+/`.
+		  * Constraints: The maximum length is `64` characters. The minimum length is `2` characters. The value must match regular expression `/[A-Za-z0-9]+/`.;
+  * `id` - (Optional, String) The ID of an `ibm_scc_scope` that is prexisiting
+    * Constraints: `id` must not be used with `environment` and `properties`
 * `notifications` - (Required, List) The configuration for setting up notifications if a scan fails. Requires event_notifications from the instance settings to be setup.
+
 Nested schema for **notifications**:
 	* `controls` - (List) The failed controls.
 	Nested schema for **controls**:
@@ -79,7 +155,8 @@ Nested schema for **notifications**:
 		  * Constraints: The list items must match regular expression `/^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-4[0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$|^$/`. The maximum length is `512` items. The minimum length is `0` items.
 		* `threshold_limit` - (Integer) The threshold limit.
 	* `enabled` - (Boolean) The flag to enable notifications. Set to true to enabled notifications, false to disable
-* `attachment_parameters` - (List) The attachment parameters required from the profile that the attachment is targeting. All parameters listed from the profile needs to be set.
+* `attachment_parameters` - (List) The attachment parameters required from the profile that the attachment is targeting. All parameters listed from the profile needs to be set. **NOTE**: All `attachment_parameters` must be defined; use `datasource.ibm_scc_profile` to see all necessary parameters.
+
 Nested schema for **attachment_parameters**:
     * `parameter_name` - (Required, String) The name of the parameter to target.
     * `parameter_display_name` - (Required, String) The display name of the parameter shown in the UI.
