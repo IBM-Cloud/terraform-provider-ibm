@@ -19,7 +19,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go/backuprecoveryv1"
+	"github.com/IBM/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 )
 
 func DataSourceIbmBackupRecoveryConnectorLogs() *schema.Resource {
@@ -31,7 +31,7 @@ func DataSourceIbmBackupRecoveryConnectorLogs() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
-				Description: "Token required to authenticate to the connector",
+				Description: "Token required to authenticate to the connector. Token can be obtained using ibm_backup_recovery_connector_access_token resource",
 			},
 			"connector_logs": &schema.Schema{
 				Type:        schema.TypeList,

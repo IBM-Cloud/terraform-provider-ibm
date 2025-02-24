@@ -132,7 +132,6 @@ import (
 	"github.com/IBM/platform-services-go-sdk/partnercentersellv1"
 	scc "github.com/IBM/scc-go-sdk/v5/securityandcompliancecenterapiv3"
 	"github.com/IBM/secrets-manager-go-sdk/v2/secretsmanagerv2"
-	backupRecoveryConnector "github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 )
 
 // RetryAPIDelay - retry api delay
@@ -244,7 +243,7 @@ type ClientSession interface {
 	ResourceControllerAPI() (controller.ResourceControllerAPI, error)
 	ResourceControllerAPIV2() (controllerv2.ResourceControllerAPIV2, error)
 	BackupRecoveryV1() (*backuprecoveryv1.BackupRecoveryV1, error)
-	BackupRecoveryV1Connector() (*backupRecoveryConnector.BackupRecoveryV1Connector, error)
+	BackupRecoveryV1Connector() (*backuprecoveryv1.BackupRecoveryV1Connector, error)
 	IBMCloudLogsRoutingV0() (*ibmcloudlogsroutingv0.IBMCloudLogsRoutingV0, error)
 	SoftLayerSession() *slsession.Session
 	IBMPISession() (*ibmpisession.IBMPISession, error)
@@ -576,7 +575,7 @@ type clientSession struct {
 	backupRecoveryClient    *backuprecoveryv1.BackupRecoveryV1
 	backupRecoveryClientErr error
 
-	backupRecoveryConnectorClient    *backupRecoveryConnector.BackupRecoveryV1Connector
+	backupRecoveryConnectorClient    *backuprecoveryv1.BackupRecoveryV1Connector
 	backupRecoveryConnectorClientErr error
 
 	secretsManagerClient    *secretsmanagerv2.SecretsManagerV2
@@ -1169,7 +1168,7 @@ func (session clientSession) BackupRecoveryV1() (*backuprecoveryv1.BackupRecover
 	return session.backupRecoveryClient, session.backupRecoveryClientErr
 }
 
-func (session clientSession) BackupRecoveryV1Connector() (*backupRecoveryConnector.BackupRecoveryV1Connector, error) {
+func (session clientSession) BackupRecoveryV1Connector() (*backuprecoveryv1.BackupRecoveryV1Connector, error) {
 	return session.backupRecoveryConnectorClient, session.backupRecoveryConnectorClientErr
 }
 
@@ -1657,13 +1656,13 @@ func (c *Config) ClientSession() (interface{}, error) {
 	var backupRecoveryConnectorClientAuthenticator core.Authenticator
 	backupRecoveryConnectorClientAuthenticator = &core.NoAuthAuthenticator{}
 
-	backupRecoveryConnectorClientOptions := &backupRecoveryConnector.BackupRecoveryV1ConnectorOptions{
+	backupRecoveryConnectorClientOptions := &backuprecoveryv1.BackupRecoveryV1ConnectorOptions{
 		ConnectorURL:  EnvFallBack([]string{"IBMCLOUD_BACKUP_RECOVERY_CONNECTOR_ENDPOINT"}, backupRecoveryConnectorURL),
 		Authenticator: backupRecoveryConnectorClientAuthenticator,
 	}
 
 	// Construct the service connector client.
-	session.backupRecoveryConnectorClient, err = backupRecoveryConnector.NewBackupRecoveryV1Connector(backupRecoveryConnectorClientOptions)
+	session.backupRecoveryConnectorClient, err = backuprecoveryv1.NewBackupRecoveryV1Connector(backupRecoveryConnectorClientOptions)
 	tr := &gohttp.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}
 	session.backupRecoveryConnectorClient.Service.Client.Transport = tr
 	if err == nil {

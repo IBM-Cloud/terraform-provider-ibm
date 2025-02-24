@@ -65,7 +65,6 @@ require (
 	github.com/rook/rook/pkg/apis v0.0.0-20231204200402-5287527732f7
 	github.com/softlayer/softlayer-go v1.0.3
 	github.com/stretchr/testify v1.10.0
-	github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go v1.0.2-0.20250127145751-be643e99205b
 	golang.org/x/crypto v0.32.0
 	gopkg.in/yaml.v3 v3.0.1
 	gotest.tools v2.2.0+incompatible
