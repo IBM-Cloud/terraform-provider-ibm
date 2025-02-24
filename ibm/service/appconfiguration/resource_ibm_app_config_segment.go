@@ -98,14 +98,14 @@ func resourceIbmIbmAppConfigSegmentCreate(d *schema.ResourceData, meta interface
 	options.SetName(d.Get("name").(string))
 	options.SetSegmentID(d.Get("segment_id").(string))
 
-	if _, ok := d.GetOk("description"); ok {
+	if _, ok := GetFieldExists(d, "description"); ok {
 		options.SetDescription(d.Get("description").(string))
 	}
-	if _, ok := d.GetOk("tags"); ok {
+	if _, ok := GetFieldExists(d, "tags"); ok {
 		options.SetTags(d.Get("tags").(string))
 	}
 
-	if _, ok := d.GetOk("rules"); ok {
+	if _, ok := GetFieldExists(d, "rules"); ok {
 		var segmentRules []appconfigurationv1.Rule
 		for _, e := range d.Get("rules").([]interface{}) {
 			value := e.(map[string]interface{})
@@ -242,16 +242,16 @@ func resourceIbmIbmAppConfigSegmentUpdate(d *schema.ResourceData, meta interface
 
 	if ok := d.HasChanges("name", "description", "tags", "rules", "attribute_name", "operator", "values"); ok {
 
-		if _, ok := d.GetOk("name"); ok {
+		if _, ok := GetFieldExists(d, "name"); ok {
 			options.SetName(d.Get("name").(string))
 		}
-		if _, ok := d.GetOk("description"); ok {
+		if _, ok := GetFieldExists(d, "description"); ok {
 			options.SetDescription(d.Get("description").(string))
 		}
-		if _, ok := d.GetOk("tags"); ok {
+		if _, ok := GetFieldExists(d, "tags"); ok {
 			options.SetTags(d.Get("tags").(string))
 		}
-		if _, ok := d.GetOk("rules"); ok {
+		if _, ok := GetFieldExists(d, "rules"); ok {
 			var segmentRules []appconfigurationv1.Rule
 			for _, e := range d.Get("rules").([]interface{}) {
 				value := e.(map[string]interface{})

@@ -1,8 +1,8 @@
-// Copyright IBM Corp. 2024 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.97.0-0e90eab1-20241120-170029
+ * IBM OpenAPI Terraform Generator Version: 3.99.1-daeb6e46-20250131-173156
  */
 
 package partnercentersell
@@ -192,22 +192,10 @@ func ResourceIbmOnboardingCatalogProduct() *schema.Resource {
 																			Optional:    true,
 																			Description: "The description about the features of the product.",
 																		},
-																		"description_i18n": &schema.Schema{
-																			Type:        schema.TypeMap,
-																			Optional:    true,
-																			Description: "The description about the features of the product in translation.",
-																			Elem:        &schema.Schema{Type: schema.TypeString},
-																		},
 																		"title": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
 																			Description: "The descriptive title for the feature.",
-																		},
-																		"title_i18n": &schema.Schema{
-																			Type:        schema.TypeMap,
-																			Optional:    true,
-																			Description: "The descriptive title for the feature in translation.",
-																			Elem:        &schema.Schema{Type: schema.TypeString},
 																		},
 																	},
 																},
@@ -222,12 +210,6 @@ func ResourceIbmOnboardingCatalogProduct() *schema.Resource {
 																			Type:        schema.TypeString,
 																			Required:    true,
 																			Description: "Provide a descriptive caption that indicates what the media illustrates. This caption is displayed in the catalog.",
-																		},
-																		"caption_i18n": &schema.Schema{
-																			Type:        schema.TypeMap,
-																			Optional:    true,
-																			Description: "The brief explanation for your images and videos in translation.",
-																			Elem:        &schema.Schema{Type: schema.TypeString},
 																		},
 																		"thumbnail": &schema.Schema{
 																			Type:        schema.TypeString,
@@ -247,10 +229,29 @@ func ResourceIbmOnboardingCatalogProduct() *schema.Resource {
 																	},
 																},
 															},
-															"embeddable_dashboard": &schema.Schema{
-																Type:        schema.TypeString,
+															"navigation_items": &schema.Schema{
+																Type:        schema.TypeList,
 																Optional:    true,
-																Description: "On a service kind record this controls if your service has a custom dashboard or Resource Detail page.",
+																Description: "List of custom navigation panel.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"id": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Description: "Id of custom navigation panel.",
+																		},
+																		"url": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Description: "Url for custom navigation panel.",
+																		},
+																		"label": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Description: "Url for custom navigation panel.",
+																		},
+																	},
+																},
 															},
 														},
 													},
@@ -313,6 +314,21 @@ func ResourceIbmOnboardingCatalogProduct() *schema.Resource {
 										Optional:    true,
 										Description: "When the objects are listed side-by-side, this value controls the ordering.",
 									},
+									"embeddable_dashboard": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "Send the service details page, skipping the service details page, go directly to the dashboard, known values launch, drilldown.",
+									},
+									"accessible_during_provision": &schema.Schema{
+										Type:        schema.TypeBool,
+										Optional:    true,
+										Description: "if your service is accessible during provisioning.",
+									},
+									"primary_offering_id": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "In case of group tile, primary used by legacy IAS service.",
+									},
 								},
 							},
 						},
@@ -335,18 +351,561 @@ func ResourceIbmOnboardingCatalogProduct() *schema.Resource {
 									},
 									"bindable": &schema.Schema{
 										Type:        schema.TypeBool,
-										Optional:    true,
+										Computed:    true,
 										Description: "Deprecated. Controls the Connections tab on the Resource Details page.",
 									},
 									"plan_updateable": &schema.Schema{
 										Type:        schema.TypeBool,
-										Optional:    true,
+										Computed:    true,
 										Description: "Indicates plan update support and controls the Plan tab on the Resource Details page.",
 									},
 									"service_key_supported": &schema.Schema{
 										Type:        schema.TypeBool,
 										Optional:    true,
 										Description: "Indicates service credentials support and controls the Service Credential tab on Resource Details page.",
+									},
+									"unique_api_key": &schema.Schema{
+										Type:        schema.TypeBool,
+										Optional:    true,
+										Sensitive:   true,
+										Description: "Indicates whether the deployment uses a unique API key or not.",
+									},
+									"async_provisioning_supported": &schema.Schema{
+										Type:        schema.TypeBool,
+										Optional:    true,
+										Description: "Used by catalog to tell if it is an async provisioning service or not.",
+									},
+									"async_unprovisioning_supported": &schema.Schema{
+										Type:        schema.TypeBool,
+										Optional:    true,
+										Description: "Used by catalog to tell if it is an async unprovisioning service or not.",
+									},
+									"custom_create_page_hybrid_enabled": &schema.Schema{
+										Type:        schema.TypeBool,
+										Optional:    true,
+										Description: "Controls if custom create page hybrid is enabled or not. Use of this flag is no longer recommended.",
+									},
+									"parameters": &schema.Schema{
+										Type:     schema.TypeList,
+										Optional: true,
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"displayname": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Description: "The display name for custom service parameters.",
+												},
+												"name": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Description: "The key of the parameter.",
+												},
+												"type": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Description: "The type of custom service parameters.",
+												},
+												"options": &schema.Schema{
+													Type:     schema.TypeList,
+													Optional: true,
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"displayname": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Description: "The display name for custom service parameters.",
+															},
+															"value": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Description: "The value for custom service parameters.",
+															},
+															"i18n": &schema.Schema{
+																Type:        schema.TypeList,
+																MaxItems:    1,
+																Optional:    true,
+																Description: "The description for the object.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"en": &schema.Schema{
+																			Type:        schema.TypeList,
+																			MaxItems:    1,
+																			Optional:    true,
+																			Description: "The translations for custom service parameter display name and description.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"displayname": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Optional:    true,
+																						Description: "The translations for custom service parameter display name.",
+																					},
+																					"description": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Optional:    true,
+																						Description: "The translations for custom service parameter description.",
+																					},
+																				},
+																			},
+																		},
+																		"de": &schema.Schema{
+																			Type:        schema.TypeList,
+																			MaxItems:    1,
+																			Optional:    true,
+																			Description: "The translations for custom service parameter display name and description.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"displayname": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Optional:    true,
+																						Description: "The translations for custom service parameter display name.",
+																					},
+																					"description": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Optional:    true,
+																						Description: "The translations for custom service parameter description.",
+																					},
+																				},
+																			},
+																		},
+																		"es": &schema.Schema{
+																			Type:        schema.TypeList,
+																			MaxItems:    1,
+																			Optional:    true,
+																			Description: "The translations for custom service parameter display name and description.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"displayname": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Optional:    true,
+																						Description: "The translations for custom service parameter display name.",
+																					},
+																					"description": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Optional:    true,
+																						Description: "The translations for custom service parameter description.",
+																					},
+																				},
+																			},
+																		},
+																		"fr": &schema.Schema{
+																			Type:        schema.TypeList,
+																			MaxItems:    1,
+																			Optional:    true,
+																			Description: "The translations for custom service parameter display name and description.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"displayname": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Optional:    true,
+																						Description: "The translations for custom service parameter display name.",
+																					},
+																					"description": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Optional:    true,
+																						Description: "The translations for custom service parameter description.",
+																					},
+																				},
+																			},
+																		},
+																		"it": &schema.Schema{
+																			Type:        schema.TypeList,
+																			MaxItems:    1,
+																			Optional:    true,
+																			Description: "The translations for custom service parameter display name and description.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"displayname": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Optional:    true,
+																						Description: "The translations for custom service parameter display name.",
+																					},
+																					"description": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Optional:    true,
+																						Description: "The translations for custom service parameter description.",
+																					},
+																				},
+																			},
+																		},
+																		"ja": &schema.Schema{
+																			Type:        schema.TypeList,
+																			MaxItems:    1,
+																			Optional:    true,
+																			Description: "The translations for custom service parameter display name and description.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"displayname": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Optional:    true,
+																						Description: "The translations for custom service parameter display name.",
+																					},
+																					"description": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Optional:    true,
+																						Description: "The translations for custom service parameter description.",
+																					},
+																				},
+																			},
+																		},
+																		"ko": &schema.Schema{
+																			Type:        schema.TypeList,
+																			MaxItems:    1,
+																			Optional:    true,
+																			Description: "The translations for custom service parameter display name and description.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"displayname": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Optional:    true,
+																						Description: "The translations for custom service parameter display name.",
+																					},
+																					"description": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Optional:    true,
+																						Description: "The translations for custom service parameter description.",
+																					},
+																				},
+																			},
+																		},
+																		"pt_br": &schema.Schema{
+																			Type:        schema.TypeList,
+																			MaxItems:    1,
+																			Optional:    true,
+																			Description: "The translations for custom service parameter display name and description.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"displayname": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Optional:    true,
+																						Description: "The translations for custom service parameter display name.",
+																					},
+																					"description": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Optional:    true,
+																						Description: "The translations for custom service parameter description.",
+																					},
+																				},
+																			},
+																		},
+																		"zh_tw": &schema.Schema{
+																			Type:        schema.TypeList,
+																			MaxItems:    1,
+																			Optional:    true,
+																			Description: "The translations for custom service parameter display name and description.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"displayname": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Optional:    true,
+																						Description: "The translations for custom service parameter display name.",
+																					},
+																					"description": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Optional:    true,
+																						Description: "The translations for custom service parameter description.",
+																					},
+																				},
+																			},
+																		},
+																		"zh_cn": &schema.Schema{
+																			Type:        schema.TypeList,
+																			MaxItems:    1,
+																			Optional:    true,
+																			Description: "The translations for custom service parameter display name and description.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"displayname": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Optional:    true,
+																						Description: "The translations for custom service parameter display name.",
+																					},
+																					"description": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Optional:    true,
+																						Description: "The translations for custom service parameter description.",
+																					},
+																				},
+																			},
+																		},
+																	},
+																},
+															},
+														},
+													},
+												},
+												"value": &schema.Schema{
+													Type:     schema.TypeList,
+													Optional: true,
+													Elem:     &schema.Schema{Type: schema.TypeString},
+												},
+												"layout": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Description: "Specifies the layout of check box or radio input types. When unspecified, the default layout is horizontal.",
+												},
+												"associations": &schema.Schema{
+													Type:        schema.TypeMap,
+													Optional:    true,
+													Description: "A JSON structure to describe the interactions with pricing plans and/or other custom parameters.",
+													Elem:        &schema.Schema{Type: schema.TypeString},
+												},
+												"validation_url": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Description: "The validation URL for custom service parameters.",
+												},
+												"options_url": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Description: "The options URL for custom service parameters.",
+												},
+												"invalidmessage": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Description: "The message that appears when the content of the text box is invalid.",
+												},
+												"description": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Description: "The description of the parameter that is displayed to help users with the value of the parameter.",
+												},
+												"required": &schema.Schema{
+													Type:        schema.TypeBool,
+													Optional:    true,
+													Description: "A boolean value that indicates whether the parameter must be entered in the IBM Cloud user interface.",
+												},
+												"pattern": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Description: "A regular expression that the value is checked against.",
+												},
+												"placeholder": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Description: "The placeholder text for custom parameters.",
+												},
+												"readonly": &schema.Schema{
+													Type:        schema.TypeBool,
+													Optional:    true,
+													Description: "A boolean value that indicates whether the value of the parameter is displayed only and cannot be changed by users. The default value is false.",
+												},
+												"hidden": &schema.Schema{
+													Type:        schema.TypeBool,
+													Optional:    true,
+													Description: "Indicates whether the custom parameters is hidden required or not.",
+												},
+												"i18n": &schema.Schema{
+													Type:        schema.TypeList,
+													MaxItems:    1,
+													Optional:    true,
+													Description: "The description for the object.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"en": &schema.Schema{
+																Type:        schema.TypeList,
+																MaxItems:    1,
+																Optional:    true,
+																Description: "The translations for custom service parameter display name and description.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"displayname": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Description: "The translations for custom service parameter display name.",
+																		},
+																		"description": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Description: "The translations for custom service parameter description.",
+																		},
+																	},
+																},
+															},
+															"de": &schema.Schema{
+																Type:        schema.TypeList,
+																MaxItems:    1,
+																Optional:    true,
+																Description: "The translations for custom service parameter display name and description.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"displayname": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Description: "The translations for custom service parameter display name.",
+																		},
+																		"description": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Description: "The translations for custom service parameter description.",
+																		},
+																	},
+																},
+															},
+															"es": &schema.Schema{
+																Type:        schema.TypeList,
+																MaxItems:    1,
+																Optional:    true,
+																Description: "The translations for custom service parameter display name and description.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"displayname": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Description: "The translations for custom service parameter display name.",
+																		},
+																		"description": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Description: "The translations for custom service parameter description.",
+																		},
+																	},
+																},
+															},
+															"fr": &schema.Schema{
+																Type:        schema.TypeList,
+																MaxItems:    1,
+																Optional:    true,
+																Description: "The translations for custom service parameter display name and description.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"displayname": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Description: "The translations for custom service parameter display name.",
+																		},
+																		"description": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Description: "The translations for custom service parameter description.",
+																		},
+																	},
+																},
+															},
+															"it": &schema.Schema{
+																Type:        schema.TypeList,
+																MaxItems:    1,
+																Optional:    true,
+																Description: "The translations for custom service parameter display name and description.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"displayname": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Description: "The translations for custom service parameter display name.",
+																		},
+																		"description": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Description: "The translations for custom service parameter description.",
+																		},
+																	},
+																},
+															},
+															"ja": &schema.Schema{
+																Type:        schema.TypeList,
+																MaxItems:    1,
+																Optional:    true,
+																Description: "The translations for custom service parameter display name and description.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"displayname": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Description: "The translations for custom service parameter display name.",
+																		},
+																		"description": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Description: "The translations for custom service parameter description.",
+																		},
+																	},
+																},
+															},
+															"ko": &schema.Schema{
+																Type:        schema.TypeList,
+																MaxItems:    1,
+																Optional:    true,
+																Description: "The translations for custom service parameter display name and description.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"displayname": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Description: "The translations for custom service parameter display name.",
+																		},
+																		"description": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Description: "The translations for custom service parameter description.",
+																		},
+																	},
+																},
+															},
+															"pt_br": &schema.Schema{
+																Type:        schema.TypeList,
+																MaxItems:    1,
+																Optional:    true,
+																Description: "The translations for custom service parameter display name and description.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"displayname": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Description: "The translations for custom service parameter display name.",
+																		},
+																		"description": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Description: "The translations for custom service parameter description.",
+																		},
+																	},
+																},
+															},
+															"zh_tw": &schema.Schema{
+																Type:        schema.TypeList,
+																MaxItems:    1,
+																Optional:    true,
+																Description: "The translations for custom service parameter display name and description.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"displayname": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Description: "The translations for custom service parameter display name.",
+																		},
+																		"description": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Description: "The translations for custom service parameter description.",
+																		},
+																	},
+																},
+															},
+															"zh_cn": &schema.Schema{
+																Type:        schema.TypeList,
+																MaxItems:    1,
+																Optional:    true,
+																Description: "The translations for custom service parameter display name and description.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"displayname": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Description: "The translations for custom service parameter display name.",
+																		},
+																		"description": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Description: "The translations for custom service parameter description.",
+																		},
+																	},
+																},
+															},
+														},
+													},
+												},
+											},
+										},
 									},
 								},
 							},
@@ -598,10 +1157,26 @@ func ResourceIbmOnboardingCatalogProduct() *schema.Resource {
 					},
 				},
 			},
+			"geo_tags": &schema.Schema{
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+			},
+			"pricing_tags": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "A list of tags that carry information about the pricing information of your product.",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+			},
 			"url": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The global catalog URL of your product.",
+			},
+			"group": &schema.Schema{
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Flag for group tile legacy service.",
 			},
 			"catalog_product_id": &schema.Schema{
 				Type:        schema.TypeString,
@@ -638,14 +1213,14 @@ func ResourceIbmOnboardingCatalogProductValidator() *validate.ResourceValidator 
 			ValidateFunctionIdentifier: validate.ValidateRegexp,
 			Type:                       validate.TypeString,
 			Required:                   true,
-			Regexp:                     `^[a-z0-9\-.]+$`,
+			Regexp:                     `^[a-zA-Z0-9\-.]+$`,
 		},
 		validate.ValidateSchema{
 			Identifier:                 "kind",
 			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
 			Type:                       validate.TypeString,
 			Required:                   true,
-			AllowedValues:              "composite, platform_service, service",
+			AllowedValues:              "composite, iaas, platform_service, service",
 		},
 	)
 
@@ -697,7 +1272,7 @@ func resourceIbmOnboardingCatalogProductCreate(context context.Context, d *schem
 		createCatalogProductOptions.SetImages(imagesModel)
 	}
 	if _, ok := d.GetOk("metadata"); ok {
-		metadataModel, err := ResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadata(d.Get("metadata.0").(map[string]interface{}))
+		metadataModel, err := ResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadataPrototypePatch(d.Get("metadata.0").(map[string]interface{}))
 		if err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_onboarding_catalog_product", "create", "parse-metadata").GetDiag()
 		}
@@ -815,10 +1390,28 @@ func resourceIbmOnboardingCatalogProductRead(context context.Context, d *schema.
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_onboarding_catalog_product", "read", "set-metadata").GetDiag()
 		}
 	}
+	if !core.IsNil(globalCatalogProduct.GeoTags) {
+		if err = d.Set("geo_tags", globalCatalogProduct.GeoTags); err != nil {
+			err = fmt.Errorf("Error setting geo_tags: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_onboarding_catalog_product", "read", "set-geo_tags").GetDiag()
+		}
+	}
+	if !core.IsNil(globalCatalogProduct.PricingTags) {
+		if err = d.Set("pricing_tags", globalCatalogProduct.PricingTags); err != nil {
+			err = fmt.Errorf("Error setting pricing_tags: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_onboarding_catalog_product", "read", "set-pricing_tags").GetDiag()
+		}
+	}
 	if !core.IsNil(globalCatalogProduct.URL) {
 		if err = d.Set("url", globalCatalogProduct.URL); err != nil {
 			err = fmt.Errorf("Error setting url: %s", err)
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_onboarding_catalog_product", "read", "set-url").GetDiag()
+		}
+	}
+	if !core.IsNil(globalCatalogProduct.Group) {
+		if err = d.Set("group", globalCatalogProduct.Group); err != nil {
+			err = fmt.Errorf("Error setting group: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_onboarding_catalog_product", "read", "set-group").GetDiag()
 		}
 	}
 	if parts[0] != "" {
@@ -910,7 +1503,7 @@ func resourceIbmOnboardingCatalogProductUpdate(context context.Context, d *schem
 		hasChange = true
 	}
 	if d.HasChange("metadata") {
-		metadata, err := ResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadata(d.Get("metadata.0").(map[string]interface{}))
+		metadata, err := ResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadataPrototypePatch(d.Get("metadata.0").(map[string]interface{}))
 		if err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_onboarding_catalog_product", "update", "parse-metadata").GetDiag()
 		}
@@ -1013,20 +1606,20 @@ func ResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductImages(modelMap
 	return model, nil
 }
 
-func ResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadata(modelMap map[string]interface{}) (*partnercentersellv1.GlobalCatalogProductMetadata, error) {
-	model := &partnercentersellv1.GlobalCatalogProductMetadata{}
+func ResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadataPrototypePatch(modelMap map[string]interface{}) (*partnercentersellv1.GlobalCatalogProductMetadataPrototypePatch, error) {
+	model := &partnercentersellv1.GlobalCatalogProductMetadataPrototypePatch{}
 	if modelMap["rc_compatible"] != nil {
 		model.RcCompatible = core.BoolPtr(modelMap["rc_compatible"].(bool))
 	}
 	if modelMap["ui"] != nil && len(modelMap["ui"].([]interface{})) > 0 && modelMap["ui"].([]interface{})[0] != nil {
-		UiModel, err := ResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataUI(modelMap["ui"].([]interface{})[0].(map[string]interface{}))
+		UiModel, err := ResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadataUI(modelMap["ui"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
 		model.Ui = UiModel
 	}
 	if modelMap["service"] != nil && len(modelMap["service"].([]interface{})) > 0 && modelMap["service"].([]interface{})[0] != nil {
-		ServiceModel, err := ResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataService(modelMap["service"].([]interface{})[0].(map[string]interface{}))
+		ServiceModel, err := ResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadataServicePrototypePatch(modelMap["service"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -1042,8 +1635,8 @@ func ResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadata(modelM
 	return model, nil
 }
 
-func ResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataUI(modelMap map[string]interface{}) (*partnercentersellv1.GlobalCatalogMetadataUI, error) {
-	model := &partnercentersellv1.GlobalCatalogMetadataUI{}
+func ResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadataUI(modelMap map[string]interface{}) (*partnercentersellv1.GlobalCatalogProductMetadataUI, error) {
+	model := &partnercentersellv1.GlobalCatalogProductMetadataUI{}
 	if modelMap["strings"] != nil && len(modelMap["strings"].([]interface{})) > 0 && modelMap["strings"].([]interface{})[0] != nil {
 		StringsModel, err := ResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataUIStrings(modelMap["strings"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
@@ -1063,6 +1656,15 @@ func ResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataUI(modelMap ma
 	}
 	if modelMap["side_by_side_index"] != nil {
 		model.SideBySideIndex = core.Float64Ptr(modelMap["side_by_side_index"].(float64))
+	}
+	if modelMap["embeddable_dashboard"] != nil && modelMap["embeddable_dashboard"].(string) != "" {
+		model.EmbeddableDashboard = core.StringPtr(modelMap["embeddable_dashboard"].(string))
+	}
+	if modelMap["accessible_during_provision"] != nil {
+		model.AccessibleDuringProvision = core.BoolPtr(modelMap["accessible_during_provision"].(bool))
+	}
+	if modelMap["primary_offering_id"] != nil && modelMap["primary_offering_id"].(string) != "" {
+		model.PrimaryOfferingID = core.StringPtr(modelMap["primary_offering_id"].(string))
 	}
 	return model, nil
 }
@@ -1103,8 +1705,16 @@ func ResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataUIStringsConte
 		}
 		model.Media = media
 	}
-	if modelMap["embeddable_dashboard"] != nil && modelMap["embeddable_dashboard"].(string) != "" {
-		model.EmbeddableDashboard = core.StringPtr(modelMap["embeddable_dashboard"].(string))
+	if modelMap["navigation_items"] != nil {
+		navigationItems := []partnercentersellv1.GlobalCatalogMetadataUINavigationItem{}
+		for _, navigationItemsItem := range modelMap["navigation_items"].([]interface{}) {
+			navigationItemsItemModel, err := ResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataUINavigationItem(navigationItemsItem.(map[string]interface{}))
+			if err != nil {
+				return model, err
+			}
+			navigationItems = append(navigationItems, *navigationItemsItemModel)
+		}
+		model.NavigationItems = navigationItems
 	}
 	return model, nil
 }
@@ -1114,24 +1724,8 @@ func ResourceIbmOnboardingCatalogProductMapToCatalogHighlightItem(modelMap map[s
 	if modelMap["description"] != nil && modelMap["description"].(string) != "" {
 		model.Description = core.StringPtr(modelMap["description"].(string))
 	}
-	if modelMap["description_i18n"] != nil {
-		model.DescriptionI18n = make(map[string]string)
-		for key, value := range modelMap["description_i18n"].(map[string]interface{}) {
-			if str, ok := value.(string); ok {
-				model.DescriptionI18n[key] = str
-			}
-		}
-	}
 	if modelMap["title"] != nil && modelMap["title"].(string) != "" {
 		model.Title = core.StringPtr(modelMap["title"].(string))
-	}
-	if modelMap["title_i18n"] != nil {
-		model.TitleI18n = make(map[string]string)
-		for key, value := range modelMap["title_i18n"].(map[string]interface{}) {
-			if str, ok := value.(string); ok {
-				model.TitleI18n[key] = str
-			}
-		}
 	}
 	return model, nil
 }
@@ -1139,19 +1733,25 @@ func ResourceIbmOnboardingCatalogProductMapToCatalogHighlightItem(modelMap map[s
 func ResourceIbmOnboardingCatalogProductMapToCatalogProductMediaItem(modelMap map[string]interface{}) (*partnercentersellv1.CatalogProductMediaItem, error) {
 	model := &partnercentersellv1.CatalogProductMediaItem{}
 	model.Caption = core.StringPtr(modelMap["caption"].(string))
-	if modelMap["caption_i18n"] != nil {
-		model.CaptionI18n = make(map[string]string)
-		for key, value := range modelMap["caption_i18n"].(map[string]interface{}) {
-			if str, ok := value.(string); ok {
-				model.CaptionI18n[key] = str
-			}
-		}
-	}
 	if modelMap["thumbnail"] != nil && modelMap["thumbnail"].(string) != "" {
 		model.Thumbnail = core.StringPtr(modelMap["thumbnail"].(string))
 	}
 	model.Type = core.StringPtr(modelMap["type"].(string))
 	model.URL = core.StringPtr(modelMap["url"].(string))
+	return model, nil
+}
+
+func ResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataUINavigationItem(modelMap map[string]interface{}) (*partnercentersellv1.GlobalCatalogMetadataUINavigationItem, error) {
+	model := &partnercentersellv1.GlobalCatalogMetadataUINavigationItem{}
+	if modelMap["id"] != nil && modelMap["id"].(string) != "" {
+		model.ID = core.StringPtr(modelMap["id"].(string))
+	}
+	if modelMap["url"] != nil && modelMap["url"].(string) != "" {
+		model.URL = core.StringPtr(modelMap["url"].(string))
+	}
+	if modelMap["label"] != nil && modelMap["label"].(string) != "" {
+		model.Label = core.StringPtr(modelMap["label"].(string))
+	}
 	return model, nil
 }
 
@@ -1181,22 +1781,215 @@ func ResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataUIUrls(modelMa
 	return model, nil
 }
 
-func ResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataService(modelMap map[string]interface{}) (*partnercentersellv1.GlobalCatalogMetadataService, error) {
-	model := &partnercentersellv1.GlobalCatalogMetadataService{}
+func ResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadataServicePrototypePatch(modelMap map[string]interface{}) (*partnercentersellv1.GlobalCatalogProductMetadataServicePrototypePatch, error) {
+	model := &partnercentersellv1.GlobalCatalogProductMetadataServicePrototypePatch{}
 	if modelMap["rc_provisionable"] != nil {
 		model.RcProvisionable = core.BoolPtr(modelMap["rc_provisionable"].(bool))
 	}
 	if modelMap["iam_compatible"] != nil {
 		model.IamCompatible = core.BoolPtr(modelMap["iam_compatible"].(bool))
 	}
-	if modelMap["bindable"] != nil {
-		model.Bindable = core.BoolPtr(modelMap["bindable"].(bool))
-	}
-	if modelMap["plan_updateable"] != nil {
-		model.PlanUpdateable = core.BoolPtr(modelMap["plan_updateable"].(bool))
-	}
 	if modelMap["service_key_supported"] != nil {
 		model.ServiceKeySupported = core.BoolPtr(modelMap["service_key_supported"].(bool))
+	}
+	if modelMap["unique_api_key"] != nil {
+		model.UniqueApiKey = core.BoolPtr(modelMap["unique_api_key"].(bool))
+	}
+	if modelMap["async_provisioning_supported"] != nil {
+		model.AsyncProvisioningSupported = core.BoolPtr(modelMap["async_provisioning_supported"].(bool))
+	}
+	if modelMap["async_unprovisioning_supported"] != nil {
+		model.AsyncUnprovisioningSupported = core.BoolPtr(modelMap["async_unprovisioning_supported"].(bool))
+	}
+	if modelMap["custom_create_page_hybrid_enabled"] != nil {
+		model.CustomCreatePageHybridEnabled = core.BoolPtr(modelMap["custom_create_page_hybrid_enabled"].(bool))
+	}
+	if modelMap["parameters"] != nil {
+		parameters := []partnercentersellv1.GlobalCatalogMetadataServiceCustomParameters{}
+		for _, parametersItem := range modelMap["parameters"].([]interface{}) {
+			parametersItemModel, err := ResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataServiceCustomParameters(parametersItem.(map[string]interface{}))
+			if err != nil {
+				return model, err
+			}
+			parameters = append(parameters, *parametersItemModel)
+		}
+		model.Parameters = parameters
+	}
+	return model, nil
+}
+
+func ResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataServiceCustomParameters(modelMap map[string]interface{}) (*partnercentersellv1.GlobalCatalogMetadataServiceCustomParameters, error) {
+	model := &partnercentersellv1.GlobalCatalogMetadataServiceCustomParameters{}
+	if modelMap["displayname"] != nil && modelMap["displayname"].(string) != "" {
+		model.Displayname = core.StringPtr(modelMap["displayname"].(string))
+	}
+	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
+		model.Name = core.StringPtr(modelMap["name"].(string))
+	}
+	if modelMap["type"] != nil && modelMap["type"].(string) != "" {
+		model.Type = core.StringPtr(modelMap["type"].(string))
+	}
+	if modelMap["options"] != nil {
+		options := []partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersOptions{}
+		for _, optionsItem := range modelMap["options"].([]interface{}) {
+			optionsItemModel, err := ResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataServiceCustomParametersOptions(optionsItem.(map[string]interface{}))
+			if err != nil {
+				return model, err
+			}
+			options = append(options, *optionsItemModel)
+		}
+		model.Options = options
+	}
+	if modelMap["value"] != nil {
+		value := []string{}
+		for _, valueItem := range modelMap["value"].([]interface{}) {
+			value = append(value, valueItem.(string))
+		}
+		model.Value = value
+	}
+	if modelMap["layout"] != nil && modelMap["layout"].(string) != "" {
+		model.Layout = core.StringPtr(modelMap["layout"].(string))
+	}
+	if modelMap["associations"] != nil {
+		model.Associations = modelMap["associations"].(map[string]interface{})
+	}
+	if modelMap["validation_url"] != nil && modelMap["validation_url"].(string) != "" {
+		model.ValidationURL = core.StringPtr(modelMap["validation_url"].(string))
+	}
+	if modelMap["options_url"] != nil && modelMap["options_url"].(string) != "" {
+		model.OptionsURL = core.StringPtr(modelMap["options_url"].(string))
+	}
+	if modelMap["invalidmessage"] != nil && modelMap["invalidmessage"].(string) != "" {
+		model.Invalidmessage = core.StringPtr(modelMap["invalidmessage"].(string))
+	}
+	if modelMap["description"] != nil && modelMap["description"].(string) != "" {
+		model.Description = core.StringPtr(modelMap["description"].(string))
+	}
+	if modelMap["required"] != nil {
+		model.Required = core.BoolPtr(modelMap["required"].(bool))
+	}
+	if modelMap["pattern"] != nil && modelMap["pattern"].(string) != "" {
+		model.Pattern = core.StringPtr(modelMap["pattern"].(string))
+	}
+	if modelMap["placeholder"] != nil && modelMap["placeholder"].(string) != "" {
+		model.Placeholder = core.StringPtr(modelMap["placeholder"].(string))
+	}
+	if modelMap["readonly"] != nil {
+		model.Readonly = core.BoolPtr(modelMap["readonly"].(bool))
+	}
+	if modelMap["hidden"] != nil {
+		model.Hidden = core.BoolPtr(modelMap["hidden"].(bool))
+	}
+	if modelMap["i18n"] != nil && len(modelMap["i18n"].([]interface{})) > 0 {
+		I18nModel, err := ResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataServiceCustomParametersI18n(modelMap["i18n"].([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.I18n = I18nModel
+	}
+	return model, nil
+}
+
+func ResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataServiceCustomParametersOptions(modelMap map[string]interface{}) (*partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersOptions, error) {
+	model := &partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersOptions{}
+	if modelMap["displayname"] != nil && modelMap["displayname"].(string) != "" {
+		model.Displayname = core.StringPtr(modelMap["displayname"].(string))
+	}
+	if modelMap["value"] != nil && modelMap["value"].(string) != "" {
+		model.Value = core.StringPtr(modelMap["value"].(string))
+	}
+	if modelMap["i18n"] != nil && len(modelMap["i18n"].([]interface{})) > 0 {
+		I18nModel, err := ResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataServiceCustomParametersI18n(modelMap["i18n"].([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.I18n = I18nModel
+	}
+	return model, nil
+}
+
+func ResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataServiceCustomParametersI18n(modelMap map[string]interface{}) (*partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersI18n, error) {
+	model := &partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersI18n{}
+	if modelMap["en"] != nil && len(modelMap["en"].([]interface{})) > 0 {
+		EnModel, err := ResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataServiceCustomParametersI18nFields(modelMap["en"].([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.En = EnModel
+	}
+	if modelMap["de"] != nil && len(modelMap["de"].([]interface{})) > 0 {
+		DeModel, err := ResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataServiceCustomParametersI18nFields(modelMap["de"].([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.De = DeModel
+	}
+	if modelMap["es"] != nil && len(modelMap["es"].([]interface{})) > 0 {
+		EsModel, err := ResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataServiceCustomParametersI18nFields(modelMap["es"].([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.Es = EsModel
+	}
+	if modelMap["fr"] != nil && len(modelMap["fr"].([]interface{})) > 0 {
+		FrModel, err := ResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataServiceCustomParametersI18nFields(modelMap["fr"].([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.Fr = FrModel
+	}
+	if modelMap["it"] != nil && len(modelMap["it"].([]interface{})) > 0 {
+		ItModel, err := ResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataServiceCustomParametersI18nFields(modelMap["it"].([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.It = ItModel
+	}
+	if modelMap["ja"] != nil && len(modelMap["ja"].([]interface{})) > 0 {
+		JaModel, err := ResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataServiceCustomParametersI18nFields(modelMap["ja"].([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.Ja = JaModel
+	}
+	if modelMap["ko"] != nil && len(modelMap["ko"].([]interface{})) > 0 {
+		KoModel, err := ResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataServiceCustomParametersI18nFields(modelMap["ko"].([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.Ko = KoModel
+	}
+	if modelMap["pt_br"] != nil && len(modelMap["pt_br"].([]interface{})) > 0 {
+		PtBrModel, err := ResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataServiceCustomParametersI18nFields(modelMap["pt_br"].([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.PtBr = PtBrModel
+	}
+	if modelMap["zh_tw"] != nil && len(modelMap["zh_tw"].([]interface{})) > 0 {
+		ZhTwModel, err := ResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataServiceCustomParametersI18nFields(modelMap["zh_tw"].([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.ZhTw = ZhTwModel
+	}
+	if modelMap["zh_cn"] != nil && len(modelMap["zh_cn"].([]interface{})) > 0 {
+		ZhCnModel, err := ResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataServiceCustomParametersI18nFields(modelMap["zh_cn"].([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.ZhCn = ZhCnModel
+	}
+	return model, nil
+}
+
+func ResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataServiceCustomParametersI18nFields(modelMap map[string]interface{}) (*partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersI18nFields, error) {
+	model := &partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersI18nFields{}
+	if modelMap["displayname"] != nil && modelMap["displayname"].(string) != "" {
+		model.Displayname = core.StringPtr(modelMap["displayname"].(string))
+	}
+	if modelMap["description"] != nil && modelMap["description"].(string) != "" {
+		model.Description = core.StringPtr(modelMap["description"].(string))
 	}
 	return model, nil
 }
@@ -1467,14 +2260,14 @@ func ResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataToMap(model 
 		modelMap["rc_compatible"] = *model.RcCompatible
 	}
 	if model.Ui != nil {
-		uiMap, err := ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataUIToMap(model.Ui)
+		uiMap, err := ResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataUIToMap(model.Ui)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["ui"] = []map[string]interface{}{uiMap}
 	}
 	if model.Service != nil {
-		serviceMap, err := ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceToMap(model.Service)
+		serviceMap, err := ResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataServiceToMap(model.Service)
 		if err != nil {
 			return modelMap, err
 		}
@@ -1490,7 +2283,7 @@ func ResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataToMap(model 
 	return modelMap, nil
 }
 
-func ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataUIToMap(model *partnercentersellv1.GlobalCatalogMetadataUI) (map[string]interface{}, error) {
+func ResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataUIToMap(model *partnercentersellv1.GlobalCatalogProductMetadataUI) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Strings != nil {
 		stringsMap, err := ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataUIStringsToMap(model.Strings)
@@ -1511,6 +2304,15 @@ func ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataUIToMap(model *part
 	}
 	if model.SideBySideIndex != nil {
 		modelMap["side_by_side_index"] = *model.SideBySideIndex
+	}
+	if model.EmbeddableDashboard != nil {
+		modelMap["embeddable_dashboard"] = *model.EmbeddableDashboard
+	}
+	if model.AccessibleDuringProvision != nil {
+		modelMap["accessible_during_provision"] = *model.AccessibleDuringProvision
+	}
+	if model.PrimaryOfferingID != nil {
+		modelMap["primary_offering_id"] = *model.PrimaryOfferingID
 	}
 	return modelMap, nil
 }
@@ -1551,8 +2353,16 @@ func ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataUIStringsContentToM
 		}
 		modelMap["media"] = media
 	}
-	if model.EmbeddableDashboard != nil {
-		modelMap["embeddable_dashboard"] = *model.EmbeddableDashboard
+	if model.NavigationItems != nil {
+		navigationItems := []map[string]interface{}{}
+		for _, navigationItemsItem := range model.NavigationItems {
+			navigationItemsItemMap, err := ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataUINavigationItemToMap(&navigationItemsItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			navigationItems = append(navigationItems, navigationItemsItemMap)
+		}
+		modelMap["navigation_items"] = navigationItems
 	}
 	return modelMap, nil
 }
@@ -1562,22 +2372,8 @@ func ResourceIbmOnboardingCatalogProductCatalogHighlightItemToMap(model *partner
 	if model.Description != nil {
 		modelMap["description"] = *model.Description
 	}
-	if model.DescriptionI18n != nil {
-		descriptionI18n := make(map[string]interface{})
-		for k, v := range model.DescriptionI18n {
-			descriptionI18n[k] = flex.Stringify(v)
-		}
-		modelMap["description_i18n"] = descriptionI18n
-	}
 	if model.Title != nil {
 		modelMap["title"] = *model.Title
-	}
-	if model.TitleI18n != nil {
-		titleI18n := make(map[string]interface{})
-		for k, v := range model.TitleI18n {
-			titleI18n[k] = flex.Stringify(v)
-		}
-		modelMap["title_i18n"] = titleI18n
 	}
 	return modelMap, nil
 }
@@ -1585,18 +2381,25 @@ func ResourceIbmOnboardingCatalogProductCatalogHighlightItemToMap(model *partner
 func ResourceIbmOnboardingCatalogProductCatalogProductMediaItemToMap(model *partnercentersellv1.CatalogProductMediaItem) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["caption"] = *model.Caption
-	if model.CaptionI18n != nil {
-		captionI18n := make(map[string]interface{})
-		for k, v := range model.CaptionI18n {
-			captionI18n[k] = flex.Stringify(v)
-		}
-		modelMap["caption_i18n"] = captionI18n
-	}
 	if model.Thumbnail != nil {
 		modelMap["thumbnail"] = *model.Thumbnail
 	}
 	modelMap["type"] = *model.Type
 	modelMap["url"] = *model.URL
+	return modelMap, nil
+}
+
+func ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataUINavigationItemToMap(model *partnercentersellv1.GlobalCatalogMetadataUINavigationItem) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.ID != nil {
+		modelMap["id"] = *model.ID
+	}
+	if model.URL != nil {
+		modelMap["url"] = *model.URL
+	}
+	if model.Label != nil {
+		modelMap["label"] = *model.Label
+	}
 	return modelMap, nil
 }
 
@@ -1626,7 +2429,7 @@ func ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataUIUrlsToMap(model *
 	return modelMap, nil
 }
 
-func ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceToMap(model *partnercentersellv1.GlobalCatalogMetadataService) (map[string]interface{}, error) {
+func ResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataServiceToMap(model *partnercentersellv1.GlobalCatalogProductMetadataService) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.RcProvisionable != nil {
 		modelMap["rc_provisionable"] = *model.RcProvisionable
@@ -1642,6 +2445,205 @@ func ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceToMap(model 
 	}
 	if model.ServiceKeySupported != nil {
 		modelMap["service_key_supported"] = *model.ServiceKeySupported
+	}
+	if model.UniqueApiKey != nil {
+		modelMap["unique_api_key"] = *model.UniqueApiKey
+	}
+	if model.AsyncProvisioningSupported != nil {
+		modelMap["async_provisioning_supported"] = *model.AsyncProvisioningSupported
+	}
+	if model.AsyncUnprovisioningSupported != nil {
+		modelMap["async_unprovisioning_supported"] = *model.AsyncUnprovisioningSupported
+	}
+	if model.CustomCreatePageHybridEnabled != nil {
+		modelMap["custom_create_page_hybrid_enabled"] = *model.CustomCreatePageHybridEnabled
+	}
+	if model.Parameters != nil {
+		parameters := []map[string]interface{}{}
+		for _, parametersItem := range model.Parameters {
+			parametersItemMap, err := ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceCustomParametersToMap(&parametersItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			parameters = append(parameters, parametersItemMap)
+		}
+		modelMap["parameters"] = parameters
+	}
+	return modelMap, nil
+}
+
+func ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceCustomParametersToMap(model *partnercentersellv1.GlobalCatalogMetadataServiceCustomParameters) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Displayname != nil {
+		modelMap["displayname"] = *model.Displayname
+	}
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
+	}
+	if model.Type != nil {
+		modelMap["type"] = *model.Type
+	}
+	if model.Options != nil {
+		options := []map[string]interface{}{}
+		for _, optionsItem := range model.Options {
+			optionsItemMap, err := ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceCustomParametersOptionsToMap(&optionsItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			options = append(options, optionsItemMap)
+		}
+		modelMap["options"] = options
+	}
+	if model.Value != nil {
+		modelMap["value"] = model.Value
+	}
+	if model.Layout != nil {
+		modelMap["layout"] = *model.Layout
+	}
+	if model.Associations != nil {
+		associations := make(map[string]interface{})
+		for k, v := range model.Associations {
+			associations[k] = flex.Stringify(v)
+		}
+		modelMap["associations"] = associations
+	}
+	if model.ValidationURL != nil {
+		modelMap["validation_url"] = *model.ValidationURL
+	}
+	if model.OptionsURL != nil {
+		modelMap["options_url"] = *model.OptionsURL
+	}
+	if model.Invalidmessage != nil {
+		modelMap["invalidmessage"] = *model.Invalidmessage
+	}
+	if model.Description != nil {
+		modelMap["description"] = *model.Description
+	}
+	if model.Required != nil {
+		modelMap["required"] = *model.Required
+	}
+	if model.Pattern != nil {
+		modelMap["pattern"] = *model.Pattern
+	}
+	if model.Placeholder != nil {
+		modelMap["placeholder"] = *model.Placeholder
+	}
+	if model.Readonly != nil {
+		modelMap["readonly"] = *model.Readonly
+	}
+	if model.Hidden != nil {
+		modelMap["hidden"] = *model.Hidden
+	}
+	if model.I18n != nil {
+		i18nMap, err := ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceCustomParametersI18nToMap(model.I18n)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["i18n"] = []map[string]interface{}{i18nMap}
+	}
+	return modelMap, nil
+}
+
+func ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceCustomParametersOptionsToMap(model *partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersOptions) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Displayname != nil {
+		modelMap["displayname"] = *model.Displayname
+	}
+	if model.Value != nil {
+		modelMap["value"] = *model.Value
+	}
+	if model.I18n != nil {
+		i18nMap, err := ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceCustomParametersI18nToMap(model.I18n)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["i18n"] = []map[string]interface{}{i18nMap}
+	}
+	return modelMap, nil
+}
+
+func ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceCustomParametersI18nToMap(model *partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersI18n) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.En != nil {
+		enMap, err := ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceCustomParametersI18nFieldsToMap(model.En)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["en"] = []map[string]interface{}{enMap}
+	}
+	if model.De != nil {
+		deMap, err := ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceCustomParametersI18nFieldsToMap(model.De)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["de"] = []map[string]interface{}{deMap}
+	}
+	if model.Es != nil {
+		esMap, err := ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceCustomParametersI18nFieldsToMap(model.Es)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["es"] = []map[string]interface{}{esMap}
+	}
+	if model.Fr != nil {
+		frMap, err := ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceCustomParametersI18nFieldsToMap(model.Fr)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["fr"] = []map[string]interface{}{frMap}
+	}
+	if model.It != nil {
+		itMap, err := ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceCustomParametersI18nFieldsToMap(model.It)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["it"] = []map[string]interface{}{itMap}
+	}
+	if model.Ja != nil {
+		jaMap, err := ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceCustomParametersI18nFieldsToMap(model.Ja)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["ja"] = []map[string]interface{}{jaMap}
+	}
+	if model.Ko != nil {
+		koMap, err := ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceCustomParametersI18nFieldsToMap(model.Ko)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["ko"] = []map[string]interface{}{koMap}
+	}
+	if model.PtBr != nil {
+		ptBrMap, err := ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceCustomParametersI18nFieldsToMap(model.PtBr)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["pt_br"] = []map[string]interface{}{ptBrMap}
+	}
+	if model.ZhTw != nil {
+		zhTwMap, err := ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceCustomParametersI18nFieldsToMap(model.ZhTw)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["zh_tw"] = []map[string]interface{}{zhTwMap}
+	}
+	if model.ZhCn != nil {
+		zhCnMap, err := ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceCustomParametersI18nFieldsToMap(model.ZhCn)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["zh_cn"] = []map[string]interface{}{zhCnMap}
+	}
+	return modelMap, nil
+}
+
+func ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceCustomParametersI18nFieldsToMap(model *partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersI18nFields) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Displayname != nil {
+		modelMap["displayname"] = *model.Displayname
+	}
+	if model.Description != nil {
+		modelMap["description"] = *model.Description
 	}
 	return modelMap, nil
 }
@@ -1859,463 +2861,902 @@ func ResourceIbmOnboardingCatalogProductGlobalCatalogProductPatchAsPatch(patchVa
 	path = "active"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["active"] = nil
+	} else if !exists {
+		delete(patch, "active")
 	}
 	path = "disabled"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["disabled"] = nil
+	} else if !exists {
+		delete(patch, "disabled")
 	}
 	path = "overview_ui"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["overview_ui"] = nil
 	} else if exists && patch["overview_ui"] != nil {
-		ResourceIbmOnboardingCatalogProductGlobalCatalogOverviewUIAsPatch(patch["overview_ui"].(map[string]interface{}), d)
+		ResourceIbmOnboardingCatalogProductGlobalCatalogOverviewUIAsPatch(patch["overview_ui"].(map[string]interface{}), d, fmt.Sprintf("%s.0", path))
+	} else if !exists {
+		delete(patch, "overview_ui")
 	}
 	path = "tags"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["tags"] = nil
+	} else if !exists {
+		delete(patch, "tags")
 	}
 	path = "images"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["images"] = nil
 	} else if exists && patch["images"] != nil {
-		ResourceIbmOnboardingCatalogProductGlobalCatalogProductImagesAsPatch(patch["images"].(map[string]interface{}), d)
+		ResourceIbmOnboardingCatalogProductGlobalCatalogProductImagesAsPatch(patch["images"].(map[string]interface{}), d, fmt.Sprintf("%s.0", path))
+	} else if !exists {
+		delete(patch, "images")
 	}
 	path = "object_provider"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["object_provider"] = nil
 	} else if exists && patch["object_provider"] != nil {
-		ResourceIbmOnboardingCatalogProductCatalogProductProviderAsPatch(patch["object_provider"].(map[string]interface{}), d)
+		ResourceIbmOnboardingCatalogProductCatalogProductProviderAsPatch(patch["object_provider"].(map[string]interface{}), d, fmt.Sprintf("%s.0", path))
+	} else if !exists {
+		delete(patch, "object_provider")
 	}
 	path = "metadata"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["metadata"] = nil
 	} else if exists && patch["metadata"] != nil {
-		ResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataAsPatch(patch["metadata"].(map[string]interface{}), d)
+		ResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataPrototypePatchAsPatch(patch["metadata"].(map[string]interface{}), d, fmt.Sprintf("%s.0", path))
+	} else if !exists {
+		delete(patch, "metadata")
 	}
 
 	return patch
 }
 
-func ResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataAsPatch(patch map[string]interface{}, d *schema.ResourceData) {
+func ResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataPrototypePatchAsPatch(patch map[string]interface{}, d *schema.ResourceData, rootPath string) {
 	var path string
 
-	path = "metadata.0.rc_compatible"
+	path = rootPath + ".rc_compatible"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["rc_compatible"] = nil
+	} else if !exists {
+		delete(patch, "rc_compatible")
 	}
-	path = "metadata.0.ui"
+	path = rootPath + ".ui"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["ui"] = nil
 	} else if exists && patch["ui"] != nil {
-		ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataUIAsPatch(patch["ui"].(map[string]interface{}), d)
+		ResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataUIAsPatch(patch["ui"].(map[string]interface{}), d, fmt.Sprintf("%s.0", path))
+	} else if !exists {
+		delete(patch, "ui")
 	}
-	path = "metadata.0.service"
+	path = rootPath + ".service"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["service"] = nil
 	} else if exists && patch["service"] != nil {
-		ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceAsPatch(patch["service"].(map[string]interface{}), d)
+		ResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataServicePrototypePatchAsPatch(patch["service"].(map[string]interface{}), d, fmt.Sprintf("%s.0", path))
+	} else if !exists {
+		delete(patch, "service")
 	}
-	path = "metadata.0.other"
+	path = rootPath + ".other"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["other"] = nil
 	} else if exists && patch["other"] != nil {
-		ResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataOtherAsPatch(patch["other"].(map[string]interface{}), d)
+		ResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataOtherAsPatch(patch["other"].(map[string]interface{}), d, fmt.Sprintf("%s.0", path))
+	} else if !exists {
+		delete(patch, "other")
 	}
 }
 
-func ResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataOtherAsPatch(patch map[string]interface{}, d *schema.ResourceData) {
+func ResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataOtherAsPatch(patch map[string]interface{}, d *schema.ResourceData, rootPath string) {
 	var path string
 
-	path = "metadata.0.other.0.pc"
+	path = rootPath + ".pc"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["pc"] = nil
 	} else if exists && patch["pc"] != nil {
-		ResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataOtherPCAsPatch(patch["pc"].(map[string]interface{}), d)
+		ResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataOtherPCAsPatch(patch["pc"].(map[string]interface{}), d, fmt.Sprintf("%s.0", path))
+	} else if !exists {
+		delete(patch, "pc")
 	}
-	path = "metadata.0.other.0.composite"
+	path = rootPath + ".composite"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["composite"] = nil
 	} else if exists && patch["composite"] != nil {
-		ResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataOtherCompositeAsPatch(patch["composite"].(map[string]interface{}), d)
+		ResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataOtherCompositeAsPatch(patch["composite"].(map[string]interface{}), d, fmt.Sprintf("%s.0", path))
+	} else if !exists {
+		delete(patch, "composite")
 	}
 }
 
-func ResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataOtherCompositeAsPatch(patch map[string]interface{}, d *schema.ResourceData) {
+func ResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataOtherCompositeAsPatch(patch map[string]interface{}, d *schema.ResourceData, rootPath string) {
 	var path string
 
-	path = "metadata.0.other.0.composite.0.composite_kind"
+	path = rootPath + ".composite_kind"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["composite_kind"] = nil
+	} else if !exists {
+		delete(patch, "composite_kind")
 	}
-	path = "metadata.0.other.0.composite.0.composite_tag"
+	path = rootPath + ".composite_tag"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["composite_tag"] = nil
+	} else if !exists {
+		delete(patch, "composite_tag")
 	}
-	path = "metadata.0.other.0.composite.0.children"
+	path = rootPath + ".children"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["children"] = nil
 	} else if exists && patch["children"] != nil {
-		ResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataOtherCompositeChildAsPatch(patch["children"].([]map[string]interface{})[0], d)
+		childrenList := patch["children"].([]map[string]interface{})
+		for i, childrenItem := range childrenList {
+			ResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataOtherCompositeChildAsPatch(childrenItem, d, fmt.Sprintf("%s.%d", path, i))
+		}
+	} else if !exists {
+		delete(patch, "children")
 	}
 }
 
-func ResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataOtherCompositeChildAsPatch(patch map[string]interface{}, d *schema.ResourceData) {
+func ResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataOtherCompositeChildAsPatch(patch map[string]interface{}, d *schema.ResourceData, rootPath string) {
 	var path string
 
-	path = "metadata.0.other.0.composite.0.children.0.kind"
+	path = rootPath + ".kind"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["kind"] = nil
+	} else if !exists {
+		delete(patch, "kind")
 	}
-	path = "metadata.0.other.0.composite.0.children.0.name"
+	path = rootPath + ".name"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["name"] = nil
+	} else if !exists {
+		delete(patch, "name")
 	}
 }
 
-func ResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataOtherPCAsPatch(patch map[string]interface{}, d *schema.ResourceData) {
+func ResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataOtherPCAsPatch(patch map[string]interface{}, d *schema.ResourceData, rootPath string) {
 	var path string
 
-	path = "metadata.0.other.0.pc.0.support"
+	path = rootPath + ".support"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["support"] = nil
 	} else if exists && patch["support"] != nil {
-		ResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataOtherPCSupportAsPatch(patch["support"].(map[string]interface{}), d)
+		ResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataOtherPCSupportAsPatch(patch["support"].(map[string]interface{}), d, fmt.Sprintf("%s.0", path))
+	} else if !exists {
+		delete(patch, "support")
 	}
 }
 
-func ResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataOtherPCSupportAsPatch(patch map[string]interface{}, d *schema.ResourceData) {
+func ResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataOtherPCSupportAsPatch(patch map[string]interface{}, d *schema.ResourceData, rootPath string) {
 	var path string
 
-	path = "metadata.0.other.0.pc.0.support.0.url"
+	path = rootPath + ".url"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["url"] = nil
+	} else if !exists {
+		delete(patch, "url")
 	}
-	path = "metadata.0.other.0.pc.0.support.0.status_url"
+	path = rootPath + ".status_url"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["status_url"] = nil
+	} else if !exists {
+		delete(patch, "status_url")
 	}
-	path = "metadata.0.other.0.pc.0.support.0.locations"
+	path = rootPath + ".locations"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["locations"] = nil
+	} else if !exists {
+		delete(patch, "locations")
 	}
-	path = "metadata.0.other.0.pc.0.support.0.languages"
+	path = rootPath + ".languages"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["languages"] = nil
+	} else if !exists {
+		delete(patch, "languages")
 	}
-	path = "metadata.0.other.0.pc.0.support.0.process"
+	path = rootPath + ".process"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["process"] = nil
+	} else if !exists {
+		delete(patch, "process")
 	}
-	path = "metadata.0.other.0.pc.0.support.0.process_i18n"
+	path = rootPath + ".process_i18n"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["process_i18n"] = nil
+	} else if !exists {
+		delete(patch, "process_i18n")
 	}
-	path = "metadata.0.other.0.pc.0.support.0.support_type"
+	path = rootPath + ".support_type"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["support_type"] = nil
+	} else if !exists {
+		delete(patch, "support_type")
 	}
-	path = "metadata.0.other.0.pc.0.support.0.support_escalation"
+	path = rootPath + ".support_escalation"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["support_escalation"] = nil
 	} else if exists && patch["support_escalation"] != nil {
-		ResourceIbmOnboardingCatalogProductSupportEscalationAsPatch(patch["support_escalation"].(map[string]interface{}), d)
+		ResourceIbmOnboardingCatalogProductSupportEscalationAsPatch(patch["support_escalation"].(map[string]interface{}), d, fmt.Sprintf("%s.0", path))
+	} else if !exists {
+		delete(patch, "support_escalation")
 	}
-	path = "metadata.0.other.0.pc.0.support.0.support_details"
+	path = rootPath + ".support_details"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["support_details"] = nil
 	} else if exists && patch["support_details"] != nil {
-		ResourceIbmOnboardingCatalogProductSupportDetailsItemAsPatch(patch["support_details"].([]map[string]interface{})[0], d)
+		support_detailsList := patch["support_details"].([]map[string]interface{})
+		for i, support_detailsItem := range support_detailsList {
+			ResourceIbmOnboardingCatalogProductSupportDetailsItemAsPatch(support_detailsItem, d, fmt.Sprintf("%s.%d", path, i))
+		}
+	} else if !exists {
+		delete(patch, "support_details")
 	}
 }
 
-func ResourceIbmOnboardingCatalogProductSupportDetailsItemAsPatch(patch map[string]interface{}, d *schema.ResourceData) {
+func ResourceIbmOnboardingCatalogProductSupportDetailsItemAsPatch(patch map[string]interface{}, d *schema.ResourceData, rootPath string) {
 	var path string
 
-	path = "metadata.0.other.0.pc.0.support.0.support_details.0.type"
+	path = rootPath + ".type"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["type"] = nil
+	} else if !exists {
+		delete(patch, "type")
 	}
-	path = "metadata.0.other.0.pc.0.support.0.support_details.0.contact"
+	path = rootPath + ".contact"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["contact"] = nil
+	} else if !exists {
+		delete(patch, "contact")
 	}
-	path = "metadata.0.other.0.pc.0.support.0.support_details.0.response_wait_time"
+	path = rootPath + ".response_wait_time"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["response_wait_time"] = nil
 	} else if exists && patch["response_wait_time"] != nil {
-		ResourceIbmOnboardingCatalogProductSupportTimeIntervalAsPatch(patch["response_wait_time"].(map[string]interface{}), d)
+		ResourceIbmOnboardingCatalogProductSupportTimeIntervalAsPatch(patch["response_wait_time"].(map[string]interface{}), d, fmt.Sprintf("%s.0", path))
+	} else if !exists {
+		delete(patch, "response_wait_time")
 	}
-	path = "metadata.0.other.0.pc.0.support.0.support_details.0.availability"
+	path = rootPath + ".availability"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["availability"] = nil
 	} else if exists && patch["availability"] != nil {
-		ResourceIbmOnboardingCatalogProductSupportDetailsItemAvailabilityAsPatch(patch["availability"].(map[string]interface{}), d)
+		ResourceIbmOnboardingCatalogProductSupportDetailsItemAvailabilityAsPatch(patch["availability"].(map[string]interface{}), d, fmt.Sprintf("%s.0", path))
+	} else if !exists {
+		delete(patch, "availability")
 	}
 }
 
-func ResourceIbmOnboardingCatalogProductSupportDetailsItemAvailabilityAsPatch(patch map[string]interface{}, d *schema.ResourceData) {
+func ResourceIbmOnboardingCatalogProductSupportDetailsItemAvailabilityAsPatch(patch map[string]interface{}, d *schema.ResourceData, rootPath string) {
 	var path string
 
-	path = "metadata.0.other.0.pc.0.support.0.support_details.0.availability.0.times"
+	path = rootPath + ".times"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["times"] = nil
 	} else if exists && patch["times"] != nil {
-		ResourceIbmOnboardingCatalogProductSupportDetailsItemAvailabilityTimeAsPatch(patch["times"].([]map[string]interface{})[0], d)
+		timesList := patch["times"].([]map[string]interface{})
+		for i, timesItem := range timesList {
+			ResourceIbmOnboardingCatalogProductSupportDetailsItemAvailabilityTimeAsPatch(timesItem, d, fmt.Sprintf("%s.%d", path, i))
+		}
+	} else if !exists {
+		delete(patch, "times")
 	}
-	path = "metadata.0.other.0.pc.0.support.0.support_details.0.availability.0.timezone"
+	path = rootPath + ".timezone"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["timezone"] = nil
+	} else if !exists {
+		delete(patch, "timezone")
 	}
-	path = "metadata.0.other.0.pc.0.support.0.support_details.0.availability.0.always_available"
+	path = rootPath + ".always_available"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["always_available"] = nil
+	} else if !exists {
+		delete(patch, "always_available")
 	}
 }
 
-func ResourceIbmOnboardingCatalogProductSupportDetailsItemAvailabilityTimeAsPatch(patch map[string]interface{}, d *schema.ResourceData) {
+func ResourceIbmOnboardingCatalogProductSupportDetailsItemAvailabilityTimeAsPatch(patch map[string]interface{}, d *schema.ResourceData, rootPath string) {
 	var path string
 
-	path = "metadata.0.other.0.pc.0.support.0.support_details.0.availability.0.times.0.day"
+	path = rootPath + ".day"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["day"] = nil
+	} else if !exists {
+		delete(patch, "day")
 	}
-	path = "metadata.0.other.0.pc.0.support.0.support_details.0.availability.0.times.0.start_time"
+	path = rootPath + ".start_time"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["start_time"] = nil
+	} else if !exists {
+		delete(patch, "start_time")
 	}
-	path = "metadata.0.other.0.pc.0.support.0.support_details.0.availability.0.times.0.end_time"
+	path = rootPath + ".end_time"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["end_time"] = nil
+	} else if !exists {
+		delete(patch, "end_time")
 	}
 }
 
-func ResourceIbmOnboardingCatalogProductSupportEscalationAsPatch(patch map[string]interface{}, d *schema.ResourceData) {
+func ResourceIbmOnboardingCatalogProductSupportEscalationAsPatch(patch map[string]interface{}, d *schema.ResourceData, rootPath string) {
 	var path string
 
-	path = "metadata.0.other.0.pc.0.support.0.support_escalation.0.contact"
+	path = rootPath + ".contact"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["contact"] = nil
+	} else if !exists {
+		delete(patch, "contact")
 	}
-	path = "metadata.0.other.0.pc.0.support.0.support_escalation.0.escalation_wait_time"
+	path = rootPath + ".escalation_wait_time"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["escalation_wait_time"] = nil
 	} else if exists && patch["escalation_wait_time"] != nil {
-		ResourceIbmOnboardingCatalogProductSupportTimeIntervalAsPatch(patch["escalation_wait_time"].(map[string]interface{}), d)
+		ResourceIbmOnboardingCatalogProductSupportTimeIntervalAsPatch(patch["escalation_wait_time"].(map[string]interface{}), d, fmt.Sprintf("%s.0", path))
+	} else if !exists {
+		delete(patch, "escalation_wait_time")
 	}
-	path = "metadata.0.other.0.pc.0.support.0.support_escalation.0.response_wait_time"
+	path = rootPath + ".response_wait_time"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["response_wait_time"] = nil
+	} else if !exists {
+		delete(patch, "response_wait_time")
 	}
 }
 
-func ResourceIbmOnboardingCatalogProductSupportTimeIntervalAsPatch(patch map[string]interface{}, d *schema.ResourceData) {
+func ResourceIbmOnboardingCatalogProductSupportTimeIntervalAsPatch(patch map[string]interface{}, d *schema.ResourceData, rootPath string) {
 	var path string
 
-	path = "metadata.0.other.0.pc.0.support.0.support_details.0.response_wait_time.0.value"
+	path = rootPath + ".value"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["value"] = nil
+	} else if !exists {
+		delete(patch, "value")
 	}
-	path = "metadata.0.other.0.pc.0.support.0.support_details.0.response_wait_time.0.type"
+	path = rootPath + ".type"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["type"] = nil
+	} else if !exists {
+		delete(patch, "type")
 	}
 }
 
-func ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceAsPatch(patch map[string]interface{}, d *schema.ResourceData) {
+func ResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataServicePrototypePatchAsPatch(patch map[string]interface{}, d *schema.ResourceData, rootPath string) {
 	var path string
 
-	path = "metadata.0.service.0.rc_provisionable"
+	path = rootPath + ".rc_provisionable"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["rc_provisionable"] = nil
+	} else if !exists {
+		delete(patch, "rc_provisionable")
 	}
-	path = "metadata.0.service.0.iam_compatible"
+	path = rootPath + ".iam_compatible"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["iam_compatible"] = nil
+	} else if !exists {
+		delete(patch, "iam_compatible")
 	}
-	path = "metadata.0.service.0.bindable"
-	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
-		patch["bindable"] = nil
-	}
-	path = "metadata.0.service.0.plan_updateable"
-	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
-		patch["plan_updateable"] = nil
-	}
-	path = "metadata.0.service.0.service_key_supported"
+	path = rootPath + ".service_key_supported"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["service_key_supported"] = nil
+	} else if !exists {
+		delete(patch, "service_key_supported")
+	}
+	path = rootPath + ".unique_api_key"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["unique_api_key"] = nil
+	} else if !exists {
+		delete(patch, "unique_api_key")
+	}
+	path = rootPath + ".async_provisioning_supported"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["async_provisioning_supported"] = nil
+	} else if !exists {
+		delete(patch, "async_provisioning_supported")
+	}
+	path = rootPath + ".async_unprovisioning_supported"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["async_unprovisioning_supported"] = nil
+	} else if !exists {
+		delete(patch, "async_unprovisioning_supported")
+	}
+	path = rootPath + ".custom_create_page_hybrid_enabled"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["custom_create_page_hybrid_enabled"] = nil
+	} else if !exists {
+		delete(patch, "custom_create_page_hybrid_enabled")
+	}
+	path = rootPath + ".parameters"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["parameters"] = nil
+	} else if exists && patch["parameters"] != nil {
+		parametersList := patch["parameters"].([]map[string]interface{})
+		for i, parametersItem := range parametersList {
+			ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceCustomParametersAsPatch(parametersItem, d, fmt.Sprintf("%s.%d", path, i))
+		}
+	} else if !exists {
+		delete(patch, "parameters")
 	}
 }
 
-func ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataUIAsPatch(patch map[string]interface{}, d *schema.ResourceData) {
+func ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceCustomParametersAsPatch(patch map[string]interface{}, d *schema.ResourceData, rootPath string) {
 	var path string
 
-	path = "metadata.0.ui.0.strings"
+	path = rootPath + ".displayname"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["displayname"] = nil
+	} else if !exists {
+		delete(patch, "displayname")
+	}
+	path = rootPath + ".name"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["name"] = nil
+	} else if !exists {
+		delete(patch, "name")
+	}
+	path = rootPath + ".type"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["type"] = nil
+	} else if !exists {
+		delete(patch, "type")
+	}
+	path = rootPath + ".options"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["options"] = nil
+	} else if exists && patch["options"] != nil {
+		optionsList := patch["options"].([]map[string]interface{})
+		for i, optionsItem := range optionsList {
+			ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceCustomParametersOptionsAsPatch(optionsItem, d, fmt.Sprintf("%s.%d", path, i))
+		}
+	} else if !exists {
+		delete(patch, "options")
+	}
+	path = rootPath + ".value"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["value"] = nil
+	} else if !exists {
+		delete(patch, "value")
+	}
+	path = rootPath + ".layout"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["layout"] = nil
+	} else if !exists {
+		delete(patch, "layout")
+	}
+	path = rootPath + ".associations"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["associations"] = nil
+	} else if !exists {
+		delete(patch, "associations")
+	}
+	path = rootPath + ".validation_url"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["validation_url"] = nil
+	} else if !exists {
+		delete(patch, "validation_url")
+	}
+	path = rootPath + ".options_url"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["options_url"] = nil
+	} else if !exists {
+		delete(patch, "options_url")
+	}
+	path = rootPath + ".invalidmessage"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["invalidmessage"] = nil
+	} else if !exists {
+		delete(patch, "invalidmessage")
+	}
+	path = rootPath + ".description"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["description"] = nil
+	} else if !exists {
+		delete(patch, "description")
+	}
+	path = rootPath + ".required"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["required"] = nil
+	} else if !exists {
+		delete(patch, "required")
+	}
+	path = rootPath + ".pattern"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["pattern"] = nil
+	} else if !exists {
+		delete(patch, "pattern")
+	}
+	path = rootPath + ".placeholder"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["placeholder"] = nil
+	} else if !exists {
+		delete(patch, "placeholder")
+	}
+	path = rootPath + ".readonly"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["readonly"] = nil
+	} else if !exists {
+		delete(patch, "readonly")
+	}
+	path = rootPath + ".hidden"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["hidden"] = nil
+	} else if !exists {
+		delete(patch, "hidden")
+	}
+	path = rootPath + ".i18n"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["i18n"] = nil
+	} else if !exists {
+		delete(patch, "i18n")
+	}
+}
+
+func ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceCustomParametersOptionsAsPatch(patch map[string]interface{}, d *schema.ResourceData, rootPath string) {
+	var path string
+
+	path = rootPath + ".displayname"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["displayname"] = nil
+	} else if !exists {
+		delete(patch, "displayname")
+	}
+	path = rootPath + ".value"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["value"] = nil
+	} else if !exists {
+		delete(patch, "value")
+	}
+	path = rootPath + ".i18n"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["i18n"] = nil
+	} else if exists && patch["i18n"] != nil {
+		ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceCustomParametersI18nAsPatch(patch["i18n"].(map[string]interface{}), d, fmt.Sprintf("%s.0", path))
+	} else if !exists {
+		delete(patch, "i18n")
+	}
+}
+
+func ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceCustomParametersI18nAsPatch(patch map[string]interface{}, d *schema.ResourceData, rootPath string) {
+	var path string
+
+	path = rootPath + ".en"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["en"] = nil
+	} else if exists && patch["en"] != nil {
+		ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceCustomParametersI18nFieldsAsPatch(patch["en"].(map[string]interface{}), d, fmt.Sprintf("%s.0", path))
+	} else if !exists {
+		delete(patch, "en")
+	}
+	path = rootPath + ".de"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["de"] = nil
+	} else if !exists {
+		delete(patch, "de")
+	}
+	path = rootPath + ".es"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["es"] = nil
+	} else if !exists {
+		delete(patch, "es")
+	}
+	path = rootPath + ".fr"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["fr"] = nil
+	} else if !exists {
+		delete(patch, "fr")
+	}
+	path = rootPath + ".it"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["it"] = nil
+	} else if !exists {
+		delete(patch, "it")
+	}
+	path = rootPath + ".ja"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["ja"] = nil
+	} else if !exists {
+		delete(patch, "ja")
+	}
+	path = rootPath + ".ko"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["ko"] = nil
+	} else if !exists {
+		delete(patch, "ko")
+	}
+	path = rootPath + ".pt_br"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["pt_br"] = nil
+	} else if !exists {
+		delete(patch, "pt_br")
+	}
+	path = rootPath + ".zh_tw"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["zh_tw"] = nil
+	} else if !exists {
+		delete(patch, "zh_tw")
+	}
+	path = rootPath + ".zh_cn"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["zh_cn"] = nil
+	} else if !exists {
+		delete(patch, "zh_cn")
+	}
+}
+
+func ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceCustomParametersI18nFieldsAsPatch(patch map[string]interface{}, d *schema.ResourceData, rootPath string) {
+	var path string
+
+	path = rootPath + ".displayname"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["displayname"] = nil
+	} else if !exists {
+		delete(patch, "displayname")
+	}
+	path = rootPath + ".description"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["description"] = nil
+	} else if !exists {
+		delete(patch, "description")
+	}
+}
+
+func ResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataUIAsPatch(patch map[string]interface{}, d *schema.ResourceData, rootPath string) {
+	var path string
+
+	path = rootPath + ".strings"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["strings"] = nil
 	} else if exists && patch["strings"] != nil {
-		ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataUIStringsAsPatch(patch["strings"].(map[string]interface{}), d)
+		ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataUIStringsAsPatch(patch["strings"].(map[string]interface{}), d, fmt.Sprintf("%s.0", path))
+	} else if !exists {
+		delete(patch, "strings")
 	}
-	path = "metadata.0.ui.0.urls"
+	path = rootPath + ".urls"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["urls"] = nil
 	} else if exists && patch["urls"] != nil {
-		ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataUIUrlsAsPatch(patch["urls"].(map[string]interface{}), d)
+		ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataUIUrlsAsPatch(patch["urls"].(map[string]interface{}), d, fmt.Sprintf("%s.0", path))
+	} else if !exists {
+		delete(patch, "urls")
 	}
-	path = "metadata.0.ui.0.hidden"
+	path = rootPath + ".hidden"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["hidden"] = nil
+	} else if !exists {
+		delete(patch, "hidden")
 	}
-	path = "metadata.0.ui.0.side_by_side_index"
+	path = rootPath + ".side_by_side_index"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["side_by_side_index"] = nil
+	} else if !exists {
+		delete(patch, "side_by_side_index")
+	}
+	path = rootPath + ".embeddable_dashboard"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["embeddable_dashboard"] = nil
+	} else if !exists {
+		delete(patch, "embeddable_dashboard")
+	}
+	path = rootPath + ".accessible_during_provision"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["accessible_during_provision"] = nil
+	} else if !exists {
+		delete(patch, "accessible_during_provision")
+	}
+	path = rootPath + ".primary_offering_id"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["primary_offering_id"] = nil
+	} else if !exists {
+		delete(patch, "primary_offering_id")
 	}
 }
 
-func ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataUIUrlsAsPatch(patch map[string]interface{}, d *schema.ResourceData) {
+func ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataUIUrlsAsPatch(patch map[string]interface{}, d *schema.ResourceData, rootPath string) {
 	var path string
 
-	path = "metadata.0.ui.0.urls.0.doc_url"
+	path = rootPath + ".doc_url"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["doc_url"] = nil
+	} else if !exists {
+		delete(patch, "doc_url")
 	}
-	path = "metadata.0.ui.0.urls.0.apidocs_url"
+	path = rootPath + ".apidocs_url"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["apidocs_url"] = nil
+	} else if !exists {
+		delete(patch, "apidocs_url")
 	}
-	path = "metadata.0.ui.0.urls.0.terms_url"
+	path = rootPath + ".terms_url"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["terms_url"] = nil
+	} else if !exists {
+		delete(patch, "terms_url")
 	}
-	path = "metadata.0.ui.0.urls.0.instructions_url"
+	path = rootPath + ".instructions_url"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["instructions_url"] = nil
+	} else if !exists {
+		delete(patch, "instructions_url")
 	}
-	path = "metadata.0.ui.0.urls.0.catalog_details_url"
+	path = rootPath + ".catalog_details_url"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["catalog_details_url"] = nil
+	} else if !exists {
+		delete(patch, "catalog_details_url")
 	}
-	path = "metadata.0.ui.0.urls.0.custom_create_page_url"
+	path = rootPath + ".custom_create_page_url"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["custom_create_page_url"] = nil
+	} else if !exists {
+		delete(patch, "custom_create_page_url")
 	}
-	path = "metadata.0.ui.0.urls.0.dashboard"
+	path = rootPath + ".dashboard"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["dashboard"] = nil
+	} else if !exists {
+		delete(patch, "dashboard")
 	}
 }
 
-func ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataUIStringsAsPatch(patch map[string]interface{}, d *schema.ResourceData) {
+func ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataUIStringsAsPatch(patch map[string]interface{}, d *schema.ResourceData, rootPath string) {
 	var path string
 
-	path = "metadata.0.ui.0.strings.0.en"
+	path = rootPath + ".en"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["en"] = nil
 	} else if exists && patch["en"] != nil {
-		ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataUIStringsContentAsPatch(patch["en"].(map[string]interface{}), d)
+		ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataUIStringsContentAsPatch(patch["en"].(map[string]interface{}), d, fmt.Sprintf("%s.0", path))
+	} else if !exists {
+		delete(patch, "en")
 	}
 }
 
-func ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataUIStringsContentAsPatch(patch map[string]interface{}, d *schema.ResourceData) {
+func ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataUIStringsContentAsPatch(patch map[string]interface{}, d *schema.ResourceData, rootPath string) {
 	var path string
 
-	path = "metadata.0.ui.0.strings.0.en.0.bullets"
+	path = rootPath + ".bullets"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["bullets"] = nil
 	} else if exists && patch["bullets"] != nil {
-		ResourceIbmOnboardingCatalogProductCatalogHighlightItemAsPatch(patch["bullets"].([]map[string]interface{})[0], d)
+		bulletsList := patch["bullets"].([]map[string]interface{})
+		for i, bulletsItem := range bulletsList {
+			ResourceIbmOnboardingCatalogProductCatalogHighlightItemAsPatch(bulletsItem, d, fmt.Sprintf("%s.%d", path, i))
+		}
+	} else if !exists {
+		delete(patch, "bullets")
 	}
-	path = "metadata.0.ui.0.strings.0.en.0.media"
+	path = rootPath + ".media"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["media"] = nil
 	} else if exists && patch["media"] != nil {
-		ResourceIbmOnboardingCatalogProductCatalogProductMediaItemAsPatch(patch["media"].([]map[string]interface{})[0], d)
+		mediaList := patch["media"].([]map[string]interface{})
+		for i, mediaItem := range mediaList {
+			ResourceIbmOnboardingCatalogProductCatalogProductMediaItemAsPatch(mediaItem, d, fmt.Sprintf("%s.%d", path, i))
+		}
+	} else if !exists {
+		delete(patch, "media")
 	}
-	path = "metadata.0.ui.0.strings.0.en.0.embeddable_dashboard"
+	path = rootPath + ".navigation_items"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
-		patch["embeddable_dashboard"] = nil
+		patch["navigation_items"] = nil
+	} else if exists && patch["navigation_items"] != nil {
+		navigation_itemsList := patch["navigation_items"].([]map[string]interface{})
+		for i, navigation_itemsItem := range navigation_itemsList {
+			ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataUINavigationItemAsPatch(navigation_itemsItem, d, fmt.Sprintf("%s.%d", path, i))
+		}
+	} else if !exists {
+		delete(patch, "navigation_items")
 	}
 }
 
-func ResourceIbmOnboardingCatalogProductCatalogProductMediaItemAsPatch(patch map[string]interface{}, d *schema.ResourceData) {
+func ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataUINavigationItemAsPatch(patch map[string]interface{}, d *schema.ResourceData, rootPath string) {
 	var path string
 
-	path = "metadata.0.ui.0.strings.0.en.0.media.0.caption_i18n"
+	path = rootPath + ".id"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
-		patch["caption_i18n"] = nil
+		patch["id"] = nil
+	} else if !exists {
+		delete(patch, "id")
 	}
-	path = "metadata.0.ui.0.strings.0.en.0.media.0.thumbnail"
+	path = rootPath + ".url"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["url"] = nil
+	} else if !exists {
+		delete(patch, "url")
+	}
+	path = rootPath + ".label"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["label"] = nil
+	} else if !exists {
+		delete(patch, "label")
+	}
+}
+
+func ResourceIbmOnboardingCatalogProductCatalogProductMediaItemAsPatch(patch map[string]interface{}, d *schema.ResourceData, rootPath string) {
+	var path string
+
+	path = rootPath + ".thumbnail"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["thumbnail"] = nil
+	} else if !exists {
+		delete(patch, "thumbnail")
 	}
 }
 
-func ResourceIbmOnboardingCatalogProductCatalogHighlightItemAsPatch(patch map[string]interface{}, d *schema.ResourceData) {
+func ResourceIbmOnboardingCatalogProductCatalogHighlightItemAsPatch(patch map[string]interface{}, d *schema.ResourceData, rootPath string) {
 	var path string
 
-	path = "metadata.0.ui.0.strings.0.en.0.bullets.0.description"
+	path = rootPath + ".description"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["description"] = nil
+	} else if !exists {
+		delete(patch, "description")
 	}
-	path = "metadata.0.ui.0.strings.0.en.0.bullets.0.description_i18n"
-	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
-		patch["description_i18n"] = nil
-	}
-	path = "metadata.0.ui.0.strings.0.en.0.bullets.0.title"
+	path = rootPath + ".title"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["title"] = nil
-	}
-	path = "metadata.0.ui.0.strings.0.en.0.bullets.0.title_i18n"
-	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
-		patch["title_i18n"] = nil
+	} else if !exists {
+		delete(patch, "title")
 	}
 }
 
-func ResourceIbmOnboardingCatalogProductCatalogProductProviderAsPatch(patch map[string]interface{}, d *schema.ResourceData) {
+func ResourceIbmOnboardingCatalogProductCatalogProductProviderAsPatch(patch map[string]interface{}, d *schema.ResourceData, rootPath string) {
 	var path string
 
-	path = "object_provider.0.name"
+	path = rootPath + ".name"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["name"] = nil
+	} else if !exists {
+		delete(patch, "name")
 	}
-	path = "object_provider.0.email"
+	path = rootPath + ".email"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["email"] = nil
+	} else if !exists {
+		delete(patch, "email")
 	}
 }
 
-func ResourceIbmOnboardingCatalogProductGlobalCatalogProductImagesAsPatch(patch map[string]interface{}, d *schema.ResourceData) {
+func ResourceIbmOnboardingCatalogProductGlobalCatalogProductImagesAsPatch(patch map[string]interface{}, d *schema.ResourceData, rootPath string) {
 	var path string
 
-	path = "images.0.image"
+	path = rootPath + ".image"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["image"] = nil
+	} else if !exists {
+		delete(patch, "image")
 	}
 }
 
-func ResourceIbmOnboardingCatalogProductGlobalCatalogOverviewUIAsPatch(patch map[string]interface{}, d *schema.ResourceData) {
+func ResourceIbmOnboardingCatalogProductGlobalCatalogOverviewUIAsPatch(patch map[string]interface{}, d *schema.ResourceData, rootPath string) {
 	var path string
 
-	path = "overview_ui.0.en"
+	path = rootPath + ".en"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["en"] = nil
 	} else if exists && patch["en"] != nil {
-		ResourceIbmOnboardingCatalogProductGlobalCatalogOverviewUITranslatedContentAsPatch(patch["en"].(map[string]interface{}), d)
+		ResourceIbmOnboardingCatalogProductGlobalCatalogOverviewUITranslatedContentAsPatch(patch["en"].(map[string]interface{}), d, fmt.Sprintf("%s.0", path))
+	} else if !exists {
+		delete(patch, "en")
 	}
 }
 
-func ResourceIbmOnboardingCatalogProductGlobalCatalogOverviewUITranslatedContentAsPatch(patch map[string]interface{}, d *schema.ResourceData) {
+func ResourceIbmOnboardingCatalogProductGlobalCatalogOverviewUITranslatedContentAsPatch(patch map[string]interface{}, d *schema.ResourceData, rootPath string) {
 	var path string
 
-	path = "overview_ui.0.en.0.display_name"
+	path = rootPath + ".display_name"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["display_name"] = nil
+	} else if !exists {
+		delete(patch, "display_name")
 	}
-	path = "overview_ui.0.en.0.description"
+	path = rootPath + ".description"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["description"] = nil
+	} else if !exists {
+		delete(patch, "description")
 	}
-	path = "overview_ui.0.en.0.long_description"
+	path = rootPath + ".long_description"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["long_description"] = nil
+	} else if !exists {
+		delete(patch, "long_description")
 	}
 }

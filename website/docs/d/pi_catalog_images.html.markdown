@@ -37,7 +37,7 @@ Review the argument reference that you can specify for your data source.
 
 - `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
 - `sap` - (Optional, Bool) Set `true` to include SAP images. The default value is `false`.
-- `vtl` - (Deprecated, Optional, Bool) Set `true` to include VTL images. The default value is `false`.
+- `vtl` - (Optional, Bool) Set `true` to include VTL images. The default value is `false`.
 
 ## Attribute reference
 In addition to the argument reference list, you can access the following attribute references after your data source is created.

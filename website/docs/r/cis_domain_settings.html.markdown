@@ -48,6 +48,7 @@ resource "ibm_cis_domain_settings" "test_domain_settings" {
   cipher                      = ["AES128-SHA256"]
   origin_max_http_version     = "1"
   origin_post_quantum_encryption = "off"
+  proxy_read_timeout = 5500
   minify {
     css  = "off"
     js   = "off"
@@ -75,6 +76,7 @@ resource "ibm_cis_domain_settings" "test" {
   min_tls_version = "1.2"
   origin_max_http_version     = "2"
   origin_post_quantum_encryption = "supported"
+  proxy_read_timeout = 5500
 }
 ```
 
@@ -118,6 +120,7 @@ resource "ibm_cis_domain_settings" "test_domain_settings" {
   cipher                      = []
   origin_max_http_version     = "1"
   origin_post_quantum_encryption = "off"
+  proxy_read_timeout = 5500
   minify {
     css  = "off"
     js   = "off"
@@ -145,6 +148,7 @@ resource "ibm_cis_domain_settings" "test" {
   min_tls_version = "1.3"
   origin_max_http_version     = "2"
   origin_post_quantum_encryption = "supported"
+  proxy_read_timeout = 5500
 }
 ```
 
@@ -204,6 +208,7 @@ Review the argument references that you can specify for your resource.
 - `websockets` - (Optional, String) Supported values are `off` and `on`.
 - `origin_max_http_version` - (Optional, String) Sets the highest HTTP version to use with origin. Supported values are `1` and `2`.
 - `origin_post_quantum_encryption` - (Optional, String) Wheather to use post-quantum key agreement algorithms when connecting to the origin. Supported values are `off`, `preferred` and `supported`.
+- `proxy_read_timeout` - (Optional, Integer) Maximum time between two read operations from origin. Valid values are `1-6000`.
 
 ### Note
 

@@ -628,7 +628,7 @@ Review the argument reference that you can specify for your resource.
 
 - `backup_id` - (Optional, String) The CRN of a backup resource to restore from. The backup is created by a database deployment with the same service ID. The backup is loaded after provisioning and the new deployment starts up that uses that data. A backup CRN is in the format `crn:v1:<…>:backup:`. If omitted, the database is provisioned empty.
 - `backup_encryption_key_crn`- (Optional, Forces new resource, String) The CRN of a key protect key, that you want to use for encrypting disk that holds deployment backups. A key protect CRN is in the format `crn:v1:<...>:key:`. Backup_encryption_key_crn can be added only at the time of creation and no update support  are available.
-- `configuration` - (Optional, Json String) Database Configuration in JSON format. Supported services `databases-for-postgresql`, `databases-for-redis` and `databases-for-enterprisedb`. For valid values please refer [API docs](https://cloud.ibm.com/apidocs/cloud-databases-api/cloud-databases-api-v4#setdatabaseconfiguration-request).
+- `configuration` - (Optional, Json String) Database Configuration in JSON format. Supported services: `databases-for-postgresql`, `databases-for-redis`, `databases-for-mysql`,`messages-for-rabbitmq` and `databases-for-enterprisedb`. For valid values please refer [API docs](https://cloud.ibm.com/apidocs/cloud-databases-api/cloud-databases-api-v5#updatedatabaseconfiguration).
 - `logical_replication_slot` - (Optional, List of Objects) A list of logical replication slots that you want to create on the database. Multiple blocks are allowed. This is only available for `databases-for-postgresql`.
 
   Nested scheme for `logical_replication_slot`:

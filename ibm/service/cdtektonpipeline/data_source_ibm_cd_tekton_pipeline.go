@@ -880,7 +880,9 @@ func DataSourceIBMCdTektonPipelineWorkerToMap(model *cdtektonpipelinev2.Worker) 
 	if model.Type != nil {
 		modelMap["type"] = *model.Type
 	}
-	modelMap["id"] = *model.ID
+	if model.ID != nil {
+		modelMap["id"] = *model.ID
+	}
 	return modelMap, nil
 }
 

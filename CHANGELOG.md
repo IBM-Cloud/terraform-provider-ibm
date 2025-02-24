@@ -1,3 +1,61 @@
+# 1.75.2 (Feb 12, 2025)
+Enhancements
+* Regex fix parnercentersellv1 ([5958](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5958))
+* docs(Cloud Databases): update supported services for configuration ([5975](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5975))
+* Added custom endpoints support for logs routing ([5974](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5974))
+* Created wrapper function around GetOkExists and all GetOk function usage has been replaced with GetFieldExists wrapper function ([5965](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5965))
+
+BugFixes
+* Global Search and Global Tagging private endpoint generation appear incorrect ([4843](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4843))
+
+# 1.75.1 (Feb 04, 2025)
+Enhancements
+* Add Custom Endpoints to Logs Routing Service ([5961](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5961))
+
+# 1.75.0 (Jan 31, 2025)
+* Support for Cloud logs
+    - **Datasources**
+        - ibm_logs_stream
+        - ibm_logs_streams
+    - **Resources**
+        - ibm_logs_stream
+* Support for Power System
+    - **Datasources**
+        - ibm_pi_instance_snapshot
+* Support for SDSaaS
+    - **Resources**
+        - ibm_sds_volume
+        - ibm_sds_host
+Enhancements
+* IBM Cloud Shell: re-gen provider for adopting the new error toolchain ([5904](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5904))
+* feat(PDNS): update custom resolver profile and views ([5625](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5625))
+* feat(CIS): Logpush to cloud logs and generic destination ([5872](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5872))
+* fix(PDNS): removal of custom resolver location resource ([5915](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5915))
+* Add custom service parameters and other gc flags parnercentersellv1 ([5900](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5900))
+* fix(PDNS): add a note for custom resolver location order change ([5921](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5921))
+* ODF 4.17 initial support ([5933](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5933))
+* feat: update vmware service ([5926](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5926))
+BugFixes
+* Vpngwconn fix ([5917](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5917))
+    
+# 1.75.0-beta1 (Jan 28, 2025)
+* Support for SDSaaS
+    - **Resources**
+        - ibm_sds_volume
+        - ibm_sds_host
+Enhancements
+* IBM Cloud Shell: re-gen provider for adopting the new error toolchain ([5904](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5904))
+* feat(PDNS): update custom resolver profile and views ([5625](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5625))
+* feat(CIS): Logpush to cloud logs and generic destination ([5872](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5872))
+* fix(PDNS): removal of custom resolver location resource ([5915](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5915))
+* Add custom service parameters and other gc flags parnercentersellv1 ([5900](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5900))
+* fix(PDNS): add a note for custom resolver location order change ([5921](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5921))
+* ODF 4.17 initial support ([5933](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5933))
+* feat: update vmware service ([5926](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5926))
+BugFixes
+* Vpngwconn fix ([5917](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5917))
+
+        
 # 1.75.0-beta0 (Jan 10, 2025)
 * Support for Cloud logs
     - **Datasources**
