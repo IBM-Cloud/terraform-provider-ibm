@@ -278,12 +278,6 @@ func createSaramaAdminClient(d *schema.ResourceData, meta interface{}) (sarama.C
 		}
 		instanceCRN = getInstanceCRN(topicID)
 	}
-	var adminClient sarama.ClusterAdmin
-	var ok bool
-	if adminClient, ok = clientPool[instanceCRN]; ok {
-		log.Printf("[DEBUG] createSaramaAdminClient got client from pool for instance %s", instanceCRN)
-		return adminClient, instanceCRN, nil
-	}
 	instance, err := getInstanceDetails(instanceCRN, meta)
 	if err != nil {
 		return nil, "", err
@@ -295,6 +289,12 @@ func createSaramaAdminClient(d *schema.ResourceData, meta interface{}) (sarama.C
 	slices.Sort(brokerAddress)
 	d.Set("kafka_brokers_sasl", brokerAddress)
 	log.Printf("[INFO] createSaramaAdminClient kafka_brokers_sasl is set to %s", brokerAddress)
+	var adminClient sarama.ClusterAdmin
+	var ok bool
+	if adminClient, ok = clientPool[instanceCRN]; ok {
+		log.Printf("[DEBUG] createSaramaAdminClient got client from pool for instance %s", instanceCRN)
+		return adminClient, instanceCRN, nil
+	}
 	config := sarama.NewConfig()
 	config.ClientID = fmt.Sprintf("terraform-provider-ibm/%s", version.Version)
 	config.Net.SASL.Enable = true
