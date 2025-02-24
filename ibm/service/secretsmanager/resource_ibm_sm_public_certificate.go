@@ -70,7 +70,8 @@ func ResourceIbmSmPublicCertificate() *schema.Resource {
 			"common_name": &schema.Schema{
 				Type:        schema.TypeString,
 				ForceNew:    true,
-				Required:    true,
+				Optional:    true,
+				Computed:    true,
 				Description: "The Common Name (AKA CN) represents the server name that is protected by the SSL certificate.",
 			},
 			"alt_names": &schema.Schema{
