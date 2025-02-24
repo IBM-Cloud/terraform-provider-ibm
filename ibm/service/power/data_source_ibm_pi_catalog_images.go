@@ -32,7 +32,6 @@ func DataSourceIBMPICatalogImages() *schema.Resource {
 				Type:        schema.TypeBool,
 			},
 			Arg_VTL: {
-				Deprecated:  "This field is deprecated.",
 				Description: "Set true to include VTL images. The default value is false.",
 				Optional:    true,
 				Type:        schema.TypeBool,

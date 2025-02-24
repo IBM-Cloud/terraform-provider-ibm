@@ -36,7 +36,17 @@ func DataSourceIBMISSSHKey() *schema.Resource {
 				Required:    true,
 				Description: "The name of the ssh key",
 			},
-
+			// missing schema added
+			"created_at": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The date and time that the key was created.",
+			},
+			"href": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The URL for this key.",
+			},
 			isKeyType: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -146,6 +156,12 @@ func keyGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 			d.Set(isKeyLength, *key.Length)
 			controller, err := flex.GetBaseController(meta)
 			if err != nil {
+				return err
+			}
+			if err = d.Set("created_at", flex.DateTimeToString(key.CreatedAt)); err != nil {
+				return err
+			}
+			if err = d.Set("href", key.Href); err != nil {
 				return err
 			}
 			d.Set(flex.ResourceControllerURL, controller+"/vpc/compute/sshKeys")
