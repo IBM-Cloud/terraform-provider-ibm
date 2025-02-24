@@ -241,7 +241,7 @@ func resourceIBMCmValidationCreate(context context.Context, d *schema.ResourceDa
 		}
 		validateInstallOptions.SetEnvironmentVariables(envsModel)
 	}
-	if _, ok := d.GetOk("schematics"); ok {
+	if _, ok := d.GetOk("schematics.0"); ok {
 		schematicsModel, err := schematicsMapToDeployRequestBodySchematics(d.Get("schematics.0").(map[string]interface{}))
 		if err != nil {
 			tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_cm_validation", "create")
