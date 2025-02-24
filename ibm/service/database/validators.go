@@ -56,24 +56,16 @@ func isSkipBackupAllowed(newVersion string, allowedVersions []AllowedUpgrade) bo
 }
 
 var (
-	// Function pointers to allow mocking
 	listDeploymentTasksFunc     = listDeploymentTasks
 	getDeploymentCapabilityFunc = getDeploymentCapability
 )
 
 func validateVersion(instanceID string, newVersion string, skipBackup bool, meta interface{}) (err error) {
+	fmt.Printf("Type of meta: %T\n", meta)
 	// First get currently running tasks
 	tasks, err := listDeploymentTasksFunc(instanceID, meta)
 	if err != nil {
 		log.Fatalf("Error fetching tasks: %v", err)
-	}
-
-	// Print all tasks
-	fmt.Println("Tasks fetched:")
-	for _, task := range tasks.Tasks {
-		status := *task.Status
-		description := *task.Description
-		fmt.Printf("Task Status: %s, Description: %s\n", status, description)
 	}
 
 	if len(tasks.Tasks) != 0 {
