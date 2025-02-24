@@ -22,8 +22,8 @@ require (
 	github.com/IBM/eventstreams-go-sdk v1.4.0
 	github.com/IBM/go-sdk-core v1.1.0
 	github.com/IBM/go-sdk-core/v3 v3.2.4
-	github.com/IBM/go-sdk-core/v5 v5.18.3
-	github.com/IBM/ibm-backup-recovery-sdk-go v1.0.1
+	github.com/IBM/go-sdk-core/v5 v5.18.5
+	github.com/IBM/ibm-backup-recovery-sdk-go v1.0.2
 	github.com/IBM/ibm-cos-sdk-go v1.12.0
 	github.com/IBM/ibm-cos-sdk-go-config/v2 v2.2.0
 	github.com/IBM/ibm-hpcs-tke-sdk v0.0.0-20211109141421-a4b61b05f7d1
@@ -66,7 +66,7 @@ require (
 	github.com/softlayer/softlayer-go v1.0.3
 	github.com/stretchr/testify v1.10.0
 	github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go v1.0.2-0.20250127145751-be643e99205b
-	golang.org/x/crypto v0.31.0
+	golang.org/x/crypto v0.32.0
 	gopkg.in/yaml.v3 v3.0.1
 	gotest.tools v2.2.0+incompatible
 	k8s.io/api v0.31.1
@@ -209,11 +209,11 @@ require (
 	go.uber.org/ratelimit v0.2.0 // indirect
 	go.uber.org/zap v1.27.0 // indirect
 	golang.org/x/mod v0.21.0 // indirect
-	golang.org/x/net v0.32.0 // indirect
+	golang.org/x/net v0.34.0 // indirect
 	golang.org/x/oauth2 v0.22.0 // indirect
 	golang.org/x/sync v0.10.0 // indirect
-	golang.org/x/sys v0.28.0 // indirect
-	golang.org/x/term v0.27.0 // indirect
+	golang.org/x/sys v0.29.0 // indirect
+	golang.org/x/term v0.28.0 // indirect
 	golang.org/x/text v0.21.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 	golang.org/x/tools v0.26.0 // indirect
@@ -231,8 +231,6 @@ require (
 	sigs.k8s.io/structured-merge-diff/v4 v4.4.1 // indirect
 	sigs.k8s.io/yaml v1.4.0 // indirect
 )
-
-// replace github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go v1.0.2-0.20250126142418-6a5677d99fa8 => /Users/deekshasharma/Documents/git/ibm-backup-recovery-sdk-go
 
 replace github.com/softlayer/softlayer-go v1.0.3 => github.com/IBM-Cloud/softlayer-go v1.0.5-tf
 
