@@ -5,9 +5,6 @@ package eventstreams
 
 import (
 	"context"
-	"encoding/base64"
-	"encoding/json"
-	"errors"
 	"fmt"
 	"log"
 	"slices"
@@ -21,7 +18,6 @@ import (
 	"github.com/IBM/go-sdk-core/v5/core"
 	iamidentity "github.com/IBM/platform-services-go-sdk/iamidentityv1"
 	"github.com/IBM/sarama"
-	jwt "github.com/golang-jwt/jwt/v5"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -311,17 +307,10 @@ func createSaramaAdminClient(d *schema.ResourceData, meta interface{}) (sarama.C
 		config.Net.SASL.AuthIdentity = instanceCRN
 	}
 	config.Admin.Timeout = adminClientTimeout
-	if bxSession.Config.BluemixAPIKey != "" {
-		config.Net.SASL.User = "token"
-		config.Net.SASL.Password = bxSession.Config.BluemixAPIKey
-		config.Net.SASL.Mechanism = sarama.SASLTypePlaintext
-		log.Printf("[DEBUG] createSaramaAdminClient configured SASL mechanism=PLAIN")
-	} else if _, err = validateToken(bxSession.Config.IAMAccessToken); err == nil {
-		config.Net.SASL.Mechanism = sarama.SASLTypeOAuth
-		config.Net.SASL.TokenProvider = accessTokenProvider{clientSession: bxSession}
-		log.Printf("[DEBUG] createSaramaAdminClient configured SASL mechanism=OAUTHBEARER")
-	} else {
-		return nil, "", errors.New("either IBMCLOUD_API_KEY or IAM_TOKEN needs to be configured")
+	config.Net.SASL.Mechanism = sarama.SASLTypeOAuth
+	config.Net.SASL.TokenProvider, err = newAccessTokenProvider(bxSession)
+	if err != nil {
+		return nil, "", err
 	}
 	adminClient, err = sarama.NewClusterAdmin(brokerAddress, config)
 	if err != nil {
@@ -373,64 +362,29 @@ func getInstanceCRN(topicID string) string {
 }
 
 type accessTokenProvider struct {
-	clientSession *session.Session
+	authenticator *core.IamAuthenticator
+}
+
+func newAccessTokenProvider(sess *session.Session) (*accessTokenProvider, error) {
+	authenticator, err := core.NewIamAuthenticatorBuilder().
+		SetURL(conns.EnvFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, iamidentity.DefaultServiceURL)).
+		SetApiKey(sess.Config.BluemixAPIKey).
+		SetRefreshToken(sess.Config.IAMRefreshToken).
+		SetClientIDSecret("bx", "bx").
+		Build()
+	if err != nil {
+		log.Printf("[DEBUG] newAccessTokenProvider() error:%s", err)
+		return nil, err
+	}
+	return &accessTokenProvider{authenticator}, nil
 }
 
 // Token() implements sarama.AccessTokenProvider interface for sasl.mechanism=OAUTHBEARER
-func (tp accessTokenProvider) Token() (*sarama.AccessToken, error) {
-	token, err := validateToken(tp.clientSession.Config.IAMAccessToken)
+func (tp *accessTokenProvider) Token() (*sarama.AccessToken, error) {
+	token, err := tp.authenticator.GetToken()
 	if err != nil {
-		log.Printf("[DEBUG] accessTokenProvider.Token() error:%s", err)
+		log.Printf("[DEBUG] accessTokenProvider.GetToken() error:%s", err)
 		return nil, err
 	}
-	if expired(token) {
-		authenticator := &core.IamAuthenticator{
-			RefreshToken: tp.clientSession.Config.IAMRefreshToken,
-			ClientId:     "bx",
-			ClientSecret: "bx",
-			URL:          conns.EnvFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, iamidentity.DefaultServiceURL),
-		}
-		token, err = authenticator.GetToken()
-		if err != nil {
-			log.Printf("[DEBUG] accessTokenProvider.authenticator.GetToken() error:%s", err)
-			return nil, err
-		}
-	}
 	return &sarama.AccessToken{Token: token}, nil
-}
-
-func validateToken(token string) (string, error) {
-	if len(token) == 0 {
-		return "", errors.New("IAMAccessToken is required")
-	}
-	token = strings.TrimPrefix(token, "Bearer")
-	token = strings.Trim(token, " ")
-	if len(strings.Split(token, ".")) != 3 {
-		return "", errors.New("IAMAccessToken is malformed")
-	}
-	return token, nil
-}
-
-func expired(token string) (expired bool) {
-	expired = true
-	tokenString, err := base64.RawURLEncoding.DecodeString(strings.Split(token, ".")[1])
-	if err != nil {
-		log.Printf("[DEBUG] expired.DecodeString() error:%s", err)
-		return
-	}
-	claims := jwt.RegisteredClaims{}
-	err = json.Unmarshal(tokenString, &claims)
-	if err != nil {
-		log.Printf("[DEBUG] expired.Unmarshal() error:%s", err)
-		return
-	}
-	if claims.ID == "" {
-		log.Printf("[DEBUG] expired.jit is empty")
-		return
-	}
-	if claims.ExpiresAt.IsZero() {
-		log.Printf("[DEBUG] expired.exp is zero")
-		return
-	}
-	return claims.ExpiresAt.Before(time.Now().Add(10 * time.Second))
 }
