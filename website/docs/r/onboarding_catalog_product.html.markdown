@@ -29,18 +29,19 @@ resource "ibm_onboarding_catalog_product" "onboarding_catalog_product_instance" 
 				en {
 					bullets {
 						description = "description"
-						description_i18n = { "key" = "inner" }
 						title = "title"
-						title_i18n = { "key" = "inner" }
 					}
 					media {
 						caption = "caption"
-						caption_i18n = { "key" = "inner" }
 						thumbnail = "thumbnail"
 						type = "image"
 						url = "url"
 					}
-					embeddable_dashboard = "embeddable_dashboard"
+					navigation_items {
+						id = "id"
+						url = "url"
+						label = "label"
+					}
 				}
 			}
 			urls {
@@ -54,14 +55,18 @@ resource "ibm_onboarding_catalog_product" "onboarding_catalog_product_instance" 
 			}
 			hidden = true
 			side_by_side_index = 1.0
+			embeddable_dashboard = "embeddable_dashboard"
+			accessible_during_provision = true
+			primary_offering_id = "primary_offering_id"
 		}
 		service {
 			rc_provisionable = true
 			iam_compatible = true
-			bindable = true
-			plan_updateable = true
 			service_key_supported = true
 			unique_api_key = true
+			async_provisioning_supported = true
+			async_unprovisioning_supported = true
+			custom_create_page_hybrid_enabled = true
 			parameters {
 				displayname = "displayname"
 				name = "name"
@@ -247,7 +252,7 @@ Nested schema for **images**:
 	* `image` - (Optional, String) The URL for your product logo.
 	  * Constraints: The maximum length is `2083` characters. The minimum length is `0` characters.
 * `kind` - (Required, String) The kind of the global catalog object.
-  * Constraints: Allowable values are: `service`, `platform_service`, `composite`.
+  * Constraints: Allowable values are: `service`, `platform_service`, `iaas`, `composite`.
 * `metadata` - (Optional, List) The global catalog service metadata object.
 Nested schema for **metadata**:
 	* `other` - (Optional, List) The additional metadata of the service in global catalog.
@@ -260,7 +265,7 @@ Nested schema for **metadata**:
 				* `kind` - (Optional, String) The type of the composite child.
 				  * Constraints: Allowable values are: `service`, `platform_service`.
 				* `name` - (Optional, String) The name of the composite child.
-				  * Constraints: The maximum length is `100` characters. The minimum length is `2` characters. The value must match regular expression `/^[a-z0-9\\-.]+$/`.
+				  * Constraints: The maximum length is `100` characters. The minimum length is `2` characters. The value must match regular expression `/^[a-zA-Z0-9\\-.]+$/`.
 			* `composite_kind` - (Optional, String) The type of the composite service.
 			  * Constraints: Allowable values are: `service`, `platform_service`.
 			* `composite_tag` - (Optional, String) The tag used for the composite parent and its children.
@@ -314,7 +319,10 @@ Nested schema for **metadata**:
 	* `rc_compatible` - (Optional, Boolean) Whether the object is compatible with the resource controller service.
 	* `service` - (Optional, List) The global catalog metadata of the service.
 	Nested schema for **service**:
-		* `bindable` - (Optional, Boolean) Deprecated. Controls the Connections tab on the Resource Details page.
+		* `async_provisioning_supported` - (Optional, Boolean) Used by catalog to tell if it is an async provisioning service or not.
+		* `async_unprovisioning_supported` - (Optional, Boolean) Used by catalog to tell if it is an async unprovisioning service or not.
+		* `bindable` - (Computed, Boolean) Deprecated. Controls the Connections tab on the Resource Details page.
+		* `custom_create_page_hybrid_enabled` - (Optional, Boolean) Controls if custom create page hybrid is enabled or not. Use of this flag is no longer recommended.
 		* `iam_compatible` - (Optional, Boolean) Whether the service is compatible with the IAM service.
 		* `parameters` - (Optional, List)
 		  * Constraints: The maximum length is `1000` items. The minimum length is `0` items.
@@ -476,13 +484,18 @@ Nested schema for **metadata**:
 			  * Constraints: The maximum length is `2083` characters. The minimum length is `1` character. The value must match regular expression `/^(?!mailto:)(?:(?:http|https|ftp):\/\/)(?:\\S+(?::\\S*)?@)?(?:(?:(?:[1-9]\\d?|1\\d\\d|2[01]\\d|22[0-3])(?:\\.(?:1?\\d{1,2}|2[0-4]\\d|25[0-5])){2}(?:\\.(?:[0-9]\\d?|1\\d\\d|2[0-4]\\d|25[0-4]))|(?:(?:[a-z\\u00a1-\\uffff0-9]+-?)*[a-z\\u00a1-\\uffff0-9]+)(?:\\.(?:[a-z\\u00a1-\\uffff0-9]+-?)*[a-z\\u00a1-\\uffff0-9]+)*(?:\\.(?:[a-z\\u00a1-\\uffff]{2,})))|localhost)(?::\\d{2,5})?(?:(\/|\\?|#)[^\\s]*)?$/`.
 			* `value` - (Optional, List)
 			  * Constraints: The list items must match regular expression `/^[ -~\\s]*$/`. The maximum length is `1000` items. The minimum length is `0` items.
-		* `plan_updateable` - (Optional, Boolean) Indicates plan update support and controls the Plan tab on the Resource Details page.
+		* `plan_updateable` - (Computed, Boolean) Indicates plan update support and controls the Plan tab on the Resource Details page.
 		* `rc_provisionable` - (Optional, Boolean) Whether the service is provisionable by the resource controller service.
 		* `service_key_supported` - (Optional, Boolean) Indicates service credentials support and controls the Service Credential tab on Resource Details page.
-		* `unique_api_key` - (Optional, Boolean) Indicates that the deployment uses an unique api key or not.
+		* `unique_api_key` - (Optional, Boolean) Indicates whether the deployment uses a unique API key or not.
 	* `ui` - (Optional, List) The UI metadata of this service.
 	Nested schema for **ui**:
+		* `accessible_during_provision` - (Optional, Boolean) if your service is accessible during provisioning.
+		* `embeddable_dashboard` - (Optional, String) Send the service details page, skipping the service details page, go directly to the dashboard, known values launch, drilldown.
+		  * Constraints: The maximum length is `256` characters. The minimum length is `0` characters. The value must match regular expression `/./`.
 		* `hidden` - (Optional, Boolean) Whether the object is hidden from the consumption catalog.
+		* `primary_offering_id` - (Optional, String) In case of group tile, primary used by legacy IAS service.
+		  * Constraints: The maximum length is `256` characters. The minimum length is `0` characters. The value must match regular expression `/./`.
 		* `side_by_side_index` - (Optional, Float) When the objects are listed side-by-side, this value controls the ordering.
 		* `strings` - (Optional, List) The data strings.
 		Nested schema for **strings**:
@@ -493,24 +506,28 @@ Nested schema for **metadata**:
 				Nested schema for **bullets**:
 					* `description` - (Optional, String) The description about the features of the product.
 					  * Constraints: The maximum length is `2000` characters. The minimum length is `0` characters. The value must match regular expression `/^[ -~\\s]*$/`.
-					* `description_i18n` - (Optional, Map) The description about the features of the product in translation.
 					* `title` - (Optional, String) The descriptive title for the feature.
 					  * Constraints: The maximum length is `256` characters. The minimum length is `0` characters. The value must match regular expression `/^[ -~\\s]*$/`.
-					* `title_i18n` - (Optional, Map) The descriptive title for the feature in translation.
-				* `embeddable_dashboard` - (Optional, String) On a service kind record this controls if your service has a custom dashboard or Resource Detail page.
-				  * Constraints: The maximum length is `2083` characters. The minimum length is `0` characters.
 				* `media` - (Optional, List) The list of supporting media for this product.
 				  * Constraints: The maximum length is `100` items. The minimum length is `0` items.
 				Nested schema for **media**:
 					* `caption` - (Required, String) Provide a descriptive caption that indicates what the media illustrates. This caption is displayed in the catalog.
 					  * Constraints: The maximum length is `2000` characters. The minimum length is `0` characters. The value must match regular expression `/^[ -~\\s]*$/`.
-					* `caption_i18n` - (Optional, Map) The brief explanation for your images and videos in translation.
 					* `thumbnail` - (Optional, String) The reduced-size version of your images and videos.
 					  * Constraints: The maximum length is `2083` characters. The minimum length is `0` characters.
 					* `type` - (Required, String) The type of the media.
 					  * Constraints: Allowable values are: `image`, `youtube`, `video_mp_4`, `video_webm`.
 					* `url` - (Required, String) The URL that links to the media that shows off the product.
 					  * Constraints: The maximum length is `2083` characters. The minimum length is `0` characters.
+				* `navigation_items` - (Optional, List) List of custom navigation panel.
+				  * Constraints: The maximum length is `100` items. The minimum length is `0` items.
+				Nested schema for **navigation_items**:
+					* `id` - (Optional, String) Id of custom navigation panel.
+					  * Constraints: The maximum length is `256` characters. The minimum length is `0` characters. The value must match regular expression `/./`.
+					* `label` - (Optional, String) Url for custom navigation panel.
+					  * Constraints: The maximum length is `256` characters. The minimum length is `0` characters. The value must match regular expression `/./`.
+					* `url` - (Optional, String) Url for custom navigation panel.
+					  * Constraints: The maximum length is `256` characters. The minimum length is `0` characters. The value must match regular expression `/./`.
 		* `urls` - (Optional, List) Metadata with URLs related to a service.
 		Nested schema for **urls**:
 			* `apidocs_url` - (Optional, String) The URL for your product's API documentation.
@@ -528,7 +545,7 @@ Nested schema for **metadata**:
 			* `terms_url` - (Optional, String) The URL for your product's end user license agreement.
 			  * Constraints: The maximum length is `2083` characters. The minimum length is `0` characters.
 * `name` - (Required, String) The programmatic name of this product.
-  * Constraints: The value must match regular expression `/^[a-z0-9\\-.]+$/`.
+  * Constraints: The value must match regular expression `/^[a-zA-Z0-9\\-.]+$/`.
 * `object_id` - (Optional, String) The desired ID of the global catalog object.
 * `object_provider` - (Required, List) The provider or owner of the product.
 Nested schema for **object_provider**:
@@ -554,6 +571,9 @@ After your resource is created, you can read values from the listed arguments an
 * `catalog_product_id` - (String) The ID of a global catalog object.
 * `geo_tags` - (List) 
   * Constraints: The list items must match regular expression `/./`. The maximum length is `1000` items. The minimum length is `0` items.
+* `group` - (Boolean) Flag for group tile legacy service.
+* `pricing_tags` - (List) A list of tags that carry information about the pricing information of your product.
+  * Constraints: The list items must match regular expression `/^[a-z0-9\\-._]+$/`. The maximum length is `100` items. The minimum length is `0` items.
 * `url` - (String) The global catalog URL of your product.
 
 

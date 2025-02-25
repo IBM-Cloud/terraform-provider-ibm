@@ -181,25 +181,25 @@ func resourceIbmIbmAppConfigSnapshotUpdate(d *schema.ResourceData, meta interfac
 		if ok := d.HasChanges("git_config_name", "collection_id", "environment_id", "git_url", "git_branch", "git_file_path", "git_token"); ok {
 			options := &appconfigurationv1.UpdateGitconfigOptions{}
 			options.SetGitConfigID(parts[1])
-			if _, ok := d.GetOk("git_config_name"); ok {
+			if _, ok := GetFieldExists(d, "git_config_name"); ok {
 				options.SetGitConfigName(d.Get("git_config_name").(string))
 			}
-			if _, ok := d.GetOk("collection_id"); ok {
+			if _, ok := GetFieldExists(d, "collection_id"); ok {
 				options.SetCollectionID(d.Get("collection_id").(string))
 			}
-			if _, ok := d.GetOk("environment_id"); ok {
+			if _, ok := GetFieldExists(d, "environment_id"); ok {
 				options.SetEnvironmentID(d.Get("environment_id").(string))
 			}
-			if _, ok := d.GetOk("git_url"); ok {
+			if _, ok := GetFieldExists(d, "git_url"); ok {
 				options.SetGitURL(d.Get("git_url").(string))
 			}
-			if _, ok := d.GetOk("git_branch"); ok {
+			if _, ok := GetFieldExists(d, "git_branch"); ok {
 				options.SetGitBranch(d.Get("git_branch").(string))
 			}
-			if _, ok := d.GetOk("git_file_path"); ok {
+			if _, ok := GetFieldExists(d, "git_file_path"); ok {
 				options.SetGitFilePath(d.Get("git_file_path").(string))
 			}
-			if _, ok := d.GetOk("git_token"); ok {
+			if _, ok := GetFieldExists(d, "git_token"); ok {
 				options.SetGitToken(d.Get("git_token").(string))
 			}
 			_, response, err := appconfigClient.UpdateGitconfig(options)

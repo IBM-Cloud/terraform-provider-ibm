@@ -96,15 +96,16 @@ Review the argument references that you can specify for your resource.
 - `pi_network` - (Required, List of Map) List of one or more networks to attach to the instance.
 
   The `pi_network` block supports:
-  - `network_id` - (String) The network ID to assign to the instance.
-  - `ip_address` - (String) The ip address to be used of this network.
+  - `ip_address` - (Optional, String) The ip address to be used of this network.
+  - `network_id` - (Required, String) The network ID to assign to the instance.
+  - `network_security_group_ids` - (Optional, List) The Network security groups that the network interface is a member of. There is a limit of 1 network security group in the array. If not specified, default network security group is used.
 - `pi_pin_policy` - (Optional, String) Select the pinning policy for your Power Systems Virtual Server instance. Supported values are `soft`, `hard`, and `none`.    **Note** You can choose to soft pin (`soft`) or hard pin (`hard`) a virtual server to the physical host where it runs. When you soft pin an instance for high availability, the instance automatically migrates back to the original host once the host is back to its operating state. If the instance has a licensing restriction with the host, the hard pin option restricts the movement of the instance during remote restart, automated remote restart, DRO, and live partition migration. The default pinning policy is `none`.
 - `pi_placement_group_id` - (Optional, String) The ID of the placement group that the instance is in or empty quotes `""` to indicate it is not in a placement group. The meta-argument `count` and a `pi_replicants` cannot be used when specifying a placement group ID. Instances provisioning in the same placement group must be provisioned one at a time; however, to provision multiple instances on the same host or different hosts then use `pi_replicants` and `pi_replication_policy` instead of `pi_placement_group_id`.
 - `pi_processors` - (Optional, Float) The number of vCPUs to assign to the VM as visible within the guest Operating System.
   - Required when not creating SAP instances. Conflicts with `pi_sap_profile_id`.
 - `pi_proc_type` - (Optional, String) The type of processor mode in which the VM will run with `shared`, `capped` or `dedicated`.
   - Required when not creating SAP instances. Conflicts with `pi_sap_profile_id`.
-- `pi_replicants` - (Optional, Integer) The number of instances that you want to provision with the same configuration. If this parameter is not set,  `1` is used by default.
+- `pi_replicants` - (Optional, Integer) The number of instances that you want to provision with the same configuration. If this parameter is not set, `1` is used by default.
 - `pi_replication_policy` - (Optional, String) The replication policy that you want to use, either `affinity`, `anti-affinity` or `none`. If this parameter is not set, `none` is used by default.
 - `pi_replication_scheme` - (Optional, String) The replication scheme that you want to set, either `prefix` or `suffix`.
 - `pi_replication_sites` - (Optional, List) Indicates the replication sites of the boot volume.
@@ -126,9 +127,9 @@ Review the argument references that you can specify for your resource.
 - `pi_virtual_serial_number` - (Optional, List)  Virtual Serial Number information. If using `ibm_pi_virtual_serial_number` resource to manage a virtual serial number assigned to this instance, it is strongly recommended to ignore changes in this argument using the `ignore_changes` meta-argument in the `lifecycle`.
   
   Nested scheme for `pi_virtual_serial_number`:
-    - `description` - (String, Optional) Description of virtual serial number.
-    - `serial` - (String, Required) Provide an existing reserved Virtual Serial Number or specify 'auto-assign' for auto generated Virtual Serial Number.
-      
+  - `description` - (String, Optional) Description of virtual serial number.
+  - `serial` - (String, Required) Provide an existing reserved Virtual Serial Number or specify 'auto-assign' for auto generated Virtual Serial Number.
+
       ~> **Note** When set to "auto-assign", changes to `serial` outside of terraform will not be detected. In addition, if a new generated virtual serial number is needed, the old serial must be removed before a new one is generated.
 - `pi_volume_ids` - (Optional, List of String) The list of volume IDs that you want to attach to the instance during creation.
 
@@ -137,6 +138,7 @@ Review the argument references that you can specify for your resource.
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
 - `crn` - (String) The CRN of this resource.
+- `dedicated_host_id` - (String) The dedicated host ID where the shared processor pool resides.
 - `fault` - (Map) Fault information, if any.
   
    Nested scheme for `fault`:
@@ -158,12 +160,15 @@ In addition to all argument reference list, you can access the following attribu
 - `pin_policy`  - (String) The pinning policy of the instance.
 - `pi_network` - (List of Map) - A list of networks that are assigned to the instance.
   Nested scheme for `pi_network`:
+  - `external_ip` - (String) The external IP address of the network.
   - `ip_address` - (String) The IP address of the network.
   - `mac_address` - (String) The MAC address of the network.
   - `network_id` - (String) The ID of the network.
+  - `network_interface_id` - (String) ID of the network interface.
   - `network_name` - (String) The name of the network.
+  - `network_security_group_ids` - (List) IDs of the network necurity groups that the network interface is a member of.
+  - `network_security_groups_href` - (List) Links to the network security groups that the network interface is a member of.
   - `type` - (String) The type of network.
-  - `external_ip` - (String) The external IP address of the network.
 - `progress` - (Float) - Specifies the overall progress of the instance deployment process in percentage.
 - `shared_processor_pool_id` - (String)  The ID of the shared processor pool for the instance.
 - `status` - (String) The status of the instance.

@@ -45,4 +45,5 @@ Secrets Manager
 Security and Compliance Center
 Transit Gateway
 Usage Reports
+VCF as a Service
 VPC infrastructure

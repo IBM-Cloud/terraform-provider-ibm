@@ -207,6 +207,50 @@ func ResourceIbmCodeEngineJob() *schema.Resource {
 				Computed:    true,
 				Description: "Reference to a build run that is associated with the job.",
 			},
+			"computed_env_variables": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "References to config maps, secrets or literal values, which are defined and set by Code Engine and are exposed as environment variables in the job run.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"key": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "The key to reference as environment variable.",
+						},
+						"name": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "The name of the environment variable.",
+						},
+						"prefix": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "A prefix that can be added to all keys of a full secret or config map reference.",
+						},
+						"reference": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "The name of the secret or config map.",
+						},
+						"type": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Specify the type of the environment variable.",
+						},
+						"value": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "The literal value of the environment variable.",
+						},
+					},
+				},
+			},
 			"created_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -593,6 +637,20 @@ func resourceIbmCodeEngineJobRead(context context.Context, d *schema.ResourceDat
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_code_engine_job", "read", "set-build_run").GetDiag()
 		}
 	}
+	if !core.IsNil(job.ComputedEnvVariables) {
+		computedEnvVariables := []map[string]interface{}{}
+		for _, computedEnvVariablesItem := range job.ComputedEnvVariables {
+			computedEnvVariablesItemMap, err := ResourceIbmCodeEngineJobEnvVarToMap(&computedEnvVariablesItem) // #nosec G601
+			if err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_code_engine_job", "read", "computed_env_variables-to-map").GetDiag()
+			}
+			computedEnvVariables = append(computedEnvVariables, computedEnvVariablesItemMap)
+		}
+		if err = d.Set("computed_env_variables", computedEnvVariables); err != nil {
+			err = fmt.Errorf("Error setting computed_env_variables: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_code_engine_job", "read", "set-computed_env_variables").GetDiag()
+		}
+	}
 	if !core.IsNil(job.CreatedAt) {
 		if err = d.Set("created_at", job.CreatedAt); err != nil {
 			err = fmt.Errorf("Error setting created_at: %s", err)
@@ -900,7 +958,7 @@ func ResourceIbmCodeEngineJobJobPatchAsPatch(patchVals *codeenginev2.JobPatch, d
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["run_env_variables"] = nil
 	} else if exists && patch["run_env_variables"] != nil {
-		ResourceIbmCodeEngineJobEnvVarPrototypeAsPatch(patch["run_env_variables"].([]interface{})[0].(map[string]interface{}), d)
+		ResourceIbmCodeEngineJobEnvVarPrototypeAsPatch(patch["run_env_variables"].(map[string]interface{}), d)
 	}
 	path = "run_mode"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
@@ -914,7 +972,7 @@ func ResourceIbmCodeEngineJobJobPatchAsPatch(patchVals *codeenginev2.JobPatch, d
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["run_volume_mounts"] = nil
 	} else if exists && patch["run_volume_mounts"] != nil {
-		ResourceIbmCodeEngineJobVolumeMountPrototypeAsPatch(patch["run_volume_mounts"].([]interface{})[0].(map[string]interface{}), d)
+		ResourceIbmCodeEngineJobVolumeMountPrototypeAsPatch(patch["run_volume_mounts"].(map[string]interface{}), d)
 	}
 	path = "scale_array_spec"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {

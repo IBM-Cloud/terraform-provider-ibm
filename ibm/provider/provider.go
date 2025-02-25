@@ -348,7 +348,10 @@ func Provider() *schema.Provider {
 			"ibm_db2":                                      db2.DataSourceIBMDb2Instance(),
 			"ibm_db2_connection_info":                      db2.DataSourceIbmDb2ConnectionInfo(),
 			"ibm_db2_whitelist_ip":                         db2.DataSourceIbmDb2Whitelist(),
+			"ibm_db2_allowlist_ip":                         db2.DataSourceIbmDb2Allowlist(),
 			"ibm_db2_autoscale":                            db2.DataSourceIbmDb2Autoscale(),
+			"ibm_db2_backup":                               db2.DataSourceIbmDb2Backup(),
+			"ibm_db2_tuneable_param":                       db2.DataSourceIbmDb2TuneableParam(),
 			"ibm_compute_bare_metal":                       classicinfrastructure.DataSourceIBMComputeBareMetal(),
 			"ibm_compute_image_template":                   classicinfrastructure.DataSourceIBMComputeImageTemplate(),
 			"ibm_compute_placement_group":                  classicinfrastructure.DataSourceIBMComputePlacementGroup(),
@@ -856,9 +859,11 @@ func Provider() *schema.Provider {
 			"ibm_cm_offering_instance": catalogmanagement.DataSourceIBMCmOfferingInstance(),
 			"ibm_cm_preset":            catalogmanagement.DataSourceIBMCmPreset(),
 			"ibm_cm_object":            catalogmanagement.DataSourceIBMCmObject(),
+			"ibm_cm_account":           catalogmanagement.DataSourceIBMCmAccount(),
 
 			// Added for Resource Tag
-			"ibm_resource_tag": globaltagging.DataSourceIBMResourceTag(),
+			"ibm_resource_tag":   globaltagging.DataSourceIBMResourceTag(),
+			"ibm_iam_access_tag": globaltagging.DataSourceIBMIamAccessTag(),
 
 			// Atracker
 			"ibm_atracker_targets": atracker.DataSourceIBMAtrackerTargets(),
@@ -1476,6 +1481,7 @@ func Provider() *schema.Provider {
 			"ibm_cm_version":           catalogmanagement.ResourceIBMCmVersion(),
 			"ibm_cm_validation":        catalogmanagement.ResourceIBMCmValidation(),
 			"ibm_cm_object":            catalogmanagement.ResourceIBMCmObject(),
+			"ibm_cm_account":           catalogmanagement.ResourceIBMCmAccount(),
 
 			// Added for enterprise
 			"ibm_enterprise":               enterprise.ResourceIBMEnterprise(),
@@ -2278,7 +2284,6 @@ func Validator() validate.ValidatorDict {
 				"ibm_iam_trusted_profile_links":       iamidentity.DataSourceIBMIamTrustedProfileLinksValidator(),
 				"ibm_iam_trusted_profile":             iamidentity.DataSourceIBMIamTrustedProfileValidator(),
 				"ibm_iam_trusted_profile_claim_rules": iamidentity.DataSourceIBMIamTrustedProfileClaimRulesValidator(),
-				"ibm_iam_trusted_profiles":            iamidentity.DataSourceIBMIamTrustedProfilesValidator(),
 
 				"ibm_iam_access_group_policy":    iampolicy.DataSourceIBMIAMAccessGroupPolicyValidator(),
 				"ibm_iam_service_policy":         iampolicy.DataSourceIBMIAMServicePolicyValidator(),

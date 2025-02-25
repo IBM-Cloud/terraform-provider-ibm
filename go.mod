@@ -7,12 +7,12 @@ toolchain go1.23.4
 require (
 	github.com/IBM-Cloud/bluemix-go v0.0.0-20241117121028-a3be206688b3
 	github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20240725064144-454a2ae23113
-	github.com/IBM-Cloud/power-go-client v1.9.0
+	github.com/IBM-Cloud/power-go-client v1.10.0
 	github.com/IBM/apigateway-go-sdk v0.0.0-20210714141226-a5d5d49caaca
 	github.com/IBM/appconfiguration-go-admin-sdk v0.4.4
 	github.com/IBM/appid-management-go-sdk v0.0.0-20210908164609-dd0e0eaf732f
 	github.com/IBM/cloud-databases-go-sdk v0.7.1
-	github.com/IBM/cloud-db2-go-sdk v0.0.0-20241206113855-40a65de39906
+	github.com/IBM/cloud-db2-go-sdk v0.2.3
 	github.com/IBM/cloudant-go-sdk v0.8.0
 	github.com/IBM/code-engine-go-sdk v0.0.0-20241217191651-e1821f8c58c3
 	github.com/IBM/configuration-aggregator-go-sdk v0.0.2
@@ -30,18 +30,18 @@ require (
 	github.com/IBM/ibm-hpcs-uko-sdk v0.0.20-beta
 	github.com/IBM/keyprotect-go-client v0.15.1
 	github.com/IBM/logs-go-sdk v0.4.0
-	github.com/IBM/logs-router-go-sdk v1.0.5
+	github.com/IBM/logs-router-go-sdk v1.0.7
 	github.com/IBM/mqcloud-go-sdk v0.2.0
-	github.com/IBM/networking-go-sdk v0.51.1
-	github.com/IBM/platform-services-go-sdk v0.73.0
+	github.com/IBM/networking-go-sdk v0.51.2
+	github.com/IBM/platform-services-go-sdk v0.74.1
 	github.com/IBM/project-go-sdk v0.3.5
 	github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5
-	github.com/IBM/sarama v1.41.2
+	github.com/IBM/sarama v1.45.0
 	github.com/IBM/scc-go-sdk/v5 v5.4.1
 	github.com/IBM/schematics-go-sdk v0.3.0
 	github.com/IBM/sds-go-sdk v0.0.4
-	github.com/IBM/secrets-manager-go-sdk/v2 v2.0.7
-	github.com/IBM/vmware-go-sdk v0.1.2
+	github.com/IBM/secrets-manager-go-sdk/v2 v2.0.10
+	github.com/IBM/vmware-go-sdk v0.1.3
 	github.com/IBM/vpc-beta-go-sdk v0.8.0
 	github.com/IBM/vpc-go-sdk v0.64.0
 	github.com/ScaleFT/sshkeys v0.0.0-20200327173127-6142f742bca5
@@ -52,6 +52,7 @@ require (
 	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32
 	github.com/go-openapi/strfmt v0.23.0
 	github.com/golang-jwt/jwt v3.2.2+incompatible
+	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/google/go-cmp v0.6.0
 	github.com/google/uuid v1.6.0
 	github.com/hashicorp/go-uuid v1.0.3
@@ -95,7 +96,7 @@ require (
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/dchest/bcrypt_pbkdf v0.0.0-20150205184540-83f37f9c154a // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
-	github.com/eapache/go-resiliency v1.4.0 // indirect
+	github.com/eapache/go-resiliency v1.7.0 // indirect
 	github.com/eapache/go-xerial-snappy v0.0.0-20230731223053-c322873962e3 // indirect
 	github.com/eapache/queue v1.1.0 // indirect
 	github.com/emicklei/go-restful/v3 v3.12.1 // indirect
@@ -141,7 +142,7 @@ require (
 	github.com/hashicorp/go-sockaddr v1.0.6 // indirect
 	github.com/hashicorp/hc-install v0.9.0 // indirect
 	github.com/hashicorp/hcl v1.0.1-vault-5 // indirect
-	github.com/hashicorp/hcl/v2 v2.22.0 // indirect
+	github.com/hashicorp/hcl/v2 v2.23.0 // indirect
 	github.com/hashicorp/logutils v1.0.0 // indirect
 	github.com/hashicorp/terraform-exec v0.21.0 // indirect
 	github.com/hashicorp/terraform-json v0.23.0 // indirect
@@ -165,7 +166,7 @@ require (
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/k8snetworkplumbingwg/network-attachment-definition-client v1.7.0 // indirect
-	github.com/klauspost/compress v1.16.7 // indirect
+	github.com/klauspost/compress v1.17.11 // indirect
 	github.com/kube-object-storage/lib-bucket-provisioner v0.0.0-20221122204822-d1a8c34382f1 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
 	github.com/libopenstorage/secrets v0.0.0-20240416031220-a17cf7f72c6c // indirect
@@ -188,7 +189,7 @@ require (
 	github.com/opentracing/opentracing-go v1.2.1-0.20220228012449-10b1cf09e00b // indirect
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
 	github.com/pelletier/go-toml v1.7.0 // indirect
-	github.com/pierrec/lz4/v4 v4.1.18 // indirect
+	github.com/pierrec/lz4/v4 v4.1.22 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475 // indirect
 	github.com/ryanuber/go-glob v1.0.0 // indirect
@@ -212,7 +213,7 @@ require (
 	golang.org/x/net v0.34.0 // indirect
 	golang.org/x/oauth2 v0.22.0 // indirect
 	golang.org/x/sync v0.10.0 // indirect
-	golang.org/x/sys v0.29.0 // indirect
+	golang.org/x/sys v0.30.0 // indirect
 	golang.org/x/term v0.28.0 // indirect
 	golang.org/x/text v0.21.0 // indirect
 	golang.org/x/time v0.3.0 // indirect

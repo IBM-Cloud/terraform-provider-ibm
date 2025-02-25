@@ -180,17 +180,17 @@ func dataSourceIbmAppConfigSegmentsRead(d *schema.ResourceData, meta interface{}
 
 	options := &appconfigurationv1.ListSegmentsOptions{}
 
-	if _, ok := d.GetOk("expand"); ok {
+	if _, ok := GetFieldExists(d, "expand"); ok {
 		options.SetExpand(d.Get("expand").(bool))
 	}
-	if _, ok := d.GetOk("tags"); ok {
+	if _, ok := GetFieldExists(d, "tags"); ok {
 		options.SetTags(d.Get("tags").(string))
 	}
-	if _, ok := d.GetOk("sort"); ok {
+	if _, ok := GetFieldExists(d, "sort"); ok {
 		options.SetTags(d.Get("sort").(string))
 	}
 
-	if _, ok := d.GetOk("include"); ok {
+	if _, ok := GetFieldExists(d, "include"); ok {
 		options.SetInclude(d.Get("include").(string))
 	}
 
@@ -201,12 +201,12 @@ func dataSourceIbmAppConfigSegmentsRead(d *schema.ResourceData, meta interface{}
 
 	finalList := []appconfigurationv1.Segment{}
 
-	if _, ok := d.GetOk("limit"); ok {
+	if _, ok := GetFieldExists(d, "limit"); ok {
 		isLimit = true
 		limit = int64(d.Get("limit").(int))
 	}
 	options.SetLimit(limit)
-	if _, ok := d.GetOk("offset"); ok {
+	if _, ok := GetFieldExists(d, "offset"); ok {
 		offset = int64(d.Get("offset").(int))
 	}
 	for {

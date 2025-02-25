@@ -18,7 +18,6 @@ The following example enables you to create a image in your project:
 
 ```terraform
 resource "ibm_pi_image" "testacc_image  "{
-  pi_image_name       = "7200-03-02"
   pi_image_id         = <"image id obtained from the datasource">
   pi_cloud_instance_id = "<value of the cloud_instance_id>"
 }

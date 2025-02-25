@@ -57,7 +57,7 @@ Review the argument references that you can specify for your resource.
 - `pi_instance_name` - (Required, String) The name of the instance you want to take a snapshot of.
 - `pi_snapshot_name` - (Required, String) The unique name of the snapshot.
 - `pi_user_tags` - (Optional, List) The user tags attached to this resource.
-- `pi_volume_ids` - (Optional, String) A list of volume IDs of the instance that will be part of the snapshot. If none are provided, then all the volumes of the instance will be part of the snapshot.
+- `pi_volume_ids` - (Optional, List) A list of volume IDs of the instance that will be part of the snapshot. If none are provided, then all the volumes of the instance will be part of the snapshot.
 
 ## Attribute reference
 
@@ -69,7 +69,7 @@ In addition to all argument reference list, you can access the following attribu
 - `last_update_date` - (String) The last updated date of the snapshot.
 - `snapshot_id` - (String) ID of the PVM instance snapshot.
 - `status` - (String) Status of the PVM instance snapshot.
-- `volume_snapshots` - (String) A map of volume snapshots included in the PVM instance snapshot.
+- `volume_snapshots` - (Map) A map of volume snapshots included in the PVM instance snapshot.
 
 ## Import
 
