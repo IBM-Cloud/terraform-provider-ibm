@@ -97,6 +97,11 @@ func DataSourceIbmSccReportEvaluations() *schema.Resource {
 							Computed:    true,
 							Description: "The component ID.",
 						},
+						"component_name": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The name of component.",
+						},
 						"assessment": {
 							Type:        schema.TypeList,
 							Computed:    true,
@@ -330,7 +335,7 @@ func dataSourceIbmSccReportEvaluationsEvaluationToMap(model *securityandcomplian
 		modelMap["report_id"] = model.ReportID
 	}
 	if model.ComponentName != nil {
-		modelMap["control_id"] = model.ComponentName
+		modelMap["component_name"] = model.ComponentName
 	}
 	if model.ComponentID != nil {
 		modelMap["component_id"] = model.ComponentID

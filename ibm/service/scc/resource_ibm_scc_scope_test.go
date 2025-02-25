@@ -66,6 +66,7 @@ func TestAccIbmSccScopeAllArgs(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_scc_scope.scc_scope_instance", "name", name),
 					resource.TestCheckResourceAttr("ibm_scc_scope.scc_scope_instance", "description", description),
 					resource.TestCheckResourceAttr("ibm_scc_scope.scc_scope_instance", "environment", environment),
+					resource.TestCheckResourceAttrSet("ibm_scc_scope.scc_scope_instance", "scope_id"),
 				),
 			},
 			{
@@ -75,6 +76,7 @@ func TestAccIbmSccScopeAllArgs(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_scc_scope.scc_scope_instance", "name", nameUpdate),
 					resource.TestCheckResourceAttr("ibm_scc_scope.scc_scope_instance", "description", descriptionUpdate),
 					resource.TestCheckResourceAttr("ibm_scc_scope.scc_scope_instance", "environment", environment),
+					resource.TestCheckResourceAttrSet("ibm_scc_scope.scc_scope_instance", "scope_id"),
 				),
 			},
 			{
