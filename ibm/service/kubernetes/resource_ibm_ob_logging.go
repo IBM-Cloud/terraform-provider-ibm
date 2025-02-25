@@ -39,7 +39,7 @@ func ResourceIBMObLogging() *schema.Resource {
 		Update:             resourceIBMLoggingUpdate,
 		Delete:             resourceIBMLoggingDelete,
 		Importer:           &schema.ResourceImporter{},
-		DeprecationMessage: "This service is deprecated and end of life as of 30 March 2025. To migrate from Log Analysis to Cloud Logs, see: https://cloud.ibm.com/docs/log-analysis?topic=log-analysis-deprecation_migration",
+		DeprecationMessage: "The observability plug-in (ob) is deprecated and support ends on 28 March 2025. There is no direct replacement, however you can now manage your observability instance and agents via the Cluster dashboard or the Cloud Logs UI.",
 
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(45 * time.Minute),
