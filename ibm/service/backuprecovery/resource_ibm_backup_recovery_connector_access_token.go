@@ -70,12 +70,6 @@ func ResourceIbmBackupRecoveryConnectorAccessToken() *schema.Resource {
 }
 
 func checkDiffResourceIbmBackupRecoveryConnectorAccessToken(context context.Context, d *schema.ResourceDiff, meta interface{}) error {
-	// oldId, _ := d.GetChange("x_ibm_tenant_id")
-	// if oldId == "" {
-	// 	return nil
-	// }
-
-	// return if it's a new resource
 	if d.Id() == "" {
 		return nil
 	}
