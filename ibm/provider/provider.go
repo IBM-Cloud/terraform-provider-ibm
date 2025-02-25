@@ -250,6 +250,8 @@ func Provider() *schema.Provider {
 			"ibm_backup_recovery_search_indexed_object":    backuprecovery.DataSourceIbmBackupRecoverySearchIndexedObject(),
 			"ibm_backup_recovery_object_snapshots":         backuprecovery.DataSourceIbmBackupRecoveryObjectSnapshots(),
 			"ibm_backup_recovery_connectors_metadata":      backuprecovery.DataSourceIbmBackupRecoveryConnectorsMetadata(),
+			"ibm_backup_recovery_connector_logs":           backuprecovery.DataSourceIbmBackupRecoveryConnectorLogs(),
+			"ibm_backup_recovery_connector_status":         backuprecovery.DataSourceIbmBackupRecoveryConnectorStatus(),
 			"ibm_backup_recovery_data_source_connections":  backuprecovery.DataSourceIbmBackupRecoveryDataSourceConnections(),
 			"ibm_backup_recovery_data_source_connectors":   backuprecovery.DataSourceIbmBackupRecoveryDataSourceConnectors(),
 			"ibm_backup_recovery_search_objects":           backuprecovery.DataSourceIbmBackupRecoverySearchObjects(),
@@ -266,6 +268,7 @@ func Provider() *schema.Provider {
 			"ibm_backup_recovery_source_registration":      backuprecovery.DataSourceIbmBackupRecoverySourceRegistration(),
 			"ibm_backup_recovery_download_indexed_files":   backuprecovery.DataSourceIbmBackupRecoveryDownloadIndexedFiles(),
 			"ibm_backup_recovery_protection_sources":       backuprecovery.DataSourceIbmBackupRecoveryProtectionSources(),
+			"ibm_backup_recovery_connector_get_users":      backuprecovery.DataSourceIbmBackupRecoveryConnectorGetUsers(),
 
 			// // AppID
 			"ibm_appid_action_url":               appid.DataSourceIBMAppIDActionURL(),
@@ -1068,6 +1071,9 @@ func Provider() *schema.Provider {
 			"ibm_backup_recovery_source_registration":                            backuprecovery.ResourceIbmBackupRecoverySourceRegistration(),
 			"ibm_backup_recovery_update_protection_group_run_request":            backuprecovery.ResourceIbmBackupRecoveryUpdateProtectionGroupRunRequest(),
 			"ibm_backup_recovery_connection_registration_token":                  backuprecovery.ResourceIbmBackupRecoveryConnectionRegistrationToken(),
+			"ibm_backup_recovery_connector_registration":                         backuprecovery.ResourceIbmBackupRecoveryConnectorRegistration(),
+			"ibm_backup_recovery_connector_access_token":                         backuprecovery.ResourceIbmBackupRecoveryConnectorAccessToken(),
+			"ibm_backup_recovery_connector_update_user":                          backuprecovery.ResourceIbmBackupRecoveryConnectorUpdateUser(),
 
 			"ibm_api_gateway_endpoint":              apigateway.ResourceIBMApiGatewayEndPoint(),
 			"ibm_api_gateway_endpoint_subscription": apigateway.ResourceIBMApiGatewayEndpointSubscription(),
