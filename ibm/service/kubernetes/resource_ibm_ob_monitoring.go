@@ -34,11 +34,12 @@ const (
 
 func ResourceIBMObMonitoring() *schema.Resource {
 	return &schema.Resource{
-		Create:   resourceIBMMonitoringCreate,
-		Read:     resourceIBMMonitoringRead,
-		Update:   resourceIBMMonitoringUpdate,
-		Delete:   resourceIBMMonitoringDelete,
-		Importer: &schema.ResourceImporter{},
+		Create:             resourceIBMMonitoringCreate,
+		Read:               resourceIBMMonitoringRead,
+		Update:             resourceIBMMonitoringUpdate,
+		Delete:             resourceIBMMonitoringDelete,
+		Importer:           &schema.ResourceImporter{},
+		DeprecationMessage: "This service is deprecated and end of life as of 30 March 2025. You can continue to use the installed IBM Cloud Monitoring Service and the installed agents in your cluster, but you can no longer use the observability plugin to add, update, or remove your agents. <place holder for link>?",
 
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(45 * time.Minute),

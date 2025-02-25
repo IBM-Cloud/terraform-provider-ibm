@@ -34,11 +34,12 @@ const (
 
 func ResourceIBMObLogging() *schema.Resource {
 	return &schema.Resource{
-		Create:   resourceIBMLoggingCreate,
-		Read:     resourceIBMLoggingRead,
-		Update:   resourceIBMLoggingUpdate,
-		Delete:   resourceIBMLoggingDelete,
-		Importer: &schema.ResourceImporter{},
+		Create:             resourceIBMLoggingCreate,
+		Read:               resourceIBMLoggingRead,
+		Update:             resourceIBMLoggingUpdate,
+		Delete:             resourceIBMLoggingDelete,
+		Importer:           &schema.ResourceImporter{},
+		DeprecationMessage: "This service is deprecated and end of life as of 30 March 2025. To migrate from Log Analysis to Cloud Logs, see: https://cloud.ibm.com/docs/log-analysis?topic=log-analysis-deprecation_migration",
 
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(45 * time.Minute),
