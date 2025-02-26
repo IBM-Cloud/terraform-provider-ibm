@@ -945,7 +945,7 @@ func Provider() *schema.Provider {
 			"ibm_en_destination_msteams":       eventnotification.DataSourceIBMEnMSTeamsDestination(),
 			"ibm_en_subscription_msteams":      eventnotification.DataSourceIBMEnFCMSubscription(),
 			"ibm_en_destination_pagerduty":     eventnotification.DataSourceIBMEnPagerDutyDestination(),
-			"ibm_en_subscription_pagerduty":    eventnotification.DataSourceIBMEnFCMSubscription(),
+			"ibm_en_subscription_pagerduty":    eventnotification.DataSourceIBMEnPagerDutySubscription(),
 			"ibm_en_integration":               eventnotification.DataSourceIBMEnIntegration(),
 			"ibm_en_integrations":              eventnotification.DataSourceIBMEnIntegrations(),
 			"ibm_en_destination_sn":            eventnotification.DataSourceIBMEnServiceNowDestination(),
@@ -973,6 +973,7 @@ func Provider() *schema.Provider {
 			"ibm_en_smtp_allowed_ips":          eventnotification.DataSourceIBMEnSMTPAllowedIps(),
 			"ibm_en_webhook_template":          eventnotification.DataSourceIBMEnWebhookTemplate(),
 			"ibm_en_subscription_scheduler":    eventnotification.DataSourceIBMEnFCMSubscription(),
+			"ibm_en_pagerduty_template":        eventnotification.DataSourceIBMEnPagerDutyTemplate(),
 
 			// Added for Toolchain
 			"ibm_cd_toolchain":                         cdtoolchain.DataSourceIBMCdToolchain(),
@@ -1605,7 +1606,7 @@ func Provider() *schema.Provider {
 			"ibm_en_destination_msteams":       eventnotification.ResourceIBMEnMSTeamsDestination(),
 			"ibm_en_subscription_msteams":      eventnotification.ResourceIBMEnFCMSubscription(),
 			"ibm_en_destination_pagerduty":     eventnotification.ResourceIBMEnPagerDutyDestination(),
-			"ibm_en_subscription_pagerduty":    eventnotification.ResourceIBMEnFCMSubscription(),
+			"ibm_en_subscription_pagerduty":    eventnotification.ResourceIBMEnPagerDutySubscription(),
 			"ibm_en_integration":               eventnotification.ResourceIBMEnIntegration(),
 			"ibm_en_destination_sn":            eventnotification.ResourceIBMEnServiceNowDestination(),
 			"ibm_en_subscription_sn":           eventnotification.ResourceIBMEnFCMSubscription(),
@@ -1628,6 +1629,7 @@ func Provider() *schema.Provider {
 			"ibm_en_smtp_setting":              eventnotification.ResourceIBMEnSMTPSetting(),
 			"ibm_en_webhook_template":          eventnotification.ResourceIBMEnWebhookTemplate(),
 			"ibm_en_subscription_scheduler":    eventnotification.ResourceIBMEnFCMSubscription(),
+			"ibm_en_pagerduty_template":        eventnotification.ResourceIBMEnPagerDutyTemplate(),
 
 			// Added for Toolchain
 			"ibm_cd_toolchain":                         cdtoolchain.ResourceIBMCdToolchain(),
