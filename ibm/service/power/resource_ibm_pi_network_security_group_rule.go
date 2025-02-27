@@ -437,11 +437,23 @@ func resourceIBMPINetworkSecurityGroupRuleCreate(ctx context.Context, d *schema.
 		remote := d.Get(Arg_Remote + ".0").(map[string]interface{})
 		networkSecurityGroupAddRule.Remote = networkSecurityGroupRuleMapToRemote(remote)
 
+		// Check against incompatible options
+		if networkSecurityGroupAddRule.Protocol.Type == All || networkSecurityGroupAddRule.Protocol.Type == ICMP {
+			_, okDestPorts := d.GetOk(Arg_DestinationPorts)
+			_, okDestPort := d.GetOk(Arg_DestinationPort)
+			_, okSourcePorts := d.GetOk(Arg_SourcePorts)
+			_, okSourcePort := d.GetOk(Arg_SourcePort)
+
+			if okDestPorts || okDestPort || okSourcePorts || okSourcePort {
+				return diag.Errorf("pi_destination_ports, pi_destination_port, pi_source_ports, and pi_source_port are not allowed with protocol value of %s or %s", All, ICMP)
+			}
+		}
+
 		// Optional fields
 		if _, ok := d.GetOk(Arg_DestinationPorts); ok {
 			destinationPort := d.Get(Arg_DestinationPorts + ".0").(map[string]interface{})
 			networkSecurityGroupAddRule.DestinationPorts = networkSecurityGroupRuleMapToPort(destinationPort)
-		} else {
+		} else if _, ok := d.GetOk(Arg_DestinationPort); ok {
 			destinationPort := d.Get(Arg_DestinationPort + ".0").(map[string]interface{})
 			networkSecurityGroupAddRule.DestinationPort = networkSecurityGroupRuleMapToPort(destinationPort)
 		}
@@ -449,7 +461,7 @@ func resourceIBMPINetworkSecurityGroupRuleCreate(ctx context.Context, d *schema.
 		if _, ok := d.GetOk(Arg_SourcePorts); ok {
 			sourcePort := d.Get(Arg_SourcePorts + ".0").(map[string]interface{})
 			networkSecurityGroupAddRule.SourcePorts = networkSecurityGroupRuleMapToPort(sourcePort)
-		} else {
+		} else if _, ok := d.GetOk(Arg_SourcePort); ok {
 			sourcePort := d.Get(Arg_SourcePort + ".0").(map[string]interface{})
 			networkSecurityGroupAddRule.SourcePort = networkSecurityGroupRuleMapToPort(sourcePort)
 		}
