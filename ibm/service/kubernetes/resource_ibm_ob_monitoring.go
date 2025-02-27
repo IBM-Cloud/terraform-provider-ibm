@@ -39,7 +39,7 @@ func ResourceIBMObMonitoring() *schema.Resource {
 		Update:             resourceIBMMonitoringUpdate,
 		Delete:             resourceIBMMonitoringDelete,
 		Importer:           &schema.ResourceImporter{},
-		DeprecationMessage: "The observability plug-in (ob) is deprecated and support ends on 28 March 2025. There is no direct replacement, however you can now manage your observability instance and agents via the Cluster dashboard or the Cloud Monitoring UI.",
+		DeprecationMessage: "The observability plug-in (ob) is deprecated and support ends on 28 March 2025. You can now manage your observability instance and agents via the Cluster dashboard or the Observability agents module: https://github.com/terraform-ibm-modules/terraform-ibm-observability-agents.",
 
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(45 * time.Minute),
