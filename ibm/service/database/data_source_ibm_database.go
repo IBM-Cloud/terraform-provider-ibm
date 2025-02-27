@@ -16,6 +16,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
+	"github.com/IBM/platform-services-go-sdk/globalcatalogv1"
 	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	rg "github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
 )
@@ -535,36 +536,27 @@ func DataSourceIBMDatabaseInstanceValidator() *validate.ResourceValidator {
 }
 
 func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{}) error {
+	fmt.Println("Custom:dataSourceIBMDatabaseInstanceRead entry")
+	fmt.Println("Custom:Get ResourceControllerV2API")
 	var instance rc.ResourceInstance
 	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return err
 	}
-	rsCatClient, err := meta.(conns.ClientSession).ResourceCatalogAPI()
-	if err != nil {
-		return err
-	}
-	rsCatRepo := rsCatClient.ResourceCatalog()
+	fmt.Println("Custom:got ResourceControllerV2API", rsConClient.GetServiceURL())
 	name := d.Get("name").(string)
 	resourceInstanceListOptions := rc.ListResourceInstancesOptions{
 		Name: &name,
 	}
-
+	fmt.Println("Custom:got ResourceCatalog", name)
 	if rsGrpID, ok := d.GetOk("resource_group_id"); ok {
 		rg := rsGrpID.(string)
 		resourceInstanceListOptions.ResourceGroupID = &rg
 	}
-
 	if service, ok := d.GetOk("service"); ok {
-
-		serviceOff, err := rsCatRepo.FindByName(service.(string), true)
-		if err != nil {
-			return fmt.Errorf("[ERROR] Error retrieving service offering: %s", err)
-		}
-		resourceId := serviceOff[0].ID
-		resourceInstanceListOptions.ResourceID = &resourceId
+		name := service.(string)
+		resourceInstanceListOptions.ResourceID = &name
 	}
-
 	next_url := ""
 	var instances []rc.ResourceInstance
 	for {
@@ -585,6 +577,7 @@ func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{})
 			break
 		}
 	}
+	fmt.Println("Custom:got next_url", next_url)
 	var filteredInstances []rc.ResourceInstance
 	var location string
 
@@ -623,19 +616,30 @@ func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{})
 	d.Set("resource_group_id", instance.ResourceGroupID)
 	d.Set("location", instance.RegionID)
 	d.Set("guid", instance.GUID)
+	globalClient, err := meta.(conns.ClientSession).GlobalCatalogV1API()
+	if err != nil {
+		return err
+	}
+	options := globalcatalogv1.GetCatalogEntryOptions{
 
-	serviceOff, err := rsCatRepo.GetServiceName(*instance.ResourceID)
+		ID: instance.ResourceID,
+	}
+	service, _, err := globalClient.GetCatalogEntry(&options)
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error retrieving service offering: %s", err)
 	}
 
-	d.Set("service", serviceOff)
+	d.Set("service", service.Name)
 
-	servicePlan, err := rsCatRepo.GetServicePlanName(*instance.ResourcePlanID)
+	planOptions := globalcatalogv1.GetCatalogEntryOptions{
+
+		ID: instance.ResourcePlanID,
+	}
+	plan, _, err := globalClient.GetCatalogEntry(&planOptions)
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error retrieving plan: %s", err)
 	}
-	d.Set("plan", servicePlan)
+	d.Set("plan", plan.Name)
 
 	d.Set(flex.ResourceName, instance.Name)
 	d.Set(flex.ResourceCRN, instance.CRN)
@@ -720,6 +724,7 @@ func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{})
 	}
 
 	d.Set("allowlist", flex.FlattenAllowlist(allowlist.IPAddresses))
+	fmt.Println("Custom:Exit")
 	return nil
 }
 
