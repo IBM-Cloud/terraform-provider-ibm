@@ -535,21 +535,27 @@ func DataSourceIBMDatabaseInstanceValidator() *validate.ResourceValidator {
 }
 
 func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{}) error {
+	fmt.Println("Custom:dataSourceIBMDatabaseInstanceRead entry")
+	fmt.Println("Custom:Get ResourceControllerV2API")
 	var instance rc.ResourceInstance
 	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return err
 	}
+	fmt.Println("Custom:got ResourceControllerV2API", rsConClient.GetServiceURL())
+	fmt.Println("Custom:get ResourceCatalogAPI")
 	rsCatClient, err := meta.(conns.ClientSession).ResourceCatalogAPI()
 	if err != nil {
 		return err
 	}
+	fmt.Println("Custom:got ResourceCatalogAPI")
+	fmt.Println("Custom:get ResourceCatalog")
 	rsCatRepo := rsCatClient.ResourceCatalog()
 	name := d.Get("name").(string)
 	resourceInstanceListOptions := rc.ListResourceInstancesOptions{
 		Name: &name,
 	}
-
+	fmt.Println("Custom:got ResourceCatalog", name)
 	if rsGrpID, ok := d.GetOk("resource_group_id"); ok {
 		rg := rsGrpID.(string)
 		resourceInstanceListOptions.ResourceGroupID = &rg
@@ -564,7 +570,7 @@ func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{})
 		resourceId := serviceOff[0].ID
 		resourceInstanceListOptions.ResourceID = &resourceId
 	}
-
+	fmt.Println("Custom:get next_url")
 	next_url := ""
 	var instances []rc.ResourceInstance
 	for {
@@ -585,6 +591,7 @@ func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{})
 			break
 		}
 	}
+	fmt.Println("Custom:got next_url", next_url)
 	var filteredInstances []rc.ResourceInstance
 	var location string
 
@@ -720,6 +727,7 @@ func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{})
 	}
 
 	d.Set("allowlist", flex.FlattenAllowlist(allowlist.IPAddresses))
+	fmt.Println("Custom:Exit")
 	return nil
 }
 
