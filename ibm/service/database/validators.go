@@ -62,24 +62,8 @@ var (
 
 func validateVersion(instanceID string, newVersion string, skipBackup bool, meta interface{}) (err error) {
 	fmt.Printf("Type of meta: %T\n", meta)
-	// First get currently running tasks
-	tasks, err := listDeploymentTasksFunc(instanceID, meta)
-	if err != nil {
-		log.Fatalf("Error fetching tasks: %v", err)
-	}
 
-	if len(tasks.Tasks) != 0 {
-		for _, task := range tasks.Tasks {
-			status := *task.Status
-			description := *task.Description
-			// TODO bind to new type field instead of description
-			if (status == "queued" || status == "running") && description == "Upgrading database" {
-				return fmt.Errorf("There is already an upgrade task %s. Please wait for this to complete", status)
-			}
-		}
-	}
-
-	// Get available versions for deployment
+	// Get available versions for deployment TODO what happens if there is an inplace running and versions has changed
 	capability, err := getDeploymentCapabilityFunc("versions", instanceID, "classic", "us-south", meta)
 	if err != nil {
 		log.Fatalf("Error fetching capability: %v", err)

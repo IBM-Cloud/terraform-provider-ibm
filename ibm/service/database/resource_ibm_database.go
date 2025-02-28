@@ -243,18 +243,14 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				Description: "The configuration schema in JSON format",
 			},
 			"version": {
-				Description:      "The database version to provision if specified",
-				Type:             schema.TypeString,
-				Optional:         true,
-				Computed:         true,
-				DiffSuppressFunc: flex.ApplyOnce,
+				Description: "The database version to provision if specified",
+				Type:        schema.TypeString,
+				Optional:    true,
 			},
-			"skip_backup": {
-				Description:      "Option to skip the backup when upgrading the version of your db.",
-				Type:             schema.TypeBool,
-				Optional:         true,
-				Computed:         true,
-				DiffSuppressFunc: flex.ApplyOnce,
+			"version_upgrade_skip_backup": {
+				Description: "Option to skip the backup when upgrading the version of your db. Default is false",
+				Type:        schema.TypeBool,
+				Optional:    true,
 			},
 			"service_endpoints": {
 				Description:  "Types of the service endpoints. Possible values are 'public', 'private', 'public-and-private'.",
@@ -2207,7 +2203,48 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 		}
 	}
 
+	/*
+	   	 if d.HasChange("version") {
+	   		version := d.Get("version").(string)
+
+	   //LORNA
+
+	
+	   		 		 skipBackup := false
+	   		 		if skip, ok := d.GetOk("version_upgrade_skip_backup"); ok {
+	   		 			skipBackup = skip.(bool)
+	   		 		}
+
+	   		 		var expirationDatetime string
+	   	 const isTimeoutMoreThan24Hours = isMoreThan24Hours(d.Timeout(schema.TimeoutUpdate))
+
+	   	 if(isTimeoutMoreThan24Hours){
+	   	 	expirationDatetime = now.Add(24 * time.Hour).String()
+	   	 } else{
+	   	 	expirationDatetime = millisecondsToISOTimestamp(d.Timeout(schema.TimeoutUpdate))
+	   	 }
+
+	   		 		versionOptions := &clouddatabasesv5.VersionOptions{
+	   		 			ID: &instanceID,
+	   		 			Skip_Backup: skipBackup,
+	   		 			}
+	   		 		}
+
+	   		 		 promoteReadReplicaResponse, response, err := cloudDatabasesClient.PromoteReadOnlyReplica(promoteReadOnlyReplicaOptions)
+
+	   				if err != nil {
+	   				 	return diag.FromErr(fmt.Errorf("[ERROR] Error promoting read replica: %s\n%s", err, response))
+	   		 		}
+
+	   		 taskID := *promoteReadReplicaResponse.Task.ID
+	   		 _, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
+
+	   		 		if err != nil {
+	   					return diag.FromErr(fmt.Errorf("[ERROR] Error upgrading version: %s", err))
+	   				}
+	*/
 	return resourceIBMDatabaseInstanceRead(context, d, meta)
+
 }
 
 func resourceIBMDatabaseInstanceDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -2406,9 +2443,11 @@ func waitForDatabaseTaskComplete(taskId string, d *schema.ResourceData, meta int
 			}
 
 			switch *getTaskResponse.Task.Status {
+			case "expired": // TODO do we want this anymore
+				return false, fmt.Errorf("[Error] Database Task expired")
 			case "failed":
 				return false, fmt.Errorf("[Error] Database Task failed")
-			case "complete", "":
+			case "complete", "": // TODO: Shouldnt this be completed?
 				return true, nil
 			case "queued", "running":
 				break
@@ -3141,6 +3180,7 @@ func validateRemoteLeaderIDDiff(_ context.Context, diff *schema.ResourceDiff, me
 
 func validateVersionDiff(_ context.Context, diff *schema.ResourceDiff, meta interface{}) (err error) {
 	_, versionOk := diff.GetOk("version")
+
 	instanceID := diff.Id() // Does this check if something is provisioned or not?
 	oldVersion, newVersion := diff.GetChange("version")
 	// In place upgrade validation
