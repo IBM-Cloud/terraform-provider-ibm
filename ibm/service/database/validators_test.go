@@ -13,28 +13,6 @@ import (
 
 type MockMeta struct{}
 
-func MockListDeploymentTaskRunning(instanceID string, meta interface{}) (*clouddatabasesv5.Tasks, error) {
-	return &clouddatabasesv5.Tasks{
-		Tasks: []clouddatabasesv5.Task{
-			{
-				Status:      core.StringPtr("running"),
-				Description: core.StringPtr("Upgrading database"),
-			},
-		},
-	}, nil
-}
-
-func MockListDeploymentTaskCompleted(instanceID string, meta interface{}) (*clouddatabasesv5.Tasks, error) {
-	return &clouddatabasesv5.Tasks{
-		Tasks: []clouddatabasesv5.Task{
-			{
-				Status:      core.StringPtr("completed"),
-				Description: core.StringPtr("Upgrading database"),
-			},
-		},
-	}, nil
-}
-
 func MockGetDeploymentCapability(capability, instanceID, deploymentType, region string, meta interface{}) (*clouddatabasesv5.Capability, error) {
 	return &clouddatabasesv5.Capability{
 		Versions: []clouddatabasesv5.VersionsCapabilityItem{
@@ -78,7 +56,6 @@ func TestValidateVersion(t *testing.T) {
 			instanceID:         "test-instance",
 			newVersion:         "6",
 			skipBackup:         false,
-			mockListFunc:       MockListDeploymentTaskRunning,
 			mockCapabilityFunc: MockGetDeploymentCapability,
 			expectedError:      "There is already an upgrade task running. Please wait for this to complete",
 		},
@@ -87,7 +64,6 @@ func TestValidateVersion(t *testing.T) {
 			instanceID:         "test-instance",
 			newVersion:         "9",
 			skipBackup:         false,
-			mockListFunc:       MockListDeploymentTaskCompleted,
 			mockCapabilityFunc: MockGetDeploymentCapabilityNoTransitions,
 			expectedError:      "You are not allowed to upgrade version, there are no approved upgrade paths for your current version, please look at our docs here",
 		},
@@ -96,7 +72,6 @@ func TestValidateVersion(t *testing.T) {
 			instanceID:         "test-instance",
 			newVersion:         "10",
 			skipBackup:         false,
-			mockListFunc:       MockListDeploymentTaskCompleted,
 			mockCapabilityFunc: MockGetDeploymentCapability,
 			expectedError:      "Version 10 is not a valid upgrade version. Allowed versions [6 7 8]",
 		},
@@ -105,14 +80,12 @@ func TestValidateVersion(t *testing.T) {
 			instanceID:         "test-instance",
 			newVersion:         "7",
 			skipBackup:         false,
-			mockListFunc:       MockListDeploymentTaskCompleted,
 			mockCapabilityFunc: MockGetDeploymentCapability,
 			expectedError:      "",
 		},
 	}
 
 	for _, tc := range tests {
-		listDeploymentTasksFunc = tc.mockListFunc
 		getDeploymentCapabilityFunc = tc.mockCapabilityFunc
 
 		err := validateVersion(tc.instanceID, tc.newVersion, tc.skipBackup, &MockMeta{})

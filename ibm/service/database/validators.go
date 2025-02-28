@@ -56,7 +56,6 @@ func isSkipBackupAllowed(newVersion string, allowedVersions []AllowedUpgrade) bo
 }
 
 var (
-	listDeploymentTasksFunc     = listDeploymentTasks
 	getDeploymentCapabilityFunc = getDeploymentCapability
 )
 
