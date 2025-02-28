@@ -13,7 +13,8 @@ import (
 )
 
 /* Deployment api calls
-   TODO Move other deployment api endpoints in here */
+   TODO Move other deployment api endpoints in here
+*/
 
 func getDeploymentCapability(capabilityId string, deploymentId string, platform string, location string, meta interface{}) (*clouddatabasesv5.Capability, error) {
 

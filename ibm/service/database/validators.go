@@ -10,9 +10,9 @@ import (
 	"github.com/IBM/cloud-databases-go-sdk/clouddatabasesv5"
 )
 
-// TODO move other validators in here
+/* TODO move other validators in here */
 
-/* VERSION */
+/* VERSION VALIDATOR */
 type AllowedUpgrade struct {
 	ToVersion           string `json:"to_version"`
 	SkipBackupSupported bool   `json:"skip_backup_supported"`
@@ -23,11 +23,11 @@ func getAllowedUpgradeVersions(capability clouddatabasesv5.Capability) []Allowed
 
 	for _, version := range capability.Versions {
 		for _, transition := range version.Transitions {
-			// TODO change to in-place, fix skip backup once API is complete
+			// TODO change to in-place
 			if transition.Method != nil && *transition.Method == "restore" {
 				allowedVersions = append(allowedVersions, AllowedUpgrade{
 					ToVersion:           *transition.ToVersion,
-					SkipBackupSupported: false, // transition.SkipBackupSupported,
+					SkipBackupSupported: *transition.SkipBackupSupported,
 				})
 			}
 		}
@@ -56,13 +56,13 @@ func isSkipBackupAllowed(newVersion string, allowedVersions []AllowedUpgrade) bo
 }
 
 var (
+	// TODO: FInd a better way to do this, this allows mocking for unit tests
 	getDeploymentCapabilityFunc = getDeploymentCapability
 )
 
-func validateVersion(instanceID string, newVersion string, skipBackup bool, meta interface{}) (err error) {
-	fmt.Printf("Type of meta: %T\n", meta)
-
-	// Get available versions for deployment TODO what happens if there is an inplace running and versions has changed
+func validateVersion(instanceID string, version string, skipBackup bool, meta interface{}) (err error) {
+	// TODO make more ipu specific
+	// Get available versions for deployment
 	capability, err := getDeploymentCapabilityFunc("versions", instanceID, "classic", "us-south", meta)
 	if err != nil {
 		log.Fatalf("Error fetching capability: %v", err)
@@ -73,7 +73,7 @@ func validateVersion(instanceID string, newVersion string, skipBackup bool, meta
 		return fmt.Errorf("You are not allowed to upgrade version, there are no approved upgrade paths for your current version, please look at our docs here")
 	}
 
-	isAllowed := isVersionAllowed(newVersion, allowedVersions)
+	isAllowed := isVersionAllowed(version, allowedVersions)
 
 	if isAllowed == false {
 		allowedVersionList := []string{}
@@ -81,18 +81,18 @@ func validateVersion(instanceID string, newVersion string, skipBackup bool, meta
 		for _, upgrade := range allowedVersions {
 			allowedVersionList = append(allowedVersionList, upgrade.ToVersion)
 		}
-		return fmt.Errorf("Version %s is not a valid upgrade version. Allowed versions %v", newVersion, allowedVersionList)
+		return fmt.Errorf("Version %s is not a valid upgrade version. Allowed versions %v", version, allowedVersionList)
 	}
 
 	if skipBackup == true {
-		isAllowedSkipBackup := isSkipBackupAllowed(newVersion, allowedVersions)
+		isAllowedSkipBackup := isSkipBackupAllowed(version, allowedVersions)
 
 		if isAllowedSkipBackup != true {
-			return fmt.Errorf("You are not allowed to skip taking a backup when upgrading to version %s. Please remove skip_backup or update field to false", newVersion)
+			return fmt.Errorf("You are not allowed to skip taking a backup when upgrading to version %s. Please remove version_upgrade_skip_backup or update field to false", version)
 		}
 	}
 
 	return nil
 }
 
-/* VERSION END */
+/* VERSION VALIDATOR END */

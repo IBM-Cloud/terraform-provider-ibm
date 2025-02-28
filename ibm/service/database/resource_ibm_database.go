@@ -251,6 +251,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				Description: "Option to skip the backup when upgrading the version of your db. Default is false",
 				Type:        schema.TypeBool,
 				Optional:    true,
+				Default:     false,
 			},
 			"service_endpoints": {
 				Description:  "Types of the service endpoints. Possible values are 'public', 'private', 'public-and-private'.",
@@ -2204,44 +2205,38 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 	}
 
 	/*
-	   	 if d.HasChange("version") {
-	   		version := d.Get("version").(string)
+		if d.HasChange("version") {
+			//TODO LORNA: hook this up to new endpoint
+		   	version := d.Get("version").(string)
+		   	skipBackup := d.Get("version_upgrade_skip_backup").(bool)
 
-	   //LORNA
+			var expirationDatetime string
+		   	const isTimeoutMoreThan24Hours = isMoreThan24Hours(d.Timeout(schema.TimeoutUpdate))
 
-	
-	   		 		 skipBackup := false
-	   		 		if skip, ok := d.GetOk("version_upgrade_skip_backup"); ok {
-	   		 			skipBackup = skip.(bool)
-	   		 		}
+		   	if(isTimeoutMoreThan24Hours){
+		   		expirationDatetime = now.Add(24 * time.Hour).String()
+		   	} else{
+		   	 	expirationDatetime = millisecondsToISOTimestamp(d.Timeout(schema.TimeoutUpdate))
+		   	}
 
-	   		 		var expirationDatetime string
-	   	 const isTimeoutMoreThan24Hours = isMoreThan24Hours(d.Timeout(schema.TimeoutUpdate))
+		   	versionOptions := &clouddatabasesv5.VersionOptions{
+		   		ID: &instanceID,
+		   		Skip_Backup: skipBackup,
+		   	}
 
-	   	 if(isTimeoutMoreThan24Hours){
-	   	 	expirationDatetime = now.Add(24 * time.Hour).String()
-	   	 } else{
-	   	 	expirationDatetime = millisecondsToISOTimestamp(d.Timeout(schema.TimeoutUpdate))
-	   	 }
+		   	versionResponse, response, err := cloudDatabasesClient.Version(versionOptions)
 
-	   		 		versionOptions := &clouddatabasesv5.VersionOptions{
-	   		 			ID: &instanceID,
-	   		 			Skip_Backup: skipBackup,
-	   		 			}
-	   		 		}
+		   	if err != nil {
+		   		return diag.FromErr(fmt.Errorf("[ERROR] Error upgrading version of instance: %s\n%s", err, response))
+		   	}
 
-	   		 		 promoteReadReplicaResponse, response, err := cloudDatabasesClient.PromoteReadOnlyReplica(promoteReadOnlyReplicaOptions)
+		   	taskID := *versionResponse.Task.ID
+		   	_, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
 
-	   				if err != nil {
-	   				 	return diag.FromErr(fmt.Errorf("[ERROR] Error promoting read replica: %s\n%s", err, response))
-	   		 		}
-
-	   		 taskID := *promoteReadReplicaResponse.Task.ID
-	   		 _, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
-
-	   		 		if err != nil {
-	   					return diag.FromErr(fmt.Errorf("[ERROR] Error upgrading version: %s", err))
-	   				}
+		   	if err != nil {
+		   		return diag.FromErr(fmt.Errorf("[ERROR] Error upgrading version: %s", err))
+			}
+		}
 	*/
 	return resourceIBMDatabaseInstanceRead(context, d, meta)
 
@@ -2443,7 +2438,7 @@ func waitForDatabaseTaskComplete(taskId string, d *schema.ResourceData, meta int
 			}
 
 			switch *getTaskResponse.Task.Status {
-			case "expired": // TODO do we want this anymore
+			case "expired": // TODO do we need this
 				return false, fmt.Errorf("[Error] Database Task expired")
 			case "failed":
 				return false, fmt.Errorf("[Error] Database Task failed")
@@ -3179,19 +3174,13 @@ func validateRemoteLeaderIDDiff(_ context.Context, diff *schema.ResourceDiff, me
 }
 
 func validateVersionDiff(_ context.Context, diff *schema.ResourceDiff, meta interface{}) (err error) {
-	_, versionOk := diff.GetOk("version")
-
-	instanceID := diff.Id() // Does this check if something is provisioned or not?
+	instanceID := diff.Id()
 	oldVersion, newVersion := diff.GetChange("version")
 	// In place upgrade validation
-	if versionOk && instanceID != "" && oldVersion != newVersion {
-		backup, exists := diff.GetOk("skip_backup")
-		skipBackup := false // default
-
-		if exists {
-			skipBackup = backup.(bool)
-		}
+	if instanceID != "" && oldVersion != newVersion {
+		skipBackup := diff.Get("version_upgrade_skip_backup").(bool)
 		newVersionStr, _ := newVersion.(string)
+
 		return validateVersion(instanceID, newVersionStr, skipBackup, meta)
 	}
 

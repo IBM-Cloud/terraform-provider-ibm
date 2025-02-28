@@ -8,7 +8,7 @@ import (
 
 	"github.com/IBM/cloud-databases-go-sdk/clouddatabasesv5"
 	"github.com/IBM/go-sdk-core/core"
-	"gotest.tools/assert"
+	"github.com/stretchr/testify/assert"
 )
 
 type MockMeta struct{}
@@ -101,7 +101,7 @@ func TestValidateVersion(t *testing.T) {
 		if tc.expectedError != "" {
 			assert.Error(t, err, tc.expectedError)
 		} else {
-			assert.NilError(t, err)
+			assert.NoError(t, err)
 		}
 	}
 }
