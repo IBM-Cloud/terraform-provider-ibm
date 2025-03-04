@@ -36,8 +36,8 @@ require (
 	github.com/IBM/platform-services-go-sdk v0.74.1
 	github.com/IBM/project-go-sdk v0.3.5
 	github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5
+	github.com/IBM/scc-go-sdk/v5 v5.5.2
 	github.com/IBM/sarama v1.45.0
-	github.com/IBM/scc-go-sdk/v5 v5.4.1
 	github.com/IBM/schematics-go-sdk v0.3.0
 	github.com/IBM/sds-go-sdk v0.0.4
 	github.com/IBM/secrets-manager-go-sdk/v2 v2.0.10
@@ -52,7 +52,6 @@ require (
 	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32
 	github.com/go-openapi/strfmt v0.23.0
 	github.com/golang-jwt/jwt v3.2.2+incompatible
-	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/google/go-cmp v0.6.0
 	github.com/google/uuid v1.6.0
 	github.com/hashicorp/go-uuid v1.0.3

@@ -69,6 +69,9 @@ func testAccCheckIBMIamTrustedProfileClaimRuleConfigBasic(profileName string) st
 	return fmt.Sprintf(`
 		resource "ibm_iam_trusted_profile" "iam_trusted_profile" {
 			name = "%s"
+			lifecycle {
+              ignore_changes = [history]
+            }
 		}
 		resource "ibm_iam_trusted_profile_claim_rule" "iam_trusted_profile_claim_rule" {
 			profile_id = ibm_iam_trusted_profile.iam_trusted_profile.id 
@@ -89,6 +92,9 @@ func testAccCheckIBMIamTrustedProfileClaimRuleConfig(profileName string, name st
 	return fmt.Sprintf(`
 		resource "ibm_iam_trusted_profile" "iam_trusted_profile" {
 			name = "%s"
+			lifecycle {
+              ignore_changes = [history]
+            }
 		}
 		resource "ibm_iam_trusted_profile_claim_rule" "iam_trusted_profile_claim_rule" {
 			profile_id = ibm_iam_trusted_profile.iam_trusted_profile.id

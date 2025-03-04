@@ -5,6 +5,7 @@ package scc
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"time"
 
@@ -448,7 +449,7 @@ func dataSourceIbmSccLatestReportsReportToMap(model *securityandcompliancecenter
 		modelMap["group_id"] = model.GroupID
 	}
 	if model.CreatedOn != nil {
-		modelMap["created_on"] = model.CreatedOn
+		modelMap["created_on"] = model.CreatedOn.String()
 	}
 	if model.ScanTime != nil {
 		modelMap["scan_time"] = model.ScanTime
@@ -528,9 +529,9 @@ func dataSourceIbmSccLatestReportsAttachmentToMap(model *securityandcompliancece
 	if model.Schedule != nil {
 		modelMap["schedule"] = model.Schedule
 	}
-	if model.Scope != nil {
+	if model.Scopes != nil {
 		scope := []map[string]interface{}{}
-		for _, scopeItem := range model.Scope {
+		for _, scopeItem := range model.Scopes {
 			scopeItemMap, err := dataSourceIbmSccLatestReportsAttachmentScopeToMap(&scopeItem)
 			if err != nil {
 				return modelMap, err
@@ -542,7 +543,7 @@ func dataSourceIbmSccLatestReportsAttachmentToMap(model *securityandcompliancece
 	return modelMap, nil
 }
 
-func dataSourceIbmSccLatestReportsAttachmentScopeToMap(model *securityandcompliancecenterapiv3.AttachmentScope) (map[string]interface{}, error) {
+func dataSourceIbmSccLatestReportsAttachmentScopeToMap(model *securityandcompliancecenterapiv3.Scope) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
 		modelMap["id"] = model.ID
@@ -553,7 +554,7 @@ func dataSourceIbmSccLatestReportsAttachmentScopeToMap(model *securityandcomplia
 	if model.Properties != nil {
 		properties := []map[string]interface{}{}
 		for _, propertiesItem := range model.Properties {
-			propertiesItemMap, err := dataSourceIbmSccLatestReportsScopePropertyToMap(&propertiesItem)
+			propertiesItemMap, err := dataSourceIbmSccLatestReportsScopePropertyToMap(propertiesItem)
 			if err != nil {
 				return modelMap, err
 			}
@@ -564,13 +565,24 @@ func dataSourceIbmSccLatestReportsAttachmentScopeToMap(model *securityandcomplia
 	return modelMap, nil
 }
 
-func dataSourceIbmSccLatestReportsScopePropertyToMap(model *securityandcompliancecenterapiv3.ScopeProperty) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.Name != nil {
-		modelMap["name"] = model.Name
+func dataSourceIbmSccLatestReportsScopePropertyToMap(model securityandcompliancecenterapiv3.ScopePropertyIntf) (map[string]interface{}, error) {
+	if _, ok := model.(*securityandcompliancecenterapiv3.ScopePropertyScopeID); ok {
+		return resourceIBMSccScopeScopePropertyScopeIDToMap(model.(*securityandcompliancecenterapiv3.ScopePropertyScopeID))
+	} else if _, ok := model.(*securityandcompliancecenterapiv3.ScopePropertyScopeType); ok {
+		return resourceIBMSccScopeScopePropertyScopeTypeToMap(model.(*securityandcompliancecenterapiv3.ScopePropertyScopeType))
+	} else if _, ok := model.(*securityandcompliancecenterapiv3.ScopePropertyExclusions); ok {
+		return resourceIBMSccScopeScopePropertyExclusionsToMap(model.(*securityandcompliancecenterapiv3.ScopePropertyExclusions))
+	} else if _, ok := model.(*securityandcompliancecenterapiv3.ScopeProperty); ok {
+		modelMap := make(map[string]interface{})
+		model := model.(*securityandcompliancecenterapiv3.ScopeProperty)
+		if model.Name != nil {
+			modelMap["name"] = model.Name
+		}
+		if model.Value != nil {
+			modelMap["value"] = model.Value
+		}
+		return modelMap, nil
+	} else {
+		return nil, fmt.Errorf("Unrecognized securityandcompliancecenterv3.ScopePropertyIntf subtype encountered")
 	}
-	if model.Value != nil {
-		modelMap["value"] = model.Value
-	}
-	return modelMap, nil
 }

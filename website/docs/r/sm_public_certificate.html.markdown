@@ -8,7 +8,7 @@ subcategory: "Secrets Manager"
 
 # ibm_sm_public_certificate
 
-Provides a resource for PublicCertificate. This allows PublicCertificate to be created, updated and deleted.
+Provides a resource for Secrets Manager public certificate secret. This allows a public certificate secret to be created, updated and deleted.
 
 ## Example Usage
 
@@ -42,7 +42,7 @@ Review the argument reference that you can specify for your resource.
 * `name` - (Required, String) The human-readable name of your secret.
   * Constraints: The maximum length is `256` characters. The minimum length is `2` characters. The value must match regular expression `^[A-Za-z0-9_][A-Za-z0-9_]*(?:_*-*\.*[A-Za-z0-9]*)*[A-Za-z0-9]+$`.
 * `ca` - (Required, Forces new resource, String) The name of the certificate authority configuration.
-* `common_name` - (Required, Forces new resource, String) The Common Name (AKA CN) represents the server name protected by the SSL certificate.
+* `common_name` - (Optional, Forces new resource, String) The Common Name (AKA CN) represents the server name protected by the SSL certificate.
   * Constraints: The maximum length is `64` characters. The minimum length is `4` characters. The value must match regular expression `/^(\\*\\.)?(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9])\\.?$/`.
 * `custom_metadata` - (Optional, Map) The secret metadata that a user can customize.
 * `description` - (Optional, String) An extended description of your secret.To protect your privacy, do not use personal data, such as your name or location, as a description for your secret group.

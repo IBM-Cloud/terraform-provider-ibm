@@ -38,6 +38,36 @@ func TestAccIBMIAMAuthorizationPolicy_Basic(t *testing.T) {
 	})
 }
 
+func TestAccIBMIAMAuthorizationPolicyUpdate_Basic(t *testing.T) {
+	var conf iampolicymanagementv1.PolicyTemplateMetaData
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMIAMAuthorizationPolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMAuthorizationPolicyBasic(),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMAuthorizationPolicyExists("ibm_iam_authorization_policy.policy", conf),
+					resource.TestCheckResourceAttr("ibm_iam_authorization_policy.policy", "source_service_name", "cloud-object-storage"),
+					resource.TestCheckResourceAttr("ibm_iam_authorization_policy.policy", "target_service_name", "kms"),
+					resource.TestCheckResourceAttr("ibm_iam_authorization_policy.policy", "description", "Authorization Policy for test scenario"),
+				),
+			},
+			{
+				Config: testAccCheckIBMIAMAuthorizationPolicyUpdate(acc.Tg_cross_network_account_id),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMAuthorizationPolicyExists("ibm_iam_authorization_policy.policy", conf),
+					resource.TestCheckResourceAttr("ibm_iam_authorization_policy.policy", "source_service_name", "cloud-object-storage"),
+					resource.TestCheckResourceAttr("ibm_iam_authorization_policy.policy", "source_service_account", acc.Tg_cross_network_account_id),
+					resource.TestCheckResourceAttr("ibm_iam_authorization_policy.policy", "description", "Authorization Policy for test scenario"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccIBMIAMAuthorizationPolicy_Resource_Instance(t *testing.T) {
 	var conf iampolicymanagementv1.PolicyTemplateMetaData
 	instanceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
@@ -369,6 +399,18 @@ func testAccCheckIBMIAMAuthorizationPolicyBasic() string {
 		description = "Authorization Policy for test scenario"
 	  }
 	`
+}
+
+func testAccCheckIBMIAMAuthorizationPolicyUpdate(accountId string) string {
+	return fmt.Sprintf(`
+	resource "ibm_iam_authorization_policy" "policy" {
+		source_service_name = "cloud-object-storage"
+		source_service_account = "%s"
+		target_service_name = "kms"
+		roles               = ["Reader"]
+		description = "Authorization Policy for test scenario"
+	  }
+	`, accountId)
 }
 
 func testAccCheckIBMIAMAuthorizationPolicyResourceInstance(instanceName string) string {
