@@ -84,7 +84,7 @@ Nested schema for **source**:
 * `timezone` - (Optional, String) Only used for timer triggers. Specify the timezone used for this timer trigger, which will ensure the CRON activates this trigger relative to the specified timezone. If no timezone is specified, the default timezone used is UTC. Valid timezones are those listed in the IANA timezone database, https://www.iana.org/time-zones.
   * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z+_., \/]{1,253}$/`.
 * `type` - (Required, String) Trigger type.
-  * Constraints: Allowable values are: .
+  * Constraints: Allowable values are: `manual`, `scm`, `timer`, `generic`.
 * `worker` - (Optional, List) Details of the worker used to run the trigger.
 Nested schema for **worker**:
 	* `id` - (Required, String) ID of the worker.
