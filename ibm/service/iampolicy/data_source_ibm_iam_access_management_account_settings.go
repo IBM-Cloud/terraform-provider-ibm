@@ -56,7 +56,7 @@ func DataSourceIBMIAMAccessManagementAccountSettings() *schema.Resource {
 									"service_id": {
 										Type:        schema.TypeSet,
 										Computed:    true,
-										Description: "The core set of properties associated with a serviceID identity type.",
+										Description: "The core set of properties associated with a serviceId identity type.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"state": {
