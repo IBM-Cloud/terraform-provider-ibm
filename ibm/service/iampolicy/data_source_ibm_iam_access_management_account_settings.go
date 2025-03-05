@@ -18,7 +18,7 @@ import (
 
 func DataSourceIBMIAMAccessManagementAccountSettings() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIBMAccessManagementAccountSettingsRead,
+		ReadContext: dataSourceIBMAccessManagementAccountSettingsGet,
 
 		Schema: map[string]*schema.Schema{
 			"external_account_identity_interaction": {
@@ -114,7 +114,7 @@ func DataSourceIBMIAMAccessManagementAccountSettings() *schema.Resource {
 	}
 }
 
-func dataSourceIBMAccessManagementAccountSettingsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMAccessManagementAccountSettingsGet(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamPolicyManagementClient, err := meta.(conns.ClientSession).IAMPolicyManagementV1API()
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_iam_access_management_account_settings", "read")

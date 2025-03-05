@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"reflect"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -18,10 +19,10 @@ import (
 
 func ResourceIBMIAMAccessManagementAccountSettings() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceIBMAccessManagementAccountSettingsCreate,
-		ReadContext:   resourceIBMAccessManagementAccountSettingsRead,
-		UpdateContext: resourceIBMAccessManagementAccountSettingsUpdate,
-		DeleteContext: resourceIBMAccessManagementAccountSettingsReset,
+		ReadContext:   resourceIBMAccessManagementAccountSettingsGet,
+		CreateContext: resourceIBMAccessManagementAccountSettingsSet,
+		UpdateContext: resourceIBMAccessManagementAccountSettingsSet,
+		DeleteContext: resourceIBMAccessManagementAccountSettingsUnSet,
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
@@ -123,12 +124,7 @@ func ResourceIBMIAMAccessManagementAccountSettings() *schema.Resource {
 	}
 }
 
-func resourceIBMAccessManagementAccountSettingsCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	// There is no create,
-	return resourceIBMAccessManagementAccountSettingsRead(context, d, meta)
-}
-
-func resourceIBMAccessManagementAccountSettingsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMAccessManagementAccountSettingsGet(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamPolicyManagementClient, err := meta.(conns.ClientSession).IAMPolicyManagementV1API()
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_iam_access_management_account_settings", "read")
@@ -165,7 +161,7 @@ func resourceIBMAccessManagementAccountSettingsRead(context context.Context, d *
 	return nil
 }
 
-func resourceIBMAccessManagementAccountSettingsUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMAccessManagementAccountSettingsSet(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamPolicyManagementClient, err := meta.(conns.ClientSession).IAMPolicyManagementV1API()
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_iam_access_management_account_settings", "update")
@@ -196,7 +192,7 @@ func resourceIBMAccessManagementAccountSettingsUpdate(context context.Context, d
 		if _, ok := d.GetOk("accept_language"); ok {
 			getSettingsOptions.SetAcceptLanguage(d.Get("accept_language").(string))
 		}
-		_, response, err := iamPolicyManagementClient.GetSettingsWithContext(context, getSettingsOptions)
+		amAccountSettings, response, err := iamPolicyManagementClient.GetSettingsWithContext(context, getSettingsOptions)
 		if err != nil {
 			if response != nil && response.StatusCode == 404 {
 				d.SetId("")
@@ -207,20 +203,22 @@ func resourceIBMAccessManagementAccountSettingsUpdate(context context.Context, d
 			return tfErr.GetDiag()
 		}
 
-		updateSettingsOptions.SetIfMatch(response.Headers.Get("ETag"))
-		updateSettingsOptions.SetAccountID(accountID)
-		_, _, err = iamPolicyManagementClient.UpdateSettingsWithContext(context, updateSettingsOptions)
-		if err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateSettingsWithContext failed: %s", err.Error()), "ibm_iam_access_management_account_settings", "update")
-			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-			return tfErr.GetDiag()
+		if !areAMSettingsEqual(updateSettingsOptions.ExternalAccountIdentityInteraction, amAccountSettings.ExternalAccountIdentityInteraction) {
+			updateSettingsOptions.SetIfMatch(response.Headers.Get("ETag"))
+			updateSettingsOptions.SetAccountID(accountID)
+			_, _, err = iamPolicyManagementClient.UpdateSettingsWithContext(context, updateSettingsOptions)
+			if err != nil {
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateSettingsWithContext failed: %s", err.Error()), "ibm_iam_access_management_account_settings", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
+			}
 		}
 	}
 
-	return resourceIBMAccessManagementAccountSettingsRead(context, d, meta)
+	return resourceIBMAccessManagementAccountSettingsGet(context, d, meta)
 }
 
-func resourceIBMAccessManagementAccountSettingsReset(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMAccessManagementAccountSettingsUnSet(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// Update Settings to enabled and empty array for each category since there is no real delete functionality for this API
 	iamPolicyManagementClient, err := meta.(conns.ClientSession).IAMPolicyManagementV1API()
 	if err != nil {
@@ -281,4 +279,13 @@ func resourceIBMAccessManagementAccountSettingsReset(context context.Context, d 
 
 	d.SetId("")
 	return nil
+}
+
+func areAMSettingsEqual(request *iampolicymanagementv1.ExternalAccountIdentityInteractionPatch, response *iampolicymanagementv1.ExternalAccountIdentityInteraction) bool {
+	if request != nil && request.IdentityTypes != nil && response != nil && response.IdentityTypes != nil {
+		return reflect.DeepEqual(request.IdentityTypes.User, response.IdentityTypes.User) &&
+			reflect.DeepEqual(request.IdentityTypes.Service, response.IdentityTypes.Service) &&
+			reflect.DeepEqual(request.IdentityTypes.ServiceID, response.IdentityTypes.ServiceID)
+	}
+	return false
 }
