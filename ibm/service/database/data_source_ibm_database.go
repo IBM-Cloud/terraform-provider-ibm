@@ -552,6 +552,12 @@ func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{})
 	if rsGrpID, ok := d.GetOk("resource_group_id"); ok {
 		rg := rsGrpID.(string)
 		resourceInstanceListOptions.ResourceGroupID = &rg
+	} else {
+		defaultRg, err := flex.DefaultResourceGroup(meta)
+		if err != nil {
+			return err
+		}
+		resourceInstanceListOptions.ResourceGroupID = &defaultRg
 	}
 	if service, ok := d.GetOk("service"); ok {
 		name := service.(string)
