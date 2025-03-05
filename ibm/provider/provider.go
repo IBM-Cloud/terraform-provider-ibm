@@ -435,6 +435,7 @@ func Provider() *schema.Provider {
 			"ibm_iam_policy_template_version":              iampolicy.DataSourceIBMIAMPolicyTemplateVersion(),
 			"ibm_iam_policy_assignments":                   iampolicy.DataSourceIBMIAMPolicyAssignments(),
 			"ibm_iam_policy_assignment":                    iampolicy.DataSourceIBMIAMPolicyAssignment(),
+			"ibm_iam_access_management_account_settings":   iampolicy.DataSourceIBMIAMAccessManagementAccountSettings(),
 
 			// backup as Service
 			"ibm_is_backup_policy":       vpc.DataSourceIBMIsBackupPolicy(),

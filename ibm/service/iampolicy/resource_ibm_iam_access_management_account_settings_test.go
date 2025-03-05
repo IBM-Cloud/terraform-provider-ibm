@@ -1,114 +1,159 @@
-// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
+
 package iampolicy_test
 
 import (
 	"fmt"
-	// "regexp"
 	"testing"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
-	// "github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	// "github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-
-	// "github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
-	// "github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	// "github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
-func TestAccIBMIAMAccessManagementAccountSettings_User_Basic(t *testing.T) {
-	// var conf iampolicymanagementv1.V2PolicyTemplateMetaData
-
+func TestAccIBMIAMAccessManagementAccountSettings_User(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
-		Providers:    acc.TestAccProviders,
-		// CheckDestroy: testAccCheckIBMIAMAccessManagementAccountSettingsDestroy,
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMIAMAccessManagementAccountSettingsUserBasic(acc.IAMAccountId),
+				Config: testAccCheckIBMIAMAccessManagementAccountSettingsRead(acc.IAMAccountId),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					// testAccCheckIBMIAMAccessManagementAccountSettingsExists("ibm_iam_access_management_account_settings.settings", conf),
-					resource.TestCheckResourceAttr("ibm_iam_access_management_account_settings.settings", "external_account_identity_interaction.identity_types.user.external_allowed_accounts.#", "0"),
-					resource.TestCheckResourceAttrSet("ibm_iam_access_management_account_settings.settings", "external_account_identity_interaction"),
+					resource.TestCheckResourceAttr("ibm_iam_access_management_account_settings.settings", "external_account_identity_interaction.#", "1"),
+					resource.TestCheckResourceAttr("ibm_iam_access_management_account_settings.settings", "external_account_identity_interaction.0.identity_types.#", "1"),
+					resource.TestCheckResourceAttr("ibm_iam_access_management_account_settings.settings", "external_account_identity_interaction.0.identity_types.0.user.#", "1"),
+					resource.TestCheckResourceAttr("ibm_iam_access_management_account_settings.settings", "external_account_identity_interaction.0.identity_types.0.user.0.state", "enabled"),
+					resource.TestCheckResourceAttr("ibm_iam_access_management_account_settings.settings", "external_account_identity_interaction.0.identity_types.0.user.0.external_allowed_accounts.#", "0"),
 				),
 			},
-			// {
-			// 	Config: testAccCheckIBMIAMAccessManagementAccountSettingsUserUpdate(),
-			// 	Check: resource.ComposeAggregateTestCheckFunc(
-			// 		resource.TestCheckResourceAttr("ibm_iam_access_management_account_settings.settings", "tags.#", "2"),
-			// 		resource.TestCheckResourceAttr("ibm_iam_access_management_account_settings.settings", "roles.#", "2"),
-			// 	),
-			// },
+			{
+				Config: testAccCheckIBMIAMAccessManagementAccountSettingsUpdate(acc.IAMAccountId, "user", "service_id", "service"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_iam_access_management_account_settings.settings", "external_account_identity_interaction.#", "1"),
+					resource.TestCheckResourceAttr("ibm_iam_access_management_account_settings.settings", "external_account_identity_interaction.0.identity_types.#", "1"),
+					resource.TestCheckResourceAttr("ibm_iam_access_management_account_settings.settings", "external_account_identity_interaction.0.identity_types.0.user.#", "1"),
+					resource.TestCheckResourceAttr("ibm_iam_access_management_account_settings.settings", "external_account_identity_interaction.0.identity_types.0.user.0.state", "monitor"),
+					resource.TestCheckResourceAttr("ibm_iam_access_management_account_settings.settings", "external_account_identity_interaction.0.identity_types.0.user.0.external_allowed_accounts.#", "2"),
+					resource.TestCheckResourceAttr("ibm_iam_access_management_account_settings.settings", "external_account_identity_interaction.0.identity_types.0.user.0.external_allowed_accounts.0", "account_id_01"),
+					resource.TestCheckResourceAttr("ibm_iam_access_management_account_settings.settings", "external_account_identity_interaction.0.identity_types.0.user.0.external_allowed_accounts.1", "account_id_02"),
+				),
+			},
 		},
 	})
 }
 
-// func testAccCheckIBMIAMAccessManagementAccountSettingsDestroy(s *terraform.State) error {
-// 	rsContClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).IAMPolicyManagementV1API()
-// 	if err != nil {
-// 		return err
-// 	}
-// 	for _, rs := range s.RootModule().Resources {
-// 		if rs.Type != "ibm_iam_user_policy" {
-// 			continue
-// 		}
-// 		policyID := rs.Primary.ID
-// 		parts, err := flex.IdParts(policyID)
-// 		if err != nil {
-// 			return err
-// 		}
+func TestAccIBMIAMAccessManagementAccountSettings_ServiceID(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMAccessManagementAccountSettingsRead(acc.IAMAccountId),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_iam_access_management_account_settings.settings", "external_account_identity_interaction.#", "1"),
+					resource.TestCheckResourceAttr("ibm_iam_access_management_account_settings.settings", "external_account_identity_interaction.0.identity_types.#", "1"),
+					resource.TestCheckResourceAttr("ibm_iam_access_management_account_settings.settings", "external_account_identity_interaction.0.identity_types.0.service_id.#", "1"),
+					resource.TestCheckResourceAttr("ibm_iam_access_management_account_settings.settings", "external_account_identity_interaction.0.identity_types.0.service_id.0.state", "enabled"),
+					resource.TestCheckResourceAttr("ibm_iam_access_management_account_settings.settings", "external_account_identity_interaction.0.identity_types.0.service_id.0.external_allowed_accounts.#", "0"),
+				),
+			},
+			{
+				Config: testAccCheckIBMIAMAccessManagementAccountSettingsUpdate(acc.IAMAccountId, "service_id", "user", "service"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_iam_access_management_account_settings.settings", "external_account_identity_interaction.#", "1"),
+					resource.TestCheckResourceAttr("ibm_iam_access_management_account_settings.settings", "external_account_identity_interaction.0.identity_types.#", "1"),
+					resource.TestCheckResourceAttr("ibm_iam_access_management_account_settings.settings", "external_account_identity_interaction.0.identity_types.0.service_id.#", "1"),
+					resource.TestCheckResourceAttr("ibm_iam_access_management_account_settings.settings", "external_account_identity_interaction.0.identity_types.0.service_id.0.state", "monitor"),
+					resource.TestCheckResourceAttr("ibm_iam_access_management_account_settings.settings", "external_account_identity_interaction.0.identity_types.0.service_id.0.external_allowed_accounts.#", "2"),
+					resource.TestCheckResourceAttr("ibm_iam_access_management_account_settings.settings", "external_account_identity_interaction.0.identity_types.0.service_id.0.external_allowed_accounts.0", "account_id_01"),
+					resource.TestCheckResourceAttr("ibm_iam_access_management_account_settings.settings", "external_account_identity_interaction.0.identity_types.0.service_id.0.external_allowed_accounts.1", "account_id_02"),
+				),
+			},
+		},
+	})
+}
 
-// 		userPolicyID := parts[1]
+func TestAccIBMIAMAccessManagementAccountSettings_Service(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMAccessManagementAccountSettingsRead(acc.IAMAccountId),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_iam_access_management_account_settings.settings", "external_account_identity_interaction.#", "1"),
+					resource.TestCheckResourceAttr("ibm_iam_access_management_account_settings.settings", "external_account_identity_interaction.0.identity_types.#", "1"),
+					resource.TestCheckResourceAttr("ibm_iam_access_management_account_settings.settings", "external_account_identity_interaction.0.identity_types.0.service.#", "1"),
+					resource.TestCheckResourceAttr("ibm_iam_access_management_account_settings.settings", "external_account_identity_interaction.0.identity_types.0.service.0.state", "enabled"),
+					resource.TestCheckResourceAttr("ibm_iam_access_management_account_settings.settings", "external_account_identity_interaction.0.identity_types.0.service.0.external_allowed_accounts.#", "0"),
+				),
+			},
+			{
+				Config: testAccCheckIBMIAMAccessManagementAccountSettingsUpdate(acc.IAMAccountId, "service", "user", "service_id"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_iam_access_management_account_settings.settings", "external_account_identity_interaction.#", "1"),
+					resource.TestCheckResourceAttr("ibm_iam_access_management_account_settings.settings", "external_account_identity_interaction.0.identity_types.#", "1"),
+					resource.TestCheckResourceAttr("ibm_iam_access_management_account_settings.settings", "external_account_identity_interaction.0.identity_types.0.service.#", "1"),
+					resource.TestCheckResourceAttr("ibm_iam_access_management_account_settings.settings", "external_account_identity_interaction.0.identity_types.0.service.0.state", "monitor"),
+					resource.TestCheckResourceAttr("ibm_iam_access_management_account_settings.settings", "external_account_identity_interaction.0.identity_types.0.service.0.external_allowed_accounts.#", "2"),
+					resource.TestCheckResourceAttr("ibm_iam_access_management_account_settings.settings", "external_account_identity_interaction.0.identity_types.0.service.0.external_allowed_accounts.0", "account_id_01"),
+					resource.TestCheckResourceAttr("ibm_iam_access_management_account_settings.settings", "external_account_identity_interaction.0.identity_types.0.service.0.external_allowed_accounts.1", "account_id_02"),
+				),
+			},
+		},
+	})
+}
 
-// 		getPolicyOptions := rsContClient.NewGetV2PolicyOptions(
-// 			userPolicyID,
-// 		)
-
-// 		// Try to find the key
-// 		destroyedPolicy, response, err := rsContClient.GetV2Policy(getPolicyOptions)
-
-// 		if err == nil && *destroyedPolicy.State != "deleted" {
-// 			return fmt.Errorf("User policy still exists: %s\n", rs.Primary.ID)
-// 		} else if response.StatusCode != 404 && destroyedPolicy.State != nil && *destroyedPolicy.State != "deleted" {
-// 			return fmt.Errorf("[ERROR] Error waiting for user policy (%s) to be destroyed: %s", rs.Primary.ID, err)
-// 		}
-// 	}
-
-// 	return nil
-// }
-
-func testAccCheckIBMIAMAccessManagementAccountSettingsUserBasic(accountID string) string {
-	fmt.Printf("howdy accountID: %+v", accountID)
+func testAccCheckIBMIAMAccessManagementAccountSettingsRead(accountID string) string {
 	return fmt.Sprintf(` 
 		resource "ibm_iam_access_management_account_settings" "settings" {
 			account_id = "%s"
-			external_account_identity_interaction = <<EOF
-			{
-			  "identity_types":{
-			    "user":{
-			      "state":"monitor",
-				    "external_allowed_accounts":[]
+
+			external_account_identity_interaction {
+			  identity_types {
+			    user {
+			      state                     = "enabled"
+                  external_allowed_accounts = []
 			    }
-		    }
-			}
-			EOF
+
+                service_id {
+			      state                     = "enabled"
+                  external_allowed_accounts = []
+			    }
+
+                service {
+			      state                     = "enabled"
+                  external_allowed_accounts = []
+			    }
+              }
+            }
 	  }
 	`, accountID)
 }
 
-// func testAccCheckIBMIAMAccessManagementAccountSettingsUserUpdate(accountId string) string {
-// 	return fmt.Sprintf(`
-		
-// 		resource "ibm_iam_access_management_account_settings" "settings" {
-// 			external_account_identity_interaction {
-// 				identity_types {
-// 					user {
-// 						state = "monitor"
-// 						external_allowed_accounts = ["account1"]
-// 					}
-// 				}
-// 			}
-// 	  }
-// 	`)
-// }
+func testAccCheckIBMIAMAccessManagementAccountSettingsUpdate(accountID string, type1 string, type2 string, type3 string) string {
+	return fmt.Sprintf(` 
+		resource "ibm_iam_access_management_account_settings" "settings" {
+			account_id = "%s"
+
+			external_account_identity_interaction {
+			  identity_types {
+			    %s {
+			      state                     = "monitor"
+                  external_allowed_accounts = ["account_id_01", "account_id_02"]
+			    }
+
+                %s {
+			      state                     = "enabled"
+                  external_allowed_accounts = []
+			    }
+
+                %s {
+			      state                     = "enabled"
+                  external_allowed_accounts = []
+			    }
+              }
+            }
+	  }
+	`, accountID, type1, type2, type3)
+}
