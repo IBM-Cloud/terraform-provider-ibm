@@ -1956,6 +1956,120 @@ func FlattenRuleConditions(rule iampolicymanagementv1.V2PolicyRule) []map[string
 	return result
 }
 
+func FlattenAMSettingsExternalIdentityInteraction(amAccountSettings *iampolicymanagementv1.AccountSettingsAccessManagement) []map[string]interface{} {
+	identityTypes := make([]map[string]interface{}, 0)
+	if amAccountSettings.ExternalAccountIdentityInteraction != nil && amAccountSettings.ExternalAccountIdentityInteraction.IdentityTypes != nil {
+		iTypes := amAccountSettings.ExternalAccountIdentityInteraction.IdentityTypes
+		user := make([]map[string]interface{}, 0)
+		if iTypes.User != nil {
+			u := map[string]interface{}{
+				"state":                     iTypes.User.State,
+				"external_allowed_accounts": iTypes.User.ExternalAllowedAccounts,
+			}
+			user = append(user, u)
+		}
+		serviceId := make([]map[string]interface{}, 0)
+		if iTypes.ServiceID != nil {
+			sid := map[string]interface{}{
+				"state":                     iTypes.ServiceID.State,
+				"external_allowed_accounts": iTypes.ServiceID.ExternalAllowedAccounts,
+			}
+			serviceId = append(serviceId, sid)
+		}
+		service := make([]map[string]interface{}, 0)
+		if iTypes.Service != nil {
+			s := map[string]interface{}{
+				"state":                     iTypes.Service.State,
+				"external_allowed_accounts": iTypes.Service.ExternalAllowedAccounts,
+			}
+			service = append(service, s)
+		}
+		identityTypes = append(identityTypes, map[string]interface{}{
+			"user":       user,
+			"service_id": serviceId,
+			"service":    service,
+		})
+	}
+	externalIdentityInteraction := make([]map[string]interface{}, 0)
+	externalIdentityInteraction = append(externalIdentityInteraction, map[string]interface{}{
+		"identity_types": identityTypes,
+	})
+	return externalIdentityInteraction
+}
+
+func GenerateExternalAccountIdentityInteraction(d *schema.ResourceData) iampolicymanagementv1.ExternalAccountIdentityInteractionPatch {
+	interaction := getElementFromResource(d, "external_account_identity_interaction")
+	if interaction != nil {
+		identityTypes := getFirstElementFromSet(interaction["identity_types"])
+		if identityTypes != nil {
+			identityTypesPatch := iampolicymanagementv1.IdentityTypesPatch{}
+			user := getFirstElementFromSet(identityTypes["user"])
+			if user != nil {
+				state := user["state"].(string)
+				accounts := user["external_allowed_accounts"].([]interface{})
+				userPatch := iampolicymanagementv1.IdentityTypesBase{
+					State:                   &state,
+					ExternalAllowedAccounts: interfaceSliceToStringSlice(accounts),
+				}
+				identityTypesPatch.User = &userPatch
+			}
+
+			serviceId := getFirstElementFromSet(identityTypes["service_id"])
+			if serviceId != nil {
+				state := serviceId["state"].(string)
+				accounts := serviceId["external_allowed_accounts"].([]interface{})
+				serviceIdPatch := iampolicymanagementv1.IdentityTypesBase{
+					State:                   &state,
+					ExternalAllowedAccounts: interfaceSliceToStringSlice(accounts),
+				}
+				identityTypesPatch.ServiceID = &serviceIdPatch
+			}
+
+			service := getFirstElementFromSet(identityTypes["service"])
+			if service != nil {
+				state := service["state"].(string)
+				accounts := service["external_allowed_accounts"].([]interface{})
+				servicePatch := iampolicymanagementv1.IdentityTypesBase{
+					State:                   &state,
+					ExternalAllowedAccounts: interfaceSliceToStringSlice(accounts),
+				}
+				identityTypesPatch.Service = &servicePatch
+			}
+			return iampolicymanagementv1.ExternalAccountIdentityInteractionPatch{
+				IdentityTypes: &identityTypesPatch,
+			}
+		}
+	}
+	return iampolicymanagementv1.ExternalAccountIdentityInteractionPatch{}
+}
+
+func getFirstElementFromSet(elem interface{}) map[string]interface{} {
+	set, ok := elem.(*schema.Set)
+	if ok && len(set.List()) != 0 {
+		return set.List()[0].(map[string]interface{})
+	}
+	return nil
+}
+
+func getElementFromResource(d *schema.ResourceData, key string) map[string]interface{} {
+	if elem, ok := d.GetOk(key); ok {
+		return getFirstElementFromSet(elem)
+	}
+	return nil
+}
+
+func interfaceSliceToStringSlice(interfaceSlice []interface{}) []string {
+	stringSlice := make([]string, 0, len(interfaceSlice))
+	for _, element := range interfaceSlice {
+		if str, ok := element.(string); ok {
+			stringSlice = append(stringSlice, str)
+		} else {
+			stringSlice = append(stringSlice, fmt.Sprintf("%v", element))
+		}
+	}
+	return stringSlice
+}
+
 // Cloud Internet Services
 func FlattenHealthMonitors(list []datatypes.Network_LBaaS_Listener) []map[string]interface{} {
 	result := make([]map[string]interface{}, 0, len(list))
