@@ -8,8 +8,13 @@ subcategory: "Identity & Access Management (IAM)"
 
 # ibm_iam_access_management_account_settings
 
-Update, and reset an `iam_access_management_account_settings` with this resource. The resource is already initialized with default values. 
-Therefore, create operation does not actually create the resource. Also, the delete operation resets the resource with default values.
+Update, and reset an `iam_access_management_account_settings` with this resource. 
+
+**Note**: The resource is already initialized with default values. Therefore, create operation does not actually create the resource. 
+As a result, the `terraform apply` command would apply the values supplied 
+in the plan and this would override any existing settings values previously set. 
+Also note that the delete operation (`terraform destroy`) resets the resource with default values.
+
 
 ## Example Usage
 
