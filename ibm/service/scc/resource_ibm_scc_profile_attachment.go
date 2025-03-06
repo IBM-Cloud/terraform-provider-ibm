@@ -51,7 +51,7 @@ func ResourceIbmSccProfileAttachment() *schema.Resource {
 				Type:        schema.TypeList,
 				Required:    true,
 				Description: "The scope payload for the multi cloud feature.",
-        ForceNew:    true,
+				ForceNew:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"environment": {
