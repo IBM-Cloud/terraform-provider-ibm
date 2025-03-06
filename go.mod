@@ -18,7 +18,7 @@ require (
 	github.com/IBM/configuration-aggregator-go-sdk v0.0.2
 	github.com/IBM/container-registry-go-sdk v1.1.0
 	github.com/IBM/continuous-delivery-go-sdk/v2 v2.0.2
-	github.com/IBM/event-notifications-go-admin-sdk v0.13.0
+	github.com/IBM/event-notifications-go-admin-sdk v0.14.0
 	github.com/IBM/eventstreams-go-sdk v1.4.0
 	github.com/IBM/go-sdk-core v1.1.0
 	github.com/IBM/go-sdk-core/v3 v3.2.4
@@ -36,8 +36,8 @@ require (
 	github.com/IBM/platform-services-go-sdk v0.74.1
 	github.com/IBM/project-go-sdk v0.3.5
 	github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5
-	github.com/IBM/scc-go-sdk/v5 v5.5.2
 	github.com/IBM/sarama v1.45.0
+	github.com/IBM/scc-go-sdk/v5 v5.5.2
 	github.com/IBM/schematics-go-sdk v0.3.0
 	github.com/IBM/sds-go-sdk v0.0.4
 	github.com/IBM/secrets-manager-go-sdk/v2 v2.0.10
