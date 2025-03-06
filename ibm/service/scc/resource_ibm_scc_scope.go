@@ -65,6 +65,7 @@ func ResourceIbmSccScope() *schema.Resource {
 			},
 			"exclusions": &schema.Schema{
 				Type:        schema.TypeList,
+				ForceNew:    true,
 				Optional:    true,
 				Computed:    true,
 				Description: "A list of scopes/targets to exclude from a scope.",
