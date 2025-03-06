@@ -305,7 +305,7 @@ func ResourceIBMCISRulesetRuleCreate(d *schema.ResourceData, meta interface{}) e
 		opt.SetRef(rulesObject[CISRulesetsRuleRef].(string))
 
 		position := rulesetsv1.Position{}
-		if reflect.ValueOf(rulesObject[CISRulesetsRulePosition]).IsNil() {
+		if !reflect.ValueOf(rulesObject[CISRulesetsRulePosition]).IsNil() {
 			position = expandCISRulesetsRulesPositions(rulesObject[CISRulesetsRulePosition])
 		}
 		opt.SetPosition(&position)
@@ -390,14 +390,13 @@ func ResourceIBMCISRulesetRuleUpdate(d *schema.ResourceData, meta interface{}) e
 			actionParameters := expandCISRulesetsRulesActionParameters(rulesetsRuleObject[CISRulesetsRuleActionParameters])
 			opt.SetActionParameters(&actionParameters)
 		}
-		actionParameters := expandCISRulesetsRulesActionParameters(rulesetsRuleObject[CISRulesetsRuleActionParameters])
-		opt.SetActionParameters(&actionParameters)
 		opt.SetEnabled(rulesetsRuleObject[CISRulesetsRuleActionEnabled].(bool))
 		opt.SetExpression(rulesetsRuleObject[CISRulesetsRuleExpression].(string))
 		opt.SetRef(rulesetsRuleObject[CISRulesetsRuleRef].(string))
-		position := expandCISRulesetsRulesPositions(rulesetsRuleObject[CISRulesetsRulePosition])
-		opt.SetPosition(&position)
-
+		if d.HasChange(CISRulesetsRulePosition) {
+			position := expandCISRulesetsRulesPositions(rulesetsRuleObject[CISRulesetsRulePosition])
+			opt.SetPosition(&position)
+		}
 		opt.SetRulesetID(rulesetId)
 		opt.SetRuleID(ruleId)
 		opt.SetID(ruleId)
