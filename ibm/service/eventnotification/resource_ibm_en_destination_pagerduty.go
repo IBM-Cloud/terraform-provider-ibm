@@ -24,7 +24,6 @@ func ResourceIBMEnPagerDutyDestination() *schema.Resource {
 		UpdateContext: resourceIBMEnPagerDutyDestinationUpdate,
 		DeleteContext: resourceIBMEnPagerDutyDestinationDelete,
 		Importer:      &schema.ResourceImporter{},
-
 		Schema: map[string]*schema.Schema{
 			"instance_guid": {
 				Type:        schema.TypeString,
@@ -69,12 +68,13 @@ func ResourceIBMEnPagerDutyDestination() *schema.Resource {
 										Type:        schema.TypeString,
 										Sensitive:   true,
 										Optional:    true,
-										Description: "The api key for chrome app authorization",
+										Description: "The api key Pagerduty",
+										Default:     "",
 									},
 									"routing_key": {
 										Type:        schema.TypeString,
 										Optional:    true,
-										Description: "The website url",
+										Description: "The routing key for pagerduty",
 									},
 								},
 							},
@@ -104,6 +104,7 @@ func ResourceIBMEnPagerDutyDestination() *schema.Resource {
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 		},
+		DeprecationMessage: "The api_key parameter under config has  been deprecated and will be removed in future ",
 	}
 }
 

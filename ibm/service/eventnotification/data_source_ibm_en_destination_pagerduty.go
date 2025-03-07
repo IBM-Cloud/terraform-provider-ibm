@@ -18,8 +18,8 @@ import (
 
 func DataSourceIBMEnPagerDutyDestination() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIBMEnPagerDutyeDestinationRead,
-
+		ReadContext:        dataSourceIBMEnPagerDutyeDestinationRead,
+		DeprecationMessage: "The api_key parameter under config has  been deprecated and will be removed in future ",
 		Schema: map[string]*schema.Schema{
 			"instance_guid": {
 				Type:        schema.TypeString,
