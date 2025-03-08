@@ -541,7 +541,7 @@ func DataSourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{})
 
 	name := d.Get("name").(string)
 
-	resourceInstanceListOptions := rc.ListResourceInstancesOptions{
+	resourceInstanceListOptions := &rc.ListResourceInstancesOptions{
 		Name: &name,
 	}
 
@@ -568,20 +568,16 @@ func DataSourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{})
 			return fmt.Errorf("[ERROR] Error retrieving database offering: %s", err)
 		}
 
-		//resourceInstanceListOptions.ServiceID = serviceOff[0].ID
 		resourceId := serviceOff[0].ID
 		resourceInstanceListOptions.ResourceID = &resourceId
 	}
 
-	// Corrected API Call
-	listResourceInstancesOptions := &rc.ListResourceInstancesOptions{}
-
-	result, _, err := rsAPI.ListResourceInstances(listResourceInstancesOptions)
+	result, _, err := rsAPI.ListResourceInstances(resourceInstanceListOptions)
 	if err != nil {
 		return fmt.Errorf("Error fetching resource instances: %s", err)
 	}
 
-	instances = result.Resources // Corrected assignment
+	instances = result.Resources
 
 	var filteredInstances []rc.ResourceInstance
 	var location string
@@ -598,14 +594,16 @@ func DataSourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{})
 	}
 
 	if len(filteredInstances) == 0 {
-		return fmt.Errorf("[ERROR] No resource instance found with name [%s]", name)
+		return fmt.Errorf("[ERROR] No resource instance found with name [%s]\nIf not specified please specify more filters like resource_group_id if instance doesn't exists in default group, location or database", name)
 	}
+
+	var instance rc.ResourceInstance
 
 	if len(filteredInstances) > 1 {
-		return fmt.Errorf("more than one resource instance found with name [%s]", name)
+		return fmt.Errorf("[ERROR] More than one resource instance found with name matching [%s]\nIf not specified please specify more filters like resource_group_id if instance doesn't exists in default group, location or database", name)
 	}
 
-	instance := filteredInstances[0]
+	instance = filteredInstances[0]
 
 	d.SetId(*instance.ID)
 
@@ -644,7 +642,6 @@ func DataSourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{})
 	if err != nil {
 		return err
 	}
-	d.Set(flex.ResourceControllerURL, rcontroller+"/services/")
 	d.Set(flex.ResourceControllerURL, rcontroller+"/services/"+url.QueryEscape(*instance.CRN))
 
 	cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
@@ -658,9 +655,9 @@ func DataSourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{})
 	getDeploymentInfoResponse, response, err := cloudDatabasesClient.GetDeploymentInfo(getDeploymentInfoOptions)
 	if err != nil {
 		if response.StatusCode == 404 {
-			return fmt.Errorf("[error] the database instance was not found in the region set for the provider")
+			return fmt.Errorf("[ERROR] The database instance was not found in the region set for the Provider, or the default of us-south. Specify the correct region in the provider definition, or create a provider alias for the correct region. %v", err)
 		}
-		return fmt.Errorf("[ERROR] Error getting database config: %s", err)
+		return fmt.Errorf("[ERROR] Error getting database config while updating adminpassword for: %s with error %s", *instance.ID, err)
 	}
 
 	deployment := getDeploymentInfoResponse.Deployment
@@ -690,7 +687,7 @@ func DataSourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{})
 
 	autoscalingGroup, _, err := cloudDatabasesClient.GetAutoscalingConditions(getAutoscalingConditionsOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error getting database autoscaling groups: %s", err)
+		return fmt.Errorf("[ERROR] Error getting database autoscaling groups: %s\n Hint: Check if there is a mismatch between your database location and IBMCLOUD_REGION", err)
 	}
 	d.Set("auto_scaling", flattenAutoScalingGroup(*autoscalingGroup))
 
