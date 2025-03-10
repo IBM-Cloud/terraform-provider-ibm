@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2022 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package atracker_test
@@ -19,21 +19,68 @@ func TestAccIBMAtrackerSettingsBasic(t *testing.T) {
 	var conf atrackerv2.Settings
 	metadataRegionPrimary := "us-south"
 	privateAPIEndpointOnly := "false"
+	metadataRegionPrimaryUpdate := "us-east"
+	privateAPIEndpointOnlyUpdate := "true"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMAtrackerSettingsDestroy,
 		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckIBMAtrackerSettingsConfigBasic(metadataRegionPrimary,
-					"", privateAPIEndpointOnly),
+			resource.TestStep{
+				Config: testAccCheckIBMAtrackerSettingsConfigBasic(metadataRegionPrimary, "", privateAPIEndpointOnly),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMAtrackerSettingsExists("ibm_atracker_settings.atracker_settings", conf),
-					resource.TestCheckResourceAttr("ibm_atracker_settings.atracker_settings", "metadata_region_primary", metadataRegionPrimary),
-					resource.TestCheckResourceAttr("ibm_atracker_settings.atracker_settings", "metadata_region_backup", ""),
-					resource.TestCheckResourceAttr("ibm_atracker_settings.atracker_settings", "private_api_endpoint_only", privateAPIEndpointOnly),
+					testAccCheckIBMAtrackerSettingsExists("ibm_atracker_settings.atracker_settings_instance", conf),
+					resource.TestCheckResourceAttr("ibm_atracker_settings.atracker_settings_instance", "metadata_region_primary", metadataRegionPrimary),
+					resource.TestCheckResourceAttr("ibm_atracker_settings.atracker_settings_instance", "private_api_endpoint_only", privateAPIEndpointOnly),
 				),
+			},
+			resource.TestStep{
+				Config: testAccCheckIBMAtrackerSettingsConfigBasic(metadataRegionPrimaryUpdate, "", privateAPIEndpointOnlyUpdate),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_atracker_settings.atracker_settings_instance", "metadata_region_primary", metadataRegionPrimaryUpdate),
+					resource.TestCheckResourceAttr("ibm_atracker_settings.atracker_settings_instance", "private_api_endpoint_only", privateAPIEndpointOnlyUpdate),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMAtrackerSettingsAllArgs(t *testing.T) {
+	var conf atrackerv2.Settings
+	metadataRegionPrimary := "us-south"
+	metadataRegionBackup := "eu-gb"
+	privateAPIEndpointOnly := "false"
+	metadataRegionPrimaryUpdate := "us-east"
+	metadataRegionBackupUpdate := "eu-de"
+	privateAPIEndpointOnlyUpdate := "true"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMAtrackerSettingsDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMAtrackerSettingsConfig(metadataRegionPrimary, metadataRegionBackup, privateAPIEndpointOnly),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMAtrackerSettingsExists("ibm_atracker_settings.atracker_settings_instance", conf),
+					resource.TestCheckResourceAttr("ibm_atracker_settings.atracker_settings_instance", "metadata_region_primary", metadataRegionPrimary),
+					resource.TestCheckResourceAttr("ibm_atracker_settings.atracker_settings_instance", "metadata_region_backup", metadataRegionBackup),
+					resource.TestCheckResourceAttr("ibm_atracker_settings.atracker_settings_instance", "private_api_endpoint_only", privateAPIEndpointOnly),
+				),
+			},
+			resource.TestStep{
+				Config: testAccCheckIBMAtrackerSettingsConfig(metadataRegionPrimaryUpdate, metadataRegionBackupUpdate, privateAPIEndpointOnlyUpdate),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_atracker_settings.atracker_settings_instance", "metadata_region_primary", metadataRegionPrimaryUpdate),
+					resource.TestCheckResourceAttr("ibm_atracker_settings.atracker_settings_instance", "metadata_region_backup", metadataRegionBackupUpdate),
+					resource.TestCheckResourceAttr("ibm_atracker_settings.atracker_settings_instance", "private_api_endpoint_only", privateAPIEndpointOnlyUpdate),
+				),
+			},
+			resource.TestStep{
+				ResourceName:      "ibm_atracker_settings.atracker_settings",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -42,7 +89,7 @@ func TestAccIBMAtrackerSettingsBasic(t *testing.T) {
 func testAccCheckIBMAtrackerSettingsConfigBasic(metadataRegionPrimary string,
 	metadataRegionBackup string, privateAPIEndpointOnly string) string {
 	return fmt.Sprintf(`
-		resource "ibm_atracker_target" "atracker_target" {
+		resource "ibm_atracker_target" "atracker_target_instance" {
 			name = "my-cos-target"
 			target_type = "cloud_object_storage"
 			cos_endpoint {
@@ -61,6 +108,30 @@ func testAccCheckIBMAtrackerSettingsConfigBasic(metadataRegionPrimary string,
 		}
 	`, metadataRegionPrimary,
 		metadataRegionBackup, privateAPIEndpointOnly)
+}
+
+func testAccCheckIBMAtrackerSettingsConfig(metadataRegionPrimary string, metadataRegionBackup string, privateAPIEndpointOnly string) string {
+	return fmt.Sprintf(`
+
+		resource "ibm_atracker_target" "atracker_target_instance" {
+			name = "my-cos-target"
+			target_type = "cloud_object_storage"
+			cos_endpoint {
+				endpoint = "s3.private.us-east.cloud-object-storage.appdomain.cloud"
+				target_crn = "crn:v1:bluemix:public:cloud-object-storage:global:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
+				bucket = "my-atracker-bucket"
+				api_key = "xxxxxxxxxxxxxx" # pragma: whitelist secret
+				service_to_service_enabled = false
+			}
+		}
+
+		resource "ibm_atracker_settings" "atracker_settings" {
+			default_targets = [ ibm_atracker_target.atracker_target_instance.id ]
+			metadata_region_primary = "%s"
+			metadata_region_backup = "%s"
+			private_api_endpoint_only = %s
+		}
+	`, metadataRegionPrimary, metadataRegionBackup, privateAPIEndpointOnly)
 }
 
 func testAccCheckIBMAtrackerSettingsExists(n string, obj atrackerv2.Settings) resource.TestCheckFunc {
