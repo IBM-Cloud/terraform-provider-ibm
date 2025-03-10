@@ -2,7 +2,7 @@
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.101.0-62624c1e-20250225-192301
+ * IBM OpenAPI Terraform Generator Version: 3.99.1-daeb6e46-20250131-173156
  */
 
 package partnercentersell
@@ -685,6 +685,18 @@ func resourceIbmOnboardingCatalogPlanRead(context context.Context, d *schema.Res
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_onboarding_catalog_plan", "read", "set-url").GetDiag()
 		}
 	}
+	if parts[0] != "" {
+		if err = d.Set("product_id", parts[0]); err != nil {
+			err = fmt.Errorf("Error setting product_id: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_onboarding_catalog_plan", "read", "set-product_id").GetDiag()
+		}
+	}
+	if parts[1] != "" {
+		if err = d.Set("catalog_product_id", parts[1]); err != nil {
+			err = fmt.Errorf("Error setting catalog_product_id: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_onboarding_catalog_plan", "read", "set-catalog_product_id").GetDiag()
+		}
+	}
 	if !core.IsNil(globalCatalogPlan.ID) {
 		if err = d.Set("catalog_plan_id", globalCatalogPlan.ID); err != nil {
 			err = fmt.Errorf("Error setting catalog_plan_id: %s", err)
@@ -713,6 +725,9 @@ func resourceIbmOnboardingCatalogPlanUpdate(context context.Context, d *schema.R
 	updateCatalogPlanOptions.SetProductID(parts[0])
 	updateCatalogPlanOptions.SetCatalogProductID(parts[1])
 	updateCatalogPlanOptions.SetCatalogPlanID(parts[2])
+	if _, ok := d.GetOk("env"); ok {
+		updateCatalogPlanOptions.SetEnv(d.Get("env").(string))
+	}
 
 	hasChange := false
 
@@ -726,10 +741,6 @@ func resourceIbmOnboardingCatalogPlanUpdate(context context.Context, d *schema.R
 		errMsg := fmt.Sprintf("Cannot update resource property \"%s\" with the ForceNew annotation."+
 			" The resource must be re-created to update this property.", "catalog_product_id")
 		return flex.DiscriminatedTerraformErrorf(nil, errMsg, "ibm_onboarding_catalog_plan", "update", "catalog_product_id-forces-new").GetDiag()
-	}
-	if d.HasChange("env") {
-		updateCatalogPlanOptions.SetEnv(d.Get("env").(string))
-		hasChange = true
 	}
 	if d.HasChange("active") {
 		newActive := d.Get("active").(bool)
@@ -848,7 +859,7 @@ func ResourceIbmOnboardingCatalogPlanMapToCatalogProductProvider(modelMap map[st
 
 func ResourceIbmOnboardingCatalogPlanMapToGlobalCatalogOverviewUI(modelMap map[string]interface{}) (*partnercentersellv1.GlobalCatalogOverviewUI, error) {
 	model := &partnercentersellv1.GlobalCatalogOverviewUI{}
-	if modelMap["en"] != nil && len(modelMap["en"].([]interface{})) > 0 {
+	if modelMap["en"] != nil && len(modelMap["en"].([]interface{})) > 0 && modelMap["en"].([]interface{})[0] != nil {
 		EnModel, err := ResourceIbmOnboardingCatalogPlanMapToGlobalCatalogOverviewUITranslatedContent(modelMap["en"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
@@ -877,28 +888,28 @@ func ResourceIbmOnboardingCatalogPlanMapToGlobalCatalogPlanMetadataPrototypePatc
 	if modelMap["rc_compatible"] != nil {
 		model.RcCompatible = core.BoolPtr(modelMap["rc_compatible"].(bool))
 	}
-	if modelMap["ui"] != nil && len(modelMap["ui"].([]interface{})) > 0 {
+	if modelMap["ui"] != nil && len(modelMap["ui"].([]interface{})) > 0 && modelMap["ui"].([]interface{})[0] != nil {
 		UiModel, err := ResourceIbmOnboardingCatalogPlanMapToGlobalCatalogPlanMetadataUI(modelMap["ui"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
 		model.Ui = UiModel
 	}
-	if modelMap["service"] != nil && len(modelMap["service"].([]interface{})) > 0 {
+	if modelMap["service"] != nil && len(modelMap["service"].([]interface{})) > 0 && modelMap["service"].([]interface{})[0] != nil {
 		ServiceModel, err := ResourceIbmOnboardingCatalogPlanMapToGlobalCatalogPlanMetadataServicePrototypePatch(modelMap["service"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
 		model.Service = ServiceModel
 	}
-	if modelMap["pricing"] != nil && len(modelMap["pricing"].([]interface{})) > 0 {
+	if modelMap["pricing"] != nil && len(modelMap["pricing"].([]interface{})) > 0 && modelMap["pricing"].([]interface{})[0] != nil {
 		PricingModel, err := ResourceIbmOnboardingCatalogPlanMapToGlobalCatalogMetadataPricing(modelMap["pricing"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
 		model.Pricing = PricingModel
 	}
-	if modelMap["plan"] != nil && len(modelMap["plan"].([]interface{})) > 0 {
+	if modelMap["plan"] != nil && len(modelMap["plan"].([]interface{})) > 0 && modelMap["plan"].([]interface{})[0] != nil {
 		PlanModel, err := ResourceIbmOnboardingCatalogPlanMapToGlobalCatalogPlanMetadataPlan(modelMap["plan"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
@@ -917,14 +928,14 @@ func ResourceIbmOnboardingCatalogPlanMapToGlobalCatalogPlanMetadataPrototypePatc
 
 func ResourceIbmOnboardingCatalogPlanMapToGlobalCatalogPlanMetadataUI(modelMap map[string]interface{}) (*partnercentersellv1.GlobalCatalogPlanMetadataUI, error) {
 	model := &partnercentersellv1.GlobalCatalogPlanMetadataUI{}
-	if modelMap["strings"] != nil && len(modelMap["strings"].([]interface{})) > 0 {
+	if modelMap["strings"] != nil && len(modelMap["strings"].([]interface{})) > 0 && modelMap["strings"].([]interface{})[0] != nil {
 		StringsModel, err := ResourceIbmOnboardingCatalogPlanMapToGlobalCatalogMetadataUIStrings(modelMap["strings"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
 		model.Strings = StringsModel
 	}
-	if modelMap["urls"] != nil && len(modelMap["urls"].([]interface{})) > 0 {
+	if modelMap["urls"] != nil && len(modelMap["urls"].([]interface{})) > 0 && modelMap["urls"].([]interface{})[0] != nil {
 		UrlsModel, err := ResourceIbmOnboardingCatalogPlanMapToGlobalCatalogMetadataUIUrls(modelMap["urls"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
@@ -942,7 +953,7 @@ func ResourceIbmOnboardingCatalogPlanMapToGlobalCatalogPlanMetadataUI(modelMap m
 
 func ResourceIbmOnboardingCatalogPlanMapToGlobalCatalogMetadataUIStrings(modelMap map[string]interface{}) (*partnercentersellv1.GlobalCatalogMetadataUIStrings, error) {
 	model := &partnercentersellv1.GlobalCatalogMetadataUIStrings{}
-	if modelMap["en"] != nil && len(modelMap["en"].([]interface{})) > 0 {
+	if modelMap["en"] != nil && len(modelMap["en"].([]interface{})) > 0 && modelMap["en"].([]interface{})[0] != nil {
 		EnModel, err := ResourceIbmOnboardingCatalogPlanMapToGlobalCatalogMetadataUIStringsContent(modelMap["en"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
