@@ -267,7 +267,8 @@ func dataSourceLoadBalancerPoolCollectionPoolsToMap(poolsItem vpcv1.LoadBalancer
 	}
 	if poolsItem.HealthMonitor != nil {
 		healthMonitorList := []map[string]interface{}{}
-		healthMonitorMap := dataSourceLoadBalancerPoolCollectionPoolsHealthMonitorToMap(*poolsItem.HealthMonitor)
+		poolHealthMonitor := poolsItem.HealthMonitor.(*vpcv1.LoadBalancerPoolHealthMonitor)
+		healthMonitorMap := dataSourceLoadBalancerPoolCollectionPoolsHealthMonitorToMap(*poolHealthMonitor)
 		healthMonitorList = append(healthMonitorList, healthMonitorMap)
 		poolsMap["health_monitor"] = healthMonitorList
 	}

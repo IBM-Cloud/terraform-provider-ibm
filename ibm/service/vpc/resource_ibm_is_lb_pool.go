@@ -298,24 +298,23 @@ func lbPoolCreate(d *schema.ResourceData, meta interface{}, name, lbID, algorith
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error checking for load balancer (%s) is active: %s", lbID, err)
 	}
-
+	healthMonitor := &vpcv1.LoadBalancerPoolHealthMonitorPrototype{
+		Delay:      &healthDelay,
+		MaxRetries: &maxRetries,
+		Timeout:    &healthTimeOut,
+		Type:       &healthType,
+	}
 	options := &vpcv1.CreateLoadBalancerPoolOptions{
 		LoadBalancerID: &lbID,
 		Algorithm:      &algorithm,
 		Protocol:       &protocol,
 		Name:           &name,
-		HealthMonitor: &vpcv1.LoadBalancerPoolHealthMonitorPrototype{
-			Delay:      &healthDelay,
-			MaxRetries: &maxRetries,
-			Timeout:    &healthTimeOut,
-			Type:       &healthType,
-		},
 	}
 	if healthMonitorURL != "" {
-		options.HealthMonitor.URLPath = &healthMonitorURL
+		healthMonitor.URLPath = &healthMonitorURL
 	}
 	if healthMonitorPort > int64(0) {
-		options.HealthMonitor.Port = &healthMonitorPort
+		healthMonitor.Port = &healthMonitorPort
 	}
 	if spType != "" {
 		options.SessionPersistence = &vpcv1.LoadBalancerPoolSessionPersistencePrototype{
@@ -328,6 +327,7 @@ func lbPoolCreate(d *schema.ResourceData, meta interface{}, name, lbID, algorith
 	if pProtocol != "" {
 		options.ProxyProtocol = &pProtocol
 	}
+	options.HealthMonitor = healthMonitor
 	lbPool, response, err := sess.CreateLoadBalancerPool(options)
 	if err != nil {
 		return fmt.Errorf("[DEBUG] lbpool create err: %s\n%s", err, response)
@@ -390,17 +390,20 @@ func lbPoolGet(d *schema.ResourceData, meta interface{}, lbID, lbPoolID string) 
 	d.Set(isLBID, lbID)
 	d.Set(isLBPoolAlgorithm, *lbPool.Algorithm)
 	d.Set(isLBPoolProtocol, *lbPool.Protocol)
-	d.Set(isLBPoolHealthDelay, *lbPool.HealthMonitor.Delay)
-	d.Set(isLBPoolHealthRetries, *lbPool.HealthMonitor.MaxRetries)
-	d.Set(isLBPoolHealthTimeout, *lbPool.HealthMonitor.Timeout)
-	if lbPool.HealthMonitor.Type != nil {
-		d.Set(isLBPoolHealthType, *lbPool.HealthMonitor.Type)
-	}
-	if lbPool.HealthMonitor.URLPath != nil {
-		d.Set(isLBPoolHealthMonitorURL, *lbPool.HealthMonitor.URLPath)
-	}
-	if lbPool.HealthMonitor.Port != nil {
-		d.Set(isLBPoolHealthMonitorPort, *lbPool.HealthMonitor.Port)
+	if lbPool.HealthMonitor != nil {
+		poolHealthMonitor := lbPool.HealthMonitor.(*vpcv1.LoadBalancerPoolHealthMonitor)
+		d.Set(isLBPoolHealthDelay, *poolHealthMonitor.Delay)
+		d.Set(isLBPoolHealthRetries, *poolHealthMonitor.MaxRetries)
+		d.Set(isLBPoolHealthTimeout, *poolHealthMonitor.Timeout)
+		if poolHealthMonitor.Type != nil {
+			d.Set(isLBPoolHealthType, *poolHealthMonitor.Type)
+		}
+		if poolHealthMonitor.URLPath != nil {
+			d.Set(isLBPoolHealthMonitorURL, *poolHealthMonitor.URLPath)
+		}
+		if poolHealthMonitor.Port != nil {
+			d.Set(isLBPoolHealthMonitorPort, *poolHealthMonitor.Port)
+		}
 	}
 	if lbPool.SessionPersistence != nil {
 		d.Set(isLBPoolSessPersistenceType, *lbPool.SessionPersistence.Type)

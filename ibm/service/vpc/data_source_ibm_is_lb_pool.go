@@ -261,7 +261,8 @@ func dataSourceIBMIsLbPoolRead(context context.Context, d *schema.ResourceData, 
 	}
 
 	if loadBalancerPool.HealthMonitor != nil {
-		err = d.Set("health_monitor", dataSourceLoadBalancerPoolFlattenHealthMonitor(*loadBalancerPool.HealthMonitor))
+		poolHealthMonitor := loadBalancerPool.HealthMonitor.(*vpcv1.LoadBalancerPoolHealthMonitor)
+		err = d.Set("health_monitor", dataSourceLoadBalancerPoolFlattenHealthMonitor(*poolHealthMonitor))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting health_monitor %s", err))
 		}

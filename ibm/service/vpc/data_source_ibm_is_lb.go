@@ -517,17 +517,18 @@ func lbGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 					pool[poolProvisioningStatus] = *p.ProvisioningStatus
 					pool["name"] = *p.Name
 					if p.HealthMonitor != nil {
+						poolHealthMonitor := p.HealthMonitor.(*vpcv1.LoadBalancerPoolHealthMonitor)
 						healthMonitorInfo := make(map[string]interface{})
-						delayfinal := strconv.FormatInt(*(p.HealthMonitor.Delay), 10)
+						delayfinal := strconv.FormatInt(*(poolHealthMonitor.Delay), 10)
 						healthMonitorInfo[healthMonitorDelay] = delayfinal
-						maxRetriesfinal := strconv.FormatInt(*(p.HealthMonitor.MaxRetries), 10)
-						timeoutfinal := strconv.FormatInt(*(p.HealthMonitor.Timeout), 10)
+						maxRetriesfinal := strconv.FormatInt(*(poolHealthMonitor.MaxRetries), 10)
+						timeoutfinal := strconv.FormatInt(*(poolHealthMonitor.Timeout), 10)
 						healthMonitorInfo[healthMonitorMaxRetries] = maxRetriesfinal
 						healthMonitorInfo[healthMonitorTimeout] = timeoutfinal
-						if p.HealthMonitor.URLPath != nil {
-							healthMonitorInfo[healthMonitorURLPath] = *(p.HealthMonitor.URLPath)
+						if poolHealthMonitor.URLPath != nil {
+							healthMonitorInfo[healthMonitorURLPath] = *(poolHealthMonitor.URLPath)
 						}
-						healthMonitorInfo[healthMonitorType] = *(p.HealthMonitor.Type)
+						healthMonitorInfo[healthMonitorType] = *(poolHealthMonitor.Type)
 						pool[healthMonitor] = healthMonitorInfo
 					}
 
