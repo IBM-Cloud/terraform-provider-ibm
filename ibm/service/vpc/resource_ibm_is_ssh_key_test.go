@@ -40,6 +40,32 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 		},
 	})
 }
+func TestAccIBMISSSHKey_CreatedAtHref(t *testing.T) {
+	var key string
+	publicKey := strings.TrimSpace(`
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
+`)
+	name := fmt.Sprintf("tfssh-createname-%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: checkKeyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISKeyConfig(publicKey, name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISKeyExists("ibm_is_ssh_key.isExampleKey", key),
+					resource.TestCheckResourceAttr(
+						"ibm_is_ssh_key.isExampleKey", "name", name),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_ssh_key.isExampleKey", "created_at"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_ssh_key.isExampleKey", "href"),
+				),
+			},
+		},
+	})
+}
 func TestAccIBMISSSHKey_Newlinebasic(t *testing.T) {
 	var key, key1 string
 	publicKeyTrim := strings.TrimSpace(`ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDKd3e4uoENwyLGDxpUyxkeC008r6JOHGkeF4HxEUrE2ZkTXvuOyRaF8Utyv12U5Jvpf/NQVGmdlG3rQPY5VRELthr8mhNWexY5WYo/zXSZNjHCjozpL101bcxfNG498y6uv6UoTk6geJcmckVjOYY/2T9F2B1q6dQxIsYIghjfZBFM6+wA136Nx0nof2lZiK7KAIzIlgUY3g3hhno0x5FmJHM9waoHXFLgQA0psz8XUcSt2Zr0JGFOm5U6HV/tvoP4AVB5YrhRatHry2Ulfh4acy0wswgRM0zieU0U/nLJbCgDVLwZyABEC6WcLTfrkkI53I9oYb8XyeWpyRFQLfT7AIIjfgT7q0q4gzSKTJSDR85SHhOmC/bhCDBuJ9s1ICyschF1y8lPjL/maxweNorg3RfuqsZZdmNHR9RKSxt7CPM98Z6yu5wMWRVLC6Ux5MGp6m0mDIJOfaZla6uvp8d/G6cjWCdU5eCeBh6XdQn4UDXwEB/s86lpgbDsPLMCleP8J+w8uZPQA1KZ+uWGBjoswhtOCa6bU/6ZuTqGpQVOGjVOWUGOq/ocvR03ucj6fBKViFWxV75ABXfJLarKkkIMlv9IeJ05NZG6kQjiCRN4T2I0gd9lAm0YqcITEqcN4Wgbm1z2zPwvMyWuMCW3LY4932JHKQkCEXgGBAtsnrXhZw==`)

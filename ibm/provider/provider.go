@@ -64,6 +64,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/satellite"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/scc"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/schematics"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/sdsaas"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/secretsmanager"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/transitgateway"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/usagereports"
@@ -347,7 +348,10 @@ func Provider() *schema.Provider {
 			"ibm_db2":                                      db2.DataSourceIBMDb2Instance(),
 			"ibm_db2_connection_info":                      db2.DataSourceIbmDb2ConnectionInfo(),
 			"ibm_db2_whitelist_ip":                         db2.DataSourceIbmDb2Whitelist(),
+			"ibm_db2_allowlist_ip":                         db2.DataSourceIbmDb2Allowlist(),
 			"ibm_db2_autoscale":                            db2.DataSourceIbmDb2Autoscale(),
+			"ibm_db2_backup":                               db2.DataSourceIbmDb2Backup(),
+			"ibm_db2_tuneable_param":                       db2.DataSourceIbmDb2TuneableParam(),
 			"ibm_compute_bare_metal":                       classicinfrastructure.DataSourceIBMComputeBareMetal(),
 			"ibm_compute_image_template":                   classicinfrastructure.DataSourceIBMComputeImageTemplate(),
 			"ibm_compute_placement_group":                  classicinfrastructure.DataSourceIBMComputePlacementGroup(),
@@ -855,9 +859,11 @@ func Provider() *schema.Provider {
 			"ibm_cm_offering_instance": catalogmanagement.DataSourceIBMCmOfferingInstance(),
 			"ibm_cm_preset":            catalogmanagement.DataSourceIBMCmPreset(),
 			"ibm_cm_object":            catalogmanagement.DataSourceIBMCmObject(),
+			"ibm_cm_account":           catalogmanagement.DataSourceIBMCmAccount(),
 
 			// Added for Resource Tag
-			"ibm_resource_tag": globaltagging.DataSourceIBMResourceTag(),
+			"ibm_resource_tag":   globaltagging.DataSourceIBMResourceTag(),
+			"ibm_iam_access_tag": globaltagging.DataSourceIBMIamAccessTag(),
 
 			// Atracker
 			"ibm_atracker_targets": atracker.DataSourceIBMAtrackerTargets(),
@@ -896,6 +902,8 @@ func Provider() *schema.Provider {
 			"ibm_scc_provider_type_collection": scc.DataSourceIbmSccProviderTypeCollection(),
 			"ibm_scc_provider_type_instance":   scc.DataSourceIbmSccProviderTypeInstance(),
 			"ibm_scc_latest_reports":           scc.DataSourceIbmSccLatestReports(),
+			"ibm_scc_scope":                    scc.DataSourceIbmSccScope(),
+			"ibm_scc_scope_collection":         scc.DataSourceIbmSccScopeCollection(),
 			"ibm_scc_report":                   scc.DataSourceIbmSccReport(),
 			"ibm_scc_report_controls":          scc.DataSourceIbmSccReportControls(),
 			"ibm_scc_report_evaluations":       scc.DataSourceIbmSccReportEvaluations(),
@@ -1040,6 +1048,8 @@ func Provider() *schema.Provider {
 			"ibm_logs_data_usage_metrics": logs.AddLogsInstanceFields(logs.DataSourceIbmLogsDataUsageMetrics()),
 			"ibm_logs_enrichments":        logs.AddLogsInstanceFields(logs.DataSourceIbmLogsEnrichments()),
 			"ibm_logs_data_access_rules":  logs.AddLogsInstanceFields(logs.DataSourceIbmLogsDataAccessRules()),
+			"ibm_logs_stream":             logs.AddLogsInstanceFields(logs.DataSourceIbmLogsStream()),
+			"ibm_logs_streams":            logs.AddLogsInstanceFields(logs.DataSourceIbmLogsStreams()),
 
 			// Logs Router Service
 			"ibm_logs_router_tenants": logsrouting.DataSourceIBMLogsRouterTenants(),
@@ -1385,6 +1395,10 @@ func Provider() *schema.Provider {
 			"ibm_cdn":                                      classicinfrastructure.ResourceIBMCDN(),
 			"ibm_hardware_firewall_shared":                 classicinfrastructure.ResourceIBMFirewallShared(),
 
+			// Software Defined Storage as a Service
+			"ibm_sds_volume": sdsaas.ResourceIBMSdsVolume(),
+			"ibm_sds_host":   sdsaas.ResourceIBMSdsHost(),
+
 			// Partner Center Sell
 			"ibm_onboarding_registration":       partnercentersell.ResourceIbmOnboardingRegistration(),
 			"ibm_onboarding_product":            partnercentersell.ResourceIbmOnboardingProduct(),
@@ -1407,6 +1421,7 @@ func Provider() *schema.Provider {
 			"ibm_pi_image":                           power.ResourceIBMPIImage(),
 			"ibm_pi_instance_action":                 power.ResourceIBMPIInstanceAction(),
 			"ibm_pi_instance":                        power.ResourceIBMPIInstance(),
+			"ibm_pi_instance_snapshot":               power.ResourceIBMPIInstanceSnapshot(),
 			"ibm_pi_ipsec_policy":                    power.ResourceIBMPIIPSecPolicy(),
 			"ibm_pi_key":                             power.ResourceIBMPIKey(),
 			"ibm_pi_network_address_group_member":    power.ResourceIBMPINetworkAddressGroupMember(),
@@ -1442,7 +1457,6 @@ func Provider() *schema.Provider {
 
 			// Added for Custom Resolver
 			"ibm_dns_custom_resolver":                 dnsservices.ResourceIBMPrivateDNSCustomResolver(),
-			"ibm_dns_custom_resolver_location":        dnsservices.ResourceIBMPrivateDNSCRLocation(),
 			"ibm_dns_custom_resolver_forwarding_rule": dnsservices.ResourceIBMPrivateDNSForwardingRule(),
 			"ibm_dns_custom_resolver_secondary_zone":  dnsservices.ResourceIBMPrivateDNSSecondaryZone(),
 			"ibm_dns_linked_zone":                     dnsservices.ResourceIBMDNSLinkedZone(),
@@ -1469,6 +1483,7 @@ func Provider() *schema.Provider {
 			"ibm_cm_version":           catalogmanagement.ResourceIBMCmVersion(),
 			"ibm_cm_validation":        catalogmanagement.ResourceIBMCmValidation(),
 			"ibm_cm_object":            catalogmanagement.ResourceIBMCmObject(),
+			"ibm_cm_account":           catalogmanagement.ResourceIBMCmAccount(),
 
 			// Added for enterprise
 			"ibm_enterprise":               enterprise.ResourceIBMEnterprise(),
@@ -1561,6 +1576,7 @@ func Provider() *schema.Provider {
 			"ibm_scc_profile":                scc.ResourceIbmSccProfile(),
 			"ibm_scc_profile_attachment":     scc.ResourceIbmSccProfileAttachment(),
 			"ibm_scc_provider_type_instance": scc.ResourceIbmSccProviderTypeInstance(),
+			"ibm_scc_scope":                  scc.ResourceIbmSccScope(),
 
 			// Security Services
 			"ibm_pag_instance": pag.ResourceIBMPag(),
@@ -1680,6 +1696,7 @@ func Provider() *schema.Provider {
 			"ibm_logs_data_usage_metrics": logs.AddLogsInstanceFields(logs.ResourceIbmLogsDataUsageMetrics()),
 			"ibm_logs_enrichment":         logs.AddLogsInstanceFields(logs.ResourceIbmLogsEnrichment()),
 			"ibm_logs_data_access_rule":   logs.AddLogsInstanceFields(logs.ResourceIbmLogsDataAccessRule()),
+			"ibm_logs_stream":             logs.AddLogsInstanceFields(logs.ResourceIbmLogsStream()),
 
 			// Logs Router Service
 			"ibm_logs_router_tenant": logsrouting.ResourceIBMLogsRouterTenant(),
@@ -1939,6 +1956,9 @@ func Validator() validate.ValidatorDict {
 				"ibm_hpcs_vault":                               hpcs.ResourceIbmVaultValidator(),
 				"ibm_config_aggregator_settings":               configurationaggregator.ResourceIbmConfigAggregatorSettingsValidator(),
 
+				// Cloudshell
+				"ibm_cloud_shell_account_settings": cloudshell.ResourceIBMCloudShellAccountSettingsValidator(),
+
 				// MQ on Cloud
 				"ibm_mqcloud_queue_manager":                    mqcloud.ResourceIbmMqcloudQueueManagerValidator(),
 				"ibm_mqcloud_application":                      mqcloud.ResourceIbmMqcloudApplicationValidator(),
@@ -2022,6 +2042,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_is_reservation":                                 vpc.ResourceIBMISReservationValidator(),
 				"ibm_kms_key_rings":                                  kms.ResourceIBMKeyRingValidator(),
 				"ibm_dns_glb_monitor":                                dnsservices.ResourceIBMPrivateDNSGLBMonitorValidator(),
+				"ibm_dns_custom_resolver":                            dnsservices.ResourceIBMPrivateDNSCustomResolverValidator(),
 				"ibm_dns_custom_resolver_forwarding_rule":            dnsservices.ResourceIBMPrivateDNSForwardingRuleValidator(),
 				"ibm_schematics_action":                              schematics.ResourceIBMSchematicsActionValidator(),
 				"ibm_schematics_job":                                 schematics.ResourceIBMSchematicsJobValidator(),
@@ -2067,6 +2088,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_scc_profile":                scc.ResourceIbmSccProfileValidator(),
 				"ibm_scc_profile_attachment":     scc.ResourceIbmSccProfileAttachmentValidator(),
 				"ibm_scc_provider_type_instance": scc.ResourceIbmSccProviderTypeInstanceValidator(),
+				"ibm_scc_scope":                  scc.ResourceIbmSccScopeValidator(),
 
 				// Added for Toolchains
 				"ibm_cd_toolchain":                         cdtoolchain.ResourceIBMCdToolchainValidator(),
@@ -2157,8 +2179,9 @@ func Validator() validate.ValidatorDict {
 
 				// Added for Event Notifications
 
-				"ibm_en_smtp_configuration": eventnotification.ResourceIBMEnSMTPConfigurationValidator(),
-				"ibm_en_smtp_user":          eventnotification.ResourceIBMEnSMTPUserValidator(),
+				"ibm_en_smtp_configuration":       eventnotification.ResourceIBMEnSMTPConfigurationValidator(),
+				"ibm_en_smtp_user":                eventnotification.ResourceIBMEnSMTPUserValidator(),
+				"ibm_en_destination_custom_email": eventnotification.ResourceIBMEnEmailDestinationValidator(),
 
 				// Added for VMware as a Service
 				"ibm_vmaas_vdc":             vmware.ResourceIbmVmaasVdcValidator(),
@@ -2173,9 +2196,14 @@ func Validator() validate.ValidatorDict {
 				"ibm_logs_dashboard_folder": logs.ResourceIbmLogsDashboardFolderValidator(),
 				"ibm_logs_enrichment":       logs.ResourceIbmLogsEnrichmentValidator(),
 				"ibm_logs_data_access_rule": logs.ResourceIbmLogsDataAccessRuleValidator(),
+				"ibm_logs_stream":           logs.ResourceIbmLogsStreamValidator(),
 
 				// Added for Logs Router Service
 				"ibm_logs_router_tenant": logsrouting.ResourceIBMLogsRouterTenantValidator(),
+
+				// Added for Software Defined Storage as a Service
+				"ibm_sds_volume": sdsaas.ResourceIBMSdsVolumeValidator(),
+				"ibm_sds_host":   sdsaas.ResourceIBMSdsHostValidator(),
 			},
 			DataSourceValidatorDictionary: map[string]*validate.ResourceValidator{
 				"ibm_is_subnet":                     vpc.DataSourceIBMISSubnetValidator(),
@@ -2260,7 +2288,6 @@ func Validator() validate.ValidatorDict {
 				"ibm_iam_trusted_profile_links":       iamidentity.DataSourceIBMIamTrustedProfileLinksValidator(),
 				"ibm_iam_trusted_profile":             iamidentity.DataSourceIBMIamTrustedProfileValidator(),
 				"ibm_iam_trusted_profile_claim_rules": iamidentity.DataSourceIBMIamTrustedProfileClaimRulesValidator(),
-				"ibm_iam_trusted_profiles":            iamidentity.DataSourceIBMIamTrustedProfilesValidator(),
 
 				"ibm_iam_access_group_policy":    iampolicy.DataSourceIBMIAMAccessGroupPolicyValidator(),
 				"ibm_iam_service_policy":         iampolicy.DataSourceIBMIAMServicePolicyValidator(),

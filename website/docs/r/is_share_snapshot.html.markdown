@@ -60,7 +60,7 @@ After your resource is created, you can read values from the listed arguments an
 - `crn` - (String) The CRN for this share snapshot.
 - `fingerprint` - (String) The fingerprint for this snapshot.
 - `href` - (String) The URL for this share snapshot.
-- `is_share_snapshot_id` - (String) The unique identifier for this share snapshot.
+- `share_snapshot` - (String) The unique identifier for this share snapshot.
 - `lifecycle_state` - (String) The lifecycle state of this share snapshot.
 - `minimum_size` - (Integer) The minimum size of a share created from this snapshot. When a snapshot is created, this will be set to the size of the `source_share`.
 - `resource_group` - (List) The resource group for this file share.
@@ -84,13 +84,13 @@ After your resource is created, you can read values from the listed arguments an
 ## Import
 
 You can import the `ibm_is_share_snapshot` resource by using `id`.
-The `id` property can be formed from `share_id`, and `is_share_snapshot_id` in the following format:
+The `id` property can be formed from `share_id`, and `share_snapshot` in the following format:
 
 <pre>
 &lt;share_id&gt;/&lt;is_share_snapshot_id&gt;
 </pre>
 - `share_id`: A string. The file share identifier.
-- `is_share_snapshot_id`: A string in the format `r006-e13ee54f-baa4-40d3-b35c-b9ec163972b4`. The unique identifier for this share snapshot.
+- `share_snapshot`: A string in the format `r006-e13ee54f-baa4-40d3-b35c-b9ec163972b4`. The unique identifier for this share snapshot.
 
 # Syntax
 <pre>

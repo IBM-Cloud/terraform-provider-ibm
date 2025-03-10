@@ -120,6 +120,7 @@ resource "ibm_onboarding_catalog_deployment" "onboarding_catalog_deployment_inst
 
 | Name | Description |
 |------|-------------|
+| geo_tags |  |
 | url | The global catalog URL of your product. |
 | catalog_deployment_id | The ID of a global catalog object. |
 
@@ -137,6 +138,7 @@ resource "ibm_onboarding_catalog_plan" "onboarding_catalog_plan_instance" {
   kind = var.onboarding_catalog_plan_kind
   overview_ui = var.onboarding_catalog_plan_overview_ui
   tags = var.onboarding_catalog_plan_tags
+  pricing_tags = var.onboarding_catalog_plan_pricing_tags
   object_provider = var.onboarding_catalog_plan_object_provider
   metadata = var.onboarding_catalog_plan_metadata
 }
@@ -157,6 +159,7 @@ resource "ibm_onboarding_catalog_plan" "onboarding_catalog_plan_instance" {
 | kind | The kind of the global catalog object. | `string` | true |
 | overview_ui | The object that contains the service details from the Overview page in global catalog. | `` | false |
 | tags | A list of tags that carry information about your product. These tags can be used to find your product in the IBM Cloud catalog. | `list(string)` | true |
+| pricing_tags | A list of tags that carry information about the pricing information of your product. | `list(string)` | false |
 | object_provider | The provider or owner of the product. | `` | true |
 | metadata | Global catalog plan metadata. | `` | false |
 
@@ -164,6 +167,7 @@ resource "ibm_onboarding_catalog_plan" "onboarding_catalog_plan_instance" {
 
 | Name | Description |
 |------|-------------|
+| geo_tags |  |
 | url | The global catalog URL of your product. |
 | catalog_plan_id | The ID of a global catalog object. |
 
@@ -208,7 +212,10 @@ resource "ibm_onboarding_catalog_product" "onboarding_catalog_product_instance" 
 
 | Name | Description |
 |------|-------------|
+| geo_tags |  |
+| pricing_tags | A list of tags that carry information about the pricing information of your product. |
 | url | The global catalog URL of your product. |
+| group | Flag for group tile legacy service. |
 | catalog_product_id | The ID of a global catalog object. |
 
 ### Resource: ibm_onboarding_iam_registration

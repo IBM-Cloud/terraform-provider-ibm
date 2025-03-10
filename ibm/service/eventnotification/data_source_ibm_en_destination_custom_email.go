@@ -67,6 +67,54 @@ func DataSourceIBMEnCustomEmailDestination() *schema.Resource {
 										Computed:    true,
 										Description: "The custom doamin",
 									},
+									"dkim": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "The DKIM attributes.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"public_key": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "dkim public key.",
+												},
+												"selector": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "dkim selector.",
+												},
+												"verification": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "dkim verification.",
+												},
+											},
+										},
+									},
+									"spf": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "The SPF attributes.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"txt_name": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "spf text name.",
+												},
+												"txt_value": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "spf text value.",
+												},
+												"verification": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "spf verification.",
+												},
+											},
+										},
+									},
 								},
 							},
 						},
@@ -140,7 +188,7 @@ func dataSourceIBMEnCustomEmailDestinationRead(context context.Context, d *schem
 	}
 
 	if result.Config != nil {
-		err = d.Set("config", enSlackDestinationFlattenConfig(*result.Config))
+		err = d.Set("config", enCustomEmailDestinationFlattenConfig(*result.Config))
 		if err != nil {
 			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting config: %s", err), "(Data) ibm_en_destination_custom_email", "read")
 			return tfErr.GetDiag()
@@ -194,9 +242,52 @@ func enCustomEmailDestinationConfigParamsToMap(paramsItem en.DestinationConfigOn
 
 	params := paramsItem.(*en.DestinationConfigOneOf)
 
-	if params.URL != nil {
+	if params.Domain != nil {
 		paramsMap["domain"] = params.Domain
 	}
 
+	if params.Dkim != nil {
+		dkimMap, err := dataSourceIBMEnDestinationDkimAttributesToMap(params.Dkim)
+		if err != nil {
+			return paramsMap
+		}
+		paramsMap["dkim"] = []map[string]interface{}{dkimMap}
+	}
+	if params.Spf != nil {
+		spfMap, err := dataSourceIBMEnDestinationSpfAttributesToMap(params.Spf)
+		if err != nil {
+			return paramsMap
+		}
+		paramsMap["spf"] = []map[string]interface{}{spfMap}
+	}
+
 	return paramsMap
+}
+
+func dataSourceIBMEnDestinationDkimAttributesToMap(model *en.DkimAttributes) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.PublicKey != nil {
+		modelMap["public_key"] = model.PublicKey
+	}
+	if model.Selector != nil {
+		modelMap["selector"] = model.Selector
+	}
+	if model.Verification != nil {
+		modelMap["verification"] = model.Verification
+	}
+	return modelMap, nil
+}
+
+func dataSourceIBMEnDestinationSpfAttributesToMap(model *en.SpfAttributes) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.TxtName != nil {
+		modelMap["txt_name"] = model.TxtName
+	}
+	if model.TxtValue != nil {
+		modelMap["txt_value"] = model.TxtValue
+	}
+	if model.Verification != nil {
+		modelMap["verification"] = model.Verification
+	}
+	return modelMap, nil
 }

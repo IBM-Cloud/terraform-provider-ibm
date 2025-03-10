@@ -18,7 +18,7 @@ import (
 )
 
 func TestAccIbmSccProviderTypeInstanceBasic(t *testing.T) {
-	var conf securityandcompliancecenterapiv3.ProviderTypeInstanceItem
+	var conf securityandcompliancecenterapiv3.ProviderTypeInstance
 	name := fmt.Sprintf("tf_provider_type_instance_name_%d", acctest.RandIntRange(10, 100))
 	nameUpdate := fmt.Sprintf("tf_provider_type_instance_name_%d", acctest.RandIntRange(10, 100))
 
@@ -45,7 +45,7 @@ func TestAccIbmSccProviderTypeInstanceBasic(t *testing.T) {
 }
 
 func TestAccIbmSccProviderTypeInstanceAllArgs(t *testing.T) {
-	var conf securityandcompliancecenterapiv3.ProviderTypeInstanceItem
+	var conf securityandcompliancecenterapiv3.ProviderTypeInstance
 	name := fmt.Sprintf("tf_provider_type_instance_name_%d", acctest.RandIntRange(10, 100))
 	nameUpdate := fmt.Sprintf("tf_provider_type_instance_name_%d", acctest.RandIntRange(10, 100))
 
@@ -98,7 +98,7 @@ func testAccCheckIbmSccProviderTypeInstanceConfig(instanceID string, name string
 	`, instanceID, providerTypeID, name, attributes)
 }
 
-func testAccCheckIbmSccProviderTypeInstanceExists(n string, obj securityandcompliancecenterapiv3.ProviderTypeInstanceItem) resource.TestCheckFunc {
+func testAccCheckIbmSccProviderTypeInstanceExists(n string, obj securityandcompliancecenterapiv3.ProviderTypeInstance) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {

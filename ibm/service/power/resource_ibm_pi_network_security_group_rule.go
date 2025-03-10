@@ -49,8 +49,33 @@ func ResourceIBMPINetworkSecurityGroupRule() *schema.Resource {
 				Type:         schema.TypeString,
 				ValidateFunc: validation.NoZeroValues,
 			},
+			Arg_DestinationPort: {
+				ConflictsWith: []string{Arg_DestinationPorts, Arg_NetworkSecurityGroupRuleID},
+				Description:   "Destination port ranges.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						Attr_Maximum: {
+							Default:     65535,
+							Description: "The end of the port range, if applicable. If the value is not present then the default value of 65535 will be the maximum port number.",
+							Optional:    true,
+							Type:        schema.TypeInt,
+						},
+						Attr_Minimum: {
+							Default:     1,
+							Description: "The start of the port range, if applicable. If the value is not present then the default value of 1 will be the minimum port number.",
+							Optional:    true,
+							Type:        schema.TypeInt,
+						},
+					},
+				},
+				ForceNew: true,
+				MaxItems: 1,
+				Optional: true,
+				Type:     schema.TypeList,
+			},
 			Arg_DestinationPorts: {
-				ConflictsWith: []string{Arg_NetworkSecurityGroupRuleID},
+				ConflictsWith: []string{Arg_DestinationPort, Arg_NetworkSecurityGroupRuleID},
+				Deprecated:    "This field is deprecated. Please use 'pi_destination_port' instead.",
 				Description:   "Destination port ranges.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -80,7 +105,7 @@ func ResourceIBMPINetworkSecurityGroupRule() *schema.Resource {
 				Type:        schema.TypeString,
 			},
 			Arg_NetworkSecurityGroupRuleID: {
-				ConflictsWith: []string{Arg_Action, Arg_DestinationPorts, Arg_Protocol, Arg_Remote, Arg_SourcePorts},
+				ConflictsWith: []string{Arg_Action, Arg_DestinationPort, Arg_DestinationPorts, Arg_Protocol, Arg_Remote, Arg_SourcePort, Arg_SourcePorts},
 				Description:   "The network security group rule id to remove.",
 				ForceNew:      true,
 				Optional:      true,
@@ -147,8 +172,33 @@ func ResourceIBMPINetworkSecurityGroupRule() *schema.Resource {
 				Optional: true,
 				Type:     schema.TypeList,
 			},
+			Arg_SourcePort: {
+				ConflictsWith: []string{Arg_NetworkSecurityGroupRuleID, Arg_SourcePorts},
+				Description:   "Source port ranges.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						Attr_Maximum: {
+							Default:     65535,
+							Description: "The end of the port range, if applicable. If the value is not present then the default value of 65535 will be the maximum port number.",
+							Optional:    true,
+							Type:        schema.TypeInt,
+						},
+						Attr_Minimum: {
+							Default:     1,
+							Description: "The start of the port range, if applicable. If the value is not present then the default value of 1 will be the minimum port number.",
+							Optional:    true,
+							Type:        schema.TypeInt,
+						},
+					},
+				},
+				ForceNew: true,
+				MaxItems: 1,
+				Optional: true,
+				Type:     schema.TypeList,
+			},
 			Arg_SourcePorts: {
-				ConflictsWith: []string{Arg_NetworkSecurityGroupRuleID},
+				ConflictsWith: []string{Arg_NetworkSecurityGroupRuleID, Arg_SourcePort},
+				Deprecated:    "This field is deprecated. 'Please use pi_source_port' instead.",
 				Description:   "Source port ranges.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -178,6 +228,11 @@ func ResourceIBMPINetworkSecurityGroupRule() *schema.Resource {
 				Description: "The network security group's crn.",
 				Type:        schema.TypeString,
 			},
+			Attr_Default: {
+				Computed:    true,
+				Description: "Indicates if the network security group is the default network security group in the workspace.",
+				Type:        schema.TypeBool,
+			},
 			Attr_Members: {
 				Computed:    true,
 				Description: "The list of IPv4 addresses and, or network interfaces in the network security group.",
@@ -191,6 +246,11 @@ func ResourceIBMPINetworkSecurityGroupRule() *schema.Resource {
 						Attr_MacAddress: {
 							Computed:    true,
 							Description: "The mac address of a network interface included if the type is network-interface.",
+							Type:        schema.TypeString,
+						},
+						Attr_NetworkInterfaceID: {
+							Computed:    true,
+							Description: "The network ID of a network interface included if the type is network-interface.",
 							Type:        schema.TypeString,
 						},
 						Attr_Target: {
@@ -378,17 +438,28 @@ func resourceIBMPINetworkSecurityGroupRuleCreate(ctx context.Context, d *schema.
 		networkSecurityGroupAddRule.Remote = networkSecurityGroupRuleMapToRemote(remote)
 
 		// Optional fields
-		destinationPort := d.Get(Arg_DestinationPorts + ".0").(map[string]interface{})
-		networkSecurityGroupAddRule.DestinationPorts = networkSecurityGroupRuleMapToPort(destinationPort)
+		if _, ok := d.GetOk(Arg_DestinationPorts); ok {
+			destinationPort := d.Get(Arg_DestinationPorts + ".0").(map[string]interface{})
+			networkSecurityGroupAddRule.DestinationPorts = networkSecurityGroupRuleMapToPort(destinationPort)
+		} else {
+			destinationPort := d.Get(Arg_DestinationPort + ".0").(map[string]interface{})
+			networkSecurityGroupAddRule.DestinationPort = networkSecurityGroupRuleMapToPort(destinationPort)
+		}
 
-		sourcePort := d.Get(Arg_SourcePorts + ".0").(map[string]interface{})
-		networkSecurityGroupAddRule.SourcePorts = networkSecurityGroupRuleMapToPort(sourcePort)
+		if _, ok := d.GetOk(Arg_SourcePorts); ok {
+			sourcePort := d.Get(Arg_SourcePorts + ".0").(map[string]interface{})
+			networkSecurityGroupAddRule.SourcePorts = networkSecurityGroupRuleMapToPort(sourcePort)
+		} else {
+			sourcePort := d.Get(Arg_SourcePort + ".0").(map[string]interface{})
+			networkSecurityGroupAddRule.SourcePort = networkSecurityGroupRuleMapToPort(sourcePort)
+		}
 
 		networkSecurityGroup, err := nsgClient.AddRule(nsgID, &networkSecurityGroupAddRule)
-		ruleID := *networkSecurityGroup.ID
 		if err != nil {
 			return diag.FromErr(err)
 		}
+		ruleID := *networkSecurityGroup.ID
+
 		_, err = isWaitForIBMPINetworkSecurityGroupRuleAdd(ctx, nsgClient, nsgID, ruleID, d.Timeout(schema.TimeoutCreate))
 		if err != nil {
 			return diag.FromErr(err)
@@ -423,6 +494,7 @@ func resourceIBMPINetworkSecurityGroupRuleRead(ctx context.Context, d *schema.Re
 		}
 		d.Set(Attr_UserTags, userTags)
 	}
+	d.Set(Attr_Default, networkSecurityGroup.Default)
 
 	if len(networkSecurityGroup.Members) > 0 {
 		members := []map[string]interface{}{}

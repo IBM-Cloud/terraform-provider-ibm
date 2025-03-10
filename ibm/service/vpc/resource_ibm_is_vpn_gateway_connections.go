@@ -752,10 +752,111 @@ func vpngwconUpdate(d *schema.ResourceData, meta interface{}, gID, gConnID strin
 		vpnGatewayConnectionPatchModel.EstablishMode = &newEstablishMode
 		hasChanged = true
 	}
+
+	if d.HasChange("local.0.cidrs") {
+		o, n := d.GetChange("local.0.cidrs")
+		oldSet := o.(*schema.Set)
+		newSet := n.(*schema.Set)
+
+		// Find items to remove (present in old but not in new)
+		toRemove := oldSet.Difference(newSet)
+		if toRemove.Len() > 0 {
+			for _, cidr := range toRemove.List() {
+				cidrStr := cidr.(string)
+				removeVPNGatewayConnectionsLocalCIDROptions := &vpcv1.RemoveVPNGatewayConnectionsLocalCIDROptions{
+					VPNGatewayID: &gID,
+					ID:           &gConnID,
+					CIDR:         &cidrStr,
+				}
+
+				res, err := sess.RemoveVPNGatewayConnectionsLocalCIDR(removeVPNGatewayConnectionsLocalCIDROptions)
+				if err != nil {
+					return fmt.Errorf("error removing VPN Gateway Connection Local CIDR %s: %w", cidrStr, err)
+				}
+
+				if res.StatusCode != 201 && res.StatusCode != 204 {
+					return fmt.Errorf("unexpected status code %d while removing Local CIDR %s", res.StatusCode, cidrStr)
+				}
+			}
+		}
+
+		// Find items to add (present in new but not in old)
+		toAdd := newSet.Difference(oldSet)
+		if toAdd.Len() > 0 {
+			for _, cidr := range toAdd.List() {
+				cidrStr := cidr.(string)
+				addVPNGatewayConnectionsLocalCIDROptions := &vpcv1.AddVPNGatewayConnectionsLocalCIDROptions{
+					VPNGatewayID: &gID,
+					ID:           &gConnID,
+					CIDR:         &cidrStr,
+				}
+
+				res, err := sess.AddVPNGatewayConnectionsLocalCIDR(addVPNGatewayConnectionsLocalCIDROptions)
+				if err != nil {
+					return fmt.Errorf("error adding VPN Gateway Connection Local CIDR %s: %w", cidrStr, err)
+				}
+
+				if res.StatusCode != 201 && res.StatusCode != 204 {
+					return fmt.Errorf("unexpected status code %d while adding Local CIDR %s", res.StatusCode, cidrStr)
+				}
+			}
+		}
+	}
+
 	if d.HasChange("peer") {
 		peer, err := resourceIBMIsVPNGatewayConnectionMapToVPNGatewayConnectionPeerPatch(d.Get("peer.0").(map[string]interface{}))
 		if err != nil {
 			return err
+		}
+		if d.HasChange("peer.0.cidrs") {
+			o, n := d.GetChange("peer.0.cidrs")
+			oldSet := o.(*schema.Set)
+			newSet := n.(*schema.Set)
+
+			// Find items to remove (present in old but not in new)
+			toRemove := oldSet.Difference(newSet)
+			if toRemove.Len() > 0 {
+				for _, cidr := range toRemove.List() {
+					cidrStr := cidr.(string)
+					removeVPNGatewayConnectionsPeerCIDROptions := &vpcv1.RemoveVPNGatewayConnectionsPeerCIDROptions{
+						VPNGatewayID: &gID,
+						ID:           &gConnID,
+						CIDR:         &cidrStr,
+					}
+
+					res, err := sess.RemoveVPNGatewayConnectionsPeerCIDR(removeVPNGatewayConnectionsPeerCIDROptions)
+					if err != nil {
+						return fmt.Errorf("error removing VPN Gateway Connection Peer CIDR %s: %w", cidrStr, err)
+					}
+
+					if res.StatusCode != 201 && res.StatusCode != 204 {
+						return fmt.Errorf("unexpected status code %d while removing CIDR %s", res.StatusCode, cidrStr)
+					}
+				}
+			}
+
+			// Find items to add (present in new but not in old)
+			toAdd := newSet.Difference(oldSet)
+			if toAdd.Len() > 0 {
+				for _, cidr := range toAdd.List() {
+					cidrStr := cidr.(string)
+					addVPNGatewayConnectionsPeerCIDROptions := &vpcv1.AddVPNGatewayConnectionsPeerCIDROptions{
+						VPNGatewayID: &gID,
+						ID:           &gConnID,
+						CIDR:         &cidrStr,
+					}
+
+					res, err := sess.AddVPNGatewayConnectionsPeerCIDR(addVPNGatewayConnectionsPeerCIDROptions)
+					if err != nil {
+						return fmt.Errorf("error adding VPN Gateway Connection Peer CIDR %s: %w", cidrStr, err)
+					}
+
+					if res.StatusCode != 201 && res.StatusCode != 204 {
+						return fmt.Errorf("unexpected status code %d while adding CIDR %s", res.StatusCode, cidrStr)
+					}
+				}
+			}
+
 		}
 		vpnGatewayConnectionPatchModel.Peer = peer
 		hasChanged = true

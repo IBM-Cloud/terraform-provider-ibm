@@ -21,17 +21,16 @@ import (
 
 func TestAccIBMPIImagebasic(t *testing.T) {
 	imageRes := "ibm_pi_image.power_image"
-	name := fmt.Sprintf("tf-pi-image-%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMPIImageDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMPIImageConfig(name),
+				Config: testAccCheckIBMPIImageConfig(),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMPIImageExists(imageRes),
-					resource.TestCheckResourceAttr(imageRes, "pi_image_name", name),
+					resource.TestCheckResourceAttrSet(imageRes, "pi_image_name"),
 				),
 			},
 		},
@@ -92,14 +91,13 @@ func testAccCheckIBMPIImageExists(n string) resource.TestCheckFunc {
 	}
 }
 
-func testAccCheckIBMPIImageConfig(name string) string {
+func testAccCheckIBMPIImageConfig() string {
 	return fmt.Sprintf(`
 	resource "ibm_pi_image" "power_image" {
-		pi_cloud_instance_id = "%[2]s"
-		pi_image_id         = "%[3]s"
-		pi_image_name       = "%[1]s"
+		pi_cloud_instance_id = "%[1]s"
+		pi_image_id         = "%[2]s"
 	  }
-	`, name, acc.Pi_cloud_instance_id, acc.Pi_image)
+	`, acc.Pi_cloud_instance_id, acc.Pi_image)
 }
 
 func TestAccIBMPIImageCOSPublicImport(t *testing.T) {
@@ -138,7 +136,6 @@ func testAccCheckIBMPIImageCOSPublicConfig(name string) string {
 
 func TestAccIBMPIImageUserTags(t *testing.T) {
 	imageRes := "ibm_pi_image.power_image"
-	name := fmt.Sprintf("tf-pi-image-%d", acctest.RandIntRange(10, 100))
 	userTagsString := `["env:dev","test_tag"]`
 	userTagsStringUpdated := `["env:dev","test_tag","ibm"]`
 	resource.Test(t, resource.TestCase{
@@ -147,10 +144,10 @@ func TestAccIBMPIImageUserTags(t *testing.T) {
 		CheckDestroy: testAccCheckIBMPIImageDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMPIImageUserTagsConfig(name, userTagsString),
+				Config: testAccCheckIBMPIImageUserTagsConfig(userTagsString),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMPIImageExists(imageRes),
-					resource.TestCheckResourceAttr(imageRes, "pi_image_name", name),
+					resource.TestCheckResourceAttrSet(imageRes, "pi_image_name"),
 					resource.TestCheckResourceAttrSet(imageRes, "image_id"),
 					resource.TestCheckResourceAttr(imageRes, "pi_user_tags.#", "2"),
 					resource.TestCheckTypeSetElemAttr(imageRes, "pi_user_tags.*", "env:dev"),
@@ -158,10 +155,10 @@ func TestAccIBMPIImageUserTags(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckIBMPIImageUserTagsConfig(name, userTagsStringUpdated),
+				Config: testAccCheckIBMPIImageUserTagsConfig(userTagsStringUpdated),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMPIImageExists(imageRes),
-					resource.TestCheckResourceAttr(imageRes, "pi_image_name", name),
+					resource.TestCheckResourceAttrSet(imageRes, "pi_image_name"),
 					resource.TestCheckResourceAttrSet(imageRes, "image_id"),
 					resource.TestCheckResourceAttr(imageRes, "pi_user_tags.#", "3"),
 					resource.TestCheckTypeSetElemAttr(imageRes, "pi_user_tags.*", "env:dev"),
@@ -173,15 +170,14 @@ func TestAccIBMPIImageUserTags(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMPIImageUserTagsConfig(name string, userTagsString string) string {
+func testAccCheckIBMPIImageUserTagsConfig(userTagsString string) string {
 	return fmt.Sprintf(`
 	resource "ibm_pi_image" "power_image" {
-		pi_cloud_instance_id = "%[2]s"
-		pi_image_id         = "%[3]s"
-		pi_image_name       = "%[1]s"
-		pi_user_tags        = %[4]s
+		pi_cloud_instance_id = "%[1]s"
+		pi_image_id         = "%[2]s"
+		pi_user_tags        = %[3]s
 	  }
-	`, name, acc.Pi_cloud_instance_id, acc.Pi_image, userTagsString)
+	`, acc.Pi_cloud_instance_id, acc.Pi_image, userTagsString)
 }
 
 func TestAccIBMPIImageBYOLImport(t *testing.T) {

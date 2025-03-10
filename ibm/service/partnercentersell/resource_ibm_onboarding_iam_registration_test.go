@@ -367,19 +367,19 @@ func testAccCheckIbmOnboardingIamRegistrationUpdateConfig(
 					zh_tw = "zh_tw"
 					zh_cn = "zh_cn"
 				}
-				display_name {
-					default = "default"
-					en = "en"
-					de = "de"
-					es = "es"
-					fr = "fr"
-					it = "it"
-					ja = "ja"
-					ko = "ko"
-					pt_br = "pt_br"
-					zh_tw = "zh_tw"
-					zh_cn = "zh_cn"
-				}
+							display_name {
+								default = "default"
+								en = "en"
+								de = "de"
+								es = "es"
+								fr = "fr"
+								it = "it"
+								ja = "ja"
+								ko = "ko"
+								pt_br = "pt_br"
+								zh_tw = "zh_tw"
+								zh_cn = "zh_cn"
+							}
 				options {
 					hidden = true
 				}
@@ -430,7 +430,7 @@ func testAccCheckIbmOnboardingIamRegistrationUpdateConfig(
 				pt_br = "pt_br"
 				zh_tw = "zh_tw"
 				zh_cn = "zh_cn"
-			}
+						}
 			parent_ids = ["05ca8653-de25-49fa-a14d-aaa5d373bc22"]	
 			supported_attributes {
 				key = "testString"
@@ -887,7 +887,7 @@ func TestResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedAttr
 		supportedAttributesOptionsModel := make(map[string]interface{})
 		supportedAttributesOptionsModel["operators"] = []string{"stringEquals"}
 		supportedAttributesOptionsModel["hidden"] = true
-		supportedAttributesOptionsModel["supported_attributes"] = []string{"testString"}
+		supportedAttributesOptionsModel["supported_patterns"] = []string{"testString"}
 		supportedAttributesOptionsModel["policy_types"] = []string{"access"}
 		supportedAttributesOptionsModel["is_empty_value_supported"] = true
 		supportedAttributesOptionsModel["is_string_exists_false_value_supported"] = true
@@ -1053,7 +1053,7 @@ func TestResourceIbmOnboardingIamRegistrationSupportedAttributesOptionsToMap(t *
 		model := make(map[string]interface{})
 		model["operators"] = []string{"stringEquals"}
 		model["hidden"] = true
-		model["supported_attributes"] = []string{"testString"}
+		model["supported_patterns"] = []string{"testString"}
 		model["policy_types"] = []string{"access"}
 		model["is_empty_value_supported"] = true
 		model["is_string_exists_false_value_supported"] = true
@@ -1814,6 +1814,7 @@ func TestResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupporte
 		iamServiceRegistrationSupportedAnonymousAccessAttributesModel := new(partnercentersellv1.IamServiceRegistrationSupportedAnonymousAccessAttributes)
 		iamServiceRegistrationSupportedAnonymousAccessAttributesModel.AccountID = core.StringPtr("testString")
 		iamServiceRegistrationSupportedAnonymousAccessAttributesModel.ServiceName = core.StringPtr("testString")
+		iamServiceRegistrationSupportedAnonymousAccessAttributesModel.AdditionalProperties = map[string]string{"key1": "testString"}
 
 		model := new(partnercentersellv1.IamServiceRegistrationSupportedAnonymousAccess)
 		model.Attributes = iamServiceRegistrationSupportedAnonymousAccessAttributesModel
@@ -1825,6 +1826,7 @@ func TestResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupporte
 	iamServiceRegistrationSupportedAnonymousAccessAttributesModel := make(map[string]interface{})
 	iamServiceRegistrationSupportedAnonymousAccessAttributesModel["account_id"] = "testString"
 	iamServiceRegistrationSupportedAnonymousAccessAttributesModel["service_name"] = "testString"
+	iamServiceRegistrationSupportedAnonymousAccessAttributesModel["additional_properties"] = map[string]interface{}{"key1": "testString"}
 
 	model := make(map[string]interface{})
 	model["attributes"] = []interface{}{iamServiceRegistrationSupportedAnonymousAccessAttributesModel}
@@ -1840,6 +1842,7 @@ func TestResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupporte
 		model := new(partnercentersellv1.IamServiceRegistrationSupportedAnonymousAccessAttributes)
 		model.AccountID = core.StringPtr("testString")
 		model.ServiceName = core.StringPtr("testString")
+		model.AdditionalProperties = map[string]string{"key1": "testString"}
 
 		assert.Equal(t, result, model)
 	}
@@ -1847,6 +1850,7 @@ func TestResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupporte
 	model := make(map[string]interface{})
 	model["account_id"] = "testString"
 	model["service_name"] = "testString"
+	model["additional_properties"] = map[string]interface{}{"key1": "testString"}
 
 	result, err := partnercentersell.ResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupportedAnonymousAccessAttributes(model)
 	assert.Nil(t, err)
@@ -1950,7 +1954,7 @@ func TestResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupporte
 	supportedAttributesOptionsModel := make(map[string]interface{})
 	supportedAttributesOptionsModel["operators"] = []interface{}{"stringEquals"}
 	supportedAttributesOptionsModel["hidden"] = true
-	supportedAttributesOptionsModel["supported_attributes"] = []interface{}{"testString"}
+	supportedAttributesOptionsModel["supported_patterns"] = []interface{}{"testString"}
 	supportedAttributesOptionsModel["policy_types"] = []interface{}{"access"}
 	supportedAttributesOptionsModel["is_empty_value_supported"] = true
 	supportedAttributesOptionsModel["is_string_exists_false_value_supported"] = true
@@ -2059,7 +2063,7 @@ func TestResourceIbmOnboardingIamRegistrationMapToSupportedAttributesOptions(t *
 	model := make(map[string]interface{})
 	model["operators"] = []interface{}{"stringEquals"}
 	model["hidden"] = true
-	model["supported_attributes"] = []interface{}{"testString"}
+	model["supported_patterns"] = []interface{}{"testString"}
 	model["policy_types"] = []interface{}{"access"}
 	model["is_empty_value_supported"] = true
 	model["is_string_exists_false_value_supported"] = true

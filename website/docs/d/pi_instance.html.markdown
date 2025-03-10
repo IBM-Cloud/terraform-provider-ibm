@@ -47,6 +47,7 @@ Review the argument references that you can specify for your data source.
 In addition to all argument reference list, you can access the following attribute references after your data source is created.
 
 - `crn` - (String) The CRN of this resource.
+- `dedicated_host_id` - (String) The dedicated host ID where the shared processor pool resides.
 - `deployment_type` - (String) The custom deployment type.
 - `fault` - (Map) Fault information, if any.
   
@@ -78,10 +79,12 @@ In addition to all argument reference list, you can access the following attribu
   Nested scheme for `networks`:
   - `external_ip` - (String) The external IP address of the instance.
   - `ip` - (String) The IP address of the instance.
-  - `macaddress` - (String) The MAC address of the instance. Deprecated please use `mac_address` instead.
   - `mac_address` - (String) The MAC address of the instance.
   - `network_id` - (String) The network ID of the instance.
+  - `network_interface_id` - (String) ID of the network interface.
   - `network_name` - (String) The network name of the instance.
+  - `network_security_group_ids` - (List) IDs of the network necurity groups that the network interface is a member of.
+  - `network_security_groups_href` - (List) Links to the network security groups that the network interface is a member of.
   - `type` - (String) The type of the network.
 
 - `pin_policy` - (String) The pinning policy of the instance.
