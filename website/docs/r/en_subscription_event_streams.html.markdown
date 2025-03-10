@@ -1,23 +1,23 @@
 ---
 subcategory: 'Event Notifications'
 layout: 'ibm'
-page_title: 'IBM : ibm_en_subscription_pagerduty'
+page_title: 'IBM : ibm_en_subscription_event_streams'
 description: |-
   Manages Event Notifications subscription.
 ---
 
-# ibm_en_subscription_pagerduty
+# ibm_en_subscription_event_streams
 
-Create, update, or delete a Pagerduty subscription by using IBM Cloud™ Event Notifications.
+Create, update, or delete a Event Streams subscription by using IBM Cloud™ Event Notifications.
 
 ## Example usage
 
 ```terraform
-resource "ibm_en_subscription_pagerduty" "pagerduty_subscription" {
+resource "ibm_en_subscription_event_streams" "es_subscription" {
   instance_guid    = ibm_resource_instance.en_terraform_test_resource.guid
-  name             = "EN Pagerduty subscription"
-  description      = "Subscription for pagerduty destination in Event Notifications"
-  destination_id   = ibm_en_destination_pagerduty.destination1.destination_id
+  name             = "EN Event Streams subscription"
+  description      = "Subscription for event streams destination in Event Notifications"
+  destination_id   = ibm_en_destination_event_streams.destination1.destination_id
   topic_id         = ibm_en_topic.topic1.topic_id
   attributes {
     template_id_notification = "e40843c8-hgft-4717-8ee4-f923f2786a34"
@@ -48,7 +48,7 @@ Review the argument reference that you can specify for your resource.
 
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 
-- `id` - (String) The unique identifier of the `pagerduty_subscription`.
+- `id` - (String) The unique identifier of the `es_subscription`.
 
 - `subscription_id` - (String) The unique identifier of the created subscription.
 
@@ -56,7 +56,7 @@ In addition to all argument references listed, you can access the following attr
 
 ## Import
 
-You can import the `ibm_en_subscription_pagerduty` resource by using `id`.
+You can import the `ibm_en_subscription_event_streams` resource by using `id`.
 The `id` property can be formed from `instance_guid`, and `subscription_id` in the following format:
 
 ```
@@ -69,5 +69,5 @@ The `id` property can be formed from `instance_guid`, and `subscription_id` in t
 **Example**
 
 ```
-$ terraform import ibm_en_subscription_pagerduty.pagerduty_subscription <instance_guid>/<subscription_id>
+$ terraform import ibm_en_subscription_event_streams.es_subscription <instance_guid>/<subscription_id>
 ```
