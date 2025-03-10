@@ -2,7 +2,7 @@
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.99.1-daeb6e46-20250131-173156
+ * IBM OpenAPI Terraform Generator Version: 3.101.0-62624c1e-20250225-192301
  */
 
 package partnercentersell
@@ -122,7 +122,7 @@ func ResourceIbmOnboardingCatalogDeployment() *schema.Resource {
 			},
 			"tags": &schema.Schema{
 				Type:        schema.TypeList,
-				Required:    true,
+				Optional:    true,
 				Description: "A list of tags that carry information about your product. These tags can be used to find your product in the IBM Cloud catalog.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
@@ -194,7 +194,6 @@ func ResourceIbmOnboardingCatalogDeployment() *schema.Resource {
 									"unique_api_key": &schema.Schema{
 										Type:        schema.TypeBool,
 										Computed:    true,
-										Sensitive:   true,
 										Description: "Indicates whether the deployment uses a unique API key or not.",
 									},
 									"parameters": &schema.Schema{
@@ -865,15 +864,6 @@ func resourceIbmOnboardingCatalogDeploymentCreate(context context.Context, d *sc
 	createCatalogDeploymentOptions.SetActive(d.Get("active").(bool))
 	createCatalogDeploymentOptions.SetDisabled(d.Get("disabled").(bool))
 	createCatalogDeploymentOptions.SetKind(d.Get("kind").(string))
-	if _, ok := d.GetOk("env"); ok {
-		createCatalogDeploymentOptions.SetEnv(d.Get("env").(string))
-	}
-	var tags []string
-	for _, v := range d.Get("tags").([]interface{}) {
-		tagsItem := v.(string)
-		tags = append(tags, tagsItem)
-	}
-	createCatalogDeploymentOptions.SetTags(tags)
 	objectProviderModel, err := ResourceIbmOnboardingCatalogDeploymentMapToCatalogProductProvider(d.Get("object_provider.0").(map[string]interface{}))
 	if err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_onboarding_catalog_deployment", "create", "parse-object_provider").GetDiag()
@@ -888,6 +878,14 @@ func resourceIbmOnboardingCatalogDeploymentCreate(context context.Context, d *sc
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_onboarding_catalog_deployment", "create", "parse-overview_ui").GetDiag()
 		}
 		createCatalogDeploymentOptions.SetOverviewUi(overviewUiModel)
+	}
+	if _, ok := d.GetOk("tags"); ok {
+		var tags []string
+		for _, v := range d.Get("tags").([]interface{}) {
+			tagsItem := v.(string)
+			tags = append(tags, tagsItem)
+		}
+		createCatalogDeploymentOptions.SetTags(tags)
 	}
 	if _, ok := d.GetOk("metadata"); ok {
 		metadataModel, err := ResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogDeploymentMetadataPrototypePatch(d.Get("metadata.0").(map[string]interface{}))
@@ -978,9 +976,11 @@ func resourceIbmOnboardingCatalogDeploymentRead(context context.Context, d *sche
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_onboarding_catalog_deployment", "read", "set-overview_ui").GetDiag()
 		}
 	}
-	if err = d.Set("tags", globalCatalogDeployment.Tags); err != nil {
-		err = fmt.Errorf("Error setting tags: %s", err)
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_onboarding_catalog_deployment", "read", "set-tags").GetDiag()
+	if !core.IsNil(globalCatalogDeployment.Tags) {
+		if err = d.Set("tags", globalCatalogDeployment.Tags); err != nil {
+			err = fmt.Errorf("Error setting tags: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_onboarding_catalog_deployment", "read", "set-tags").GetDiag()
+		}
 	}
 	objectProviderMap, err := ResourceIbmOnboardingCatalogDeploymentCatalogProductProviderToMap(globalCatalogDeployment.ObjectProvider)
 	if err != nil {
@@ -1012,24 +1012,6 @@ func resourceIbmOnboardingCatalogDeploymentRead(context context.Context, d *sche
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_onboarding_catalog_deployment", "read", "set-url").GetDiag()
 		}
 	}
-	if parts[0] != "" {
-		if err = d.Set("product_id", parts[0]); err != nil {
-			err = fmt.Errorf("Error setting product_id: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_onboarding_catalog_deployment", "read", "set-product_id").GetDiag()
-		}
-	}
-	if parts[1] != "" {
-		if err = d.Set("catalog_product_id", parts[1]); err != nil {
-			err = fmt.Errorf("Error setting catalog_product_id: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_onboarding_catalog_deployment", "read", "set-catalog_product_id").GetDiag()
-		}
-	}
-	if parts[2] != "" {
-		if err = d.Set("catalog_plan_id", parts[2]); err != nil {
-			err = fmt.Errorf("Error setting catalog_plan_id: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_onboarding_catalog_deployment", "read", "set-catalog_plan_id").GetDiag()
-		}
-	}
 	if !core.IsNil(globalCatalogDeployment.ID) {
 		if err = d.Set("catalog_deployment_id", globalCatalogDeployment.ID); err != nil {
 			err = fmt.Errorf("Error setting catalog_deployment_id: %s", err)
@@ -1059,9 +1041,6 @@ func resourceIbmOnboardingCatalogDeploymentUpdate(context context.Context, d *sc
 	updateCatalogDeploymentOptions.SetCatalogProductID(parts[1])
 	updateCatalogDeploymentOptions.SetCatalogPlanID(parts[2])
 	updateCatalogDeploymentOptions.SetCatalogDeploymentID(parts[3])
-	if _, ok := d.GetOk("env"); ok {
-		updateCatalogDeploymentOptions.SetEnv(d.Get("env").(string))
-	}
 
 	hasChange := false
 
@@ -1080,6 +1059,10 @@ func resourceIbmOnboardingCatalogDeploymentUpdate(context context.Context, d *sc
 		errMsg := fmt.Sprintf("Cannot update resource property \"%s\" with the ForceNew annotation."+
 			" The resource must be re-created to update this property.", "catalog_plan_id")
 		return flex.DiscriminatedTerraformErrorf(nil, errMsg, "ibm_onboarding_catalog_deployment", "update", "catalog_plan_id-forces-new").GetDiag()
+	}
+	if d.HasChange("env") {
+		updateCatalogDeploymentOptions.SetEnv(d.Get("env").(string))
+		hasChange = true
 	}
 	if d.HasChange("active") {
 		newActive := d.Get("active").(bool)
@@ -1190,7 +1173,7 @@ func ResourceIbmOnboardingCatalogDeploymentMapToCatalogProductProvider(modelMap 
 
 func ResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogOverviewUI(modelMap map[string]interface{}) (*partnercentersellv1.GlobalCatalogOverviewUI, error) {
 	model := &partnercentersellv1.GlobalCatalogOverviewUI{}
-	if modelMap["en"] != nil && len(modelMap["en"].([]interface{})) > 0 && modelMap["en"].([]interface{})[0] != nil {
+	if modelMap["en"] != nil && len(modelMap["en"].([]interface{})) > 0 {
 		EnModel, err := ResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogOverviewUITranslatedContent(modelMap["en"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
@@ -1219,14 +1202,14 @@ func ResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogDeploymentMetadataP
 	if modelMap["rc_compatible"] != nil {
 		model.RcCompatible = core.BoolPtr(modelMap["rc_compatible"].(bool))
 	}
-	if modelMap["service"] != nil && len(modelMap["service"].([]interface{})) > 0 && modelMap["service"].([]interface{})[0] != nil {
+	if modelMap["service"] != nil && len(modelMap["service"].([]interface{})) > 0 {
 		ServiceModel, err := ResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogDeploymentMetadataServicePrototypePatch(modelMap["service"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
 		model.Service = ServiceModel
 	}
-	if modelMap["deployment"] != nil && len(modelMap["deployment"].([]interface{})) > 0 && modelMap["deployment"].([]interface{})[0] != nil {
+	if modelMap["deployment"] != nil && len(modelMap["deployment"].([]interface{})) > 0 {
 		DeploymentModel, err := ResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogMetadataDeployment(modelMap["deployment"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
@@ -1439,7 +1422,7 @@ func ResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogMetadataServiceCust
 
 func ResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogMetadataDeployment(modelMap map[string]interface{}) (*partnercentersellv1.GlobalCatalogMetadataDeployment, error) {
 	model := &partnercentersellv1.GlobalCatalogMetadataDeployment{}
-	if modelMap["broker"] != nil && len(modelMap["broker"].([]interface{})) > 0 && modelMap["broker"].([]interface{})[0] != nil {
+	if modelMap["broker"] != nil && len(modelMap["broker"].([]interface{})) > 0 {
 		BrokerModel, err := ResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogMetadataDeploymentBroker(modelMap["broker"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err

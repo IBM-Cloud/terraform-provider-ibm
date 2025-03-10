@@ -8,8 +8,6 @@ subcategory: "Partner Center Sell"
 
 # ibm_onboarding_catalog_plan
 
-**Note - Intended for internal use only. This resource is strictly experimental and subject to change without notice.**
-
 Create, update, and delete onboarding_catalog_plans with this resource.
 
 ## Example Usage
@@ -206,7 +204,7 @@ Nested schema for **overview_ui**:
   * Constraints: The list items must match regular expression `/^[a-z0-9\\-._]+$/`. The maximum length is `100` items. The minimum length is `0` items.
 * `product_id` - (Required, Forces new resource, String) The unique ID of the product.
   * Constraints: The maximum length is `71` characters. The minimum length is `71` characters. The value must match regular expression `/^[a-zA-Z0-9]{32}:o:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/`.
-* `tags` - (Required, List) A list of tags that carry information about your product. These tags can be used to find your product in the IBM Cloud catalog.
+* `tags` - (Optional, List) A list of tags that carry information about your product. These tags can be used to find your product in the IBM Cloud catalog.
   * Constraints: The list items must match regular expression `/^[a-z0-9\\-._]+$/`. The maximum length is `100` items. The minimum length is `0` items.
 
 ## Attribute Reference
@@ -226,7 +224,7 @@ You can import the `ibm_onboarding_catalog_plan` resource by using `id`.
 The `id` property can be formed from `product_id`, `catalog_product_id`, and `catalog_plan_id` in the following format:
 
 <pre>
-product_id/catalog_product_id/catalog_plan_id
+&lt;product_id&gt;/&lt;catalog_product_id&gt;/&lt;catalog_plan_id&gt;
 </pre>
 * `product_id`: A string. The unique ID of the product.
 * `catalog_product_id`: A string. The unique ID of this global catalog product.
@@ -234,5 +232,5 @@ product_id/catalog_product_id/catalog_plan_id
 
 # Syntax
 <pre>
-$ terraform import ibm_onboarding_catalog_plan.onboarding_catalog_plan product_id/catalog_product_id/catalog_plan_id;
+$ terraform import ibm_onboarding_catalog_plan.onboarding_catalog_plan &lt;product_id&gt;/&lt;catalog_product_id&gt;/&lt;catalog_plan_id&gt;
 </pre>

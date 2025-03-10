@@ -7,9 +7,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -22,31 +22,24 @@ import (
 
 func TestAccIbmOnboardingCatalogDeploymentBasic(t *testing.T) {
 	var conf partnercentersellv1.GlobalCatalogDeployment
-	productID := acc.PcsOnboardingProductWithCatalogProduct
-	catalogProductID := acc.PcsOnboardingCatalogProductId
-	catalogPlanID := acc.PcsOnboardingCatalogPlanId
-	objectId := fmt.Sprintf("test-object-id-terraform-%d", acctest.RandIntRange(10, 100))
-	name := "test-deployment-name-terraform"
+	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	active := "true"
-	disabled := "false"
+	disabled := "true"
 	kind := "deployment"
-	nameUpdate := "test-deployment-name-terraform"
+	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	activeUpdate := "false"
 	disabledUpdate := "false"
 	kindUpdate := "deployment"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheckPartnerCenterSell(t) },
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmOnboardingCatalogDeploymentDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmOnboardingCatalogDeploymentConfigBasic(productID, catalogProductID, catalogPlanID, name, active, disabled, kind, objectId),
+				Config: testAccCheckIbmOnboardingCatalogDeploymentConfigBasic(name, active, disabled, kind),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmOnboardingCatalogDeploymentExists("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", conf),
-					resource.TestCheckResourceAttr("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", "product_id", productID),
-					resource.TestCheckResourceAttr("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", "catalog_product_id", catalogProductID),
-					resource.TestCheckResourceAttr("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", "catalog_plan_id", catalogPlanID),
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", "name", name),
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", "active", active),
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", "disabled", disabled),
@@ -54,11 +47,8 @@ func TestAccIbmOnboardingCatalogDeploymentBasic(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmOnboardingCatalogDeploymentConfigBasic(productID, catalogProductID, catalogPlanID, nameUpdate, activeUpdate, disabledUpdate, kindUpdate, objectId),
+				Config: testAccCheckIbmOnboardingCatalogDeploymentConfigBasic(nameUpdate, activeUpdate, disabledUpdate, kindUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", "product_id", productID),
-					resource.TestCheckResourceAttr("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", "catalog_product_id", catalogProductID),
-					resource.TestCheckResourceAttr("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", "catalog_plan_id", catalogPlanID),
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", "name", nameUpdate),
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", "active", activeUpdate),
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", "disabled", disabledUpdate),
@@ -71,42 +61,30 @@ func TestAccIbmOnboardingCatalogDeploymentBasic(t *testing.T) {
 
 func TestAccIbmOnboardingCatalogDeploymentAllArgs(t *testing.T) {
 	var conf partnercentersellv1.GlobalCatalogDeployment
-	productID := acc.PcsOnboardingProductWithCatalogProduct
-	catalogProductID := acc.PcsOnboardingCatalogProductId
-	catalogPlanID := acc.PcsOnboardingCatalogPlanId
-	objectId := fmt.Sprintf("test-object-id-terraform-2-%d", acctest.RandIntRange(10, 100))
-	env := "current"
-	name := "test-deployment-name-terraform"
+	env := fmt.Sprintf("tf_env_%d", acctest.RandIntRange(10, 100))
+	objectID := fmt.Sprintf("tf_object_id_%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	active := "true"
-	disabled := "false"
+	disabled := "true"
 	kind := "deployment"
-	envUpdate := "current"
-	nameUpdate := "test-deployment-name-terraform"
+	envUpdate := fmt.Sprintf("tf_env_%d", acctest.RandIntRange(10, 100))
+	objectIDUpdate := fmt.Sprintf("tf_object_id_%d", acctest.RandIntRange(10, 100))
+	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	activeUpdate := "false"
 	disabledUpdate := "false"
 	kindUpdate := "deployment"
-	overviewUiEn := "display_name"
-	overviewUiEnUpdate := "display_name_2"
-	rcCompatible := "true"
-	rcCompatibleUpdate := "false"
-	iamCompatible := "true"
-	iamCompatibleUpdate := "false"
-	deploymentBrokerName := "broker-petra-1"
-	deploymentBrokerNameUpdate := "broker-petra-2"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheckPartnerCenterSell(t) },
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmOnboardingCatalogDeploymentDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmOnboardingCatalogDeploymentConfig(productID, catalogProductID, catalogPlanID, env, name, active, disabled, kind, objectId, overviewUiEn, rcCompatible, iamCompatible, deploymentBrokerName),
+				Config: testAccCheckIbmOnboardingCatalogDeploymentConfig(env, objectID, name, active, disabled, kind),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmOnboardingCatalogDeploymentExists("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", conf),
-					resource.TestCheckResourceAttr("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", "product_id", productID),
-					resource.TestCheckResourceAttr("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", "catalog_product_id", catalogProductID),
-					resource.TestCheckResourceAttr("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", "catalog_plan_id", catalogPlanID),
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", "env", env),
+					resource.TestCheckResourceAttr("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", "object_id", objectID),
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", "name", name),
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", "active", active),
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", "disabled", disabled),
@@ -114,12 +92,10 @@ func TestAccIbmOnboardingCatalogDeploymentAllArgs(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmOnboardingCatalogDeploymentUpdateConfig(productID, catalogProductID, catalogPlanID, envUpdate, nameUpdate, activeUpdate, disabledUpdate, kindUpdate, objectId, overviewUiEnUpdate, rcCompatibleUpdate, iamCompatibleUpdate, deploymentBrokerNameUpdate),
+				Config: testAccCheckIbmOnboardingCatalogDeploymentConfig(envUpdate, objectIDUpdate, nameUpdate, activeUpdate, disabledUpdate, kindUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", "product_id", productID),
-					resource.TestCheckResourceAttr("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", "catalog_product_id", catalogProductID),
-					resource.TestCheckResourceAttr("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", "catalog_plan_id", catalogPlanID),
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", "env", envUpdate),
+					resource.TestCheckResourceAttr("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", "object_id", objectIDUpdate),
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", "name", nameUpdate),
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", "active", activeUpdate),
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", "disabled", disabledUpdate),
@@ -127,153 +103,181 @@ func TestAccIbmOnboardingCatalogDeploymentAllArgs(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				ResourceName:      "ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance",
+				ResourceName:      "ibm_onboarding_catalog_deployment.onboarding_catalog_deployment",
 				ImportState:       true,
-				ImportStateVerify: false,
-				ImportStateVerifyIgnore: []string{
-					"env", "product_id", "catalog_product_id", "catalog_plan_id", "geo_tags",
-				},
+				ImportStateVerify: true,
 			},
 		},
 	})
 }
 
-func testAccCheckIbmOnboardingCatalogDeploymentConfigBasic(productID string, catalogProductID string, catalogPlanID string, name string, active string, disabled string, kind string, objectId string) string {
+func testAccCheckIbmOnboardingCatalogDeploymentConfigBasic(name string, active string, disabled string, kind string) string {
 	return fmt.Sprintf(`
 		resource "ibm_onboarding_catalog_deployment" "onboarding_catalog_deployment_instance" {
-			product_id = "%s"
-			catalog_product_id = "%s"
-			catalog_plan_id = "%s"
+			product_id = ibm_onboarding_product.onboarding_product_instance.id
+			catalog_product_id = ibm_onboarding_catalog_product.onboarding_catalog_product_instance.onboarding_catalog_product_id
+			catalog_plan_id = ibm_onboarding_catalog_plan.onboarding_catalog_plan_instance.onboarding_catalog_plan_id
 			name = "%s"
 			active = %s
 			disabled = %s
 			kind = "%s"
-			object_id = "%s"
-			tags = ["sample"]
 			object_provider {
 				name = "name"
-				email = "email@email.com"
+				email = "email"
 			}
-			metadata {
-                rc_compatible =	false
-				service {
-				  	rc_provisionable = true
-  					iam_compatible = true
-				}
-            }
 		}
-	`, productID, catalogProductID, catalogPlanID, name, active, disabled, kind, objectId)
+	`, name, active, disabled, kind)
 }
 
-func testAccCheckIbmOnboardingCatalogDeploymentConfig(productID string, catalogProductID string, catalogPlanID string, env string, name string, active string, disabled string, kind string, objectId string, overviewUiEn string, rcCompatible string, iamCompatible string, deploymentBrokerName string) string {
+func testAccCheckIbmOnboardingCatalogDeploymentConfig(env string, objectID string, name string, active string, disabled string, kind string) string {
 	return fmt.Sprintf(`
+
 		resource "ibm_onboarding_catalog_deployment" "onboarding_catalog_deployment_instance" {
-			product_id = "%s"
-			catalog_product_id = "%s"
-			catalog_plan_id = "%s"
+			product_id = ibm_onboarding_product.onboarding_product_instance.id
+			catalog_product_id = ibm_onboarding_catalog_product.onboarding_catalog_product_instance.onboarding_catalog_product_id
+			catalog_plan_id = ibm_onboarding_catalog_plan.onboarding_catalog_plan_instance.onboarding_catalog_plan_id
 			env = "%s"
+			object_id = "%s"
 			name = "%s"
 			active = %s
 			disabled = %s
 			kind = "%s"
-			object_id = "%s"
 			overview_ui {
 				en {
-					display_name = "%s"
+					display_name = "display_name"
 					description = "description"
 					long_description = "long_description"
 				}
 			}
-			tags = ["sample"]
+			tags = "FIXME"
 			object_provider {
 				name = "name"
-				email = "email@email.com"
+				email = "email"
 			}
 			metadata {
-                rc_compatible =	"%s"
+				rc_compatible = true
 				service {
-				  	rc_provisionable = true
-  					iam_compatible = "%s"
+					rc_provisionable = true
+					iam_compatible = true
 					service_key_supported = true
 					parameters {
-                		displayname = "test"
-                		name = "test"
-			    		type = "text"
-                		value = ["test"]
-                		description = "test"
-            		}
+						displayname = "displayname"
+						name = "name"
+						type = "text"
+						options {
+							displayname = "displayname"
+							value = "value"
+							i18n {
+								en {
+									displayname = "displayname"
+									description = "description"
+								}
+								de {
+									displayname = "displayname"
+									description = "description"
+								}
+								es {
+									displayname = "displayname"
+									description = "description"
+								}
+								fr {
+									displayname = "displayname"
+									description = "description"
+								}
+								it {
+									displayname = "displayname"
+									description = "description"
+								}
+								ja {
+									displayname = "displayname"
+									description = "description"
+								}
+								ko {
+									displayname = "displayname"
+									description = "description"
+								}
+								pt_br {
+									displayname = "displayname"
+									description = "description"
+								}
+								zh_tw {
+									displayname = "displayname"
+									description = "description"
+								}
+								zh_cn {
+									displayname = "displayname"
+									description = "description"
+								}
+							}
+						}
+						value = [ "value" ]
+						layout = "layout"
+						associations = { "key" = "anything as a string" }
+						validation_url = "validation_url"
+						options_url = "options_url"
+						invalidmessage = "invalidmessage"
+						description = "description"
+						required = true
+						pattern = "pattern"
+						placeholder = "placeholder"
+						readonly = true
+						hidden = true
+						i18n {
+							en {
+								displayname = "displayname"
+								description = "description"
+							}
+							de {
+								displayname = "displayname"
+								description = "description"
+							}
+							es {
+								displayname = "displayname"
+								description = "description"
+							}
+							fr {
+								displayname = "displayname"
+								description = "description"
+							}
+							it {
+								displayname = "displayname"
+								description = "description"
+							}
+							ja {
+								displayname = "displayname"
+								description = "description"
+							}
+							ko {
+								displayname = "displayname"
+								description = "description"
+							}
+							pt_br {
+								displayname = "displayname"
+								description = "description"
+							}
+							zh_tw {
+								displayname = "displayname"
+								description = "description"
+							}
+							zh_cn {
+								displayname = "displayname"
+								description = "description"
+							}
+						}
+					}
 				}
 				deployment {
 					broker {
-						name = "%s"
+						name = "name"
 						guid = "guid"
 					}
-					location = "ams03"
-					location_url = "https://globalcatalog.test.cloud.ibm.com/api/v1/ams03"
-					target_crn = "crn:v1:staging:public::ams03:::environment:staging-ams03"
+					location = "location"
+					location_url = "location_url"
+					target_crn = "target_crn"
 				}
-            }
+			}
 		}
-	`, productID, catalogProductID, catalogPlanID, env, name, active, disabled, kind, objectId, overviewUiEn, rcCompatible, iamCompatible, deploymentBrokerName)
-}
-
-func testAccCheckIbmOnboardingCatalogDeploymentUpdateConfig(productID string, catalogProductID string, catalogPlanID string, env string, name string, active string, disabled string, kind string, objectId string, overviewUiEn string, rcCompatible string, iamCompatible string, deploymentBrokerName string) string {
-	return fmt.Sprintf(`
-		resource "ibm_onboarding_catalog_deployment" "onboarding_catalog_deployment_instance" {
-			product_id = "%s"
-			catalog_product_id = "%s"
-			catalog_plan_id = "%s"
-			env = "%s"
-			name = "%s"
-			active = %s
-			disabled = %s
-			kind = "%s"
-			object_id = "%s"
-			overview_ui {
-				en {
-					display_name = "%s"
-					description = "description"
-					long_description = "long_description"
-				}
-			}
-			tags = ["sample", "moresample"]
-			object_provider {
-				name = "name"
-				email = "email@email.com"
-			}
-			metadata {
-                rc_compatible =	"%s"
-				service {
-				  	rc_provisionable = true
-  					iam_compatible = "%s"
-					service_key_supported = false
-					parameters {
-                		displayname = "test"
-                		name = "test"
-			    		type = "text"
-                		value = ["test"]
-                		description = "test"
-            		}
-					parameters {
-                		displayname = "test2"
-                		name = "test2"
-			    		type = "text"
-                		value = ["test2"]
-                		description = "test2"
-            		}
-				}
-				deployment {
-					broker {
-						name = "%s"
-						guid = "guid"
-					}
-					location = "ams03"
-					location_url = "https://globalcatalog.test.cloud.ibm.com/api/v1/ams03"
-					target_crn = "crn:v1:staging:public::ams03:::environment:staging-ams03"
-				}
-            }
-	}
-	`, productID, catalogProductID, catalogPlanID, env, name, active, disabled, kind, objectId, overviewUiEn, rcCompatible, iamCompatible, deploymentBrokerName)
+	`, env, objectID, name, active, disabled, kind)
 }
 
 func testAccCheckIbmOnboardingCatalogDeploymentExists(n string, obj partnercentersellv1.GlobalCatalogDeployment) resource.TestCheckFunc {
