@@ -115,7 +115,7 @@ func ResourceIbmOnboardingCatalogPlan() *schema.Resource {
 			},
 			"tags": &schema.Schema{
 				Type:        schema.TypeList,
-				Required:    true,
+				Optional:    true,
 				Description: "A list of tags that carry information about your product. These tags can be used to find your product in the IBM Cloud catalog.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
@@ -350,7 +350,6 @@ func ResourceIbmOnboardingCatalogPlan() *schema.Resource {
 									"unique_api_key": &schema.Schema{
 										Type:        schema.TypeBool,
 										Computed:    true,
-										Sensitive:   true,
 										Description: "Indicates whether the deployment uses a unique API key or not.",
 									},
 								},
@@ -525,12 +524,6 @@ func resourceIbmOnboardingCatalogPlanCreate(context context.Context, d *schema.R
 	createCatalogPlanOptions.SetActive(d.Get("active").(bool))
 	createCatalogPlanOptions.SetDisabled(d.Get("disabled").(bool))
 	createCatalogPlanOptions.SetKind(d.Get("kind").(string))
-	var tags []string
-	for _, v := range d.Get("tags").([]interface{}) {
-		tagsItem := v.(string)
-		tags = append(tags, tagsItem)
-	}
-	createCatalogPlanOptions.SetTags(tags)
 	objectProviderModel, err := ResourceIbmOnboardingCatalogPlanMapToCatalogProductProvider(d.Get("object_provider.0").(map[string]interface{}))
 	if err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_onboarding_catalog_plan", "create", "parse-object_provider").GetDiag()
@@ -545,6 +538,14 @@ func resourceIbmOnboardingCatalogPlanCreate(context context.Context, d *schema.R
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_onboarding_catalog_plan", "create", "parse-overview_ui").GetDiag()
 		}
 		createCatalogPlanOptions.SetOverviewUi(overviewUiModel)
+	}
+	if _, ok := d.GetOk("tags"); ok {
+		var tags []string
+		for _, v := range d.Get("tags").([]interface{}) {
+			tagsItem := v.(string)
+			tags = append(tags, tagsItem)
+		}
+		createCatalogPlanOptions.SetTags(tags)
 	}
 	if _, ok := d.GetOk("pricing_tags"); ok {
 		var pricingTags []string
@@ -642,9 +643,11 @@ func resourceIbmOnboardingCatalogPlanRead(context context.Context, d *schema.Res
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_onboarding_catalog_plan", "read", "set-overview_ui").GetDiag()
 		}
 	}
-	if err = d.Set("tags", globalCatalogPlan.Tags); err != nil {
-		err = fmt.Errorf("Error setting tags: %s", err)
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_onboarding_catalog_plan", "read", "set-tags").GetDiag()
+	if !core.IsNil(globalCatalogPlan.Tags) {
+		if err = d.Set("tags", globalCatalogPlan.Tags); err != nil {
+			err = fmt.Errorf("Error setting tags: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_onboarding_catalog_plan", "read", "set-tags").GetDiag()
+		}
 	}
 	if !core.IsNil(globalCatalogPlan.PricingTags) {
 		if err = d.Set("pricing_tags", globalCatalogPlan.PricingTags); err != nil {
