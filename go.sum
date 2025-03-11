@@ -141,8 +141,8 @@ github.com/IBM/ibm-cos-sdk-go v1.12.0 h1:Wrk3ve4JS3euhl7XjNFd3RlvPT56199G2/rKaPW
 github.com/IBM/ibm-cos-sdk-go v1.12.0/go.mod h1:v/VBvFuysZMIX9HcaIrz6a+FLVw9px8fq6XabFwD+E4=
 github.com/IBM/ibm-cos-sdk-go-config/v2 v2.2.0 h1:H5XSKuOEf+z+506ITq3FSXhFNBaZt7OLpH4OTQGcNXw=
 github.com/IBM/ibm-cos-sdk-go-config/v2 v2.2.0/go.mod h1:ci4tI9mIZEtN6cenuVN9RWyNJu8CkWHmYH758K2lVEQ=
-github.com/IBM/ibm-hpcs-tke-sdk v0.0.0-20211109141421-a4b61b05f7d1 h1:T5UwRKKd+BoaPZ7UIlpJrzXzVTUEs8HcxwQ3pCIbORs=
-github.com/IBM/ibm-hpcs-tke-sdk v0.0.0-20211109141421-a4b61b05f7d1/go.mod h1:M2JyuyeWHPtgGNeezr6YqVRuaav2MpY8Ha4QrEYvMoI=
+github.com/IBM/ibm-hpcs-tke-sdk v0.0.0-20250305134146-e023c2e84762 h1:eB640+EihADOu56O2p/9JuuEUnSKX5I2URFd8/g92HY=
+github.com/IBM/ibm-hpcs-tke-sdk v0.0.0-20250305134146-e023c2e84762/go.mod h1:M2JyuyeWHPtgGNeezr6YqVRuaav2MpY8Ha4QrEYvMoI=
 github.com/IBM/ibm-hpcs-uko-sdk v0.0.20-beta h1:P1fdIfKsD9xvJQ5MHIEztPS9yfNf9x+VDTamaYcmqcs=
 github.com/IBM/ibm-hpcs-uko-sdk v0.0.20-beta/go.mod h1:MLVNHMYoKsvovJZ4v1gQCpIYtRDHTtoIHK6XztDZGsU=
 github.com/IBM/keyprotect-go-client v0.5.1/go.mod h1:5TwDM/4FRJq1ZOlwQL1xFahLWQ3TveR88VmL1u3njyI=
@@ -164,8 +164,6 @@ github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5 h1:N
 github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5/go.mod h1:b07XHUVh0XYnQE9s2mqgjYST1h9buaQNqN4EcKhOsX0=
 github.com/IBM/sarama v1.45.0 h1:IzeBevTn809IJ/dhNKhP5mpxEXTmELuezO2tgHD9G5E=
 github.com/IBM/sarama v1.45.0/go.mod h1:EEay63m8EZkeumco9TDXf2JT3uDnZsZqFgV46n4yZdY=
-github.com/IBM/scc-go-sdk/v5 v5.5.2 h1:a0+puffs6O8hgoEIEVtHgYOTeM4UEPWcGs1fCSy1Ywc=
-github.com/IBM/scc-go-sdk/v5 v5.5.2/go.mod h1:N7PZUKMH90og3FY4FyGLo1Zy4106pZ1+6k9nFn23eis=
 github.com/IBM/scc-go-sdk/v5 v5.5.3 h1:9KuKMUz1jJ4OBtq2GHuuCRh1JonE4Jj1N26bfxBqNiU=
 github.com/IBM/scc-go-sdk/v5 v5.5.3/go.mod h1:N7PZUKMH90og3FY4FyGLo1Zy4106pZ1+6k9nFn23eis=
 github.com/IBM/schematics-go-sdk v0.3.0 h1:Vwxw85SONflakiBsNHAfViKLyp9zJiH5/hh6SewOP5Q=
