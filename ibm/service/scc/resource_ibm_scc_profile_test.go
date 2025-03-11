@@ -103,11 +103,10 @@ func testAccCheckIbmSccProfileConfigBasic(instanceID string, profileName string,
 			control_library_name = "control_library_name"
 			control_library_description = "control_library_description"
 			control_library_type = "custom"
-			version_group_label = "03354ab4-03be-41c0-a469-826fc0262e78"
 			latest = true
 			controls {
+        control_id ="0d4624f5-f5f6-44ed-9e09-6662e2f4106c"
 				control_name = "control-name"
-				control_id = "1fa45e17-9322-4e6c-bbd6-1c51db08e790"
 				control_description = "control_description"
 				control_category = "control_category"
 				control_tags = [ "control_tags" ]
@@ -125,7 +124,7 @@ func testAccCheckIbmSccProfileConfigBasic(instanceID string, profileName string,
 						assessment_description = "assessment_description"
 						parameters {
 							parameter_display_name = "Sign out due to inactivity in seconds"
-                            parameter_name         = "session_invalidation_in_seconds"
+              parameter_name         = "session_invalidation_in_seconds"
 							parameter_type = "numeric"
 						}
 					}
@@ -160,11 +159,10 @@ func testAccCheckIbmSccProfileConfig(instanceID string, profileName string, prof
 			control_library_name = "control_library_name"
 			control_library_description = "control_library_description"
 			control_library_type = "custom"
-			version_group_label = "03354ab4-03be-41c0-a469-826fc0262e78"
 			latest = true
 			controls {
+        control_id ="0d4624f5-f5f6-44ed-9e09-6662e2f4106c"
 				control_name = "control-name"
-				control_id = "1fa45e17-9322-4e6c-bbd6-1c51db08e790"
 				control_description = "control_description"
 				control_category = "control_category"
 				control_tags = [ "control_tags" ]
@@ -182,7 +180,7 @@ func testAccCheckIbmSccProfileConfig(instanceID string, profileName string, prof
 						assessment_description = "assessment_description"
 						parameters {
 							parameter_display_name = "Sign out due to inactivity in seconds"
-                            parameter_name         = "session_invalidation_in_seconds"
+              parameter_name         = "session_invalidation_in_seconds"
 							parameter_type = "numeric"
 						}
 					}

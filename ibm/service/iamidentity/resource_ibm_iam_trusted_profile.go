@@ -45,7 +45,7 @@ func ResourceIBMIAMTrustedProfile() *schema.Resource {
 				Computed:    true,
 				Description: "ID of the account that this trusted profile belong to.",
 			},
-			"id": &schema.Schema{
+			"profile_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "the unique identifier of the trusted profile. Example:'Profile-94497d0d-2ac3-41bf-a993-a49d1b14627c'.",
@@ -211,7 +211,7 @@ func resourceIBMIamTrustedProfileRead(context context.Context, d *schema.Resourc
 		err = fmt.Errorf("Error setting account_id: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile", "read", "set-account_id").GetDiag()
 	}
-	if err = d.Set("id", trustedProfile.ID); err != nil {
+	if err = d.Set("profile_id", trustedProfile.ID); err != nil {
 		err = fmt.Errorf("Error setting id: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile", "read", "set-id").GetDiag()
 	}
@@ -263,8 +263,8 @@ func resourceIBMIamTrustedProfileRead(context context.Context, d *schema.Resourc
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile", "read", "set-ims_user_id").GetDiag()
 		}
 	}
+	history := []map[string]interface{}{}
 	if !core.IsNil(trustedProfile.History) {
-		history := []map[string]interface{}{}
 		for _, historyItem := range trustedProfile.History {
 			historyItemMap, err := ResourceIBMIamTrustedProfileEnityHistoryRecordToMap(&historyItem) // #nosec G601
 			if err != nil {
@@ -272,10 +272,11 @@ func resourceIBMIamTrustedProfileRead(context context.Context, d *schema.Resourc
 			}
 			history = append(history, historyItemMap)
 		}
-		if err = d.Set("history", history); err != nil {
-			err = fmt.Errorf("Error setting history: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile", "read", "set-history").GetDiag()
-		}
+	}
+	if err = d.Set("history", history); err != nil {
+		err = fmt.Errorf("Error setting history: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile", "read", "set-history").GetDiag()
+
 	}
 
 	return nil

@@ -68,7 +68,7 @@ You can specify the following arguments for this resource.
   * Constraints: The maximum length is `256` characters. The minimum length is `2` characters. The value must match regular expression `/[A-Za-z0-9]+/`.
 * `control_library_name` - (Required, String) The control library name.
   * Constraints: The maximum length is `64` characters. The minimum length is `2` characters. The value must match regular expression `/^[a-zA-Z0-9_\\s\\-]*$/`.
-* `control_library_type` - (Required, String) The control library type.
+* `control_library_type` - (Required, String) The control library type. Use `custom` in most cases.
   * Constraints: Allowable values are: `predefined`, `custom`.
 * `control_library_version` - (Optional, String) The control library version.
   * Constraints: The maximum length is `64` characters. The minimum length is `5` characters. The value must match regular expression `/^[a-zA-Z0-9_\\-.]*$/`.
@@ -131,11 +131,11 @@ Nested schema for **controls**:
 		  * Constraints: Allowable values are: `user`.
 	* `control_tags` - (Optional, List) The control tags.
 	  * Constraints: The list items must match regular expression `/^[a-zA-Z0-9_,'"\\s\\-\\[\\]]+$/`. The maximum length is `512` items. The minimum length is `0` items.
-	* `status` - (Optional, String) The control status.
+	* `status` - (Optional, String) The control status. Set to `enabled` to other resources to use this control library, `disabled` otherwise.
 	  * Constraints: Allowable values are: `enabled`, `disabled`.
 
 * `latest` - (Optional, Boolean) The latest version of the control library.
-* `version_group_label` - (Optional, String) The version group label.
+* `version_group_label` - (Computed, String) The version group label. This is string is the unique identifier for the current version of the Control Library
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/`.
 
 ## Attribute Reference
