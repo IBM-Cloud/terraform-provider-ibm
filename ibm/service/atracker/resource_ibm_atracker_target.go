@@ -52,7 +52,7 @@ func ResourceIBMAtrackerTarget() *schema.Resource {
 				Type:        schema.TypeList,
 				MaxItems:    1,
 				Optional:    true,
-				Description: "Property values for a Cloud Object Storage Endpoint in responses.",
+				Description: "Property values for a Cloud Object Storage endpoint.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"endpoint": &schema.Schema{
@@ -89,7 +89,7 @@ func ResourceIBMAtrackerTarget() *schema.Resource {
 				Type:        schema.TypeList,
 				MaxItems:    1,
 				Optional:    true,
-				Description: "Property values for the Event Streams Endpoint in responses.",
+				Description: "Property values for the Event Streams endpoint.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"target_crn": &schema.Schema{
@@ -127,7 +127,7 @@ func ResourceIBMAtrackerTarget() *schema.Resource {
 				Type:        schema.TypeList,
 				MaxItems:    1,
 				Optional:    true,
-				Description: "Property values for the IBM Cloud Logs endpoint in responses.",
+				Description: "Property values for the IBM Cloud Logs endpoint.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"target_crn": &schema.Schema{
@@ -320,7 +320,6 @@ func resourceIBMAtrackerTargetRead(context context.Context, d *schema.ResourceDa
 		if err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_atracker_target", "read", "cos_endpoint-to-map").GetDiag()
 		}
-		// TODO: do we need below customized code to check last parts of CRN?
 		if cosInterface, ok := d.GetOk("cos_endpoint.0"); ok {
 			targetCrnExisting := cosInterface.(map[string]interface{})["target_crn"].(string)
 			targetCrnIncoming := cosEndpointMap["target_crn"].(*string)
@@ -424,7 +423,7 @@ func resourceIBMAtrackerTargetUpdate(context context.Context, d *schema.Resource
 
 	hasChange := false
 
-	if d.HasChange("name") || d.HasChange("region") || d.HasChange("cos_endpoint") || d.HasChange("eventstreams_endpoint") || d.HasChange("cloudlogs_endpoint") {
+	if d.HasChange("name") || d.HasChange("cos_endpoint") || d.HasChange("eventstreams_endpoint") || d.HasChange("cloudlogs_endpoint") {
 		if _, ok := d.GetOk("name"); ok {
 			replaceTargetOptions.SetName(d.Get("name").(string))
 		}
