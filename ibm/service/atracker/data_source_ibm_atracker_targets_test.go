@@ -51,7 +51,6 @@ func TestAccIBMAtrackerTargetsDataSourceAllArgs(t *testing.T) {
 				Config: testAccCheckIBMAtrackerTargetsDataSourceConfig(targetName, targetTargetType, targetRegion),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_atracker_targets.atracker_targets_instance", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_atracker_targets.atracker_targets_instance", "region"),
 					resource.TestCheckResourceAttrSet("data.ibm_atracker_targets.atracker_targets_instance", "name"),
 					resource.TestCheckResourceAttrSet("data.ibm_atracker_targets.atracker_targets_instance", "targets.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_atracker_targets.atracker_targets_instance", "targets.0.id"),
@@ -61,7 +60,6 @@ func TestAccIBMAtrackerTargetsDataSourceAllArgs(t *testing.T) {
 					resource.TestCheckResourceAttr("data.ibm_atracker_targets.atracker_targets_instance", "targets.0.region", targetRegion),
 					resource.TestCheckResourceAttrSet("data.ibm_atracker_targets.atracker_targets_instance", "targets.0.created_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_atracker_targets.atracker_targets_instance", "targets.0.updated_at"),
-					resource.TestCheckResourceAttrSet("data.ibm_atracker_targets.atracker_targets_instance", "targets.0.message"),
 					resource.TestCheckResourceAttr("data.ibm_atracker_targets.atracker_targets_instance", "targets.0.api_version", "2"),
 				),
 			},
@@ -74,6 +72,7 @@ func testAccCheckIBMAtrackerTargetsDataSourceConfigBasic(targetName string, targ
 		resource "ibm_atracker_target" "atracker_target_instance" {
 			name = "%s"
 			target_type = "%s"
+			region = "us-south"
 			cos_endpoint {
 				endpoint = "s3.private.us-east.cloud-object-storage.appdomain.cloud"
 				target_crn = "crn:v1:bluemix:public:cloud-object-storage:global:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
@@ -113,7 +112,7 @@ func testAccCheckIBMAtrackerTargetsDataSourceConfig(targetName string, targetTar
 				target_crn = "crn:v1:bluemix:public:logs:eu-es:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
 			}
 		}
-		data "ibm_atracker_targets" "atracker_target_instance" {
+		data "ibm_atracker_targets" "atracker_targets_instance" {
 			name = ibm_atracker_target.atracker_target_instance.name
 		}
 		

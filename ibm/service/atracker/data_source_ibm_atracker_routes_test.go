@@ -46,6 +46,7 @@ func testAccCheckIBMAtrackerRoutesDataSourceConfigBasic(routeName string) string
 		resource "ibm_atracker_target" "atracker_target_instance" {
 			name = "my-cos-target"
 			target_type = "cloud_object_storage"
+			region = "us-south"
 			cos_endpoint {
 				endpoint = "s3.private.us-east.cloud-object-storage.appdomain.cloud"
 				target_crn = "crn:v1:bluemix:public:cloud-object-storage:global:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"

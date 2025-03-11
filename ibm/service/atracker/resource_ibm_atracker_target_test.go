@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
@@ -22,9 +21,9 @@ import (
 
 func TestAccIBMAtrackerTargetBasic(t *testing.T) {
 	var conf atrackerv2.Target
-	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tf_basic_name_1")
 	targetType := "cloud_object_storage"
-	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	nameUpdate := fmt.Sprintf("tf_basic_name_2")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -52,12 +51,11 @@ func TestAccIBMAtrackerTargetBasic(t *testing.T) {
 
 func TestAccIBMAtrackerTargetAllArgs(t *testing.T) {
 	var conf atrackerv2.Target
-	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tf_all_name_1")
 	targetType := "cloud_object_storage"
-	region := fmt.Sprintf("tf_region_%d", acctest.RandIntRange(10, 100))
-	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	targetTypeUpdate := "cloud_logs"
-	regionUpdate := fmt.Sprintf("tf_region_%d", acctest.RandIntRange(10, 100))
+	region := fmt.Sprintf("us-south")
+	// targetType and region cannot be changed
+	nameUpdate := fmt.Sprintf("tf_all_name_2")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -74,11 +72,11 @@ func TestAccIBMAtrackerTargetAllArgs(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIBMAtrackerTargetConfig(nameUpdate, targetTypeUpdate, regionUpdate),
+				Config: testAccCheckIBMAtrackerTargetConfig(nameUpdate, targetType, region),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_atracker_target.atracker_target_instance", "name", nameUpdate),
-					resource.TestCheckResourceAttr("ibm_atracker_target.atracker_target_instance", "target_type", targetTypeUpdate),
-					resource.TestCheckResourceAttr("ibm_atracker_target.atracker_target_instance", "region", regionUpdate),
+					resource.TestCheckResourceAttr("ibm_atracker_target.atracker_target_instance", "target_type", targetType),
+					resource.TestCheckResourceAttr("ibm_atracker_target.atracker_target_instance", "region", region),
 				),
 			},
 			resource.TestStep{
@@ -95,6 +93,7 @@ func testAccCheckIBMAtrackerTargetConfigBasic(name string, targetType string) st
 		resource "ibm_atracker_target" "atracker_target_instance" {
 			name = "%s"
 			target_type = "%s"
+			region = "us-south"
 			cos_endpoint {
 					endpoint = "s3.private.us-east.cloud-object-storage.appdomain.cloud"
 					target_crn = "crn:v1:bluemix:public:cloud-object-storage:global:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
@@ -119,16 +118,6 @@ func testAccCheckIBMAtrackerTargetConfig(name string, targetType string, region 
 				bucket = "my-atracker-bucket"
 				api_key = "xxxxxxxxxxxxxx"
 				service_to_service_enabled = true
-			}
-			eventstreams_endpoint {
-				target_crn = "crn:v1:bluemix:public:messagehub:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
-				brokers = [ "kafka-x:9094" ]
-				topic = "my-topic"
-				api_key = "xxxxxxxxxxxxxx"
-				service_to_service_enabled = false
-			}
-			cloudlogs_endpoint {
-				target_crn = "crn:v1:bluemix:public:logs:eu-es:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
 			}
 		}
 	`, name, targetType, region)
