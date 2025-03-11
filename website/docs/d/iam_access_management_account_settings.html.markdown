@@ -1,19 +1,19 @@
 ---
 layout: "ibm"
-page_title: "IBM : ibm_iam_access_management_account_settings"
+page_title: "IBM : ibm_iam_account_settings_external_interaction"
 description: |-
-  Get information about access_management_account_settings
+  Get information about account_settings_external_interaction
 subcategory: "Identity & Access Management (IAM)"
 ---
 
-# ibm_iam_access_management_account_settings
+# ibm_iam_account_settings_external_interaction
 
-Retrieve information about an existing `iam_access_management_account_settings` data sources. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
+Retrieve information about an existing `iam_account_settings_external_interaction` data sources. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
 
 ## Example Usage
 
 ```hcl
-data "ibm_iam_access_management_account_settings" "settings" {
+data "ibm_iam_account_settings_external_interaction" "settings" {
     account_id = "accountId-01"
 }
 ```

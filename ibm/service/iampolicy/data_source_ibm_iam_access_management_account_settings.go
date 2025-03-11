@@ -16,9 +16,9 @@ import (
 	"github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
 )
 
-func DataSourceIBMIAMAccessManagementAccountSettings() *schema.Resource {
+func DataSourceIBMIAMAccountSettingsExternalInteraction() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIBMAccessManagementAccountSettingsGet,
+		ReadContext: dataSourceIBMAccountSettingsExternalInteractionGet,
 
 		Schema: map[string]*schema.Schema{
 			"external_account_identity_interaction": {
@@ -114,10 +114,10 @@ func DataSourceIBMIAMAccessManagementAccountSettings() *schema.Resource {
 	}
 }
 
-func dataSourceIBMAccessManagementAccountSettingsGet(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMAccountSettingsExternalInteractionGet(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamPolicyManagementClient, err := meta.(conns.ClientSession).IAMPolicyManagementV1API()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_iam_access_management_account_settings", "read")
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_iam_account_settings_external_interaction", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -139,12 +139,12 @@ func dataSourceIBMAccessManagementAccountSettingsGet(context context.Context, d 
 	amAccountSettings, _, err := iamPolicyManagementClient.GetSettingsWithContext(context, getSettingsOptions)
 
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetSettingsWithContext failed: %s", err.Error()), "ibm_iam_access_management_account_settings", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetSettingsWithContext failed: %s", err.Error()), "ibm_iam_account_settings_external_interaction", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 	d.Set("external_account_identity_interaction", flex.FlattenAMSettingsExternalIdentityInteraction(amAccountSettings))
 
-	d.SetId(fmt.Sprintf("amAccountSettings-%s", accountID))
+	d.SetId(accountID)
 	return nil
 }

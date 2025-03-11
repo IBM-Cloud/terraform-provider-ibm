@@ -17,12 +17,12 @@ import (
 	"github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
 )
 
-func ResourceIBMIAMAccessManagementAccountSettings() *schema.Resource {
+func ResourceIBMIAMAccountSettingsExternalInteraction() *schema.Resource {
 	return &schema.Resource{
-		ReadContext:   resourceIBMAccessManagementAccountSettingsGet,
-		CreateContext: resourceIBMAccessManagementAccountSettingsSet,
-		UpdateContext: resourceIBMAccessManagementAccountSettingsSet,
-		DeleteContext: resourceIBMAccessManagementAccountSettingsUnSet,
+		ReadContext:   resourceIBMAccountSettingsExternalInteractionGet,
+		CreateContext: resourceIBMAccountSettingsExternalInteractionSet,
+		UpdateContext: resourceIBMAccountSettingsExternalInteractionSet,
+		DeleteContext: resourceIBMAccountSettingsExternalInteractionUnSet,
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
@@ -124,10 +124,10 @@ func ResourceIBMIAMAccessManagementAccountSettings() *schema.Resource {
 	}
 }
 
-func resourceIBMAccessManagementAccountSettingsGet(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMAccountSettingsExternalInteractionGet(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamPolicyManagementClient, err := meta.(conns.ClientSession).IAMPolicyManagementV1API()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_iam_access_management_account_settings", "read")
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_iam_account_settings_external_interaction", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -149,7 +149,7 @@ func resourceIBMAccessManagementAccountSettingsGet(context context.Context, d *s
 	amAccountSettings, _, err := iamPolicyManagementClient.GetSettingsWithContext(context, getSettingsOptions)
 
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetSettingsWithContext failed: %s", err.Error()), "ibm_iam_access_management_account_settings", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetSettingsWithContext failed: %s", err.Error()), "ibm_iam_account_settings_external_interaction", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -157,14 +157,14 @@ func resourceIBMAccessManagementAccountSettingsGet(context context.Context, d *s
 		d.Set("external_account_identity_interaction", flex.FlattenAMSettingsExternalIdentityInteraction(amAccountSettings))
 	}
 
-	d.SetId(fmt.Sprintf("amAccountSettings-%s", accountID))
+	d.SetId(accountID)
 	return nil
 }
 
-func resourceIBMAccessManagementAccountSettingsSet(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMAccountSettingsExternalInteractionSet(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamPolicyManagementClient, err := meta.(conns.ClientSession).IAMPolicyManagementV1API()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_iam_access_management_account_settings", "update")
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_iam_account_settings_external_interaction", "update")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -198,7 +198,7 @@ func resourceIBMAccessManagementAccountSettingsSet(context context.Context, d *s
 				d.SetId("")
 				return nil
 			}
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetPolicyAssignmentWithContext failed: %s", err.Error()), "ibm_iam_access_management_account_settings", "read")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetPolicyAssignmentWithContext failed: %s", err.Error()), "ibm_iam_account_settings_external_interaction", "read")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
@@ -208,21 +208,21 @@ func resourceIBMAccessManagementAccountSettingsSet(context context.Context, d *s
 			updateSettingsOptions.SetAccountID(accountID)
 			_, _, err = iamPolicyManagementClient.UpdateSettingsWithContext(context, updateSettingsOptions)
 			if err != nil {
-				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateSettingsWithContext failed: %s", err.Error()), "ibm_iam_access_management_account_settings", "update")
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateSettingsWithContext failed: %s", err.Error()), "ibm_iam_account_settings_external_interaction", "update")
 				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 				return tfErr.GetDiag()
 			}
 		}
 	}
 
-	return resourceIBMAccessManagementAccountSettingsGet(context, d, meta)
+	return resourceIBMAccountSettingsExternalInteractionGet(context, d, meta)
 }
 
-func resourceIBMAccessManagementAccountSettingsUnSet(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMAccountSettingsExternalInteractionUnSet(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// Update Settings to enabled and empty array for each category since there is no real delete functionality for this API
 	iamPolicyManagementClient, err := meta.(conns.ClientSession).IAMPolicyManagementV1API()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_iam_access_management_account_settings", "delete")
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_iam_account_settings_external_interaction", "delete")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -245,7 +245,7 @@ func resourceIBMAccessManagementAccountSettingsUnSet(context context.Context, d 
 			d.SetId("")
 			return nil
 		}
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetPolicyAssignmentWithContext failed: %s", err.Error()), "ibm_iam_access_management_account_settings", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetPolicyAssignmentWithContext failed: %s", err.Error()), "ibm_iam_account_settings_external_interaction", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -272,7 +272,7 @@ func resourceIBMAccessManagementAccountSettingsUnSet(context context.Context, d 
 	updateSettingsOptions.SetAccountID(accountID)
 	_, _, err = iamPolicyManagementClient.UpdateSettingsWithContext(context, updateSettingsOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateSettingsWithContext failed: %s", err.Error()), "ibm_iam_access_management_account_settings", "update")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateSettingsWithContext failed: %s", err.Error()), "ibm_iam_account_settings_external_interaction", "update")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}

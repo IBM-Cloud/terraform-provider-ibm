@@ -1,14 +1,14 @@
 ---
 layout: "ibm"
-page_title: "IBM : ibm_iam_access_management_account_settings"
+page_title: "IBM : ibm_iam_account_settings_external_interaction"
 description: |-
-  Manages access_management_account_settings
+  Manages account_settings_external_interaction
 subcategory: "Identity & Access Management (IAM)"
 ---
 
-# ibm_iam_access_management_account_settings
+# ibm_iam_account_settings_external_interaction
 
-Update, and reset an `iam_access_management_account_settings` with this resource. 
+Update, and reset an `iam_account_settings_external_interaction` with this resource. 
 
 **Note**: The resource is already initialized with default values. Therefore, create operation does not actually create the resource. 
 As a result, the `terraform apply` command would apply the values supplied 
@@ -19,7 +19,7 @@ Also note that the delete operation (`terraform destroy`) resets the resource wi
 ## Example Usage
 
 ```hcl
-resource "ibm_iam_access_management_account_settings" "settings" {
+resource "ibm_iam_account_settings_external_interaction" "settings" {
     account_id = "accountId-01"
 
     external_account_identity_interaction {
