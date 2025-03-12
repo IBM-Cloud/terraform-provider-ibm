@@ -957,7 +957,7 @@ func resourceIbmSccProfileAttachmentMultiCloudScopeToMap(model *securityandcompl
 	}
 	properties := []map[string]interface{}{}
 	for _, propertiesItem := range model.Properties {
-		propertiesItemMap, err := resourceIbmSccProfileAttachmentPropertyItemToMap(propertiesItem)
+		propertiesItemMap, err := scopePropertiesToMap(propertiesItem)
 		if err != nil {
 			return modelMap, err
 		}
@@ -968,21 +968,6 @@ func resourceIbmSccProfileAttachmentMultiCloudScopeToMap(model *securityandcompl
 		modelMap["id"] = model.ID
 	}
 	return modelMap, nil
-}
-
-func resourceIbmSccProfileAttachmentPropertyItemToMap(model securityandcompliancecenterapiv3.ScopePropertyIntf) (map[string]interface{}, error) {
-	if prop, ok := model.(*securityandcompliancecenterapiv3.ScopeProperty); ok && prop.Name != nil && prop.Value != nil {
-		modelMap := make(map[string]interface{})
-		modelMap["name"] = prop.Name
-		if val, ok := prop.Value.(string); !ok {
-			modelMap["value"] = fmt.Sprintf("%v", val)
-		} else {
-			modelMap["value"] = prop.Value
-		}
-		return modelMap, nil
-	} else {
-		return nil, fmt.Errorf("Unrecognized securityandcompliancecenterv3.ScopePropertyIntf subtype encountered")
-	}
 }
 
 func resourceIbmSccProfileAttachmentAttachmentsNotificationsPrototypeToMap(model *securityandcompliancecenterapiv3.AttachmentNotifications) (map[string]interface{}, error) {
