@@ -46,12 +46,6 @@ func TestAccIbmSccProfileAttachmentAllArgs(t *testing.T) {
 				Config: testAccCheckIbmSccProfileAttachmentConfig(acc.SccInstanceID, acc.SccResourceGroupID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmSccProfileAttachmentExists("ibm_scc_profile_attachment.scc_profile_attachment_instance", conf),
-				),
-			},
-			resource.TestStep{
-				Config: testAccCheckIbmSccProfileAttachmentConfig(acc.SccInstanceID, acc.SccResourceGroupID),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmSccProfileAttachmentExists("ibm_scc_profile_attachment.scc_profile_attachment_instance", conf),
 					resource.TestCheckResourceAttr(
 						"ibm_scc_profile_attachment.scc_profile_attachment_instance", "attachment_parameters.#", "6"),
 					resource.TestCheckResourceAttr(
