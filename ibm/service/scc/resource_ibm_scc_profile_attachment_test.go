@@ -43,17 +43,21 @@ func TestAccIbmSccProfileAttachmentAllArgs(t *testing.T) {
 		CheckDestroy: testAccCheckIbmSccProfileAttachmentDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmSccProfileAttachmentConfig(acc.SccInstanceID),
+				Config: testAccCheckIbmSccProfileAttachmentConfig(acc.SccInstanceID, acc.SccResourceGroupID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmSccProfileAttachmentExists("ibm_scc_profile_attachment.scc_profile_attachment_instance", conf),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmSccProfileAttachmentConfig(acc.SccInstanceID),
+				Config: testAccCheckIbmSccProfileAttachmentConfig(acc.SccInstanceID, acc.SccResourceGroupID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmSccProfileAttachmentExists("ibm_scc_profile_attachment.scc_profile_attachment_instance", conf),
 					resource.TestCheckResourceAttr(
 						"ibm_scc_profile_attachment.scc_profile_attachment_instance", "attachment_parameters.#", "6"),
+					resource.TestCheckResourceAttr(
+						"ibm_scc_profile_attachment.scc_profile_attachment_instance", "scope.0.properties.#", "3"),
+					resource.TestCheckResourceAttr(
+						"ibm_scc_profile_attachment.scc_profile_attachment_instance", "scope.0.properties.2.name", "exclusions"),
 				),
 			},
 			resource.TestStep{
@@ -181,7 +185,7 @@ func testAccCheckIbmSccProfileAttachmentConfigBasic(instanceID string) string {
   `, instanceID)
 }
 
-func testAccCheckIbmSccProfileAttachmentConfig(instanceID string) string {
+func testAccCheckIbmSccProfileAttachmentConfig(instanceID string, resGroupID string) string {
 	return fmt.Sprintf(`
 		locals {
 			scc_profiles_map = tomap(merge([
@@ -206,10 +210,14 @@ func testAccCheckIbmSccProfileAttachmentConfig(instanceID string) string {
 				scope_id    = data.ibm_iam_account_settings.iam_account_settings.account_id
 				scope_type  = "account"
 			}
+			exclusions {
+				scope_id   = "%s"
+				scope_type = "account.resource_group"
+			}
 		}
 
 		resource "ibm_scc_profile_attachment" "scc_profile_attachment_instance" {
-			instance_id = "%s"
+			instance_id = data.ibm_scc_profiles.scc_profiles.instance_id
 			profile_id = local.scc_profiles_map["CIS IBM Cloud Foundations Benchmark v1.1.0"]
 			name = "terraform_ac_profile_attachment_name"
 			description = "scc_profile_attachment_description"
@@ -274,7 +282,7 @@ func testAccCheckIbmSccProfileAttachmentConfig(instanceID string) string {
 				parameter_type = "string_list"
 			}
   }
-  `, instanceID, instanceID)
+  `, instanceID, resGroupID)
 }
 
 // Returns a terraform change where the attachment_parameters are modified slightly.

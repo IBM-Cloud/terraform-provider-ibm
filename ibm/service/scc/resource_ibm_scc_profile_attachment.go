@@ -971,31 +971,13 @@ func resourceIbmSccProfileAttachmentMultiCloudScopeToMap(model *securityandcompl
 }
 
 func resourceIbmSccProfileAttachmentPropertyItemToMap(model securityandcompliancecenterapiv3.ScopePropertyIntf) (map[string]interface{}, error) {
-	if _, ok := model.(*securityandcompliancecenterapiv3.ScopePropertyScopeID); ok {
-		return resourceIBMSccScopeScopePropertyScopeIDToMap(model.(*securityandcompliancecenterapiv3.ScopePropertyScopeID))
-	} else if _, ok := model.(*securityandcompliancecenterapiv3.ScopePropertyScopeType); ok {
-		return resourceIBMSccScopeScopePropertyScopeTypeToMap(model.(*securityandcompliancecenterapiv3.ScopePropertyScopeType))
-	} else if _, ok := model.(*securityandcompliancecenterapiv3.ScopePropertyExclusions); ok {
-		return resourceIBMSccScopeScopePropertyExclusionsToMap(model.(*securityandcompliancecenterapiv3.ScopePropertyExclusions))
-	} else if _, ok := model.(*securityandcompliancecenterapiv3.ScopeProperty); ok {
+	if prop, ok := model.(*securityandcompliancecenterapiv3.ScopeProperty); ok && prop.Name != nil && prop.Value != nil {
 		modelMap := make(map[string]interface{})
-		model := model.(*securityandcompliancecenterapiv3.ScopeProperty)
-		if model.Name != nil {
-			modelMap["name"] = model.Name
-		}
-		if model.Value != nil {
-			modelMap["value"] = model.Value
-		}
-		if model.Exclusions != nil {
-			exclusions := []map[string]interface{}{}
-			for _, exclusionsItem := range model.Exclusions {
-				exclusionsItemMap, err := resourceIBMSccScopeScopePropertyExclusionItemToMap(&exclusionsItem)
-				if err != nil {
-					return modelMap, err
-				}
-				exclusions = append(exclusions, exclusionsItemMap)
-			}
-			modelMap["exclusions"] = exclusions
+		modelMap["name"] = prop.Name
+		if val, ok := prop.Value.(string); !ok {
+			modelMap["value"] = fmt.Sprintf("%v", val)
+		} else {
+			modelMap["value"] = prop.Value
 		}
 		return modelMap, nil
 	} else {
