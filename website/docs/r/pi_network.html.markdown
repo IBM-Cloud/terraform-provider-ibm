@@ -10,7 +10,7 @@ description: |-
 
 Create, update, or delete a network connection for your Power Systems Virtual Server instance. For more information, about power virtual server instance network, see [setting up an IBM network install server](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-configuring-subnet).
 
-## Example usage
+## Example Usage
 
 The following example creates a network connection for your Power Systems Virtual Server instance.
 
@@ -34,7 +34,6 @@ resource "ibm_pi_network" "power_networks" {
 
 - Please find [supported Regions](https://cloud.ibm.com/apidocs/power-cloud#endpoint) for endpoints.
 - If a Power cloud instance is provisioned at `lon04`, The provider level attributes should be as follows:
-
   - `region` - `lon`
   - `zone` - `lon04`
 
@@ -59,6 +58,8 @@ The `ibm_pi_network` provides the following [Timeouts](https://www.terraform.io/
 
 Review the argument references that you can specify for your resource.
 
+- `pi_advertise` - (Optional, String) Enable the network to be advertised.
+- `pi_arp_broadcast` - (Optional, String) Enable ARP Broadcast.
 - `pi_cidr` - (Optional, String) The network CIDR. Required for `vlan` network type.
 - `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
 - `pi_dns` - (Optional, Set of String) The DNS Servers for the network. If not specified, default is 127.0.0.1 for 'vlan' (private network) and 9.9.9.9 for 'pub-vlan' (public network). A maximum of one DNS server can be specified for private networks in Power Edge Router workspaces.
