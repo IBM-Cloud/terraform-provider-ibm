@@ -485,7 +485,13 @@ func expandCISRules(obj interface{}) []rulesetsv1.RuleCreate {
 
 		position := rulesetsv1.Position{}
 		if len(ruleObj[CISRulesetsRulePosition].(*schema.Set).List()) != 0 {
-			position = expandCISRulesetsRulesPositions(ruleObj[CISRulesetsRulePosition])
+			var err error
+			position, err = expandCISRulesetsRulesPositions(ruleObj[CISRulesetsRulePosition])
+			if err != nil {
+				// TODO : Check whether to return empty ruleset or finalResponse
+				fmt.Printf("[ERROR] Error while expanding the CIS Rulesets Rule Position %s", err)
+				return []rulesetsv1.RuleCreate{}
+			}
 		}
 
 		ruleRespObj := rulesetsv1.RuleCreate{
@@ -508,7 +514,7 @@ func expandCISRules(obj interface{}) []rulesetsv1.RuleCreate {
 	return finalResponse
 }
 
-func expandCISRulesetsRulesPositions(obj interface{}) rulesetsv1.Position {
+func expandCISRulesetsRulesPositions(obj interface{}) (rulesetsv1.Position, error) {
 	responseObj := rulesetsv1.Position{}
 	if len(obj.(*schema.Set).List()) != 0 {
 		response := obj.(*schema.Set).List()[0].(map[string]interface{})
@@ -517,50 +523,63 @@ func expandCISRulesetsRulesPositions(obj interface{}) rulesetsv1.Position {
 		after := response[CISRulesetsRulePositionAfter].(string)
 		index := int64(response[CISRulesetsRulePositionIndex].(int))
 
-		if before != "" {
+		if before != "" && after == "" && index == 0 {
 			responseObj = rulesetsv1.Position{
 				Before: &before,
 			}
-		}
-		if after != "" {
+		} else if after != "" && before == "" && index == 0 {
 			responseObj = rulesetsv1.Position{
 				After: &after,
 			}
-		}
-		if index != 0 {
+		} else if index != 0 && before == "" && after == "" {
 			responseObj = rulesetsv1.Position{
 				Index: &index,
 			}
+		} else {
+			return rulesetsv1.Position{}, fmt.Errorf("only one of 'before', 'after', or 'index' can be set")
 		}
-
 	}
-	return responseObj
+	return responseObj, nil
 }
 
 func expandCISRulesetsRulesActionParameters(obj interface{}) rulesetsv1.ActionParameters {
 
+	actionParameterRespObj := rulesetsv1.ActionParameters{}
+	// This was failing because of index out of range, hence ading check here.
+	if len(obj.(*schema.Set).List()) == 0 {
+		return actionParameterRespObj
+	}
+
 	actionParameterObj := obj.(*schema.Set).List()[0].(map[string]interface{})
 
 	id := actionParameterObj[CISRulesetsRuleId].(string)
+	if id != "" {
+		actionParameterRespObj.ID = &id
+	}
 	version := actionParameterObj[CISRulesetsVersion].(string)
+	if version != "" {
+		actionParameterRespObj.Version = &version
+	}
 	ruleListInterface := actionParameterObj[CISRulesetList].([]interface{})
 
 	ruleList := make([]string, 0)
 	for i, v := range ruleListInterface {
 		ruleList[i] = fmt.Sprint(v)
 	}
+	actionParameterRespObj.Rulesets = ruleList
 
 	finalResponse := make([]rulesetsv1.ActionParameters, 0)
-	actionParameterRespObj := rulesetsv1.ActionParameters{
-		ID:       &id,
-		Rulesets: ruleList,
-		Version:  &version,
-	}
 
 	overrideObj := rulesetsv1.Overrides{}
 	if len(actionParameterObj[CISRulesetOverrides].(*schema.Set).List()) != 0 {
 		overrideObj = expandCISRulesetsRulesActionParametersOverrides(actionParameterObj[CISRulesetOverrides])
 		actionParameterRespObj.Overrides = &overrideObj
+	}
+
+	resObj := rulesetsv1.ActionParametersResponse{}
+	if len(actionParameterObj[CISRulesetsRuleActionParametersResponse].(*schema.Set).List()) != 0 {
+		resObj = expandCISRulesetsRulesActionParametersResponse(actionParameterObj[CISRulesetsRuleActionParametersResponse])
+		actionParameterRespObj.Response = &resObj
 	}
 
 	finalResponse = append(finalResponse, actionParameterRespObj)
@@ -572,7 +591,7 @@ func expandCISRulesetsRulesActionParametersResponse(obj interface{}) rulesetsv1.
 	response := obj.(*schema.Set).List()[0].(map[string]interface{})
 	content := response[CISRulesetsRuleActionParametersResponseContent].(string)
 	contentType := response[CISRulesetsRuleActionParametersResponseContentType].(string)
-	statusCode := response[cisPageRuleActionsValueStatusCode].(int64)
+	statusCode := int64(response[cisPageRuleActionsValueStatusCode].(int))
 
 	responseObj := rulesetsv1.ActionParametersResponse{
 		Content:     &content,
