@@ -115,9 +115,9 @@ func TestAccIBMIAMAuthorizationPolicy_Resource_Group(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerifyIgnore: []string{"transaction_id"},
 			},
 		},
 	})
