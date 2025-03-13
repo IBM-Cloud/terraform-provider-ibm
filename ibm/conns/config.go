@@ -1334,7 +1334,6 @@ func (sess clientSession) GlobalCatalogV1API() (*globalcatalogv1.GlobalCatalogV1
 
 // ClientSession configures and returns a fully initialized ClientSession
 func (c *Config) ClientSession() (interface{}, error) {
-	fmt.Println("custom:Configuring new client session")
 	sess, err := newSession(c)
 	if err != nil {
 		return nil, err
@@ -3704,18 +3703,6 @@ func newSession(c *Config) (*Session, error) {
 	}
 
 	if c.IAMToken != "" {
-		fmt.Println("custom:IAM TOKEN IS NOT EMPTY")
-	}
-
-	if c.IAMTrustedProfileID != "" {
-		fmt.Println("custom:c.IAMTrustedProfileID is not empty")
-	}
-
-	if c.IAMRefreshToken != "" {
-		fmt.Println("custom:c.IAMRefreshToken is not empty")
-	}
-
-	if c.IAMToken != "" {
 		log.Println("Configuring SoftLayer Session with token")
 		softlayerSession.IAMToken = c.IAMToken
 		softlayerSession.IAMRefreshToken = c.IAMRefreshToken
@@ -3729,11 +3716,9 @@ func newSession(c *Config) (*Session, error) {
 	ibmSession.SoftLayerSession = softlayerSession
 
 	if c.IAMTrustedProfileID == "" && (c.IAMToken != "" && c.IAMRefreshToken == "") || (c.IAMToken == "" && c.IAMRefreshToken != "") {
-		fmt.Println("custom.. here profileId is empty and one of the token is empty")
 		return nil, fmt.Errorf("iam_token and iam_refresh_token must be provided")
 	}
 	if c.IAMTrustedProfileID != "" && c.IAMToken == "" {
-		fmt.Println("custom.. here profileId is NOT empty and one of the token is empty")
 		return nil, fmt.Errorf("iam_token and iam_profile_id must be provided")
 	}
 
