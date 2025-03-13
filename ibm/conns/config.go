@@ -1854,7 +1854,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		if c.Region == "us-south" || c.Region == "us-east" {
 			usageReportsURL = ContructEndpoint(fmt.Sprintf("private.%s.usagereports", c.Region), fmt.Sprintf("%s/v1", cloudEndpoint))
 		} else {
-			fmt.Println("Private Endpint supports only us-south and us-east region specific endpoint")
+			log.Println("Private Endpint supports only us-south and us-east region specific endpoint")
 			usageReportsURL = ContructEndpoint("private.us-south.usagereports", fmt.Sprintf("%s/v1", cloudEndpoint))
 		}
 	}
