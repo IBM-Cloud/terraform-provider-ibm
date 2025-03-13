@@ -544,28 +544,31 @@ func expandCISRulesetsRulesPositions(obj interface{}) (rulesetsv1.Position, erro
 
 func expandCISRulesetsRulesActionParameters(obj interface{}) rulesetsv1.ActionParameters {
 
+	actionParameterRespObj := rulesetsv1.ActionParameters{}
 	// This was failing because of index out of range, hence ading check here.
 	if len(obj.(*schema.Set).List()) == 0 {
-		return rulesetsv1.ActionParameters{}
+		return actionParameterRespObj
 	}
 
 	actionParameterObj := obj.(*schema.Set).List()[0].(map[string]interface{})
 
 	id := actionParameterObj[CISRulesetsRuleId].(string)
+	if id != "" {
+		actionParameterRespObj.ID = &id
+	}
 	version := actionParameterObj[CISRulesetsVersion].(string)
+	if version != "" {
+		actionParameterRespObj.Version = &version
+	}
 	ruleListInterface := actionParameterObj[CISRulesetList].([]interface{})
 
 	ruleList := make([]string, 0)
 	for i, v := range ruleListInterface {
 		ruleList[i] = fmt.Sprint(v)
 	}
+	actionParameterRespObj.Rulesets = ruleList
 
 	finalResponse := make([]rulesetsv1.ActionParameters, 0)
-	actionParameterRespObj := rulesetsv1.ActionParameters{
-		ID:       &id,
-		Rulesets: ruleList,
-		Version:  &version,
-	}
 
 	overrideObj := rulesetsv1.Overrides{}
 	if len(actionParameterObj[CISRulesetOverrides].(*schema.Set).List()) != 0 {
@@ -588,7 +591,7 @@ func expandCISRulesetsRulesActionParametersResponse(obj interface{}) rulesetsv1.
 	response := obj.(*schema.Set).List()[0].(map[string]interface{})
 	content := response[CISRulesetsRuleActionParametersResponseContent].(string)
 	contentType := response[CISRulesetsRuleActionParametersResponseContentType].(string)
-	statusCode := response[cisPageRuleActionsValueStatusCode].(int64)
+	statusCode := int64(response[cisPageRuleActionsValueStatusCode].(int))
 
 	responseObj := rulesetsv1.ActionParametersResponse{
 		Content:     &content,
