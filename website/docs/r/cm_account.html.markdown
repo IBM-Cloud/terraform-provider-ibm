@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_cm_account"
 description: |-
   Manages cm_account.
-subcategory: "Catalog Management API"
+subcategory: "Catalog Management"
 ---
 
 # ibm_cm_account
@@ -14,6 +14,39 @@ Create, update, and delete cm_accounts with this resource.
 
 ```hcl
 resource "ibm_cm_account" "cm_account_instance" {
+  region_filter = "geo:eu"
+
+  account_filters {
+    category_filters {
+      category_name = "provider"
+      filter {
+        filter_terms = [
+          "ibm_third_party",
+        ]
+      }
+      include = false
+    }
+    category_filters {
+      category_name = "category"
+      filter {
+        filter_terms = [
+          "watson",
+          "ai",
+          "blockchain",
+        ]
+      }
+      include = false
+    }
+    id_filters {
+      exclude {}
+      include {
+        filter_terms = [
+          "9dcb8ea2-30b4-4adf-8821-0d35f0a9d74f-global",
+        ]
+      }
+    }
+    include_all = true
+  }
 }
 ```
 

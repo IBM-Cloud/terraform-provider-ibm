@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_cm_account"
 description: |-
   Get information about cm_account
-subcategory: "Catalog Management API"
+subcategory: "Catalog Management"
 ---
 
 # ibm_cm_account
