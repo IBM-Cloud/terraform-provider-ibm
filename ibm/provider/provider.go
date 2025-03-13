@@ -348,7 +348,10 @@ func Provider() *schema.Provider {
 			"ibm_db2":                                      db2.DataSourceIBMDb2Instance(),
 			"ibm_db2_connection_info":                      db2.DataSourceIbmDb2ConnectionInfo(),
 			"ibm_db2_whitelist_ip":                         db2.DataSourceIbmDb2Whitelist(),
+			"ibm_db2_allowlist_ip":                         db2.DataSourceIbmDb2Allowlist(),
 			"ibm_db2_autoscale":                            db2.DataSourceIbmDb2Autoscale(),
+			"ibm_db2_backup":                               db2.DataSourceIbmDb2Backup(),
+			"ibm_db2_tuneable_param":                       db2.DataSourceIbmDb2TuneableParam(),
 			"ibm_compute_bare_metal":                       classicinfrastructure.DataSourceIBMComputeBareMetal(),
 			"ibm_compute_image_template":                   classicinfrastructure.DataSourceIBMComputeImageTemplate(),
 			"ibm_compute_placement_group":                  classicinfrastructure.DataSourceIBMComputePlacementGroup(),
@@ -856,6 +859,7 @@ func Provider() *schema.Provider {
 			"ibm_cm_offering_instance": catalogmanagement.DataSourceIBMCmOfferingInstance(),
 			"ibm_cm_preset":            catalogmanagement.DataSourceIBMCmPreset(),
 			"ibm_cm_object":            catalogmanagement.DataSourceIBMCmObject(),
+			"ibm_cm_account":           catalogmanagement.DataSourceIBMCmAccount(),
 
 			// Added for Resource Tag
 			"ibm_resource_tag":   globaltagging.DataSourceIBMResourceTag(),
@@ -898,6 +902,8 @@ func Provider() *schema.Provider {
 			"ibm_scc_provider_type_collection": scc.DataSourceIbmSccProviderTypeCollection(),
 			"ibm_scc_provider_type_instance":   scc.DataSourceIbmSccProviderTypeInstance(),
 			"ibm_scc_latest_reports":           scc.DataSourceIbmSccLatestReports(),
+			"ibm_scc_scope":                    scc.DataSourceIbmSccScope(),
+			"ibm_scc_scope_collection":         scc.DataSourceIbmSccScopeCollection(),
 			"ibm_scc_report":                   scc.DataSourceIbmSccReport(),
 			"ibm_scc_report_controls":          scc.DataSourceIbmSccReportControls(),
 			"ibm_scc_report_evaluations":       scc.DataSourceIbmSccReportEvaluations(),
@@ -1477,6 +1483,7 @@ func Provider() *schema.Provider {
 			"ibm_cm_version":           catalogmanagement.ResourceIBMCmVersion(),
 			"ibm_cm_validation":        catalogmanagement.ResourceIBMCmValidation(),
 			"ibm_cm_object":            catalogmanagement.ResourceIBMCmObject(),
+			"ibm_cm_account":           catalogmanagement.ResourceIBMCmAccount(),
 
 			// Added for enterprise
 			"ibm_enterprise":               enterprise.ResourceIBMEnterprise(),
@@ -1569,6 +1576,7 @@ func Provider() *schema.Provider {
 			"ibm_scc_profile":                scc.ResourceIbmSccProfile(),
 			"ibm_scc_profile_attachment":     scc.ResourceIbmSccProfileAttachment(),
 			"ibm_scc_provider_type_instance": scc.ResourceIbmSccProviderTypeInstance(),
+			"ibm_scc_scope":                  scc.ResourceIbmSccScope(),
 
 			// Security Services
 			"ibm_pag_instance": pag.ResourceIBMPag(),
@@ -2080,6 +2088,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_scc_profile":                scc.ResourceIbmSccProfileValidator(),
 				"ibm_scc_profile_attachment":     scc.ResourceIbmSccProfileAttachmentValidator(),
 				"ibm_scc_provider_type_instance": scc.ResourceIbmSccProviderTypeInstanceValidator(),
+				"ibm_scc_scope":                  scc.ResourceIbmSccScopeValidator(),
 
 				// Added for Toolchains
 				"ibm_cd_toolchain":                         cdtoolchain.ResourceIBMCdToolchainValidator(),

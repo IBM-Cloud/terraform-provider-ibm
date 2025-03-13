@@ -140,21 +140,32 @@ func DataSourceIBMPIInstance() *schema.Resource {
 							Description: "The MAC address of the instance.",
 							Type:        schema.TypeString,
 						},
-						Attr_Macaddress: {
-							Computed:    true,
-							Deprecated:  "Deprecated, use mac_address instead",
-							Description: "The MAC address of the instance.",
-							Type:        schema.TypeString,
-						},
 						Attr_NetworkID: {
 							Computed:    true,
 							Description: "The network ID of the instance.",
+							Type:        schema.TypeString,
+						},
+						Attr_NetworkInterfaceID: {
+							Computed:    true,
+							Description: "ID of the network interface.",
 							Type:        schema.TypeString,
 						},
 						Attr_NetworkName: {
 							Computed:    true,
 							Description: "The network name of the instance.",
 							Type:        schema.TypeString,
+						},
+						Attr_NetworkSecurityGroupIDs: {
+							Computed:    true,
+							Description: "IDs of the network necurity groups that the network interface is a member of.",
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Type:        schema.TypeSet,
+						},
+						Attr_NetworkSecurityGroupsHref: {
+							Computed:    true,
+							Description: "Links to the network security groups that the network interface is a member of.",
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Type:        schema.TypeList,
 						},
 						Attr_Type: {
 							Computed:    true,

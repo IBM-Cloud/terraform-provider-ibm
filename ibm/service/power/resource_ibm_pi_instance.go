@@ -177,29 +177,47 @@ func ResourceIBMPIInstance() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						Attr_IPAddress: {
-							Type:     schema.TypeString,
-							Optional: true,
 							Computed: true,
+							Optional: true,
+							Type:     schema.TypeString,
 						},
 						Attr_MacAddress: {
-							Type:     schema.TypeString,
 							Computed: true,
+							Type:     schema.TypeString,
 						},
 						Attr_NetworkID: {
-							Type:     schema.TypeString,
 							Required: true,
+							Type:     schema.TypeString,
+						},
+						Attr_NetworkInterfaceID: {
+							Computed:    true,
+							Description: "ID of the network interface.",
+							Type:        schema.TypeString,
 						},
 						Attr_NetworkName: {
-							Type:     schema.TypeString,
 							Computed: true,
+							Type:     schema.TypeString,
+						},
+						Attr_NetworkSecurityGroupIDs: {
+							Computed:    true,
+							Description: "Network security groups that the network interface is a member of. There is a limit of 1 network security group in the array. If not specified, default network security group is used.",
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Optional:    true,
+							Type:        schema.TypeSet,
+						},
+						Attr_NetworkSecurityGroupsHref: {
+							Computed:    true,
+							Description: "Links to the network security groups that the network interface is a member of.",
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Type:        schema.TypeList,
 						},
 						Attr_Type: {
-							Type:     schema.TypeString,
 							Computed: true,
+							Type:     schema.TypeString,
 						},
 						Attr_ExternalIP: {
-							Type:     schema.TypeString,
 							Computed: true,
+							Type:     schema.TypeString,
 						},
 					},
 				},
@@ -624,12 +642,19 @@ func resourceIBMPIInstanceRead(ctx context.Context, d *schema.ResourceData, meta
 		for _, n := range powervmdata.Networks {
 			if n != nil {
 				v := map[string]interface{}{
-					Attr_IPAddress:   n.IPAddress,
-					Attr_MacAddress:  n.MacAddress,
-					Attr_NetworkID:   n.NetworkID,
-					Attr_NetworkName: n.NetworkName,
-					Attr_Type:        n.Type,
-					Attr_ExternalIP:  n.ExternalIP,
+					Attr_ExternalIP:         n.ExternalIP,
+					Attr_IPAddress:          n.IPAddress,
+					Attr_MacAddress:         n.MacAddress,
+					Attr_NetworkID:          n.NetworkID,
+					Attr_NetworkInterfaceID: n.NetworkInterfaceID,
+					Attr_NetworkName:        n.NetworkName,
+					Attr_Type:               n.Type,
+				}
+				if len(n.NetworkSecurityGroupIDs) > 0 {
+					v[Attr_NetworkSecurityGroupIDs] = n.NetworkSecurityGroupIDs
+				}
+				if len(n.NetworkSecurityGroupsHref) > 0 {
+					v[Attr_NetworkSecurityGroupsHref] = n.NetworkSecurityGroupsHref
 				}
 				networksMap = append(networksMap, v)
 			}
@@ -1514,8 +1539,9 @@ func expandPVMNetworks(networks []interface{}) []*models.PVMInstanceAddNetwork {
 	for _, v := range networks {
 		network := v.(map[string]interface{})
 		pvmInstanceNetwork := &models.PVMInstanceAddNetwork{
-			IPAddress: network[Attr_IPAddress].(string),
-			NetworkID: flex.PtrToString(network[Attr_NetworkID].(string)),
+			IPAddress:               network[Attr_IPAddress].(string),
+			NetworkID:               flex.PtrToString(network[Attr_NetworkID].(string)),
+			NetworkSecurityGroupIDs: flex.ExpandStringList((network[Attr_NetworkSecurityGroupIDs].(*schema.Set)).List()),
 		}
 		pvmNetworks = append(pvmNetworks, pvmInstanceNetwork)
 	}

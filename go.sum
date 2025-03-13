@@ -97,10 +97,6 @@ github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20240725064144-454a2ae2311
 github.com/IBM-Cloud/ibm-cloud-cli-sdk v0.5.3/go.mod h1:RiUvKuHKTBmBApDMUQzBL14pQUGKcx/IioKQPIcRQjs=
 github.com/IBM-Cloud/power-go-client v1.10.0 h1:yBUHWwvNBmLkWpbZJQJEXoxBa1Dm+eJgMSbk9ljmXUU=
 github.com/IBM-Cloud/power-go-client v1.10.0/go.mod h1:UDyXeIKEp6r7yWUXYu3r0ZnFSlNZ2YeQTHwM2Tmlgv0=
-github.com/IBM-Cloud/power-go-client v1.10.0-beta7 h1:nxAuY/0axYwOq2jb2jVZqu3nmPP/7/sFC6HCi8RhMUA=
-github.com/IBM-Cloud/power-go-client v1.10.0-beta7/go.mod h1:UDyXeIKEp6r7yWUXYu3r0ZnFSlNZ2YeQTHwM2Tmlgv0=
-github.com/IBM-Cloud/power-go-client v1.10.0 h1:yBUHWwvNBmLkWpbZJQJEXoxBa1Dm+eJgMSbk9ljmXUU=
-github.com/IBM-Cloud/power-go-client v1.10.0/go.mod h1:UDyXeIKEp6r7yWUXYu3r0ZnFSlNZ2YeQTHwM2Tmlgv0=
 github.com/IBM-Cloud/softlayer-go v1.0.5-tf h1:koUAyF9b6X78lLLruGYPSOmrfY2YcGYKOj/Ug9nbKNw=
 github.com/IBM-Cloud/softlayer-go v1.0.5-tf/go.mod h1:6HepcfAXROz0Rf63krk5hPZyHT6qyx2MNvYyHof7ik4=
 github.com/IBM/apigateway-go-sdk v0.0.0-20210714141226-a5d5d49caaca h1:crniVcf+YcmgF03NmmfonXwSQ73oJF+IohFYBwknMxs=
@@ -111,8 +107,8 @@ github.com/IBM/appid-management-go-sdk v0.0.0-20210908164609-dd0e0eaf732f h1:4c1
 github.com/IBM/appid-management-go-sdk v0.0.0-20210908164609-dd0e0eaf732f/go.mod h1:d22kTYY7RYBWcQlZpqrSdshpB/lJ16viWS5Sbjtlc8s=
 github.com/IBM/cloud-databases-go-sdk v0.7.1 h1:5kK4/3NUsGxZzmuUe+1ftajpOQbeDVh5VeemrPgROP4=
 github.com/IBM/cloud-databases-go-sdk v0.7.1/go.mod h1:JYucI1PdwqbAd8XGdDAchxzxRP7bxOh1zUnseovHKsc=
-github.com/IBM/cloud-db2-go-sdk v0.0.0-20241206113855-40a65de39906 h1:m5V+U7CKclw2CkxfHXW1+KHZB+9cb4tLaDPiF/qBrz4=
-github.com/IBM/cloud-db2-go-sdk v0.0.0-20241206113855-40a65de39906/go.mod h1:jEJMNXX2KOE+Hhk3M8CBq0qi9CZ0eRK36xmhuBPSiNA=
+github.com/IBM/cloud-db2-go-sdk v0.2.3 h1:R+8uFXSZFOsBDC7nKqW9DgyGgT9Pop589ziUIaw2Tek=
+github.com/IBM/cloud-db2-go-sdk v0.2.3/go.mod h1:jEJMNXX2KOE+Hhk3M8CBq0qi9CZ0eRK36xmhuBPSiNA=
 github.com/IBM/cloudant-go-sdk v0.8.0 h1:XzaqZFy5fm1Q9+iK52X5zRW39SHaahT9pf5SRgVTsTY=
 github.com/IBM/cloudant-go-sdk v0.8.0/go.mod h1:zDGBs8ideVtn9MehXbIQNI3852B68BsMtKJvq3iPn/Q=
 github.com/IBM/code-engine-go-sdk v0.0.0-20241217191651-e1821f8c58c3 h1:bNopmSDZEmWf+Q4ZqwnT3LY7vNt7S3oVH3PXTZHuLmE=
@@ -145,8 +141,8 @@ github.com/IBM/ibm-cos-sdk-go v1.12.0 h1:Wrk3ve4JS3euhl7XjNFd3RlvPT56199G2/rKaPW
 github.com/IBM/ibm-cos-sdk-go v1.12.0/go.mod h1:v/VBvFuysZMIX9HcaIrz6a+FLVw9px8fq6XabFwD+E4=
 github.com/IBM/ibm-cos-sdk-go-config/v2 v2.2.0 h1:H5XSKuOEf+z+506ITq3FSXhFNBaZt7OLpH4OTQGcNXw=
 github.com/IBM/ibm-cos-sdk-go-config/v2 v2.2.0/go.mod h1:ci4tI9mIZEtN6cenuVN9RWyNJu8CkWHmYH758K2lVEQ=
-github.com/IBM/ibm-hpcs-tke-sdk v0.0.0-20211109141421-a4b61b05f7d1 h1:T5UwRKKd+BoaPZ7UIlpJrzXzVTUEs8HcxwQ3pCIbORs=
-github.com/IBM/ibm-hpcs-tke-sdk v0.0.0-20211109141421-a4b61b05f7d1/go.mod h1:M2JyuyeWHPtgGNeezr6YqVRuaav2MpY8Ha4QrEYvMoI=
+github.com/IBM/ibm-hpcs-tke-sdk v0.0.0-20250305134146-e023c2e84762 h1:eB640+EihADOu56O2p/9JuuEUnSKX5I2URFd8/g92HY=
+github.com/IBM/ibm-hpcs-tke-sdk v0.0.0-20250305134146-e023c2e84762/go.mod h1:M2JyuyeWHPtgGNeezr6YqVRuaav2MpY8Ha4QrEYvMoI=
 github.com/IBM/ibm-hpcs-uko-sdk v0.0.20-beta h1:P1fdIfKsD9xvJQ5MHIEztPS9yfNf9x+VDTamaYcmqcs=
 github.com/IBM/ibm-hpcs-uko-sdk v0.0.20-beta/go.mod h1:MLVNHMYoKsvovJZ4v1gQCpIYtRDHTtoIHK6XztDZGsU=
 github.com/IBM/keyprotect-go-client v0.5.1/go.mod h1:5TwDM/4FRJq1ZOlwQL1xFahLWQ3TveR88VmL1u3njyI=
@@ -168,8 +164,8 @@ github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5 h1:N
 github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5/go.mod h1:b07XHUVh0XYnQE9s2mqgjYST1h9buaQNqN4EcKhOsX0=
 github.com/IBM/sarama v1.45.0 h1:IzeBevTn809IJ/dhNKhP5mpxEXTmELuezO2tgHD9G5E=
 github.com/IBM/sarama v1.45.0/go.mod h1:EEay63m8EZkeumco9TDXf2JT3uDnZsZqFgV46n4yZdY=
-github.com/IBM/scc-go-sdk/v5 v5.4.1 h1:RXIuxOo9/hxkWyHCI69ae+KIJgSbXcAkJwTEl+fO3LQ=
-github.com/IBM/scc-go-sdk/v5 v5.4.1/go.mod h1:2xQTDgNXG5QMEfQxBDKB067z+5ha6OgcaKCTcdGDAo8=
+github.com/IBM/scc-go-sdk/v5 v5.5.2 h1:a0+puffs6O8hgoEIEVtHgYOTeM4UEPWcGs1fCSy1Ywc=
+github.com/IBM/scc-go-sdk/v5 v5.5.2/go.mod h1:N7PZUKMH90og3FY4FyGLo1Zy4106pZ1+6k9nFn23eis=
 github.com/IBM/schematics-go-sdk v0.3.0 h1:Vwxw85SONflakiBsNHAfViKLyp9zJiH5/hh6SewOP5Q=
 github.com/IBM/schematics-go-sdk v0.3.0/go.mod h1:Tw2OSAPdpC69AxcwoyqcYYaGTTW6YpERF9uNEU+BFRQ=
 github.com/IBM/sds-go-sdk v0.0.4 h1:zkkqDzc+TgFYU/BK4Oknv8cMBXJ08WKUu7yKCyzslvE=
@@ -555,8 +551,6 @@ github.com/golang-jwt/jwt v3.2.2+incompatible/go.mod h1:8pz2t5EyA70fFQQSrl6XZXzq
 github.com/golang-jwt/jwt/v4 v4.0.0/go.mod h1:/xlHOz8bRuivTWchD4jCa+NbatV+wEUSzwAxVc6locg=
 github.com/golang-jwt/jwt/v4 v4.2.0/go.mod h1:/xlHOz8bRuivTWchD4jCa+NbatV+wEUSzwAxVc6locg=
 github.com/golang-jwt/jwt/v4 v4.3.0/go.mod h1:/xlHOz8bRuivTWchD4jCa+NbatV+wEUSzwAxVc6locg=
-github.com/golang-jwt/jwt/v5 v5.2.1 h1:OuVbFODueb089Lh128TAcimifWaLhJwVflnrgM17wHk=
-github.com/golang-jwt/jwt/v5 v5.2.1/go.mod h1:pqrtFR0X4osieyHYxtmOUWsAWrfe1Q5UVIyoH402zdk=
 github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b/go.mod h1:SBH7ygxi8pfUlaOkMMuAQtPIUF8ecWP5IEl/CR7VP2Q=
 github.com/golang/groupcache v0.0.0-20160516000752-02826c3e7903/go.mod h1:cIg4eruTrX1D+g88fzRXU5OdNfaM+9IcxsU14FzY7Hc=
 github.com/golang/groupcache v0.0.0-20180513044358-24b0969c4cb7/go.mod h1:cIg4eruTrX1D+g88fzRXU5OdNfaM+9IcxsU14FzY7Hc=

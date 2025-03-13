@@ -108,9 +108,9 @@ func TestAccIBMPIInstanceStorageConnection(t *testing.T) {
 func testAccCheckIBMPIInstanceStorageConnectionConfig(name, instanceHealthStatus string) string {
 	return fmt.Sprintf(`
 	resource "ibm_pi_volume" "power_volume" {
-		pi_cloud_instance_id = "%[1]s"
-		pi_volume_size       = 1
-		pi_volume_name       = "%[2]s"
+		pi_cloud_instance_id  = "%[1]s"
+		pi_volume_size        = 1
+		pi_volume_name        = "%[2]s"
 		pi_volume_type        = "tier3"
 	  }
 	resource "ibm_pi_instance" "power_instance" {
@@ -129,6 +129,50 @@ func testAccCheckIBMPIInstanceStorageConnectionConfig(name, instanceHealthStatus
 		pi_volume_ids         = [ibm_pi_volume.power_volume.volume_id]
 	  }
 	`, acc.Pi_cloud_instance_id, name, acc.Pi_image, acc.Pi_network_name, acc.Pi_storage_connection, instanceHealthStatus)
+}
+func testAccCheckIBMPIInstanceNetworkSecurityGroupConfig(name, instanceHealthStatus string) string {
+	return fmt.Sprintf(`
+	resource "ibm_pi_volume" "power_volume" {
+		pi_cloud_instance_id  		 = "%[1]s"
+		pi_volume_size        		 = 1
+		pi_volume_name       		 = "%[2]s"
+		pi_volume_type          	 = "tier3"
+	  }
+	resource "ibm_pi_instance" "power_instance" {
+		pi_cloud_instance_id 		 = "%[1]s"
+		pi_memory            		 = "2"
+		pi_processors        		 = "0.25"
+		pi_instance_name     		 = "%[2]s"
+		pi_proc_type         		 = "shared"
+		pi_image_id          		 = "%[3]s"
+		pi_sys_type          		 = "s922"
+		pi_network {
+		  network_id                 = "%[4]s"
+		  network_security_group_ids = ["%[6]s"]
+		}
+		pi_health_status             = "%[5]s"
+		pi_volume_ids                = [ibm_pi_volume.power_volume.volume_id]
+	  }
+	`, acc.Pi_cloud_instance_id, name, acc.Pi_image, acc.Pi_network_name, instanceHealthStatus, acc.Pi_network_security_group_id)
+}
+func TestAccIBMPIInstanceNetworkSecurityGroup(t *testing.T) {
+	instanceRes := "ibm_pi_instance.power_instance"
+	name := fmt.Sprintf("tf-pi-instance-%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPIInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMPIInstanceNetworkSecurityGroupConfig(name, power.OK),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIInstanceExists(instanceRes),
+					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),
+					resource.TestCheckResourceAttr(instanceRes, "pi_network.0.network_security_group_ids.0", acc.Pi_network_security_group_id),
+				),
+			},
+		},
+	})
 }
 
 func TestAccIBMPIInstanceDeploymentTarget(t *testing.T) {
@@ -450,7 +494,7 @@ func testAccIBMPIInstanceVTLConfig(name string) string {
 		pi_key_name          = "%[2]s"
 		pi_ssh_key           = "ssh-rsa AAAAB3NzaC1yc2EAAAABJQAAAQEArb2aK0mekAdbYdY9rwcmeNSxqVCwez3WZTYEq+1Nwju0x5/vQFPSD2Kp9LpKBbxx3OVLN4VffgGUJznz9DAr7veLkWaf3iwEil6U4rdrhBo32TuDtoBwiczkZ9gn1uJzfIaCJAJdnO80Kv9k0smbQFq5CSb9H+F5VGyFue/iVd5/b30MLYFAz6Jg1GGWgw8yzA4Gq+nO7HtyuA2FnvXdNA3yK/NmrTiPCdJAtEPZkGu9LcelkQ8y90ArlKfjtfzGzYDE4WhOufFxyWxciUePh425J2eZvElnXSdGha+FCfYjQcvqpCVoBAG70U4fJBGjB+HL/GpCXLyiYXPrSnzC9w=="
 	}
-	
+
 	resource "ibm_pi_network" "vtl_network" {
 		pi_cloud_instance_id = "%[1]s"
 		pi_network_name      = "%[2]s"
@@ -472,7 +516,7 @@ func testAccIBMPIInstanceVTLConfig(name string) string {
 			network_id = ibm_pi_network.vtl_network.network_id
 		}
 	  }
-	
+
 	`, acc.Pi_cloud_instance_id, name, acc.Pi_image)
 }
 
