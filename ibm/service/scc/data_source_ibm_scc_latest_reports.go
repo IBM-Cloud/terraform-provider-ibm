@@ -5,7 +5,6 @@ package scc
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
@@ -566,23 +565,5 @@ func dataSourceIbmSccLatestReportsAttachmentScopeToMap(model *securityandcomplia
 }
 
 func dataSourceIbmSccLatestReportsScopePropertyToMap(model securityandcompliancecenterapiv3.ScopePropertyIntf) (map[string]interface{}, error) {
-	if _, ok := model.(*securityandcompliancecenterapiv3.ScopePropertyScopeID); ok {
-		return resourceIBMSccScopeScopePropertyScopeIDToMap(model.(*securityandcompliancecenterapiv3.ScopePropertyScopeID))
-	} else if _, ok := model.(*securityandcompliancecenterapiv3.ScopePropertyScopeType); ok {
-		return resourceIBMSccScopeScopePropertyScopeTypeToMap(model.(*securityandcompliancecenterapiv3.ScopePropertyScopeType))
-	} else if _, ok := model.(*securityandcompliancecenterapiv3.ScopePropertyExclusions); ok {
-		return resourceIBMSccScopeScopePropertyExclusionsToMap(model.(*securityandcompliancecenterapiv3.ScopePropertyExclusions))
-	} else if _, ok := model.(*securityandcompliancecenterapiv3.ScopeProperty); ok {
-		modelMap := make(map[string]interface{})
-		model := model.(*securityandcompliancecenterapiv3.ScopeProperty)
-		if model.Name != nil {
-			modelMap["name"] = model.Name
-		}
-		if model.Value != nil {
-			modelMap["value"] = model.Value
-		}
-		return modelMap, nil
-	} else {
-		return nil, fmt.Errorf("Unrecognized securityandcompliancecenterv3.ScopePropertyIntf subtype encountered")
-	}
+	return scopePropertiesToMap(model)
 }

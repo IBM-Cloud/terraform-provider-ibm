@@ -26,6 +26,14 @@ func TestAccIbmSccScopeCollectionDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_scc_scope_collection.scc_scope_collection_instance", "scopes.0.name"),
 				),
 			},
+			resource.TestStep{
+				Config: testAccCheckIbmSccScopeCollectionConfigNew(),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("data.ibm_scc_scope_collection.scc_scope_collection_instance", "instance_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_scc_scope_collection.scc_scope_collection_instance", "scopes.#"),
+					resource.TestCheckResourceAttr("data.ibm_scc_scope_collection.scc_scope_collection_instance", "scopes.#", "0"),
+				),
+			},
 		},
 	})
 }
@@ -36,4 +44,20 @@ func testAccCheckIbmSccScopeCollectionConfigBasic(instanceID string) string {
       instance_id = "%s"
     }
 	`, instanceID)
+}
+
+// provisions a new SCC instance and checks if the datasource returns 0 scopes
+func testAccCheckIbmSccScopeCollectionConfigNew() string {
+	return fmt.Sprint(`
+    resource "ibm_resource_instance" "scc_instance" {
+      name              = "tf-test-security-compliance-center"
+      service           = "compliance"
+      plan              = "security-compliance-center-standard-plan"
+      location          = "us-east"
+    }
+ 
+    data "ibm_scc_scope_collection" "scc_scope_collection_instance" {
+      instance_id = ibm_resource_instance.scc_instance.guid
+    }
+  `)
 }
