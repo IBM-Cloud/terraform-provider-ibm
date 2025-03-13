@@ -697,11 +697,6 @@ func DataSourceIBMISInstanceProfiles() *schema.Resource {
 							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"default": {
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "The default VCPU architecture for an instance with this profile.",
-									},
 									"type": {
 										Type:        schema.TypeString,
 										Computed:    true,
@@ -766,11 +761,6 @@ func DataSourceIBMISInstanceProfiles() *schema.Resource {
 							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"default": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "The default VCPU manufacturer for an instance with this profile.",
-									},
 									"type": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,

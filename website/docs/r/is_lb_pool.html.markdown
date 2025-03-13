@@ -122,6 +122,13 @@ The `ibm_is_lb_pool` resource provides the following [Timeouts](https://www.terr
 Review the argument references that you can specify for your resource. 
 
 - `algorithm` - (Required, String) The load-balancing algorithm. Supported values are `round_robin`, `weighted_round_robin`, or `least_connections`.
+- `failsafe_policy` - (Optional, List) The failsafe policy to use for this pool. If unspecified, the default failsafe policy action from the profile will be used.
+	Nested schema for **failsafe_policy**:
+	- `action` - (Optional, String) A load balancer failsafe policy action:- `forward`: Forwards requests to the `target` pool.- `fail`: Rejects requests with an HTTP `503` status code.The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.
+	- `target` - (Optional, List) If `action` is `forward`, the target pool to forward to.If `action` is `fail`, this property will be absent.The targets supported by this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.
+		Nested schema for **target**:
+		- `href` - (Optional, String) The URL for this load balancer pool. Mutually exclusive with `id`.
+		- `id` - (Optional, String) The unique identifier for this load balancer pool. Mutually exclusive with `href`.
 - `health_delay`- (Required, Integer) The health check interval in seconds. Interval must be greater than `timeout` value.
 - `health_retries`- (Required, Integer) The health check max retries.
 - `health_timeout`- (Required, Integer) The health check timeout in seconds.
@@ -139,6 +146,17 @@ Review the argument references that you can specify for your resource.
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
 - `id` - (String) The unique identifier of the load balancer pool. The ID is composed of `<lb_id>/<pool_id>`.
+- `failsafe_policy` - (List) The failsafe policy to use for this pool.If unspecified, the default failsafe policy action from the profile will be used.
+	Nested schema for **failsafe_policy**:
+	- `healthy_member_threshold_count` - (Integer) The healthy member count at which the failsafe policy action will be triggered. At present, this is always `0`, but may be modifiable in the future. The minimum value is `0`.
+	- `target` - (List) If `action` is `forward`, the target pool to forward to.If `action` is `fail`, this property will be absent.The targets supported by this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.
+		Nested schema for **target**:
+		- `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
+			Nested schema for **deleted**:
+			- `more_info` - (String) Link to documentation about deleted resources.
+		- `href` - (String) The URL for this load balancer pool.
+		- `id` - (String) The unique identifier for this load balancer pool.
+		- `name` - (String) The name for this load balancer pool. The name is unique across all pools for the load balancer.
 - `provisioning_status` - (String) The status of load balancer pool.
 - `pool_id` - (String) ID of the load balancer pool.
 - `related_crn` - (String) The CRN of the load balancer resource.
