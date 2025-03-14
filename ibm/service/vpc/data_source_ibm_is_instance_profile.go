@@ -700,11 +700,6 @@ func DataSourceIBMISInstanceProfile() *schema.Resource {
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"default": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The default VCPU architecture for an instance with this profile.",
-						},
 						"type": {
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -723,11 +718,6 @@ func DataSourceIBMISInstanceProfile() *schema.Resource {
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"default": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The default VCPU manufacturer for an instance with this profile.",
-						},
 						"type": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -1271,9 +1261,6 @@ func dataSourceInstanceProfileFlattenVcpuArchitecture(result vpcv1.InstanceProfi
 func dataSourceInstanceProfileVcpuArchitectureToMap(vcpuArchitectureItem vpcv1.InstanceProfileVcpuArchitecture) (vcpuArchitectureMap map[string]interface{}) {
 	vcpuArchitectureMap = map[string]interface{}{}
 
-	if vcpuArchitectureItem.Default != nil {
-		vcpuArchitectureMap["default"] = vcpuArchitectureItem.Default
-	}
 	if vcpuArchitectureItem.Type != nil {
 		vcpuArchitectureMap["type"] = vcpuArchitectureItem.Type
 	}
@@ -1296,9 +1283,6 @@ func dataSourceInstanceProfileFlattenVcpuManufacture(result vpcv1.InstanceProfil
 func dataSourceInstanceProfileVcpuManufacturerToMap(vcpuManufacutererItem vpcv1.InstanceProfileVcpuManufacturer) (vcpuManufacturerMap map[string]interface{}) {
 	vcpuManufacturerMap = map[string]interface{}{}
 
-	if vcpuManufacutererItem.Default != nil {
-		vcpuManufacturerMap["default"] = vcpuManufacutererItem.Default
-	}
 	if vcpuManufacutererItem.Type != nil {
 		vcpuManufacturerMap["type"] = vcpuManufacutererItem.Type
 	}

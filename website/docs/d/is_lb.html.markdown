@@ -61,7 +61,7 @@ In addition to all argument reference list, you can access the following attribu
   Nested scheme for `dns`:
   - `instance_crn` - (String) The CRN of the DNS instance associated with the DNS zone
   - `zone_id` - (String) The unique identifier of the DNS zone.
-
+- `failsafe_policy_actions` - (List) The supported `failsafe_policy.action` values for this load balancer's pools. Allowable list items are: `fail`, `forward`.
 - `hostname` - (String) Fully qualified domain name assigned to this load balancer.
 - `id` - (String) The ID of the load balancer.
 - `instance_groups_supported` - (Boolean) Indicates whether this load balancer supports instance groups.

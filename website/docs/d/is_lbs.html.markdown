@@ -46,6 +46,7 @@ Review the attribute references that you can access after you retrieve your data
 		Nested scheme for `dns`:
 		- `instance_crn` - (String) The CRN of the DNS instance associated with the DNS zone
 		- `zone_id` - (String) The unique identifier of the DNS zone.
+	- `failsafe_policy_actions` - (List) The supported `failsafe_policy.action` values for this load balancer's pools. Allowable list items are: `fail`, `forward`.
 	- `name` - (String) Name of the load balancer.
 	- `subnets` - (List) The subnets this load balancer is part of.
 
