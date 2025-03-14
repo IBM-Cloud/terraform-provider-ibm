@@ -538,9 +538,9 @@ func TestAccIBMISLBPool_networkfixed_failsafe_update(t *testing.T) {
 					resource.TestCheckResourceAttrSet(
 						"ibm_is_lb_pool.testacc_lb_pool2", "failsafe_policy.0.action"),
 					resource.TestCheckResourceAttrSet(
-						"ibm_is_lb_pool.testacc_lb_pool2", "failsafe_policy.0.target.name"),
+						"ibm_is_lb_pool.testacc_lb_pool2", "failsafe_policy.0.target.0.name"),
 					resource.TestCheckResourceAttr(
-						"ibm_is_lb_pool.testacc_lb_pool2", "failsafe_policy.0.target.name", poolName1),
+						"ibm_is_lb_pool.testacc_lb_pool2", "failsafe_policy.0.target.0.name", poolName),
 					resource.TestCheckResourceAttrSet(
 						"ibm_is_lb_pool.testacc_lb_pool2", "failsafe_policy.0.target.#"),
 					resource.TestCheckResourceAttrSet(
@@ -642,7 +642,7 @@ func TestAccIBMISLBPool_networkfixed_failsafe_update(t *testing.T) {
 					resource.TestCheckResourceAttrSet(
 						"ibm_is_lb_pool.testacc_lb_pool2", "failsafe_policy.0.action"),
 					resource.TestCheckResourceAttr(
-						"ibm_is_lb_pool.testacc_lb_pool2", "failsafe_policy.0.target.name", poolName2),
+						"ibm_is_lb_pool.testacc_lb_pool2", "failsafe_policy.0.target.0.name", poolName2),
 					resource.TestCheckResourceAttrSet(
 						"ibm_is_lb_pool.testacc_lb_pool2", "failsafe_policy.0.target.#"),
 					resource.TestCheckResourceAttrSet(
