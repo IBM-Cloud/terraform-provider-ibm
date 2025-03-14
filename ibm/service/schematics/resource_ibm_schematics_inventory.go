@@ -96,13 +96,6 @@ func ResourceIBMSchematicsInventoryValidator() *validate.ResourceValidator {
 			MinValueLength:             3,
 			MaxValueLength:             64,
 		},
-		validate.ValidateSchema{
-			Identifier:                 "location",
-			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
-			Type:                       validate.TypeString,
-			Optional:                   true,
-			AllowedValues:              "eu-de, eu-gb, us-east, us-south",
-		},
 	)
 
 	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_schematics_inventory", Schema: validateSchema}
