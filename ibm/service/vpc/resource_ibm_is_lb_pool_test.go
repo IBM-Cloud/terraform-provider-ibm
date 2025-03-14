@@ -471,9 +471,9 @@ func TestAccIBMISLBPool_networkfixed_failsafe_update(t *testing.T) {
 	vpcname := fmt.Sprintf("tflbp-vpc-%d", acctest.RandIntRange(10, 100))
 	subnetname := fmt.Sprintf("tflbpc-name-%d", acctest.RandIntRange(10, 100))
 	name := fmt.Sprintf("tfcreate%d", acctest.RandIntRange(10, 100))
-	poolName := fmt.Sprintf("tflbpoolc%d", acctest.RandIntRange(10, 100))
-	poolName1 := fmt.Sprintf("tflbpoolu%d", acctest.RandIntRange(10, 100))
-	poolName2 := fmt.Sprintf("tflbpoolu%d", acctest.RandIntRange(10, 100))
+	poolName := fmt.Sprintf("tflbpool0%d", acctest.RandIntRange(10, 100))
+	poolName1 := fmt.Sprintf("tflbpool1%d", acctest.RandIntRange(10, 100))
+	poolName2 := fmt.Sprintf("tflbpool2%d", acctest.RandIntRange(10, 100))
 	alg1 := "round_robin"
 	protocol1 := "udp"
 	proxyProtocol1 := "disabled"
@@ -1413,11 +1413,11 @@ func testAccCheckIBMISLBPoolNetworkFixedFailsafeConfig2(vpcname, subnetname, zon
 		failsafe_policy {
 			action = "%s"
 			target {
-				id = ibm_is_lb_pool.ibm_is_lb_pool3.pool_id
+				id = ibm_is_lb_pool.testacc_lb_pool3.pool_id
 			}
 		}
 	}
-	resource "ibm_is_lb_pool" "ibm_is_lb_pool3" {
+	resource "ibm_is_lb_pool" "testacc_lb_pool3" {
 		name 			= "%s"
 		lb 				= "${ibm_is_lb.testacc_LB.id}"
 		algorithm 		= "%s"
