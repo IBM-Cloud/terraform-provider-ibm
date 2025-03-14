@@ -69,7 +69,7 @@ func (v *Version) isSkipBackupAllowed(version string) bool {
 	return false
 }
 
-func transformVersions(versions []clouddatabasesv5.VersionsCapabilityItem) []*Version {
+func expandVersions(versions []clouddatabasesv5.VersionsCapabilityItem) []*Version {
 	if len(versions) == 0 {
 		return nil
 	}
@@ -83,7 +83,6 @@ func transformVersions(versions []clouddatabasesv5.VersionsCapabilityItem) []*Ve
 			IsPreferred: *capabilityVersion.IsPreferred,
 		}
 
-		// Process transitions as an array of VersionTransition
 		if capabilityVersion.Transitions != nil {
 			var transitions []VersionTransition
 
@@ -104,41 +103,37 @@ func transformVersions(versions []clouddatabasesv5.VersionsCapabilityItem) []*Ve
 	return expandedVersions
 }
 
+// This allows us to mock getDeploymentCapability in tests
+var getDeploymentCapabilityFunc = getDeploymentCapability
+
 func validateVersion(instanceID string, targetVersion string, skipBackup bool, meta interface{}) (err error) {
 	// Get available versions for deployment
-	capability, err := getDeploymentCapability("versions", instanceID, "classic", "us-south", meta)
+	capability, err := getDeploymentCapabilityFunc("versions", instanceID, "classic", "us-south", meta)
 	if err != nil {
 		log.Fatalf("Error fetching capability: %v", err)
 	}
 
 	if capability != nil && capability.Versions != nil {
-		// Convert capability.Versions to []interface{}
 		var versions []Version
-		for _, v := range transformVersions(capability.Versions) {
+		for _, v := range expandVersions(capability.Versions) {
 			versions = append(versions, *v)
 		}
 
-		// Now pass the versionsData to expandVersions
 		allowedVersions := getAllowedUpgradeVersions(versions)
 
 		if len(allowedVersions) == 0 {
-			log.Fatalf("No approved upgrade paths for your current version. Check the docs.")
+			log.Fatalf("No approved upgrade paths for your current version.")
 		}
-
-		// Now you can work with expandedVersions, which is []*Version
-		fmt.Println("Trans Versions:", versions)
 
 		for _, version := range versions {
 			if version.isVersionAllowed(targetVersion) {
-				// validate here
 				if skipBackup && !version.isSkipBackupAllowed(targetVersion) {
-					return fmt.Errorf("Skipping backup is not allowed when upgrading to %s", targetVersion)
+					return fmt.Errorf("Skipping backup is not allowed when upgrading to version %s", targetVersion)
 				}
-				// Upgrade allowed, proceed
 				return nil
 			}
 
-			// If we reach here, the version was not allowed
+			// Version is not allowed
 			var allowedVersionList []string
 			for _, upgrade := range allowedVersions {
 				allowedVersionList = append(allowedVersionList, upgrade.ToVersion)
@@ -146,16 +141,7 @@ func validateVersion(instanceID string, targetVersion string, skipBackup bool, m
 			return fmt.Errorf("Version %s is not a valid upgrade version. Allowed versions: %v", targetVersion, allowedVersionList)
 
 		}
-
 	}
-
-	// if skipBackup == true {
-	// 	isAllowedSkipBackup := isSkipBackupAllowed(version, allowedVersions)
-
-	// 	if isAllowedSkipBackup != true {
-	// 		return fmt.Errorf("You are not allowed to skip taking a backup when upgrading to version %s. Please remove version_upgrade_skip_backup or update field to false", version)
-	// 	}
-	// }
 
 	return nil
 }
