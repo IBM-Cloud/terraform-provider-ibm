@@ -468,9 +468,13 @@ func ResourceIBMCISDnsRecordRead(d *schema.ResourceData, meta interface{}) error
 	}
 
 	d.Set(cisID, crn)
-	d.Set(cisDomainID, *result.Result.ZoneID)
+	if result.Result.ZoneID != nil {
+		d.Set(cisDomainID, *result.Result.ZoneID)
+	}
 	d.Set(cisDNSRecordID, *result.Result.ID)
-	d.Set(cisZoneName, *result.Result.ZoneName)
+	if result.Result.ZoneName != nil {
+		d.Set(cisZoneName, *result.Result.ZoneName)
+	}
 	d.Set(cisDNSRecordCreatedOn, *result.Result.CreatedOn)
 	d.Set(cisDNSRecordModifiedOn, *result.Result.ModifiedOn)
 	d.Set(cisDNSRecordName, *result.Result.Name)
