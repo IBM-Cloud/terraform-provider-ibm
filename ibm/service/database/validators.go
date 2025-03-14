@@ -13,84 +13,149 @@ import (
 /* TODO move other validators in here */
 
 /* VERSION VALIDATOR */
+
+type Version struct {
+	Version     string
+	Type        string
+	Status      string
+	IsPreferred bool
+	Transitions []VersionTransition
+}
+
+type VersionTransition struct {
+	Application         string
+	Method              string
+	SkipBackupSupported bool
+	FromVersion         string
+	ToVersion           string
+}
 type AllowedUpgrade struct {
 	ToVersion           string `json:"to_version"`
 	SkipBackupSupported bool   `json:"skip_backup_supported"`
 }
 
-func getAllowedUpgradeVersions(capability clouddatabasesv5.Capability) []AllowedUpgrade {
+func getAllowedUpgradeVersions(versions []Version) []AllowedUpgrade {
 	var allowedVersions []AllowedUpgrade
 
-	for _, version := range capability.Versions {
+	for _, version := range versions {
 		for _, transition := range version.Transitions {
-			// TODO change to in-place
-			if transition.Method != nil && *transition.Method == "restore" {
+			if transition.Method == "restore" {
 				allowedVersions = append(allowedVersions, AllowedUpgrade{
-					ToVersion:           *transition.ToVersion,
-					SkipBackupSupported: *transition.SkipBackupSupported,
+					ToVersion:           transition.ToVersion,
+					SkipBackupSupported: transition.SkipBackupSupported,
 				})
 			}
 		}
 	}
 
 	return allowedVersions
-
 }
 
-func isVersionAllowed(newVersion string, allowedVersions []AllowedUpgrade) bool {
-	for _, upgrade := range allowedVersions {
-		if upgrade.ToVersion == newVersion {
+func (v *Version) isVersionAllowed(version string) bool {
+	for _, transition := range v.Transitions {
+		if transition.ToVersion == version {
 			return true
 		}
 	}
 	return false
 }
 
-func isSkipBackupAllowed(newVersion string, allowedVersions []AllowedUpgrade) bool {
-	for _, upgrade := range allowedVersions {
-		if upgrade.ToVersion == newVersion {
-			return upgrade.SkipBackupSupported
+func (v *Version) isSkipBackupAllowed(version string) bool {
+	for _, transition := range v.Transitions {
+		if transition.ToVersion == version {
+			return transition.SkipBackupSupported
 		}
 	}
 	return false
 }
 
-var (
-	// TODO: FInd a better way to do this, this allows mocking for unit tests
-	getDeploymentCapabilityFunc = getDeploymentCapability
-)
+func transformVersions(versions []clouddatabasesv5.VersionsCapabilityItem) []*Version {
+	if len(versions) == 0 {
+		return nil
+	}
 
-func validateVersion(instanceID string, version string, skipBackup bool, meta interface{}) (err error) {
-	// TODO make more ipu specific
+	expandedVersions := make([]*Version, 0, len(versions))
+
+	for _, capabilityVersion := range versions {
+		version := Version{
+			Version:     *capabilityVersion.Version,
+			Status:      *capabilityVersion.Status,
+			IsPreferred: *capabilityVersion.IsPreferred,
+		}
+
+		// Process transitions as an array of VersionTransition
+		if capabilityVersion.Transitions != nil {
+			var transitions []VersionTransition
+
+			for _, transition := range capabilityVersion.Transitions {
+				transitions = append(transitions, VersionTransition{
+					Application:         *transition.Application,
+					Method:              *transition.Method,
+					SkipBackupSupported: *transition.SkipBackupSupported,
+					FromVersion:         *transition.FromVersion,
+					ToVersion:           *transition.ToVersion,
+				})
+			}
+			version.Transitions = transitions
+		}
+		expandedVersions = append(expandedVersions, &version)
+	}
+
+	return expandedVersions
+}
+
+func validateVersion(instanceID string, targetVersion string, skipBackup bool, meta interface{}) (err error) {
 	// Get available versions for deployment
-	capability, err := getDeploymentCapabilityFunc("versions", instanceID, "classic", "us-south", meta)
+	capability, err := getDeploymentCapability("versions", instanceID, "classic", "us-south", meta)
 	if err != nil {
 		log.Fatalf("Error fetching capability: %v", err)
 	}
-	allowedVersions := getAllowedUpgradeVersions(*capability)
 
-	if len(allowedVersions) == 0 {
-		return fmt.Errorf("You are not allowed to upgrade version, there are no approved upgrade paths for your current version, please look at our docs here")
-	}
-
-	isAllowed := isVersionAllowed(version, allowedVersions)
-
-	if isAllowed == false {
-		allowedVersionList := []string{}
-
-		for _, upgrade := range allowedVersions {
-			allowedVersionList = append(allowedVersionList, upgrade.ToVersion)
+	if capability != nil && capability.Versions != nil {
+		// Convert capability.Versions to []interface{}
+		var versions []Version
+		for _, v := range transformVersions(capability.Versions) {
+			versions = append(versions, *v)
 		}
-		return fmt.Errorf("Version %s is not a valid upgrade version. Allowed versions %v", version, allowedVersionList)
-	}
 
-	if skipBackup == true {
-		isAllowedSkipBackup := isSkipBackupAllowed(version, allowedVersions)
+		// Now pass the versionsData to expandVersions
+		allowedVersions := getAllowedUpgradeVersions(versions)
 
-		if isAllowedSkipBackup != true {
-			return fmt.Errorf("You are not allowed to skip taking a backup when upgrading to version %s. Please remove version_upgrade_skip_backup or update field to false", version)
+		if len(allowedVersions) == 0 {
+			log.Fatalf("No approved upgrade paths for your current version. Check the docs.")
 		}
+
+		// Now you can work with expandedVersions, which is []*Version
+		fmt.Println("Trans Versions:", versions)
+
+		for _, version := range versions {
+			if version.isVersionAllowed(targetVersion) {
+				// validate here
+				if skipBackup && !version.isSkipBackupAllowed(targetVersion) {
+					return fmt.Errorf("Skipping backup is not allowed when upgrading to %s", targetVersion)
+				}
+				// Upgrade allowed, proceed
+				return nil
+			}
+
+			// If we reach here, the version was not allowed
+			var allowedVersionList []string
+			for _, upgrade := range allowedVersions {
+				allowedVersionList = append(allowedVersionList, upgrade.ToVersion)
+			}
+			return fmt.Errorf("Version %s is not a valid upgrade version. Allowed versions: %v", targetVersion, allowedVersionList)
+
+		}
+
 	}
+
+	// if skipBackup == true {
+	// 	isAllowedSkipBackup := isSkipBackupAllowed(version, allowedVersions)
+
+	// 	if isAllowedSkipBackup != true {
+	// 		return fmt.Errorf("You are not allowed to skip taking a backup when upgrading to version %s. Please remove version_upgrade_skip_backup or update field to false", version)
+	// 	}
+	// }
 
 	return nil
 }
