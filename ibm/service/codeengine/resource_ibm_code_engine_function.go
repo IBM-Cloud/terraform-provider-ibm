@@ -913,9 +913,8 @@ func ResourceIbmCodeEngineFunctionFunctionPatchAsPatch(patchVals *codeenginev2.F
 	}
 	path = "run_env_variables"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
-		patch["run_env_variables"] = nil
-	} else if exists && patch["run_env_variables"] != nil {
-		ResourceIbmCodeEngineFunctionEnvVarPrototypeAsPatch(patch["run_volume_mounts"].(map[string]interface{}), d)
+		runEnvVariables := []map[string]interface{}{}
+		patch["run_env_variables"] = runEnvVariables
 	}
 	path = "runtime"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
