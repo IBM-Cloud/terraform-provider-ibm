@@ -305,8 +305,11 @@ func ResourceIBMCISRulesetRuleCreate(d *schema.ResourceData, meta interface{}) e
 		opt.SetRef(rulesObject[CISRulesetsRuleRef].(string))
 
 		position := rulesetsv1.Position{}
-		if reflect.ValueOf(rulesObject[CISRulesetsRulePosition]).IsNil() {
-			position = expandCISRulesetsRulesPositions(rulesObject[CISRulesetsRulePosition])
+		if !reflect.ValueOf(rulesObject[CISRulesetsRulePosition]).IsNil() {
+			position, err = expandCISRulesetsRulesPositions(rulesObject[CISRulesetsRulePosition])
+			if err != nil {
+				return fmt.Errorf("[ERROR] Error while creating the zone Rule %s", err)
+			}
 		}
 		opt.SetPosition(&position)
 
@@ -340,7 +343,10 @@ func ResourceIBMCISRulesetRuleCreate(d *schema.ResourceData, meta interface{}) e
 
 		position := rulesetsv1.Position{}
 		if reflect.ValueOf(rulesObject[CISRulesetsRulePosition]).IsNil() {
-			position = expandCISRulesetsRulesPositions(rulesObject[CISRulesetsRulePosition])
+			position, err = expandCISRulesetsRulesPositions(rulesObject[CISRulesetsRulePosition])
+			if err != nil {
+				return fmt.Errorf("[ERROR] Error while creating the instance Rule %s", err)
+			}
 		}
 		opt.SetPosition(&position)
 
@@ -386,19 +392,25 @@ func ResourceIBMCISRulesetRuleUpdate(d *schema.ResourceData, meta interface{}) e
 		rulesetsRuleObject := d.Get(CISRulesetsRule).([]interface{})[0].(map[string]interface{})
 		opt.SetDescription(rulesetsRuleObject[CISRulesetsDescription].(string))
 		opt.SetAction(rulesetsRuleObject[CISRulesetsRuleAction].(string))
-		actionParameters := expandCISRulesetsRulesActionParameters(rulesetsRuleObject[CISRulesetsRuleActionParameters])
-		opt.SetActionParameters(&actionParameters)
+		if d.HasChange(CISRulesetsRuleActionParameters) {
+			actionParameters := expandCISRulesetsRulesActionParameters(rulesetsRuleObject[CISRulesetsRuleActionParameters])
+			opt.SetActionParameters(&actionParameters)
+		}
+
 		opt.SetEnabled(rulesetsRuleObject[CISRulesetsRuleActionEnabled].(bool))
 		opt.SetExpression(rulesetsRuleObject[CISRulesetsRuleExpression].(string))
 		opt.SetRef(rulesetsRuleObject[CISRulesetsRuleRef].(string))
-		position := expandCISRulesetsRulesPositions(rulesetsRuleObject[CISRulesetsRulePosition])
+		position, err := expandCISRulesetsRulesPositions(rulesetsRuleObject[CISRulesetsRulePosition])
+		if err != nil {
+			return fmt.Errorf("[ERROR] Error while updating the zone Ruleset %s", err)
+		}
 		opt.SetPosition(&position)
 
 		opt.SetRulesetID(rulesetId)
 		opt.SetRuleID(ruleId)
 		opt.SetID(ruleId)
 
-		_, _, err := sess.UpdateZoneRulesetRule(opt)
+		_, _, err = sess.UpdateZoneRulesetRule(opt)
 
 		if err != nil {
 			return fmt.Errorf("[ERROR] Error while updating the zone Ruleset %s", err)
@@ -417,14 +429,17 @@ func ResourceIBMCISRulesetRuleUpdate(d *schema.ResourceData, meta interface{}) e
 		opt.SetEnabled(rulesetsRuleObject[CISRulesetsRuleActionEnabled].(bool))
 		opt.SetExpression(rulesetsRuleObject[CISRulesetsRuleExpression].(string))
 		opt.SetRef(rulesetsRuleObject[CISRulesetsRuleAction].(string))
-		position := expandCISRulesetsRulesPositions(rulesetsRuleObject[CISRulesetsRulePosition])
+		position, err := expandCISRulesetsRulesPositions(rulesetsRuleObject[CISRulesetsRulePosition])
+		if err != nil {
+			return fmt.Errorf("[ERROR] Error while updating the zone Ruleset %s", err)
+		}
 		opt.SetPosition(&position)
 
 		opt.SetRulesetID(rulesetId)
 		opt.SetRuleID(ruleId)
 		opt.SetID(ruleId)
 
-		_, _, err := sess.UpdateInstanceRulesetRule(opt)
+		_, _, err = sess.UpdateInstanceRulesetRule(opt)
 
 		if err != nil {
 			return fmt.Errorf("[ERROR] Error while updating the zone Ruleset %s", err)
@@ -442,7 +457,7 @@ func ResourceIBMCISRulesetRuleDelete(d *schema.ResourceData, meta interface{}) e
 		return fmt.Errorf("[ERROR] Error while getting the CisRulesetsSession %s", err)
 	}
 
-	ruleId, rulesetId, zoneId, crn, err := flex.ConvertTfToCisFourVar(d.Id())
+	ruleId, rulesetId, zoneId, crn, _ := flex.ConvertTfToCisFourVar(d.Id())
 	sess.Crn = core.StringPtr(crn)
 
 	if zoneId != "" {
