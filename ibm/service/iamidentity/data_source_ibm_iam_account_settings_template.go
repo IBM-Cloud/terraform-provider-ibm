@@ -1,18 +1,24 @@
-// Copyright IBM Corp. 2023 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
+
+/*
+ * IBM OpenAPI Terraform Generator Version: 3.98.0-8be2046a-20241205-162752
+ */
 
 package iamidentity
 
 import (
 	"context"
 	"fmt"
-	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"log"
 	"strconv"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
 )
 
@@ -213,15 +219,16 @@ func DataSourceIBMAccountSettingsTemplate() *schema.Resource {
 func dataSourceIBMAccountSettingsTemplateRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamIdentityClient, err := meta.(conns.ClientSession).IAMIdentityV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_iam_account_settings_template", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	getAccountSettingsTemplateVersionOptions := &iamidentityv1.GetAccountSettingsTemplateVersionOptions{}
 
 	id, version, err := parseResourceId(d.Get("template_id").(string))
 	if err != nil {
-		log.Printf("[DEBUG] resourceIBMAccountSettingsTemplateRead failed %s", err)
-		return diag.FromErr(fmt.Errorf("resourceIBMAccountSettingsTemplateRead failed %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) resourceIBMAccountSettingsTemplateRead", "read", "sep-id-parts").GetDiag()
 	}
 	if version == "" {
 		version = d.Get("version").(string)
@@ -234,51 +241,54 @@ func dataSourceIBMAccountSettingsTemplateRead(context context.Context, d *schema
 		getAccountSettingsTemplateVersionOptions.SetIncludeHistory(d.Get("include_history").(bool))
 	}
 
-	accountSettingsTemplateResponse, response, err := iamIdentityClient.GetAccountSettingsTemplateVersionWithContext(context, getAccountSettingsTemplateVersionOptions)
+	accountSettingsTemplateResponse, _, err := iamIdentityClient.GetAccountSettingsTemplateVersionWithContext(context, getAccountSettingsTemplateVersionOptions)
 	if err != nil {
-		log.Printf("[DEBUG] GetAccountSettingsTemplateVersionWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetAccountSettingsTemplateVersionWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetAccountSettingsTemplateVersionWithContext failed: %s", err.Error()), "(Data) ibm_iam_account_settings_template", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(buildResourceIdFromTemplateVersion(*accountSettingsTemplateResponse.ID, *accountSettingsTemplateResponse.Version))
 
 	if err = d.Set("id", accountSettingsTemplateResponse.ID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting id: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting id: %s", err), "(Data) ibm_iam_account_settings_template", "read", "set-id").GetDiag()
 	}
 
 	if !core.IsNil(accountSettingsTemplateResponse.Version) {
 		versionStr := strconv.Itoa(int(*accountSettingsTemplateResponse.Version))
 		if err = d.Set("version", versionStr); err != nil {
-			return diag.FromErr(fmt.Errorf("error setting version: %s", err))
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting version: %s", err), "(Data) ibm_iam_account_settings_template", "read", "set-version").GetDiag()
 		}
 	}
 
 	if err = d.Set("account_id", accountSettingsTemplateResponse.AccountID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting account_id: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting account_id: %s", err), "(Data) ibm_iam_account_settings_template", "read", "set-account_id").GetDiag()
 	}
 
 	if err = d.Set("name", accountSettingsTemplateResponse.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_iam_account_settings_template", "read", "set-name").GetDiag()
 	}
 
-	if err = d.Set("description", accountSettingsTemplateResponse.Description); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting description: %s", err))
+	if !core.IsNil(accountSettingsTemplateResponse.Description) {
+		if err = d.Set("description", accountSettingsTemplateResponse.Description); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting description: %s", err), "(Data) ibm_iam_account_settings_template", "read", "set-description").GetDiag()
+		}
 	}
 
 	if err = d.Set("committed", accountSettingsTemplateResponse.Committed); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting committed: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting committed: %s", err), "(Data) ibm_iam_account_settings_template", "read", "set-committed").GetDiag()
 	}
 
 	var accountSettings []map[string]interface{}
 	if accountSettingsTemplateResponse.AccountSettings != nil {
 		modelMap, err := dataSourceIBMAccountSettingsTemplateAccountSettingsComponentToMap(accountSettingsTemplateResponse.AccountSettings)
 		if err != nil {
-			return diag.FromErr(err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_iam_account_settings_template", "read", "account_settings-to-map").GetDiag()
 		}
 		accountSettings = append(accountSettings, modelMap)
 	}
 	if err = d.Set("account_settings", accountSettings); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting account_settings %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting account_settings: %s", err), "(Data) ibm_iam_account_settings_template", "read", "set-account_settings").GetDiag()
 	}
 
 	var history []map[string]interface{}
@@ -286,37 +296,45 @@ func dataSourceIBMAccountSettingsTemplateRead(context context.Context, d *schema
 		for _, modelItem := range accountSettingsTemplateResponse.History {
 			modelMap, err := dataSourceIBMAccountSettingsTemplateEnityHistoryRecordToMap(&modelItem)
 			if err != nil {
-				return diag.FromErr(err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_iam_account_settings_template", "read", "history-to-map").GetDiag()
 			}
 			history = append(history, modelMap)
 		}
 	}
 	if err = d.Set("history", history); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting history %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting history: %s", err), "(Data) ibm_iam_account_settings_template", "read", "set-history").GetDiag()
 	}
 
 	if err = d.Set("entity_tag", accountSettingsTemplateResponse.EntityTag); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting entity_tag: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting entity_tag: %s", err), "(Data) ibm_iam_account_settings_template", "read", "set-entity_tag").GetDiag()
 	}
 
 	if err = d.Set("crn", accountSettingsTemplateResponse.CRN); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting crn: %s", err), "(Data) ibm_iam_account_settings_template", "read", "set-crn").GetDiag()
 	}
 
-	if err = d.Set("created_at", accountSettingsTemplateResponse.CreatedAt); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
+	if !core.IsNil(accountSettingsTemplateResponse.CreatedAt) {
+		if err = d.Set("created_at", accountSettingsTemplateResponse.CreatedAt); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting created_at: %s", err), "(Data) ibm_iam_account_settings_template", "read", "set-created_at").GetDiag()
+		}
 	}
 
-	if err = d.Set("created_by_id", accountSettingsTemplateResponse.CreatedByID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting created_by_id: %s", err))
+	if !core.IsNil(accountSettingsTemplateResponse.CreatedByID) {
+		if err = d.Set("created_by_id", accountSettingsTemplateResponse.CreatedByID); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting created_by_id: %s", err), "(Data) ibm_iam_account_settings_template", "read", "set-created_by_id").GetDiag()
+		}
 	}
 
-	if err = d.Set("last_modified_at", accountSettingsTemplateResponse.LastModifiedAt); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting last_modified_at: %s", err))
+	if !core.IsNil(accountSettingsTemplateResponse.LastModifiedAt) {
+		if err = d.Set("last_modified_at", accountSettingsTemplateResponse.LastModifiedAt); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting last_modified_at: %s", err), "(Data) ibm_iam_account_settings_template", "read", "set-last_modified_at").GetDiag()
+		}
 	}
 
-	if err = d.Set("last_modified_by_id", accountSettingsTemplateResponse.LastModifiedByID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting last_modified_by_id: %s", err))
+	if !core.IsNil(accountSettingsTemplateResponse.LastModifiedByID) {
+		if err = d.Set("last_modified_by_id", accountSettingsTemplateResponse.LastModifiedByID); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting last_modified_by_id: %s", err), "(Data) ibm_iam_account_settings_template", "read", "set-last_modified_by_id").GetDiag()
+		}
 	}
 
 	return nil
