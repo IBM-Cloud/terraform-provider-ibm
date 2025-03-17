@@ -39,7 +39,7 @@ func ResourceIBMEnPagerDutyDestination() *schema.Resource {
 			"type": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The type of Destination type push_chrome.",
+				Description: "The type of Destination type pagerduty.",
 			},
 			"description": {
 				Type:        schema.TypeString,
@@ -54,7 +54,7 @@ func ResourceIBMEnPagerDutyDestination() *schema.Resource {
 			"config": {
 				Type:        schema.TypeList,
 				MaxItems:    1,
-				Optional:    true,
+				Required:    true,
 				Description: "Payload describing a destination configuration.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -68,13 +68,14 @@ func ResourceIBMEnPagerDutyDestination() *schema.Resource {
 										Type:        schema.TypeString,
 										Sensitive:   true,
 										Optional:    true,
-										Description: "The api key Pagerduty",
 										Default:     "",
+										Description: "API Key for the PagerDuty account.",
+										Deprecated:  "The api_key parameter under config has  been deprecated and will be removed in future",
 									},
 									"routing_key": {
 										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "The routing key for pagerduty",
+										Required:    true,
+										Description: "Routing Key (Integration Key) for the team in PagerDuty account.",
 									},
 								},
 							},
@@ -104,7 +105,6 @@ func ResourceIBMEnPagerDutyDestination() *schema.Resource {
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 		},
-		DeprecationMessage: "The api_key parameter under config has  been deprecated and will be removed in future ",
 	}
 }
 
