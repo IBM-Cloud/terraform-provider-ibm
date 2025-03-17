@@ -1,8 +1,8 @@
-// Copyright IBM Corp. 2025 All Rights Reserved.
+// Copyright IBM Corp. 2024,2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.96.0-d6dec9d7-20241008-212902
+ * IBM OpenAPI Terraform Generator Version: 3.99.0-d27cee72-20250129-204831
  */
 
 package sdsaas
@@ -15,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
@@ -39,15 +40,15 @@ func ResourceIBMSdsHost() *schema.Resource {
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_sds_host", "name"),
-				Description:  "The name for this host. The name must not be used by another host.  If unspecified, the name will be a hyphenated list of randomly-selected words.",
+				Description:  "Unique name of the host.",
 			},
 			"nqn": &schema.Schema{
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_sds_host", "nqn"),
-				Description:  "The NQN of the host configured in customer's environment.",
+				Description:  "The NQN (NVMe Qualified Name) as configured on the initiator (compute/host) accessing the storage.",
 			},
-			"volumes": &schema.Schema{
+			"volume_mappings": &schema.Schema{
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "The host-to-volume map.",
@@ -55,59 +56,148 @@ func ResourceIBMSdsHost() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"status": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The current status of a volume/host mapping attempt.",
-						},
-						"volume_id": &schema.Schema{
-							Type:        schema.TypeString,
 							Required:    true,
-							Description: "The volume ID that needs to be mapped with a host.",
+							Description: "The status of the volume mapping. The enumerated values for this property will expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the unexpected property value was encountered.",
 						},
-						"volume_name": &schema.Schema{
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The volume name.",
-						},
-						"storage_identifiers": &schema.Schema{
+						"storage_identifier": &schema.Schema{
 							Type:        schema.TypeList,
 							MaxItems:    1,
 							Optional:    true,
 							Description: "Storage network and ID information associated with a volume/host mapping.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"id": &schema.Schema{
+									"subsystem_nqn": &schema.Schema{
 										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "The storage ID associated with a volume/host mapping.",
+										Required:    true,
+										Description: "The NVMe target subsystem NQN (NVMe Qualified Name) that can be used for doing NVMe connect by the initiator.",
 									},
 									"namespace_id": &schema.Schema{
 										Type:        schema.TypeInt,
-										Optional:    true,
-										Description: "The namespace ID associated with a volume/host mapping.",
+										Required:    true,
+										Description: "NVMe namespace ID that can be used to co-relate the discovered devices on host to the corresponding volume.",
 									},
 									"namespace_uuid": &schema.Schema{
 										Type:        schema.TypeString,
-										Optional:    true,
+										Required:    true,
 										Description: "The namespace UUID associated with a volume/host mapping.",
 									},
-									"network_info": &schema.Schema{
+									"gateways": &schema.Schema{
 										Type:        schema.TypeList,
-										Optional:    true,
-										Description: "The IP and port for volume/host mappings.",
+										Required:    true,
+										Description: "List of NVMe gateways.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
-												"gateway_ip": &schema.Schema{
+												"ip_address": &schema.Schema{
 													Type:        schema.TypeString,
-													Optional:    true,
+													Computed:    true,
 													Description: "Network information for volume/host mappings.",
 												},
 												"port": &schema.Schema{
 													Type:        schema.TypeInt,
-													Optional:    true,
+													Computed:    true,
 													Description: "Network information for volume/host mappings.",
 												},
 											},
 										},
+									},
+								},
+							},
+						},
+						"href": &schema.Schema{
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The URL for this resource.",
+						},
+						"id": &schema.Schema{
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Unique identifier of the mapping.",
+						},
+						"volume": &schema.Schema{
+							Type:        schema.TypeList,
+							MaxItems:    1,
+							Optional:    true,
+							Description: "The volume reference.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"id": &schema.Schema{
+										Type:        schema.TypeString,
+										Required:    true,
+										Description: "Unique identifer of the host.",
+									},
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Unique name of the host.",
+									},
+								},
+							},
+						},
+						"host": &schema.Schema{
+							Type:        schema.TypeList,
+							MaxItems:    1,
+							Optional:    true,
+							Description: "Host mapping schema.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"id": &schema.Schema{
+										Type:        schema.TypeString,
+										Required:    true,
+										Description: "Unique identifer of the host.",
+									},
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Required:    true,
+										Description: "Unique name of the host.",
+									},
+									"nqn": &schema.Schema{
+										Type:        schema.TypeString,
+										Required:    true,
+										Description: "The NQN (NVMe Qualified Name) as configured on the initiator (compute/host) accessing the storage.",
+									},
+								},
+							},
+						},
+						"subsystem_nqn": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The NVMe target subsystem NQN (NVMe Qualified Name) that can be used for doing NVMe connect by the initiator.",
+						},
+						"namespace": &schema.Schema{
+							Type:        schema.TypeList,
+							MaxItems:    1,
+							Optional:    true,
+							Description: "The NVMe namespace properties for a given volume mapping.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"id": &schema.Schema{
+										Type:        schema.TypeInt,
+										Optional:    true,
+										Description: "NVMe namespace ID that can be used to co-relate the discovered devices on host to the corresponding volume.",
+									},
+									"uuid": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "UUID of the NVMe namespace.",
+									},
+								},
+							},
+						},
+						"gateways": &schema.Schema{
+							Type:        schema.TypeList,
+							Optional:    true,
+							Description: "List of NVMe gateways.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"ip_address": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Network information for volume/host mappings.",
+									},
+									"port": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "Network information for volume/host mappings.",
 									},
 								},
 							},
@@ -118,7 +208,12 @@ func ResourceIBMSdsHost() *schema.Resource {
 			"created_at": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The date and time that the host was created.",
+				Description: "The date and time when the resource was created.",
+			},
+			"href": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The URL for this resource.",
 			},
 		},
 	}
@@ -134,7 +229,7 @@ func ResourceIBMSdsHostValidator() *validate.ResourceValidator {
 			Optional:                   true,
 			Regexp:                     `^-?([a-z]|[a-z][-a-z0-9]*[a-z0-9]|[0-9][-a-z0-9]*([a-z]|[-a-z][-a-z0-9]*[a-z0-9]))$`,
 			MinValueLength:             1,
-			MaxValueLength:             64,
+			MaxValueLength:             63,
 		},
 		validate.ValidateSchema{
 			Identifier:                 "nqn",
@@ -142,8 +237,8 @@ func ResourceIBMSdsHostValidator() *validate.ResourceValidator {
 			Type:                       validate.TypeString,
 			Required:                   true,
 			Regexp:                     `^nqn\.\d{4}-\d{2}\.[a-z0-9-]+(?:\.[a-z0-9-]+)*:[a-zA-Z0-9.\-:]+$`,
-			MinValueLength:             1,
-			MaxValueLength:             64,
+			MinValueLength:             16,
+			MaxValueLength:             223,
 		},
 	)
 
@@ -152,8 +247,7 @@ func ResourceIBMSdsHostValidator() *validate.ResourceValidator {
 }
 
 func resourceIBMSdsHostCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	endpoint := d.Get("sds_endpoint").(string)
-	sdsaasClient, err := getSDSConfigClient(meta, endpoint)
+	sdsaasClient, err := meta.(conns.ClientSession).SdsaasV1()
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_sds_host", "create", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
@@ -166,17 +260,17 @@ func resourceIBMSdsHostCreate(context context.Context, d *schema.ResourceData, m
 	if _, ok := d.GetOk("name"); ok {
 		hostCreateOptions.SetName(d.Get("name").(string))
 	}
-	if _, ok := d.GetOk("volumes"); ok {
-		var volumes []sdsaasv1.VolumeMappingIdentity
-		for _, v := range d.Get("volumes").([]interface{}) {
+	if _, ok := d.GetOk("volume_mappings"); ok {
+		var volumeMappings []sdsaasv1.VolumeMappingPrototype
+		for _, v := range d.Get("volume_mappings").([]interface{}) {
 			value := v.(map[string]interface{})
-			volumesItem, err := ResourceIBMSdsHostMapToVolumeMappingIdentity(value)
+			volumeMappingsItem, err := ResourceIBMSdsHostMapToVolumeMappingPrototype(value)
 			if err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_sds_host", "create", "parse-volumes").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_sds_host", "create", "parse-volume_mappings").GetDiag()
 			}
-			volumes = append(volumes, *volumesItem)
+			volumeMappings = append(volumeMappings, *volumeMappingsItem)
 		}
-		hostCreateOptions.SetVolumes(volumes)
+		hostCreateOptions.SetVolumeMappings(volumeMappings)
 	}
 
 	host, _, err := sdsaasClient.HostCreateWithContext(context, hostCreateOptions)
@@ -192,8 +286,7 @@ func resourceIBMSdsHostCreate(context context.Context, d *schema.ResourceData, m
 }
 
 func resourceIBMSdsHostRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	endpoint := d.Get("sds_endpoint").(string)
-	sdsaasClient, err := getSDSConfigClient(meta, endpoint)
+	sdsaasClient, err := meta.(conns.ClientSession).SdsaasV1()
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_sds_host", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
@@ -225,33 +318,34 @@ func resourceIBMSdsHostRead(context context.Context, d *schema.ResourceData, met
 		err = fmt.Errorf("Error setting nqn: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_sds_host", "read", "set-nqn").GetDiag()
 	}
-	if !core.IsNil(host.Volumes) {
-		volumes := []map[string]interface{}{}
-		for _, volumesItem := range host.Volumes {
-			volumesItemMap, err := ResourceIBMSdsHostVolumeMappingReferenceToMap(&volumesItem) // #nosec G601
+	if !core.IsNil(host.VolumeMappings) {
+		volumeMappings := []map[string]interface{}{}
+		for _, volumeMappingsItem := range host.VolumeMappings {
+			volumeMappingsItemMap, err := ResourceIBMSdsHostVolumeMappingToMap(&volumeMappingsItem) // #nosec G601
 			if err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_sds_host", "read", "volumes-to-map").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_sds_host", "read", "volume_mappings-to-map").GetDiag()
 			}
-			volumes = append(volumes, volumesItemMap)
+			volumeMappings = append(volumeMappings, volumeMappingsItemMap)
 		}
-		if err = d.Set("volumes", volumes); err != nil {
-			err = fmt.Errorf("Error setting volumes: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_sds_host", "read", "set-volumes").GetDiag()
+		if err = d.Set("volume_mappings", volumeMappings); err != nil {
+			err = fmt.Errorf("Error setting volume_mappings: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_sds_host", "read", "set-volume_mappings").GetDiag()
 		}
 	}
-	if !core.IsNil(host.CreatedAt) {
-		if err = d.Set("created_at", host.CreatedAt); err != nil {
-			err = fmt.Errorf("Error setting created_at: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_sds_host", "read", "set-created_at").GetDiag()
-		}
+	if err = d.Set("created_at", flex.DateTimeToString(host.CreatedAt)); err != nil {
+		err = fmt.Errorf("Error setting created_at: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_sds_host", "read", "set-created_at").GetDiag()
+	}
+	if err = d.Set("href", host.Href); err != nil {
+		err = fmt.Errorf("Error setting href: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_sds_host", "read", "set-href").GetDiag()
 	}
 
 	return nil
 }
 
 func resourceIBMSdsHostUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	endpoint := d.Get("sds_endpoint").(string)
-	sdsaasClient, err := getSDSConfigClient(meta, endpoint)
+	sdsaasClient, err := meta.(conns.ClientSession).SdsaasV1()
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_sds_host", "update", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
@@ -289,8 +383,7 @@ func resourceIBMSdsHostUpdate(context context.Context, d *schema.ResourceData, m
 }
 
 func resourceIBMSdsHostDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	endpoint := d.Get("sds_endpoint").(string)
-	sdsaasClient, err := getSDSConfigClient(meta, endpoint)
+	sdsaasClient, err := meta.(conns.ClientSession).SdsaasV1()
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_sds_host", "delete", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
@@ -313,61 +406,118 @@ func resourceIBMSdsHostDelete(context context.Context, d *schema.ResourceData, m
 	return nil
 }
 
-func ResourceIBMSdsHostMapToVolumeMappingIdentity(modelMap map[string]interface{}) (*sdsaasv1.VolumeMappingIdentity, error) {
-	model := &sdsaasv1.VolumeMappingIdentity{}
-	model.VolumeID = core.StringPtr(modelMap["volume_id"].(string))
+func ResourceIBMSdsHostMapToVolumeMappingPrototype(modelMap map[string]interface{}) (*sdsaasv1.VolumeMappingPrototype, error) {
+	model := &sdsaasv1.VolumeMappingPrototype{}
+	VolumeModel, err := ResourceIBMSdsHostMapToVolumeIdentity(modelMap["volume"].([]interface{})[0].(map[string]interface{}))
+	if err != nil {
+		return model, err
+	}
+	model.Volume = VolumeModel
 	return model, nil
 }
 
-func ResourceIBMSdsHostVolumeMappingReferenceToMap(model *sdsaasv1.VolumeMappingReference) (map[string]interface{}, error) {
+func ResourceIBMSdsHostMapToVolumeIdentity(modelMap map[string]interface{}) (*sdsaasv1.VolumeIdentity, error) {
+	model := &sdsaasv1.VolumeIdentity{}
+	model.ID = core.StringPtr(modelMap["id"].(string))
+	return model, nil
+}
+
+func ResourceIBMSdsHostVolumeMappingToMap(model *sdsaasv1.VolumeMapping) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	if model.Status != nil {
-		modelMap["status"] = *model.Status
-	}
-	modelMap["volume_id"] = *model.VolumeID
-	modelMap["volume_name"] = *model.VolumeName
-	if model.StorageIdentifiers != nil {
-		storageIdentifiersMap, err := ResourceIBMSdsHostStorageIdentifiersReferenceToMap(model.StorageIdentifiers)
+	modelMap["status"] = *model.Status
+	if model.StorageIdentifier != nil {
+		storageIdentifierMap, err := ResourceIBMSdsHostStorageIdentifierToMap(model.StorageIdentifier)
 		if err != nil {
 			return modelMap, err
 		}
-		modelMap["storage_identifiers"] = []map[string]interface{}{storageIdentifiersMap}
+		modelMap["storage_identifier"] = []map[string]interface{}{storageIdentifierMap}
 	}
-	return modelMap, nil
-}
-
-func ResourceIBMSdsHostStorageIdentifiersReferenceToMap(model *sdsaasv1.StorageIdentifiersReference) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.ID != nil {
-		modelMap["id"] = *model.ID
+	modelMap["href"] = *model.Href
+	modelMap["id"] = *model.ID
+	if model.Volume != nil {
+		volumeMap, err := ResourceIBMSdsHostVolumeReferenceToMap(model.Volume)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["volume"] = []map[string]interface{}{volumeMap}
 	}
-	if model.NamespaceID != nil {
-		modelMap["namespace_id"] = flex.IntValue(model.NamespaceID)
+	if model.Host != nil {
+		hostMap, err := ResourceIBMSdsHostHostReferenceToMap(model.Host)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["host"] = []map[string]interface{}{hostMap}
 	}
-	if model.NamespaceUUID != nil {
-		modelMap["namespace_uuid"] = *model.NamespaceUUID
+	if model.SubsystemNqn != nil {
+		modelMap["subsystem_nqn"] = *model.SubsystemNqn
 	}
-	if model.NetworkInfo != nil {
-		networkInfo := []map[string]interface{}{}
-		for _, networkInfoItem := range model.NetworkInfo {
-			networkInfoItemMap, err := ResourceIBMSdsHostNetworkInfoReferenceToMap(&networkInfoItem) // #nosec G601
+	if model.Namespace != nil {
+		namespaceMap, err := ResourceIBMSdsHostNamespaceToMap(model.Namespace)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["namespace"] = []map[string]interface{}{namespaceMap}
+	}
+	if model.Gateways != nil {
+		gateways := []map[string]interface{}{}
+		for _, gatewaysItem := range model.Gateways {
+			gatewaysItemMap, err := ResourceIBMSdsHostGatewayToMap(&gatewaysItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
-			networkInfo = append(networkInfo, networkInfoItemMap)
+			gateways = append(gateways, gatewaysItemMap)
 		}
-		modelMap["network_info"] = networkInfo
+		modelMap["gateways"] = gateways
 	}
 	return modelMap, nil
 }
 
-func ResourceIBMSdsHostNetworkInfoReferenceToMap(model *sdsaasv1.NetworkInfoReference) (map[string]interface{}, error) {
+func ResourceIBMSdsHostStorageIdentifierToMap(model *sdsaasv1.StorageIdentifier) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	if model.GatewayIP != nil {
-		modelMap["gateway_ip"] = *model.GatewayIP
+	modelMap["subsystem_nqn"] = *model.SubsystemNqn
+	modelMap["namespace_id"] = flex.IntValue(model.NamespaceID)
+	modelMap["namespace_uuid"] = *model.NamespaceUUID
+	gateways := []map[string]interface{}{}
+	for _, gatewaysItem := range model.Gateways {
+		gatewaysItemMap, err := ResourceIBMSdsHostGatewayToMap(&gatewaysItem) // #nosec G601
+		if err != nil {
+			return modelMap, err
+		}
+		gateways = append(gateways, gatewaysItemMap)
 	}
-	if model.Port != nil {
-		modelMap["port"] = flex.IntValue(model.Port)
+	modelMap["gateways"] = gateways
+	return modelMap, nil
+}
+
+func ResourceIBMSdsHostGatewayToMap(model *sdsaasv1.Gateway) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["ip_address"] = *model.IPAddress
+	modelMap["port"] = flex.IntValue(model.Port)
+	return modelMap, nil
+}
+
+func ResourceIBMSdsHostVolumeReferenceToMap(model *sdsaasv1.VolumeReference) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["id"] = *model.ID
+	modelMap["name"] = *model.Name
+	return modelMap, nil
+}
+
+func ResourceIBMSdsHostHostReferenceToMap(model *sdsaasv1.HostReference) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["id"] = *model.ID
+	modelMap["name"] = *model.Name
+	modelMap["nqn"] = *model.Nqn
+	return modelMap, nil
+}
+
+func ResourceIBMSdsHostNamespaceToMap(model *sdsaasv1.Namespace) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.ID != nil {
+		modelMap["id"] = flex.IntValue(model.ID)
+	}
+	if model.UUID != nil {
+		modelMap["uuid"] = *model.UUID
 	}
 	return modelMap, nil
 }
@@ -379,6 +529,8 @@ func ResourceIBMSdsHostHostPatchAsPatch(patchVals *sdsaasv1.HostPatch, d *schema
 	path = "name"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["name"] = nil
+	} else if !exists {
+		delete(patch, "name")
 	}
 
 	return patch
