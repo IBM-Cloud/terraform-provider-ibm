@@ -33,7 +33,8 @@ data "ibm_is_ssh_key" "example" {
 ## Argument reference
 Review the argument references that you can specify for your data source. 
 
-- `name` - (Required, String) The name of the SSH key.
+- `id` - (Optional, String) The id of the SSH key. {Exactly one of `id` or `name` is required}
+- `name` - (Optional, String) The name of the SSH key. {Exactly one of `id` or `name` is required}
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created. 
