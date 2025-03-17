@@ -21,7 +21,7 @@ var (
 )
 
 func TestAccIbmBackupRecoverySourceRegistrationBasic(t *testing.T) {
-	var conf backuprecoveryv1.SourceRegistrationReponseParams
+	var conf backuprecoveryv1.SourceRegistrationResponseParams
 
 	environment := "kPhysical"
 	connectionId := "6456884682673709176"
@@ -83,7 +83,7 @@ func testAccCheckIbmBackupRecoverySourceRegistrationConfigBasic(environment, app
 	`, tenantIdRegister, environment, connectionId, endpoint, hostType, physicalType, applications)
 }
 
-func testAccCheckIbmBackupRecoverySourceRegistrationExists(n string, obj backuprecoveryv1.SourceRegistrationReponseParams) resource.TestCheckFunc {
+func testAccCheckIbmBackupRecoverySourceRegistrationExists(n string, obj backuprecoveryv1.SourceRegistrationResponseParams) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
