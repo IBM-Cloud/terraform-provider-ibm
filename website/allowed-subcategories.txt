@@ -3,6 +3,7 @@ API Gateway
 App ID Management
 App Configuration
 Catalog Management
+Ceph as a Service
 Classic infrastructure
 Cloud Database
 Cloud Foundry
@@ -40,7 +41,6 @@ Push Notifications
 Resource management
 Satellite
 Schematics
-Sdsaas
 Secrets Manager
 Security and Compliance Center
 Transit Gateway

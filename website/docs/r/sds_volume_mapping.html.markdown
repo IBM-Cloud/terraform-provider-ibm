@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_sds_volume_mapping"
 description: |-
   Manages sds_volume_mapping.
-subcategory: "Sdsaas"
+subcategory: "Ceph as a Service"
 ---
 
 # ibm_sds_volume_mapping

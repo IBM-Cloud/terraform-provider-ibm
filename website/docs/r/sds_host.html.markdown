@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_sds_host"
 description: |-
   Manages sds_host.
-subcategory: "Sdsaas"
+subcategory: "Ceph as a Service"
 ---
 
 # ibm_sds_host
