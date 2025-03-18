@@ -1,21 +1,21 @@
 ---
 subcategory: 'Event Notifications'
 layout: 'ibm'
-page_title: 'IBM : ibm_en_subscription_pagerduty'
+page_title: 'IBM : ibm_en_subscription_event_streams'
 description: |-
-  Get information about a PagerDuty subscription
+  Get information about a Event Streams subscription
 ---
 
-# ibm_en_subscription_pagerduty
+# ibm_en_subscription_event_streams
 
 Provides a read-only data source for subscription. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
 ## Example usage
 
 ```terraform
-data "ibm_en_subscription_pagerduty" "pagerduty_subscription" {
+data "ibm_en_subscription_event_streams" "es_subscription" {
   instance_guid   = ibm_resource_instance.en_terraform_test_resource.guid
-  subscription_id = ibm_en_subscription_pagerduty.subscription_pagerduty.subscription_id
+  subscription_id = ibm_en_subscription_event_streams.subscription_pagerduty.subscription_id
 }
 ```
 
@@ -31,7 +31,7 @@ Review the argument reference that you can specify for your data source.
 
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
-- `id` - The unique identifier of the pagerduty_subscription.
+- `id` - The unique identifier of the es_subscription.
 
 - `name` - (String) Subscription name.
 

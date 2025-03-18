@@ -1,37 +1,37 @@
 ---
 subcategory: 'Event Notifications'
 layout: 'ibm'
-page_title: 'IBM : ibm_en_destination_pagerduty'
+page_title: 'IBM : ibm_en_destination_event_streams'
 description: |-
-  Manages Event Notification Pagerduty destinations.
+  Get information about a Event Streams destination
 ---
 
-# ibm_en_destination_pagerduty
+# ibm_en_destination_event_streams
 
-Provides a read-only data source for Pagerduty destination. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+Provides a read-only data source for IEvent Streams destination. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
 ## Example usage
 
 ```terraform
-
-data "ibm_en_destination_pagerduty" "pagerduty_en_destination" {
+data "ibm_en_destination_event_streams" "es_en_destination" {
   instance_guid  = ibm_resource_instance.en_terraform_test_resource.guid
-  destination_id = ibm_en_destination_pagerduty.destination1.destination_id
+  destination_id = ibm_en_destination_event_streams.cos_destination.destination_id
 }
 ```
 
 ## Argument reference
 
-Review the argument reference that you can specify for your resource.
+Review the argument reference that you can specify for your data source.
 
 - `instance_guid` - (Required, Forces new resource, String) Unique identifier for IBM Cloud Event Notifications instance.
 
 - `destination_id` - (Required, String) Unique identifier for Destination.
+
 ## Attribute reference
 
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
-- `id` - The unique identifier of the `pagerduty_en_destination`.
+- `id` - The unique identifier of the `es_en_destination`.
 
 - `name` - (String) Destination name.
 
@@ -41,7 +41,7 @@ In addition to all argument references listed, you can access the following attr
 
 - `subscription_names` - (List) List of subscriptions.
 
-- `type` - (String) Destination type pagerduty.
+- `type` - (String) Destination type event_streams.
 
 - `collect_failed_events` - (boolean) Toggle switch to enable collect failed event in Cloud Object Storage bucket.
 
@@ -52,8 +52,11 @@ In addition to all argument references listed, you can access the following attr
 
   Nested scheme for **params**:
 
-  - `api_key` - (Optional, string) The apikey required to validate user for the assigned group[The parameter has been deprecated from destination config parameter, it will be removed in future].
+  - `topic` - (Required, string) Topic of Event Streams.
 
-  - `routing_key` - (Required, string) The integration key required to route the events to pagerduty.
+  - `crn` - (Required, string) CRN of the Event Streans instance.
+
+  - `endpoint`   - (Required, string) End Point of Event Streams
+
 
 - `updated_at` - (String) Last updated time.

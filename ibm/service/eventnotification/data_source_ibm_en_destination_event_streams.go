@@ -16,9 +16,10 @@ import (
 	en "github.com/IBM/event-notifications-go-admin-sdk/eventnotificationsv1"
 )
 
-func DataSourceIBMEnPagerDutyDestination() *schema.Resource {
+func DataSourceIBMEnEventStreamsDestination() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIBMEnPagerDutyeDestinationRead,
+		ReadContext: dataSourceIBMEnEventStreamsDestinationRead,
+
 		Schema: map[string]*schema.Schema{
 			"instance_guid": {
 				Type:        schema.TypeString,
@@ -43,7 +44,7 @@ func DataSourceIBMEnPagerDutyDestination() *schema.Resource {
 			"type": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Destination type pagerduty.",
+				Description: "Destination type ibmcf.",
 			},
 			"collect_failed_events": {
 				Type:        schema.TypeBool,
@@ -61,16 +62,20 @@ func DataSourceIBMEnPagerDutyDestination() *schema.Resource {
 							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"api_key": {
+									"crn": {
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "API Key for the PagerDuty account.",
-										Deprecated:  "The api_key parameter under config has  been deprecated and will be removed in future",
+										Description: "The instance CRN for Event Streams instance",
 									},
-									"routing_key": {
+									"topic": {
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "Routing Key (Integration Key) for the team in PagerDuty account.",
+										Description: "Topic of Event Streams",
+									},
+									"endpoint": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The endpoint for the Event Streams",
 									},
 								},
 							},
@@ -100,10 +105,10 @@ func DataSourceIBMEnPagerDutyDestination() *schema.Resource {
 	}
 }
 
-func dataSourceIBMEnPagerDutyeDestinationRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMEnEventStreamsDestinationRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	enClient, err := meta.(conns.ClientSession).EventNotificationsApiV1()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_en_destination_pagerduty", "read")
+		tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_en_destination_event_streams", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -115,7 +120,7 @@ func dataSourceIBMEnPagerDutyeDestinationRead(context context.Context, d *schema
 
 	result, _, err := enClient.GetDestinationWithContext(context, options)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetDestinationWithContext failed: %s", err.Error()), "(Data) ibm_en_destination_pagerduty", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetDestinationWithContext failed: %s", err.Error()), "(Data) ibm_en_destination_event_streams", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -123,31 +128,31 @@ func dataSourceIBMEnPagerDutyeDestinationRead(context context.Context, d *schema
 	d.SetId(fmt.Sprintf("%s/%s", *options.InstanceID, *options.ID))
 
 	if err = d.Set("name", result.Name); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_en_destination_pagerduty", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_en_destination_event_streams", "read")
 		return tfErr.GetDiag()
 	}
 
 	if result.Description != nil {
 		if err = d.Set("description", result.Description); err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting description: %s", err), "(Data) ibm_en_destination_pagerduty", "read")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting description: %s", err), "(Data) ibm_en_destination_event_streams", "read")
 			return tfErr.GetDiag()
 		}
 	}
 
 	if err = d.Set("type", result.Type); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting type: %s", err), "(Data) ibm_en_destination_pagerduty", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting type: %s", err), "(Data) ibm_en_destination_event_streams", "read")
 		return tfErr.GetDiag()
 	}
 
 	if err = d.Set("collect_failed_events", result.CollectFailedEvents); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting CollectFailedEvents: %s", err), "(Data) ibm_en_destination_pagerduty", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting CollectFailedEvents: %s", err), "(Data) ibm_en_destination_event_streams", "read")
 		return tfErr.GetDiag()
 	}
 
 	if result.Config != nil {
-		err = d.Set("config", enPagerDutyDestinationFlattenConfig(*result.Config))
+		err = d.Set("config", enEventStreamsDestinationFlattenConfig(*result.Config))
 		if err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting config: %s", err), "(Data) ibm_en_destination_pagerduty", "read")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting config: %s", err), "(Data) ibm_en_destination_event_streams", "read")
 			return tfErr.GetDiag()
 		}
 	}
@@ -155,38 +160,38 @@ func dataSourceIBMEnPagerDutyeDestinationRead(context context.Context, d *schema
 	if result.SubscriptionNames != nil {
 		err = d.Set("subscription_names", result.SubscriptionNames)
 		if err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting subscription_names: %s", err), "(Data) ibm_en_destination_pagerduty", "read")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting subscription_names: %s", err), "(Data) ibm_en_destination_event_streams", "read")
 			return tfErr.GetDiag()
 		}
 	}
 
 	if err = d.Set("updated_at", flex.DateTimeToString(result.UpdatedAt)); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting updated_at: %s", err), "(Data) ibm_en_destination_pagerduty", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting updated_at: %s", err), "(Data) ibm_en_destination_event_streams", "read")
 		return tfErr.GetDiag()
 	}
 
 	if err = d.Set("subscription_count", flex.IntValue(result.SubscriptionCount)); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting subscription_count: %s", err), "(Data) ibm_en_destination_pagerduty", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting subscription_count: %s", err), "(Data) ibm_en_destination_event_streams", "read")
 		return tfErr.GetDiag()
 	}
 
 	return nil
 }
 
-func enPagerDutyDestinationFlattenConfig(result en.DestinationConfig) (finalList []map[string]interface{}) {
+func enEventStreamsDestinationFlattenConfig(result en.DestinationConfig) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
-	finalMap := enPagerDutyDestinationConfigToMap(result)
+	finalMap := enEventStreamsDestinationConfigToMap(result)
 	finalList = append(finalList, finalMap)
 
 	return finalList
 }
 
-func enPagerDutyDestinationConfigToMap(configItem en.DestinationConfig) (configMap map[string]interface{}) {
+func enEventStreamsDestinationConfigToMap(configItem en.DestinationConfig) (configMap map[string]interface{}) {
 	configMap = map[string]interface{}{}
 
 	if configItem.Params != nil {
 		paramsList := []map[string]interface{}{}
-		paramsMap := enPagerDutyDestinationConfigParamsToMap(configItem.Params)
+		paramsMap := enEventStreamsDestinationConfigParamsToMap(configItem.Params)
 		paramsList = append(paramsList, paramsMap)
 		configMap["params"] = paramsList
 	}
@@ -194,16 +199,21 @@ func enPagerDutyDestinationConfigToMap(configItem en.DestinationConfig) (configM
 	return configMap
 }
 
-func enPagerDutyDestinationConfigParamsToMap(paramsItem en.DestinationConfigOneOfIntf) (paramsMap map[string]interface{}) {
+func enEventStreamsDestinationConfigParamsToMap(paramsItem en.DestinationConfigOneOfIntf) (paramsMap map[string]interface{}) {
 	paramsMap = map[string]interface{}{}
 
 	params := paramsItem.(*en.DestinationConfigOneOf)
 
-	if params.APIKey != nil {
-		paramsMap["api_key"] = params.APIKey
+	if params.CRN != nil {
+		paramsMap["crn"] = params.CRN
 	}
-	if params.RoutingKey != nil {
-		paramsMap["routing_key"] = params.RoutingKey
+
+	if params.Topic != nil {
+		paramsMap["topic"] = params.Topic
+	}
+
+	if params.Endpoint != nil {
+		paramsMap["endpoint"] = params.Endpoint
 	}
 
 	return paramsMap
