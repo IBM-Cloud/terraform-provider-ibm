@@ -8,7 +8,8 @@ description: |-
 ---
 
 # ibm_cis_ruleset
-Provides an IBM Cloud Internet Services ruleset resource, to update and delete the ruleset of an Instance or Domain. For more information about IBM Cloud Internet Services ruleset, see [ruleset instance](https://cloud.ibm.com/docs/cis?topic=cis-managed-rules-overview).
+
+Provides an IBM Cloud Internet Services ruleset resource, to update and delete the ruleset of an Instance or Domain. To deploy the managed rulesets see [entrypoint ruleset](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/cis_ruleset_entrypoint_version). For more information about IBM Cloud Internet Services ruleset, see [ruleset instance](https://cloud.ibm.com/docs/cis?topic=cis-managed-rules-overview).
 **As there is no option to create a ruleset resource, it is required to use import module to generate the respective resource configurations([Reference](https://test.cloud.ibm.com/docs/cis?topic=cis-terraform-generating-configuration)) and use the import command to populate the state file, as stated at the end of this page.**
 
 ## Example usage
@@ -53,7 +54,8 @@ resource "ibm_cis_ruleset" "config" {
 ```
 
 ## Argument reference
-Review the argument references that you can specify for your resource. 
+
+Review the argument references that you can specify for your resource.
 
 - `cis_id` - (Required, String) The ID of the CIS service instance.
 - `domain_id` - (Optional, String) The Domain/Zone ID of the CIS service instance. If domain_id is provided the request will be made at the zone/domain level otherwise the request will be made at the instance level.
@@ -63,17 +65,15 @@ Review the argument references that you can specify for your resource.
   Nested scheme of `rulesets`
   - `description` (optional, string) Description of the ruleset.
   - `rules` (optional, list) Rules which are required to be added/modified.
-
   Nested scheme of `rules`
     - `id` (Required, String) ID of the rule.
-    - `action` (Required, String). Action of the rule. 
+    - `action` (Required, String). Action of the rule.
     - `description` (Optional, String) Description of the rule.
     - `enable` (Optional, Boolean) Enables/Disables the rule.
     - `expression` (Optional, String) Expression used by the rule to match the incoming request.
     - `ref` (Optional, String) ID of an existing rule. If not provided, it is populated by the ID of the created rule.
     - `action_parameters` (Optional, List) Parameters which are used to modify the rules.
-    
-      Nested scheme of `action parameters`
+    Nested scheme of `action parameters`
       - `id` (Required, String) ID of the managed ruleset to be deployed.
       - `overrides` (Optional, List) provides the parameters which are to be overridden.
 
@@ -86,21 +86,19 @@ Review the argument references that you can specify for your resource.
           - `rule_id` (Required, String) ID of the rule.
           - `enabled` (Optional, Boolean) Enables/Disables the rule.
           - `action` (Optional, String) Action of the rule.
-        
         - `categories` (Optional, List)
-          
+
           Nested scheme of `categories`
           - `category` (Required, String) Category of the rule.
           - `enabled` (Optional, Boolean) Enables/Disables the rule.
           - `action` (Optional, String) Action of the rule.
 
-        
-
 ## Attribute reference
+
 There are no attribute references in addition to the argument reference list.
 
-
 ## Import
+
 The `ibm_cis_ruleset` resource is imported by using the ID. The ID is formed from the ruleset ID, the domain ID of the domain and the CRN (Cloud Resource Name) concatenated  using a `:` character.
 
 The domain ID and CRN are located on the **Overview** page of the Internet Services instance of the domain heading of the console, or by using the `ibm cis` CLI commands.
@@ -111,14 +109,14 @@ The domain ID and CRN are located on the **Overview** page of the Internet Servi
 
 - **CRN** is a 120-digit character string of the form: `crn:v1:bluemix:public:internet-svcs:global:a/4ea1882a2d3401ed1e459979941966ea:31fa970d-51d0-4b05-893e-251cba75a7b3::`.
 
-**Syntax**
+### Syntax
 
-```
-$ terraform import ibm_cis_ruleset.config <ruleset_id>:<domain-id>:<crn>
+``` terraform
+terraform import ibm_cis_ruleset.config <ruleset_id>:<domain-id>:<crn>
 ```
 
-**Example**
+### Example
 
-```
-$ terraform import ibm_cis_ruleset.config 48996f0da6ed76251b475971b097205c:9caf68812ae9b3f0377fdf986751a78f:crn:v1:bluemix:public:internet-svcs:global:a/4ea1882a2d3401ed1e459979941966ea:31fa970d-51d0-4b05-893e-251cba75a7b3::
+``` terraform
+terraform import ibm_cis_ruleset.config 48996f0da6ed76251b475971b097205c:9caf68812ae9b3f0377fdf986751a78f:crn:v1:bluemix:public:internet-svcs:global:a/4ea1882a2d3401ed1e459979941966ea:31fa970d-51d0-4b05-893e-251cba75a7b3::
 ```

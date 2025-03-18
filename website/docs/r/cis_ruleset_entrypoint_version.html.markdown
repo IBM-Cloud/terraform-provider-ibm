@@ -8,54 +8,145 @@ description: |-
 ---
 
 # ibm_cis_ruleset_entrypoint_version
-Provides an IBM Cloud Internet Services ruleset entrypoint version resource, to create and update the ruleset entrypoint of an instance or domain. For more information, about IBM Cloud Internet Services ruleset entrypoint version, see [ruleset entrypoint instance](https://cloud.ibm.com/docs/cis?topic=cis-managed-rules-overview).
-**As there is no option to create a ruleset entry point resource, it is required to use import module to generate the respective resource configurations([Reference](https://test.cloud.ibm.com/docs/cis?topic=cis-terraform-generating-configuration)) and use the import command to populate the state file, as stated at the end of this page.**
+
+Provides an IBM Cloud Internet Services ruleset entrypoint version resource, to create and update the ruleset entrypoint of an instance or domain. It is also used to deploy the managed ruleset and to add custom rules. For more information, about IBM Cloud Internet Services ruleset entrypoint version, see [ruleset entrypoint instance](https://cloud.ibm.com/docs/cis?topic=cis-managed-rules-overview). To manage rules individually we can also use [ruleset rule](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/cis_ruleset_rule).
 
 ## Example usage
 
 ```terraform
-# create/update entrypoint ruleset of a domain or instance
+# create entrypoint ruleset for a domain.
 
-
-resource "ibm_cis_ruleset_entrypoint_version" "config" {
+  resource "ibm_cis_ruleset_entrypoint_version" "test" {
     cis_id    = ibm_cis.instance.id
     domain_id = data.ibm_cis_domain.cis_domain.domain_id
     phase = "http_request_firewall_managed"
     rulesets {
-      description = "Entry Point ruleset"
+      description = "Entry Point ruleset for managed ruleset"
+    }
+  }
+
+# Create/Update entrypoint ruleset and deploy managed ruleset.
+
+  resource "ibm_cis_ruleset_entrypoint_version" "test" {
+    cis_id    = ibm_cis.instance.id
+    domain_id = data.ibm_cis_domain.cis_domain.domain_id
+    phase = "http_request_firewall_managed"
+    rulesets {
+      description = "Entry Point ruleset for managed ruleset"
       rules {
         action =  "execute"
-        action_parameters  {
-          id = var.to_be_deployed_ruleset.id
-          overrides  {
-            action = "log"
-            enabled = true
-            override_rules {
-                rule_id = var.overriden_rule.id
-                enabled = true
-                action = "block"
-            }
-            categories {
-                category = "wordpress"
-                enabled = true
-                action = "log"
-            }
-          }
-        }
-        description = var.rule.description
+        description = "Deploy CIS Managed Ruleset"
         enabled = true
-        expression = "ip.src ne 1.1.1.1"
-        ref = var.reference_rule.id
+        expression = "true"
+        action_parameters  {
+          id = "efb7b8c949ac4650a09736fc376e9aee"
+        } 
       }
     }
   }
 
+# Create/Update entrypoint ruleset and deploy multiple managed ruleset.
 
+  resource "ibm_cis_ruleset_entrypoint_version" "test" {
+    cis_id    = ibm_cis.instance.id
+    domain_id = data.ibm_cis_domain.cis_domain.domain_id
+    phase = "http_request_firewall_managed"
+    rulesets {
+      description = "Entry Point ruleset for managed ruleset"
+      rules {
+        action =  "execute"
+        description = "Deploy CIS Managed Ruleset"
+        enabled = true
+        expression = "true"
+        action_parameters  {
+          id = "efb7b8c949ac4650a09736fc376e9aee"
+        } 
+      }
+      rules {
+        action =  "execute"
+        description = "Deploy CIS OWASP Core Ruleset"
+        enabled = true
+        expression = "true"
+        action_parameters  {
+          id = "4814384a9e5d4991b9815dcfc25d2f1f"
+        } 
+      }
+      rules {
+        action =  "execute"
+        description = "Deploy CIS Exposed Credentials Check Ruleset"
+        enabled = true
+        expression = "true"
+        action_parameters  {
+          id = "c2e184081120413c86c3ab7e14069605"
+        } 
+      }
+    }
+  }
+
+# Override rules and categories in a deployed managed ruleset
+
+  resource "ibm_cis_ruleset_entrypoint_version" "test" {
+    cis_id    = ibm_cis.instance.id
+    domain_id = data.ibm_cis_domain.cis_domain.domain_id
+    phase = "http_request_firewall_managed"
+    rulesets {
+      description = "Entry Point ruleset for managed ruleset"
+      rules {
+        action =  "execute"
+        description = "Deploy CIS Managed Ruleset"
+        enabled = true
+        expression = "true"
+        action_parameters  {
+          id = "efb7b8c949ac4650a09736fc376e9aee"
+          overrides {
+            action = "block"
+            enabled = true
+            override_rules {
+              rule_id = "var.overriden_rule.id"
+              enabled = true
+              action = "block"
+            }
+            categories {
+              category = "wordpress"
+              enabled = true
+              action = "block"
+            }
+          }
+        } 
+      }
+    }
+  }
+
+#  Add custom rules. Rules can also be added using the ruleset rule resource.
+
+  resource "ibm_cis_ruleset_entrypoint_version" "config" {
+    cis_id    = "crn:v1:bluemix:public:internet-svcs:global:a/bcf1865e99742d38d2d5fc3fb80a5496:d428087d-3f36-48f4-8626-99c37aee95bc::"
+    domain_id = "de8e5d94f7033a29b026166e5f7c6f96"
+    phase = "http_request_firewall_custom"
+    rulesets {
+      description = "var.description"
+      rules {
+        action = "var.action"
+        expression = "var.expression"
+        description = "var.rule.description"
+        enabled = "true"
+      }
+      rules {
+        action = "var.action"
+        expression = "var.expression"
+        description = "var.rule.description"
+        enabled = "true"
+      }
+    }
+  }
 
 ```
 
+**Note**: If an update is required in a particular rule, we still have to provide the data for other rules. Otherwise the new update will override the previous configuration. To add or update an individual rule, see the resource [ruleset rule](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/cis_ruleset_rule)
+
 ## Argument reference
-Review the argument references that you can specify for your resource. 
+
+Review the argument references that you can specify for your resource.
 
 - `cis_id` - (Required, String) The ID of the CIS service instance.
 - `domain_id` - (Optional, String) The Domain/Zone ID of the CIS service instance. If domain_id is provided the request will be made at the zone/domain level otherwise the request will be made at the instance level.
@@ -65,7 +156,6 @@ Review the argument references that you can specify for your resource.
   Nested scheme of `rulesets`
   - `description` (Optional, String) Description of the ruleset
   - `rules` (Optional, List) Rules which are required to be added/modified.
-
   Nested scheme of `rules`
     - `action` (String). If you are deploying a rule then action is required. The `execute` action is used for deploying the ruleset. If you are updating the rule we then action is optional.
     - `description` (Optional, String) Description of the rule.
@@ -93,13 +183,13 @@ Review the argument references that you can specify for your resource.
           - `category` (Required, String) Category of the rule.
           - `enabled` (Optional, Boolean) Enables/Disables the rule.
           - `action` (Optional, String) Action of the rule.
-        
 
 ## Attribute reference
+
 There are no attribute references in addition to the argument reference list.
 
-
 ## Import
+
 The `ibm_cis_ruleset_entrypoint_version` resource is imported by using the ID. The ID is formed from the ruleset phase, the domain ID of the domain and the Cloud Resource Name (CRN) concatenated  using a `:` character.
 
 The domain ID and CRN are located on the **Overview** page of the Internet Services instance of the domain heading of the console, or by using the `ibm cis` CLI commands.
@@ -110,14 +200,14 @@ The domain ID and CRN are located on the **Overview** page of the Internet Servi
 
 - **CRN** is a 120-digit character string of the form: `crn:v1:bluemix:public:internet-svcs:global:a/4ea1882a2d3401ed1e459979941966ea:31fa970d-51d0-4b05-893e-251cba75a7b3::`.
 
-**Syntax**
+### Syntax
 
-```
-$ terraform import ibm_cis_ruleset_entrypoint_version.config <phase>:<domain-id>:<crn>
+``` terraform
+terraform import ibm_cis_ruleset_entrypoint_version.config <phase>:<domain-id>:<crn>
 ```
 
-**Example**
+### Example
 
-```
-$ terraform import ibm_cis_ruleset_entrypoint_version.config http_request_firewall_managed:9caf68812ae9b3f0377fdf986751a78f:crn:v1:bluemix:public:internet-svcs:global:a/4ea1882a2d3401ed1e459979941966ea:31fa970d-51d0-4b05-893e-251cba75a7b3::
+``` terraform
+terraform import ibm_cis_ruleset_entrypoint_version.config http_request_firewall_managed:9caf68812ae9b3f0377fdf986751a78f:crn:v1:bluemix:public:internet-svcs:global:a/4ea1882a2d3401ed1e459979941966ea:31fa970d-51d0-4b05-893e-251cba75a7b3::
 ```
