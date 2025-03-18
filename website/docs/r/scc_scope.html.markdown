@@ -82,7 +82,7 @@ You can specify the following arguments for this resource.
           * `enterprise.account_group` - targets an enterprise's account group
           * `enterprise` - targets an IBM enterprise
       * `scope_id` - (Required, String) The ID of the target defined in `scope_type`.
-* `exclusions` - (Optional, List) A list of scopes/targets to exclude from a scope.
+* `exclusions` - (Optional, List, Forces new resource) A list of scopes/targets to exclude from a scope.
   
   Nested schema for **exclusions**:
     * `scope_type` - (Required, String) The type of target to exclude from the scope
