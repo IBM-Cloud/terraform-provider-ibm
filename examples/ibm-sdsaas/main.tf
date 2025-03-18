@@ -28,7 +28,7 @@ resource "ibm_sds_host" "sds_host_instance" {
 
 // Provision sds_volume_mapping resource instance
 resource "ibm_sds_volume_mapping" "sds_vm_1" {
-
+  sds_endpoint = var.sds_endpoint
   depends_on = [time_sleep.wait_5_seconds]
 
   host_id = ibm_sds_host.sds_host_instance.id
@@ -39,7 +39,7 @@ resource "ibm_sds_volume_mapping" "sds_vm_1" {
 
 // Provision sds_volume_mapping resource instance
 resource "ibm_sds_volume_mapping" "sds_vm_2" {
-
+  sds_endpoint = var.sds_endpoint
   depends_on = [time_sleep.wait_5_seconds]
 
   host_id = ibm_sds_host.sds_host_instance.id

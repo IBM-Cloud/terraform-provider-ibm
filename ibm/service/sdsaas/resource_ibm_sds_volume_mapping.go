@@ -15,7 +15,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
@@ -214,7 +213,8 @@ func ResourceIBMSdsVolumeMappingValidator() *validate.ResourceValidator {
 }
 
 func resourceIBMSdsVolumeMappingCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	sdsaasClient, err := meta.(conns.ClientSession).SdsaasV1()
+	endpoint := d.Get("sds_endpoint").(string)
+	sdsaasClient, err := getSDSConfigClient(meta, endpoint)
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_sds_volume_mapping", "update", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
@@ -243,7 +243,8 @@ func resourceIBMSdsVolumeMappingCreate(context context.Context, d *schema.Resour
 }
 
 func resourceIBMSdsVolumeMappingRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	sdsaasClient, err := meta.(conns.ClientSession).SdsaasV1()
+	endpoint := d.Get("sds_endpoint").(string)
+	sdsaasClient, err := getSDSConfigClient(meta, endpoint)
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_sds_volume_mapping", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
@@ -346,11 +347,8 @@ func resourceIBMSdsVolumeMappingRead(context context.Context, d *schema.Resource
 }
 
 func resourceIBMSdsVolumeMappingUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-
-	log.Printf("[TRACE]\n%s", "In the update")
-	fmt.Println("[TRACE] ", d)
-
-	sdsaasClient, err := meta.(conns.ClientSession).SdsaasV1()
+	endpoint := d.Get("sds_endpoint").(string)
+	sdsaasClient, err := getSDSConfigClient(meta, endpoint)
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_sds_volume_mapping", "update", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
@@ -371,13 +369,6 @@ func resourceIBMSdsVolumeMappingUpdate(context context.Context, d *schema.Resour
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_sds_volume_mapping", "update", "parse-volume").GetDiag()
 	}
 	hostMappingCreateOptions.SetVolume(volumeModel)
-	///////////////////////////////////////////////////////
-	// This section has been manually added. It will need to be added again after generation
-	// volume := sdsaasv1.VolumeIdentity{
-	// 	ID: core.StringPtr(d.Get("volume_id").(string)),
-	// }
-	// hostMappingCreateOptions.SetVolume(&volume)
-	///////////////////////////////////////////////////////
 
 	hasChange := false
 
@@ -408,7 +399,8 @@ func resourceIBMSdsVolumeMappingUpdate(context context.Context, d *schema.Resour
 }
 
 func resourceIBMSdsVolumeMappingDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	sdsaasClient, err := meta.(conns.ClientSession).SdsaasV1()
+	endpoint := d.Get("sds_endpoint").(string)
+	sdsaasClient, err := getSDSConfigClient(meta, endpoint)
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_sds_volume_mapping", "delete", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())

@@ -268,6 +268,16 @@ func ResourceIBMSdsVolume() *schema.Resource {
 	}
 }
 
+func getSDSConfigClient(meta interface{}, endpoint string) (*sdsaasv1.SdsaasV1, error) {
+	sdsconfigClient, err := meta.(conns.ClientSession).SdsaasV1()
+	if err != nil {
+		return nil, err
+	}
+	url := conns.EnvFallBack([]string{"IBMCLOUD_SDS_ENDPOINT"}, endpoint)
+	sdsconfigClient.Service.Options.URL = url
+	return sdsconfigClient, nil
+}
+
 func ResourceIBMSdsVolumeValidator() *validate.ResourceValidator {
 	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
@@ -295,7 +305,8 @@ func ResourceIBMSdsVolumeValidator() *validate.ResourceValidator {
 }
 
 func resourceIBMSdsVolumeCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	sdsaasClient, err := meta.(conns.ClientSession).SdsaasV1()
+	endpoint := d.Get("sds_endpoint").(string)
+	sdsaasClient, err := getSDSConfigClient(meta, endpoint)
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_sds_volume", "create", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
@@ -322,7 +333,8 @@ func resourceIBMSdsVolumeCreate(context context.Context, d *schema.ResourceData,
 }
 
 func resourceIBMSdsVolumeRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	sdsaasClient, err := meta.(conns.ClientSession).SdsaasV1()
+	endpoint := d.Get("sds_endpoint").(string)
+	sdsaasClient, err := getSDSConfigClient(meta, endpoint)
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_sds_volume", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
@@ -411,7 +423,8 @@ func resourceIBMSdsVolumeRead(context context.Context, d *schema.ResourceData, m
 }
 
 func resourceIBMSdsVolumeUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	sdsaasClient, err := meta.(conns.ClientSession).SdsaasV1()
+	endpoint := d.Get("sds_endpoint").(string)
+	sdsaasClient, err := getSDSConfigClient(meta, endpoint)
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_sds_volume", "update", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
@@ -454,7 +467,8 @@ func resourceIBMSdsVolumeUpdate(context context.Context, d *schema.ResourceData,
 }
 
 func resourceIBMSdsVolumeDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	sdsaasClient, err := meta.(conns.ClientSession).SdsaasV1()
+	endpoint := d.Get("sds_endpoint").(string)
+	sdsaasClient, err := getSDSConfigClient(meta, endpoint)
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_sds_volume", "delete", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
