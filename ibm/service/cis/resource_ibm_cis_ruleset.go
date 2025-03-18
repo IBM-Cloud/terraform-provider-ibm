@@ -326,7 +326,7 @@ func ResourceIBMCISRulesetValidator() *validate.ResourceValidator {
 func ResourceIBMCISRulesetCreate(d *schema.ResourceData, meta interface{}) error {
 	// check if it is a new resource, if true then return error that user need to import it first
 	if d.IsNewResource() {
-		return fmt.Errorf("[ERROR] You can not create a new resource. Please import the resource first. Check documentation for import usage.")
+		return fmt.Errorf("[ERROR] You can not create a new resource. Please import the resource first. Check documentation for import usage")
 	}
 	return nil
 }
@@ -488,7 +488,6 @@ func expandCISRules(obj interface{}) []rulesetsv1.RuleCreate {
 			var err error
 			position, err = expandCISRulesetsRulesPositions(ruleObj[CISRulesetsRulePosition])
 			if err != nil {
-				// TODO : Check whether to return empty ruleset or finalResponse
 				fmt.Printf("[ERROR] Error while expanding the CIS Rulesets Rule Position %s", err)
 				return []rulesetsv1.RuleCreate{}
 			}
@@ -545,7 +544,7 @@ func expandCISRulesetsRulesPositions(obj interface{}) (rulesetsv1.Position, erro
 func expandCISRulesetsRulesActionParameters(obj interface{}) rulesetsv1.ActionParameters {
 
 	actionParameterRespObj := rulesetsv1.ActionParameters{}
-	// This was failing because of index out of range, hence ading check here.
+	// return empty object if action parameter is not provided.
 	if len(obj.(*schema.Set).List()) == 0 {
 		return actionParameterRespObj
 	}

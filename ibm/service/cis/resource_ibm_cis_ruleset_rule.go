@@ -325,9 +325,45 @@ func ResourceIBMCISRulesetRuleCreate(d *schema.ResourceData, meta interface{}) e
 			return fmt.Errorf("[ERROR] Error while creating the zone Rule %s", resp)
 		}
 		len_rules := len(result.Result.Rules)
-		opt.SetID(*result.Result.Rules[len_rules-1].ID)
 
-		d.SetId(dataSourceCISRulesetsRuleCheckID(d, *result.Result.Rules[len_rules-1].ID))
+		// When creating a rule response is resulted as list of rules.
+		// To get the index we have to check if index,after or before is provided by the user.
+		// If not provided then we will take the last rule from the list as the new rule is added at the end.
+
+		rule_id := ""
+		if len(rulesObject[CISRulesetsRulePosition].(*schema.Set).List()) != 0 {
+			response := rulesObject[CISRulesetsRulePosition].(*schema.Set).List()[0].(map[string]interface{})
+			before := response[CISRulesetsRulePositionBefore].(string)
+			after := response[CISRulesetsRulePositionAfter].(string)
+			index := int64(response[CISRulesetsRulePositionIndex].(int))
+
+			if after != "" {
+				for i, rule := range result.Result.Rules {
+					if *rule.ID == after {
+						opt.SetID(*result.Result.Rules[i+1].ID)
+						rule_id = *result.Result.Rules[i+1].ID
+						break
+					}
+				}
+			} else if before != "" {
+				for i, rule := range result.Result.Rules {
+					if *rule.ID == before {
+						opt.SetID(*result.Result.Rules[i-1].ID)
+						rule_id = *result.Result.Rules[i-1].ID
+						break
+					}
+				}
+			} else if index != 0 {
+				opt.SetID(*result.Result.Rules[index-1].ID)
+				rule_id = *result.Result.Rules[index-1].ID
+			}
+
+		} else {
+			opt.SetID(*result.Result.Rules[len_rules-1].ID)
+			rule_id = *result.Result.Rules[len_rules-1].ID
+		}
+
+		d.SetId(dataSourceCISRulesetsRuleCheckID(d, rule_id))
 
 	} else {
 		opt := sess.NewCreateInstanceRulesetRuleOptions(rulesetId)
@@ -381,7 +417,7 @@ func ResourceIBMCISRulesetRuleUpdate(d *schema.ResourceData, meta interface{}) e
 		return fmt.Errorf("[ERROR] Error while getting the CisRulesetsSession %s", err)
 	}
 
-	ruleId, rulesetId, zoneId, crn, err := flex.ConvertTfToCisFourVar(d.Id())
+	ruleId, rulesetId, zoneId, crn, _ := flex.ConvertTfToCisFourVar(d.Id())
 	sess.Crn = core.StringPtr(crn)
 
 	if zoneId != "" {
@@ -400,8 +436,8 @@ func ResourceIBMCISRulesetRuleUpdate(d *schema.ResourceData, meta interface{}) e
 		opt.SetEnabled(rulesetsRuleObject[CISRulesetsRuleActionEnabled].(bool))
 		opt.SetExpression(rulesetsRuleObject[CISRulesetsRuleExpression].(string))
 		opt.SetRef(rulesetsRuleObject[CISRulesetsRuleRef].(string))
-		position, err := expandCISRulesetsRulesPositions(rulesetsRuleObject[CISRulesetsRulePosition])
-		if err != nil {
+		position, positionError := expandCISRulesetsRulesPositions(rulesetsRuleObject[CISRulesetsRulePosition])
+		if positionError != nil {
 			return fmt.Errorf("[ERROR] Error while updating the zone Ruleset %s", err)
 		}
 		opt.SetPosition(&position)
@@ -410,7 +446,7 @@ func ResourceIBMCISRulesetRuleUpdate(d *schema.ResourceData, meta interface{}) e
 		opt.SetRuleID(ruleId)
 		opt.SetID(ruleId)
 
-		_, _, err = sess.UpdateZoneRulesetRule(opt)
+		_, _, err := sess.UpdateZoneRulesetRule(opt)
 
 		if err != nil {
 			return fmt.Errorf("[ERROR] Error while updating the zone Ruleset %s", err)
