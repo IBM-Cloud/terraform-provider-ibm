@@ -75,7 +75,7 @@ func ResourceIbmSmIamCredentialsConfiguration() *schema.Resource {
 }
 
 func resourceIbmSmIamCredentialsConfigurationCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
+	secretsManagerClient, endpointsFile, err := getSecretsManagerSession(meta.(conns.ClientSession))
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, "", IAMCredentialsConfigResourceName, "create")
 		return tfErr.GetDiag()
@@ -83,7 +83,7 @@ func resourceIbmSmIamCredentialsConfigurationCreate(context context.Context, d *
 
 	region := getRegion(secretsManagerClient, d)
 	instanceId := d.Get("instance_id").(string)
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d), endpointsFile)
 
 	createConfigurationOptions := &secretsmanagerv2.CreateConfigurationOptions{}
 
@@ -108,7 +108,7 @@ func resourceIbmSmIamCredentialsConfigurationCreate(context context.Context, d *
 }
 
 func resourceIbmSmIamCredentialsConfigurationRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
+	secretsManagerClient, endpointsFile, err := getSecretsManagerSession(meta.(conns.ClientSession))
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, "", IAMCredentialsConfigResourceName, "read")
 		return tfErr.GetDiag()
@@ -122,7 +122,7 @@ func resourceIbmSmIamCredentialsConfigurationRead(context context.Context, d *sc
 	region := id[0]
 	instanceId := id[1]
 	configName := id[2]
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d), endpointsFile)
 
 	getConfigurationOptions := &secretsmanagerv2.GetConfigurationOptions{}
 
@@ -181,7 +181,7 @@ func resourceIbmSmIamCredentialsConfigurationRead(context context.Context, d *sc
 }
 
 func resourceIbmSmIamCredentialsConfigurationUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
+	secretsManagerClient, endpointsFile, err := getSecretsManagerSession(meta.(conns.ClientSession))
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, "", IAMCredentialsConfigResourceName, "update")
 		return tfErr.GetDiag()
@@ -191,7 +191,7 @@ func resourceIbmSmIamCredentialsConfigurationUpdate(context context.Context, d *
 	region := id[0]
 	instanceId := id[1]
 	configName := id[2]
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d), endpointsFile)
 
 	updateConfigurationOptions := &secretsmanagerv2.UpdateConfigurationOptions{}
 
@@ -226,7 +226,7 @@ func resourceIbmSmIamCredentialsConfigurationUpdate(context context.Context, d *
 }
 
 func resourceIbmSmIamCredentialsConfigurationDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
+	secretsManagerClient, endpointsFile, err := getSecretsManagerSession(meta.(conns.ClientSession))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -235,7 +235,7 @@ func resourceIbmSmIamCredentialsConfigurationDelete(context context.Context, d *
 	region := id[0]
 	instanceId := id[1]
 	configName := id[2]
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d), endpointsFile)
 
 	deleteConfigurationOptions := &secretsmanagerv2.DeleteConfigurationOptions{}
 
