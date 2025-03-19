@@ -43,6 +43,11 @@ func DataSourceIBMPISAPProfiles() *schema.Resource {
 							Description: "Amount of cores.",
 							Type:        schema.TypeInt,
 						},
+						Attr_DefaultSystem: {
+							Computed:    true,
+							Description: "System to use if not provided",
+							Type:        schema.TypeString,
+						},
 						Attr_FullSystemProfile: {
 							Computed:    true,
 							Description: "Requires full system for deployment.",
@@ -112,6 +117,7 @@ func dataSourceIBMPISAPProfilesRead(ctx context.Context, d *schema.ResourceData,
 		profile := map[string]interface{}{
 			Attr_Certified:         *sapProfile.Certified,
 			Attr_Cores:             *sapProfile.Cores,
+			Attr_DefaultSystem:     sapProfile.DefaultSystem,
 			Attr_FullSystemProfile: sapProfile.FullSystemProfile,
 			Attr_Memory:            *sapProfile.Memory,
 			Attr_ProfileID:         *sapProfile.ProfileID,

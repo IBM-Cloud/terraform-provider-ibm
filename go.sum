@@ -95,8 +95,8 @@ github.com/IBM-Cloud/bluemix-go v0.0.0-20241117121028-a3be206688b3/go.mod h1:/7h
 github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20240725064144-454a2ae23113 h1:f2Erqfea1dKpaTFagTJM6W/wnD3JGq/Vn9URh8nuRwk=
 github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20240725064144-454a2ae23113/go.mod h1:xUQL9SGAjoZFd4GNjrjjtEpjpkgU7RFXRyHesbKTjiY=
 github.com/IBM-Cloud/ibm-cloud-cli-sdk v0.5.3/go.mod h1:RiUvKuHKTBmBApDMUQzBL14pQUGKcx/IioKQPIcRQjs=
-github.com/IBM-Cloud/power-go-client v1.10.0 h1:yBUHWwvNBmLkWpbZJQJEXoxBa1Dm+eJgMSbk9ljmXUU=
-github.com/IBM-Cloud/power-go-client v1.10.0/go.mod h1:UDyXeIKEp6r7yWUXYu3r0ZnFSlNZ2YeQTHwM2Tmlgv0=
+github.com/IBM-Cloud/power-go-client v1.11.0 h1:4xlYXF2+S3s6Crb0D2+d5c1kb6gUE7eowMXLB7Q6cWY=
+github.com/IBM-Cloud/power-go-client v1.11.0/go.mod h1:UDyXeIKEp6r7yWUXYu3r0ZnFSlNZ2YeQTHwM2Tmlgv0=
 github.com/IBM-Cloud/softlayer-go v1.0.5-tf h1:koUAyF9b6X78lLLruGYPSOmrfY2YcGYKOj/Ug9nbKNw=
 github.com/IBM-Cloud/softlayer-go v1.0.5-tf/go.mod h1:6HepcfAXROz0Rf63krk5hPZyHT6qyx2MNvYyHof7ik4=
 github.com/IBM/apigateway-go-sdk v0.0.0-20210714141226-a5d5d49caaca h1:crniVcf+YcmgF03NmmfonXwSQ73oJF+IohFYBwknMxs=
