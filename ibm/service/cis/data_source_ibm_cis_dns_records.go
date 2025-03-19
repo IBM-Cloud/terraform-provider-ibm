@@ -206,22 +206,41 @@ func dataSourceIBMCISDNSRecordsRead(d *schema.ResourceData, meta interface{}) er
 		record := map[string]interface{}{}
 		record["id"] = flex.ConvertCisToTfThreeVar(*instance.ID, zoneID, crn)
 		record[cisDNSRecordID] = *instance.ID
-		record[cisZoneName] = *instance.ZoneName
-		record[cisDNSRecordCreatedOn] = *instance.CreatedOn
-		record[cisDNSRecordModifiedOn] = *instance.ModifiedOn
-		record[cisDNSRecordName] = *instance.Name
-		record[cisDNSRecordType] = *instance.Type
+		if instance.ID != nil {
+			record[cisDNSRecordID] = *instance.ID
+		}
+		if instance.ZoneName != nil {
+			record[cisZoneName] = *instance.ZoneName
+		}
+		if instance.CreatedOn != nil {
+			record[cisDNSRecordCreatedOn] = *instance.CreatedOn
+		}
+		if instance.ModifiedOn != nil {
+			record[cisDNSRecordModifiedOn] = *instance.ModifiedOn
+		}
+		if instance.Name != nil {
+			record[cisDNSRecordName] = *instance.Name
+		}
+		if instance.Type != nil {
+			record[cisDNSRecordType] = *instance.Type
+		}
 		if instance.Priority != nil {
 			record[cisDNSRecordPriority] = *instance.Priority
 		}
 		if instance.Content != nil {
 			record[cisDNSRecordContent] = *instance.Content
 		}
-		record[cisDNSRecordProxiable] = *instance.Proxiable
-		record[cisDNSRecordProxied] = *instance.Proxied
-		record[cisDNSRecordTTL] = *instance.TTL
+		if instance.Proxiable != nil {
+			record[cisDNSRecordProxiable] = *instance.Proxiable
+		}
+		if instance.Proxied != nil {
+			record[cisDNSRecordProxied] = *instance.Proxied
+		}
+		if instance.TTL != nil {
+			record[cisDNSRecordTTL] = *instance.TTL
+		}
 		if instance.Data != nil {
-			d.Set(cisDNSRecordData, flattenData(instance.Data, *instance.ZoneName))
+			d.Set(cisDNSRecordData, flattenData(instance.Data, instance.ZoneName))
 		}
 
 		records = append(records, record)
