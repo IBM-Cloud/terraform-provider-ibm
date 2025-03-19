@@ -1,3 +1,8 @@
+# 1.76.2 (Mar 20, 2025)
+* removed validation of location for sch resources and ds ([6063](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6063))
+* fix(cis): don't panic when ZoneID/ZoneName not set ([6070](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6070))
+* Support trusted token for ICD Services. Use v2 resource controller library ([6012](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6012))
+
 # 1.76.1 (Mar 07, 2025)
 BugFixes
 * fix(identity) rolling back id to profile_id ([6039](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6039))
