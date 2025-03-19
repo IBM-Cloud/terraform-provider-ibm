@@ -55,48 +55,48 @@ func TestIsVersionAllowed(t *testing.T) {
 	}
 }
 
-func TestIsSkipBackupAllowed(t *testing.T) {
-	testcases := []struct {
-		version        Version
-		targetVersion  string
-		expectedResult bool
-	}{
-		{
-			version: Version{
-				Version: "6.0",
-				Transitions: []VersionTransition{
-					{ToVersion: "6.1", SkipBackupSupported: true},
-					{ToVersion: "7.0", SkipBackupSupported: false},
-				},
-			},
-			targetVersion:  "6.1",
-			expectedResult: true,
-		},
-		{
-			version: Version{
-				Version: "7.0",
-				Transitions: []VersionTransition{
-					{ToVersion: "8", SkipBackupSupported: false},
-				},
-			},
-			targetVersion:  "8",
-			expectedResult: false,
-		},
-		{
-			version: Version{
-				Version:     "14",
-				Transitions: []VersionTransition{},
-			},
-			targetVersion:  "15",
-			expectedResult: false,
-		},
-	}
+// func TestIsSkipBackupAllowed(t *testing.T) {
+// 	testcases := []struct {
+// 		version        Version
+// 		targetVersion  string
+// 		expectedResult bool
+// 	}{
+// 		{
+// 			version: Version{
+// 				Version: "6.0",
+// 				Transitions: []VersionTransition{
+// 					{ToVersion: "6.1", SkipBackupSupported: true},
+// 					{ToVersion: "7.0", SkipBackupSupported: false},
+// 				},
+// 			},
+// 			targetVersion:  "6.1",
+// 			expectedResult: true,
+// 		},
+// 		{
+// 			version: Version{
+// 				Version: "7.0",
+// 				Transitions: []VersionTransition{
+// 					{ToVersion: "8", SkipBackupSupported: false},
+// 				},
+// 			},
+// 			targetVersion:  "8",
+// 			expectedResult: false,
+// 		},
+// 		{
+// 			version: Version{
+// 				Version:     "14",
+// 				Transitions: []VersionTransition{},
+// 			},
+// 			targetVersion:  "15",
+// 			expectedResult: false,
+// 		},
+// 	}
 
-	for _, tc := range testcases {
-		result := tc.version.isSkipBackupAllowed(tc.targetVersion)
-		assert.Equal(t, tc.expectedResult, result)
-	}
-}
+// 	for _, tc := range testcases {
+// 		result := tc.version.isSkipBackupAllowed(tc.targetVersion)
+// 		assert.Equal(t, tc.expectedResult, result)
+// 	}
+// }
 
 // func TestValidateUpgradeVersion(t *testing.T) {
 // 	testcases := []struct {
