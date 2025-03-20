@@ -17,7 +17,6 @@ import (
 */
 
 func getDeploymentCapability(capabilityId string, deploymentId string, platform string, location string, meta interface{}) (*clouddatabasesv5.Capability, error) {
-
 	cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
 	if err != nil {
 		return nil, err

@@ -248,7 +248,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				Optional:    true,
 			},
 			"version_upgrade_skip_backup": {
-				Description: "Option to skip the backup when upgrading the version of your db. Default is false",
+				Description: "Option to skip the backup when upgrading the version of your db. Skipping the backup means that your deployment becomes available more quickly, but there is no immediate backup available. Default is false",
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     false,
@@ -2204,40 +2204,35 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 		}
 	}
 
-	/*
-		if d.HasChange("version") {
-			//TODO LORNA: hook this up to new endpoint
-		   	version := d.Get("version").(string)
-		   	skipBackup := d.Get("version_upgrade_skip_backup").(bool)
+	if d.HasChange("version") {
+		//TODO LORNA: hook this up to new endpoint
+		version := d.Get("version").(string)
+		skipBackup := d.Get("version_upgrade_skip_backup").(bool)
 
-			var expirationDatetime string
-		   	const isTimeoutMoreThan24Hours = isMoreThan24Hours(d.Timeout(schema.TimeoutUpdate))
+		timeoutHelper := TimeoutHelper{Now: time.Now()}
+		expirationDatetime := timeoutHelper.calculateExpirationDatetime(d.Timeout(schema.TimeoutUpdate))
+		log.Printf("[WARN] Lorna testing %s\n%v\n%s ", version, skipBackup, expirationDatetime)
+		// versionUpgradeOptions := &clouddatabasesv5.SetDatabaseInplaceVersionUpgradeOptions{
+		// 	ID: &instanceID,
+		//  Version: version,
+		// 	SkipBackup: skipBackup,
+		// 	ExpirationDatetime: expirationDatetime,
+		// }
 
-		   	if(isTimeoutMoreThan24Hours){
-		   		expirationDatetime = now.Add(24 * time.Hour).String()
-		   	} else{
-		   	 	expirationDatetime = millisecondsToISOTimestamp(d.Timeout(schema.TimeoutUpdate))
-		   	}
+		// versionUpgradeResponse, response, err := cloudDatabasesClient.SetDatabaseInplaceVersionUpgrade(versionOptions)
 
-		   	versionOptions := &clouddatabasesv5.VersionOptions{
-		   		ID: &instanceID,
-		   		Skip_Backup: skipBackup,
-		   	}
+		// if err != nil {
+		// 	return diag.FromErr(fmt.Errorf("[ERROR] Error upgrading version of instance: %s\n%s", err, response))
+		// }
 
-		   	versionResponse, response, err := cloudDatabasesClient.Version(versionOptions)
+		// taskID := *versionUpgradeResponse.Task.ID
+		// _, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
 
-		   	if err != nil {
-		   		return diag.FromErr(fmt.Errorf("[ERROR] Error upgrading version of instance: %s\n%s", err, response))
-		   	}
+		// if err != nil {
+		// 	return diag.FromErr(fmt.Errorf("[ERROR] Error upgrading version: %s", err))
+		// }
+	}
 
-		   	taskID := *versionResponse.Task.ID
-		   	_, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
-
-		   	if err != nil {
-		   		return diag.FromErr(fmt.Errorf("[ERROR] Error upgrading version: %s", err))
-			}
-		}
-	*/
 	return resourceIBMDatabaseInstanceRead(context, d, meta)
 
 }
@@ -2438,11 +2433,11 @@ func waitForDatabaseTaskComplete(taskId string, d *schema.ResourceData, meta int
 			}
 
 			switch *getTaskResponse.Task.Status {
-			case "expired": // TODO do we need this
+			case "expired":
 				return false, fmt.Errorf("[Error] Database Task expired")
 			case "failed":
 				return false, fmt.Errorf("[Error] Database Task failed")
-			case "complete", "": // TODO: Shouldnt this be completed?
+			case "complete", "":
 				return true, nil
 			case "queued", "running":
 				break
@@ -3176,8 +3171,9 @@ func validateRemoteLeaderIDDiff(_ context.Context, diff *schema.ResourceDiff, me
 func validateVersionDiff(_ context.Context, diff *schema.ResourceDiff, meta interface{}) (err error) {
 	instanceID := diff.Id()
 	oldVersion, newVersion := diff.GetChange("version")
-	// In place upgrade validation
+
 	if instanceID != "" && oldVersion != newVersion {
+		// In place upgrade validation
 		skipBackup := diff.Get("version_upgrade_skip_backup").(bool)
 		newVersionStr, _ := newVersion.(string)
 

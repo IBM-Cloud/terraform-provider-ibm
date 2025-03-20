@@ -6,19 +6,22 @@ package database
 import "time"
 
 /*  TODO Move other helper functions here */
-
-func isMoreThan24Hours(milliseconds int64) bool {
-	twentyFourHours := 24 * time.Hour
-	duration := time.Duration(milliseconds) * time.Millisecond
-
-	return duration > twentyFourHours
+type TimeoutHelper struct {
+	Now time.Time
 }
 
-func millisecondsToISOTimestamp(milliseconds int64) string {
-	t := time.UnixMilli(milliseconds)
+func (t *TimeoutHelper) isMoreThan24Hours(duration time.Duration) bool {
+	return duration > 24*time.Hour
+}
 
-	// Format to ISO 8601 Example: 2024-02-27T12:32:03Z
-	isoTimestamp := t.UTC().Format(time.RFC3339)
+func (t *TimeoutHelper) durationToISO8601(duration time.Duration) string {
+	return t.Now.Add(duration).Format(time.RFC3339) // TODO Should it be UTC??
+}
 
-	return isoTimestamp
+func (t *TimeoutHelper) calculateExpirationDatetime(timeoutDuration time.Duration) string {
+	if t.isMoreThan24Hours(timeoutDuration) {
+		return t.durationToISO8601(24 * time.Hour)
+	}
+
+	return t.durationToISO8601(timeoutDuration)
 }

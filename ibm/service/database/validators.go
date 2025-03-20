@@ -30,11 +30,9 @@ type VersionTransition struct {
 	SkipBackupSupported *bool
 }
 
-/* TODO in this function should I just return in-place?
-Make SkipBackupSupported optional
+/* TODO
 How to mock fetch function
 How to test against a branch for go dsk etc
-Should expandVersion only return in-place?
 */
 
 func expandVersion(version clouddatabasesv5.VersionsCapabilityItem) *Version {
@@ -81,9 +79,9 @@ func fetchDeploymentVersion(instanceId string, meta interface{}) *Version {
 	}
 
 	// Expand the first version as there's only one expected
-	expandedVersion := expandVersion(capability.Versions[0])
+	version := expandVersion(capability.Versions[0])
 
-	return expandedVersion
+	return version
 }
 
 func (v *Version) isVersionAllowed(version string) bool {
