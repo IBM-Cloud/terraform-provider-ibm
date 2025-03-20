@@ -489,10 +489,6 @@ func ResourceIBMCISDnsRecordRead(d *schema.ResourceData, meta interface{}) error
 	if result.Result.Type != nil {
 		d.Set(cisDNSRecordType, *result.Result.Type)
 	}
-	d.Set(cisDNSRecordID, *result.Result.ID)
-	if result.Result.ZoneName != nil {
-		d.Set(cisZoneName, *result.Result.ZoneName)
-	}
 	if result.Result.Content != nil {
 		d.Set(cisDNSRecordContent, *result.Result.Content)
 	}

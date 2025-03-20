@@ -224,9 +224,6 @@ func dataSourceIBMCISDNSRecordsRead(d *schema.ResourceData, meta interface{}) er
 		if instance.Type != nil {
 			record[cisDNSRecordType] = *instance.Type
 		}
-		if instance.ZoneName != nil {
-			record[cisZoneName] = *instance.ZoneName
-		}
 		if instance.Priority != nil {
 			record[cisDNSRecordPriority] = *instance.Priority
 		}
