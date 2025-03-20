@@ -25,7 +25,6 @@ Run `terraform destroy` when you don't need these resources.
 ```hcl
 resource "ibm_sds_volume" "sds_volume_instance" {
   sds_endpoint = var.sds_endpoint
-  hostnqnstring = var.sds_volume_hostnqnstring
   capacity = var.sds_volume_capacity
   name = var.sds_volume_name
 }
@@ -37,9 +36,8 @@ resource "ibm_sds_volume" "sds_volume_instance" {
 |------|-------------|------|---------|
 | ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
 | sds_endpoint | IBM Cloud Endpoint | `string` | false |
-| hostnqnstring | The host nqn. | `string` | false |
 | capacity | The capacity of the volume (in gigabytes). | `number` | true |
-| name | The name of the volume. | `string` | false |
+| name | Unique name of the host. | `string` | false |
 
 #### Outputs
 
@@ -47,11 +45,12 @@ resource "ibm_sds_volume" "sds_volume_instance" {
 |------|-------------|
 | bandwidth | The maximum bandwidth (in megabits per second) for the volume. |
 | created_at | The date and time that the volume was created. |
-| hosts | List of host details that volume is mapped to. |
+| href | The URL for this resource. |
 | iops | Iops The maximum I/O operations per second (IOPS) for this volume. |
 | resource_type | The resource type of the volume. |
-| status | The current status of the volume. |
-| status_reasons | Reasons for the current status of the volume. |
+| status | The status of the volume resource. The enumerated values for this property will expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the unexpected property value was encountered. |
+| status_reasons | The reasons for the current status (if any). |
+| volume_mappings | List of volume mappings for this volume. |
 
 ### Resource: ibm_sds_host
 
@@ -60,7 +59,7 @@ resource "ibm_sds_host" "sds_host_instance" {
   sds_endpoint = var.sds_endpoint
   name = var.sds_host_name
   nqn = var.sds_host_nqn
-  volumes = var.sds_host_volumes
+  volume_mappings = var.sds_host_volume_mappings
 }
 ```
 
@@ -70,16 +69,47 @@ resource "ibm_sds_host" "sds_host_instance" {
 |------|-------------|------|---------|
 | ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
 | sds_endpoint | IBM Cloud Endpoint | `string` | false |
-| name | The name for this host. The name must not be used by another host.  If unspecified, the name will be a hyphenated list of randomly-selected words. | `string` | false |
-| nqn | The NQN of the host configured in customer's environment. | `string` | true |
-| volumes | The host-to-volume map. | `list()` | false |
+| name | Unique name of the host. | `string` | false |
+| nqn | The NQN (NVMe Qualified Name) as configured on the initiator (compute/host) accessing the storage. | `string` | true |
+| volume_mappings | The host-to-volume map. | `list()` | false |
 
 #### Outputs
 
 | Name | Description |
 |------|-------------|
-| created_at | The date and time that the host was created. |
+| created_at | The date and time when the resource was created. |
+| href | The URL for this resource. |
 
+
+### Resource: ibm_sds_volume_mapping
+
+```hcl
+resource "ibm_sds_volume_mapping" "sds_volume_mapping_instance" {
+  host_id = ibm_sds_host.sds_host_instance.id
+  volume = var.sds_volume_mapping_volume
+}
+```
+
+#### Inputs
+
+| Name | Description | Type | Required |
+|------|-------------|------|---------|
+| ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
+| host_id | A unique host ID. | `string` | true |
+| volume | The volume reference. | `` | true |
+
+#### Outputs
+
+| Name | Description |
+|------|-------------|
+| status | The status of the volume mapping. The enumerated values for this property will expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the unexpected property value was encountered. |
+| storage_identifier | Storage network and ID information associated with a volume/host mapping. |
+| href | The URL for this resource. |
+| host | Host mapping schema. |
+| subsystem_nqn | The NVMe target subsystem NQN (NVMe Qualified Name) that can be used for doing NVMe connect by the initiator. |
+| namespace | The NVMe namespace properties for a given volume mapping. |
+| gateways | List of NVMe gateways. |
+| volume_mapping_id | Unique identifier of the mapping. |
 
 ## Assumptions
 
