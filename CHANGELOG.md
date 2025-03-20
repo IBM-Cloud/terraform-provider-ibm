@@ -1,3 +1,42 @@
+# 1.77.0-beta0 (Mar 19, 2025)
+* Support for IAM 
+    - **Datasources**
+        - ibm_iam_account_settings_external_interaction
+    - **Resources**
+        - ibm_iam_account_settings_external_interaction
+* Support for Event Notification 
+    - **Datasources**
+        - ibm_en_destination_event_streams
+        - ibm_en_event_streams_template
+        - ibm_en_pagerduty_template
+        - ibm_en_subscription_event_streams
+    - **Resources**
+        - ibm_en_destination_event_streams
+        - ibm_en_event_streams_template
+        - ibm_en_pagerduty_template
+        - ibm_en_subscription_event_streams
+
+
+Enhancements
+* chore: update TKE SDK reference ([6048](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6048))
+* Add nsg protocol check ([6030](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6030))
+* Support trusted token for ICD Services. Use v2 resource controller library ([6012](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6012))
+* add crn to group response ([6046](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6046))
+* Added support for id in is_ssh_key data source ([6054](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6054))
+* feat(lb): support for lb pool failover policy ([6061](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6061))
+* Add crn to IAM group response ([6046](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6046))
+* Added support for id in is_ssh_key data source ([6054](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6054))
+
+Bug Fixes
+* fix crashing provider due to Code Engine type casting ([6058](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6058))
+* fix: adding ForceNew to IBM Scope and bumping to new scc-go-sdk version ([6051](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6051))
+* removed validation of location for sch resources and ds ([6063](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6063))
+* Added retry logic for is_bare_metal_server 409 ([6064](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6064))
+* fix: update docs for cm account resource ([6038](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6038))
+* fix(cis): don't panic when ZoneID/ZoneName not set ([6070](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6070))
+* enhanced the is-geography datasources errors ([6076](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6076))
+
+
 # 1.76.1 (Mar 07, 2025)
 BugFixes
 * fix(identity) rolling back id to profile_id ([6039](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6039))

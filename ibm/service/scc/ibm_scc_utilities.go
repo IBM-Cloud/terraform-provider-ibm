@@ -524,3 +524,22 @@ func ruleAdditionalTargetAttributeToMap(model *securityandcompliancecenterapiv3.
 	}
 	return modelMap, nil
 }
+
+// scopePropertiesToMap returns a map[string]interface{}
+//
+// This function is used for any scc resource/datasource that
+// need to read scope.properties
+func scopePropertiesToMap(model securityandcompliancecenterapiv3.ScopePropertyIntf) (map[string]interface{}, error) {
+	if prop, ok := model.(*securityandcompliancecenterapiv3.ScopeProperty); ok && prop.Name != nil && prop.Value != nil {
+		modelMap := make(map[string]interface{})
+		modelMap["name"] = prop.Name
+		if val, ok := prop.Value.(string); !ok {
+			modelMap["value"] = fmt.Sprintf("%v", val)
+		} else {
+			modelMap["value"] = prop.Value
+		}
+		return modelMap, nil
+	} else {
+		return nil, fmt.Errorf("Unrecognized securityandcompliancecenterv3.ScopePropertyIntf subtype encountered")
+	}
+}

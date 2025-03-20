@@ -153,6 +153,32 @@ func DataSourceIBMISLbProfiles() *schema.Resource {
 							Computed:    true,
 							Description: "The UDP support type for a load balancer with this profile",
 						},
+						"failsafe_policy_actions": &schema.Schema{
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"default": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The default failsafe policy action for this profile.",
+									},
+									"type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The type for this profile field.",
+									},
+									"values": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "The supported failsafe policy actions.",
+										Elem: &schema.Schema{
+											Type: schema.TypeString,
+										},
+									},
+								},
+							},
+						},
 					},
 				},
 			},
@@ -203,6 +229,11 @@ func dataSourceIBMISLbProfilesRead(d *schema.ResourceData, meta interface{}) err
 			"href":   *profileCollector.Href,
 			"family": *profileCollector.Family,
 		}
+		failsafePolicyActionsMap, err := dataSourceIBMIsLbProfilesLoadBalancerProfileFailsafePolicyActionsToMap(profileCollector.FailsafePolicyActions)
+		if err != nil {
+			return err
+		}
+		l["failsafe_policy_actions"] = []map[string]interface{}{failsafePolicyActionsMap}
 		if profileCollector.UDPSupported != nil {
 			udpSupport := profileCollector.UDPSupported
 			switch reflect.TypeOf(udpSupport).String() {
@@ -322,4 +353,41 @@ func dataSourceIBMISLbProfilesRead(d *schema.ResourceData, meta interface{}) err
 // dataSourceIBMISLbProfilesID returns a reasonable ID for a profileCollector list.
 func dataSourceIBMISLbProfilesID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
+}
+
+func dataSourceIBMIsLbProfilesLoadBalancerProfileFailsafePolicyActionsToMap(model vpcv1.LoadBalancerProfileFailsafePolicyActionsIntf) (map[string]interface{}, error) {
+	if _, ok := model.(*vpcv1.LoadBalancerProfileFailsafePolicyActionsEnum); ok {
+		return dataSourceIBMIsLbProfilesLoadBalancerProfileFailsafePolicyActionsEnumToMap(model.(*vpcv1.LoadBalancerProfileFailsafePolicyActionsEnum))
+	} else if _, ok := model.(*vpcv1.LoadBalancerProfileFailsafePolicyActionsDependent); ok {
+		return dataSourceIBMIsLbProfilesLoadBalancerProfileFailsafePolicyActionsDependentToMap(model.(*vpcv1.LoadBalancerProfileFailsafePolicyActionsDependent))
+	} else if _, ok := model.(*vpcv1.LoadBalancerProfileFailsafePolicyActions); ok {
+		modelMap := make(map[string]interface{})
+		model := model.(*vpcv1.LoadBalancerProfileFailsafePolicyActions)
+		if model.Default != nil {
+			modelMap["default"] = *model.Default
+		}
+		if model.Type != nil {
+			modelMap["type"] = *model.Type
+		}
+		if model.Values != nil {
+			modelMap["values"] = model.Values
+		}
+		return modelMap, nil
+	} else {
+		return nil, fmt.Errorf("Unrecognized vpcv1.LoadBalancerProfileFailsafePolicyActionsIntf subtype encountered")
+	}
+}
+
+func dataSourceIBMIsLbProfilesLoadBalancerProfileFailsafePolicyActionsEnumToMap(model *vpcv1.LoadBalancerProfileFailsafePolicyActionsEnum) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["default"] = *model.Default
+	modelMap["type"] = *model.Type
+	modelMap["values"] = model.Values
+	return modelMap, nil
+}
+
+func dataSourceIBMIsLbProfilesLoadBalancerProfileFailsafePolicyActionsDependentToMap(model *vpcv1.LoadBalancerProfileFailsafePolicyActionsDependent) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["type"] = *model.Type
+	return modelMap, nil
 }
