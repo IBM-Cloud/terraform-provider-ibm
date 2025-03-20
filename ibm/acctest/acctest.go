@@ -949,8 +949,8 @@ func init() {
 
 	IsBareMetalServerImage = os.Getenv("IS_BARE_METAL_SERVER_IMAGE")
 	if IsBareMetalServerImage == "" {
-		IsBareMetalServerImage = "r006-2d1f36b0-df65-4570-82eb-df7ae5f778b1" // for next gen infrastructure
-		fmt.Println("[INFO] Set the environment variable IsBareMetalServerImage for testing ibm_is_bare_metal_server resource else it is set to default value 'r006-2d1f36b0-df65-4570-82eb-df7ae5f778b1'")
+		IsBareMetalServerImage = "r006-55a03390-3245-450f-82c4-0cb47f632b59" // for next gen infrastructure
+		fmt.Println("[INFO] Set the environment variable IsBareMetalServerImage for testing ibm_is_bare_metal_server resource else it is set to default value 'r006-55a03390-3245-450f-82c4-0cb47f632b59'")
 	}
 
 	IsBareMetalServerImage2 = os.Getenv("IS_BARE_METAL_SERVER_IMAGE2")

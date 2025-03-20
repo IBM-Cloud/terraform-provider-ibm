@@ -135,7 +135,7 @@ You can specify the following arguments for this resource.
   Nested schema for **scope**:
 	* `environment` - (String) The environment that relates to this scope.
 	  * Constraints: The maximum length is `64` characters. The minimum length is `2` characters. The value must match regular expression `/[A-Za-z0-9]+/`.
-	* `properties` - (List) The properties supported for scoping by this environment.
+	* `properties` - (List, Forces new resource) The properties supported for scoping by this environment.
 	  * Constraints: The maximum length is `8` items. The minimum length is `0` items.
     Nested schema for **properties**:
       ~> NOTE: Defining the `scope_type` value must be either `account`, `account.resource_group`, `enterprise`, `enterprise.account` and `enterprise.account_group`."

@@ -489,6 +489,10 @@ func ResourceIBMCISDnsRecordRead(d *schema.ResourceData, meta interface{}) error
 	if result.Result.Type != nil {
 		d.Set(cisDNSRecordType, *result.Result.Type)
 	}
+	d.Set(cisDNSRecordID, *result.Result.ID)
+	if result.Result.ZoneName != nil {
+		d.Set(cisZoneName, *result.Result.ZoneName)
+	}
 	if result.Result.Content != nil {
 		d.Set(cisDNSRecordContent, *result.Result.Content)
 	}
@@ -505,7 +509,11 @@ func ResourceIBMCISDnsRecordRead(d *schema.ResourceData, meta interface{}) error
 		d.Set(cisDNSRecordPriority, *result.Result.Priority)
 	}
 	if result.Result.Data != nil {
-		d.Set(cisDNSRecordData, flattenData(result.Result.Data, result.Result.ZoneName))
+		zoneName := ""
+		if result.Result.ZoneName != nil {
+			zoneName = *result.Result.ZoneName
+		}
+		d.Set(cisDNSRecordData, flattenData(result.Result.Data, zoneName))
 	}
 	return nil
 }
@@ -919,15 +927,15 @@ func suppressDomainIDDiff(k, old, new string, d *schema.ResourceData) bool {
 	// TF concantenates domain_id with cis_id. So just check when <domain_id> is passed as input it is same as domai_id in the combination that is Set.
 	return strings.Split(new, ":")[0] == old
 }
-func flattenData(inVal interface{}, zone *string) map[string]string {
+func flattenData(inVal interface{}, zone string) map[string]string {
 	outVal := make(map[string]string)
 	if inVal == nil {
 		return outVal
 	}
 	for k, v := range inVal.(map[string]interface{}) {
 		strValue := fmt.Sprintf("%v", v)
-		if k == "name" && zone != nil {
-			strValue = strings.Replace(strValue, "."+*zone, "", -1)
+		if k == "name" && zone != "" {
+			strValue = strings.Replace(strValue, "."+zone, "", -1)
 		}
 		outVal[k] = strValue
 

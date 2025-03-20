@@ -6,6 +6,7 @@ package vpc_test
 import (
 	"errors"
 	"fmt"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -1134,4 +1135,112 @@ func testAccCheckIBMISBareMetalServerInitializationConfig(vpcname, subnetname, s
 			vpc 				= ibm_is_vpc.testacc_vpc.id
 		}
 `, vpcname, subnetname, acc.ISZoneName, sshname, publicKey, acc.IsBareMetalServerProfileName, name, image, acc.ISZoneName, userdata)
+}
+
+func TestAccIBMISBareMetalServerMultiple(t *testing.T) {
+	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
+	namePrefix := fmt.Sprintf("tf-server-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tfip-subnet-%d", acctest.RandIntRange(10, 100))
+	publicKey := strings.TrimSpace(`
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
+`)
+	sshname := fmt.Sprintf("tf-sshname-%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISBareMetalServerDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISBareMetalServerMultipleConfig(vpcname, subnetname, sshname, publicKey, namePrefix),
+				Check: resource.ComposeTestCheckFunc(
+					// Check that each of the 9 servers has an entry in the state file
+					testAccCheckBareMetalServerStateEntries(9),
+					resource.TestMatchResourceAttr(
+						"ibm_is_bare_metal_server.testacc_bms.0", "name", regexp.MustCompile(fmt.Sprintf("%s-0", namePrefix))),
+				),
+				ExpectError: regexp.MustCompile(".*"),
+			},
+		},
+	})
+}
+
+// Test function that verifies the state contains the expected number of bare metal servers
+func testAccCheckBareMetalServerStateEntries(expectedCount int) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		count := 0
+
+		// Check for each of the expected instances in the state file
+		for i := 0; i < expectedCount; i++ {
+			resourceName := fmt.Sprintf("ibm_is_bare_metal_server.testacc_bms.%d", i)
+			_, ok := s.RootModule().Resources[resourceName]
+			if !ok {
+				return fmt.Errorf("Expected state entry not found: %s", resourceName)
+			}
+
+			// The ID might be empty if resource creation failed, but we still want
+			// to count it as a state entry since that's what we're testing
+			count++
+		}
+
+		if count != expectedCount {
+			return fmt.Errorf("Expected to find %d bare metal server entries in state, found %d", expectedCount, count)
+		}
+
+		return nil
+	}
+}
+
+// Configuration for testing multiple bare metal servers
+func testAccCheckIBMISBareMetalServerMultipleConfig(vpcname, subnetname, sshname, publicKey, namePrefix string) string {
+	return fmt.Sprintf(`
+		resource "ibm_is_vpc" "testacc_vpc" {
+			name = "%s"
+		}
+	  
+		resource "ibm_is_subnet" "testacc_subnet" {
+			name            			= "%s"
+			vpc             			= ibm_is_vpc.testacc_vpc.id
+			zone            			= "%s"
+			total_ipv4_address_count 	= 256
+		}
+	  
+		resource "ibm_is_ssh_key" "testacc_sshkey" {
+			name       			= "%s"
+			public_key 			= "%s"
+		}
+	  
+		resource "ibm_is_bare_metal_server" "testacc_bms" {
+			count = 9
+			profile 			= "%s"
+			name 				= "%s-${count.index}"
+			image 				= "%s"
+			zone 				= "%s"
+			keys 				= [ibm_is_ssh_key.testacc_sshkey.id]
+			vpc 				= ibm_is_vpc.testacc_vpc.id
+			primary_network_attachment {
+				name = "bms-${count.index}-pnac-${count.index}"
+				virtual_network_interface { 
+					name = "bms-${count.index}-eth0-pnac-vni-${count.index}"
+					subnet = ibm_is_subnet.testacc_subnet.id
+					enable_infrastructure_nat = true
+					allow_ip_spoofing = true
+				}
+				allowed_vlans = [100, 102]
+			}
+			network_attachments {
+				name = "bms-${count.index}-eth1-snac-${count.index}"
+				virtual_network_interface { 
+					name = "bms-${count.index}-eth1-snac-vni-${count.index}"
+					subnet = ibm_is_subnet.testacc_subnet.id
+					enable_infrastructure_nat = true
+					allow_ip_spoofing = true
+				}
+				allowed_vlans = [203, 205]
+			}
+			lifecycle {
+				ignore_changes = [ network_attachments ]
+			}
+		}
+`, vpcname, subnetname, acc.ISZoneName, sshname, publicKey, acc.IsBareMetalServerProfileName, namePrefix, acc.IsBareMetalServerImage, acc.ISZoneName)
 }

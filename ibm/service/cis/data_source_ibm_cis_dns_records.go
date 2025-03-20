@@ -224,6 +224,9 @@ func dataSourceIBMCISDNSRecordsRead(d *schema.ResourceData, meta interface{}) er
 		if instance.Type != nil {
 			record[cisDNSRecordType] = *instance.Type
 		}
+		if instance.ZoneName != nil {
+			record[cisZoneName] = *instance.ZoneName
+		}
 		if instance.Priority != nil {
 			record[cisDNSRecordPriority] = *instance.Priority
 		}
@@ -240,7 +243,11 @@ func dataSourceIBMCISDNSRecordsRead(d *schema.ResourceData, meta interface{}) er
 			record[cisDNSRecordTTL] = *instance.TTL
 		}
 		if instance.Data != nil {
-			d.Set(cisDNSRecordData, flattenData(instance.Data, instance.ZoneName))
+			zoneName := ""
+			if instance.ZoneName != nil {
+				zoneName = *instance.ZoneName
+			}
+			d.Set(cisDNSRecordData, flattenData(instance.Data, zoneName))
 		}
 
 		records = append(records, record)
