@@ -30,11 +30,6 @@ type VersionTransition struct {
 	SkipBackupSupported *bool
 }
 
-/* TODO
-How to mock fetch function
-How to test against a branch for go dsk etc
-*/
-
 func expandVersion(version clouddatabasesv5.VersionsCapabilityItem) *Version {
 	expandedVersion := &Version{
 		Version:     *version.Version,
@@ -65,13 +60,49 @@ func expandVersion(version clouddatabasesv5.VersionsCapabilityItem) *Version {
 	return expandedVersion
 }
 
-// This allows us to mock getDeploymentCapability in tests
-var getDeploymentCapabilityFunc = getDeploymentCapability
+func (v *Version) isVersionUpgradeAllowed(version string) bool {
+	for _, transition := range v.Transitions {
+		if transition.ToVersion == version && transition.Method == "in-place" { //TODO replace restore with in-place
+			return true
+		}
+	}
+	return false
+}
+
+func (v *Version) isSkipBackupUpgradeAllowed(version string) bool {
+	for _, transition := range v.Transitions {
+		if transition.ToVersion == version && transition.SkipBackupSupported != nil && transition.Method == "in-place" { //TODO replace restore with in-place
+			return *transition.SkipBackupSupported
+		}
+	}
+	return false
+}
+
+func (v *Version) hasUpgradeVersions() bool {
+	for _, transition := range v.Transitions {
+		if transition.Method == "in-place" { //TODO replace restore with in-place
+			return true
+		}
+	}
+	return false
+}
+
+func (v *Version) getAllowedVersionsList() []string {
+	var allowedList []string
+	for _, transition := range v.Transitions {
+		if transition.Method == "in-place" { //TODO replace restore with in-place
+			allowedList = append(allowedList, transition.ToVersion)
+		}
+	}
+	return allowedList
+}
+
+var fetchDeploymentVersionFn = fetchDeploymentVersion
 
 func fetchDeploymentVersion(instanceId string, meta interface{}) *Version {
-	capability, err := getDeploymentCapabilityFunc("versions", instanceId, "classic", "us-south", meta)
+	capability, err := getDeploymentCapability("versions", instanceId, "classic", "us-south", meta)
 	if err != nil {
-		log.Fatalf("Error fetching versions: %v", err)
+		log.Fatalf("Error fetching deployment versions: %v", err)
 	}
 
 	if capability == nil || capability.Versions == nil || len(capability.Versions) == 0 {
@@ -84,57 +115,20 @@ func fetchDeploymentVersion(instanceId string, meta interface{}) *Version {
 	return version
 }
 
-func (v *Version) isVersionAllowed(version string) bool {
-	for _, transition := range v.Transitions {
-		if transition.ToVersion == version && transition.Method == "restore" { //TODO replace restore with in-place
-			return true
-		}
-	}
-	return false
-}
-
-func (v *Version) isSkipBackupAllowed(version string) bool {
-	for _, transition := range v.Transitions {
-		if transition.ToVersion == version && transition.SkipBackupSupported != nil && transition.Method == "restore" { //TODO replace restore with in-place
-			return *transition.SkipBackupSupported
-		}
-	}
-	return false
-}
-
-func (v *Version) hasUpgradeVersions() bool {
-	for _, transition := range v.Transitions {
-		if transition.Method == "restore" { //TODO replace restore with in-place
-			return true
-		}
-	}
-	return false
-}
-
-func (v *Version) getAllowedVersionsList() []string {
-	var allowedList []string
-	for _, transition := range v.Transitions {
-		if transition.Method == "restore" { //TODO replace restore with in-place
-			allowedList = append(allowedList, transition.ToVersion)
-		}
-	}
-	return allowedList
-}
-
-func validateVersion(instanceId string, targetVersion string, skipBackup bool, meta interface{}) (err error) {
-	deploymentVersion := fetchDeploymentVersion(instanceId, meta)
+func validateUpgradeVersion(instanceId string, upgradeVersion string, skipBackup bool, meta interface{}) (err error) {
+	deploymentVersion := fetchDeploymentVersionFn(instanceId, meta)
 
 	if deploymentVersion == nil || deploymentVersion.hasUpgradeVersions() == false {
 		return fmt.Errorf("No available upgrade versions for your current version.")
 	}
 
-	if !deploymentVersion.isVersionAllowed(targetVersion) {
+	if !deploymentVersion.isVersionUpgradeAllowed(upgradeVersion) {
 		allowedList := deploymentVersion.getAllowedVersionsList()
-		return fmt.Errorf("Version %s is not a valid upgrade version. Allowed versions: %v", targetVersion, allowedList)
+		return fmt.Errorf("Version %s is not a valid upgrade version. Allowed versions: %v", upgradeVersion, allowedList)
 	}
 
-	if skipBackup && !deploymentVersion.isSkipBackupAllowed(targetVersion) {
-		return fmt.Errorf("Skipping backup is not allowed when upgrading to version %s", targetVersion)
+	if skipBackup && !deploymentVersion.isSkipBackupUpgradeAllowed(upgradeVersion) {
+		return fmt.Errorf("Skipping backup is not allowed when upgrading to version %s", upgradeVersion)
 	}
 
 	return nil

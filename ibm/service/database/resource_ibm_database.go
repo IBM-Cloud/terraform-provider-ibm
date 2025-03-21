@@ -2211,25 +2211,31 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 
 		timeoutHelper := TimeoutHelper{Now: time.Now()}
 		expirationDatetime := timeoutHelper.calculateExpirationDatetime(d.Timeout(schema.TimeoutUpdate))
+
 		log.Printf("[WARN] Lorna testing %s\n%v\n%s ", version, skipBackup, expirationDatetime)
+
 		// versionUpgradeOptions := &clouddatabasesv5.SetDatabaseInplaceVersionUpgradeOptions{
-		// 	ID: &instanceID,
-		//  Version: version,
-		// 	SkipBackup: skipBackup,
-		// 	ExpirationDatetime: expirationDatetime,
+		// 	ID:                 core.StringPtr(instanceID),
+		// 	Version:            core.StringPtr(version),
+		// 	SkipBackup:         core.BoolPtr(skipBackup),
+		// 	ExpirationDatetime: core.StringPtr(expirationDatetime),
 		// }
 
 		// versionUpgradeResponse, response, err := cloudDatabasesClient.SetDatabaseInplaceVersionUpgrade(versionOptions)
 
 		// if err != nil {
-		// 	return diag.FromErr(fmt.Errorf("[ERROR] Error upgrading version of instance: %s\n%s", err, response))
+		// 	return diag.FromErr(fmt.Errorf("[ERROR] error upgrading version of instance: %v\nResponse: %v", err, response))
+		// }
+
+		// if versionUpgradeResponse == nil || versionUpgradeResponse.Task == nil || versionUpgradeResponse.Task.ID == nil {
+		// 	return diag.FromErr(fmt.Errorf("[ERROR] received nil for version upgrade"))
 		// }
 
 		// taskID := *versionUpgradeResponse.Task.ID
 		// _, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
 
 		// if err != nil {
-		// 	return diag.FromErr(fmt.Errorf("[ERROR] Error upgrading version: %s", err))
+		// 	return diag.FromErr(fmt.Errorf("[ERROR] error waiting for upgrade task to complete: %w", err))
 		// }
 	}
 
@@ -3173,11 +3179,10 @@ func validateVersionDiff(_ context.Context, diff *schema.ResourceDiff, meta inte
 	oldVersion, newVersion := diff.GetChange("version")
 
 	if instanceID != "" && oldVersion != newVersion {
-		// In place upgrade validation
 		skipBackup := diff.Get("version_upgrade_skip_backup").(bool)
 		newVersionStr, _ := newVersion.(string)
 
-		return validateVersion(instanceID, newVersionStr, skipBackup, meta)
+		return validateUpgradeVersion(instanceID, newVersionStr, skipBackup, meta)
 	}
 
 	return nil

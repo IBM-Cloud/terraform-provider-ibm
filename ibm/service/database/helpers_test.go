@@ -7,29 +7,51 @@ import (
 	"testing"
 	"time"
 
-	"gotest.tools/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestIsMoreThan24Hours(t *testing.T) {
 	mockNow := time.Date(2025, 1, 1, 15, 0, 0, 0, time.UTC)
 	helper := TimeoutHelper{Now: mockNow}
 
-	tests := []struct {
-		name     string
-		duration time.Duration
-		expected bool
+	testcases := []struct {
+		description string
+		duration    time.Duration
+		expected    bool
 	}{
-		{"Exactly 24 hours", 24 * time.Hour, false},
-		{"More than 24 hours", 25 * time.Hour, true},
-		{"Less than 24 hours", 23 * time.Hour, false},
+		{
+			description: "When duration is EXACTLY 24 hours, Expect false",
+			duration:    24 * time.Hour,
+			expected:    false,
+		},
+		{
+			description: "When duration is MORE than 24 hours, Expect true",
+			duration:    25 * time.Hour,
+			expected:    true,
+		},
+		{
+			description: "When duration is LESS than 24 hours, Expect false",
+			duration:    23 * time.Hour,
+			expected:    false,
+		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			result := helper.isMoreThan24Hours(tt.duration)
-			assert.Equal(t, tt.expected, result)
+	for _, tc := range testcases {
+		t.Run(tc.description, func(t *testing.T) {
+			result := helper.isMoreThan24Hours(tc.duration)
+			require.Equal(t, tc.expected, result)
 		})
 	}
+}
+
+func TestFutureTimeToISO(t *testing.T) {
+	mockNow := time.Date(2025, 1, 1, 10, 0, 0, 0, time.UTC)
+	helper := TimeoutHelper{Now: mockNow}
+
+	result := helper.futureTimeToISO(30 * time.Minute)
+	expected := "2025-01-01T10:30:00Z"
+
+	require.Equal(t, expected, result)
 }
 
 func TestCalculateExpirationDatetime(t *testing.T) {
@@ -37,20 +59,30 @@ func TestCalculateExpirationDatetime(t *testing.T) {
 	helper := TimeoutHelper{Now: mockNow}
 
 	testcases := []struct {
-		name            string
-		timeoutDuration time.Duration
-		expected        string
+		description string
+		duration    time.Duration
+		expected    string
 	}{
-		{"Exactly 24 hours", 24 * time.Hour, "2025-01-02T15:00:00Z"},
-		{"More than 24 hours", 25 * time.Hour, "2025-01-02T15:00:00Z"}, // Should cap at 24h
-		{"Less than 24 hours", 20 * time.Minute, "2025-01-01T15:20:00Z"},
+		{
+			description: "When duration is EXACTLY 24 hours, Expect an ISO 24 hrs from now",
+			duration:    24 * time.Hour,
+			expected:    "2025-01-02T15:00:00Z",
+		},
+		{
+			description: "When duration is MORE than 24 hours, Expect an ISO 24 hrs from now as that is the maximum",
+			duration:    25 * time.Hour,
+			expected:    "2025-01-02T15:00:00Z",
+		},
+		{
+			description: "When duration is LESS than 24 hours, Expect an ISO of now + duration",
+			duration:    20 * time.Minute,
+			expected:    "2025-01-01T15:20:00Z"},
 	}
 
 	for _, tc := range testcases {
-		t.Run(tc.name, func(t *testing.T) {
-			result := helper.calculateExpirationDatetime(tc.timeoutDuration)
-
-			assert.Equal(t, tc.expected, result)
+		t.Run(tc.description, func(t *testing.T) {
+			result := helper.calculateExpirationDatetime(tc.duration)
+			require.Equal(t, tc.expected, result)
 		})
 	}
 }
