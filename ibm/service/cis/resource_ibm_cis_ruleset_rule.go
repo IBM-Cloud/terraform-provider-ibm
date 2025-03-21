@@ -184,7 +184,7 @@ var CISRulesetsRulesObject = &schema.Resource{
 		CISRulesetsRuleExpression: {
 			Type:        schema.TypeString,
 			Optional:    true,
-			Description: "Experession of the rulesets rule",
+			Description: "Expression of the rulesets rule",
 		},
 		CISRulesetsRuleRef: {
 			Type:        schema.TypeString,
