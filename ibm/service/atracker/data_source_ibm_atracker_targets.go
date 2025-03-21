@@ -104,9 +104,10 @@ func DataSourceIBMAtrackerTargets() *schema.Resource {
 							},
 						},
 						"logdna_endpoint": {
+							Deprecated:  "Remove this attribute's configuration as it is no longer in use and the attribute will be removed in the next major version of the provider.",
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "Property values for a LogDNA Endpoint.",
+							Description: "(Deprecated) Property values for a LogDNA Endpoint.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"target_crn": {

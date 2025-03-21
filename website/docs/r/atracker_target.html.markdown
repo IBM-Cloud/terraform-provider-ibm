@@ -25,19 +25,9 @@ resource "ibm_atracker_target" "atracker_cos_target" {
   region = "us-south"
 }
 
-resource "ibm_atracker_target" "atracker_logdna_target" {
-  logdna_endpoint {
-    target_crn = "crn:v1:bluemix:public:logdna:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
-    ingestion_key = "xxxxxxxxxxxxxx"
-  }
-  name = "my-logdna-target"
-  target_type = "logdna"
-  region = "us-south"
-}
-
 resource "ibm_atracker_target" "atracker_eventstreams_target" {
   eventstreams_endpoint {
-    target_crn = "crn:v1:bluemix:public:logdna:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
+    target_crn = "crn:v1:bluemix:public:messagehub:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
     brokers = ["xxxxx.cloud.ibm.com:9093","yyyyy.cloud.ibm.com:9093"]
     topic = "my-topic"
     api_key = "api-key"  // pragma: allowlist secret
@@ -73,7 +63,7 @@ Nested scheme for **cos_endpoint**:
 	* `service_to_service_enabled` - (Optional, Boolean) Determines if IBM Cloud Activity Tracker Event Routing has service to service authentication enabled. Set this flag to true if service to service is enabled and do not supply an apikey.
 	* `target_crn` - (Required, String) The CRN of the Cloud Object Storage instance.
 	  * Constraints: The maximum length is `1000` characters. The minimum length is `3` characters. The value must match regular expression `/^[a-zA-Z0-9 -._:\/]+$/`.
-* `logdna_endpoint` - (Optional, List) Property values for a LogDNA Endpoint.
+* `logdna_endpoint` - **DEPRECATED** (Optional, List) Property values for a LogDNA Endpoint. Remove this attribute's configuration as it is no longer in use and the attribute will be removed in the next major version of the provider.
 Nested scheme for **logdna_endpoint**:
 	* `ingestion_key` - (Required, String) The LogDNA ingestion key is used for routing logs to a specific LogDNA instance.
 	  * Constraints: The maximum length is `1000` characters. The minimum length is `3` characters. The value must match regular expression `/^[a-zA-Z0-9 -._:\/]+$/`.
@@ -97,8 +87,8 @@ Nested scheme for **eventstreams_endpoint**:
   * Constraints: The maximum length is `1000` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9 -._:]+$/`.
 * `region` - (Optional, String) Include this optional field if you want to create a target in a different region other than the one you are connected.
   * Constraints: The maximum length is `1000` characters. The minimum length is `3` characters. The value must match regular expression `/^[a-zA-Z0-9 -._:]+$/`.
-* `target_type` - (Required, Forces new resource, String) The type of the target. It can be cloud_object_storage, logdna or event_streams. Based on this type you must include cos_endpoint, logdna_endpoint or eventstreams_endpoint.
-  * Constraints: Allowable values are: `cloud_object_storage`, `logdna`, `event_streams`, `cloud_logs`.
+* `target_type` - (Required, Forces new resource, String) The type of the target. It can be cloud_object_storage, logdna (**DEPRECATED**) or event_streams. Based on this type you must include cos_endpoint, logdna_endpoint (**DEPRECATED**) or eventstreams_endpoint.
+  * Constraints: Allowable values are: `cloud_object_storage`, `logdna` (**DEPRECATED**), `event_streams`, `cloud_logs`.
 
 ## Attribute reference
 

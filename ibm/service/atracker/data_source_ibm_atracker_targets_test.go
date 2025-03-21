@@ -97,10 +97,6 @@ func testAccCheckIBMAtrackerTargetsDataSourceConfig(targetName string, targetTar
 				api_key = "%s" // pragma: allowlist secret
 				service_to_service_enabled = true
 			}
-			logdna_endpoint {
-				target_crn = "crn:v1:bluemix:public:logdna:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
-				ingestion_key = "%s"
-			}
 			eventstreams_endpoint {
 				target_crn = "crn:v1:bluemix:public:messagehub:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
 				brokers = [ "kafka-x:9094" ]
@@ -116,5 +112,5 @@ func testAccCheckIBMAtrackerTargetsDataSourceConfig(targetName string, targetTar
 			name = ibm_atracker_target.atracker_target.name
 		}
 		
-	`, targetName, targetTargetType, targetRegion, acc.COSApiKey, acc.IngestionKey, acc.IesApiKey)
+	`, targetName, targetTargetType, targetRegion, acc.COSApiKey, acc.IesApiKey)
 }

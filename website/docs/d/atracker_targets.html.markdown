@@ -35,7 +35,7 @@ Nested scheme for **targets**:
 	* `name` - (String) The name of the target resource.
 	* `crn` - (String) The crn of the target resource.
 	* `target_type` - (String) The type of the target.
-	  * Constraints: Allowable values are: `cloud_object_storage`, `logdna`, `event_streams`, `cloud_logs`.
+	  * Constraints: Allowable values are: `cloud_object_storage`, `logdna` (**DEPRECATED**), `event_streams`, `cloud_logs`.
 	* `encrypt_key` - (String) The encryption key that is used to encrypt events before Activity Tracker services buffer them on storage. This credential is masked in the response.
 	* `region` - (String) Included this optional field if you used it to create a target in a different region other than the one you are connected.
 	* `cos_endpoint` - (List) Property values for a Cloud Object Storage Endpoint.
@@ -49,7 +49,7 @@ Nested scheme for **targets**:
 		* `service_to_service_enabled` - (Boolean) Determines if IBM Cloud Activity Tracker Event Routing has service to service authentication enabled. Set this flag to true if service to service is enabled and do not supply an apikey.
 		* `target_crn` - (String) The CRN of the Cloud Object Storage instance.
 		  * Constraints: The maximum length is `1000` characters. The minimum length is `3` characters. The value must match regular expression `/^[a-zA-Z0-9 -._:\/]+$/`.
-	* `logdna_endpoint` - (List) Property values for a LogDNA Endpoint.
+	* `logdna_endpoint` - **DEPRECATED** (List) Property values for a LogDNA Endpoint. This attribute is no longer in use and will be removed in the next major version of the provider.
 	Nested scheme for **logdna_endpoint**:
 		* `ingestion_key` - (String) The LogDNA ingestion key is used for routing logs to a specific LogDNA instance.
 		  * Constraints: The maximum length is `1000` characters. The minimum length is `3` characters. The value must match regular expression `/^[a-zA-Z0-9 -._:\/]+$/`.

@@ -41,7 +41,7 @@ func ResourceIBMAtrackerTarget() *schema.Resource {
 				Required:         true,
 				ForceNew:         true,
 				ValidateFunc:     validate.InvokeValidator("ibm_atracker_target", "target_type"),
-				Description:      "The type of the target. It can be cloud_object_storage, logdna, event_streams, or cloud_logs. Based on this type you must include cos_endpoint, logdna_endpoint, eventstreams_endpoint or cloudlogs_endpoint.",
+				Description:      "The type of the target. It can be cloud_object_storage, logdna (deprecated), event_streams, or cloud_logs. Based on this type you must include cos_endpoint, logdna_endpoint (deprecated), eventstreams_endpoint or cloudlogs_endpoint.",
 			},
 			"cos_endpoint": {
 				Type:        schema.TypeList,
@@ -84,8 +84,9 @@ func ResourceIBMAtrackerTarget() *schema.Resource {
 				Type:        schema.TypeList,
 				MaxItems:    1,
 				Optional:    true,
-				Description: "Property values for a LogDNA Endpoint.",
+				Description: "(Deprecated) Property values for a LogDNA Endpoint.",
 				Elem: &schema.Resource{
+					DeprecationMessage: "Remove this attribute's configuration as it is no longer in use and the attribute will be removed in the next major version of the provider.",
 					Schema: map[string]*schema.Schema{
 						"target_crn": {
 							Type:        schema.TypeString,
