@@ -99,7 +99,7 @@ var CISResourceResponseObject = &schema.Resource{
 											CISRulesetOverridesEnabled: {
 												Type:        schema.TypeBool,
 												Optional:    true,
-												Description: "Enable disable rule",
+												Description: "Enable/Disable rule",
 											},
 											// CISRulesetOverridesSensitivityLevel: {
 											// 	Type:        schema.TypeString,
@@ -120,7 +120,7 @@ var CISResourceResponseObject = &schema.Resource{
 														CISRulesetOverridesEnabled: {
 															Type:        schema.TypeBool,
 															Optional:    true,
-															Description: "Enable disable rule",
+															Description: "Enable/Disable rule",
 														},
 														CISRulesetOverridesAction: {
 															Type:        schema.TypeString,
@@ -149,7 +149,7 @@ var CISResourceResponseObject = &schema.Resource{
 														CISRulesetOverridesEnabled: {
 															Type:        schema.TypeBool,
 															Optional:    true,
-															Description: "Enable disable rule",
+															Description: "Enable/Disable rule",
 														},
 														CISRulesetOverridesAction: {
 															Type:        schema.TypeString,
