@@ -8,7 +8,7 @@ description: |-
 
 # ibm_cis_ruleset_rule
 
-Provides an IBM Cloud Internet Services rulesets rule resource to create, update, and delete the ruleset rule of an instance or domain. For more information, about IBM Cloud Internet Services ruleset rule, see [ruleset instance](https://cloud.ibm.com/docs/cis?topic=cis-managed-rules-overview).
+Provides an IBM Cloud Internet Services rulesets rule resource to create, update, and delete the ruleset rule of an instance or domain. For more information about the IBM Cloud Internet Services ruleset rule, see [ruleset instance](https://cloud.ibm.com/docs/cis?topic=cis-managed-rules-overview).
 
 ## Example usage
 
@@ -94,17 +94,17 @@ Provides an IBM Cloud Internet Services rulesets rule resource to create, update
 Review the argument references that you can specify for your resource.
 
 - `cis_id` - (Required, String) The ID of the CIS service instance.
-- `domain_id` - (Optional, String) The Domain/Zone ID of the CIS service instance. If domain_id is provided the request will be made at the zone/domain level otherwise the  request will be made at the instance level.
+- `domain_id` - (Optional, String) The Domain/Zone ID of the CIS service instance. If `domain_id` is provided, the request is made at the zone/domain level; otherwise, the request is made at the instance level.
 - `ruleset_id` - (Required, String) ID of the ruleset inside which rules will be created, updated, or deleted.
-- `rule` (Optional, List) Rule which is required to be added/modified.
+- `rule` (Optional, List) Rule that is required to be added/modified.
   
   Nested scheme of `rule`
-  - `action` (Required, String). If you are deploying a managed rule then `execute` action is used. If you are adding a custom rule then any action can be used other then `execute`.
+  - `action` (Required, String). If you are deploying a managed rule, then the `execute` action is used. If you are adding a custom rule, then any action can be used other then `execute`.
   - `description` (Optional, String) Description of the rule.
   - `enable` (Required, Boolean) Enables/Disables the rule.
   - `expression` (Required, String) Expression used by the rule to match the incoming request.
-    - `ref` (Optional, String) ID of an existing rule. If not provided it is populated by the ID of the created rule.
-    - `action_parameters` (Optional, List) Parameters which are used to modify the rules.
+    - `ref` (Optional, String) ID of an existing rule. If not provided, it is populated by the ID of the created rule.
+    - `action_parameters` (Optional, List) Parameters that are used to modify the rules.
     Nested scheme of `action parameters`
       - `id` (Optional, String) ID of the managed ruleset to be deployed. It is not required in custom rule.
       - `response` (Optional, Map). Custom response used for custom rules.
@@ -113,12 +113,12 @@ Review the argument references that you can specify for your resource.
 
         - `status_code` (Optional, Integer) Status code of the response.
         - `content` (Optional, String) Content of the response.
-        - `content_type` (Optional, String) Content type of the response
-      - `overrides` (Optional, List) Provides the parameters which are to be overridden.
+        - `content_type` (Optional, String) Content type of the response.
+      - `overrides` (Optional, List) Provides the parameters that are to be overridden.
 
         Nested scheme of `overrides`
         - `action` (Optional, String) Action of the rule. Examples: log, block, skip.
-        - `enabled` (Optional, Boolean) Enables/Disables the rule
+        - `enabled` (Optional, Boolean) Enables/Disables the rule.
         - `override_rules` (Optional, List) List of details of managed rules to be overridden. These rules are already present in the managed ruleset.
 
           Nested scheme of `override_rules`
@@ -133,8 +133,8 @@ Review the argument references that you can specify for your resource.
           - `action` (Optional, String) Action of the rule.
     - `position` (Optional, List). You can use only one of the before, after, and index fields at a time. It is used to update the positing of the existing rule.
       - `index` (Optional, String) Index of the rule to be added.
-      - `before` (Optional, String) Id of the rule before which new rule will be added.
-      - `after` (Optional, String) Id of the rule after which new rule will be added.
+      - `before` (Optional, String) ID of the rule before which the new rule will be added.
+      - `after` (Optional, String) ID of the rule after which the new rule will be added.
 
 ## Attribute reference
 
