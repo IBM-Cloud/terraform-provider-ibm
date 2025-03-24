@@ -8,6 +8,8 @@ subcategory: "Partner Center Sell"
 
 # ibm_onboarding_product
 
+**Note - Intended for internal use only. This resource is strictly experimental and subject to change without notice.**
+
 Create, update, and delete onboarding_products with this resource.
 
 ## Example Usage
@@ -77,5 +79,5 @@ You can import the `ibm_onboarding_product` resource by using `id`. The ID of a 
 
 # Syntax
 <pre>
-$ terraform import ibm_onboarding_product.onboarding_product &lt;id&gt;
+$ terraform import ibm_onboarding_product.onboarding_product id;
 </pre>

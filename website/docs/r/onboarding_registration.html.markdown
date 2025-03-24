@@ -8,6 +8,8 @@ subcategory: "Partner Center Sell"
 
 # ibm_onboarding_registration
 
+**Note - Intended for internal use only. This resource is strictly experimental and subject to change without notice.**
+
 Create, update, and delete onboarding_registrations with this resource.
 
 ## Example Usage
@@ -57,5 +59,5 @@ You can import the `ibm_onboarding_registration` resource by using `id`. The ID 
 
 # Syntax
 <pre>
-$ terraform import ibm_onboarding_registration.onboarding_registration &lt;id&gt;
+$ terraform import ibm_onboarding_registration.onboarding_registration id;
 </pre>
