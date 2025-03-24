@@ -204,9 +204,10 @@ type Config struct {
 	IAMRefreshToken string
 
 	// Zone
-	Zone          string
-	Visibility    string
-	EndpointsFile string
+	Zone                string
+	Visibility          string
+	PrivateEndpointType string
+	EndpointsFile       string
 }
 
 // Session stores the information required for communication with the SoftLayer and Bluemix API
@@ -3729,15 +3730,16 @@ func newSession(c *Config) (*Session, error) {
 			IAMAccessToken:  c.IAMToken,
 			IAMRefreshToken: c.IAMRefreshToken,
 			// Comment out debug mode for v0.12
-			Debug:         os.Getenv("TF_LOG") != "",
-			HTTPTimeout:   c.BluemixTimeout,
-			Region:        c.Region,
-			ResourceGroup: c.ResourceGroup,
-			RetryDelay:    &c.RetryDelay,
-			MaxRetries:    &c.RetryCount,
-			Visibility:    c.Visibility,
-			EndpointsFile: c.EndpointsFile,
-			UserAgent:     fmt.Sprintf("terraform-provider-ibm/%s", version.Version),
+			Debug:               os.Getenv("TF_LOG") != "",
+			HTTPTimeout:         c.BluemixTimeout,
+			Region:              c.Region,
+			ResourceGroup:       c.ResourceGroup,
+			RetryDelay:          &c.RetryDelay,
+			MaxRetries:          &c.RetryCount,
+			Visibility:          c.Visibility,
+			PrivateEndpointType: c.PrivateEndpointType,
+			EndpointsFile:       c.EndpointsFile,
+			UserAgent:           fmt.Sprintf("terraform-provider-ibm/%s", version.Version),
 		}
 		sess, err := bxsession.New(bmxConfig)
 		if err != nil {
@@ -3752,15 +3754,16 @@ func newSession(c *Config) (*Session, error) {
 		bmxConfig := &bluemix.Config{
 			BluemixAPIKey: c.BluemixAPIKey,
 			// Comment out debug mode for v0.12
-			Debug:         os.Getenv("TF_LOG") != "",
-			HTTPTimeout:   c.BluemixTimeout,
-			Region:        c.Region,
-			ResourceGroup: c.ResourceGroup,
-			RetryDelay:    &c.RetryDelay,
-			MaxRetries:    &c.RetryCount,
-			Visibility:    c.Visibility,
-			EndpointsFile: c.EndpointsFile,
-			UserAgent:     fmt.Sprintf("terraform-provider-ibm/%s", version.Version),
+			Debug:               os.Getenv("TF_LOG") != "",
+			HTTPTimeout:         c.BluemixTimeout,
+			Region:              c.Region,
+			ResourceGroup:       c.ResourceGroup,
+			RetryDelay:          &c.RetryDelay,
+			MaxRetries:          &c.RetryCount,
+			Visibility:          c.Visibility,
+			PrivateEndpointType: c.PrivateEndpointType,
+			EndpointsFile:       c.EndpointsFile,
+			UserAgent:           fmt.Sprintf("terraform-provider-ibm/%s", version.Version),
 		}
 		sess, err := bxsession.New(bmxConfig)
 		if err != nil {

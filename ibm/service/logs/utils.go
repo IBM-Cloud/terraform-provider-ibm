@@ -46,12 +46,24 @@ func getLogsInstanceEndpointType(originalClient *logsv0.LogsV0, d *schema.Resour
 
 // <instance_id>.api.eu-gb.logs.test.cloud.ibm.com
 // Clone the base logs client and set the API endpoint per the instance
-func getClientWithLogsInstanceEndpoint(originalClient *logsv0.LogsV0, instanceId string, region string, endpointType string) *logsv0.LogsV0 {
+func getClientWithLogsInstanceEndpoint(originalClient *logsv0.LogsV0, meta interface{}, instanceId string, region string, endpointType string) (*logsv0.LogsV0, error) {
 	// build the api endpoint
 	domain := cloudEndpoint
 	if strings.Contains(os.Getenv("IBMCLOUD_IAM_API_ENDPOINT"), "test") {
 		domain = testCloudEndpoint
 	}
+	bxSession, err := meta.(conns.ClientSession).BluemixSession()
+	if err != nil {
+		return originalClient, fmt.Errorf("bxsession error: %s  id: $s", err)
+	}
+
+	var privateEndpointType string
+	if bxSession != nil && bxSession.Config != nil {
+		privateEndpointType = bxSession.Config.PrivateEndpointType
+		log.Printf("Private endpoint type  targetted by provider %s", privateEndpointType)
+
+	}
+
 	// getting originalConfigServiceURL to not miss filemap precedence from the url constructed in config.go file
 	originalConfigServiceURL := originalClient.GetServiceURL()
 
@@ -61,8 +73,10 @@ func getClientWithLogsInstanceEndpoint(originalClient *logsv0.LogsV0, instanceId
 	if endpointType == "private" {
 		if strings.Contains(originalConfigServiceURL, fmt.Sprintf("https://%s.api.private.%s.logs.%s", instanceId, region, domain)) {
 			endpoint = originalConfigServiceURL
-		} else {
+		} else if privateEndpointType == "cse" {
 			endpoint = fmt.Sprintf("https://%s.api.private.%s.logs.%s:3443", instanceId, region, domain)
+		} else {
+			endpoint = fmt.Sprintf("https://%s.api.private.%s.logs.%s", instanceId, region, domain)
 		}
 	} else {
 		if strings.Contains(originalConfigServiceURL, fmt.Sprintf("https://%s.api.%s.logs.%s", instanceId, region, domain)) {
@@ -82,7 +96,7 @@ func getClientWithLogsInstanceEndpoint(originalClient *logsv0.LogsV0, instanceId
 
 	newClient.Service.SetServiceURL(endpoint)
 
-	return newClient
+	return newClient, nil
 }
 
 // Add the fields needed for building the instance endpoint to the given schema
@@ -109,8 +123,7 @@ func AddLogsInstanceFields(resource *schema.Resource) *schema.Resource {
 	return resource
 }
 
-func updateClientURLWithInstanceEndpoint(id string, logsClient *logsv0.LogsV0, d *schema.ResourceData) (*logsv0.LogsV0, string, string, string, error) {
-
+func updateClientURLWithInstanceEndpoint(id string, meta interface{}, logsClient *logsv0.LogsV0, d *schema.ResourceData) (*logsv0.LogsV0, string, string, string, error) {
 	idList, err := flex.IdParts(id)
 	if err != nil || len(idList) < 2 {
 		return logsClient, "", "", "", fmt.Errorf("Invalid Id %s. Error: %s", id, err)
@@ -123,7 +136,9 @@ func updateClientURLWithInstanceEndpoint(id string, logsClient *logsv0.LogsV0, d
 		resourceId = idList[2]
 	}
 
-	logsClient = getClientWithLogsInstanceEndpoint(logsClient, instanceId, region, getLogsInstanceEndpointType(logsClient, d))
-
+	logsClient, err = getClientWithLogsInstanceEndpoint(logsClient, meta, instanceId, region, getLogsInstanceEndpointType(logsClient, d))
+	if err != nil {
+		return logsClient, "", "", "", fmt.Errorf("getClientWithLogsInstanceEndpoint error: %s", err)
+	}
 	return logsClient, region, instanceId, resourceId, nil
 }

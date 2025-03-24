@@ -1605,7 +1605,10 @@ func resourceIbmLogsAlertCreate(context context.Context, d *schema.ResourceData,
 
 	region := getLogsInstanceRegion(logsClient, d)
 	instanceId := d.Get("instance_id").(string)
-	logsClient = getClientWithLogsInstanceEndpoint(logsClient, instanceId, region, getLogsInstanceEndpointType(logsClient, d))
+	logsClient, err = getClientWithLogsInstanceEndpoint(logsClient, meta, instanceId, region, getLogsInstanceEndpointType(logsClient, d))
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("Unable to get updated logs instance client"))
+	}
 
 	createAlertOptions := &logsv0.CreateAlertOptions{}
 
@@ -1707,7 +1710,7 @@ func resourceIbmLogsAlertRead(context context.Context, d *schema.ResourceData, m
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
-	logsClient, region, instanceId, alertId, err := updateClientURLWithInstanceEndpoint(d.Id(), logsClient, d)
+	logsClient, region, instanceId, alertId, err := updateClientURLWithInstanceEndpoint(d.Id(), meta, logsClient, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -1845,7 +1848,7 @@ func resourceIbmLogsAlertUpdate(context context.Context, d *schema.ResourceData,
 		return tfErr.GetDiag()
 	}
 
-	logsClient, _, _, alertId, err := updateClientURLWithInstanceEndpoint(d.Id(), logsClient, d)
+	logsClient, _, _, alertId, err := updateClientURLWithInstanceEndpoint(d.Id(), meta, logsClient, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -1975,7 +1978,7 @@ func resourceIbmLogsAlertDelete(context context.Context, d *schema.ResourceData,
 		return tfErr.GetDiag()
 	}
 
-	logsClient, _, _, alertId, err := updateClientURLWithInstanceEndpoint(d.Id(), logsClient, d)
+	logsClient, _, _, alertId, err := updateClientURLWithInstanceEndpoint(d.Id(), meta, logsClient, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
