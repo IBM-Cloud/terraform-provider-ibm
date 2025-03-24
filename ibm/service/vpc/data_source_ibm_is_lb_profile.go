@@ -9,6 +9,7 @@ import (
 	"log"
 	"reflect"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -81,6 +82,32 @@ func DataSourceIBMISLbProfile() *schema.Resource {
 				Computed:    true,
 				Description: "The UDP support type for a load balancer with this profile",
 			},
+			"failsafe_policy_actions": &schema.Schema{
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"default": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The default failsafe policy action for this profile.",
+						},
+						"type": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The type for this profile field.",
+						},
+						"values": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The supported failsafe policy actions.",
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -147,6 +174,18 @@ func dataSourceIBMISLbProfileRead(context context.Context, d *schema.ResourceDat
 			}
 		}
 	}
+
+	failsafePolicyActions := []map[string]interface{}{}
+	if lbProfile.FailsafePolicyActions != nil {
+		modelMap, err := dataSourceIBMIsLbProfileLoadBalancerProfileFailsafePolicyActionsToMap(lbProfile.FailsafePolicyActions)
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_lb_profile", "read", "failsafe_policy_actions-to-map").GetDiag()
+		}
+		failsafePolicyActions = append(failsafePolicyActions, modelMap)
+	}
+	if err = d.Set("failsafe_policy_actions", failsafePolicyActions); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting failsafe_policy_actions: %s", err), "(Data) ibm_is_lb_profile", "read", "set-failsafe_policy_actions").GetDiag()
+	}
 	if lbProfile.RouteModeSupported != nil {
 		routeMode := lbProfile.RouteModeSupported
 		switch reflect.TypeOf(routeMode).String() {
@@ -177,4 +216,41 @@ func dataSourceIBMISLbProfileRead(context context.Context, d *schema.ResourceDat
 	}
 	d.SetId(*lbProfile.Name)
 	return nil
+}
+
+func dataSourceIBMIsLbProfileLoadBalancerProfileFailsafePolicyActionsToMap(model vpcv1.LoadBalancerProfileFailsafePolicyActionsIntf) (map[string]interface{}, error) {
+	if _, ok := model.(*vpcv1.LoadBalancerProfileFailsafePolicyActionsEnum); ok {
+		return dataSourceIBMIsLbProfileLoadBalancerProfileFailsafePolicyActionsEnumToMap(model.(*vpcv1.LoadBalancerProfileFailsafePolicyActionsEnum))
+	} else if _, ok := model.(*vpcv1.LoadBalancerProfileFailsafePolicyActionsDependent); ok {
+		return dataSourceIBMIsLbProfileLoadBalancerProfileFailsafePolicyActionsDependentToMap(model.(*vpcv1.LoadBalancerProfileFailsafePolicyActionsDependent))
+	} else if _, ok := model.(*vpcv1.LoadBalancerProfileFailsafePolicyActions); ok {
+		modelMap := make(map[string]interface{})
+		model := model.(*vpcv1.LoadBalancerProfileFailsafePolicyActions)
+		if model.Default != nil {
+			modelMap["default"] = *model.Default
+		}
+		if model.Type != nil {
+			modelMap["type"] = *model.Type
+		}
+		if model.Values != nil {
+			modelMap["values"] = model.Values
+		}
+		return modelMap, nil
+	} else {
+		return nil, fmt.Errorf("Unrecognized vpcv1.LoadBalancerProfileFailsafePolicyActionsIntf subtype encountered")
+	}
+}
+
+func dataSourceIBMIsLbProfileLoadBalancerProfileFailsafePolicyActionsEnumToMap(model *vpcv1.LoadBalancerProfileFailsafePolicyActionsEnum) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["default"] = *model.Default
+	modelMap["type"] = *model.Type
+	modelMap["values"] = model.Values
+	return modelMap, nil
+}
+
+func dataSourceIBMIsLbProfileLoadBalancerProfileFailsafePolicyActionsDependentToMap(model *vpcv1.LoadBalancerProfileFailsafePolicyActionsDependent) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["type"] = *model.Type
+	return modelMap, nil
 }

@@ -48,45 +48,11 @@ func ResourceIbmSccProfileAttachment() *schema.Resource {
 				Description: "The account ID that is associated to the attachment.",
 			},
 			"scope": {
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Required:    true,
-				Description: "The scope payload for the multi cloud feature.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"environment": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Computed:    true,
-							Description: "The environment that relates to this scope.",
-						},
-						"properties": {
-							Type:        schema.TypeList,
-							Optional:    true,
-							Computed:    true,
-							Description: "The properties supported for scoping by this environment.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"name": {
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "The name of the property.",
-									},
-									"value": {
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "The value of the property.",
-									},
-								},
-							},
-						},
-						"id": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Computed:    true,
-							Description: "The scope id to target.",
-						},
-					},
-				},
+				Description: "The scope/scopes to link the profile attachment.",
+				Elem:        schemaAttachmentScopes(),
+				Set:         attachmentHashSchemaSetFunc("id"),
 			},
 			"created_on": {
 				Type:        schema.TypeString,
@@ -177,7 +143,7 @@ func ResourceIbmSccProfileAttachment() *schema.Resource {
 				Optional:    true,
 				Description: "The profile parameters for the attachment.",
 				Elem:        schemaAttachmentParameters(),
-				Set:         attachmentParametersSchemaSetFunc("assessment_id", "parameter_name", "parameter_display_name", "parameter_type", "parameter_value"),
+				Set:         attachmentHashSchemaSetFunc("assessment_id", "parameter_name", "parameter_display_name", "parameter_type", "parameter_value"),
 			},
 			"last_scan": {
 				Type:        schema.TypeList,
@@ -247,7 +213,7 @@ func ResourceIbmSccProfileAttachmentValidator() *validate.ResourceValidator {
 
 // hashAttachmentParameters will determine how to hash the AttachmentParameters schema.Resource
 // It uses the 'assessment_id' in order to determine the difference.
-func attachmentParametersSchemaSetFunc(keys ...string) schema.SchemaSetFunc {
+func attachmentHashSchemaSetFunc(keys ...string) schema.SchemaSetFunc {
 	return func(v interface{}) int {
 		var str strings.Builder
 
@@ -328,6 +294,46 @@ func schemaAttachmentParameters() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The value of the parameter.",
+			},
+		},
+	}
+}
+
+// schemaAttachmentScopes returns a *schema.Resource for AttachmentScopes
+func schemaAttachmentScopes() *schema.Resource {
+	return &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"environment": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "The environment that relates to this scope.",
+			},
+			"properties": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Computed:    true,
+				Description: "The properties supported for scoping by this environment.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"name": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The name of the property.",
+						},
+						"value": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The value of the property.",
+						},
+					},
+				},
+			},
+			"id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "The scope id to target.",
 			},
 		},
 	}
@@ -434,15 +440,25 @@ func resourceIbmSccProfileAttachmentRead(context context.Context, d *schema.Reso
 		}
 	}
 	if !core.IsNil(attachmentItem.Scope) {
-		scope := []map[string]interface{}{}
+		// scope := []map[string]interface{}{}
+		// for _, scopeItem := range attachmentItem.Scope {
+		// 	scopeItemMap, err := resourceIbmSccProfileAttachmentMultiCloudScopeToMap(&scopeItem)
+		// 	if err != nil {
+		// 		return diag.FromErr(err)
+		// 	}
+		// 	scope = append(scope, scopeItemMap)
+		// }
+		attachmentScopes := &schema.Set{
+			F: attachmentHashSchemaSetFunc("id"),
+		}
 		for _, scopeItem := range attachmentItem.Scope {
 			scopeItemMap, err := resourceIbmSccProfileAttachmentMultiCloudScopeToMap(&scopeItem)
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			scope = append(scope, scopeItemMap)
+			attachmentScopes.Add(scopeItemMap)
 		}
-		if err = d.Set("scope", scope); err != nil {
+		if err = d.Set("scope", attachmentScopes); err != nil {
 			return diag.FromErr(flex.FmtErrorf("Error setting scope: %s", err))
 		}
 	}
@@ -487,7 +503,7 @@ func resourceIbmSccProfileAttachmentRead(context context.Context, d *schema.Reso
 	}
 	if !core.IsNil(attachmentItem.AttachmentParameters) {
 		attachmentParameters := &schema.Set{
-			F: attachmentParametersSchemaSetFunc("assessment_id", "parameter_name", "parameter_display_name", "parameter_type", "parameter_value"),
+			F: attachmentHashSchemaSetFunc("assessment_id", "parameter_name", "parameter_display_name", "parameter_type", "parameter_value"),
 		}
 		for _, attachmentParametersItem := range attachmentItem.AttachmentParameters {
 			attachmentParametersItemMap, err := resourceIbmSccProfileAttachmentAttachmentParameterPrototypeToMap(&attachmentParametersItem)
@@ -586,6 +602,10 @@ func resourceIbmSccProfileAttachmentUpdate(context context.Context, d *schema.Re
 		hasChange = true
 	}
 
+	if d.HasChange("scope") {
+		hasChange = true
+	}
+
 	if d.HasChange("notifications") {
 		notificationsItem := d.Get("notifications.0").(map[string]interface{})
 		updateNotifications, err := resourceIbmSccProfileAttachmentMapToAttachmentsNotificationsPrototype(notificationsItem)
@@ -632,16 +652,17 @@ func resourceIbmSccProfileAttachmentUpdate(context context.Context, d *schema.Re
 		if replaceProfileAttachmentOptions.Status == nil {
 			replaceProfileAttachmentOptions.SetSchedule(d.Get("status").(string))
 		}
-		if len(replaceProfileAttachmentOptions.Scope) == 0 {
-			scope := []securityandcompliancecenterapiv3.MultiCloudScopePayload{}
-			for _, scopeItem := range d.Get("scope").([]interface{}) {
+		if replaceProfileAttachmentOptions.Scope == nil || d.Get("scope") != nil {
+			scopeItems := d.Get("scope")
+			scopes := []securityandcompliancecenterapiv3.MultiCloudScopePayload{}
+			for _, scopeItem := range scopeItems.(*schema.Set).List() {
 				scopeItemModel, err := resourceIbmSccProfileAttachmentMapToMultiCloudScope(scopeItem.(map[string]interface{}))
 				if err != nil {
 					return diag.FromErr(err)
 				}
-				scope = append(scope, *scopeItemModel)
+				scopes = append(scopes, *scopeItemModel)
 			}
-			replaceProfileAttachmentOptions.SetScope(scope)
+			replaceProfileAttachmentOptions.SetScope(scopes)
 		}
 		_, response, err := securityandcompliancecenterapiClient.ReplaceProfileAttachmentWithContext(context, replaceProfileAttachmentOptions)
 		if err != nil {
@@ -688,7 +709,7 @@ func resourceIbmSccProfileAttachmentMapToAttachmentsPrototype(modelMap map[strin
 		model.Description = core.StringPtr(modelMap["description"].(string))
 	}
 	scope := []securityandcompliancecenterapiv3.MultiCloudScopePayload{}
-	for _, scopeItem := range modelMap["scope"].([]interface{}) {
+	for _, scopeItem := range modelMap["scope"].(*schema.Set).List() {
 		scopeItemModel, err := resourceIbmSccProfileAttachmentMapToMultiCloudScope(scopeItem.(map[string]interface{}))
 		if err != nil {
 			return model, err
@@ -936,7 +957,7 @@ func resourceIbmSccProfileAttachmentMultiCloudScopeToMap(model *securityandcompl
 	}
 	properties := []map[string]interface{}{}
 	for _, propertiesItem := range model.Properties {
-		propertiesItemMap, err := resourceIbmSccProfileAttachmentPropertyItemToMap(propertiesItem)
+		propertiesItemMap, err := scopePropertiesToMap(propertiesItem)
 		if err != nil {
 			return modelMap, err
 		}
@@ -947,39 +968,6 @@ func resourceIbmSccProfileAttachmentMultiCloudScopeToMap(model *securityandcompl
 		modelMap["id"] = model.ID
 	}
 	return modelMap, nil
-}
-
-func resourceIbmSccProfileAttachmentPropertyItemToMap(model securityandcompliancecenterapiv3.ScopePropertyIntf) (map[string]interface{}, error) {
-	if _, ok := model.(*securityandcompliancecenterapiv3.ScopePropertyScopeID); ok {
-		return resourceIBMSccScopeScopePropertyScopeIDToMap(model.(*securityandcompliancecenterapiv3.ScopePropertyScopeID))
-	} else if _, ok := model.(*securityandcompliancecenterapiv3.ScopePropertyScopeType); ok {
-		return resourceIBMSccScopeScopePropertyScopeTypeToMap(model.(*securityandcompliancecenterapiv3.ScopePropertyScopeType))
-	} else if _, ok := model.(*securityandcompliancecenterapiv3.ScopePropertyExclusions); ok {
-		return resourceIBMSccScopeScopePropertyExclusionsToMap(model.(*securityandcompliancecenterapiv3.ScopePropertyExclusions))
-	} else if _, ok := model.(*securityandcompliancecenterapiv3.ScopeProperty); ok {
-		modelMap := make(map[string]interface{})
-		model := model.(*securityandcompliancecenterapiv3.ScopeProperty)
-		if model.Name != nil {
-			modelMap["name"] = model.Name
-		}
-		if model.Value != nil {
-			modelMap["value"] = model.Value
-		}
-		if model.Exclusions != nil {
-			exclusions := []map[string]interface{}{}
-			for _, exclusionsItem := range model.Exclusions {
-				exclusionsItemMap, err := resourceIBMSccScopeScopePropertyExclusionItemToMap(&exclusionsItem)
-				if err != nil {
-					return modelMap, err
-				}
-				exclusions = append(exclusions, exclusionsItemMap)
-			}
-			modelMap["exclusions"] = exclusions
-		}
-		return modelMap, nil
-	} else {
-		return nil, fmt.Errorf("Unrecognized securityandcompliancecenterv3.ScopePropertyIntf subtype encountered")
-	}
 }
 
 func resourceIbmSccProfileAttachmentAttachmentsNotificationsPrototypeToMap(model *securityandcompliancecenterapiv3.AttachmentNotifications) (map[string]interface{}, error) {
