@@ -2,7 +2,7 @@
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.99.1-daeb6e46-20250131-173156
+ * IBM OpenAPI Terraform Generator Version: 3.102.0-615ec964-20250307-203034
  */
 
 package partnercentersell
@@ -201,7 +201,7 @@ func ResourceIbmOnboardingResourceBrokerValidator() *validate.ResourceValidator 
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Optional:                   true,
-			Regexp:                     `^[a-z]+$`,
+			Regexp:                     `^[a-z_.-]+$`,
 			MinValueLength:             1,
 			MaxValueLength:             64,
 		},
@@ -470,13 +470,14 @@ func resourceIbmOnboardingResourceBrokerUpdate(context context.Context, d *schem
 	updateResourceBrokerOptions := &partnercentersellv1.UpdateResourceBrokerOptions{}
 
 	updateResourceBrokerOptions.SetBrokerID(d.Id())
-	if _, ok := d.GetOk("env"); ok {
-		updateResourceBrokerOptions.SetEnv(d.Get("env").(string))
-	}
 
 	hasChange := false
 
 	patchVals := &partnercentersellv1.BrokerPatch{}
+	if d.HasChange("env") {
+		updateResourceBrokerOptions.SetEnv(d.Get("env").(string))
+		hasChange = true
+	}
 	if d.HasChange("auth_username") {
 		newAuthUsername := d.Get("auth_username").(string)
 		patchVals.AuthUsername = &newAuthUsername

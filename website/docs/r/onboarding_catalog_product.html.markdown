@@ -8,8 +8,6 @@ subcategory: "Partner Center Sell"
 
 # ibm_onboarding_catalog_product
 
-**Note - Intended for internal use only. This resource is strictly experimental and subject to change without notice.**
-
 Create, update, and delete onboarding_catalog_products with this resource.
 
 ## Example Usage
@@ -246,7 +244,7 @@ You can specify the following arguments for this resource.
 * `active` - (Required, Boolean) Whether the service is active.
 * `disabled` - (Required, Boolean) Determines the global visibility for the catalog entry, and its children. If it is not enabled, all plans are disabled.
 * `env` - (Optional, String) The environment to fetch this object from.
-  * Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^[a-z]+$/`.
+  * Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^[a-z_.-]+$/`.
 * `images` - (Optional, List) Images from the global catalog entry that help illustrate the service.
 Nested schema for **images**:
 	* `image` - (Optional, String) The URL for your product logo.
@@ -583,12 +581,12 @@ You can import the `ibm_onboarding_catalog_product` resource by using `id`.
 The `id` property can be formed from `product_id`, and `catalog_product_id` in the following format:
 
 <pre>
-	product_id/catalog_product_id;
+&lt;product_id&gt;/&lt;catalog_product_id&gt;
 </pre>
 * `product_id`: A string. The unique ID of the product.
 * `catalog_product_id`: A string. The ID of a global catalog object.
 
 # Syntax
 <pre>
-$ terraform import ibm_onboarding_catalog_product.onboarding_catalog_product product_id/catalog_product_id;
+$ terraform import ibm_onboarding_catalog_product.onboarding_catalog_product &lt;product_id&gt;/&lt;catalog_product_id&gt;
 </pre>

@@ -8,8 +8,6 @@ subcategory: "Partner Center Sell"
 
 # ibm_onboarding_resource_broker
 
-**Note - Intended for internal use only. This resource is strictly experimental and subject to change without notice.**
-
 Create, update, and delete onboarding_resource_brokers with this resource.
 
 ## Example Usage
@@ -42,7 +40,7 @@ You can specify the following arguments for this resource.
 * `broker_url` - (Required, String) The URL associated with the broker application.
 * `catalog_type` - (Optional, String) To enable the provisioning of your broker, set this parameter value to `service`.
 * `env` - (Optional, String) The environment to fetch this object from.
-  * Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^[a-z]+$/`.
+  * Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^[a-z_.-]+$/`.
 * `name` - (Required, String) The name of the broker.
   * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^[ -~\\s]*$/`.
 * `region` - (Optional, String) The region where the pricing plan is available.
@@ -84,5 +82,5 @@ You can import the `ibm_onboarding_resource_broker` resource by using `id`. The 
 
 # Syntax
 <pre>
-$ terraform import ibm_onboarding_resource_broker.onboarding_resource_broker id;
+$ terraform import ibm_onboarding_resource_broker.onboarding_resource_broker &lt;id&gt;
 </pre>
