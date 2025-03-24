@@ -26,6 +26,7 @@ Run `terraform destroy` when you don't need these resources.
 atracker_target resource:
 
 ```hcl
+# Deprecated: logdna_endpoint is no longer in use and will be removed in the next major version of the provider.
 resource "atracker_target" "atracker_target_instance" {
   name = var.atracker_target_name
   target_type = var.atracker_target_target_type
@@ -101,9 +102,9 @@ data "atracker_routes" "atracker_routes_instance" {
 | name | The name of the target. The name must be 1000 characters or less, and cannot include any special characters other than `(space) - . _ :`. | `string` | true |
 | target_type | The type of the target. | `string` | true |
 | cos_endpoint | Property values for a Cloud Object Storage Endpoint. | `` | true |
-| eventstreams_endpoint | Property values for the Event Streams Endpoint in responses. | `` | false |
-| logdna_endpoint | Property values for a LogDNA Endpoint in responses. | `` | false |
-| cloudlogs_endpoint | Property values for the IBM Cloud Logs Endpoint in responses. | `` | false |
+| eventstreams_endpoint | Property values for the Event Streams Endpoint. | `` | false |
+| logdna_endpoint | Deprecated. Property values for a LogDNA Endpoint. Remove this attribute as it is no longer in use and it will be removed in the next major version of the provider.| `` | false |
+| cloudlogs_endpoint | Property values for the IBM Cloud Logs Endpoint. | `` | false |
 | name | The name of the route. The name must be 1000 characters or less and cannot include any special characters other than `(space) - . _ :`. | `string` | true |
 | rules | The routing rules that will be evaluated in their order of the array. Once a rule is matched, the remaining rules in the route definition will be skipped. | `list()` | true |
 | default_targets | The target ID List. In the event that no routing rule causes the event to be sent to a target, these targets will receive the event. | `list(string)` | false |
