@@ -46,9 +46,11 @@ const (
 )
 
 const (
-	databaseTaskSuccessStatus  = "completed"
-	databaseTaskProgressStatus = "running"
-	databaseTaskFailStatus     = "failed"
+	databaseTaskCompletedStatus  = "completed"
+	databaseTaskQueuedStatus = "queued"
+	databaseTaskRunningStatus = "running"
+	databaseTaskFailedStatus     = "failed"
+	databaseTaskExpiredStatus     = "expired"
 )
 
 const (
@@ -2212,7 +2214,7 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 		timeoutHelper := TimeoutHelper{Now: time.Now()}
 		expirationDatetime := timeoutHelper.calculateExpirationDatetime(d.Timeout(schema.TimeoutUpdate))
 
-		log.Printf("[WARN] Lorna testing %s\n%v\n%s ", version, skipBackup, expirationDatetime)
+		log.Printf("[INFO] Change version testing %s, %v, %s", version, skipBackup, expirationDatetime)
 
 		// versionUpgradeOptions := &clouddatabasesv5.SetDatabaseInplaceVersionUpgradeOptions{
 		// 	ID:                 core.StringPtr(instanceID),
@@ -2232,10 +2234,10 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 		// }
 
 		// taskID := *versionUpgradeResponse.Task.ID
-		// _, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
 
+		// _, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
 		// if err != nil {
-		// 	return diag.FromErr(fmt.Errorf("[ERROR] error waiting for upgrade task to complete: %w", err))
+		// 	return diag.FromErr(fmt.Errorf("[ERROR] error waiting for version upgrade task to complete: %w", err))
 		// }
 	}
 
@@ -2439,13 +2441,13 @@ func waitForDatabaseTaskComplete(taskId string, d *schema.ResourceData, meta int
 			}
 
 			switch *getTaskResponse.Task.Status {
-			case "expired":
+			case databaseTaskExpiredStatus:
 				return false, fmt.Errorf("[Error] Database Task expired")
-			case "failed":
+			case databaseTaskFailedStatus:
 				return false, fmt.Errorf("[Error] Database Task failed")
-			case "complete", "":
+			case databaseTaskCompletedStatus, "":
 				return true, nil
-			case "queued", "running":
+			case databaseTaskQueuedStatus, databaseTaskRunningStatus:
 				break
 			}
 		}
@@ -3178,14 +3180,31 @@ func validateVersionDiff(_ context.Context, diff *schema.ResourceDiff, meta inte
 	instanceID := diff.Id()
 	oldVersion, newVersion := diff.GetChange("version")
 
-	if instanceID != "" && oldVersion != newVersion {
-		skipBackup := diff.Get("version_upgrade_skip_backup").(bool)
-		newVersionStr, _ := newVersion.(string)
-
-		return validateUpgradeVersion(instanceID, newVersionStr, skipBackup, meta)
+	if instanceID == "" || oldVersion == newVersion {
+		return nil
 	}
 
-	return nil
+	cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error getting database client settings: %w", err)
+	}
+
+	// Check if a version upgrade task is already in progress
+	upgradeInProgress, task, err := isMatchingTaskInProgress(cloudDatabasesClient, instanceID, "Upgrading instance")
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error getting tasks: %w", err)
+	}
+
+	if upgradeInProgress {
+		// Skip validation if task is already running as the version value could change on instance before task is complete
+		log.Printf("[INFO] Task already in progress: %s", *task.ID)
+		return nil
+	}
+
+	skipBackup := diff.Get("version_upgrade_skip_backup").(bool)
+	newVersionStr, _ := newVersion.(string)
+
+	return validateUpgradeVersion(instanceID, newVersionStr, skipBackup, meta)
 }
 
 func (c *userChange) isDelete() bool {

@@ -3,7 +3,14 @@
 
 package database
 
-import "time"
+import (
+	"fmt"
+	"log"
+	"time"
+
+	"github.com/IBM/cloud-databases-go-sdk/clouddatabasesv5"
+	"github.com/IBM/go-sdk-core/core"
+)
 
 /*  TODO Move other helper functions here */
 type TimeoutHelper struct {
@@ -24,4 +31,36 @@ func (t *TimeoutHelper) calculateExpirationDatetime(timeoutDuration time.Duratio
 	}
 
 	return t.futureTimeToISO(timeoutDuration)
+}
+
+func isMatchingTaskInProgress(
+	cloudDatabasesClient *clouddatabasesv5.CloudDatabasesV5,
+	deploymentID string,
+	matchDescription string,
+) (bool, *clouddatabasesv5.Task, error) {
+
+	opts := clouddatabasesv5.ListDeploymentTasksOptions{
+		ID: core.StringPtr(deploymentID),
+	}
+
+	resp, _, err := cloudDatabasesClient.ListDeploymentTasks(&opts)
+	if err != nil {
+		return false, nil, fmt.Errorf("failed to list deployment tasks: %w", err)
+	}
+
+	for _, task := range resp.Tasks {
+		if task.Status == nil || task.Description == nil {
+			continue
+		}
+
+		status := *task.Status
+		desc := *task.Description
+
+		if (status == databaseTaskRunningStatus || status == databaseTaskQueuedStatus) && desc == matchDescription {
+			log.Printf("[INFO] Found matching task in progress: %s (status: %s)", desc, status)
+			return true, &task, nil
+		}
+	}
+
+	return false, nil, nil
 }
