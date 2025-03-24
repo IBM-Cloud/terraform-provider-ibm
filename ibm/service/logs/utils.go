@@ -73,10 +73,10 @@ func getClientWithLogsInstanceEndpoint(originalClient *logsv0.LogsV0, meta inter
 	if endpointType == "private" {
 		if strings.Contains(originalConfigServiceURL, fmt.Sprintf("https://%s.api.private.%s.logs.%s", instanceId, region, domain)) {
 			endpoint = originalConfigServiceURL
-		} else if privateEndpointType == "cse" {
-			endpoint = fmt.Sprintf("https://%s.api.private.%s.logs.%s:3443", instanceId, region, domain)
-		} else {
+		} else if privateEndpointType == "vpe" {
 			endpoint = fmt.Sprintf("https://%s.api.private.%s.logs.%s", instanceId, region, domain)
+		} else {
+			endpoint = fmt.Sprintf("https://%s.api.private.%s.logs.%s:3443", instanceId, region, domain)
 		}
 	} else {
 		if strings.Contains(originalConfigServiceURL, fmt.Sprintf("https://%s.api.%s.logs.%s", instanceId, region, domain)) {

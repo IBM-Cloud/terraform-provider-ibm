@@ -228,7 +228,7 @@ func Provider() *schema.Provider {
 			"private_endpoint_type": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				ValidateFunc: validate.ValidateAllowedStringValues([]string{"cse"}),
+				ValidateFunc: validate.ValidateAllowedStringValues([]string{"vpe"}),
 				Description:  "Private Endpoint type used by the endpoint cse or vpe.",
 				DefaultFunc:  schema.MultiEnvDefaultFunc([]string{"IC_PRIVATE_ENDPOINT_TYPE", "IBMCLOUD_PRIVATE_ENDPOINT_TYPE"}, nil),
 			},
