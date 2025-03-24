@@ -112,7 +112,7 @@ resource "ibm_onboarding_catalog_deployment" "onboarding_catalog_deployment_inst
 | disabled | Determines the global visibility for the catalog entry, and its children. If it is not enabled, all plans are disabled. | `bool` | true |
 | kind | The kind of the global catalog object. | `string` | true |
 | overview_ui | The object that contains the service details from the Overview page in global catalog. | `` | false |
-| tags | A list of tags that carry information about your product. These tags can be used to find your product in the IBM Cloud catalog. | `list(string)` | false |
+| tags | A list of tags that carry information about your product. These tags can be used to find your product in the IBM Cloud catalog. | `list(string)` | true |
 | object_provider | The provider or owner of the product. | `` | true |
 | metadata | Global catalog deployment metadata. | `` | false |
 
@@ -158,7 +158,7 @@ resource "ibm_onboarding_catalog_plan" "onboarding_catalog_plan_instance" {
 | disabled | Determines the global visibility for the catalog entry, and its children. If it is not enabled, all plans are disabled. | `bool` | true |
 | kind | The kind of the global catalog object. | `string` | true |
 | overview_ui | The object that contains the service details from the Overview page in global catalog. | `` | false |
-| tags | A list of tags that carry information about your product. These tags can be used to find your product in the IBM Cloud catalog. | `list(string)` | false |
+| tags | A list of tags that carry information about your product. These tags can be used to find your product in the IBM Cloud catalog. | `list(string)` | true |
 | pricing_tags | A list of tags that carry information about the pricing information of your product. | `list(string)` | false |
 | object_provider | The provider or owner of the product. | `` | true |
 | metadata | Global catalog plan metadata. | `` | false |
