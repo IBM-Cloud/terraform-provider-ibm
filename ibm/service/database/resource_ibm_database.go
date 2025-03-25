@@ -254,7 +254,6 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				Description: "Option to skip the backup when upgrading the version of your db. Skipping the backup means that your deployment becomes available more quickly, but there is no immediate backup available. Default is false",
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Default:     false,
 			},
 			"service_endpoints": {
 				Description:  "Types of the service endpoints. Possible values are 'public', 'private', 'public-and-private'.",
@@ -2210,7 +2209,7 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 	if d.HasChange("version") {
 		//TODO LORNA: hook this up to new endpoint
 		version := d.Get("version").(string)
-		skipBackup := d.Get("version_upgrade_skip_backup").(bool)
+		skipBackup := d.Get("version_upgrade_skip_backup") == true
 
 		timeoutHelper := TimeoutHelper{Now: time.Now()}
 		expirationDatetime := timeoutHelper.calculateExpirationDatetime(d.Timeout(schema.TimeoutUpdate))
@@ -3202,7 +3201,7 @@ func validateVersionDiff(_ context.Context, diff *schema.ResourceDiff, meta inte
 		return nil
 	}
 
-	skipBackup := diff.Get("version_upgrade_skip_backup").(bool)
+	skipBackup := diff.Get("version_upgrade_skip_backup") == true
 	newVersionStr, _ := newVersion.(string)
 
 	return validateUpgradeVersion(instanceID, newVersionStr, skipBackup, meta)
