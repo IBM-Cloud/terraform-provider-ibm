@@ -2048,7 +2048,16 @@ func resourceIBMISBareMetalServerCreate(context context.Context, d *schema.Resou
 	createbmsoptions.BareMetalServerPrototype = options
 	bms, response, err := sess.CreateBareMetalServerWithContext(context, createbmsoptions)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("[DEBUG] Create bare metal server err %s\n%s", err, response))
+		if response != nil && response.StatusCode == 409 {
+			log.Printf("[DEBUG] Create Bare Metal Server response status code: 409 conflict, provider will try again. %s", err)
+			time.Sleep(15 * time.Second)
+			bms, response, err = sess.CreateBareMetalServerWithContext(context, createbmsoptions)
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("[DEBUG] Create bare metal server(1) err %s\n%s", err, response))
+			}
+		} else {
+			return diag.FromErr(fmt.Errorf("[DEBUG] Create bare metal server err %s\n%s", err, response))
+		}
 	}
 	d.SetId(*bms.ID)
 	log.Printf("[INFO] Bare Metal Server : %s", *bms.ID)
