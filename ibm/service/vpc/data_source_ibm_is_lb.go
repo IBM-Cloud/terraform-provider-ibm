@@ -320,6 +320,12 @@ func DataSourceIBMISLB() *schema.Resource {
 					},
 				},
 			},
+			"failsafe_policy_actions": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The supported `failsafe_policy.action` values for this load balancer's pools.",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+			},
 			flex.ResourceControllerURL: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -500,6 +506,10 @@ func lbGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 				}
 				d.Set(isLBListeners, listenerList)
 			}
+			if err = d.Set("failsafe_policy_actions", lb.FailsafePolicyActions); err != nil {
+				err = fmt.Errorf("Error setting failsafe_policy_actions: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb", "read", "set-failsafe_policy_actions")
+			}
 			listLoadBalancerPoolsOptions := &vpcv1.ListLoadBalancerPoolsOptions{}
 			listLoadBalancerPoolsOptions.SetLoadBalancerID(*lb.ID)
 			poolsResult, _, _ := sess.ListLoadBalancerPools(listLoadBalancerPoolsOptions)
@@ -517,17 +527,18 @@ func lbGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 					pool[poolProvisioningStatus] = *p.ProvisioningStatus
 					pool["name"] = *p.Name
 					if p.HealthMonitor != nil {
+						poolHealthMonitor := p.HealthMonitor.(*vpcv1.LoadBalancerPoolHealthMonitor)
 						healthMonitorInfo := make(map[string]interface{})
-						delayfinal := strconv.FormatInt(*(p.HealthMonitor.Delay), 10)
+						delayfinal := strconv.FormatInt(*(poolHealthMonitor.Delay), 10)
 						healthMonitorInfo[healthMonitorDelay] = delayfinal
-						maxRetriesfinal := strconv.FormatInt(*(p.HealthMonitor.MaxRetries), 10)
-						timeoutfinal := strconv.FormatInt(*(p.HealthMonitor.Timeout), 10)
+						maxRetriesfinal := strconv.FormatInt(*(poolHealthMonitor.MaxRetries), 10)
+						timeoutfinal := strconv.FormatInt(*(poolHealthMonitor.Timeout), 10)
 						healthMonitorInfo[healthMonitorMaxRetries] = maxRetriesfinal
 						healthMonitorInfo[healthMonitorTimeout] = timeoutfinal
-						if p.HealthMonitor.URLPath != nil {
-							healthMonitorInfo[healthMonitorURLPath] = *(p.HealthMonitor.URLPath)
+						if poolHealthMonitor.URLPath != nil {
+							healthMonitorInfo[healthMonitorURLPath] = *(poolHealthMonitor.URLPath)
 						}
-						healthMonitorInfo[healthMonitorType] = *(p.HealthMonitor.Type)
+						healthMonitorInfo[healthMonitorType] = *(poolHealthMonitor.Type)
 						pool[healthMonitor] = healthMonitorInfo
 					}
 

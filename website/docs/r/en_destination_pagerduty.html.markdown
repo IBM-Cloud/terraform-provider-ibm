@@ -51,7 +51,7 @@ Review the argument reference that you can specify for your resource.
 
   Nested scheme for **params**:
 
-  - `api_key` - (Required, string) The apikey required to validate user for the assigned group.
+  - `api_key` - (Optional, string) The apikey required to validate user for the assigned group[The parameter has been deprecated from destination config parameter, it will be removed in future].
   - `routing_key` - (Required, string) The integration key required to route the events to pagerduty.
 ## Attribute reference
 

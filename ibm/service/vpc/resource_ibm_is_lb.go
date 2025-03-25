@@ -146,7 +146,12 @@ func ResourceIBMISLB() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-
+			"failsafe_policy_actions": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The supported `failsafe_policy.action` values for this load balancer's pools.",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+			},
 			isLBCrn: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -585,6 +590,11 @@ func lbGet(d *schema.ResourceData, meta interface{}, id string) error {
 	}
 	if lb.RouteMode != nil {
 		d.Set(isLBRouteMode, *lb.RouteMode)
+	}
+
+	if err = d.Set("failsafe_policy_actions", lb.FailsafePolicyActions); err != nil {
+		err = fmt.Errorf("Error setting failsafe_policy_actions: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb", "read", "set-failsafe_policy_actions")
 	}
 	d.Set(isLBStatus, *lb.ProvisioningStatus)
 	d.Set(isLBCrn, *lb.CRN)

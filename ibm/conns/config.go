@@ -74,6 +74,7 @@ import (
 	"github.com/IBM/platform-services-go-sdk/catalogmanagementv1"
 	"github.com/IBM/platform-services-go-sdk/contextbasedrestrictionsv1"
 	"github.com/IBM/platform-services-go-sdk/enterprisemanagementv1"
+	"github.com/IBM/platform-services-go-sdk/globalcatalogv1"
 	searchv2 "github.com/IBM/platform-services-go-sdk/globalsearchv2"
 	"github.com/IBM/platform-services-go-sdk/globaltaggingv1"
 	iamaccessgroups "github.com/IBM/platform-services-go-sdk/iamaccessgroupsv2"
@@ -300,6 +301,7 @@ type ClientSession interface {
 	CatalogManagementV1() (*catalogmanagementv1.CatalogManagementV1, error)
 	EnterpriseManagementV1() (*enterprisemanagementv1.EnterpriseManagementV1, error)
 	ResourceControllerV2API() (*resourcecontroller.ResourceControllerV2, error)
+	GlobalCatalogV1API() (*globalcatalogv1.GlobalCatalogV1, error)
 	SecretsManagerV2() (*secretsmanagerv2.SecretsManagerV2, error)
 	SchematicsV1() (*schematicsv1.SchematicsV1, error)
 	SatelliteClientSession() (*kubernetesserviceapiv1.KubernetesServiceApiV1, error)
@@ -687,6 +689,10 @@ type clientSession struct {
 	// Software Defined Storage
 	sdsaasClient    *sdsaasv1.SdsaasV1
 	sdsaasClientErr error
+
+	// Global Catalog Management Option
+	globalCatalogClient    *globalcatalogv1.GlobalCatalogV1
+	globalCatalogClientErr error
 }
 
 // Usage Reports
@@ -1321,6 +1327,11 @@ func (session clientSession) IBMCloudLogsRoutingV0() (*ibmcloudlogsroutingv0.IBM
 	return session.ibmCloudLogsRoutingClient, session.ibmCloudLogsRoutingClientErr
 }
 
+// GlobalCatalog Session
+func (sess clientSession) GlobalCatalogV1API() (*globalcatalogv1.GlobalCatalogV1, error) {
+	return sess.globalCatalogClient, sess.globalCatalogClientErr
+}
+
 // ClientSession configures and returns a fully initialized ClientSession
 func (c *Config) ClientSession() (interface{}, error) {
 	sess, err := newSession(c)
@@ -1843,7 +1854,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		if c.Region == "us-south" || c.Region == "us-east" {
 			usageReportsURL = ContructEndpoint(fmt.Sprintf("private.%s.usagereports", c.Region), fmt.Sprintf("%s/v1", cloudEndpoint))
 		} else {
-			fmt.Println("Private Endpint supports only us-south and us-east region specific endpoint")
+			log.Println("Private Endpint supports only us-south and us-east region specific endpoint")
 			usageReportsURL = ContructEndpoint("private.us-south.usagereports", fmt.Sprintf("%s/v1", cloudEndpoint))
 		}
 	}
@@ -1987,7 +1998,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 
 	// Construct the service client.
-	session.securityAndComplianceCenterClient, err = scc.NewSecurityAndComplianceCenterApiV3(sccApiClientOptions)
+	session.securityAndComplianceCenterClient, err = scc.NewSecurityAndComplianceCenterV3(sccApiClientOptions)
 	if err == nil {
 		// Enable retries for API calls
 		session.securityAndComplianceCenterClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
@@ -3628,6 +3639,37 @@ func (c *Config) ClientSession() (interface{}, error) {
 		} else {
 			session.sdsaasClientErr = fmt.Errorf("Error occurred while constructing 'sdsaas' service client: %q", err)
 		}
+	}
+
+	// CATALOG MANAGEMENT Service
+	globalcatalogURL := globalcatalogv1.DefaultServiceURL
+	if c.Visibility == "private" {
+		if c.Region == "us-south" || c.Region == "us-east" {
+			rmURL = ContructEndpoint(fmt.Sprintf("private.%s.globalcatalog/api/v1", c.Region), fmt.Sprintf("%s", cloudEndpoint))
+		} else {
+			fmt.Println("Private Endpoint supports only us-south and us-east region specific endpoint")
+			rmURL = ContructEndpoint("private.us-south.globalcatalog/api/v1", fmt.Sprintf("%s", cloudEndpoint))
+		}
+	}
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		catalogManagementURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_GLOBAL_CATALOG_API_ENDPOINT", c.Region, catalogManagementURL)
+	}
+	globalCatalogClientOptions := &globalcatalogv1.GlobalCatalogV1Options{
+		URL:           EnvFallBack([]string{"IBMCLOUD_GLOBAL_CATALOG_API_ENDPOINT"}, globalcatalogURL),
+		Authenticator: authenticator,
+	}
+	// Construct the service client.
+	session.globalCatalogClient, err = globalcatalogv1.NewGlobalCatalogV1(globalCatalogClientOptions)
+	if err != nil {
+		session.globalCatalogClientErr = fmt.Errorf("[ERROR] Error occurred while configuring global catalog API service: %q", err)
+	}
+	if session.globalCatalogClient != nil && session.globalCatalogClient.Service != nil {
+		// Enable retries for API calls
+		session.globalCatalogClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.globalCatalogClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
 
 	if os.Getenv("TF_LOG") != "" {
