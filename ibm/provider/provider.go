@@ -1195,8 +1195,6 @@ func Provider() *schema.Provider {
 			"ibm_container_dedicated_host":                  kubernetes.ResourceIBMContainerDedicatedHost(),
 			"ibm_cr_namespace":                              registry.ResourceIBMCrNamespace(),
 			"ibm_cr_retention_policy":                       registry.ResourceIBMCrRetentionPolicy(),
-			"ibm_ob_logging":                                kubernetes.ResourceIBMObLogging(),
-			"ibm_ob_monitoring":                             kubernetes.ResourceIBMObMonitoring(),
 			"ibm_cos_bucket":                                cos.ResourceIBMCOSBucket(),
 			"ibm_cos_bucket_replication_rule":               cos.ResourceIBMCOSBucketReplicationConfiguration(),
 			"ibm_cos_bucket_object":                         cos.ResourceIBMCOSBucketObject(),
