@@ -46,11 +46,11 @@ const (
 )
 
 const (
-	databaseTaskCompletedStatus  = "completed"
-	databaseTaskQueuedStatus = "queued"
-	databaseTaskRunningStatus = "running"
-	databaseTaskFailedStatus     = "failed"
-	databaseTaskExpiredStatus     = "expired"
+	databaseTaskCompletedStatus = "completed"
+	databaseTaskQueuedStatus    = "queued"
+	databaseTaskRunningStatus   = "running"
+	databaseTaskFailedStatus    = "failed"
+	databaseTaskExpiredStatus   = "expired"
 )
 
 const (
@@ -247,6 +247,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 			"version": {
 				Description: "The database version to provision if specified",
 				Type:        schema.TypeString,
+				Computed:    true,
 				Optional:    true,
 			},
 			"version_upgrade_skip_backup": {
