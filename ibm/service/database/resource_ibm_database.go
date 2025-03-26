@@ -251,7 +251,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				Optional:    true,
 			},
 			"version_upgrade_skip_backup": {
-				Description: "Option to skip the backup when upgrading the version of your db. Skipping the backup means that your deployment becomes available more quickly, but there is no immediate backup available. Default is false",
+				Description: "Option to skip the backup when upgrading the version of your db. Only applicable to databases that do not support PITR. Skipping the backup means that your deployment becomes available more quickly, but there is no immediate backup available. This is not recommended as it could result in data loss",
 				Type:        schema.TypeBool,
 				Optional:    true,
 			},
