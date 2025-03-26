@@ -62,7 +62,7 @@ func expandVersion(version clouddatabasesv5.VersionsCapabilityItem) *Version {
 
 func (v *Version) isVersionUpgradeAllowed(version string) bool {
 	for _, transition := range v.Transitions {
-		if transition.ToVersion == version && transition.Method == "in-place" { //TODO replace restore with in-place
+		if transition.ToVersion == version && transition.Method == "in-place" {
 			return true
 		}
 	}
@@ -71,7 +71,7 @@ func (v *Version) isVersionUpgradeAllowed(version string) bool {
 
 func (v *Version) isSkipBackupUpgradeAllowed(version string) bool {
 	for _, transition := range v.Transitions {
-		if transition.ToVersion == version && transition.SkipBackupSupported != nil && transition.Method == "in-place" { //TODO replace restore with in-place
+		if transition.ToVersion == version && transition.SkipBackupSupported != nil && transition.Method == "in-place" {
 			return *transition.SkipBackupSupported
 		}
 	}
@@ -80,7 +80,7 @@ func (v *Version) isSkipBackupUpgradeAllowed(version string) bool {
 
 func (v *Version) hasUpgradeVersions() bool {
 	for _, transition := range v.Transitions {
-		if transition.Method == "in-place" { //TODO replace restore with in-place
+		if transition.Method == "in-place" {
 			return true
 		}
 	}
@@ -90,7 +90,7 @@ func (v *Version) hasUpgradeVersions() bool {
 func (v *Version) getAllowedVersionsList() []string {
 	var allowedList []string
 	for _, transition := range v.Transitions {
-		if transition.Method == "in-place" { //TODO replace restore with in-place
+		if transition.Method == "in-place" {
 			allowedList = append(allowedList, transition.ToVersion)
 		}
 	}

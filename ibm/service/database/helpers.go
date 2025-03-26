@@ -9,12 +9,21 @@ import (
 	"time"
 
 	"github.com/IBM/cloud-databases-go-sdk/clouddatabasesv5"
-	"github.com/IBM/go-sdk-core/core"
+	"github.com/IBM/go-sdk-core/v5/core"
 )
 
 /*  TODO Move other helper functions here */
 type TimeoutHelper struct {
 	Now time.Time
+}
+
+// Allows mocking
+type DeploymentTaskFetcher interface {
+	ListDeploymentTasks(opts *clouddatabasesv5.ListDeploymentTasksOptions) (*clouddatabasesv5.Tasks, *core.DetailedResponse, error)
+}
+type TaskManager struct {
+	Client     DeploymentTaskFetcher
+	InstanceID string
 }
 
 func (t *TimeoutHelper) isMoreThan24Hours(duration time.Duration) bool {
@@ -33,30 +42,24 @@ func (t *TimeoutHelper) calculateExpirationDatetime(timeoutDuration time.Duratio
 	return t.futureTimeToISO(timeoutDuration)
 }
 
-func isMatchingTaskInProgress(
-	cloudDatabasesClient *clouddatabasesv5.CloudDatabasesV5,
-	deploymentID string,
-	matchDescription string,
-) (bool, *clouddatabasesv5.Task, error) {
-
-	opts := clouddatabasesv5.ListDeploymentTasksOptions{
-		ID: core.StringPtr(deploymentID),
+func (tm *TaskManager) IsMatchingTaskInProgress(description string) (bool, *clouddatabasesv5.Task, error) {
+	opts := &clouddatabasesv5.ListDeploymentTasksOptions{
+		ID: core.StringPtr(tm.InstanceID),
 	}
 
-	resp, _, err := cloudDatabasesClient.ListDeploymentTasks(&opts)
+	resp, _, err := tm.Client.ListDeploymentTasks(opts)
 	if err != nil {
-		return false, nil, fmt.Errorf("failed to list deployment tasks: %w", err)
+		return false, nil, fmt.Errorf("failed to list tasks for instance: %w", err)
 	}
 
 	for _, task := range resp.Tasks {
 		if task.Status == nil || task.Description == nil {
 			continue
 		}
-
 		status := *task.Status
 		desc := *task.Description
 
-		if (status == databaseTaskRunningStatus || status == databaseTaskQueuedStatus) && desc == matchDescription {
+		if (status == databaseTaskRunningStatus || status == databaseTaskQueuedStatus) && desc == description {
 			log.Printf("[INFO] Found matching task in progress: %s (status: %s)", desc, status)
 			return true, &task, nil
 		}

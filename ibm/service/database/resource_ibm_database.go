@@ -245,7 +245,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				Description: "The configuration schema in JSON format",
 			},
 			"version": {
-				Description: "The database version to provision if specified",
+				Description: "The database version to provision if specified or the database version to upgrade to",
 				Type:        schema.TypeString,
 				Computed:    true,
 				Optional:    true,
@@ -3189,10 +3189,15 @@ func validateVersionDiff(_ context.Context, diff *schema.ResourceDiff, meta inte
 		return fmt.Errorf("[ERROR] Error getting database client settings: %w", err)
 	}
 
+	tm := &TaskManager{
+		Client:     cloudDatabasesClient,
+		InstanceID: instanceID,
+	}
+
 	// Check if a version upgrade task is already in progress
-	upgradeInProgress, task, err := isMatchingTaskInProgress(cloudDatabasesClient, instanceID, "Upgrading instance")
+	upgradeInProgress, task, err := tm.IsMatchingTaskInProgress("Upgrading instance")
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error getting tasks: %w", err)
+		return fmt.Errorf("[ERROR] Error getting tasks for instance: %w", err)
 	}
 
 	if upgradeInProgress {

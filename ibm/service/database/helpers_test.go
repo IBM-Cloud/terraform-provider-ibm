@@ -4,9 +4,12 @@
 package database
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
+	"github.com/IBM/cloud-databases-go-sdk/clouddatabasesv5"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/stretchr/testify/require"
 )
 
@@ -83,6 +86,131 @@ func TestCalculateExpirationDatetime(t *testing.T) {
 		t.Run(tc.description, func(t *testing.T) {
 			result := helper.calculateExpirationDatetime(tc.duration)
 			require.Equal(t, tc.expected, result)
+		})
+	}
+}
+
+type MockTaskClient struct {
+	Tasks []clouddatabasesv5.Task
+	Err   error
+}
+
+func (m *MockTaskClient) ListDeploymentTasks(opts *clouddatabasesv5.ListDeploymentTasksOptions) (*clouddatabasesv5.Tasks, *core.DetailedResponse, error) {
+	if m.Err != nil {
+		return nil, nil, m.Err
+	}
+	return &clouddatabasesv5.Tasks{
+		Tasks: m.Tasks,
+	}, &core.DetailedResponse{}, nil
+}
+
+func TestIsMatchingTaskInProgress(t *testing.T) {
+	testcases := []struct {
+		description        string
+		mockTasks          []clouddatabasesv5.Task
+		mockError          error
+		instanceID         string
+		matchDescription   string
+		expectedInProgress bool
+		expectedTaskID     string
+		expectError        bool
+	}{
+		{
+			description: "When matching task is running, Expect true",
+			mockTasks: []clouddatabasesv5.Task{
+				{
+					ID:          core.StringPtr("123"),
+					Status:      core.StringPtr("running"),
+					Description: core.StringPtr("Upgrading instance"),
+				},
+			},
+			instanceID:         "inst-1",
+			matchDescription:   "Upgrading instance",
+			expectedInProgress: true,
+			expectedTaskID:     "123",
+		},
+		{
+			description: "When matching task is queued, Expect true",
+			mockTasks: []clouddatabasesv5.Task{
+				{
+					ID:          core.StringPtr("234"),
+					Status:      core.StringPtr("queued"),
+					Description: core.StringPtr("Upgrading instance"),
+				},
+			},
+			instanceID:         "inst-2",
+			matchDescription:   "Upgrading instance",
+			expectedInProgress: true,
+			expectedTaskID:     "234",
+		},
+		{
+			description: "When matching task is completed, Expect false",
+			mockTasks: []clouddatabasesv5.Task{
+				{
+					ID:          core.StringPtr("101"),
+					Status:      core.StringPtr("completed"),
+					Description: core.StringPtr("Upgrading instance"),
+				},
+				{
+					ID:          core.StringPtr("102"),
+					Status:      core.StringPtr("queued"),
+					Description: core.StringPtr("Backing up instance"),
+				},
+			},
+			instanceID:         "inst-4",
+			matchDescription:   "Upgrading instance",
+			expectedInProgress: false,
+		},
+		{
+			description: "When matching task is NOT the running task, Expect false",
+			mockTasks: []clouddatabasesv5.Task{
+				{
+					ID:          core.StringPtr("789"),
+					Status:      core.StringPtr("running"),
+					Description: core.StringPtr("Restoring instance"),
+				},
+			},
+			instanceID:         "inst-3",
+			matchDescription:   "Upgrading instance",
+			expectedInProgress: false,
+		},
+		{
+			description:        "When there is an error getting tasks, Expect error",
+			mockError:          fmt.Errorf("API error"),
+			instanceID:         "inst-5",
+			matchDescription:   "Upgrading instance",
+			expectError:        true,
+			expectedInProgress: false,
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.description, func(t *testing.T) {
+			mockClient := &MockTaskClient{
+				Tasks: tc.mockTasks,
+				Err:   tc.mockError,
+			}
+
+			tm := &TaskManager{
+				Client:     mockClient,
+				InstanceID: tc.instanceID,
+			}
+
+			inProgress, task, err := tm.IsMatchingTaskInProgress(tc.matchDescription)
+
+			if tc.expectError {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+				require.Equal(t, tc.expectedInProgress, inProgress)
+
+				if tc.expectedInProgress {
+					require.NotNil(t, task)
+					require.Equal(t, tc.expectedTaskID, *task.ID)
+				} else {
+					require.Nil(t, task)
+				}
+			}
 		})
 	}
 }
