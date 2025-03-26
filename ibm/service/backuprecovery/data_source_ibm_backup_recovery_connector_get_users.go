@@ -31,6 +31,7 @@ func DataSourceIbmBackupRecoveryConnectorGetUsers() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
+				Sensitive:   true,
 				Description: "Specifies the session name cookie of the Cohesity user.",
 			},
 			"tenant_ids": &schema.Schema{

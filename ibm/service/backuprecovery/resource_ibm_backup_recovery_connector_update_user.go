@@ -35,6 +35,7 @@ func ResourceIbmBackupRecoveryConnectorUpdateUser() *schema.Resource {
 			"session_name_cookie": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
+				Sensitive:   true,
 				Description: "Specifies the session name cookie of the Cohesity user.",
 			},
 			"ad_user_info": &schema.Schema{

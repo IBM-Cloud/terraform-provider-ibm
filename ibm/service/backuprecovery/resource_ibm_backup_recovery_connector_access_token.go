@@ -28,31 +28,30 @@ func ResourceIbmBackupRecoveryConnectorAccessToken() *schema.Resource {
 		ReadContext:   resourceIbmBackupRecoveryConnectorAccessTokenRead,
 		DeleteContext: resourceIbmBackupRecoveryConnectorAccessTokenDelete,
 		CustomizeDiff: checkDiffResourceIbmBackupRecoveryConnectorAccessToken,
-		Importer:      &schema.ResourceImporter{},
+		UpdateContext: resourceIbmBackupRecoveryConnectorAccessTokenUpdate,
 
 		Schema: map[string]*schema.Schema{
 			"username": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
-				ForceNew:    true,
 				Description: "Specifies the login name of the Cohesity user.",
 			},
 			"password": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
-				ForceNew:    true,
+				Sensitive:   true,
 				Description: "Specifies the password of the Cohesity user account.",
 			},
 			"domain": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
-				ForceNew:    true,
 				Description: "Specifies the domain the user is logging in to. For a local user the domain is LOCAL. For LDAP/AD user, the domain will map to a LDAP connection string. A user is uniquely identified by a combination of username and domain. LOCAL is the default domain.",
 			},
 			"access_token": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Created access token.",
+				Sensitive:   true,
 			},
 			"privileges": &schema.Schema{
 				Type:        schema.TypeList,
@@ -140,6 +139,19 @@ func resourceIbmBackupRecoveryConnectorAccessTokenCreate(context context.Context
 
 func resourceIbmBackupRecoveryConnectionAccessTokenID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
+}
+
+func resourceIbmBackupRecoveryConnectorAccessTokenUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	// This resource does not support a "delete" operation.
+	var diags diag.Diagnostics
+	warning := diag.Diagnostic{
+		Severity: diag.Warning,
+		Summary:  "Resource update will only affect terraform state and not the actual backend resource",
+		Detail:   "Update operation for this resource is not supported and will only affect the terraform statefile. No changes will be made to the backend resource.",
+	}
+	diags = append(diags, warning)
+	// d.SetId("")
+	return diags
 }
 
 func resourceIbmBackupRecoveryConnectorAccessTokenRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

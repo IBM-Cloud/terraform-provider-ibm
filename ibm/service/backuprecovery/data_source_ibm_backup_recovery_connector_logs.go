@@ -31,6 +31,7 @@ func DataSourceIbmBackupRecoveryConnectorLogs() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
+				Sensitive:   true,
 				Description: "Token required to authenticate to the connector. Token can be obtained using ibm_backup_recovery_connector_access_token resource",
 			},
 			"connector_logs": &schema.Schema{

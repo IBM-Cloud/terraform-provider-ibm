@@ -29,23 +29,22 @@ func ResourceIbmBackupRecoveryConnectorRegistration() *schema.Resource {
 		DeleteContext: resourceIbmBackupRecoveryConnectorRegistrationDelete,
 		Importer:      &schema.ResourceImporter{},
 		CustomizeDiff: checkDiffResourceIbmBackupRecoveryConnectorRegistration,
+		UpdateContext: resourceIbmBackupRecoveryConnectorRegistrationUpdate,
 		Schema: map[string]*schema.Schema{
 			"connector_id": &schema.Schema{
 				Type:        schema.TypeInt,
 				Optional:    true,
-				ForceNew:    true,
 				Description: "The connector's ID to be used for registration. Two connectors belonging to the same tenant are guaranteed to have different IDs.",
 			},
 			"access_token": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				ForceNew:    true,
+				Sensitive:   true,
 				Description: "Token required to authenticate to the connector. Token can be obtained using ibm_backup_recovery_connector_access_token resource",
 			},
 			"registration_token": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				ForceNew:    true,
 				Description: "The registration token.",
 			},
 		},
@@ -104,6 +103,19 @@ func resourceIbmBackupRecoveryConnectorRegistrationCreate(context context.Contex
 
 func resourceIbmBackupRecoveryConnectorRegistrationId(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
+}
+
+func resourceIbmBackupRecoveryConnectorRegistrationUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	// This resource does not support a "delete" operation.
+	var diags diag.Diagnostics
+	warning := diag.Diagnostic{
+		Severity: diag.Warning,
+		Summary:  "Resource update will only affect terraform state and not the actual backend resource",
+		Detail:   "Update operation for this resource is not supported and will only affect the terraform statefile. No changes will be made to the backend resource.",
+	}
+	diags = append(diags, warning)
+	// d.SetId("")
+	return diags
 }
 
 func resourceIbmBackupRecoveryConnectorRegistrationRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
