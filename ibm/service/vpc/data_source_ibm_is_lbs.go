@@ -101,6 +101,11 @@ func DataSourceIBMISLBS() *schema.Resource {
 							Computed:    true,
 							Description: "Indicates whether this load balancer supports source IP session persistence.",
 						},
+						isLBReservedIPtargetSupported: {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Indicates whether this load balancer supports members with reserved IP as target.",
+						},
 						isLBUdpSupported: {
 							Type:        schema.TypeBool,
 							Computed:    true,
@@ -370,6 +375,9 @@ func getLbs(d *schema.ResourceData, meta interface{}) error {
 		}
 		if lb.RouteMode != nil {
 			lbInfo[isLBRouteMode] = *lb.RouteMode
+		}
+		if lb.ReservedIPTargetSupported != nil {
+			lbInfo[isLBReservedIPtargetSupported] = *lb.ReservedIPTargetSupported
 		}
 		if lb.UDPSupported != nil {
 			lbInfo[isLBUdpSupported] = *lb.UDPSupported
