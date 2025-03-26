@@ -33,12 +33,12 @@ func ResourceIbmBackupRecoveryConnectorAccessToken() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"username": &schema.Schema{
 				Type:        schema.TypeString,
-				Optional:    true,
+				Required:    true,
 				Description: "Specifies the login name of the Cohesity user.",
 			},
 			"password": &schema.Schema{
 				Type:        schema.TypeString,
-				Optional:    true,
+				Required:    true,
 				Sensitive:   true,
 				Description: "Specifies the password of the Cohesity user account.",
 			},
