@@ -1,3 +1,7 @@
+# 1.76.3 (Mar 26, 2025)
+* Support vpe endpoints ([6083](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6083))
+
+
 # 1.76.2 (Mar 20, 2025)
 * removed validation of location for sch resources and ds ([6063](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6063))
 * fix(cis): don't panic when ZoneID/ZoneName not set ([6070](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6070))
