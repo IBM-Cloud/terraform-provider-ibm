@@ -121,7 +121,10 @@ func resourceIbmLogsEnrichmentCreate(context context.Context, d *schema.Resource
 	}
 	region := getLogsInstanceRegion(logsClient, d)
 	instanceId := d.Get("instance_id").(string)
-	logsClient = getClientWithLogsInstanceEndpoint(logsClient, instanceId, region, getLogsInstanceEndpointType(logsClient, d))
+	logsClient, err = getClientWithLogsInstanceEndpoint(logsClient, meta, instanceId, region, getLogsInstanceEndpointType(logsClient, d))
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("Unable to get updated logs instance client"))
+	}
 
 	createEnrichmentOptions := &logsv0.CreateEnrichmentOptions{}
 
@@ -151,7 +154,7 @@ func resourceIbmLogsEnrichmentRead(context context.Context, d *schema.ResourceDa
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
-	logsClient, region, instanceId, enrichmentID, err := updateClientURLWithInstanceEndpoint(d.Id(), logsClient, d)
+	logsClient, region, instanceId, enrichmentID, err := updateClientURLWithInstanceEndpoint(d.Id(), meta, logsClient, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -210,7 +213,7 @@ func resourceIbmLogsEnrichmentDelete(context context.Context, d *schema.Resource
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
-	logsClient, _, _, enrichmentID, err := updateClientURLWithInstanceEndpoint(d.Id(), logsClient, d)
+	logsClient, _, _, enrichmentID, err := updateClientURLWithInstanceEndpoint(d.Id(), meta, logsClient, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}

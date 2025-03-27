@@ -225,6 +225,13 @@ func Provider() *schema.Provider {
 				Description:  "Visibility of the provider if it is private or public.",
 				DefaultFunc:  schema.MultiEnvDefaultFunc([]string{"IC_VISIBILITY", "IBMCLOUD_VISIBILITY"}, "public"),
 			},
+			"private_endpoint_type": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validate.ValidateAllowedStringValues([]string{"vpe"}),
+				Description:  "Private Endpoint type used by the service endpoints. Example: vpe.",
+				DefaultFunc:  schema.MultiEnvDefaultFunc([]string{"IC_PRIVATE_ENDPOINT_TYPE", "IBMCLOUD_PRIVATE_ENDPOINT_TYPE"}, nil),
+			},
 			"endpoints_file_path": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -1195,8 +1202,6 @@ func Provider() *schema.Provider {
 			"ibm_container_dedicated_host":                  kubernetes.ResourceIBMContainerDedicatedHost(),
 			"ibm_cr_namespace":                              registry.ResourceIBMCrNamespace(),
 			"ibm_cr_retention_policy":                       registry.ResourceIBMCrRetentionPolicy(),
-			"ibm_ob_logging":                                kubernetes.ResourceIBMObLogging(),
-			"ibm_ob_monitoring":                             kubernetes.ResourceIBMObMonitoring(),
 			"ibm_cos_bucket":                                cos.ResourceIBMCOSBucket(),
 			"ibm_cos_bucket_replication_rule":               cos.ResourceIBMCOSBucketReplicationConfiguration(),
 			"ibm_cos_bucket_object":                         cos.ResourceIBMCOSBucketObject(),
@@ -2364,6 +2369,10 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	if v, ok := d.GetOk("visibility"); ok {
 		visibility = v.(string)
 	}
+	var privateEndpointType string
+	if vt, ok := d.GetOk("private_endpoint_type"); ok {
+		privateEndpointType = vt.(string)
+	}
 	var file string
 	if f, ok := d.GetOk("endpoints_file_path"); ok {
 		file = f.(string)
@@ -2402,6 +2411,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		IAMRefreshToken:      iamRefreshToken,
 		Zone:                 zone,
 		Visibility:           visibility,
+		PrivateEndpointType:  privateEndpointType,
 		EndpointsFile:        file,
 		IAMTrustedProfileID:  iamTrustedProfileId,
 	}
