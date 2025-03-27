@@ -10,7 +10,7 @@ description: |-
 
 Create or delete a placement group.
 
-## Example usage
+## Example Usage
 
 The following example enables you to create a placement group with a group policy of affinity:
 
@@ -29,7 +29,7 @@ resource "ibm_pi_placement_group" "testacc_placement_group" {
   - `region` - `lon`
   - `zone` - `lon04`
   
-  Example usage:
+Example usage:
 
   ```terraform
     provider "ibm" {
@@ -45,7 +45,7 @@ ibm_pi_placement_group provides the following [timeouts](https://www.terraform.i
 - **create** - (Default 60 minutes) Used for creating a placement group.
 - **delete** - (Default 60 minutes) Used for deleting a placement group.
 
-## Argument reference
+## Argument Reference
 
 Review the argument references that you can specify for your resource.
 
@@ -53,7 +53,7 @@ Review the argument references that you can specify for your resource.
 - `pi_placement_group_name`  - (Required, String) The name of the placement group.
 - `pi_placement_group_policy` - (Required, String) The value of the group's affinity policy. Valid values are `affinity` and `anti-affinity`.
 
-## Attribute reference
+## Attribute Reference
 
  In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
