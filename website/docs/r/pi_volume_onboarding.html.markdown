@@ -10,7 +10,7 @@ description: |-
 
 Creates volume onboarding. For more information, about managing volume groups, see [getting started with IBM Power Systems Virtual Servers](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-getting-started).
 
-## Example usage
+## Example Usage
 
 The following example attaches volume to a power systems virtual server instance.
 
@@ -51,7 +51,7 @@ ibm_pi_volume_onboarding provides the following [timeouts](https://www.terraform
 - **create** - (Default 15 minutes) Used for attaching volume.
 - **delete** - (Default 15 minutes) Used for detaching volume.
 
-## Argument reference
+## Argument Reference
 
 Review the argument references that you can specify for your resource.
 
@@ -69,7 +69,7 @@ Review the argument references that you can specify for your resource.
     - `pi_auxiliary_volume_name` - (Required, String) The auxiliary volume name.
     - `pi_display_name` - (Optional, String) The display name of auxiliary volume which is to be onboarded.
 
-## Attribute reference
+## Attribute Reference
 
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
