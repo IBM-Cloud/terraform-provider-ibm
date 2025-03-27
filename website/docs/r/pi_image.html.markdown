@@ -10,7 +10,7 @@ description: |-
 
 Create, update, or delete for a Power Systems Virtual Server image. For more information, about IBM power virtual server cloud, see [getting started with IBM Power Systems Virtual Servers](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-getting-started).
 
-## Example usage
+## Example Usage
 
 The following example enables you to create a image in your project:
 
@@ -61,7 +61,7 @@ The ibm_pi_image provides the following [timeouts](https://www.terraform.io/docs
 - **update** - (Default 10 minutes) Used for updating image.
 - **delete** - (Default 10 minutes) Used for deleting image.
 
-## Argument reference
+## Argument Reference
 
 Review the argument references that you can specify for your resource.
 
@@ -96,7 +96,7 @@ Review the argument references that you can specify for your resource.
   - `vendor` - (Required, String) Vendor supporting the product. Allowable value is: `SAP`.
 - `pi_user_tags` - (Optional, List) The user tags attached to this resource.
 
-## Attribute reference
+## Attribute Reference
 
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 

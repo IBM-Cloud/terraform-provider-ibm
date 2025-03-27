@@ -10,7 +10,7 @@ description: |-
 
 Export an image to IBM Cloud Object Storage for Power Systems Virtual Server instance. For more information, about IBM power virtual server cloud, see [getting started with IBM Power Systems Virtual Servers](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-getting-started).
 
-## Example usage
+## Example Usage
 
 The following example enables you to export an image:
 
@@ -48,7 +48,7 @@ The `ibm_pi_image_export` provides the following [timeouts](https://www.terrafor
 
 - **create** - (Default 60 minutes) used for exporting image to IBM Cloud Object Storage bucked. Considered failed if no response is received by timeout.
 
-## Argument reference
+## Argument Reference
 
 Review the argument references that you can specify for your resource.
 
@@ -59,7 +59,7 @@ Review the argument references that you can specify for your resource.
 - `pi_image_id` - (Required, String) The Image ID of existing source image; required for image export.
 - `pi_image_secret_key` - (Required, String, Sensitive) The Cloud Object Storage secret key; required for buckets with private access.
 
-## Attribute reference
+## Attribute Reference
 
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
