@@ -1,3 +1,113 @@
+# 1.77.0-beta0 (Mar 19, 2025)
+* Support for IAM 
+    - **Datasources**
+        - ibm_iam_account_settings_external_interaction
+    - **Resources**
+        - ibm_iam_account_settings_external_interaction
+* Support for Event Notification 
+    - **Datasources**
+        - ibm_en_destination_event_streams
+        - ibm_en_event_streams_template
+        - ibm_en_pagerduty_template
+        - ibm_en_subscription_event_streams
+    - **Resources**
+        - ibm_en_destination_event_streams
+        - ibm_en_event_streams_template
+        - ibm_en_pagerduty_template
+        - ibm_en_subscription_event_streams
+
+
+Enhancements
+* chore: update TKE SDK reference ([6048](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6048))
+* Add nsg protocol check ([6030](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6030))
+* Support trusted token for ICD Services. Use v2 resource controller library ([6012](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6012))
+* add crn to group response ([6046](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6046))
+* Added support for id in is_ssh_key data source ([6054](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6054))
+* feat(lb): support for lb pool failover policy ([6061](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6061))
+* Add crn to IAM group response ([6046](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6046))
+* Added support for id in is_ssh_key data source ([6054](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6054))
+
+Bug Fixes
+* fix crashing provider due to Code Engine type casting ([6058](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6058))
+* fix: adding ForceNew to IBM Scope and bumping to new scc-go-sdk version ([6051](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6051))
+* removed validation of location for sch resources and ds ([6063](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6063))
+* Added retry logic for is_bare_metal_server 409 ([6064](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6064))
+* fix: update docs for cm account resource ([6038](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6038))
+* fix(cis): don't panic when ZoneID/ZoneName not set ([6070](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6070))
+* enhanced the is-geography datasources errors ([6076](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6076))
+
+
+# 1.76.1 (Mar 07, 2025)
+BugFixes
+* fix(identity) rolling back id to profile_id ([6039](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6039))
+* fix(identity) Trusted profile history field error ([6031](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6031))
+* fix: fix the resource name being printed in ibm_en_integration logging ([6037](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6037))
+
+# 1.76.0 (Mar 03, 2025)
+* Support for IAM Access Management
+    - **Datasources**
+        - ibm_iam_access_tag
+* Support for IBM Db2
+    - **Datasources**
+        - ibm_db2_allowlist_ip
+        - ibm_db2_backup
+        - ibm_db2_tuneable_param
+* Support for Global Catalog
+    - **Datasources**
+        - ibm_cm_account
+    - **Resources**
+        - ibm_cm_account
+* Support for SCC
+    - **Datasources**
+        - ibm_scc_scope
+        - ibm_scc_scope_collection
+    - **Resources**
+        - ibm_scc_scope
+
+Enhancements
+* Update tcp flag documentation ([5981](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5981))
+* Add sap deployment target check ([5980](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5980))
+* Power SPPP Refactor ([5962](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5962))
+* Deprecate network port data source and resource ([5982](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5982))
+* Add date-based versioning support for Code Engine ([5951](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5951))
+* Mcsp flag consolidation parnercentersellv1 ([5979](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5979))
+* feat(Cloud Databases): Update Database Password Complexity Validation ([5985](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5985))
+* Event Streams: support kafka client with IAM token for auth ([5822](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5822))
+* Add SourcePort, DestinationPort to NSG rule resource ([5996](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5996))
+* Remove snapshot get check and update documentation ([5916](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5916))
+* Granular CRN for dedicated hosts ([5983](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5983))
+* [Datasource][Resource] Add dedicated host id attribute to shared processor pool ([5992](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5992))
+* [Datasource][Resource] Add network security group ids field to network interface ([5993](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5993))
+* [Datasource][Resource] Add dedicated host id to instance ([5995](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5995))
+* remove erroneous attribute in example ([5999](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5999))
+* Remove vtl deprecation message ([6004](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6004))
+* Update NSG datasources and resources ([5986](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5986))
+* new error messages for TP datasources ([5997](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5997))
+* CDN EOL Notification: Preparing for the Transition, Deprecation Msg added ([6001](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6001))
+* fix(CIS): update response type of proxy read timeout setting ([5990](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5990))
+* Add support for managed CSR in Secrets Manager Imported Certificate secret  ([6002](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6002))
+* Added support for default address prefixes in vpc(s) datasource ([6011](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6011))
+* added support for created_at and href support in is_ssh_key ([6003](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6003))
+* Updated readme for ansible collection ([6000](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6000))
+* Add Network Interface and NSG Href To Instance Network ([5991](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5991))
+* change parameter updates in code engine to prevent panic ([5939](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5939))
+* fix(identity) new error messages for TP link ([6009](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6009))
+* fix(identity) new error messages for TP resource ([5989](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5989))
+* Support of update authorization policy ([6015](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6015))
+* Remove default value for ibm_code_engine_build strategy_spec_file to enable other values for run_mode ([5972](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5972))
+* fix(identity) new error messages for TP claim rules ([6023](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6023))
+* chore(add deprecation message to iks observability resource) ([6026](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6026))
+* Update pag_instance.html.markdown ([6032](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6032))
+
+BugFixes
+* fix(vpc): dns name update issue fixed ([5973](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5973))
+* fix(priority) update validators.go ([6010](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6010))
+* fix(share-snap): Fix docs and missing item in data source ([5987](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5987))
+* fix(docs): pps docs indentation fix ([5959](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5959))
+* handle async provisioning during create and return proper error message ([6024](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6024))
+* fix: always use sasl oauthbearer for sarama client ([6020](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6020))
+* SM Fixes ([6017](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6017))
+
 # 1.75.2 (Feb 12, 2025)
 Enhancements
 * Regex fix parnercentersellv1 ([5958](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5958))

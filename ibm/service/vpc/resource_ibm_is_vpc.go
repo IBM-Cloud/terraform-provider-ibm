@@ -1358,11 +1358,27 @@ func vpcUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasCha
 		if d.HasChange("dns.0.enable_hub") {
 			_, newEH := d.GetChange("dns.0.enable_hub")
 			dnsPatch.EnableHub = core.BoolPtr(newEH.(bool))
+			hasDnsChanged = true
 		}
 		if d.HasChange("dns.0.resolver") {
-
 			_, newResolver := d.GetChange("dns.0.resolver")
-
+			if d.HasChange("dns.0.resolver.0.dns_binding_name") && (d.Get("dns.0.resolver.0.dns_binding_name").(string) != "null" || d.Get("dns.0.resolver.0.dns_binding_name").(string) != "") {
+				dnsBindingName := d.Get("dns.0.resolver.0.dns_binding_name").(string)
+				dnsBindingId := d.Get("dns.0.resolver.0.dns_binding_id").(string)
+				vpcdnsResolutionBindingPatch := &vpcv1.VpcdnsResolutionBindingPatch{
+					Name: &dnsBindingName,
+				}
+				vpcdnsResolutionBindingPatchAsPatch, _ := vpcdnsResolutionBindingPatch.AsPatch()
+				updateVPCDnsResolutionBinding := &vpcv1.UpdateVPCDnsResolutionBindingOptions{
+					ID:                           &dnsBindingId,
+					VPCID:                        core.StringPtr(d.Id()),
+					VpcdnsResolutionBindingPatch: vpcdnsResolutionBindingPatchAsPatch,
+				}
+				_, res, err := sess.UpdateVPCDnsResolutionBinding(updateVPCDnsResolutionBinding)
+				if err != nil {
+					return fmt.Errorf("[ERROR] Error updating dns_binding_name during VPCPatch: %s\n%s", err, res)
+				}
+			}
 			if newResolver != nil && len(newResolver.([]interface{})) > 0 {
 				ResolverModel := &vpcv1.VpcdnsResolverPatch{}
 				if d.HasChange("dns.0.resolver.0.manual_servers") {
@@ -1455,6 +1471,7 @@ func vpcUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasCha
 							}
 						}
 					}
+					hasDnsChanged = true
 				}
 				if d.HasChange("dns.0.resolver.0.vpc_id") {
 					_, newResolverVpc := d.GetChange("dns.0.resolver.0.vpc_id")
@@ -1472,6 +1489,7 @@ func vpcUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasCha
 							}
 						}
 					}
+					hasDnsChanged = true
 				}
 				if d.HasChange("dns.0.resolver.0.vpc_crn") {
 					_, newResolverVpc := d.GetChange("dns.0.resolver.0.vpc_crn")
@@ -1489,11 +1507,11 @@ func vpcUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasCha
 							}
 						}
 					}
+					hasDnsChanged = true
 				}
 				dnsPatch.Resolver = ResolverModel
 			}
 		}
-		hasDnsChanged = true
 	}
 	if hasChanged || hasDnsChanged {
 		updateVpcOptions := &vpcv1.UpdateVPCOptions{
