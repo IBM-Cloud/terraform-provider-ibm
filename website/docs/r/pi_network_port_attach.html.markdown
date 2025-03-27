@@ -13,7 +13,7 @@ description: |-
 
 Attaches a network port to a Power Systems Virtual Server instance. For more information, see [getting started with IBM Power Systems Virtual Servers](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-getting-started).
 
-## Example usage
+## Example Usage
 
 In the following example, you can create an network_port_attach resource:
 
@@ -49,7 +49,7 @@ ibm_pi_network_port_attach provides the following [timeouts](https://www.terrafo
 - **create** - (Default 60 minutes) Used for attaching a network port.
 - **delete** - (Default 60 minutes) Used for detaching a network port.
 
-## Argument reference
+## Argument Reference
 
 Review the argument references that you can specify for your resource.
 
@@ -60,7 +60,7 @@ Review the argument references that you can specify for your resource.
 - `pi_network_port_ipaddress` - (Optional, String) The requested ip address of this port.
 - `pi_user_tags` - (Optional, List) The user tags attached to this resource.
 
-## Attribute reference
+## Attribute Reference
 
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 

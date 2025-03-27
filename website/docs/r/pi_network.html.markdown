@@ -55,7 +55,7 @@ The `ibm_pi_network` provides the following [Timeouts](https://www.terraform.io/
 - **update** - (Default 60 minutes) Used for updating a network.
 - **delete** - (Default 60 minutes) Used for deleting a network.
 
-## Argument reference
+## Argument Reference
 
 Review the argument references that you can specify for your resource.
 
@@ -82,7 +82,7 @@ Review the argument references that you can specify for your resource.
   - `type` - (Optional, String) Type of the network peer. Allowable values are: `L2`, `L3BGP`, `L3Static`.
 - `pi_user_tags` - (Optional, List) The user tags attached to this resource.
 
-## Attribute reference
+## Attribute Reference
 
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 

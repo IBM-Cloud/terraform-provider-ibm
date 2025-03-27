@@ -94,18 +94,18 @@ Review the argument references that you can specify for your resource.
 - `pi_remote` - (Optional, List) List of remote. Required if `pi_network_security_group_rule_id` is not provided.
 
     Nested schema for `pi_remote`:
-    - `id` - (Optional, String) The id of the remote network address group or network security group the rules apply to. Not required for default-network-address-group.
-    - `type` - (Optional, String) The type of remote group the rules apply to. Supported values are: `network-security-group`, `network-address-group`, `default-network-address-group`.
+      - `id` - (Optional, String) The id of the remote network address group or network security group the rules apply to. Not required for default-network-address-group.
+      - `type` - (Optional, String) The type of remote group the rules apply to. Supported values are: `network-security-group`, `network-address-group`, `default-network-address-group`.
 - `pi_source_port` - (Optional, List) List of source port
 
     Nested schema for `pi_source_port`:
-    - `maximum` - (Optional, Int) The end of the port range, if applicable. If the value is not present then the default value of 65535 will be the maximum port number.
-    - `minimum` - (Optional, Int) The start of the port range, if applicable. If the value is not present then the default value of 1 will be the minimum port number.
+      - `maximum` - (Optional, Int) The end of the port range, if applicable. If the value is not present then the default value of 65535 will be the maximum port number.
+      - `minimum` - (Optional, Int) The start of the port range, if applicable. If the value is not present then the default value of 1 will be the minimum port number.
 - `pi_source_ports` - (Deprecated, Optional, List) List of source port. Deprecated, please use `pi_source_port`.
 
     Nested schema for `pi_source_ports`:
-    - `maximum` - (Optional, Int) The end of the port range, if applicable. If the value is not present then the default value of 65535 will be the maximum port number.
-    - `minimum` - (Optional, Int) The start of the port range, if applicable. If the value is not present then the default value of 1 will be the minimum port number.
+      - `maximum` - (Optional, Int) The end of the port range, if applicable. If the value is not present then the default value of 65535 will be the maximum port number.
+      - `minimum` - (Optional, Int) The start of the port range, if applicable. If the value is not present then the default value of 1 will be the minimum port number.
 
 - `pi_name` - (Optional, String) The name of the network security group rule. Required if `pi_network_security_group_rule_id` is not provided.
 
