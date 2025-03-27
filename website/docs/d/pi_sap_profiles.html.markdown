@@ -10,7 +10,7 @@ description: |-
 
 Retrieve information about all SAP profiles. For more information, see [getting started with IBM Power Systems Virtual Servers](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-getting-started).
 
-## Example usage
+## Example Usage
 
 ```terraform
 data "ibm_pi_sap_profiles" "example" {
@@ -25,22 +25,22 @@ data "ibm_pi_sap_profiles" "example" {
   - `region` - `lon`
   - `zone` - `lon04`
 
-  Example usage:
+Example usage:
 
-    ```terraform
-      provider "ibm" {
-        region    =   "lon"
-        zone      =   "lon04"
-      }
-    ```
+  ```terraform
+    provider "ibm" {
+      region    =   "lon"
+      zone      =   "lon04"
+    }
+  ```
   
-## Argument reference
+## Argument Reference
 
 Review the argument references that you can specify for your data source.
 
 - `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
 
-## Attribute reference
+## Attribute Reference
 
 In addition to all argument reference list, you can access the following attribute references after your data source is created.
 
