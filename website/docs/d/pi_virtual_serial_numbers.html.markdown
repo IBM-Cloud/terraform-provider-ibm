@@ -10,7 +10,7 @@ description: |-
 
 Retrieve information about existing virtual serial numbers as a read-only data source. For more information, about IBM power virtual server cloud, see [getting started with IBM Power Systems Virtual Servers](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-getting-started).
 
-## Example usage
+## Example Usage
 
 ```terraform
 data "ibm_pi_virtual_serial_numbers" "ds_virtual_serial_number" {
@@ -27,6 +27,7 @@ data "ibm_pi_virtual_serial_numbers" "ds_virtual_serial_number" {
   - `zone` - `lon04`
 
 Example usage:
+
   ```terraform
     provider "ibm" {
       region    =   "lon"
@@ -34,20 +35,20 @@ Example usage:
     }
   ```
   
-## Argument reference
+## Argument Reference
 
-Review the argument reference that you can specify for your data source. 
+Review the argument reference that you can specify for your data source.
 
-- `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account. 
+- `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
 - `pi_instance_id` - (Optional, String) Power virtual server instance ID.
 
-## Attribute reference
+## Attribute Reference
 
 In addition to the argument reference list, you can access the following attribute references after your data source is created.
 
 - `virtual_serial_numbers` - (List) List of virtual serial numbers
 
   Nested scheme for `virtual_serial_numbers`:
-    - `description` - (String) Description for virtual serial number.
-    - `pvm_instance_id` - (String) ID of PVM virtual serial number is attached to.
-    - `serial` - (String) Virtual serial number.
+  - `description` - (String) Description for virtual serial number.
+  - `pvm_instance_id` - (String) ID of PVM virtual serial number is attached to.
+  - `serial` - (String) Virtual serial number.
