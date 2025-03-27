@@ -92,6 +92,11 @@ var CISRulesetsRulesObject = &schema.Resource{
 												Optional:    true,
 												Description: "Sensitivity Level",
 											},
+											CISRulesetOverridesScoreThreshold: {
+												Type:        schema.TypeInt,
+												Optional:    true,
+												Description: "Score threshold for the override rule",
+											},
 										},
 									},
 								},
@@ -375,7 +380,7 @@ func ResourceIBMCISRulesetRuleUpdate(d *schema.ResourceData, meta interface{}) e
 		return fmt.Errorf("[ERROR] Error while getting the CisRulesetsSession %s", err)
 	}
 
-	ruleId, rulesetId, zoneId, crn, err := flex.ConvertTfToCisFourVar(d.Id())
+	ruleId, rulesetId, zoneId, crn, _ := flex.ConvertTfToCisFourVar(d.Id())
 	sess.Crn = core.StringPtr(crn)
 
 	if zoneId != "" {
@@ -442,7 +447,7 @@ func ResourceIBMCISRulesetRuleDelete(d *schema.ResourceData, meta interface{}) e
 		return fmt.Errorf("[ERROR] Error while getting the CisRulesetsSession %s", err)
 	}
 
-	ruleId, rulesetId, zoneId, crn, err := flex.ConvertTfToCisFourVar(d.Id())
+	ruleId, rulesetId, zoneId, crn, _ := flex.ConvertTfToCisFourVar(d.Id())
 	sess.Crn = core.StringPtr(crn)
 
 	if zoneId != "" {
