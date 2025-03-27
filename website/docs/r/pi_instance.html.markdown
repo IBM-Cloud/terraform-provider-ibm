@@ -96,8 +96,9 @@ Review the argument references that you can specify for your resource.
 - `pi_network` - (Required, List of Map) List of one or more networks to attach to the instance.
 
   The `pi_network` block supports:
-  - `network_id` - (String) The network ID to assign to the instance.
-  - `ip_address` - (String) The ip address to be used of this network.
+  - `ip_address` - (Optional, String) The ip address to be used of this network.
+  - `network_id` - (Required, String) The network ID to assign to the instance.
+  - `network_security_group_ids` - (Optional, List) The Network security groups that the network interface is a member of. There is a limit of 1 network security group in the array. If not specified, default network security group is used.
 - `pi_pin_policy` - (Optional, String) Select the pinning policy for your Power Systems Virtual Server instance. Supported values are `soft`, `hard`, and `none`.    **Note** You can choose to soft pin (`soft`) or hard pin (`hard`) a virtual server to the physical host where it runs. When you soft pin an instance for high availability, the instance automatically migrates back to the original host once the host is back to its operating state. If the instance has a licensing restriction with the host, the hard pin option restricts the movement of the instance during remote restart, automated remote restart, DRO, and live partition migration. The default pinning policy is `none`.
 - `pi_placement_group_id` - (Optional, String) The ID of the placement group that the instance is in or empty quotes `""` to indicate it is not in a placement group. The meta-argument `count` and a `pi_replicants` cannot be used when specifying a placement group ID. Instances provisioning in the same placement group must be provisioned one at a time; however, to provision multiple instances on the same host or different hosts then use `pi_replicants` and `pi_replication_policy` instead of `pi_placement_group_id`.
 - `pi_processors` - (Optional, Float) The number of vCPUs to assign to the VM as visible within the guest Operating System.
@@ -159,12 +160,15 @@ In addition to all argument reference list, you can access the following attribu
 - `pin_policy`  - (String) The pinning policy of the instance.
 - `pi_network` - (List of Map) - A list of networks that are assigned to the instance.
   Nested scheme for `pi_network`:
+  - `external_ip` - (String) The external IP address of the network.
   - `ip_address` - (String) The IP address of the network.
   - `mac_address` - (String) The MAC address of the network.
   - `network_id` - (String) The ID of the network.
+  - `network_interface_id` - (String) ID of the network interface.
   - `network_name` - (String) The name of the network.
+  - `network_security_group_ids` - (List) IDs of the network necurity groups that the network interface is a member of.
+  - `network_security_groups_href` - (List) Links to the network security groups that the network interface is a member of.
   - `type` - (String) The type of network.
-  - `external_ip` - (String) The external IP address of the network.
 - `progress` - (Float) - Specifies the overall progress of the instance deployment process in percentage.
 - `shared_processor_pool_id` - (String)  The ID of the shared processor pool for the instance.
 - `status` - (String) The status of the instance.

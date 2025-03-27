@@ -51,8 +51,10 @@ func testAccCheckIBMCmValidationSimpleConfig(versionLocator string) string {
 				secure = true
 			}
 
-			environment_variables {
-
+			schematics {
+				name = "workspace name"
+				description = "workspace description"
+				region = "us-south"
 			}
 		}
 	`, versionLocator)

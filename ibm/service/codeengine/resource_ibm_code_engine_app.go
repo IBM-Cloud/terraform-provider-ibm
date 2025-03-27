@@ -1391,8 +1391,6 @@ func ResourceIbmCodeEngineAppAppPatchAsPatch(patchVals *codeenginev2.AppPatch, d
 	path = "probe_liveness"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["probe_liveness"] = nil
-	} else if exists && patch["probe_liveness"] != nil {
-		ResourceIbmCodeEngineAppProbePrototypeAsPatch(patch["probe_liveness"].(map[string]interface{}), d)
 	}
 	path = "probe_readiness"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
@@ -1412,9 +1410,8 @@ func ResourceIbmCodeEngineAppAppPatchAsPatch(patchVals *codeenginev2.AppPatch, d
 	}
 	path = "run_env_variables"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
-		patch["run_env_variables"] = nil
-	} else if exists && patch["run_env_variables"] != nil {
-		ResourceIbmCodeEngineAppEnvVarPrototypeAsPatch(patch["run_env_variables"].([]interface{})[0].(map[string]interface{}), d)
+		runEnvVariables := []map[string]interface{}{}
+		patch["run_env_variables"] = runEnvVariables
 	}
 	path = "run_service_account"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
@@ -1422,9 +1419,8 @@ func ResourceIbmCodeEngineAppAppPatchAsPatch(patchVals *codeenginev2.AppPatch, d
 	}
 	path = "run_volume_mounts"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
-		patch["run_volume_mounts"] = nil
-	} else if exists && patch["run_volume_mounts"] != nil {
-		ResourceIbmCodeEngineAppVolumeMountPrototypeAsPatch(patch["run_volume_mounts"].([]interface{})[0].(map[string]interface{}), d)
+		runVolumeMounts := []map[string]interface{}{}
+		patch["run_volume_mounts"] = runVolumeMounts
 	}
 	path = "scale_concurrency"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {

@@ -32,6 +32,32 @@ func TestAccIBMISLBProfilesDatasource_basic(t *testing.T) {
 		},
 	})
 }
+func TestAccIBMISLBProfilesDatasource_failsafepolicyactions(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+
+				Config: testDSCheckIBMISLBProfilesFailsafepolicyactionsConfig(),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("data.ibm_is_lb_profiles.test_profiles", "lb_profiles.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_lb_profiles.test_profiles", "lb_profiles.0.failsafe_policy_actions.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_lb_profiles.test_profiles", "lb_profiles.0.failsafe_policy_actions.0.default"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_lb_profiles.test_profiles", "lb_profiles.0.failsafe_policy_actions.0.type"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_lb_profiles.test_profiles", "lb_profiles.0.failsafe_policy_actions.0.values.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_lb_profiles.test_profiles", "lb_profiles.0.family"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_lb_profiles.test_profiles", "lb_profiles.0.href"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_lb_profiles.test_profiles", "lb_profiles.0.name"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_lb_profiles.test_profiles", "lb_profiles.0.route_mode_supported"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_lb_profiles.test_profiles", "lb_profiles.0.route_mode_type"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_lb_profiles.test_profiles", "lb_profiles.0.udp_supported"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_lb_profiles.test_profiles", "lb_profiles.0.udp_supported_type"),
+				),
+			},
+		},
+	})
+}
 func TestAccIBMISLBProfilesDatasource_filter(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
@@ -60,5 +86,10 @@ func testDSCheckIBMISLBProfilesFilterConfig() string {
 	return fmt.Sprintf(`
 	data "ibm_is_lb_profiles" "test_profiles" {
 		name = "network-fixed"
+	} `)
+}
+func testDSCheckIBMISLBProfilesFailsafepolicyactionsConfig() string {
+	return fmt.Sprintf(`
+	data "ibm_is_lb_profiles" "test_profiles" {
 	} `)
 }
