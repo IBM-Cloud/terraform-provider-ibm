@@ -56,6 +56,7 @@ const (
 	CISRulesetsRulePositionBefore                      = "before"
 	CISRulesetsRulePositionIndex                       = "index"
 	CISRulesetRuleId                                   = "rule_id"
+	CISRulesetOverridesScoreThreshold                  = "score_threshold"
 )
 
 var CISResponseObject = &schema.Resource{
@@ -169,6 +170,11 @@ var CISResponseObject = &schema.Resource{
 															Type:        schema.TypeString,
 															Computed:    true,
 															Description: "Action to perform",
+														},
+														CISRulesetOverridesScoreThreshold: {
+															Type:        schema.TypeInt,
+															Computed:    true,
+															Description: "Score Threshold",
 														},
 														// CISRulesetOverridesSensitivityLevel: {
 														// 	Type:        schema.TypeString,
@@ -572,6 +578,7 @@ func flattenCISRulesetsRuleActionParameterOverrides(rulesetsRuleActionParameterO
 			overrideRulesObj[CISRulesetRuleId] = obj.ID
 			overrideRulesObj[CISRulesetOverridesEnabled] = obj.Enabled
 			overrideRulesObj[CISRulesetOverridesAction] = obj.Action
+			overrideRulesObj[CISRulesetOverridesScoreThreshold] = obj.ScoreThreshold
 
 			overrideRulesList = append(overrideRulesList, overrideRulesObj)
 		}

@@ -31,7 +31,7 @@ require (
 	github.com/IBM/logs-go-sdk v0.4.0
 	github.com/IBM/logs-router-go-sdk v1.0.7
 	github.com/IBM/mqcloud-go-sdk v0.2.0
-	github.com/IBM/networking-go-sdk v0.51.2
+	github.com/IBM/networking-go-sdk v0.51.3
 	github.com/IBM/platform-services-go-sdk v0.77.0
 	github.com/IBM/project-go-sdk v0.3.5
 	github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5
