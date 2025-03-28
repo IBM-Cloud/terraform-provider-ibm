@@ -1413,8 +1413,9 @@ func Provider() *schema.Provider {
 			"ibm_hardware_firewall_shared":                 classicinfrastructure.ResourceIBMFirewallShared(),
 
 			// Software Defined Storage as a Service
-			"ibm_sds_volume": sdsaas.ResourceIBMSdsVolume(),
-			"ibm_sds_host":   sdsaas.ResourceIBMSdsHost(),
+			"ibm_sds_volume":         sdsaas.ResourceIBMSdsVolume(),
+			"ibm_sds_volume_mapping": sdsaas.ResourceIBMSdsVolumeMapping(),
+			"ibm_sds_host":           sdsaas.ResourceIBMSdsHost(),
 
 			// Partner Center Sell
 			"ibm_onboarding_registration":       partnercentersell.ResourceIbmOnboardingRegistration(),
@@ -2223,8 +2224,9 @@ func Validator() validate.ValidatorDict {
 				"ibm_logs_router_tenant": logsrouting.ResourceIBMLogsRouterTenantValidator(),
 
 				// Added for Software Defined Storage as a Service
-				"ibm_sds_volume": sdsaas.ResourceIBMSdsVolumeValidator(),
-				"ibm_sds_host":   sdsaas.ResourceIBMSdsHostValidator(),
+				"ibm_sds_volume":         sdsaas.ResourceIBMSdsVolumeValidator(),
+				"ibm_sds_volume_mapping": sdsaas.ResourceIBMSdsVolumeValidator(),
+				"ibm_sds_host":           sdsaas.ResourceIBMSdsHostValidator(),
 			},
 			DataSourceValidatorDictionary: map[string]*validate.ResourceValidator{
 				"ibm_is_subnet":                     vpc.DataSourceIBMISSubnetValidator(),
