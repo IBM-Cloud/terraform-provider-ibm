@@ -31,7 +31,7 @@ func (t *TimeoutHelper) isMoreThan24Hours(duration time.Duration) bool {
 }
 
 func (t *TimeoutHelper) futureTimeToISO(duration time.Duration) string {
-	return t.Now.Add(duration).Format(time.RFC3339) // TODO Should it be UTC??
+	return t.Now.Add(duration).UTC().Format(time.RFC3339)
 }
 
 func (t *TimeoutHelper) calculateExpirationDatetime(timeoutDuration time.Duration) string {
