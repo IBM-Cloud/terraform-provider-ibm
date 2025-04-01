@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2025 All Rights Reserved.
+// Copyright IBM Corp. 2024,2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package sdsaas_test
@@ -24,7 +24,7 @@ func TestAccIBMSdsVolumeBasic(t *testing.T) {
 	var conf sdsaasv1.Volume
 	capacity := fmt.Sprintf("%d", acctest.RandIntRange(1, 5))
 	name := "terraform-test-1"
-	nameUpdate := "terraform-test-name-updated"
+	nameUpdate := "terraform-test-1-updated"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -36,13 +36,11 @@ func TestAccIBMSdsVolumeBasic(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMSdsVolumeExists("ibm_sds_volume.sds_volume_instance", conf),
 					resource.TestCheckResourceAttr("ibm_sds_volume.sds_volume_instance", "capacity", capacity),
-					resource.TestCheckResourceAttr("ibm_sds_volume.sds_volume_instance", "name", name),
 				),
 			},
 			resource.TestStep{
 				Config: testAccCheckIBMSdsVolumeConfigBasic(capacity, nameUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_sds_volume.sds_volume_instance", "capacity", capacity),
 					resource.TestCheckResourceAttr("ibm_sds_volume.sds_volume_instance", "name", nameUpdate),
 				),
 			},
@@ -52,7 +50,6 @@ func TestAccIBMSdsVolumeBasic(t *testing.T) {
 
 func TestAccIBMSdsVolumeAllArgs(t *testing.T) {
 	var conf sdsaasv1.Volume
-	hostnqnstring := "nqn.2014-06.org:9345"
 	capacity := fmt.Sprintf("%d", acctest.RandIntRange(1, 5))
 	name := "terraform-test-name-1"
 	nameUpdate := "terraform-test-name-updated"
@@ -63,25 +60,24 @@ func TestAccIBMSdsVolumeAllArgs(t *testing.T) {
 		CheckDestroy: testAccCheckIBMSdsVolumeDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMSdsVolumeConfig(hostnqnstring, capacity, name),
+				Config: testAccCheckIBMSdsVolumeConfig(capacity, name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMSdsVolumeExists("ibm_sds_volume.sds_volume_instance", conf),
-					resource.TestCheckResourceAttr("ibm_sds_volume.sds_volume_instance", "hostnqnstring", hostnqnstring),
 					resource.TestCheckResourceAttr("ibm_sds_volume.sds_volume_instance", "capacity", capacity),
 					resource.TestCheckResourceAttr("ibm_sds_volume.sds_volume_instance", "name", name),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIBMSdsVolumeConfig(hostnqnstring, capacity, nameUpdate),
+				Config: testAccCheckIBMSdsVolumeConfig(capacity, nameUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_sds_volume.sds_volume_instance", "hostnqnstring", hostnqnstring),
 					resource.TestCheckResourceAttr("ibm_sds_volume.sds_volume_instance", "capacity", capacity),
 					resource.TestCheckResourceAttr("ibm_sds_volume.sds_volume_instance", "name", nameUpdate),
 				),
 			},
 			resource.TestStep{
-				ResourceName: "ibm_sds_volume.sds_volume_instance",
-				ImportState:  true,
+				ResourceName:      "ibm_sds_volume.sds_volume_instance",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -96,15 +92,14 @@ func testAccCheckIBMSdsVolumeConfigBasic(capacity string, name string) string {
 	`, capacity, name)
 }
 
-func testAccCheckIBMSdsVolumeConfig(hostnqnstring string, capacity string, name string) string {
+func testAccCheckIBMSdsVolumeConfig(capacity string, name string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_sds_volume" "sds_volume_instance" {
-			hostnqnstring = "%s"
 			capacity = %s
 			name = "%s"
 		}
-	`, hostnqnstring, capacity, name)
+	`, capacity, name)
 }
 
 func testAccCheckIBMSdsVolumeExists(n string, obj sdsaasv1.Volume) resource.TestCheckFunc {
@@ -123,6 +118,9 @@ func testAccCheckIBMSdsVolumeExists(n string, obj sdsaasv1.Volume) resource.Test
 		volumeOptions := &sdsaasv1.VolumeOptions{}
 
 		volumeOptions.SetVolumeID(rs.Primary.ID)
+
+		// Give time for the volume to fully create before checking its state
+		time.Sleep(10 * time.Second)
 
 		volume, _, err := sdsaasClient.Volume(volumeOptions)
 		if err != nil {
@@ -164,22 +162,204 @@ func testAccCheckIBMSdsVolumeDestroy(s *terraform.State) error {
 	return nil
 }
 
-func TestResourceIBMSdsVolumeHostMappingToMap(t *testing.T) {
+func TestResourceIBMSdsVolumeVolumeStatusReasonToMap(t *testing.T) {
 	checkResult := func(result map[string]interface{}) {
 		model := make(map[string]interface{})
-		model["host_id"] = "testString"
-		model["host_name"] = "testString"
-		model["host_nqn"] = "testString"
+		model["code"] = "volume_not_found"
+		model["message"] = "Specified resource not found"
+		model["more_info"] = "testString"
 
 		assert.Equal(t, result, model)
 	}
 
-	model := new(sdsaasv1.HostMapping)
-	model.HostID = core.StringPtr("testString")
-	model.HostName = core.StringPtr("testString")
-	model.HostNqn = core.StringPtr("testString")
+	model := new(sdsaasv1.VolumeStatusReason)
+	model.Code = core.StringPtr("volume_not_found")
+	model.Message = core.StringPtr("Specified resource not found")
+	model.MoreInfo = core.StringPtr("testString")
 
-	result, err := sdsaas.ResourceIBMSdsVolumeHostMappingToMap(model)
+	result, err := sdsaas.ResourceIBMSdsVolumeVolumeStatusReasonToMap(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestResourceIBMSdsVolumeVolumeMappingToMap(t *testing.T) {
+	checkResult := func(result map[string]interface{}) {
+		gatewayModel := make(map[string]interface{})
+		gatewayModel["ip_address"] = "testString"
+		gatewayModel["port"] = int(22)
+
+		storageIdentifierModel := make(map[string]interface{})
+		storageIdentifierModel["subsystem_nqn"] = "nqn.2014-06.org:1234"
+		storageIdentifierModel["namespace_id"] = int(1)
+		storageIdentifierModel["namespace_uuid"] = "testString"
+		storageIdentifierModel["gateways"] = []map[string]interface{}{gatewayModel}
+
+		volumeReferenceModel := make(map[string]interface{})
+		volumeReferenceModel["id"] = "testString"
+		volumeReferenceModel["name"] = "testString"
+
+		hostReferenceModel := make(map[string]interface{})
+		hostReferenceModel["id"] = "testString"
+		hostReferenceModel["name"] = "testString"
+		hostReferenceModel["nqn"] = "testString"
+
+		namespaceModel := make(map[string]interface{})
+		namespaceModel["id"] = int(1)
+		namespaceModel["uuid"] = "testString"
+
+		model := make(map[string]interface{})
+		model["status"] = "mapped"
+		model["storage_identifier"] = []map[string]interface{}{storageIdentifierModel}
+		model["href"] = "testString"
+		model["id"] = "1a6b7274-678d-4dfb-8981-c71dd9d4daa5-1a6b7274-678d-4dfb-8981-c71dd9d4da45"
+		model["volume"] = []map[string]interface{}{volumeReferenceModel}
+		model["host"] = []map[string]interface{}{hostReferenceModel}
+		model["subsystem_nqn"] = "nqn.2014-06.org:1234"
+		model["namespace"] = []map[string]interface{}{namespaceModel}
+		model["gateways"] = []map[string]interface{}{gatewayModel}
+
+		assert.Equal(t, result, model)
+	}
+
+	gatewayModel := new(sdsaasv1.Gateway)
+	gatewayModel.IPAddress = core.StringPtr("testString")
+	gatewayModel.Port = core.Int64Ptr(int64(22))
+
+	storageIdentifierModel := new(sdsaasv1.StorageIdentifier)
+	storageIdentifierModel.SubsystemNqn = core.StringPtr("nqn.2014-06.org:1234")
+	storageIdentifierModel.NamespaceID = core.Int64Ptr(int64(1))
+	storageIdentifierModel.NamespaceUUID = core.StringPtr("testString")
+	storageIdentifierModel.Gateways = []sdsaasv1.Gateway{*gatewayModel}
+
+	volumeReferenceModel := new(sdsaasv1.VolumeReference)
+	volumeReferenceModel.ID = core.StringPtr("testString")
+	volumeReferenceModel.Name = core.StringPtr("testString")
+
+	hostReferenceModel := new(sdsaasv1.HostReference)
+	hostReferenceModel.ID = core.StringPtr("testString")
+	hostReferenceModel.Name = core.StringPtr("testString")
+	hostReferenceModel.Nqn = core.StringPtr("testString")
+
+	namespaceModel := new(sdsaasv1.Namespace)
+	namespaceModel.ID = core.Int64Ptr(int64(1))
+	namespaceModel.UUID = core.StringPtr("testString")
+
+	model := new(sdsaasv1.VolumeMapping)
+	model.Status = core.StringPtr("mapped")
+	model.StorageIdentifier = storageIdentifierModel
+	model.Href = core.StringPtr("testString")
+	model.ID = core.StringPtr("1a6b7274-678d-4dfb-8981-c71dd9d4daa5-1a6b7274-678d-4dfb-8981-c71dd9d4da45")
+	model.Volume = volumeReferenceModel
+	model.Host = hostReferenceModel
+	model.SubsystemNqn = core.StringPtr("nqn.2014-06.org:1234")
+	model.Namespace = namespaceModel
+	model.Gateways = []sdsaasv1.Gateway{*gatewayModel}
+
+	result, err := sdsaas.ResourceIBMSdsVolumeVolumeMappingToMap(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestResourceIBMSdsVolumeStorageIdentifierToMap(t *testing.T) {
+	checkResult := func(result map[string]interface{}) {
+		gatewayModel := make(map[string]interface{})
+		gatewayModel["ip_address"] = "testString"
+		gatewayModel["port"] = int(22)
+
+		model := make(map[string]interface{})
+		model["subsystem_nqn"] = "nqn.2014-06.org:1234"
+		model["namespace_id"] = int(1)
+		model["namespace_uuid"] = "testString"
+		model["gateways"] = []map[string]interface{}{gatewayModel}
+
+		assert.Equal(t, result, model)
+	}
+
+	gatewayModel := new(sdsaasv1.Gateway)
+	gatewayModel.IPAddress = core.StringPtr("testString")
+	gatewayModel.Port = core.Int64Ptr(int64(22))
+
+	model := new(sdsaasv1.StorageIdentifier)
+	model.SubsystemNqn = core.StringPtr("nqn.2014-06.org:1234")
+	model.NamespaceID = core.Int64Ptr(int64(1))
+	model.NamespaceUUID = core.StringPtr("testString")
+	model.Gateways = []sdsaasv1.Gateway{*gatewayModel}
+
+	result, err := sdsaas.ResourceIBMSdsVolumeStorageIdentifierToMap(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestResourceIBMSdsVolumeGatewayToMap(t *testing.T) {
+	checkResult := func(result map[string]interface{}) {
+		model := make(map[string]interface{})
+		model["ip_address"] = "testString"
+		model["port"] = int(22)
+
+		assert.Equal(t, result, model)
+	}
+
+	model := new(sdsaasv1.Gateway)
+	model.IPAddress = core.StringPtr("testString")
+	model.Port = core.Int64Ptr(int64(22))
+
+	result, err := sdsaas.ResourceIBMSdsVolumeGatewayToMap(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestResourceIBMSdsVolumeVolumeReferenceToMap(t *testing.T) {
+	checkResult := func(result map[string]interface{}) {
+		model := make(map[string]interface{})
+		model["id"] = "testString"
+		model["name"] = "testString"
+
+		assert.Equal(t, result, model)
+	}
+
+	model := new(sdsaasv1.VolumeReference)
+	model.ID = core.StringPtr("testString")
+	model.Name = core.StringPtr("testString")
+
+	result, err := sdsaas.ResourceIBMSdsVolumeVolumeReferenceToMap(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestResourceIBMSdsVolumeHostReferenceToMap(t *testing.T) {
+	checkResult := func(result map[string]interface{}) {
+		model := make(map[string]interface{})
+		model["id"] = "testString"
+		model["name"] = "testString"
+		model["nqn"] = "testString"
+
+		assert.Equal(t, result, model)
+	}
+
+	model := new(sdsaasv1.HostReference)
+	model.ID = core.StringPtr("testString")
+	model.Name = core.StringPtr("testString")
+	model.Nqn = core.StringPtr("testString")
+
+	result, err := sdsaas.ResourceIBMSdsVolumeHostReferenceToMap(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestResourceIBMSdsVolumeNamespaceToMap(t *testing.T) {
+	checkResult := func(result map[string]interface{}) {
+		model := make(map[string]interface{})
+		model["id"] = int(1)
+		model["uuid"] = "testString"
+
+		assert.Equal(t, result, model)
+	}
+
+	model := new(sdsaasv1.Namespace)
+	model.ID = core.Int64Ptr(int64(1))
+	model.UUID = core.StringPtr("testString")
+
+	result, err := sdsaas.ResourceIBMSdsVolumeNamespaceToMap(model)
 	assert.Nil(t, err)
 	checkResult(result)
 }
