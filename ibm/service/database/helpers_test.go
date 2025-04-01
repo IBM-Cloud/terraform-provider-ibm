@@ -104,7 +104,7 @@ func (m *MockTaskClient) ListDeploymentTasks(opts *clouddatabasesv5.ListDeployme
 	}, &core.DetailedResponse{}, nil
 }
 
-func TestIsMatchingTaskInProgress(t *testing.T) {
+func TestMatchingTaskInProgress(t *testing.T) {
 	testcases := []struct {
 		description        string
 		mockTasks          []clouddatabasesv5.Task
@@ -112,14 +112,19 @@ func TestIsMatchingTaskInProgress(t *testing.T) {
 		instanceID         string
 		matchDescription   string
 		expectedInProgress bool
-		expectedTaskID     string
+		expectedTask       clouddatabasesv5.Task
 		expectError        bool
 	}{
 		{
-			description: "When matching task is running, Expect true",
+			description: "When matching task is running, Expect true and matching task",
 			mockTasks: []clouddatabasesv5.Task{
 				{
 					ID:          core.StringPtr("123"),
+					Status:      core.StringPtr("running"),
+					Description: core.StringPtr("Restoring instance"),
+				},
+				{
+					ID:          core.StringPtr("1234"),
 					Status:      core.StringPtr("running"),
 					Description: core.StringPtr("Upgrading instance"),
 				},
@@ -127,11 +132,20 @@ func TestIsMatchingTaskInProgress(t *testing.T) {
 			instanceID:         "inst-1",
 			matchDescription:   "Upgrading instance",
 			expectedInProgress: true,
-			expectedTaskID:     "123",
+			expectedTask: clouddatabasesv5.Task{
+				ID:          core.StringPtr("1234"),
+				Status:      core.StringPtr("running"),
+				Description: core.StringPtr("Upgrading instance"),
+			},
 		},
 		{
-			description: "When matching task is queued, Expect true",
+			description: "When matching task is queued, Expect true and matching task",
 			mockTasks: []clouddatabasesv5.Task{
+				{
+					ID:          core.StringPtr("123"),
+					Status:      core.StringPtr("queued"),
+					Description: core.StringPtr("Restoring instance"),
+				},
 				{
 					ID:          core.StringPtr("234"),
 					Status:      core.StringPtr("queued"),
@@ -141,7 +155,11 @@ func TestIsMatchingTaskInProgress(t *testing.T) {
 			instanceID:         "inst-2",
 			matchDescription:   "Upgrading instance",
 			expectedInProgress: true,
-			expectedTaskID:     "234",
+			expectedTask: clouddatabasesv5.Task{
+				ID:          core.StringPtr("234"),
+				Status:      core.StringPtr("queued"),
+				Description: core.StringPtr("Upgrading instance"),
+			},
 		},
 		{
 			description: "When matching task is completed, Expect false",
@@ -196,7 +214,7 @@ func TestIsMatchingTaskInProgress(t *testing.T) {
 				InstanceID: tc.instanceID,
 			}
 
-			inProgress, task, err := tm.IsMatchingTaskInProgress(tc.matchDescription)
+			inProgress, task, err := tm.matchingTaskInProgress(tc.matchDescription)
 
 			if tc.expectError {
 				require.Error(t, err)
@@ -206,7 +224,7 @@ func TestIsMatchingTaskInProgress(t *testing.T) {
 
 				if tc.expectedInProgress {
 					require.NotNil(t, task)
-					require.Equal(t, tc.expectedTaskID, *task.ID)
+					require.Equal(t, tc.expectedTask, *task)
 				} else {
 					require.Nil(t, task)
 				}

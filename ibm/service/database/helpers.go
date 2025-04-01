@@ -42,7 +42,7 @@ func (t *TimeoutHelper) calculateExpirationDatetime(timeoutDuration time.Duratio
 	return t.futureTimeToISO(timeoutDuration)
 }
 
-func (tm *TaskManager) IsMatchingTaskInProgress(description string) (bool, *clouddatabasesv5.Task, error) {
+func (tm *TaskManager) matchingTaskInProgress(description string) (bool, *clouddatabasesv5.Task, error) {
 	opts := &clouddatabasesv5.ListDeploymentTasksOptions{
 		ID: core.StringPtr(tm.InstanceID),
 	}

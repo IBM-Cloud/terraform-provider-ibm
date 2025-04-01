@@ -2216,29 +2216,49 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 
 		log.Printf("[INFO] Change version testing %s, %v, %s", version, skipBackup, expirationDatetime)
 
-		// versionUpgradeOptions := &clouddatabasesv5.SetDatabaseInplaceVersionUpgradeOptions{
-		// 	ID:                 core.StringPtr(instanceID),
-		// 	Version:            core.StringPtr(version),
-		// 	SkipBackup:         core.BoolPtr(skipBackup),
-		// 	ExpirationDatetime: core.StringPtr(expirationDatetime),
-		// }
+		// Check if a version upgrade task is already in progress
+		tm := &TaskManager{
+			Client:     cloudDatabasesClient,
+			InstanceID: instanceID,
+		}
 
-		// versionUpgradeResponse, response, err := cloudDatabasesClient.SetDatabaseInplaceVersionUpgrade(versionOptions)
+		upgradeInProgress, currentTask, err := tm.matchingTaskInProgress("Upgrading instance")
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("[ERROR] Error getting tasks for instance: %w", err))
+		}
 
-		// if err != nil {
-		// 	return diag.FromErr(fmt.Errorf("[ERROR] error upgrading version of instance: %v\nResponse: %v", err, response))
-		// }
+		if upgradeInProgress {
+			log.Printf("[INFO] Upgrade task already in progress, waiting for it to complete: %s", *currentTask.ID)
+			_, err = waitForDatabaseTaskComplete(*currentTask.ID, d, meta, d.Timeout(schema.TimeoutUpdate))
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("[ERROR] error waiting for version upgrade task to complete: %w", err))
+			}
+		} else {
+			log.Printf("[INFO] Triggering upgrade to version %s", version)
+			// versionUpgradeOptions := &clouddatabasesv5.SetDatabaseInplaceVersionUpgradeOptions{
+			// 	ID:                 core.StringPtr(instanceID),
+			// 	Version:            core.StringPtr(version),
+			// 	SkipBackup:         core.BoolPtr(skipBackup),
+			// 	ExpirationDatetime: core.StringPtr(expirationDatetime),
+			// }
 
-		// if versionUpgradeResponse == nil || versionUpgradeResponse.Task == nil || versionUpgradeResponse.Task.ID == nil {
-		// 	return diag.FromErr(fmt.Errorf("[ERROR] received nil for version upgrade"))
-		// }
+			// versionUpgradeResponse, response, err := cloudDatabasesClient.SetDatabaseInplaceVersionUpgrade(versionOptions)
 
-		// taskID := *versionUpgradeResponse.Task.ID
+			// if err != nil {
+			// 	return diag.FromErr(fmt.Errorf("[ERROR] error upgrading version of instance: %v\nResponse: %v", err, response))
+			// }
 
-		// _, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
-		// if err != nil {
-		// 	return diag.FromErr(fmt.Errorf("[ERROR] error waiting for version upgrade task to complete: %w", err))
-		// }
+			// if versionUpgradeResponse == nil || versionUpgradeResponse.Task == nil || versionUpgradeResponse.Task.ID == nil {
+			// 	return diag.FromErr(fmt.Errorf("[ERROR] received nil for version upgrade"))
+			// }
+
+			// taskID := *versionUpgradeResponse.Task.ID
+
+			// _, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
+			// if err != nil {
+			// 	return diag.FromErr(fmt.Errorf("[ERROR] error waiting for version upgrade task to complete: %w", err))
+			// }
+		}
 	}
 
 	return resourceIBMDatabaseInstanceRead(context, d, meta)
@@ -3195,14 +3215,14 @@ func validateVersionDiff(_ context.Context, diff *schema.ResourceDiff, meta inte
 	}
 
 	// Check if a version upgrade task is already in progress
-	upgradeInProgress, task, err := tm.IsMatchingTaskInProgress("Upgrading instance")
+	upgradeInProgress, task, err := tm.matchingTaskInProgress("Upgrading instance")
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error getting tasks for instance: %w", err)
 	}
 
 	if upgradeInProgress {
-		// Skip validation if task is already running as the version value could change on instance before task is complete
-		log.Printf("[INFO] Task already in progress: %s", *task.ID)
+		// Skip validation if task is already running as the version value could change on instance before task is complete and it would already have been validated
+		log.Printf("[INFO] Upgrade task already in progress: %s", *task.ID)
 		return nil
 	}
 
