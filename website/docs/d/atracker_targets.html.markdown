@@ -73,4 +73,3 @@ Nested schema for **targets**:
 		* `last_failure` - (String) The timestamp of the failure.
 		* `reason_for_last_failure` - (String) Detailed description of the cause of the failure.
 		* `status` - (String) The status such as failed or success.
-

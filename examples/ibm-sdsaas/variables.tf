@@ -9,18 +9,13 @@ variable "sds_endpoint" {
   default     = "<endpoint>"
 }
 
-variable "sds_volume_hostnqnstring" {
-  description = "The host nqn."
-  type        = string
-  default     = "nqn.2014-06.org:9345"
-}
 variable "sds_volume_capacity" {
   description = "The capacity of the volume (in gigabytes)."
   type        = number
   default     = 10
 }
 variable "sds_volume_name_1" {
-  description = "The name of the volume."
+  description = "Unique name of the host."
   type        = string
   default     = "demo-volume-1"
 }
@@ -32,12 +27,12 @@ variable "sds_volume_name_2" {
 }
 
 variable "sds_host_name" {
-  description = "The name for this host. The name must not be used by another host.  If unspecified, the name will be a hyphenated list of randomly-selected words."
+  description = "Unique name of the host."
   type        = string
   default     = "demo-host"
 }
 variable "sds_host_nqn" {
-  description = "The NQN of the host configured in customer's environment."
+  description = "The NQN (NVMe Qualified Name) as configured on the initiator (compute/host) accessing the storage."
   type        = string
   default     = "nqn.2014-06.org:9345"
 }

@@ -6,7 +6,6 @@ provider "ibm" {
 resource "ibm_sds_volume" "sds_volume_instance_1" {
   sds_endpoint = var.sds_endpoint
 
-  hostnqnstring = var.sds_volume_hostnqnstring
   capacity = var.sds_volume_capacity
   name = var.sds_volume_name_1
 }
@@ -15,7 +14,6 @@ resource "ibm_sds_volume" "sds_volume_instance_1" {
 resource "ibm_sds_volume" "sds_volume_instance_2" {
   sds_endpoint = var.sds_endpoint
 
-  hostnqnstring = var.sds_volume_hostnqnstring
   capacity = var.sds_volume_capacity
   name = var.sds_volume_name_2
 }
@@ -26,12 +24,36 @@ resource "ibm_sds_host" "sds_host_instance" {
 
   name = var.sds_host_name
   nqn = var.sds_host_nqn
-  volumes {
-    volume_id = ibm_sds_volume.sds_volume_instance_1.id
-    volume_name = ibm_sds_volume.sds_volume_instance_1.name
+}
+
+// Provision sds_volume_mapping resource instance
+resource "ibm_sds_volume_mapping" "sds_vm_1" {
+  sds_endpoint = var.sds_endpoint
+  depends_on = [time_sleep.wait_5_seconds]
+
+  host_id = ibm_sds_host.sds_host_instance.id
+  volume {
+    id = ibm_sds_volume.sds_volume_instance_1.id
   }
-  volumes {
-    volume_id = ibm_sds_volume.sds_volume_instance_2.id
-    volume_name = ibm_sds_volume.sds_volume_instance_2.name
+}
+
+// Provision sds_volume_mapping resource instance
+resource "ibm_sds_volume_mapping" "sds_vm_2" {
+  sds_endpoint = var.sds_endpoint
+  depends_on = [time_sleep.wait_5_seconds]
+
+  host_id = ibm_sds_host.sds_host_instance.id
+  volume {
+    id = ibm_sds_volume.sds_volume_instance_2.id
   }
+}
+
+// Use this sleep to allow the volume mappings to delete first before deleting the volumes and hosts
+resource "time_sleep" "wait_5_seconds" {
+  depends_on = [
+    ibm_sds_volume.sds_volume_instance_1,
+    ibm_sds_volume.sds_volume_instance_2,
+    ibm_sds_host.sds_host_instance
+  ]
+  destroy_duration = "5s"
 }

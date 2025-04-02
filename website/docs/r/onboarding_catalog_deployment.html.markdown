@@ -165,12 +165,12 @@ You can specify the following arguments for this resource.
 
 * `active` - (Required, Boolean) Whether the service is active.
 * `catalog_plan_id` - (Required, Forces new resource, String) The unique ID of this global catalog plan.
-  * Constraints: The maximum length is `128` characters. The minimum length is `2` characters. The value must match regular expression `/^[a-zA-Z\\-_\\d]+$/`.
+  * Constraints: The maximum length is `128` characters. The minimum length is `2` characters. The value must match regular expression `/^\\S*$/`.
 * `catalog_product_id` - (Required, Forces new resource, String) The unique ID of this global catalog product.
-  * Constraints: The maximum length is `128` characters. The minimum length is `2` characters. The value must match regular expression `/^[a-zA-Z\\-_\\d]+$/`.
+  * Constraints: The maximum length is `128` characters. The minimum length is `2` characters. The value must match regular expression `/^\\S*$/`.
 * `disabled` - (Required, Boolean) Determines the global visibility for the catalog entry, and its children. If it is not enabled, all plans are disabled.
 * `env` - (Optional, String) The environment to fetch this object from.
-  * Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^[a-z]+$/`.
+  * Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^[a-z_.-]+$/`.
 * `kind` - (Required, String) The kind of the global catalog object.
   * Constraints: Allowable values are: `deployment`.
 * `metadata` - (Optional, List) Global catalog deployment metadata.

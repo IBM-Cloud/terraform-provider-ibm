@@ -222,6 +222,7 @@ const (
 	Attr_Dedicated                                   = "dedicated"
 	Attr_DedicatedHostID                             = "dedicated_host_id"
 	Attr_Default                                     = "default"
+	Attr_DefaultSystem                               = "default_system"
 	Attr_DeleteOnTermination                         = "delete_on_termination"
 	Attr_DeploymentType                              = "deployment_type"
 	Attr_Description                                 = "description"
