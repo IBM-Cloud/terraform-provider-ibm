@@ -5,7 +5,7 @@ This area is primarily for IBM provider contributors and maintainers. For inform
 
 ## Environment variables to set for the tests
 * COS_API_KEY   : API Key used for creating COS targets
-* INGESTION_KEY : LogDNA Ingestion Key used for creating Logdna targets
+* INGESTION_KEY : Deprecated. LogDNA Ingestion Key used for creating Logdna targets. This variable is no longer in use and will be removed in the next major version of the provider.
 * IES_API_KEY   : Event streams password used for creating Event streams targets
 
 ## Handy Links

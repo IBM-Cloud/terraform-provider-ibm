@@ -126,7 +126,10 @@ func resourceIbmLogsDataAccessRuleCreate(context context.Context, d *schema.Reso
 
 	region := getLogsInstanceRegion(logsClient, d)
 	instanceId := d.Get("instance_id").(string)
-	logsClient = getClientWithLogsInstanceEndpoint(logsClient, instanceId, region, getLogsInstanceEndpointType(logsClient, d))
+	logsClient, err = getClientWithLogsInstanceEndpoint(logsClient, meta, instanceId, region, getLogsInstanceEndpointType(logsClient, d))
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("Unable to get updated logs instance client"))
+	}
 
 	createDataAccessRuleOptions := &logsv0.CreateDataAccessRuleOptions{}
 
@@ -166,7 +169,7 @@ func resourceIbmLogsDataAccessRuleRead(context context.Context, d *schema.Resour
 		return tfErr.GetDiag()
 	}
 
-	logsClient, region, instanceId, accessRuleId, err := updateClientURLWithInstanceEndpoint(d.Id(), logsClient, d)
+	logsClient, region, instanceId, accessRuleId, err := updateClientURLWithInstanceEndpoint(d.Id(), meta, logsClient, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -240,7 +243,7 @@ func resourceIbmLogsDataAccessRuleUpdate(context context.Context, d *schema.Reso
 		return tfErr.GetDiag()
 	}
 
-	logsClient, _, _, accessRuleId, err := updateClientURLWithInstanceEndpoint(d.Id(), logsClient, d)
+	logsClient, _, _, accessRuleId, err := updateClientURLWithInstanceEndpoint(d.Id(), meta, logsClient, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -293,7 +296,7 @@ func resourceIbmLogsDataAccessRuleDelete(context context.Context, d *schema.Reso
 		return tfErr.GetDiag()
 	}
 
-	logsClient, _, _, accessRuleId, err := updateClientURLWithInstanceEndpoint(d.Id(), logsClient, d)
+	logsClient, _, _, accessRuleId, err := updateClientURLWithInstanceEndpoint(d.Id(), meta, logsClient, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}

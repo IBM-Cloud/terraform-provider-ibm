@@ -320,6 +320,12 @@ func DataSourceIBMISLB() *schema.Resource {
 					},
 				},
 			},
+			"failsafe_policy_actions": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The supported `failsafe_policy.action` values for this load balancer's pools.",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+			},
 			flex.ResourceControllerURL: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -499,6 +505,10 @@ func lbGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 					}
 				}
 				d.Set(isLBListeners, listenerList)
+			}
+			if err = d.Set("failsafe_policy_actions", lb.FailsafePolicyActions); err != nil {
+				err = fmt.Errorf("Error setting failsafe_policy_actions: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb", "read", "set-failsafe_policy_actions")
 			}
 			listLoadBalancerPoolsOptions := &vpcv1.ListLoadBalancerPoolsOptions{}
 			listLoadBalancerPoolsOptions.SetLoadBalancerID(*lb.ID)

@@ -43,17 +43,15 @@ func TestAccIbmSccProfileAttachmentAllArgs(t *testing.T) {
 		CheckDestroy: testAccCheckIbmSccProfileAttachmentDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmSccProfileAttachmentConfig(acc.SccInstanceID),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmSccProfileAttachmentExists("ibm_scc_profile_attachment.scc_profile_attachment_instance", conf),
-				),
-			},
-			resource.TestStep{
-				Config: testAccCheckIbmSccProfileAttachmentConfig(acc.SccInstanceID),
+				Config: testAccCheckIbmSccProfileAttachmentConfig(acc.SccInstanceID, acc.SccResourceGroupID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmSccProfileAttachmentExists("ibm_scc_profile_attachment.scc_profile_attachment_instance", conf),
 					resource.TestCheckResourceAttr(
 						"ibm_scc_profile_attachment.scc_profile_attachment_instance", "attachment_parameters.#", "6"),
+					resource.TestCheckResourceAttr(
+						"ibm_scc_profile_attachment.scc_profile_attachment_instance", "scope.0.properties.#", "3"),
+					resource.TestCheckResourceAttr(
+						"ibm_scc_profile_attachment.scc_profile_attachment_instance", "scope.0.properties.2.name", "exclusions"),
 				),
 			},
 			resource.TestStep{
@@ -149,21 +147,24 @@ func testAccCheckIbmSccProfileAttachmentConfigBasic(instanceID string) string {
 			}
 		}
 
+		resource "ibm_scc_scope" "scc_scope_instance" {
+			instance_id = resource.ibm_scc_control_library.scc_control_library_instance.instance_id
+			name = "Scope-Terraform-Test"
+			description = "Scope Made by Terraform Testing"
+			environment = "ibm-cloud"
+			properties  = {
+				scope_id    = resource.ibm_scc_control_library.scc_control_library_instance.account_id
+				scope_type  = "account"
+			}
+		}
+
 		resource "ibm_scc_profile_attachment" "scc_profile_attachment_instance" {
 			instance_id = resource.ibm_scc_control_library.scc_control_library_instance.instance_id
 			profile_id = ibm_scc_profile.scc_profile_instance.profile_id
 			name = "profile_attachment_name"
 			description = "scc_profile_attachment_description"
 			scope {
-				environment = "ibm-cloud"	
-				properties {
-					name = "scope_id"
-					value = resource.ibm_scc_control_library.scc_control_library_instance.account_id
-				}
-				properties {
-					name = "scope_type"
-					value = "account"
-				}
+				id = ibm_scc_scope.scc_scope_instance.scope_id
 			}
 			schedule = "every_30_days"
 			status = "disabled"
@@ -171,14 +172,14 @@ func testAccCheckIbmSccProfileAttachmentConfigBasic(instanceID string) string {
 				enabled = false
 				controls {
 					failed_control_ids = []
-					threshold_limit = 14
+				 	threshold_limit = 14
 				}
 			}
 		}
-	`, instanceID)
+  `, instanceID)
 }
 
-func testAccCheckIbmSccProfileAttachmentConfig(instanceID string) string {
+func testAccCheckIbmSccProfileAttachmentConfig(instanceID string, resGroupID string) string {
 	return fmt.Sprintf(`
 		locals {
 			scc_profiles_map = tomap(merge([
@@ -194,21 +195,28 @@ func testAccCheckIbmSccProfileAttachmentConfig(instanceID string) string {
 		data "ibm_iam_account_settings" "iam_account_settings" {
 		}
 
+		resource "ibm_scc_scope" "scc_scope_instance" {
+			instance_id = data.ibm_scc_profiles.scc_profiles.instance_id
+			name = "Scope-Terraform-Test"
+			description = "Scope Made by Terraform Testing"
+			environment = "ibm-cloud"
+			properties  = {
+				scope_id    = data.ibm_iam_account_settings.iam_account_settings.account_id
+				scope_type  = "account"
+			}
+			exclusions {
+				scope_id   = "%s"
+				scope_type = "account.resource_group"
+			}
+		}
+
 		resource "ibm_scc_profile_attachment" "scc_profile_attachment_instance" {
-			instance_id = "%s"
+			instance_id = data.ibm_scc_profiles.scc_profiles.instance_id
 			profile_id = local.scc_profiles_map["CIS IBM Cloud Foundations Benchmark v1.1.0"]
-			name = "profile_attachment_name"
+			name = "terraform_ac_profile_attachment_name"
 			description = "scc_profile_attachment_description"
 			scope {
-			environment = "ibm-cloud"	
-			properties {
-				name = "scope_id"
-				value = data.ibm_iam_account_settings.iam_account_settings.account_id
-			}
-			properties {
-				name = "scope_type"
-				value = "account"
-			}
+				id = ibm_scc_scope.scc_scope_instance.scope_id
 			}
 			schedule = "every_30_days"
 			status = "disabled"
@@ -267,8 +275,8 @@ func testAccCheckIbmSccProfileAttachmentConfig(instanceID string) string {
 				parameter_name = "exclude_default_security_groups"
 				parameter_type = "string_list"
 			}
-	}
-	`, instanceID, instanceID)
+  }
+  `, instanceID, resGroupID)
 }
 
 // Returns a terraform change where the attachment_parameters are modified slightly.
@@ -287,81 +295,83 @@ func testAccCheckIbmSccProfileAttachmentConfigChange(instanceID string) string {
 
 		data "ibm_iam_account_settings" "iam_account_settings" {}
 
+		resource "ibm_scc_scope" "scc_scope_instance" {
+			instance_id = data.ibm_scc_profiles.scc_profiles.instance_id
+			name = "Scope-Terraform-Test"
+			description = "Scope Made by Terraform Testing"
+			environment = "ibm-cloud"
+			properties  = {
+				scope_id    = data.ibm_iam_account_settings.iam_account_settings.account_id
+				scope_type  = "account"
+			}
+		}
 		resource "ibm_scc_profile_attachment" "scc_profile_attachment_instance" {
-		instance_id = "%s"
-		profile_id = local.scc_profiles_map["CIS IBM Cloud Foundations Benchmark v1.1.0"]
-		name = "profile_attachment_name"
-		description = "scc_profile_attachment_description"
+			instance_id = "%s"
+			profile_id = local.scc_profiles_map["CIS IBM Cloud Foundations Benchmark v1.1.0"]
+			name = "profile_attachment_name"
+			description = "scc_profile_attachment_description"
 			scope {
-				environment = "ibm-cloud"	
-				properties {
-					name = "scope_id"
-					value = data.ibm_iam_account_settings.iam_account_settings.account_id
-				}
-				properties {
-					name = "scope_type"
-					value = "account"
+				id = ibm_scc_scope.scc_scope_instance.scope_id
+			}
+			schedule = "every_30_days"
+			status = "disabled"
+			notifications {
+				enabled = false
+				controls {
+					failed_control_ids = []
+					threshold_limit = 14
 				}
 			}
-    schedule = "every_30_days"
-    status = "disabled"
-    notifications {
-      enabled = false
-      controls {
-        failed_control_ids = []
-        threshold_limit = 14
-      }
-    }
-		attachment_parameters {
-			parameter_value = "['1.2', '1.3']"
-			assessment_id = "rule-e16fcfea-fe21-4d30-a721-423611481fea"
-			assessment_type = "automated"
-			parameter_display_name = "IBM Cloud Internet Services TLS version"
-			parameter_name = "tls_version"
-			parameter_type = "string_list"
-		}
-		attachment_parameters {
-			parameter_value = "8080"
-			assessment_id = "rule-f9137be8-2490-4afb-8cd5-a201cb167eb2"
-			assessment_type = "automated"
-			parameter_display_name = "Network ACL rule for allowed IPs to SSH port"
-			parameter_name = "ssh_port"
-			parameter_type = "numeric"
-		}
-		attachment_parameters {
-			parameter_value = "23"
-			assessment_id = "rule-7c5f6385-67e4-4edf-bec8-c722558b2dec"
-			assessment_type = "automated"
-			parameter_display_name = "Security group rule SSH allow port number"
-			parameter_name = "ssh_port"
-			parameter_type = "numeric"
-		}
-		attachment_parameters {
-			parameter_value = "4000"
-			assessment_id = "rule-f1e80ee7-88d5-4bf2-b42f-c863bb24601c"
-			assessment_type = "automated"
-			parameter_display_name = "Disallowed IPs for ingress to RDP port"
-			parameter_name = "rdp_port"
-			parameter_type = "numeric"
-		}
-		attachment_parameters {
-			parameter_value = "1234"
-			assessment_id = "rule-9653d2c7-6290-4128-a5a3-65487ba40370"
-			assessment_type = "automated"
-			parameter_display_name = "Security group rule RDP allow port number"
-			parameter_name = "rdp_port"
-			parameter_type = "numeric"
-		}
-		attachment_parameters {
-			parameter_value = "['default']"
-			assessment_id = "rule-96527f89-1867-4581-b923-1400e04661e0"
-			assessment_type = "automated"
-			parameter_display_name = "Exclude the default security groups"
-			parameter_name = "exclude_default_security_groups"
-			parameter_type = "string_list"
-		}
+			attachment_parameters {
+				parameter_value = "['1.2', '1.3']"
+				assessment_id = "rule-e16fcfea-fe21-4d30-a721-423611481fea"
+				assessment_type = "automated"
+				parameter_display_name = "IBM Cloud Internet Services TLS version"
+				parameter_name = "tls_version"
+				parameter_type = "string_list"
+			}
+			attachment_parameters {
+				parameter_value = "8080"
+				assessment_id = "rule-f9137be8-2490-4afb-8cd5-a201cb167eb2"
+				assessment_type = "automated"
+				parameter_display_name = "Network ACL rule for allowed IPs to SSH port"
+				parameter_name = "ssh_port"
+				parameter_type = "numeric"
+			}
+			attachment_parameters {
+				parameter_value = "23"
+				assessment_id = "rule-7c5f6385-67e4-4edf-bec8-c722558b2dec"
+				assessment_type = "automated"
+				parameter_display_name = "Security group rule SSH allow port number"
+				parameter_name = "ssh_port"
+				parameter_type = "numeric"
+			}
+			attachment_parameters {
+				parameter_value = "4000"
+				assessment_id = "rule-f1e80ee7-88d5-4bf2-b42f-c863bb24601c"
+				assessment_type = "automated"
+				parameter_display_name = "Disallowed IPs for ingress to RDP port"
+				parameter_name = "rdp_port"
+				parameter_type = "numeric"
+			}
+			attachment_parameters {
+				parameter_value = "1234"
+				assessment_id = "rule-9653d2c7-6290-4128-a5a3-65487ba40370"
+				assessment_type = "automated"
+				parameter_display_name = "Security group rule RDP allow port number"
+				parameter_name = "rdp_port"
+				parameter_type = "numeric"
+			}
+			attachment_parameters {
+				parameter_value = "['default']"
+				assessment_id = "rule-96527f89-1867-4581-b923-1400e04661e0"
+				assessment_type = "automated"
+				parameter_display_name = "Exclude the default security groups"
+				parameter_name = "exclude_default_security_groups"
+				parameter_type = "string_list"
+			}
 	}
-	`, instanceID, instanceID)
+`, instanceID, instanceID)
 }
 
 func testAccCheckIbmSccProfileAttachmentExists(n string, obj securityandcompliancecenterapiv3.ProfileAttachment) resource.TestCheckFunc {

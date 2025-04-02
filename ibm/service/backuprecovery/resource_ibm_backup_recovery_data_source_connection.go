@@ -56,6 +56,7 @@ func ResourceIbmBackupRecoveryDataSourceConnection() *schema.Resource {
 			"registration_token": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
+				Sensitive:   true,
 				Description: "Specifies a token that can be used to register a connector against this connection.",
 			},
 			"tenant_id": &schema.Schema{

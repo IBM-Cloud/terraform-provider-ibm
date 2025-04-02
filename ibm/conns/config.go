@@ -74,6 +74,7 @@ import (
 	"github.com/IBM/platform-services-go-sdk/catalogmanagementv1"
 	"github.com/IBM/platform-services-go-sdk/contextbasedrestrictionsv1"
 	"github.com/IBM/platform-services-go-sdk/enterprisemanagementv1"
+	"github.com/IBM/platform-services-go-sdk/globalcatalogv1"
 	searchv2 "github.com/IBM/platform-services-go-sdk/globalsearchv2"
 	"github.com/IBM/platform-services-go-sdk/globaltaggingv1"
 	iamaccessgroups "github.com/IBM/platform-services-go-sdk/iamaccessgroupsv2"
@@ -203,9 +204,10 @@ type Config struct {
 	IAMRefreshToken string
 
 	// Zone
-	Zone          string
-	Visibility    string
-	EndpointsFile string
+	Zone                string
+	Visibility          string
+	PrivateEndpointType string
+	EndpointsFile       string
 }
 
 // Session stores the information required for communication with the SoftLayer and Bluemix API
@@ -244,6 +246,7 @@ type ClientSession interface {
 	ResourceControllerAPI() (controller.ResourceControllerAPI, error)
 	ResourceControllerAPIV2() (controllerv2.ResourceControllerAPIV2, error)
 	BackupRecoveryV1() (*backuprecoveryv1.BackupRecoveryV1, error)
+	BackupRecoveryV1Connector() (*backuprecoveryv1.BackupRecoveryV1Connector, error)
 	IBMCloudLogsRoutingV0() (*ibmcloudlogsroutingv0.IBMCloudLogsRoutingV0, error)
 	SoftLayerSession() *slsession.Session
 	IBMPISession() (*ibmpisession.IBMPISession, error)
@@ -300,6 +303,7 @@ type ClientSession interface {
 	CatalogManagementV1() (*catalogmanagementv1.CatalogManagementV1, error)
 	EnterpriseManagementV1() (*enterprisemanagementv1.EnterpriseManagementV1, error)
 	ResourceControllerV2API() (*resourcecontroller.ResourceControllerV2, error)
+	GlobalCatalogV1API() (*globalcatalogv1.GlobalCatalogV1, error)
 	SecretsManagerV2() (*secretsmanagerv2.SecretsManagerV2, error)
 	SchematicsV1() (*schematicsv1.SchematicsV1, error)
 	SatelliteClientSession() (*kubernetesserviceapiv1.KubernetesServiceApiV1, error)
@@ -576,6 +580,9 @@ type clientSession struct {
 	backupRecoveryClient    *backuprecoveryv1.BackupRecoveryV1
 	backupRecoveryClientErr error
 
+	backupRecoveryConnectorClient    *backuprecoveryv1.BackupRecoveryV1Connector
+	backupRecoveryConnectorClientErr error
+
 	secretsManagerClient    *secretsmanagerv2.SecretsManagerV2
 	secretsManagerClientErr error
 
@@ -687,6 +694,10 @@ type clientSession struct {
 	// Software Defined Storage
 	sdsaasClient    *sdsaasv1.SdsaasV1
 	sdsaasClientErr error
+
+	// Global Catalog Management Option
+	globalCatalogClient    *globalcatalogv1.GlobalCatalogV1
+	globalCatalogClientErr error
 }
 
 // Usage Reports
@@ -1170,6 +1181,10 @@ func (session clientSession) BackupRecoveryV1() (*backuprecoveryv1.BackupRecover
 	return session.backupRecoveryClient, session.backupRecoveryClientErr
 }
 
+func (session clientSession) BackupRecoveryV1Connector() (*backuprecoveryv1.BackupRecoveryV1Connector, error) {
+	return session.backupRecoveryConnectorClient, session.backupRecoveryConnectorClientErr
+}
+
 // IBM Cloud Secrets Manager V2 Basic API
 func (session clientSession) SecretsManagerV2() (*secretsmanagerv2.SecretsManagerV2, error) {
 	return session.secretsManagerClient, session.secretsManagerClientErr
@@ -1321,6 +1336,11 @@ func (session clientSession) IBMCloudLogsRoutingV0() (*ibmcloudlogsroutingv0.IBM
 	return session.ibmCloudLogsRoutingClient, session.ibmCloudLogsRoutingClientErr
 }
 
+// GlobalCatalog Session
+func (sess clientSession) GlobalCatalogV1API() (*globalcatalogv1.GlobalCatalogV1, error) {
+	return sess.globalCatalogClient, sess.globalCatalogClientErr
+}
+
 // ClientSession configures and returns a fully initialized ClientSession
 func (c *Config) ClientSession() (interface{}, error) {
 	sess, err := newSession(c)
@@ -1362,6 +1382,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.enterpriseManagementClientErr = errEmptyBluemixCredentials
 		session.resourceControllerErr = errEmptyBluemixCredentials
 		session.backupRecoveryClientErr = errEmptyBluemixCredentials
+		session.backupRecoveryConnectorClientErr = errEmptyBluemixCredentials
 		session.catalogManagementClientErr = errEmptyBluemixCredentials
 		session.partnerCenterSellClientErr = errEmptyBluemixCredentials
 		session.ibmpiConfigErr = errEmptyBluemixCredentials
@@ -1628,9 +1649,11 @@ func (c *Config) ClientSession() (interface{}, error) {
 
 	// Construct the service options.
 	var backupRecoveryURL string
+	var backupRecoveryConnectorURL string
 
 	if fileMap != nil && c.Visibility != "public-and-private" {
 		backupRecoveryURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_BACKUP_RECOVERY_ENDPOINT", c.Region, backupRecoveryURL)
+		backupRecoveryConnectorURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_BACKUP_RECOVERY_CONNECTOR_ENDPOINT", c.Region, backupRecoveryConnectorURL)
 	}
 
 	backupRecoveryClientOptions := &backuprecoveryv1.BackupRecoveryV1Options{
@@ -1651,6 +1674,29 @@ func (c *Config) ClientSession() (interface{}, error) {
 		})
 	} else {
 		session.backupRecoveryClientErr = fmt.Errorf("Error occurred while configuring IBM Backup recovery API service: %q", err)
+	}
+
+	var backupRecoveryConnectorClientAuthenticator core.Authenticator
+	backupRecoveryConnectorClientAuthenticator = &core.NoAuthAuthenticator{}
+
+	backupRecoveryConnectorClientOptions := &backuprecoveryv1.BackupRecoveryV1ConnectorOptions{
+		ConnectorURL:  EnvFallBack([]string{"IBMCLOUD_BACKUP_RECOVERY_CONNECTOR_ENDPOINT"}, backupRecoveryConnectorURL),
+		Authenticator: backupRecoveryConnectorClientAuthenticator,
+	}
+
+	// Construct the service connector client.
+	session.backupRecoveryConnectorClient, err = backuprecoveryv1.NewBackupRecoveryV1Connector(backupRecoveryConnectorClientOptions)
+	tr := &gohttp.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}
+	session.backupRecoveryConnectorClient.Service.Client.Transport = tr
+	if err == nil {
+		// Enable retries for API calls
+		session.backupRecoveryClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.backupRecoveryClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	} else {
+		session.backupRecoveryConnectorClientErr = fmt.Errorf("Error occurred while configuring IBM Backup recovery API connector service: %q", err)
 	}
 
 	projectEndpoint := project.DefaultServiceURL
@@ -1843,7 +1889,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		if c.Region == "us-south" || c.Region == "us-east" {
 			usageReportsURL = ContructEndpoint(fmt.Sprintf("private.%s.usagereports", c.Region), fmt.Sprintf("%s/v1", cloudEndpoint))
 		} else {
-			fmt.Println("Private Endpint supports only us-south and us-east region specific endpoint")
+			log.Println("Private Endpint supports only us-south and us-east region specific endpoint")
 			usageReportsURL = ContructEndpoint("private.us-south.usagereports", fmt.Sprintf("%s/v1", cloudEndpoint))
 		}
 	}
@@ -3630,6 +3676,37 @@ func (c *Config) ClientSession() (interface{}, error) {
 		}
 	}
 
+	// CATALOG MANAGEMENT Service
+	globalcatalogURL := globalcatalogv1.DefaultServiceURL
+	if c.Visibility == "private" {
+		if c.Region == "us-south" || c.Region == "us-east" {
+			rmURL = ContructEndpoint(fmt.Sprintf("private.%s.globalcatalog/api/v1", c.Region), fmt.Sprintf("%s", cloudEndpoint))
+		} else {
+			fmt.Println("Private Endpoint supports only us-south and us-east region specific endpoint")
+			rmURL = ContructEndpoint("private.us-south.globalcatalog/api/v1", fmt.Sprintf("%s", cloudEndpoint))
+		}
+	}
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		catalogManagementURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_GLOBAL_CATALOG_API_ENDPOINT", c.Region, catalogManagementURL)
+	}
+	globalCatalogClientOptions := &globalcatalogv1.GlobalCatalogV1Options{
+		URL:           EnvFallBack([]string{"IBMCLOUD_GLOBAL_CATALOG_API_ENDPOINT"}, globalcatalogURL),
+		Authenticator: authenticator,
+	}
+	// Construct the service client.
+	session.globalCatalogClient, err = globalcatalogv1.NewGlobalCatalogV1(globalCatalogClientOptions)
+	if err != nil {
+		session.globalCatalogClientErr = fmt.Errorf("[ERROR] Error occurred while configuring global catalog API service: %q", err)
+	}
+	if session.globalCatalogClient != nil && session.globalCatalogClient.Service != nil {
+		// Enable retries for API calls
+		session.globalCatalogClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.globalCatalogClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	}
+
 	if os.Getenv("TF_LOG") != "" {
 		logDestination := log.Writer()
 		goLogger := log.New(logDestination, "", log.LstdFlags)
@@ -3687,15 +3764,16 @@ func newSession(c *Config) (*Session, error) {
 			IAMAccessToken:  c.IAMToken,
 			IAMRefreshToken: c.IAMRefreshToken,
 			// Comment out debug mode for v0.12
-			Debug:         os.Getenv("TF_LOG") != "",
-			HTTPTimeout:   c.BluemixTimeout,
-			Region:        c.Region,
-			ResourceGroup: c.ResourceGroup,
-			RetryDelay:    &c.RetryDelay,
-			MaxRetries:    &c.RetryCount,
-			Visibility:    c.Visibility,
-			EndpointsFile: c.EndpointsFile,
-			UserAgent:     fmt.Sprintf("terraform-provider-ibm/%s", version.Version),
+			Debug:               os.Getenv("TF_LOG") != "",
+			HTTPTimeout:         c.BluemixTimeout,
+			Region:              c.Region,
+			ResourceGroup:       c.ResourceGroup,
+			RetryDelay:          &c.RetryDelay,
+			MaxRetries:          &c.RetryCount,
+			Visibility:          c.Visibility,
+			PrivateEndpointType: c.PrivateEndpointType,
+			EndpointsFile:       c.EndpointsFile,
+			UserAgent:           fmt.Sprintf("terraform-provider-ibm/%s", version.Version),
 		}
 		sess, err := bxsession.New(bmxConfig)
 		if err != nil {
@@ -3710,15 +3788,16 @@ func newSession(c *Config) (*Session, error) {
 		bmxConfig := &bluemix.Config{
 			BluemixAPIKey: c.BluemixAPIKey,
 			// Comment out debug mode for v0.12
-			Debug:         os.Getenv("TF_LOG") != "",
-			HTTPTimeout:   c.BluemixTimeout,
-			Region:        c.Region,
-			ResourceGroup: c.ResourceGroup,
-			RetryDelay:    &c.RetryDelay,
-			MaxRetries:    &c.RetryCount,
-			Visibility:    c.Visibility,
-			EndpointsFile: c.EndpointsFile,
-			UserAgent:     fmt.Sprintf("terraform-provider-ibm/%s", version.Version),
+			Debug:               os.Getenv("TF_LOG") != "",
+			HTTPTimeout:         c.BluemixTimeout,
+			Region:              c.Region,
+			ResourceGroup:       c.ResourceGroup,
+			RetryDelay:          &c.RetryDelay,
+			MaxRetries:          &c.RetryCount,
+			Visibility:          c.Visibility,
+			PrivateEndpointType: c.PrivateEndpointType,
+			EndpointsFile:       c.EndpointsFile,
+			UserAgent:           fmt.Sprintf("terraform-provider-ibm/%s", version.Version),
 		}
 		sess, err := bxsession.New(bmxConfig)
 		if err != nil {

@@ -17,7 +17,7 @@ import (
 )
 
 func TestAccIBMPolicyAssignmentBasic(t *testing.T) {
-	var conf iampolicymanagementv1.GetPolicyAssignmentResponse
+	var conf iampolicymanagementv1.PolicyTemplateAssignmentItems
 	var name string = fmt.Sprintf("TerraformTemplateTest%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -47,7 +47,7 @@ func TestAccIBMPolicyAssignmentBasic(t *testing.T) {
 }
 
 func TestAccIBMPolicyAssignmentS2SBasic(t *testing.T) {
-	var conf iampolicymanagementv1.GetPolicyAssignmentResponse
+	var conf iampolicymanagementv1.PolicyTemplateAssignmentItems
 	var name string = fmt.Sprintf("TerraformTemplateTest%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -71,7 +71,7 @@ func TestAccIBMPolicyAssignmentS2SBasic(t *testing.T) {
 }
 
 func TestAccIBMPolicyAssignmentEnterprise(t *testing.T) {
-	var conf iampolicymanagementv1.GetPolicyAssignmentResponse
+	var conf iampolicymanagementv1.PolicyTemplateAssignmentItems
 	var name string = fmt.Sprintf("TerraformTemplateTest%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -280,7 +280,7 @@ func testAccCheckIBMPolicyAssignmentConfigEnterprise(name string, targetId strin
 		}`, name, targetId)
 }
 
-func testAccCheckIBMPolicyAssignmentExists(n string, obj iampolicymanagementv1.GetPolicyAssignmentResponse) resource.TestCheckFunc {
+func testAccCheckIBMPolicyAssignmentExists(n string, obj iampolicymanagementv1.PolicyTemplateAssignmentItems) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -303,7 +303,7 @@ func testAccCheckIBMPolicyAssignmentExists(n string, obj iampolicymanagementv1.G
 			return err
 		}
 
-		assignmentDetails := policyAssignmentV1.(*iampolicymanagementv1.GetPolicyAssignmentResponse)
+		assignmentDetails := policyAssignmentV1.(*iampolicymanagementv1.PolicyTemplateAssignmentItems)
 
 		obj = *assignmentDetails
 		return nil

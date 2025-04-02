@@ -51,6 +51,12 @@ func DataSourceIBMISLBS() *schema.Resource {
 							Computed:    true,
 							Description: "The date and time that this pool was created.",
 						},
+						"failsafe_policy_actions": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The supported `failsafe_policy.action` values for this load balancer's pools.",
+							Elem:        &schema.Schema{Type: schema.TypeString},
+						},
 						"dns": {
 							Type:        schema.TypeList,
 							Computed:    true,
@@ -467,6 +473,7 @@ func getLbs(d *schema.ResourceData, meta interface{}) error {
 			}
 			lbInfo[isLBPools] = poolList
 		}
+		lbInfo["failsafe_policy_actions"] = lb.FailsafePolicyActions
 		if lb.Profile != nil {
 			lbProfile := make(map[string]interface{})
 			lbProfile[name] = *lb.Profile.Name
