@@ -1133,7 +1133,7 @@ func snapshotDelete(d *schema.ResourceData, meta interface{}, id string) error {
 	deleteSnapshotOptions := &vpcv1.DeleteSnapshotOptions{
 		ID: &id,
 	}
-	_, response, err = sess.DeleteSnapshot(deleteSnapshotOptions)
+	response, err = sess.DeleteSnapshot(deleteSnapshotOptions)
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error deleting Snapshot : %s\n%s", err, response)
 	}
