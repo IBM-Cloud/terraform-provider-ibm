@@ -80,7 +80,7 @@ func TestAccIBMPISPPPlacementGroupBasic(t *testing.T) {
 			{
 				Config: testAccCheckIBMPIDeleteSPPPlacementGroup(name, policy),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMPISPPPlacementGroupDelete("ibm_pi_spp_placement_group.spp_placement_group_another", "ibm_pi_shared_processor_pool.spp_pool", "ibm_pi_shared_processor_pool.spp_pool_2"),
+					testAccCheckIBMPISPPPlacementGroupDelete("ibm_pi_shared_processor_pool.spp_pool", "ibm_pi_shared_processor_pool.spp_pool_2"),
 				),
 			},
 			{
@@ -296,7 +296,7 @@ func testAccCheckIBMPISPPPlacementGroupMemberExistsFromSPPCreate(n string, pool 
 	}
 }
 
-func testAccCheckIBMPISPPPlacementGroupDelete(n string, pool string, newPool string) resource.TestCheckFunc {
+func testAccCheckIBMPISPPPlacementGroupDelete(pool string, newPool string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		sess, err := acc.TestAccProvider.Meta().(conns.ClientSession).IBMPISession()
 		if err != nil {

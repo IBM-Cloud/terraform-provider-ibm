@@ -81,7 +81,7 @@ func TestAccIBMPIPlacementGroupBasic(t *testing.T) {
 			{
 				Config: testAccCheckIBMPIDeletePlacementGroup(name, policy, "tinytest-1x4"),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMPIPlacementGroupDelete("ibm_pi_placement_group.power_placement_group", "ibm_pi_instance.power_instance", "ibm_pi_instance.power_instance_in_pg"),
+					testAccCheckIBMPIPlacementGroupDelete("ibm_pi_instance.power_instance", "ibm_pi_instance.power_instance_in_pg"),
 				),
 			},
 		},
@@ -304,7 +304,7 @@ func testAccCheckIBMPIPlacementGroupMemberExistsFromInstanceCreate(n string, ins
 	}
 }
 
-func testAccCheckIBMPIPlacementGroupDelete(n string, inst string, newInstance string) resource.TestCheckFunc {
+func testAccCheckIBMPIPlacementGroupDelete(inst string, newInstance string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		sess, err := acc.TestAccProvider.Meta().(conns.ClientSession).IBMPISession()
 		if err != nil {
