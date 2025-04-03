@@ -132,6 +132,11 @@ var CISResourceResponseObject = &schema.Resource{
 															Optional:    true,
 															Description: "Sensitivity level",
 														},
+														CISRulesetOverridesScoreThreshold: {
+															Type:        schema.TypeInt,
+															Optional:    true,
+															Description: "Score Threshold",
+														},
 													},
 												},
 											},
@@ -326,7 +331,7 @@ func ResourceIBMCISRulesetValidator() *validate.ResourceValidator {
 func ResourceIBMCISRulesetCreate(d *schema.ResourceData, meta interface{}) error {
 	// check if it is a new resource, if true then return error that user need to import it first
 	if d.IsNewResource() {
-		return fmt.Errorf("[ERROR] You cannot create a new resource. Import the resource first. Check documentation for import usage.")
+		return fmt.Errorf("[ERROR] You can not create a new resource. Please import the resource first. Check documentation for import usage")
 	}
 	return nil
 }
@@ -618,10 +623,14 @@ func expandCISRulesetsRulesActionParametersOverrides(obj interface{}) rulesetsv1
 
 	finalResponse := make([]rulesetsv1.Overrides, 0)
 	overrideRespObj := rulesetsv1.Overrides{
-		Action:     &actionOverride,
-		Enabled:    &enabledOverride,
 		Rules:      rules,
 		Categories: categories,
+	}
+	if actionOverride != "" {
+		overrideRespObj.Action = &actionOverride
+	}
+	if enabledOverride {
+		overrideRespObj.Enabled = &enabledOverride
 	}
 	finalResponse = append(finalResponse, overrideRespObj)
 
@@ -639,10 +648,16 @@ func expandCISRulesetsRulesActionParametersOverridesCategories(obj interface{}) 
 		enabled := response[CISRulesetOverridesEnabled].(bool)
 		category := response[CISRulesetOverridesCategoriesCategory].(string)
 		overrideRespObj := rulesetsv1.CategoriesOverride{
-			Action:   &action,
-			Enabled:  &enabled,
 			Category: &category,
 		}
+
+		if action != "" {
+			overrideRespObj.Action = &action
+		}
+		if enabled {
+			overrideRespObj.Enabled = &enabled
+		}
+
 		finalResponse = append(finalResponse, overrideRespObj)
 
 	}
@@ -659,11 +674,19 @@ func expandCISRulesetsRulesActionParametersOverridesRules(obj interface{}) []rul
 		id := response[CISRulesetRuleId].(string)
 		action := response[CISRulesetOverridesAction].(string)
 		enabled := response[CISRulesetOverridesEnabled].(bool)
+		score := int64(response[CISRulesetOverridesScoreThreshold].(int))
 
 		overrideRespObj := rulesetsv1.RulesOverride{
-			ID:      &id,
-			Action:  &action,
-			Enabled: &enabled,
+			ID: &id,
+		}
+		if action != "" {
+			overrideRespObj.Action = &action
+		}
+		if enabled {
+			overrideRespObj.Enabled = &enabled
+		}
+		if score != 0 {
+			overrideRespObj.ScoreThreshold = &score
 		}
 		finalResponse = append(finalResponse, overrideRespObj)
 	}

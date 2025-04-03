@@ -92,6 +92,11 @@ var CISRulesetsRulesObject = &schema.Resource{
 												Optional:    true,
 												Description: "Sensitivity level",
 											},
+											CISRulesetOverridesScoreThreshold: {
+												Type:        schema.TypeInt,
+												Optional:    true,
+												Description: "Score threshold for the override rule",
+											},
 										},
 									},
 								},
