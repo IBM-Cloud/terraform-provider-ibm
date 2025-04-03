@@ -4,18 +4,20 @@
 package vpc
 
 import (
+	"context"
 	"fmt"
 	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func DataSourceIBMISEndpointGateway() *schema.Resource {
 	return &schema.Resource{
-		Read:     dataSourceIBMISEndpointGatewayRead,
-		Importer: &schema.ResourceImporter{},
+		ReadContext: dataSourceIBMISEndpointGatewayRead,
+		Importer:    &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
 			isVirtualEndpointGatewayName: {
@@ -176,10 +178,12 @@ func DataSourceIBMISEndpointGateway() *schema.Resource {
 }
 
 func dataSourceIBMISEndpointGatewayRead(
-	d *schema.ResourceData, meta interface{}) error {
+	context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_virtual_endpoint_gateway", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	name := d.Get(isVirtualEndpointGatewayName).(string)
@@ -189,12 +193,18 @@ func dataSourceIBMISEndpointGatewayRead(
 
 	results, response, err := sess.ListEndpointGateways(options)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error fetching endpoint gateways %s\n%s", err, response)
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetEndpointGatewayWithContext failed: %s\n%s", err.Error(), response), "(Data) ibm_is_virtual_endpoint_gateway", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
 	}
 	allrecs := results.EndpointGateways
 
 	if len(allrecs) == 0 {
-		return fmt.Errorf("[ERROR] No Virtual Endpoints Gateway found with given name %s", name)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetEndpointGatewayWithContext failed: %s", err.Error()), "(Data) ibm_is_virtual_endpoint_gateway", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	result := allrecs[0]
 	d.SetId(*result.ID)
@@ -205,7 +215,7 @@ func dataSourceIBMISEndpointGatewayRead(
 	d.Set(isVirtualEndpointGatewayCreatedAt, result.CreatedAt.String())
 	d.Set(isVirtualEndpointGatewayLifecycleState, result.LifecycleState)
 	if err := d.Set(isVirtualEndpointGatewayLifecycleReasons, resourceEGWFlattenLifecycleReasons(result.LifecycleReasons)); err != nil {
-		return fmt.Errorf("[ERROR] Error setting lifecycle_reasons: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_virtual_endpoint_gateway", "read", "lifecycle_reasons-to-map").GetDiag()
 	}
 	d.Set(isVirtualEndpointGatewayResourceType, result.ResourceType)
 	d.Set(isVirtualEndpointGatewayIPs, flattenIPs(result.Ips))
