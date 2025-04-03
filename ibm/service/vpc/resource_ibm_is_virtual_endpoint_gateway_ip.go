@@ -112,7 +112,7 @@ func ResourceIBMISEndpointGatewayIP() *schema.Resource {
 func resourceIBMisVirtualEndpointGatewayIPCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_virtual_endpoint_gateway_ip_ip", "create", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_virtual_endpoint_gateway_ip", "create", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -122,7 +122,7 @@ func resourceIBMisVirtualEndpointGatewayIPCreate(context context.Context, d *sch
 	_, response, err := sess.AddEndpointGatewayIP(opt)
 	if err != nil {
 		log.Printf("Add Endpoint Gateway failed: %v", response)
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_virtual_endpoint_gateway_ip_ip", "create", "id").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_virtual_endpoint_gateway_ip", "create", "id").GetDiag()
 	}
 	d.SetId(fmt.Sprintf("%s/%s", gatewayID, ipID))
 	return resourceIBMisVirtualEndpointGatewayIPRead(context, d, meta)
@@ -131,13 +131,13 @@ func resourceIBMisVirtualEndpointGatewayIPCreate(context context.Context, d *sch
 func resourceIBMisVirtualEndpointGatewayIPRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_virtual_endpoint_gateway_ip_ip", "read", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_virtual_endpoint_gateway_ip", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 	parts, err := flex.IdParts(d.Id())
 	if err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_virtual_endpoint_gateway_ip_ip", "read", "sep-id-parts").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_virtual_endpoint_gateway_ip", "read", "sep-id-parts").GetDiag()
 	}
 	gatewayID := parts[0]
 	ipID := parts[1]
@@ -145,7 +145,7 @@ func resourceIBMisVirtualEndpointGatewayIPRead(context context.Context, d *schem
 	result, response, err := sess.GetEndpointGatewayIP(opt)
 	if err != nil {
 		log.Printf("Get Endpoint Gateway IP failed: %v", response)
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_virtual_endpoint_gateway_ip_ip", "read", "get-endpoint-gateway-ip").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_virtual_endpoint_gateway_ip", "read", "get-endpoint-gateway-ip").GetDiag()
 	}
 	d.Set(isVirtualEndpointGatewayIPID, result.ID)
 	d.Set(isVirtualEndpointGatewayIPName, result.Name)

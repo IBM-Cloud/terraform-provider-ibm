@@ -194,7 +194,7 @@ func dataSourceIBMISEndpointGatewayRead(
 	results, response, err := sess.ListEndpointGateways(options)
 	if err != nil {
 		if err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetEndpointGatewayWithContext failed: %s\n%s", err.Error(), response), "(Data) ibm_is_virtual_endpoint_gateway", "read")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListEndpointGateways failed: %s\n%s", err.Error(), response), "(Data) ibm_is_virtual_endpoint_gateway", "read")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
@@ -202,7 +202,7 @@ func dataSourceIBMISEndpointGatewayRead(
 	allrecs := results.EndpointGateways
 
 	if len(allrecs) == 0 {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetEndpointGatewayWithContext failed: %s", err.Error()), "(Data) ibm_is_virtual_endpoint_gateway", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListEndpointGateways failed: %s", err.Error()), "(Data) ibm_is_virtual_endpoint_gateway", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
