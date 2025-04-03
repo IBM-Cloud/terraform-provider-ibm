@@ -89,7 +89,7 @@ func ResourceIbmSmEnRegistrationValidator() *validate.ResourceValidator {
 }
 
 func resourceIbmSmEnRegistrationCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
+	secretsManagerClient, endpointsFile, err := getSecretsManagerSession(meta.(conns.ClientSession))
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, "", EnRegistrationResourceName, "create")
 		return tfErr.GetDiag()
@@ -97,7 +97,7 @@ func resourceIbmSmEnRegistrationCreate(context context.Context, d *schema.Resour
 
 	region := getRegion(secretsManagerClient, d)
 	instanceId := d.Get("instance_id").(string)
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d), endpointsFile)
 
 	createNotificationsRegistrationOptions := &secretsmanagerv2.CreateNotificationsRegistrationOptions{}
 
@@ -120,7 +120,7 @@ func resourceIbmSmEnRegistrationCreate(context context.Context, d *schema.Resour
 }
 
 func resourceIbmSmEnRegistrationRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
+	secretsManagerClient, endpointsFile, err := getSecretsManagerSession(meta.(conns.ClientSession))
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, "", EnRegistrationResourceName, "read")
 		return tfErr.GetDiag()
@@ -133,7 +133,7 @@ func resourceIbmSmEnRegistrationRead(context context.Context, d *schema.Resource
 	}
 	region := id[0]
 	instanceId := id[1]
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d), endpointsFile)
 
 	getNotificationsRegistrationOptions := &secretsmanagerv2.GetNotificationsRegistrationOptions{}
 
@@ -165,7 +165,7 @@ func resourceIbmSmEnRegistrationRead(context context.Context, d *schema.Resource
 }
 
 func resourceIbmSmEnRegistrationUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
+	secretsManagerClient, endpointsFile, err := getSecretsManagerSession(meta.(conns.ClientSession))
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf(""), EnRegistrationResourceName, "update")
 		return tfErr.GetDiag()
@@ -174,7 +174,7 @@ func resourceIbmSmEnRegistrationUpdate(context context.Context, d *schema.Resour
 	id := strings.Split(d.Id(), "/")
 	region := id[0]
 	instanceId := id[1]
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d), endpointsFile)
 
 	createNotificationsRegistrationOptions := &secretsmanagerv2.CreateNotificationsRegistrationOptions{}
 
@@ -203,7 +203,7 @@ func resourceIbmSmEnRegistrationUpdate(context context.Context, d *schema.Resour
 }
 
 func resourceIbmSmEnRegistrationDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
+	secretsManagerClient, endpointsFile, err := getSecretsManagerSession(meta.(conns.ClientSession))
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, "", EnRegistrationResourceName, "delete")
 		return tfErr.GetDiag()
@@ -212,7 +212,7 @@ func resourceIbmSmEnRegistrationDelete(context context.Context, d *schema.Resour
 	id := strings.Split(d.Id(), "/")
 	region := id[0]
 	instanceId := id[1]
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d), endpointsFile)
 
 	deleteNotificationsRegistrationOptions := &secretsmanagerv2.DeleteNotificationsRegistrationOptions{}
 

@@ -76,7 +76,10 @@ func resourceIbmLogsDashboardFolderCreate(context context.Context, d *schema.Res
 
 	region := getLogsInstanceRegion(logsClient, d)
 	instanceId := d.Get("instance_id").(string)
-	logsClient = getClientWithLogsInstanceEndpoint(logsClient, instanceId, region, getLogsInstanceEndpointType(logsClient, d))
+	logsClient, err = getClientWithLogsInstanceEndpoint(logsClient, meta, instanceId, region, getLogsInstanceEndpointType(logsClient, d))
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("Unable to get updated logs instance client"))
+	}
 
 	createDashboardFolderOptions := &logsv0.CreateDashboardFolderOptions{}
 
@@ -105,7 +108,7 @@ func resourceIbmLogsDashboardFolderRead(context context.Context, d *schema.Resou
 		return tfErr.GetDiag()
 	}
 
-	logsClient, region, instanceId, dashboardFolderId, err := updateClientURLWithInstanceEndpoint(d.Id(), logsClient, d)
+	logsClient, region, instanceId, dashboardFolderId, err := updateClientURLWithInstanceEndpoint(d.Id(), meta, logsClient, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -158,7 +161,7 @@ func resourceIbmLogsDashboardFolderUpdate(context context.Context, d *schema.Res
 		return tfErr.GetDiag()
 	}
 
-	logsClient, _, _, dashboardFolderId, err := updateClientURLWithInstanceEndpoint(d.Id(), logsClient, d)
+	logsClient, _, _, dashboardFolderId, err := updateClientURLWithInstanceEndpoint(d.Id(), meta, logsClient, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -196,7 +199,7 @@ func resourceIbmLogsDashboardFolderDelete(context context.Context, d *schema.Res
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
-	logsClient, _, _, dashboardFolderId, err := updateClientURLWithInstanceEndpoint(d.Id(), logsClient, d)
+	logsClient, _, _, dashboardFolderId, err := updateClientURLWithInstanceEndpoint(d.Id(), meta, logsClient, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}

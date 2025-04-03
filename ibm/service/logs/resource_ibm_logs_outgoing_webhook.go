@@ -152,7 +152,10 @@ func resourceIbmLogsOutgoingWebhookCreate(context context.Context, d *schema.Res
 
 	region := getLogsInstanceRegion(logsClient, d)
 	instanceId := d.Get("instance_id").(string)
-	logsClient = getClientWithLogsInstanceEndpoint(logsClient, instanceId, region, getLogsInstanceEndpointType(logsClient, d))
+	logsClient, err = getClientWithLogsInstanceEndpoint(logsClient, meta, instanceId, region, getLogsInstanceEndpointType(logsClient, d))
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("Unable to get updated logs instance client"))
+	}
 
 	bodyModelMap := map[string]interface{}{}
 	createOutgoingWebhookOptions := &logsv0.CreateOutgoingWebhookOptions{}
@@ -195,7 +198,7 @@ func resourceIbmLogsOutgoingWebhookRead(context context.Context, d *schema.Resou
 		return tfErr.GetDiag()
 	}
 
-	logsClient, region, instanceId, webhookId, err := updateClientURLWithInstanceEndpoint(d.Id(), logsClient, d)
+	logsClient, region, instanceId, webhookId, err := updateClientURLWithInstanceEndpoint(d.Id(), meta, logsClient, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -266,7 +269,7 @@ func resourceIbmLogsOutgoingWebhookUpdate(context context.Context, d *schema.Res
 		return tfErr.GetDiag()
 	}
 
-	logsClient, _, _, webhookId, err := updateClientURLWithInstanceEndpoint(d.Id(), logsClient, d)
+	logsClient, _, _, webhookId, err := updateClientURLWithInstanceEndpoint(d.Id(), meta, logsClient, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -323,7 +326,7 @@ func resourceIbmLogsOutgoingWebhookDelete(context context.Context, d *schema.Res
 		return tfErr.GetDiag()
 	}
 
-	logsClient, _, _, webhookId, err := updateClientURLWithInstanceEndpoint(d.Id(), logsClient, d)
+	logsClient, _, _, webhookId, err := updateClientURLWithInstanceEndpoint(d.Id(), meta, logsClient, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}

@@ -86,7 +86,7 @@ func ResourceIbmSmSecretGroupValidator() *validate.ResourceValidator {
 }
 
 func resourceIbmSmSecretGroupCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
+	secretsManagerClient, endpointsFile, err := getSecretsManagerSession(meta.(conns.ClientSession))
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, "", SecretGroupResourceName, "create")
 		return tfErr.GetDiag()
@@ -94,7 +94,7 @@ func resourceIbmSmSecretGroupCreate(context context.Context, d *schema.ResourceD
 
 	region := getRegion(secretsManagerClient, d)
 	instanceId := d.Get("instance_id").(string)
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d), endpointsFile)
 
 	createSecretGroupOptions := &secretsmanagerv2.CreateSecretGroupOptions{}
 
@@ -117,7 +117,7 @@ func resourceIbmSmSecretGroupCreate(context context.Context, d *schema.ResourceD
 }
 
 func resourceIbmSmSecretGroupRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
+	secretsManagerClient, endpointsFile, err := getSecretsManagerSession(meta.(conns.ClientSession))
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, "", SecretGroupResourceName, "read")
 		return tfErr.GetDiag()
@@ -131,7 +131,7 @@ func resourceIbmSmSecretGroupRead(context context.Context, d *schema.ResourceDat
 	region := id[0]
 	instanceId := id[1]
 	secretGroupId := id[2]
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d), endpointsFile)
 
 	getSecretGroupOptions := &secretsmanagerv2.GetSecretGroupOptions{}
 
@@ -181,7 +181,7 @@ func resourceIbmSmSecretGroupRead(context context.Context, d *schema.ResourceDat
 }
 
 func resourceIbmSmSecretGroupUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
+	secretsManagerClient, endpointsFile, err := getSecretsManagerSession(meta.(conns.ClientSession))
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, "", SecretGroupResourceName, "update")
 		return tfErr.GetDiag()
@@ -191,7 +191,7 @@ func resourceIbmSmSecretGroupUpdate(context context.Context, d *schema.ResourceD
 	region := id[0]
 	instanceId := id[1]
 	secretGroupId := id[2]
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d), endpointsFile)
 
 	updateSecretGroupOptions := &secretsmanagerv2.UpdateSecretGroupOptions{}
 
@@ -225,7 +225,7 @@ func resourceIbmSmSecretGroupUpdate(context context.Context, d *schema.ResourceD
 }
 
 func resourceIbmSmSecretGroupDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
+	secretsManagerClient, endpointsFile, err := getSecretsManagerSession(meta.(conns.ClientSession))
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, "", SecretGroupResourceName, "delete")
 		return tfErr.GetDiag()
@@ -235,7 +235,7 @@ func resourceIbmSmSecretGroupDelete(context context.Context, d *schema.ResourceD
 	region := id[0]
 	instanceId := id[1]
 	secretGroupId := id[2]
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d), endpointsFile)
 
 	deleteSecretGroupOptions := &secretsmanagerv2.DeleteSecretGroupOptions{}
 

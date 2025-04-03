@@ -246,7 +246,7 @@ You can specify the following arguments for this resource.
 * `active` - (Required, Boolean) Whether the service is active.
 * `disabled` - (Required, Boolean) Determines the global visibility for the catalog entry, and its children. If it is not enabled, all plans are disabled.
 * `env` - (Optional, String) The environment to fetch this object from.
-  * Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^[a-z]+$/`.
+  * Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^[a-z_.-]+$/`.
 * `images` - (Optional, List) Images from the global catalog entry that help illustrate the service.
 Nested schema for **images**:
 	* `image` - (Optional, String) The URL for your product logo.
