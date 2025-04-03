@@ -280,7 +280,11 @@ func isWaitForOldTargetDelete(context context.Context, vpcClient *vpcv1.VpcV1, d
 func resourceIBMIsShareMountTargetCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("vpcClient creation failed: %s", err.Error()), "ibm_is_share_mount_target", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
 	}
 
 	//Temporary code to fix concurrent mount target issues.
@@ -369,7 +373,9 @@ func resourceIBMIsShareMountTargetCreate(context context.Context, d *schema.Reso
 func resourceIBMIsShareMountTargetRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("vpcClient creation failed: %s", err.Error()), "ibm_is_share_mount_target", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	getShareMountTargetOptions := &vpcv1.GetShareMountTargetOptions{}
@@ -388,8 +394,9 @@ func resourceIBMIsShareMountTargetRead(context context.Context, d *schema.Resour
 			d.SetId("")
 			return nil
 		}
-		log.Printf("[DEBUG] GetShareMountTargetWithContext failed %s\n%s", err, response)
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("share mount target err %s\n%s", err, response), "ibm_is_share_mount_target", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return diag.FromErr(tfErr)
 	}
 	if shareTarget.AccessControlMode != nil {
 		d.Set("access_control_mode", *shareTarget.AccessControlMode)
@@ -439,7 +446,11 @@ func resourceIBMIsShareMountTargetRead(context context.Context, d *schema.Resour
 func resourceIBMIsShareMountTargetUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("vpcClient creation failed: %s", err.Error()), "ibm_is_share_mount_target", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
 	}
 
 	updateShareMountTargetOptions := &vpcv1.UpdateShareMountTargetOptions{}
@@ -619,7 +630,11 @@ func resourceIBMIsShareMountTargetUpdate(context context.Context, d *schema.Reso
 func resourceIBMIsShareMountTargetDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("vpcClient creation failed: %s", err.Error()), "ibm_is_share_mount_target", "delete")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
 	}
 
 	deleteShareMountTargetOptions := &vpcv1.DeleteShareMountTargetOptions{}

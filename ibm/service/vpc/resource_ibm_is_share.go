@@ -1046,7 +1046,11 @@ func ResourceIbmIsShareValidator() *validate.ResourceValidator {
 func resourceIbmIsShareCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("vpcClient creation failed: %s", err.Error()), "ibm_is_share", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
 	}
 
 	createShareOptions := &vpcv1.CreateShareOptions{}
@@ -1324,7 +1328,11 @@ func resourceIbmIsShareMapToShareMountTargetPrototype(d *schema.ResourceData, sh
 func resourceIbmIsShareRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("vpcClient creation failed: %s", err.Error()), "ibm_is_share", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
 	}
 
 	getShareOptions := &vpcv1.GetShareOptions{}
@@ -1565,7 +1573,11 @@ func resourceIbmIsShareRead(context context.Context, d *schema.ResourceData, met
 func resourceIbmIsShareUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("vpcClient creation failed: %s", err.Error()), "ibm_is_share", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
 	}
 
 	getShareOptions := &vpcv1.GetShareOptions{}
@@ -1623,7 +1635,11 @@ func resourceIbmIsShareUpdate(context context.Context, d *schema.ResourceData, m
 func resourceIbmIsShareDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("vpcClient creation failed: %s", err.Error()), "ibm_is_share", "delete")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
 	}
 
 	getShareOptions := &vpcv1.GetShareOptions{}
@@ -1636,8 +1652,9 @@ func resourceIbmIsShareDelete(context context.Context, d *schema.ResourceData, m
 			d.SetId("")
 			return nil
 		}
-		log.Printf("[DEBUG] GetShareWithContext failed %s\n%s", err, response)
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("share err %s\n%s", err, response), "ibm_is_share", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return diag.FromErr(tfErr)
 	}
 	if share.MountTargets != nil {
 		if _, ok := d.GetOk("mount_targets"); ok {
@@ -1650,8 +1667,9 @@ func resourceIbmIsShareDelete(context context.Context, d *schema.ResourceData, m
 
 				_, response, err := vpcClient.DeleteShareMountTargetWithContext(context, deleteShareMountTargetOptions)
 				if err != nil {
-					log.Printf("[DEBUG] DeleteShareMountTargetWithContext failed %s\n%s", err, response)
-					return diag.FromErr(err)
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("share err share mount target %s\n%s", err, response), "ibm_is_share", "delete")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return diag.FromErr(tfErr)
 				}
 				_, err = isWaitForTargetDelete(context, vpcClient, d, d.Id(), *targetsItem.ID)
 				if err != nil {
@@ -1673,8 +1691,9 @@ func resourceIbmIsShareDelete(context context.Context, d *schema.ResourceData, m
 					d.SetId("")
 					return nil
 				}
-				log.Printf("[DEBUG] GetShareWithContext failed %s\n%s", err, response)
-				return diag.FromErr(err)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("share err %s\n%s", err, response), "ibm_is_share", "read")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return diag.FromErr(tfErr)
 			}
 			if replicaShare.MountTargets != nil {
 				if _, ok := d.GetOk("replica_share.0.mount_targets"); ok {
@@ -1687,8 +1706,9 @@ func resourceIbmIsShareDelete(context context.Context, d *schema.ResourceData, m
 
 						_, response, err := vpcClient.DeleteShareMountTargetWithContext(context, deleteShareMountTargetOptions)
 						if err != nil {
-							log.Printf("[DEBUG] DeleteShareMountTargetWithContext failed %s\n%s", err, response)
-							return diag.FromErr(err)
+							tfErr := flex.TerraformErrorf(err, fmt.Sprintf("share err share mount target %s\n%s", err, response), "ibm_is_share", "delete")
+							log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+							return diag.FromErr(tfErr)
 						}
 						_, err = isWaitForTargetDelete(context, vpcClient, d, d.Id(), *targetsItem.ID)
 						if err != nil {
@@ -1703,8 +1723,9 @@ func resourceIbmIsShareDelete(context context.Context, d *schema.ResourceData, m
 					d.SetId("")
 					return nil
 				}
-				log.Printf("[DEBUG] GetShareWithContext failed %s\n%s", err, response)
-				return diag.FromErr(err)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("share err %s\n%s", err, response), "ibm_is_share", "read")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return diag.FromErr(tfErr)
 			}
 			replicaETag := response.Headers.Get("ETag")
 			deleteShareOptions := &vpcv1.DeleteShareOptions{}
@@ -1712,8 +1733,9 @@ func resourceIbmIsShareDelete(context context.Context, d *schema.ResourceData, m
 			deleteShareOptions.SetID(*replicaShare.ID)
 			_, response, err = vpcClient.DeleteShareWithContext(context, deleteShareOptions)
 			if err != nil {
-				log.Printf("[DEBUG] DeleteShareWithContext failed %s\n%s", err, response)
-				return diag.FromErr(err)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("share err  %s\n%s", err, response), "ibm_is_share", "delete")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return diag.FromErr(tfErr)
 			}
 
 			_, err = isWaitForShareDelete(context, vpcClient, d, *replicaShare.ID)
@@ -1728,8 +1750,9 @@ func resourceIbmIsShareDelete(context context.Context, d *schema.ResourceData, m
 			d.SetId("")
 			return nil
 		}
-		log.Printf("[DEBUG] GetShareWithContext failed %s\n%s", err, response)
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("share err %s\n%s", err, response), "ibm_is_share", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return diag.FromErr(tfErr)
 	}
 	ETag := response.Headers.Get("ETag")
 	deleteShareOptions := &vpcv1.DeleteShareOptions{}
@@ -1738,8 +1761,9 @@ func resourceIbmIsShareDelete(context context.Context, d *schema.ResourceData, m
 	deleteShareOptions.IfMatch = &ETag
 	_, response, err = vpcClient.DeleteShareWithContext(context, deleteShareOptions)
 	if err != nil {
-		log.Printf("[DEBUG] DeleteShareWithContext failed %s\n%s", err, response)
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("share err %s\n%s", err, response), "ibm_is_share", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return diag.FromErr(tfErr)
 	}
 
 	_, err = isWaitForShareDelete(context, vpcClient, d, d.Id())
