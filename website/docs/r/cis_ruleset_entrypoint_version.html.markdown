@@ -177,7 +177,7 @@ Review the argument references that you can specify for your resource.
           - `rule_id` (Required, String) ID of the rule.
           - `enabled` (Optional, Boolean) Enables/Disables the rule.
           - `action` (Optional, String) Action of the rule.
-          - `score_thrshold` (Optional, Int) Score theshold of the rule. Allowed values are 25, 40, 60 for high, medium and low sensitivity respectively. 
+          - `score_threshold` (Optional, Int) Score threshold of the rule. Allowed values are 25, 40, 60 for high, medium and low sensitivity respectively. 
         - `categories` (Optional, List)
 
           Nested scheme of `categories`
