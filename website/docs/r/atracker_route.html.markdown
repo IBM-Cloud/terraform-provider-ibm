@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_atracker_route"
 description: |-
   Manages atracker_route.
-subcategory: "Activity Tracker API Version 2"
+subcategory: "Activity Tracker Event Routing"
 ---
 
 # ibm_atracker_route
