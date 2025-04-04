@@ -612,6 +612,7 @@ Review the argument references that you can specify for your resource.
 
   Nested scheme for `boot_volume`:
   - `auto_delete_volume` - (Optional, String) If set to **true**, when deleting the instance the volume will also be deleted
+  - `bandwidth` - (Optional, Integer) The maximum bandwidth (in megabits per second) for the volume. For this property to be specified, the volume storage_generation must be 2.
   - `encryption` - (Optional, String) The type of encryption to use for the boot volume.
   - `name` - (Optional, String) The name of the boot volume.
   - `size` - (Optional, Integer) The size of the boot volume.(The capacity of the volume in gigabytes. This defaults to minimum capacity of the image and maximum to `250`.)
@@ -864,6 +865,7 @@ Review the argument references that you can specify for your resource.
 - `volume_prototypes`- (List of Strings) A list of data volumes to attach to the instance. Mutually exclusive with `volumes`.
 
   Nested scheme for `volume_prototypes`:
+  - `bandwidth` - (Optional, Integer) The maximum bandwidth (in megabits per second) for the volume. For this property to be specified, the volume storage_generation must be 2.
   - `delete_volume_on_instance_delete` - (Bool) If set to **true**, automatically deletes the volumes that are attached to an instance. **Note** Setting this argument can bring some inconsistency in the volume resource, as the volumes is destroyed along with instances.
   - `encryption` - (String) The type of encryption that is used for the volume prototype.
   - `iops`- (Integer) The number of input and output operations per second of the volume prototype.
