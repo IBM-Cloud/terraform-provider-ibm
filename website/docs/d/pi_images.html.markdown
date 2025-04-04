@@ -10,7 +10,7 @@ description: |-
 
 Retrieve a list of supported images that you can use in your Power Systems Virtual Server instance. The image represents the version of the operation system that is installed in your Power Systems Virtual Server instance. For more information, about power instance images, see [capturing and exporting a virtual machine (VM)](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-capturing-exporting-vm).
 
-## Example usage
+## Example Usage
 
 The following example retrieves all images for a cloud instance ID.
 
@@ -36,13 +36,13 @@ Example usage:
     }
   ```
   
-## Argument reference
+## Argument Reference
 
 Review the argument references that you can specify for your data source.
 
 - `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
 
-## Attribute reference
+## Attribute Reference
 
 In addition to all argument reference list, you can access the following attribute references after your data source is created.
 
@@ -50,7 +50,7 @@ In addition to all argument reference list, you can access the following attribu
 
   Nested scheme for `image_info`:
   - `crn` - (String) The CRN of this resource.
-  - `href` - (String) The hyper link of an image. 
+  - `href` - (String) The hyper link of an image.
   - `id` - (String) The unique identifier of an image.
   - `image_type` - (String) The identifier of this image type.
   - `name`-  (String) The name of an image.
