@@ -292,6 +292,10 @@ func DataSourceIBMISInstanceTemplate() *schema.Resource {
 										Computed:    true,
 										Description: "The  globally unique name for the volume profile to use for this volume.",
 									},
+									"bandwidth": {
+										Type:     schema.TypeInt,
+										Computed: true,
+									},
 									isInstanceTemplateVolAttVolCapacity: {
 										Type:        schema.TypeInt,
 										Computed:    true,
@@ -856,6 +860,10 @@ func DataSourceIBMISInstanceTemplate() *schema.Resource {
 							Type:     schema.TypeInt,
 							Computed: true,
 						},
+						"bandwidth": {
+							Type:     schema.TypeInt,
+							Computed: true,
+						},
 						isInstanceTemplateBootProfile: {
 							Type:     schema.TypeString,
 							Computed: true,
@@ -1242,7 +1250,10 @@ func dataSourceIBMISInstanceTemplateRead(context context.Context, d *schema.Reso
 				if volumeInst.ID != nil {
 					volumeAttach[isInstanceTemplateVolAttVolume] = *volumeInst.ID
 				}
-
+				// bandwidth changes
+				if volumeInst.Bandwidth != nil {
+					newVolume["bandwidth"] = volumeInst.Bandwidth
+				}
 				if volumeInst.Capacity != nil {
 					newVolume[isInstanceTemplateVolAttVolCapacity] = *volumeInst.Capacity
 				}
@@ -1278,6 +1289,10 @@ func dataSourceIBMISInstanceTemplateRead(context context.Context, d *schema.Reso
 				volumeIntf := instance.BootVolumeAttachment.Volume
 				bootVol[isInstanceTemplateName] = volumeIntf.Name
 				bootVol[isInstanceTemplateVol] = volumeIntf.Name
+				// bandwidth changes
+				if volumeIntf.Bandwidth != nil {
+					bootVol["bandwidth"] = volumeIntf.Bandwidth
+				}
 				bootVol[isInstanceTemplateBootSize] = volumeIntf.Capacity
 				if instance.BootVolumeAttachment.Volume.Profile != nil {
 					volProfIntf := instance.BootVolumeAttachment.Volume.Profile
@@ -1579,7 +1594,10 @@ func dataSourceIBMISInstanceTemplateRead(context context.Context, d *schema.Reso
 						if volumeInst.ID != nil {
 							volumeAttach[isInstanceTemplateVolAttVolume] = *volumeInst.ID
 						}
-
+						// bandwidth changes
+						if volumeInst.Bandwidth != nil {
+							newVolume["bandwidth"] = volumeInst.Bandwidth
+						}
 						if volumeInst.Capacity != nil {
 							newVolume[isInstanceTemplateVolAttVolCapacity] = *volumeInst.Capacity
 						}
@@ -1615,6 +1633,10 @@ func dataSourceIBMISInstanceTemplateRead(context context.Context, d *schema.Reso
 						volumeIntf := instance.BootVolumeAttachment.Volume
 						bootVol[isInstanceTemplateName] = volumeIntf.Name
 						bootVol[isInstanceTemplateVol] = volumeIntf.Name
+						// bandwidth changes
+						if volumeIntf.Bandwidth != nil {
+							bootVol["bandwidth"] = volumeIntf.Bandwidth
+						}
 						bootVol[isInstanceTemplateBootSize] = volumeIntf.Capacity
 						if instance.BootVolumeAttachment.Volume.Profile != nil {
 							volProfIntf := instance.BootVolumeAttachment.Volume.Profile

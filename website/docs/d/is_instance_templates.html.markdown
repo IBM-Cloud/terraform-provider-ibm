@@ -37,6 +37,7 @@ You can access the following attribute references after your data source is crea
 	- `boot_volume` - (List) A nested block describes the boot volume configuration for the template.
 
 	  Nested scheme for `boot_volume`:
+		- `bandwidth` - (Optional, Integer) The maximum bandwidth (in megabits per second) for the volume. For this property to be specified, the volume storage_generation must be 2.
 		- `delete_volume_on_instance_delete` - (String) You can configure to delete the boot volume based on instance deletion.
 		- `encryption` - (String) The encryption key CRN such as HPCS, Key Protect, etc., is provided to encrypt the boot volume attached.
 		- `iops` - (String) The IOPS for the boot volume.
@@ -211,6 +212,7 @@ You can access the following attribute references after your data source is crea
 	- `volume_attachments` - (List) A nested block describes the storage volume configuration for the template.
 
 	  Nested scheme for `volume_attachments`:
+		- `bandwidth` - (Optional, Integer) The maximum bandwidth (in megabits per second) for the volume. For this property to be specified, the volume storage_generation must be 2.
 		- `delete_volume_on_instance_delete` - (Bool) You can configure to delete the storage volume to delete based on instance deletion.
 		- `name` - (String) The name of the boot volume.
 		- `volume` - (String) The storage volume ID created in VPC.
