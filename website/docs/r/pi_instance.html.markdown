@@ -10,7 +10,7 @@ description: |-
 
 Create, delete or update a [Power Systems Virtual Server instance](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-creating-power-virtual-server).
 
-## Example usage
+## Example Usage
 
 The following example creates a Power Systems Virtual Server instance.
 
@@ -58,7 +58,7 @@ The `ibm_pi_instance` provides the following [timeouts](https://www.terraform.io
 - **update** - (Default 60 minutes) Used for updating an instance.
 - **delete** - (Default 60 minutes) Used for deleting an instance.
 
-## Argument reference
+## Argument Reference
 
 Review the argument references that you can specify for your resource.
 
@@ -132,7 +132,7 @@ Review the argument references that you can specify for your resource.
       ~> **Note** When set to "auto-assign", changes to `serial` outside of terraform will not be detected. In addition, if a new generated virtual serial number is needed, the old serial must be removed before a new one is generated.
 - `pi_volume_ids` - (Optional, List of String) The list of volume IDs that you want to attach to the instance during creation.
 
-## Attribute reference
+## Attribute Reference
 
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
