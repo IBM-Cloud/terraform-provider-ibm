@@ -94,7 +94,6 @@ func TestAccIBMPISPPPlacementGroupBasic(t *testing.T) {
 }
 
 func testAccCheckIBMPISPPPlacementGroupDestroy(s *terraform.State) error {
-
 	sess, err := acc.TestAccProvider.Meta().(conns.ClientSession).IBMPISession()
 	if err != nil {
 		return err
@@ -114,6 +113,7 @@ func testAccCheckIBMPISPPPlacementGroupDestroy(s *terraform.State) error {
 
 	return nil
 }
+
 func testAccCheckIBMPISPPPlacementGroupExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 
@@ -654,5 +654,5 @@ func testAccCheckIBMPICreateSAPInstanceWithSPP(name string, policy string) strin
 			}
 			pi_health_status		= "OK"
 			pi_shared_processor_pool = ibm_pi_shared_processor_pool.spp_pool_2.pi_shared_processor_pool_name
-		}`, acc.Pi_cloud_instance_id, name, policy, acc.Pi_image, acc.Pi_network_name, acc.Pi_sap_image, acc.PiSAPProfileID)
+		}`, acc.Pi_cloud_instance_id, name, policy, acc.Pi_image, acc.Pi_network_name, acc.Pi_sap_image, acc.Pi_sap_profile_id)
 }
