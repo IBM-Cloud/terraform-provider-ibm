@@ -745,14 +745,20 @@ func vpcCreate(d *schema.ResourceData, meta interface{}, name, apm, rg string, i
 	}
 
 	if dnsresolvertpeOk, ok := d.GetOk("dns.0.resolver.0.type"); ok {
-		if dnsresolvertpeOk.(string) == "delegated" && d.Get("dns.0.resolver.0.vpc_id").(string) != "" {
+		if dnsresolvertpeOk.(string) == "delegated" && ((d.Get("dns.0.resolver.0.vpc_id").(string) != "") || (d.Get("dns.0.resolver.0.vpc_crn").(string) != "")) {
 			vpcId := d.Get("dns.0.resolver.0.vpc_id").(string)
+			vpcCrn := d.Get("dns.0.resolver.0.vpc_crn").(string)
 			createDnsBindings := &vpcv1.CreateVPCDnsResolutionBindingOptions{
 				VPCID: vpc.ID,
-				VPC: &vpcv1.VPCIdentity{
-					ID: &vpcId,
-				},
 			}
+			vpcidentity := vpcv1.VPCIdentity{}
+			if vpcId != "" {
+				vpcidentity.ID = &vpcId
+			}
+			if vpcCrn != "" {
+				vpcidentity.CRN = &vpcCrn
+			}
+			createDnsBindings.VPC = &vpcidentity
 			if bindingNameOk, ok := d.GetOk("dns.0.resolver.0.dns_binding_name"); ok {
 				bindingName := bindingNameOk.(string)
 				createDnsBindings.Name = &bindingName
@@ -763,14 +769,19 @@ func vpcCreate(d *schema.ResourceData, meta interface{}, name, apm, rg string, i
 				return fmt.Errorf("[ERROR] CreateVPCDnsResolutionBinding failed in vpc resource %s\n%s", err, response)
 			}
 			resolverType := "delegated"
-			dnsPatch := &vpcv1.VpcdnsPatch{
-				Resolver: &vpcv1.VpcdnsResolverPatch{
-					Type: &resolverType,
-					VPC: &vpcv1.VpcdnsResolverVPCPatch{
-						ID: &vpcId,
-					},
-				},
+			dnsPatch := &vpcv1.VpcdnsPatch{}
+			resolver := &vpcv1.VpcdnsResolverPatch{
+				Type: &resolverType,
 			}
+			vpcPatch := &vpcv1.VpcdnsResolverVPCPatch{}
+			if vpcId != "" {
+				vpcPatch.ID = &vpcId
+			}
+			if vpcCrn != "" {
+				vpcPatch.CRN = &vpcCrn
+			}
+			resolver.VPC = vpcPatch
+			dnsPatch.Resolver = resolver
 			vpcPatchModel := &vpcv1.VPCPatch{}
 			vpcPatchModel.Dns = dnsPatch
 			vpcPatchModelAsPatch, err := vpcPatchModel.AsPatch()
@@ -1045,9 +1056,10 @@ func vpcGet(d *schema.ResourceData, meta interface{}, id string) error {
 		}
 		resolverMapArray := dnsMap["resolver"].([]map[string]interface{})
 		resolverMap := resolverMapArray[0]
-		if resolverMap["type"] != nil && resolverMap["vpc_id"] != nil {
+		if resolverMap["type"] != nil && ((resolverMap["vpc_id"] != nil) || (resolverMap["vpc_crn"] != nil)) {
 			resType := resolverMap["type"].(*string)
 			resVpc := resolverMap["vpc_id"].(string)
+			resVpcCrn := resolverMap["vpc_crn"].(string)
 			if *resType == "delegated" {
 				listVPCDnsResolutionBindingOptions := &vpcv1.ListVPCDnsResolutionBindingsOptions{
 					VPCID: vpc.ID,
@@ -1066,7 +1078,7 @@ func vpcGet(d *schema.ResourceData, meta interface{}, id string) error {
 					allResults = append(allResults, nextPage...)
 				}
 				for _, binding := range allResults {
-					if *binding.VPC.ID == resVpc {
+					if (*binding.VPC.ID == resVpc) || (*binding.VPC.CRN == resVpcCrn) {
 						resolverMap["dns_binding_id"] = binding.ID
 						resolverMap["dns_binding_name"] = binding.Name
 						resolverMapArray[0] = resolverMap
@@ -1417,12 +1429,19 @@ func vpcUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasCha
 					if oldResolverType != nil && newResolverType != nil && oldResolverType.(string) != "" && newResolverType.(string) != "" {
 						if oldResolverType.(string) == "system" && newResolverType.(string) == "delegated" {
 							vpcId := d.Get("dns.0.resolver.0.vpc_id").(string)
+							vpcCrn := d.Get("dns.0.resolver.0.vpc_crn").(string)
 							createDnsBindings := &vpcv1.CreateVPCDnsResolutionBindingOptions{
 								VPCID: core.StringPtr(d.Id()),
-								VPC: &vpcv1.VPCIdentity{
-									ID: &vpcId,
-								},
 							}
+							vpcidentity := &vpcv1.VPCIdentity{}
+							if vpcId != "" {
+								vpcidentity.ID = &vpcId
+							}
+							if vpcCrn != "" {
+								vpcidentity.CRN = &vpcCrn
+							}
+							createDnsBindings.VPC = vpcidentity
+
 							if bindingNameOk, ok := d.GetOk("dns.0.resolver.0.dns_binding_name"); ok {
 								bindingName := bindingNameOk.(string)
 								createDnsBindings.Name = &bindingName

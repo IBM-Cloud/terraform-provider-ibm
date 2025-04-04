@@ -1256,6 +1256,67 @@ func testAccCheckIBMISVPCCustomResolverDelegatedToSystemConfig(vpcname1, vpcname
 	  }
     `, vpcname1, acc.ISZoneName, acc.ISZoneName, vpcname2)
 }
+func testAccCheckIBMISVPCCustomResolverDelegatedToSystemVPCCrnConfig(vpcname1, vpcname2 string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "hub_true" {
+		name = "%s"
+		dns {
+		  enable_hub = true
+		}
+	  }
+	  resource "ibm_is_subnet" "hub_true_sub1" {
+		name                     = "hub-true-subnet1"
+		vpc                      = ibm_is_vpc.hub_true.id
+		zone                     = "%s"
+		total_ipv4_address_count = 16
+	  }
+	  resource "ibm_is_subnet" "hub_true_sub2" {
+		name                     = "hub-true-subnet2"
+		vpc                      = ibm_is_vpc.hub_true.id
+		zone                     = "%s"
+		total_ipv4_address_count = 16
+	  }
+	  resource "ibm_resource_instance" "dns-cr-instance" {
+		name              = "dns-cr-instance"
+		resource_group_id = data.ibm_resource_group.rg.id
+		location          = "global"
+		service           = "dns-svcs"
+		plan              = "standard-dns"
+	  }
+	  resource "ibm_dns_custom_resolver" "test_hub_true" {
+		name              = "test-hub-true-customresolver"
+		instance_id       = ibm_resource_instance.dns-cr-instance.guid
+		description       = "new test CR - TF"
+		high_availability = true
+		enabled           = true
+		locations {
+		  subnet_crn = ibm_is_subnet.hub_true_sub1.crn
+		  enabled    = true
+		}
+		locations {
+		  subnet_crn = ibm_is_subnet.hub_true_sub2.crn
+		  enabled    = true
+		}
+	  }
+	  // delegated vpc
+	  resource "ibm_is_vpc" "hub_false_delegated" {
+		depends_on = [ibm_dns_custom_resolver.test_hub_true]
+		name       = "%s"
+		dns {
+		  enable_hub = false
+		  resolver {
+			type = "system"
+			dns_binding_name = "null"
+			vpc_crn = "null"
+		  }
+		}
+	  }
+	  
+	  data "ibm_resource_group" "rg" {
+		is_default = true
+	  }
+    `, vpcname1, acc.ISZoneName, acc.ISZoneName, vpcname2)
+}
 
 // VPC DNS name update fix
 // TestAccIBMISVPC_ResolverTypeTransitionDnsNameUpdate tests the transition of resolver types in a VPC.
@@ -1343,6 +1404,90 @@ func TestAccIBMISVPC_ResolverTypeTransitionDnsNameUpdate(t *testing.T) {
 		},
 	})
 }
+func TestAccIBMISVPC_ResolverTypeTransitionDnsNameVPCCrnUpdate(t *testing.T) {
+	var vpc string
+	vpcname1 := fmt.Sprintf("tf-vpc-hub-true-%d", acctest.RandIntRange(10, 100))
+	vpcname2 := fmt.Sprintf("tf-vpc-hub-false-%d", acctest.RandIntRange(10, 100))
+	dnsName := fmt.Sprintf("tf-dns-%d", acctest.RandIntRange(10, 100))
+	dnsNameUpdated := fmt.Sprintf("tf-dns-update-%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISVPCDestroy,
+		Steps: []resource.TestStep{
+			// Step 1: Initial setup with system resolver
+			{
+				Config: testAccCheckIBMISVPCResolverSystemConfig(vpcname1, vpcname2),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISVPCExists("ibm_is_vpc.hub_false_delegated", vpc),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpc.hub_false_delegated", "name", vpcname2),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpc.hub_false_delegated", "dns.0.enable_hub", "false"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpc.hub_false_delegated", "dns.0.resolver.0.type", "system"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpc.hub_false_delegated", "dns.0.resolver.0.vpc_crn", ""),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpc.hub_false_delegated", "dns.0.resolver.0.dns_binding_name", ""),
+				),
+			},
+			// Step 2: Change to delegated resolver with no name
+			{
+				Config: testAccCheckIBMISVPCCustomResolverDelegatedWithNoNameVpcCrnConfig(vpcname1, vpcname2),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISVPCExists("ibm_is_vpc.hub_false_delegated", vpc),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpc.hub_false_delegated", "dns.0.resolver.0.type", "delegated"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpc.hub_false_delegated", "dns.0.resolver.0.vpc_crn"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpc.hub_false_delegated", "dns.0.resolver.0.dns_binding_name"),
+				),
+			},
+			// Step 3: Update the binding name
+			{
+				Config: testAccCheckIBMISVPCCustomResolverDelegatedWithNameVPCCrnConfig(vpcname1, vpcname2, dnsName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISVPCExists("ibm_is_vpc.hub_false_delegated", vpc),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpc.hub_false_delegated", "dns.0.resolver.0.type", "delegated"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpc.hub_false_delegated", "dns.0.resolver.0.vpc_crn"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpc.hub_false_delegated", "dns.0.resolver.0.dns_binding_name", dnsName),
+				),
+			},
+			// Step 4: Update the binding name again
+			{
+				Config: testAccCheckIBMISVPCCustomResolverDelegatedWithNameVPCCrnConfig(vpcname1, vpcname2, dnsNameUpdated),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISVPCExists("ibm_is_vpc.hub_false_delegated", vpc),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpc.hub_false_delegated", "dns.0.resolver.0.type", "delegated"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpc.hub_false_delegated", "dns.0.resolver.0.vpc_crn"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpc.hub_false_delegated", "dns.0.resolver.0.dns_binding_name", dnsNameUpdated),
+				),
+			},
+			// Step 5: Change back to system resolver
+			{
+				Config: testAccCheckIBMISVPCCustomResolverDelegatedToSystemVPCCrnConfig(vpcname1, vpcname2),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISVPCExists("ibm_is_vpc.hub_false_delegated", vpc),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpc.hub_false_delegated", "dns.0.resolver.0.type", "system"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpc.hub_false_delegated", "dns.0.resolver.0.vpc_crn", ""),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpc.hub_false_delegated", "dns.0.resolver.0.dns_binding_name", ""),
+				),
+			},
+		},
+	})
+}
 
 // Helper function to generate config for custom resolver with hub VPC
 func testAccCheckIBMISVPCCustomResolverDelegatedWithNoNameConfig(vpcname1, vpcname2 string) string {
@@ -1396,6 +1541,66 @@ func testAccCheckIBMISVPCCustomResolverDelegatedWithNoNameConfig(vpcname1, vpcna
 		  resolver {
 			type = "delegated"
 			vpc_id = ibm_is_vpc.hub_true.id
+		  }
+		}
+	  }
+	  
+	  data "ibm_resource_group" "rg" {
+		is_default = true
+	  }
+    `, vpcname1, acc.ISZoneName, acc.ISZoneName, vpcname2)
+}
+func testAccCheckIBMISVPCCustomResolverDelegatedWithNoNameVpcCrnConfig(vpcname1, vpcname2 string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "hub_true" {
+		name = "%s"
+		dns {
+		  enable_hub = true
+		}
+	  }
+	  resource "ibm_is_subnet" "hub_true_sub1" {
+		name                     = "hub-true-subnet1"
+		vpc                      = ibm_is_vpc.hub_true.id
+		zone                     = "%s"
+		total_ipv4_address_count = 16
+	  }
+	  resource "ibm_is_subnet" "hub_true_sub2" {
+		name                     = "hub-true-subnet2"
+		vpc                      = ibm_is_vpc.hub_true.id
+		zone                     = "%s"
+		total_ipv4_address_count = 16
+	  }
+	  resource "ibm_resource_instance" "dns-cr-instance" {
+		name              = "dns-cr-instance"
+		resource_group_id = data.ibm_resource_group.rg.id
+		location          = "global"
+		service           = "dns-svcs"
+		plan              = "standard-dns"
+	  }
+	  resource "ibm_dns_custom_resolver" "test_hub_true" {
+		name              = "test-hub-true-customresolver"
+		instance_id       = ibm_resource_instance.dns-cr-instance.guid
+		description       = "new test CR - TF"
+		high_availability = true
+		enabled           = true
+		locations {
+		  subnet_crn = ibm_is_subnet.hub_true_sub1.crn
+		  enabled    = true
+		}
+		locations {
+		  subnet_crn = ibm_is_subnet.hub_true_sub2.crn
+		  enabled    = true
+		}
+	  }
+	  // delegated vpc
+	  resource "ibm_is_vpc" "hub_false_delegated" {
+		depends_on = [ibm_dns_custom_resolver.test_hub_true]
+		name       = "%s"
+		dns {
+		  enable_hub = false
+		  resolver {
+			type = "delegated"
+			vpc_crn = ibm_is_vpc.hub_true.crn
 		  }
 		}
 	  }
@@ -1459,6 +1664,67 @@ func testAccCheckIBMISVPCCustomResolverDelegatedWithNameConfig(vpcname1, vpcname
 			type = "delegated"
 			dns_binding_name = "%s"
 			vpc_id = ibm_is_vpc.hub_true.id
+		  }
+		}
+	  }
+	  
+	  data "ibm_resource_group" "rg" {
+		is_default = true
+	  }
+    `, vpcname1, acc.ISZoneName, acc.ISZoneName, vpcname2, dnsName)
+}
+func testAccCheckIBMISVPCCustomResolverDelegatedWithNameVPCCrnConfig(vpcname1, vpcname2, dnsName string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "hub_true" {
+		name = "%s"
+		dns {
+		  enable_hub = true
+		}
+	  }
+	  resource "ibm_is_subnet" "hub_true_sub1" {
+		name                     = "hub-true-subnet1"
+		vpc                      = ibm_is_vpc.hub_true.id
+		zone                     = "%s"
+		total_ipv4_address_count = 16
+	  }
+	  resource "ibm_is_subnet" "hub_true_sub2" {
+		name                     = "hub-true-subnet2"
+		vpc                      = ibm_is_vpc.hub_true.id
+		zone                     = "%s"
+		total_ipv4_address_count = 16
+	  }
+	  resource "ibm_resource_instance" "dns-cr-instance" {
+		name              = "dns-cr-instance"
+		resource_group_id = data.ibm_resource_group.rg.id
+		location          = "global"
+		service           = "dns-svcs"
+		plan              = "standard-dns"
+	  }
+	  resource "ibm_dns_custom_resolver" "test_hub_true" {
+		name              = "test-hub-true-customresolver"
+		instance_id       = ibm_resource_instance.dns-cr-instance.guid
+		description       = "new test CR - TF"
+		high_availability = true
+		enabled           = true
+		locations {
+		  subnet_crn = ibm_is_subnet.hub_true_sub1.crn
+		  enabled    = true
+		}
+		locations {
+		  subnet_crn = ibm_is_subnet.hub_true_sub2.crn
+		  enabled    = true
+		}
+	  }
+	  // delegated vpc
+	  resource "ibm_is_vpc" "hub_false_delegated" {
+		depends_on = [ibm_dns_custom_resolver.test_hub_true]
+		name       = "%s"
+		dns {
+		  enable_hub = false
+		  resolver {
+			type = "delegated"
+			dns_binding_name = "%s"
+			vpc_crn = ibm_is_vpc.hub_true.crn
 		  }
 		}
 	  }
