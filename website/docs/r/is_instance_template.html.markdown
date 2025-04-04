@@ -299,7 +299,7 @@ Review the argument references that you can specify for your resource.
             - `id` - (Optional, String) The unique identifier for this cluster network subnet.
     - `name` - (Optional, String) The name for this cluster network attachment. Names must be unique within the instance the cluster network attachment resides in. If unspecified, the name will be a hyphenated list of randomly-selected words. Names starting with `ibm-` are reserved for provider-owned resources, and are not allowed.
 
-- `confidential_compute_mode` - (Optional, String) The confidential compute mode to use for this virtual server instance.If unspecified, the default confidential compute mode from the profile will be used. **Constraints: Allowable values are: `disabled`, `sgx`**  {Select Availability}
+- `confidential_compute_mode` - (Optional, String) The confidential compute mode to use for this virtual server instance.If unspecified, the default confidential compute mode from the profile will be used. **Constraints: Allowable values are: `disabled`, `sgx`, `tdx`**  {Select Availability}
 
   ~>**Note:** The confidential_compute_mode is `Select Availability` feature. Confidential computing with Intel SGX for VPC is available only in the US-South (Dallas) region.
    
