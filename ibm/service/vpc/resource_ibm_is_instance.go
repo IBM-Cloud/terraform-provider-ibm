@@ -916,6 +916,7 @@ func ResourceIBMISInstance() *schema.Resource {
 										Type:        schema.TypeString,
 										Optional:    true,
 										Computed:    true,
+										ForceNew:    true,
 										Description: "The virtual network interface id for this instance network attachment.",
 									},
 									"allow_ip_spoofing": &schema.Schema{
@@ -1077,6 +1078,7 @@ func ResourceIBMISInstance() *schema.Resource {
 										Optional:      true,
 										ConflictsWith: []string{"primary_network_attachment.0.virtual_network_interface.0.id"},
 										Computed:      true,
+										ForceNew:      true,
 										Description:   "The resource group id for this virtual network interface.",
 									},
 									"resource_type": &schema.Schema{
@@ -1308,6 +1310,7 @@ func ResourceIBMISInstance() *schema.Resource {
 										Type:        schema.TypeString,
 										Optional:    true,
 										Computed:    true,
+										ForceNew:    true,
 										Description: "The virtual network interface id for this instance network attachment.",
 									},
 									"allow_ip_spoofing": &schema.Schema{
@@ -1462,6 +1465,7 @@ func ResourceIBMISInstance() *schema.Resource {
 										Type:        schema.TypeString,
 										Optional:    true,
 										Computed:    true,
+										ForceNew:    true,
 										Description: "The resource group id for this virtual network interface.",
 									},
 									"resource_type": &schema.Schema{
