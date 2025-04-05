@@ -1244,3 +1244,368 @@ func testAccCheckIBMISBareMetalServerMultipleConfig(vpcname, subnetname, sshname
 		}
 `, vpcname, subnetname, acc.ISZoneName, sshname, publicKey, acc.IsBareMetalServerProfileName, namePrefix, acc.IsBareMetalServerImage, acc.ISZoneName)
 }
+
+func TestAccIBMISBareMetalServer_network_interfaces(t *testing.T) {
+	var server string
+	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tf-server-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tfip-subnet-%d", acctest.RandIntRange(10, 100))
+	publicKey := strings.TrimSpace(`
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
+`)
+	sshname := fmt.Sprintf("tf-sshname-%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISBareMetalServerDestroy,
+		Steps: []resource.TestStep{
+			// Initial configuration with primary_network_interface and one network_interfaces
+			{
+				Config: testAccCheckIBMISBareMetalServerBasicNicConfig(vpcname, subnetname, sshname, publicKey, name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISBareMetalServerExists("ibm_is_bare_metal_server.testacc_bms", server),
+					resource.TestCheckResourceAttr(
+						"ibm_is_bare_metal_server.testacc_bms", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_is_bare_metal_server.testacc_bms", "primary_network_interface.0.name", "nic1"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_bare_metal_server.testacc_bms", "primary_network_interface.0.allowed_vlans.#", "3"),
+					resource.TestCheckTypeSetElemAttr(
+						"ibm_is_bare_metal_server.testacc_bms", "primary_network_interface.0.allowed_vlans.*", "101"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_bare_metal_server.testacc_bms", "network_interfaces.#", "1"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_bare_metal_server.testacc_bms", "network_interfaces.0.name", "nic2"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_bare_metal_server.testacc_bms", "network_interfaces.0.allowed_vlans.#", "5"),
+				),
+			},
+			// Add second network interface
+			{
+				Config: testAccCheckIBMISBareMetalServerTwoNicsConfig(vpcname, subnetname, sshname, publicKey, name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISBareMetalServerExists("ibm_is_bare_metal_server.testacc_bms", server),
+					resource.TestCheckResourceAttr(
+						"ibm_is_bare_metal_server.testacc_bms", "network_interfaces.#", "2"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_bare_metal_server.testacc_bms", "network_interfaces.0.name", "nic2"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_bare_metal_server.testacc_bms", "network_interfaces.1.name", "nic3"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_bare_metal_server.testacc_bms", "network_interfaces.1.allowed_vlans.#", "6"),
+					resource.TestCheckTypeSetElemAttr(
+						"ibm_is_bare_metal_server.testacc_bms", "network_interfaces.1.allowed_vlans.*", "312"),
+				),
+			},
+			// Update allowed_vlans in existing network interfaces
+			{
+				Config: testAccCheckIBMISBareMetalServerUpdateAllowedVlansConfig(vpcname, subnetname, sshname, publicKey, name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISBareMetalServerExists("ibm_is_bare_metal_server.testacc_bms", server),
+					resource.TestCheckResourceAttr(
+						"ibm_is_bare_metal_server.testacc_bms", "network_interfaces.#", "2"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_bare_metal_server.testacc_bms", "network_interfaces.0.allowed_vlans.#", "7"),
+					resource.TestCheckTypeSetElemAttr(
+						"ibm_is_bare_metal_server.testacc_bms", "network_interfaces.0.allowed_vlans.*", "209"),
+				),
+			},
+			// Add VLAN type interfaces
+			{
+				Config: testAccCheckIBMISBareMetalServerWithVlanNicsConfig(vpcname, subnetname, sshname, publicKey, name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISBareMetalServerExists("ibm_is_bare_metal_server.testacc_bms", server),
+					resource.TestCheckResourceAttr(
+						"ibm_is_bare_metal_server.testacc_bms", "network_interfaces.#", "4"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_bare_metal_server.testacc_bms", "network_interfaces.2.name", "nic4"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_bare_metal_server.testacc_bms", "network_interfaces.2.vlan", "312"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_bare_metal_server.testacc_bms", "network_interfaces.3.name", "nic5"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_bare_metal_server.testacc_bms", "network_interfaces.3.vlan", "308"),
+				),
+			},
+			// Update properties of network interfaces
+			{
+				Config: testAccCheckIBMISBareMetalServerUpdateNicPropertiesConfig(vpcname, subnetname, sshname, publicKey, name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISBareMetalServerExists("ibm_is_bare_metal_server.testacc_bms", server),
+					resource.TestCheckResourceAttr(
+						"ibm_is_bare_metal_server.testacc_bms", "network_interfaces.#", "4"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_bare_metal_server.testacc_bms", "network_interfaces.0.allow_ip_spoofing", "true"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_bare_metal_server.testacc_bms", "network_interfaces.2.enable_infrastructure_nat", "false"),
+				),
+			},
+		},
+	})
+}
+
+// Initial config with primary_network_interface and one network_interface
+func testAccCheckIBMISBareMetalServerBasicNicConfig(vpcname, subnetname, sshname, publicKey, name string) string {
+	return fmt.Sprintf(`
+        resource "ibm_is_vpc" "testacc_vpc" {
+            name = "%s"
+        }
+      
+        resource "ibm_is_subnet" "testacc_subnet" {
+            name                        = "%s"
+            vpc                         = ibm_is_vpc.testacc_vpc.id
+            zone                        = "%s"
+            total_ipv4_address_count    = 16
+        }
+      
+        resource "ibm_is_ssh_key" "testacc_sshkey" {
+            name                        = "%s"
+            public_key                  = "%s"
+        }
+      
+        resource "ibm_is_bare_metal_server" "testacc_bms" {
+            profile                     = "%s"
+            name                        = "%s"
+            image                       = "%s"
+            zone                        = "%s"
+            keys                        = [ibm_is_ssh_key.testacc_sshkey.id]
+            
+            primary_network_interface {
+                name                    = "nic1"
+                subnet                  = ibm_is_subnet.testacc_subnet.id
+                allowed_vlans           = [101, 102, 103]
+            }
+            
+            network_interfaces {
+                name                    = "nic2"
+                subnet                  = ibm_is_subnet.testacc_subnet.id
+                allowed_vlans           = [201, 202, 203, 204, 208]
+            }
+            
+            vpc                         = ibm_is_vpc.testacc_vpc.id
+        }
+    `, vpcname, subnetname, acc.ISZoneName, sshname, publicKey, acc.IsBareMetalServerProfileName, name, acc.IsBareMetalServerImage, acc.ISZoneName)
+}
+
+// Config with two network interfaces
+func testAccCheckIBMISBareMetalServerTwoNicsConfig(vpcname, subnetname, sshname, publicKey, name string) string {
+	return fmt.Sprintf(`
+        resource "ibm_is_vpc" "testacc_vpc" {
+            name = "%s"
+        }
+      
+        resource "ibm_is_subnet" "testacc_subnet" {
+            name                        = "%s"
+            vpc                         = ibm_is_vpc.testacc_vpc.id
+            zone                        = "%s"
+            total_ipv4_address_count    = 16
+        }
+      
+        resource "ibm_is_ssh_key" "testacc_sshkey" {
+            name                        = "%s"
+            public_key                  = "%s"
+        }
+      
+        resource "ibm_is_bare_metal_server" "testacc_bms" {
+            profile                     = "%s"
+            name                        = "%s"
+            image                       = "%s"
+            zone                        = "%s"
+            keys                        = [ibm_is_ssh_key.testacc_sshkey.id]
+            
+            primary_network_interface {
+                name                    = "nic1"
+                subnet                  = ibm_is_subnet.testacc_subnet.id
+                allowed_vlans           = [101, 102, 103]
+            }
+            
+            network_interfaces {
+                name                    = "nic2"
+                subnet                  = ibm_is_subnet.testacc_subnet.id
+                allowed_vlans           = [201, 202, 203, 204, 208]
+            }
+            
+            network_interfaces {
+                name                    = "nic3"
+                subnet                  = ibm_is_subnet.testacc_subnet.id
+                allowed_vlans           = [301, 302, 303, 304, 308, 312]
+            }
+            
+            vpc                         = ibm_is_vpc.testacc_vpc.id
+        }
+    `, vpcname, subnetname, acc.ISZoneName, sshname, publicKey, acc.IsBareMetalServerProfileName, name, acc.IsBareMetalServerImage, acc.ISZoneName)
+}
+
+// Config with updated allowed_vlans
+func testAccCheckIBMISBareMetalServerUpdateAllowedVlansConfig(vpcname, subnetname, sshname, publicKey, name string) string {
+	return fmt.Sprintf(`
+        resource "ibm_is_vpc" "testacc_vpc" {
+            name = "%s"
+        }
+      
+        resource "ibm_is_subnet" "testacc_subnet" {
+            name                        = "%s"
+            vpc                         = ibm_is_vpc.testacc_vpc.id
+            zone                        = "%s"
+            total_ipv4_address_count    = 16
+        }
+      
+        resource "ibm_is_ssh_key" "testacc_sshkey" {
+            name                        = "%s"
+            public_key                  = "%s"
+        }
+      
+        resource "ibm_is_bare_metal_server" "testacc_bms" {
+            profile                     = "%s"
+            name                        = "%s"
+            image                       = "%s"
+            zone                        = "%s"
+            keys                        = [ibm_is_ssh_key.testacc_sshkey.id]
+            
+            primary_network_interface {
+                name                    = "nic1"
+                subnet                  = ibm_is_subnet.testacc_subnet.id
+                allowed_vlans           = [101, 102, 103]
+            }
+            
+            network_interfaces {
+                name                    = "nic2"
+                subnet                  = ibm_is_subnet.testacc_subnet.id
+                allowed_vlans           = [201, 202, 203, 204, 208, 209, 210]
+            }
+            
+            network_interfaces {
+                name                    = "nic3"
+                subnet                  = ibm_is_subnet.testacc_subnet.id
+                allowed_vlans           = [301, 302, 303, 304, 308, 312]
+            }
+            
+            vpc                         = ibm_is_vpc.testacc_vpc.id
+        }
+    `, vpcname, subnetname, acc.ISZoneName, sshname, publicKey, acc.IsBareMetalServerProfileName, name, acc.IsBareMetalServerImage, acc.ISZoneName)
+}
+
+// Config with VLAN type interfaces added
+func testAccCheckIBMISBareMetalServerWithVlanNicsConfig(vpcname, subnetname, sshname, publicKey, name string) string {
+	return fmt.Sprintf(`
+        resource "ibm_is_vpc" "testacc_vpc" {
+            name = "%s"
+        }
+      
+        resource "ibm_is_subnet" "testacc_subnet" {
+            name                        = "%s"
+            vpc                         = ibm_is_vpc.testacc_vpc.id
+            zone                        = "%s"
+            total_ipv4_address_count    = 16
+        }
+      
+        resource "ibm_is_ssh_key" "testacc_sshkey" {
+            name                        = "%s"
+            public_key                  = "%s"
+        }
+      
+        resource "ibm_is_bare_metal_server" "testacc_bms" {
+            profile                     = "%s"
+            name                        = "%s"
+            image                       = "%s"
+            zone                        = "%s"
+            keys                        = [ibm_is_ssh_key.testacc_sshkey.id]
+            
+            primary_network_interface {
+                name                    = "nic1"
+                subnet                  = ibm_is_subnet.testacc_subnet.id
+                allowed_vlans           = [101, 102, 103]
+            }
+            
+            network_interfaces {
+                name                    = "nic2"
+                subnet                  = ibm_is_subnet.testacc_subnet.id
+                allowed_vlans           = [201, 202, 203, 204, 208, 209, 210]
+            }
+            
+            network_interfaces {
+                name                    = "nic3"
+                subnet                  = ibm_is_subnet.testacc_subnet.id
+                allowed_vlans           = [301, 302, 303, 304, 308, 312]
+            }
+            
+            network_interfaces {
+                name                    = "nic4"
+                subnet                  = ibm_is_subnet.testacc_subnet.id
+                vlan                    = 312
+            }
+            
+            network_interfaces {
+                name                    = "nic5"
+                subnet                  = ibm_is_subnet.testacc_subnet.id
+                vlan                    = 308
+            }
+            
+            vpc                         = ibm_is_vpc.testacc_vpc.id
+        }
+    `, vpcname, subnetname, acc.ISZoneName, sshname, publicKey, acc.IsBareMetalServerProfileName, name, acc.IsBareMetalServerImage, acc.ISZoneName)
+}
+
+// Config with updated network interface properties
+func testAccCheckIBMISBareMetalServerUpdateNicPropertiesConfig(vpcname, subnetname, sshname, publicKey, name string) string {
+	return fmt.Sprintf(`
+        resource "ibm_is_vpc" "testacc_vpc" {
+            name = "%s"
+        }
+      
+        resource "ibm_is_subnet" "testacc_subnet" {
+            name                        = "%s"
+            vpc                         = ibm_is_vpc.testacc_vpc.id
+            zone                        = "%s"
+            total_ipv4_address_count    = 16
+        }
+      
+        resource "ibm_is_ssh_key" "testacc_sshkey" {
+            name                        = "%s"
+            public_key                  = "%s"
+        }
+      
+        resource "ibm_is_bare_metal_server" "testacc_bms" {
+            profile                     = "%s"
+            name                        = "%s"
+            image                       = "%s"
+            zone                        = "%s"
+            keys                        = [ibm_is_ssh_key.testacc_sshkey.id]
+            
+            primary_network_interface {
+                name                    = "nic1"
+                subnet                  = ibm_is_subnet.testacc_subnet.id
+                allowed_vlans           = [101, 102, 103]
+            }
+            
+            network_interfaces {
+                name                    = "nic2"
+                subnet                  = ibm_is_subnet.testacc_subnet.id
+                allowed_vlans           = [201, 202, 203, 204, 208, 209, 210]
+                allow_ip_spoofing       = true
+            }
+            
+            network_interfaces {
+                name                    = "nic3"
+                subnet                  = ibm_is_subnet.testacc_subnet.id
+                allowed_vlans           = [301, 302, 303, 304, 308, 312]
+            }
+            
+            network_interfaces {
+                name                    = "nic4"
+                subnet                  = ibm_is_subnet.testacc_subnet.id
+                vlan                    = 312
+                enable_infrastructure_nat = false
+            }
+            
+            network_interfaces {
+                name                    = "nic5"
+                subnet                  = ibm_is_subnet.testacc_subnet.id
+                vlan                    = 308
+            }
+            
+            vpc                         = ibm_is_vpc.testacc_vpc.id
+        }
+    `, vpcname, subnetname, acc.ISZoneName, sshname, publicKey, acc.IsBareMetalServerProfileName, name, acc.IsBareMetalServerImage, acc.ISZoneName)
+}
