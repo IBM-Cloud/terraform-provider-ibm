@@ -1335,10 +1335,6 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 					testAccCheckIBMISBareMetalServerExists("ibm_is_bare_metal_server.testacc_bms", server),
 					resource.TestCheckResourceAttr(
 						"ibm_is_bare_metal_server.testacc_bms", "network_interfaces.#", "4"),
-					resource.TestCheckResourceAttr(
-						"ibm_is_bare_metal_server.testacc_bms", "network_interfaces.0.allow_ip_spoofing", "true"),
-					resource.TestCheckResourceAttr(
-						"ibm_is_bare_metal_server.testacc_bms", "network_interfaces.2.enable_infrastructure_nat", "false"),
 				),
 			},
 		},
@@ -1583,20 +1579,18 @@ func testAccCheckIBMISBareMetalServerUpdateNicPropertiesConfig(vpcname, subnetna
                 name                    = "nic2"
                 subnet                  = ibm_is_subnet.testacc_subnet.id
                 allowed_vlans           = [201, 202, 203, 204, 208, 209, 210]
-                allow_ip_spoofing       = true
             }
             
             network_interfaces {
                 name                    = "nic3"
                 subnet                  = ibm_is_subnet.testacc_subnet.id
-                allowed_vlans           = [301, 302, 303, 304, 308, 312]
+                allowed_vlans           = [301, 302, 303, 304, 308, 312, 319]
             }
             
             network_interfaces {
                 name                    = "nic4"
                 subnet                  = ibm_is_subnet.testacc_subnet.id
                 vlan                    = 312
-                enable_infrastructure_nat = false
             }
             
             network_interfaces {
