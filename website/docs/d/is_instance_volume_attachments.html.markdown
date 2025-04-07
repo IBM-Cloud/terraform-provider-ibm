@@ -41,6 +41,7 @@ In addition to all argument reference list, you can access the following attribu
 - `volume_attachments`- (List of Object) A list of volume attachments on an instance.
    
    Nested scheme for `volume_attachments`:
+  - `bandwidth` - (Optional, Integer) The maximum bandwidth (in megabits per second) for the volume. For this property to be specified, the volume storage_generation must be 2.
   - `delete_volume_on_instance_delete` - (Boolean) If set to **true**, when deleting the instance the volume will also be deleted.
   - `device`-  (String) A unique identifier for the device which is exposed to the instance operating system.
   - `href` - (String) The URL for this volume attachment.

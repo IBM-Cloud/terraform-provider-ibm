@@ -10,7 +10,7 @@ description: |-
 
 Retrieve information about a Power Systems Virtual Server instance IP address. For more information, about Power Systems Virtual Server instance IP address, see [configuring and adding a private network subnet](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-configuring-subnet).
 
-## Example usage
+## Example Usage
 
 ```terraform
 data "ibm_pi_instance_ip" "ds_instance_ip" {
@@ -36,7 +36,7 @@ Example usage:
     }
   ```
   
-## Argument reference
+## Argument Reference
 
 Review the argument references that you can specify for your data source.
 
@@ -44,7 +44,7 @@ Review the argument references that you can specify for your data source.
 - `pi_instance_name` - (Required, String) The unique identifier or name of the instance.
 - `pi_network_name` - (Required, String) The subnet that the instance belongs to.
 
-## Attribute reference
+## Attribute Reference
 
 In addition to all argument reference list, you can access the following attribute references after your data source is created.
 
