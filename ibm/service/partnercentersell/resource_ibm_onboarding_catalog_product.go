@@ -2,7 +2,7 @@
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.102.0-615ec964-20250307-203034
+ * IBM OpenAPI Terraform Generator Version: 3.103.0-e8b84313-20250402-201816
  */
 
 package partnercentersell
@@ -1213,7 +1213,7 @@ func ResourceIbmOnboardingCatalogProductValidator() *validate.ResourceValidator 
 			ValidateFunctionIdentifier: validate.ValidateRegexp,
 			Type:                       validate.TypeString,
 			Required:                   true,
-			Regexp:                     `^[a-zA-Z0-9\-.]+$`,
+			Regexp:                     `^\S*$`,
 		},
 		validate.ValidateSchema{
 			Identifier:                 "kind",
