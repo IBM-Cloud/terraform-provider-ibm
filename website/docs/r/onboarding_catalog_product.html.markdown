@@ -8,6 +8,8 @@ subcategory: "Partner Center Sell"
 
 # ibm_onboarding_catalog_product
 
+**Note - Intended for internal use only. This resource is strictly experimental and subject to change without notice.**
+
 Create, update, and delete onboarding_catalog_products with this resource.
 
 ## Example Usage
@@ -582,12 +584,12 @@ You can import the `ibm_onboarding_catalog_product` resource by using `id`.
 The `id` property can be formed from `product_id`, and `catalog_product_id` in the following format:
 
 <pre>
-&lt;product_id&gt;/&lt;catalog_product_id&gt;
+	product_id/catalog_product_id;
 </pre>
 * `product_id`: A string. The unique ID of the product.
 * `catalog_product_id`: A string. The ID of a global catalog object.
 
 # Syntax
 <pre>
-$ terraform import ibm_onboarding_catalog_product.onboarding_catalog_product &lt;product_id&gt;/&lt;catalog_product_id&gt;
+$ terraform import ibm_onboarding_catalog_product.onboarding_catalog_product product_id/catalog_product_id;
 </pre>
