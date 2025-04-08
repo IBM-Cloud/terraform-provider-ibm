@@ -8,8 +8,6 @@ subcategory: "Partner Center Sell"
 
 # ibm_onboarding_catalog_product
 
-**Note - Intended for internal use only. This resource is strictly experimental and subject to change without notice.**
-
 Create, update, and delete onboarding_catalog_products with this resource.
 
 ## Example Usage
@@ -265,7 +263,7 @@ Nested schema for **metadata**:
 				* `kind` - (Optional, String) The type of the composite child.
 				  * Constraints: Allowable values are: `service`, `platform_service`.
 				* `name` - (Optional, String) The name of the composite child.
-				  * Constraints: The maximum length is `100` characters. The minimum length is `2` characters. The value must match regular expression `/^[a-zA-Z0-9\\-.]+$/`.
+				  * Constraints: The maximum length is `100` characters. The minimum length is `2` characters. The value must match regular expression `/^\\S*$/`.
 			* `composite_kind` - (Optional, String) The type of the composite service.
 			  * Constraints: Allowable values are: `service`, `platform_service`.
 			* `composite_tag` - (Optional, String) The tag used for the composite parent and its children.
@@ -545,7 +543,7 @@ Nested schema for **metadata**:
 			* `terms_url` - (Optional, String) The URL for your product's end user license agreement.
 			  * Constraints: The maximum length is `2083` characters. The minimum length is `0` characters.
 * `name` - (Required, String) The programmatic name of this product.
-  * Constraints: The value must match regular expression `/^[a-zA-Z0-9\\-.]+$/`.
+  * Constraints: The value must match regular expression `/^\\S*$/`.
 * `object_id` - (Optional, String) The desired ID of the global catalog object.
 * `object_provider` - (Required, List) The provider or owner of the product.
 Nested schema for **object_provider**:
@@ -569,6 +567,7 @@ After your resource is created, you can read values from the listed arguments an
 
 * `id` - The unique identifier of the onboarding_catalog_product.
 * `catalog_product_id` - (String) The ID of a global catalog object.
+  * Constraints: The value must match regular expression `/^\\S*$/`.
 * `geo_tags` - (List) 
   * Constraints: The list items must match regular expression `/./`. The maximum length is `1000` items. The minimum length is `0` items.
 * `group` - (Boolean) Flag for group tile legacy service.
@@ -583,12 +582,12 @@ You can import the `ibm_onboarding_catalog_product` resource by using `id`.
 The `id` property can be formed from `product_id`, and `catalog_product_id` in the following format:
 
 <pre>
-	product_id/catalog_product_id;
+&lt;product_id&gt;/&lt;catalog_product_id&gt;
 </pre>
 * `product_id`: A string. The unique ID of the product.
 * `catalog_product_id`: A string. The ID of a global catalog object.
 
 # Syntax
 <pre>
-$ terraform import ibm_onboarding_catalog_product.onboarding_catalog_product product_id/catalog_product_id;
+$ terraform import ibm_onboarding_catalog_product.onboarding_catalog_product &lt;product_id&gt;/&lt;catalog_product_id&gt;
 </pre>

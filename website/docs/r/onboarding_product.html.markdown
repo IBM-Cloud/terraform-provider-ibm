@@ -8,8 +8,6 @@ subcategory: "Partner Center Sell"
 
 # ibm_onboarding_product
 
-**Note - Intended for internal use only. This resource is strictly experimental and subject to change without notice.**
-
 Create, update, and delete onboarding_products with this resource.
 
 ## Example Usage
@@ -64,13 +62,15 @@ After your resource is created, you can read values from the listed arguments an
 * `account_id` - (String) The IBM Cloud account ID of the provider.
 * `approver_resource_id` - (String) The ID of the approval workflow of your product.
 * `global_catalog_offering_id` - (String) The ID of a global catalog object.
+  * Constraints: The value must match regular expression `/^\\S*$/`.
 * `iam_registration_id` - (String) IAM registration identifier.
-  * Constraints: The maximum length is `512` characters. The minimum length is `2` characters. The value must match regular expression `/^[a-zA-Z0-9\\-.]+$/`.
+  * Constraints: The maximum length is `512` characters. The minimum length is `2` characters. The value must match regular expression `/^\\S*$/`.
 * `private_catalog_id` - (String) The ID of the private catalog that contains the product. Only applicable for software type products.
   * Constraints: The value must match regular expression `/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/`.
 * `private_catalog_offering_id` - (String) The ID of the linked private catalog product. Only applicable for software type products.
   * Constraints: The value must match regular expression `/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/`.
 * `staging_global_catalog_offering_id` - (String) The ID of a global catalog object.
+  * Constraints: The value must match regular expression `/^\\S*$/`.
 
 
 ## Import
@@ -79,5 +79,5 @@ You can import the `ibm_onboarding_product` resource by using `id`. The ID of a 
 
 # Syntax
 <pre>
-$ terraform import ibm_onboarding_product.onboarding_product id;
+$ terraform import ibm_onboarding_product.onboarding_product &lt;id&gt;
 </pre>

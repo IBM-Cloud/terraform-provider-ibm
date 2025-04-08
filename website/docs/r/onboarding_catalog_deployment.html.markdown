@@ -8,8 +8,6 @@ subcategory: "Partner Center Sell"
 
 # ibm_onboarding_catalog_deployment
 
-**Note - Intended for internal use only. This resource is strictly experimental and subject to change without notice.**
-
 Create, update, and delete onboarding_catalog_deployments with this resource.
 
 ## Example Usage
@@ -165,9 +163,9 @@ You can specify the following arguments for this resource.
 
 * `active` - (Required, Boolean) Whether the service is active.
 * `catalog_plan_id` - (Required, Forces new resource, String) The unique ID of this global catalog plan.
-  * Constraints: The maximum length is `128` characters. The minimum length is `2` characters. The value must match regular expression `/^\\S*$/`.
+  * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^\\S*$/`.
 * `catalog_product_id` - (Required, Forces new resource, String) The unique ID of this global catalog product.
-  * Constraints: The maximum length is `128` characters. The minimum length is `2` characters. The value must match regular expression `/^\\S*$/`.
+  * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^\\S*$/`.
 * `disabled` - (Required, Boolean) Determines the global visibility for the catalog entry, and its children. If it is not enabled, all plans are disabled.
 * `env` - (Optional, String) The environment to fetch this object from.
   * Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^[a-z_.-]+$/`.
@@ -177,7 +175,7 @@ You can specify the following arguments for this resource.
 Nested schema for **metadata**:
 	* `deployment` - (Optional, List) The global catalog metadata of the deployment.
 	Nested schema for **deployment**:
-		* `broker` - (Optional, List) The global catalog metadata of the deployment.
+		* `broker` - (Optional, List) The broker data connected to the deployment.
 		Nested schema for **broker**:
 			* `guid` - (Optional, String) Crn or guid of the resource broker.
 			  * Constraints: The maximum length is `2000` characters. The minimum length is `2` characters. The value must match regular expression `/^[ -~\\s]*$/`.
@@ -359,7 +357,7 @@ Nested schema for **metadata**:
 		* `service_key_supported` - (Optional, Boolean) Indicates service credentials support and controls the Service Credential tab on Resource Details page.
 		* `unique_api_key` - (Computed, Boolean) Indicates whether the deployment uses a unique API key or not.
 * `name` - (Required, String) The programmatic name of this deployment.
-  * Constraints: The value must match regular expression `/^[a-zA-Z0-9\\-.]+$/`.
+  * Constraints: The value must match regular expression `/^\\S*$/`.
 * `object_id` - (Optional, String) The desired ID of the global catalog object.
 * `object_provider` - (Required, List) The provider or owner of the product.
 Nested schema for **object_provider**:
@@ -374,7 +372,7 @@ Nested schema for **overview_ui**:
 		* `long_description` - (Optional, String) The detailed description of your product that is displayed at the beginning of your product page in the catalog. Markdown markup language is supported.
 * `product_id` - (Required, Forces new resource, String) The unique ID of the product.
   * Constraints: The maximum length is `71` characters. The minimum length is `71` characters. The value must match regular expression `/^[a-zA-Z0-9]{32}:o:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/`.
-* `tags` - (Required, List) A list of tags that carry information about your product. These tags can be used to find your product in the IBM Cloud catalog.
+* `tags` - (Optional, List) A list of tags that carry information about your product. These tags can be used to find your product in the IBM Cloud catalog.
   * Constraints: The list items must match regular expression `/^[a-z0-9\\-._]+$/`. The maximum length is `100` items. The minimum length is `0` items.
 
 ## Attribute Reference
@@ -383,6 +381,7 @@ After your resource is created, you can read values from the listed arguments an
 
 * `id` - The unique identifier of the onboarding_catalog_deployment.
 * `catalog_deployment_id` - (String) The ID of a global catalog object.
+  * Constraints: The value must match regular expression `/^\\S*$/`.
 * `geo_tags` - (List) 
   * Constraints: The list items must match regular expression `/./`. The maximum length is `1000` items. The minimum length is `0` items.
 * `url` - (String) The global catalog URL of your product.
@@ -394,7 +393,8 @@ You can import the `ibm_onboarding_catalog_deployment` resource by using `id`.
 The `id` property can be formed from `product_id`, `catalog_product_id`, `catalog_plan_id`, and `catalog_deployment_id` in the following format:
 
 <pre>
-product_id/catalog_product_id/catalog_plan_id/catalog_deployment_id</pre>
+&lt;product_id&gt;/&lt;catalog_product_id&gt;/&lt;catalog_plan_id&gt;/&lt;catalog_deployment_id&gt;
+</pre>
 * `product_id`: A string. The unique ID of the product.
 * `catalog_product_id`: A string. The unique ID of this global catalog product.
 * `catalog_plan_id`: A string. The unique ID of this global catalog plan.
@@ -402,5 +402,5 @@ product_id/catalog_product_id/catalog_plan_id/catalog_deployment_id</pre>
 
 # Syntax
 <pre>
-$ terraform import ibm_onboarding_catalog_deployment.onboarding_catalog_deployment product_id/catalog_product_id/catalog_plan_id/catalog_deployment_id
+$ terraform import ibm_onboarding_catalog_deployment.onboarding_catalog_deployment &lt;product_id&gt;/&lt;catalog_product_id&gt;/&lt;catalog_plan_id&gt;/&lt;catalog_deployment_id&gt;
 </pre>
