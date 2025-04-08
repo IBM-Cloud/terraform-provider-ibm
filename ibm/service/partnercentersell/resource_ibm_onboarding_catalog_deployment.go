@@ -732,7 +732,7 @@ func ResourceIbmOnboardingCatalogDeployment() *schema.Resource {
 										Type:        schema.TypeList,
 										MaxItems:    1,
 										Optional:    true,
-										Description: "The global catalog metadata of the deployment.",
+										Description: "The broker data connected to the deployment.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"name": &schema.Schema{
@@ -806,7 +806,7 @@ func ResourceIbmOnboardingCatalogDeploymentValidator() *validate.ResourceValidat
 			Type:                       validate.TypeString,
 			Required:                   true,
 			Regexp:                     `^\S*$`,
-			MinValueLength:             2,
+			MinValueLength:             1,
 			MaxValueLength:             128,
 		},
 		validate.ValidateSchema{
@@ -815,7 +815,7 @@ func ResourceIbmOnboardingCatalogDeploymentValidator() *validate.ResourceValidat
 			Type:                       validate.TypeString,
 			Required:                   true,
 			Regexp:                     `^\S*$`,
-			MinValueLength:             2,
+			MinValueLength:             1,
 			MaxValueLength:             128,
 		},
 		validate.ValidateSchema{
@@ -832,7 +832,7 @@ func ResourceIbmOnboardingCatalogDeploymentValidator() *validate.ResourceValidat
 			ValidateFunctionIdentifier: validate.ValidateRegexp,
 			Type:                       validate.TypeString,
 			Required:                   true,
-			Regexp:                     `^[a-zA-Z0-9\-.]+$`,
+			Regexp:                     `^\S*$`,
 		},
 		validate.ValidateSchema{
 			Identifier:                 "kind",

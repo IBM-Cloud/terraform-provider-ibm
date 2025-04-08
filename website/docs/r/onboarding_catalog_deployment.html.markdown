@@ -165,9 +165,9 @@ You can specify the following arguments for this resource.
 
 * `active` - (Required, Boolean) Whether the service is active.
 * `catalog_plan_id` - (Required, Forces new resource, String) The unique ID of this global catalog plan.
-  * Constraints: The maximum length is `128` characters. The minimum length is `2` characters. The value must match regular expression `/^\\S*$/`.
+  * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^\\S*$/`.
 * `catalog_product_id` - (Required, Forces new resource, String) The unique ID of this global catalog product.
-  * Constraints: The maximum length is `128` characters. The minimum length is `2` characters. The value must match regular expression `/^\\S*$/`.
+  * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^\\S*$/`.
 * `disabled` - (Required, Boolean) Determines the global visibility for the catalog entry, and its children. If it is not enabled, all plans are disabled.
 * `env` - (Optional, String) The environment to fetch this object from.
   * Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^[a-z_.-]+$/`.
@@ -177,7 +177,7 @@ You can specify the following arguments for this resource.
 Nested schema for **metadata**:
 	* `deployment` - (Optional, List) The global catalog metadata of the deployment.
 	Nested schema for **deployment**:
-		* `broker` - (Optional, List) The global catalog metadata of the deployment.
+		* `broker` - (Optional, List) The broker data connected to the deployment.
 		Nested schema for **broker**:
 			* `guid` - (Optional, String) Crn or guid of the resource broker.
 			  * Constraints: The maximum length is `2000` characters. The minimum length is `2` characters. The value must match regular expression `/^[ -~\\s]*$/`.
@@ -359,7 +359,7 @@ Nested schema for **metadata**:
 		* `service_key_supported` - (Optional, Boolean) Indicates service credentials support and controls the Service Credential tab on Resource Details page.
 		* `unique_api_key` - (Computed, Boolean) Indicates whether the deployment uses a unique API key or not.
 * `name` - (Required, String) The programmatic name of this deployment.
-  * Constraints: The value must match regular expression `/^[a-zA-Z0-9\\-.]+$/`.
+  * Constraints: The value must match regular expression `/^\\S*$/`.
 * `object_id` - (Optional, String) The desired ID of the global catalog object.
 * `object_provider` - (Required, List) The provider or owner of the product.
 Nested schema for **object_provider**:
@@ -383,6 +383,7 @@ After your resource is created, you can read values from the listed arguments an
 
 * `id` - The unique identifier of the onboarding_catalog_deployment.
 * `catalog_deployment_id` - (String) The ID of a global catalog object.
+  * Constraints: The value must match regular expression `/^\\S*$/`.
 * `geo_tags` - (List) 
   * Constraints: The list items must match regular expression `/./`. The maximum length is `1000` items. The minimum length is `0` items.
 * `url` - (String) The global catalog URL of your product.
