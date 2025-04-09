@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2024 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
@@ -497,6 +497,10 @@ func resourceIBMCdTektonPipelineTriggerRead(context context.Context, d *schema.R
 	}
 
 	trigger := triggerIntf.(*cdtektonpipelinev2.Trigger)
+	if err = d.Set("pipeline_id", parts[0]); err != nil {
+		err = fmt.Errorf("Error setting pipeline_id: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cd_tekton_pipeline_trigger", "read", "set-pipeline_id").GetDiag()
+	}
 	if err = d.Set("type", trigger.Type); err != nil {
 		err = fmt.Errorf("Error setting type: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cd_tekton_pipeline_trigger", "read", "set-type").GetDiag()
@@ -799,7 +803,9 @@ func resourceIBMCdTektonPipelineTriggerDelete(context context.Context, d *schema
 
 func ResourceIBMCdTektonPipelineTriggerMapToWorkerIdentity(modelMap map[string]interface{}) (*cdtektonpipelinev2.WorkerIdentity, error) {
 	model := &cdtektonpipelinev2.WorkerIdentity{}
-	model.ID = core.StringPtr(modelMap["id"].(string))
+	if modelMap["id"] != nil {
+		model.ID = core.StringPtr(modelMap["id"].(string))
+	}
 	return model, nil
 }
 

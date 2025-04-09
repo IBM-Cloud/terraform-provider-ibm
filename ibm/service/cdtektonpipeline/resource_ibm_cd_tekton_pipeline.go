@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2024 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
@@ -865,7 +865,9 @@ func resourceIBMCdTektonPipelineDelete(context context.Context, d *schema.Resour
 
 func ResourceIBMCdTektonPipelineMapToWorkerIdentity(modelMap map[string]interface{}) (*cdtektonpipelinev2.WorkerIdentity, error) {
 	model := &cdtektonpipelinev2.WorkerIdentity{}
-	model.ID = core.StringPtr(modelMap["id"].(string))
+	if modelMap["id"] != nil {
+		model.ID = core.StringPtr(modelMap["id"].(string))
+	}
 	return model, nil
 }
 
@@ -877,7 +879,9 @@ func ResourceIBMCdTektonPipelineWorkerToMap(model *cdtektonpipelinev2.Worker) (m
 	if model.Type != nil {
 		modelMap["type"] = *model.Type
 	}
-	modelMap["id"] = *model.ID
+	if model.ID != nil {
+		modelMap["id"] = *model.ID
+	}
 	return modelMap, nil
 }
 
