@@ -4,17 +4,19 @@
 package vpc
 
 import (
+	"context"
 	"fmt"
 	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func DataSourceIBMISSSHKey() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceIBMISSSHKeyRead,
+		ReadContext: dataSourceIBMISSSHKeyRead,
 
 		Schema: map[string]*schema.Schema{
 			"resource_group": {
@@ -119,7 +121,7 @@ func DataSourceIBMISSSHKey() *schema.Resource {
 	}
 }
 
-func dataSourceIBMISSSHKeyRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceIBMISSSHKeyRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	name := ""
 	if nameOk, ok := d.GetOk(isKeyName); ok {
 		name = nameOk.(string)
@@ -129,17 +131,19 @@ func dataSourceIBMISSSHKeyRead(d *schema.ResourceData, meta interface{}) error {
 		id = idOk.(string)
 	}
 
-	err := keyGetByNameOrId(d, meta, name, id)
-	if err != nil {
-		return err
+	diag := keyGetByNameOrId(context, d, meta, name, id)
+	if diag != nil {
+		return diag
 	}
 	return nil
 }
 
-func keyGetByNameOrId(d *schema.ResourceData, meta interface{}, name, id string) error {
+func keyGetByNameOrId(context context.Context, d *schema.ResourceData, meta interface{}, name, id string) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_ssh_key", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	var key vpcv1.Key
 
@@ -147,9 +151,11 @@ func keyGetByNameOrId(d *schema.ResourceData, meta interface{}, name, id string)
 		getKeyOptions := &vpcv1.GetKeyOptions{
 			ID: &id,
 		}
-		keyintf, response, err := sess.GetKey(getKeyOptions)
+		keyintf, _, err := sess.GetKeyWithContext(context, getKeyOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error GetKey %s\n%s", err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetKeyWithContext failed: %s", err.Error()), "(Data) ibm_is_ssh_key", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		key = *keyintf
 
@@ -163,9 +169,11 @@ func keyGetByNameOrId(d *schema.ResourceData, meta interface{}, name, id string)
 				listKeysOptions.Start = &start
 			}
 
-			keys, response, err := sess.ListKeys(listKeysOptions)
+			keys, _, err := sess.ListKeysWithContext(context, listKeysOptions)
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error fetching Keys %s\n%s", err, response)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListKeysWithContext failed: %s", err.Error()), "(Data) ibm_is_ssh_key", "read")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			start = flex.GetNext(keys.Next)
 			allrecs = append(allrecs, keys.Keys...)
@@ -181,33 +189,50 @@ func keyGetByNameOrId(d *schema.ResourceData, meta interface{}, name, id string)
 			}
 		}
 		if !found {
-			return fmt.Errorf("[ERROR] No SSH Key found with name %s", name)
+			err = fmt.Errorf("[ERROR] No SSH Key found with name %s", name)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Not found: %s", err.Error()), "(Data) ibm_is_ssh_key", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 	d.SetId(*key.ID)
-	d.Set("name", *key.Name)
-	d.Set(isKeyType, *key.Type)
-	d.Set(isKeyFingerprint, *key.Fingerprint)
-	d.Set(isKeyLength, *key.Length)
+	if err = d.Set("name", key.Name); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_is_ssh_key", "read", "set-name").GetDiag()
+	}
+	if err = d.Set("type", key.Type); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting type: %s", err), "(Data) ibm_is_ssh_key", "read", "set-type").GetDiag()
+	}
+	if err = d.Set("fingerprint", key.Fingerprint); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting fingerprint: %s", err), "(Data) ibm_is_ssh_key", "read", "set-fingerprint").GetDiag()
+	}
+	if err = d.Set("length", flex.IntValue(key.Length)); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting length: %s", err), "(Data) ibm_is_ssh_key", "read", "set-length").GetDiag()
+	}
 	controller, err := flex.GetBaseController(meta)
 	if err != nil {
-		return err
-	}
-	if err = d.Set("created_at", flex.DateTimeToString(key.CreatedAt)); err != nil {
-		return err
-	}
-	if err = d.Set("href", key.Href); err != nil {
-		return err
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_controller_url: %s", err), "(Data) ibm_is_ssh_key", "read", "set-resource_controller_url").GetDiag()
 	}
 	d.Set(flex.ResourceControllerURL, controller+"/vpc/compute/sshKeys")
-	d.Set(flex.ResourceName, *key.Name)
-	d.Set(flex.ResourceCRN, *key.CRN)
-	d.Set(IsKeyCRN, *key.CRN)
+	if err = d.Set("created_at", flex.DateTimeToString(key.CreatedAt)); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting created_at: %s", err), "(Data) ibm_is_ssh_key", "read", "set-created_at").GetDiag()
+	}
+	if err = d.Set("href", key.Href); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting href: %s", err), "(Data) ibm_is_ssh_key", "read", "set-href").GetDiag()
+	}
+	if err = d.Set(flex.ResourceName, key.Name); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_name: %s", err), "(Data) ibm_is_ssh_key", "read", "set-resource_name").GetDiag()
+	}
+	if err = d.Set(flex.ResourceCRN, key.CRN); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_crn: %s", err), "(Data) ibm_is_ssh_key", "read", "set-resource_crn").GetDiag()
+	}
+	if err = d.Set("crn", key.CRN); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting crn: %s", err), "(Data) ibm_is_ssh_key", "read", "set-crn").GetDiag()
+	}
 	if key.ResourceGroup != nil {
 		d.Set(flex.ResourceGroupName, *key.ResourceGroup.ID)
 	}
-	if key.PublicKey != nil {
-		d.Set(isKeyPublicKey, *key.PublicKey)
+	if err = d.Set("public_key", key.PublicKey); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting public_key: %s", err), "(Data) ibm_is_ssh_key", "read", "set-public_key").GetDiag()
 	}
 	tags, err := flex.GetGlobalTagsUsingCRN(meta, *key.CRN, "", isUserTagType)
 	if err != nil {
