@@ -205,6 +205,7 @@ func keyGetByNameOrId(d *schema.ResourceData, meta interface{}, name, id string)
 	d.Set(IsKeyCRN, *key.CRN)
 	if key.ResourceGroup != nil {
 		d.Set(flex.ResourceGroupName, *key.ResourceGroup.ID)
+		d.Set("resource_group", *key.ResourceGroup.ID)
 	}
 	if key.PublicKey != nil {
 		d.Set(isKeyPublicKey, *key.PublicKey)
