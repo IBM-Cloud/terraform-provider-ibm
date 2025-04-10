@@ -47,14 +47,14 @@ Nested schema for **targets**:
 	  * Constraints: The maximum length is `256` characters. The minimum length is `1` character. The value must match regular expression `/[a-z,A-Z,0-9,:,-]/`.
 	* `name` - (String) The name for this tenant target. The name is unique across all targets for this tenant.
 	  * Constraints: The maximum length is `35` characters. The minimum length is `1` character. The value must match regular expression `/[a-z,A-Z,0-9,-,.]/`.
-	* `parameters` - (List) List of properties returned from a successful list operation for a log-sink of type IBM Log Analysis (logdna).
+	* `parameters` - (List) List of properties returned from a successful list operation for a log-sink of type IBM Cloud Logs.
 	Nested schema for **parameters**:
 		* `host` - (String) Host name of the log-sink.
 		  * Constraints: The maximum length is `256` characters. The minimum length is `1` character. The value must match regular expression `/[a-z,A-Z,0-9,-,.]/`.
 		* `port` - (Integer) Network port of the log-sink.
 		  * Constraints: The maximum value is `65535`. The minimum value is `1`.
 	* `type` - (String) Type of log-sink. Identical to the <code>service-name</code> segment of <code>log_sink_crn</code>.
-	  * Constraints: Allowable values are: `logdna`.
+	  * Constraints: Allowable values are: `logs`.
 	* `updated_at` - (String) Time stamp the target was last updated.
 	  * Constraints: The maximum length is `36` characters. The minimum length is `1` character. The value must match regular expression `/[0-9,:,.,-,T,Z]/`.
 

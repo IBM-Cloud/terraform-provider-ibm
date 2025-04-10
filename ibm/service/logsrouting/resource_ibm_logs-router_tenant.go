@@ -154,6 +154,32 @@ func ResourceIBMLogsRouterTenant() *schema.Resource {
 				Computed:    true,
 				Description: "Resource version identifier.",
 			},
+			"write_status": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The status of the write attempt to the target with the provided endpoint parameters.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"status": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The status such as failed or success.",
+						},
+						"reason_for_last_failure": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "Detailed description of the cause of the failure.",
+						},
+						"last_failure": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "The timestamp of the failure.",
+						},
+					},
+				},
+			},
 		},
 	}
 }
