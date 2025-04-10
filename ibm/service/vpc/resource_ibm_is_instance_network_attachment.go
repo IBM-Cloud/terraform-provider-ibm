@@ -91,6 +91,7 @@ func ResourceIBMIsInstanceNetworkAttachment() *schema.Resource {
 							Type:          schema.TypeString,
 							Optional:      true,
 							Computed:      true,
+							ForceNew:      true,
 							ConflictsWith: []string{"virtual_network_interface.0.allow_ip_spoofing", "virtual_network_interface.0.auto_delete", "virtual_network_interface.0.enable_infrastructure_nat", "virtual_network_interface.0.ips", "virtual_network_interface.0.name", "virtual_network_interface.0.primary_ip", "virtual_network_interface.0.resource_group", "virtual_network_interface.0.security_groups", "virtual_network_interface.0.security_groups"},
 							Description:   "The virtual network interface id for this instance network attachment.",
 						},
@@ -251,6 +252,7 @@ func ResourceIBMIsInstanceNetworkAttachment() *schema.Resource {
 						"resource_group": &schema.Schema{
 							Type:          schema.TypeString,
 							Optional:      true,
+							ForceNew:      true,
 							ConflictsWith: []string{"virtual_network_interface.0.id"},
 							Computed:      true,
 							Description:   "The resource group id for this virtual network interface.",
@@ -321,7 +323,7 @@ func resourceIBMIsInstanceNetworkAttachmentCreate(context context.Context, d *sc
 	createInstanceNetworkAttachmentOptions := &vpcv1.CreateInstanceNetworkAttachmentOptions{}
 
 	createInstanceNetworkAttachmentOptions.SetInstanceID(d.Get("instance").(string))
-	virtualNetworkInterfaceModel, err := resourceIBMIsInstanceNetworkAttachmentMapToInstanceNetworkAttachmentPrototypeVirtualNetworkInterface(d.Get("virtual_network_interface.0").(map[string]interface{}))
+	virtualNetworkInterfaceModel, err := resourceIBMIsInstanceNetworkAttachmentMapToInstanceNetworkAttachmentPrototypeVirtualNetworkInterface(d, d.Get("virtual_network_interface.0").(map[string]interface{}))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -707,15 +709,15 @@ func resourceIBMIsInstanceNetworkAttachmentDelete(context context.Context, d *sc
 	return nil
 }
 
-func resourceIBMIsInstanceNetworkAttachmentMapToInstanceNetworkAttachmentPrototypeVirtualNetworkInterface(modelMap map[string]interface{}) (vpcv1.InstanceNetworkAttachmentPrototypeVirtualNetworkInterfaceIntf, error) {
+func resourceIBMIsInstanceNetworkAttachmentMapToInstanceNetworkAttachmentPrototypeVirtualNetworkInterface(d *schema.ResourceData, modelMap map[string]interface{}) (vpcv1.InstanceNetworkAttachmentPrototypeVirtualNetworkInterfaceIntf, error) {
 	model := &vpcv1.InstanceNetworkAttachmentPrototypeVirtualNetworkInterface{}
-	if modelMap["allow_ip_spoofing"] != nil {
+	if _, ok := d.GetOkExists("allow_ip_spoofing"); ok {
 		model.AllowIPSpoofing = core.BoolPtr(modelMap["allow_ip_spoofing"].(bool))
 	}
 	if modelMap["auto_delete"] != nil {
 		model.AutoDelete = core.BoolPtr(modelMap["auto_delete"].(bool))
 	}
-	if modelMap["enable_infrastructure_nat"] != nil {
+	if _, ok := d.GetOkExists("enable_infrastructure_nat"); ok {
 		model.EnableInfrastructureNat = core.BoolPtr(modelMap["enable_infrastructure_nat"].(bool))
 	}
 	if modelMap["ips"] != nil {

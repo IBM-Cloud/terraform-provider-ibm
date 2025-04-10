@@ -34,7 +34,7 @@ Example usage:
     }
   ```
 
-## Argument reference
+## Argument Reference
 
 Review the argument references that you can specify for your data source.
 

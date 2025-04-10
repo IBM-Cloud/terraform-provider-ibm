@@ -1,5 +1,9 @@
-// Copyright IBM Corp. 2022 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
+
+/*
+ * IBM OpenAPI Terraform Generator Version: 3.101.0-62624c1e-20250225-192301
+ */
 
 package atracker
 
@@ -12,114 +16,88 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/platform-services-go-sdk/atrackerv2"
 )
 
 func DataSourceIBMAtrackerTargets() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: DataSourceIBMAtrackerTargetsRead,
+		ReadContext: dataSourceIBMAtrackerTargetsRead,
 
 		Schema: map[string]*schema.Schema{
-			"name": {
+			"region": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Limit the query to the specified region.",
+			},
+			"name": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The name of the target resource.",
 			},
-			"targets": {
+			"targets": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "A list of target resources.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"id": {
+						"id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The uuid of the target resource.",
 						},
-						"name": {
+						"name": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The name of the target resource.",
 						},
-						"crn": {
+						"crn": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The crn of the target resource.",
 						},
-						"target_type": {
+						"target_type": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The type of the target.",
 						},
-						"region": {
+						"region": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Included this optional field if you used it to create a target in a different region other than the one you are connected.",
 						},
-						"encrypt_key": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Deprecated:  "use encryption_key instead",
-							Description: "The encryption key that is used to encrypt events before Activity Tracker services buffer them on storage. This credential is masked in the response.",
-						},
-						"encryption_key": {
-							Type:        schema.TypeString,
-							Sensitive:   true,
-							Computed:    true,
-							Description: "The encryption key that is used to encrypt events before Activity Tracker services buffer them on storage. This credential is masked in the response.",
-						},
-						"cos_endpoint": {
+						"cos_endpoint": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "Property values for a Cloud Object Storage Endpoint.",
+							Description: "Property values for a Cloud Object Storage Endpoint in responses.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"endpoint": {
+									"endpoint": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The host name of the Cloud Object Storage endpoint.",
 									},
-									"target_crn": {
+									"target_crn": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The CRN of the Cloud Object Storage instance.",
 									},
-									"bucket": {
+									"bucket": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The bucket name under the Cloud Object Storage instance.",
 									},
-									"api_key": {
+									"api_key": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Sensitive:   true,
 										Description: "The IAM API key that has writer access to the Cloud Object Storage instance. This credential is masked in the response. This is required if service_to_service is not enabled.",
 									},
-									"service_to_service_enabled": {
+									"service_to_service_enabled": &schema.Schema{
 										Type:        schema.TypeBool,
 										Computed:    true,
 										Description: "Determines if IBM Cloud Activity Tracker Event Routing has service to service authentication enabled. Set this flag to true if service to service is enabled and do not supply an apikey.",
-									},
-								},
-							},
-						},
-						"logdna_endpoint": {
-							Deprecated:  "Remove this attribute's configuration as it is no longer in use and the attribute will be removed in the next major version of the provider.",
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "(Deprecated) Property values for a LogDNA Endpoint.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"target_crn": {
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "The CRN of the LogDNA instance.",
-									},
-									"ingestion_key": {
-										Type:        schema.TypeString,
-										Sensitive:   true,
-										Computed:    true,
-										Description: "The LogDNA ingestion key is used for routing logs to a specific LogDNA instance.",
 									},
 								},
 							},
@@ -148,7 +126,7 @@ func DataSourceIBMAtrackerTargets() *schema.Resource {
 										Computed:    true,
 										Description: "The messsage hub topic defined in the Event Streams instance.",
 									},
-									"api_key": &schema.Schema{ // pragma: allowlist secret
+									"api_key": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Sensitive:   true,
@@ -171,53 +149,28 @@ func DataSourceIBMAtrackerTargets() *schema.Resource {
 									"target_crn": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "The CRN of the IBM Cloud Logs instance",
+										Description: "The CRN of the IBM Cloud Logs instance.",
 									},
 								},
 							},
 						},
-						"cos_write_status": {
-							Type:        schema.TypeList,
-							Computed:    true,
-							Deprecated:  "use write_status instead",
-							Description: "The status of the write attempt with the provided cos_endpoint parameters.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"status": {
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "The status such as failed or success.",
-									},
-									"last_failure": {
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "The timestamp of the failure.",
-									},
-									"reason_for_last_failure": {
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "Detailed description of the cause of the failure.",
-									},
-								},
-							},
-						},
-						"write_status": {
+						"write_status": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
 							Description: "The status of the write attempt to the target with the provided endpoint parameters.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"status": {
+									"status": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The status such as failed or success.",
 									},
-									"last_failure": {
+									"last_failure": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The timestamp of the failure.",
 									},
-									"reason_for_last_failure": {
+									"reason_for_last_failure": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "Detailed description of the cause of the failure.",
@@ -225,29 +178,22 @@ func DataSourceIBMAtrackerTargets() *schema.Resource {
 								},
 							},
 						},
-						"created": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Deprecated:  "use created_at instead",
-							Description: "The timestamp of the target creation time.",
-						},
-						"updated": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Deprecated:  "use updated_at instead",
-							Description: "The timestamp of the target last updated time.",
-						},
-						"created_at": {
+						"created_at": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The timestamp of the target creation time.",
 						},
-						"updated_at": {
+						"updated_at": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The timestamp of the target last updated time.",
 						},
-						"api_version": {
+						"message": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "An optional message containing information about the target.",
+						},
+						"api_version": &schema.Schema{
 							Type:        schema.TypeInt,
 							Computed:    true,
 							Description: "The API version of the target.",
@@ -259,18 +205,25 @@ func DataSourceIBMAtrackerTargets() *schema.Resource {
 	}
 }
 
-func DataSourceIBMAtrackerTargetsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	atrackerClientv2, err := getAtrackerClients(meta)
+func dataSourceIBMAtrackerTargetsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	atrackerClient, err := meta.(conns.ClientSession).AtrackerV2()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_atracker_targets", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	listTargetsOptions := &atrackerv2.ListTargetsOptions{}
 
-	targetList, response, err := atrackerClientv2.ListTargetsWithContext(context, listTargetsOptions)
+	if _, ok := d.GetOk("region"); ok {
+		listTargetsOptions.SetRegion(d.Get("region").(string))
+	}
+
+	targetList, _, err := atrackerClient.ListTargetsWithContext(context, listTargetsOptions)
 	if err != nil {
-		log.Printf("[DEBUG] ListTargetsWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("ListTargetsWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListTargetsWithContext failed: %s", err.Error()), "(Data) ibm_atracker_targets", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	// Use the provided filter argument and construct a new list with only the requested resource(s)
@@ -293,32 +246,30 @@ func DataSourceIBMAtrackerTargetsRead(context context.Context, d *schema.Resourc
 
 	if suppliedFilter {
 		if len(targetList.Targets) == 0 {
-			return diag.FromErr(fmt.Errorf("no Targets found with name %s", name))
+			return flex.DiscriminatedTerraformErrorf(nil, fmt.Sprintf("no Targets found with name %s", name), "(Data) ibm_atracker_targets", "read", "no-collection-found").GetDiag()
 		}
 		d.SetId(name)
 	} else {
-		d.SetId(DataSourceIBMAtrackerTargetsID(d))
+		d.SetId(dataSourceIBMAtrackerTargetsID(d))
 	}
 
 	targets := []map[string]interface{}{}
-	if targetList.Targets != nil {
-		for _, modelItem := range targetList.Targets {
-			modelMap, err := DataSourceIBMAtrackerTargetsTargetToMap(&modelItem)
-			if err != nil {
-				return diag.FromErr(err)
-			}
-			targets = append(targets, modelMap)
+	for _, targetsItem := range targetList.Targets {
+		targetsItemMap, err := DataSourceIBMAtrackerTargetsTargetToMap(&targetsItem) // #nosec G601
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_atracker_targets", "read", "targets-to-map").GetDiag()
 		}
+		targets = append(targets, targetsItemMap)
 	}
 	if err = d.Set("targets", targets); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting targets %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting targets: %s", err), "(Data) ibm_atracker_targets", "read", "set-targets").GetDiag()
 	}
-	return nil
 
+	return nil
 }
 
-// DataSourceIBMAtrackerTargetsID returns a reasonable ID for the list.
-func DataSourceIBMAtrackerTargetsID(d *schema.ResourceData) string {
+// dataSourceIBMAtrackerTargetsID returns a reasonable ID for the list.
+func dataSourceIBMAtrackerTargetsID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
 
@@ -346,13 +297,6 @@ func DataSourceIBMAtrackerTargetsTargetToMap(model *atrackerv2.Target) (map[stri
 		}
 		modelMap["cos_endpoint"] = []map[string]interface{}{cosEndpointMap}
 	}
-	if model.LogdnaEndpoint != nil {
-		logdnaEndpointMap, err := DataSourceIBMAtrackerTargetsLogdnaEndpointToMap(model.LogdnaEndpoint)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["logdna_endpoint"] = []map[string]interface{}{logdnaEndpointMap}
-	}
 	if model.EventstreamsEndpoint != nil {
 		eventstreamsEndpointMap, err := DataSourceIBMAtrackerTargetsEventstreamsEndpointToMap(model.EventstreamsEndpoint)
 		if err != nil {
@@ -361,7 +305,7 @@ func DataSourceIBMAtrackerTargetsTargetToMap(model *atrackerv2.Target) (map[stri
 		modelMap["eventstreams_endpoint"] = []map[string]interface{}{eventstreamsEndpointMap}
 	}
 	if model.CloudlogsEndpoint != nil {
-		cloudlogsEndpointMap, err := DataSourceIBMAtrackerTargetsCloudlogsEndpointToMap(model.CloudlogsEndpoint)
+		cloudlogsEndpointMap, err := DataSourceIBMAtrackerTargetsCloudLogsEndpointToMap(model.CloudlogsEndpoint)
 		if err != nil {
 			return modelMap, err
 		}
@@ -383,8 +327,6 @@ func DataSourceIBMAtrackerTargetsTargetToMap(model *atrackerv2.Target) (map[stri
 	if model.APIVersion != nil {
 		modelMap["api_version"] = *model.APIVersion
 	}
-	// TODO: Deprecated, to remove
-	modelMap["encryption_key"] = REDACTED_TEXT
 	return modelMap, nil
 }
 
@@ -401,14 +343,6 @@ func DataSourceIBMAtrackerTargetsCosEndpointToMap(model *atrackerv2.CosEndpoint)
 	}
 	if model.ServiceToServiceEnabled != nil {
 		modelMap["service_to_service_enabled"] = *model.ServiceToServiceEnabled
-	}
-	return modelMap, nil
-}
-
-func DataSourceIBMAtrackerTargetsLogdnaEndpointToMap(model *atrackerv2.LogdnaEndpoint) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.TargetCRN != nil {
-		modelMap["target_crn"] = *model.TargetCRN
 	}
 	return modelMap, nil
 }
@@ -433,7 +367,7 @@ func DataSourceIBMAtrackerTargetsEventstreamsEndpointToMap(model *atrackerv2.Eve
 	return modelMap, nil
 }
 
-func DataSourceIBMAtrackerTargetsCloudlogsEndpointToMap(model *atrackerv2.CloudLogsEndpoint) (map[string]interface{}, error) {
+func DataSourceIBMAtrackerTargetsCloudLogsEndpointToMap(model *atrackerv2.CloudLogsEndpoint) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.TargetCRN != nil {
 		modelMap["target_crn"] = *model.TargetCRN

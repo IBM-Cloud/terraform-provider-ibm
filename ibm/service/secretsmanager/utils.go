@@ -84,11 +84,34 @@ func getEndpointType(originalClient *secretsmanagerv2.SecretsManagerV2, d *schem
 	}
 }
 
+// Get the Secrets Manager session and the endpoints file from the provider's configuration
+func getSecretsManagerSession(clientSession conns.ClientSession) (*secretsmanagerv2.SecretsManagerV2, string, error) {
+	secretsManagerClient, err := clientSession.SecretsManagerV2()
+	if err != nil {
+		return secretsManagerClient, "", err
+	}
+
+	bmxsession, err := clientSession.BluemixSession()
+	if err != nil {
+		return secretsManagerClient, "", err
+	}
+
+	return secretsManagerClient, bmxsession.Config.EndpointsFile, nil
+}
+
 // Clone the base secrets manager client and set the API endpoint per the instance
-func getClientWithInstanceEndpoint(originalClient *secretsmanagerv2.SecretsManagerV2, instanceId string, region string, endpointType string) *secretsmanagerv2.SecretsManagerV2 {
+func getClientWithInstanceEndpoint(originalClient *secretsmanagerv2.SecretsManagerV2, instanceId string, region string,
+	endpointType string, endpointsFile string) *secretsmanagerv2.SecretsManagerV2 {
 	// build the api endpoint
 	domain := "appdomain.cloud"
-	if strings.Contains(os.Getenv("IBMCLOUD_IAM_API_ENDPOINT"), "test") {
+
+	// Check if we're running in the staging environment based on the configuration of the IAM API endpoint
+	iamUrl := os.Getenv("IBMCLOUD_IAM_API_ENDPOINT")
+	if iamUrl == "" {
+		iamUrl = conns.FileFallBack(endpointsFile, endpointType, "IBMCLOUD_IAM_API_ENDPOINT", region, "https://iam.cloud.ibm.com")
+	}
+
+	if strings.Contains(iamUrl, "test") {
 		domain = "test.appdomain.cloud"
 	}
 	var endpoint string
@@ -163,14 +186,14 @@ func DateTimeToRFC3339(dt *strfmt.DateTime) (s string) {
 
 func getSecretByIdOrByName(context context.Context, d *schema.ResourceData, meta interface{}, secretType string, dataSourceName string) (secretsmanagerv2.SecretIntf, string, string, diag.Diagnostics) {
 
-	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
+	secretsManagerClient, endpointsFile, err := getSecretsManagerSession(meta.(conns.ClientSession))
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, "", fmt.Sprintf("(Data) %s", dataSourceName), "read")
 		return nil, "", "", tfErr.GetDiag()
 	}
 	region := getRegion(secretsManagerClient, d)
 	instanceId := d.Get("instance_id").(string)
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d), endpointsFile)
 
 	secretId := d.Get("secret_id").(string)
 	secretName := d.Get("name").(string)

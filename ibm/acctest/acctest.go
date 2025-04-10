@@ -90,6 +90,7 @@ var (
 	ISZoneName2                     string
 	ISZoneName3                     string
 	IsResourceGroupID               string
+	IsResourceGroupIDUpdate         string
 	ISResourceCrn                   string
 	ISCIDR                          string
 	ISCIDR2                         string
@@ -855,6 +856,11 @@ func init() {
 	if IsResourceGroupID == "" {
 		IsResourceGroupID = "c01d34dff4364763476834c990398zz8"
 		fmt.Println("[INFO] Set the environment variable SL_RESOURCE_GROUP_ID for testing with different resource group id else it is set to default value 'c01d34dff4364763476834c990398zz8'")
+	}
+	IsResourceGroupIDUpdate = os.Getenv("SL_RESOURCE_GROUP_ID_UPDATE")
+	if IsResourceGroupIDUpdate == "" {
+		IsResourceGroupIDUpdate = "c01d34dff4364763476834c990398zz8"
+		fmt.Println("[INFO] Set the environment variable SL_RESOURCE_GROUP_ID_UPDATE for testing with different resource group id else it is set to default value 'c01d34dff4364763476834c990398zz8'")
 	}
 	ISResourceCrn = os.Getenv("IS_RESOURCE_INSTANCE_CRN")
 	if ISResourceCrn == "" {

@@ -75,6 +75,11 @@ func DataSourceIBMISInstanceVolumeAttachment() *schema.Resource {
 				Computed:    true,
 				Description: "The type of volume attachment one of [ boot, data ]",
 			},
+			"bandwidth": {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The maximum bandwidth (in megabits per second) for the volume when attached to this instance. This may be lower than the volume bandwidth depending on the configuration of the instance.",
+			},
 
 			isInstanceVolumeAttVolumeReference: {
 				Type:        schema.TypeList,
@@ -142,6 +147,8 @@ func instanceVolumeAttachmentGetByName(d *schema.ResourceData, meta interface{},
 		if *volumeAtt.Name == name {
 			d.SetId(makeTerraformVolAttID(instanceId, *volumeAtt.ID))
 			d.Set(isInstanceVolAttName, *volumeAtt.Name)
+			// bandwidth changes
+			d.Set("bandwidth", *volumeAtt.Bandwidth)
 			d.Set(isInstanceVolumeDeleteOnInstanceDelete, *volumeAtt.DeleteVolumeOnInstanceDelete)
 			d.Set(isInstanceVolumeAttDevice, *volumeAtt.Device.ID)
 			d.Set(isInstanceVolumeAttHref, *volumeAtt.Href)

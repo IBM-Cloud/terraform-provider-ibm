@@ -415,7 +415,7 @@ func ResourceIbmSmImportedCertificate() *schema.Resource {
 }
 
 func resourceIbmSmImportedCertificateCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
+	secretsManagerClient, endpointsFile, err := getSecretsManagerSession(meta.(conns.ClientSession))
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, "", ImportedCertSecretResourceName, "create")
 		return tfErr.GetDiag()
@@ -423,7 +423,7 @@ func resourceIbmSmImportedCertificateCreate(context context.Context, d *schema.R
 
 	region := getRegion(secretsManagerClient, d)
 	instanceId := d.Get("instance_id").(string)
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d), endpointsFile)
 
 	createSecretOptions := &secretsmanagerv2.CreateSecretOptions{}
 
@@ -449,7 +449,7 @@ func resourceIbmSmImportedCertificateCreate(context context.Context, d *schema.R
 }
 
 func resourceIbmSmImportedCertificateRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
+	secretsManagerClient, endpointsFile, err := getSecretsManagerSession(meta.(conns.ClientSession))
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, "", ImportedCertSecretResourceName, "read")
 		return tfErr.GetDiag()
@@ -463,7 +463,7 @@ func resourceIbmSmImportedCertificateRead(context context.Context, d *schema.Res
 	region := id[0]
 	instanceId := id[1]
 	secretId := id[2]
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d), endpointsFile)
 
 	getSecretOptions := &secretsmanagerv2.GetSecretOptions{}
 
@@ -743,7 +743,7 @@ func managedCsrToMap(managedCsr *secretsmanagerv2.ImportedCertificateManagedCsrR
 }
 
 func resourceIbmSmImportedCertificateUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
+	secretsManagerClient, endpointsFile, err := getSecretsManagerSession(meta.(conns.ClientSession))
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, "", ImportedCertSecretResourceName, "update")
 		return tfErr.GetDiag()
@@ -753,7 +753,7 @@ func resourceIbmSmImportedCertificateUpdate(context context.Context, d *schema.R
 	region := id[0]
 	instanceId := id[1]
 	secretId := id[2]
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d), endpointsFile)
 
 	updateSecretMetadataOptions := &secretsmanagerv2.UpdateSecretMetadataOptions{}
 
@@ -864,7 +864,7 @@ func resourceIbmSmImportedCertificateUpdate(context context.Context, d *schema.R
 }
 
 func resourceIbmSmImportedCertificateDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
+	secretsManagerClient, endpointsFile, err := getSecretsManagerSession(meta.(conns.ClientSession))
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, "", ImportedCertSecretResourceName, "delete")
 		return tfErr.GetDiag()
@@ -874,7 +874,7 @@ func resourceIbmSmImportedCertificateDelete(context context.Context, d *schema.R
 	region := id[0]
 	instanceId := id[1]
 	secretId := id[2]
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d), endpointsFile)
 
 	deleteSecretOptions := &secretsmanagerv2.DeleteSecretOptions{}
 

@@ -1,12 +1,15 @@
-# Example for AtrackerV2
+# Examples for Activity Tracker API Version 2
 
-This example illustrates how to use the AtrackerV2
+These examples illustrate how to use the resources and data sources associated with Activity Tracker API Version 2.
 
-The following types of resources are supported:
+The following resources are supported:
+* ibm_atracker_target
+* ibm_atracker_route
+* ibm_atracker_settings
 
-* Activity Tracker Event Routing Target
-* Activity Tracker Event Routing Route
-* Activity Tracker Event Routing Settings
+The following data sources are supported:
+* ibm_atracker_targets
+* ibm_atracker_routes
 
 ## Usage
 
@@ -20,59 +23,145 @@ $ terraform apply
 
 Run `terraform destroy` when you don't need these resources.
 
+## Activity Tracker API Version 2 resources
 
-## AtrackerV2 resources
-
-atracker_target resource:
+### Resource: ibm_atracker_target
 
 ```hcl
-# Deprecated: logdna_endpoint is no longer in use and will be removed in the next major version of the provider.
-resource "atracker_target" "atracker_target_instance" {
+resource "ibm_atracker_target" "atracker_target_instance" {
   name = var.atracker_target_name
   target_type = var.atracker_target_target_type
   region = var.atracker_target_region
   cos_endpoint = var.atracker_target_cos_endpoint
-  logdna_endpoint = var.atracker_target_logdna_endpoint
   eventstreams_endpoint = var.atracker_target_eventstreams_endpoint
-  cloudlogs_endpoint = var.atracker_target_cloudlogs_instance
+  cloudlogs_endpoint = var.atracker_target_cloudlogs_endpoint
 }
 ```
-atracker_route resource:
+
+#### Inputs
+
+| Name | Description | Type | Required |
+|------|-------------|------|---------|
+| ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
+| name | The name of the target resource. | `string` | true |
+| target_type | The type of the target. | `string` | true |
+| region | Included this optional field if you used it to create a target in a different region other than the one you are connected. | `string` | false |
+| cos_endpoint | Property values for a Cloud Object Storage Endpoint in responses. | `` | false |
+| eventstreams_endpoint | Property values for the Event Streams Endpoint in responses. | `` | false |
+| cloudlogs_endpoint | Property values for the IBM Cloud Logs endpoint in responses. | `` | false |
+
+#### Outputs
+
+| Name | Description |
+|------|-------------|
+| crn | The crn of the target resource. |
+| write_status | The status of the write attempt to the target with the provided endpoint parameters. |
+| created_at | The timestamp of the target creation time. |
+| updated_at | The timestamp of the target last updated time. |
+| message | An optional message containing information about the target. |
+| api_version | The API version of the target. |
+
+### Resource: ibm_atracker_route
 
 ```hcl
-resource "atracker_route" "atracker_route_instance" {
+resource "ibm_atracker_route" "atracker_route_instance" {
   name = var.atracker_route_name
   rules = var.atracker_route_rules
 }
 ```
 
-atracker_settings resource:
+#### Inputs
+
+| Name | Description | Type | Required |
+|------|-------------|------|---------|
+| ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
+| name | The name of the route. | `string` | true |
+| rules | The routing rules that will be evaluated in their order of the array. Once a rule is matched, the remaining rules in the route definition will be skipped. | `list()` | true |
+
+#### Outputs
+
+| Name | Description |
+|------|-------------|
+| crn | The crn of the route resource. |
+| version | The version of the route. |
+| created_at | The timestamp of the route creation time. |
+| updated_at | The timestamp of the route last updated time. |
+| api_version | The API version of the route. |
+| message | An optional message containing information about the route. |
+
+### Resource: ibm_atracker_settings
 
 ```hcl
-resource "atracker_settings" "atracker_settings_instance" {
-  metadata_region_primary = var.atracker_settings_metadata_region_primary
-  private_api_endpoint_only = var.atracker_settings_private_api_endpoint_only
+resource "ibm_atracker_settings" "atracker_settings_instance" {
   default_targets = var.atracker_settings_default_targets
   permitted_target_regions = var.atracker_settings_permitted_target_regions
+  metadata_region_primary = var.atracker_settings_metadata_region_primary
+  metadata_region_backup = var.atracker_settings_metadata_region_backup
+  private_api_endpoint_only = var.atracker_settings_private_api_endpoint_only
 }
 ```
 
-## AtrackerV2 Data sources
+#### Inputs
 
-atracker_targets data source:
+| Name | Description | Type | Required |
+|------|-------------|------|---------|
+| ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
+| default_targets | The target ID List. In the event that no routing rule causes the event to be sent to a target, these targets will receive the event. | `list(string)` | false |
+| permitted_target_regions | If present then only these regions may be used to define a target. | `list(string)` | false |
+| metadata_region_primary | To store all your meta data in a single region. | `string` | true |
+| metadata_region_backup | To store all your meta data in a backup region. | `string` | false |
+| private_api_endpoint_only | If you set this true then you cannot access api through public network. | `bool` | true |
+
+#### Outputs
+
+| Name | Description |
+|------|-------------|
+| api_version | API version used for configuring IBM Cloud Activity Tracker Event Routing resources in the account. |
+| message | An optional message containing information about the audit log locations. |
+
+## Activity Tracker API Version 2 data sources
+
+### Data source: ibm_atracker_targets
 
 ```hcl
-data "atracker_targets" "atracker_targets_instance" {
+data "ibm_atracker_targets" "atracker_targets_instance" {
+  region = var.atracker_targets_region
   name = var.atracker_targets_name
 }
 ```
-atracker_routes data source:
+
+#### Inputs
+
+| Name | Description | Type | Required |
+|------|-------------|------|---------|
+| region | Limit the query to the specified region. | `string` | false |
+| name | The name of the target resource. | `string` | false |
+
+#### Outputs
+
+| Name | Description |
+|------|-------------|
+| targets | A list of target resources. |
+
+### Data source: ibm_atracker_routes
 
 ```hcl
-data "atracker_routes" "atracker_routes_instance" {
+data "ibm_atracker_routes" "atracker_routes_instance" {
   name = var.atracker_routes_name
 }
 ```
+
+#### Inputs
+
+| Name | Description | Type | Required |
+|------|-------------|------|---------|
+| name | The name of the route. | `string` | false |
+
+#### Outputs
+
+| Name | Description |
+|------|-------------|
+| routes | A list of route resources. |
 
 ## Assumptions
 
@@ -93,35 +182,3 @@ data "atracker_routes" "atracker_routes_instance" {
 | Name | Version |
 |------|---------|
 | ibm | 1.13.1 |
-
-## Inputs
-
-| Name | Description | Type | Required |
-|------|-------------|------|---------|
-| ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
-| name | The name of the target. The name must be 1000 characters or less, and cannot include any special characters other than `(space) - . _ :`. | `string` | true |
-| target_type | The type of the target. | `string` | true |
-| cos_endpoint | Property values for a Cloud Object Storage Endpoint. | `` | true |
-| eventstreams_endpoint | Property values for the Event Streams Endpoint. | `` | false |
-| logdna_endpoint | Deprecated. Property values for a LogDNA Endpoint. Remove this attribute as it is no longer in use and it will be removed in the next major version of the provider.| `` | false |
-| cloudlogs_endpoint | Property values for the IBM Cloud Logs Endpoint. | `` | false |
-| name | The name of the route. The name must be 1000 characters or less and cannot include any special characters other than `(space) - . _ :`. | `string` | true |
-| rules | The routing rules that will be evaluated in their order of the array. Once a rule is matched, the remaining rules in the route definition will be skipped. | `list()` | true |
-| default_targets | The target ID List. In the event that no routing rule causes the event to be sent to a target, these targets will receive the event. | `list(string)` | false |
-| permitted_target_regions | If present then only these regions may be used to define a target. | `list(string)` | false |
-| metadata_region_primary | To store all your meta data in a single region. | `string` | true |
-| metadata_region_backup | To store all your meta data in a backup region. | `string` | false |
-| private_api_endpoint_only | If you set this true then you cannot access api through public network. | `bool` | true |
-| region | Limit the query to the specified region. | `string` | false |
-| name | The name of the target resource. | `string` | false |
-| name | The name of the route. | `string` | false |
-
-## Outputs
-
-| Name | Description |
-|------|-------------|
-| atracker_target | atracker_target object |
-| atracker_route | atracker_route object |
-| atracker_targets | atracker_targets object |
-| atracker_routes | atracker_routes object |
-| atracker_settings | atracker_settings object |
