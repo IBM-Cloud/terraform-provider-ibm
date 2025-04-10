@@ -2,7 +2,7 @@
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.95.2-120e65bc-20240924-152329
+ * IBM OpenAPI Terraform Generator Version: 3.103.0-e8b84313-20250402-201816
  */
 
 package cdtektonpipeline
@@ -296,31 +296,13 @@ func resourceIBMCdTektonPipelineTriggerPropertyUpdate(context context.Context, d
 	replaceTektonPipelineTriggerPropertyOptions.SetPipelineID(parts[0])
 	replaceTektonPipelineTriggerPropertyOptions.SetTriggerID(parts[1])
 	replaceTektonPipelineTriggerPropertyOptions.SetPropertyName(parts[2])
+	replaceTektonPipelineTriggerPropertyOptions.SetPipelineID(d.Get("pipeline_id").(string))
+	replaceTektonPipelineTriggerPropertyOptions.SetTriggerID(d.Get("trigger_id").(string))
 	replaceTektonPipelineTriggerPropertyOptions.SetName(d.Get("name").(string))
 	replaceTektonPipelineTriggerPropertyOptions.SetType(d.Get("type").(string))
 
 	hasChange := false
 
-	if d.HasChange("pipeline_id") {
-		errMsg := fmt.Sprintf("Cannot update resource property \"%s\" with the ForceNew annotation."+
-			" The resource must be re-created to update this property.", "pipeline_id")
-		return flex.DiscriminatedTerraformErrorf(nil, errMsg, "ibm_cd_tekton_pipeline_trigger_property", "update", "pipeline_id-forces-new").GetDiag()
-	}
-	if d.HasChange("trigger_id") {
-		errMsg := fmt.Sprintf("Cannot update resource property \"%s\" with the ForceNew annotation."+
-			" The resource must be re-created to update this property.", "trigger_id")
-		return flex.DiscriminatedTerraformErrorf(nil, errMsg, "ibm_cd_tekton_pipeline_trigger_property", "update", "trigger_id-forces-new").GetDiag()
-	}
-	if d.HasChange("name") {
-		errMsg := fmt.Sprintf("Cannot update resource property \"%s\" with the ForceNew annotation."+
-			" The resource must be re-created to update this property.", "name")
-		return flex.DiscriminatedTerraformErrorf(nil, errMsg, "ibm_cd_tekton_pipeline_trigger_property", "update", "name-forces-new").GetDiag()
-	}
-	if d.HasChange("type") {
-		errMsg := fmt.Sprintf("Cannot update resource property \"%s\" with the ForceNew annotation."+
-			" The resource must be re-created to update this property.", "type")
-		return flex.DiscriminatedTerraformErrorf(nil, errMsg, "ibm_cd_tekton_pipeline_trigger_property", "update", "type-forces-new").GetDiag()
-	}
 	if d.HasChange("locked") {
 		replaceTektonPipelineTriggerPropertyOptions.SetLocked(d.Get("locked").(bool))
 		hasChange = true

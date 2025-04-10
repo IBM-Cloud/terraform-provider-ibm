@@ -2,7 +2,7 @@
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.95.2-120e65bc-20240924-152329
+ * IBM OpenAPI Terraform Generator Version: 3.103.0-e8b84313-20250402-201816
  */
 
 package cdtektonpipeline
@@ -234,14 +234,10 @@ func resourceIBMCdTektonPipelineDefinitionUpdate(context context.Context, d *sch
 
 	replaceTektonPipelineDefinitionOptions.SetPipelineID(parts[0])
 	replaceTektonPipelineDefinitionOptions.SetDefinitionID(parts[1])
+	replaceTektonPipelineDefinitionOptions.SetPipelineID(d.Get("pipeline_id").(string))
 
 	hasChange := false
 
-	if d.HasChange("pipeline_id") {
-		errMsg := fmt.Sprintf("Cannot update resource property \"%s\" with the ForceNew annotation."+
-			" The resource must be re-created to update this property.", "pipeline_id")
-		return flex.DiscriminatedTerraformErrorf(nil, errMsg, "ibm_cd_tekton_pipeline_definition", "update", "pipeline_id-forces-new").GetDiag()
-	}
 	if d.HasChange("source") {
 		source, err := ResourceIBMCdTektonPipelineDefinitionMapToDefinitionSource(d.Get("source.0").(map[string]interface{}))
 		if err != nil {
@@ -250,7 +246,6 @@ func resourceIBMCdTektonPipelineDefinitionUpdate(context context.Context, d *sch
 		replaceTektonPipelineDefinitionOptions.SetSource(source)
 		hasChange = true
 	}
-
 	if hasChange {
 		_, _, err = cdTektonPipelineClient.ReplaceTektonPipelineDefinitionWithContext(context, replaceTektonPipelineDefinitionOptions)
 		if err != nil {

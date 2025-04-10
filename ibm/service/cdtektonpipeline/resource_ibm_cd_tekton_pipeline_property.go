@@ -2,7 +2,7 @@
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.95.2-120e65bc-20240924-152329
+ * IBM OpenAPI Terraform Generator Version: 3.103.0-e8b84313-20250402-201816
  */
 
 package cdtektonpipeline
@@ -273,26 +273,12 @@ func resourceIBMCdTektonPipelinePropertyUpdate(context context.Context, d *schem
 
 	replaceTektonPipelinePropertyOptions.SetPipelineID(parts[0])
 	replaceTektonPipelinePropertyOptions.SetPropertyName(parts[1])
+	replaceTektonPipelinePropertyOptions.SetPipelineID(d.Get("pipeline_id").(string))
 	replaceTektonPipelinePropertyOptions.SetName(d.Get("name").(string))
 	replaceTektonPipelinePropertyOptions.SetType(d.Get("type").(string))
 
 	hasChange := false
 
-	if d.HasChange("pipeline_id") {
-		errMsg := fmt.Sprintf("Cannot update resource property \"%s\" with the ForceNew annotation."+
-			" The resource must be re-created to update this property.", "pipeline_id")
-		return flex.DiscriminatedTerraformErrorf(nil, errMsg, "ibm_cd_tekton_pipeline_property", "update", "pipeline_id-forces-new").GetDiag()
-	}
-	if d.HasChange("name") {
-		errMsg := fmt.Sprintf("Cannot update resource property \"%s\" with the ForceNew annotation."+
-			" The resource must be re-created to update this property.", "name")
-		return flex.DiscriminatedTerraformErrorf(nil, errMsg, "ibm_cd_tekton_pipeline_property", "update", "name-forces-new").GetDiag()
-	}
-	if d.HasChange("type") {
-		errMsg := fmt.Sprintf("Cannot update resource property \"%s\" with the ForceNew annotation."+
-			" The resource must be re-created to update this property.", "type")
-		return flex.DiscriminatedTerraformErrorf(nil, errMsg, "ibm_cd_tekton_pipeline_property", "update", "type-forces-new").GetDiag()
-	}
 	if d.HasChange("locked") {
 		replaceTektonPipelinePropertyOptions.SetLocked(d.Get("locked").(bool))
 		hasChange = true
