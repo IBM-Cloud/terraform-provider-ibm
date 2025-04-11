@@ -56,13 +56,12 @@ Nested schema for **targets**:
 	  * Constraints: The maximum length is `256` characters. The minimum length is `1` character. The value must match regular expression `/[a-z,A-Z,0-9,:,-]/`.
 	* `name` - (Optional, String) The name for this tenant target. The name is unique across all targets for this tenant.
 	  * Constraints: The maximum length is `35` characters. The minimum length is `1` character. The value must match regular expression `/[a-z,A-Z,0-9,-,.]/`.
-	* `parameters` - (Required, List) List of properties returned from a successful list operation for a log-sink of type IBM Log Analysis (logdna).
+	* `parameters` - (Required, List) List of properties returned from a successful list operation for a log-sink of type IBM Cloud Logs.
 	Nested schema for **parameters**:
 		* `host` - (Required, String) Host name of the log-sink.
 		  * Constraints: The maximum length is `256` characters. The minimum length is `1` character. The value must match regular expression `/[a-z,A-Z,0-9,-,.]/`.
 		* `port` - (Required, Integer) Network port of the log-sink.
 		  * Constraints: The maximum value is `65535`. The minimum value is `1`.
-		* `access_credential` - (Optional, String) Secret to connect to the Mezmo log-sink. This is not required for log-sink of type Cloud Logs.
 
 
 ## Attribute Reference
@@ -84,6 +83,11 @@ After your resource is created, you can read values from the listed arguments an
 * `target.0.etag` - ETag identifier for logs_router_tenant target.
 
 * `target.0.id` -  The unique identifier of the logs_router_tenant target
+* `write_status` - (List) The status of the write attempt to the target with the provided endpoint parameters.
+Nested schema for **write_status**:
+	* `last_failure` - (String) The timestamp of the failure.
+	* `reason_for_last_failure` - (String) Detailed description of the cause of the failure.
+	* `status` - (String) The status such as failed or success.
 
 ## Import
 
