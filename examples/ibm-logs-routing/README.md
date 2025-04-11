@@ -64,6 +64,7 @@ resource "ibm_logs_router_tenant" "logs_router_tenant_instance" {
 | crn | Cloud resource name of the tenant. |
 | etag | Resource version identifier. |
 | targets | List of targets. |
+| write_status | The status of the write attempt to the target with the provided endpoint parameters. |
 
 ## IBM Cloud Logs Routing data sources
 

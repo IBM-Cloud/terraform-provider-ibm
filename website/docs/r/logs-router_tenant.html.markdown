@@ -83,6 +83,11 @@ After your resource is created, you can read values from the listed arguments an
 * `target.0.etag` - ETag identifier for logs_router_tenant target.
 
 * `target.0.id` -  The unique identifier of the logs_router_tenant target
+* `write_status` - (List) The status of the write attempt to the target with the provided endpoint parameters.
+Nested schema for **write_status**:
+	* `last_failure` - (String) The timestamp of the failure.
+	* `reason_for_last_failure` - (String) Detailed description of the cause of the failure.
+	* `status` - (String) The status such as failed or success.
 
 ## Import
 

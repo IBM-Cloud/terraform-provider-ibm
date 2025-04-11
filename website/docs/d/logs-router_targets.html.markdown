@@ -57,4 +57,8 @@ Nested schema for **targets**:
 	  * Constraints: Allowable values are: `logs`.
 	* `updated_at` - (String) Time stamp the target was last updated.
 	  * Constraints: The maximum length is `36` characters. The minimum length is `1` character. The value must match regular expression `/[0-9,:,.,-,T,Z]/`.
-
+* `write_status` - (List) The status of the write attempt to the target with the provided endpoint parameters.
+Nested schema for **write_status**:
+	* `last_failure` - (String) The timestamp of the failure.
+	* `reason_for_last_failure` - (String) Detailed description of the cause of the failure.
+	* `status` - (String) The status such as failed or success.
