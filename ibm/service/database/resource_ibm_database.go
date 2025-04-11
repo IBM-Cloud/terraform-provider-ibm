@@ -3122,16 +3122,9 @@ func expandUserChanges(_oldUsers []interface{}, _newUsers []interface{}) (userCh
 func validateRemoteLeaderIDDiff(_ context.Context, diff *schema.ResourceDiff, meta interface{}) (err error) {
 	_, remoteLeaderIdOk := diff.GetOk("remote_leader_id")
 	service := diff.Get("service").(string)
-	crn := diff.Get("resource_crn").(string)
 
 	if remoteLeaderIdOk && (service != "databases-for-postgresql" && service != "databases-for-mysql" && service != "databases-for-enterprisedb") {
 		return fmt.Errorf("[ERROR] remote_leader_id is only supported for databases-for-postgresql, databases-for-enterprisedb and databases-for-mysql")
-	}
-
-	oldValue, newValue := diff.GetChange("remote_leader_id")
-
-	if crn != "" && oldValue == "" && newValue != "" {
-		return fmt.Errorf("[ERROR] You cannot convert an existing instance to a read replica")
 	}
 
 	return nil
