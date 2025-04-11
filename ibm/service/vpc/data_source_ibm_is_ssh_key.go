@@ -230,6 +230,7 @@ func keyGetByNameOrId(context context.Context, d *schema.ResourceData, meta inte
 	}
 	if key.ResourceGroup != nil {
 		d.Set(flex.ResourceGroupName, *key.ResourceGroup.ID)
+		d.Set("resource_group", *key.ResourceGroup.ID)
 	}
 	if err = d.Set("public_key", key.PublicKey); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting public_key: %s", err), "(Data) ibm_is_ssh_key", "read", "set-public_key").GetDiag()
