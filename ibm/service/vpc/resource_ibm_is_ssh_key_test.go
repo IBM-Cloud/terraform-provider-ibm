@@ -35,7 +35,32 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 					testAccCheckIBMISKeyExists("ibm_is_ssh_key.isExampleKey", key),
 					resource.TestCheckResourceAttr(
 						"ibm_is_ssh_key.isExampleKey", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_is_ssh_key.isExampleKey", "public_key", publicKey),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_ssh_key.isExampleKey", "fingerprint"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_ssh_key.isExampleKey", "length"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_ssh_key.isExampleKey", "type"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_ssh_key.isExampleKey", "crn"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_ssh_key.isExampleKey", "created_at"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_ssh_key.isExampleKey", "href"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_ssh_key.isExampleKey", "resource_controller_url"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_ssh_key.isExampleKey", "resource_crn"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_ssh_key.isExampleKey", "resource_name"),
 				),
+			},
+			{
+				ResourceName:      "ibm_is_ssh_key.isExampleKey",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -199,4 +224,105 @@ func testAccCheckIBMISKeyNewlineConfig(name, name1 string) string {
         EOT
 		}
 	`, name, name1)
+}
+
+// Test with tags
+func TestAccIBMISSSHKey_WithTags(t *testing.T) {
+	var key string
+	publicKey := strings.TrimSpace(`
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
+`)
+	name := fmt.Sprintf("tfssh-tagname-%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: checkKeyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISKeyConfigWithTags(publicKey, name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISKeyExists("ibm_is_ssh_key.isExampleKey", key),
+					resource.TestCheckResourceAttr(
+						"ibm_is_ssh_key.isExampleKey", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_is_ssh_key.isExampleKey", "tags.#", "3"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_ssh_key.isExampleKey", "fingerprint"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_ssh_key.isExampleKey", "length"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_ssh_key.isExampleKey", "type"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_ssh_key.isExampleKey", "crn"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_ssh_key.isExampleKey", "created_at"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_ssh_key.isExampleKey", "href"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_ssh_key.isExampleKey", "resource_controller_url"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_ssh_key.isExampleKey", "resource_crn"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_ssh_key.isExampleKey", "resource_group"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_ssh_key.isExampleKey", "resource_group_name"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_ssh_key.isExampleKey", "resource_name"),
+				),
+			},
+		},
+	})
+}
+
+// Add config with tags
+func testAccCheckIBMISKeyConfigWithTags(publicKey, name string) string {
+	return fmt.Sprintf(`
+		resource "ibm_is_ssh_key" "isExampleKey" {
+			name = "%s"
+			public_key = "%s"
+			tags = ["test:1", "test:2", "test:3"]
+		}
+	`, name, publicKey)
+}
+
+// Add Resource Group test
+func TestAccIBMISSSHKey_WithResourceGroup(t *testing.T) {
+	var key string
+	publicKey := strings.TrimSpace(`
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
+`)
+	name := fmt.Sprintf("tfssh-rgname-%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: checkKeyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISKeyConfigWithResourceGroup(publicKey, name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISKeyExists("ibm_is_ssh_key.isExampleKey", key),
+					resource.TestCheckResourceAttr(
+						"ibm_is_ssh_key.isExampleKey", "name", name),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_ssh_key.isExampleKey", "resource_group"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_ssh_key.isExampleKey", "resource_group_name"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMISKeyConfigWithResourceGroup(publicKey, name string) string {
+	return fmt.Sprintf(`
+		data "ibm_resource_group" "default" {
+			is_default = true
+		}
+		
+		resource "ibm_is_ssh_key" "isExampleKey" {
+			name = "%s"
+			public_key = "%s"
+			resource_group = data.ibm_resource_group.default.id
+		}
+	`, name, publicKey)
 }
