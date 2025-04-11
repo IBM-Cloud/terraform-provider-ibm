@@ -2,7 +2,7 @@
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.102.0-615ec964-20250307-203034
+ * IBM OpenAPI Terraform Generator Version: 3.101.0-62624c1e-20250225-192301
  */
 
 package partnercentersell
@@ -122,7 +122,7 @@ func ResourceIbmOnboardingCatalogDeployment() *schema.Resource {
 			},
 			"tags": &schema.Schema{
 				Type:        schema.TypeList,
-				Required:    true,
+				Optional:    true,
 				Description: "A list of tags that carry information about your product. These tags can be used to find your product in the IBM Cloud catalog.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
@@ -194,7 +194,6 @@ func ResourceIbmOnboardingCatalogDeployment() *schema.Resource {
 									"unique_api_key": &schema.Schema{
 										Type:        schema.TypeBool,
 										Computed:    true,
-										Sensitive:   true,
 										Description: "Indicates whether the deployment uses a unique API key or not.",
 									},
 									"parameters": &schema.Schema{
@@ -733,7 +732,7 @@ func ResourceIbmOnboardingCatalogDeployment() *schema.Resource {
 										Type:        schema.TypeList,
 										MaxItems:    1,
 										Optional:    true,
-										Description: "The global catalog metadata of the deployment.",
+										Description: "The broker data connected to the deployment.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"name": &schema.Schema{
@@ -807,7 +806,7 @@ func ResourceIbmOnboardingCatalogDeploymentValidator() *validate.ResourceValidat
 			Type:                       validate.TypeString,
 			Required:                   true,
 			Regexp:                     `^\S*$`,
-			MinValueLength:             2,
+			MinValueLength:             1,
 			MaxValueLength:             128,
 		},
 		validate.ValidateSchema{
@@ -816,7 +815,7 @@ func ResourceIbmOnboardingCatalogDeploymentValidator() *validate.ResourceValidat
 			Type:                       validate.TypeString,
 			Required:                   true,
 			Regexp:                     `^\S*$`,
-			MinValueLength:             2,
+			MinValueLength:             1,
 			MaxValueLength:             128,
 		},
 		validate.ValidateSchema{
@@ -833,7 +832,7 @@ func ResourceIbmOnboardingCatalogDeploymentValidator() *validate.ResourceValidat
 			ValidateFunctionIdentifier: validate.ValidateRegexp,
 			Type:                       validate.TypeString,
 			Required:                   true,
-			Regexp:                     `^[a-zA-Z0-9\-.]+$`,
+			Regexp:                     `^\S*$`,
 		},
 		validate.ValidateSchema{
 			Identifier:                 "kind",
@@ -978,9 +977,11 @@ func resourceIbmOnboardingCatalogDeploymentRead(context context.Context, d *sche
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_onboarding_catalog_deployment", "read", "set-overview_ui").GetDiag()
 		}
 	}
-	if err = d.Set("tags", globalCatalogDeployment.Tags); err != nil {
-		err = fmt.Errorf("Error setting tags: %s", err)
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_onboarding_catalog_deployment", "read", "set-tags").GetDiag()
+	if !core.IsNil(globalCatalogDeployment.Tags) {
+		if err = d.Set("tags", globalCatalogDeployment.Tags); err != nil {
+			err = fmt.Errorf("Error setting tags: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_onboarding_catalog_deployment", "read", "set-tags").GetDiag()
+		}
 	}
 	objectProviderMap, err := ResourceIbmOnboardingCatalogDeploymentCatalogProductProviderToMap(globalCatalogDeployment.ObjectProvider)
 	if err != nil {

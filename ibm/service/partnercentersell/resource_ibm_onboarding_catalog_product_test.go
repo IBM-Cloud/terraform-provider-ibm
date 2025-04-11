@@ -22,9 +22,9 @@ import (
 
 func TestAccIbmOnboardingCatalogProductBasic(t *testing.T) {
 	var conf partnercentersellv1.GlobalCatalogProduct
-	baseName := fmt.Sprintf("test-name-terraform-%d", acctest.RandIntRange(10, 100))
+	baseName := fmt.Sprintf("test-name-terraform-%d-1", acctest.RandIntRange(10, 100))
 	productID := acc.PcsOnboardingProductWithApprovedProgrammaticName
-	objectId := fmt.Sprintf("test-object-id-terraform-%d", acctest.RandIntRange(10, 100))
+	objectId := fmt.Sprintf("test-object-id-terraform-%d-1", acctest.RandIntRange(10, 100))
 	name := baseName
 	active := "true"
 	disabled := "false"
@@ -67,8 +67,8 @@ func TestAccIbmOnboardingCatalogProductBasic(t *testing.T) {
 func TestAccIbmOnboardingCatalogProductAllArgs(t *testing.T) {
 	var conf partnercentersellv1.GlobalCatalogProduct
 	productID := acc.PcsOnboardingProductWithApprovedProgrammaticName2
-	baseName := fmt.Sprintf("test-name-terraform-%d", acctest.RandIntRange(10, 100))
-	objectId := fmt.Sprintf("test-object-id-terraform-%d", acctest.RandIntRange(10, 100))
+	baseName := fmt.Sprintf("test-name-terraform-%d-1", acctest.RandIntRange(10, 100))
+	objectId := fmt.Sprintf("test-object-id-terraform-%d-1", acctest.RandIntRange(10, 100))
 	env := "current"
 	name := baseName
 	active := "true"
@@ -173,7 +173,7 @@ func testAccCheckIbmOnboardingCatalogProductConfigBasic(productID string, name s
 			disabled = %s
 			kind = "%s"
 			object_id = "%s"
-			tags = ["tag", "support_third_party"]
+			tags = ["tag", "support_ibm"]
 			object_provider {
 				name = "name"
 				email = "email@emai.com"
