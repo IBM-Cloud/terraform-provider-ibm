@@ -467,6 +467,7 @@ func isTransitGatewayConnectionRefreshFunc(client *transitgatewayapisv1.TransitG
 	}
 }
 func resourceIBMTransitGatewayConnectionRead(d *schema.ResourceData, meta interface{}) error {
+
 	client, err := transitgatewayClient(meta)
 	if err != nil {
 		return err
@@ -518,7 +519,6 @@ func resourceIBMTransitGatewayConnectionRead(d *schema.ResourceData, meta interf
 	if instance.PrefixFiltersDefault != nil {
 		d.Set(tgDefaultPrefixFilter, *instance.PrefixFiltersDefault)
 	}
-
 	d.Set(tgConnectionId, *instance.ID)
 	d.Set(tgGatewayId, gatewayId)
 	getTransitGatewayOptions := &transitgatewayapisv1.GetTransitGatewayOptions{
