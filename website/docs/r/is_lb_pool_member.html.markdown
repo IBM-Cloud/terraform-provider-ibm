@@ -47,6 +47,19 @@ resource "ibm_is_lb_pool_member" "example" {
 }
 ```
 
+
+### Sample to create a application load balancer as member target for private path network load balancer.
+
+```terraform
+resource "ibm_is_lb_pool_member" "example" {
+  lb        = ibm_is_lb.example.id
+  pool      = element(split("/", ibm_is_lb_pool.example.id), 1)
+  port      = 8080
+  weight    = 60
+  target_id = ibm_is_lb.example.id
+}
+```
+
 ## Timeouts
 The `ibm_is_lb_pool_member` resource provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
@@ -62,7 +75,7 @@ Review the argument references that you can specify for your resource.
 - `pool` - (Required, Forces new resource, String) The load balancer pool unique identifier.
 - `port`- (Required, Integer) The port number of the application running in the server member.
 - `target_address` - (Required, String) The IP address of the pool member.
-- `target_id` - (Required, String) The unique identifier for the virtual server instance pool member. Required for network load balancer.
+- `target_id` - (Required, String) The unique identifier for the virtual server / application load balancer instance pool member. Required for network load balancer.
 
 - `weight` - (Optional, Integer) Weight of the server member. This option takes effect only when the load-balancing algorithm of its belonging pool is `weighted_round_robin`, Minimum allowed weight is `0` and Maximum allowed weight is `100`. Default: 50, Weight of the server member. Applicable only if the pool algorithm is weighted_round_robin.
 

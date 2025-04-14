@@ -36,6 +36,13 @@ Review the attribute references that you can access after you retrieve your data
 	Nested scheme for `load_balancers`:
 	- `access_mode` - (String) The access mode for this load balancer. One of **private**, **public**, **private_path**.
 	- `access_tags`  - (String) Access management tags associated for the load balancer.
+	- `attached_load_balancer_pool_members` - (List) The load balancer pool members attached to this load balancer.
+		Nested scheme for `members`:
+		- `deleted` - (List) If present, this property indicates the referenced resource has been deleted and providessome supplementary information.
+			Nested scheme for `deleted`:
+			- `more_info` - (String) Link to documentation about deleted resources.
+		- `href` - (String) The URL for this load balancer pool member.
+		- `id` - (String) The unique identifier for this load balancer pool member.
 	- `availability` - (String) The availability of this load balancer
 	- `id` - (String) The unique identifier of the load balancer.
 	- `instance_groups_supported` - (Boolean) Indicates whether this load balancer supports instance groups.
