@@ -62,6 +62,9 @@ func ResourceIBMTransitGatewayConnection() *schema.Resource {
 			Update: schema.DefaultTimeout(10 * time.Minute),
 		},
 
+		// Excluded Computed:true to suppress parent-level rendering for RGRE; handled in tunnel blocks only.
+		// Affected fields: local_gateway_ip, local_tunnel_ip, remote_bgp_asn,
+		// remote_gateway_ip, remote_tunnel_ip, zone.
 		Schema: map[string]*schema.Schema{
 			tgGatewayId: {
 				Type:        schema.TypeString,
@@ -118,42 +121,36 @@ func ResourceIBMTransitGatewayConnection() *schema.Resource {
 			tgLocalGatewayIp: {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Computed:    true,
 				ForceNew:    true,
 				Description: "The local gateway IP address. This field only applies to network type 'gre_tunnel' and 'unbound_gre_tunnel' connections.",
 			},
 			tgLocalTunnelIp: {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Computed:    true,
 				ForceNew:    true,
 				Description: "The local tunnel IP address. This field only applies to network type 'gre_tunnel' and 'unbound_gre_tunnel' connections.",
 			},
 			tgRemoteBgpAsn: {
 				Type:        schema.TypeInt,
 				Optional:    true,
-				Computed:    true,
 				ForceNew:    true,
 				Description: "The remote network BGP ASN. This field only applies to network type 'gre_tunnel' and 'unbound_gre_tunnel' connections.",
 			},
 			tgRemoteGatewayIp: {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Computed:    true,
 				ForceNew:    true,
 				Description: "The remote gateway IP address. This field only applies to network type 'gre_tunnel' and 'unbound_gre_tunnel' connections.",
 			},
 			tgRemoteTunnelIp: {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Computed:    true,
 				ForceNew:    true,
 				Description: "The remote tunnel IP address. This field only applies to network type 'gre_tunnel' and 'unbound_gre_tunnel' connections.",
 			},
 			tgZone: {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Computed:    true,
 				ForceNew:    true,
 				Description: "Location of GRE tunnel. This field only applies to network type 'gre_tunnel' and 'unbound_gre_tunnel' connections.",
 			},
@@ -470,7 +467,6 @@ func isTransitGatewayConnectionRefreshFunc(client *transitgatewayapisv1.TransitG
 	}
 }
 func resourceIBMTransitGatewayConnectionRead(d *schema.ResourceData, meta interface{}) error {
-
 	client, err := transitgatewayClient(meta)
 	if err != nil {
 		return err
@@ -519,7 +515,21 @@ func resourceIBMTransitGatewayConnectionRead(d *schema.ResourceData, meta interf
 	if instance.RequestStatus != nil {
 		d.Set(tgRequestStatus, *instance.RequestStatus)
 	}
-
+	if instance.LocalGatewayIp != nil {
+		d.Set(tgLocalGatewayIp, *instance.LocalGatewayIp)
+	}
+	if instance.LocalTunnelIp != nil {
+		d.Set(tgLocalTunnelIp, *instance.LocalTunnelIp)
+	}
+	if instance.RemoteGatewayIp != nil {
+		d.Set(tgRemoteGatewayIp, *instance.RemoteGatewayIp)
+	}
+	if instance.LocalBgpAsn != nil {
+		d.Set(tgLocalBgpAsn, *instance.LocalBgpAsn)
+	}
+	if instance.RemoteBgpAsn != nil {
+		d.Set(tgRemoteBgpAsn, *instance.RemoteBgpAsn)
+	}
 	if instance.PrefixFiltersDefault != nil {
 		d.Set(tgDefaultPrefixFilter, *instance.PrefixFiltersDefault)
 	}
