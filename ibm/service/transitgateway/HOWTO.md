@@ -81,7 +81,7 @@ cp ~/go/bin/terraform-provider-ibm ~/.terraform.d/plugins/registry.terraform.io/
 chmod +x ~/.terraform.d/plugins/registry.terraform.io/ibm-cloud/ibm/1.77.1/darwin_amd64/terraform-provider-ibm_v1.77.1
 ```
 
-Then run Terraform:
+Then navigate into terraform-provider-ibm/ibm/service/transitgateway and run Terraform:
 ```bash
 terraform init
 terraform plan
@@ -90,6 +90,10 @@ terraform apply
 
 ```
 
+Notice: Run the below command to output more details: 
+```
+TF_LOG=DEBUG terraform plan | tee plan.log 
+```
 
 If your logs show your custom build debug lines, the local binary is working.
 
