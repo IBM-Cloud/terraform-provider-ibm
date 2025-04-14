@@ -1,3 +1,14 @@
+# 1.77.1 (Apr 14, 2025)
+Enhancements
+* feat(partner center sell): less restriction on global catalog object names ([6122](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6122))
+* fix(Cloud Databases): Fix for importing read replicas ([6126](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6126))
+* fix(patner-center-sell): remove required flag on tag fields ([6055](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6055))
+* enhancement: improved error handling for is (ike/ipsec) policy ([6128](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6128))
+* enhancement: improved error handling for is_ssh_key ([6124](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6124)) 
+* fix: set previously unset attribute on is_ssh_key datasource ([6123](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6123)) 
+* Added tests for tdx confidential compute mode ([6121](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6121)) 
+* fix: update issue on is_volume name update ([6127](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6127)) 
+* Added acceptance test for sgx confidential compute mode ([6120](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6120)) 
 
 # 1.77.0 (Apr 06, 2025)
 * Support for IAM 
