@@ -516,9 +516,11 @@ func resourceIBMTransitGatewayConnectionRead(d *schema.ResourceData, meta interf
 	if instance.RequestStatus != nil {
 		d.Set(tgRequestStatus, *instance.RequestStatus)
 	}
+
 	if instance.PrefixFiltersDefault != nil {
 		d.Set(tgDefaultPrefixFilter, *instance.PrefixFiltersDefault)
 	}
+
 	d.Set(tgConnectionId, *instance.ID)
 	d.Set(tgGatewayId, gatewayId)
 	getTransitGatewayOptions := &transitgatewayapisv1.GetTransitGatewayOptions{
