@@ -5,6 +5,7 @@ package vpc
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 	"log"
 
@@ -13,6 +14,7 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 )
 
@@ -145,7 +147,9 @@ func DataSourceIBMIsImageExport() *schema.Resource {
 func DataSourceIBMIsImageExportRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_image_export_job", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	getImageExportJobOptions := &vpcv1.GetImageExportJobOptions{}
@@ -153,90 +157,96 @@ func DataSourceIBMIsImageExportRead(context context.Context, d *schema.ResourceD
 	getImageExportJobOptions.SetImageID(d.Get("image").(string))
 	getImageExportJobOptions.SetID(d.Get("image_export_job").(string))
 
-	imageExportJob, response, err := vpcClient.GetImageExportJobWithContext(context, getImageExportJobOptions)
+	imageExportJob, _, err := vpcClient.GetImageExportJobWithContext(context, getImageExportJobOptions)
 	if err != nil {
-		log.Printf("[DEBUG] GetImageExportJobWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetImageExportJobWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetImageExportJobWithContext failed: %s", err.Error()), "(Data) ibm_is_image_export_job", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", *getImageExportJobOptions.ImageID, *getImageExportJobOptions.ID))
 
-	if err = d.Set("completed_at", flex.DateTimeToString(imageExportJob.CompletedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting completed_at: %s", err))
+	if !core.IsNil(imageExportJob.CompletedAt) {
+		if err = d.Set("completed_at", flex.DateTimeToString(imageExportJob.CompletedAt)); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting completed_at: %s", err), "(Data) ibm_is_image_export_job", "read", "set-completed_at").GetDiag()
+		}
 	}
 
 	if err = d.Set("created_at", flex.DateTimeToString(imageExportJob.CreatedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting created_at: %s", err), "(Data) ibm_is_image_export_job", "read", "set-created_at").GetDiag()
 	}
 
-	if err = d.Set("encrypted_data_key", imageExportJob.EncryptedDataKey); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting encrypted_data_key: %s", err))
+	if !core.IsNil(imageExportJob.EncryptedDataKey) {
+		if err = d.Set("encrypted_data_key", base64.StdEncoding.EncodeToString(*imageExportJob.EncryptedDataKey)); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting encrypted_data_key: %s", err), "(Data) ibm_is_image_export_job", "read", "set-encrypted_data_key").GetDiag()
+		}
 	}
 
 	if err = d.Set("format", imageExportJob.Format); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting format: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting format: %s", err), "(Data) ibm_is_image_export_job", "read", "set-format").GetDiag()
 	}
 
 	if err = d.Set("href", imageExportJob.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting href: %s", err), "(Data) ibm_is_image_export_job", "read", "set-href").GetDiag()
 	}
 
 	if err = d.Set("name", imageExportJob.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_is_image_export_job", "read", "set-name").GetDiag()
 	}
 
 	if err = d.Set("resource_type", imageExportJob.ResourceType); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting resource_type: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_type: %s", err), "(Data) ibm_is_image_export_job", "read", "set-resource_type").GetDiag()
 	}
 
-	if err = d.Set("started_at", flex.DateTimeToString(imageExportJob.StartedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting started_at: %s", err))
+	if !core.IsNil(imageExportJob.StartedAt) {
+		if err = d.Set("started_at", flex.DateTimeToString(imageExportJob.StartedAt)); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting started_at: %s", err), "(Data) ibm_is_image_export_job", "read", "set-started_at").GetDiag()
+		}
 	}
 
 	if err = d.Set("status", imageExportJob.Status); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting status: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting status: %s", err), "(Data) ibm_is_image_export_job", "read", "set-status").GetDiag()
 	}
-
 	statusReasons := []map[string]interface{}{}
 	if imageExportJob.StatusReasons != nil {
 		for _, modelItem := range imageExportJob.StatusReasons {
 			modelMap, err := DataSourceIBMIsImageExportImageExportJobStatusReasonToMap(&modelItem)
 			if err != nil {
-				return diag.FromErr(err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_image_export_job", "read", "status_reasons-to-map").GetDiag()
 			}
 			statusReasons = append(statusReasons, modelMap)
 		}
 	}
 	if err = d.Set("status_reasons", statusReasons); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting status_reasons %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting status_reasons: %s", err), "(Data) ibm_is_image_export_job", "read", "set-status_reasons").GetDiag()
 	}
 
 	storageBucket := []map[string]interface{}{}
 	if imageExportJob.StorageBucket != nil {
 		modelMap, err := DataSourceIBMIsImageExportCloudObjectStorageBucketReferenceToMap(imageExportJob.StorageBucket)
 		if err != nil {
-			return diag.FromErr(err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_image_export_job", "read", "storage_bucket-to-map").GetDiag()
 		}
 		storageBucket = append(storageBucket, modelMap)
 	}
 	if err = d.Set("storage_bucket", storageBucket); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting storage_bucket %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting storage_bucket: %s", err), "(Data) ibm_is_image_export_job", "read", "set-storage_bucket").GetDiag()
 	}
 
 	if err = d.Set("storage_href", imageExportJob.StorageHref); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting storage_href: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting storage_href: %s", err), "(Data) ibm_is_image_export_job", "read", "set-storage_href").GetDiag()
 	}
 
 	storageObject := []map[string]interface{}{}
 	if imageExportJob.StorageObject != nil {
 		modelMap, err := DataSourceIBMIsImageExportCloudObjectStorageObjectReferenceToMap(imageExportJob.StorageObject)
 		if err != nil {
-			return diag.FromErr(err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_image_export_job", "read", "storage_object-to-map").GetDiag()
 		}
 		storageObject = append(storageObject, modelMap)
 	}
 	if err = d.Set("storage_object", storageObject); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting storage_object %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting storage_object: %s", err), "(Data) ibm_is_image_export_job", "read", "set-storage_object").GetDiag()
 	}
 
 	return nil
