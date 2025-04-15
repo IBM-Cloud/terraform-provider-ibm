@@ -297,7 +297,9 @@ func ResourceIBMIsSnapshotConsistencyGroupValidator() *validate.ResourceValidato
 func resourceIBMIsSnapshotConsistencyGroupCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_ibm_is_snapshot_consistency_group", "create", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	createSnapshotConsistencyGroupOptions := &vpcv1.CreateSnapshotConsistencyGroupOptions{}
 	snapshotConsistencyGroupPrototype := &vpcv1.SnapshotConsistencyGroupPrototype{}
@@ -351,10 +353,11 @@ func resourceIBMIsSnapshotConsistencyGroupCreate(context context.Context, d *sch
 	snapshotConsistencyGroupPrototype.Snapshots = snapshotConsistencyGroupPrototypeSnapshotsItemArray
 
 	createSnapshotConsistencyGroupOptions.SnapshotConsistencyGroupPrototype = snapshotConsistencyGroupPrototype
-	snapshotConsistencyGroup, response, err := vpcClient.CreateSnapshotConsistencyGroupWithContext(context, createSnapshotConsistencyGroupOptions)
+	snapshotConsistencyGroup, _, err := vpcClient.CreateSnapshotConsistencyGroupWithContext(context, createSnapshotConsistencyGroupOptions)
 	if err != nil {
-		log.Printf("[DEBUG] CreateSnapshotConsistencyGroupWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("CreateSnapshotConsistencyGroupWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateSnapshotConsistencyGroupWithContext failed: %s", err.Error()), "ibm_ibm_is_snapshot_consistency_group", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(*snapshotConsistencyGroup.ID)
@@ -362,7 +365,9 @@ func resourceIBMIsSnapshotConsistencyGroupCreate(context context.Context, d *sch
 	_, err = isWaitForSnapshotConsistencyGroupAvailable(vpcClient, d.Id(), d.Timeout(schema.TimeoutCreate))
 
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Wait for SnapshotConsistencyGroup available failed: %s", err.Error()), "ibm_ibm_is_snapshot_consistency_group", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	v := os.Getenv("IC_ENV_TAGS")
@@ -496,7 +501,9 @@ func isSnapshotDeleteConsistencyGroupRefreshFunc(vpcClient *vpcv1.VpcV1, id stri
 func resourceIBMIsSnapshotConsistencyGroupRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_ibm_is_snapshot_consistency_group", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	getSnapshotConsistencyGroupOptions := &vpcv1.GetSnapshotConsistencyGroupOptions{}
@@ -508,87 +515,105 @@ func resourceIBMIsSnapshotConsistencyGroupRead(context context.Context, d *schem
 			d.SetId("")
 			return nil
 		}
-		log.Printf("[DEBUG] GetSnapshotConsistencyGroupWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetSnapshotConsistencyGroupWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetSnapshotConsistencyGroupWithContext failed: %s", err.Error()), "ibm_ibm_is_snapshot_consistency_group", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	if !core.IsNil(snapshotConsistencyGroup.DeleteSnapshotsOnDelete) {
 		if err = d.Set("delete_snapshots_on_delete", snapshotConsistencyGroup.DeleteSnapshotsOnDelete); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting delete_snapshots_on_delete: %s", err))
+			err = fmt.Errorf("Error setting delete_snapshots_on_delete: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_ibm_is_snapshot_consistency_group", "read", "set-delete_snapshots_on_delete").GetDiag()
 		}
 	}
 	if !core.IsNil(snapshotConsistencyGroup.Name) {
 		if err = d.Set("name", snapshotConsistencyGroup.Name); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
+			err = fmt.Errorf("Error setting name: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_ibm_is_snapshot_consistency_group", "read", "set-name").GetDiag()
 		}
 	}
 	if !core.IsNil(snapshotConsistencyGroup.ResourceGroup) && !core.IsNil(snapshotConsistencyGroup.ResourceGroup.ID) {
-		d.Set("resource_group", snapshotConsistencyGroup.ResourceGroup.ID)
+		if err = d.Set("resource_group", snapshotConsistencyGroup.ResourceGroup.ID); err != nil {
+			err = fmt.Errorf("Error setting resource_group: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_ibm_is_snapshot_consistency_group", "read", "set-resource_group").GetDiag()
+		}
 	}
 	if !core.IsNil(snapshotConsistencyGroup.Snapshots) {
 		snapshots := []map[string]interface{}{}
 		for _, snapshotsItem := range snapshotConsistencyGroup.Snapshots {
 			snapshotsItemMap, err := resourceIBMIsSnapshotConsistencyGroupSnapshotConsistencyGroupSnapshotsItemToMap(&snapshotsItem)
 			if err != nil {
-				return diag.FromErr(err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_ibm_is_snapshot_consistency_group", "read", "snapshots-to-map").GetDiag()
 			}
 			snapshots = append(snapshots, snapshotsItemMap)
 		}
 		if err = d.Set("snapshot_reference", snapshots); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting snapshots: %s", err))
+			err = fmt.Errorf("Error setting snapshot_reference: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_ibm_is_snapshot_consistency_group", "read", "set-snapshot_reference").GetDiag()
 		}
 	}
+
 	if !core.IsNil(snapshotConsistencyGroup.BackupPolicyPlan) {
 		backupPolicyPlanMap, err := resourceIBMIsSnapshotConsistencyGroupBackupPolicyPlanReferenceToMap(snapshotConsistencyGroup.BackupPolicyPlan)
 		if err != nil {
-			return diag.FromErr(err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_ibm_is_snapshot_consistency_group", "read", "backup_policy_plan-to-map").GetDiag()
 		}
 		if err = d.Set("backup_policy_plan", []map[string]interface{}{backupPolicyPlanMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting backup_policy_plan: %s", err))
-		}
-	} else {
-		if err = d.Set("backup_policy_plan", []map[string]interface{}{}); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting backup_policy_plan: %s", err))
+			err = fmt.Errorf("Error setting backup_policy_plan: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_ibm_is_snapshot_consistency_group", "read", "set-backup_policy_plan").GetDiag()
 		}
 	}
 	if err = d.Set("created_at", flex.DateTimeToString(snapshotConsistencyGroup.CreatedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
+		err = fmt.Errorf("Error setting created_at: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_ibm_is_snapshot_consistency_group", "read", "set-created_at").GetDiag()
 	}
 	if err = d.Set("crn", snapshotConsistencyGroup.CRN); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
+		err = fmt.Errorf("Error setting crn: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_ibm_is_snapshot_consistency_group", "read", "set-crn").GetDiag()
 	}
 	if err = d.Set("href", snapshotConsistencyGroup.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+		err = fmt.Errorf("Error setting href: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_ibm_is_snapshot_consistency_group", "read", "set-href").GetDiag()
 	}
 	if err = d.Set("lifecycle_state", snapshotConsistencyGroup.LifecycleState); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting lifecycle_state: %s", err))
+		err = fmt.Errorf("Error setting lifecycle_state: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_ibm_is_snapshot_consistency_group", "read", "set-lifecycle_state").GetDiag()
 	}
 	if err = d.Set("resource_type", snapshotConsistencyGroup.ResourceType); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting resource_type: %s", err))
+		err = fmt.Errorf("Error setting resource_type: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_ibm_is_snapshot_consistency_group", "read", "set-resource_type").GetDiag()
 	}
 	if err = d.Set("service_tags", snapshotConsistencyGroup.ServiceTags); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting service_tags: %s", err))
+		err = fmt.Errorf("Error setting service_tags: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_ibm_is_snapshot_consistency_group", "read", "set-service_tags").GetDiag()
 	}
 	tags, err := flex.GetGlobalTagsUsingCRN(meta, *snapshotConsistencyGroup.CRN, "", isUserTagType)
 	if err != nil {
 		log.Printf(
 			"Error on get of resource vpc snapshot consistency group (%s) tags: %s", d.Id(), err)
 	}
-	d.Set("tags", tags)
-
+	if err = d.Set("tags", tags); err != nil {
+		err = fmt.Errorf("Error setting tags: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_ibm_is_snapshot_consistency_group", "read", "set-tags").GetDiag()
+	}
 	accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *snapshotConsistencyGroup.CRN, "", isAccessTagType)
 	if err != nil {
 		log.Printf(
 			"Error on get of resource VPC snapshot consistency group (%s) access tags: %s", d.Id(), err)
 	}
-	d.Set("access_tags", accesstags)
+	if err = d.Set("access_tags", accesstags); err != nil {
+		err = fmt.Errorf("Error setting access_tags: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_ibm_is_snapshot_consistency_group", "read", "set-access_tags").GetDiag()
+	}
 	return nil
 }
 
 func resourceIBMIsSnapshotConsistencyGroupUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_ibm_is_snapshot_consistency_group", "update", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	updateSnapshotConsistencyGroupOptions := &vpcv1.UpdateSnapshotConsistencyGroupOptions{}
@@ -605,8 +630,9 @@ func resourceIBMIsSnapshotConsistencyGroupUpdate(context context.Context, d *sch
 				d.SetId("")
 				return nil
 			}
-			log.Printf("[DEBUG] GetSnapshotConsistencyGroupWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("GetSnapshotConsistencyGroupWithContext failed %s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetSnapshotConsistencyGroupWithContext failed: %s", err.Error()), "ibm_ibm_is_snapshot_consistency_group", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
 		oldList, newList := d.GetChange("tags")
@@ -626,8 +652,9 @@ func resourceIBMIsSnapshotConsistencyGroupUpdate(context context.Context, d *sch
 				d.SetId("")
 				return nil
 			}
-			log.Printf("[DEBUG] GetSnapshotConsistencyGroupWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("GetSnapshotConsistencyGroupWithContext failed %s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetSnapshotConsistencyGroupWithContext failed: %s", err.Error()), "ibm_ibm_is_snapshot_consistency_group", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
 		oldList, newList := d.GetChange("access_tags")
@@ -659,21 +686,25 @@ func resourceIBMIsSnapshotConsistencyGroupUpdate(context context.Context, d *sch
 			d.SetId("")
 			return nil
 		}
-		log.Printf("[DEBUG] GetSnapshotConsistencyGroupWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetSnapshotConsistencyGroupWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetSnapshotConsistencyGroupWithContext failed: %s", err.Error()), "ibm_ibm_is_snapshot_consistency_group", "update")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	updateSnapshotConsistencyGroupOptions.SetIfMatch(response.Headers.Get("Etag"))
 
 	if hasChange {
 		updateSnapshotConsistencyGroupOptions.SnapshotConsistencyGroupPatch, _ = patchVals.AsPatch()
-		_, response, err := vpcClient.UpdateSnapshotConsistencyGroupWithContext(context, updateSnapshotConsistencyGroupOptions)
+		_, _, err := vpcClient.UpdateSnapshotConsistencyGroupWithContext(context, updateSnapshotConsistencyGroupOptions)
 		if err != nil {
-			log.Printf("[DEBUG] UpdateSnapshotConsistencyGroupWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("UpdateSnapshotConsistencyGroupWithContext failed %s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateSnapshotConsistencyGroupWithContext failed: %s", err.Error()), "ibm_ibm_is_snapshot_consistency_group", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		_, err = isWaitForSnapshotConsistencyGroupUpdate(vpcClient, d.Id(), d.Timeout(schema.TimeoutCreate))
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Wait for SnapshotConsistencyGroup update failed: %s", err.Error()), "ibm_ibm_is_snapshot_consistency_group", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 
@@ -683,22 +714,27 @@ func resourceIBMIsSnapshotConsistencyGroupUpdate(context context.Context, d *sch
 func resourceIBMIsSnapshotConsistencyGroupDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_ibm_is_snapshot_consistency_group", "delete", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	deleteSnapshotConsistencyGroupOptions := &vpcv1.DeleteSnapshotConsistencyGroupOptions{}
 
 	deleteSnapshotConsistencyGroupOptions.SetID(d.Id())
 
-	_, response, err := vpcClient.DeleteSnapshotConsistencyGroupWithContext(context, deleteSnapshotConsistencyGroupOptions)
+	_, _, err = vpcClient.DeleteSnapshotConsistencyGroupWithContext(context, deleteSnapshotConsistencyGroupOptions)
 	if err != nil {
-		log.Printf("[DEBUG] DeleteSnapshotConsistencyGroupWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("DeleteSnapshotConsistencyGroupWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteSnapshotConsistencyGroupWithContext failed: %s", err.Error()), "ibm_ibm_is_snapshot_consistency_group", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	_, err = isWaitForSnapshotConsistencyGroupDeleted(vpcClient, d.Id(), d.Timeout(schema.TimeoutDelete))
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Wait for SnapshotConsistencyGroup deleted failed: %s", err.Error()), "ibm_ibm_is_snapshot_consistency_group", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId("")

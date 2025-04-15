@@ -6,6 +6,7 @@ package vpc
 import (
 	"context"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -67,24 +68,28 @@ func dataSourceIBMISSnapshotClonesRead(context context.Context, d *schema.Resour
 	id := d.Get(isSnapshot).(string)
 	err := getSnapshotClones(context, d, meta, id)
 	if err != nil {
-		return diag.FromErr(err)
+		return err
 	}
 	return nil
 }
 
-func getSnapshotClones(context context.Context, d *schema.ResourceData, meta interface{}, id string) error {
+func getSnapshotClones(context context.Context, d *schema.ResourceData, meta interface{}, id string) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_ibm_is_snapshot_clones", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	listSnapshotClonesOptions := &vpcv1.ListSnapshotClonesOptions{
 		ID: &id,
 	}
 
-	clonesCollection, response, err := sess.ListSnapshotClonesWithContext(context, listSnapshotClonesOptions)
+	clonesCollection, _, err := sess.ListSnapshotClonesWithContext(context, listSnapshotClonesOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error fetching snapshot(%s) clones %s\n%s", id, err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListSnapshotClonesWithContext failed: %s", err.Error()), "(Data) ibm_ibm_is_snapshot_clones", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	clones := clonesCollection.Clones
 
@@ -103,7 +108,9 @@ func getSnapshotClones(context context.Context, d *schema.ResourceData, meta int
 		clonesInfo = append(clonesInfo, l)
 	}
 	d.SetId(dataSourceIBMISSnapshotClonesID(d))
-	d.Set(isSnapshotClones, clonesInfo)
+	if err = d.Set("clones", clonesInfo); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting clones: %s", err), "(Data) ibm_ibm_is_snapshot_clones", "read", "set-clones").GetDiag()
+	}
 	return nil
 }
 
