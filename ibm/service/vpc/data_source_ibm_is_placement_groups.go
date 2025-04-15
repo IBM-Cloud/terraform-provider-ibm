@@ -121,7 +121,9 @@ func DataSourceIbmIsPlacementGroups() *schema.Resource {
 func dataSourceIbmIsPlacementGroupsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_placement_groups", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	listPlacementGroupsOptions := &vpcv1.ListPlacementGroupsOptions{}
@@ -131,10 +133,11 @@ func dataSourceIbmIsPlacementGroupsRead(context context.Context, d *schema.Resou
 		if start != "" {
 			listPlacementGroupsOptions.Start = &start
 		}
-		placementGroupCollection, response, err := vpcClient.ListPlacementGroupsWithContext(context, listPlacementGroupsOptions)
+		placementGroupCollection, _, err := vpcClient.ListPlacementGroupsWithContext(context, listPlacementGroupsOptions)
 		if err != nil {
-			log.Printf("[DEBUG] ListPlacementGroupsWithContext failed %s\n%s", err, response)
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListPlacementGroupsWithContext failed %s", err), "(Data) ibm_is_placement_groups", "read")
+			log.Printf("[DEBUG] %s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		start = flex.GetNext(placementGroupCollection.Next)
 		allrecs = append(allrecs, placementGroupCollection.PlacementGroups...)
@@ -146,10 +149,10 @@ func dataSourceIbmIsPlacementGroupsRead(context context.Context, d *schema.Resou
 	d.SetId(dataSourceIbmIsPlacementGroupsID(d))
 	err = d.Set("placement_groups", dataSourcePlacementGroupCollectionFlattenPlacementGroups(meta, allrecs))
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting placement_groups %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting placement_groups %s", err), "(Data) ibm_is_placement_groups", "read", "placement_groups-set").GetDiag()
 	}
 	if err = d.Set("total_count", len(allrecs)); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting total_count: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting total_count %s", err), "(Data) ibm_is_placement_groups", "read", "total_count-set").GetDiag()
 	}
 	return nil
 }
