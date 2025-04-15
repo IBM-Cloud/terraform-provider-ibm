@@ -27,8 +27,10 @@ func TestAccIBMISLBListenerPolicyRule_basic(t *testing.T) {
 	//lblistenerpolicyname2 := fmt.Sprintf("tflblisuat-listener-policy-%d", acctest.RandIntRange(10, 100))
 	lblistenerpolicyRuleField1 := fmt.Sprintf("tflblipolicy-rule-field-%d", acctest.RandIntRange(10, 100))
 	lblistenerpolicyRuleField2 := fmt.Sprintf("tflblipolicy-rule-field-%d", acctest.RandIntRange(10, 100))
+	lblistenerpolicyRuleField3 := fmt.Sprintf("tflblipolicy-rule-field-%d", acctest.RandIntRange(10, 100))
 	lblistenerpolicyRuleValue1 := fmt.Sprintf("tflblipolicy-rule-value-%d", acctest.RandIntRange(10, 100))
 	lblistenerpolicyRuleValue2 := fmt.Sprintf("tflblipolicy-rule-value-%d", acctest.RandIntRange(10, 100))
+	lblistenerpolicyRuleValue3 := fmt.Sprintf("tflblipolicy-rule-value-%d", acctest.RandIntRange(10, 100))
 
 	priority := "1"
 	protocol := "http"
@@ -38,6 +40,7 @@ func TestAccIBMISLBListenerPolicyRule_basic(t *testing.T) {
 	condition := "equals"
 	typeh := "header"
 	typeb := "body"
+	typeSni := "sni_hostname"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -54,6 +57,19 @@ func TestAccIBMISLBListenerPolicyRule_basic(t *testing.T) {
 						"ibm_is_lb_listener_policy_rule.testacc_lb_listener_policy_rule", "field", lblistenerpolicyRuleField1),
 					resource.TestCheckResourceAttr(
 						"ibm_is_lb_listener_policy_rule.testacc_lb_listener_policy_rule", "value", lblistenerpolicyRuleValue1),
+				),
+			},
+
+			{
+				Config: testAccCheckIBMISLBListenerPolicyRuleConfig(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, lbname, port, protocol, lblistenerpolicyname, action, priority, condition, typeSni, lblistenerpolicyRuleField1, lblistenerpolicyRuleValue1),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISLBListenerPolicyRuleExists("ibm_is_lb_listener_policy_rule.testacc_lb_listener_policy_rule", ruleID),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb.testacc_LB", "name", lbname),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_listener_policy_rule.testacc_lb_listener_policy_rule", "field", lblistenerpolicyRuleField3),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_listener_policy_rule.testacc_lb_listener_policy_rule", "value", lblistenerpolicyRuleValue3),
 				),
 			},
 

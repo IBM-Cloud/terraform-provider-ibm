@@ -133,6 +133,13 @@ func ResourceIBMISLBListenerPolicy() *schema.Resource {
 				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_is_lb_listener_policy", isLBListenerPolicyAction),
 				Description:  "Policy Action",
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					// Suppress the change if the old value is 'forward' and new value is 'forward_to_pool'
+					if old == "forward" && new == "forward_to_pool" {
+						return true
+					}
+					return false
+				},
 			},
 
 			isLBListenerPolicyPriority: {
@@ -360,7 +367,7 @@ func ResourceIBMISLBListenerPolicy() *schema.Resource {
 func ResourceIBMISLBListenerPolicyValidator() *validate.ResourceValidator {
 
 	validateSchema := make([]validate.ValidateSchema, 0)
-	action := "forward, redirect, reject, https_redirect"
+	action := "forward,forward_to_pool,forward_to_listener,redirect,reject,https_redirect"
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
 			Identifier:                 isLBListenerPolicyName,
@@ -464,7 +471,7 @@ func lbListenerPolicyCreate(d *schema.ResourceData, meta interface{}, lbID, list
 		}
 
 	} else {
-		if actionChk.(string) == "forward" {
+		if actionChk.(string) == "forward" || actionChk.(string) == "forward_to_pool" {
 			if targetIDSet {
 
 				//User can set the poolId as combination of lbID/poolID, if so parse the string & get the poolID
@@ -472,12 +479,24 @@ func lbListenerPolicyCreate(d *schema.ResourceData, meta interface{}, lbID, list
 				if err != nil {
 					return diag.FromErr(err)
 				}
-
 				target = &vpcv1.LoadBalancerListenerPolicyTargetPrototypeLoadBalancerPoolIdentity{
 					ID: &id,
 				}
 			} else {
-				return diag.FromErr(fmt.Errorf("When action is forward please specify target_id"))
+				return diag.FromErr(fmt.Errorf("when action is forward or forward_to_pool please specify target_id"))
+			}
+		} else if actionChk.(string) == "forward_to_listener" {
+			if targetIDSet {
+				//User can set listener id as combination of lbID/listenerID, parse and get the listenerID
+				listenerID, err := getListenerID(d.Get(isLBListenerPolicyListenerID).(string))
+				if err != nil {
+					return diag.FromErr(err)
+				}
+				target = &vpcv1.LoadBalancerListenerPolicyTargetPrototypeLoadBalancerListenerIdentity{
+					ID: &listenerID,
+				}
+			} else {
+				return diag.FromErr(fmt.Errorf("when action is  forward_to_listener please specify listener id"))
 			}
 		} else if actionChk.(string) == "redirect" {
 
@@ -794,9 +813,9 @@ func lbListenerPolicyUpdate(d *schema.ResourceData, meta interface{}, lbID, list
 		hasChanged = true
 
 	} else {
-
+		actionChk := (d.Get(isLBListenerPolicyAction).(string))
 		//If Action is forward and TargetID is changed, set the target to pool ID
-		if d.Get(isLBListenerPolicyAction).(string) == "forward" && d.HasChange(isLBListenerPolicyTargetID) {
+		if (actionChk == "forward" || actionChk == "forward_to_pool") && d.HasChange(isLBListenerPolicyTargetID) {
 
 			//User can set the poolId as combination of lbID/poolID, if so parse the string & get the poolID
 			id, err := getPoolID(d.Get(isLBListenerPolicyTargetID).(string))
@@ -809,6 +828,15 @@ func lbListenerPolicyUpdate(d *schema.ResourceData, meta interface{}, lbID, list
 
 			loadBalancerListenerPolicyPatchModel.Target = target
 			hasChanged = true
+		} else if actionChk == "forward_to_listener" && d.HasChange(isLBListenerPolicyTargetID) {
+			//User can set listener id as combination of lbID/listenerID, parse and get the listenerID
+			listenerID, err := getListenerID(d.Get(isLBListenerPolicyListenerID).(string))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			target = &vpcv1.LoadBalancerListenerPolicyTargetPatchLoadBalancerListenerIdentity{
+				ID: &listenerID,
+			}
 		} else if d.Get(isLBListenerPolicyAction).(string) == "redirect" {
 			//if Action is redirect and either status code or URL chnaged, set accordingly
 			//LoadBalancerListenerPolicyPatchTargetLoadBalancerListenerPolicyRedirectURLPatch
@@ -1104,11 +1132,18 @@ func lbListenerPolicyGet(d *schema.ResourceData, meta interface{}, lbID, listene
 				return diag.FromErr(fmt.Errorf("Error setting target: %s", err))
 			}
 		} else {
-			if *(policy.Action) == "forward" {
+			if *(policy.Action) == "forward" || *(policy.Action) == "forward_to_pool" {
 				if reflect.TypeOf(policy.Target).String() == "*vpcv1.LoadBalancerListenerPolicyTargetLoadBalancerPoolReference" {
 					target, ok := policy.Target.(*vpcv1.LoadBalancerListenerPolicyTargetLoadBalancerPoolReference)
 					if ok {
 						d.Set(isLBListenerPolicyTargetID, target.ID)
+					}
+				} else if *(policy.Action) == "forward_to_listener" {
+					if reflect.TypeOf(policy.Target).String() == "*vpcv1.LoadBalancerListenerPolicyTargetLoadBalancerListenerReference" {
+						target, ok := policy.Target.(*vpcv1.LoadBalancerListenerPolicyTargetLoadBalancerListenerReference)
+						if ok {
+							d.Set(isLBListenerPolicyTargetID, target.ID)
+						}
 					}
 				}
 
