@@ -842,11 +842,11 @@ func resourceIBMISVolumeUpdate(context context.Context, d *schema.ResourceData, 
 		hasNameChanged = true
 	}
 
-	err := volUpdate(d, meta, id, name, hasNameChanged, delete)
+	err := volUpdate(context, d, meta, id, name, hasNameChanged, delete)
 	if err != nil {
 		return err
 	}
-	return resourceIBMISVolumeRead(d, meta)
+	return resourceIBMISVolumeRead(context, d, meta)
 }
 
 func volUpdate(context context.Context, d *schema.ResourceData, meta interface{}, id, name string, hasNameChanged, delete bool) diag.Diagnostics {
