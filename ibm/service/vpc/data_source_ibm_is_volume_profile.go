@@ -229,17 +229,17 @@ func dataSourceIBMISVolumeProfileRead(context context.Context, d *schema.Resourc
 
 	name := d.Get(isVolumeProfile).(string)
 
-	err := volumeProfileGet(d, meta, name)
+	err := volumeProfileGet(context, d, meta, name)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func volumeProfileGet(d *schema.ResourceData, meta interface{}, name string) diag.Diagnostics {
+func volumeProfileGet(context context.Context, d *schema.ResourceData, meta interface{}, name string) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_is_volume_profile", "read")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_volume_profile", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -259,52 +259,44 @@ func volumeProfileGet(d *schema.ResourceData, meta interface{}, name string) dia
 	if volumeProfile.BootCapacity != nil {
 		modelMap, err := DataSourceIBMIsVolumeProfileVolumeProfileBootCapacityToMap(volumeProfile.BootCapacity)
 		if err != nil {
-			tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_is_volume_profile", "read")
-			return tfErr.GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_volume_profile", "read", "boot_capacity-to-map").GetDiag()
 		}
 		bootCapacity = append(bootCapacity, modelMap)
 	}
 	if err = d.Set("boot_capacity", bootCapacity); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting boot_capacity: %s", err), "(Data) ibm_is_volume_profile", "read")
-		return tfErr.GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting boot_capacity: %s", err), "(Data) ibm_is_volume_profile", "read", "set-boot_capacity").GetDiag()
 	}
 
 	capacity := []map[string]interface{}{}
 	if volumeProfile.Capacity != nil {
 		modelMap, err := DataSourceIBMIsVolumeProfileVolumeProfileCapacityToMap(volumeProfile.Capacity)
 		if err != nil {
-			tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_is_volume_profile", "read")
-			return tfErr.GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_volume_profile", "read", "capacity-to-map").GetDiag()
 		}
 		capacity = append(capacity, modelMap)
 	}
 	if err = d.Set("capacity", capacity); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting capacity: %s", err), "(Data) ibm_is_volume_profile", "read")
-		return tfErr.GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting capacity: %s", err), "(Data) ibm_is_volume_profile", "read", "set-capacity").GetDiag()
 	}
 
 	if err = d.Set("family", volumeProfile.Family); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting family: %s", err), "(Data) ibm_is_volume_profile", "read")
-		return tfErr.GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting family: %s", err), "(Data) ibm_is_volume_profile", "read", "set-family").GetDiag()
 	}
 
 	if err = d.Set("href", volumeProfile.Href); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting href: %s", err), "(Data) ibm_is_volume_profile", "read")
-		return tfErr.GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting href: %s", err), "(Data) ibm_is_volume_profile", "read", "set-href").GetDiag()
 	}
 
 	iops := []map[string]interface{}{}
 	if volumeProfile.Iops != nil {
 		modelMap, err := DataSourceIBMIsVolumeProfileVolumeProfileIopsToMap(volumeProfile.Iops)
 		if err != nil {
-			tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_is_volume_profile", "read")
-			return tfErr.GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_volume_profile", "read", "iops-to-map").GetDiag()
 		}
 		iops = append(iops, modelMap)
 	}
 	if err = d.Set("iops", iops); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting iops: %s", err), "(Data) ibm_is_volume_profile", "read")
-		return tfErr.GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting iops: %s", err), "(Data) ibm_is_volume_profile", "read", "set-iops").GetDiag()
 	}
 	// defined_performance changes
 
