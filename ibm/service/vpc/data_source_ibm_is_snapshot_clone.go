@@ -59,7 +59,7 @@ func dataSourceIBMISSnapshotCloneRead(context context.Context, d *schema.Resourc
 func getSnapshotClone(context context.Context, d *schema.ResourceData, meta interface{}, id, zone string) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_ibm_is_snapshot_clone", "read", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_snapshot_clone", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -71,7 +71,7 @@ func getSnapshotClone(context context.Context, d *schema.ResourceData, meta inte
 
 	clone, _, err := sess.GetSnapshotCloneWithContext(context, getSnapshotCloneOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetSnapshotCloneWithContext failed: %s", err.Error()), "(Data) ibm_ibm_is_snapshot_clone", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetSnapshotCloneWithContext failed: %s", err.Error()), "(Data) ibm_is_snapshot_clone", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -79,18 +79,18 @@ func getSnapshotClone(context context.Context, d *schema.ResourceData, meta inte
 	if clone != nil && clone.Zone != nil {
 		d.SetId(*clone.Zone.Name)
 		if err = d.Set("zone", *clone.Zone.Name); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting zone: %s", err), "(Data) ibm_ibm_is_snapshot_clone", "read", "set-zone").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting zone: %s", err), "(Data) ibm_is_snapshot_clone", "read", "set-zone").GetDiag()
 		}
 		if err = d.Set("available", *clone.Available); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting available: %s", err), "(Data) ibm_ibm_is_snapshot_clone", "read", "set-available").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting available: %s", err), "(Data) ibm_is_snapshot_clone", "read", "set-available").GetDiag()
 		}
 		if clone.CreatedAt != nil {
 			if err = d.Set("created_at", flex.DateTimeToString(clone.CreatedAt)); err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting created_at: %s", err), "(Data) ibm_ibm_is_snapshot_clone", "read", "set-created_at").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting created_at: %s", err), "(Data) ibm_is_snapshot_clone", "read", "set-created_at").GetDiag()
 			}
 		}
 	} else {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("No snapshot(%s) clone(%s) found ", id, zone), "(Data) ibm_ibm_is_snapshot_clone", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("No snapshot(%s) clone(%s) found ", id, zone), "(Data) ibm_is_snapshot_clone", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}

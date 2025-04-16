@@ -534,7 +534,7 @@ func dataSourceIBMISSnapshotsRead(context context.Context, d *schema.ResourceDat
 func getSnapshots(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_ibm_is_snapshots", "read", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_snapshots", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -607,7 +607,7 @@ func getSnapshots(context context.Context, d *schema.ResourceData, meta interfac
 		}
 		snapshots, _, err := sess.ListSnapshotsWithContext(context, listSnapshotOptions)
 		if err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListSnapshotsWithContext failed %s", err), "(Data) ibm_ibm_is_snapshots", "read")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListSnapshotsWithContext failed %s", err), "(Data) ibm_is_snapshots", "read")
 			log.Printf("[DEBUG] %s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
@@ -668,7 +668,7 @@ func getSnapshots(context context.Context, d *schema.ResourceData, meta interfac
 			for _, copiesItem := range snapshot.Copies {
 				copiesMap, err := dataSourceIBMIsSnapshotsSnapshotCopiesItemToMap(&copiesItem)
 				if err != nil {
-					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_ibm_is_snapshots", "read", "copies-to-map").GetDiag()
+					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_snapshots", "read", "copies-to-map").GetDiag()
 				}
 				snapshotCopies = append(snapshotCopies, copiesMap)
 			}
@@ -772,7 +772,7 @@ func getSnapshots(context context.Context, d *schema.ResourceData, meta interfac
 	}
 	d.SetId(dataSourceIBMISSnapshotsID(d))
 	if err = d.Set("snapshots", snapshotsInfo); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting snapshots %s", err), "(Data) ibm_ibm_is_snapshots", "read", "snapshots-set").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting snapshots %s", err), "(Data) ibm_is_snapshots", "read", "snapshots-set").GetDiag()
 	}
 	return nil
 }

@@ -440,7 +440,7 @@ func dataSourceIBMISSnapshotRead(context context.Context, d *schema.ResourceData
 func snapshotGetByNameOrID(context context.Context, d *schema.ResourceData, meta interface{}, name, id string) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_ibm_is_snapshot", "read", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_snapshot", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -456,7 +456,7 @@ func snapshotGetByNameOrID(context context.Context, d *schema.ResourceData, meta
 			}
 			snapshots, _, err := sess.ListSnapshotsWithContext(context, listSnapshotOptions)
 			if err != nil {
-				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListSnapshotsWithContext failed: %s", err.Error()), "(Data) ibm_ibm_is_snapshot", "read")
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListSnapshotsWithContext failed: %s", err.Error()), "(Data) ibm_is_snapshot", "read")
 				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 				return tfErr.GetDiag()
 			}
@@ -471,36 +471,36 @@ func snapshotGetByNameOrID(context context.Context, d *schema.ResourceData, meta
 			if *snapshot.Name == name || *snapshot.ID == id {
 				d.SetId(*snapshot.ID)
 				if err = d.Set("name", snapshot.Name); err != nil {
-					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_ibm_is_snapshot", "read", "set-name").GetDiag()
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_is_snapshot", "read", "set-name").GetDiag()
 				}
 				if err = d.Set("href", snapshot.Href); err != nil {
-					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting href: %s", err), "(Data) ibm_ibm_is_snapshot", "read", "set-href").GetDiag()
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting href: %s", err), "(Data) ibm_is_snapshot", "read", "set-href").GetDiag()
 				}
 				if err = d.Set("crn", snapshot.CRN); err != nil {
-					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting crn: %s", err), "(Data) ibm_ibm_is_snapshot", "read", "set-crn").GetDiag()
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting crn: %s", err), "(Data) ibm_is_snapshot", "read", "set-crn").GetDiag()
 				}
 				if err = d.Set("minimum_capacity", flex.IntValue(snapshot.MinimumCapacity)); err != nil {
-					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting minimum_capacity: %s", err), "(Data) ibm_ibm_is_snapshot", "read", "set-minimum_capacity").GetDiag()
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting minimum_capacity: %s", err), "(Data) ibm_is_snapshot", "read", "set-minimum_capacity").GetDiag()
 				}
 				if err = d.Set("size", flex.IntValue(snapshot.Size)); err != nil {
-					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting size: %s", err), "(Data) ibm_ibm_is_snapshot", "read", "set-size").GetDiag()
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting size: %s", err), "(Data) ibm_is_snapshot", "read", "set-size").GetDiag()
 				}
 				if err = d.Set("encryption", snapshot.Encryption); err != nil {
-					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting encryption: %s", err), "(Data) ibm_ibm_is_snapshot", "read", "set-encryption").GetDiag()
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting encryption: %s", err), "(Data) ibm_is_snapshot", "read", "set-encryption").GetDiag()
 				}
 				if snapshot.EncryptionKey != nil && snapshot.EncryptionKey.CRN != nil {
 					if err = d.Set("encryption_key", *snapshot.EncryptionKey.CRN); err != nil {
-						return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting encryption_key: %s", err), "(Data) ibm_ibm_is_snapshot", "read", "set-encryption_key").GetDiag()
+						return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting encryption_key: %s", err), "(Data) ibm_is_snapshot", "read", "set-encryption_key").GetDiag()
 					}
 				}
 				if err = d.Set("lifecycle_state", snapshot.LifecycleState); err != nil {
-					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting lifecycle_state: %s", err), "(Data) ibm_ibm_is_snapshot", "read", "set-lifecycle_state").GetDiag()
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting lifecycle_state: %s", err), "(Data) ibm_is_snapshot", "read", "set-lifecycle_state").GetDiag()
 				}
 				if err = d.Set("resource_type", snapshot.ResourceType); err != nil {
-					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_type: %s", err), "(Data) ibm_ibm_is_snapshot", "read", "set-resource_type").GetDiag()
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_type: %s", err), "(Data) ibm_is_snapshot", "read", "set-resource_type").GetDiag()
 				}
 				if err = d.Set("bootable", snapshot.Bootable); err != nil {
-					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting bootable: %s", err), "(Data) ibm_ibm_is_snapshot", "read", "set-bootable").GetDiag()
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting bootable: %s", err), "(Data) ibm_is_snapshot", "read", "set-bootable").GetDiag()
 				}
 
 				// source snapshot
@@ -520,7 +520,7 @@ func snapshotGetByNameOrID(context context.Context, d *schema.ResourceData, meta
 					sourceSnapshotList = append(sourceSnapshotList, sourceSnapshot)
 				}
 				if err = d.Set("source_snapshot", sourceSnapshotList); err != nil {
-					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting source_snapshot: %s", err), "(Data) ibm_ibm_is_snapshot", "read", "set-source_snapshot").GetDiag()
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting source_snapshot: %s", err), "(Data) ibm_is_snapshot", "read", "set-source_snapshot").GetDiag()
 				}
 
 				// snapshot consistency group
@@ -540,7 +540,7 @@ func snapshotGetByNameOrID(context context.Context, d *schema.ResourceData, meta
 					snapshotConsistencyGroupList = append(snapshotConsistencyGroupList, snapshotConsistencyGroup)
 				}
 				if err = d.Set("snapshot_consistency_group", snapshotConsistencyGroupList); err != nil {
-					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting snapshot_consistency_group: %s", err), "(Data) ibm_ibm_is_snapshot", "read", "set-snapshot_consistency_group").GetDiag()
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting snapshot_consistency_group: %s", err), "(Data) ibm_is_snapshot", "read", "set-snapshot_consistency_group").GetDiag()
 				}
 
 				// snapshot copies
@@ -549,38 +549,38 @@ func snapshotGetByNameOrID(context context.Context, d *schema.ResourceData, meta
 					for _, copiesItem := range snapshot.Copies {
 						copiesMap, err := dataSourceIBMIsSnapshotsSnapshotCopiesItemToMap(&copiesItem)
 						if err != nil {
-							return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_ibm_is_snapshot", "read", "copies-to-map").GetDiag()
+							return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_snapshot", "read", "copies-to-map").GetDiag()
 						}
 						snapshotCopies = append(snapshotCopies, copiesMap)
 					}
 				}
 				if err = d.Set("copies", snapshotCopies); err != nil {
-					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting copies: %s", err), "(Data) ibm_ibm_is_snapshot", "read", "set-copies").GetDiag()
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting copies: %s", err), "(Data) ibm_is_snapshot", "read", "set-copies").GetDiag()
 				}
 
 				if snapshot.UserTags != nil {
 					if err = d.Set("tags", snapshot.UserTags); err != nil {
-						return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting tags: %s", err), "(Data) ibm_ibm_is_snapshot", "read", "set-tags").GetDiag()
+						return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting tags: %s", err), "(Data) ibm_is_snapshot", "read", "set-tags").GetDiag()
 					}
 				}
 				if snapshot.ResourceGroup != nil && snapshot.ResourceGroup.ID != nil {
 					if err = d.Set("resource_group", *snapshot.ResourceGroup.ID); err != nil {
-						return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_group: %s", err), "(Data) ibm_ibm_is_snapshot", "read", "set-resource_group").GetDiag()
+						return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_group: %s", err), "(Data) ibm_is_snapshot", "read", "set-resource_group").GetDiag()
 					}
 				}
 				if snapshot.SourceVolume != nil && snapshot.SourceVolume.ID != nil {
 					if err = d.Set("source_volume", *snapshot.SourceVolume.ID); err != nil {
-						return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting source_volume: %s", err), "(Data) ibm_ibm_is_snapshot", "read", "set-source_volume").GetDiag()
+						return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting source_volume: %s", err), "(Data) ibm_is_snapshot", "read", "set-source_volume").GetDiag()
 					}
 				}
 				if snapshot.SourceImage != nil && snapshot.SourceImage.ID != nil {
 					if err = d.Set("source_image", *snapshot.SourceImage.ID); err != nil {
-						return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting source_image: %s", err), "(Data) ibm_ibm_is_snapshot", "read", "set-source_image").GetDiag()
+						return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting source_image: %s", err), "(Data) ibm_is_snapshot", "read", "set-source_image").GetDiag()
 					}
 				}
 				if snapshot.OperatingSystem != nil && snapshot.OperatingSystem.Name != nil {
 					if err = d.Set("operating_system", *snapshot.OperatingSystem.Name); err != nil {
-						return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting operating_system: %s", err), "(Data) ibm_ibm_is_snapshot", "read", "set-operating_system").GetDiag()
+						return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting operating_system: %s", err), "(Data) ibm_is_snapshot", "read", "set-operating_system").GetDiag()
 					}
 				}
 				// catalog
@@ -610,7 +610,7 @@ func snapshotGetByNameOrID(context context.Context, d *schema.ResourceData, meta
 					catalogList = append(catalogList, catalogMap)
 				}
 				if err = d.Set("catalog_offering", catalogList); err != nil {
-					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting catalog_offering: %s", err), "(Data) ibm_ibm_is_snapshot", "read", "set-catalog_offering").GetDiag()
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting catalog_offering: %s", err), "(Data) ibm_is_snapshot", "read", "set-catalog_offering").GetDiag()
 				}
 
 				var clones []string
@@ -623,10 +623,10 @@ func snapshotGetByNameOrID(context context.Context, d *schema.ResourceData, meta
 					}
 				}
 				if err = d.Set("clones", flex.NewStringSet(schema.HashString, clones)); err != nil {
-					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting clones: %s", err), "(Data) ibm_ibm_is_snapshot", "read", "set-clones").GetDiag()
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting clones: %s", err), "(Data) ibm_is_snapshot", "read", "set-clones").GetDiag()
 				}
 				if err = d.Set("service_tags", snapshot.ServiceTags); err != nil {
-					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting service_tags: %s", err), "(Data) ibm_ibm_is_snapshot", "read", "set-service_tags").GetDiag()
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting service_tags: %s", err), "(Data) ibm_is_snapshot", "read", "set-service_tags").GetDiag()
 				}
 				backupPolicyPlanList := []map[string]interface{}{}
 				if snapshot.BackupPolicyPlan != nil {
@@ -643,7 +643,7 @@ func snapshotGetByNameOrID(context context.Context, d *schema.ResourceData, meta
 					backupPolicyPlanList = append(backupPolicyPlanList, backupPolicyPlan)
 				}
 				if err = d.Set("backup_policy_plan", backupPolicyPlanList); err != nil {
-					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting backup_policy_plan: %s", err), "(Data) ibm_ibm_is_snapshot", "read", "set-backup_policy_plan").GetDiag()
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting backup_policy_plan: %s", err), "(Data) ibm_is_snapshot", "read", "set-backup_policy_plan").GetDiag()
 				}
 				accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *snapshot.CRN, "", isAccessTagType)
 				if err != nil {
@@ -651,12 +651,12 @@ func snapshotGetByNameOrID(context context.Context, d *schema.ResourceData, meta
 						"[ERROR] Error on get of resource snapshot (%s) access tags: %s", d.Id(), err)
 				}
 				if err = d.Set("access_tags", accesstags); err != nil {
-					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting access_tags: %s", err), "(Data) ibm_ibm_is_snapshot", "read", "set-access_tags").GetDiag()
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting access_tags: %s", err), "(Data) ibm_is_snapshot", "read", "set-access_tags").GetDiag()
 				}
 				return nil
 			}
 		}
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("No snapshot found with name : %s", name), "(Data) ibm_ibm_is_snapshot", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("No snapshot found with name : %s", name), "(Data) ibm_is_snapshot", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	} else {
@@ -665,46 +665,46 @@ func snapshotGetByNameOrID(context context.Context, d *schema.ResourceData, meta
 		}
 		snapshot, _, err := sess.GetSnapshot(getSnapshotOptions)
 		if err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetSnapshotWithContext failed: %s", err.Error()), "(Data) ibm_ibm_is_snapshot", "read")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetSnapshotWithContext failed: %s", err.Error()), "(Data) ibm_is_snapshot", "read")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
 		d.SetId(*snapshot.ID)
 		if err = d.Set("name", snapshot.Name); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_ibm_is_snapshot", "read", "set-name").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_is_snapshot", "read", "set-name").GetDiag()
 		}
 		if err = d.Set("href", snapshot.Href); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting href: %s", err), "(Data) ibm_ibm_is_snapshot", "read", "set-href").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting href: %s", err), "(Data) ibm_is_snapshot", "read", "set-href").GetDiag()
 		}
 		if err = d.Set("crn", snapshot.CRN); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting crn: %s", err), "(Data) ibm_ibm_is_snapshot", "read", "set-crn").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting crn: %s", err), "(Data) ibm_is_snapshot", "read", "set-crn").GetDiag()
 		}
 		if err = d.Set("minimum_capacity", flex.IntValue(snapshot.MinimumCapacity)); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting minimum_capacity: %s", err), "(Data) ibm_ibm_is_snapshot", "read", "set-minimum_capacity").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting minimum_capacity: %s", err), "(Data) ibm_is_snapshot", "read", "set-minimum_capacity").GetDiag()
 		}
 		if err = d.Set("size", flex.IntValue(snapshot.Size)); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting size: %s", err), "(Data) ibm_ibm_is_snapshot", "read", "set-size").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting size: %s", err), "(Data) ibm_is_snapshot", "read", "set-size").GetDiag()
 		}
 		if err = d.Set("encryption", snapshot.Encryption); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting encryption: %s", err), "(Data) ibm_ibm_is_snapshot", "read", "set-encryption").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting encryption: %s", err), "(Data) ibm_is_snapshot", "read", "set-encryption").GetDiag()
 		}
 		if err = d.Set("lifecycle_state", snapshot.LifecycleState); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting lifecycle_state: %s", err), "(Data) ibm_ibm_is_snapshot", "read", "set-lifecycle_state").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting lifecycle_state: %s", err), "(Data) ibm_is_snapshot", "read", "set-lifecycle_state").GetDiag()
 		}
 		if err = d.Set("resource_type", snapshot.ResourceType); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_type: %s", err), "(Data) ibm_ibm_is_snapshot", "read", "set-resource_type").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_type: %s", err), "(Data) ibm_is_snapshot", "read", "set-resource_type").GetDiag()
 		}
 		if err = d.Set("bootable", snapshot.Bootable); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting bootable: %s", err), "(Data) ibm_ibm_is_snapshot", "read", "set-bootable").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting bootable: %s", err), "(Data) ibm_is_snapshot", "read", "set-bootable").GetDiag()
 		}
 
 		if snapshot.EncryptionKey != nil && snapshot.EncryptionKey.CRN != nil {
 			if err = d.Set("encryption_key", snapshot.EncryptionKey.CRN); err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting encryption_key: %s", err), "(Data) ibm_ibm_is_snapshot", "read", "set-encryption_key").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting encryption_key: %s", err), "(Data) ibm_is_snapshot", "read", "set-encryption_key").GetDiag()
 			}
 		}
 		if err = d.Set("service_tags", snapshot.ServiceTags); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting service_tags: %s", err), "(Data) ibm_ibm_is_snapshot", "read", "set-service_tags").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting service_tags: %s", err), "(Data) ibm_is_snapshot", "read", "set-service_tags").GetDiag()
 		}
 		// source snapshot
 		sourceSnapshotList := []map[string]interface{}{}
@@ -723,7 +723,7 @@ func snapshotGetByNameOrID(context context.Context, d *schema.ResourceData, meta
 			sourceSnapshotList = append(sourceSnapshotList, sourceSnapshot)
 		}
 		if err = d.Set("source_snapshot", sourceSnapshotList); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting source_snapshot: %s", err), "(Data) ibm_ibm_is_snapshot", "read", "set-source_snapshot").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting source_snapshot: %s", err), "(Data) ibm_is_snapshot", "read", "set-source_snapshot").GetDiag()
 		}
 		// snapshot copies
 		snapshotCopies := []map[string]interface{}{}
@@ -731,43 +731,43 @@ func snapshotGetByNameOrID(context context.Context, d *schema.ResourceData, meta
 			for _, copiesItem := range snapshot.Copies {
 				copiesMap, err := dataSourceIBMIsSnapshotsSnapshotCopiesItemToMap(&copiesItem)
 				if err != nil {
-					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_ibm_is_snapshot", "read", "copies-to-map").GetDiag()
+					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_snapshot", "read", "copies-to-map").GetDiag()
 				}
 				snapshotCopies = append(snapshotCopies, copiesMap)
 			}
 		}
 		if err = d.Set("copies", snapshotCopies); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting copies: %s", err), "(Data) ibm_ibm_is_snapshot", "read", "set-copies").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting copies: %s", err), "(Data) ibm_is_snapshot", "read", "set-copies").GetDiag()
 		}
 
 		if !core.IsNil(snapshot.CapturedAt) {
 			if err = d.Set("captured_at", flex.DateTimeToString(snapshot.CapturedAt)); err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting captured_at: %s", err), "(Data) ibm_ibm_is_snapshot", "read", "set-captured_at").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting captured_at: %s", err), "(Data) ibm_is_snapshot", "read", "set-captured_at").GetDiag()
 			}
 		}
 		if snapshot.UserTags != nil {
 			if err = d.Set("tags", snapshot.UserTags); err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting tags: %s", err), "(Data) ibm_ibm_is_snapshot", "read", "set-tags").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting tags: %s", err), "(Data) ibm_is_snapshot", "read", "set-tags").GetDiag()
 			}
 		}
 		if snapshot.ResourceGroup != nil && snapshot.ResourceGroup.ID != nil {
 			if err = d.Set("resource_group", *snapshot.ResourceGroup.ID); err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_group: %s", err), "(Data) ibm_ibm_is_snapshot", "read", "set-resource_group").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_group: %s", err), "(Data) ibm_is_snapshot", "read", "set-resource_group").GetDiag()
 			}
 		}
 		if snapshot.SourceVolume != nil && snapshot.SourceVolume.ID != nil {
 			if err = d.Set("source_volume", *snapshot.SourceVolume.ID); err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting source_volume: %s", err), "(Data) ibm_ibm_is_snapshot", "read", "set-source_volume").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting source_volume: %s", err), "(Data) ibm_is_snapshot", "read", "set-source_volume").GetDiag()
 			}
 		}
 		if snapshot.SourceImage != nil && snapshot.SourceImage.ID != nil {
 			if err = d.Set("source_image", *snapshot.SourceImage.ID); err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting source_image: %s", err), "(Data) ibm_ibm_is_snapshot", "read", "set-source_image").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting source_image: %s", err), "(Data) ibm_is_snapshot", "read", "set-source_image").GetDiag()
 			}
 		}
 		if snapshot.OperatingSystem != nil && snapshot.OperatingSystem.Name != nil {
 			if err = d.Set("operating_system", *snapshot.OperatingSystem.Name); err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting operating_system: %s", err), "(Data) ibm_ibm_is_snapshot", "read", "set-operating_system").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting operating_system: %s", err), "(Data) ibm_is_snapshot", "read", "set-operating_system").GetDiag()
 			}
 		}
 		var clones []string
@@ -780,7 +780,7 @@ func snapshotGetByNameOrID(context context.Context, d *schema.ResourceData, meta
 			}
 		}
 		if err = d.Set("clones", flex.NewStringSet(schema.HashString, clones)); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting clones: %s", err), "(Data) ibm_ibm_is_snapshot", "read", "set-clones").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting clones: %s", err), "(Data) ibm_is_snapshot", "read", "set-clones").GetDiag()
 		}
 
 		if snapshot.CatalogOffering != nil {
@@ -808,7 +808,7 @@ func snapshotGetByNameOrID(context context.Context, d *schema.ResourceData, meta
 			}
 			catalogList = append(catalogList, catalogMap)
 			if err = d.Set("catalog_offering", catalogList); err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting catalog_offering: %s", err), "(Data) ibm_ibm_is_snapshot", "read", "set-catalog_offering").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting catalog_offering: %s", err), "(Data) ibm_is_snapshot", "read", "set-catalog_offering").GetDiag()
 			}
 		}
 
@@ -827,7 +827,7 @@ func snapshotGetByNameOrID(context context.Context, d *schema.ResourceData, meta
 			backupPolicyPlanList = append(backupPolicyPlanList, backupPolicyPlan)
 		}
 		if err = d.Set("backup_policy_plan", backupPolicyPlanList); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting backup_policy_plan: %s", err), "(Data) ibm_ibm_is_snapshot", "read", "set-backup_policy_plan").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting backup_policy_plan: %s", err), "(Data) ibm_is_snapshot", "read", "set-backup_policy_plan").GetDiag()
 		}
 		accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *snapshot.CRN, "", isAccessTagType)
 		if err != nil {
@@ -835,7 +835,7 @@ func snapshotGetByNameOrID(context context.Context, d *schema.ResourceData, meta
 				"[ERROR] Error on get of resource snapshot (%s) access tags: %s", d.Id(), err)
 		}
 		if err = d.Set("access_tags", accesstags); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting access_tags: %s", err), "(Data) ibm_ibm_is_snapshot", "read", "set-access_tags").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting access_tags: %s", err), "(Data) ibm_is_snapshot", "read", "set-access_tags").GetDiag()
 		}
 		return nil
 	}

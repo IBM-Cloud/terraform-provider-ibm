@@ -76,7 +76,7 @@ func dataSourceIBMISSnapshotClonesRead(context context.Context, d *schema.Resour
 func getSnapshotClones(context context.Context, d *schema.ResourceData, meta interface{}, id string) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_ibm_is_snapshot_clones", "read", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_snapshot_clones", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -87,7 +87,7 @@ func getSnapshotClones(context context.Context, d *schema.ResourceData, meta int
 
 	clonesCollection, _, err := sess.ListSnapshotClonesWithContext(context, listSnapshotClonesOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListSnapshotClonesWithContext failed: %s", err.Error()), "(Data) ibm_ibm_is_snapshot_clones", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListSnapshotClonesWithContext failed: %s", err.Error()), "(Data) ibm_is_snapshot_clones", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -109,7 +109,7 @@ func getSnapshotClones(context context.Context, d *schema.ResourceData, meta int
 	}
 	d.SetId(dataSourceIBMISSnapshotClonesID(d))
 	if err = d.Set("clones", clonesInfo); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting clones: %s", err), "(Data) ibm_ibm_is_snapshot_clones", "read", "set-clones").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting clones: %s", err), "(Data) ibm_is_snapshot_clones", "read", "set-clones").GetDiag()
 	}
 	return nil
 }
