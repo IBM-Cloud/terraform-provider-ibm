@@ -454,7 +454,7 @@ func isWaitForIBMPIImageAvailable(ctx context.Context, client *instance.IBMPIIma
 	stateConf := &retry.StateChangeConf{
 		Pending:    []string{State_Retry, State_Queued},
 		Target:     []string{State_Active},
-		Refresh:    isIBMPIImageRefreshFunc(ctx, client, id),
+		Refresh:    isIBMPIImageRefreshFunc(client, id),
 		Timeout:    timeout,
 		Delay:      20 * time.Second,
 		MinTimeout: 10 * time.Second,
@@ -463,7 +463,7 @@ func isWaitForIBMPIImageAvailable(ctx context.Context, client *instance.IBMPIIma
 	return stateConf.WaitForStateContext(ctx)
 }
 
-func isIBMPIImageRefreshFunc(ctx context.Context, client *instance.IBMPIImageClient, id string) retry.StateRefreshFunc {
+func isIBMPIImageRefreshFunc(client *instance.IBMPIImageClient, id string) retry.StateRefreshFunc {
 
 	log.Printf("Calling the isIBMPIImageRefreshFunc Refresh Function....")
 	return func() (interface{}, string, error) {
