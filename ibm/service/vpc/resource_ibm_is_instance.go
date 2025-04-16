@@ -6743,27 +6743,6 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 
 	}
 
-	if d.HasChange(isInstanceTotalVolumeBandwidth) && !d.IsNewResource() {
-		totalVolBandwidth := int64(d.Get(isInstanceTotalVolumeBandwidth).(int))
-		updnetoptions := &vpcv1.UpdateInstanceOptions{
-			ID: &id,
-		}
-
-		instancePatchModel := &vpcv1.InstancePatch{
-			TotalVolumeBandwidth: &totalVolBandwidth,
-		}
-		instancePatch, err := instancePatchModel.AsPatch()
-		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch with total volume bandwidth for InstancePatch: %s", err)
-		}
-		updnetoptions.InstancePatch = instancePatch
-
-		_, _, err = instanceC.UpdateInstance(updnetoptions)
-		if err != nil {
-			return err
-		}
-	}
-
 	if (d.HasChange(isInstanceName) || d.HasChange("confidential_compute_mode") || d.HasChange("enable_secure_boot")) && !d.IsNewResource() {
 		restartNeeded := false
 		serverstopped := false
@@ -7005,6 +6984,26 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 			return err
 		}
 
+	}
+	if d.HasChange(isInstanceTotalVolumeBandwidth) && !d.IsNewResource() {
+		totalVolBandwidth := int64(d.Get(isInstanceTotalVolumeBandwidth).(int))
+		updnetoptions := &vpcv1.UpdateInstanceOptions{
+			ID: &id,
+		}
+
+		instancePatchModel := &vpcv1.InstancePatch{
+			TotalVolumeBandwidth: &totalVolBandwidth,
+		}
+		instancePatch, err := instancePatchModel.AsPatch()
+		if err != nil {
+			return fmt.Errorf("[ERROR] Error calling asPatch with total volume bandwidth for InstancePatch: %s", err)
+		}
+		updnetoptions.InstancePatch = instancePatch
+
+		_, _, err = instanceC.UpdateInstance(updnetoptions)
+		if err != nil {
+			return err
+		}
 	}
 
 	getinsOptions := &vpcv1.GetInstanceOptions{
