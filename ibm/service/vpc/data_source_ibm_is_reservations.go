@@ -235,7 +235,7 @@ func DataSourceIBMIsReservations() *schema.Resource {
 func dataSourceIBMIsReservationsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_ibm_is_reservations", "read", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_reservations", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -267,7 +267,7 @@ func dataSourceIBMIsReservationsRead(context context.Context, d *schema.Resource
 		}
 		reservationCollection, _, err := sess.ListReservationsWithContext(context, listReservationsOptions)
 		if err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListReservationsWithContext failed %s", err), "(Data) ibm_ibm_is_reservations", "read")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListReservationsWithContext failed %s", err), "(Data) ibm_is_reservations", "read")
 			log.Printf("[DEBUG] %s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
@@ -286,7 +286,7 @@ func dataSourceIBMIsReservationsRead(context context.Context, d *schema.Resource
 	if reservations != nil {
 		err = d.Set("reservations", dataSourceReservationCollectionFlattenReservations(reservations))
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting reservations %s", err), "(Data) ibm_ibm_is_reservations", "read", "reservations-set").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting reservations %s", err), "(Data) ibm_is_reservations", "read", "reservations-set").GetDiag()
 		}
 	}
 
