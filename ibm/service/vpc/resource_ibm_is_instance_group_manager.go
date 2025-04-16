@@ -4,22 +4,26 @@
 package vpc
 
 import (
+	"context"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func ResourceIBMISInstanceGroupManager() *schema.Resource {
 	return &schema.Resource{
-		Create:   resourceIBMISInstanceGroupManagerCreate,
-		Read:     resourceIBMISInstanceGroupManagerRead,
-		Update:   resourceIBMISInstanceGroupManagerUpdate,
-		Delete:   resourceIBMISInstanceGroupManagerDelete,
-		Importer: &schema.ResourceImporter{},
+		CreateContext: resourceIBMISInstanceGroupManagerCreate,
+		ReadContext:   resourceIBMISInstanceGroupManagerRead,
+		UpdateContext: resourceIBMISInstanceGroupManagerUpdate,
+		DeleteContext: resourceIBMISInstanceGroupManagerDelete,
+		Importer:      &schema.ResourceImporter{},
 
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(10 * time.Minute),
@@ -179,14 +183,16 @@ func ResourceIBMISInstanceGroupManagerValidator() *validate.ResourceValidator {
 	return &ibmISInstanceGroupManagerResourceValidator
 }
 
-func resourceIBMISInstanceGroupManagerCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMISInstanceGroupManagerCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 	instanceGroupID := d.Get("instance_group").(string)
 	managerType := d.Get("manager_type").(string)
 
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_group_manager", "create", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	if managerType == "scheduled" {
@@ -207,9 +213,11 @@ func resourceIBMISInstanceGroupManagerCreate(d *schema.ResourceData, meta interf
 			InstanceGroupID:               &instanceGroupID,
 			InstanceGroupManagerPrototype: &instanceGroupManagerPrototype,
 		}
-		instanceGroupManagerIntf, response, err := sess.CreateInstanceGroupManager(&createInstanceGroupManagerOptions)
+		instanceGroupManagerIntf, _, err := sess.CreateInstanceGroupManagerWithContext(context, &createInstanceGroupManagerOptions)
 		if err != nil || instanceGroupManagerIntf == nil {
-			return fmt.Errorf("[ERROR] Error creating InstanceGroup manager: %s\n%s", err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateInstanceGroupManagerWithContext failed: %s", err.Error()), "ibm_is_instance_group_manager", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		instanceGroupManager := instanceGroupManagerIntf.(*vpcv1.InstanceGroupManager)
 		d.SetId(fmt.Sprintf("%s/%s", instanceGroupID, *instanceGroupManager.ID))
@@ -256,12 +264,16 @@ func resourceIBMISInstanceGroupManagerCreate(d *schema.ResourceData, meta interf
 
 		_, healthError := waitForHealthyInstanceGroup(instanceGroupID, meta, d.Timeout(schema.TimeoutCreate))
 		if healthError != nil {
-			return healthError
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("waitForHealthyInstanceGroup failed: %s", err.Error()), "ibm_is_instance_group_manager", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
-		instanceGroupManagerIntf, response, err := sess.CreateInstanceGroupManager(&createInstanceGroupManagerOptions)
+		instanceGroupManagerIntf, _, err := sess.CreateInstanceGroupManagerWithContext(context, &createInstanceGroupManagerOptions)
 		if err != nil || instanceGroupManagerIntf == nil {
-			return fmt.Errorf("[ERROR] Error creating InstanceGroup manager: %s\n%s", err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateInstanceGroupManagerWithContext failed: %s", err.Error()), "ibm_is_instance_group_manager", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		instanceGroupManager := instanceGroupManagerIntf.(*vpcv1.InstanceGroupManager)
 
@@ -269,14 +281,16 @@ func resourceIBMISInstanceGroupManagerCreate(d *schema.ResourceData, meta interf
 
 	}
 
-	return resourceIBMISInstanceGroupManagerRead(d, meta)
+	return resourceIBMISInstanceGroupManagerRead(context, d, meta)
 
 }
 
-func resourceIBMISInstanceGroupManagerUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMISInstanceGroupManagerUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_group_manager", "update", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	managerType := d.Get("manager_type").(string)
@@ -325,7 +339,7 @@ func resourceIBMISInstanceGroupManagerUpdate(d *schema.ResourceData, meta interf
 	if changed {
 		parts, err := flex.IdParts(d.Id())
 		if err != nil {
-			return err
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_group_manager", "update", "sep-id-parts").GetDiag()
 		}
 		instanceGroupID := parts[0]
 		instanceGroupManagerID := parts[1]
@@ -333,32 +347,40 @@ func resourceIBMISInstanceGroupManagerUpdate(d *schema.ResourceData, meta interf
 		updateInstanceGroupManagerOptions.InstanceGroupID = &instanceGroupID
 		instanceGroupManagerPatch, err := instanceGroupManagerPatchModel.AsPatch()
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for InstanceGroupManagerPatch: %s", err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("instanceGroupManagerPatchModel.AsPatch() failed: %s", err.Error()), "ibm_is_instance_group_manager", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		updateInstanceGroupManagerOptions.InstanceGroupManagerPatch = instanceGroupManagerPatch
 
 		_, healthError := waitForHealthyInstanceGroup(instanceGroupID, meta, d.Timeout(schema.TimeoutUpdate))
 		if healthError != nil {
-			return healthError
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("waitForHealthyInstanceGroup failed: %s", err.Error()), "ibm_is_instance_group_manager", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
-		_, response, err := sess.UpdateInstanceGroupManager(&updateInstanceGroupManagerOptions)
+		_, _, err = sess.UpdateInstanceGroupManagerWithContext(context, &updateInstanceGroupManagerOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error updating InstanceGroup manager: %s\n%s", err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateInstanceGroupManagerWithContext failed: %s", err.Error()), "ibm_is_instance_group_manager", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
-	return resourceIBMISInstanceGroupManagerRead(d, meta)
+	return resourceIBMISInstanceGroupManagerRead(context, d, meta)
 }
 
-func resourceIBMISInstanceGroupManagerRead(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMISInstanceGroupManagerRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_group_manager", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	parts, err := flex.IdParts(d.Id())
 	if err != nil {
-		return err
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_group_manager", "read", "sep-id-parts").GetDiag()
 	}
 	instanceGroupID := parts[0]
 	instanceGroupManagerID := parts[1]
@@ -367,36 +389,95 @@ func resourceIBMISInstanceGroupManagerRead(d *schema.ResourceData, meta interfac
 		ID:              &instanceGroupManagerID,
 		InstanceGroupID: &instanceGroupID,
 	}
-	instanceGroupManagerIntf, response, err := sess.GetInstanceGroupManager(&getInstanceGroupManagerOptions)
+	instanceGroupManagerIntf, response, err := sess.GetInstanceGroupManagerWithContext(context, &getInstanceGroupManagerOptions)
 	if err != nil || instanceGroupManagerIntf == nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error Getting InstanceGroup Manager: %s\n%s", err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetInstanceGroupManagerWithContext failed: %s", err.Error()), "ibm_is_instance_group_manager", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	instanceGroupManager := instanceGroupManagerIntf.(*vpcv1.InstanceGroupManager)
 
 	managerType := *instanceGroupManager.ManagerType
 
 	if managerType == "scheduled" {
-		d.Set("name", *instanceGroupManager.Name)
-		d.Set("enable_manager", *instanceGroupManager.ManagementEnabled)
-		d.Set("manager_id", instanceGroupManagerID)
-		d.Set("instance_group", instanceGroupID)
-		d.Set("manager_type", *instanceGroupManager.ManagerType)
-
+		if !core.IsNil(instanceGroupManager.Name) {
+			if err = d.Set("name", instanceGroupManager.Name); err != nil {
+				err = fmt.Errorf("Error setting name: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_group_manager", "read", "set-name").GetDiag()
+			}
+		}
+		if !core.IsNil(instanceGroupManager.ManagementEnabled) {
+			if err = d.Set("enable_manager", instanceGroupManager.ManagementEnabled); err != nil {
+				err = fmt.Errorf("Error setting enable_manager: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_group_manager", "read", "set-enable_manager").GetDiag()
+			}
+		}
+		if err = d.Set("manager_id", instanceGroupManagerID); err != nil {
+			err = fmt.Errorf("Error setting manager_id: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_group_manager", "read", "set-manager_id").GetDiag()
+		}
+		if err = d.Set("instance_group", instanceGroupID); err != nil {
+			err = fmt.Errorf("Error setting instance_group: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_group_manager", "read", "set-instance_group").GetDiag()
+		}
+		if err = d.Set("manager_type", *instanceGroupManager.ManagerType); err != nil {
+			err = fmt.Errorf("Error setting manager_type: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_group_manager", "read", "set-manager_type").GetDiag()
+		}
 	} else {
-
-		d.Set("name", *instanceGroupManager.Name)
+		if !core.IsNil(instanceGroupManager.Name) {
+			if err = d.Set("name", instanceGroupManager.Name); err != nil {
+				err = fmt.Errorf("Error setting name: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_group_manager", "read", "set-name").GetDiag()
+			}
+		}
 		d.Set("aggregation_window", *instanceGroupManager.AggregationWindow)
-		d.Set("cooldown", *instanceGroupManager.Cooldown)
-		d.Set("max_membership_count", *instanceGroupManager.MaxMembershipCount)
-		d.Set("min_membership_count", *instanceGroupManager.MinMembershipCount)
-		d.Set("enable_manager", *instanceGroupManager.ManagementEnabled)
-		d.Set("manager_id", instanceGroupManagerID)
-		d.Set("instance_group", instanceGroupID)
-		d.Set("manager_type", *instanceGroupManager.ManagerType)
+		if !core.IsNil(instanceGroupManager.AggregationWindow) {
+			if err = d.Set("aggregation_window", flex.IntValue(instanceGroupManager.AggregationWindow)); err != nil {
+				err = fmt.Errorf("Error setting aggregation_window: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_group_manager", "read", "set-aggregation_window").GetDiag()
+			}
+		}
+		if !core.IsNil(instanceGroupManager.Cooldown) {
+			if err = d.Set("cooldown", flex.IntValue(instanceGroupManager.Cooldown)); err != nil {
+				err = fmt.Errorf("Error setting cooldown: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_group_manager", "read", "set-cooldown").GetDiag()
+			}
+		}
+		if !core.IsNil(instanceGroupManager.MaxMembershipCount) {
+			if err = d.Set("max_membership_count", flex.IntValue(instanceGroupManager.MaxMembershipCount)); err != nil {
+				err = fmt.Errorf("Error setting max_membership_count: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_group_manager", "read", "set-max_membership_count").GetDiag()
+			}
+		}
+		if !core.IsNil(instanceGroupManager.MinMembershipCount) {
+			if err = d.Set("min_membership_count", flex.IntValue(instanceGroupManager.MinMembershipCount)); err != nil {
+				err = fmt.Errorf("Error setting min_membership_count: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_group_manager", "read", "set-min_membership_count").GetDiag()
+			}
+		}
+		if !core.IsNil(instanceGroupManager.ManagementEnabled) {
+			if err = d.Set("enable_manager", instanceGroupManager.ManagementEnabled); err != nil {
+				err = fmt.Errorf("Error setting enable_manager: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_group_manager", "read", "set-enable_manager").GetDiag()
+			}
+		}
+		if err = d.Set("manager_id", instanceGroupManagerID); err != nil {
+			err = fmt.Errorf("Error setting manager_id: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_group_manager", "read", "set-manager_id").GetDiag()
+		}
+		if err = d.Set("instance_group", instanceGroupID); err != nil {
+			err = fmt.Errorf("Error setting instance_group: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_group_manager", "read", "set-instance_group").GetDiag()
+		}
+		if err = d.Set("manager_type", *instanceGroupManager.ManagerType); err != nil {
+			err = fmt.Errorf("Error setting manager_type: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_group_manager", "read", "set-manager_type").GetDiag()
+		}
 
 	}
 
@@ -411,26 +492,34 @@ func resourceIBMISInstanceGroupManagerRead(d *schema.ResourceData, meta interfac
 			actions = append(actions, actn)
 		}
 	}
-	d.Set("actions", actions)
+	if err = d.Set("actions", actions); err != nil {
+		err = fmt.Errorf("Error setting actions: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_group_manager", "read", "set-actions").GetDiag()
+	}
 
 	policies := make([]string, 0)
 
 	for i := 0; i < len(instanceGroupManager.Policies); i++ {
 		policies = append(policies, string(*(instanceGroupManager.Policies[i].ID)))
 	}
-	d.Set("policies", policies)
+	if err = d.Set("policies", policies); err != nil {
+		err = fmt.Errorf("Error setting policies: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_group_manager", "read", "set-policies").GetDiag()
+	}
 	return nil
 }
 
-func resourceIBMISInstanceGroupManagerDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMISInstanceGroupManagerDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_group_manager", "delete", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	parts, err := flex.IdParts(d.Id())
 	if err != nil {
-		return err
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_group_manager", "delete", "sep-id-parts").GetDiag()
 	}
 	instanceGroupID := parts[0]
 	instanceGroupManagerID := parts[1]
@@ -442,16 +531,20 @@ func resourceIBMISInstanceGroupManagerDelete(d *schema.ResourceData, meta interf
 
 	_, healthError := waitForHealthyInstanceGroup(instanceGroupID, meta, d.Timeout(schema.TimeoutDelete))
 	if healthError != nil {
-		return healthError
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("waitForHealthyInstanceGroup failed: %s", err.Error()), "ibm_is_instance_group_manager", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
-	response, err := sess.DeleteInstanceGroupManager(&deleteInstanceGroupManagerOptions)
+	response, err := sess.DeleteInstanceGroupManagerWithContext(context, &deleteInstanceGroupManagerOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error Deleting the InstanceGroup Manager: %s\n%s", err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteInstanceGroupManagerWithContext failed: %s", err.Error()), "ibm_is_instance_group_manager", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	return nil
 }
