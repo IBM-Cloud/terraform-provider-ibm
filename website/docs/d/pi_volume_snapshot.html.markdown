@@ -47,7 +47,7 @@ You can specify the following arguments for this data source.
 In addition to all argument reference list, you can access the following attribute references after your data source is created.
 
 - `creation_date` - (String) The date and time when the volume snapshot was created.
-- `crn` - (String) The CRN for this resource.
+- `crn` - (Deprecated, String) The CRN for this resource.
 - `id` - (String) The unique identifier of the volume snapshot.
 - `name` - (String) The volume snapshot name.
 - `size` - (Float) The size of the volume snapshot, in gibibytes (GiB).
