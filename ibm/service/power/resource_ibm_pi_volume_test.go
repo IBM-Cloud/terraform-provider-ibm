@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -64,7 +65,7 @@ func testAccCheckIBMPIVolumeDestroy(s *terraform.State) error {
 		volume, err := volumeC.Get(volumeID)
 		if err == nil {
 			log.Println("volume*****", volume.State)
-			return fmt.Errorf("PI Volume still exists: %s", rs.Primary.ID)
+			return flex.FmtErrorf("PI Volume still exists: %s", rs.Primary.ID)
 		}
 	}
 
@@ -76,7 +77,7 @@ func testAccCheckIBMPIVolumeExists(n string) resource.TestCheckFunc {
 		rs, ok := s.RootModule().Resources[n]
 
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return flex.FmtErrorf("Not found: %s", n)
 		}
 
 		if rs.Primary.ID == "" {

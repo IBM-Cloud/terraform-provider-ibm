@@ -5,6 +5,7 @@ package power
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
@@ -123,7 +124,9 @@ func dataSourceIBMPINetworkInterfacesRead(ctx context.Context, d *schema.Resourc
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_network_interfaces", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
@@ -131,7 +134,9 @@ func dataSourceIBMPINetworkInterfacesRead(ctx context.Context, d *schema.Resourc
 	networkC := instance.NewIBMPINetworkClient(ctx, sess, cloudInstanceID)
 	networkInterfaces, err := networkC.GetAllNetworkInterfaces(networkID)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetAllNetworkInterfaces failed: %s", err.Error()), "ibm_pi_network_interfaces", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	var genID, _ = uuid.GenerateUUID()

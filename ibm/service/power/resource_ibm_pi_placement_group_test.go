@@ -102,7 +102,7 @@ func testAccCheckIBMPIPlacementGroupDestroy(s *terraform.State) error {
 		placementGroupC := instance.NewIBMPIPlacementGroupClient(context.Background(), sess, cloudinstanceid)
 		_, err = placementGroupC.Get(parts[1])
 		if err == nil {
-			return fmt.Errorf("PI placement group still exists: %s", rs.Primary.ID)
+			return flex.FmtErrorf("PI placement group still exists: %s", rs.Primary.ID)
 		}
 	}
 	return nil
@@ -113,7 +113,7 @@ func testAccCheckIBMPIPlacementGroupExists(n string) resource.TestCheckFunc {
 		rs, ok := s.RootModule().Resources[n]
 
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return flex.FmtErrorf("Not found: %s", n)
 		}
 
 		if rs.Primary.ID == "" {
@@ -145,7 +145,7 @@ func testAccCheckIBMPIPlacementGroupMemberExists(n string, inst string) resource
 		rs, ok := s.RootModule().Resources[n]
 
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return flex.FmtErrorf("Not found: %s", n)
 		}
 
 		if rs.Primary.ID == "" {
@@ -171,7 +171,7 @@ func testAccCheckIBMPIPlacementGroupMemberExists(n string, inst string) resource
 
 		instancers, ok := s.RootModule().Resources[inst]
 		if !ok {
-			return fmt.Errorf("Not found: %s", inst)
+			return flex.FmtErrorf("Not found: %s", inst)
 		}
 		instanceParts, err := flex.IdParts(instancers.Primary.ID)
 		if err != nil {
@@ -185,7 +185,7 @@ func testAccCheckIBMPIPlacementGroupMemberExists(n string, inst string) resource
 			}
 		}
 		if !isInstanceFound {
-			return fmt.Errorf("Expected server ID %s in the PG members field but found %s", instanceParts[1], strings.Join(pg.Members[:], ","))
+			return flex.FmtErrorf("Expected server ID %s in the PG members field but found %s", instanceParts[1], strings.Join(pg.Members[:], ","))
 		}
 		return nil
 	}
@@ -197,7 +197,7 @@ func testAccCheckIBMPIPlacementGroupMemberDoesNotExist(n string, inst string) re
 		rs, ok := s.RootModule().Resources[n]
 
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return flex.FmtErrorf("Not found: %s", n)
 		}
 
 		if rs.Primary.ID == "" {
@@ -223,14 +223,14 @@ func testAccCheckIBMPIPlacementGroupMemberDoesNotExist(n string, inst string) re
 
 		instancers, ok := s.RootModule().Resources[inst]
 		if !ok {
-			return fmt.Errorf("Not found: %s", inst)
+			return flex.FmtErrorf("Not found: %s", inst)
 		}
 		instanccParts, err := flex.IdParts(instancers.Primary.ID)
 		if err != nil {
 			return err
 		}
 		if len(pg.Members) > 0 {
-			return fmt.Errorf("Expected server ID %s to be removed so that the PG members field is empty but foumd %s", instanccParts[1], pg.Members[0])
+			return flex.FmtErrorf("Expected server ID %s to be removed so that the PG members field is empty but foumd %s", instanccParts[1], pg.Members[0])
 		}
 
 		return nil
@@ -252,7 +252,7 @@ func testAccCheckIBMPIPlacementGroupMemberExistsFromInstanceCreate(n string, ins
 		rs, ok := s.RootModule().Resources[n]
 
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return flex.FmtErrorf("Not found: %s", n)
 		}
 
 		if rs.Primary.ID == "" {
@@ -278,7 +278,7 @@ func testAccCheckIBMPIPlacementGroupMemberExistsFromInstanceCreate(n string, ins
 
 		instancers, ok := s.RootModule().Resources[inst]
 		if !ok {
-			return fmt.Errorf("Not found: %s", inst)
+			return flex.FmtErrorf("Not found: %s", inst)
 		}
 		instanceParts, err := flex.IdParts(instancers.Primary.ID)
 		if err != nil {
@@ -287,7 +287,7 @@ func testAccCheckIBMPIPlacementGroupMemberExistsFromInstanceCreate(n string, ins
 
 		newinstancers, ok := s.RootModule().Resources[newInstance]
 		if !ok {
-			return fmt.Errorf("Not found: %s", newInstance)
+			return flex.FmtErrorf("Not found: %s", newInstance)
 		}
 		newinstanceParts, err := flex.IdParts(newinstancers.Primary.ID)
 		if err != nil {
@@ -295,10 +295,10 @@ func testAccCheckIBMPIPlacementGroupMemberExistsFromInstanceCreate(n string, ins
 		}
 
 		if !containsMember(pg.Members, instanceParts[1]) {
-			return fmt.Errorf("Expected server ID %s in the PG members field", instanceParts[1])
+			return flex.FmtErrorf("Expected server ID %s in the PG members field", instanceParts[1])
 		}
 		if !containsMember(pg.Members, newinstanceParts[1]) {
-			return fmt.Errorf("Expected new server ID %s in the PG members field", newinstanceParts[1])
+			return flex.FmtErrorf("Expected new server ID %s in the PG members field", newinstanceParts[1])
 		}
 		return nil
 	}
@@ -313,7 +313,7 @@ func testAccCheckIBMPIPlacementGroupDelete(n string, inst string, newInstance st
 
 		instancers, ok := s.RootModule().Resources[inst]
 		if !ok {
-			return fmt.Errorf("Not found: %s", inst)
+			return flex.FmtErrorf("Not found: %s", inst)
 		}
 		instanceParts, err := flex.IdParts(instancers.Primary.ID)
 		if err != nil {
@@ -322,7 +322,7 @@ func testAccCheckIBMPIPlacementGroupDelete(n string, inst string, newInstance st
 
 		newinstancers, ok := s.RootModule().Resources[newInstance]
 		if !ok {
-			return fmt.Errorf("Not found: %s", newInstance)
+			return flex.FmtErrorf("Not found: %s", newInstance)
 		}
 		newinstanceParts, err := flex.IdParts(newinstancers.Primary.ID)
 		if err != nil {
@@ -337,14 +337,14 @@ func testAccCheckIBMPIPlacementGroupDelete(n string, inst string, newInstance st
 		}
 
 		if *instance.PlacementGroup != "none" {
-			return fmt.Errorf("Expected no placement group ID in the PVM instance data but found %s", *instance.PlacementGroup)
+			return flex.FmtErrorf("Expected no placement group ID in the PVM instance data but found %s", *instance.PlacementGroup)
 		}
 		newinstance, err := inst_client.Get(newinstanceParts[1])
 		if err != nil {
 			return err
 		}
 		if *newinstance.PlacementGroup != "none" {
-			return fmt.Errorf("Expected no placement group ID in the PVM instance data but found %s", *newinstance.PlacementGroup)
+			return flex.FmtErrorf("Expected no placement group ID in the PVM instance data but found %s", *newinstance.PlacementGroup)
 		}
 		return nil
 	}

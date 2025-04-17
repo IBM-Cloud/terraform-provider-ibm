@@ -76,7 +76,9 @@ func DataSourceIBMPIStorageTypeCapacity() *schema.Resource {
 func dataSourceIBMPIStorageTypeCapacityRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_storage_type_capacity", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
@@ -85,8 +87,9 @@ func dataSourceIBMPIStorageTypeCapacityRead(ctx context.Context, d *schema.Resou
 	client := instance.NewIBMPIStorageCapacityClient(ctx, sess, cloudInstanceID)
 	stc, err := client.GetStorageTypeCapacity(storageType)
 	if err != nil {
-		log.Printf("[ERROR] get storage type capacity failed %v", err)
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetStorageTypeCapacity failed: %s", err.Error()), "ibm_pi_storage_type_capacity", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", cloudInstanceID, storageType))

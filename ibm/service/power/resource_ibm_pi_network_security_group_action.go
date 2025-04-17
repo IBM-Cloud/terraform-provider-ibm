@@ -6,17 +6,18 @@ package power
 import (
 	"context"
 	"fmt"
+	"log"
 	"time"
-
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 func ResourceIBMPINetworkSecurityGroupAction() *schema.Resource {
@@ -60,7 +61,9 @@ func ResourceIBMPINetworkSecurityGroupAction() *schema.Resource {
 func resourceIBMPINetworkSecurityGroupActionCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_network_security_group_action", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
@@ -69,17 +72,23 @@ func resourceIBMPINetworkSecurityGroupActionCreate(ctx context.Context, d *schem
 	wsclient := instance.NewIBMPIWorkspacesClient(ctx, sess, cloudInstanceID)
 	_, err = isWaitForWorkspaceActive(ctx, wsclient, cloudInstanceID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForWorkspaceActive failed: %s", err.Error()), "ibm_pi_network_security_group_action", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	body := &models.NetworkSecurityGroupsAction{Action: &action}
 	err = nsgClient.Action(body)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Action failed: %s", err.Error()), "ibm_pi_network_security_group_action", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	_, err = isWaitForNSGStatus(ctx, wsclient, cloudInstanceID, action, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForNSGStatus failed: %s", err.Error()), "ibm_pi_network_security_group_action", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	d.SetId(cloudInstanceID)
 	return resourceIBMPINetworkSecurityGroupActionRead(ctx, d, meta)
@@ -88,51 +97,61 @@ func resourceIBMPINetworkSecurityGroupActionCreate(ctx context.Context, d *schem
 func resourceIBMPINetworkSecurityGroupActionRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_network_security_group_action", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	wsclient := instance.NewIBMPIWorkspacesClient(ctx, sess, d.Id())
 	ws, err := wsclient.Get(d.Id())
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Get failed: %s", err.Error()), "ibm_pi_network_security_group_action", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
-
 	if ws.Details.NetworkSecurityGroups != nil {
 		d.Set(Attr_State, ws.Details.NetworkSecurityGroups.State)
 	} else {
 		d.Set(Attr_State, nil)
 	}
-
 	return nil
 }
+
 func resourceIBMPINetworkSecurityGroupActionUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_network_security_group_action", "update")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
 	if d.HasChange(Arg_Action) {
 		action := d.Get(Arg_Action).(string)
 		nsgClient := instance.NewIBMIPINetworkSecurityGroupClient(ctx, sess, cloudInstanceID)
-
 		body := &models.NetworkSecurityGroupsAction{Action: &action}
 		err = nsgClient.Action(body)
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Action failed: %s", err.Error()), "ibm_pi_network_security_group_action", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		wsclient := instance.NewIBMPIWorkspacesClient(ctx, sess, cloudInstanceID)
 		_, err = isWaitForNSGStatus(ctx, wsclient, cloudInstanceID, action, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForNSGStatus failed: %s", err.Error()), "ibm_pi_network_security_group_action", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 
 	return resourceIBMPINetworkSecurityGroupActionRead(ctx, d, meta)
 }
+
 func resourceIBMPINetworkSecurityGroupActionDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	d.SetId("")
 	return nil
 }
+
 func isWaitForWorkspaceActive(ctx context.Context, client *instance.IBMPIWorkspacesClient, id string, timeout time.Duration) (interface{}, error) {
 	stateConf := &retry.StateChangeConf{
 		Pending:    []string{State_Provisioning},
@@ -142,9 +161,9 @@ func isWaitForWorkspaceActive(ctx context.Context, client *instance.IBMPIWorkspa
 		Delay:      10 * time.Second,
 		MinTimeout: 10 * time.Second,
 	}
-
 	return stateConf.WaitForStateContext(ctx)
 }
+
 func isWorkspaceRefreshFunc(client *instance.IBMPIWorkspacesClient, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		ws, err := client.Get(id)
@@ -157,12 +176,13 @@ func isWorkspaceRefreshFunc(client *instance.IBMPIWorkspacesClient, id string) r
 		}
 
 		if *(ws.Status) == State_Failed {
-			return ws, State_Failed, fmt.Errorf("[ERROR] The resource instance %s is in failed state", id)
+			return ws, State_Failed, flex.FmtErrorf("[ERROR] The resource instance %s is in failed state", id)
 		}
 
 		return ws, State_Provisioning, nil
 	}
 }
+
 func isWaitForNSGStatus(ctx context.Context, client *instance.IBMPIWorkspacesClient, id, action string, timeout time.Duration) (interface{}, error) {
 	stateConf := &retry.StateChangeConf{
 		Pending:    []string{State_Configuring},
@@ -172,7 +192,6 @@ func isWaitForNSGStatus(ctx context.Context, client *instance.IBMPIWorkspacesCli
 		Delay:      10 * time.Second,
 		MinTimeout: 10 * time.Second,
 	}
-
 	return stateConf.WaitForStateContext(ctx)
 }
 
@@ -192,7 +211,7 @@ func isPERWorkspaceNSGRefreshFunc(client *instance.IBMPIWorkspacesClient, id, ac
 		}
 
 		if *(ws.Details.NetworkSecurityGroups.State) == State_Error {
-			return ws, State_Error, fmt.Errorf("[ERROR] The workspace network security group state %s is %s", id, State_Error)
+			return ws, State_Error, flex.FmtErrorf("[ERROR] The workspace network security group state %s is %s", id, State_Error)
 		}
 		if *(ws.Details.NetworkSecurityGroups.State) == State_Active && action == Enable {
 			return ws, State_Active, nil

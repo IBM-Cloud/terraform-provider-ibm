@@ -11,6 +11,7 @@ import (
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -53,7 +54,7 @@ func testAccCheckIBMPIImageDestroy(s *terraform.State) error {
 		imageC := st.NewIBMPIImageClient(context.Background(), sess, cloudInstanceID)
 		_, err = imageC.Get(imageID)
 		if err == nil {
-			return fmt.Errorf("PI Image still exists: %s", rs.Primary.ID)
+			return flex.FmtErrorf("PI Image still exists: %s", rs.Primary.ID)
 		}
 	}
 
@@ -65,7 +66,7 @@ func testAccCheckIBMPIImageExists(n string) resource.TestCheckFunc {
 		rs, ok := s.RootModule().Resources[n]
 
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return flex.FmtErrorf("Not found: %s", n)
 		}
 
 		if rs.Primary.ID == "" {

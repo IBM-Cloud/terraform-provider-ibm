@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -89,11 +90,11 @@ func testAccIBMPIWorkspaceDestroy(s *terraform.State) error {
 		workspace, resp, err := client.GetRC(cloudInstanceID)
 		if err == nil {
 			if *workspace.State == power.State_Active {
-				return fmt.Errorf("Resource Instance still exists: %s", rs.Primary.ID)
+				return flex.FmtErrorf("Resource Instance still exists: %s", rs.Primary.ID)
 			}
 		} else {
 			if !strings.Contains(err.Error(), "404") {
-				return fmt.Errorf("[ERROR] Error checking if Resource Instance (%s) has been destroyed: %s with resp code: %s", rs.Primary.ID, err, resp)
+				return flex.FmtErrorf("[ERROR] Error checking if Resource Instance (%s) has been destroyed: %s with resp code: %s", rs.Primary.ID, err, resp)
 			}
 		}
 	}
@@ -105,7 +106,7 @@ func testAccCheckIBMPIWorkspaceExists(n string) resource.TestCheckFunc {
 		rs, ok := s.RootModule().Resources[n]
 
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return flex.FmtErrorf("Not found: %s", n)
 		}
 
 		if rs.Primary.ID == "" {

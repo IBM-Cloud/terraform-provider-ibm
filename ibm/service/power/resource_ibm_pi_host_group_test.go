@@ -16,6 +16,7 @@ import (
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 )
 
 func TestAccIBMPIHostGroupBasic(t *testing.T) {
@@ -56,7 +57,7 @@ func testAccCheckIBMPIHostGroupExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return flex.FmtErrorf("Not found: %s", n)
 		}
 		if rs.Primary.ID == "" {
 			return errors.New("No Record ID is set")
@@ -95,7 +96,7 @@ func testAccCheckIBMPIHostGroupDestroy(s *terraform.State) error {
 		client := instance.NewIBMPIHostGroupsClient(context.Background(), sess, cloudInstanceID)
 		_, err = client.GetHostGroup(hostGroupID)
 		if err == nil {
-			return fmt.Errorf("PI host group still exists: %s", rs.Primary.ID)
+			return flex.FmtErrorf("PI host group still exists: %s", rs.Primary.ID)
 		}
 	}
 	return nil

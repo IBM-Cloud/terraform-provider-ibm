@@ -101,10 +101,13 @@ func ResourceIBMPINetworkAddressGroupMember() *schema.Resource {
 		},
 	}
 }
+
 func resourceIBMPINetworkAddressGroupMemberCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_network_address_group_member", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
 	nagID := d.Get(Arg_NetworkAddressGroupID).(string)
@@ -115,11 +118,15 @@ func resourceIBMPINetworkAddressGroupMemberCreate(ctx context.Context, d *schema
 		body.Cidr = &cidr
 		NetworkAddressGroupMember, err := nagC.AddMember(nagID, body)
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("AddMember failed: %s", err.Error()), "ibm_pi_network_address_group_member", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		_, err = isWaitForIBMPINetworkAddressGroupMemberAdd(ctx, nagC, nagID, *NetworkAddressGroupMember.ID, d.Timeout(schema.TimeoutCreate))
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForIBMPINetworkAddressGroupMemberAdd failed: %s", err.Error()), "ibm_pi_network_address_group_member", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		d.SetId(fmt.Sprintf("%s/%s/%s", cloudInstanceID, nagID, *NetworkAddressGroupMember.ID))
 	}
@@ -127,26 +134,35 @@ func resourceIBMPINetworkAddressGroupMemberCreate(ctx context.Context, d *schema
 		memberID := v.(string)
 		err := nagC.DeleteMember(nagID, memberID)
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteMember failed: %s", err.Error()), "ibm_pi_network_address_group_member", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		_, err = isWaitForIBMPINetworkAddressGroupMemberRemove(ctx, nagC, nagID, memberID, d.Timeout(schema.TimeoutDelete))
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForIBMPINetworkAddressGroupMemberRemove failed: %s", err.Error()), "ibm_pi_network_address_group_member", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		d.SetId(fmt.Sprintf("%s/%s", cloudInstanceID, nagID))
 	}
 
 	return resourceIBMPINetworkAddressGroupMemberRead(ctx, d, meta)
 }
+
 func resourceIBMPINetworkAddressGroupMemberRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_network_address_group_member", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	parts, err := flex.IdParts(d.Id())
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IdParts failed: %s", err.Error()), "ibm_pi_network_address_group_member", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	nagC := instance.NewIBMPINetworkAddressGroupClient(ctx, sess, parts[0])
 	networkAddressGroup, err := nagC.Get(parts[1])
@@ -155,7 +171,9 @@ func resourceIBMPINetworkAddressGroupMemberRead(ctx context.Context, d *schema.R
 			d.SetId("")
 			return nil
 		}
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Get failed: %s", err.Error()), "ibm_pi_network_address_group_member", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	if networkAddressGroup.Crn != nil {
@@ -180,25 +198,34 @@ func resourceIBMPINetworkAddressGroupMemberRead(ctx context.Context, d *schema.R
 
 	return nil
 }
+
 func resourceIBMPINetworkAddressGroupMemberDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_network_address_group_member", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	parts, err := flex.IdParts(d.Id())
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IdParts failed: %s", err.Error()), "ibm_pi_network_address_group_member", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	if len(parts) > 2 {
 		nagC := instance.NewIBMPINetworkAddressGroupClient(ctx, sess, parts[0])
 		err = nagC.DeleteMember(parts[1], parts[2])
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteMember failed: %s", err.Error()), "ibm_pi_network_address_group_member", "delete")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		_, err = isWaitForIBMPINetworkAddressGroupMemberRemove(ctx, nagC, parts[1], parts[2], d.Timeout(schema.TimeoutDelete))
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForIBMPINetworkAddressGroupMemberRemove failed: %s", err.Error()), "ibm_pi_network_address_group_member", "delete")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 
@@ -206,6 +233,7 @@ func resourceIBMPINetworkAddressGroupMemberDelete(ctx context.Context, d *schema
 
 	return nil
 }
+
 func isWaitForIBMPINetworkAddressGroupMemberAdd(ctx context.Context, client *instance.IBMPINetworkAddressGroupClient, id, memberID string, timeout time.Duration) (interface{}, error) {
 
 	stateConf := &retry.StateChangeConf{
@@ -219,6 +247,7 @@ func isWaitForIBMPINetworkAddressGroupMemberAdd(ctx context.Context, client *ins
 
 	return stateConf.WaitForStateContext(ctx)
 }
+
 func isIBMPINetworkAddressGroupMemberAddRefreshFunc(client *instance.IBMPINetworkAddressGroupClient, id, memberID string) retry.StateRefreshFunc {
 
 	return func() (interface{}, string, error) {
@@ -239,6 +268,7 @@ func isIBMPINetworkAddressGroupMemberAddRefreshFunc(client *instance.IBMPINetwor
 		return networkAddressGroup, State_Pending, nil
 	}
 }
+
 func isWaitForIBMPINetworkAddressGroupMemberRemove(ctx context.Context, client *instance.IBMPINetworkAddressGroupClient, id, memberID string, timeout time.Duration) (interface{}, error) {
 
 	stateConf := &retry.StateChangeConf{
@@ -252,6 +282,7 @@ func isWaitForIBMPINetworkAddressGroupMemberRemove(ctx context.Context, client *
 
 	return stateConf.WaitForStateContext(ctx)
 }
+
 func isIBMPINetworkAddressGroupMemberRemoveRefreshFunc(client *instance.IBMPINetworkAddressGroupClient, id, memberID string) retry.StateRefreshFunc {
 
 	return func() (interface{}, string, error) {
