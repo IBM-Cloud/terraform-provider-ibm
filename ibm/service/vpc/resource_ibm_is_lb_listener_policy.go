@@ -401,6 +401,9 @@ func resourceIBMISLBListenerPolicyCreate(context context.Context, d *schema.Reso
 	}
 
 	action := d.Get(isLBListenerPolicyAction).(string)
+	if action == "forward" {
+		action = "forward_to_pool"
+	}
 	priority := int64(d.Get(isLBListenerPolicyPriority).(int))
 
 	//user-defined name for this policy.
@@ -487,7 +490,7 @@ func lbListenerPolicyCreate(d *schema.ResourceData, meta interface{}, lbID, list
 			}
 		} else if actionChk.(string) == "forward_to_listener" {
 			if targetIDSet {
-				//User can set listener id as combination of lbID/listenerID, parse and get the listenerID
+				//user can set listener id as combination of lbID/listenerID, parse and get the listenerID
 				listenerID, err := getListenerID(d.Get(isLBListenerPolicyListenerID).(string))
 				if err != nil {
 					return diag.FromErr(err)
