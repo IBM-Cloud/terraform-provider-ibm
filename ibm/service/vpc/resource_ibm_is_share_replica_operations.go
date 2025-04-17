@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -91,7 +92,9 @@ func ResourceIbmIsShareReplicaOperationsValidator() *validate.ResourceValidator 
 func resourceIbmIsShareReplicaOperationsCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("vpcClient creation failed: %s", err.Error()), "ibm_is_share_replica_operations", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	share_id := d.Get("share_replica").(string)
@@ -110,8 +113,9 @@ func resourceIbmIsShareReplicaOperationsCreate(context context.Context, d *schem
 		}
 		response, err := vpcClient.FailoverShareWithContext(context, failOverShareOptions)
 		if err != nil {
-			log.Printf("[DEBUG] FailoverShareWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("[ERROR] FailoverShareWithContext failed %s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Fail over failed: %s\n%s", err.Error(), response), "ibm_is_share_replica_operations", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	} else {
 		deleteShareSourceOptions := &vpcv1.DeleteShareSourceOptions{
@@ -119,8 +123,9 @@ func resourceIbmIsShareReplicaOperationsCreate(context context.Context, d *schem
 		}
 		response, err := vpcClient.DeleteShareSourceWithContext(context, deleteShareSourceOptions)
 		if err != nil {
-			log.Printf("[DEBUG] DeleteShareSourceWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("[ERROR] DeleteShareSourceWithContext failed %s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Split share failed: %s\n%s", err.Error(), response), "ibm_is_share_replica_operations", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 	_, err = isWaitForShareReplicationJobDone(context, vpcClient, share_id, d, d.Timeout(schema.TimeoutCreate))
