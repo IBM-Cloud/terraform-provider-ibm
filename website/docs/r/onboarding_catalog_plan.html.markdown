@@ -99,7 +99,7 @@ You can specify the following arguments for this resource.
 
 * `active` - (Required, Boolean) Whether the service is active.
 * `catalog_product_id` - (Required, Forces new resource, String) The unique ID of this global catalog product.
-  * Constraints: The maximum length is `128` characters. The minimum length is `2` characters. The value must match regular expression `/^\\S*$/`.
+  * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^\\S*$/`.
 * `disabled` - (Required, Boolean) Determines the global visibility for the catalog entry, and its children. If it is not enabled, all plans are disabled.
 * `env` - (Optional, String) The environment to fetch this object from.
   * Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^[a-z_.-]+$/`.
@@ -189,7 +189,7 @@ Nested schema for **metadata**:
 			* `terms_url` - (Optional, String) The URL for your product's end user license agreement.
 			  * Constraints: The maximum length is `2083` characters. The minimum length is `0` characters.
 * `name` - (Required, String) The programmatic name of this plan.
-  * Constraints: The value must match regular expression `/^[a-zA-Z0-9\\-.]+$/`.
+  * Constraints: The value must match regular expression `/^\\S*$/`.
 * `object_id` - (Optional, String) The desired ID of the global catalog object.
 * `object_provider` - (Required, List) The provider or owner of the product.
 Nested schema for **object_provider**:
@@ -206,7 +206,7 @@ Nested schema for **overview_ui**:
   * Constraints: The list items must match regular expression `/^[a-z0-9\\-._]+$/`. The maximum length is `100` items. The minimum length is `0` items.
 * `product_id` - (Required, Forces new resource, String) The unique ID of the product.
   * Constraints: The maximum length is `71` characters. The minimum length is `71` characters. The value must match regular expression `/^[a-zA-Z0-9]{32}:o:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/`.
-* `tags` - (Required, List) A list of tags that carry information about your product. These tags can be used to find your product in the IBM Cloud catalog.
+* `tags` - (Optional, List) A list of tags that carry information about your product. These tags can be used to find your product in the IBM Cloud catalog.
   * Constraints: The list items must match regular expression `/^[a-z0-9\\-._]+$/`. The maximum length is `100` items. The minimum length is `0` items.
 
 ## Attribute Reference
@@ -215,6 +215,7 @@ After your resource is created, you can read values from the listed arguments an
 
 * `id` - The unique identifier of the onboarding_catalog_plan.
 * `catalog_plan_id` - (String) The ID of a global catalog object.
+  * Constraints: The value must match regular expression `/^\\S*$/`.
 * `geo_tags` - (List) 
   * Constraints: The list items must match regular expression `/./`. The maximum length is `1000` items. The minimum length is `0` items.
 * `url` - (String) The global catalog URL of your product.
