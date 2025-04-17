@@ -43,6 +43,8 @@ resource "ibm_cis_domain_settings" "test_domain_settings" {
   tls_client_auth             = "off"
   true_client_ip_header       = "off"
   websockets                  = "off"
+  opportunistic_onion         = "off"
+  log_retention               = false
   challenge_ttl               = 31536000
   max_upload                  = 300
   cipher                      = ["AES128-SHA256"]
@@ -115,6 +117,8 @@ resource "ibm_cis_domain_settings" "test_domain_settings" {
   tls_client_auth             = "off"
   true_client_ip_header       = "off"
   websockets                  = "off"
+  opportunistic_onion         = "off"
+  log_retention               = false
   challenge_ttl               = 31536000
   max_upload                  = 300
   cipher                      = []
@@ -209,6 +213,8 @@ Review the argument references that you can specify for your resource.
 - `origin_max_http_version` - (Optional, String) Sets the highest HTTP version to use with origin. Supported values are `1` and `2`.
 - `origin_post_quantum_encryption` - (Optional, String) Wheather to use post-quantum key agreement algorithms when connecting to the origin. Supported values are `off`, `preferred` and `supported`.
 - `proxy_read_timeout` - (Optional, Integer) Maximum time between two read operations from origin. Valid values are `1-6000`.
+- `opportunistic_onion` - (Optional, String) Supported values are `off` and `on`.
+- `log_retention` - (Optional, String) Supported values are `false` and `true`.
 
 ### Note
 
