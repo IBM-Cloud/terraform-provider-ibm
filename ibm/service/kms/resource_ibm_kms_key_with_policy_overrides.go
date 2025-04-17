@@ -113,7 +113,7 @@ func ResourceIBMKmsKeyWithPolicyOverrides() *schema.Resource {
 			"expiration_date": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "The date the key material expires. The date format follows RFC 3339. You can set an expiration date on any key on its creation. A key moves into the Deactivated state within one hour past its expiration date, if one is assigned. If you create a key without specifying an expiration date, the key does not expire",
+				Description: "The date and time that the key expires in the system, in RFC 3339 format (YYYY-MM-DD HH:MM:SS.SS, for example 2019-10-12T07:20:50.52Z). Use caution when setting an expiration date, as keys created with an expiration date automatically transition to the Deactivated state within one hour after expiration. In this state, the only allowed actions on the key are unwrap, rewrap, rotate, and delete. Deactivated keys cannot be used to encrypt (wrap) new data, even if rotated while deactivated. Rotation does not reset or extend the expiration date, nor does it allow changing it. According to NIST 800-57 Section 5.3.6-7.a, wrapping operations must not be performed using a key-wrapping key whose originator-usage period has expired. It is recommended that any data encrypted with an expiring or expired key be re-encrypted using a new Customer-Root Key (CRK) before the original CRK expires, to prevent service disruptions. Deleting and restoring a deactivated key does not move it back to the Active state. If the expiration_date attribute is omitted, the key does not expire.",
 				ForceNew:    true,
 			},
 			"instance_crn": {
