@@ -111,6 +111,9 @@ func resourceIBMISSecurityGroupTargetCreate(d *schema.ResourceData, meta interfa
 	createSecurityGroupTargetBindingOptions := &vpcv1.CreateSecurityGroupTargetBindingOptions{}
 	createSecurityGroupTargetBindingOptions.SecurityGroupID = &securityGroupID
 	createSecurityGroupTargetBindingOptions.ID = &targetID
+	isSGTargetPrefixKey := "security_group_key_" + targetID
+	conns.IbmMutexKV.Lock(isSGTargetPrefixKey)
+	defer conns.IbmMutexKV.Unlock(isSGTargetPrefixKey)
 
 	sg, response, err := sess.CreateSecurityGroupTargetBinding(createSecurityGroupTargetBindingOptions)
 	if err != nil || sg == nil {
@@ -193,6 +196,12 @@ func resourceIBMISSecurityGroupTargetRead(d *schema.ResourceData, meta interface
 	if target.ResourceType != nil && *target.ResourceType != "" {
 		d.Set(isSecurityGroupResourceType, *target.ResourceType)
 	}
+	if target != nil && *target.ResourceType == "load_balancer" {
+		_, waitErr := isWaitForSGTargetLBAvailable(sess, *target.ID, d.Timeout(schema.TimeoutCreate))
+		if waitErr != nil {
+			return fmt.Errorf("[ERROR] Error waiting for load balancer to become available while creating/updating Security Group Target Binding: %s", waitErr)
+		}
+	}
 
 	return nil
 }
@@ -222,6 +231,10 @@ func resourceIBMISSecurityGroupTargetDelete(d *schema.ResourceData, meta interfa
 		}
 		return fmt.Errorf("[ERROR] Error Getting Security Group Targets (%s): %s\n%s", securityGroupID, err, response)
 	}
+	// Acquire a lock based on the target ID to prevent simultaneous delete on same target
+	isSGTargetPrefixKey := "security_group_key_" + securityGroupTargetID
+	conns.IbmMutexKV.Lock(isSGTargetPrefixKey)
+	defer conns.IbmMutexKV.Unlock(isSGTargetPrefixKey)
 
 	deleteSecurityGroupTargetBindingOptions := sess.NewDeleteSecurityGroupTargetBindingOptions(securityGroupID, securityGroupTargetID)
 	response, err = sess.DeleteSecurityGroupTargetBinding(deleteSecurityGroupTargetBindingOptions)
