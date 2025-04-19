@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 )
 
@@ -46,7 +47,9 @@ func DataSourceIBMIsVPNGatewayConnectionLocalCidrs() *schema.Resource {
 func dataSourceIBMIsVPNGatewayConnectionLocalCidrsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_vpn_gateway_connection_local_cidrs", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	listVPNGatewayConnectionsLocalCidrsOptions := &vpcv1.ListVPNGatewayConnectionsLocalCIDRsOptions{}
@@ -54,13 +57,17 @@ func dataSourceIBMIsVPNGatewayConnectionLocalCidrsRead(context context.Context, 
 	listVPNGatewayConnectionsLocalCidrsOptions.SetVPNGatewayID(d.Get("vpn_gateway").(string))
 	listVPNGatewayConnectionsLocalCidrsOptions.SetID(d.Get("vpn_gateway_connection").(string))
 
-	vpnGatewayConnectionCidRs, response, err := vpcClient.ListVPNGatewayConnectionsLocalCIDRsWithContext(context, listVPNGatewayConnectionsLocalCidrsOptions)
+	vpnGatewayConnectionCidRs, _, err := vpcClient.ListVPNGatewayConnectionsLocalCIDRsWithContext(context, listVPNGatewayConnectionsLocalCidrsOptions)
 	if err != nil {
-		log.Printf("[DEBUG] ListVPNGatewayConnectionsLocalCidrsWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("ListVPNGatewayConnectionsLocalCidrsWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListVPNGatewayConnectionsLocalCIDRsWithContext failed %s", err), "(Data) ibm_is_vpn_gateway_connection_local_cidrs", "read")
+		log.Printf("[DEBUG] %s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	d.SetId(dataSourceIBMIsVPNGatewayConnectionLocalCidrsID(d))
-	d.Set("cidrs", vpnGatewayConnectionCidRs.CIDRs)
+
+	if err = d.Set("cidrs", vpnGatewayConnectionCidRs.CIDRs); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting cidrs %s", err), "(Data) ibm_is_vpn_gateway_connection_local_cidrs", "read", "cidrs-set").GetDiag()
+	}
 
 	return nil
 }
