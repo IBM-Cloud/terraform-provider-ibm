@@ -1,5 +1,4 @@
 Activity Tracker Event Routing
-API Gateway
 App ID Management
 App Configuration
 Catalog Management

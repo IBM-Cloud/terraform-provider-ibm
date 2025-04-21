@@ -24,7 +24,6 @@ import (
 	"github.com/IBM-Cloud/container-services-go-sdk/kubernetesserviceapiv1"
 	"github.com/IBM-Cloud/container-services-go-sdk/satellitelinkv1"
 	"github.com/IBM-Cloud/terraform-provider-ibm/version"
-	apigateway "github.com/IBM/apigateway-go-sdk/apigatewaycontrollerapiv1"
 	"github.com/IBM/appconfiguration-go-admin-sdk/appconfigurationv1"
 	appid "github.com/IBM/appid-management-go-sdk/appidmanagementv4"
 	"github.com/IBM/cloud-databases-go-sdk/clouddatabasesv5"
@@ -258,7 +257,6 @@ type ClientSession interface {
 	KeyManagementAPI() (*kp.Client, error)
 	VpcV1API() (*vpc.VpcV1, error)
 	VpcV1BetaAPI() (*vpcbeta.VpcbetaV1, error)
-	APIGateway() (*apigateway.ApiGatewayControllerApiV1, error)
 	PrivateDNSClientSession() (*dns.DnsSvcsV1, error)
 	CosConfigV1API() (*cosconfig.ResourceConfigurationV1, error)
 	DirectlinkV1API() (*dl.DirectLinkV1, error)
@@ -333,9 +331,6 @@ type clientSession struct {
 
 	appidErr error
 	appidAPI *appid.AppIDManagementV4
-
-	apigatewayErr error
-	apigatewayAPI *apigateway.ApiGatewayControllerApiV1
 
 	accountConfigErr     error
 	bmxAccountServiceAPI accountv2.AccountServiceAPI
@@ -867,11 +862,6 @@ func (sess clientSession) SoftLayerSession() *slsession.Session {
 	return sess.session.SoftLayerSession
 }
 
-// apigatewayAPI provides API Gateway APIs
-func (sess clientSession) APIGateway() (*apigateway.ApiGatewayControllerApiV1, error) {
-	return sess.apigatewayAPI, sess.apigatewayErr
-}
-
 func (session clientSession) PushServiceV1() (*pushservicev1.PushServiceV1, error) {
 	return session.pushServiceClient, session.pushServiceClientErr
 }
@@ -1389,7 +1379,6 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.userManagementErr = errEmptyBluemixCredentials
 		session.vpcErr = errEmptyBluemixCredentials
 		session.vpcbetaErr = errEmptyBluemixCredentials
-		session.apigatewayErr = errEmptyBluemixCredentials
 		session.pDNSErr = errEmptyBluemixCredentials
 		session.bmxUserFetchErr = errEmptyBluemixCredentials
 		session.directlinkErr = errEmptyBluemixCredentials
@@ -2375,24 +2364,6 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.functionIAMNamespaceErr = fmt.Errorf("[ERROR] Error occured while configuring Cloud Funciton Service : %q", err)
 	}
 	session.functionIAMNamespaceAPI = namespaceFunction
-
-	//  API GATEWAY service
-	apicurl := ContructEndpoint(fmt.Sprintf("api.%s.apigw", c.Region), fmt.Sprintf("%s/controller", cloudEndpoint))
-	if c.Visibility == "private" || c.Visibility == "public-and-private" {
-		apicurl = ContructEndpoint(fmt.Sprintf("api.private.%s.apigw", c.Region), fmt.Sprintf("%s/controller", cloudEndpoint))
-	}
-	if fileMap != nil && c.Visibility != "public-and-private" {
-		apicurl = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_API_GATEWAY_ENDPOINT", c.Region, apicurl)
-	}
-	APIGatewayControllerAPIV1Options := &apigateway.ApiGatewayControllerApiV1Options{
-		URL:           EnvFallBack([]string{"IBMCLOUD_API_GATEWAY_ENDPOINT"}, apicurl),
-		Authenticator: &core.NoAuthAuthenticator{},
-	}
-	apigatewayAPI, err := apigateway.NewApiGatewayControllerApiV1(APIGatewayControllerAPIV1Options)
-	if err != nil {
-		session.apigatewayErr = fmt.Errorf("[ERROR] Error occured while configuring  APIGateway service: %q", err)
-	}
-	session.apigatewayAPI = apigatewayAPI
 
 	// POWER SYSTEMS Service
 	piURL := ContructEndpoint(c.Region, "power-iaas.cloud.ibm.com")
