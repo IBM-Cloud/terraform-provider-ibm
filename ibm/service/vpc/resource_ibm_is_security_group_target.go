@@ -196,12 +196,6 @@ func resourceIBMISSecurityGroupTargetRead(d *schema.ResourceData, meta interface
 	if target.ResourceType != nil && *target.ResourceType != "" {
 		d.Set(isSecurityGroupResourceType, *target.ResourceType)
 	}
-	if target != nil && *target.ResourceType == "load_balancer" {
-		_, waitErr := isWaitForSGTargetLBAvailable(sess, *target.ID, d.Timeout(schema.TimeoutCreate))
-		if waitErr != nil {
-			return fmt.Errorf("[ERROR] Error waiting for load balancer to become available while creating/updating Security Group Target Binding: %s", waitErr)
-		}
-	}
 
 	return nil
 }
