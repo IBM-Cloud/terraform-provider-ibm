@@ -4,11 +4,14 @@
 package vpc
 
 import (
+	"context"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -23,7 +26,7 @@ const (
 
 func DataSourceIBMISReservedIPs() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSdataSourceIBMISReservedIPsRead,
+		ReadContext: dataSdataSourceIBMISReservedIPsRead,
 		Schema: map[string]*schema.Schema{
 			/*
 				Request Parameters
@@ -163,10 +166,12 @@ func DataSourceIBMISReservedIPs() *schema.Resource {
 	}
 }
 
-func dataSdataSourceIBMISReservedIPsRead(d *schema.ResourceData, meta interface{}) error {
+func dataSdataSourceIBMISReservedIPsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_subnet_reserved_ips", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	subnetID := d.Get(isSubNetID).(string)
@@ -181,9 +186,11 @@ func dataSdataSourceIBMISReservedIPsRead(d *schema.ResourceData, meta interface{
 			options.Start = &start
 		}
 
-		result, response, err := sess.ListSubnetReservedIps(options)
+		result, response, err := sess.ListSubnetReservedIpsWithContext(context, options)
 		if err != nil || response == nil || result == nil {
-			return fmt.Errorf("[ERROR] Error fetching reserved ips %s\n%s", err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListSubnetReservedIpsWithContext failed %s", err), "(Data) ibm_is_subnet_reserved_ips", "read")
+			log.Printf("[DEBUG] %s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		start = flex.GetNext(result.Next)
 		allrecs = append(allrecs, result.ReservedIps...)
@@ -209,7 +216,8 @@ func dataSdataSourceIBMISReservedIPsRead(d *schema.ResourceData, meta interface{
 		if data.Target != nil {
 			modelMap, err := dataSourceIBMIsReservedIPReservedIPTargetToMap(data.Target)
 			if err != nil {
-				return err
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_subnet_reserved_ips", "read", "target-to-map").GetDiag()
+
 			}
 			target = append(target, modelMap)
 		}
@@ -223,9 +231,17 @@ func dataSdataSourceIBMISReservedIPsRead(d *schema.ResourceData, meta interface{
 	}
 
 	d.SetId(time.Now().UTC().String()) // This is not any reserved ip or subnet id but state id
-	d.Set(isReservedIPs, reservedIPs)
-	d.Set(isReservedIPsCount, len(reservedIPs))
-	d.Set(isSubNetID, subnetID)
+	if err = d.Set("reserved_ips", reservedIPs); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting reserved_ips %s", err), "(Data) ibm_is_subnet_reserved_ips", "read", "reserved_ips-set").GetDiag()
+	}
+	if err = d.Set(isReservedIPsCount, len(reservedIPs)); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting total_count: %s", err), "(Data) ibm_is_subnet_reserved_ips", "read", "set-total_count").GetDiag()
+	}
+
+	if err = d.Set(isSubNetID, subnetID); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting subnet: %s", err), "(Data) ibm_is_subnet_reserved_ips", "read", "set-subnet").GetDiag()
+	}
+
 	return nil
 }
 
