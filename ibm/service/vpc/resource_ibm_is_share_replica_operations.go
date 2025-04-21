@@ -130,7 +130,7 @@ func resourceIbmIsShareReplicaOperationsCreate(context context.Context, d *schem
 	}
 	_, err = isWaitForShareReplicationJobDone(context, vpcClient, share_id, d, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
-		return diag.FromErr(err)
+		return flex.TerraformErrorf(err, fmt.Sprintf("isWaitForShareReplicationJobDone failed: %s", err.Error()), "ibm_is_share_replica_operations", "create").GetDiag()
 	}
 	d.SetId(share_id)
 	return nil
