@@ -144,7 +144,7 @@ func resourceIBMISSecurityGroupTargetCreate(d *schema.ResourceData, meta interfa
 		if errsgt != nil {
 			return errsgt
 		}
-	} else if crn != nil && *crn != "" && strings.Contains(*crn, "virtual_network_interfaces") {
+	} else if crn != nil && *crn != "" && strings.Contains(*crn, "virtual-network-interface") {
 		vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 		if err != nil {
 			return err
