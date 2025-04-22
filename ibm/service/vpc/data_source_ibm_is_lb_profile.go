@@ -62,6 +62,16 @@ func DataSourceIBMISLbProfile() *schema.Resource {
 				Computed:    true,
 				Description: "The product family this load balancer profile belongs to",
 			},
+			"reserved_ip_target_supported": {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "The Reserved IP Target support for a load balancer with this profile",
+			},
+			"reserved_ip_type": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The Reserved IP Target support for a load balancer profile, one of [fixed, dependent]",
+			},
 			"route_mode_supported": {
 				Type:        schema.TypeBool,
 				Computed:    true,
@@ -210,6 +220,34 @@ func dataSourceIBMISLbProfileRead(context context.Context, d *schema.ResourceDat
 				}
 				if rms.Value != nil {
 					d.Set("route_mode_supported", *rms.Value)
+				}
+			}
+		}
+	}
+	if lbProfile.ReservedIPTargetSupported != nil {
+		reservedIPTargetSupported := lbProfile.ReservedIPTargetSupported
+		switch reflect.TypeOf(reservedIPTargetSupported).String() {
+		case "*vpcv1.LoadBalancerProfileReservedIPTargetSupportedFixed":
+			{
+				reservedIP := reservedIPTargetSupported.(*vpcv1.LoadBalancerProfileReservedIPTargetSupportedFixed)
+				d.Set("reserved_ip_target_supported", reservedIP.Value)
+				d.Set("reserved_ip_type", reservedIP.Type)
+			}
+		case "*vpcv1.LoadBalancerProfileReservedIPTargetSupportedDependent":
+			{
+				reservedIP := reservedIPTargetSupported.(*vpcv1.LoadBalancerProfileReservedIPTargetSupportedDependent)
+				if reservedIP.Type != nil {
+					d.Set("reserved_ip_type", *reservedIP.Type)
+				}
+			}
+		case "*vpcv1.LoadBalancerProfileReservedIPTargetSupported":
+			{
+				reservedIP := reservedIPTargetSupported.(*vpcv1.LoadBalancerProfileReservedIPTargetSupported)
+				if reservedIP.Type != nil {
+					d.Set("reserved_ip_type", *reservedIP.Type)
+				}
+				if reservedIP.Value != nil {
+					d.Set("reserved_ip_target_supported", *reservedIP.Value)
 				}
 			}
 		}
