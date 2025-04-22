@@ -521,3 +521,161 @@ func testAccCheckSatelliteEntitlementClusterCreate(clusterName, locationName, ma
 	}
 `, locationName, managed_from, resource_group, resource_prefix, resource_prefix, region, resource_prefix, publicKey, resource_prefix, region, resource_prefix, host_provider, clusterName, operatingSystem)
 }
+
+func TestAccIBMSatelliteCluster_KmsEnable(t *testing.T) {
+	clusterName := fmt.Sprintf("terraform1_%d", acctest.RandIntRange(10, 100))
+	locationName := fmt.Sprintf("tf-satellitelocation-%d", acctest.RandIntRange(10, 100))
+	managed_from := "dal10"
+	operatingSystem := "REDHAT_8_64"
+	resource_group := "default"
+	region := "us-south"
+	resource_prefix := "tf-satellite"
+	host_provider := "ibm"
+	publicKey := acc.SatelliteSSHPubKey
+	kmsInstanceName := fmt.Sprintf("kmsInstance_%d", acctest.RandIntRange(10, 100))
+	rootKeyName := fmt.Sprintf("rootKey_%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckSatelliteClusterDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMSatelliteClusterKmsEnable(kmsInstanceName, rootKeyName, clusterName, locationName, managed_from, operatingSystem, resource_group, resource_prefix, region, publicKey, host_provider),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"ibm_satellite_cluster.create_cluster", "name", clusterName),
+					resource.TestCheckResourceAttr(
+						"ibm_satellite_cluster.create_cluster", "kms_config.#", "1"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMSatelliteClusterKmsEnable(kmsInstanceName, rootKeyName, clusterName, locationName, managed_from, operatingSystem, resource_group, resource_prefix, region, publicKey, host_provider string) string {
+	return fmt.Sprintf(`
+
+ 	resource "ibm_resource_instance" "kms_instance1" {
+ 		name              = "%s"
+ 		service           = "kms"
+ 		plan              = "tiered-pricing"
+ 		location          = "us-south"
+ 	}
+ 	  
+ 	resource "ibm_kms_key" "test" {
+ 		instance_id = "${ibm_resource_instance.kms_instance1.guid}"
+ 		key_name = "%s"
+ 		standard_key =  false
+ 		force_delete = true
+ 	}
+
+	variable "location_zones" {
+		description = "Allocate your hosts across these three zones"
+		type        = list(string)
+		default     = ["us-south-1", "us-south-2", "us-south-3"]
+	}
+
+	data "ibm_is_image" "rhel8" {
+		name = "ibm-redhat-8-8-minimal-amd64-2"
+	}
+
+	resource "ibm_satellite_location" "location" {
+		location      = "%s"
+		managed_from  = "%s"
+		zones		  = var.location_zones
+		coreos_enabled = true
+	}
+
+	data "ibm_satellite_attach_host_script" "script" {
+		location          = ibm_satellite_location.location.id
+		labels            = ["env:prod"]
+		host_provider     = "ibm"
+	}
+
+	data "ibm_resource_group" "resource_group" {
+		name = "%s"
+	}
+	  
+	resource "ibm_is_vpc" "satellite_vpc" {
+		name = "%s-vpc-1"
+	}
+	  
+	resource "ibm_is_subnet" "satellite_subnet" {
+		count                    = 3
+
+		name                     = "%s-subnet-${count.index}"
+		vpc                      = ibm_is_vpc.satellite_vpc.id
+		total_ipv4_address_count = 256
+		zone                     = "%s-${count.index + 1}"
+	}
+	  
+	resource "ibm_is_ssh_key" "satellite_ssh" {	  
+		name        = "%s-ibm-ssh"
+		public_key  = "%s"
+	}
+	  
+	resource "ibm_is_instance" "satellite_instance" {
+		count          = 3
+
+		name           = "%s-instance-${count.index}"
+		vpc            = ibm_is_vpc.satellite_vpc.id
+		zone           = "%s-${count.index + 1}"
+		image          = data.ibm_is_image.rhel8.id
+		profile        = "mx2-8x64"
+		keys           = [ibm_is_ssh_key.satellite_ssh.id]
+		resource_group = data.ibm_resource_group.resource_group.id
+		user_data      = data.ibm_satellite_attach_host_script.script.host_script
+		
+		primary_network_interface {
+			subnet = ibm_is_subnet.satellite_subnet[count.index].id
+		}
+	}
+	  
+	resource "ibm_is_floating_ip" "satellite_ip" {
+		count  = 3
+
+		name   = "%s-fip-${count.index}"
+		target = ibm_is_instance.satellite_instance[count.index].primary_network_interface[0].id
+	}
+	  
+	resource "ibm_satellite_host" "assign_host" {
+		count  = 3
+	  
+		location      = ibm_satellite_location.location.id
+		host_id       = element(ibm_is_instance.satellite_instance[*].name, count.index)
+		labels        = ["env:prod"]
+		zone          = element(var.location_zones, count.index)
+		host_provider = "%s"
+	}
+
+	resource "ibm_satellite_cluster" "create_cluster" {
+		name                   = "%s"  
+		location               = ibm_satellite_host.assign_host.0.location
+		enable_config_admin    = true
+		kube_version           = "4.13_openshift"
+		operating_system       = "%s"
+		wait_for_worker_update = true
+		dynamic "zones" {
+			for_each = var.location_zones
+			content {
+				id	= zones.value
+			}
+		}
+		default_worker_pool_labels = {
+			"test"  = "test-pool1"
+			"test1" = "test-pool2"
+		}
+		kms_config {
+ 			instance_id = ibm_resource_instance.kms_instance1.guid
+ 			crk_id = ibm_kms_key.test.key_id
+ 			private_endpoint = false
+ 		}
+	}
+
+	data "ibm_satellite_cluster_worker_pool" "read_default_wp" {
+		name    = "default"
+		cluster = ibm_satellite_cluster.create_cluster.id
+	}
+`, kmsInstanceName, rootKeyName, locationName, managed_from, resource_group, resource_prefix, resource_prefix, region, resource_prefix, publicKey, resource_prefix, region, resource_prefix, host_provider, clusterName, operatingSystem)
+}

@@ -2,6 +2,20 @@ data "ibm_resource_group" "rg" {
   name = var.resource_group
 }
 
+resource "ibm_resource_instance" "kms_instance1" {
+  name              = "test_kms"
+  service           = "kms"
+  plan              = "tiered-pricing"
+  location          = "us-south"
+}
+
+resource "ibm_kms_key" "test" {
+  instance_id = ibm_resource_instance.kms_instance1.guid
+  key_name = "test_root_key"
+  standard_key =  false
+  force_delete = true
+}
+
 resource "ibm_satellite_cluster" "create_cluster" {
   name                   = var.cluster
   location               = var.location
@@ -21,6 +35,12 @@ resource "ibm_satellite_cluster" "create_cluster" {
 
   default_worker_pool_labels = var.default_wp_labels
   tags                       = var.cluster_tags
+
+  kms_config {
+    instance_id = ibm_resource_instance.kms_instance1.guid
+    crk_id = ibm_kms_key.test.id
+    private_endpoint = false
+  }
 }
 
 data "ibm_satellite_cluster" "read_cluster" {
