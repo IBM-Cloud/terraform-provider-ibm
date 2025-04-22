@@ -527,7 +527,7 @@ func TestAccIBMSatelliteCluster_KmsEnable(t *testing.T) {
 	locationName := fmt.Sprintf("tf-satellitelocation-%d", acctest.RandIntRange(10, 100))
 	managed_from := "dal10"
 	operatingSystem := "REDHAT_8_64"
-	resource_group := "default"
+	resource_group := "Default"
 	region := "us-south"
 	resource_prefix := "tf-satellite"
 	host_provider := "ibm"

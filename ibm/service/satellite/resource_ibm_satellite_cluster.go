@@ -548,7 +548,7 @@ func resourceIBMSatelliteClusterCreate(d *schema.ResourceData, meta interface{})
 		return fmt.Errorf("[ERROR] Error waiting for getting cluster (%s) to be warning state: %s", clusterId, err)
 	}
 
-	return resourceIBMSatelliteClusterRead(d, meta)
+	return resourceIBMSatelliteClusterUpdate(d, meta)
 }
 
 func resourceIBMSatelliteClusterRead(d *schema.ResourceData, meta interface{}) error {
