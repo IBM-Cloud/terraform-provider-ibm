@@ -4,6 +4,7 @@
 package vpc
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"reflect"
@@ -12,12 +13,13 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func DataSourceIBMISVPC() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceIBMISVPCRead,
+		ReadContext: dataSourceIBMISVPCRead,
 
 		Schema: map[string]*schema.Schema{
 			isVPCDefaultNetworkACL: {
@@ -506,32 +508,36 @@ func DataSourceIBMISVpcValidator() *validate.ResourceValidator {
 	return &ibmISVpcDataSourceValidator
 }
 
-func dataSourceIBMISVPCRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceIBMISVPCRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	name := d.Get(isVPCName).(string)
 	id := d.Get("identifier").(string)
-	err := vpcGetByNameOrId(d, meta, name, id)
+	err := vpcGetByNameOrId(context, d, meta, name, id)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func vpcGetByNameOrId(d *schema.ResourceData, meta interface{}, name, id string) error {
+func vpcGetByNameOrId(context context.Context, d *schema.ResourceData, meta interface{}, name, id string) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_vpc", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	flag := false
 	if id != "" {
 		getVpcsOptions := &vpcv1.GetVPCOptions{
 			ID: &id,
 		}
-		vpcGet, response, err := sess.GetVPC(getVpcsOptions)
+		vpcGet, _, err := sess.GetVPCWithContext(context, getVpcsOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Fetching vpc %s\n%s", err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetVPCWithContext failed: %s", err.Error()), "(Data) ibm_is_vpc", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		flag = true
-		setVpcDetails(d, vpcGet, meta, sess)
+		setVpcDetails(context, d, vpcGet, meta, sess)
 	} else {
 		start := ""
 		allrecs := []vpcv1.VPC{}
@@ -540,9 +546,11 @@ func vpcGetByNameOrId(d *schema.ResourceData, meta interface{}, name, id string)
 			if start != "" {
 				listVpcsOptions.Start = &start
 			}
-			vpcs, response, err := sess.ListVpcs(listVpcsOptions)
+			vpcs, _, err := sess.ListVpcsWithContext(context, listVpcsOptions)
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error Fetching vpcs %s\n%s", err, response)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListVpcsWithContext failed: %s", err.Error()), "(Data) ibm_is_vpc", "read")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			start = flex.GetNext(vpcs.Next)
 			allrecs = append(allrecs, vpcs.Vpcs...)
@@ -553,41 +561,72 @@ func vpcGetByNameOrId(d *schema.ResourceData, meta interface{}, name, id string)
 		for _, v := range allrecs {
 			if *v.Name == name {
 				flag = true
-				setVpcDetails(d, &v, meta, sess)
+				setVpcDetails(context, d, &v, meta, sess)
 			}
 		}
 	}
 	if !flag {
-		return fmt.Errorf("[ERROR] No VPC found with name %s", name)
+		err = fmt.Errorf("[ERROR] No VPC found with name %s", name)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListVpcsWithContext failed: %s", err.Error()), "(Data) ibm_is_vpc", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	return nil
 }
 
-func setVpcDetails(d *schema.ResourceData, vpc *vpcv1.VPC, meta interface{}, sess *vpcv1.VpcV1) error {
+func setVpcDetails(context context.Context, d *schema.ResourceData, vpc *vpcv1.VPC, meta interface{}, sess *vpcv1.VpcV1) diag.Diagnostics {
 	if vpc != nil {
+		var err error
 		d.SetId(*vpc.ID)
 		d.Set("identifier", *vpc.ID)
-		d.Set(isVPCName, *vpc.Name)
-		d.Set(isVPCClassicAccess, *vpc.ClassicAccess)
-		d.Set(isVPCStatus, *vpc.Status)
+		if err = d.Set("name", vpc.Name); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_is_vpc", "read", "set-name").GetDiag()
+		}
+		if err = d.Set("classic_access", vpc.ClassicAccess); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting classic_access: %s", err), "(Data) ibm_is_vpc", "read", "set-classic_access").GetDiag()
+		}
+		if err = d.Set("status", vpc.Status); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting status: %s", err), "(Data) ibm_is_vpc", "read", "set-status").GetDiag()
+		}
 		if vpc.ResourceGroup != nil {
-			d.Set(isVPCResourceGroup, *vpc.ResourceGroup.ID)
+			if err = d.Set("resource_group", *vpc.ResourceGroup.ID); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_group: %s", err), "(Data) ibm_is_vpc", "read", "set-resource_group").GetDiag()
+			}
 		}
 		if vpc.DefaultNetworkACL != nil {
-			d.Set(isVPCDefaultNetworkACLName, *vpc.DefaultNetworkACL.Name)
-			d.Set(isVPCDefaultNetworkACL, *vpc.DefaultNetworkACL.ID)
-			d.Set(isVPCDefaultNetworkACLCRN, vpc.DefaultNetworkACL.CRN)
+
+			if err = d.Set(isVPCDefaultNetworkACLName, *vpc.DefaultNetworkACL.Name); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting default_network_acl_name: %s", err), "(Data) ibm_is_vpc", "read", "set-default_network_acl_name").GetDiag()
+			}
+
+			if err = d.Set(isVPCDefaultNetworkACL, *vpc.DefaultNetworkACL.ID); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting default_network_acl: %s", err), "(Data) ibm_is_vpc", "read", "set-default_network_acl").GetDiag()
+			}
+
+			if err = d.Set(isVPCDefaultNetworkACLCRN, vpc.DefaultNetworkACL.CRN); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting default_network_acl_crn: %s", err), "(Data) ibm_is_vpc", "read", "set-default_network_acl_crn").GetDiag()
+			}
 		} else {
 			d.Set(isVPCDefaultNetworkACL, nil)
 		}
 		if vpc.DefaultRoutingTable != nil {
-			d.Set(isVPCDefaultRoutingTableName, *vpc.DefaultRoutingTable.Name)
-			d.Set(isVPCDefaultRoutingTable, *vpc.DefaultRoutingTable.ID)
+			if err = d.Set(isVPCDefaultRoutingTableName, *vpc.DefaultRoutingTable.Name); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting default_routing_table_name: %s", err), "(Data) ibm_is_vpc", "read", "set-default_routing_table_name").GetDiag()
+			}
+			if err = d.Set(isVPCDefaultRoutingTable, *vpc.DefaultRoutingTable.ID); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting default_routing_table: %s", err), "(Data) ibm_is_vpc", "read", "set-default_routing_table").GetDiag()
+			}
 		}
 		if vpc.DefaultSecurityGroup != nil {
-			d.Set(isVPCDefaultSecurityGroupName, *vpc.DefaultSecurityGroup.Name)
-			d.Set(isVPCDefaultSecurityGroup, *vpc.DefaultSecurityGroup.ID)
-			d.Set(isVPCDefaultSecurityGroupCRN, vpc.DefaultSecurityGroup.CRN)
+			if err = d.Set(isVPCDefaultSecurityGroupName, *vpc.DefaultSecurityGroup.Name); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting default_security_group_name: %s", err), "(Data) ibm_is_vpc", "read", "set-default_security_group_name").GetDiag()
+			}
+			if d.Set(isVPCDefaultSecurityGroup, *vpc.DefaultSecurityGroup.ID); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting default_security_group: %s", err), "(Data) ibm_is_vpc", "read", "set-default_security_group").GetDiag()
+			}
+			if err = d.Set(isVPCDefaultSecurityGroupCRN, vpc.DefaultSecurityGroup.CRN); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting default_security_group_crn: %s", err), "(Data) ibm_is_vpc", "read", "set-default_security_group_crn").GetDiag()
+			}
 		} else {
 			d.Set(isVPCDefaultSecurityGroup, nil)
 		}
@@ -596,36 +635,46 @@ func setVpcDetails(d *schema.ResourceData, vpc *vpcv1.VPC, meta interface{}, ses
 			log.Printf(
 				"An error occured during reading of vpc (%s) tags : %s", d.Id(), err)
 		}
-		d.Set(isVPCTags, tags)
+
+		if err = d.Set(isVPCTags, tags); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting tags: %s", err), "(Data) ibm_is_vpc", "read", "set-tags").GetDiag()
+		}
 		accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *vpc.CRN, "", isVPCAccessTagType)
 		if err != nil {
 			log.Printf(
 				"An error occured during reading of vpc (%s) access tags: %s", d.Id(), err)
 		}
-		d.Set(isVPCAccessTags, accesstags)
-		d.Set(isVPCCRN, *vpc.CRN)
+
+		if err = d.Set(isVPCAccessTags, accesstags); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting access_tags: %s", err), "(Data) ibm_is_vpc", "read", "set-access_tags").GetDiag()
+		}
+		if err = d.Set("crn", vpc.CRN); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting crn: %s", err), "(Data) ibm_is_vpc", "read", "set-crn").GetDiag()
+		}
 
 		healthReasons := []map[string]interface{}{}
 		if vpc.HealthReasons != nil {
 			for _, modelItem := range vpc.HealthReasons {
 				modelMap, err := dataSourceIBMIsVPCVPCHealthReasonToMap(&modelItem)
 				if err != nil {
-					return err
+					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_vpc", "read", "health_reasons-to-map").GetDiag()
 				}
 				healthReasons = append(healthReasons, modelMap)
 			}
 		}
 		if err = d.Set("health_reasons", healthReasons); err != nil {
-			return fmt.Errorf("[ERROR] Error setting health_reasons %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting health_reasons: %s", err), "(Data) ibm_is_vpc", "read", "set-health_reasons").GetDiag()
 		}
 
 		if err = d.Set("health_state", vpc.HealthState); err != nil {
-			return fmt.Errorf("[ERROR] Error setting health_state: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting health_state: %s", err), "(Data) ibm_is_vpc", "read", "set-health_state").GetDiag()
 		}
 
 		controller, err := flex.GetBaseController(meta)
 		if err != nil {
-			return err
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetBaseController failed: %s", err.Error()), "(Data) ibm_is_vpc", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
 		// address prefixes
@@ -643,10 +692,11 @@ func setVpcDetails(d *schema.ResourceData, vpc *vpcv1.VPC, meta interface{}, ses
 				listVpcAddressPrefixesOptions.Start = &startAdd
 			}
 
-			addressPrefixCollection, response, err := sess.ListVPCAddressPrefixes(listVpcAddressPrefixesOptions)
+			addressPrefixCollection, _, err := sess.ListVPCAddressPrefixesWithContext(context, listVpcAddressPrefixesOptions)
 			if err != nil {
-				log.Printf("[DEBUG] ListVpcAddressPrefixesWithContext failed %s\n%s", err, response)
-				return fmt.Errorf("ListVpcAddressPrefixesWithContext failed %s\n%s", err, response)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListVPCAddressPrefixesWithContext failed: %s", err.Error()), "(Data) ibm_is_vpc", "read")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 
 			allRecs = append(allRecs, addressPrefixCollection.AddressPrefixes...)
@@ -670,15 +720,28 @@ func setVpcDetails(d *schema.ResourceData, vpc *vpcv1.VPC, meta interface{}, ses
 
 		// Set the default_address_prefixes attribute in the Terraform state
 		if err := d.Set("default_address_prefixes", defaultAddressPrefixes); err != nil {
-			return fmt.Errorf("error setting default_address_prefixes: %w", err)
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting default_address_prefixes: %s", err), "(Data) ibm_is_vpc", "read", "set-default_address_prefixes").GetDiag()
+
 		}
 
-		d.Set(flex.ResourceControllerURL, controller+"/vpc-ext/network/vpcs")
-		d.Set(flex.ResourceName, *vpc.Name)
-		d.Set(flex.ResourceCRN, *vpc.CRN)
-		d.Set(flex.ResourceStatus, *vpc.Status)
+		if err = d.Set(flex.ResourceControllerURL, controller+"/vpc-ext/network/vpcs"); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_controller_url: %s", err), "(Data) ibm_is_vpc", "read", "set-resource_controller_url").GetDiag()
+		}
+
+		if err = d.Set(flex.ResourceName, *vpc.Name); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_name: %s", err), "(Data) ibm_is_vpc", "read", "set-resource_name").GetDiag()
+		}
+
+		if err = d.Set(flex.ResourceCRN, *vpc.CRN); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_crn: %s", err), "(Data) ibm_is_vpc", "read", "set-resource_crn").GetDiag()
+		}
+		if err = d.Set(flex.ResourceStatus, *vpc.Status); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_status: %s", err), "(Data) ibm_is_vpc", "read", "set-resource_status").GetDiag()
+		}
 		if vpc.ResourceGroup != nil {
-			d.Set(flex.ResourceGroupName, *vpc.ResourceGroup.Name)
+			if err = d.Set(flex.ResourceGroupName, *vpc.ResourceGroup.Name); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_group_name: %s", err), "(Data) ibm_is_vpc", "read", "set-resource_group_name").GetDiag()
+			}
 		}
 		//set the cse ip addresses info
 		if vpc.CseSourceIps != nil {
@@ -691,7 +754,9 @@ func setVpcDetails(d *schema.ResourceData, vpc *vpcv1.VPC, meta interface{}, ses
 					cseSourceIpsList = append(cseSourceIpsList, currentCseSourceIp)
 				}
 			}
-			d.Set(cseSourceAddresses, cseSourceIpsList)
+			if err = d.Set(cseSourceAddresses, cseSourceIpsList); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting cse_source_addresses: %s", err), "(Data) ibm_is_vpc", "read", "set-cse_source_addresses").GetDiag()
+			}
 		}
 
 		// adding pagination support for subnets inside vpc
@@ -704,9 +769,11 @@ func setVpcDetails(d *schema.ResourceData, vpc *vpcv1.VPC, meta interface{}, ses
 			if startSub != "" {
 				options.Start = &startSub
 			}
-			s, response, err := sess.ListSubnets(options)
+			s, _, err := sess.ListSubnetsWithContext(context, options)
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error fetching subnets %s\n%s", err, response)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListVPCAddressPrefixes failed: %s", err.Error()), "(Data) ibm_is_vpc", "read")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			startSub = flex.GetNext(s.Next)
 			allrecsSub = append(allrecsSub, s.Subnets...)
@@ -729,7 +796,10 @@ func setVpcDetails(d *schema.ResourceData, vpc *vpcv1.VPC, meta interface{}, ses
 					subnetsInfo = append(subnetsInfo, l)
 				}
 			}
-			d.Set(subnetsList, subnetsInfo)
+
+			if err = d.Set(subnetsList, subnetsInfo); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting subnets: %s", err), "(Data) ibm_is_vpc", "read", "set-subnets").GetDiag()
+			}
 		}
 
 		// adding pagination support for sg inside vpc
@@ -745,9 +815,11 @@ func setVpcDetails(d *schema.ResourceData, vpc *vpcv1.VPC, meta interface{}, ses
 			if startSg != "" {
 				listSgOptions.Start = &startSg
 			}
-			sgs, response, err := sess.ListSecurityGroups(listSgOptions)
+			sgs, _, err := sess.ListSecurityGroupsWithContext(context, listSgOptions)
 			if err != nil || sgs == nil {
-				return fmt.Errorf("[ERROR] Error fetching Security Groups %s\n%s", err, response)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListVPCAddressPrefixes failed: %s", err.Error()), "(Data) ibm_is_vpc", "read")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			if *sgs.TotalCount == int64(0) {
 				break
@@ -864,14 +936,17 @@ func setVpcDetails(d *schema.ResourceData, vpc *vpcv1.VPC, meta interface{}, ses
 			g[isVPCSgRules] = rules
 			securityGroupList = append(securityGroupList, g)
 		}
-		d.Set(isVPCSecurityGroupList, securityGroupList)
+
+		if err = d.Set(isVPCSecurityGroupList, securityGroupList); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting security_group: %s", err), "(Data) ibm_is_vpc", "read", "set-security_group").GetDiag()
+		}
 		if !core.IsNil(vpc.Dns) {
 			dnsMap, err := dataSourceIBMIsVPCVpcdnsToMap(vpc.Dns)
 			if err != nil {
-				return err
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_vpc", "read", "dns-to-map").GetDiag()
 			}
 			if err = d.Set(isVPCDns, []map[string]interface{}{dnsMap}); err != nil {
-				return fmt.Errorf("[ERROR] Error setting dns: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting dns: %s", err), "(Data) ibm_is_vpc", "read", "set-dns").GetDiag()
 			}
 		}
 		return nil
