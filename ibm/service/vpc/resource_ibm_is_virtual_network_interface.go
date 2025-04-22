@@ -399,7 +399,9 @@ func ResourceIBMIsVirtualNetworkInterfaceValidator() *validate.ResourceValidator
 func resourceIBMIsVirtualNetworkInterfaceCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_virtual_network_interface", "create", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	createVirtualNetworkInterfaceOptions := &vpcv1.CreateVirtualNetworkInterfaceOptions{}
@@ -419,7 +421,7 @@ func resourceIBMIsVirtualNetworkInterfaceCreate(context context.Context, d *sche
 			value := v.(map[string]interface{})
 			ipsItem, err := resourceIBMIsVirtualNetworkInterfaceMapToVirtualNetworkInterfaceIPsReservedIPPrototype(value)
 			if err != nil {
-				return diag.FromErr(err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_virtual_network_interface", "create", "parse-ips").GetDiag()
 			}
 			ips = append(ips, ipsItem)
 		}
@@ -438,7 +440,7 @@ func resourceIBMIsVirtualNetworkInterfaceCreate(context context.Context, d *sche
 		}
 		primaryIPModel, err := resourceIBMIsVirtualNetworkInterfaceMapToVirtualNetworkInterfacePrimaryIPReservedIPPrototype(d.Get("primary_ip.0").(map[string]interface{}), autodelete)
 		if err != nil {
-			return diag.FromErr(err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_virtual_network_interface", "create", "parse-primary_ip").GetDiag()
 		}
 		createVirtualNetworkInterfaceOptions.SetPrimaryIP(primaryIPModel)
 	}
@@ -469,10 +471,11 @@ func resourceIBMIsVirtualNetworkInterfaceCreate(context context.Context, d *sche
 	}
 	// log.Printf("[INFO] vnip2 request map is %s", output(createVirtualNetworkInterfaceOptions))
 
-	virtualNetworkInterface, response, err := sess.CreateVirtualNetworkInterfaceWithContext(context, createVirtualNetworkInterfaceOptions)
+	virtualNetworkInterface, _, err := sess.CreateVirtualNetworkInterfaceWithContext(context, createVirtualNetworkInterfaceOptions)
 	if err != nil {
-		log.Printf("[DEBUG] CreateVirtualNetworkInterfaceWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("CreateVirtualNetworkInterfaceWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateVirtualNetworkInterfaceWithContext failed: %s", err.Error()), "ibm_is_virtual_network_interface", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(*virtualNetworkInterface.ID)
@@ -499,7 +502,9 @@ func resourceIBMIsVirtualNetworkInterfaceCreate(context context.Context, d *sche
 func resourceIBMIsVirtualNetworkInterfaceRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_virtual_network_interface", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	getVirtualNetworkInterfaceOptions := &vpcv1.GetVirtualNetworkInterfaceOptions{}
@@ -512,23 +517,27 @@ func resourceIBMIsVirtualNetworkInterfaceRead(context context.Context, d *schema
 			d.SetId("")
 			return nil
 		}
-		log.Printf("[DEBUG] GetVirtualNetworkInterfaceWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetVirtualNetworkInterfaceWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetVirtualNetworkInterfaceWithContext failed: %s", err.Error()), "ibm_is_virtual_network_interface", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	if !core.IsNil(virtualNetworkInterface.AllowIPSpoofing) {
 		if err = d.Set("allow_ip_spoofing", virtualNetworkInterface.AllowIPSpoofing); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting allow_ip_spoofing: %s", err))
+			err = fmt.Errorf("Error setting allow_ip_spoofing: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_virtual_network_interface", "read", "set-allow_ip_spoofing").GetDiag()
 		}
 	}
 	if !core.IsNil(virtualNetworkInterface.AutoDelete) {
 		if err = d.Set("auto_delete", virtualNetworkInterface.AutoDelete); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting auto_delete: %s", err))
+			err = fmt.Errorf("Error setting auto_delete: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_virtual_network_interface", "read", "set-auto_delete").GetDiag()
 		}
 	}
 	if !core.IsNil(virtualNetworkInterface.EnableInfrastructureNat) {
 		if err = d.Set("enable_infrastructure_nat", virtualNetworkInterface.EnableInfrastructureNat); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting enable_infrastructure_nat: %s", err))
+			err = fmt.Errorf("Error setting enable_infrastructure_nat: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_virtual_network_interface", "read", "set-enable_infrastructure_nat").GetDiag()
 		}
 	}
 	if !core.IsNil(virtualNetworkInterface.Ips) {
@@ -537,35 +546,44 @@ func resourceIBMIsVirtualNetworkInterfaceRead(context context.Context, d *schema
 			if *virtualNetworkInterface.PrimaryIP.ID != *ipsItem.ID {
 				ipsItemMap, err := resourceIBMIsVirtualNetworkInterfaceReservedIPReferenceToMap(&ipsItem, false)
 				if err != nil {
-					return diag.FromErr(err)
+					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_virtual_network_interface", "read", "ips-to-map").GetDiag()
 				}
 				ips = append(ips, ipsItemMap)
 			}
 		}
 		if err = d.Set("ips", ips); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting ips: %s", err))
+			err = fmt.Errorf("Error setting ips: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_virtual_network_interface", "read", "set-ips").GetDiag()
 		}
 	}
 	if !core.IsNil(virtualNetworkInterface.Name) {
 		if err = d.Set("name", virtualNetworkInterface.Name); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting name: %s", err))
+			err = fmt.Errorf("Error setting name: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_virtual_network_interface", "read", "set-name").GetDiag()
 		}
 	}
 	if !core.IsNil(virtualNetworkInterface.ProtocolStateFilteringMode) {
-		d.Set("protocol_state_filtering_mode", virtualNetworkInterface.ProtocolStateFilteringMode)
+		if err = d.Set("protocol_state_filtering_mode", virtualNetworkInterface.ProtocolStateFilteringMode); err != nil {
+			err = fmt.Errorf("Error setting protocol_state_filtering_mode: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_virtual_network_interface", "read", "set-protocol_state_filtering_mode").GetDiag()
+		}
 	}
 	if !core.IsNil(virtualNetworkInterface.PrimaryIP) {
 		autodelete := d.Get("primary_ip.0.auto_delete").(bool)
 		primaryIPMap, err := resourceIBMIsVirtualNetworkInterfaceReservedIPReferenceToMap(virtualNetworkInterface.PrimaryIP, autodelete)
 		if err != nil {
-			return diag.FromErr(err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_virtual_network_interface", "read", "primary_ip-to-map").GetDiag()
 		}
 		if err = d.Set("primary_ip", []map[string]interface{}{primaryIPMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting primary_ip: %s", err))
+			err = fmt.Errorf("Error setting primary_ip: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_virtual_network_interface", "read", "set-primary_ip").GetDiag()
 		}
 	}
 	if !core.IsNil(virtualNetworkInterface.ResourceGroup) {
-		d.Set("resource_group", virtualNetworkInterface.ResourceGroup.ID)
+		if err = d.Set("resource_group", virtualNetworkInterface.ResourceGroup.ID); err != nil {
+			err = fmt.Errorf("Error setting resource_group: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_virtual_network_interface", "read", "set-resource_group").GetDiag()
+		}
 	}
 	if !core.IsNil(virtualNetworkInterface.SecurityGroups) {
 		securityGroups := make([]string, 0)
@@ -575,53 +593,68 @@ func resourceIBMIsVirtualNetworkInterfaceRead(context context.Context, d *schema
 			}
 		}
 		if err = d.Set("security_groups", securityGroups); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting security_groups for vni: %s", err))
+			err = fmt.Errorf("Error setting security_groups: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_virtual_network_interface", "read", "set-security_groups").GetDiag()
 		}
 	}
 	if !core.IsNil(virtualNetworkInterface.Subnet) {
-		d.Set("subnet", virtualNetworkInterface.Subnet.ID)
+		if err = d.Set("subnet", virtualNetworkInterface.Subnet.ID); err != nil {
+			err = fmt.Errorf("Error setting subnet: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_virtual_network_interface", "read", "set-subnet").GetDiag()
+		}
 	}
 	if err = d.Set("created_at", flex.DateTimeToString(virtualNetworkInterface.CreatedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting created_at: %s", err))
+		err = fmt.Errorf("Error setting created_at: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_virtual_network_interface", "read", "set-created_at").GetDiag()
 	}
 	if err = d.Set("crn", virtualNetworkInterface.CRN); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting crn: %s", err))
+		err = fmt.Errorf("Error setting crn: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_virtual_network_interface", "read", "set-crn").GetDiag()
 	}
 	if err = d.Set("href", virtualNetworkInterface.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting href: %s", err))
+		err = fmt.Errorf("Error setting href: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_virtual_network_interface", "read", "set-href").GetDiag()
 	}
 	if err = d.Set("lifecycle_state", virtualNetworkInterface.LifecycleState); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting lifecycle_state: %s", err))
+		err = fmt.Errorf("Error setting lifecycle_state: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_virtual_network_interface", "read", "set-lifecycle_state").GetDiag()
 	}
 	if !core.IsNil(virtualNetworkInterface.MacAddress) {
 		if err = d.Set("mac_address", virtualNetworkInterface.MacAddress); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting mac_address: %s", err))
+			err = fmt.Errorf("Error setting mac_address: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_virtual_network_interface", "read", "set-mac_address").GetDiag()
 		}
 	}
 	if err = d.Set("resource_type", virtualNetworkInterface.ResourceType); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting resource_type: %s", err))
+		err = fmt.Errorf("Error setting resource_type: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_virtual_network_interface", "read", "set-resource_type").GetDiag()
 	}
 	if !core.IsNil(virtualNetworkInterface.Target) {
 		targetMap, err := resourceIBMIsVirtualNetworkInterfaceVirtualNetworkInterfaceTargetToMap(virtualNetworkInterface.Target)
 		if err != nil {
-			return diag.FromErr(err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_virtual_network_interface", "read", "target-to-map").GetDiag()
 		}
 		if err = d.Set("target", []map[string]interface{}{targetMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting target: %s", err))
+			err = fmt.Errorf("Error setting target: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_virtual_network_interface", "read", "set-target").GetDiag()
 		}
 	} else {
 		d.Set("target", nil)
 	}
 	vpcMap, err := resourceIBMIsVirtualNetworkInterfaceVPCReferenceToMap(virtualNetworkInterface.VPC)
 	if err != nil {
-		return diag.FromErr(err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_virtual_network_interface", "read", "vpc-to-map").GetDiag()
 	}
 	if err = d.Set("vpc", []map[string]interface{}{vpcMap}); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting vpc: %s", err))
+		err = fmt.Errorf("Error setting vpc: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_virtual_network_interface", "read", "set-vpc").GetDiag()
 	}
 
 	if virtualNetworkInterface.Zone != nil {
-		d.Set("zone", *virtualNetworkInterface.Zone.Name)
+		if err = d.Set("zone", *virtualNetworkInterface.Zone.Name); err != nil {
+			err = fmt.Errorf("Error setting zone: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_virtual_network_interface", "read", "set-zone").GetDiag()
+		}
 	}
 
 	tags, err := flex.GetGlobalTagsUsingCRN(meta, *virtualNetworkInterface.CRN, "", isUserTagType)
@@ -635,9 +668,14 @@ func resourceIBMIsVirtualNetworkInterfaceRead(context context.Context, d *schema
 		log.Printf(
 			"Error on get of resource vni (%s) access tags: %s", d.Id(), err)
 	}
-
-	d.Set("tags", tags)
-	d.Set("access_tags", accesstags)
+	if err = d.Set("tags", tags); err != nil {
+		err = fmt.Errorf("Error setting tags: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_virtual_network_interface", "read", "set-tags").GetDiag()
+	}
+	if err = d.Set("access_tags", accesstags); err != nil {
+		err = fmt.Errorf("Error setting access_tags: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_virtual_network_interface", "read", "set-access_tags").GetDiag()
+	}
 
 	return nil
 }
@@ -645,7 +683,9 @@ func resourceIBMIsVirtualNetworkInterfaceRead(context context.Context, d *schema
 func resourceIBMIsVirtualNetworkInterfaceUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_virtual_network_interface", "update", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	id := d.Id()
 
@@ -811,10 +851,11 @@ func resourceIBMIsVirtualNetworkInterfaceUpdate(context context.Context, d *sche
 					addVirtualNetworkInterfaceIPOptions := &vpcv1.AddVirtualNetworkInterfaceIPOptions{}
 					addVirtualNetworkInterfaceIPOptions.SetVirtualNetworkInterfaceID(id)
 					addVirtualNetworkInterfaceIPOptions.SetID(ipItem)
-					_, response, err := sess.AddVirtualNetworkInterfaceIPWithContext(context, addVirtualNetworkInterfaceIPOptions)
+					_, _, err := sess.AddVirtualNetworkInterfaceIPWithContext(context, addVirtualNetworkInterfaceIPOptions)
 					if err != nil {
-						log.Printf("[DEBUG] AddVirtualNetworkInterfaceIPWithContext failed in VirtualNetworkInterface patch %s\n%s", err, response)
-						return diag.FromErr(fmt.Errorf("AddVirtualNetworkInterfaceIPWithContext failed in VirtualNetworkInterface patch %s\n%s", err, response))
+						tfErr := flex.TerraformErrorf(err, fmt.Sprintf("AddVirtualNetworkInterfaceIPWithContext failed: %s", err.Error()), "ibm_is_virtual_network_interface", "update")
+						log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+						return tfErr.GetDiag()
 					}
 				}
 			}
@@ -826,10 +867,11 @@ func resourceIBMIsVirtualNetworkInterfaceUpdate(context context.Context, d *sche
 					removeVirtualNetworkInterfaceIPOptions := &vpcv1.RemoveVirtualNetworkInterfaceIPOptions{}
 					removeVirtualNetworkInterfaceIPOptions.SetVirtualNetworkInterfaceID(id)
 					removeVirtualNetworkInterfaceIPOptions.SetID(ipItem)
-					response, err := sess.RemoveVirtualNetworkInterfaceIPWithContext(context, removeVirtualNetworkInterfaceIPOptions)
+					_, err := sess.RemoveVirtualNetworkInterfaceIPWithContext(context, removeVirtualNetworkInterfaceIPOptions)
 					if err != nil {
-						log.Printf("[DEBUG] RemoveVirtualNetworkInterfaceIPWithContext failed in VirtualNetworkInterface patch %s\n%s", err, response)
-						return diag.FromErr(fmt.Errorf("RemoveVirtualNetworkInterfaceIPWithContext failed in VirtualNetworkInterface patch %s\n%s", err, response))
+						tfErr := flex.TerraformErrorf(err, fmt.Sprintf("RemoveVirtualNetworkInterfaceIPWithContext failed: %s", err.Error()), "ibm_is_virtual_network_interface", "update")
+						log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+						return tfErr.GetDiag()
 					}
 				}
 			}
@@ -854,12 +896,16 @@ func resourceIBMIsVirtualNetworkInterfaceUpdate(context context.Context, d *sche
 		}
 		reservedIpPathAsPatch, err := reservedIpPath.AsPatch()
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error calling reserved ip as patch on vni patch \n%s", err))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("reservedIpPath.AsPatch() failed: %s", err.Error()), "ibm_is_virtual_network_interface", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		updateripoptions.ReservedIPPatch = reservedIpPathAsPatch
-		_, response, err := sess.UpdateSubnetReservedIP(updateripoptions)
+		_, _, err = sess.UpdateSubnetReservedIPWithContext(context, updateripoptions)
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error updating vni reserved ip(%s): %s\n%s", ripId, err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateSubnetReservedIPWithContext failed: %s", err.Error()), "ibm_is_virtual_network_interface", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 	if d.HasChange("security_groups") && !d.IsNewResource() {
@@ -875,13 +921,17 @@ func resourceIBMIsVirtualNetworkInterfaceUpdate(context context.Context, d *sche
 					SecurityGroupID: &add[i],
 					ID:              &vniId,
 				}
-				_, response, err := sess.CreateSecurityGroupTargetBinding(createsgnicoptions)
+				_, _, err := sess.CreateSecurityGroupTargetBindingWithContext(context, createsgnicoptions)
 				if err != nil {
-					return diag.FromErr(fmt.Errorf("[ERROR] Error while creating security group %q for virtual network interface %s\n%s: %q", add[i], d.Id(), err, response))
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateSecurityGroupTargetBindingWithContext failed: %s", err.Error()), "ibm_is_virtual_network_interface", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
 				_, err = isWaitForVirtualNetworkInterfaceAvailable(sess, vniId, d.Timeout(schema.TimeoutUpdate))
 				if err != nil {
-					return diag.FromErr(err)
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForVirtualNetworkInterfaceAvailable failed: %s", err.Error()), "ibm_is_virtual_network_interface", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
 			}
 
@@ -892,13 +942,17 @@ func resourceIBMIsVirtualNetworkInterfaceUpdate(context context.Context, d *sche
 					SecurityGroupID: &remove[i],
 					ID:              &vniId,
 				}
-				response, err := sess.DeleteSecurityGroupTargetBinding(deletesgnicoptions)
+				_, err := sess.DeleteSecurityGroupTargetBindingWithContext(context, deletesgnicoptions)
 				if err != nil {
-					return diag.FromErr(fmt.Errorf("[ERROR] Error while removing security group %q for virtual network interface %s\n%s: %q", remove[i], d.Id(), err, response))
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteSecurityGroupTargetBindingWithContext failed: %s", err.Error()), "ibm_is_virtual_network_interface", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
 				_, err = isWaitForVirtualNetworkInterfaceAvailable(sess, vniId, d.Timeout(schema.TimeoutUpdate))
 				if err != nil {
-					return diag.FromErr(err)
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForVirtualNetworkInterfaceAvailable failed: %s", err.Error()), "ibm_is_virtual_network_interface", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
 			}
 		}
@@ -906,10 +960,11 @@ func resourceIBMIsVirtualNetworkInterfaceUpdate(context context.Context, d *sche
 
 	if hasChange {
 		updateVirtualNetworkInterfaceOptions.VirtualNetworkInterfacePatch, _ = patchVals.AsPatch()
-		_, response, err := sess.UpdateVirtualNetworkInterfaceWithContext(context, updateVirtualNetworkInterfaceOptions)
+		_, _, err := sess.UpdateVirtualNetworkInterfaceWithContext(context, updateVirtualNetworkInterfaceOptions)
 		if err != nil {
-			log.Printf("[DEBUG] UpdateVirtualNetworkInterfaceWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("UpdateVirtualNetworkInterfaceWithContext failed %s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateVirtualNetworkInterfaceWithContext failed: %s", err.Error()), "ibm_is_virtual_network_interface", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 
@@ -919,21 +974,26 @@ func resourceIBMIsVirtualNetworkInterfaceUpdate(context context.Context, d *sche
 func resourceIBMIsVirtualNetworkInterfaceDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_virtual_network_interface", "delete", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	deleteVirtualNetworkInterfacesOptions := &vpcv1.DeleteVirtualNetworkInterfacesOptions{}
 
 	deleteVirtualNetworkInterfacesOptions.SetID(d.Id())
 
-	vni, response, err := sess.DeleteVirtualNetworkInterfacesWithContext(context, deleteVirtualNetworkInterfacesOptions)
+	vni, _, err := sess.DeleteVirtualNetworkInterfacesWithContext(context, deleteVirtualNetworkInterfacesOptions)
 	if err != nil {
-		log.Printf("[DEBUG] DeleteVirtualNetworkInterfacesWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("DeleteVirtualNetworkInterfacesWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteVirtualNetworkInterfacesWithContext failed: %s", err.Error()), "ibm_is_virtual_network_interface", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	_, err = isWaitForVirtualNetworkInterfaceDeleted(sess, d.Id(), d.Timeout(schema.TimeoutDelete), vni)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForVirtualNetworkInterfaceDeleted failed: %s", err.Error()), "ibm_is_virtual_network_interface", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId("")
