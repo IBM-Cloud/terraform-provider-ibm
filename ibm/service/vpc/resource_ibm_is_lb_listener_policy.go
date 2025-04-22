@@ -138,6 +138,10 @@ func ResourceIBMISLBListenerPolicy() *schema.Resource {
 					if old == "forward" && new == "forward_to_pool" {
 						return true
 					}
+					// Suppress the change if the old value is 'forward_to_pool' and new value is 'forward'
+					if old == "forward_to_pool" && new == "forward" {
+						return true
+					}
 					return false
 				},
 			},
