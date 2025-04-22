@@ -4,17 +4,21 @@
 package vpc
 
 import (
+	"context"
 	"fmt"
+	"log"
 	"reflect"
 	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func DataSourceIBMIsSecurityGroupRules() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceIBMIsSecurityGroupRulesRead,
+		ReadContext: dataSourceIBMIsSecurityGroupRulesRead,
 
 		Schema: map[string]*schema.Schema{
 			"security_group": &schema.Schema{
@@ -152,20 +156,24 @@ func DataSourceIBMIsSecurityGroupRules() *schema.Resource {
 	}
 }
 
-func dataSourceIBMIsSecurityGroupRulesRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceIBMIsSecurityGroupRulesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	secGrpId := d.Get("security_group").(string)
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_security_group_rules", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	listSecurityGroupRuleOptions := vpcv1.ListSecurityGroupRulesOptions{
 		SecurityGroupID: &secGrpId,
 	}
 
-	ruleList, response, err := sess.ListSecurityGroupRules(&listSecurityGroupRuleOptions)
+	ruleList, _, err := sess.ListSecurityGroupRulesWithContext(context, &listSecurityGroupRuleOptions)
 	if err != nil {
-		return fmt.Errorf("Error fetching security group rules %s\n%s", err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListSecurityGroupRulesWithContext failed: %s", err.Error()), "(Data) ibm_is_security_group_rules", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	rulesInfo := make([]map[string]interface{}, 0)
@@ -254,7 +262,9 @@ func dataSourceIBMIsSecurityGroupRulesRead(d *schema.ResourceData, meta interfac
 		rulesInfo = append(rulesInfo, l)
 	}
 	d.SetId(dataSourceIBMIsSecurityGroupRulesID(d))
-	d.Set("rules", rulesInfo)
+	if err = d.Set("rules", rulesInfo); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting rules: %s", err), "(Data) ibm_is_security_group_rules", "read", "set-rules").GetDiag()
+	}
 	return nil
 }
 
