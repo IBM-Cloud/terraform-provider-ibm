@@ -283,6 +283,7 @@ func TestValidateVersion(t *testing.T) {
 	tests := []struct {
 		description        string
 		instanceID         string
+		location           string
 		upgradeVersion     string
 		skipBackup         bool
 		mockCapabilityFunc func(capability string, instanceID string, platform string, location string, meta interface{}) (*clouddatabasesv5.Capability, error)
@@ -291,6 +292,7 @@ func TestValidateVersion(t *testing.T) {
 		{
 			description:        "When there are no upgrade paths for the upgrade version, Expect no upgrade versions error",
 			instanceID:         "test-instance",
+			location:           "us-south",
 			upgradeVersion:     "9",
 			skipBackup:         false,
 			mockCapabilityFunc: MockGetDeploymentCapabilityNoTransitions,
@@ -299,6 +301,7 @@ func TestValidateVersion(t *testing.T) {
 		{
 			description:        "When the upgrade version is no a valid version, Expect allowed versions error",
 			instanceID:         "test-instance",
+			location:           "us-south",
 			upgradeVersion:     "10",
 			skipBackup:         false,
 			mockCapabilityFunc: MockGetDeploymentCapability,
@@ -307,6 +310,7 @@ func TestValidateVersion(t *testing.T) {
 		{
 			description:        "When skip backup is not allowed for upgrade version, Expect skip backup error",
 			instanceID:         "test-instance",
+			location:           "eu-gb",
 			upgradeVersion:     "7",
 			skipBackup:         true,
 			mockCapabilityFunc: MockGetDeploymentCapability,
@@ -315,6 +319,7 @@ func TestValidateVersion(t *testing.T) {
 		{
 			description:        "When the upgrade version is valid, Expect no error",
 			instanceID:         "test-instance",
+			location:           "eu-gb",
 			upgradeVersion:     "7",
 			skipBackup:         false,
 			mockCapabilityFunc: MockGetDeploymentCapability,
@@ -327,13 +332,13 @@ func TestValidateVersion(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.description, func(t *testing.T) {
-			fetchDeploymentVersionFn = func(instanceID string, meta interface{}) *Version {
-				capability, err := tc.mockCapabilityFunc("versions", instanceID, "classic", "us-south", meta)
+			fetchDeploymentVersionFn = func(instanceID string, location string, meta interface{}) *Version {
+				capability, err := tc.mockCapabilityFunc("versions", instanceID, "classic", location, meta)
 				require.NoError(t, err)
 				return expandVersion(capability.Versions[0])
 			}
 
-			err := validateUpgradeVersion(tc.instanceID, tc.upgradeVersion, tc.skipBackup, &MockMeta{})
+			err := validateUpgradeVersion(tc.instanceID, tc.location, tc.upgradeVersion, tc.skipBackup, &MockMeta{})
 
 			if tc.expectedError != "" {
 				require.Error(t, err)

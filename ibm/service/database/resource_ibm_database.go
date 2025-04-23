@@ -3228,8 +3228,9 @@ func validateVersionDiff(_ context.Context, diff *schema.ResourceDiff, meta inte
 
 	skipBackup := diff.Get("version_upgrade_skip_backup") == true
 	newVersionStr, _ := newVersion.(string)
+	location := diff.Get("location").(string)
 
-	return validateUpgradeVersion(instanceID, newVersionStr, skipBackup, meta)
+	return validateUpgradeVersion(instanceID, location, newVersionStr, skipBackup, meta)
 }
 
 func (c *userChange) isDelete() bool {
