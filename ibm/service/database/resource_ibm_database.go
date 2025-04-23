@@ -2207,7 +2207,7 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 	}
 
 	if d.HasChange("version") {
-		//TODO LORNA: hook this up to new endpoint
+		//TODO LORNA: test new endpoint end to end
 		version := d.Get("version").(string)
 		skipBackup := d.Get("version_upgrade_skip_backup") == true
 
@@ -2235,29 +2235,29 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 			}
 		} else {
 			log.Printf("[INFO] Triggering upgrade to version %s", version)
-			// versionUpgradeOptions := &clouddatabasesv5.SetDatabaseInplaceVersionUpgradeOptions{
-			// 	ID:                 core.StringPtr(instanceID),
-			// 	Version:            core.StringPtr(version),
-			// 	SkipBackup:         core.BoolPtr(skipBackup),
-			// 	ExpirationDatetime: core.StringPtr(expirationDatetime),
-			// }
+			versionUpgradeOptions := &clouddatabasesv5.SetDatabaseInplaceVersionUpgradeOptions{
+				ID:                 core.StringPtr(instanceID),
+				Version:            core.StringPtr(version),
+				SkipBackup:         core.BoolPtr(skipBackup),
+				ExpirationDatetime: &expirationDatetime,
+			}
 
-			// versionUpgradeResponse, response, err := cloudDatabasesClient.SetDatabaseInplaceVersionUpgrade(versionOptions)
+			versionUpgradeResponse, response, err := cloudDatabasesClient.SetDatabaseInplaceVersionUpgrade(versionUpgradeOptions)
 
-			// if err != nil {
-			// 	return diag.FromErr(fmt.Errorf("[ERROR] error upgrading version of instance: %v\nResponse: %v", err, response))
-			// }
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("[ERROR] error upgrading version of instance: %v\nResponse: %v", err, response))
+			}
 
-			// if versionUpgradeResponse == nil || versionUpgradeResponse.Task == nil || versionUpgradeResponse.Task.ID == nil {
-			// 	return diag.FromErr(fmt.Errorf("[ERROR] received nil for version upgrade"))
-			// }
+			if versionUpgradeResponse == nil || versionUpgradeResponse.Task == nil || versionUpgradeResponse.Task.ID == nil {
+				return diag.FromErr(fmt.Errorf("[ERROR] received nil for version upgrade"))
+			}
 
-			// taskID := *versionUpgradeResponse.Task.ID
+			taskID := *versionUpgradeResponse.Task.ID
 
-			// _, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
-			// if err != nil {
-			// 	return diag.FromErr(fmt.Errorf("[ERROR] error waiting for version upgrade task to complete: %w", err))
-			// }
+			_, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("[ERROR] error waiting for version upgrade task to complete: %w", err))
+			}
 		}
 	}
 

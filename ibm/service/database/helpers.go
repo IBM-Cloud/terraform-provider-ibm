@@ -10,6 +10,7 @@ import (
 
 	"github.com/IBM/cloud-databases-go-sdk/clouddatabasesv5"
 	"github.com/IBM/go-sdk-core/v5/core"
+	"github.com/go-openapi/strfmt"
 )
 
 /*  TODO Move other helper functions here */
@@ -30,11 +31,12 @@ func (t *TimeoutHelper) isMoreThan24Hours(duration time.Duration) bool {
 	return duration > 24*time.Hour
 }
 
-func (t *TimeoutHelper) futureTimeToISO(duration time.Duration) string {
-	return t.Now.Add(duration).UTC().Format(time.RFC3339)
+func (t *TimeoutHelper) futureTimeToISO(duration time.Duration) strfmt.DateTime {
+	utcTime := t.Now.Add(duration).UTC()
+	return strfmt.DateTime(utcTime)
 }
 
-func (t *TimeoutHelper) calculateExpirationDatetime(timeoutDuration time.Duration) string {
+func (t *TimeoutHelper) calculateExpirationDatetime(timeoutDuration time.Duration) strfmt.DateTime {
 	if t.isMoreThan24Hours(timeoutDuration) {
 		return t.futureTimeToISO(24 * time.Hour)
 	}

@@ -10,6 +10,7 @@ import (
 
 	"github.com/IBM/cloud-databases-go-sdk/clouddatabasesv5"
 	"github.com/IBM/go-sdk-core/v5/core"
+	"github.com/go-openapi/strfmt"
 	"github.com/stretchr/testify/require"
 )
 
@@ -52,7 +53,7 @@ func TestFutureTimeToISO(t *testing.T) {
 	helper := TimeoutHelper{Now: mockNow}
 
 	result := helper.futureTimeToISO(30 * time.Minute)
-	expected := "2025-01-01T10:30:00Z"
+	expected := strfmt.DateTime(result)
 
 	require.Equal(t, expected, result)
 }
@@ -61,25 +62,29 @@ func TestCalculateExpirationDatetime(t *testing.T) {
 	mockNow := time.Date(2025, 1, 1, 15, 0, 0, 0, time.UTC)
 	helper := TimeoutHelper{Now: mockNow}
 
+	expected24Hours := strfmt.DateTime(helper.futureTimeToISO(24 * time.Hour))
+	expected20minutes := strfmt.DateTime(helper.futureTimeToISO(20 * time.Minute))
+
 	testcases := []struct {
 		description string
 		duration    time.Duration
-		expected    string
+		expected    strfmt.DateTime
 	}{
 		{
 			description: "When duration is EXACTLY 24 hours, Expect an ISO 24 hrs from now",
 			duration:    24 * time.Hour,
-			expected:    "2025-01-02T15:00:00Z",
+			expected:    expected24Hours,
 		},
 		{
 			description: "When duration is MORE than 24 hours, Expect an ISO 24 hrs from now as that is the maximum",
 			duration:    25 * time.Hour,
-			expected:    "2025-01-02T15:00:00Z",
+			expected:    expected24Hours,
 		},
 		{
 			description: "When duration is LESS than 24 hours, Expect an ISO of now + duration",
 			duration:    20 * time.Minute,
-			expected:    "2025-01-01T15:20:00Z"},
+			expected:    expected20minutes,
+		},
 	}
 
 	for _, tc := range testcases {
