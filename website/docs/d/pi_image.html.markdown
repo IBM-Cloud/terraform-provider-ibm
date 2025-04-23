@@ -10,7 +10,7 @@ description: |-
 
 Import the details of an existing IBM Power Virtual Server Cloud image as a read-only data source. For more information, about IBM power virtual server cloud, see [getting started with IBM Power Systems Virtual Servers](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-getting-started).
 
-## Example usage
+## Example Usage
 
 ```terraform
 data "ibm_pi_image" "ds_image" {
@@ -35,14 +35,14 @@ Example usage:
     }
   ```
   
-## Argument reference
+## Argument Reference
 
 Review the argument references that you can specify for your data source.
 
 - `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
 - `pi_image_name` - (Required, String) The ID of the image. To find supported images, run the `ibmcloud pi images` command.
 
-## Attribute reference
+## Attribute Reference
 
 In addition to all argument reference list, you can access the following attribute references after your data source is created.
 

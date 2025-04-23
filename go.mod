@@ -5,9 +5,9 @@ go 1.23.3
 toolchain go1.23.4
 
 require (
-	github.com/IBM-Cloud/bluemix-go v0.0.0-20241117121028-a3be206688b3
+	github.com/IBM-Cloud/bluemix-go v0.0.0-20250324085928-caa6511f0c13
 	github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20240725064144-454a2ae23113
-	github.com/IBM-Cloud/power-go-client v1.10.0
+	github.com/IBM-Cloud/power-go-client v1.11.0
 	github.com/IBM/apigateway-go-sdk v0.0.0-20210714141226-a5d5d49caaca
 	github.com/IBM/appconfiguration-go-admin-sdk v0.4.4
 	github.com/IBM/appid-management-go-sdk v0.0.0-20210908164609-dd0e0eaf732f
@@ -23,26 +23,27 @@ require (
 	github.com/IBM/go-sdk-core v1.1.0
 	github.com/IBM/go-sdk-core/v3 v3.2.4
 	github.com/IBM/go-sdk-core/v5 v5.19.0
-	github.com/IBM/ibm-backup-recovery-sdk-go v1.0.1
+	github.com/IBM/ibm-backup-recovery-sdk-go v1.0.3
 	github.com/IBM/ibm-cos-sdk-go v1.12.0
 	github.com/IBM/ibm-cos-sdk-go-config/v2 v2.2.0
+	github.com/IBM/ibm-hpcs-tke-sdk v0.0.0-20250305134146-e023c2e84762
 	github.com/IBM/ibm-hpcs-uko-sdk v0.0.20-beta
 	github.com/IBM/keyprotect-go-client v0.15.1
 	github.com/IBM/logs-go-sdk v0.4.0
 	github.com/IBM/logs-router-go-sdk v1.0.7
 	github.com/IBM/mqcloud-go-sdk v0.2.0
-	github.com/IBM/networking-go-sdk v0.51.2
-	github.com/IBM/platform-services-go-sdk v0.77.0
+	github.com/IBM/networking-go-sdk v0.51.3
+	github.com/IBM/platform-services-go-sdk v0.78.0
 	github.com/IBM/project-go-sdk v0.3.5
 	github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5
 	github.com/IBM/sarama v1.45.0
 	github.com/IBM/scc-go-sdk/v5 v5.5.3
 	github.com/IBM/schematics-go-sdk v0.3.0
-	github.com/IBM/sds-go-sdk v0.0.4
+	github.com/IBM/sds-go-sdk v1.0.1
 	github.com/IBM/secrets-manager-go-sdk/v2 v2.0.10
 	github.com/IBM/vmware-go-sdk v0.1.3
 	github.com/IBM/vpc-beta-go-sdk v0.8.0
-	github.com/IBM/vpc-go-sdk v0.65.0
+	github.com/IBM/vpc-go-sdk v0.66.0
 	github.com/ScaleFT/sshkeys v0.0.0-20200327173127-6142f742bca5
 	github.com/akamai/AkamaiOPEN-edgegrid-golang v1.2.2
 	github.com/akamai/AkamaiOPEN-edgegrid-golang/v5 v5.0.0
@@ -50,8 +51,8 @@ require (
 	github.com/apparentlymart/go-cidr v1.1.0
 	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32
 	github.com/go-openapi/strfmt v0.23.0
-	github.com/golang-jwt/jwt v3.2.2+incompatible
-	github.com/google/go-cmp v0.6.0
+	github.com/golang-jwt/jwt/v5 v5.2.2
+	github.com/google/go-cmp v0.7.0
 	github.com/google/uuid v1.6.0
 	github.com/hashicorp/go-uuid v1.0.3
 	github.com/hashicorp/go-version v1.7.0
@@ -76,8 +77,6 @@ require (
 )
 
 require github.com/BurntSushi/toml v1.2.0 // indirect
-
-require github.com/IBM/ibm-hpcs-tke-sdk v0.0.0-20250305134146-e023c2e84762
 
 require (
 	github.com/Logicalis/asn1 v0.0.0-20190312173541-d60463189a56 // indirect
@@ -122,6 +121,7 @@ require (
 	github.com/go-playground/validator/v10 v10.24.0 // indirect
 	github.com/go-test/deep v1.1.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
+	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/gnostic-models v0.6.8 // indirect
@@ -210,10 +210,10 @@ require (
 	go.uber.org/ratelimit v0.2.0 // indirect
 	go.uber.org/zap v1.27.0 // indirect
 	golang.org/x/mod v0.21.0 // indirect
-	golang.org/x/net v0.37.0 // indirect
+	golang.org/x/net v0.38.0 // indirect
 	golang.org/x/oauth2 v0.22.0 // indirect
 	golang.org/x/sync v0.12.0 // indirect
-	golang.org/x/sys v0.31.0 // indirect
+	golang.org/x/sys v0.32.0 // indirect
 	golang.org/x/term v0.30.0 // indirect
 	golang.org/x/text v0.23.0 // indirect
 	golang.org/x/time v0.3.0 // indirect

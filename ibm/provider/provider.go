@@ -225,6 +225,13 @@ func Provider() *schema.Provider {
 				Description:  "Visibility of the provider if it is private or public.",
 				DefaultFunc:  schema.MultiEnvDefaultFunc([]string{"IC_VISIBILITY", "IBMCLOUD_VISIBILITY"}, "public"),
 			},
+			"private_endpoint_type": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validate.ValidateAllowedStringValues([]string{"vpe"}),
+				Description:  "Private Endpoint type used by the service endpoints. Example: vpe.",
+				DefaultFunc:  schema.MultiEnvDefaultFunc([]string{"IC_PRIVATE_ENDPOINT_TYPE", "IBMCLOUD_PRIVATE_ENDPOINT_TYPE"}, nil),
+			},
 			"endpoints_file_path": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -250,6 +257,8 @@ func Provider() *schema.Provider {
 			"ibm_backup_recovery_search_indexed_object":    backuprecovery.DataSourceIbmBackupRecoverySearchIndexedObject(),
 			"ibm_backup_recovery_object_snapshots":         backuprecovery.DataSourceIbmBackupRecoveryObjectSnapshots(),
 			"ibm_backup_recovery_connectors_metadata":      backuprecovery.DataSourceIbmBackupRecoveryConnectorsMetadata(),
+			"ibm_backup_recovery_connector_logs":           backuprecovery.DataSourceIbmBackupRecoveryConnectorLogs(),
+			"ibm_backup_recovery_connector_status":         backuprecovery.DataSourceIbmBackupRecoveryConnectorStatus(),
 			"ibm_backup_recovery_data_source_connections":  backuprecovery.DataSourceIbmBackupRecoveryDataSourceConnections(),
 			"ibm_backup_recovery_data_source_connectors":   backuprecovery.DataSourceIbmBackupRecoveryDataSourceConnectors(),
 			"ibm_backup_recovery_search_objects":           backuprecovery.DataSourceIbmBackupRecoverySearchObjects(),
@@ -266,6 +275,7 @@ func Provider() *schema.Provider {
 			"ibm_backup_recovery_source_registration":      backuprecovery.DataSourceIbmBackupRecoverySourceRegistration(),
 			"ibm_backup_recovery_download_indexed_files":   backuprecovery.DataSourceIbmBackupRecoveryDownloadIndexedFiles(),
 			"ibm_backup_recovery_protection_sources":       backuprecovery.DataSourceIbmBackupRecoveryProtectionSources(),
+			"ibm_backup_recovery_connector_get_users":      backuprecovery.DataSourceIbmBackupRecoveryConnectorGetUsers(),
 
 			// // AppID
 			"ibm_appid_action_url":               appid.DataSourceIBMAppIDActionURL(),
@@ -1075,6 +1085,9 @@ func Provider() *schema.Provider {
 			"ibm_backup_recovery_source_registration":                            backuprecovery.ResourceIbmBackupRecoverySourceRegistration(),
 			"ibm_backup_recovery_update_protection_group_run_request":            backuprecovery.ResourceIbmBackupRecoveryUpdateProtectionGroupRunRequest(),
 			"ibm_backup_recovery_connection_registration_token":                  backuprecovery.ResourceIbmBackupRecoveryConnectionRegistrationToken(),
+			"ibm_backup_recovery_connector_registration":                         backuprecovery.ResourceIbmBackupRecoveryConnectorRegistration(),
+			"ibm_backup_recovery_connector_access_token":                         backuprecovery.ResourceIbmBackupRecoveryConnectorAccessToken(),
+			"ibm_backup_recovery_connector_update_user":                          backuprecovery.ResourceIbmBackupRecoveryConnectorUpdateUser(),
 
 			"ibm_api_gateway_endpoint":              apigateway.ResourceIBMApiGatewayEndPoint(),
 			"ibm_api_gateway_endpoint_subscription": apigateway.ResourceIBMApiGatewayEndpointSubscription(),
@@ -1400,8 +1413,9 @@ func Provider() *schema.Provider {
 			"ibm_hardware_firewall_shared":                 classicinfrastructure.ResourceIBMFirewallShared(),
 
 			// Software Defined Storage as a Service
-			"ibm_sds_volume": sdsaas.ResourceIBMSdsVolume(),
-			"ibm_sds_host":   sdsaas.ResourceIBMSdsHost(),
+			"ibm_sds_volume":         sdsaas.ResourceIBMSdsVolume(),
+			"ibm_sds_volume_mapping": sdsaas.ResourceIBMSdsVolumeMapping(),
+			"ibm_sds_host":           sdsaas.ResourceIBMSdsHost(),
 
 			// Partner Center Sell
 			"ibm_onboarding_registration":       partnercentersell.ResourceIbmOnboardingRegistration(),
@@ -2210,8 +2224,9 @@ func Validator() validate.ValidatorDict {
 				"ibm_logs_router_tenant": logsrouting.ResourceIBMLogsRouterTenantValidator(),
 
 				// Added for Software Defined Storage as a Service
-				"ibm_sds_volume": sdsaas.ResourceIBMSdsVolumeValidator(),
-				"ibm_sds_host":   sdsaas.ResourceIBMSdsHostValidator(),
+				"ibm_sds_volume":         sdsaas.ResourceIBMSdsVolumeValidator(),
+				"ibm_sds_volume_mapping": sdsaas.ResourceIBMSdsVolumeValidator(),
+				"ibm_sds_host":           sdsaas.ResourceIBMSdsHostValidator(),
 			},
 			DataSourceValidatorDictionary: map[string]*validate.ResourceValidator{
 				"ibm_is_subnet":                     vpc.DataSourceIBMISSubnetValidator(),
@@ -2362,6 +2377,10 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	if v, ok := d.GetOk("visibility"); ok {
 		visibility = v.(string)
 	}
+	var privateEndpointType string
+	if vt, ok := d.GetOk("private_endpoint_type"); ok {
+		privateEndpointType = vt.(string)
+	}
 	var file string
 	if f, ok := d.GetOk("endpoints_file_path"); ok {
 		file = f.(string)
@@ -2400,6 +2419,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		IAMRefreshToken:      iamRefreshToken,
 		Zone:                 zone,
 		Visibility:           visibility,
+		PrivateEndpointType:  privateEndpointType,
 		EndpointsFile:        file,
 		IAMTrustedProfileID:  iamTrustedProfileId,
 	}

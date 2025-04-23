@@ -8,9 +8,9 @@ subcategory: "Activity Tracker Event Routing"
 
 # ibm_atracker_targets
 
-Provides a read-only data source to retrieve information about atracker_targets. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+Provides a read-only data source to retrieve information about atracker_targets. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
 
-## Example usage
+## Example Usage
 
 ```terraform
 data "ibm_atracker_targets" "atracker_targets" {
@@ -18,30 +18,29 @@ data "ibm_atracker_targets" "atracker_targets" {
 }
 ```
 
-## Argument reference
+## Argument Reference
 
-Review the argument reference that you can specify for your data source.
+You can specify the following arguments for this data source.
 
-* `name` - (String) The name of the target resource.
+* `name` - (Optional, String) The name of the target resource.
+* `region` - (Optional, String) Limit the query to the specified region.
+  * Constraints: The maximum length is `256` characters. The minimum length is `3` characters. The value must match regular expression `/^[a-zA-Z0-9 -]/`.
 
-## Attribute reference
+## Attribute Reference
 
-In addition to all argument references listed, you can access the following attribute references after your data source is created.
+After your data source is created, you can read values from the following attributes.
 
 * `id` - The unique identifier of the atracker_targets.
 * `targets` - (List) A list of target resources.
-Nested scheme for **targets**:
-	* `id` - (String) The uuid of the target resource.
-	* `name` - (String) The name of the target resource.
-	* `crn` - (String) The crn of the target resource.
-	* `target_type` - (String) The type of the target.
-	  * Constraints: Allowable values are: `cloud_object_storage`, `logdna` (**DEPRECATED**), `event_streams`, `cloud_logs`.
-	* `encrypt_key` - (String) The encryption key that is used to encrypt events before Activity Tracker services buffer them on storage. This credential is masked in the response.
-	* `region` - (String) Included this optional field if you used it to create a target in a different region other than the one you are connected.
-	* `cos_endpoint` - (List) Property values for a Cloud Object Storage Endpoint.
-	Nested scheme for **cos_endpoint**:
-		* `api_key` - (String) The IAM API key that has writer access to the Cloud Object Storage instance. This credential is masked in the response. This is required if service_to_service is not enabled.
-		  * Constraints: The maximum length is `1000` characters. The minimum length is `3` characters. The value must match regular expression `/^[a-zA-Z0-9 -._:]+$/`.
+Nested schema for **targets**:
+	* `api_version` - (Integer) The API version of the target.
+	  * Constraints: The maximum value is `2`. The minimum value is `2`.
+	* `cloudlogs_endpoint` - (List) Property values for the IBM Cloud Logs endpoint in responses.
+	Nested schema for **cloudlogs_endpoint**:
+		* `target_crn` - (String) The CRN of the IBM Cloud Logs instance.
+		  * Constraints: The maximum length is `1000` characters. The minimum length is `3` characters. The value must match regular expression `/^[a-zA-Z0-9 -._:\/]+$/`.
+	* `cos_endpoint` - (List) Property values for a Cloud Object Storage Endpoint in responses.
+	Nested schema for **cos_endpoint**:
 		* `bucket` - (String) The bucket name under the Cloud Object Storage instance.
 		  * Constraints: The maximum length is `1000` characters. The minimum length is `3` characters. The value must match regular expression `/^[a-zA-Z0-9 -._:\/]+$/`.
 		* `endpoint` - (String) The host name of the Cloud Object Storage endpoint.
@@ -49,39 +48,28 @@ Nested scheme for **targets**:
 		* `service_to_service_enabled` - (Boolean) Determines if IBM Cloud Activity Tracker Event Routing has service to service authentication enabled. Set this flag to true if service to service is enabled and do not supply an apikey.
 		* `target_crn` - (String) The CRN of the Cloud Object Storage instance.
 		  * Constraints: The maximum length is `1000` characters. The minimum length is `3` characters. The value must match regular expression `/^[a-zA-Z0-9 -._:\/]+$/`.
-	* `logdna_endpoint` - **DEPRECATED** (List) Property values for a LogDNA Endpoint. This attribute is no longer in use and will be removed in the next major version of the provider.
-	Nested scheme for **logdna_endpoint**:
-		* `ingestion_key` - (String) The LogDNA ingestion key is used for routing logs to a specific LogDNA instance.
-		  * Constraints: The maximum length is `1000` characters. The minimum length is `3` characters. The value must match regular expression `/^[a-zA-Z0-9 -._:\/]+$/`.
-		* `target_crn` - (String) The CRN of the LogDNA instance.
-		  * Constraints: The maximum length is `1000` characters. The minimum length is `3` characters. The value must match regular expression `/^[a-zA-Z0-9 -._:\/]+$/`.
-	* `eventstreams_endpoint` - (List) Property values for Event streams Endpoint.
-	Nested scheme for **eventstreams_endpoint**:
-		* `api_key` - (String) The user password (api key) for the message hub topic in the Event Streams instance. This is required if service_to_service is not enabled..
-			* Constraints: The maximum length is `1000` characters. The minimum length is `3` characters. The value must match regular expression `/^[a-zA-Z0-9 -._:]+$/`.
-		* `topic` - (String) The topic name defined under the Event streams instance.
-			* Constraints: The maximum length is `1000` characters. The minimum length is `3` characters. The value must match regular expression `/^[a-zA-Z0-9 -._:\/]+$/`.
-		* `brokers` - (List) The list of brokers defined under the Event streams instance and used in the event streams endpoint.
-			* Constraints: The list items must match regular expression `/^[a-zA-Z0-9 -._:]+$/`.
-		* `service_to_service_enabled` - (Boolean) Determines if IBM Cloud Activity Tracker Event Routing has service to service authentication enabled. Set this flag to true if service to service is enabled and do not supply an apikey.
-		* `target_crn` - (String) The CRN of the Event streams instance.
-			* Constraints: The maximum length is `1000` characters. The minimum length is `3` characters. The value must match regular expression `/^[a-zA-Z0-9 -._:\/]+$/`.
-	* `cloudlogs_endpoint` - (List) Property values for an IBM Cloud Logs endpoint.
-	Nested scheme for **cloudlogs_endpoint**:
-		* `target_crn` - (String) The CRN of the IBM Cloud Logs instance.
-			* Constraints: The maximum length is `1000` characters. The minimum length is `3` characters. The value must match regular expression `/^[a-zA-Z0-9 -._:\/]+$/`.
-  * `write_status` - (List) The status of the write attempt to the target with the provided endpoint parameters.
-	Nested scheme for **write_status**:
-  	* `last_failure` - (String) The timestamp of the failure.
-  	* `reason_for_last_failure` - (String) Detailed description of the cause of the failure.
-  	* `status` - (String) The status such as failed or success.
 	* `created_at` - (String) The timestamp of the target creation time.
+	* `crn` - (String) The crn of the target resource.
+	* `eventstreams_endpoint` - (List) Property values for the Event Streams Endpoint in responses.
+	Nested schema for **eventstreams_endpoint**:
+		* `api_key` - (String) The user password (api key) for the message hub topic in the Event Streams instance.
+		  * Constraints: The maximum length is `1000` characters. The minimum length is `3` characters. The value must match regular expression `/^[a-zA-Z0-9 -._:\/]+$/`.
+		* `brokers` - (List) List of broker endpoints.
+		  * Constraints: The list items must match regular expression `/^[a-zA-Z0-9 -._:]+$/`.
+		* `service_to_service_enabled` - (Boolean) Determines if IBM Cloud Activity Tracker Event Routing has service to service authentication enabled. Set this flag to true if service to service is enabled and do not supply an apikey.
+		* `target_crn` - (String) The CRN of the Event Streams instance.
+		  * Constraints: The maximum length is `1000` characters. The minimum length is `3` characters. The value must match regular expression `/^[a-zA-Z0-9 -._:\/]+$/`.
+		* `topic` - (String) The messsage hub topic defined in the Event Streams instance.
+		  * Constraints: The maximum length is `1000` characters. The minimum length is `3` characters. The value must match regular expression `/^[a-zA-Z0-9 -._:\/]+$/`.
+	* `id` - (String) The uuid of the target resource.
+	* `message` - (String) An optional message containing information about the target.
+	* `name` - (String) The name of the target resource.
+	* `region` - (String) Included this optional field if you used it to create a target in a different region other than the one you are connected.
+	* `target_type` - (String) The type of the target.
+	  * Constraints: Allowable values are: `cloud_object_storage`, `event_streams`, `cloud_logs`.
 	* `updated_at` - (String) The timestamp of the target last updated time.
-	* `api_version` - (Integer) The API version of the target.
-  * `cos_write_status` - **DEPRECATED** (List) The status of the write attempt with the provided cos_endpoint parameters.
-	Nested scheme for **cos_write_status**:
-		* `status` - (String) The status such as failed or success.
+	* `write_status` - (List) The status of the write attempt to the target with the provided endpoint parameters.
+	Nested schema for **write_status**:
 		* `last_failure` - (String) The timestamp of the failure.
 		* `reason_for_last_failure` - (String) Detailed description of the cause of the failure.
-	* `created` - **DEPRECATED** (String) The timestamp of the target creation time.
-	* `updated` - **DEPRECATED** (String) The timestamp of the target last updated time.
+		* `status` - (String) The status such as failed or success.

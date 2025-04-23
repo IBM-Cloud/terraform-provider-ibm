@@ -7,9 +7,11 @@ description: |-
 ---
 
 # ibm_pi_dhcp
+
 Retrieve information about a DHCP Server. For more information, see [getting started with IBM Power Systems Virtual Servers](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-getting-started).
 
-## Example usage
+## Example Usage
+
 ```terraform
 data "ibm_pi_dhcp" "example" {
   pi_cloud_instance_id = "<value of the cloud_instance_id>"
@@ -17,13 +19,15 @@ data "ibm_pi_dhcp" "example" {
 }
 ```
 
-**Notes**
+### Notes
+
 - Please find [supported Regions](https://cloud.ibm.com/apidocs/power-cloud#endpoint) for endpoints.
 - If a Power cloud instance is provisioned at `lon04`, The provider level attributes should be as follows:
   - `region` - `lon`
   - `zone` - `lon04`
 
 Example usage:
+
   ```terraform
     provider "ibm" {
       region    =   "lon"
@@ -31,13 +35,15 @@ Example usage:
     }
   ```
 
-## Argument reference
+## Argument Reference
+
 Review the argument references that you can specify for your data source.
 
 - `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
 - `pi_dhcp_id` - (Required, String) ID of the DHCP Server.
 
-## Attribute reference
+## Attribute Reference
+
 In addition to all argument reference list, you can access the following attribute references after your data source is created.
 
 - `dhcp_id` - (Deprecated, String) ID of the DHCP Server.

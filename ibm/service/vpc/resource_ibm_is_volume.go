@@ -103,6 +103,12 @@ func ResourceIBMISVolume() *schema.Resource {
 				Description:  "Volume profile name",
 			},
 
+			"bandwidth": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Computed:    true,
+				Description: "The maximum bandwidth (in megabits per second) for the volume. For this property to be specified, the volume storage_generation must be 2.",
+			},
 			isVolumeZone: {
 				Type:        schema.TypeString,
 				Required:    true,
@@ -327,12 +333,6 @@ func ResourceIBMISVolume() *schema.Resource {
 				Description: "The resource group name in which resource is provisioned",
 			},
 
-			isVolumeBandwidth: {
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "The maximum bandwidth (in megabits per second) for the volume",
-			},
-
 			isVolumesOperatingSystem: &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -533,6 +533,11 @@ func volCreate(d *schema.ResourceData, meta interface{}, volName, profile, zone 
 	if i, ok := d.GetOk(isVolumeIops); ok {
 		iops := int64(i.(int))
 		volTemplate.Iops = &iops
+	}
+	// bandwidth changes
+	if b, ok := d.GetOk("bandwidth"); ok {
+		bandwidth := int64(b.(int))
+		volTemplate.Bandwidth = &bandwidth
 	}
 
 	var userTags *schema.Set
@@ -791,25 +796,53 @@ func volUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasNam
 	}
 	options.IfMatch = &eTag
 
-	//name update
+	// bandwidth update
+	hasBandwidthChanged := false
+	if d.HasChange("bandwidth") {
+		hasBandwidthChanged = true
+	}
+
+	//name || bandwidth update
 	volumeNamePatchModel := &vpcv1.VolumePatch{}
-	if hasNameChanged {
-		volumeNamePatchModel.Name = &name
-		volumeNamePatch, err := volumeNamePatchModel.AsPatch()
-		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for volumeNamePatch: %s", err)
+	if hasNameChanged || hasBandwidthChanged {
+		if hasNameChanged {
+			volumeNamePatchModel.Name = &name
+			volumeNamePatch, err := volumeNamePatchModel.AsPatch()
+			if err != nil {
+				return fmt.Errorf("[ERROR] Error calling asPatch for volumeNamePatch for name: %s", err)
+			}
+			options.VolumePatch = volumeNamePatch
+			_, response, err = sess.UpdateVolume(options)
+			if err != nil {
+				return err
+			}
+			_, err = isWaitForVolumeAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
+			if err != nil {
+				return err
+			}
+			eTag = response.Headers.Get("ETag")
+			options.IfMatch = &eTag
 		}
-		options.VolumePatch = volumeNamePatch
-		_, response, err = sess.UpdateVolume(options)
-		if err != nil {
-			return err
+		if hasBandwidthChanged {
+			volumeNamePatchModel = &vpcv1.VolumePatch{}
+			bandwidth := int64(d.Get("bandwidth").(int))
+			volumeNamePatchModel.Bandwidth = &bandwidth
+			volumeNamePatch, err := volumeNamePatchModel.AsPatch()
+			if err != nil {
+				return fmt.Errorf("[ERROR] Error calling asPatch for volumeNamePatch for bandwidth: %s", err)
+			}
+			options.VolumePatch = volumeNamePatch
+			_, response, err = sess.UpdateVolume(options)
+			if err != nil {
+				return err
+			}
+			_, err = isWaitForVolumeAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
+			if err != nil {
+				return err
+			}
+			eTag = response.Headers.Get("ETag")
+			options.IfMatch = &eTag
 		}
-		_, err = isWaitForVolumeAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
-		if err != nil {
-			return err
-		}
-		eTag = response.Headers.Get("ETag")
-		options.IfMatch = &eTag
 	}
 
 	// profile/ iops update
