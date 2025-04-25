@@ -4232,3 +4232,96 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 		},
 	})
 }
+
+func TestAccIBMISInstance_ProfileAndBandwidthUpdate(t *testing.T) {
+	var instance string
+	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tf-instance-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tf-subnet-%d", acctest.RandIntRange(10, 100))
+	publicKey := strings.TrimSpace(`
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
+`)
+	sshname := fmt.Sprintf("tf-ssh-%d", acctest.RandIntRange(10, 100))
+	initialProfile := "cx2-4x8"   // Initial profile
+	updatedProfile := "cx2-48x96" // Updated profile
+	initialBandwidth := 2000      // Initial bandwidth
+	updatedBandwidth := 20000     // Updated bandwidth
+	prefix := fmt.Sprintf("tf-prefix-%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISInstanceDestroy,
+		Steps: []resource.TestStep{
+			// Step 1: Create instance with initial profile and bandwidth
+			{
+				Config: testAccCheckIBMISInstanceConfigWithProfileAndBandwidth(
+					vpcname, subnetname, sshname, publicKey, name, prefix, initialProfile, initialBandwidth),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISInstanceExists("ibm_is_instance.testacc_instance", instance),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "profile", initialProfile),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "total_volume_bandwidth", fmt.Sprintf("%d", initialBandwidth)),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "zone", acc.ISZoneName),
+				),
+			},
+			// Step 2: Update both profile and bandwidth in a single operation
+			{
+				Config: testAccCheckIBMISInstanceConfigWithProfileAndBandwidth(
+					vpcname, subnetname, sshname, publicKey, name, prefix, updatedProfile, updatedBandwidth),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISInstanceExists("ibm_is_instance.testacc_instance", instance),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "profile", updatedProfile),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "total_volume_bandwidth", fmt.Sprintf("%d", updatedBandwidth)),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "zone", acc.ISZoneName),
+				),
+			},
+		},
+	})
+}
+
+// Configuration function that allows specifying both profile and bandwidth with primary network attachment
+func testAccCheckIBMISInstanceConfigWithProfileAndBandwidth(vpcname, subnetname, sshname, publicKey, name, prefix, profile string, bandwidth int) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	}
+	  
+	resource "ibm_is_subnet" "testacc_subnet" {
+		name            = "%s"
+		vpc             = ibm_is_vpc.testacc_vpc.id
+		zone            = "%s"
+		ipv4_cidr_block = "%s"
+	}
+	  
+	resource "ibm_is_ssh_key" "testacc_sshkey" {
+		name       = "%s"
+		public_key = "%s"
+	}
+	  
+	resource "ibm_is_instance" "testacc_instance" {
+		name    = "%s"
+		image   = "%s"
+		profile = "%s"
+		total_volume_bandwidth = %d
+		primary_network_attachment {
+			name = "%s-pna"
+			virtual_network_interface {
+				subnet = ibm_is_subnet.testacc_subnet.id
+			}
+		}
+		vpc  = ibm_is_vpc.testacc_vpc.id
+		zone = "%s"
+		keys = [ibm_is_ssh_key.testacc_sshkey.id]
+		wait_before_delete = false
+	}`, vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, sshname, publicKey, name, acc.IsImage, profile, bandwidth, prefix, acc.ISZoneName)
+}
