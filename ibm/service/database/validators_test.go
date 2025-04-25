@@ -24,8 +24,8 @@ func TestIsVersionUpgradeAllowed(t *testing.T) {
 			version: Version{
 				Version: "6.0",
 				Transitions: []VersionTransition{
-					{Method: "in-place", ToVersion: "6.1", SkipBackupSupported: core.BoolPtr(false)},
-					{Method: "in-place", ToVersion: "7.0", SkipBackupSupported: core.BoolPtr(false)},
+					{Method: inPlace, ToVersion: "6.1", SkipBackupSupported: core.BoolPtr(false)},
+					{Method: inPlace, ToVersion: "7.0", SkipBackupSupported: core.BoolPtr(false)},
 				},
 			},
 			upgradeVersion: "7.0",
@@ -36,8 +36,8 @@ func TestIsVersionUpgradeAllowed(t *testing.T) {
 			version: Version{
 				Version: "7.0",
 				Transitions: []VersionTransition{
-					{Method: "restore", ToVersion: "7.1"},
-					{Method: "restore", ToVersion: "7.2"},
+					{Method: restore, ToVersion: "7.1"},
+					{Method: restore, ToVersion: "7.2"},
 				},
 			},
 			upgradeVersion: "7.1",
@@ -48,8 +48,8 @@ func TestIsVersionUpgradeAllowed(t *testing.T) {
 			version: Version{
 				Version: "7.0",
 				Transitions: []VersionTransition{
-					{Method: "restore", ToVersion: "7.1"},
-					{Method: "in-place", ToVersion: "7.2"},
+					{Method: restore, ToVersion: "7.1"},
+					{Method: inPlace, ToVersion: "7.2"},
 				},
 			},
 			upgradeVersion: "8",
@@ -86,8 +86,8 @@ func TestIsSkipBackupUpgradeAllowed(t *testing.T) {
 			version: Version{
 				Version: "6.0",
 				Transitions: []VersionTransition{
-					{Method: "in-place", ToVersion: "6.1", SkipBackupSupported: core.BoolPtr(true)},
-					{Method: "in-place", ToVersion: "7.0", SkipBackupSupported: core.BoolPtr(false)},
+					{Method: inPlace, ToVersion: "6.1", SkipBackupSupported: core.BoolPtr(true)},
+					{Method: inPlace, ToVersion: "7.0", SkipBackupSupported: core.BoolPtr(false)},
 				},
 			},
 			upgradeVersion: "6.1",
@@ -98,7 +98,7 @@ func TestIsSkipBackupUpgradeAllowed(t *testing.T) {
 			version: Version{
 				Version: "7.0",
 				Transitions: []VersionTransition{
-					{Method: "in-place", ToVersion: "8", SkipBackupSupported: core.BoolPtr(false)},
+					{Method: inPlace, ToVersion: "8", SkipBackupSupported: core.BoolPtr(false)},
 				},
 			},
 			upgradeVersion: "8",
@@ -109,7 +109,7 @@ func TestIsSkipBackupUpgradeAllowed(t *testing.T) {
 			version: Version{
 				Version: "7.0",
 				Transitions: []VersionTransition{
-					{Method: "in-place", ToVersion: "8", SkipBackupSupported: nil},
+					{Method: inPlace, ToVersion: "8", SkipBackupSupported: nil},
 				},
 			},
 			upgradeVersion: "8",
@@ -145,8 +145,8 @@ func TestHasUpgradeVersions(t *testing.T) {
 			version: Version{
 				Version: "6.0",
 				Transitions: []VersionTransition{
-					{Method: "in-place", ToVersion: "6.1", SkipBackupSupported: core.BoolPtr(true)},
-					{Method: "in-place", ToVersion: "7.0", SkipBackupSupported: core.BoolPtr(false)},
+					{Method: inPlace, ToVersion: "6.1", SkipBackupSupported: core.BoolPtr(true)},
+					{Method: inPlace, ToVersion: "7.0", SkipBackupSupported: core.BoolPtr(false)},
 				},
 			},
 			expectedResult: true,
@@ -156,7 +156,7 @@ func TestHasUpgradeVersions(t *testing.T) {
 			version: Version{
 				Version: "7.0",
 				Transitions: []VersionTransition{
-					{Method: "restore", ToVersion: "8", SkipBackupSupported: core.BoolPtr(false)},
+					{Method: restore, ToVersion: "8", SkipBackupSupported: core.BoolPtr(false)},
 				},
 			},
 			expectedResult: false,
@@ -191,10 +191,10 @@ func TestGetAllowedVersionsList(t *testing.T) {
 			version: Version{
 				Version: "6.0",
 				Transitions: []VersionTransition{
-					{Method: "restore", ToVersion: "6.1", SkipBackupSupported: core.BoolPtr(true)},
-					{Method: "restore", ToVersion: "7.0", SkipBackupSupported: core.BoolPtr(false)},
-					{Method: "in-place", ToVersion: "8.0", SkipBackupSupported: core.BoolPtr(false)},
-					{Method: "in-place", ToVersion: "9.5", SkipBackupSupported: core.BoolPtr(false)},
+					{Method: restore, ToVersion: "6.1", SkipBackupSupported: core.BoolPtr(true)},
+					{Method: restore, ToVersion: "7.0", SkipBackupSupported: core.BoolPtr(false)},
+					{Method: inPlace, ToVersion: "8.0", SkipBackupSupported: core.BoolPtr(false)},
+					{Method: inPlace, ToVersion: "9.5", SkipBackupSupported: core.BoolPtr(false)},
 				},
 			},
 			expectedResult: []string{"8.0", "9.5"},
@@ -204,8 +204,8 @@ func TestGetAllowedVersionsList(t *testing.T) {
 			version: Version{
 				Version: "6.0",
 				Transitions: []VersionTransition{
-					{Method: "restore", ToVersion: "6.1", SkipBackupSupported: core.BoolPtr(true)},
-					{Method: "restore", ToVersion: "7.0", SkipBackupSupported: core.BoolPtr(false)},
+					{Method: restore, ToVersion: "6.1", SkipBackupSupported: core.BoolPtr(true)},
+					{Method: restore, ToVersion: "7.0", SkipBackupSupported: core.BoolPtr(false)},
 				},
 			},
 			expectedResult: nil,
@@ -242,21 +242,21 @@ func MockGetDeploymentCapability(capability string, instanceID string, platform 
 						Application:         core.StringPtr("mongodb"),
 						FromVersion:         core.StringPtr("6"),
 						ToVersion:           core.StringPtr("7"),
-						Method:              core.StringPtr("in-place"),
+						Method:              core.StringPtr(inPlace),
 						SkipBackupSupported: core.BoolPtr(false),
 					},
 					{
 						Application:         core.StringPtr("mongodb"),
 						FromVersion:         core.StringPtr("6"),
 						ToVersion:           core.StringPtr("8"),
-						Method:              core.StringPtr("in-place"),
+						Method:              core.StringPtr(inPlace),
 						SkipBackupSupported: core.BoolPtr(true),
 					},
 					{
 						Application:         core.StringPtr("mongodb"),
 						FromVersion:         core.StringPtr("6"),
 						ToVersion:           core.StringPtr("10"),
-						Method:              core.StringPtr("restore"),
+						Method:              core.StringPtr(restore),
 						SkipBackupSupported: core.BoolPtr(true),
 					},
 				},
@@ -333,7 +333,7 @@ func TestValidateVersion(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.description, func(t *testing.T) {
 			fetchDeploymentVersionFn = func(instanceID string, location string, meta interface{}) *Version {
-				capability, err := tc.mockCapabilityFunc("versions", instanceID, "classic", location, meta)
+				capability, err := tc.mockCapabilityFunc(versions, instanceID, classicPlatform, location, meta)
 				require.NoError(t, err)
 				return expandVersion(capability.Versions[0])
 			}

@@ -14,6 +14,13 @@ import (
 
 /* VERSION VALIDATOR */
 
+const (
+	versions        = "versions"
+	classicPlatform = "classic"
+	inPlace         = "in-place"
+	restore         = "restore"
+)
+
 type Version struct {
 	Version     string
 	Type        string
@@ -62,7 +69,7 @@ func expandVersion(version clouddatabasesv5.VersionsCapabilityItem) *Version {
 
 func (v *Version) isVersionUpgradeAllowed(version string) bool {
 	for _, transition := range v.Transitions {
-		if transition.ToVersion == version && transition.Method == "in-place" {
+		if transition.ToVersion == version && transition.Method == inPlace {
 			return true
 		}
 	}
@@ -71,7 +78,7 @@ func (v *Version) isVersionUpgradeAllowed(version string) bool {
 
 func (v *Version) isSkipBackupUpgradeAllowed(version string) bool {
 	for _, transition := range v.Transitions {
-		if transition.ToVersion == version && transition.SkipBackupSupported != nil && transition.Method == "in-place" {
+		if transition.ToVersion == version && transition.SkipBackupSupported != nil && transition.Method == inPlace {
 			return *transition.SkipBackupSupported
 		}
 	}
@@ -80,7 +87,7 @@ func (v *Version) isSkipBackupUpgradeAllowed(version string) bool {
 
 func (v *Version) hasUpgradeVersions() bool {
 	for _, transition := range v.Transitions {
-		if transition.Method == "in-place" {
+		if transition.Method == inPlace {
 			return true
 		}
 	}
@@ -90,7 +97,7 @@ func (v *Version) hasUpgradeVersions() bool {
 func (v *Version) getAllowedVersionsList() []string {
 	var allowedList []string
 	for _, transition := range v.Transitions {
-		if transition.Method == "in-place" {
+		if transition.Method == inPlace {
 			allowedList = append(allowedList, transition.ToVersion)
 		}
 	}
@@ -100,7 +107,7 @@ func (v *Version) getAllowedVersionsList() []string {
 var fetchDeploymentVersionFn = fetchDeploymentVersion
 
 func fetchDeploymentVersion(instanceId string, location string, meta interface{}) *Version {
-	capability, err := getDeploymentCapability("versions", instanceId, "classic", location, meta)
+	capability, err := getDeploymentCapability(versions, instanceId, classicPlatform, location, meta)
 	if err != nil {
 		log.Fatalf("Error fetching deployment versions: %v", err)
 	}

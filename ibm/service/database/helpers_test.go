@@ -115,7 +115,7 @@ func TestMatchingTaskInProgress(t *testing.T) {
 		mockTasks          []clouddatabasesv5.Task
 		mockError          error
 		instanceID         string
-		matchDescription   string
+		matchResourceType  string
 		expectedInProgress bool
 		expectedTask       clouddatabasesv5.Task
 		expectError        bool
@@ -124,84 +124,84 @@ func TestMatchingTaskInProgress(t *testing.T) {
 			description: "When matching task is running, Expect true and matching task",
 			mockTasks: []clouddatabasesv5.Task{
 				{
-					ID:          core.StringPtr("123"),
-					Status:      core.StringPtr("running"),
-					Description: core.StringPtr("Restoring instance"),
+					ID:           core.StringPtr("123"),
+					Status:       core.StringPtr(databaseTaskRunningStatus),
+					ResourceType: core.StringPtr(taskRestore),
 				},
 				{
-					ID:          core.StringPtr("1234"),
-					Status:      core.StringPtr("running"),
-					Description: core.StringPtr("Upgrading instance"),
+					ID:           core.StringPtr("1234"),
+					Status:       core.StringPtr(databaseTaskRunningStatus),
+					ResourceType: core.StringPtr(taskUpgrade),
 				},
 			},
 			instanceID:         "inst-1",
-			matchDescription:   "Upgrading instance",
+			matchResourceType:  taskUpgrade,
 			expectedInProgress: true,
 			expectedTask: clouddatabasesv5.Task{
-				ID:          core.StringPtr("1234"),
-				Status:      core.StringPtr("running"),
-				Description: core.StringPtr("Upgrading instance"),
+				ID:           core.StringPtr("1234"),
+				Status:       core.StringPtr(databaseTaskRunningStatus),
+				ResourceType: core.StringPtr(taskUpgrade),
 			},
 		},
 		{
 			description: "When matching task is queued, Expect true and matching task",
 			mockTasks: []clouddatabasesv5.Task{
 				{
-					ID:          core.StringPtr("123"),
-					Status:      core.StringPtr("queued"),
-					Description: core.StringPtr("Restoring instance"),
+					ID:           core.StringPtr("123"),
+					Status:       core.StringPtr(databaseTaskQueuedStatus),
+					ResourceType: core.StringPtr(taskRestore),
 				},
 				{
-					ID:          core.StringPtr("234"),
-					Status:      core.StringPtr("queued"),
-					Description: core.StringPtr("Upgrading instance"),
+					ID:           core.StringPtr("234"),
+					Status:       core.StringPtr(databaseTaskQueuedStatus),
+					ResourceType: core.StringPtr(taskUpgrade),
 				},
 			},
 			instanceID:         "inst-2",
-			matchDescription:   "Upgrading instance",
+			matchResourceType:  taskUpgrade,
 			expectedInProgress: true,
 			expectedTask: clouddatabasesv5.Task{
-				ID:          core.StringPtr("234"),
-				Status:      core.StringPtr("queued"),
-				Description: core.StringPtr("Upgrading instance"),
+				ID:           core.StringPtr("234"),
+				Status:       core.StringPtr(databaseTaskQueuedStatus),
+				ResourceType: core.StringPtr(taskUpgrade),
 			},
 		},
 		{
 			description: "When matching task is completed, Expect false",
 			mockTasks: []clouddatabasesv5.Task{
 				{
-					ID:          core.StringPtr("101"),
-					Status:      core.StringPtr("completed"),
-					Description: core.StringPtr("Upgrading instance"),
+					ID:           core.StringPtr("101"),
+					Status:       core.StringPtr(databaseTaskCompletedStatus),
+					ResourceType: core.StringPtr(taskUpgrade),
 				},
 				{
-					ID:          core.StringPtr("102"),
-					Status:      core.StringPtr("queued"),
-					Description: core.StringPtr("Backing up instance"),
+					ID:           core.StringPtr("102"),
+					Status:       core.StringPtr(databaseTaskQueuedStatus),
+					ResourceType: core.StringPtr("backup"),
 				},
 			},
 			instanceID:         "inst-4",
-			matchDescription:   "Upgrading instance",
+			matchResourceType:  taskUpgrade,
 			expectedInProgress: false,
 		},
 		{
 			description: "When matching task is NOT the running task, Expect false",
 			mockTasks: []clouddatabasesv5.Task{
 				{
-					ID:          core.StringPtr("789"),
-					Status:      core.StringPtr("running"),
-					Description: core.StringPtr("Restoring instance"),
+					ID:           core.StringPtr("789"),
+					Status:       core.StringPtr(databaseTaskRunningStatus),
+					ResourceType: core.StringPtr(taskRestore),
 				},
 			},
 			instanceID:         "inst-3",
-			matchDescription:   "Upgrading instance",
+			matchResourceType:  taskUpgrade,
 			expectedInProgress: false,
 		},
 		{
 			description:        "When there is an error getting tasks, Expect error",
 			mockError:          fmt.Errorf("API error"),
 			instanceID:         "inst-5",
-			matchDescription:   "Upgrading instance",
+			matchResourceType:  taskUpgrade,
 			expectError:        true,
 			expectedInProgress: false,
 		},
@@ -219,7 +219,7 @@ func TestMatchingTaskInProgress(t *testing.T) {
 				InstanceID: tc.instanceID,
 			}
 
-			inProgress, task, err := tm.matchingTaskInProgress(tc.matchDescription)
+			inProgress, task, err := tm.matchingTaskInProgress(tc.matchResourceType)
 
 			if tc.expectError {
 				require.Error(t, err)

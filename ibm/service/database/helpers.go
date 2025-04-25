@@ -44,7 +44,7 @@ func (t *TimeoutHelper) calculateExpirationDatetime(timeoutDuration time.Duratio
 	return t.futureTimeToISO(timeoutDuration)
 }
 
-func (tm *TaskManager) matchingTaskInProgress(description string) (bool, *clouddatabasesv5.Task, error) {
+func (tm *TaskManager) matchingTaskInProgress(taskType string) (bool, *clouddatabasesv5.Task, error) {
 	opts := &clouddatabasesv5.ListDeploymentTasksOptions{
 		ID: core.StringPtr(tm.InstanceID),
 	}
@@ -55,14 +55,14 @@ func (tm *TaskManager) matchingTaskInProgress(description string) (bool, *cloudd
 	}
 
 	for _, task := range resp.Tasks {
-		if task.Status == nil || task.Description == nil {
+		if task.Status == nil || task.ResourceType == nil {
 			continue
 		}
 		status := *task.Status
-		desc := *task.Description
+		resourceType := *task.ResourceType
 
-		if (status == databaseTaskRunningStatus || status == databaseTaskQueuedStatus) && desc == description {
-			log.Printf("[INFO] Found matching task in progress: %s (status: %s)", desc, status)
+		if (status == databaseTaskRunningStatus || status == databaseTaskQueuedStatus) && resourceType == taskType {
+			log.Printf("[INFO] Found matching task in progress: %s (status: %s)", resourceType, status)
 			return true, &task, nil
 		}
 	}

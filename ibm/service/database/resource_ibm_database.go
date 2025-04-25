@@ -54,6 +54,11 @@ const (
 )
 
 const (
+	taskUpgrade = "upgrade"
+	taskRestore = "restore"
+)
+
+const (
 	databaseUserSpecialChars   = "_-"
 	opsManagerUserSpecialChars = "~!@#$%^&*()=+[]{}|;:,.<>/?_-"
 )
@@ -2222,7 +2227,7 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 			InstanceID: instanceID,
 		}
 
-		upgradeInProgress, currentTask, err := tm.matchingTaskInProgress("Upgrading instance")
+		upgradeInProgress, currentTask, err := tm.matchingTaskInProgress(taskUpgrade)
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("[ERROR] Error getting tasks for instance: %w", err))
 		}
@@ -3215,7 +3220,7 @@ func validateVersionDiff(_ context.Context, diff *schema.ResourceDiff, meta inte
 	}
 
 	// Check if a version upgrade task is already in progress
-	upgradeInProgress, task, err := tm.matchingTaskInProgress("Upgrading instance")
+	upgradeInProgress, task, err := tm.matchingTaskInProgress(taskUpgrade)
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error getting tasks for instance: %w", err)
 	}
