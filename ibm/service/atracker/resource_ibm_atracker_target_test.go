@@ -80,10 +80,9 @@ func TestAccIBMAtrackerTargetAllArgs(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				ResourceName:            "ibm_atracker_target.atracker_target_instance",
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"region"},
+				ResourceName:      "ibm_atracker_target.atracker_target_instance",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})

@@ -215,6 +215,10 @@ func dataSourceIBMAtrackerTargetsRead(context context.Context, d *schema.Resourc
 
 	listTargetsOptions := &atrackerv2.ListTargetsOptions{}
 
+	if _, ok := d.GetOk("region"); ok {
+		listTargetsOptions.SetRegion(d.Get("region").(string))
+	}
+
 	targetList, _, err := atrackerClient.ListTargetsWithContext(context, listTargetsOptions)
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListTargetsWithContext failed: %s", err.Error()), "(Data) ibm_atracker_targets", "read")
