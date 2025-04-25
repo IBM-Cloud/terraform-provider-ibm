@@ -649,15 +649,11 @@ func expandCISRulesetsRulesActionParametersOverridesCategories(obj interface{}) 
 		category := response[CISRulesetOverridesCategoriesCategory].(string)
 		overrideRespObj := rulesetsv1.CategoriesOverride{
 			Category: &category,
+			Enabled:  &enabled,
 		}
-
 		if action != "" {
 			overrideRespObj.Action = &action
 		}
-		if enabled {
-			overrideRespObj.Enabled = &enabled
-		}
-
 		finalResponse = append(finalResponse, overrideRespObj)
 
 	}
@@ -677,13 +673,11 @@ func expandCISRulesetsRulesActionParametersOverridesRules(obj interface{}) []rul
 		score := int64(response[CISRulesetOverridesScoreThreshold].(int))
 
 		overrideRespObj := rulesetsv1.RulesOverride{
-			ID: &id,
+			ID:      &id,
+			Enabled: &enabled,
 		}
 		if action != "" {
 			overrideRespObj.Action = &action
-		}
-		if enabled {
-			overrideRespObj.Enabled = &enabled
 		}
 		if score != 0 {
 			overrideRespObj.ScoreThreshold = &score
