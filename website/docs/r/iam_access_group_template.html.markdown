@@ -59,6 +59,54 @@ resource "ibm_iam_access_group_template" "iam_access_group_template_instance" {
 }
 ```
 
+Access Group template with service id member that allows the child account administrator to add additional access to the access group created by this template
+
+```hcl
+resource "ibm_iam_access_group_template" "iam_access_group_template_instance" {
+  name = "IAM Admin Group template"
+  description = "This access group template has a service id member."
+  group {
+		name = "name"
+		description = "description"
+		members {
+			services = [ "iam-ServiceId-66306ad9-5fe6-472e-94bc-ad73c3335212" ]
+		}
+		action_controls {
+			access {
+				add = true
+			}
+		}
+  }
+  policy_template_references {
+		id = "id"
+		version = "version"
+  }
+}
+```
+
+Access Group template with user member that allows child account administrators to add other members to the access group created by this template.
+
+```hcl
+resource "ibm_iam_access_group_template" "iam_access_group_template_instance" {
+  name = "IAM Admin Group template"
+  description = "This access group template has a service id member."
+  group {
+		name = "name"
+		description = "description"
+		members {
+			users = [ "IBMid-1230004321" ]
+			action_controls {
+				add = true
+			}
+		}
+  }
+  policy_template_references {
+		id = "id"
+		version = "version"
+  }
+}
+```
+
 ## Argument Reference
 
 You can specify the following arguments for this resource.
