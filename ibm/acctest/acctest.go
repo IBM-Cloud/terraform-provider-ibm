@@ -240,6 +240,7 @@ var (
 	Pi_replication_volume_name        string
 	Pi_resource_group_id              string
 	Pi_sap_image                      string
+	Pi_sap_profile_id                 string
 	Pi_shared_processor_pool_id       string
 	Pi_snapshot_id                    string
 	Pi_spp_placement_group_id         string
@@ -254,7 +255,6 @@ var (
 	Pi_volume_onboarding_id           string
 	Pi_volume_onboarding_source_crn   string
 	PiCloudConnectionName             string
-	PiSAPProfileID                    string
 	PiStoragePool                     string
 	PiStorageType                     string
 )
@@ -1270,9 +1270,9 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable PI_CLOUD_CONNECTION_NAME for testing ibm_pi_cloud_connection resource else it is set to default value 'terraform-test-power'")
 	}
 
-	PiSAPProfileID = os.Getenv("PI_SAP_PROFILE_ID")
-	if PiSAPProfileID == "" {
-		PiSAPProfileID = "terraform-test-power"
+	Pi_sap_profile_id = os.Getenv("PI_SAP_PROFILE_ID")
+	if Pi_sap_profile_id == "" {
+		Pi_sap_profile_id = "terraform-test-power"
 		fmt.Println("[INFO] Set the environment variable PI_SAP_PROFILE_ID for testing ibm_pi_sap_profile resource else it is set to default value 'terraform-test-power'")
 	}
 

@@ -827,22 +827,22 @@ func volUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasNam
 			volumeNamePatchModel = &vpcv1.VolumePatch{}
 			bandwidth := int64(d.Get("bandwidth").(int))
 			volumeNamePatchModel.Bandwidth = &bandwidth
+			volumeNamePatch, err := volumeNamePatchModel.AsPatch()
+			if err != nil {
+				return fmt.Errorf("[ERROR] Error calling asPatch for volumeNamePatch for bandwidth: %s", err)
+			}
+			options.VolumePatch = volumeNamePatch
+			_, response, err = sess.UpdateVolume(options)
+			if err != nil {
+				return err
+			}
+			_, err = isWaitForVolumeAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
+			if err != nil {
+				return err
+			}
+			eTag = response.Headers.Get("ETag")
+			options.IfMatch = &eTag
 		}
-		volumeNamePatch, err := volumeNamePatchModel.AsPatch()
-		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for volumeNamePatch for bandwidth: %s", err)
-		}
-		options.VolumePatch = volumeNamePatch
-		_, response, err = sess.UpdateVolume(options)
-		if err != nil {
-			return err
-		}
-		_, err = isWaitForVolumeAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
-		if err != nil {
-			return err
-		}
-		eTag = response.Headers.Get("ETag")
-		options.IfMatch = &eTag
 	}
 
 	// profile/ iops update
