@@ -151,6 +151,40 @@ func DataSourceIBMISLB() *schema.Resource {
 				Description: "Load Balancer subnets list",
 			},
 
+			isAttachedLoadBalancerPoolMembers: {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The load balancer pool members attached to this load balancer.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"deleted": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "If present, this property indicates the referenced resource has been deleted and providessome supplementary information.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"more_info": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Link to documentation about deleted resources.",
+									},
+								},
+							},
+						},
+						"href": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The URL for this load balancer pool member.",
+						},
+						"id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The unique identifier for this load balancer pool member.",
+						},
+					},
+				},
+			},
+
 			isLBSecurityGroups: {
 				Type:        schema.TypeSet,
 				Computed:    true,
@@ -483,6 +517,9 @@ func lbGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 				d.Set(isLBSubnets, subnetList)
 			}
 
+			if lb.AttachedLoadBalancerPoolMembers != nil {
+				d.Set(isAttachedLoadBalancerPoolMembers, dataSourceAttachedLoadBalancerPoolFlattenMembers(lb.AttachedLoadBalancerPoolMembers))
+			}
 			d.Set(isLBSecurityGroupsSupported, false)
 			if lb.SecurityGroups != nil {
 				securitygroupList := make([]string, 0)
@@ -598,4 +635,41 @@ func lbGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 		}
 	}
 	return fmt.Errorf("[ERROR] No Load balancer found with name %s", name)
+}
+
+func dataSourceAttachedLoadBalancerPoolFlattenMembers(result []vpcv1.LoadBalancerPoolMemberReference) (members []map[string]interface{}) {
+	for _, membersItem := range result {
+		members = append(members, dataSourceAttachedLoadBalancerPoolMembersToMap(membersItem))
+	}
+
+	return members
+}
+
+func dataSourceAttachedLoadBalancerPoolMembersToMap(membersItem vpcv1.LoadBalancerPoolMemberReference) (membersMap map[string]interface{}) {
+	membersMap = map[string]interface{}{}
+
+	if membersItem.Deleted != nil {
+		deletedList := []map[string]interface{}{}
+		deletedMap := dataSourceAttachedLoadBalancerPoolMembersDeletedToMap(*membersItem.Deleted)
+		deletedList = append(deletedList, deletedMap)
+		membersMap["deleted"] = deletedList
+	}
+	if membersItem.Href != nil {
+		membersMap["href"] = membersItem.Href
+	}
+	if membersItem.ID != nil {
+		membersMap["id"] = membersItem.ID
+	}
+
+	return membersMap
+}
+
+func dataSourceAttachedLoadBalancerPoolMembersDeletedToMap(deletedItem vpcv1.Deleted) (deletedMap map[string]interface{}) {
+	deletedMap = map[string]interface{}{}
+
+	if deletedItem.MoreInfo != nil {
+		deletedMap["more_info"] = deletedItem.MoreInfo
+	}
+
+	return deletedMap
 }
