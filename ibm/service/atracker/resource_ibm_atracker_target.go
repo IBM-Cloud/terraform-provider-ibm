@@ -370,8 +370,8 @@ func resourceIBMAtrackerTargetRead(context context.Context, d *schema.ResourceDa
 		}
 	}
 
-	if !core.IsNil(target.Region) {
-		if len(*target.Region) > 0 {
+	if _, exists := d.GetOk("region"); exists {
+		if !core.IsNil(target.Region) && len(*target.Region) > 0 {
 			if err = d.Set("region", *target.Region); err != nil {
 				err = fmt.Errorf("Error setting region: %s", err)
 				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_atracker_target", "read", "set-region").GetDiag()
@@ -423,7 +423,7 @@ func resourceIBMAtrackerTargetUpdate(context context.Context, d *schema.Resource
 
 	hasChange := false
 
-	if d.HasChange("name") || d.HasChange("cos_endpoint") || d.HasChange("eventstreams_endpoint") || d.HasChange("cloudlogs_endpoint") {
+	if d.HasChange("name") || d.HasChange("cos_endpoint") || d.HasChange("region") || d.HasChange("eventstreams_endpoint") || d.HasChange("cloudlogs_endpoint") {
 		if _, ok := d.GetOk("name"); ok {
 			replaceTargetOptions.SetName(d.Get("name").(string))
 		}
