@@ -83,11 +83,6 @@ After your resource is created, you can read values from the listed arguments an
 * `target.0.etag` - ETag identifier for logs_router_tenant target.
 
 * `target.0.id` -  The unique identifier of the logs_router_tenant target
-* `write_status` - (List) The status of the write attempt to the target with the provided endpoint parameters.
-Nested schema for **write_status**:
-	* `last_failure` - (String) The timestamp of the failure.
-	* `reason_for_last_failure` - (String) Detailed description of the cause of the failure.
-	* `status` - (String) The status such as failed or success.
 
 ## Import
 
@@ -102,3 +97,10 @@ $ terraform import ibm_logs_router_tenant.logs_router_tenant &lt;id/region&gt;
 ```
 $ terraform import ibm_logs_router_tenant.logs_router_tenant 8717db99-2cfb-4ba6-a033-89c994c2e9f0/us-east
 ```
+
+## Log Analysis
+
+As of 28 March 2024 the Log Analysis service is deprecated and will no longer be supported as of 30 March 2025.
+IBM Cloud Logs will stop supporting `logdna` targets at the same time and no logs will be routed to these type of targets after that date.
+You should make sure that you have configured your tenant to direct your logs to another destination before 30 March 2025.
+Any `logdna` targets still configured after 30 April 2025 will be removed automatically from your tenant configuration.

@@ -30,12 +30,11 @@ resource "ibm_logs_router_tenant" "logs_router_tenant_instance" {
   name = var.logs_router_tenant_name
   region = "us-east"
   targets {
-    log_sink_crn = "crn:v1:bluemix:public:logdna:eu-de:a/7246b8fa0a174a71899f5affa4f18d78:3517d2ed-9429-af34-ad52-34278391cbc8::"
+    log_sink_crn = "crn:v1:bluemix:public:logs:eu-de:a/7246b8fa0a174a71899f5affa4f18d78:3517d2ed-9429-af34-ad52-34278391cbc8::"
     name = "my-log-sink"
     parameters {
       host = "www.example.com"
       port = 443
-      access_credential = "new-credential"
     }
   }
 }
@@ -49,11 +48,10 @@ resource "ibm_logs_router_tenant" "logs_router_tenant_instance" {
 | name | The name for this tenant. The name is regionally unique across all tenants in the account. | `string` | true |
 | region | The region to onboard this tenant. | `string` | true |
 | targets | List of targets. | `list()` | true |
-| targets.log_sink_crn | CRN of the Mezmo or Cloud Logs instance to sends logs to | `string` | true |
+| targets.log_sink_crn | CRN of the Cloud Logs instance to sends logs to | `string` | true |
 | targets.name | The name for this target. The name is regionally unique for this tenant. | `string` | true |
 | targets.parameters.host | Host name of the log-sink | `string` | true |
 | targets.parameters.port | Network port of the log-sink | `integer` | true |
-| targets.parameters.access_credential | Secret to connect to the Mezmo log-sink. This is not required for log-sink of type Cloud Logs | `string` | false |
 
 #### Outputs
 
@@ -64,7 +62,6 @@ resource "ibm_logs_router_tenant" "logs_router_tenant_instance" {
 | crn | Cloud resource name of the tenant. |
 | etag | Resource version identifier. |
 | targets | List of targets. |
-| write_status | The status of the write attempt to the target with the provided endpoint parameters. |
 
 ## IBM Cloud Logs Routing data sources
 
@@ -152,3 +149,8 @@ To use the provided endpoints file, set the visibility to either `public` or `pi
     }
 }
 ```
+
+As of 28 March 2024 the Log Analysis service is deprecated and will no longer be supported as of 30 March 2025.
+IBM Cloud Logs will stop supporting `logdna` targets at the same time and no logs will be routed to these type of targets after that date.
+You should make sure that you have configured your tenant to direct your logs to another destination before 30 March 2025.
+Any `logdna` targets still configured after 30 April 2025 will be removed automatically from your tenant configuration.
