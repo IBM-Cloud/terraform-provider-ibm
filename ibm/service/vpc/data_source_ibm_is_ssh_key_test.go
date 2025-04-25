@@ -30,17 +30,31 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 					resource.TestCheckResourceAttr(
 						"data.ibm_is_ssh_key.ds_key", "name", name1),
 					resource.TestCheckResourceAttrSet(
+						"data.ibm_is_ssh_key.ds_key", "id"),
+					resource.TestCheckResourceAttrSet(
 						"data.ibm_is_ssh_key.ds_key", "crn"),
 					resource.TestCheckResourceAttrSet(
 						"data.ibm_is_ssh_key.ds_key", "fingerprint"),
-					resource.TestCheckResourceAttrSet(
-						"data.ibm_is_ssh_key.ds_key", "id"),
 					resource.TestCheckResourceAttrSet(
 						"data.ibm_is_ssh_key.ds_key", "length"),
 					resource.TestCheckResourceAttrSet(
 						"data.ibm_is_ssh_key.ds_key", "public_key"),
 					resource.TestCheckResourceAttrSet(
 						"data.ibm_is_ssh_key.ds_key", "type"),
+					resource.TestCheckResourceAttrSet(
+						"data.ibm_is_ssh_key.ds_key", "created_at"),
+					resource.TestCheckResourceAttrSet(
+						"data.ibm_is_ssh_key.ds_key", "href"),
+					resource.TestCheckResourceAttrSet(
+						"data.ibm_is_ssh_key.ds_key", "resource_controller_url"),
+					resource.TestCheckResourceAttrSet(
+						"data.ibm_is_ssh_key.ds_key", "resource_crn"),
+					// resource.TestCheckResourceAttrSet(
+					// 	"data.ibm_is_ssh_key.ds_key", "resource_group"),
+					resource.TestCheckResourceAttrSet(
+						"data.ibm_is_ssh_key.ds_key", "resource_group_name"),
+					resource.TestCheckResourceAttrSet(
+						"data.ibm_is_ssh_key.ds_key", "resource_name"),
 					resource.TestCheckResourceAttrSet(
 						"data.ibm_is_ssh_key.ds_key", "tags.#"),
 					resource.TestCheckResourceAttr(

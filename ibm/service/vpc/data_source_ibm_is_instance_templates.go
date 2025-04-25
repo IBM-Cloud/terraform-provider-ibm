@@ -314,6 +314,10 @@ func DataSourceIBMISInstanceTemplates() *schema.Resource {
 													Computed:    true,
 													Description: "The maximum I/O operations per second (IOPS) for the volume.",
 												},
+												"bandwidth": {
+													Type:     schema.TypeInt,
+													Computed: true,
+												},
 												isInstanceTemplateVolAttVolProfile: {
 													Type:        schema.TypeString,
 													Computed:    true,
@@ -914,6 +918,10 @@ func DataSourceIBMISInstanceTemplates() *schema.Resource {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
+									"bandwidth": {
+										Type:     schema.TypeInt,
+										Computed: true,
+									},
 									isInstanceTemplateBootVolumeTags: {
 										Type:        schema.TypeSet,
 										Computed:    true,
@@ -1246,7 +1254,10 @@ func dataSourceIBMISInstanceTemplatesRead(d *schema.ResourceData, meta interface
 					profile := volumeInst.Profile.(*vpcv1.VolumeProfileIdentity)
 					newVolume[isInstanceTemplateVolAttVolProfile] = profile.Name
 				}
-
+				// bandwidth changes
+				if volumeInst.Bandwidth != nil {
+					newVolume["bandwidth"] = volumeInst.Bandwidth
+				}
 				if volumeInst.Iops != nil {
 					newVolume[isInstanceTemplateVolAttVolIops] = *volumeInst.Iops
 				}
@@ -1279,6 +1290,10 @@ func dataSourceIBMISInstanceTemplatesRead(d *schema.ResourceData, meta interface
 					volProfIntf := instance.BootVolumeAttachment.Volume.Profile
 					volProfInst := volProfIntf.(*vpcv1.VolumeProfileIdentity)
 					bootVol[isInstanceTemplateBootProfile] = volProfInst.Name
+				}
+				// bandwidth changes
+				if volumeIntf.Bandwidth != nil {
+					bootVol["bandwidth"] = volumeIntf.Bandwidth
 				}
 				if instance.BootVolumeAttachment.Volume.UserTags != nil {
 					bootVol[isInstanceTemplateBootVolumeTags] = instance.BootVolumeAttachment.Volume.UserTags

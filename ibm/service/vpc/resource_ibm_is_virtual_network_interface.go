@@ -222,6 +222,7 @@ func ResourceIBMIsVirtualNetworkInterface() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
+				ForceNew:    true,
 				Description: "The resource group id for this virtual network interface.",
 			},
 			"security_groups": {

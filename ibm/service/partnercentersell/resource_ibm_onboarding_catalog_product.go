@@ -2,7 +2,7 @@
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.99.1-daeb6e46-20250131-173156
+ * IBM OpenAPI Terraform Generator Version: 3.103.0-e8b84313-20250402-201816
  */
 
 package partnercentersell
@@ -367,7 +367,6 @@ func ResourceIbmOnboardingCatalogProduct() *schema.Resource {
 									"unique_api_key": &schema.Schema{
 										Type:        schema.TypeBool,
 										Optional:    true,
-										Sensitive:   true,
 										Description: "Indicates whether the deployment uses a unique API key or not.",
 									},
 									"async_provisioning_supported": &schema.Schema{
@@ -1204,7 +1203,7 @@ func ResourceIbmOnboardingCatalogProductValidator() *validate.ResourceValidator 
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Optional:                   true,
-			Regexp:                     `^[a-z]+$`,
+			Regexp:                     `^[a-z_.-]+$`,
 			MinValueLength:             1,
 			MaxValueLength:             64,
 		},
@@ -1213,7 +1212,7 @@ func ResourceIbmOnboardingCatalogProductValidator() *validate.ResourceValidator 
 			ValidateFunctionIdentifier: validate.ValidateRegexp,
 			Type:                       validate.TypeString,
 			Required:                   true,
-			Regexp:                     `^[a-zA-Z0-9\-.]+$`,
+			Regexp:                     `^\S*$`,
 		},
 		validate.ValidateSchema{
 			Identifier:                 "kind",

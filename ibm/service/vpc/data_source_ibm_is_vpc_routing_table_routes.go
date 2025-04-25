@@ -4,12 +4,14 @@
 package vpc
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -30,7 +32,7 @@ const (
 
 func DataSourceIBMISVPCRoutingTableRoutes() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceIBMISVPCRoutingTableRoutesList,
+		ReadContext: dataSourceIBMISVPCRoutingTableRoutesList,
 		Schema: map[string]*schema.Schema{
 			isRoutingTableRouteVpcID: {
 				Type:        schema.TypeString,
@@ -163,10 +165,12 @@ func DataSourceIBMISVPCRoutingTableRoutes() *schema.Resource {
 	}
 }
 
-func dataSourceIBMISVPCRoutingTableRoutesList(d *schema.ResourceData, meta interface{}) error {
+func dataSourceIBMISVPCRoutingTableRoutesList(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_vpc_routing_table_routes", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	vpcID := d.Get(isRoutingTableRouteVpcID).(string)
@@ -178,10 +182,11 @@ func dataSourceIBMISVPCRoutingTableRoutesList(d *schema.ResourceData, meta inter
 		if start != "" {
 			listVpcRoutingTablesRoutesOptions.Start = &start
 		}
-		result, detail, err := sess.ListVPCRoutingTableRoutes(listVpcRoutingTablesRoutesOptions)
+		result, _, err := sess.ListVPCRoutingTableRoutesWithContext(context, listVpcRoutingTablesRoutesOptions)
 		if err != nil {
-			log.Printf("Error reading list of VPC Routing Table Routes:%s\n%s", err, detail)
-			return err
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListVPCDnsResolutionBindingsWithContext failed %s", err), "(Data) ibm_is_vpc_routing_table_routes", "read")
+			log.Printf("[DEBUG] %s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		start = flex.GetNext(result.Next)
 		allrecs = append(allrecs, result.Routes...)
@@ -212,7 +217,7 @@ func dataSourceIBMISVPCRoutingTableRoutesList(d *schema.ResourceData, meta inter
 			mm, err := dataSourceIBMIsRouteCreatorToMap(instance.Creator)
 			if err != nil {
 				log.Printf("Error reading list of VPC Routing Table Routes' creator:%s", err)
-				return err
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_vpc_routing_table_routes", "read", "creator-to-map").GetDiag()
 			}
 			creator = append(creator, mm)
 
@@ -253,9 +258,17 @@ func dataSourceIBMISVPCRoutingTableRoutesList(d *schema.ResourceData, meta inter
 		vpcRoutingTableRoutes = append(vpcRoutingTableRoutes, route)
 	}
 	d.SetId(dataSourceIBMISVPCRoutingTableRoutesID(d))
-	d.Set(isRoutingTableRouteVpcID, vpcID)
-	d.Set(isRouteTableID, routingTableID)
-	d.Set(isRoutingTableRoutes, vpcRoutingTableRoutes)
+
+	if err = d.Set(isRoutingTableRouteVpcID, vpcID); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting vpc: %s", err), "(Data) ibm_is_vpc_routing_table_routes", "read", "set-vpc").GetDiag()
+	}
+
+	if err = d.Set(isRouteTableID, routingTableID); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting routing_table: %s", err), "(Data) ibm_is_vpc_routing_table_routes", "read", "set-routing_table").GetDiag()
+	}
+	if err = d.Set(isRoutingTableRoutes, vpcRoutingTableRoutes); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting dns_resolution_bindings %s", err), "(Data) ibm_is_vpc_routing_table_routes", "read", "routes-set").GetDiag()
+	}
 	return nil
 }
 

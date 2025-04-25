@@ -149,7 +149,6 @@ func testAccCheckIbmOnboardingCatalogDeploymentConfigBasic(productID string, cat
 			disabled = %s
 			kind = "%s"
 			object_id = "%s"
-			tags = ["sample"]
 			object_provider {
 				name = "name"
 				email = "email@email.com"

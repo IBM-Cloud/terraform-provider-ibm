@@ -4,12 +4,16 @@
 package vpc
 
 import (
+	"context"
 	"fmt"
+	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -25,12 +29,12 @@ const (
 
 func ResourceIBMISVpcAddressPrefix() *schema.Resource {
 	return &schema.Resource{
-		Create:   resourceIBMISVpcAddressPrefixCreate,
-		Read:     resourceIBMISVpcAddressPrefixRead,
-		Update:   resourceIBMISVpcAddressPrefixUpdate,
-		Delete:   resourceIBMISVpcAddressPrefixDelete,
-		Exists:   resourceIBMISVpcAddressPrefixExists,
-		Importer: &schema.ResourceImporter{},
+		CreateContext: resourceIBMISVpcAddressPrefixCreate,
+		ReadContext:   resourceIBMISVpcAddressPrefixRead,
+		UpdateContext: resourceIBMISVpcAddressPrefixUpdate,
+		DeleteContext: resourceIBMISVpcAddressPrefixDelete,
+		Exists:        resourceIBMISVpcAddressPrefixExists,
+		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
 			isVPCAddressPrefixPrefixName: {
@@ -113,7 +117,7 @@ func ResourceIBMISAddressPrefixValidator() *validate.ResourceValidator {
 	return &ibmISAddressPrefixResourceValidator
 }
 
-func resourceIBMISVpcAddressPrefixCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMISVpcAddressPrefixCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 	isDefault := false
 	prefixName := d.Get(isVPCAddressPrefixPrefixName).(string)
@@ -128,17 +132,19 @@ func resourceIBMISVpcAddressPrefixCreate(d *schema.ResourceData, meta interface{
 	conns.IbmMutexKV.Lock(isVPCAddressPrefixKey)
 	defer conns.IbmMutexKV.Unlock(isVPCAddressPrefixKey)
 
-	err := vpcAddressPrefixCreate(d, meta, prefixName, zoneName, cidr, vpcID, isDefault)
+	err := vpcAddressPrefixCreate(context, d, meta, prefixName, zoneName, cidr, vpcID, isDefault)
 	if err != nil {
 		return err
 	}
-	return resourceIBMISVpcAddressPrefixRead(d, meta)
+	return resourceIBMISVpcAddressPrefixRead(context, d, meta)
 }
 
-func vpcAddressPrefixCreate(d *schema.ResourceData, meta interface{}, name, zone, cidr, vpcID string, isDefault bool) error {
+func vpcAddressPrefixCreate(context context.Context, d *schema.ResourceData, meta interface{}, name, zone, cidr, vpcID string, isDefault bool) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_address_prefix", "create", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	options := &vpcv1.CreateVPCAddressPrefixOptions{
 		Name:      &name,
@@ -149,9 +155,11 @@ func vpcAddressPrefixCreate(d *schema.ResourceData, meta interface{}, name, zone
 			Name: &zone,
 		},
 	}
-	addrPrefix, response, err := sess.CreateVPCAddressPrefix(options)
+	addrPrefix, _, err := sess.CreateVPCAddressPrefixWithContext(context, options)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while creating VPC Address Prefix %s\n%s", err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateVPCAddressPrefixWithContext failed: %s", err.Error()), "ibm_is_vpc_address_prefix", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	addrPrefixID := *addrPrefix.ID
@@ -160,15 +168,15 @@ func vpcAddressPrefixCreate(d *schema.ResourceData, meta interface{}, name, zone
 	return nil
 }
 
-func resourceIBMISVpcAddressPrefixRead(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMISVpcAddressPrefixRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	parts, err := flex.IdParts(d.Id())
 	if err != nil {
-		return err
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_address_prefix", "read", "sep-id-parts").GetDiag()
 	}
 
 	vpcID := parts[0]
 	addrPrefixID := parts[1]
-	error := vpcAddressPrefixGet(d, meta, vpcID, addrPrefixID)
+	error := vpcAddressPrefixGet(context, d, meta, vpcID, addrPrefixID)
 	if error != nil {
 		return error
 	}
@@ -176,45 +184,80 @@ func resourceIBMISVpcAddressPrefixRead(d *schema.ResourceData, meta interface{})
 	return nil
 }
 
-func vpcAddressPrefixGet(d *schema.ResourceData, meta interface{}, vpcID, addrPrefixID string) error {
+func vpcAddressPrefixGet(context context.Context, d *schema.ResourceData, meta interface{}, vpcID, addrPrefixID string) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_address_prefix", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	getvpcAddressPrefixOptions := &vpcv1.GetVPCAddressPrefixOptions{
 		VPCID: &vpcID,
 		ID:    &addrPrefixID,
 	}
-	addrPrefix, response, err := sess.GetVPCAddressPrefix(getvpcAddressPrefixOptions)
+	addrPrefix, response, err := sess.GetVPCAddressPrefixWithContext(context, getvpcAddressPrefixOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error Getting VPC Address Prefix (%s): %s\n%s", addrPrefixID, err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetVPCAddressPrefixWithContext failed: %s", err.Error()), "ibm_is_vpc_address_prefix", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
-	d.Set(isVPCAddressPrefixVPCID, vpcID)
-	d.Set(isVPCAddressPrefixDefault, *addrPrefix.IsDefault)
-	d.Set(isVPCAddressPrefixPrefixName, *addrPrefix.Name)
+
+	if err = d.Set(isVPCAddressPrefixVPCID, vpcID); err != nil {
+		err = fmt.Errorf("Error setting vpc: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_address_prefix", "read", "set-vpc").GetDiag()
+	}
+	if !core.IsNil(addrPrefix.IsDefault) {
+		if err = d.Set("is_default", addrPrefix.IsDefault); err != nil {
+			err = fmt.Errorf("Error setting is_default: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_address_prefix", "read", "set-is_default").GetDiag()
+		}
+	}
+	if !core.IsNil(addrPrefix.Name) {
+		if err = d.Set("name", addrPrefix.Name); err != nil {
+			err = fmt.Errorf("Error setting name: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_address_prefix", "read", "set-name").GetDiag()
+		}
+	}
 	if addrPrefix.Zone != nil {
-		d.Set(isVPCAddressPrefixZoneName, *addrPrefix.Zone.Name)
+		if err = d.Set(isVPCAddressPrefixZoneName, *addrPrefix.Zone.Name); err != nil {
+			err = fmt.Errorf("Error setting zone: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_address_prefix", "read", "set-zone").GetDiag()
+		}
 	}
-	d.Set(isVPCAddressPrefixCIDR, *addrPrefix.CIDR)
-	d.Set(isVPCAddressPrefixHasSubnets, *addrPrefix.HasSubnets)
-	d.Set(isAddressPrefix, addrPrefixID)
+	if err = d.Set("cidr", addrPrefix.CIDR); err != nil {
+		err = fmt.Errorf("Error setting cidr: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_address_prefix", "read", "set-cidr").GetDiag()
+	}
+	if err = d.Set("has_subnets", addrPrefix.HasSubnets); err != nil {
+		err = fmt.Errorf("Error setting has_subnets: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_address_prefix", "read", "set-has_subnets").GetDiag()
+	}
+	if err = d.Set(isAddressPrefix, addrPrefixID); err != nil {
+		err = fmt.Errorf("Error setting address_prefix: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_address_prefix", "read", "set-address_prefix").GetDiag()
+	}
 	getVPCOptions := &vpcv1.GetVPCOptions{
 		ID: &vpcID,
 	}
-	vpc, response, err := sess.GetVPC(getVPCOptions)
+	vpc, response, err := sess.GetVPCWithContext(context, getVPCOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error Getting VPC : %s\n%s", err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetVPCWithContext failed: %s", err.Error()), "ibm_is_vpc_address_prefix", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
-	d.Set(flex.RelatedCRN, *vpc.CRN)
+	if err = d.Set(flex.RelatedCRN, *vpc.CRN); err != nil {
+		err = fmt.Errorf("Error setting related_crn: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_address_prefix", "read", "set-related_crn").GetDiag()
+	}
 
 	return nil
 }
 
-func resourceIBMISVpcAddressPrefixUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMISVpcAddressPrefixUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 	name := ""
 	isDefault := false
@@ -223,7 +266,7 @@ func resourceIBMISVpcAddressPrefixUpdate(d *schema.ResourceData, meta interface{
 
 	parts, err := flex.IdParts(d.Id())
 	if err != nil {
-		return err
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_address_prefix", "update", "sep-id-parts").GetDiag()
 	}
 	vpcID := parts[0]
 	addrPrefixID := parts[1]
@@ -240,18 +283,20 @@ func resourceIBMISVpcAddressPrefixUpdate(d *schema.ResourceData, meta interface{
 		isDefault = d.Get(isVPCAddressPrefixDefault).(bool)
 		hasIsDefaultChanged = true
 	}
-	error := vpcAddressPrefixUpdate(d, meta, vpcID, addrPrefixID, name, isDefault, hasNameChanged, hasIsDefaultChanged)
+	error := vpcAddressPrefixUpdate(context, d, meta, vpcID, addrPrefixID, name, isDefault, hasNameChanged, hasIsDefaultChanged)
 	if error != nil {
 		return error
 	}
 
-	return resourceIBMISVpcAddressPrefixRead(d, meta)
+	return resourceIBMISVpcAddressPrefixRead(context, d, meta)
 }
 
-func vpcAddressPrefixUpdate(d *schema.ResourceData, meta interface{}, vpcID, addrPrefixID, name string, isDefault, hasNameChanged, hasIsDefaultChanged bool) error {
+func vpcAddressPrefixUpdate(context context.Context, d *schema.ResourceData, meta interface{}, vpcID, addrPrefixID, name string, isDefault, hasNameChanged, hasIsDefaultChanged bool) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_address_prefix", "update", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if hasNameChanged || hasIsDefaultChanged {
 		updatevpcAddressPrefixoptions := &vpcv1.UpdateVPCAddressPrefixOptions{
@@ -268,22 +313,27 @@ func vpcAddressPrefixUpdate(d *schema.ResourceData, meta interface{}, vpcID, add
 		}
 		addressPrefixPatch, err := addressPrefixPatchModel.AsPatch()
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for AddressPrefixPatch: %s", err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("addressPrefixPatchModel.AsPatch() failed: %s", err.Error()), "ibm_is_vpc_address_prefix", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		updatevpcAddressPrefixoptions.AddressPrefixPatch = addressPrefixPatch
-		_, response, err := sess.UpdateVPCAddressPrefix(updatevpcAddressPrefixoptions)
+		_, _, err = sess.UpdateVPCAddressPrefixWithContext(context, updatevpcAddressPrefixoptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Updating VPC Address Prefix: %s\n%s", err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateVPCAddressPrefixWithContext failed: %s", err.Error()), "ibm_is_vpc_address_prefix", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 	return nil
 }
 
-func resourceIBMISVpcAddressPrefixDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMISVpcAddressPrefixDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 	parts, err := flex.IdParts(d.Id())
 	if err != nil {
-		return err
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_address_prefix", "delete", "sep-id-parts").GetDiag()
+
 	}
 	vpcID := parts[0]
 	addrPrefixID := parts[1]
@@ -292,7 +342,7 @@ func resourceIBMISVpcAddressPrefixDelete(d *schema.ResourceData, meta interface{
 	conns.IbmMutexKV.Lock(isVPCAddressPrefixKey)
 	defer conns.IbmMutexKV.Unlock(isVPCAddressPrefixKey)
 
-	error := vpcAddressPrefixDelete(d, meta, vpcID, addrPrefixID)
+	error := vpcAddressPrefixDelete(context, d, meta, vpcID, addrPrefixID)
 	if error != nil {
 		return error
 	}
@@ -301,34 +351,40 @@ func resourceIBMISVpcAddressPrefixDelete(d *schema.ResourceData, meta interface{
 	return nil
 }
 
-func vpcAddressPrefixDelete(d *schema.ResourceData, meta interface{}, vpcID, addrPrefixID string) error {
+func vpcAddressPrefixDelete(context context.Context, d *schema.ResourceData, meta interface{}, vpcID, addrPrefixID string) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_address_prefix", "delete", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	getvpcAddressPrefixOptions := &vpcv1.GetVPCAddressPrefixOptions{
 		VPCID: &vpcID,
 		ID:    &addrPrefixID,
 	}
-	_, response, err := sess.GetVPCAddressPrefix(getvpcAddressPrefixOptions)
+	_, response, err := sess.GetVPCAddressPrefixWithContext(context, getvpcAddressPrefixOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error Getting VPC Address Prefix (%s): %s\n%s", addrPrefixID, err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetVPCAddressPrefixWithContext failed: %s", err.Error()), "ibm_is_vpc_address_prefix", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	deletevpcAddressPrefixOptions := &vpcv1.DeleteVPCAddressPrefixOptions{
 		VPCID: &vpcID,
 		ID:    &addrPrefixID,
 	}
-	response, err = sess.DeleteVPCAddressPrefix(deletevpcAddressPrefixOptions)
+	response, err = sess.DeleteVPCAddressPrefixWithContext(context, deletevpcAddressPrefixOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error Deleting VPC Address Prefix (%s): %s\n%s", addrPrefixID, err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetVPCAddressPrefixWithContext failed: %s", err.Error()), "ibm_is_vpc_address_prefix", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	d.SetId("")
 	return nil
@@ -341,7 +397,7 @@ func resourceIBMISVpcAddressPrefixExists(d *schema.ResourceData, meta interface{
 		return false, fmt.Errorf("[ERROR] Incorrect ID %s: ID should be a combination of vpcID/addrPrefixID", d.Id())
 	}
 	if err != nil {
-		return false, err
+		return false, flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_address_prefix", "exists", "sep-id-parts")
 	}
 	vpcID := parts[0]
 	addrPrefixID := parts[1]
@@ -353,7 +409,9 @@ func resourceIBMISVpcAddressPrefixExists(d *schema.ResourceData, meta interface{
 func vpcAddressPrefixExists(d *schema.ResourceData, meta interface{}, vpcID, addrPrefixID string) (bool, error) {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return false, err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_address_prefix", "exists", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return false, tfErr
 	}
 	getvpcAddressPrefixOptions := &vpcv1.GetVPCAddressPrefixOptions{
 		VPCID: &vpcID,
@@ -364,7 +422,9 @@ func vpcAddressPrefixExists(d *schema.ResourceData, meta interface{}, vpcID, add
 		if response != nil && response.StatusCode == 404 {
 			return false, nil
 		}
-		return false, fmt.Errorf("[ERROR] Error getting VPC Address Prefix: %s\n%s", err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetVPCAddressPrefix failed: %s", err.Error()), "ibm_is_vpc_address_prefix", "exists")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return false, tfErr
 	}
 	return true, nil
 }

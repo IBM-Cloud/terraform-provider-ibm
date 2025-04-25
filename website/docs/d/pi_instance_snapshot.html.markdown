@@ -10,7 +10,7 @@ description: |-
 
 Retrieve information about a Power Systems Virtual Server instance snapshot. For more information, about Power Virtual Server instance snapshot, see [getting started with IBM Power Systems Virtual Servers](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-getting-started).
 
-## Example usage
+## Example Usage
 
 ```terraform
 data "ibm_pi_instance_snapshot" "ds_instance_snapshot" {
@@ -35,14 +35,14 @@ Example usage:
     }
   ```
 
-## Argument reference
+## Argument Reference
 
 Review the argument references that you can specify for your data source.
 
 - `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
 - `pi_snapshot_id` - (Required, String) The unique identifier of the Power Systems Virtual Machine instance snapshot.
 
-## Attribute reference
+## Attribute Reference
 
 In addition to all argument reference list, you can access the following attribute references after your data source is created.
 

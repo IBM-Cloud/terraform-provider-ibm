@@ -64,6 +64,21 @@ resource "ibm_is_vpc" "testacc_vpc" {
   name = "test-vpc"
 }
 ```
+VPE endpoints support:
+```terraform
+# Configure the IBM Provider
+
+provider "ibm" {
+  visibility            = "private"
+  private_endpoint_type = "vpe"
+}
+
+# List Cloud Logs alerts
+data "ibm_logs_alerts" "alerts" {
+  instance_id = "logs_instance_guid"
+  region      = "logs_instance_region"
+}
+```
 ## Example usage of resources:
 
 ```terraform
@@ -244,7 +259,9 @@ The following arguments are supported in the `provider` block:
     * If visibility is set to `private`, use the regional private endpoint or global private endpoint. The regional private endpoint is given higher precedence.  In order to use the private endpoint from an IBM Cloud resource (such as, a classic VM instance), one must have VRF-enabled account.  If the Cloud service does not support private endpoint, the terraform resource or datasource will log an error.
     * If visibility is set to `public-and-private`, use regional private endpoints or global private endpoint. If service doesn't support regional or global private endpoints it will use the regional or global public endpoint.
     * This can also be sourced from the `IC_VISIBILITY` (higher precedence) or `IBMCLOUD_VISIBILITY` environment variable.
-
+* `private_endpoint_type` - (Optional) Private Endpoint type used by the service endpoints. Allowable values are `vpe`.
+By default provider targets to cse endpoints when the `visibility` is set to `private`. If you want to target to vpe private endpoints, set `private_endpoint_type` to `vpe`.
+    * This can also be sourced from the `IC_PRIVATE_ENDPOINT_TYPE` (higher precedence) or `IBMCLOUD_PRIVATE_ENDPOINT_TYPE` environment variable.
 
 ***Note***
 The CloudFoundry endpoint has been updated in this release of IBM Cloud Terraform provider v0.17.4.  If you are using an earlier version of IBM Cloud Terraform provider, export the `IBMCLOUD_UAA_ENDPOINT` to the new authentication endpoint, as illustrated below

@@ -222,6 +222,7 @@ const (
 	Attr_Dedicated                                   = "dedicated"
 	Attr_DedicatedHostID                             = "dedicated_host_id"
 	Attr_Default                                     = "default"
+	Attr_DefaultSystem                               = "default_system"
 	Attr_DeleteOnTermination                         = "delete_on_termination"
 	Attr_DeploymentType                              = "deployment_type"
 	Attr_Description                                 = "description"
@@ -656,22 +657,6 @@ const (
 	Timeout_Warning  = 60 * time.Second
 	vpcRetryCount    = 2
 	vpcRetryDuration = time.Minute
-
-	// TODO: Second Half Cleanup, remove extra variables
-
-	PIConsoleLanguageCode = "pi_language_code"
-	PIInstanceMigratable  = "pi_migratable"
-
-	// Volume Clone
-	PIVolumeCloneName   = "pi_volume_clone_name"
-	PIVolumeCloneTaskID = "pi_volume_clone_task_id"
-	PITargetStorageTier = "pi_target_storage_tier"
-
-	// IBM PI Volume Group
-	PIVolumeGroupID                   = "pi_volume_group_id"
-	PIVolumeGroupName                 = "pi_volume_group_name"
-	PIVolumeGroupConsistencyGroupName = "pi_consistency_group_name"
-	PIVolumeGroupAction               = "pi_volume_group_action"
 
 	// VPN
 	PIVPNConnectionDeadPeerDetection          = "dead_peer_detections"

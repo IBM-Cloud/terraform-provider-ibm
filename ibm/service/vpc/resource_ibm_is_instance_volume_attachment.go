@@ -81,6 +81,12 @@ func ResourceIBMISInstanceVolumeAttachment() *schema.Resource {
 				ValidateFunc: validate.InvokeValidator("ibm_is_instance_volume_attachment", isInstanceVolAttName),
 				Description:  "The user-defined name for this volume attachment.",
 			},
+			"bandwidth": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Computed:    true,
+				Description: "The maximum bandwidth (in megabits per second) for the volume. For this property to be specified, the volume storage_generation must be 2.",
+			},
 
 			isInstanceVolumeDeleteOnInstanceDelete: {
 				Type:        schema.TypeBool,
@@ -361,6 +367,14 @@ func instanceVolAttachmentCreate(d *schema.ResourceData, meta interface{}, insta
 				volProtoVol.Capacity = &volCapacityInt
 			}
 		}
+		// bandwidth changes
+		var volBandwidthInt int64
+		if volBandwidth, ok := d.GetOk("bandwidth"); ok {
+			volBandwidthInt = int64(volBandwidth.(int))
+			if volBandwidthInt != 0 {
+				volProtoVol.Bandwidth = &volBandwidthInt
+			}
+		}
 		var iops int64
 		if volIops, ok := d.GetOk(isInstanceVolIops); ok {
 			iops = int64(volIops.(int))
@@ -503,6 +517,8 @@ func instanceVolumeAttachmentGet(d *schema.ResourceData, meta interface{}, insta
 	d.Set(isInstanceVolIops, *volumeDetail.Iops)
 	d.Set(isInstanceVolProfile, *volumeDetail.Profile.Name)
 	d.Set(isInstanceVolCapacity, *volumeDetail.Capacity)
+	// bandwidth changes
+	d.Set("bandwidth", volumeDetail.Bandwidth)
 	if volumeDetail.EncryptionKey != nil {
 		d.Set(isInstanceVolEncryptionKey, *volumeDetail.EncryptionKey.CRN)
 	}
@@ -571,25 +587,42 @@ func instanceVolAttUpdate(d *schema.ResourceData, meta interface{}) error {
 			return err
 		}
 	}
-
-	if d.HasChange(isInstanceVolumeAttVolumeReferenceName) {
-		newname := d.Get(isInstanceVolumeAttVolumeReferenceName).(string)
+	hasNameChanged := d.HasChange(isInstanceVolumeAttVolumeReferenceName)
+	hasBandwidthChanged := d.HasChange("bandwidth")
+	if hasNameChanged || hasBandwidthChanged {
 		volid := d.Get(isInstanceVolAttVol).(string)
 		voloptions := &vpcv1.UpdateVolumeOptions{
 			ID: &volid,
 		}
-		volumePatchModel := &vpcv1.VolumePatch{
-			Name: &newname,
+		if hasNameChanged {
+			volumePatchModel := &vpcv1.VolumePatch{}
+			newname := d.Get(isInstanceVolumeAttVolumeReferenceName).(string)
+			volumePatchModel.Name = &newname
+			volumePatch, err := volumePatchModel.AsPatch()
+			if err != nil {
+				return fmt.Errorf("[ERROR] Error calling asPatch for VolumePatch: %s", err)
+			}
+			voloptions.VolumePatch = volumePatch
+			_, response, err := instanceC.UpdateVolume(voloptions)
+			if err != nil {
+				return fmt.Errorf("[ERROR] Error updating volume name : %s\n%s", err, response)
+			}
 		}
-		volumePatch, err := volumePatchModel.AsPatch()
-		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for VolumePatch: %s", err)
+		if hasBandwidthChanged {
+			volumePatchModel := &vpcv1.VolumePatch{}
+			newBandwidth := int64(d.Get("bandwidth").(int))
+			volumePatchModel.Bandwidth = &newBandwidth
+			volumePatch, err := volumePatchModel.AsPatch()
+			if err != nil {
+				return fmt.Errorf("[ERROR] Error calling asPatch for VolumePatch: %s", err)
+			}
+			voloptions.VolumePatch = volumePatch
+			_, response, err := instanceC.UpdateVolume(voloptions)
+			if err != nil {
+				return fmt.Errorf("[ERROR] Error updating volume bandwidth : %s\n%s", err, response)
+			}
 		}
-		voloptions.VolumePatch = volumePatch
-		_, response, err := instanceC.UpdateVolume(voloptions)
-		if err != nil {
-			return fmt.Errorf("[ERROR] Error updating volume name : %s\n%s", err, response)
-		}
+
 	}
 
 	// profile/iops update

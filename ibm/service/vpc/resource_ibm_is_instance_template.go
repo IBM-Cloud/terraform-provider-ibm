@@ -405,6 +405,12 @@ func ResourceIBMISInstanceTemplate() *schema.Resource {
 										ForceNew:    true,
 										Description: "The capacity of the volume in gigabytes. The specified minimum and maximum capacity values for creating or updating volumes may expand in the future.",
 									},
+									"bandwidth": {
+										Type:        schema.TypeInt,
+										Optional:    true,
+										ForceNew:    true,
+										Description: "The maximum bandwidth (in megabits per second) for the volume. For this property to be specified, the volume storage_generation must be 2.",
+									},
 									isInstanceTemplateVolAttVolEncryptionKey: {
 										Type:        schema.TypeString,
 										Optional:    true,
@@ -1172,13 +1178,23 @@ func ResourceIBMISInstanceTemplate() *schema.Resource {
 							Optional: true,
 							Computed: true,
 						},
+						"bandwidth": {
+							Type:        schema.TypeInt,
+							Optional:    true,
+							ForceNew:    true,
+							Description: "The maximum bandwidth (in megabits per second) for the volume. For this property to be specified, the volume storage_generation must be 2.",
+						},
 						isInstanceTemplateBootSize: {
 							Type:     schema.TypeInt,
+							Optional: true,
 							Computed: true,
+							ForceNew: true,
 						},
 						isInstanceTemplateBootProfile: {
 							Type:     schema.TypeString,
+							Optional: true,
 							Computed: true,
+							ForceNew: true,
 						},
 						isInstanceTemplateVolumeDeleteOnInstanceDelete: {
 							Type:     schema.TypeBool,
@@ -1554,9 +1570,22 @@ func instanceTemplateCreateByCatalogOffering(d *schema.ResourceData, meta interf
 			}
 		}
 
-		volcap := 100
+		// bandwidth changes
+		volBandwith := bootvol["bandwidth"].(int)
+		if volBandwith != 0 {
+			volBandwith64 := int64(volBandwith)
+			volTemplate.Bandwidth = &volBandwith64
+		}
+		volcap := bootvol["size"].(int)
 		volcapint64 := int64(volcap)
-		volprof := "general-purpose"
+		if volcap == 0 {
+			volcap := 100
+			volcapint64 = int64(volcap)
+		}
+		volprof := bootvol["profile"].(string)
+		if volprof == "" {
+			volprof = "general-purpose"
+		}
 		volTemplate.Capacity = &volcapint64
 		volTemplate.Profile = &vpcv1.VolumeProfileIdentity{
 			Name: &volprof,
@@ -1611,7 +1640,14 @@ func instanceTemplateCreateByCatalogOffering(d *schema.ResourceData, meta interf
 					},
 					Capacity: &capacity,
 				}
+				// bandwidth changes
+				bandwidth := int64(newvol["bandwidth"].(int))
+				if bandwidth != int64(0) {
+					volPrototype.Bandwidth = &bandwidth
+				}
+
 				iops := int64(newvol[isInstanceTemplateVolAttVolIops].(int))
+
 				encryptionKey := newvol[isInstanceTemplateVolAttVolEncryptionKey].(string)
 
 				if iops != 0 {
@@ -2048,9 +2084,22 @@ func instanceTemplateCreate(d *schema.ResourceData, meta interface{}, profile, n
 			}
 		}
 
-		volcap := 100
+		// bandwidth changes
+		volBandwith := bootvol["bandwidth"].(int)
+		if volBandwith != 0 {
+			volBandwith64 := int64(volBandwith)
+			volTemplate.Bandwidth = &volBandwith64
+		}
+		volcap := bootvol["size"].(int)
 		volcapint64 := int64(volcap)
-		volprof := "general-purpose"
+		if volcap == 0 {
+			volcap := 100
+			volcapint64 = int64(volcap)
+		}
+		volprof := bootvol["profile"].(string)
+		if volprof == "" {
+			volprof = "general-purpose"
+		}
 		volTemplate.Capacity = &volcapint64
 		volTemplate.Profile = &vpcv1.VolumeProfileIdentity{
 			Name: &volprof,
@@ -2105,6 +2154,13 @@ func instanceTemplateCreate(d *schema.ResourceData, meta interface{}, profile, n
 					},
 					Capacity: &capacity,
 				}
+
+				//bandwidth changes
+				bandwidth := int64(newvol["bandwidth"].(int))
+				if bandwidth != int64(0) {
+					volPrototype.Bandwidth = &bandwidth
+				}
+
 				iops := int64(newvol[isInstanceTemplateVolAttVolIops].(int))
 				encryptionKey := newvol[isInstanceTemplateVolAttVolEncryptionKey].(string)
 
@@ -2685,6 +2741,10 @@ func instanceTemplateGet(d *schema.ResourceData, meta interface{}, ID string) er
 			if volumeInst.UserTags != nil {
 				newVolume[isInstanceTemplateVolAttTags] = volumeInst.UserTags
 			}
+			// bandwidth changes
+			if volumeInst.Bandwidth != nil {
+				newVolume["bandwidth"] = volumeInst.Bandwidth
+			}
 			if len(newVolume) > 0 {
 				newVolumeArr = append(newVolumeArr, newVolume)
 			}
@@ -2713,6 +2773,9 @@ func instanceTemplateGet(d *schema.ResourceData, meta interface{}, ID string) er
 			}
 			if volumeIntf.UserTags != nil {
 				bootVol[isVolumeTags] = volumeIntf.UserTags
+			}
+			if volumeIntf.Bandwidth != nil {
+				bootVol["bandwidth"] = volumeIntf.Bandwidth
 			}
 		}
 

@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2022 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package atracker_test
@@ -13,7 +13,9 @@ import (
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/atracker"
 	"github.com/IBM/platform-services-go-sdk/atrackerv2"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAccIBMAtrackerRouteBasic(t *testing.T) {
@@ -26,21 +28,21 @@ func TestAccIBMAtrackerRouteBasic(t *testing.T) {
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMAtrackerRouteDestroy,
 		Steps: []resource.TestStep{
-			{
+			resource.TestStep{
 				Config: testAccCheckIBMAtrackerRouteConfigBasic(name),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMAtrackerRouteExists("ibm_atracker_route.atracker_route", conf),
-					resource.TestCheckResourceAttr("ibm_atracker_route.atracker_route", "name", name),
+					testAccCheckIBMAtrackerRouteExists("ibm_atracker_route.atracker_route_instance", conf),
+					resource.TestCheckResourceAttr("ibm_atracker_route.atracker_route_instance", "name", name),
 				),
 			},
-			{
+			resource.TestStep{
 				Config: testAccCheckIBMAtrackerRouteConfigBasic(nameUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_atracker_route.atracker_route", "name", nameUpdate),
+					resource.TestCheckResourceAttr("ibm_atracker_route.atracker_route_instance", "name", nameUpdate),
 				),
 			},
-			{
-				ResourceName:      "ibm_atracker_route.atracker_route",
+			resource.TestStep{
+				ResourceName:      "ibm_atracker_route.atracker_route_instance",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -61,18 +63,18 @@ func TestAccIBMAtrackerRouteBasicMultipleRules(t *testing.T) {
 			{
 				Config: testAccCheckIBMAtrackerRouteConfigBasicMultipleRules(name),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMAtrackerRouteExists("ibm_atracker_route.atracker_route", conf),
-					resource.TestCheckResourceAttr("ibm_atracker_route.atracker_route", "name", name),
+					testAccCheckIBMAtrackerRouteExists("ibm_atracker_route.atracker_route_instance", conf),
+					resource.TestCheckResourceAttr("ibm_atracker_route.atracker_route_instance", "name", name),
 				),
 			},
 			{
 				Config: testAccCheckIBMAtrackerRouteConfigBasicMultipleRules(nameUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_atracker_route.atracker_route", "name", nameUpdate),
+					resource.TestCheckResourceAttr("ibm_atracker_route.atracker_route_instance", "name", nameUpdate),
 				),
 			},
 			{
-				ResourceName:      "ibm_atracker_route.atracker_route",
+				ResourceName:      "ibm_atracker_route.atracker_route_instance",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -82,21 +84,23 @@ func TestAccIBMAtrackerRouteBasicMultipleRules(t *testing.T) {
 
 func testAccCheckIBMAtrackerRouteConfigBasic(name string) string {
 	return fmt.Sprintf(`
-		resource "ibm_atracker_target" "atracker_target" {
+		resource "ibm_atracker_target" "atracker_target_instance" {
 			name = "my-cos-target"
 			target_type = "cloud_object_storage"
+			region = "us-south"
 			cos_endpoint {
 				endpoint = "s3.private.us-east.cloud-object-storage.appdomain.cloud"
 				target_crn = "crn:v1:bluemix:public:cloud-object-storage:global:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
 				bucket = "my-atracker-bucket"
 				api_key = "xxxxxxxxxxxxxx"
+				service_to_service_enabled = false
 			}
 		}
 
-		resource "ibm_atracker_route" "atracker_route" {
+		resource "ibm_atracker_route" "atracker_route_instance" {
 			name = "%s"
 			rules {
-				target_ids = [ ibm_atracker_target.atracker_target.id ]
+				target_ids = [ ibm_atracker_target.atracker_target_instance.id ]
 				locations = [ "us-south" ]
 			}
 		}
@@ -105,9 +109,10 @@ func testAccCheckIBMAtrackerRouteConfigBasic(name string) string {
 
 func testAccCheckIBMAtrackerRouteConfigBasicMultipleRules(name string) string {
 	return fmt.Sprintf(`
-		resource "ibm_atracker_target" "atracker_target" {
+		resource "ibm_atracker_target" "atracker_target_instance" {
 			name = "my-cos-target"
 			target_type = "cloud_object_storage"
+			region = "us-south"
 			cos_endpoint {
 				endpoint = "s3.private.us-east.cloud-object-storage.appdomain.cloud"
 				target_crn = "crn:v1:bluemix:public:cloud-object-storage:global:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
@@ -116,14 +121,14 @@ func testAccCheckIBMAtrackerRouteConfigBasicMultipleRules(name string) string {
 			}
 		}
 
-		resource "ibm_atracker_route" "atracker_route" {
+		resource "ibm_atracker_route" "atracker_route_instance" {
 			name = "%s"
 			rules {
-				target_ids = [ ibm_atracker_target.atracker_target.id ]
+				target_ids = [ ibm_atracker_target.atracker_target_instance.id ]
 				locations = [ "us-south" ]
 			}
 			rules {
-				target_ids = [ ibm_atracker_target.atracker_target.id ]
+				target_ids = [ ibm_atracker_target.atracker_target_instance.id ]
 				locations = [ "us-east" ]
 			}
 		}
@@ -175,11 +180,47 @@ func testAccCheckIBMAtrackerRouteDestroy(s *terraform.State) error {
 		_, response, err := atrackerClient.GetRoute(getRouteOptions)
 
 		if err == nil {
-			return fmt.Errorf("Activity Tracker Route still exists: %s", rs.Primary.ID)
+			return fmt.Errorf("atracker_route_instance still exists: %s", rs.Primary.ID)
 		} else if response.StatusCode != 404 {
-			return fmt.Errorf("[ERROR] Error checking for Activity Tracker Route (%s) has been destroyed: %s", rs.Primary.ID, err)
+			return fmt.Errorf("Error checking for atracker_route_instance (%s) has been destroyed: %s", rs.Primary.ID, err)
 		}
 	}
 
 	return nil
+}
+
+func TestResourceIBMAtrackerRouteRuleToMap(t *testing.T) {
+	checkResult := func(result map[string]interface{}) {
+		model := make(map[string]interface{})
+		model["target_ids"] = []string{"c3af557f-fb0e-4476-85c3-0889e7fe7bc4"}
+		model["locations"] = []string{"us-south"}
+
+		assert.Equal(t, result, model)
+	}
+
+	model := new(atrackerv2.Rule)
+	model.TargetIds = []string{"c3af557f-fb0e-4476-85c3-0889e7fe7bc4"}
+	model.Locations = []string{"us-south"}
+
+	result, err := atracker.ResourceIBMAtrackerRouteRuleToMap(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestResourceIBMAtrackerRouteMapToRulePrototype(t *testing.T) {
+	checkResult := func(result *atrackerv2.RulePrototype) {
+		model := new(atrackerv2.RulePrototype)
+		model.TargetIds = []string{"c3af557f-fb0e-4476-85c3-0889e7fe7bc4"}
+		model.Locations = []string{"us-south"}
+
+		assert.Equal(t, result, model)
+	}
+
+	model := make(map[string]interface{})
+	model["target_ids"] = []interface{}{"c3af557f-fb0e-4476-85c3-0889e7fe7bc4"}
+	model["locations"] = []interface{}{"us-south"}
+
+	result, err := atracker.ResourceIBMAtrackerRouteMapToRulePrototype(model)
+	assert.Nil(t, err)
+	checkResult(result)
 }

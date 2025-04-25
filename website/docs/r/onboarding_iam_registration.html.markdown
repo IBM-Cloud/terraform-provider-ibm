@@ -299,11 +299,11 @@ Nested schema for **display_name**:
 	  * Constraints: The maximum length is `256` characters. The minimum length is `0` characters. The value must match regular expression `/./`.
 * `enabled` - (Optional, Boolean) Whether the service is enabled or disabled for IAM.
 * `env` - (Optional, String) The environment to fetch this object from.
-  * Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^[a-z]+$/`.
+  * Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^[a-z_.-]+$/`.
 * `name` - (Required, String) The IAM registration name, which must be the programmatic name of the product.
-  * Constraints: The value must match regular expression `/^[a-zA-Z0-9\\-.]+$/`.
+  * Constraints: The value must match regular expression `/^\\S*$/`.
 * `parent_ids` - (Optional, List) The list of parent IDs for product access management.
-  * Constraints: The list items must match regular expression `/^[a-zA-Z0-9\\-.]+$/`. The maximum length is `100` items. The minimum length is `0` items.
+  * Constraints: The list items must match regular expression `/^\\S*$/`. The maximum length is `100` items. The minimum length is `0` items.
 * `product_id` - (Required, Forces new resource, String) The unique ID of the product.
   * Constraints: The maximum length is `71` characters. The minimum length is `71` characters. The value must match regular expression `/^[a-zA-Z0-9]{32}:o:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/`.
 * `resource_hierarchy_attribute` - (Optional, List) The resource hierarchy key-value pair for composite services.

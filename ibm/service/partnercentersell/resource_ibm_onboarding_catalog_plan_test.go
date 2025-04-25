@@ -146,7 +146,6 @@ func testAccCheckIbmOnboardingCatalogPlanConfigBasic(productID string, catalogPr
 			disabled = %s
 			kind = "%s"
 			object_id = "%s"
-			tags = ["tag"]
 			object_provider {
 				name = "name"
 				email = "email@email.com"

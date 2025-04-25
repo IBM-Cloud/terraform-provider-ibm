@@ -10,7 +10,9 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -32,12 +34,12 @@ const (
 
 func ResourceIBMISIPSecPolicy() *schema.Resource {
 	return &schema.Resource{
-		Create:   resourceIBMISIPSecPolicyCreate,
-		Read:     resourceIBMISIPSecPolicyRead,
-		Update:   resourceIBMISIPSecPolicyUpdate,
-		Delete:   resourceIBMISIPSecPolicyDelete,
-		Exists:   resourceIBMISIPSecPolicyExists,
-		Importer: &schema.ResourceImporter{},
+		CreateContext: resourceIBMISIPSecPolicyCreate,
+		ReadContext:   resourceIBMISIPSecPolicyRead,
+		UpdateContext: resourceIBMISIPSecPolicyUpdate,
+		DeleteContext: resourceIBMISIPSecPolicyDelete,
+		Exists:        resourceIBMISIPSecPolicyExists,
+		Importer:      &schema.ResourceImporter{},
 
 		CustomizeDiff: customdiff.All(
 			customdiff.Sequence(
@@ -191,7 +193,7 @@ func ResourceIBMISIPSECValidator() *validate.ResourceValidator {
 	return &ibmISIPSECResourceValidator
 }
 
-func resourceIBMISIPSecPolicyCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMISIPSecPolicyCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 	log.Printf("[DEBUG] Ip Sec create")
 	name := d.Get(isIpSecName).(string)
@@ -199,17 +201,19 @@ func resourceIBMISIPSecPolicyCreate(d *schema.ResourceData, meta interface{}) er
 	encryptionAlg := d.Get(isIpSecEncryptionAlg).(string)
 	pfs := d.Get(isIpSecPFS).(string)
 
-	err := ipsecpCreate(d, meta, authenticationAlg, encryptionAlg, name, pfs)
-	if err != nil {
-		return err
+	diag := ipsecpCreate(context, d, meta, authenticationAlg, encryptionAlg, name, pfs)
+	if diag != nil {
+		return diag
 	}
-	return resourceIBMISIPSecPolicyRead(d, meta)
+	return resourceIBMISIPSecPolicyRead(context, d, meta)
 }
 
-func ipsecpCreate(d *schema.ResourceData, meta interface{}, authenticationAlg, encryptionAlg, name, pfs string) error {
+func ipsecpCreate(context context.Context, d *schema.ResourceData, meta interface{}, authenticationAlg, encryptionAlg, name, pfs string) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_ipsec_policy", "create", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	options := &vpcv1.CreateIpsecPolicyOptions{
 		AuthenticationAlgorithm: &authenticationAlg,
@@ -232,56 +236,97 @@ func ipsecpCreate(d *schema.ResourceData, meta interface{}, authenticationAlg, e
 			ID: &rg,
 		}
 	}
-	ipSec, response, err := sess.CreateIpsecPolicy(options)
+	ipSec, _, err := sess.CreateIpsecPolicyWithContext(context, options)
 	if err != nil {
-		return fmt.Errorf("[DEBUG] ipSec policy err %s\n%s", err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateIpsecPolicyWithContext failed: %s", err.Error()), "ibm_is_ipsec_policy", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	d.SetId(*ipSec.ID)
 	log.Printf("[INFO] ipSec policy : %s", *ipSec.ID)
 	return nil
 }
 
-func resourceIBMISIPSecPolicyRead(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMISIPSecPolicyRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 	id := d.Id()
-	return ipsecpGet(d, meta, id)
+	return ipsecpGet(context, d, meta, id)
 }
 
-func ipsecpGet(d *schema.ResourceData, meta interface{}, id string) error {
+func ipsecpGet(context context.Context, d *schema.ResourceData, meta interface{}, id string) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_ipsec_policy", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	getIpsecPolicyOptions := &vpcv1.GetIpsecPolicyOptions{
 		ID: &id,
 	}
-	ipSec, response, err := sess.GetIpsecPolicy(getIpsecPolicyOptions)
+	iPsecPolicy, response, err := sess.GetIpsecPolicy(getIpsecPolicyOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error getting IPSEC Policy(%s): %s\n%s", id, err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetIpsecPolicyWithContext failed: %s", err.Error()), "ibm_is_ipsec_policy", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
-	d.Set(isIpSecName, *ipSec.Name)
-	d.Set(isIpSecAuthenticationAlg, *ipSec.AuthenticationAlgorithm)
-	d.Set(isIpSecEncryptionAlg, *ipSec.EncryptionAlgorithm)
-	if ipSec.ResourceGroup != nil {
-		d.Set(isIPSecResourceGroup, *ipSec.ResourceGroup.ID)
-		d.Set(flex.ResourceGroupName, *ipSec.ResourceGroup.Name)
+	if !core.IsNil(iPsecPolicy.Name) {
+		if err = d.Set("name", iPsecPolicy.Name); err != nil {
+			err = fmt.Errorf("Error setting name: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_ipsec_policy", "read", "set-name").GetDiag()
+		}
+		if err = d.Set(flex.ResourceName, iPsecPolicy.Name); err != nil {
+			err = fmt.Errorf("Error setting resource_name: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_ipsec_policy", "read", "set-resource_name").GetDiag()
+		}
+	}
+	if err = d.Set("authentication_algorithm", iPsecPolicy.AuthenticationAlgorithm); err != nil {
+		err = fmt.Errorf("Error setting authentication_algorithm: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_ipsec_policy", "read", "set-authentication_algorithm").GetDiag()
+	}
+	if err = d.Set("encryption_algorithm", iPsecPolicy.EncryptionAlgorithm); err != nil {
+		err = fmt.Errorf("Error setting encryption_algorithm: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_ipsec_policy", "read", "set-encryption_algorithm").GetDiag()
+	}
+	if iPsecPolicy.ResourceGroup != nil {
+		d.Set(isIPSecResourceGroup, *iPsecPolicy.ResourceGroup.ID)
+		if err = d.Set(isIPSecResourceGroup, *iPsecPolicy.ResourceGroup.ID); err != nil {
+			err = fmt.Errorf("Error setting resource_group: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_ipsec_policy", "read", "set-resource_group").GetDiag()
+		}
+		if err = d.Set(flex.ResourceGroupName, *iPsecPolicy.ResourceGroup.Name); err != nil {
+			err = fmt.Errorf("Error setting resource_group_name: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_ipsec_policy", "read", "set-resource_group_name").GetDiag()
+		}
+
 	} else {
 		d.Set(isIPSecResourceGroup, nil)
 	}
-	d.Set(isIpSecPFS, *ipSec.Pfs)
-	if ipSec.KeyLifetime != nil {
-		d.Set(isIpSecKeyLifeTime, *ipSec.KeyLifetime)
+	if err = d.Set("pfs", iPsecPolicy.Pfs); err != nil {
+		err = fmt.Errorf("Error setting pfs: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_ipsec_policy", "read", "set-pfs").GetDiag()
 	}
-	d.Set(isIPSecEncapsulationMode, *ipSec.EncapsulationMode)
-	d.Set(isIPSecTransformProtocol, *ipSec.TransformProtocol)
+	if !core.IsNil(iPsecPolicy.KeyLifetime) {
+		if err = d.Set("key_lifetime", flex.IntValue(iPsecPolicy.KeyLifetime)); err != nil {
+			err = fmt.Errorf("Error setting key_lifetime: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_ipsec_policy", "read", "set-key_lifetime").GetDiag()
+		}
+	}
+	if err = d.Set("encapsulation_mode", iPsecPolicy.EncapsulationMode); err != nil {
+		err = fmt.Errorf("Error setting encapsulation_mode: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_ipsec_policy", "read", "set-encapsulation_mode").GetDiag()
+	}
+	if err = d.Set("transform_protocol", iPsecPolicy.TransformProtocol); err != nil {
+		err = fmt.Errorf("Error setting transform_protocol: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_ipsec_policy", "read", "set-transform_protocol").GetDiag()
+	}
 
 	connList := make([]map[string]interface{}, 0)
-	if ipSec.Connections != nil && len(ipSec.Connections) > 0 {
-		for _, connection := range ipSec.Connections {
+	if iPsecPolicy.Connections != nil && len(iPsecPolicy.Connections) > 0 {
+		for _, connection := range iPsecPolicy.Connections {
 			conn := map[string]interface{}{}
 			conn[isIPSecVPNConnectionName] = *connection.Name
 			conn[isIPSecVPNConnectionId] = *connection.ID
@@ -292,29 +337,31 @@ func ipsecpGet(d *schema.ResourceData, meta interface{}, id string) error {
 	d.Set(isIPSecVPNConnections, connList)
 	controller, err := flex.GetBaseController(meta)
 	if err != nil {
-		return err
+		err = fmt.Errorf("Error featching Base Controller URL: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_ipsec_policy", "read", "set-resource_controller_url").GetDiag()
 	}
 	d.Set(flex.ResourceControllerURL, controller+"/vpc-ext/network/ipsecpolicies")
-	d.Set(flex.ResourceName, *ipSec.Name)
 	// d.Set(flex.ResourceCRN, *ipSec.Crn)
 	return nil
 }
 
-func resourceIBMISIPSecPolicyUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMISIPSecPolicyUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 	id := d.Id()
-	err := ipsecpUpdate(d, meta, id)
+	err := ipsecpUpdate(context, d, meta, id)
 	if err != nil {
 		return err
 	}
 
-	return resourceIBMISIPSecPolicyRead(d, meta)
+	return resourceIBMISIPSecPolicyRead(context, d, meta)
 }
 
-func ipsecpUpdate(d *schema.ResourceData, meta interface{}, id string) error {
+func ipsecpUpdate(context context.Context, d *schema.ResourceData, meta interface{}, id string) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_ipsec_policy", "update", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	options := &vpcv1.UpdateIpsecPolicyOptions{
@@ -336,46 +383,56 @@ func ipsecpUpdate(d *schema.ResourceData, meta interface{}, id string) error {
 		}
 		ipsecPolicyPatch, err := ipsecPolicyPatchModel.AsPatch()
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for IPsecPolicyPatch: %s", err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error calling asPatch for IPsecPolicyPatch: %s", err.Error()), "ibm_is_ipsec_policy", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		options.IPsecPolicyPatch = ipsecPolicyPatch
 
-		_, response, err := sess.UpdateIpsecPolicy(options)
+		_, _, err = sess.UpdateIpsecPolicyWithContext(context, options)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error on update of IPSEC Policy(%s): %s\n%s", id, err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateIpsecPolicyWithContext failed: %s", err.Error()), "ibm_is_ipsec_policy", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 	return nil
 }
 
-func resourceIBMISIPSecPolicyDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMISIPSecPolicyDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 	id := d.Id()
-	return ipsecpDelete(d, meta, id)
+	return ipsecpDelete(context, d, meta, id)
 }
 
-func ipsecpDelete(d *schema.ResourceData, meta interface{}, id string) error {
+func ipsecpDelete(context context.Context, d *schema.ResourceData, meta interface{}, id string) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_ipsec_policy", "delete", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	getIpsecPolicyOptions := &vpcv1.GetIpsecPolicyOptions{
 		ID: &id,
 	}
-	_, response, err := sess.GetIpsecPolicy(getIpsecPolicyOptions)
+	_, response, err := sess.GetIpsecPolicyWithContext(context, getIpsecPolicyOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error getting IPSEC Policy(%s): %s\n%s", id, err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetIpsecPolicyWithContext failed: %s", err.Error()), "ibm_is_ipsec_policy", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	deleteIpsecPolicyOptions := &vpcv1.DeleteIpsecPolicyOptions{
 		ID: &id,
 	}
-	response, err = sess.DeleteIpsecPolicy(deleteIpsecPolicyOptions)
+	response, err = sess.DeleteIpsecPolicyWithContext(context, deleteIpsecPolicyOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error Deleting IPSEC Policy(%s): %s\n%s", id, err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteIpsecPolicyWithContext failed: %s", err.Error()), "ibm_is_ipsec_policy", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	d.SetId("")
 	return nil
@@ -390,17 +447,21 @@ func resourceIBMISIPSecPolicyExists(d *schema.ResourceData, meta interface{}) (b
 func ipsecpExists(d *schema.ResourceData, meta interface{}, id string) (bool, error) {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return false, err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_ipsec_policy", "exits", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return false, tfErr
 	}
-	getIpsecPolicyOptions := &vpcv1.GetIpsecPolicyOptions{
+	options := &vpcv1.GetIpsecPolicyOptions{
 		ID: &id,
 	}
-	_, response, err := sess.GetIpsecPolicy(getIpsecPolicyOptions)
+	_, response, err := sess.GetIpsecPolicy(options)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			return false, nil
 		}
-		return false, fmt.Errorf("[ERROR] Error getting IPSEC Policy(%s): %s\n%s", id, err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetIpsecPolicy failed: %s", err.Error()), "ibm_is_ipsec_policy", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return false, tfErr
 	}
 	return true, nil
 }
