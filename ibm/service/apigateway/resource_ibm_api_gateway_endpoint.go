@@ -130,8 +130,8 @@ func resourceIBMApiGatewayEndPointCreate(d *schema.ResourceData, meta interface{
 			}
 			y2j, yErr := yaml.YAMLToJSON(data)
 			if yErr != nil {
-				fmt.Println("Error parsing yaml file", err)
-				return err
+				fmt.Println("Error parsing yaml file", yErr)
+				return yErr
 			}
 			document = y2j
 		} else {
@@ -267,8 +267,8 @@ func resourceIBMApiGatewayEndPointUpdate(d *schema.ResourceData, meta interface{
 			}
 			y2j, yErr := yaml.YAMLToJSON(data)
 			if yErr != nil {
-				fmt.Println("Error parsing yaml file", err)
-				return err
+				fmt.Println("Error parsing yaml file", yErr)
+				return yErr
 			}
 			document = y2j
 		} else {
@@ -337,8 +337,8 @@ func resourceIBMApiGatewayEndPointUpdate(d *schema.ResourceData, meta interface{
 				}
 				y2j, yErr := yaml.YAMLToJSON(data)
 				if yErr != nil {
-					fmt.Println("Error parsing yaml file", err)
-					return err
+					fmt.Println("Error parsing yaml file", yErr)
+					return yErr
 				}
 				document = y2j
 			} else {
