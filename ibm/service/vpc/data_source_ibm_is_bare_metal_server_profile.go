@@ -6,6 +6,7 @@ package vpc
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -438,22 +439,32 @@ func dataSourceIBMISBMSProfileRead(context context.Context, d *schema.ResourceDa
 	name := d.Get("name").(string)
 	sess, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_bare_metal_server_profile", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	options := &vpcv1.GetBareMetalServerProfileOptions{
 		Name: &name,
 	}
-	bmsProfile, response, err := sess.GetBareMetalServerProfileWithContext(context, options)
-	if err != nil || bmsProfile == nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error Getting Bare Metal Server Profile (%s): %s\n%s", name, err, response))
+	bareMetalServerProfile, _, err := sess.GetBareMetalServerProfileWithContext(context, options)
+	if err != nil || bareMetalServerProfile == nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetBareMetalServerProfileWithContext failed: %s", err.Error()), "(Data) ibm_is_bare_metal_server_profile", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
-	d.SetId(*bmsProfile.Name)
-	d.Set(isBareMetalServerProfileName, *bmsProfile.Name)
-	d.Set(isBareMetalServerProfileFamily, *bmsProfile.Family)
-	d.Set(isBareMetalServerProfileHref, *bmsProfile.Href)
-	if bmsProfile.Bandwidth != nil {
+	d.SetId(*bareMetalServerProfile.Name)
+	if err = d.Set(isBareMetalServerProfileName, *bareMetalServerProfile.Name); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_is_bare_metal_server_profile", "read", "set-name").GetDiag()
+	}
+	if err = d.Set("family", bareMetalServerProfile.Family); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting family: %s", err), "(Data) ibm_is_bare_metal_server_profile", "read", "set-family").GetDiag()
+	}
+	if err = d.Set("href", bareMetalServerProfile.Href); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting href: %s", err), "(Data) ibm_is_bare_metal_server_profile", "read", "set-href").GetDiag()
+	}
+	if bareMetalServerProfile.Bandwidth != nil {
 		bwList := make([]map[string]interface{}, 0)
-		bw := bmsProfile.Bandwidth.(*vpcv1.BareMetalServerProfileBandwidth)
+		bw := bareMetalServerProfile.Bandwidth.(*vpcv1.BareMetalServerProfileBandwidth)
 		bandwidth := map[string]interface{}{}
 		if bw.Type != nil {
 			bandwidth[isBareMetalServerProfileType] = *bw.Type
@@ -477,105 +488,123 @@ func dataSourceIBMISBMSProfileRead(context context.Context, d *schema.ResourceDa
 			bandwidth["step"] = flex.IntValue(bw.Step)
 		}
 		bwList = append(bwList, bandwidth)
-		d.Set(isBareMetalServerProfileBandwidth, bwList)
+		if err = d.Set(isBareMetalServerProfileBandwidth, bwList); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting bandwidth: %s", err), "(Data) ibm_is_bare_metal_server_profile", "read", "set-bandwidth").GetDiag()
+		}
 	}
 	consoleTypes := []map[string]interface{}{}
-	if bmsProfile.ConsoleTypes != nil {
-		modelMap, err := dataSourceIBMIsBareMetalServerProfileBareMetalServerProfileConsoleTypesToMap(bmsProfile.ConsoleTypes)
+	if bareMetalServerProfile.ConsoleTypes != nil {
+		modelMap, err := dataSourceIBMIsBareMetalServerProfileBareMetalServerProfileConsoleTypesToMap(bareMetalServerProfile.ConsoleTypes)
 		if err != nil {
-			return diag.FromErr(err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_bare_metal_server_profile", "read", "console_types-to-map").GetDiag()
 		}
 		consoleTypes = append(consoleTypes, modelMap)
 	}
 	if err = d.Set("console_types", consoleTypes); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting console_types %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting console_types: %s", err), "(Data) ibm_is_bare_metal_server_profile", "read", "set-console_types").GetDiag()
 	}
 
 	networkInterfaceCount := []map[string]interface{}{}
-	if bmsProfile.NetworkInterfaceCount != nil {
-		modelMap, err := dataSourceIBMIsBareMetalServerProfileBareMetalServerProfileNetworkInterfaceCountToMap(bmsProfile.NetworkInterfaceCount)
+	if bareMetalServerProfile.NetworkInterfaceCount != nil {
+		modelMap, err := dataSourceIBMIsBareMetalServerProfileBareMetalServerProfileNetworkInterfaceCountToMap(bareMetalServerProfile.NetworkInterfaceCount)
 		if err != nil {
-			return diag.FromErr(err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_bare_metal_server_profile", "read", "network_interface_count-to-map").GetDiag()
 		}
 		networkInterfaceCount = append(networkInterfaceCount, modelMap)
 	}
 	if err = d.Set("network_interface_count", networkInterfaceCount); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting network_interface_count %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting network_interface_count: %s", err), "(Data) ibm_is_bare_metal_server_profile", "read", "set-network_interface_count").GetDiag()
 	}
 
-	if bmsProfile.CpuArchitecture != nil {
+	if bareMetalServerProfile.CpuArchitecture != nil {
 		caList := make([]map[string]interface{}, 0)
-		ca := bmsProfile.CpuArchitecture
+		ca := bareMetalServerProfile.CpuArchitecture
 		architecture := map[string]interface{}{
 			isBareMetalServerProfileType:  *ca.Type,
 			isBareMetalServerProfileValue: *ca.Value,
 		}
 		caList = append(caList, architecture)
-		d.Set(isBareMetalServerProfileCPUArchitecture, caList)
+
+		if err = d.Set(isBareMetalServerProfileCPUArchitecture, caList); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting cpu_architecture: %s", err), "(Data) ibm_is_bare_metal_server_profile", "read", "set-cpu_architecture").GetDiag()
+		}
 	}
-	if bmsProfile.CpuCoreCount != nil {
+	if bareMetalServerProfile.CpuCoreCount != nil {
 		ccList := make([]map[string]interface{}, 0)
-		cc := bmsProfile.CpuCoreCount.(*vpcv1.BareMetalServerProfileCpuCoreCount)
+		cc := bareMetalServerProfile.CpuCoreCount.(*vpcv1.BareMetalServerProfileCpuCoreCount)
 		coreCount := map[string]interface{}{
 			isBareMetalServerProfileType:  *cc.Type,
 			isBareMetalServerProfileValue: *cc.Value,
 		}
 		ccList = append(ccList, coreCount)
-		d.Set(isBareMetalServerProfileCPUCoreCount, ccList)
+
+		if err = d.Set(isBareMetalServerProfileCPUCoreCount, ccList); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting cpu_core_count: %s", err), "(Data) ibm_is_bare_metal_server_profile", "read", "set-cpu_core_count").GetDiag()
+		}
 	}
-	if bmsProfile.CpuSocketCount != nil {
+	if bareMetalServerProfile.CpuSocketCount != nil {
 		scList := make([]map[string]interface{}, 0)
-		sc := bmsProfile.CpuSocketCount.(*vpcv1.BareMetalServerProfileCpuSocketCount)
+		sc := bareMetalServerProfile.CpuSocketCount.(*vpcv1.BareMetalServerProfileCpuSocketCount)
 		socketCount := map[string]interface{}{
 			isBareMetalServerProfileType:  *sc.Type,
 			isBareMetalServerProfileValue: *sc.Value,
 		}
 		scList = append(scList, socketCount)
-		d.Set(isBareMetalServerProfileCPUSocketCount, scList)
+		if err = d.Set(isBareMetalServerProfileCPUSocketCount, scList); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting cpu_socket_count: %s", err), "(Data) ibm_is_bare_metal_server_profile", "read", "set-cpu_socket_count").GetDiag()
+		}
 	}
 
-	if bmsProfile.Memory != nil {
+	if bareMetalServerProfile.Memory != nil {
 		memList := make([]map[string]interface{}, 0)
-		mem := bmsProfile.Memory.(*vpcv1.BareMetalServerProfileMemory)
+		mem := bareMetalServerProfile.Memory.(*vpcv1.BareMetalServerProfileMemory)
 		m := map[string]interface{}{
 			isBareMetalServerProfileType:  *mem.Type,
 			isBareMetalServerProfileValue: *mem.Value,
 		}
 		memList = append(memList, m)
-		d.Set(isBareMetalServerProfileMemory, memList)
+		if err = d.Set(isBareMetalServerProfileMemory, memList); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting memory: %s", err), "(Data) ibm_is_bare_metal_server_profile", "read", "set-memory").GetDiag()
+		}
 	}
-	d.Set(isBareMetalServerProfileRT, bmsProfile.ResourceType)
-	if bmsProfile.SupportedTrustedPlatformModuleModes != nil {
+	if err = d.Set(isBareMetalServerProfileRT, bareMetalServerProfile.ResourceType); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_type: %s", err), "(Data) ibm_is_bare_metal_server_profile", "read", "set-resource_type").GetDiag()
+	}
+	if bareMetalServerProfile.SupportedTrustedPlatformModuleModes != nil {
 		list := make([]map[string]interface{}, 0)
 		var stpmmlist []string
-		for _, item := range bmsProfile.SupportedTrustedPlatformModuleModes.Values {
+		for _, item := range bareMetalServerProfile.SupportedTrustedPlatformModuleModes.Values {
 			stpmmlist = append(stpmmlist, item)
 		}
 		m := map[string]interface{}{
-			isBareMetalServerProfileType: *bmsProfile.SupportedTrustedPlatformModuleModes.Type,
+			isBareMetalServerProfileType: *bareMetalServerProfile.SupportedTrustedPlatformModuleModes.Type,
 		}
 		m[isBareMetalServerProfileValues] = stpmmlist
 		list = append(list, m)
-		d.Set(isBareMetalServerProfileSTPMMs, list)
+		if err = d.Set(isBareMetalServerProfileSTPMMs, list); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting supported_trusted_platform_module_modes: %s", err), "(Data) ibm_is_bare_metal_server_profile", "read", "set-supported_trusted_platform_module_modes").GetDiag()
+		}
 	}
-	if bmsProfile.OsArchitecture != nil {
+	if bareMetalServerProfile.OsArchitecture != nil {
 		list := make([]map[string]interface{}, 0)
 		var valuelist []string
-		for _, item := range bmsProfile.OsArchitecture.Values {
+		for _, item := range bareMetalServerProfile.OsArchitecture.Values {
 			valuelist = append(valuelist, item)
 		}
 		m := map[string]interface{}{
-			isBareMetalServerProfileDefault: *bmsProfile.OsArchitecture.Default,
-			isBareMetalServerProfileType:    *bmsProfile.OsArchitecture.Type,
+			isBareMetalServerProfileDefault: *bareMetalServerProfile.OsArchitecture.Default,
+			isBareMetalServerProfileType:    *bareMetalServerProfile.OsArchitecture.Type,
 		}
 		m[isBareMetalServerProfileValues] = valuelist
 		list = append(list, m)
-		d.Set(isBareMetalServerProfileOS, list)
+		if err = d.Set(isBareMetalServerProfileOS, list); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting os_architecture: %s", err), "(Data) ibm_is_bare_metal_server_profile", "read", "set-os_architecture").GetDiag()
+		}
 	}
 
-	if bmsProfile.Disks != nil {
+	if bareMetalServerProfile.Disks != nil {
 		list := make([]map[string]interface{}, 0)
-		for _, disk := range bmsProfile.Disks {
+		for _, disk := range bareMetalServerProfile.Disks {
 			qlist := make([]map[string]interface{}, 0)
 			slist := make([]map[string]interface{}, 0)
 			sitlist := make([]map[string]interface{}, 0)
@@ -607,36 +636,37 @@ func dataSourceIBMISBMSProfileRead(context context.Context, d *schema.ResourceDa
 			}
 			list = append(list, sz)
 		}
-		d.Set(isBareMetalServerProfileDisks, list)
-
+		if err = d.Set(isBareMetalServerProfileDisks, list); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting disks: %s", err), "(Data) ibm_is_bare_metal_server_profile", "read", "set-disks").GetDiag()
+		}
 		// vni
 		virtualNetworkInterfacesSupported := []map[string]interface{}{}
-		if bmsProfile.VirtualNetworkInterfacesSupported != nil {
-			modelMap, err := dataSourceIBMIsBareMetalServerProfileBareMetalServerProfileVirtualNetworkInterfacesSupportedToMap(bmsProfile.VirtualNetworkInterfacesSupported)
+		if bareMetalServerProfile.VirtualNetworkInterfacesSupported != nil {
+			modelMap, err := dataSourceIBMIsBareMetalServerProfileBareMetalServerProfileVirtualNetworkInterfacesSupportedToMap(bareMetalServerProfile.VirtualNetworkInterfacesSupported)
 			if err != nil {
-				return diag.FromErr(err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_bare_metal_server_profile", "read", "virtual_network_interfaces_supported-to-map").GetDiag()
 			}
 			virtualNetworkInterfacesSupported = append(virtualNetworkInterfacesSupported, modelMap)
 		}
 		if err = d.Set("virtual_network_interfaces_supported", virtualNetworkInterfacesSupported); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting virtual_network_interfaces_supported %s", err))
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting virtual_network_interfaces_supported: %s", err), "(Data) ibm_is_bare_metal_server_profile", "read", "set-virtual_network_interfaces_supported").GetDiag()
 		}
 		networkAttachmentCount := []map[string]interface{}{}
-		if bmsProfile.NetworkAttachmentCount != nil {
-			modelMap, err := dataSourceIBMIsBareMetalServerProfileBareMetalServerProfileNetworkAttachmentCountToMap(bmsProfile.NetworkAttachmentCount)
+		if bareMetalServerProfile.NetworkAttachmentCount != nil {
+			modelMap, err := dataSourceIBMIsBareMetalServerProfileBareMetalServerProfileNetworkAttachmentCountToMap(bareMetalServerProfile.NetworkAttachmentCount)
 			if err != nil {
-				return diag.FromErr(err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_bare_metal_server_profile", "read", "network_attachment_count-to-map").GetDiag()
 			}
 			networkAttachmentCount = append(networkAttachmentCount, modelMap)
 		}
 		if err = d.Set("network_attachment_count", networkAttachmentCount); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting network_attachment_count %s", err))
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting network_attachment_count: %s", err), "(Data) ibm_is_bare_metal_server_profile", "read", "set-network_attachment_count").GetDiag()
 		}
 	}
-	if bmsProfile.ReservationTerms != nil {
-		err = d.Set("reservation_terms", dataSourceBaremetalServerProfileFlattenReservationTerms(*bmsProfile.ReservationTerms))
+	if bareMetalServerProfile.ReservationTerms != nil {
+		err = d.Set("reservation_terms", dataSourceBaremetalServerProfileFlattenReservationTerms(*bareMetalServerProfile.ReservationTerms))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting reservation_terms %s", err))
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting reservation_terms: %s", err), "(Data) ibm_is_bare_metal_server_profile", "read", "set-reservation_terms").GetDiag()
 		}
 	}
 
