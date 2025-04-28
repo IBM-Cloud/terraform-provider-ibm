@@ -17,7 +17,7 @@ resource "ibm_iam_trusted_profile_template" "trusted_profile_template_instance" 
 	name = "${var.trusted_profile_template_name}"
 	description = "${var.trusted_profile_template_description}"
 	profile {
-		name = "profile from template"
+		name = "Profile from Template"
 		description = "description of profile from template"
 		rules {
 			name = "name"
@@ -37,6 +37,103 @@ resource "ibm_iam_trusted_profile_template" "trusted_profile_template_instance" 
 			accounts = ["3213asv21s3d2vsd6bv54sfb321dfb"]
 		}
 	}
+}
+```
+
+Trusted profile template with a Service Id identity and an two access policy templates
+
+```hcl
+resource "ibm_iam_trusted_profile_template" "trusted_profile_template_instance" {
+	name = "${var.trusted_profile_template_name}"
+	description = "${var.trusted_profile_template_description}"
+	profile {
+		name = "Profile from Template"
+		description = "description of profile from template"
+		identities {
+			iam_id = "iam-ServiceId-abcd83bd-e218-48af-8073-c0c1b3980001"
+			identifier = "ServiceId-abcd83bd-e218-48af-8073-c0c1b3980001"
+			type = "serviceid"
+		}
+	}
+	policy_template_references {
+		id = split("/", ibm_iam_policy_template.Kube_Administrator_ap_template.id)[0]
+		version = ibm_iam_policy_template.Kube_Administrator_ap_template.version
+  	}
+  	policy_template_references {
+		id = split("/", ibm_iam_policy_template.Services_Reader_ap_template.id)[0]
+		version = ibm_iam_policy_template.Services_Reader_ap_template.version
+  	}
+  	committed = true
+}
+```
+
+Trusted Profile template with service identity and one access policy
+
+```hcl
+resource "ibm_iam_trusted_profile_template" "trusted_profile_template_instance" {
+	name = "${var.trusted_profile_template_name}"
+	description = "${var.trusted_profile_template_description}"
+	profile {
+		name = "Profile from Template"
+		description = "description of profile from template"
+		identities {
+			iam_id = format("crn-%s", var.instance_crn)
+      		identifier = var.instance_crn
+			type = "crn"
+		}
+	}
+	policy_template_references {
+		id = split("/", ibm_iam_policy_template.Kube_Administrator_ap_template.id)[0]
+		version = ibm_iam_policy_template.Kube_Administrator_ap_template.version
+  	}
+  	committed = true
+}
+```
+
+New Trusted Profile template version
+
+```hcl
+resource "ibm_iam_trusted_profile_template" "trusted_profile_template_instance" {
+	name = "${var.trusted_profile_template_name}"
+	description = "${var.trusted_profile_template_description}"
+	profile {
+		name = "Profile from Template"
+		description = "description of profile from template"
+		identities {
+			iam_id = "iam-ServiceId-abcd83bd-e218-48af-8073-c0c1b3980001"
+			identifier = "ServiceId-abcd83bd-e218-48af-8073-c0c1b3980001"
+			type = "serviceid"
+		}
+	}
+	policy_template_references {
+		id = split("/", ibm_iam_policy_template.Kube_Administrator_ap_template.id)[0]
+		version = ibm_iam_policy_template.Kube_Administrator_ap_template.version
+  	}
+  	policy_template_references {
+		id = split("/", ibm_iam_policy_template.Services_Reader_ap_template.id)[0]
+		version = ibm_iam_policy_template.Services_Reader_ap_template.version
+  	}
+  	committed = true
+}
+
+resource "ibm_iam_trusted_profile_template" "trusted_profile_template_v2" {
+	template_id = ibm_iam_trusted_profile_template.trusted_profile_template_instance.id
+	name = "${var.trusted_profile_template_name}"
+	description = "${var.trusted_profile_template_description} v2"
+	profile {
+		name = "Profile from Template"
+		description = "description of profile from template"
+		identities {
+			iam_id = "iam-ServiceId-abcd83bd-e218-48af-8073-c0c1b3980001"
+			identifier = "ServiceId-abcd83bd-e218-48af-8073-c0c1b3980001"
+			type = "serviceid"
+		}
+	}
+	policy_template_references {
+		id = split("/", ibm_iam_policy_template.Kube_Administrator_ap_template.id)[0]
+		version = ibm_iam_policy_template.Kube_Administrator_ap_template.version
+  	}
+  	committed = true
 }
 ```
 
@@ -75,7 +172,6 @@ Nested schema for **profile**:
 	* `id` - (Required, String) ID of Access Policy Template.
 	* `version` - (Required, String) Version of Access Policy Template.
 
-
 ## Attribute Reference
 
 After your resource is created, you can read values from the listed arguments and the following attributes.
@@ -108,7 +204,6 @@ After your resource is created, you can read values from the listed arguments an
   Nested schema for **policy_template_references**:
 	* `id` - (String) ID of Access Policy Template.
 	* `version` - (String) Version of Access Policy Template.
-* 
 * `created_at` - (String) Timestamp of when the template was created.
 * `created_by_id` - (String) IAMid of the creator.
 * `crn` - (String) Cloud resource name.
@@ -124,12 +219,12 @@ Nested schema for **history**:
 * `last_modified_at` - (String) Timestamp of when the template was last modified.
 * `last_modified_by_id` - (String) IAMid of the identity that made the latest modification.
 
-
 ## Import
 
 You can import the `ibm_trusted_profile_template` resource by using `version`. Version of the the template.
 
-# Syntax
-```
-$ terraform import ibm_trusted_profile_template.trusted_profile_template <version>
+### Syntax
+
+```bash
+$ terraform import ibm_trusted_profile_template.trusted_profile_template $version
 ```
