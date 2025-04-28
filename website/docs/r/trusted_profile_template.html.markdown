@@ -40,7 +40,7 @@ resource "ibm_iam_trusted_profile_template" "trusted_profile_template_instance" 
 }
 ```
 
-Trusted profile template with a Service Id identity and an two access policy templates
+Trusted profile template with a Service Id identity and two access policy templates
 
 ```hcl
 resource "ibm_iam_trusted_profile_template" "trusted_profile_template_instance" {
