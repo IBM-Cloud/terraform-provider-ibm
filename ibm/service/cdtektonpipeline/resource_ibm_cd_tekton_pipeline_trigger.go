@@ -1,8 +1,8 @@
-// Copyright IBM Corp. 2024 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.95.2-120e65bc-20240924-152329
+ * IBM OpenAPI Terraform Generator Version: 3.103.0-e8b84313-20250402-201816
  */
 
 package cdtektonpipeline
@@ -264,7 +264,6 @@ func ResourceIBMCdTektonPipelineTrigger() *schema.Resource {
 						},
 						"href": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
 							Computed:    true,
 							Description: "API URL for interacting with the trigger property.",
 						},
@@ -497,6 +496,10 @@ func resourceIBMCdTektonPipelineTriggerRead(context context.Context, d *schema.R
 	}
 
 	trigger := triggerIntf.(*cdtektonpipelinev2.Trigger)
+	if err = d.Set("pipeline_id", parts[0]); err != nil {
+		err = fmt.Errorf("Error setting pipeline_id: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cd_tekton_pipeline_trigger", "read", "set-pipeline_id").GetDiag()
+	}
 	if err = d.Set("type", trigger.Type); err != nil {
 		err = fmt.Errorf("Error setting type: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cd_tekton_pipeline_trigger", "read", "set-type").GetDiag()
@@ -799,7 +802,9 @@ func resourceIBMCdTektonPipelineTriggerDelete(context context.Context, d *schema
 
 func ResourceIBMCdTektonPipelineTriggerMapToWorkerIdentity(modelMap map[string]interface{}) (*cdtektonpipelinev2.WorkerIdentity, error) {
 	model := &cdtektonpipelinev2.WorkerIdentity{}
-	model.ID = core.StringPtr(modelMap["id"].(string))
+	if modelMap["id"] != nil {
+		model.ID = core.StringPtr(modelMap["id"].(string))
+	}
 	return model, nil
 }
 
@@ -945,90 +950,130 @@ func ResourceIBMCdTektonPipelineTriggerTriggerPatchAsPatch(patchVals *cdtektonpi
 	path = "type"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["type"] = nil
+	} else if !exists {
+		delete(patch, "type")
 	}
 	path = "name"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["name"] = nil
+	} else if !exists {
+		delete(patch, "name")
 	}
 	path = "event_listener"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["event_listener"] = nil
+	} else if !exists {
+		delete(patch, "event_listener")
 	}
 	path = "tags"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["tags"] = nil
+	} else if !exists {
+		delete(patch, "tags")
 	}
 	path = "worker"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["worker"] = nil
+	} else if !exists {
+		delete(patch, "worker")
 	}
 	path = "max_concurrent_runs"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["max_concurrent_runs"] = nil
+	} else if !exists {
+		delete(patch, "max_concurrent_runs")
 	}
 	path = "enabled"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["enabled"] = nil
+	} else if !exists {
+		delete(patch, "enabled")
 	}
 	path = "secret"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["secret"] = nil
 	} else if exists && patch["secret"] != nil {
-		ResourceIBMCdTektonPipelineTriggerGenericSecretAsPatch(patch["secret"].(map[string]interface{}), d)
+		ResourceIBMCdTektonPipelineTriggerGenericSecretAsPatch(patch["secret"].(map[string]interface{}), d, fmt.Sprintf("%s.0", path))
+	} else if !exists {
+		delete(patch, "secret")
 	}
 	path = "cron"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["cron"] = nil
+	} else if !exists {
+		delete(patch, "cron")
 	}
 	path = "timezone"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["timezone"] = nil
+	} else if !exists {
+		delete(patch, "timezone")
 	}
 	path = "source"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["source"] = nil
+	} else if !exists {
+		delete(patch, "source")
 	}
 	path = "events"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["events"] = nil
+	} else if !exists {
+		delete(patch, "events")
 	}
 	path = "filter"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["filter"] = nil
+	} else if !exists {
+		delete(patch, "filter")
 	}
 	path = "favorite"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["favorite"] = nil
+	} else if !exists {
+		delete(patch, "favorite")
 	}
 	path = "enable_events_from_forks"
 	if _, exists := d.GetOkExists(path); d.HasChange(path) && !exists {
 		patch["enable_events_from_forks"] = nil
+	} else if !exists {
+		delete(patch, "enable_events_from_forks")
 	}
 
 	return patch
 }
 
-func ResourceIBMCdTektonPipelineTriggerGenericSecretAsPatch(patch map[string]interface{}, d *schema.ResourceData) {
+func ResourceIBMCdTektonPipelineTriggerGenericSecretAsPatch(patch map[string]interface{}, d *schema.ResourceData, rootPath string) {
 	var path string
 
-	path = "secret.0.type"
+	path = rootPath + ".type"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["type"] = nil
+	} else if !exists {
+		delete(patch, "type")
 	}
-	path = "secret.0.value"
+	path = rootPath + ".value"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["value"] = nil
+	} else if !exists {
+		delete(patch, "value")
 	}
-	path = "secret.0.source"
+	path = rootPath + ".source"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["source"] = nil
+	} else if !exists {
+		delete(patch, "source")
 	}
-	path = "secret.0.key_name"
+	path = rootPath + ".key_name"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["key_name"] = nil
+	} else if !exists {
+		delete(patch, "key_name")
 	}
-	path = "secret.0.algorithm"
+	path = rootPath + ".algorithm"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["algorithm"] = nil
+	} else if !exists {
+		delete(patch, "algorithm")
 	}
 }

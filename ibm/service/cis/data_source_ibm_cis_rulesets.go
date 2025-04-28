@@ -526,18 +526,33 @@ func flattenCISRulesetsRuleActionParameters(rulesetsRuleActionParameterObj *rule
 	if _, ok := actionParametersOutput["rulesets"]; ok {
 		resultOutput[CISRulesetList] = rulesetsRuleActionParameterObj.Rulesets
 	}
-	if val, ok := actionParametersOutput["response"]; ok {
-		response := map[string]interface{}{}
-
-		res, _ := json.Marshal(val)
-		json.Unmarshal(res, &response)
-
-		resultOutput[CISRulesetsRuleActionParametersResponse] = response
+	if _, ok := actionParametersOutput["response"]; ok {
+		flattenCISRulesetsRuleActionParameterResponse := flattenCISRulesetsRuleActionParameterResponse(rulesetsRuleActionParameterObj.Response)
+		resultOutput[CISRulesetsRuleActionParametersResponse] = []map[string]interface{}{flattenCISRulesetsRuleActionParameterResponse}
 	}
-
 	if _, ok := actionParametersOutput["overrides"]; ok {
 		flattenCISRulesetsRuleActionParameterOverrides := flattenCISRulesetsRuleActionParameterOverrides(rulesetsRuleActionParameterObj.Overrides)
 		resultOutput[CISRulesetOverrides] = []map[string]interface{}{flattenCISRulesetsRuleActionParameterOverrides}
+	}
+
+	return resultOutput
+}
+
+func flattenCISRulesetsRuleActionParameterResponse(rulesetsRuleActionParameterResponseObj *rulesetsv1.ActionParametersResponse) map[string]interface{} {
+	actionParameterResponseOutput := map[string]interface{}{}
+	resultOutput := map[string]interface{}{}
+
+	res, _ := json.Marshal(rulesetsRuleActionParameterResponseObj)
+	json.Unmarshal(res, &actionParameterResponseOutput)
+
+	if val, ok := actionParameterResponseOutput["content"]; ok {
+		resultOutput[CISRulesetsRuleActionParametersResponseContent] = val.(string)
+	}
+	if val, ok := actionParameterResponseOutput["content_type"]; ok {
+		resultOutput[CISRulesetsRuleActionParametersResponseContentType] = val.(string)
+	}
+	if val, ok := actionParameterResponseOutput["status_code"]; ok {
+		resultOutput[CISRulesetsRuleActionParametersResponseStatusCode] = val.(float64)
 	}
 
 	return resultOutput
