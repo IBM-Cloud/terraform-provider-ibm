@@ -47,4 +47,5 @@ In addition to all argument references list, you can access the following attrib
    Nested scheme for `platform_options`:
    - `disk_encryption_key_crn`-  (String) The CRN of disk encryption key.
    - `backup_encryption_key_crn`-  (String) The CRN of backup encryption key.
+   - `subscription_id` - (String) ID which is required for subscription plans, for example: PerformanceSubscription.
 

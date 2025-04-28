@@ -192,6 +192,8 @@ resource "ibm_dns_custom_resolver" "test" {
   name        = "testCR-TF"
   instance_id = ibm_resource_instance.test-pdns-instance.guid
   description = "testdescription-CR"
+  profile = "essential"
+  allow_disruptive_updates = false
   locations {
     subnet_crn  = "crn:v1:staging:public:is:us-south-1:a/01652b251c3ae2787110a995d8db0135::subnet:0716-6c3a997d-72b2-47f6-8788-6bd95e1bdb03"
     enabled     = false
@@ -203,6 +205,8 @@ resource "ibm_dns_custom_resolver" "test" {
   description     = "new test CR TF-1"
   high_availability = true
   enabled       = true
+  profile = "essential"
+  allow_disruptive_updates = false
   locations {
     subnet_crn = "crn:v1:staging:public:is:us-south-1:a/01652b251c3ae2787110a995d8db0135::subnet:0716-a094c4e8-02cd-4b04-858d-3432"
     enabled     = false
@@ -221,14 +225,6 @@ output "ibm_dns_custom_resolvers_output" {
   value = data.ibm_dns_custom_resolvers.test-cr.custom_resolvers
 }
 
-resource "ibm_dns_custom_resolver_location" "test" {
-  instance_id   = ibm_resource_instance.test-pdns-instance.guid
-  resolver_id   = ibm_dns_custom_resolver.test.custom_resolver_id
-  subnet_crn    = "crn:v1:staging:public:is:us-south-1:a/01652b251c3ae2787110a995d8db0135::subnet:0716-a094c4e8-02cd-4b04-858d-343"
-  enabled       = true
-  cr_enabled    = true
-} 
-
 resource "ibm_dns_custom_resolver_forwarding_rule" "test" {
   instance_id = ibm_resource_instance.test-pdns-instance.guid
   resolver_id = ibm_dns_custom_resolver.test.custom_resolver_id
@@ -236,6 +232,12 @@ resource "ibm_dns_custom_resolver_forwarding_rule" "test" {
   type = "zone"
   match = "test.example.com"
   forward_to = ["168.20.22.122"]
+  views   {
+    name = "view-example-name"
+    description = "view description"
+    expression = "ipInRange(source.ip, '10.240.0.0/24') || ipInRange(source.ip, '10.240.1.0/24')"
+    forward_to = ["10.240.2.6","10.240.2.7"]
+  }
 }
 
 data "ibm_dns_custom_resolver_forwarding_rules" "test-fr" {

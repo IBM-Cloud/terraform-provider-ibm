@@ -48,7 +48,8 @@ const (
 	isLBSecurityGroups               = "security_groups"
 	isLBSecurityGroupsSupported      = "security_group_supported"
 
-	isLBAccessTags = "access_tags"
+	isAttachedLoadBalancerPoolMembers = "attached_load_balancer_pool_members"
+	isLBAccessTags                    = "access_tags"
 )
 
 func ResourceIBMISLB() *schema.Resource {
@@ -100,7 +101,39 @@ func ResourceIBMISLB() *schema.Resource {
 				ValidateFunc: validate.InvokeValidator("ibm_is_lb", isLBType),
 				Description:  "Load Balancer type",
 			},
-
+			isAttachedLoadBalancerPoolMembers: {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The load balancer pool members attached to this load balancer.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"deleted": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "If present, this property indicates the referenced resource has been deleted and providessome supplementary information.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"more_info": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Link to documentation about deleted resources.",
+									},
+								},
+							},
+						},
+						"href": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The URL for this load balancer pool member.",
+						},
+						"id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The unique identifier for this load balancer pool member.",
+						},
+					},
+				},
+			},
 			isLBAvailability: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -146,7 +179,12 @@ func ResourceIBMISLB() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-
+			"failsafe_policy_actions": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The supported `failsafe_policy.action` values for this load balancer's pools.",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+			},
 			isLBCrn: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -553,6 +591,9 @@ func lbGet(d *schema.ResourceData, meta interface{}, id string) error {
 	if lb.Availability != nil {
 		d.Set(isLBAvailability, *lb.Availability)
 	}
+	if lb.AttachedLoadBalancerPoolMembers != nil {
+		d.Set(isAttachedLoadBalancerPoolMembers, dataSourceAttachedLoadBalancerPoolFlattenMembers(lb.AttachedLoadBalancerPoolMembers))
+	}
 	if lb.AccessMode != nil {
 		d.Set(isLBAccessMode, *lb.AccessMode)
 	}
@@ -585,6 +626,11 @@ func lbGet(d *schema.ResourceData, meta interface{}, id string) error {
 	}
 	if lb.RouteMode != nil {
 		d.Set(isLBRouteMode, *lb.RouteMode)
+	}
+
+	if err = d.Set("failsafe_policy_actions", lb.FailsafePolicyActions); err != nil {
+		err = fmt.Errorf("Error setting failsafe_policy_actions: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb", "read", "set-failsafe_policy_actions")
 	}
 	d.Set(isLBStatus, *lb.ProvisioningStatus)
 	d.Set(isLBCrn, *lb.CRN)

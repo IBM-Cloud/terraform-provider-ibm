@@ -79,7 +79,7 @@ func testAccCheckIamAccessTagExists(n string) resource.TestCheckFunc {
 		var tagName string
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return flex.FmtErrorf("Not found: %s", n)
 		}
 
 		iamAccessTagRegex, err := regexp.Compile(iamAccessTagRegex)
@@ -93,7 +93,7 @@ func testAccCheckIamAccessTagExists(n string) resource.TestCheckFunc {
 
 		gtClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).GlobalTaggingAPIv1()
 		if err != nil {
-			return fmt.Errorf("Error getting global tagging client settings: %s", err)
+			return flex.FmtErrorf("Error getting global tagging client settings: %s", err)
 		}
 		accessTagType := "access"
 		listTagsOptions := &globaltaggingv1.ListTagsOptions{
@@ -110,7 +110,7 @@ func testAccCheckIamAccessTagExists(n string) resource.TestCheckFunc {
 		}
 		existingAccessTags := flex.NewStringSet(flex.ResourceIBMVPCHash, taglist)
 		if !existingAccessTags.Contains(tagName) {
-			return fmt.Errorf(
+			return flex.FmtErrorf(
 				"Error on get of resource tags (%s) : %s", tagName, err)
 		}
 		return nil

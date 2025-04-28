@@ -151,6 +151,40 @@ func DataSourceIBMISLB() *schema.Resource {
 				Description: "Load Balancer subnets list",
 			},
 
+			isAttachedLoadBalancerPoolMembers: {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The load balancer pool members attached to this load balancer.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"deleted": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "If present, this property indicates the referenced resource has been deleted and providessome supplementary information.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"more_info": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Link to documentation about deleted resources.",
+									},
+								},
+							},
+						},
+						"href": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The URL for this load balancer pool member.",
+						},
+						"id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The unique identifier for this load balancer pool member.",
+						},
+					},
+				},
+			},
+
 			isLBSecurityGroups: {
 				Type:        schema.TypeSet,
 				Computed:    true,
@@ -320,6 +354,12 @@ func DataSourceIBMISLB() *schema.Resource {
 					},
 				},
 			},
+			"failsafe_policy_actions": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The supported `failsafe_policy.action` values for this load balancer's pools.",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+			},
 			flex.ResourceControllerURL: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -477,6 +517,9 @@ func lbGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 				d.Set(isLBSubnets, subnetList)
 			}
 
+			if lb.AttachedLoadBalancerPoolMembers != nil {
+				d.Set(isAttachedLoadBalancerPoolMembers, dataSourceAttachedLoadBalancerPoolFlattenMembers(lb.AttachedLoadBalancerPoolMembers))
+			}
 			d.Set(isLBSecurityGroupsSupported, false)
 			if lb.SecurityGroups != nil {
 				securitygroupList := make([]string, 0)
@@ -500,6 +543,10 @@ func lbGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 				}
 				d.Set(isLBListeners, listenerList)
 			}
+			if err = d.Set("failsafe_policy_actions", lb.FailsafePolicyActions); err != nil {
+				err = fmt.Errorf("Error setting failsafe_policy_actions: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb", "read", "set-failsafe_policy_actions")
+			}
 			listLoadBalancerPoolsOptions := &vpcv1.ListLoadBalancerPoolsOptions{}
 			listLoadBalancerPoolsOptions.SetLoadBalancerID(*lb.ID)
 			poolsResult, _, _ := sess.ListLoadBalancerPools(listLoadBalancerPoolsOptions)
@@ -517,17 +564,18 @@ func lbGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 					pool[poolProvisioningStatus] = *p.ProvisioningStatus
 					pool["name"] = *p.Name
 					if p.HealthMonitor != nil {
+						poolHealthMonitor := p.HealthMonitor.(*vpcv1.LoadBalancerPoolHealthMonitor)
 						healthMonitorInfo := make(map[string]interface{})
-						delayfinal := strconv.FormatInt(*(p.HealthMonitor.Delay), 10)
+						delayfinal := strconv.FormatInt(*(poolHealthMonitor.Delay), 10)
 						healthMonitorInfo[healthMonitorDelay] = delayfinal
-						maxRetriesfinal := strconv.FormatInt(*(p.HealthMonitor.MaxRetries), 10)
-						timeoutfinal := strconv.FormatInt(*(p.HealthMonitor.Timeout), 10)
+						maxRetriesfinal := strconv.FormatInt(*(poolHealthMonitor.MaxRetries), 10)
+						timeoutfinal := strconv.FormatInt(*(poolHealthMonitor.Timeout), 10)
 						healthMonitorInfo[healthMonitorMaxRetries] = maxRetriesfinal
 						healthMonitorInfo[healthMonitorTimeout] = timeoutfinal
-						if p.HealthMonitor.URLPath != nil {
-							healthMonitorInfo[healthMonitorURLPath] = *(p.HealthMonitor.URLPath)
+						if poolHealthMonitor.URLPath != nil {
+							healthMonitorInfo[healthMonitorURLPath] = *(poolHealthMonitor.URLPath)
 						}
-						healthMonitorInfo[healthMonitorType] = *(p.HealthMonitor.Type)
+						healthMonitorInfo[healthMonitorType] = *(poolHealthMonitor.Type)
 						pool[healthMonitor] = healthMonitorInfo
 					}
 
@@ -587,4 +635,41 @@ func lbGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 		}
 	}
 	return fmt.Errorf("[ERROR] No Load balancer found with name %s", name)
+}
+
+func dataSourceAttachedLoadBalancerPoolFlattenMembers(result []vpcv1.LoadBalancerPoolMemberReference) (members []map[string]interface{}) {
+	for _, membersItem := range result {
+		members = append(members, dataSourceAttachedLoadBalancerPoolMembersToMap(membersItem))
+	}
+
+	return members
+}
+
+func dataSourceAttachedLoadBalancerPoolMembersToMap(membersItem vpcv1.LoadBalancerPoolMemberReference) (membersMap map[string]interface{}) {
+	membersMap = map[string]interface{}{}
+
+	if membersItem.Deleted != nil {
+		deletedList := []map[string]interface{}{}
+		deletedMap := dataSourceAttachedLoadBalancerPoolMembersDeletedToMap(*membersItem.Deleted)
+		deletedList = append(deletedList, deletedMap)
+		membersMap["deleted"] = deletedList
+	}
+	if membersItem.Href != nil {
+		membersMap["href"] = membersItem.Href
+	}
+	if membersItem.ID != nil {
+		membersMap["id"] = membersItem.ID
+	}
+
+	return membersMap
+}
+
+func dataSourceAttachedLoadBalancerPoolMembersDeletedToMap(deletedItem vpcv1.Deleted) (deletedMap map[string]interface{}) {
+	deletedMap = map[string]interface{}{}
+
+	if deletedItem.MoreInfo != nil {
+		deletedMap["more_info"] = deletedItem.MoreInfo
+	}
+
+	return deletedMap
 }

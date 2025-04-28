@@ -36,7 +36,7 @@ func ResourceIBMPINetworkSecurityGroup() *schema.Resource {
 		},
 		CustomizeDiff: customdiff.Sequence(
 			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
-				return flex.ResourceTagsCustomizeDiff(diff)
+				return flex.ResourcePowerUserTagsCustomizeDiff(diff)
 			},
 		),
 		Schema: map[string]*schema.Schema{
@@ -55,6 +55,7 @@ func ResourceIBMPINetworkSecurityGroup() *schema.Resource {
 				ValidateFunc: validation.NoZeroValues,
 			},
 			Arg_UserTags: {
+				Computed:    true,
 				Description: "The user tags associated with this resource.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Optional:    true,
@@ -66,6 +67,11 @@ func ResourceIBMPINetworkSecurityGroup() *schema.Resource {
 				Computed:    true,
 				Description: "The network security group's crn.",
 				Type:        schema.TypeString,
+			},
+			Attr_Default: {
+				Computed:    true,
+				Description: "Indicates if the network security group is the default network security group in the workspace.",
+				Type:        schema.TypeBool,
 			},
 			Attr_Members: {
 				Computed:    true,
@@ -80,6 +86,11 @@ func ResourceIBMPINetworkSecurityGroup() *schema.Resource {
 						Attr_MacAddress: {
 							Computed:    true,
 							Description: "The mac address of a network interface included if the type is network-interface.",
+							Type:        schema.TypeString,
+						},
+						Attr_NetworkInterfaceID: {
+							Computed:    true,
+							Description: "The network ID of a network interface included if the type is network-interface.",
 							Type:        schema.TypeString,
 						},
 						Attr_Target: {
@@ -279,6 +290,7 @@ func resourceIBMPINetworkSecurityGroupRead(ctx context.Context, d *schema.Resour
 		}
 		d.Set(Arg_UserTags, userTags)
 	}
+	d.Set(Attr_Default, networkSecurityGroup.Default)
 
 	if len(networkSecurityGroup.Members) > 0 {
 		members := []map[string]interface{}{}

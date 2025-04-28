@@ -16,6 +16,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -33,6 +34,11 @@ func ResourceIBMPISharedProcessorPool() *schema.Resource {
 			Update: schema.DefaultTimeout(60 * time.Minute),
 			Delete: schema.DefaultTimeout(60 * time.Minute),
 		},
+		CustomizeDiff: customdiff.Sequence(
+			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
+				return flex.ResourcePowerUserTagsCustomizeDiff(diff)
+			},
+		),
 
 		Schema: map[string]*schema.Schema{
 			// Arguments
@@ -78,6 +84,7 @@ func ResourceIBMPISharedProcessorPool() *schema.Resource {
 				Type:        schema.TypeInt,
 			},
 			Arg_UserTags: {
+				Computed:    true,
 				Description: "The user tags attached to this resource.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Optional:    true,
@@ -99,6 +106,11 @@ func ResourceIBMPISharedProcessorPool() *schema.Resource {
 			Attr_CRN: {
 				Computed:    true,
 				Description: "The CRN of this resource.",
+				Type:        schema.TypeString,
+			},
+			Attr_DedicatedHostID: {
+				Computed:    true,
+				Description: "The dedicated host ID where the shared processor pool resides.",
 				Type:        schema.TypeString,
 			},
 			Attr_HostID: {
@@ -326,6 +338,7 @@ func resourceIBMPISharedProcessorPoolRead(ctx context.Context, d *schema.Resourc
 			d.Set(Arg_SharedProcessorPoolPlacementGroups, pgIDs)
 		}
 	}
+	d.Set(Attr_DedicatedHostID, response.SharedProcessorPool.DedicatedHostID)
 	d.Set(Attr_HostID, response.SharedProcessorPool.HostID)
 	d.Set(Attr_Status, response.SharedProcessorPool.Status)
 	d.Set(Attr_StatusDetail, response.SharedProcessorPool.StatusDetail)

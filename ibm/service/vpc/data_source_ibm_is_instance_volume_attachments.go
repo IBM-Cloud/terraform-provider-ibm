@@ -38,6 +38,11 @@ func DataSourceIBMISInstanceVolumeAttachments() *schema.Resource {
 							Computed:    true,
 							Description: "The user-defined name for this volume attachment.",
 						},
+						"bandwidth": {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The maximum bandwidth (in megabits per second) for the volume when attached to this instance. This may be lower than the volume bandwidth depending on the configuration of the instance.",
+						},
 
 						isInstanceVolumeAttDevice: {
 							Type:        schema.TypeString,
@@ -137,6 +142,8 @@ func instanceGetVolumeAttachments(d *schema.ResourceData, meta interface{}, inst
 	for _, volumeAtt := range allrecs {
 		currentVolAtt := map[string]interface{}{}
 		currentVolAtt[isInstanceVolAttName] = *volumeAtt.Name
+		// bandwidth changes
+		currentVolAtt["bandwidth"] = *volumeAtt.Bandwidth
 		currentVolAtt[isInstanceVolumeDeleteOnInstanceDelete] = *volumeAtt.DeleteVolumeOnInstanceDelete
 		currentVolAtt[isInstanceVolumeAttDevice] = *volumeAtt.Device.ID
 		currentVolAtt[isInstanceVolumeAttHref] = *volumeAtt.Href

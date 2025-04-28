@@ -71,6 +71,9 @@ const (
 	cisDomainSettingsChallengeTTLValidatorID    = "challenge_ttl"
 	cisDomainSettingsMaxUploadValidatorID       = "max_upload"
 	cisDomainSettingsCipherValidatorID          = "cipher"
+	cisDomainSettingsProxyReadTimeout           = "proxy_read_timeout"
+	cisDomainSettingsOpportunisticOnion         = "opportunistic_onion"
+	cisDomainSettingsLogRetention               = "log_retention"
 )
 
 func ResourceIBMCISSettings() *schema.Resource {
@@ -369,6 +372,15 @@ func ResourceIBMCISSettings() *schema.Resource {
 					ibmCISDomainSettings,
 					cisDomainSettingsOriginPostQuantumEncryption),
 			},
+			cisDomainSettingsProxyReadTimeout: {
+				Type:        schema.TypeInt,
+				Description: "Update proxy read timeout setting",
+				Optional:    true,
+				Computed:    true,
+				ValidateFunc: validate.InvokeValidator(
+					ibmCISDomainSettings,
+					cisDomainSettingsProxyReadTimeout),
+			},
 			cisDomainSettingsMinify: {
 				Type:        schema.TypeList,
 				Description: "Minify setting",
@@ -473,6 +485,21 @@ func ResourceIBMCISSettings() *schema.Resource {
 						},
 					},
 				},
+			},
+			cisDomainSettingsOpportunisticOnion: {
+				Type:        schema.TypeString,
+				Description: "Opportunistic onion setting",
+				Optional:    true,
+				Computed:    true,
+				ValidateFunc: validate.InvokeValidator(
+					ibmCISDomainSettings,
+					cisDomainSettingsOpportunisticOnion),
+			},
+			cisDomainSettingsLogRetention: {
+				Type:        schema.TypeBool,
+				Description: "Log Retention setting",
+				Optional:    true,
+				Computed:    true,
 			},
 		},
 
@@ -762,6 +789,21 @@ func ResourceIBMCISDomainSettingValidator() *validate.ResourceValidator {
 			Type:                       validate.TypeString,
 			Required:                   true,
 			AllowedValues:              quantumEncryption})
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 cisDomainSettingsProxyReadTimeout,
+			ValidateFunctionIdentifier: validate.IntBetween,
+			Type:                       validate.TypeInt,
+			Optional:                   true,
+			MinValue:                   "1",
+			MaxValue:                   "6000"})
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 cisDomainSettingsOpportunisticOnion,
+			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			AllowedValues:              "on, off"})
 	ibmCISDomainSettingResourceValidator := validate.ResourceValidator{
 		ResourceName: ibmCISDomainSettings,
 		Schema:       validateSchema}
@@ -802,6 +844,9 @@ var settingsList = []string{
 	cisDomainSettingsCipher,
 	cisDomainSettingsOriginMaxHTTPVersion,
 	cisDomainSettingsOriginPostQuantumEncryption,
+	cisDomainSettingsProxyReadTimeout,
+	cisDomainSettingsOpportunisticOnion,
+	cisDomainSettingsLogRetention,
 }
 
 func resourceCISSettingsUpdate(d *schema.ResourceData, meta interface{}) error {
@@ -1068,6 +1113,14 @@ func resourceCISSettingsUpdate(d *schema.ResourceData, meta interface{}) error {
 					_, resp, err = cisClient.UpdateOriginPostQuantumEncryption(opt)
 				}
 			}
+		case cisDomainSettingsProxyReadTimeout:
+			if d.HasChange(item) {
+				if v, ok := d.GetOk(item); ok {
+					opt := cisClient.NewUpdateProxyReadTimeoutOptions()
+					opt.SetValue(float64(v.(int)))
+					_, resp, err = cisClient.UpdateProxyReadTimeout(opt)
+				}
+			}
 		case cisDomainSettingsMinify:
 			if d.HasChange(item) {
 				if v, ok := d.GetOk(item); ok {
@@ -1126,6 +1179,22 @@ func resourceCISSettingsUpdate(d *schema.ResourceData, meta interface{}) error {
 					opt := cisClient.NewUpdateMobileRedirectOptions()
 					opt.SetValue(mobileOpt)
 					_, resp, err = cisClient.UpdateMobileRedirect(opt)
+				}
+			}
+		case cisDomainSettingsOpportunisticOnion:
+			if d.HasChange(item) {
+				if v, ok := d.GetOk(item); ok {
+					opt := cisClient.NewUpdateOpportunisticOnionOptions()
+					opt.SetValue(v.(string))
+					_, resp, err = cisClient.UpdateOpportunisticOnion(opt)
+				}
+			}
+		case cisDomainSettingsLogRetention:
+			if d.HasChange(item) {
+				if v, ok := d.GetOk(item); ok {
+					opt := cisClient.NewUpdateLogRetentionOptions(*cisClient.Crn, *cisClient.ZoneIdentifier)
+					opt.SetFlag(v.(bool))
+					_, resp, err = cisClient.UpdateLogRetention(opt)
 				}
 			}
 		}
@@ -1421,6 +1490,7 @@ func resourceCISSettingsRead(d *schema.ResourceData, meta interface{}) error {
 			}
 			settingResponse = resp
 			settingErr = err
+
 		case cisDomainSettingsOriginPostQuantumEncryption:
 			opt := cisClient.NewGetOriginPostQuantumEncryptionOptions()
 			result, resp, err := cisClient.GetOriginPostQuantumEncryption(opt)
@@ -1430,6 +1500,14 @@ func resourceCISSettingsRead(d *schema.ResourceData, meta interface{}) error {
 			settingResponse = resp
 			settingErr = err
 
+		case cisDomainSettingsProxyReadTimeout:
+			opt := cisClient.NewGetProxyReadTimeoutOptions()
+			result, resp, err := cisClient.GetProxyReadTimeout(opt)
+			if err == nil {
+				d.Set(cisDomainSettingsProxyReadTimeout, result.Result.Value)
+			}
+			settingResponse = resp
+			settingErr = err
 		case cisDomainSettingsMinify:
 			opt := cisClient.NewGetMinifyOptions()
 			result, resp, err := cisClient.GetMinify(opt)
@@ -1495,6 +1573,23 @@ func resourceCISSettingsRead(d *schema.ResourceData, meta interface{}) error {
 					}
 					d.Set(cisDomainSettingsMobileRedirect, []interface{}{uri})
 				}
+			}
+			settingResponse = resp
+			settingErr = err
+
+		case cisDomainSettingsOpportunisticOnion:
+			opt := cisClient.NewGetOpportunisticOnionOptions()
+			result, resp, err := cisClient.GetOpportunisticOnion(opt)
+			if err == nil {
+				d.Set(cisDomainSettingsOpportunisticOnion, result.Result.Value)
+			}
+			settingResponse = resp
+			settingErr = err
+		case cisDomainSettingsLogRetention:
+			opt := cisClient.NewGetLogRetentionOptions(*cisClient.Crn, *cisClient.ZoneIdentifier)
+			result, resp, err := cisClient.GetLogRetention(opt)
+			if err == nil {
+				d.Set(cisDomainSettingsLogRetention, result.Result.Flag)
 			}
 			settingResponse = resp
 			settingErr = err

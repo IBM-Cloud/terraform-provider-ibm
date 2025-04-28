@@ -39,6 +39,11 @@ func DataSourceIBMPIInstance() *schema.Resource {
 				Description: "The CRN of this resource.",
 				Type:        schema.TypeString,
 			},
+			Attr_DedicatedHostID: {
+				Computed:    true,
+				Description: "The dedicated host ID where the shared processor pool resides.",
+				Type:        schema.TypeString,
+			},
 			Attr_DeploymentType: {
 				Computed:    true,
 				Description: "The custom deployment type.",
@@ -135,21 +140,32 @@ func DataSourceIBMPIInstance() *schema.Resource {
 							Description: "The MAC address of the instance.",
 							Type:        schema.TypeString,
 						},
-						Attr_Macaddress: {
-							Computed:    true,
-							Deprecated:  "Deprecated, use mac_address instead",
-							Description: "The MAC address of the instance.",
-							Type:        schema.TypeString,
-						},
 						Attr_NetworkID: {
 							Computed:    true,
 							Description: "The network ID of the instance.",
+							Type:        schema.TypeString,
+						},
+						Attr_NetworkInterfaceID: {
+							Computed:    true,
+							Description: "ID of the network interface.",
 							Type:        schema.TypeString,
 						},
 						Attr_NetworkName: {
 							Computed:    true,
 							Description: "The network name of the instance.",
 							Type:        schema.TypeString,
+						},
+						Attr_NetworkSecurityGroupIDs: {
+							Computed:    true,
+							Description: "IDs of the network necurity groups that the network interface is a member of.",
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Type:        schema.TypeSet,
+						},
+						Attr_NetworkSecurityGroupsHref: {
+							Computed:    true,
+							Description: "Links to the network security groups that the network interface is a member of.",
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Type:        schema.TypeList,
 						},
 						Attr_Type: {
 							Computed:    true,
@@ -232,6 +248,25 @@ func DataSourceIBMPIInstance() *schema.Resource {
 				Description: "The virtual cores that are assigned to the instance.",
 				Type:        schema.TypeInt,
 			},
+			Attr_VirtualSerialNumber: {
+				Computed:    true,
+				Description: "Virtual Serial Number information",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						Attr_Description: {
+							Computed:    true,
+							Description: "Description of the Virtual Serial Number",
+							Type:        schema.TypeString,
+						},
+						Attr_Serial: {
+							Computed:    true,
+							Description: "Virtual serial number.",
+							Type:        schema.TypeString,
+						},
+					},
+				},
+				Type: schema.TypeList,
+			},
 			Attr_Volumes: {
 				Computed:    true,
 				Description: "List of volume IDs that are attached to the instance.",
@@ -266,6 +301,7 @@ func dataSourceIBMPIInstancesRead(ctx context.Context, d *schema.ResourceData, m
 		}
 		d.Set(Attr_UserTags, tags)
 	}
+	d.Set(Attr_DedicatedHostID, powervmdata.DedicatedHostID)
 	d.Set(Attr_DeploymentType, powervmdata.DeploymentType)
 	d.Set(Attr_LicenseRepositoryCapacity, powervmdata.LicenseRepositoryCapacity)
 	d.Set(Attr_MaxMem, powervmdata.Maxmem)
@@ -310,6 +346,9 @@ func dataSourceIBMPIInstancesRead(ctx context.Context, d *schema.ResourceData, m
 	}
 	if powervmdata.Fault != nil {
 		d.Set(Attr_Fault, flattenPvmInstanceFault(powervmdata.Fault))
+	}
+	if powervmdata.VirtualSerialNumber != nil {
+		d.Set(Attr_VirtualSerialNumber, flattenVirtualSerialNumberToList(powervmdata.VirtualSerialNumber))
 	}
 
 	return nil

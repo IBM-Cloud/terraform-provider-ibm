@@ -224,6 +224,7 @@ func ResourceIbmLogsAlert() *schema.Resource {
 													Type:        schema.TypeList,
 													MaxItems:    1,
 													Optional:    true,
+													Computed:    true,
 													Description: "Deadman configuration.",
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
@@ -1250,7 +1251,7 @@ func ResourceIbmLogsAlert() *schema.Resource {
 			},
 			"notification_groups": &schema.Schema{
 				Type:        schema.TypeList,
-				Required:    true,
+				Optional:    true,
 				Description: "Alert notification groups.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -1604,7 +1605,10 @@ func resourceIbmLogsAlertCreate(context context.Context, d *schema.ResourceData,
 
 	region := getLogsInstanceRegion(logsClient, d)
 	instanceId := d.Get("instance_id").(string)
-	logsClient = getClientWithLogsInstanceEndpoint(logsClient, instanceId, region, getLogsInstanceEndpointType(logsClient, d))
+	logsClient, err = getClientWithLogsInstanceEndpoint(logsClient, meta, instanceId, region, getLogsInstanceEndpointType(logsClient, d))
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("Unable to get updated logs instance client"))
+	}
 
 	createAlertOptions := &logsv0.CreateAlertOptions{}
 
@@ -1706,7 +1710,7 @@ func resourceIbmLogsAlertRead(context context.Context, d *schema.ResourceData, m
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
-	logsClient, region, instanceId, alertId, err := updateClientURLWithInstanceEndpoint(d.Id(), logsClient, d)
+	logsClient, region, instanceId, alertId, err := updateClientURLWithInstanceEndpoint(d.Id(), meta, logsClient, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -1776,13 +1780,16 @@ func resourceIbmLogsAlertRead(context context.Context, d *schema.ResourceData, m
 	if err = d.Set("notification_groups", notificationGroups); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting notification_groups: %s", err))
 	}
-	filtersMap, err := ResourceIbmLogsAlertAlertsV1AlertFiltersToMap(alert.Filters)
-	if err != nil {
-		return diag.FromErr(err)
+	if alert.Filters != nil {
+		filtersMap, err := ResourceIbmLogsAlertAlertsV1AlertFiltersToMap(alert.Filters)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if err = d.Set("filters", []map[string]interface{}{filtersMap}); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting filters: %s", err))
+		}
 	}
-	if err = d.Set("filters", []map[string]interface{}{filtersMap}); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting filters: %s", err))
-	}
+
 	if !core.IsNil(alert.ActiveWhen) {
 		activeWhenMap, err := ResourceIbmLogsAlertAlertsV1AlertActiveWhenToMap(alert.ActiveWhen)
 		if err != nil {
@@ -1841,7 +1848,7 @@ func resourceIbmLogsAlertUpdate(context context.Context, d *schema.ResourceData,
 		return tfErr.GetDiag()
 	}
 
-	logsClient, _, _, alertId, err := updateClientURLWithInstanceEndpoint(d.Id(), logsClient, d)
+	logsClient, _, _, alertId, err := updateClientURLWithInstanceEndpoint(d.Id(), meta, logsClient, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -1971,7 +1978,7 @@ func resourceIbmLogsAlertDelete(context context.Context, d *schema.ResourceData,
 		return tfErr.GetDiag()
 	}
 
-	logsClient, _, _, alertId, err := updateClientURLWithInstanceEndpoint(d.Id(), logsClient, d)
+	logsClient, _, _, alertId, err := updateClientURLWithInstanceEndpoint(d.Id(), meta, logsClient, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}

@@ -80,6 +80,7 @@ Extra attributes when `version` is provide.
           - `enabled` (Boolean) Enables/Disables the rule.
           - `action` (String) Action of the rule.
           - `sensitivity_level` (String) Defines the sensitivity level of the rule.
+          - `score_threshold` (Int) Defines the score threshold of the rule.
         - `categories` (List)
           
           Nested scheme of `categories`

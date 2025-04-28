@@ -7,22 +7,26 @@ description: |-
 ---
 
 # ibm_pi_cloud_instance
+
 Retrieve information about an existing IBM Power Virtual Server Cloud Instance as a read-only data source. For more information, about IBM power virtual server cloud, see [getting started with IBM Power Systems Virtual Servers](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-getting-started).
 
-## Example usage
+## Example Usage
+
 ```terraform
 data "ibm_pi_cloud_instance" "ds_cloud_instance" {
   pi_cloud_instance_id = "49fba6c9-23f8-40bc-9899-aca322ee7d5b"
 }
 ```
 
-**Notes**
+### Notes
+
 - Please find [supported Regions](https://cloud.ibm.com/apidocs/power-cloud#endpoint) for endpoints.
 - If a Power cloud instance is provisioned at `lon04`, The provider level attributes should be as follows:
   - `region` - `lon`
   - `zone` - `lon04`
 
 Example usage:
+
   ```terraform
     provider "ibm" {
       region    =   "lon"
@@ -30,12 +34,14 @@ Example usage:
     }
   ```
   
-## Argument reference
-Review the argument reference that you can specify for your data source. 
+## Argument Reference
 
-- `pi_cloud_instance_id` - (Required, string) The GUID of the service instance associated with an account. 
+Review the argument reference that you can specify for your data source.
 
-## Attribute reference
+- `pi_cloud_instance_id` - (Required, string) The GUID of the service instance associated with an account.
+
+## Attribute Reference
+
 In addition to the argument reference list, you can access the following attribute references after your data source is created.
 
 - `capabilities` - (String) Lists the capabilities for this cloud instance.

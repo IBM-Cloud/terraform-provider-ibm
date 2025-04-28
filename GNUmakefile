@@ -5,6 +5,7 @@ TEST_TIMEOUT?=700m
 VERSION ?= 0.0.1
 OS_ARCH := $(shell go env GOOS)_$(shell go env GOARCH)
 PLUGIN_DIR := $(HOME)/.terraform.d/plugins/registry.terraform.io/ibm-cloud/ibm/$(VERSION)/$(OS_ARCH)
+TEST_NAME ?= ""
 
 default: build
 
@@ -35,6 +36,14 @@ test: fmtcheck
 
 testacc: fmtcheck
 	TF_ACC=1 go test $(TEST) -v $(TESTARGS) -timeout $(TEST_TIMEOUT) 
+
+test-vpc:
+	@if [ "$(TEST_NAME)" = "" ]; then \
+		echo "Error: Please provide a test name using TEST_NAME=YourTestName"; \
+		exit 1; \
+	fi
+	@echo "Running VPC test: $(TEST_NAME)"
+	@$(MAKE) testacc TEST=./ibm/service/vpc TESTARGS='-run=$(TEST_NAME)'
 
 testrace: fmtcheck
 	TF_ACC= go test -race $(TEST) $(TESTARGS)

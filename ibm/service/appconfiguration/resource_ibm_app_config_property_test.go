@@ -85,17 +85,17 @@ func testAccCheckIbmAppConfigPropertyExists(n string, obj appconfigurationv1.Pro
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return flex.FmtErrorf("Not found: %s", n)
 		}
 
 		parts, err := flex.IdParts(rs.Primary.ID)
 		if err != nil {
-			return err
+			return flex.FmtErrorf(fmt.Sprintf("%s", err))
 		}
 
 		appconfigClient, err := getAppConfigClient(acc.TestAccProvider.Meta(), parts[0])
 		if err != nil {
-			return err
+			return flex.FmtErrorf(fmt.Sprintf("%s", err))
 		}
 		options := &appconfigurationv1.GetPropertyOptions{}
 
@@ -104,7 +104,7 @@ func testAccCheckIbmAppConfigPropertyExists(n string, obj appconfigurationv1.Pro
 
 		property, _, err := appconfigClient.GetProperty(options)
 		if err != nil {
-			return err
+			return flex.FmtErrorf(fmt.Sprintf("%s", err))
 		}
 
 		obj = *property
@@ -119,12 +119,12 @@ func testAccCheckIbmAppConfigPropertyDestroy(s *terraform.State) error {
 		}
 		parts, err := flex.IdParts(rs.Primary.ID)
 		if err != nil {
-			return err
+			return flex.FmtErrorf(fmt.Sprintf("%s", err))
 		}
 
 		appconfigClient, err := getAppConfigClient(acc.TestAccProvider.Meta(), parts[0])
 		if err != nil {
-			return err
+			return flex.FmtErrorf(fmt.Sprintf("%s", err))
 		}
 		options := &appconfigurationv1.GetPropertyOptions{}
 
@@ -135,9 +135,9 @@ func testAccCheckIbmAppConfigPropertyDestroy(s *terraform.State) error {
 		_, response, err := appconfigClient.GetProperty(options)
 
 		if err == nil {
-			return fmt.Errorf("app_config_property still exists: %s", rs.Primary.ID)
+			return flex.FmtErrorf("app_config_property still exists: %s", rs.Primary.ID)
 		} else if response.StatusCode != 404 {
-			return fmt.Errorf("Error checking for app_config_property (%s) has been destroyed: %s", rs.Primary.ID, err)
+			return flex.FmtErrorf("Error checking for app_config_property (%s) has been destroyed: %s", rs.Primary.ID, err)
 		}
 	}
 

@@ -215,7 +215,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				ValidateFunc: validation.All(
-					validation.StringLenBetween(15, 32),
+					validation.StringLenBetween(15, 72),
 					DatabaseUserPasswordValidator("database"),
 				),
 				Sensitive: true,
@@ -241,11 +241,11 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				Description: "The configuration schema in JSON format",
 			},
 			"version": {
-				Description:      "The database version to provision if specified",
-				Type:             schema.TypeString,
-				Optional:         true,
-				Computed:         true,
-				DiffSuppressFunc: flex.ApplyOnce,
+				Description: "The database version to provision if specified",
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				ForceNew:    true,
 			},
 			"service_endpoints": {
 				Description:  "Types of the service endpoints. Possible values are 'public', 'private', 'public-and-private'.",
@@ -1177,59 +1177,7 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 		rsInst.ResourceGroup = &defaultRg
 	}
 
-	initialNodeCount, err := getInitialNodeCount(serviceName, plan, meta)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
 	params := Params{}
-	if group, ok := d.GetOk("group"); ok {
-		groups := expandGroups(group.(*schema.Set).List())
-		var memberGroup *Group
-		var nodeCount = initialNodeCount
-		for _, g := range groups {
-			if g.ID == "member" {
-				memberGroup = g
-				break
-			}
-		}
-
-		if remoteLeader, ok := d.GetOk("remote_leader_id"); ok {
-			if remoteLeaderStr, ok := remoteLeader.(string); ok {
-				groupsResponse, _ := getGroups(remoteLeaderStr, meta)
-				currentGroups := normalizeGroups(groupsResponse)
-
-				for _, g := range groups {
-					var currentGroup *Group
-
-					for _, cg := range currentGroups {
-						if cg.ID == g.ID {
-							currentGroup = &cg
-							nodeCount = currentGroup.Members.Allocation
-						}
-					}
-				}
-			}
-		}
-
-		if memberGroup != nil {
-			if memberGroup.Memory != nil {
-				params.Memory = memberGroup.Memory.Allocation * nodeCount
-			}
-
-			if memberGroup.Disk != nil {
-				params.Disk = memberGroup.Disk.Allocation * nodeCount
-			}
-
-			if memberGroup.CPU != nil {
-				params.CPU = memberGroup.CPU.Allocation * nodeCount
-			}
-
-			if memberGroup.HostFlavor != nil {
-				params.HostFlavor = memberGroup.HostFlavor.ID
-			}
-		}
-	}
 	if version, ok := d.GetOk("version"); ok {
 		params.Version = version.(string)
 	}
@@ -1265,6 +1213,64 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 
 	if offlineRestore, ok := d.GetOk("offline_restore"); ok {
 		params.OfflineRestore = offlineRestore.(bool)
+	}
+
+	var initialNodeCount int
+	var sourceCRN string
+
+	if params.PITRDeploymentID != "" {
+		sourceCRN = params.PITRDeploymentID
+	}
+
+	if params.RemoteLeaderID != "" {
+		sourceCRN = params.RemoteLeaderID
+	}
+
+	if sourceCRN != "" {
+		group, err := getMemberGroup(sourceCRN, meta)
+
+		if err != nil {
+			return diag.FromErr(
+				fmt.Errorf("[ERROR] Error fetching source formation group: %s", err)) // raise error
+		}
+
+		if group != nil {
+			initialNodeCount = group.Members.Allocation
+		}
+	} else {
+		initialNodeCount, err = getInitialNodeCount(serviceName, plan, meta)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	var memberGroup *Group
+
+	if group, ok := d.GetOk("group"); ok {
+		groups := expandGroups(group.(*schema.Set).List())
+
+		for _, g := range groups {
+			if g.ID == "member" {
+				memberGroup = g
+				break
+			}
+		}
+	}
+
+	if memberGroup != nil && memberGroup.Memory != nil {
+		params.Memory = memberGroup.Memory.Allocation * initialNodeCount
+	}
+
+	if memberGroup != nil && memberGroup.Disk != nil {
+		params.Disk = memberGroup.Disk.Allocation * initialNodeCount
+	}
+
+	if memberGroup != nil && memberGroup.CPU != nil {
+		params.CPU = memberGroup.CPU.Allocation * initialNodeCount
+	}
+
+	if memberGroup != nil && memberGroup.HostFlavor != nil {
+		params.HostFlavor = memberGroup.HostFlavor.ID
 	}
 
 	serviceEndpoint := d.Get("service_endpoints").(string)
@@ -1332,7 +1338,7 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 			if g.CPU != nil && g.CPU.Allocation*nodeCount != currentGroup.CPU.Allocation {
 				groupScaling.CPU = &clouddatabasesv5.GroupScalingCPU{AllocationCount: core.Int64Ptr(int64(g.CPU.Allocation * nodeCount))}
 			}
-			if g.HostFlavor != nil && g.HostFlavor.ID != currentGroup.HostFlavor.ID {
+			if g.HostFlavor != nil {
 				groupScaling.HostFlavor = &clouddatabasesv5.GroupScalingHostFlavor{ID: core.StringPtr(g.HostFlavor.ID)}
 			}
 
@@ -1621,14 +1627,6 @@ func resourceIBMDatabaseInstanceRead(context context.Context, d *schema.Resource
 	if instance.Parameters != nil {
 		if endpoint, ok := instance.Parameters["service-endpoints"]; ok {
 			d.Set("service_endpoints", endpoint)
-		}
-
-		if encryptionInstance, ok := instance.Parameters["disk_encryption_instance_crn"]; ok {
-			d.Set("key_protect_instance", encryptionInstance)
-		}
-
-		if encryptionKey, ok := instance.Parameters["disk_encryption_key_crn"]; ok {
-			d.Set("key_protect_key", encryptionKey)
 		}
 	}
 
@@ -2983,14 +2981,22 @@ func getCpuEnforcementRatios(service string, plan string, hostFlavor string, met
 	return nil, 0, 0
 }
 
-func validateVersionDiff(_ context.Context, diff *schema.ResourceDiff, meta interface{}) (err error) {
-	version, configVersion := diff.GetChange("version")
+func getMemberGroup(instanceCRN string, meta interface{}) (*Group, error) {
+	groupsResponse, err := getGroups(instanceCRN, meta)
 
-	if version != configVersion {
-		return fmt.Errorf("[ERROR] The version in your configuration file (%s) does not match the version of your remote instance (%s). Make sure that you have the same version in your configuration as the version on the remote instance. Learn more about the versioning policy here: https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-versioning-policy ", configVersion, version)
+	if err != nil {
+		return nil, err
 	}
 
-	return nil
+	currentGroups := normalizeGroups(groupsResponse)
+
+	for _, cg := range currentGroups {
+		if cg.ID == "member" {
+			return &cg, nil
+		}
+	}
+
+	return nil, nil
 }
 
 func validateUsersDiff(_ context.Context, diff *schema.ResourceDiff, meta interface{}) (err error) {
@@ -3115,16 +3121,9 @@ func expandUserChanges(_oldUsers []interface{}, _newUsers []interface{}) (userCh
 func validateRemoteLeaderIDDiff(_ context.Context, diff *schema.ResourceDiff, meta interface{}) (err error) {
 	_, remoteLeaderIdOk := diff.GetOk("remote_leader_id")
 	service := diff.Get("service").(string)
-	crn := diff.Get("resource_crn").(string)
 
 	if remoteLeaderIdOk && (service != "databases-for-postgresql" && service != "databases-for-mysql" && service != "databases-for-enterprisedb") {
 		return fmt.Errorf("[ERROR] remote_leader_id is only supported for databases-for-postgresql, databases-for-enterprisedb and databases-for-mysql")
-	}
-
-	oldValue, newValue := diff.GetChange("remote_leader_id")
-
-	if crn != "" && oldValue == "" && newValue != "" {
-		return fmt.Errorf("[ERROR] You cannot convert an existing instance to a read replica")
 	}
 
 	return nil
@@ -3288,7 +3287,8 @@ func (u *DatabaseUser) ValidatePassword() (err error) {
 
 	var allowedCharacters = regexp.MustCompile(fmt.Sprintf("^(?:[a-zA-Z0-9]|%s)+$", specialCharPattern))
 	var beginWithSpecialChar = regexp.MustCompile(fmt.Sprintf("^(?:%s)", specialCharPattern))
-	var containsLetter = regexp.MustCompile("[a-zA-Z]")
+	var containsLower = regexp.MustCompile("[a-z]")
+	var containsUpper = regexp.MustCompile("[A-Z]")
 	var containsNumber = regexp.MustCompile("[0-9]")
 	var containsSpecialChar = regexp.MustCompile(fmt.Sprintf("(?:%s)", specialCharPattern))
 
@@ -3302,8 +3302,12 @@ func (u *DatabaseUser) ValidatePassword() (err error) {
 			"password must not begin with a special character (%s)", specialChars))
 	}
 
-	if !containsLetter.MatchString(u.Password) {
-		errs = append(errs, errors.New("password must contain at least one letter"))
+	if !containsLower.MatchString(u.Password) {
+		errs = append(errs, errors.New("password must contain at least one lower case letter"))
+	}
+
+	if !containsUpper.MatchString(u.Password) {
+		errs = append(errs, errors.New("password must contain at least one upper case letter"))
 	}
 
 	if !containsNumber.MatchString(u.Password) {

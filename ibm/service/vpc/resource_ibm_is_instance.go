@@ -218,8 +218,10 @@ func ResourceIBMISInstance() *schema.Resource {
 
 			// cluster changes
 			"cluster_network_attachments": &schema.Schema{
-				Type:        schema.TypeList,
-				Optional:    true,
+				Type:     schema.TypeList,
+				Optional: true,
+				Computed: true,
+				// DiffSuppressFunc: diffSuppressClusterNetworkAttachment,
 				Description: "The cluster network attachments for this virtual server instance.The cluster network attachments are ordered for consistent instance configuration.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -235,7 +237,7 @@ func ResourceIBMISInstance() *schema.Resource {
 										Optional:              true,
 										Computed:              true,
 										DiffSuppressOnRefresh: true,
-										DiffSuppressFunc:      flex.ApplyOnce,
+										DiffSuppressFunc:      flex.ApplyOnlyOnce,
 										Description:           "Indicates whether this cluster network interface will be automatically deleted when `target` is deleted.",
 									},
 									"name": &schema.Schema{
@@ -273,7 +275,7 @@ func ResourceIBMISInstance() *schema.Resource {
 													Type:             schema.TypeBool,
 													Optional:         true,
 													Computed:         true,
-													DiffSuppressFunc: flex.ApplyOnce,
+													DiffSuppressFunc: flex.ApplyOnlyOnce,
 													Description:      "Indicates whether this cluster network subnet reserved IP member will be automatically deleted when either `target` is deleted, or the cluster network subnet reserved IP is unbound.",
 												},
 												"name": &schema.Schema{
@@ -323,10 +325,10 @@ func ResourceIBMISInstance() *schema.Resource {
 							},
 						},
 						"name": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Computed:    true,
-							Description: "The name for this cluster network attachment. Names must be unique within the instance the cluster network attachment resides in. If unspecified, the name will be a hyphenated list of randomly-selected words. Names starting with `ibm-` are reserved for provider-owned resources, and are not allowed.",
+							Type:             schema.TypeString,
+							Required:         true,
+							DiffSuppressFunc: flex.ApplyOnlyOnce,
+							Description:      "The name for this cluster network attachment. Names must be unique within the instance the cluster network attachment resides in. If unspecified, the name will be a hyphenated list of randomly-selected words. Names starting with `ibm-` are reserved for provider-owned resources, and are not allowed.",
 						},
 						"href": &schema.Schema{
 							Type:        schema.TypeString,
@@ -800,6 +802,13 @@ func ResourceIBMISInstance() *schema.Resource {
 							Set:         flex.ResourceIBMVPCHash,
 							Description: "UserTags for the volume instance",
 						},
+
+						"volume_bandwidth": {
+							Type:        schema.TypeInt,
+							Optional:    true,
+							Computed:    true,
+							Description: "The maximum bandwidth (in megabits per second) for the volume. For this property to be specified, the volume storage_generation must be 2.",
+						},
 					},
 				},
 			},
@@ -831,6 +840,55 @@ func ResourceIBMISInstance() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The resource type.",
+						},
+						// primary_ip for consistency
+						"primary_ip": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The primary IP address of the virtual network interface for the network attachment.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"address": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The IP address.If the address has not yet been selected, the value will be `0.0.0.0`.This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.",
+									},
+									"deleted": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"more_info": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Link to documentation about deleted resources.",
+												},
+											},
+										},
+									},
+									"href": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The URL for this reserved IP.",
+									},
+									"id": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The unique identifier for this reserved IP.",
+									},
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The name for this reserved IP. The name is unique across all reserved IPs in a subnet.",
+									},
+									"resource_type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The resource type.",
+									},
+								},
+							},
 						},
 						"id": &schema.Schema{
 							Type:        schema.TypeString,
@@ -865,6 +923,7 @@ func ResourceIBMISInstance() *schema.Resource {
 										Type:        schema.TypeString,
 										Optional:    true,
 										Computed:    true,
+										ForceNew:    true,
 										Description: "The virtual network interface id for this instance network attachment.",
 									},
 									"allow_ip_spoofing": &schema.Schema{
@@ -1026,6 +1085,7 @@ func ResourceIBMISInstance() *schema.Resource {
 										Optional:      true,
 										ConflictsWith: []string{"primary_network_attachment.0.virtual_network_interface.0.id"},
 										Computed:      true,
+										ForceNew:      true,
 										Description:   "The resource group id for this virtual network interface.",
 									},
 									"resource_type": &schema.Schema{
@@ -1196,7 +1256,55 @@ func ResourceIBMISInstance() *schema.Resource {
 								},
 							},
 						},
-
+						// primary_ip for consistency
+						"primary_ip": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The primary IP address of the virtual network interface for the network attachment.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"address": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The IP address.If the address has not yet been selected, the value will be `0.0.0.0`.This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.",
+									},
+									"deleted": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"more_info": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Link to documentation about deleted resources.",
+												},
+											},
+										},
+									},
+									"href": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The URL for this reserved IP.",
+									},
+									"id": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The unique identifier for this reserved IP.",
+									},
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The name for this reserved IP. The name is unique across all reserved IPs in a subnet.",
+									},
+									"resource_type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The resource type.",
+									},
+								},
+							},
+						},
 						"virtual_network_interface": &schema.Schema{
 							Type:        schema.TypeList,
 							MaxItems:    1,
@@ -1209,6 +1317,7 @@ func ResourceIBMISInstance() *schema.Resource {
 										Type:        schema.TypeString,
 										Optional:    true,
 										Computed:    true,
+										ForceNew:    true,
 										Description: "The virtual network interface id for this instance network attachment.",
 									},
 									"allow_ip_spoofing": &schema.Schema{
@@ -1363,6 +1472,7 @@ func ResourceIBMISInstance() *schema.Resource {
 										Type:        schema.TypeString,
 										Optional:    true,
 										Computed:    true,
+										ForceNew:    true,
 										Description: "The resource group id for this virtual network interface.",
 									},
 									"resource_type": &schema.Schema{
@@ -1431,6 +1541,12 @@ func ResourceIBMISInstance() *schema.Resource {
 							Optional:    true,
 							Default:     true,
 							Description: "Auto delete boot volume along with instance",
+						},
+						"bandwidth": {
+							Type:        schema.TypeInt,
+							Optional:    true,
+							Computed:    true,
+							Description: "The maximum bandwidth (in megabits per second) for the volume. For this property to be specified, the volume storage_generation must be 2.",
 						},
 						isInstanceBootAttachmentName: {
 							Type:         schema.TypeString,
@@ -2135,6 +2251,13 @@ func instanceCreateByImage(d *schema.ResourceData, meta interface{}, profile, na
 					}
 				}
 			}
+			// bandwidth changes
+			if volBandwidthOk, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.volume_bandwidth", i)); ok {
+				volBandwidth := volBandwidthOk.(int)
+				if volBandwidth != 0 {
+					volumeattItemPrototypeModel.Bandwidth = core.Int64Ptr(int64(volBandwidth))
+				}
+			}
 			if volProfileOk, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.volume_profile", i)); ok {
 				volProfile := volProfileOk.(string)
 				if volProfile != "" {
@@ -2243,6 +2366,13 @@ func instanceCreateByImage(d *schema.ResourceData, meta interface{}, profile, na
 		if size != 0 && ok {
 			sizeInt64 := int64(size)
 			volTemplate.Capacity = &sizeInt64
+		}
+		// bandwidth changes
+		bandwidthOk, ok := bootvol["bandwidth"]
+		bandwidth := bandwidthOk.(int)
+		if bandwidth != 0 && ok {
+			bandwidthInt64 := int64(bandwidth)
+			volTemplate.Bandwidth = &bandwidthInt64
 		}
 		iopsOk, ok := bootvol[isInstanceBootIOPS]
 		iops := iopsOk.(int)
@@ -2665,6 +2795,13 @@ func instanceCreateByCatalogOffering(d *schema.ResourceData, meta interface{}, p
 					}
 				}
 			}
+			// bandwidth changes
+			if volBandwidthOk, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.volume_bandwidth", i)); ok {
+				volBandwidth := volBandwidthOk.(int)
+				if volBandwidth != 0 {
+					volumeattItemPrototypeModel.Bandwidth = core.Int64Ptr(int64(volBandwidth))
+				}
+			}
 			if volProfileOk, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.volume_profile", i)); ok {
 				volProfile := volProfileOk.(string)
 				if volProfile != "" {
@@ -2805,6 +2942,13 @@ func instanceCreateByCatalogOffering(d *schema.ResourceData, meta interface{}, p
 		if size != 0 && ok {
 			sizeInt64 := int64(size)
 			volTemplate.Capacity = &sizeInt64
+		}
+		// bandwidth changes
+		bandwidthOk, ok := bootvol["bandwidth"]
+		bandwidth := bandwidthOk.(int)
+		if bandwidth != 0 && ok {
+			bandwidthInt64 := int64(bandwidth)
+			volTemplate.Bandwidth = &bandwidthInt64
 		}
 		iopsOk, ok := bootvol[isInstanceBootIOPS]
 		iops := iopsOk.(int)
@@ -3201,6 +3345,13 @@ func instanceCreateByTemplate(d *schema.ResourceData, meta interface{}, profile,
 					}
 				}
 			}
+			// bandwidth changes
+			if volBandwidthOk, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.volume_bandwidth", i)); ok {
+				volBandwidth := volBandwidthOk.(int)
+				if volBandwidth != 0 {
+					volumeattItemPrototypeModel.Bandwidth = core.Int64Ptr(int64(volBandwidth))
+				}
+			}
 			if volProfileOk, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.volume_profile", i)); ok {
 				volProfile := volProfileOk.(string)
 				if volProfile != "" {
@@ -3324,6 +3475,13 @@ func instanceCreateByTemplate(d *schema.ResourceData, meta interface{}, profile,
 		if size != 0 && ok {
 			sizeInt64 := int64(size)
 			volTemplate.Capacity = &sizeInt64
+		}
+		// bandwidth changes
+		bandwidthOk, ok := bootvol["bandwidth"]
+		bandwidth := bandwidthOk.(int)
+		if bandwidth != 0 && ok {
+			bandwidthInt64 := int64(bandwidth)
+			volTemplate.Bandwidth = &bandwidthInt64
 		}
 		iopsOk, ok := bootvol[isInstanceBootIOPS]
 		iops := iopsOk.(int)
@@ -3743,6 +3901,13 @@ func instanceCreateBySnapshot(d *schema.ResourceData, meta interface{}, profile,
 					}
 				}
 			}
+			// bandwidth changes
+			if volBandwidthOk, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.volume_bandwidth", i)); ok {
+				volBandwidth := volBandwidthOk.(int)
+				if volBandwidth != 0 {
+					volumeattItemPrototypeModel.Bandwidth = core.Int64Ptr(int64(volBandwidth))
+				}
+			}
 			if volProfileOk, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.volume_profile", i)); ok {
 				volProfile := volProfileOk.(string)
 				if volProfile != "" {
@@ -3842,6 +4007,13 @@ func instanceCreateBySnapshot(d *schema.ResourceData, meta interface{}, profile,
 		if size != 0 && ok {
 			sizeInt64 := int64(size)
 			volTemplate.Capacity = &sizeInt64
+		}
+		// bandwidth changes
+		bandwidthOk, ok := bootvol["bandwidth"]
+		bandwidth := bandwidthOk.(int)
+		if bandwidth != 0 && ok {
+			bandwidthInt64 := int64(bandwidth)
+			volTemplate.Bandwidth = &bandwidthInt64
 		}
 		iopsOk, ok := bootvol[isInstanceBootIOPS]
 		iops := iopsOk.(int)
@@ -4281,6 +4453,13 @@ func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, n
 					volumeattItemPrototypeModel.EncryptionKey = &vpcv1.EncryptionKeyIdentity{
 						CRN: &volEncKey,
 					}
+				}
+			}
+			// bandwidth changes
+			if volBandwidthOk, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.volume_bandwidth", i)); ok {
+				volBandwidth := volBandwidthOk.(int)
+				if volBandwidth != 0 {
+					volumeattItemPrototypeModel.Bandwidth = core.Int64Ptr(int64(volBandwidth))
 				}
 			}
 			if volProfileOk, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.volume_profile", i)); ok {
@@ -4913,15 +5092,17 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-cluster_network_attachments")
 		}
 	}
+	clusterNetwork := make([]map[string]interface{}, 0)
 	if !core.IsNil(instance.ClusterNetwork) {
 		clusterNetworkMap, err := ResourceIBMIsInstanceClusterNetworkReferenceToMap(instance.ClusterNetwork)
 		if err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "cluster_network-to-map")
 		}
-		if err = d.Set("cluster_network", []map[string]interface{}{clusterNetworkMap}); err != nil {
-			err = fmt.Errorf("Error setting cluster_network: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-cluster_network")
-		}
+		clusterNetwork = append(clusterNetwork, clusterNetworkMap)
+	}
+	if err = d.Set("cluster_network", clusterNetwork); err != nil {
+		err = fmt.Errorf("Error setting cluster_network: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-cluster_network")
 	}
 	if !core.IsNil(instance.ConfidentialComputeMode) {
 		if err = d.Set("confidential_compute_mode", instance.ConfidentialComputeMode); err != nil {
@@ -5335,6 +5516,7 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 			if vol != nil {
 				bootVol[isInstanceBootSize] = *vol.Capacity
 				bootVol[isInstanceBootIOPS] = *vol.Iops
+				bootVol["bandwidth"] = vol.Bandwidth
 				bootVol[isInstanceBootProfile] = *vol.Profile.Name
 				if vol.EncryptionKey != nil {
 					bootVol[isInstanceBootEncryption] = *vol.EncryptionKey.CRN
@@ -5423,6 +5605,10 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 	// network attachments
 
 	err = handleVolumePrototypesUpdate(d, instanceC)
+	if err != nil {
+		return err
+	}
+	err = handleClusterNetworkAttachmentUpdate(d, instanceC)
 	if err != nil {
 		return err
 	}
@@ -5961,6 +6147,37 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 
 	bootVolSize := "boot_volume.0.size"
 	bootIopsSize := "boot_volume.0.iops"
+	bootVolBandwidth := "boot_volume.0.bandwidth"
+
+	// bandwidth changes
+	if d.HasChange(bootVolBandwidth) && !d.IsNewResource() {
+		newBandwidth := int64(d.Get(bootVolBandwidth).(int))
+		volId := d.Get("boot_volume.0.volume_id").(string)
+		updateVolumeOptions := &vpcv1.UpdateVolumeOptions{
+			ID: &volId,
+		}
+		volPatchModel := &vpcv1.VolumePatch{
+			Bandwidth: &newBandwidth,
+		}
+		volPatchModelAsPatch, err := volPatchModel.AsPatch()
+
+		if err != nil {
+			return (fmt.Errorf("[ERROR] Error encountered while apply as patch for boot volume bandwidth of instance %s", err))
+		}
+
+		updateVolumeOptions.VolumePatch = volPatchModelAsPatch
+
+		vol, res, err := instanceC.UpdateVolume(updateVolumeOptions)
+
+		if vol == nil || err != nil {
+			return (fmt.Errorf("[ERROR] Error encountered while expanding boot volume bandwidth of instance %s/n%s", err, res))
+		}
+
+		_, err = isWaitForVolumeAvailable(instanceC, volId, d.Timeout(schema.TimeoutUpdate))
+		if err != nil {
+			return err
+		}
+	}
 
 	if d.HasChange(bootVolSize) && !d.IsNewResource() {
 		old, new := d.GetChange(bootVolSize)
@@ -6526,27 +6743,6 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 
 	}
 
-	if d.HasChange(isInstanceTotalVolumeBandwidth) && !d.IsNewResource() {
-		totalVolBandwidth := int64(d.Get(isInstanceTotalVolumeBandwidth).(int))
-		updnetoptions := &vpcv1.UpdateInstanceOptions{
-			ID: &id,
-		}
-
-		instancePatchModel := &vpcv1.InstancePatch{
-			TotalVolumeBandwidth: &totalVolBandwidth,
-		}
-		instancePatch, err := instancePatchModel.AsPatch()
-		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch with total volume bandwidth for InstancePatch: %s", err)
-		}
-		updnetoptions.InstancePatch = instancePatch
-
-		_, _, err = instanceC.UpdateInstance(updnetoptions)
-		if err != nil {
-			return err
-		}
-	}
-
 	if (d.HasChange(isInstanceName) || d.HasChange("confidential_compute_mode") || d.HasChange("enable_secure_boot")) && !d.IsNewResource() {
 		restartNeeded := false
 		serverstopped := false
@@ -6789,6 +6985,26 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 		}
 
 	}
+	if d.HasChange(isInstanceTotalVolumeBandwidth) && !d.IsNewResource() {
+		totalVolBandwidth := int64(d.Get(isInstanceTotalVolumeBandwidth).(int))
+		updnetoptions := &vpcv1.UpdateInstanceOptions{
+			ID: &id,
+		}
+
+		instancePatchModel := &vpcv1.InstancePatch{
+			TotalVolumeBandwidth: &totalVolBandwidth,
+		}
+		instancePatch, err := instancePatchModel.AsPatch()
+		if err != nil {
+			return fmt.Errorf("[ERROR] Error calling asPatch with total volume bandwidth for InstancePatch: %s", err)
+		}
+		updnetoptions.InstancePatch = instancePatch
+
+		_, _, err = instanceC.UpdateInstance(updnetoptions)
+		if err != nil {
+			return err
+		}
+	}
 
 	getinsOptions := &vpcv1.GetInstanceOptions{
 		ID: &id,
@@ -6898,11 +7114,11 @@ func instanceDelete(d *schema.ResourceData, meta interface{}, id string) error {
 	if err != nil {
 		return err
 	}
+	_, err = isWaitForInstanceDelete(instanceC, d, d.Id())
+	if err != nil {
+		return err
+	}
 	if cleanDelete {
-		_, err = isWaitForInstanceDelete(instanceC, d, d.Id())
-		if err != nil {
-			return err
-		}
 		if _, ok := d.GetOk(isInstanceBootVolume); ok {
 			autoDel := d.Get("boot_volume.0.auto_delete_volume").(bool)
 			if autoDel {
@@ -7249,6 +7465,10 @@ func resourceIBMIsInstanceInstanceNetworkAttachmentReferenceToMap(model *vpcv1.I
 		vniMap["name"] = pna.VirtualNetworkInterface.Name
 		vniMap["resource_type"] = pna.VirtualNetworkInterface.ResourceType
 	}
+	if model.PrimaryIP != nil {
+		primaryipmap, _ := resourceIBMIsInstancePrimaryIPReferenceToMap(model.PrimaryIP)
+		modelMap["primary_ip"] = []map[string]interface{}{primaryipmap}
+	}
 	getVirtualNetworkInterfaceOptions := &vpcv1.GetVirtualNetworkInterfaceOptions{
 		ID: pna.VirtualNetworkInterface.ID,
 	}
@@ -7322,6 +7542,24 @@ func resourceIBMIsInstanceReservedIPReferenceToMap(model *vpcv1.ReservedIPRefere
 	modelMap["name"] = model.Name
 	if model.ResourceType != nil {
 		modelMap["resource_type"] = *model.ResourceType
+	}
+	return modelMap, nil
+}
+func resourceIBMIsInstancePrimaryIPReferenceToMap(model *vpcv1.ReservedIPReference) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["address"] = model.Address
+	if model.Deleted != nil {
+		deletedMap, err := resourceIBMIsInstanceReservedIPReferenceDeletedToMap(model.Deleted)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["deleted"] = []map[string]interface{}{deletedMap}
+	}
+	modelMap["href"] = model.Href
+	modelMap["id"] = model.ID
+	modelMap["name"] = model.Name
+	if model.ResourceType != nil {
+		modelMap["resource_type"] = model.ResourceType
 	}
 	return modelMap, nil
 }
@@ -7674,6 +7912,7 @@ func volumesEqual(oldVol, newVol map[string]interface{}) bool {
 		"volume_source_snapshot",
 		"volume_encryption_key",
 		"volume_tags",
+		"volume_bandwidth",
 	}
 
 	for _, field := range fieldsToCompare {
@@ -7838,15 +8077,21 @@ func handleVolumePrototypesUpdate(d *schema.ResourceData, instanceC *vpcv1.VpcV1
 					return fmt.Errorf("error getting volume for patch for %s: %w", name, err)
 				}
 				eTag := res.Headers.Get("ETag")
+				volchanged := false
 				volumePatchModel := &vpcv1.VolumePatch{}
 				if newVol["volume_profile"].(string) != oldVol["volume_profile"].(string) && isTieredProfile(newVol["volume_profile"].(string)) {
 					volumePatchModel.Profile = &vpcv1.VolumeProfileIdentity{
 						Name: core.StringPtr(newVol["volume_profile"].(string)),
 					}
+					volchanged = true
 				}
 				if newVol["volume_name"].(string) != oldVol["volume_name"].(string) {
 					volumePatchModel.Name = core.StringPtr(newVol["volume_name"].(string))
+					volchanged = true
 				}
+				// if newVol["volume_bandwidth"].(int) != oldVol["volume_bandwidth"].(int) {
+				// 	volumePatchModel.Bandwidth = core.Int64Ptr(int64(newVol["volume_bandwidth"].(int)))
+				// }
 				if newVol["volume_tags"] == nil && oldVol["volume_tags"] == nil {
 					// do nothing
 				} else if newVol["volume_tags"] == nil && oldVol["volume_tags"] != nil {
@@ -7859,19 +8104,21 @@ func handleVolumePrototypesUpdate(d *schema.ResourceData, instanceC *vpcv1.VpcV1
 						userTagsArray[i] = userTagStr
 					}
 					volumePatchModel.UserTags = userTagsArray
+					volchanged = true
 				}
-				volumePatch, err := volumePatchModel.AsPatch()
-				if err != nil {
-					return fmt.Errorf("error creating volume patch for %s: %w", name, err)
+				if volchanged {
+					volumePatch, err := volumePatchModel.AsPatch()
+					if err != nil {
+						return fmt.Errorf("error creating volume patch for %s: %w", name, err)
+					}
+					voloptions.VolumePatch = volumePatch
+					voloptions.SetIfMatch(eTag)
+					_, response, err := instanceC.UpdateVolume(voloptions)
+					if err != nil {
+						return fmt.Errorf("error updating volume %s: %s\n%s", name, err, response)
+					}
+					eTag = response.Headers.Get("ETag")
 				}
-				voloptions.VolumePatch = volumePatch
-				voloptions.SetIfMatch(eTag)
-				_, response, err := instanceC.UpdateVolume(voloptions)
-				if err != nil {
-					return fmt.Errorf("error updating volume %s: %s\n%s", name, err, response)
-				}
-				eTag = response.Headers.Get("ETag")
-
 				// Only include IOPS for non-tiered profiles
 				if !isTieredProfile(newVol["volume_profile"].(string)) && (int64(newVol["volume_iops"].(int)) != int64(oldVol["volume_iops"].(int))) {
 					volumeIopsPatchModel := &vpcv1.VolumePatch{}
@@ -7906,12 +8153,30 @@ func handleVolumePrototypesUpdate(d *schema.ResourceData, instanceC *vpcv1.VpcV1
 					}
 					eTag = response.Headers.Get("ETag")
 				}
+				// Only include bandwidth update
+				if int64(newVol["volume_bandwidth"].(int)) != int64(oldVol["volume_bandwidth"].(int)) {
+					volumeBandwidthPatchModel := &vpcv1.VolumePatch{}
+					bandwidth := int64(newVol["volume_bandwidth"].(int))
+					volumeBandwidthPatchModel.Bandwidth = &bandwidth
+					volumePatch, err := volumeBandwidthPatchModel.AsPatch()
+					if err != nil {
+						return fmt.Errorf("error creating volume patch for bandwidth update %s: %w", name, err)
+					}
+					voloptions.SetIfMatch(eTag)
+					voloptions.VolumePatch = volumePatch
+					_, response, err := instanceC.UpdateVolume(voloptions)
+					if err != nil {
+						return fmt.Errorf("error updating volume during bandwidth update %s: %s\n%s", name, err, response)
+					}
+					eTag = response.Headers.Get("ETag")
+				}
 			}
 		} else {
 			// Handle addition
 			profile := newVol["volume_profile"].(string)
 			capacity := int64(newVol["volume_capacity"].(int))
 			volumeName := newVol["volume_name"].(string)
+			volumeBandwith := int64(newVol["volume_bandwidth"].(int))
 
 			createvolattoptions := &vpcv1.CreateInstanceVolumeAttachmentOptions{
 				InstanceID: &instanceID,
@@ -7921,7 +8186,8 @@ func handleVolumePrototypesUpdate(d *schema.ResourceData, instanceC *vpcv1.VpcV1
 				Profile: &vpcv1.VolumeProfileIdentity{
 					Name: &profile,
 				},
-				Capacity: &capacity,
+				Capacity:  &capacity,
+				Bandwidth: &volumeBandwith,
 			}
 			// Handle delete_volume_on_instance_delete using GetOkExists only for new volumes
 			if volAutoDelete, ok := d.GetOkExists(fmt.Sprintf("volume_prototypes.%d.delete_volume_on_instance_delete", i)); ok {
@@ -7931,7 +8197,9 @@ func handleVolumePrototypesUpdate(d *schema.ResourceData, instanceC *vpcv1.VpcV1
 			// Only set IOPS for non-tiered profiles
 			if !isTieredProfile(profile) {
 				iops := int64(newVol["volume_iops"].(int))
-				volAtt.Iops = &iops
+				if iops != int64(0) {
+					volAtt.Iops = &iops
+				}
 			}
 			createvolattoptions.Volume = volAtt
 			newVolume, _, err := instanceC.CreateInstanceVolumeAttachment(createvolattoptions)
@@ -7981,6 +8249,7 @@ func hasVolumeChanged(d *schema.ResourceData, newIndex int, oldVol, newVol map[s
 		"volume_name",
 		"volume_capacity",
 		"volume_profile",
+		"volume_bandwidth",
 	}
 
 	// Compare standard fields
@@ -8101,6 +8370,7 @@ func setVolumePrototypesInState(d *schema.ResourceData, instance *vpcv1.Instance
 					vol["volume_profile"] = *volumeRef.Profile.Name
 					vol["volume_iops"] = *volumeRef.Iops
 					vol["volume_capacity"] = *volumeRef.Capacity
+					vol["volume_bandwidth"] = volumeRef.Bandwidth
 					vol["volume_crn"] = *volume.Volume.CRN
 					vol["volume_resource_type"] = *volume.Volume.ResourceType
 				}
@@ -8147,4 +8417,277 @@ func setVolumePrototypesInState(d *schema.ResourceData, instance *vpcv1.Instance
 	finalList = append(finalList, unorderedVolumes...)
 
 	return finalList, nil
+}
+
+// diffSuppressClusterNetworkAttachment handles comparing old and new cluster network attachments
+// to determine if there are actual changes that require an update
+func diffSuppressClusterNetworkAttachment(k, old, new string, d *schema.ResourceData) bool {
+	// If values are equal, no changes needed
+
+	if old == new {
+		return true
+	}
+
+	// Get the lists of old and new attachments
+	oldAttachments, newAttachments := []interface{}{}, []interface{}{}
+	if v, ok := d.GetOk("cluster_network_attachments"); ok {
+		newAttachments = v.([]interface{})
+	}
+	if v, ok := d.GetOk("cluster_network_attachments"); ok {
+		oldAttachments = v.([]interface{})
+	}
+
+	// If lengths differ, there are definitely changes
+	if len(oldAttachments) != len(newAttachments) {
+		return false
+	}
+
+	// Compare each attachment
+	for i := range oldAttachments {
+		oldAttach := oldAttachments[i].(map[string]interface{})
+		newAttach := newAttachments[i].(map[string]interface{})
+
+		// Compare cluster_network_interface
+		oldInterface := oldAttach["cluster_network_interface"].([]interface{})[0].(map[string]interface{})
+		newInterface := newAttach["cluster_network_interface"].([]interface{})[0].(map[string]interface{})
+
+		// Compare key properties
+		if !compareInterfaces(oldInterface, newInterface) {
+			return false
+		}
+	}
+
+	return true
+}
+
+// comparePrimaryIP compares primary IP configurations
+func comparePrimaryIP(old, new map[string]interface{}) bool {
+	return old["id"] == new["id"] &&
+		old["address"] == new["address"] &&
+		old["auto_delete"] == new["auto_delete"] &&
+		old["name"] == new["name"]
+}
+
+// compareSubnet compares subnet configurations
+func compareSubnet(old, new map[string]interface{}) bool {
+	return old["id"] == new["id"]
+}
+func handleClusterNetworkAttachmentUpdate(d *schema.ResourceData, instanceC *vpcv1.VpcV1) error {
+	if d.HasChange("cluster_network_attachments") {
+		old, new := d.GetChange("cluster_network_attachments")
+		oldAttachments := old.([]interface{})
+		newAttachments := new.([]interface{})
+
+		// Build maps for both old and new attachments by name
+		oldAttachMap := make(map[string]map[string]interface{})
+		newAttachMap := make(map[string]map[string]interface{})
+
+		// Map old attachments by name
+		for _, attachment := range oldAttachments {
+			attach := attachment.(map[string]interface{})
+			name := attach["name"].(string)
+			oldAttachMap[name] = attach
+		}
+
+		// Map new attachments by name and identify additions
+		toAdd := []map[string]interface{}{}
+		for _, attachment := range newAttachments {
+			attach := attachment.(map[string]interface{})
+			name := attach["name"].(string)
+			newAttachMap[name] = attach
+
+			// If name doesn't exist in old map, it's a new attachment
+			if _, exists := oldAttachMap[name]; !exists {
+				toAdd = append(toAdd, attach)
+			}
+		}
+
+		// Identify removals by checking old names not in new map
+		toRemove := []string{}
+		for name, attach := range oldAttachMap {
+			if _, exists := newAttachMap[name]; !exists {
+				if id, ok := attach["id"].(string); ok {
+					toRemove = append(toRemove, id)
+				}
+			}
+		}
+
+		// Process removals first
+		instanceID := d.Id()
+		for _, id := range toRemove {
+			deleteOptions := &vpcv1.DeleteInstanceClusterNetworkAttachmentOptions{
+				InstanceID: &instanceID,
+				ID:         &id,
+			}
+			_, _, err := instanceC.DeleteInstanceClusterNetworkAttachment(deleteOptions)
+			if err != nil {
+				return fmt.Errorf("error removing cluster network attachment: %v", err)
+			}
+		}
+
+		// Process additions
+		for _, attach := range toAdd {
+			createOptions := buildCreateClusterNetworkAttachmentOptions(d.Id(), attach)
+			_, _, err := instanceC.CreateClusterNetworkAttachment(createOptions)
+			if err != nil {
+				return fmt.Errorf("error adding cluster network attachment: %v", err)
+			}
+		}
+
+		// Identify and process updates for existing attachments
+		for name, newAttach := range newAttachMap {
+			if oldAttach, exists := oldAttachMap[name]; exists {
+				// Compare the interfaces to see if an update is needed
+				oldInterface := oldAttach["cluster_network_interface"].([]interface{})[0].(map[string]interface{})
+				newInterface := newAttach["cluster_network_interface"].([]interface{})[0].(map[string]interface{})
+
+				if !compareInterfaces(oldInterface, newInterface) {
+					updateOptions := buildUpdateClusterNetworkAttachmentOptions(d.Id(), newAttach)
+					_, _, err := instanceC.UpdateInstanceClusterNetworkAttachment(updateOptions)
+					if err != nil {
+						return fmt.Errorf("error updating cluster network attachment: %v", err)
+					}
+				}
+			}
+		}
+	}
+	return nil
+}
+
+// Helper function to compare interfaces
+func compareInterfaces(old, new map[string]interface{}) bool {
+	// Compare name
+	if old["name"] != new["name"] {
+		return false
+	}
+
+	// Compare auto_delete if present
+	oldAutoDelete, oldOk := old["auto_delete"].(bool)
+	newAutoDelete, newOk := new["auto_delete"].(bool)
+	if oldOk != newOk || (oldOk && oldAutoDelete != newAutoDelete) {
+		return false
+	}
+
+	// Compare primary_ip if present
+	oldPrimaryIP, oldOk := old["primary_ip"].([]interface{})
+	newPrimaryIP, newOk := new["primary_ip"].([]interface{})
+	if oldOk != newOk {
+		return false
+	}
+	if oldOk && newOk {
+		if len(oldPrimaryIP) != len(newPrimaryIP) {
+			return false
+		}
+		if len(oldPrimaryIP) > 0 && len(newPrimaryIP) > 0 {
+			oldIP := oldPrimaryIP[0].(map[string]interface{})
+			newIP := newPrimaryIP[0].(map[string]interface{})
+			if oldIP["address"] != newIP["address"] ||
+				oldIP["auto_delete"] != newIP["auto_delete"] ||
+				oldIP["name"] != newIP["name"] {
+				return false
+			}
+		}
+	}
+
+	// Compare subnet if present
+	oldSubnet, oldOk := old["subnet"].([]interface{})
+	newSubnet, newOk := new["subnet"].([]interface{})
+	if oldOk != newOk {
+		return false
+	}
+	if oldOk && newOk {
+		if len(oldSubnet) != len(newSubnet) {
+			return false
+		}
+		if len(oldSubnet) > 0 && len(newSubnet) > 0 {
+			oldSub := oldSubnet[0].(map[string]interface{})
+			newSub := newSubnet[0].(map[string]interface{})
+			if oldSub["id"] != newSub["id"] {
+				return false
+			}
+		}
+	}
+
+	return true
+}
+
+func buildCreateClusterNetworkAttachmentOptions(instanceID string, attachment map[string]interface{}) *vpcv1.CreateClusterNetworkAttachmentOptions {
+	networkInterface := attachment["cluster_network_interface"].([]interface{})[0].(map[string]interface{})
+
+	clusterNetworkInterface := &vpcv1.InstanceClusterNetworkAttachmentPrototypeClusterNetworkInterface{}
+
+	// if autoDelete, ok := networkInterface["auto_delete"].(bool); ok {
+	// 	clusterNetworkInterface.AutoDelete = &autoDelete
+	// }
+	if autoDelete, ok := networkInterface["auto_delete"]; ok {
+		// Convert interface{} to bool properly
+		autoDeletBool := false
+		switch v := autoDelete.(type) {
+		case bool:
+			autoDeletBool = v
+		case string:
+			autoDeletBool = v == "true"
+		}
+		clusterNetworkInterface.AutoDelete = &autoDeletBool
+	}
+
+	if name, ok := networkInterface["name"].(string); ok {
+		clusterNetworkInterface.Name = &name
+	}
+
+	if primaryIPList, ok := networkInterface["primary_ip"].([]interface{}); ok && len(primaryIPList) > 0 {
+		primaryIP := primaryIPList[0].(map[string]interface{})
+		primaryIPPrototype := &vpcv1.ClusterNetworkInterfacePrimaryIPPrototype{}
+
+		if address, ok := primaryIP["address"].(string); ok {
+			primaryIPPrototype.Address = &address
+		}
+		if autoDelete, ok := primaryIP["auto_delete"].(bool); ok {
+			primaryIPPrototype.AutoDelete = &autoDelete
+		}
+		if name, ok := primaryIP["name"].(string); ok {
+			primaryIPPrototype.Name = &name
+		}
+
+		clusterNetworkInterface.PrimaryIP = primaryIPPrototype
+	}
+
+	// Handle subnet if present
+	if subnetList, ok := networkInterface["subnet"].([]interface{}); ok && len(subnetList) > 0 {
+		subnet := subnetList[0].(map[string]interface{})
+		if id, ok := subnet["id"].(string); ok {
+			clusterNetworkInterface.Subnet = &vpcv1.ClusterNetworkSubnetIdentity{
+				ID: &id,
+			}
+		}
+	}
+
+	// Get attachment name
+	attachmentName := attachment["name"].(string)
+
+	// Create the options struct
+	createOptions := &vpcv1.CreateClusterNetworkAttachmentOptions{
+		InstanceID:              &instanceID,
+		Name:                    &attachmentName,
+		ClusterNetworkInterface: clusterNetworkInterface,
+	}
+
+	return createOptions
+}
+
+func buildUpdateClusterNetworkAttachmentOptions(instanceID string, attachment map[string]interface{}) *vpcv1.UpdateInstanceClusterNetworkAttachmentOptions {
+	networkInterface := attachment["cluster_network_interface"].([]interface{})[0].(map[string]interface{})
+	clusterNetworkInterface := &vpcv1.InstanceClusterNetworkAttachmentPatch{}
+
+	if name, ok := networkInterface["name"].(string); ok {
+		clusterNetworkInterface.Name = &name
+	}
+	clusterNetworkInterfaceAsPatch, _ := clusterNetworkInterface.AsPatch()
+	attachmentID := attachment["id"].(string)
+	updateOptions := &vpcv1.UpdateInstanceClusterNetworkAttachmentOptions{
+		InstanceID:                            &instanceID,
+		ID:                                    &attachmentID,
+		InstanceClusterNetworkAttachmentPatch: clusterNetworkInterfaceAsPatch,
+	}
+	return updateOptions
 }

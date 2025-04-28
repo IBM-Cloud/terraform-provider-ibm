@@ -8,8 +8,6 @@ subcategory: "Schematics"
 
 # ibm_schematics_agent
 
-~> **Beta:** This resource is in Beta, and is subject to change.
-
 Provides a resource for schematics_agent. This allows schematics_agent to be created, updated and deleted.
 
 ## Example Usage

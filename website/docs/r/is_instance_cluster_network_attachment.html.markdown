@@ -8,10 +8,7 @@ subcategory: "VPC infrastructure"
 
 # ibm_is_instance_cluster_network_attachment
 
-Create, update, and delete InstanceClusterNetworkAttachments with this resource.
-
-~>**Select Availability** 
-Cluster Networks for VPC is available for select customers only. Contact IBM Support if you are interested in using this functionality. [About cluster networks](https://cloud.ibm.com/docs/vpc?topic=vpc-about-cluster-network)
+Create, update, and delete InstanceClusterNetworkAttachments with this resource. [About cluster networks](https://cloud.ibm.com/docs/vpc?topic=vpc-about-cluster-network)
 
 ## Example Usage
 
@@ -145,45 +142,31 @@ resource "ibm_is_instance_action" "is_instance_start_after" {
 
 You can specify the following arguments for this resource.
 
+  ~> **Note:** 
+  **&#x2022;** Instance cluster network attachment creation requires the instance to be in stopped state. Use `ibm_is_instance_action` resource accordingly to stop/start the instance.</br>
+  **&#x2022;** Using cluster_network_attachments in `ibm_is_instance` and `ibm_is_instance_cluster_network_attachment` resource together would result in changes shown in both resources alternatively, use either of them or use meta lifecycle argument `ignore_changes` on `ibm_is_instance` resource.</br>
+
+
 - `before` - (Optional, List) The instance cluster network attachment that is immediately before. If absent, this is thelast instance cluster network attachment.
 	Nested schema for **before**:
-	- `href` - (Required, String) The URL for this instance cluster network attachment.
 	- `id` - (Required, String) The unique identifier for this instance cluster network attachment.
-	- `name` - (Computed, String) The name for this instance cluster network attachment. The name is unique across all network attachments for the instance.
-	- `resource_type` - (Computed, String) The resource type.
 - `cluster_network_interface` - (Required, List) The cluster network interface for this instance cluster network attachment.
 	
 	Nested schema for **cluster_network_interface**:
-	- `deleted` - (Optional, List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
-		Nested schema for **deleted**:
-		- `more_info` - (Computed, String) Link to documentation about deleted resources.
-	- `href` - (Required, String) The URL for this cluster network interface.
+
 	- `id` - (Required, String) The unique identifier for this cluster network interface.
 	- `name` - (Required, String) The name for this cluster network interface. The name is unique across all interfaces in the cluster network.
 	- `primary_ip` - (Required, List) The primary IP for this cluster network interface.
 		
 		Nested schema for **primary_ip**:
 		- `address` - (Required, String) The IP address.If the address is pending allocation, the value will be `0.0.0.0`.This property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support IPv6 addresses in the future.
-		- `deleted` - (Optional, List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
-			
-			Nested schema for **deleted**:
-			- `more_info` - (Computed, String) Link to documentation about deleted resources.
-		- `href` - (Required, String) The URL for this cluster network subnet reserved IP.
 		- `id` - (Required, String) The unique identifier for this cluster network subnet reserved IP.
 		- `name` - (Required, String) The name for this cluster network subnet reserved IP. The name is unique across all reserved IPs in a cluster network subnet.
-		- `resource_type` - (Computed, String) The resource type.
-	- `resource_type` - (Computed, String) The resource type.
 	- `subnet` - (Required, List)
 		
 		Nested schema for **subnet**:
-		- `deleted` - (Optional, List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
-
-			Nested schema for **deleted**:
-			- `more_info` - (Computed, String) Link to documentation about deleted resources.
-		- `href` - (Required, String) The URL for this cluster network subnet.
 		- `id` - (Required, String) The unique identifier for this cluster network subnet.
-		- `name` - (Computed, String) The name for this cluster network subnet. The name is unique across all cluster network subnets in the cluster network.
-		- `resource_type` - (Computed, String) The resource type.
+
 - `instance_id` - (Required, Forces new resource, String) The virtual server instance identifier.
 - `name` - (Optional, String) The name for this instance cluster network attachment. The name is unique across all network attachments for the instance.
 
@@ -191,16 +174,52 @@ You can specify the following arguments for this resource.
 
 After your resource is created, you can read values from the listed arguments and the following attributes.
 
+
 - `id` - The unique identifier of the InstanceClusterNetworkAttachment.
+- `before` - (List) The instance cluster network attachment that is immediately before. If absent, this is thelast instance cluster network attachment.
+	Nested schema for **before**:
+	- `href` - (String) The URL for this instance cluster network attachment.
+	- `id` - (String) The unique identifier for this instance cluster network attachment.
+	- `name` - (String) The name for this instance cluster network attachment. The name is unique across all network attachments for the instance.
+	- `resource_type` - (String) The resource type.
+- `cluster_network_interface` - (List) The cluster network interface for this instance cluster network attachment.
+	Nested schema for **cluster_network_interface**:
+	- `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
+		Nested schema for **deleted**:
+		- `more_info` - (String) Link to documentation about deleted resources.
+	- `href` - (String) The URL for this cluster network interface.
+	- `id` - (String) The unique identifier for this cluster network interface.
+	- `name` - (String) The name for this cluster network interface. The name is unique across all interfaces in the cluster network.
+	- `primary_ip` - (List) The primary IP for this cluster network interface.
+		Nested schema for **primary_ip**:
+		- `address` - (String) The IP address.If the address is pending allocation, the value will be `0.0.0.0`.This property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support IPv6 addresses in the future.
+		- `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
+
+			Nested schema for **deleted**:
+			- `more_info` - (String) Link to documentation about deleted resources.
+		- `href` - (String) The URL for this cluster network subnet reserved IP.
+		- `id` - (String) The unique identifier for this cluster network subnet reserved IP.
+		- `name` - (String) The name for this cluster network subnet reserved IP. The name is unique across all reserved IPs in a cluster network subnet.
+		- `resource_type` - (String) The resource type.
+	- `resource_type` - (String) The resource type.
+	- `subnet` - (List)
+		Nested schema for **subnet**:
+		- `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
+			Nested schema for **deleted**:
+			- `more_info` - (String) Link to documentation about deleted resources.
+		- `href` - (String) The URL for this cluster network subnet.
+		- `id` - (String) The unique identifier for this cluster network subnet.
+		- `name` - (String) The name for this cluster network subnet. The name is unique across all cluster network subnets in the cluster network.
+		- `resource_type` - (String) The resource type.
 - `href` - (String) The URL for this instance cluster network attachment.
 - `instance_cluster_network_attachment_id` - (String) The unique identifier for this instance cluster network attachment.
 - `lifecycle_reasons` - (List) The reasons for the current `lifecycle_state` (if any).
-	
 	Nested schema for **lifecycle_reasons**:
-	- `code` - (String) A reason code for this lifecycle state:- `internal_error`: internal error (contact IBM support)- `resource_suspended_by_provider`: The resource has been suspended (contact IBM  support)The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future. Allowable values are: `internal_error`, `resource_suspended_by_provider`. 
+	- `code` - (String) A reason code for this lifecycle state:- `internal_error`: internal error (contact IBM support)- `resource_suspended_by_provider`: The resource has been suspended (contact IBM  support)The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.
 	- `message` - (String) An explanation of the reason for this lifecycle state.
 	- `more_info` - (String) Link to documentation about the reason for this lifecycle state.
 - `lifecycle_state` - (String) The lifecycle state of the instance cluster network attachment. Allowable values are: `deleting`, `failed`, `pending`, `stable`, `suspended`, `updating`, `waiting`.
+- `name` - (String) The name for this instance cluster network attachment. The name is unique across all network attachments for the instance.
 - `resource_type` - (String) The resource type. Allowable values are: `instance_cluster_network_attachment`.
 
 
