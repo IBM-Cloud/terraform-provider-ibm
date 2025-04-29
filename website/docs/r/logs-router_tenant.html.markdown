@@ -56,13 +56,12 @@ Nested schema for **targets**:
 	  * Constraints: The maximum length is `256` characters. The minimum length is `1` character. The value must match regular expression `/[a-z,A-Z,0-9,:,-]/`.
 	* `name` - (Optional, String) The name for this tenant target. The name is unique across all targets for this tenant.
 	  * Constraints: The maximum length is `35` characters. The minimum length is `1` character. The value must match regular expression `/[a-z,A-Z,0-9,-,.]/`.
-	* `parameters` - (Required, List) List of properties returned from a successful list operation for a log-sink of type IBM Log Analysis (logdna).
+	* `parameters` - (Required, List) List of properties returned from a successful list operation for a log-sink of type IBM Cloud Logs.
 	Nested schema for **parameters**:
 		* `host` - (Required, String) Host name of the log-sink.
 		  * Constraints: The maximum length is `256` characters. The minimum length is `1` character. The value must match regular expression `/[a-z,A-Z,0-9,-,.]/`.
 		* `port` - (Required, Integer) Network port of the log-sink.
 		  * Constraints: The maximum value is `65535`. The minimum value is `1`.
-		* `access_credential` - (Optional, String) Secret to connect to the Mezmo log-sink. This is not required for log-sink of type Cloud Logs.
 
 
 ## Attribute Reference
@@ -98,3 +97,10 @@ $ terraform import ibm_logs_router_tenant.logs_router_tenant &lt;id/region&gt;
 ```
 $ terraform import ibm_logs_router_tenant.logs_router_tenant 8717db99-2cfb-4ba6-a033-89c994c2e9f0/us-east
 ```
+
+## Log Analysis
+
+As of 28 March 2024 the Log Analysis service is deprecated and will no longer be supported as of 30 March 2025.
+IBM Cloud Logs will stop supporting `logdna` targets at the same time and no logs will be routed to these type of targets after that date.
+You should make sure that you have configured your tenant to direct your logs to another destination before 30 March 2025.
+Any `logdna` targets still configured after 30 April 2025 will be removed automatically from your tenant configuration.
