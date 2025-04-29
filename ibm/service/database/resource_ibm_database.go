@@ -2827,8 +2827,7 @@ func validateGroupsDiff(_ context.Context, diff *schema.ResourceDiff, meta inter
 		} else {
 			if memberGroup.HostFlavor != nil {
 				groupList, err = getDefaultScalingGroups(service, plan, memberGroup.HostFlavor.ID, meta)
-			}
-			else {
+			} else {
 				groupList, err = getDefaultScalingGroups(service, plan, "", meta)
 			}
 		}
