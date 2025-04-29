@@ -295,12 +295,12 @@ func resourceIBMISSubnetCreate(context context.Context, d *schema.ResourceData, 
 	}
 	if ipv4cidr == "" && ipv4addrcount == 0 {
 		err := fmt.Errorf("%s or %s need to be provided", isSubnetIpv4CidrBlock, isSubnetTotalIpv4AddressCount)
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_gateway_connection", "update", "parse-ipv4").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet", "create", "parse-ipv4").GetDiag()
 	}
 
 	if ipv4cidr != "" && ipv4addrcount != 0 {
 		err := fmt.Errorf("only one of %s or %s needs to be provided", isSubnetIpv4CidrBlock, isSubnetTotalIpv4AddressCount)
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_gateway_connection", "update", "parse-ipv4").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet", "create", "parse-ipv4").GetDiag()
 	}
 	isSubnetKey := "subnet_key_" + vpc + "_" + zone
 	conns.IbmMutexKV.Lock(isSubnetKey)
