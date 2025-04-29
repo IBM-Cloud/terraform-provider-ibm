@@ -91,15 +91,13 @@ After your resource is created, you can read values from the listed arguments an
 ## Import
 
 You can import the `ibm_iam_policy_template` resource by using `version`.
-The `version` property can be formed from `policy_template_id`, and `version` in the following format:
+The `version` property can be formed from `template_id`, and `version` in the following format: `<template_id>/<version>`
 
-```
-<policy_template_id>/<version>
-```
-* `policy_template_id`: A string. The policy template ID.
+* `template_id`: A string. The policy template ID.
 * `version`: A string. The policy template version.
 
-# Syntax
-```
-$ terraform import ibm_iam_policy_template.policy_template <policy_template_id>/<version>
+### Syntax
+
+```bash
+$ terraform import ibm_iam_policy_template.policy_template $template_id/$version
 ```
