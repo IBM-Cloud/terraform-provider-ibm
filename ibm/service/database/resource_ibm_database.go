@@ -455,6 +455,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 							Optional: true,
 							Type:     schema.TypeSet,
 							MaxItems: 1,
+							Default:      "multitenant",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"id": {
@@ -1257,6 +1258,8 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 		}
 	}
 
+	params.HostFlavor = memberGroup.HostFlavor.ID
+
 	if memberGroup != nil && memberGroup.Memory != nil {
 		params.Memory = memberGroup.Memory.Allocation * initialNodeCount
 	}
@@ -1267,10 +1270,6 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 
 	if memberGroup != nil && memberGroup.CPU != nil {
 		params.CPU = memberGroup.CPU.Allocation * initialNodeCount
-	}
-
-	if memberGroup != nil && memberGroup.HostFlavor != nil {
-		params.HostFlavor = memberGroup.HostFlavor.ID
 	}
 
 	serviceEndpoint := d.Get("service_endpoints").(string)
@@ -1319,6 +1318,7 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 					nodeCount = currentGroup.Members.Allocation
 				}
 			}
+			groupScaling.HostFlavor = &clouddatabasesv5.GroupScalingHostFlavor{ID: core.StringPtr(g.HostFlavor.ID)}
 
 			if g.ID == "member" && (g.Members == nil || g.Members.Allocation == nodeCount) {
 				// No Horizontal Scaling needed
@@ -1338,11 +1338,8 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 			if g.CPU != nil && g.CPU.Allocation*nodeCount != currentGroup.CPU.Allocation {
 				groupScaling.CPU = &clouddatabasesv5.GroupScalingCPU{AllocationCount: core.Int64Ptr(int64(g.CPU.Allocation * nodeCount))}
 			}
-			if g.HostFlavor != nil {
-				groupScaling.HostFlavor = &clouddatabasesv5.GroupScalingHostFlavor{ID: core.StringPtr(g.HostFlavor.ID)}
-			}
 
-			if groupScaling.Members != nil || groupScaling.Memory != nil || groupScaling.Disk != nil || groupScaling.CPU != nil || groupScaling.HostFlavor != nil {
+			if groupScaling.Members != nil || groupScaling.Memory != nil || groupScaling.Disk != nil || groupScaling.CPU != nil {
 				setDeploymentScalingGroupOptions := &clouddatabasesv5.SetDeploymentScalingGroupOptions{
 					ID:      instance.ID,
 					GroupID: &g.ID,
@@ -1748,11 +1745,6 @@ func resourceIBMDatabaseInstanceRead(context context.Context, d *schema.Resource
 		}
 	}
 
-	// This can be removed any time after August once all old multitenant instances are switched over to the new multitenant
-	if groupList.Groups[0].HostFlavor == nil && (groupList.Groups[0].CPU != nil && *groupList.Groups[0].CPU.AllocationCount == 0) {
-		return appendSwitchoverWarning()
-	}
-
 	endpoint, _ := instance.Parameters["service-endpoints"]
 	if endpoint == "public" || endpoint == "public-and-private" {
 		return publicServiceEndpointsWarning()
@@ -1893,6 +1885,7 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 					"[ERROR]  (%s) group does not exist: %s", icdId, err))
 			}
 			nodeCount := currentGroup.Members.Allocation
+			groupScaling.HostFlavor = &clouddatabasesv5.GroupScalingHostFlavor{ID: core.StringPtr(group.HostFlavor.ID)}
 
 			if group.Members != nil && group.Members.Allocation != currentGroup.Members.Allocation {
 				groupScaling.Members = &clouddatabasesv5.GroupScalingMembers{AllocationCount: core.Int64Ptr(int64(group.Members.Allocation))}
@@ -1907,11 +1900,8 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 			if group.CPU != nil && group.CPU.Allocation*nodeCount != currentGroup.CPU.Allocation {
 				groupScaling.CPU = &clouddatabasesv5.GroupScalingCPU{AllocationCount: core.Int64Ptr(int64(group.CPU.Allocation * nodeCount))}
 			}
-			if group.HostFlavor != nil {
-				groupScaling.HostFlavor = &clouddatabasesv5.GroupScalingHostFlavor{ID: core.StringPtr(group.HostFlavor.ID)}
-			}
 
-			if groupScaling.Members != nil || groupScaling.Memory != nil || groupScaling.Disk != nil || groupScaling.CPU != nil || groupScaling.HostFlavor != nil {
+			if groupScaling.Members != nil || groupScaling.Memory != nil || groupScaling.Disk != nil || groupScaling.CPU != nil {
 				setDeploymentScalingGroupOptions := &clouddatabasesv5.SetDeploymentScalingGroupOptions{
 					ID:      &instanceID,
 					GroupID: &group.ID,
@@ -2661,9 +2651,8 @@ func normalizeGroups(_groups []clouddatabasesv5.Group) (groups []Group) {
 			CanScaleDown: *g.CPU.CanScaleDown,
 		}
 
-		group.HostFlavor = &HostFlavorGroupResource{}
-		if g.HostFlavor != nil {
-			group.HostFlavor.ID = *g.HostFlavor.ID
+		group.HostFlavor = &HostFlavorGroupResource{
+			ID: *g.HostFlavor.ID
 		}
 
 		groups = append(groups, group)
@@ -2729,9 +2718,7 @@ func expandGroups(_groups []interface{}) []*Group {
 
 			if hostflavorSet, ok := tfGroup["host_flavor"].(*schema.Set); ok {
 				hostflavor := hostflavorSet.List()
-				if len(hostflavor) != 0 {
-					group.HostFlavor = &HostFlavorGroupResource{ID: hostflavor[0].(map[string]interface{})["id"].(string)}
-				}
+				group.HostFlavor = &HostFlavorGroupResource{ID: hostflavor[0].(map[string]interface{})["id"].(string)}
 			}
 
 			groups = append(groups, &group)
@@ -2795,20 +2782,6 @@ func validateMultitenantMemoryCpu(resourceDefaults *Group, group *Group, cpuEnfo
 	}
 }
 
-// This can be removed any time after August once all old multitenant instances are switched over to the new multitenant
-func appendSwitchoverWarning() diag.Diagnostics {
-	var diags diag.Diagnostics
-
-	warning := diag.Diagnostic{
-		Severity: diag.Warning,
-		Summary:  "Note: IBM Cloud Databases released new Hosting Models on May 1. All existing multi-tenant instances will have their resources adjusted to Shared Compute allocations during August 2024. To monitor your current resource needs, and learn about how the transition to Shared Compute will impact your instance, see our documentation https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-hosting-models",
-	}
-
-	diags = append(diags, warning)
-
-	return diags
-}
-
 func publicServiceEndpointsWarning() diag.Diagnostics {
 	var diags diag.Diagnostics
 
@@ -2843,11 +2816,7 @@ func validateGroupsDiff(_ context.Context, diff *schema.ResourceDiff, meta inter
 		if instanceID != "" {
 			groupList, err = getGroups(instanceID, meta)
 		} else {
-			if memberGroup.HostFlavor != nil {
-				groupList, err = getDefaultScalingGroups(service, plan, memberGroup.HostFlavor.ID, meta)
-			} else {
-				groupList, err = getDefaultScalingGroups(service, plan, "", meta)
-			}
+			groupList, err = getDefaultScalingGroups(service, plan, memberGroup.HostFlavor.ID, meta)
 		}
 
 		if err != nil {
@@ -2860,7 +2829,7 @@ func validateGroupsDiff(_ context.Context, diff *schema.ResourceDiff, meta inter
 
 		cpuEnforcementRatioCeiling, cpuEnforcementRatioMb := 0, 0
 
-		if memberGroup.HostFlavor != nil && memberGroup.HostFlavor.ID == "multitenant" {
+		if memberGroup.HostFlavor.ID == "multitenant" {
 			err, cpuEnforcementRatioCeiling, cpuEnforcementRatioMb = getCpuEnforcementRatios(service, plan, memberGroup.HostFlavor.ID, meta, group)
 
 			if err != nil {
@@ -2899,7 +2868,7 @@ func validateGroupsDiff(_ context.Context, diff *schema.ResourceDiff, meta inter
 			// set current nodeCount
 			nodeCount := groupDefaults.Members.Allocation
 
-			if group.HostFlavor != nil && group.HostFlavor.ID != "" && group.HostFlavor.ID != "multitenant" {
+			if group.HostFlavor.ID != "multitenant" {
 				err = validateGroupHostFlavor(groupId, "host_flavor", group)
 				if err != nil {
 					return err
@@ -2919,7 +2888,7 @@ func validateGroupsDiff(_ context.Context, diff *schema.ResourceDiff, meta inter
 					return err
 				}
 
-				if group.HostFlavor != nil && group.HostFlavor.ID != "" && group.HostFlavor.ID == "multitenant" && cpuEnforcementRatioCeiling != 0 && cpuEnforcementRatioMb != 0 {
+				if group.HostFlavor.ID == "multitenant" && cpuEnforcementRatioCeiling != 0 && cpuEnforcementRatioMb != 0 {
 					err = validateMultitenantMemoryCpu(groupDefaults, group, cpuEnforcementRatioCeiling, cpuEnforcementRatioMb)
 					if err != nil {
 						return err
