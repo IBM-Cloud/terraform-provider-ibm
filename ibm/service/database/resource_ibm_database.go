@@ -455,7 +455,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 							Optional: true,
 							Type:     schema.TypeSet,
 							MaxItems: 1,
-							Default:      "multitenant",
+							Default:  "multitenant",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"id": {
@@ -2652,7 +2652,7 @@ func normalizeGroups(_groups []clouddatabasesv5.Group) (groups []Group) {
 		}
 
 		group.HostFlavor = &HostFlavorGroupResource{
-			ID: *g.HostFlavor.ID
+			ID: *g.HostFlavor.ID,
 		}
 
 		groups = append(groups, group)
