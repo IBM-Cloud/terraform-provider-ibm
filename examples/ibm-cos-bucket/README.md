@@ -540,90 +540,190 @@ resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle" {
   }
 }
 ```
+
+## Bucket Backup 
+
+Provides 2 seperate resources - `ibm_cos_backup_vault` and `ibm_cos_backup_policy` to manage the backup policies and the backup vaults for to store the backup of a COS bucket.
+
+## Example usage
+
+```terraform
+resource "ibm_cos_bucket" "backup-source-bucket" {
+  bucket_name           = "bucket-name"
+  resource_instance_id  = "cos_instance_id"
+  cross_region_location = "us"
+  storage_class         = "standard"
+  object_versioning {
+    enable = true
+  }
+
+}
+
+
+resource "ibm_cos_backup_vault" "backup-vault" {
+  backup_vault_name                   = "backup_vault_name"
+  service_instance_id                 = "cos_instance_id to create backup vault"
+  region                              = "us"
+  activity_tracking_management_events = true
+  metrics_monitoring_usage_metrics    = true
+  kms_key_crn                         = "crn:v1:staging:public:kms:us-south:a/997xxxxxxxxxxxxxxxxxxxxxx54:5xxxxxxxa-fxxb-4xx8-9xx4-f1xxxxxxxxx5:key:af5667d5-dxx5-4xxf-8xxf-exxxxxxxf1d"
+}
+
+
+resource "ibm_iam_authorization_policy" "policy" {
+  roles = [
+    "Backup Manager", "Writer"
+  ]
+  subject_attributes {
+    name  = "accountId"
+    value = "account_id of the cos account"
+  }
+  subject_attributes {
+    name  = "serviceName"
+    value = "cloud-object-storage"
+  }
+  subject_attributes {
+    name  = "serviceInstance"
+    value = "exxxxx34-xxxx-xxxx-xxxx-d6xxxxxxxx9"
+  }
+  subject_attributes {
+    name  = "resource"
+    value = "source-bucket-name"
+  }
+  subject_attributes {
+    name  = "resourceType"
+    value = "bucket"
+  }
+  resource_attributes {
+    name     = "accountId"
+    operator = "stringEquals"
+    value    = "account id of the cos account of backup vault"
+  }
+  resource_attributes {
+    name     = "serviceName"
+    operator = "stringEquals"
+    value    = "cloud-object-storage"
+  }
+  resource_attributes {
+    name     = "serviceInstance"
+    operator = "stringEquals"
+    value    = "exxxxx34-xxxx-xxxx-xxxx-d6xxxxxxxx9"
+  }
+  resource_attributes {
+    name     = "resource"
+    operator = "stringEquals"
+    value    = "backup-vault-name"
+  }
+  resource_attributes {
+    name     = "resourceType"
+    operator = "stringEquals"
+    value    = "backup-vault"
+  }
+}
+
+resource "ibm_cos_backup_policy" "policy" {
+  bucket_crn              = ibm_cos_bucket.bucket.crn
+  delete_after_days       = 2
+  policy_name             = "policy_name"
+  target_backup_vault_crn = ibm_cos_backup_vault.backup-vault.backup_vault_crn
+  backup_type             = "continuous"
+}
+
+```
+
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 
 ## Requirements
 
-| Name | Version |
-|------|---------|
+| Name      | Version       |
+| --------- | ------------- |
 | terraform | >=1.0.0, <2.0 |
 
 ## Providers
 
 | Name | Version |
-|------|---------|
-| ibm | Latest |
+| ---- | ------- |
+| ibm  | Latest  |
 
 ## Inputs
 
-| Name | Description | Type | Required |
-|------|-------------|------|---------|
-| bucket_name | Name of the bucket. | `string` | yes |
-| resource_group_name | Name of the resource group. | `string` | yes |
-| satellite_location_id | satellite location. | `string` | no |
-| storage | The storage class that you want to use for the bucket. Supported values are **standard, vault, cold, flex, and smart**.| `string` | no |
-| region | The location for a cross-regional bucket. Supported values are **us, eu, and ap**. | `string` | no |
-| read_data_events | If set to **true**, all object read events (i.e. downloads) will be sent to Activity Tracker. | `bool` | no
-| write_data_events | If set to **true**, all object write events (i.e. uploads) will be sent to Activity Tracker. | `bool` | no
-| management_events |If set to **true**, all bucket management events will be sent to Activity Tracker.This field only applies if `activity_tracker_crn` is not populated. | `bool` | no
-| activity_tracker_crn |When the `activity_tracker_crn` is not populated, then enabled events are sent to the Activity Tracker instance associated to the container's location unless otherwise specified in the Activity Tracker Event Routing service configuration.If `activity_tracker_crn` is populated, then enabled events are sent to the Activity Tracker instance specified and bucket management events are always enabled. | `string` | no
-| usage_metrics_enabled |If set to **true**, all usage metrics (i.e. `bytes_used`) will be sent to the monitoring service.| `bool` | no
-| request_metrics_enabled | If set to **true**, all request metrics (i.e. `rest.object.head`) will be sent to the monitoring service. | `bool` | no
-| metrics_monitoring_crn | When the `metrics_monitoring_crn` is not populated, then enabled metrics are sent to the monitoring instance associated to the container's location unless otherwise specified in the Metrics Router service configuration.If `metrics_monitoring_crn` is populated, then enabled events are sent to the Metrics Monitoring instance specified. | `string` | no
-| regional_loc | The location for a regional bucket. Supported values are **au-syd, eu-de, eu-gb, jp-tok, us-east, or us-south**. | `string` | no
-| type | Specifies the archive type to which you want the object to transition. Supported values are  **Glacier or Accelerated**. | `string` |yes
-| rule_id | Unique identifier for the rule. | `string` | no
-| days | Specifies the number of days when the specific expire rule action takes effect. | `int` | no
-| date | After the specifies date , the current version of objects in your bucket expires. | `string` | no
-| expired_object_delete_marker | Expired object delete markers can be automatically cleaned up to improve performance in bucket. This cannot be used alongside version expiration. | `bool` | no
-| prefix | Specifies a prefix filter to apply to only a subset of objects with names that match the prefix. | `string` | no
-| noncurrent_days | Configuration parameter in your policy that says how long to retain a non-current version before deleting it. | `int` | no
-| days_after_initiation | Specifies the number of days that govern the automatic cancellation of part upload. Clean up incomplete multi-part uploads after a period of time. | `int` | no
-| default | Specifies a default retention period to apply in all objects in the bucket. | `int` | yes
-| maximum | Specifies maximum duration of time an object can be kept unmodified in the bucket. | `int` | yes
-| minimum | Specifies minimum duration of time an object must be kept unmodified in the bucket. | `int` | yes
-| permanent | Specifies a permanent retention status either enable or disable for a bucket. | `bool` | no
-| enable | Specifies Versioning status either **enable or suspended** for an objects in the bucket. | `bool` | no
-| hard_quota | sets a maximum amount of storage (in bytes) available for a bucket. | `int` | no
-| object_lock | enables Object Lock on a bucket. | `bool` | no
-| bucket\_crn | The CRN of the source COS bucket. | `string` | yes |
-| bucket\_location | The location of the source COS bucket. | `string` | yes |
-| destination_bucket_crn | The CRN of your destination bucket that you want to replicate to. | `string` | yes
-| deletemarker_replication_status | Specifies whether Object storage replicates delete markers.  Specify true for Enabling it or false for Disabling it. | `string` | no
-| status | Specifies whether the rule is enabled. Specify true for Enabling it or false for Disabling it. | `string` | yes
-| rule_id | The rule id. | `string` | no
-| priority | A priority is associated with each rule. The rule will be applied in a higher priority if there are multiple rules configured. The higher the number, the higher the priority | `string` | no
-| prefix | An object key name prefix that identifies the subset of objects to which the rule applies. | `string` | no
-| bucket_crn | The CRN of the COS bucket on which Object Lock is enabled or should be enabled. | `string` | yes
-| bucket_location | Location of the COS bucket. | `string` | yes
-| endpoint_type | Endpoint types of the COS bucket. | `string` | no
-| object_lock_enabled | Enable Object Lock on an existing COS bucket. | `string` | yes
-| mode | Retention mode for the Object Lock configuration. | `string` | yes
-| years | Retention period in terms of years after which the object can be deleted. | `int` | no
-| days | Retention period in terms of days after which the object can be deleted. | `int` | no
-| key | Object key name to use when a 4XX class error occurs given as error document. | `string` | no
-| suffix | The home or default page of the website when static web hosting configuration is added. | `string` | Yes
-| hostname | Name of the host where requests are redirected. | `string` | Yes
-| protocol | Protocol to use when redirecting requests. The default is the protocol that is used in the original request. | `string` | No
-| http_error_code_returned_equals | HTTP error code when the redirect is applied. | `string` | No
-| key_prefix_equals | Object key name prefix when the redirect is applied. | `string` | No
-| host_name | Host name to use in the redirect request. | `string` | Yes
-| protocol | Protocol to use when redirecting requests. | `string` | No
-| http_redirect_code | HTTP redirect code to use on the response. | `string` | No
-| replace_key_with | Specific object key to use in the redirect request. | `string` | No
-| replace_key_prefix_with | Object key prefix to use in the redirect request. | `string` | No
-| days | Days after which the lifecycle rule expiration will be applied on the object. | `int` | No
-| date | Date after which the lifecycle rule expiration will be applied on the object. | `int` | No
-| expire_object_delete_marker | Indicates whether ibm will remove a delete marker with no noncurrent versions. | `bool` | No
-| days | Days after which the lifecycle rule transition will be applied on the object. | `int` | No
-| date | Date after which the lifecycle rule transition will be applied on the object. | `int` | No
-| storage_class | Class of storage used to store the object. | `string` | No
-| noncurrent_days | Number of days an object is noncurrent before lifecycle action is performed. | `int` | No
-| days_after_initiatiob | Number of days after which incomplete multipart uploads are aborted. | `int` | No
-| id | Unique identifier for lifecycle rule. | `int` | Yes
-| status | Whether the rule is currently being applied. | `int` | Yes
-| object_size_greater_than | Expiration rule will be applicable to the objects having size greater than specified value of his argument. | `int` | No
-| object_size_less_than | Expiration rule will be applicable to the objects having size lesser than specified value of his argument. | `int` | No
-| tag | Expiration rule will be applicable to the objects having the key-value tags specified by this attribute. | `object` | Yes
-
+| Name                                | Description                                                                                                                                                                                                                                                                                                                                                                                                    | Type     | Required |
+| ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | -------- |
+| bucket_name                         | Name of the bucket.                                                                                                                                                                                                                                                                                                                                                                                            | `string` | yes      |
+| resource_group_name                 | Name of the resource group.                                                                                                                                                                                                                                                                                                                                                                                    | `string` | yes      |
+| satellite_location_id               | satellite location.                                                                                                                                                                                                                                                                                                                                                                                            | `string` | no       |
+| storage                             | The storage class that you want to use for the bucket. Supported values are **standard, vault, cold, flex, and smart**.                                                                                                                                                                                                                                                                                        | `string` | no       |
+| region                              | The location for a cross-regional bucket. Supported values are **us, eu, and ap**.                                                                                                                                                                                                                                                                                                                             | `string` | no       |
+| read_data_events                    | If set to **true**, all object read events (i.e. downloads) will be sent to Activity Tracker.                                                                                                                                                                                                                                                                                                                  | `bool`   | no       |
+| write_data_events                   | If set to **true**, all object write events (i.e. uploads) will be sent to Activity Tracker.                                                                                                                                                                                                                                                                                                                   | `bool`   | no       |
+| management_events                   | If set to **true**, all bucket management events will be sent to Activity Tracker.This field only applies if `activity_tracker_crn` is not populated.                                                                                                                                                                                                                                                          | `bool`   | no       |
+| activity_tracker_crn                | When the `activity_tracker_crn` is not populated, then enabled events are sent to the Activity Tracker instance associated to the container's location unless otherwise specified in the Activity Tracker Event Routing service configuration.If `activity_tracker_crn` is populated, then enabled events are sent to the Activity Tracker instance specified and bucket management events are always enabled. | `string` | no       |
+| usage_metrics_enabled               | If set to **true**, all usage metrics (i.e. `bytes_used`) will be sent to the monitoring service.                                                                                                                                                                                                                                                                                                              | `bool`   | no       |
+| request_metrics_enabled             | If set to **true**, all request metrics (i.e. `rest.object.head`) will be sent to the monitoring service.                                                                                                                                                                                                                                                                                                      | `bool`   | no       |
+| metrics_monitoring_crn              | When the `metrics_monitoring_crn` is not populated, then enabled metrics are sent to the monitoring instance associated to the container's location unless otherwise specified in the Metrics Router service configuration.If `metrics_monitoring_crn` is populated, then enabled events are sent to the Metrics Monitoring instance specified.                                                                | `string` | no       |
+| regional_loc                        | The location for a regional bucket. Supported values are **au-syd, eu-de, eu-gb, jp-tok, us-east, or us-south**.                                                                                                                                                                                                                                                                                               | `string` | no       |
+| type                                | Specifies the archive type to which you want the object to transition. Supported values are  **Glacier or Accelerated**.                                                                                                                                                                                                                                                                                       | `string` | yes      |
+| rule_id                             | Unique identifier for the rule.                                                                                                                                                                                                                                                                                                                                                                                | `string` | no       |
+| days                                | Specifies the number of days when the specific expire rule action takes effect.                                                                                                                                                                                                                                                                                                                                | `int`    | no       |
+| date                                | After the specifies date , the current version of objects in your bucket expires.                                                                                                                                                                                                                                                                                                                              | `string` | no       |
+| expired_object_delete_marker        | Expired object delete markers can be automatically cleaned up to improve performance in bucket. This cannot be used alongside version expiration.                                                                                                                                                                                                                                                              | `bool`   | no       |
+| prefix                              | Specifies a prefix filter to apply to only a subset of objects with names that match the prefix.                                                                                                                                                                                                                                                                                                               | `string` | no       |
+| noncurrent_days                     | Configuration parameter in your policy that says how long to retain a non-current version before deleting it.                                                                                                                                                                                                                                                                                                  | `int`    | no       |
+| days_after_initiation               | Specifies the number of days that govern the automatic cancellation of part upload. Clean up incomplete multi-part uploads after a period of time.                                                                                                                                                                                                                                                             | `int`    | no       |
+| default                             | Specifies a default retention period to apply in all objects in the bucket.                                                                                                                                                                                                                                                                                                                                    | `int`    | yes      |
+| maximum                             | Specifies maximum duration of time an object can be kept unmodified in the bucket.                                                                                                                                                                                                                                                                                                                             | `int`    | yes      |
+| minimum                             | Specifies minimum duration of time an object must be kept unmodified in the bucket.                                                                                                                                                                                                                                                                                                                            | `int`    | yes      |
+| permanent                           | Specifies a permanent retention status either enable or disable for a bucket.                                                                                                                                                                                                                                                                                                                                  | `bool`   | no       |
+| enable                              | Specifies Versioning status either **enable or suspended** for an objects in the bucket.                                                                                                                                                                                                                                                                                                                       | `bool`   | no       |
+| hard_quota                          | sets a maximum amount of storage (in bytes) available for a bucket.                                                                                                                                                                                                                                                                                                                                            | `int`    | no       |
+| object_lock                         | enables Object Lock on a bucket.                                                                                                                                                                                                                                                                                                                                                                               | `bool`   | no       |
+| bucket\_crn                         | The CRN of the source COS bucket.                                                                                                                                                                                                                                                                                                                                                                              | `string` | yes      |
+| bucket\_location                    | The location of the source COS bucket.                                                                                                                                                                                                                                                                                                                                                                         | `string` | yes      |
+| destination_bucket_crn              | The CRN of your destination bucket that you want to replicate to.                                                                                                                                                                                                                                                                                                                                              | `string` | yes      |
+| deletemarker_replication_status     | Specifies whether Object storage replicates delete markers.  Specify true for Enabling it or false for Disabling it.                                                                                                                                                                                                                                                                                           | `string` | no       |
+| status                              | Specifies whether the rule is enabled. Specify true for Enabling it or false for Disabling it.                                                                                                                                                                                                                                                                                                                 | `string` | yes      |
+| rule_id                             | The rule id.                                                                                                                                                                                                                                                                                                                                                                                                   | `string` | no       |
+| priority                            | A priority is associated with each rule. The rule will be applied in a higher priority if there are multiple rules configured. The higher the number, the higher the priority                                                                                                                                                                                                                                  | `string` | no       |
+| prefix                              | An object key name prefix that identifies the subset of objects to which the rule applies.                                                                                                                                                                                                                                                                                                                     | `string` | no       |
+| bucket_crn                          | The CRN of the COS bucket on which Object Lock is enabled or should be enabled.                                                                                                                                                                                                                                                                                                                                | `string` | yes      |
+| bucket_location                     | Location of the COS bucket.                                                                                                                                                                                                                                                                                                                                                                                    | `string` | yes      |
+| endpoint_type                       | Endpoint types of the COS bucket.                                                                                                                                                                                                                                                                                                                                                                              | `string` | no       |
+| object_lock_enabled                 | Enable Object Lock on an existing COS bucket.                                                                                                                                                                                                                                                                                                                                                                  | `string` | yes      |
+| mode                                | Retention mode for the Object Lock configuration.                                                                                                                                                                                                                                                                                                                                                              | `string` | yes      |
+| years                               | Retention period in terms of years after which the object can be deleted.                                                                                                                                                                                                                                                                                                                                      | `int`    | no       |
+| days                                | Retention period in terms of days after which the object can be deleted.                                                                                                                                                                                                                                                                                                                                       | `int`    | no       |
+| key                                 | Object key name to use when a 4XX class error occurs given as error document.                                                                                                                                                                                                                                                                                                                                  | `string` | no       |
+| suffix                              | The home or default page of the website when static web hosting configuration is added.                                                                                                                                                                                                                                                                                                                        | `string` | Yes      |
+| hostname                            | Name of the host where requests are redirected.                                                                                                                                                                                                                                                                                                                                                                | `string` | Yes      |
+| protocol                            | Protocol to use when redirecting requests. The default is the protocol that is used in the original request.                                                                                                                                                                                                                                                                                                   | `string` | No       |
+| http_error_code_returned_equals     | HTTP error code when the redirect is applied.                                                                                                                                                                                                                                                                                                                                                                  | `string` | No       |
+| key_prefix_equals                   | Object key name prefix when the redirect is applied.                                                                                                                                                                                                                                                                                                                                                           | `string` | No       |
+| host_name                           | Host name to use in the redirect request.                                                                                                                                                                                                                                                                                                                                                                      | `string` | Yes      |
+| protocol                            | Protocol to use when redirecting requests.                                                                                                                                                                                                                                                                                                                                                                     | `string` | No       |
+| http_redirect_code                  | HTTP redirect code to use on the response.                                                                                                                                                                                                                                                                                                                                                                     | `string` | No       |
+| replace_key_with                    | Specific object key to use in the redirect request.                                                                                                                                                                                                                                                                                                                                                            | `string` | No       |
+| replace_key_prefix_with             | Object key prefix to use in the redirect request.                                                                                                                                                                                                                                                                                                                                                              | `string` | No       |
+| days                                | Days after which the lifecycle rule expiration will be applied on the object.                                                                                                                                                                                                                                                                                                                                  | `int`    | No       |
+| date                                | Date after which the lifecycle rule expiration will be applied on the object.                                                                                                                                                                                                                                                                                                                                  | `int`    | No       |
+| expire_object_delete_marker         | Indicates whether ibm will remove a delete marker with no noncurrent versions.                                                                                                                                                                                                                                                                                                                                 | `bool`   | No       |
+| days                                | Days after which the lifecycle rule transition will be applied on the object.                                                                                                                                                                                                                                                                                                                                  | `int`    | No       |
+| date                                | Date after which the lifecycle rule transition will be applied on the object.                                                                                                                                                                                                                                                                                                                                  | `int`    | No       |
+| storage_class                       | Class of storage used to store the object.                                                                                                                                                                                                                                                                                                                                                                     | `string` | No       |
+| noncurrent_days                     | Number of days an object is noncurrent before lifecycle action is performed.                                                                                                                                                                                                                                                                                                                                   | `int`    | No       |
+| days_after_initiatiob               | Number of days after which incomplete multipart uploads are aborted.                                                                                                                                                                                                                                                                                                                                           | `int`    | No       |
+| id                                  | Unique identifier for lifecycle rule.                                                                                                                                                                                                                                                                                                                                                                          | `int`    | Yes      |
+| status                              | Whether the rule is currently being applied.                                                                                                                                                                                                                                                                                                                                                                   | `int`    | Yes      |
+| object_size_greater_than            | Expiration rule will be applicable to the objects having size greater than specified value of his argument.                                                                                                                                                                                                                                                                                                    | `int`    | No       |
+| object_size_less_than               | Expiration rule will be applicable to the objects having size lesser than specified value of his argument.                                                                                                                                                                                                                                                                                                     | `int`    | No       |
+| tag                                 | Expiration rule will be applicable to the objects having the key-value tags specified by this attribute.                                                                                                                                                                                                                                                                                                       | `object` | Yes      |
+| backup_vault_name                   | Name of the backup vault.                                                                                                                                                                                                                                                                                                                                                                                      | `string` | Yes      |
+| service_instance_id                 | CRN of the COS instance where the backup vault is to be created.                                                                                                                                                                                                                                                                                                                                               | `string` | Yes      |
+| activity_tracking_management_events | Whether to send notification for the management events for backup vault.                                                                                                                                                                                                                                                                                                                                       | `bool`   | No       |
+| metrics_monitoring_usage_metrics    | Whether usage metrics are collected for this BackupVault.                                                                                                                                                                                                                                                                                                                                                      | `bool`   | No       |
+| kms_key_crn                         | Crn of the Key protect root.                                                                                                                                                                                                                                                                                                                                                                                   | `string` | No       |
+| bucket_crn                          | CRN of the source bucket.                                                                                                                                                                                                                                                                                                                                                                                      | `string` | Yes      |
+| delete_after_days                   | Number of days after which the data contained within the RecoveryRange will be deleted.                                                                                                                                                                                                                                                                                                                        | `int`    | Yes      |
+| policy_name                         | Name of the policy.                                                                                                                                                                                                                                                                                                                                                                                            | `string` | Yes      |
+| backup_type                         | Backup type. Currently only  `continuous` is supported.                                                                                                                                                                                                                                                                                                                                                        | `string` | Yes      |
+| target_backup_vault_crn             | CRN of the target backup vault.                                                                                                                                                                                                                                                                                                                                                                                | `string` | Yes      |
 {: caption="inputs"}
