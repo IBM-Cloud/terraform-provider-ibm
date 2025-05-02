@@ -357,7 +357,7 @@ func resourceIBMIsShareSnapshotCreate(context context.Context, d *schema.Resourc
 	d.SetId(fmt.Sprintf("%s/%s", *createShareSnapshotOptions.ShareID, *shareSnapshot.ID))
 	_, err = isWaitForShareSnapshotAvailable(context, vpcClient, *createShareSnapshotOptions.ShareID, *shareSnapshot.ID, d, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
-		return diag.FromErr(err)
+		return flex.TerraformErrorf(err, fmt.Sprintf("isWaitForShareSnapshotAvailable failed: %s", err.Error()), "ibm_is_share_snapshot", "create").GetDiag()
 	}
 	if _, ok := d.GetOk("access_tags"); ok {
 		oldList, newList := d.GetChange(isSubnetAccessTags)
@@ -579,7 +579,7 @@ func resourceIBMIsShareSnapshotUpdate(context context.Context, d *schema.Resourc
 		}
 		_, err = isWaitForShareSnapshotAvailable(context, vpcClient, parts[0], parts[1], d, d.Timeout(schema.TimeoutCreate))
 		if err != nil {
-			return diag.FromErr(err)
+			return flex.TerraformErrorf(err, fmt.Sprintf("isWaitForShareSnapshotAvailable failed: %s", err.Error()), "ibm_is_share_snapshot", "update").GetDiag()
 		}
 	}
 	if d.HasChange("access_tags") {
