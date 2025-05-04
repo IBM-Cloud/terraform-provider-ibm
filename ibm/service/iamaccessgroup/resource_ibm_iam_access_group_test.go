@@ -9,6 +9,7 @@ import (
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 
 	"github.com/IBM/platform-services-go-sdk/iamaccessgroupsv2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -100,9 +101,9 @@ func testAccCheckIBMIAMAccessGroupDestroy(s *terraform.State) error {
 		}
 		_, detailResponse, err := accClient.GetAccessGroup(getAccessGroupOptions)
 		if err == nil {
-			return fmt.Errorf("Access group still exists: %s", rs.Primary.ID)
+			return flex.FmtErrorf("Access group still exists: %s", rs.Primary.ID)
 		} else if detailResponse.StatusCode != 404 {
-			return fmt.Errorf("[ERROR] Error waiting for access group (%s) to be destroyed: %s", rs.Primary.ID, err)
+			return flex.FmtErrorf("[ERROR] Error waiting for access group (%s) to be destroyed: %s", rs.Primary.ID, err)
 		}
 	}
 
@@ -114,7 +115,7 @@ func testAccCheckIBMIAMAccessGroupExists(n string, obj iamaccessgroupsv2.Group) 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return flex.FmtErrorf("Not found: %s", n)
 		}
 
 		accClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).IAMAccessGroupsV2()
