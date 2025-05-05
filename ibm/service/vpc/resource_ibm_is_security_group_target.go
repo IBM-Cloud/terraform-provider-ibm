@@ -132,8 +132,9 @@ func resourceIBMISSecurityGroupTargetCreate(d *schema.ResourceData, meta interfa
 			if err != nil || sg == nil {
 				return fmt.Errorf("[ERROR] Error while creating Security Group Target Binding %s\n%s", err, response)
 			}
+		} else {
+			return fmt.Errorf("[ERROR] Error while creating Security Group Target Binding %s\n%s", err, response)
 		}
-		return fmt.Errorf("[ERROR] Error while creating Security Group Target Binding %s\n%s", err, response)
 	}
 	sgtarget := sg.(*vpcv1.SecurityGroupTargetReference)
 	d.SetId(fmt.Sprintf("%s/%s", securityGroupID, *sgtarget.ID))
