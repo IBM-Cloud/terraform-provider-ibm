@@ -215,8 +215,8 @@ func dataSourceIbmConfigAggregatorConfigurationsRead(context context.Context, d 
 	d.SetId(dataSourceIbmConfigAggregatorConfigurationsID(d))
 
 	mapSlice := []map[string]interface{}{}
-	for _, modelItem := range allItems {
-		modelMap, err := DataSourceIbmConfigAggregatorConfigurationsConfigToMap(&modelItem)
+	for _, model := range allItems {
+		modelMap, err := DataSourceIbmConfigAggregatorConfigurationsConfigToMap(&model)
 		if err != nil {
 			tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_config_aggregator_configurations", "read")
 			return tfErr.GetDiag()
@@ -248,15 +248,15 @@ func DataSourceIbmConfigAggregatorConfigurationsPaginatedPreviousToMap(model *co
 	return modelMap, nil
 }
 
-func DataSourceIbmConfigAggregatorConfigurationsConfigToMap(modelItem *configurationaggregatorv1.Config) (map[string]interface{}, error) {
-	if modelItem == nil {
-		return nil, fmt.Errorf("modelItem is nil")
+func DataSourceIbmConfigAggregatorConfigurationsConfigToMap(model *configurationaggregatorv1.Config) (map[string]interface{}, error) {
+	if model == nil {
+		return nil, fmt.Errorf("model is nil")
 	}
 
 	// Convert About struct to JSON string or "{}"
 	aboutStr := "{}"
-	if modelItem.About != nil {
-		bytes, err := json.Marshal(modelItem.About)
+	if model.About != nil {
+		bytes, err := json.Marshal(model.About)
 		if err != nil {
 			return nil, fmt.Errorf("failed to marshal About: %v", err)
 		}
@@ -265,8 +265,8 @@ func DataSourceIbmConfigAggregatorConfigurationsConfigToMap(modelItem *configura
 
 	// Convert Config struct to JSON string or "{}"
 	configStr := "{}"
-	if modelItem.Config != nil {
-		bytes, err := json.Marshal(modelItem.Config)
+	if model.Config != nil {
+		bytes, err := json.Marshal(model.Config)
 		if err != nil {
 			return nil, fmt.Errorf("failed to marshal Config: %v", err)
 		}
