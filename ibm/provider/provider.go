@@ -17,7 +17,6 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/apigateway"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/appconfiguration"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/appid"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/atracker"
@@ -241,7 +240,6 @@ func Provider() *schema.Provider {
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
-			"ibm_api_gateway":                      apigateway.DataSourceIBMApiGateway(),
 			"ibm_account":                          cloudfoundry.DataSourceIBMAccount(),
 			"ibm_app":                              cloudfoundry.DataSourceIBMApp(),
 			"ibm_app_domain_private":               cloudfoundry.DataSourceIBMAppDomainPrivate(),
@@ -625,7 +623,7 @@ func Provider() *schema.Provider {
 			"ibm_is_vpn_gateway_connection_peer_cidrs":  vpc.DataSourceIBMIsVPNGatewayConnectionPeerCidrs(),
 
 			"ibm_is_vpc_default_routing_table":       vpc.DataSourceIBMISVPCDefaultRoutingTable(),
-			"ibm_is_vpc_routing_table":               vpc.DataSourceIBMIBMIsVPCRoutingTable(),
+			"ibm_is_vpc_routing_table":               vpc.DataSourceIBMIsVPCRoutingTable(),
 			"ibm_is_vpc_routing_tables":              vpc.DataSourceIBMISVPCRoutingTables(),
 			"ibm_is_vpc_routing_table_route":         vpc.DataSourceIBMIBMIsVPCRoutingTableRoute(),
 			"ibm_is_vpc_routing_table_routes":        vpc.DataSourceIBMISVPCRoutingTableRoutes(),
@@ -1092,13 +1090,11 @@ func Provider() *schema.Provider {
 			"ibm_backup_recovery_connector_access_token":                         backuprecovery.ResourceIbmBackupRecoveryConnectorAccessToken(),
 			"ibm_backup_recovery_connector_update_user":                          backuprecovery.ResourceIbmBackupRecoveryConnectorUpdateUser(),
 
-			"ibm_api_gateway_endpoint":              apigateway.ResourceIBMApiGatewayEndPoint(),
-			"ibm_api_gateway_endpoint_subscription": apigateway.ResourceIBMApiGatewayEndpointSubscription(),
-			"ibm_app":                               cloudfoundry.ResourceIBMApp(),
-			"ibm_app_domain_private":                cloudfoundry.ResourceIBMAppDomainPrivate(),
-			"ibm_app_domain_shared":                 cloudfoundry.ResourceIBMAppDomainShared(),
-			"ibm_app_route":                         cloudfoundry.ResourceIBMAppRoute(),
-			"ibm_config_aggregator_settings":        configurationaggregator.AddConfigurationAggregatorInstanceFields(configurationaggregator.ResourceIbmConfigAggregatorSettings()),
+			"ibm_app":                        cloudfoundry.ResourceIBMApp(),
+			"ibm_app_domain_private":         cloudfoundry.ResourceIBMAppDomainPrivate(),
+			"ibm_app_domain_shared":          cloudfoundry.ResourceIBMAppDomainShared(),
+			"ibm_app_route":                  cloudfoundry.ResourceIBMAppRoute(),
+			"ibm_config_aggregator_settings": configurationaggregator.AddConfigurationAggregatorInstanceFields(configurationaggregator.ResourceIbmConfigAggregatorSettings()),
 
 			// AppID
 			"ibm_appid_action_url":               appid.ResourceIBMAppIDActionURL(),

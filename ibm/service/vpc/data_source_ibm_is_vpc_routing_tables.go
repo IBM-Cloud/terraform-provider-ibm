@@ -6,11 +6,14 @@ package vpc
 import (
 	//"encoding/json"
 
+	"context"
+	"fmt"
 	"log"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -36,7 +39,7 @@ const (
 
 func DataSourceIBMISVPCRoutingTables() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceIBMISVPCRoutingTablesList,
+		ReadContext: dataSourceIBMISVPCRoutingTablesList,
 		Schema: map[string]*schema.Schema{
 			isVpcID: {
 				Type:        schema.TypeString,
@@ -220,10 +223,12 @@ func DataSourceIBMISVPCRoutingTables() *schema.Resource {
 	}
 }
 
-func dataSourceIBMISVPCRoutingTablesList(d *schema.ResourceData, meta interface{}) error {
+func dataSourceIBMISVPCRoutingTablesList(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_vpc_routing_tables", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	vpcID := d.Get(isVpcID).(string)
@@ -239,10 +244,11 @@ func dataSourceIBMISVPCRoutingTablesList(d *schema.ResourceData, meta interface{
 		if start != "" {
 			listOptions.Start = &start
 		}
-		result, detail, err := sess.ListVPCRoutingTables(listOptions)
+		result, _, err := sess.ListVPCRoutingTablesWithContext(context, listOptions)
 		if err != nil {
-			log.Printf("Error reading list of VPC Routing Tables:%s\n%s", err, detail)
-			return err
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListVPCRoutingTablesWithContext failed %s", err), "(Data) ibm_is_vpc_routing_tables", "read")
+			log.Printf("[DEBUG] %s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		start = flex.GetNext(result.Next)
 		allrecs = append(allrecs, result.RoutingTables...)
@@ -352,8 +358,14 @@ func dataSourceIBMISVPCRoutingTablesList(d *schema.ResourceData, meta interface{
 	}
 
 	d.SetId(dataSourceIBMISVPCRoutingTablesID(d))
-	d.Set(isVpcID, vpcID)
-	d.Set(isRoutingTables, vpcRoutingTables)
+
+	if err = d.Set(isVpcID, vpcID); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting vpc: %s", err), "(Data) ibm_is_vpc_routing_tables", "read", "set-vpc").GetDiag()
+	}
+	if err = d.Set("routing_tables", vpcRoutingTables); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting routing_tables %s", err), "(Data) ibm_is_vpc_routing_tables", "read", "routing_tables-set").GetDiag()
+	}
+
 	return nil
 }
 

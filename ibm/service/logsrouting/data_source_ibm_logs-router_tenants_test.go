@@ -43,15 +43,14 @@ func testAccCheckIBMLogsRouterTenantsDataSourceConfigBasic(tenantName string) st
 	return fmt.Sprintf(`
 		 resource "ibm_logs_router_tenant" "logs_router_tenant_instance" {
 			 name = "%s"
-			 region = "br-sao"
+			 region = "ca-tor"
 			 targets {
-				 log_sink_crn = "crn:v1:bluemix:public:logdna:eu-de:a/3516b8fa0a174a71899f5affa4f18d78:3517d2ed-9429-af34-ad52-34278391cbc8::"
+				 log_sink_crn = "crn:v1:bluemix:public:logs:eu-de:a/3516b8fa0a174a71899f5affa4f18d78:3517d2ed-9429-af34-ad52-34278391cbc8::"
 				 name = "my-log-sink"
-				 type = "logdna"
+				 type = "logs"
 				 parameters {
 					 host = "www.example.com"
 					 port = 1
-					 access_credential = "%s"
 				 }
 			 }
 		 }
@@ -60,7 +59,7 @@ func testAccCheckIBMLogsRouterTenantsDataSourceConfigBasic(tenantName string) st
 			 name = ibm_logs_router_tenant.logs_router_tenant_instance.name
 			 region = ibm_logs_router_tenant.logs_router_tenant_instance.region
 		 }
-	 `, tenantName, acc.IngestionKey)
+	 `, tenantName)
 }
 
 func TestDataSourceIBMLogsRouterTenantsTenantToMap(t *testing.T) {
@@ -71,10 +70,10 @@ func TestDataSourceIBMLogsRouterTenantsTenantToMap(t *testing.T) {
 
 		targetTypeModel := make(map[string]interface{})
 		targetTypeModel["id"] = "C1C1C838-A4AC-4BD7-8BC6-3173B272429D"
-		targetTypeModel["log_sink_crn"] = "crn:v1:bluemix:public:logdna:eu-de:a/3516b8fa0a174a71899f5affa4f18d78:3517d2ed-9429-af34-ad52-34278391cbc8::"
+		targetTypeModel["log_sink_crn"] = "crn:v1:bluemix:public:logs:eu-de:a/3516b8fa0a174a71899f5affa4f18d78:3517d2ed-9429-af34-ad52-34278391cbc8::"
 		targetTypeModel["name"] = "my-logdna-log-sink"
 		targetTypeModel["etag"] = "c3a43545a7f2675970671ac3a57b8db067a1866b2222e1b950ee8da612e347c6"
-		targetTypeModel["type"] = "logdna"
+		targetTypeModel["type"] = "logs"
 		targetTypeModel["created_at"] = "2024-06-20T18:30:00.143156Z"
 		targetTypeModel["updated_at"] = "2024-06-20T18:30:00.143156Z"
 		targetTypeModel["parameters"] = []map[string]interface{}{targetParametersTypeLogDnaModel}
@@ -83,8 +82,9 @@ func TestDataSourceIBMLogsRouterTenantsTenantToMap(t *testing.T) {
 		model["id"] = "8717db99-2cfb-4ba6-a033-89c994c2e9f0"
 		model["created_at"] = "2024-06-20T18:30:00.143156Z"
 		model["updated_at"] = "2024-06-20T18:30:00.143156Z"
-		model["crn"] = "crn:v1:bluemix:public:logs-router:eu-de:a/3516b8fa0a174a71899f5affa4f18d78:3517d2ed-9429-af34-ad52-34278391cbc8::"
+		model["crn"] = "crn:v1:bluemix:public:logs:eu-de:a/3516b8fa0a174a71899f5affa4f18d78:3517d2ed-9429-af34-ad52-34278391cbc8::"
 		model["name"] = "my-logging-tenant"
+		model["type"] = "logs"
 		model["etag"] = "822b4b5423e225206c1d75666595714a11925cd0f82b229839864443d6c3c049"
 		model["targets"] = []map[string]interface{}{targetTypeModel}
 
@@ -97,10 +97,10 @@ func TestDataSourceIBMLogsRouterTenantsTenantToMap(t *testing.T) {
 
 	targetTypeModel := new(ibmcloudlogsroutingv0.TargetTypeLogDna)
 	targetTypeModel.ID = CreateMockUUID("C1C1C838-A4AC-4BD7-8BC6-3173B272429D")
-	targetTypeModel.LogSinkCRN = core.StringPtr("crn:v1:bluemix:public:logdna:eu-de:a/3516b8fa0a174a71899f5affa4f18d78:3517d2ed-9429-af34-ad52-34278391cbc8::")
+	targetTypeModel.LogSinkCRN = core.StringPtr("crn:v1:bluemix:public:logs:eu-de:a/3516b8fa0a174a71899f5affa4f18d78:3517d2ed-9429-af34-ad52-34278391cbc8::")
 	targetTypeModel.Name = core.StringPtr("my-logdna-log-sink")
 	targetTypeModel.Etag = core.StringPtr("c3a43545a7f2675970671ac3a57b8db067a1866b2222e1b950ee8da612e347c6")
-	targetTypeModel.Type = core.StringPtr("logdna")
+	targetTypeModel.Type = core.StringPtr("logs")
 	targetTypeModel.CreatedAt = core.StringPtr("2024-06-20T18:30:00.143156Z")
 	targetTypeModel.UpdatedAt = core.StringPtr("2024-06-20T18:30:00.143156Z")
 	targetTypeModel.Parameters = targetParametersTypeLogDnaModel

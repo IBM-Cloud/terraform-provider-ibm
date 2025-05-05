@@ -45,7 +45,6 @@ provider "ibm" {
 | Service | Endpoint Variable |
 |---------|-----------------|
 |Account Management|IBMCLOUD_ACCOUNT_MANAGEMENT_API_ENDPOINT|
-|API Gateway|IBMCLOUD_API_GATEWAY_ENDPOINT|
 |App Id|IBMCLOUD_APPID_MANAGEMENT_API_ENDPOINT|
 |Atracker|IBMCLOUD_ATRACKER_API_ENDPOINT|
 |Catalog Management|IBMCLOUD_CATALOG_MANAGEMENT_API_ENDPOINT|

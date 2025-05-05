@@ -21,7 +21,7 @@ func TestAccIBMPISAPProfileDataSourceBasic(t *testing.T) {
 				Config: testAccCheckIBMPISAPProfileDataSourceConfig(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_pi_sap_profile.test", "id"),
-					resource.TestCheckResourceAttr("data.ibm_pi_sap_profile.test", "id", acc.PiSAPProfileID),
+					resource.TestCheckResourceAttr("data.ibm_pi_sap_profile.test", "id", acc.Pi_sap_profile_id),
 				),
 			},
 		},
@@ -33,5 +33,5 @@ func testAccCheckIBMPISAPProfileDataSourceConfig() string {
 		data "ibm_pi_sap_profile" "test" {
 			pi_cloud_instance_id = "%s"
 			pi_sap_profile_id = "%s"
-		}`, acc.Pi_cloud_instance_id, acc.PiSAPProfileID)
+		}`, acc.Pi_cloud_instance_id, acc.Pi_sap_profile_id)
 }

@@ -192,7 +192,7 @@ func ResourceIBMPrivateDNSGLBMonitor() *schema.Resource {
 func ResourceIBMPrivateDNSGLBMonitorValidator() *validate.ResourceValidator {
 	monitorCheckTypes := "HTTP, HTTPS, TCP"
 	methods := "GET, HEAD"
-	expectedcode := "200,201,202,203,204,205,206,207,208,226,2xx"
+	expectedcode := "200,201,202,203,204,205,206,207,208,226,2xx,3xx,4xx,5xx"
 
 	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
