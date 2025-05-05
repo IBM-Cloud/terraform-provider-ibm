@@ -172,14 +172,14 @@ resource "ibm_sm_custom_credentials_secret" "sm_custom_credentials_secret" {
   labels = var.sm_custom_credentials_labels
   configuration = "my_custom_credentials_configuration"
   parameters {
-    int_values = {
+    integer_values = {
         example_param_1 = 17
     }
     string_values = {
         example_param_2 = "str2"
         example_param_3 = "str3"
     }
-    bool_values = {
+    boolean_values = {
         example_param_4 = false
     }
   }

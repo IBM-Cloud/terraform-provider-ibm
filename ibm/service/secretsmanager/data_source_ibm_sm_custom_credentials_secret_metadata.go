@@ -84,14 +84,14 @@ func DataSourceIbmSmCustomCredentialsSecretMetadata() *schema.Resource {
 				Description: "The parameters that are passed to the Custom Credentials engine.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"bool_values": &schema.Schema{
+						"boolean_values": &schema.Schema{
 							Type:        schema.TypeMap,
 							Computed:    true,
 							Description: "Pararmeters that have boolean values.",
 							Elem: &schema.Schema{
 								Type: schema.TypeBool,
 							}},
-						"int_values": &schema.Schema{
+						"integer_values": &schema.Schema{
 							Type:        schema.TypeMap,
 							Computed:    true,
 							Description: "Pararmeters that have integer values.",

@@ -23,14 +23,14 @@ resource "ibm_sm_custom_credentials_secret" "sm_custom_credentials_secret" {
   labels = ["my-label"]
   configuration = "my_custom_credentials_configuration"
   parameters {
-    int_values = {
+    integer_values = {
         example_param_1 = 17
     }
     string_values = {
         example_param_2 = "str2"
         example_param_3 = "str3"
     }
-    bool_values = {
+    boolean_values = {
         example_param_4 = false
     }
   }
@@ -59,11 +59,11 @@ Review the argument reference that you can specify for your resource.
   * Constraints: The maximum length is `30` items.
 * `name` - (Required, String) The human-readable name of your secret.
     * Constraints: The maximum length is `256` characters. The minimum length is `2` characters. The value must match regular expression `^[A-Za-z0-9_][A-Za-z0-9_]*(?:_*-*\.*[A-Za-z0-9]*)*[A-Za-z0-9]+$`.
-* `parameters` - (Optional, Forces new resource, List) The parameters that are passed to the Code Engine job.
+* `parameters` - (Optional, List) The parameters that are passed to the Code Engine job.
   Nested scheme for **parameters**:
-  * `int_values` - (Optional, Forces new resource, Map) Values of integer parameters.
-  * `string_values` - (Optional, Forces new resource, Map) Values of string parameters.
-  * `bool_values` - (Optional, Forces new resource, Map) Values of boolean parameters.
+  * `integer_values` - (Optional, Map) Values of integer parameters.
+  * `string_values` - (Optional, Map) Values of string parameters.
+  * `boolean_values` - (Optional, Map) Values of boolean parameters.
 * `rotation` - (Optional, List) Determines whether Secrets Manager rotates your secrets automatically.
   Nested scheme for **rotation**:
     * `auto_rotate` - (Optional, Boolean) Determines whether Secrets Manager rotates your secret automatically.Default is `false`. If `auto_rotate` is set to `true` the service rotates your secret based on the defined interval.
@@ -86,9 +86,9 @@ In addition to all argument references listed, you can access the following attr
   * Constraints: The maximum length is `128` characters. The minimum length is `4` characters.
 * `credentials_content` - (List) The credentials that were generated for this secret.
   Nested scheme for **credentials_content**:
-  * `int_values` - (Map) Values of integer credentials.
+  * `integer_values` - (Map) Values of integer credentials.
   * `string_values` - (Map) Values of string credentials.
-  * `bool_values` - (Map) Values of boolean credentials.
+  * `boolean_values` - (Map) Values of boolean credentials.
 * `crn` - (String) A CRN that uniquely identifies an IBM Cloud resource.
   * Constraints: The maximum length is `512` characters. The minimum length is `9` characters. The value must match regular expression `/^crn:v[0-9](:([A-Za-z0-9-._~!$&'()*+,;=@\/]|%[0-9A-Z]{2})*){8}$/`.
 * `downloaded` - (Boolean) Indicates whether the secret data that is associated with a secret version was retrieved in a call to the service API.

@@ -59,9 +59,9 @@ In addition to all argument references listed, you can access the following attr
 
 * `parameters` - (List) The parameters that were passed to the Code Engine job.
   Nested scheme for **parameters**:
-  * `int_values` - (Map) Values of integer parameters.
+  * `integer_values` - (Map) Values of integer parameters.
   * `string_values` - (Map) Values of string parameters.
-  * `bool_values` - (Map) Values of boolean parameters.
+  * `boolean_values` - (Map) Values of boolean parameters.
 
 * `rotation` - (List) Determines whether Secrets Manager rotates your secrets automatically.
 Nested scheme for **rotation**:

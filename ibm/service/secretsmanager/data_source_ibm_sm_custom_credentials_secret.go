@@ -45,7 +45,7 @@ func DataSourceIbmSmCustomCredentialsSecret() *schema.Resource {
 				Description: "The credentials that were generated for this secret.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"bool_values": &schema.Schema{
+						"boolean_values": &schema.Schema{
 							Type:        schema.TypeMap,
 							Computed:    true,
 							Description: "Credentials that have boolean values.",
@@ -53,7 +53,7 @@ func DataSourceIbmSmCustomCredentialsSecret() *schema.Resource {
 								Type: schema.TypeBool,
 							},
 						},
-						"int_values": &schema.Schema{
+						"integer_values": &schema.Schema{
 							Type:        schema.TypeMap,
 							Computed:    true,
 							Description: "Credentials that have integer values.",
@@ -117,14 +117,14 @@ func DataSourceIbmSmCustomCredentialsSecret() *schema.Resource {
 				Description: "The parameters that are passed to the Custom Credentials engine.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"bool_values": &schema.Schema{
+						"boolean_values": &schema.Schema{
 							Type:        schema.TypeMap,
 							Computed:    true,
 							Description: "Pararmeters that have boolean values.",
 							Elem: &schema.Schema{
 								Type: schema.TypeBool,
 							}},
-						"int_values": &schema.Schema{
+						"integer_values": &schema.Schema{
 							Type:        schema.TypeMap,
 							Computed:    true,
 							Description: "Pararmeters that have integer values.",

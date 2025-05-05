@@ -1,8 +1,6 @@
 module github.com/IBM-Cloud/terraform-provider-ibm
 
-go 1.23.3
-
-toolchain go1.23.4
+go 1.24.2
 
 require (
 	github.com/IBM-Cloud/bluemix-go v0.0.0-20250324085928-caa6511f0c13
@@ -22,7 +20,7 @@ require (
 	github.com/IBM/eventstreams-go-sdk v1.4.0
 	github.com/IBM/go-sdk-core v1.1.0
 	github.com/IBM/go-sdk-core/v3 v3.2.4
-	github.com/IBM/go-sdk-core/v5 v5.19.0
+	github.com/IBM/go-sdk-core/v5 v5.19.1
 	github.com/IBM/ibm-backup-recovery-sdk-go v1.0.3
 	github.com/IBM/ibm-cos-sdk-go v1.12.0
 	github.com/IBM/ibm-cos-sdk-go-config/v2 v2.2.0
@@ -40,7 +38,7 @@ require (
 	github.com/IBM/scc-go-sdk/v5 v5.5.3
 	github.com/IBM/schematics-go-sdk v0.3.0
 	github.com/IBM/sds-go-sdk v1.0.1
-	github.com/IBM/secrets-manager-go-sdk/v2 v2.0.10
+	github.com/IBM/secrets-manager-go-sdk/v2 v2.0.11
 	github.com/IBM/vmware-go-sdk v0.1.3
 	github.com/IBM/vpc-beta-go-sdk v0.8.0
 	github.com/IBM/vpc-go-sdk v0.66.0
@@ -118,7 +116,7 @@ require (
 	github.com/go-ozzo/ozzo-validation/v4 v4.3.0 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
-	github.com/go-playground/validator/v10 v10.25.0 // indirect
+	github.com/go-playground/validator/v10 v10.26.0 // indirect
 	github.com/go-test/deep v1.1.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
@@ -245,8 +243,6 @@ replace github.com/hashicorp/consul/api v1.1.0 => github.com/hashicorp/consul/ap
 replace github.com/hashicorp/vault => github.com/hashicorp/vault v1.18.2
 
 replace github.com/hashicorp/vault/api/auth/approle => github.com/hashicorp/vault/api/auth/approle v0.8.0
-
-replace github.com/IBM/secrets-manager-go-sdk/v2 => /Users/haims/GolandProjects/secrets-manager-go-sdk
 
 exclude (
 	github.com/kubernetes-incubator/external-storage v0.0.0-00010101000000-000000000000

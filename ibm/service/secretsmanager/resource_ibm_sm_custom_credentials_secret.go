@@ -44,14 +44,14 @@ func ResourceIbmSmCustomCredentialsSecret() *schema.Resource {
 				Description: "The credentials that were generated for this secret.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"bool_values": &schema.Schema{
+						"boolean_values": &schema.Schema{
 							Type:        schema.TypeMap,
 							Computed:    true,
 							Description: "Credentials that have boolean values.",
 							Elem: &schema.Schema{
 								Type: schema.TypeBool,
 							}},
-						"int_values": &schema.Schema{
+						"integer_values": &schema.Schema{
 							Type:        schema.TypeMap,
 							Computed:    true,
 							Description: "Credentials that have integer values.",
@@ -103,22 +103,19 @@ func ResourceIbmSmCustomCredentialsSecret() *schema.Resource {
 				Type:        schema.TypeList,
 				MaxItems:    1,
 				Optional:    true,
-				ForceNew:    true,
 				Description: "The parameters that are passed to the Custom Credentials engine.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"bool_values": &schema.Schema{
+						"boolean_values": &schema.Schema{
 							Type:        schema.TypeMap,
 							Optional:    true,
-							ForceNew:    true,
 							Description: "Pararmeters that have boolean values.",
 							Elem: &schema.Schema{
 								Type: schema.TypeBool,
 							}},
-						"int_values": &schema.Schema{
+						"integer_values": &schema.Schema{
 							Type:        schema.TypeMap,
 							Optional:    true,
-							ForceNew:    true,
 							Description: "Pararmeters that have integer values.",
 							Elem: &schema.Schema{
 								Type: schema.TypeInt,
@@ -127,7 +124,6 @@ func ResourceIbmSmCustomCredentialsSecret() *schema.Resource {
 						"string_values": &schema.Schema{
 							Type:        schema.TypeMap,
 							Optional:    true,
-							ForceNew:    true,
 							Description: "Pararmeters that have string values.",
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
@@ -814,14 +810,14 @@ func customCredentialsSecretCommonRotationPolicyToMap(model *secretsmanagerv2.Co
 
 func resourceIbmSmCustomCredentialsSecretMapToParameters(modelMap map[string]interface{}) (map[string]interface{}, error) {
 	parameters := map[string]interface{}{}
-	if modelMap["bool_values"] != nil {
-		boolValues := modelMap["bool_values"].(map[string]interface{})
+	if modelMap["boolean_values"] != nil {
+		boolValues := modelMap["boolean_values"].(map[string]interface{})
 		for key, value := range boolValues {
 			parameters[key] = value
 		}
 	}
-	if modelMap["int_values"] != nil {
-		intValues := modelMap["int_values"].(map[string]interface{})
+	if modelMap["integer_values"] != nil {
+		intValues := modelMap["integer_values"].(map[string]interface{})
 		for key, value := range intValues {
 			parameters[key] = value
 		}
@@ -838,17 +834,17 @@ func resourceIbmSmCustomCredentialsSecretMapToParameters(modelMap map[string]int
 // Convert either a map of custom credentials parameters or a map of credentials to the model map with int, bool and string values
 func customCredentialsSecretFieldsToMap(fields map[string]interface{}) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["bool_values"] = make(map[string]bool)
-	modelMap["int_values"] = make(map[string]int)
+	modelMap["boolean_values"] = make(map[string]bool)
+	modelMap["integer_values"] = make(map[string]int)
 	modelMap["string_values"] = make(map[string]string)
 	for key, value := range fields {
 		switch keyType := value.(type) {
 		case float64:
-			modelMap["int_values"].(map[string]int)[key] = int(value.(float64))
+			modelMap["integer_values"].(map[string]int)[key] = int(value.(float64))
 		case string:
 			modelMap["string_values"].(map[string]string)[key] = value.(string)
 		case bool:
-			modelMap["bool_values"].(map[string]bool)[key] = value.(bool)
+			modelMap["boolean_values"].(map[string]bool)[key] = value.(bool)
 		default:
 			return nil, errors.New(fmt.Sprintf("[ERROR] field type not supported. Key: %s, Value: %v, Type: %v", key, value, keyType))
 		}

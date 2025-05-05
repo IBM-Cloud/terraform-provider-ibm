@@ -35,6 +35,7 @@ func ResourceIbmSmCustomCredentialsConfiguration() *schema.Resource {
 			},
 			"code_engine": &schema.Schema{
 				Type:        schema.TypeList,
+				MaxItems:    1,
 				Required:    true,
 				ForceNew:    true,
 				Description: "The parameters required to configure Code Engine.",
