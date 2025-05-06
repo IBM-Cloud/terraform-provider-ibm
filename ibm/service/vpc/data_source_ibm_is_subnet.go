@@ -4,18 +4,20 @@
 package vpc
 
 import (
+	"context"
 	"fmt"
 	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func DataSourceIBMISSubnet() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceIBMISSubnetRead,
+		ReadContext: dataSourceIBMISSubnetRead,
 
 		Schema: map[string]*schema.Schema{
 
@@ -208,18 +210,20 @@ func DataSourceIBMISSubnetValidator() *validate.ResourceValidator {
 	return &ibmISSubnetDataSourceValidator
 }
 
-func dataSourceIBMISSubnetRead(d *schema.ResourceData, meta interface{}) error {
-	err := subnetGetByNameOrID(d, meta)
+func dataSourceIBMISSubnetRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	err := subnetGetByNameOrID(context, d, meta)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func subnetGetByNameOrID(d *schema.ResourceData, meta interface{}) error {
+func subnetGetByNameOrID(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_subnet", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	var subnet *vpcv1.Subnet
 	if v, ok := d.GetOk("identifier"); ok {
@@ -227,9 +231,11 @@ func subnetGetByNameOrID(d *schema.ResourceData, meta interface{}) error {
 		getSubnetOptions := &vpcv1.GetSubnetOptions{
 			ID: &id,
 		}
-		subnetinfo, response, err := sess.GetSubnet(getSubnetOptions)
+		subnetinfo, _, err := sess.GetSubnetWithContext(context, getSubnetOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Getting Subnet (%s): %s\n%s", id, err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetSubnetWithContext failed: %s", err.Error()), "(Data) ibm_is_subnet", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		subnet = subnetinfo
 	} else if v, ok := d.GetOk(isSubnetName); ok {
@@ -245,9 +251,11 @@ func subnetGetByNameOrID(d *schema.ResourceData, meta interface{}) error {
 				vpcIDOk := vpcIdOk.(string)
 				getSubnetsListOptions.VPCID = &vpcIDOk
 			}
-			subnetsCollection, response, err := sess.ListSubnets(getSubnetsListOptions)
+			subnetsCollection, _, err := sess.ListSubnetsWithContext(context, getSubnetsListOptions)
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error Fetching subnets List %s\n%s", err, response)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListSubnetsWithContext failed: %s", err.Error()), "(Data) ibm_is_subnet", "read")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			start = flex.GetNext(subnetsCollection.Next)
 			allrecs = append(allrecs, subnetsCollection.Subnets...)
@@ -263,7 +271,10 @@ func subnetGetByNameOrID(d *schema.ResourceData, meta interface{}) error {
 			}
 		}
 		if subnet == nil {
-			return fmt.Errorf("[ERROR] No subnet found with name (%s)", name)
+			err = fmt.Errorf("[ERROR] No subnet found with name (%s)", name)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListSubnetsWithContext failed: %s", err.Error()), "(Data) ibm_is_subnet", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 
@@ -272,29 +283,55 @@ func subnetGetByNameOrID(d *schema.ResourceData, meta interface{}) error {
 	if subnet.RoutingTable != nil {
 		err = d.Set("routing_table", dataSourceSubnetFlattenroutingTable(*subnet.RoutingTable))
 		if err != nil {
-			return fmt.Errorf("Error setting routing_table %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting available_ipv4_address_count: %s", err), "(Data) ibm_is_subnet", "read", "set-routing_table").GetDiag()
 		}
 	}
-	d.Set(isSubnetName, *subnet.Name)
-	d.Set(isSubnetIpv4CidrBlock, *subnet.Ipv4CIDRBlock)
-	d.Set(isSubnetAvailableIpv4AddressCount, *subnet.AvailableIpv4AddressCount)
-	d.Set(isSubnetTotalIpv4AddressCount, *subnet.TotalIpv4AddressCount)
+	if err = d.Set("name", subnet.Name); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_is_subnet", "read", "set-name").GetDiag()
+	}
+	if err = d.Set("ipv4_cidr_block", subnet.Ipv4CIDRBlock); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting ipv4_cidr_block: %s", err), "(Data) ibm_is_subnet", "read", "set-ipv4_cidr_block").GetDiag()
+	}
+	if err = d.Set("available_ipv4_address_count", flex.IntValue(subnet.AvailableIpv4AddressCount)); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting available_ipv4_address_count: %s", err), "(Data) ibm_is_subnet", "read", "set-available_ipv4_address_count").GetDiag()
+	}
+	if err = d.Set("total_ipv4_address_count", flex.IntValue(subnet.TotalIpv4AddressCount)); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting total_ipv4_address_count: %s", err), "(Data) ibm_is_subnet", "read", "set-total_ipv4_address_count").GetDiag()
+	}
 	if subnet.NetworkACL != nil {
-		d.Set(isSubnetNetworkACL, *subnet.NetworkACL.ID)
+		if err = d.Set(isSubnetNetworkACL, *subnet.NetworkACL.ID); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting network_acl: %s", err), "(Data) ibm_is_subnet", "read", "set-network_acl").GetDiag()
+		}
 	}
 	if subnet.PublicGateway != nil {
-		d.Set(isSubnetPublicGateway, *subnet.PublicGateway.ID)
+		if err = d.Set(isSubnetPublicGateway, *subnet.PublicGateway.ID); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting public_gateway: %s", err), "(Data) ibm_is_subnet", "read", "set-public_gateway").GetDiag()
+		}
 	} else {
 		d.Set(isSubnetPublicGateway, nil)
 	}
-	d.Set(isSubnetStatus, *subnet.Status)
-	d.Set(isSubnetZone, *subnet.Zone.Name)
-	d.Set(isSubnetVPC, *subnet.VPC.ID)
-	d.Set(isSubnetVPCName, *subnet.VPC.Name)
+	if err = d.Set("status", subnet.Status); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting status: %s", err), "(Data) ibm_is_subnet", "read", "set-status").GetDiag()
+	}
+	if subnet.Zone != nil {
+		if err = d.Set(isSubnetZone, *subnet.Zone.Name); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting zone: %s", err), "(Data) ibm_is_subnet", "read", "set-zone").GetDiag()
+		}
+	}
+	if subnet.VPC != nil {
+		if err = d.Set(isSubnetVPC, *subnet.VPC.ID); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting vpc: %s", err), "(Data) ibm_is_subnet", "read", "set-vpc").GetDiag()
+		}
+		if err = d.Set(isSubnetVPCName, *subnet.VPC.Name); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting vpc_name: %s", err), "(Data) ibm_is_subnet", "read", "set-vpc_name").GetDiag()
+		}
+	}
 
 	controller, err := flex.GetBaseController(meta)
 	if err != nil {
-		return err
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetBaseController failed: %s", err.Error()), "(Data) ibm_is_subnet", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	tags, err := flex.GetGlobalTagsUsingCRN(meta, *subnet.CRN, "", isUserTagType)
@@ -308,17 +345,34 @@ func subnetGetByNameOrID(d *schema.ResourceData, meta interface{}) error {
 		log.Printf(
 			"Error on get of resource subnet (%s) access tags: %s", d.Id(), err)
 	}
-
-	d.Set(isSubnetTags, tags)
-	d.Set(isSubnetAccessTags, accesstags)
-	d.Set(isSubnetCRN, *subnet.CRN)
-	d.Set(flex.ResourceControllerURL, controller+"/vpc-ext/network/subnets")
-	d.Set(flex.ResourceName, *subnet.Name)
-	d.Set(flex.ResourceCRN, *subnet.CRN)
-	d.Set(flex.ResourceStatus, *subnet.Status)
+	if err = d.Set(isSubnetTags, tags); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting tags: %s", err), "(Data) ibm_is_subnet", "read", "set-tags").GetDiag()
+	}
+	if err = d.Set(isSubnetAccessTags, accesstags); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting access_tags: %s", err), "(Data) ibm_is_subnet", "read", "set-access_tags").GetDiag()
+	}
+	if err = d.Set("crn", subnet.CRN); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting crn: %s", err), "(Data) ibm_is_subnet", "read", "set-crn").GetDiag()
+	}
+	if err = d.Set(flex.ResourceControllerURL, controller+"/vpc-ext/network/subnets"); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_controller_url: %s", err), "(Data) ibm_is_subnet", "read", "set-resource_controller_url").GetDiag()
+	}
+	if err = d.Set(flex.ResourceName, *subnet.Name); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_name: %s", err), "(Data) ibm_is_subnet", "read", "set-resource_name").GetDiag()
+	}
+	if err = d.Set(flex.ResourceCRN, *subnet.CRN); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_crn: %s", err), "(Data) ibm_is_subnet", "read", "set-resource_crn").GetDiag()
+	}
+	if err = d.Set(flex.ResourceStatus, *subnet.Status); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_status: %s", err), "(Data) ibm_is_subnet", "read", "set-resource_status").GetDiag()
+	}
 	if subnet.ResourceGroup != nil {
-		d.Set(isSubnetResourceGroup, *subnet.ResourceGroup.ID)
-		d.Set(flex.ResourceGroupName, *subnet.ResourceGroup.Name)
+		if err = d.Set(isSubnetResourceGroup, *subnet.ResourceGroup.ID); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_group: %s", err), "(Data) ibm_is_subnet", "read", "set-resource_group").GetDiag()
+		}
+		if err = d.Set(flex.ResourceGroupName, *subnet.ResourceGroup.Name); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_group_name: %s", err), "(Data) ibm_is_subnet", "read", "set-resource_group_name").GetDiag()
+		}
 	}
 	return nil
 }
