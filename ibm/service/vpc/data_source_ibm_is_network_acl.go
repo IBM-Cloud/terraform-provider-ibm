@@ -356,7 +356,9 @@ func DataSourceIBMIsNetworkACL() *schema.Resource {
 func dataSourceIBMIsNetworkACLRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_network_acl", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	vpc_name_str := ""
@@ -375,10 +377,11 @@ func dataSourceIBMIsNetworkACLRead(context context.Context, d *schema.ResourceDa
 			if start != "" {
 				listNetworkAclsOptions.Start = &start
 			}
-			networkACLCollection, response, err := vpcClient.ListNetworkAclsWithContext(context, listNetworkAclsOptions)
+			networkACLCollection, _, err := vpcClient.ListNetworkAclsWithContext(context, listNetworkAclsOptions)
 			if err != nil || networkACLCollection == nil {
-				log.Printf("[DEBUG] ListNetworkAclsWithContext failed %s\n%s", err, response)
-				return diag.FromErr(fmt.Errorf("ListNetworkAclsWithContext failed %s\n%s", err, response))
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListNetworkAclsWithContext failed: %s", err.Error()), "(Data) ibm_is_network_acl", "read")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			start = flex.GetNext(networkACLCollection.Next)
 			allrecs = append(allrecs, networkACLCollection.NetworkAcls...)
@@ -396,8 +399,10 @@ func dataSourceIBMIsNetworkACLRead(context context.Context, d *schema.ResourceDa
 		}
 
 		if !acl_found {
-			log.Printf("[DEBUG] No networkACL found with given VPC %s and ACL name %s", vpc_name_str, network_acl_name)
-			return diag.FromErr(fmt.Errorf("[ERROR] No networkACL found with given VPC %s and ACL name %s", vpc_name_str, network_acl_name))
+			err = fmt.Errorf("[ERROR] No networkACL found with given VPC %s and ACL name %s", vpc_name_str, network_acl_name)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListNetworkAclsWithContext failed: %s", err.Error()), "(Data) ibm_is_network_acl", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	} else {
 
@@ -405,52 +410,53 @@ func dataSourceIBMIsNetworkACLRead(context context.Context, d *schema.ResourceDa
 
 		getNetworkACLOptions.SetID(d.Get("network_acl").(string))
 
-		networkACLInst, response, err := vpcClient.GetNetworkACLWithContext(context, getNetworkACLOptions)
+		networkACLInst, _, err := vpcClient.GetNetworkACLWithContext(context, getNetworkACLOptions)
 		if err != nil || networkACLInst == nil {
-			log.Printf("[DEBUG] GetNetworkACLWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("GetNetworkACLWithContext failed %s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetNetworkACLWithContext failed: %s", err.Error()), "(Data) ibm_is_network_acl", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		networkACL = networkACLInst
 	}
 	d.SetId(*networkACL.ID)
 	if err = d.Set("created_at", flex.DateTimeToString(networkACL.CreatedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting created_at: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting created_at: %s", err), "(Data) ibm_is_network_acl", "read", "set-created_at").GetDiag()
 	}
 	if err = d.Set("crn", networkACL.CRN); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting crn: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting crn: %s", err), "(Data) ibm_is_network_acl", "read", "set-crn").GetDiag()
 	}
 	if err = d.Set("href", networkACL.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting href: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting href: %s", err), "(Data) ibm_is_network_acl", "read", "set-href").GetDiag()
 	}
 	if err = d.Set("name", networkACL.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting name: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_is_network_acl", "read", "set-name").GetDiag()
 	}
 
 	if networkACL.ResourceGroup != nil {
 		err = d.Set(isNetworkACLResourceGroup, dataSourceNetworkACLFlattenResourceGroup(*networkACL.ResourceGroup))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting resource_group %s", err))
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_group: %s", err), "(Data) ibm_is_network_acl", "read", "set-resource_group").GetDiag()
 		}
 	}
 
 	if networkACL.Rules != nil {
 		err = d.Set(isNetworkACLRules, dataSourceNetworkACLFlattenRules(networkACL.Rules))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting rules %s", err))
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting rules: %s", err), "(Data) ibm_is_network_acl", "read", "set-rules").GetDiag()
 		}
 	}
 
 	if networkACL.Subnets != nil {
 		err = d.Set("subnets", dataSourceNetworkACLFlattenSubnets(networkACL.Subnets))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting subnets %s", err))
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting subnets: %s", err), "(Data) ibm_is_network_acl", "read", "set-subnets").GetDiag()
 		}
 	}
 
 	if networkACL.VPC != nil {
 		err = d.Set("vpc", dataSourceNetworkACLFlattenVPC(*networkACL.VPC))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting vpc %s", err))
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting vpc: %s", err), "(Data) ibm_is_network_acl", "read", "set-vpc").GetDiag()
 		}
 	}
 
@@ -459,7 +465,9 @@ func dataSourceIBMIsNetworkACLRead(context context.Context, d *schema.ResourceDa
 		log.Printf(
 			"Error on get of resource Network ACL (%s) access tags: %s", d.Id(), err)
 	}
-	d.Set(isNetworkACLAccessTags, accesstags)
+	if err = d.Set(isNetworkACLAccessTags, accesstags); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting access_tags: %s", err), "(Data) ibm_is_network_acl", "read", "set-access_tags").GetDiag()
+	}
 
 	return nil
 }
