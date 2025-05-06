@@ -432,7 +432,9 @@ func ResourceIbmIsDedicatedHostValidator() *validate.ResourceValidator {
 func resourceIbmIsDedicatedHostCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host", "create", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	createDedicatedHostOptions := &vpcv1.CreateDedicatedHostOptions{}
 	dedicatedHostPrototype := vpcv1.DedicatedHostPrototype{}
@@ -475,8 +477,9 @@ func resourceIbmIsDedicatedHostCreate(context context.Context, d *schema.Resourc
 
 	dedicatedHost, response, err := vpcClient.CreateDedicatedHostWithContext(context, createDedicatedHostOptions)
 	if err != nil {
-		log.Printf("[DEBUG] CreateDedicatedHostWithContext failed %s\n%s", err, response)
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateDedicatedHostWithContext failed: %s\n%s", err, response), "ibm_is_dedicated_host", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(*dedicatedHost.ID)
@@ -499,7 +502,9 @@ func resourceIbmIsDedicatedHostCreate(context context.Context, d *schema.Resourc
 func resourceIbmIsDedicatedHostRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	getDedicatedHostOptions := &vpcv1.GetDedicatedHostOptions{}
@@ -512,22 +517,27 @@ func resourceIbmIsDedicatedHostRead(context context.Context, d *schema.ResourceD
 			d.SetId("")
 			return nil
 		}
-		log.Printf("[DEBUG] GetDedicatedHostWithContext failed %s\n%s", err, response)
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetDedicatedHostWithContext failed: %s\n%s", err, response), "ibm_is_dedicated_host", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	if err = d.Set("available_memory", flex.IntValue(dedicatedHost.AvailableMemory)); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting available_memory: %s", err))
+		err = fmt.Errorf("[ERROR] Error setting available_memory: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host", "read", "set-available_memory").GetDiag()
 	}
 	availableVcpuMap := resourceIbmIsDedicatedHostVCPUToMap(*dedicatedHost.AvailableVcpu)
 	if err = d.Set("available_vcpu", []map[string]interface{}{availableVcpuMap}); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting available_vcpu: %s", err))
+		err = fmt.Errorf("[ERROR] Error setting available_vcpu: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host", "read", "set-available_vcpu").GetDiag()
 	}
 	if err = d.Set("created_at", dedicatedHost.CreatedAt.String()); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting created_at: %s", err))
+		err = fmt.Errorf("[ERROR] Error setting created_at: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host", "read", "set-created_at").GetDiag()
 	}
 	if err = d.Set("crn", dedicatedHost.CRN); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting crn: %s", err))
+		err = fmt.Errorf("[ERROR] Error setting crn: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host", "read", "set-crn").GetDiag()
 	}
 	disks := []map[string]interface{}{}
 	for _, disksItem := range dedicatedHost.Disks {
@@ -535,15 +545,18 @@ func resourceIbmIsDedicatedHostRead(context context.Context, d *schema.ResourceD
 		disks = append(disks, disksItemMap)
 	}
 	if err = d.Set("disks", disks); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting disks: %s", err))
+		err = fmt.Errorf("[ERROR] Error setting disks: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host", "read", "set-disks").GetDiag()
 	}
 	d.Set("host_group", *dedicatedHost.Group.ID)
 
 	if err = d.Set("href", dedicatedHost.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting href: %s", err))
+		err = fmt.Errorf("[ERROR] Error setting href: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host", "read", "set-href").GetDiag()
 	}
 	if err = d.Set("instance_placement_enabled", dedicatedHost.InstancePlacementEnabled); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting instance_placement_enabled: %s", err))
+		err = fmt.Errorf("[ERROR] Error setting instance_placement_enabled: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host", "read", "set-instance_placement_enabled").GetDiag()
 	}
 	instances := []map[string]interface{}{}
 	for _, instancesItem := range dedicatedHost.Instances {
@@ -551,40 +564,51 @@ func resourceIbmIsDedicatedHostRead(context context.Context, d *schema.ResourceD
 		instances = append(instances, instancesItemMap)
 	}
 	if err = d.Set("instances", instances); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting instances: %s", err))
+		err = fmt.Errorf("[ERROR] Error setting instances: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host", "read", "set-instances").GetDiag()
 	}
 	if err = d.Set("lifecycle_state", dedicatedHost.LifecycleState); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting lifecycle_state: %s", err))
+		err = fmt.Errorf("[ERROR] Error setting lifecycle_state: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host", "read", "set-lifecycle_state").GetDiag()
 	}
 	if err = d.Set("memory", flex.IntValue(dedicatedHost.Memory)); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting memory: %s", err))
+		err = fmt.Errorf("[ERROR] Error setting memory: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host", "read", "set-memory").GetDiag()
 	}
 	if err = d.Set("name", dedicatedHost.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting name: %s", err))
+		err = fmt.Errorf("[ERROR] Error setting name: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host", "read", "set-name").GetDiag()
 	}
 	if dedicatedHost.Numa != nil {
 		if err = d.Set("numa", dataSourceDedicatedHostFlattenNumaNodes(*dedicatedHost.Numa)); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting numa: %s", err))
+			err = fmt.Errorf("[ERROR] Error setting profile: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host", "read", "set-numa").GetDiag()
 		}
 	}
 
 	if err = d.Set("profile", *dedicatedHost.Profile.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting profile: %s", err))
+		err = fmt.Errorf("[ERROR] Error setting profile: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host", "read", "set-profile").GetDiag()
 	}
 	if err = d.Set("provisionable", dedicatedHost.Provisionable); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting provisionable: %s", err))
+		err = fmt.Errorf("[ERROR] Error setting provisionable: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host", "read", "set-provisionable").GetDiag()
 	}
 	if err = d.Set("resource_group", *dedicatedHost.ResourceGroup.ID); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting resource_group: %s", err))
+		err = fmt.Errorf("[ERROR] Error setting resource_group: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host", "read", "set-resource_group").GetDiag()
 	}
 	if err = d.Set("resource_type", dedicatedHost.ResourceType); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting resource_type: %s", err))
+		err = fmt.Errorf("[ERROR] Error setting resource_type: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host", "read", "set-resource_type").GetDiag()
 	}
 	if err = d.Set("socket_count", flex.IntValue(dedicatedHost.SocketCount)); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting socket_count: %s", err))
+		err = fmt.Errorf("[ERROR] Error setting socket_count: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host", "read", "set-socket_count").GetDiag()
 	}
 	if err = d.Set("state", dedicatedHost.State); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting state: %s", err))
+		err = fmt.Errorf("[ERROR] Error setting state: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host", "read", "set-state").GetDiag()
 	}
 	supportedInstanceProfiles := []map[string]interface{}{}
 	for _, supportedInstanceProfilesItem := range dedicatedHost.SupportedInstanceProfiles {
@@ -592,15 +616,18 @@ func resourceIbmIsDedicatedHostRead(context context.Context, d *schema.ResourceD
 		supportedInstanceProfiles = append(supportedInstanceProfiles, supportedInstanceProfilesItemMap)
 	}
 	if err = d.Set("supported_instance_profiles", supportedInstanceProfiles); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting supported_instance_profiles: %s", err))
+		err = fmt.Errorf("[ERROR] Error setting supported_instance_profiles: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host", "read", "set-supported_instance_profiles").GetDiag()
 	}
 	vcpuMap := resourceIbmIsDedicatedHostVCPUToMap(*dedicatedHost.Vcpu)
 	if err = d.Set("vcpu", []map[string]interface{}{vcpuMap}); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting vcpu: %s", err))
+		err = fmt.Errorf("[ERROR] Error setting vcpu: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host", "read", "set-vcpu").GetDiag()
 	}
 
 	if err = d.Set("zone", *dedicatedHost.Zone.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting zone: %s", err))
+		err = fmt.Errorf("[ERROR] Error setting zone: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host", "read", "set-zone").GetDiag()
 	}
 	accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *dedicatedHost.CRN, "", isDedicatedHostAccessTagType)
 	if err != nil {
@@ -655,7 +682,9 @@ func resourceIbmIsDedicatedHostInstanceProfileReferenceToMap(instanceProfileRefe
 func resourceIbmIsDedicatedHostUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host", "update", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	updateDedicatedHostOptions := &vpcv1.UpdateDedicatedHostOptions{}
@@ -693,8 +722,9 @@ func resourceIbmIsDedicatedHostUpdate(context context.Context, d *schema.Resourc
 		updateDedicatedHostOptions.SetDedicatedHostPatch(dedicatedHostPrototypemap)
 		_, response, err := vpcClient.UpdateDedicatedHostWithContext(context, updateDedicatedHostOptions)
 		if err != nil {
-			log.Printf("[DEBUG] UpdateDedicatedHostWithContext fails %s\n%s", err, response)
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateDedicatedHostWithContext failed: %s\n%s", err, response), "ibm_is_dedicated_host", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 	if d.HasChange(isDedicatedHostAccessTags) {
@@ -711,7 +741,9 @@ func resourceIbmIsDedicatedHostUpdate(context context.Context, d *schema.Resourc
 func resourceIbmIsDedicatedHostDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host", "delete", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	getDedicatedHostOptions := &vpcv1.GetDedicatedHostOptions{}
@@ -746,8 +778,9 @@ func resourceIbmIsDedicatedHostDelete(context context.Context, d *schema.Resourc
 
 	response, err = vpcClient.DeleteDedicatedHostWithContext(context, deleteDedicatedHostOptions)
 	if err != nil {
-		log.Printf("[DEBUG] DeleteDedicatedHostWithContext failed %s\n%s", err, response)
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteDedicatedHostWithContext failed: %s\n%s", err, response), "ibm_is_dedicated_host", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	_, err = isWaitForDedicatedHostDelete(vpcClient, d, d.Id())
 	if err != nil {
