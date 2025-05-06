@@ -309,8 +309,6 @@ func DataSourceIbmConfigAggregatorConfigurationsAboutToMap(model *configurationa
 // }
 
 func DataSourceIbmConfigAggregatorConfigurationsConfigurationToMap(model *configurationaggregatorv1.Configuration) (string, error) {
-	fmt.Println("The datasource to run is : ")
-
 	if model == nil {
 		return "", nil
 	}
