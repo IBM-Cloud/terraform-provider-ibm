@@ -838,7 +838,7 @@ func ShareMountTargetMapToShareMountTargetPrototype(d *schema.ResourceData, vniM
 			if reservedIpName != "" {
 				primaryIpPrototype.Name = &reservedIpName
 			}
-			if autoDeleteIntf, ok := d.GetOkExists("virtual_network_interface.0.primary_ip.0.auto_delete"); ok {
+			if autoDeleteIntf, ok := d.GetOkExists("mount_targets.0.virtual_network_interface.0.primary_ip.0.auto_delete"); ok {
 				reservedIpAutoDelete := autoDeleteIntf.(bool)
 				primaryIpPrototype.AutoDelete = &reservedIpAutoDelete
 			}
