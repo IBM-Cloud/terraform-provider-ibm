@@ -1965,6 +1965,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_dl_gateway":                               directlink.ResourceIBMDLGatewayValidator(),
 				"ibm_dl_provider_gateway":                      directlink.ResourceIBMDLProviderGatewayValidator(),
 				"ibm_dl_gateway_action":                        directlink.ResourceIBMDLGatewayActionValidator(),
+				"ibm_dl_gateway_macsec_cak":                    directlink.ResourceIBMdlGatewayMacsecCakValidator(),
 				"ibm_database":                                 database.ResourceIBMICDValidator(),
 				"ibm_function_package":                         functions.ResourceIBMFuncPackageValidator(),
 				"ibm_function_action":                          functions.ResourceIBMFuncActionValidator(),

@@ -671,10 +671,10 @@ func resourceIBMdlGatewayCreateAction(d *schema.ResourceData, meta interface{}) 
 		resourceGroup := d.Get(dlResourceGroup).(string)
 		createGatewayActionOptionsModel.ResourceGroup = &directlinkv1.ResourceGroupIdentity{ID: &resourceGroup}
 	}
-	if authKeyCrn, ok := d.GetOk(dlAuthenticationKey); ok {
-		authKeyCrnStr := authKeyCrn.(string)
-		createGatewayActionOptionsModel.AuthenticationKey = &directlinkv1.GatewayActionTemplateAuthenticationKey{Crn: &authKeyCrnStr}
-	}
+	// if authKeyCrn, ok := d.GetOk(dlAuthenticationKey); ok {
+	// 	authKeyCrnStr := authKeyCrn.(string)
+	// 	createGatewayActionOptionsModel.AuthenticationKey = &directlinkv1.GatewayActionTemplateAuthenticationKey{Crn: &authKeyCrnStr}
+	// }
 	if connectionMode, ok := d.GetOk(dlConnectionMode); ok {
 		createGatewayActionOptionsModel.ConnectionMode = NewStrPointer(connectionMode.(string))
 	}
@@ -900,9 +900,9 @@ func resourceIBMdlGatewayActionRead(d *schema.ResourceData, meta interface{}) er
 	if instance.CreatedAt != nil {
 		d.Set(dlCreatedAt, instance.CreatedAt.String())
 	}
-	if instance.AuthenticationKey != nil {
-		d.Set(dlAuthenticationKey, *instance.AuthenticationKey.Crn)
-	}
+	// if instance.AuthenticationKey != nil {
+	// 	d.Set(dlAuthenticationKey, *instance.AuthenticationKey.Crn)
+	// }
 	if instance.ConnectionMode != nil {
 		d.Set(dlConnectionMode, *instance.ConnectionMode)
 	}
