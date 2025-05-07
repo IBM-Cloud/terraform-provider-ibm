@@ -38,7 +38,7 @@ In addition to all argument references listed, you can access the following attr
 
 - `created_at` - (String) The date and time that this rule was created.
 
-- `field` - (String) The field. This is applicable to `header`, `query`, and `body` rule types.If the rule type is `header`, this property is required.If the rule type is `query`, this is optional. If specified and the rule condition is not`matches_regex`, the value must be percent-encoded.If the rule type is `body`, this is optional.
+- `field` - (String) The field. This is applicable to `header`, `query`,`body` and `sni_hostname` rule types.If the rule type is `header`, this property is required.If the rule type is `query`, this is optional. If specified and the rule condition is not`matches_regex`, the value must be percent-encoded.If the rule type is `body`, this is optional.
 
 - `href` - (String) The rule's canonical URL.
 

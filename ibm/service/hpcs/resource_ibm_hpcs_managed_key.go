@@ -409,6 +409,15 @@ func ResourceIbmManagedKeyRead(context context.Context, d *schema.ResourceData, 
 	instance_id := id[1]
 	vault_id := id[2]
 	key_id := id[3]
+
+	if err = d.Set("instance_id", instance_id); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting instance ID: %s", err))
+	}
+
+	if err = d.Set("region", region); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting region: %s", err))
+	}
+
 	getManagedKeyOptions.SetID(key_id)
 	getManagedKeyOptions.SetUKOVault(vault_id)
 

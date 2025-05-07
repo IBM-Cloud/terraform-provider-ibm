@@ -101,7 +101,9 @@ func DataSourceIbmIsPlacementGroup() *schema.Resource {
 func dataSourceIbmIsPlacementGroupRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_placement_group", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	pgname := d.Get("name").(string)
 	listPlacementGroupsOptions := &vpcv1.ListPlacementGroupsOptions{}
@@ -111,10 +113,11 @@ func dataSourceIbmIsPlacementGroupRead(context context.Context, d *schema.Resour
 		if start != "" {
 			listPlacementGroupsOptions.Start = &start
 		}
-		placementGroupCollection, response, err := vpcClient.ListPlacementGroupsWithContext(context, listPlacementGroupsOptions)
+		placementGroupCollection, _, err := vpcClient.ListPlacementGroupsWithContext(context, listPlacementGroupsOptions)
 		if err != nil {
-			log.Printf("[DEBUG] ListPlacementGroupsWithContext failed %s\n%s", err, response)
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListPlacementGroupsWithContext failed: %s", err.Error()), "(Data) ibm_is_placement_group", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		start = flex.GetNext(placementGroupCollection.Next)
 		allrecs = append(allrecs, placementGroupCollection.PlacementGroups...)
@@ -126,33 +129,33 @@ func dataSourceIbmIsPlacementGroupRead(context context.Context, d *schema.Resour
 		if *placementGroup.Name == pgname {
 
 			d.SetId(*placementGroup.ID)
-			if err = d.Set("created_at", placementGroup.CreatedAt.String()); err != nil {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error setting created_at: %s", err))
+			if err = d.Set("created_at", flex.DateTimeToString(placementGroup.CreatedAt)); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting created_at: %s", err), "(Data) ibm_is_placement_group", "read", "set-created_at").GetDiag()
 			}
 			if err = d.Set("crn", placementGroup.CRN); err != nil {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error setting crn: %s", err))
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting crn: %s", err), "(Data) ibm_is_placement_group", "read", "set-crn").GetDiag()
 			}
 			if err = d.Set("href", placementGroup.Href); err != nil {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error setting href: %s", err))
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting href: %s", err), "(Data) ibm_is_placement_group", "read", "set-href").GetDiag()
 			}
 			if err = d.Set("lifecycle_state", placementGroup.LifecycleState); err != nil {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error setting lifecycle_state: %s", err))
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting lifecycle_state: %s", err), "(Data) ibm_is_placement_group", "read", "set-lifecycle_state").GetDiag()
 			}
 			if err = d.Set("name", placementGroup.Name); err != nil {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error setting name: %s", err))
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_is_placement_group", "read", "set-name").GetDiag()
 			}
 
 			if placementGroup.ResourceGroup != nil {
 				err = d.Set("resource_group", dataSourcePlacementGroupFlattenResourceGroup(*placementGroup.ResourceGroup))
 				if err != nil {
-					return diag.FromErr(fmt.Errorf("[ERROR] Error setting resource_group %s", err))
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_group: %s", err), "(Data) ibm_is_placement_group", "read", "set-resource_group").GetDiag()
 				}
 			}
 			if err = d.Set("resource_type", placementGroup.ResourceType); err != nil {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error setting resource_type: %s", err))
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_type: %s", err), "(Data) ibm_is_placement_group", "read", "set-resource_type").GetDiag()
 			}
 			if err = d.Set("strategy", placementGroup.Strategy); err != nil {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error setting strategy: %s", err))
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting strategy: %s", err), "(Data) ibm_is_placement_group", "read", "set-strategy").GetDiag()
 			}
 			tags, err := flex.GetGlobalTagsUsingCRN(meta, *placementGroup.CRN, "", isUserTagType)
 			if err != nil {
@@ -167,7 +170,13 @@ func dataSourceIbmIsPlacementGroupRead(context context.Context, d *schema.Resour
 			}
 
 			d.Set(isPlacementGroupTags, tags)
+			if err = d.Set("tags", tags); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting tags: %s", err), "(Data) ibm_is_placement_group", "read", "set-tags").GetDiag()
+			}
 			d.Set(isPlacementGroupAccessTags, accesstags)
+			if err = d.Set("access_tags", accesstags); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting access_tags: %s", err), "(Data) ibm_is_placement_group", "read", "set-access_tags").GetDiag()
+			}
 			return nil
 		}
 	}
