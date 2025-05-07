@@ -6,8 +6,10 @@ package vpc
 import (
 	"context"
 	"fmt"
+	"log"
 	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -111,7 +113,9 @@ func ResourceIBMISInstanceActionValidator() *validate.ResourceValidator {
 func resourceIBMISInstanceActionCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_action", "create", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	instanceId := ""
 	if insId, ok := d.GetOk(isInstanceID); ok {
@@ -124,16 +128,24 @@ func resourceIBMISInstanceActionCreate(context context.Context, d *schema.Resour
 	getinsOptions := &vpcv1.GetInstanceOptions{
 		ID: &instanceId,
 	}
-	instance, response, err := sess.GetInstance(getinsOptions)
+	instance, response, err := sess.GetInstanceWithContext(context, getinsOptions)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error Getting Instance (%s): %s\n%s", instanceId, err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetInstanceWithContext failed: %s", err.Error()), "ibm_is_instance_action", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if (actiontype == "stop" || actiontype == "reboot") && *instance.Status != isInstanceStatusRunning {
 		d.Set(isInstanceAction, nil)
-		return diag.FromErr(fmt.Errorf("[ERROR] Error with stop/reboot action: Cannot invoke stop/reboot action while instance is not in running state"))
+		err = fmt.Errorf("[ERROR] Error with stop/reboot action: Cannot invoke stop/reboot action while instance is not in running state")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetInstanceWithContext failed: %s", err.Error()), "ibm_is_instance_action", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	} else if actiontype == "start" && *instance.Status != isInstanceActionStatusStopped {
 		d.Set(isInstanceAction, nil)
-		return diag.FromErr(fmt.Errorf("[ERROR] Error with start action: Cannot invoke start action while instance is not in stopped state"))
+		err = fmt.Errorf("[ERROR] Error with start action: Cannot invoke start action while instance is not in stopped state")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetInstanceWithContext failed: %s", err.Error()), "ibm_is_instance_action", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	createinsactoptions := &vpcv1.CreateInstanceActionOptions{
 		InstanceID: &instanceId,
@@ -143,22 +155,28 @@ func resourceIBMISInstanceActionCreate(context context.Context, d *schema.Resour
 		force := instanceActionForceIntf.(bool)
 		createinsactoptions.Force = &force
 	}
-	_, response, err = sess.CreateInstanceAction(createinsactoptions)
+	_, response, err = sess.CreateInstanceActionWithContext(context, createinsactoptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			return nil
 		}
-		return diag.FromErr(fmt.Errorf("[ERROR] Error Creating Instance Action: %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateInstanceActionWithContext failed: %s", err.Error()), "ibm_is_instance_action", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if actiontype == "stop" {
 		_, err = isWaitForInstanceActionStop(sess, d.Timeout(schema.TimeoutUpdate), instanceId, d)
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForInstanceActionStop failed: %s", err.Error()), "ibm_is_instance_action", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	} else if actiontype == "start" || actiontype == "reboot" {
 		_, err = isWaitForInstanceActionStart(sess, d.Timeout(schema.TimeoutUpdate), instanceId, d)
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForInstanceActionStart failed: %s", err.Error()), "ibm_is_instance_action", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 
@@ -169,23 +187,29 @@ func resourceIBMISInstanceActionCreate(context context.Context, d *schema.Resour
 func resourceIBMISInstanceActionRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_action", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	id := d.Id()
 
 	options := &vpcv1.GetInstanceOptions{
 		ID: &id,
 	}
-	instance, response, err := sess.GetInstance(options)
+	instance, response, err := sess.GetInstanceWithContext(context, options)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
 			return nil
 		}
-		return diag.FromErr(fmt.Errorf("[ERROR] Error getting instance (%s): %s\n%s", id, err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetInstanceWithContext failed: %s", err.Error()), "ibm_is_instance", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
-
-	d.Set(isInstanceStatus, *instance.Status)
+	if err = d.Set(isInstanceStatus, *instance.Status); err != nil {
+		err = fmt.Errorf("Error setting status: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-status").GetDiag()
+	}
 	statusReasonsList := make([]map[string]interface{}, 0)
 	if instance.StatusReasons != nil {
 		for _, sr := range instance.StatusReasons {
@@ -200,14 +224,19 @@ func resourceIBMISInstanceActionRead(context context.Context, d *schema.Resource
 			}
 		}
 	}
-	d.Set(isInstanceStatusReasons, statusReasonsList)
+	if err = d.Set(isInstanceStatusReasons, statusReasonsList); err != nil {
+		err = fmt.Errorf("Error setting status_reasons: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-status_reasons").GetDiag()
+	}
 	return nil
 }
 
 func resourceIBMISInstanceActionUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_action", "update", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	_, actiontypeIntf := d.GetChange(isInstanceAction)
 	actiontype := actiontypeIntf.(string)
@@ -216,37 +245,51 @@ func resourceIBMISInstanceActionUpdate(context context.Context, d *schema.Resour
 	getinsOptions := &vpcv1.GetInstanceOptions{
 		ID: &id,
 	}
-	instance, response, err := sess.GetInstance(getinsOptions)
+	instance, response, err := sess.GetInstanceWithContext(context, getinsOptions)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error Getting Instance (%s): %s\n%s", id, err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetInstanceWithContext failed: %s", err.Error()), "ibm_is_instance_action", "update")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if (actiontype == "stop" || actiontype == "reboot") && *instance.Status != isInstanceStatusRunning {
 		d.Set(isInstanceAction, nil)
-		return diag.FromErr(fmt.Errorf("[ERROR] Error with stop/reboot action: Cannot invoke stop/reboot action while instance is not in running state"))
+		err = fmt.Errorf("Error with stop/reboot action: Cannot invoke stop/reboot action while instance is not in running state")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetInstanceWithContext failed: %s", err.Error()), "ibm_is_instance_action", "update")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	} else if actiontype == "start" && *instance.Status != isInstanceActionStatusStopped {
 		d.Set(isInstanceAction, nil)
-		return diag.FromErr(fmt.Errorf("[ERROR] Error with start action: Cannot invoke start action while instance is not in stopped state"))
+		err = fmt.Errorf("Error with start action: Cannot invoke start action while instance is not in stopped state")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetInstanceWithContext failed: %s", err.Error()), "ibm_is_instance_action", "update")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	createinsactoptions := &vpcv1.CreateInstanceActionOptions{
 		InstanceID: &id,
 		Type:       &actiontype,
 	}
-	_, response, err = sess.CreateInstanceAction(createinsactoptions)
+	_, response, err = sess.CreateInstanceActionWithContext(context, createinsactoptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			return nil
 		}
-		return diag.FromErr(fmt.Errorf("[ERROR] Error Creating Instance Action: %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateInstanceActionWithContext failed: %s", err.Error()), "ibm_is_instance_action", "update")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if actiontype == "stop" {
 		_, err = isWaitForInstanceActionStop(sess, d.Timeout(schema.TimeoutUpdate), id, d)
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForInstanceActionStop failed: %s", err.Error()), "ibm_is_instance_action", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	} else if actiontype == "start" || actiontype == "reboot" {
 		_, err = isWaitForInstanceActionStart(sess, d.Timeout(schema.TimeoutUpdate), id, d)
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForInstanceActionStart failed: %s", err.Error()), "ibm_is_instance_action", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 
@@ -261,7 +304,9 @@ func resourceIBMISInstanceActionDelete(context context.Context, d *schema.Resour
 func resourceIBMISInstanceActionExists(d *schema.ResourceData, meta interface{}) (bool, error) {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return false, err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_action", "exists", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return false, tfErr
 	}
 	id := d.Id()
 	getInstanceOptions := &vpcv1.GetInstanceOptions{
@@ -272,6 +317,8 @@ func resourceIBMISInstanceActionExists(d *schema.ResourceData, meta interface{})
 		if response != nil && response.StatusCode == 404 {
 			return false, nil
 		}
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetInstance failed: %s", err.Error()), "ibm_is_instance_action", "exists")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return false, fmt.Errorf("[ERROR] Error getting instance : %s\n%s", err, response)
 	}
 	return true, err

@@ -6,6 +6,7 @@ package vpc
 import (
 	"context"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -116,7 +117,9 @@ func DataSourceIBMISInstanceNICReservedIPs() *schema.Resource {
 func dataSourceIBMISInstanceNICReservedIPsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instance_network_interface_reserved_ips", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	instanceID := d.Get(isInstanceID).(string)
@@ -136,7 +139,9 @@ func dataSourceIBMISInstanceNICReservedIPsRead(context context.Context, d *schem
 
 		result, response, err := sess.ListInstanceNetworkInterfaceIpsWithContext(context, options)
 		if err != nil || response == nil || result == nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error fetching reserved ips %s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListInstanceNetworkInterfaceIpsWithContext failed: %s", err.Error()), "(Data) ibm_is_instance_network_interface_reserved_ips", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		start = flex.GetNext(result.Next)
 		allrecs = append(allrecs, result.Ips...)
@@ -164,9 +169,17 @@ func dataSourceIBMISInstanceNICReservedIPsRead(context context.Context, d *schem
 	}
 
 	d.SetId(time.Now().UTC().String()) // This is not any reserved ip or instance id but state id
-	d.Set(isInstanceNICReservedIPs, reservedIPs)
-	d.Set(isInstanceNICReservedIPsCount, len(reservedIPs))
-	d.Set(isInstanceID, instanceID)
-	d.Set(isInstanceNICID, nicID)
+	if err = d.Set(isInstanceNICReservedIPs, reservedIPs); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting reserved_ips: %s", err), "(Data) ibm_is_instance_network_interface_reserved_ips", "read", "set-reserved_ips").GetDiag()
+	}
+	if err = d.Set(isInstanceNICReservedIPsCount, len(reservedIPs)); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting total_count: %s", err), "(Data) ibm_is_instance_network_interface_reserved_ips", "read", "set-total_count").GetDiag()
+	}
+	if err = d.Set(isInstanceID, instanceID); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting instance: %s", err), "(Data) ibm_is_instance_network_interface_reserved_ips", "read", "set-instance").GetDiag()
+	}
+	if err = d.Set(isInstanceNICID, nicID); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting network_interface: %s", err), "(Data) ibm_is_instance_network_interface_reserved_ips", "read", "set-network_interface").GetDiag()
+	}
 	return nil
 }
