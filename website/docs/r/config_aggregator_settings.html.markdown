@@ -14,8 +14,8 @@ Create, update, and delete config_aggregator_settingss with this resource.
 
 ```hcl
 resource "ibm_config_aggregator_settings" "config_aggregator_settings_instance" {
-  instance_id=var.instance_id
-  region=var.region
+  instance_id = var.instance_id
+  region = var.region
   additional_scope {
 		type = "Enterprise"
 		enterprise_id = "enterprise_id"
@@ -24,7 +24,7 @@ resource "ibm_config_aggregator_settings" "config_aggregator_settings_instance" 
 			trusted_profile_id = "Profile-6bb60124-8fc3-4d18-b63d-0b99560865d3"
 		}
   }
-  resource_collection_regions = us-south
+  resource_collection_regions = ["all"]
   resource_collection_enabled = true
   trusted_profile_id = "Profile-1260aec2-f2fc-44e2-8697-2cc15a447560"
 }
@@ -34,7 +34,7 @@ resource "ibm_config_aggregator_settings" "config_aggregator_settings_instance" 
 
 You can specify the following arguments for this resource.
 * `instance_id` - (Required, Forces new resource, String) The GUID of the Configuration Aggregator instance.
-* `resource_collection_regions` - (Optional, Forces new resource, String) The region of the Configuration Aggregator instance. If not provided defaults to the region defined in the IBM provider configuration.
+* `region` - (Optional, Forces new resource, List) The region of the Configuration Aggregator instance. If not provided defaults to the region defined in the IBM provider configuration.
 * `additional_scope` - (Optional, Forces new resource, List) The additional scope that enables resource collection for Enterprise acccounts.
   * Constraints: The maximum length is `10` items. The minimum length is `0` items.
 Nested schema for **additional_scope**:
@@ -48,10 +48,10 @@ Nested schema for **additional_scope**:
 		  * Constraints: The maximum length is `44` characters. The minimum length is `44` characters. The value must match regular expression `/^[a-zA-Z0-9-]*$/`.
 	* `type` - (Optional, String) The type of scope. Currently allowed value is Enterprise.
 	  * Constraints: The maximum length is `64` characters. The minimum length is `0` characters. The value must match regular expression `/[a-zA-Z0-9]/`.
-* `regions` - (Optional, Forces new resource, List) The list of regions across which the resource collection is enabled.
+* `resource_collection_regions` - (Required,List) Regions for which the resource collection is enabled.
   * Constraints: The list items must match regular expression `/^[a-zA-Z0-9-]*$/`. The maximum length is `10` items. The minimum length is `0` items.
-* `resource_collection_enabled` - (Optional, Forces new resource, Boolean) The field denoting if the resource collection is enabled.
-* `trusted_profile_id` - (Optional, Forces new resource, String) The trusted profile id that provides Reader access to the App Configuration instance to collect resource metadata.
+* `resource_collection_enabled` - (Required, Boolean) The field denoting if the resource collection is enabled.
+* `trusted_profile_id` - (Required, String) The trusted profile id that provides Reader access to the App Configuration instance to collect resource metadata.
   * Constraints: The maximum length is `44` characters. The minimum length is `44` characters. The value must match regular expression `/^[a-zA-Z0-9-]*$/`.
 
 ## Attribute Reference
