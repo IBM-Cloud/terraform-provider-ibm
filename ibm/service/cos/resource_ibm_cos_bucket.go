@@ -1328,7 +1328,7 @@ func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 			d.Set("abort_incomplete_multipart_upload_days", abort_mpuRules)
 		}
 	} else {
-		fmt.Println("There is no lifecycle configuration on the bucket")
+		log.Printf("[DEBUG] There is no lifecycle configuration on the bucket")
 	}
 
 	// Read retention rule
