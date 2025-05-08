@@ -6,6 +6,7 @@ package vpc
 import (
 	"context"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -412,7 +413,9 @@ func dataSourceIBMIsBareMetalServerProfilesRead(context context.Context, d *sche
 
 	sess, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_bare_metal_server_profiles", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	start := ""
@@ -422,9 +425,11 @@ func dataSourceIBMIsBareMetalServerProfilesRead(context context.Context, d *sche
 		if start != "" {
 			listBMSProfilesOptions.Start = &start
 		}
-		availableProfiles, response, err := sess.ListBareMetalServerProfilesWithContext(context, listBMSProfilesOptions)
+		availableProfiles, _, err := sess.ListBareMetalServerProfilesWithContext(context, listBMSProfilesOptions)
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error fetching Bare Metal Server Profiles %s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListBareMetalServerProfilesWithContext failed %s", err), "(Data) ibm_is_bare_metal_server_profiles", "read")
+			log.Printf("[DEBUG] %s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		start = flex.GetNext(availableProfiles.Next)
 		allrecs = append(allrecs, availableProfiles.Profiles...)
@@ -494,7 +499,7 @@ func dataSourceIBMIsBareMetalServerProfilesRead(context context.Context, d *sche
 		if profile.ConsoleTypes != nil {
 			modelMap, err := dataSourceIBMIsBareMetalServerProfileBareMetalServerProfileConsoleTypesToMap(profile.ConsoleTypes)
 			if err != nil {
-				return diag.FromErr(err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_bare_metal_server_profiles", "read", "console_types-to-map").GetDiag()
 			}
 			consoleTypes = append(consoleTypes, modelMap)
 		}
@@ -504,7 +509,7 @@ func dataSourceIBMIsBareMetalServerProfilesRead(context context.Context, d *sche
 		if profile.NetworkInterfaceCount != nil {
 			modelMap, err := dataSourceIBMIsBareMetalServerProfileBareMetalServerProfileNetworkInterfaceCountToMap(profile.NetworkInterfaceCount)
 			if err != nil {
-				return diag.FromErr(err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_bare_metal_server_profiles", "read", "network_interface_count-to-map").GetDiag()
 			}
 			networkInterfaceCount = append(networkInterfaceCount, modelMap)
 		}
@@ -526,7 +531,7 @@ func dataSourceIBMIsBareMetalServerProfilesRead(context context.Context, d *sche
 		if profile.VirtualNetworkInterfacesSupported != nil {
 			modelMap, err := dataSourceIBMIsBareMetalServerProfileBareMetalServerProfileVirtualNetworkInterfacesSupportedToMap(profile.VirtualNetworkInterfacesSupported)
 			if err != nil {
-				return diag.FromErr(err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_bare_metal_server_profiles", "read", "virtual_network_interfaces_supported-to-map").GetDiag()
 			}
 			virtualNetworkInterfacesSupported = append(virtualNetworkInterfacesSupported, modelMap)
 		}
@@ -535,7 +540,7 @@ func dataSourceIBMIsBareMetalServerProfilesRead(context context.Context, d *sche
 		if profile.NetworkAttachmentCount != nil {
 			modelMap, err := dataSourceIBMIsBareMetalServerProfileBareMetalServerProfileNetworkAttachmentCountToMap(profile.NetworkAttachmentCount)
 			if err != nil {
-				return diag.FromErr(err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_bare_metal_server_profiles", "read", "network_attachment_count-to-map").GetDiag()
 			}
 			networkAttachmentCount = append(networkAttachmentCount, modelMap)
 		}
@@ -620,7 +625,9 @@ func dataSourceIBMIsBareMetalServerProfilesRead(context context.Context, d *sche
 		profilesInfo = append(profilesInfo, l)
 	}
 	d.SetId(dataSourceIBMIsBMSProfilesID(d))
-	d.Set(isBareMetalServerProfiles, profilesInfo)
+	if err = d.Set(isBareMetalServerProfiles, profilesInfo); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting profiles %s", err), "(Data) ibm_is_bare_metal_server_profiles", "read", "profiles-set").GetDiag()
+	}
 	return nil
 }
 
