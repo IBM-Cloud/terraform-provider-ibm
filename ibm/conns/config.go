@@ -1676,13 +1676,11 @@ func (c *Config) ClientSession() (interface{}, error) {
 
 	// Construct the service connector client.
 	session.backupRecoveryConnectorClient, err = backuprecoveryv1.NewBackupRecoveryV1Connector(backupRecoveryConnectorClientOptions)
-	tr := &gohttp.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}
-	session.backupRecoveryConnectorClient.Service.Client.Transport = tr
 	if err == nil {
 		// Enable retries for API calls
-		session.backupRecoveryClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.backupRecoveryConnectorClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 		// Add custom header for analytics
-		session.backupRecoveryClient.SetDefaultHeaders(gohttp.Header{
+		session.backupRecoveryConnectorClient.SetDefaultHeaders(gohttp.Header{
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
 	} else {
