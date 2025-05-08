@@ -13,6 +13,7 @@ import (
 	"log"
 	"net"
 	gohttp "net/http"
+	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -3649,19 +3650,26 @@ func (c *Config) ClientSession() (interface{}, error) {
 
 	// CATALOG MANAGEMENT Service
 	globalcatalogURL := globalcatalogv1.DefaultServiceURL
-	if c.Visibility == "private" {
-		if c.Region == "us-south" || c.Region == "us-east" {
-			rmURL = ContructEndpoint(fmt.Sprintf("private.%s.globalcatalog/api/v1", c.Region), fmt.Sprintf("%s", cloudEndpoint))
-		} else {
-			fmt.Println("Private Endpoint supports only us-south and us-east region specific endpoint")
-			rmURL = ContructEndpoint("private.us-south.globalcatalog/api/v1", fmt.Sprintf("%s", cloudEndpoint))
-		}
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		globalcatalogURL = ContructEndpoint("private.globalcatalog", cloudEndpoint)
 	}
 	if fileMap != nil && c.Visibility != "public-and-private" {
-		catalogManagementURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_GLOBAL_CATALOG_API_ENDPOINT", c.Region, catalogManagementURL)
+		globalcatalogURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_RESOURCE_CATALOG_API_ENDPOINT", c.Region, globalcatalogURL)
+	}
+	gurl := EnvFallBack([]string{"IBMCLOUD_RESOURCE_CATALOG_API_ENDPOINT"}, globalcatalogURL)
+	parsedURL, err := url.Parse(gurl)
+	if err != nil {
+		fmt.Println("Error parsing global catalog url:", err)
+	}
+	if parsedURL.Path == "" {
+		globalURL, err := url.Parse(globalcatalogv1.DefaultServiceURL)
+		if err != nil {
+			fmt.Println("Error parsing global catalog default url:", err)
+		}
+		gurl = gurl + globalURL.Path
 	}
 	globalCatalogClientOptions := &globalcatalogv1.GlobalCatalogV1Options{
-		URL:           EnvFallBack([]string{"IBMCLOUD_GLOBAL_CATALOG_API_ENDPOINT"}, globalcatalogURL),
+		URL:           gurl,
 		Authenticator: authenticator,
 	}
 	// Construct the service client.
