@@ -4,11 +4,15 @@
 package vpc
 
 import (
+	"context"
 	"fmt"
+	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -30,11 +34,11 @@ const (
 
 func ResourceIBMISInstanceGroupMembership() *schema.Resource {
 	return &schema.Resource{
-		Create:   resourceIBMISInstanceGroupMembershipUpdate,
-		Read:     resourceIBMISInstanceGroupMembershipRead,
-		Update:   resourceIBMISInstanceGroupMembershipUpdate,
-		Delete:   resourceIBMISInstanceGroupMembershipDelete,
-		Importer: &schema.ResourceImporter{},
+		CreateContext: resourceIBMISInstanceGroupMembershipUpdate,
+		ReadContext:   resourceIBMISInstanceGroupMembershipRead,
+		UpdateContext: resourceIBMISInstanceGroupMembershipUpdate,
+		DeleteContext: resourceIBMISInstanceGroupMembershipDelete,
+		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
 
@@ -162,10 +166,12 @@ func ResourceIBMISInstanceGroupMembershipValidator() *validate.ResourceValidator
 	return &ibmISInstanceGroupMembershipResourceValidator
 }
 
-func resourceIBMISInstanceGroupMembershipUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMISInstanceGroupMembershipUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_group_membership", "update", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	instanceGroupID := d.Get(isInstanceGroup).(string)
@@ -176,16 +182,18 @@ func resourceIBMISInstanceGroupMembershipUpdate(d *schema.ResourceData, meta int
 		InstanceGroupID: &instanceGroupID,
 	}
 
-	instanceGroupMembership, response, err := sess.GetInstanceGroupMembership(&getInstanceGroupMembershipOptions)
+	instanceGroupMembership, _, err := sess.GetInstanceGroupMembershipWithContext(context, &getInstanceGroupMembershipOptions)
 	if err != nil || instanceGroupMembership == nil {
-		return fmt.Errorf("[ERROR] Error Getting InstanceGroup Membership: %s\n%s", err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetInstanceGroupMembershipWithContext failed: %s", err.Error()), "ibm_is_instance_group_membership", "update")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	d.SetId(fmt.Sprintf("%s/%s", instanceGroupID, instanceGroupMembershipID))
 
 	if v, ok := d.GetOk(isInstanceGroupMemershipActionDelete); ok {
 		actionDelete := v.(bool)
 		if actionDelete {
-			return resourceIBMISInstanceGroupMembershipDelete(d, meta)
+			return resourceIBMISInstanceGroupMembershipDelete(context, d, meta)
 		}
 	}
 
@@ -201,27 +209,33 @@ func resourceIBMISInstanceGroupMembershipUpdate(d *schema.ResourceData, meta int
 			updateInstanceGroupMembershipOptions.InstanceGroupID = &instanceGroupID
 			instanceGroupMembershipPatch, err := instanceGroupMembershipPatchModel.AsPatch()
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error calling asPatch for InstanceGroupMembershipPatch: %s", err)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("instanceGroupMembershipPatchModel.AsPatch() failed: %s", err.Error()), "ibm_is_instance_group_membership", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			updateInstanceGroupMembershipOptions.InstanceGroupMembershipPatch = instanceGroupMembershipPatch
-			_, response, err := sess.UpdateInstanceGroupMembership(&updateInstanceGroupMembershipOptions)
+			_, _, err = sess.UpdateInstanceGroupMembershipWithContext(context, &updateInstanceGroupMembershipOptions)
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error updating InstanceGroup Membership: %s\n%s", err, response)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateInstanceGroupMembershipWithContext failed: %s", err.Error()), "ibm_is_instance_group_membership", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 		}
 	}
-	return resourceIBMISInstanceGroupMembershipRead(d, meta)
+	return resourceIBMISInstanceGroupMembershipRead(context, d, meta)
 }
 
-func resourceIBMISInstanceGroupMembershipRead(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMISInstanceGroupMembershipRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_group_membership", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	parts, err := flex.IdParts(d.Id())
 	if err != nil {
-		return err
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_group_membership", "read", "sep-id-parts").GetDiag()
 	}
 	instanceGroupID := parts[0]
 	instanceGroupMembershipID := parts[1]
@@ -230,17 +244,28 @@ func resourceIBMISInstanceGroupMembershipRead(d *schema.ResourceData, meta inter
 		ID:              &instanceGroupMembershipID,
 		InstanceGroupID: &instanceGroupID,
 	}
-	instanceGroupMembership, response, err := sess.GetInstanceGroupMembership(&getInstanceGroupMembershipOptions)
+	instanceGroupMembership, response, err := sess.GetInstanceGroupMembershipWithContext(context, &getInstanceGroupMembershipOptions)
 	if err != nil || instanceGroupMembership == nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error Getting InstanceGroup Membership: %s\n%s", err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetInstanceGroupMembershipWithContext failed: %s", err.Error()), "ibm_is_instance_group_membership", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
-	d.Set(isInstanceGroupMemershipDeleteInstanceOnMembershipDelete, *instanceGroupMembership.DeleteInstanceOnMembershipDelete)
-	d.Set(isInstanceGroupMembership, *instanceGroupMembership.ID)
-	d.Set(isInstanceGroupMembershipStatus, *instanceGroupMembership.Status)
+	if err = d.Set(isInstanceGroupMemershipDeleteInstanceOnMembershipDelete, *instanceGroupMembership.DeleteInstanceOnMembershipDelete); err != nil {
+		err = fmt.Errorf("Error setting delete_instance_on_membership_delete: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_group_membership", "read", "set-delete_instance_on_membership_delete").GetDiag()
+	}
+	if d.Set(isInstanceGroupMembership, *instanceGroupMembership.ID); err != nil {
+		err = fmt.Errorf("Error setting instance_group_membership: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_group_membership", "read", "set-instance_group_membership").GetDiag()
+	}
+	if err = d.Set(isInstanceGroupMembershipStatus, *instanceGroupMembership.Status); err != nil {
+		err = fmt.Errorf("Error setting status: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_group_membership", "read", "set-status").GetDiag()
+	}
 
 	instances := make([]map[string]interface{}, 0)
 	if instanceGroupMembership.Instance != nil {
@@ -251,8 +276,11 @@ func resourceIBMISInstanceGroupMembershipRead(d *schema.ResourceData, meta inter
 		}
 		instances = append(instances, instance)
 	}
-	d.Set(isInstanceGroupMemershipInstance, instances)
 
+	if err = d.Set(isInstanceGroupMemershipInstance, instances); err != nil {
+		err = fmt.Errorf("Error setting instance: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_group_membership", "read", "set-instance").GetDiag()
+	}
 	instance_templates := make([]map[string]interface{}, 0)
 	if instanceGroupMembership.InstanceTemplate != nil {
 		instance_template := map[string]interface{}{
@@ -262,23 +290,31 @@ func resourceIBMISInstanceGroupMembershipRead(d *schema.ResourceData, meta inter
 		}
 		instance_templates = append(instance_templates, instance_template)
 	}
-	d.Set(isInstanceGroupMemershipInstanceTemplate, instance_templates)
 
-	if instanceGroupMembership.PoolMember != nil && instanceGroupMembership.PoolMember.ID != nil {
-		d.Set(isInstanceGroupMembershipLoadBalancerPoolMember, *instanceGroupMembership.PoolMember.ID)
+	if err = d.Set(isInstanceGroupMemershipInstanceTemplate, instance_templates); err != nil {
+		err = fmt.Errorf("Error setting instance_template: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_group_membership", "read", "set-instance_template").GetDiag()
+	}
+	if !core.IsNil(instanceGroupMembership.PoolMember) {
+		if err = d.Set(isInstanceGroupMembershipLoadBalancerPoolMember, *instanceGroupMembership.PoolMember.ID); err != nil {
+			err = fmt.Errorf("Error setting load_balancer_pool_member: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_group_membership", "read", "set-load_balancer_pool_member").GetDiag()
+		}
 	}
 	return nil
 }
 
-func resourceIBMISInstanceGroupMembershipDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMISInstanceGroupMembershipDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_group_membership", "delete", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	parts, err := flex.IdParts(d.Id())
 	if err != nil {
-		return err
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_group_membership", "delete", "sep-id-parts").GetDiag()
 	}
 	instanceGroupID := parts[0]
 	instanceGroupMembershipID := parts[1]
@@ -287,13 +323,15 @@ func resourceIBMISInstanceGroupMembershipDelete(d *schema.ResourceData, meta int
 		ID:              &instanceGroupMembershipID,
 		InstanceGroupID: &instanceGroupID,
 	}
-	response, err := sess.DeleteInstanceGroupMembership(&deleteInstanceGroupMembershipOptions)
+	response, err := sess.DeleteInstanceGroupMembershipWithContext(context, &deleteInstanceGroupMembershipOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error Deleting the InstanceGroup Membership: %s\n%s", err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteInstanceGroupMembershipWithContext failed: %s", err.Error()), "ibm_is_instance_group_membership", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	return nil
 }

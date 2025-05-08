@@ -4,24 +4,28 @@
 package vpc
 
 import (
+	"context"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/go-openapi/strfmt"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func ResourceIBMISInstanceGroupManagerAction() *schema.Resource {
 	return &schema.Resource{
-		Create:   resourceIBMISInstanceGroupManagerActionCreate,
-		Read:     resourceIBMISInstanceGroupManagerActionRead,
-		Update:   resourceIBMISInstanceGroupManagerActionUpdate,
-		Delete:   resourceIBMISInstanceGroupManagerActionDelete,
-		Exists:   resourceIBMISInstanceGroupManagerActionExists,
-		Importer: &schema.ResourceImporter{},
+		CreateContext: resourceIBMISInstanceGroupManagerActionCreate,
+		ReadContext:   resourceIBMISInstanceGroupManagerActionRead,
+		UpdateContext: resourceIBMISInstanceGroupManagerActionUpdate,
+		DeleteContext: resourceIBMISInstanceGroupManagerActionDelete,
+		Exists:        resourceIBMISInstanceGroupManagerActionExists,
+		Importer:      &schema.ResourceImporter{},
 
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(10 * time.Minute),
@@ -208,13 +212,15 @@ func ResourceIBMISInstanceGroupManagerActionValidator() *validate.ResourceValida
 	return &ibmISInstanceGroupManagerResourceValidator
 }
 
-func resourceIBMISInstanceGroupManagerActionCreate(d *schema.ResourceData, meta interface{}) error { // CreateInstanceGroupManagerAction
+func resourceIBMISInstanceGroupManagerActionCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	instanceGroupID := d.Get("instance_group").(string)
 	instancegroupmanagerscheduledID := d.Get("instance_group_manager").(string)
 
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_group_manager_action", "create", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	instanceGroupManagerActionOptions := vpcv1.CreateInstanceGroupManagerActionOptions{}
@@ -232,7 +238,7 @@ func resourceIBMISInstanceGroupManagerActionCreate(d *schema.ResourceData, meta 
 		runat := v.(string)
 		datetime, err := strfmt.ParseDateTime(runat)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error in converting run_at to datetime format %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_group_manager_action", "create", "parse-run_at").GetDiag()
 		}
 		instanceGroupManagerActionPrototype.RunAt = &datetime
 	}
@@ -270,25 +276,31 @@ func resourceIBMISInstanceGroupManagerActionCreate(d *schema.ResourceData, meta 
 
 	_, healthError := waitForHealthyInstanceGroup(instanceGroupID, meta, d.Timeout(schema.TimeoutCreate))
 	if healthError != nil {
-		return healthError
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("waitForHealthyInstanceGroup failed: %s", err.Error()), "ibm_is_instance_group_manager_action", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
-	instanceGroupManagerActionIntf, response, err := sess.CreateInstanceGroupManagerAction(&instanceGroupManagerActionOptions)
+	instanceGroupManagerActionIntf, _, err := sess.CreateInstanceGroupManagerActionWithContext(context, &instanceGroupManagerActionOptions)
 	if err != nil || instanceGroupManagerActionIntf == nil {
-		return fmt.Errorf("[ERROR] Error creating InstanceGroup manager Action: %s\n%s", err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateInstanceGroupManagerActionWithContext failed: %s", err.Error()), "ibm_is_instance_group_manager_action", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	instanceGroupManagerAction := instanceGroupManagerActionIntf.(*vpcv1.InstanceGroupManagerAction)
 	d.SetId(fmt.Sprintf("%s/%s/%s", instanceGroupID, instancegroupmanagerscheduledID, *instanceGroupManagerAction.ID))
 
-	return resourceIBMISInstanceGroupManagerActionRead(d, meta)
+	return resourceIBMISInstanceGroupManagerActionRead(context, d, meta)
 
 }
 
-func resourceIBMISInstanceGroupManagerActionUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMISInstanceGroupManagerActionUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_group_manager_action", "update", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	var changed bool
@@ -310,7 +322,7 @@ func resourceIBMISInstanceGroupManagerActionUpdate(d *schema.ResourceData, meta 
 		runat := d.Get("run_at").(string)
 		datetime, err := strfmt.ParseDateTime(runat)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error in converting run_at to datetime format %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_group_manager_action", "update", "parse-run_at").GetDiag()
 		}
 		instanceGroupManagerActionPatchModel.RunAt = &datetime
 		changed = true
@@ -343,7 +355,7 @@ func resourceIBMISInstanceGroupManagerActionUpdate(d *schema.ResourceData, meta 
 
 		parts, err := flex.IdParts(d.Id())
 		if err != nil {
-			return err
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_group_manager_action", "update", "sep-id-parts").GetDiag()
 		}
 
 		instanceGroupID := parts[0]
@@ -357,31 +369,39 @@ func resourceIBMISInstanceGroupManagerActionUpdate(d *schema.ResourceData, meta 
 
 		instanceGroupManagerActionPatch, err := instanceGroupManagerActionPatchModel.AsPatch()
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for instanceGroupManagerActionPatch: %s", err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("instanceGroupManagerActionPatchModel.AsPatch() failed: %s", err.Error()), "ibm_is_instance_group_manager_action", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		updateInstanceGroupManagerActionOptions.InstanceGroupManagerActionPatch = instanceGroupManagerActionPatch
 
 		_, healthError := waitForHealthyInstanceGroup(instanceGroupID, meta, d.Timeout(schema.TimeoutUpdate))
 		if healthError != nil {
-			return healthError
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("waitForHealthyInstanceGroup failed: %s", err.Error()), "ibm_is_instance_group_manager_action", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
-		_, response, err := sess.UpdateInstanceGroupManagerAction(updateInstanceGroupManagerActionOptions)
+		_, _, err = sess.UpdateInstanceGroupManagerActionWithContext(context, updateInstanceGroupManagerActionOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error updating InstanceGroup manager action: %s\n%s", err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateInstanceGroupManagerActionWithContext failed: %s", err.Error()), "ibm_is_instance_group_manager_action", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
-	return resourceIBMISInstanceGroupManagerRead(d, meta)
+	return resourceIBMISInstanceGroupManagerActionRead(context, d, meta)
 }
 
-func resourceIBMISInstanceGroupManagerActionRead(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMISInstanceGroupManagerActionRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_group_manager_action", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	parts, err := flex.IdParts(d.Id())
 	if err != nil {
-		return err
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_group_manager_action", "read", "sep-id-parts").GetDiag()
 	}
 	instanceGroupID := parts[0]
 	instancegroupmanagerscheduledID := parts[1]
@@ -393,67 +413,81 @@ func resourceIBMISInstanceGroupManagerActionRead(d *schema.ResourceData, meta in
 		ID:                     &instanceGroupManagerActionID,
 	}
 
-	instanceGroupManagerActionIntf, response, err := sess.GetInstanceGroupManagerAction(getInstanceGroupManagerActionOptions)
+	instanceGroupManagerActionIntf, response, err := sess.GetInstanceGroupManagerActionWithContext(context, getInstanceGroupManagerActionOptions)
 	if err != nil || instanceGroupManagerActionIntf == nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error Getting InstanceGroup Manager Action: %s\n%s", err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetInstanceGroupManagerActionWithContext failed: %s", err.Error()), "ibm_is_instance_group_manager_action", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	instanceGroupManagerAction := instanceGroupManagerActionIntf.(*vpcv1.InstanceGroupManagerAction)
-	if err = d.Set("auto_delete", *instanceGroupManagerAction.AutoDelete); err != nil {
-		return fmt.Errorf("[ERROR] Error setting auto_delete: %s", err)
+	if err = d.Set("auto_delete", instanceGroupManagerAction.AutoDelete); err != nil {
+		err = fmt.Errorf("Error setting auto_delete: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_group_manager_action", "read", "set-auto_delete").GetDiag()
 	}
-
 	if err = d.Set("auto_delete_timeout", flex.IntValue(instanceGroupManagerAction.AutoDeleteTimeout)); err != nil {
-		return fmt.Errorf("[ERROR] Error setting auto_delete_timeout: %s", err)
+		err = fmt.Errorf("Error setting auto_delete_timeout: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_group_manager_action", "read", "set-auto_delete_timeout").GetDiag()
 	}
-	if err = d.Set("created_at", instanceGroupManagerAction.CreatedAt.String()); err != nil {
-		return fmt.Errorf("[ERROR] Error setting created_at: %s", err)
+	if err = d.Set("created_at", flex.DateTimeToString(instanceGroupManagerAction.CreatedAt)); err != nil {
+		err = fmt.Errorf("Error setting created_at: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_group_manager_action", "read", "set-created_at").GetDiag()
 	}
-
 	if err = d.Set("action_id", *instanceGroupManagerAction.ID); err != nil {
-		return fmt.Errorf("[ERROR] Error setting instance_group_manager_action : %s", err)
+		err = fmt.Errorf("Error setting action_id: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_group_manager_action", "read", "set-action_id").GetDiag()
 	}
-
-	if err = d.Set("name", *instanceGroupManagerAction.Name); err != nil {
-		return fmt.Errorf("[ERROR] Error setting name: %s", err)
-	}
-	if err = d.Set("resource_type", *instanceGroupManagerAction.ResourceType); err != nil {
-		return fmt.Errorf("[ERROR] Error setting resource_type: %s", err)
-	}
-	if err = d.Set("status", *instanceGroupManagerAction.Status); err != nil {
-		return fmt.Errorf("[ERROR] Error setting status: %s", err)
-	}
-	if err = d.Set("updated_at", instanceGroupManagerAction.UpdatedAt.String()); err != nil {
-		return fmt.Errorf("[ERROR] Error setting updated_at: %s", err)
-	}
-	if err = d.Set("action_type", *instanceGroupManagerAction.ActionType); err != nil {
-		return fmt.Errorf("[ERROR] Error setting action_type: %s", err)
-	}
-
-	if instanceGroupManagerAction.CronSpec != nil {
-		if err = d.Set("cron_spec", *instanceGroupManagerAction.CronSpec); err != nil {
-			return fmt.Errorf("[ERROR] Error setting cron_spec: %s", err)
+	if !core.IsNil(instanceGroupManagerAction.Name) {
+		if err = d.Set("name", instanceGroupManagerAction.Name); err != nil {
+			err = fmt.Errorf("Error setting name: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_group_manager_action", "read", "set-name").GetDiag()
 		}
 	}
-
-	if instanceGroupManagerAction.LastAppliedAt != nil {
-		if err = d.Set("last_applied_at", instanceGroupManagerAction.LastAppliedAt.String()); err != nil {
-			return fmt.Errorf("[ERROR] Error setting last_applied_at: %s", err)
+	if err = d.Set("resource_type", instanceGroupManagerAction.ResourceType); err != nil {
+		err = fmt.Errorf("Error setting resource_type: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_group_manager_action", "read", "set-resource_type").GetDiag()
+	}
+	if err = d.Set("status", instanceGroupManagerAction.Status); err != nil {
+		err = fmt.Errorf("Error setting status: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_group_manager_action", "read", "set-status").GetDiag()
+	}
+	if err = d.Set("updated_at", flex.DateTimeToString(instanceGroupManagerAction.UpdatedAt)); err != nil {
+		err = fmt.Errorf("Error setting updated_at: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_group_manager_action", "read", "set-updated_at").GetDiag()
+	}
+	if !core.IsNil(instanceGroupManagerAction.ActionType) {
+		if err = d.Set("action_type", instanceGroupManagerAction.ActionType); err != nil {
+			err = fmt.Errorf("Error setting action_type: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_group_manager_action", "read", "set-action_type").GetDiag()
 		}
 	}
-
-	if instanceGroupManagerAction.NextRunAt != nil {
-		if err = d.Set("next_run_at", instanceGroupManagerAction.NextRunAt.String()); err != nil {
-			return fmt.Errorf("[ERROR] Error setting next_run_at: %s", err)
+	if !core.IsNil(instanceGroupManagerAction.CronSpec) {
+		if err = d.Set("cron_spec", instanceGroupManagerAction.CronSpec); err != nil {
+			err = fmt.Errorf("Error setting cron_spec: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_group_manager_action", "read", "set-cron_spec").GetDiag()
 		}
 	}
-
+	if !core.IsNil(instanceGroupManagerAction.LastAppliedAt) {
+		if err = d.Set("last_applied_at", flex.DateTimeToString(instanceGroupManagerAction.LastAppliedAt)); err != nil {
+			err = fmt.Errorf("Error setting last_applied_at: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_group_manager_action", "read", "set-last_applied_at").GetDiag()
+		}
+	}
+	if !core.IsNil(instanceGroupManagerAction.NextRunAt) {
+		if err = d.Set("next_run_at", flex.DateTimeToString(instanceGroupManagerAction.NextRunAt)); err != nil {
+			err = fmt.Errorf("Error setting next_run_at: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_group_manager_action", "read", "set-next_run_at").GetDiag()
+		}
+	}
 	instanceGroupManagerScheduledActionGroupGroup := instanceGroupManagerAction.Group
 	if instanceGroupManagerScheduledActionGroupGroup != nil && instanceGroupManagerScheduledActionGroupGroup.MembershipCount != nil {
-		d.Set("membership_count", flex.IntValue(instanceGroupManagerScheduledActionGroupGroup.MembershipCount))
+		if err = d.Set("membership_count", flex.IntValue(instanceGroupManagerScheduledActionGroupGroup.MembershipCount)); err != nil {
+			err = fmt.Errorf("Error setting membership_count: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_group_manager_action", "read", "set-membership_count").GetDiag()
+		}
 	}
 	instanceGroupManagerScheduledActionManagerManagerInt := instanceGroupManagerAction.Manager
 	if instanceGroupManagerScheduledActionManagerManagerInt != nil {
@@ -461,26 +495,42 @@ func resourceIBMISInstanceGroupManagerActionRead(d *schema.ResourceData, meta in
 		if instanceGroupManagerScheduledActionManagerManager != nil && instanceGroupManagerScheduledActionManagerManager.ID != nil {
 
 			if instanceGroupManagerScheduledActionManagerManager.MaxMembershipCount != nil {
-				d.Set("max_membership_count", flex.IntValue(instanceGroupManagerScheduledActionManagerManager.MaxMembershipCount))
+				if err = d.Set("max_membership_count", flex.IntValue(instanceGroupManagerScheduledActionManagerManager.MaxMembershipCount)); err != nil {
+					err = fmt.Errorf("Error setting max_membership_count: %s", err)
+					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_group_manager_action", "read", "set-max_membership_count").GetDiag()
+				}
+
 			}
-			d.Set("min_membership_count", flex.IntValue(instanceGroupManagerScheduledActionManagerManager.MinMembershipCount))
-			d.Set("target_manager_name", *instanceGroupManagerScheduledActionManagerManager.Name)
-			d.Set("target_manager", *instanceGroupManagerScheduledActionManagerManager.ID)
+			if err = d.Set("min_membership_count", flex.IntValue(instanceGroupManagerScheduledActionManagerManager.MinMembershipCount)); err != nil {
+				err = fmt.Errorf("Error setting min_membership_count: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_group_manager_action", "read", "set-min_membership_count").GetDiag()
+			}
+			if err = d.Set("target_manager_name", *instanceGroupManagerScheduledActionManagerManager.Name); err != nil {
+				err = fmt.Errorf("Error setting target_manager_name: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_group_manager_action", "read", "set-target_manager_name").GetDiag()
+			}
+			if err = d.Set("target_manager", *instanceGroupManagerScheduledActionManagerManager.ID); err != nil {
+				err = fmt.Errorf("Error setting target_manager: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_group_manager_action", "read", "set-target_manager").GetDiag()
+			}
+
 		}
 	}
 
 	return nil
 }
 
-func resourceIBMISInstanceGroupManagerActionDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMISInstanceGroupManagerActionDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_group_manager_action", "delete", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	parts, err := flex.IdParts(d.Id())
 	if err != nil {
-		return err
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_group_manager_action", "delete", "sep-id-parts").GetDiag()
 	}
 	instanceGroupID := parts[0]
 	instancegroupmanagerscheduledID := parts[1]
@@ -493,16 +543,20 @@ func resourceIBMISInstanceGroupManagerActionDelete(d *schema.ResourceData, meta 
 
 	_, healthError := waitForHealthyInstanceGroup(instanceGroupID, meta, d.Timeout(schema.TimeoutDelete))
 	if healthError != nil {
-		return healthError
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("waitForHealthyInstanceGroup failed: %s", err.Error()), "ibm_is_instance_group_manager_action", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
-	response, err := sess.DeleteInstanceGroupManagerAction(deleteInstanceGroupManagerActionOptions)
+	response, err := sess.DeleteInstanceGroupManagerActionWithContext(context, deleteInstanceGroupManagerActionOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error Deleting the InstanceGroup Manager Action: %s\n%s", err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteInstanceGroupManagerActionWithContext failed: %s", err.Error()), "ibm_is_instance_group_manager_action", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	return nil
 }
@@ -511,12 +565,14 @@ func resourceIBMISInstanceGroupManagerActionExists(d *schema.ResourceData, meta 
 
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return false, err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_group_manager_action", "delete", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return false, tfErr
 	}
 
 	parts, err := flex.IdParts(d.Id())
 	if err != nil {
-		return false, err
+		return false, flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_group_manager_action", "delete", "sep-id-parts")
 	}
 	instanceGroupID := parts[0]
 	instancegroupmanagerscheduledID := parts[1]
@@ -533,7 +589,9 @@ func resourceIBMISInstanceGroupManagerActionExists(d *schema.ResourceData, meta 
 		if response != nil && response.StatusCode == 404 {
 			return false, nil
 		}
-		return false, fmt.Errorf("[ERROR] Error Getting InstanceGroup Manager Action: %s\n%s", err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetInstanceGroupManagerAction failed: %s", err.Error()), "ibm_is_instance_group_manager_action", "exists")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return false, tfErr
 	}
 
 	return true, nil
