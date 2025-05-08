@@ -39,6 +39,9 @@ var (
 	CosBackupPolicyID               string
 	BucketCRN                       string
 	BackupVaultName                 string
+	BackupVaultName2                string
+	BackupVaultCrn                  string
+	BackupVaultCrn2                 string
 	ActivityTrackerInstanceCRN      string
 	MetricsMonitoringCRN            string
 	KmsKeyCrn                       string
@@ -589,6 +592,21 @@ func init() {
 	if BackupVaultName == "" {
 		BackupVaultName = ""
 		fmt.Println("[WARN] Set the environment variable IBM_COS_Backup_Vault with a VALID BACKUP VAULT NAME  for testing ibm_cos_backup_vault* resources")
+	}
+	BackupVaultName2 = os.Getenv("IBM_COS_Backup_Vault2")
+	if BackupVaultName2 == "" {
+		BackupVaultName2 = ""
+		fmt.Println("[WARN] Set the environment variable IBM_COS_Backup_Vault2 with a VALID BACKUP VAULT NAME  for testing ibm_cos_backup_vault* resources")
+	}
+	BackupVaultCrn = os.Getenv("IBM_COS_Backup_Crn")
+	if BackupVaultCrn == "" {
+		BackupVaultCrn = ""
+		fmt.Println("[WARN] Set the environment variable IBM_COS_Backup_Crn with a VALID BACKUP VAULT CRN  for testing ibm_cos_backup_vault* resources")
+	}
+	BackupVaultCrn2 = os.Getenv("IBM_COS_Backup_Crn2")
+	if BackupVaultCrn2 == "" {
+		BackupVaultCrn2 = ""
+		fmt.Println("[WARN] Set the environment variable IBM_COS_Backup_Crn2 with a VALID BACKUP VAULT CRN  for testing ibm_cos_backup_vault* resources")
 	}
 	KmsKeyCrn = os.Getenv("IBM_KMS_KEY_CRN")
 	if KmsKeyCrn == "" {
