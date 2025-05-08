@@ -53,7 +53,6 @@ func DataSourceIBMDLGatewayMacsecConfig() *schema.Resource {
 				Computed:    true,
 				Description: "Key Server Priority",
 			},
-
 			dlSecurityPolicy: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -64,7 +63,6 @@ func DataSourceIBMDLGatewayMacsecConfig() *schema.Resource {
 				Computed:    true,
 				Description: "The current status of MACsec on the device for this gateway",
 			},
-
 			dlUpdatedAt: {
 				Type:        schema.TypeString,
 				Computed:    true,

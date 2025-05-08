@@ -4,17 +4,13 @@
 package directlink
 
 import (
-	"context"
 	"fmt"
 	"log"
-	"time"
 
 	"github.com/IBM/networking-go-sdk/directlinkv1"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 )
 
@@ -26,18 +22,6 @@ func ResourceIBMDLGatewayMacsecCak() *schema.Resource {
 		Exists:   resourceIBMdlGatewayMacsecCakExists,
 		Update:   resourceIBMdlGatewayMacsecCakUpdate,
 		Importer: &schema.ResourceImporter{},
-
-		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(60 * time.Minute),
-			Delete: schema.DefaultTimeout(60 * time.Minute),
-			Update: schema.DefaultTimeout(60 * time.Minute),
-		},
-
-		CustomizeDiff: customdiff.Sequence(
-			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
-				return flex.ResourceTagsCustomizeDiff(diff)
-			},
-		),
 		Schema: map[string]*schema.Schema{
 			dlGatewayId: {
 				Type:        schema.TypeString,
@@ -262,7 +246,7 @@ func resourceIBMdlGatewayMacsecCakRead(d *schema.ResourceData, meta interface{})
 		log.Println("[WARN] Error Get DL Gateway Macsec CAK ", response, err)
 		return err
 	}
-	
+
 	cakItem := map[string]interface{}{}
 	if instance.Status != nil {
 		cakItem[dlGatewayMacsecCakStatus] = *instance.Status

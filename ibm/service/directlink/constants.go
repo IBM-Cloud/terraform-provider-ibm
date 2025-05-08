@@ -107,8 +107,8 @@ const (
 	dlGatewaySakRekey                         = "sak_rekey"
 	dlGatewaySakRekeyTimerMode                = "sak_rekey_timer_mode"
 	dlGatewaySakRekeyPacketNumberRolloverMode = "sak_rekey_packet_mode"
-	dlGatewaySakRekeyInterval                 = "sak_rekey_interval"
-	dlGatewaySakRekeyMode                     = "sak_rekey_mode"
+	dlGatewaySakRekeyInterval                 = "interval"
+	dlGatewaySakRekeyMode                     = "mode"
 	dlGatewayMacsecSatusReasons               = "status_reasons"
 	dlGatewayMacsecSatusReason                = "status_reason"
 
@@ -116,7 +116,7 @@ const (
 	dlGatewayMacsecSatusReasonMessage  = "message"
 	dlGatewayMacsecSatusReasonMoreInfo = "more_info"
 
-	dlGatewayMacsecCaksList         = "cak_list"
+	dlGatewayMacsecCaksList       = "caks"
 	dlGatewayMacsecCak            = "cak"
 	dlGatewayMacsecCakID          = "cak_id"
 	dlGatewayMacsecCakName        = "name"
