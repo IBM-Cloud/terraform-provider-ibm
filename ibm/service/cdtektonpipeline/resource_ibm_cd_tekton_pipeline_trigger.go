@@ -984,7 +984,7 @@ func ResourceIBMCdTektonPipelineTriggerTriggerPatchAsPatch(patchVals *cdtektonpi
 		delete(patch, "max_concurrent_runs")
 	}
 	path = "enabled"
-	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+	if _, exists := d.GetOkExists(path); d.HasChange(path) && !exists {
 		patch["enabled"] = nil
 	} else if !exists {
 		delete(patch, "enabled")
@@ -1028,7 +1028,7 @@ func ResourceIBMCdTektonPipelineTriggerTriggerPatchAsPatch(patchVals *cdtektonpi
 		delete(patch, "filter")
 	}
 	path = "favorite"
-	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+	if _, exists := d.GetOkExists(path); d.HasChange(path) && !exists {
 		patch["favorite"] = nil
 	} else if !exists {
 		delete(patch, "favorite")
