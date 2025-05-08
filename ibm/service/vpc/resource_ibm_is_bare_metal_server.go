@@ -4638,18 +4638,18 @@ func resourceIBMIsBareMetalServerMapToVirtualNetworkInterfaceIPsReservedIPProtot
 	model := &vpcv1.VirtualNetworkInterfaceIPPrototype{}
 	if modelMap["id"] != nil && modelMap["id"].(string) != "" {
 		model.ID = core.StringPtr(modelMap["id"].(string))
-	}
-	if modelMap["href"] != nil && modelMap["href"].(string) != "" {
+	} else if modelMap["href"] != nil && modelMap["href"].(string) != "" {
 		model.Href = core.StringPtr(modelMap["href"].(string))
-	}
-	if modelMap["address"] != nil && modelMap["address"].(string) != "" {
-		model.Address = core.StringPtr(modelMap["address"].(string))
-	}
-	if modelMap["auto_delete"] != nil {
-		model.AutoDelete = core.BoolPtr(modelMap["auto_delete"].(bool))
-	}
-	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
-		model.Name = core.StringPtr(modelMap["name"].(string))
+	} else {
+		if modelMap["address"] != nil && modelMap["address"].(string) != "" {
+			model.Address = core.StringPtr(modelMap["address"].(string))
+		}
+		if modelMap["auto_delete"] != nil {
+			model.AutoDelete = core.BoolPtr(modelMap["auto_delete"].(bool))
+		}
+		if modelMap["name"] != nil && modelMap["name"].(string) != "" {
+			model.Name = core.StringPtr(modelMap["name"].(string))
+		}
 	}
 	return model, nil
 }
@@ -4657,18 +4657,18 @@ func resourceIBMIsBareMetalServerMapToVirtualNetworkInterfacePrimaryIPReservedIP
 	model := &vpcv1.VirtualNetworkInterfacePrimaryIPPrototype{}
 	if modelMap["id"] != nil && modelMap["id"].(string) != "" {
 		model.ID = core.StringPtr(modelMap["id"].(string))
-	}
-	if modelMap["href"] != nil && modelMap["href"].(string) != "" {
+	} else if modelMap["href"] != nil && modelMap["href"].(string) != "" {
 		model.Href = core.StringPtr(modelMap["href"].(string))
-	}
-	if modelMap["address"] != nil && modelMap["address"].(string) != "" {
-		model.Address = core.StringPtr(modelMap["address"].(string))
-	}
-	if modelMap["auto_delete"] != nil {
-		model.AutoDelete = core.BoolPtr(modelMap["auto_delete"].(bool))
-	}
-	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
-		model.Name = core.StringPtr(modelMap["name"].(string))
+	} else {
+		if modelMap["address"] != nil && modelMap["address"].(string) != "" {
+			model.Address = core.StringPtr(modelMap["address"].(string))
+		}
+		if modelMap["auto_delete"] != nil {
+			model.AutoDelete = core.BoolPtr(modelMap["auto_delete"].(bool))
+		}
+		if modelMap["name"] != nil && modelMap["name"].(string) != "" {
+			model.Name = core.StringPtr(modelMap["name"].(string))
+		}
 	}
 	return model, nil
 }
