@@ -6,11 +6,13 @@ package power
 import (
 	"context"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -138,14 +140,18 @@ func ResourceIBMPIVolumeOnboarding() *schema.Resource {
 func resourceIBMPIVolumeOnboardingCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_volume_onboarding", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
 	client := instance.NewIBMPIVolumeOnboardingClient(ctx, sess, cloudInstanceID)
 
 	vol, err := expandCreateVolumeOnboarding(d.Get(Arg_OnboardingVolumes).([]interface{}))
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("expandCreateVolumeOnboarding failed: %s", err.Error()), "ibm_pi_volume_onboarding", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	body := &models.VolumeOnboardingCreate{
@@ -158,7 +164,9 @@ func resourceIBMPIVolumeOnboardingCreate(ctx context.Context, d *schema.Resource
 
 	resOnboarding, err := client.CreateVolumeOnboarding(body)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateVolumeOnboarding failed: %s", err.Error()), "ibm_pi_volume_onboarding", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", cloudInstanceID, resOnboarding.ID))
@@ -169,19 +177,25 @@ func resourceIBMPIVolumeOnboardingCreate(ctx context.Context, d *schema.Resource
 func resourceIBMPIVolumeOnboardingRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_volume_onboarding", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID, onboardingID, err := splitID(d.Id())
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("splitID failed: %s", err.Error()), "ibm_pi_volume_onboarding", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	client := instance.NewIBMPIVolumeOnboardingClient(ctx, sess, cloudInstanceID)
 
 	onboardingData, err := client.Get(onboardingID)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Get failed: %s", err.Error()), "ibm_pi_volume_onboarding", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.Set(Arg_Description, onboardingData.Description)
@@ -204,7 +218,7 @@ func resourceIBMPIVolumeOnboardingDelete(ctx context.Context, d *schema.Resource
 // expandCreateVolumeOnboarding expands create volume onboarding resource
 func expandCreateVolumeOnboarding(data []interface{}) ([]*models.AuxiliaryVolumesForOnboarding, error) {
 	if len(data) == 0 {
-		return nil, fmt.Errorf("[ERROR] no pi_onboarding_volumes received")
+		return nil, flex.FmtErrorf("[ERROR] no pi_onboarding_volumes received")
 	}
 
 	auxVolForOnboarding := make([]*models.AuxiliaryVolumesForOnboarding, 0)

@@ -120,7 +120,9 @@ func ResourceIBMPISnapshot() *schema.Resource {
 func resourceIBMPISnapshotCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_snapshot", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
@@ -149,8 +151,9 @@ func resourceIBMPISnapshotCreate(ctx context.Context, d *schema.ResourceData, me
 
 	snapshotResponse, err := client.CreatePvmSnapShot(instanceid, snapshotBody)
 	if err != nil {
-		log.Printf("[DEBUG]  err %s", err)
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreatePvmSnapShot failed: %s", err.Error()), "ibm_pi_snapshot", "create")
+		log.Printf("[DEBUG]  err \n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", cloudInstanceID, *snapshotResponse.SnapshotID))
@@ -158,7 +161,9 @@ func resourceIBMPISnapshotCreate(ctx context.Context, d *schema.ResourceData, me
 	piSnapClient := instance.NewIBMPISnapshotClient(ctx, sess, cloudInstanceID)
 	_, err = isWaitForPIInstanceSnapshotAvailable(ctx, piSnapClient, *snapshotResponse.SnapshotID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForPIInstanceSnapshotAvailable failed: %s", err.Error()), "ibm_pi_snapshot", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	if _, ok := d.GetOk(Arg_UserTags); ok {
@@ -178,18 +183,24 @@ func resourceIBMPISnapshotRead(ctx context.Context, d *schema.ResourceData, meta
 	log.Printf("Calling the Snapshot Read function post create")
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_snapshot", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID, snapshotID, err := splitID(d.Id())
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("splitID failed: %s", err.Error()), "ibm_pi_snapshot", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	snapshot := instance.NewIBMPISnapshotClient(ctx, sess, cloudInstanceID)
 	snapshotdata, err := snapshot.Get(snapshotID)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Get failed: %s", err.Error()), "ibm_pi_snapshot", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.Set(Arg_SnapShotName, snapshotdata.Name)
@@ -214,12 +225,16 @@ func resourceIBMPISnapshotUpdate(ctx context.Context, d *schema.ResourceData, me
 	log.Printf("Calling the IBM Power Snapshot update call")
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_snapshot", "update")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID, snapshotID, err := splitID(d.Id())
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("splitID failed: %s", err.Error()), "ibm_pi_snapshot", "update")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	client := instance.NewIBMPISnapshotClient(ctx, sess, cloudInstanceID)
@@ -231,12 +246,16 @@ func resourceIBMPISnapshotUpdate(ctx context.Context, d *schema.ResourceData, me
 
 		_, err := client.Update(snapshotID, snapshotBody)
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Update failed: %s", err.Error()), "ibm_pi_snapshot", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
 		_, err = isWaitForPIInstanceSnapshotAvailable(ctx, client, snapshotID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForPIInstanceSnapshotAvailable failed: %s", err.Error()), "ibm_pi_snapshot", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 
@@ -256,12 +275,16 @@ func resourceIBMPISnapshotUpdate(ctx context.Context, d *schema.ResourceData, me
 func resourceIBMPISnapshotDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_snapshot", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID, snapshotID, err := splitID(d.Id())
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("splitID failed: %s", err.Error()), "ibm_pi_snapshot", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	client := instance.NewIBMPISnapshotClient(ctx, sess, cloudInstanceID)
@@ -276,12 +299,16 @@ func resourceIBMPISnapshotDelete(ctx context.Context, d *schema.ResourceData, me
 
 	err = client.Delete(snapshotID)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Delete failed: %s", err.Error()), "ibm_pi_snapshot", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	_, err = isWaitForPIInstanceSnapshotDeleted(ctx, client, snapshotID, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForPIInstanceSnapshotDeleted failed: %s", err.Error()), "ibm_pi_snapshot", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId("")

@@ -12,6 +12,7 @@ import (
 
 	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
@@ -97,18 +98,24 @@ func resourceIBMPIInstanceActionCreate(ctx context.Context, d *schema.ResourceDa
 func resourceIBMPIInstanceActionRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_instance_action", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID, id, err := splitID(d.Id())
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("splitID failed: %s", err.Error()), "ibm_pi_instance_action", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	client := st.NewIBMPIInstanceClient(context.Background(), sess, cloudInstanceID)
 	powervmdata, err := client.Get(id)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Get failed: %s", err.Error()), "ibm_pi_instance_action", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.Set(Attr_Status, powervmdata.Status)
@@ -141,7 +148,9 @@ func resourceIBMPIInstanceActionDelete(ctx context.Context, d *schema.ResourceDa
 func takeInstanceAction(ctx context.Context, d *schema.ResourceData, meta interface{}, timeout time.Duration) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_instance_action", "create/update")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
@@ -167,7 +176,9 @@ func takeInstanceAction(ctx context.Context, d *schema.ResourceData, meta interf
 	if action == Action_Start || action == Action_Stop || action == Action_ImmediateShutdown {
 		pvm, err := client.Get(id)
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Get failed: %s", err.Error()), "ibm_pi_instance_action", "create/update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
 		if strings.ToLower(*pvm.Status) == targetStatus && pvm.Health != nil && (pvm.Health.Status == targetHealthStatus || pvm.Health.Status == OK) {
@@ -181,8 +192,9 @@ func takeInstanceAction(ctx context.Context, d *schema.ResourceData, meta interf
 
 	err = client.Action(id, body)
 	if err != nil {
-		log.Printf("[ERROR] failed to perform the action on the instance %v", err)
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Action failed: %s", err.Error()), "ibm_pi_instance_action", "create/update")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	log.Printf("Executed the action on the instance")
@@ -190,7 +202,9 @@ func takeInstanceAction(ctx context.Context, d *schema.ResourceData, meta interf
 	log.Printf("Calling the check for %s opertion to check for status %s", action, targetStatus)
 	_, err = isWaitForPIInstanceActionStatus(ctx, client, id, timeout, targetStatus, targetHealthStatus)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForPIInstanceActionStatus failed: %s", err.Error()), "ibm_pi_instance_action", "create/update")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	return nil
@@ -226,9 +240,9 @@ func isPIActionRefreshFunc(client *st.IBMPIInstanceClient, id, targetStatus, tar
 
 		if strings.ToLower(*pvm.Status) == State_Error {
 			if pvm.Fault != nil {
-				err = fmt.Errorf("failed to perform the action on the instance: %s", pvm.Fault.Message)
+				err = flex.FmtErrorf("failed to perform the action on the instance: %s", pvm.Fault.Message)
 			} else {
-				err = fmt.Errorf("failed to perform the action on the instance")
+				err = flex.FmtErrorf("failed to perform the action on the instance")
 			}
 			return pvm, *pvm.Status, err
 		}
