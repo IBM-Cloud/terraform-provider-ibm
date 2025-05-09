@@ -1,3 +1,35 @@
+# 1.78.1 (May 09, 2025)
+## Bug Fixes
+
+### HPCS
+* Correct missing instance_id and region after import ([6211](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6211))
+
+### Backup/Recovery
+* Fix backup recovery client error handling ([6225](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6225))
+* Fix connector client usage ([6223](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6223))
+
+### Transit Gateway
+* Fixed TGW-146: Removed useless lines in logs when creating Transit Gateway resources([6143](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6143))
+
+
+### MQ Service
+* Remove undocumented custom accept language header ([6222](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6222))
+
+## Build System
+
+### General
+* Use the same environment key for global catalog and fix the path ([6217](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6217))
+
+## Documentation
+
+### Transit Gateway
+* Added HOWTO.md with local development guide and examples for Transit Gateway resources ([6143](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6143))
+
+## Enhancements
+
+### Transit Gateway
+* Simplified resource schema by removing computed attributes that are only used in tunnel blocks ([6143](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6143))
+
 # 1.78.0 (Apr 30, 2025)
 
 ## Features
