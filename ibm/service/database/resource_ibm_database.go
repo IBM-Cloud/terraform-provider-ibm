@@ -2212,7 +2212,6 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 	}
 
 	if d.HasChange("version") {
-		//TODO LORNA: test new endpoint end to end
 		version := d.Get("version").(string)
 		skipBackup := d.Get("version_upgrade_skip_backup") == true
 
