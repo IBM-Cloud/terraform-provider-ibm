@@ -21,6 +21,7 @@ import (
 const (
 	ArbitrarySecretType          = "arbitrary"
 	UsernamePasswordSecretType   = "username_password"
+	CustomCredentialsSecretType  = "custom_credentials"
 	IAMCredentialsSecretType     = "iam_credentials"
 	ServiceCredentialsSecretType = "service_credentials"
 	KvSecretType                 = "kv"
@@ -36,9 +37,11 @@ const (
 	ImportedCertSecretResourceName       = "ibm_sm_imported_certificate"
 	PublicCertSecretResourceName         = "ibm_sm_public_certificate"
 	PrivateCertSecretResourceName        = "ibm_sm_private_certificate"
+	CustomCredentialsSecretResourceName  = "ibm_sm_custom_credentials_secret"
 
 	EnRegistrationResourceName                           = "ibm_sm_en_registration"
 	IAMCredentialsConfigResourceName                     = "ibm_sm_iam_credentials_configuration"
+	CustomCredentialsConfigResourceName                  = "ibm_sm_custom_credentials_configuration"
 	ConfigurationsResourceName                           = "ibm_sm_configurations"
 	PrivateCertConfigIntermediateCAResourceName          = "ibm_sm_private_certificate_configuration_intermediate_ca"
 	PrivateCertConfigRootCAResourceName                  = "ibm_sm_private_certificate_configuration_root_ca"
@@ -170,6 +173,30 @@ func StringIsIntBetween(min, max int) schema.SchemaValidateFunc {
 
 		if v < min || v > max {
 			errors = append(errors, fmt.Errorf("expected %s to be in the range (%d - %d), got %d", k, min, max, v))
+			return warnings, errors
+		}
+
+		return warnings, errors
+	}
+}
+
+func StringIsIntWithMinimum(min int) schema.SchemaValidateFunc {
+	return func(i interface{}, k string) (warnings []string, errors []error) {
+		vs, ok := i.(string)
+		if !ok {
+			errors = append(errors, fmt.Errorf("expected type of %s to be string", k))
+			return warnings, errors
+		}
+
+		v, err := strconv.Atoi(vs)
+
+		if err != nil {
+			errors = append(errors, fmt.Errorf("expected %s to represent an integer", k))
+			return warnings, errors
+		}
+
+		if v < min {
+			errors = append(errors, fmt.Errorf("expected %s to be st least %d, got %d", k, min, v))
 			return warnings, errors
 		}
 

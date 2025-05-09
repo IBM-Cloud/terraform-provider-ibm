@@ -638,7 +638,7 @@ func resourceIbmSmUsernamePasswordSecretMapToSecretPrototype(d *schema.ResourceD
 		layout := time.RFC3339
 		parseToTime, err := time.Parse(layout, d.Get("expiration_date").(string))
 		if err != nil {
-			return nil, fmt.Errorf(`Failed to get "expiration_date". Error: ` + err.Error())
+			return nil, fmt.Errorf(`Failed to get "expiration_date". Error: %s`, err.Error())
 		}
 		parseToDateTime := strfmt.DateTime(parseToTime)
 		model.ExpirationDate = &parseToDateTime
