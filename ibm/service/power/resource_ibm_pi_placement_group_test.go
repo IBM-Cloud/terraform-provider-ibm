@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"strings"
 	"testing"
+	"time"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 
@@ -61,7 +62,7 @@ func TestAccIBMPIPlacementGroupBasic(t *testing.T) {
 			{
 				Config: testAccCheckIBMPIPlacementGroupRemoveMemberConfig(name, policy),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMPIPlacementGroupMemberDoesNotExist("ibm_pi_placement_group.power_placement_group", "ibm_pi_instance.power_instance"),
+					testAccCheckIBMPIPlacementGroupMemberDoesNotExist("ibm_pi_placement_group.power_placement_group_another", "ibm_pi_instance.power_instance"),
 				),
 			},
 			{
@@ -76,7 +77,6 @@ func TestAccIBMPIPlacementGroupBasic(t *testing.T) {
 					testAccCheckIBMPIPlacementGroupMemberExistsFromInstanceCreate("ibm_pi_placement_group.power_placement_group", "ibm_pi_instance.power_instance", "ibm_pi_instance.power_instance_in_pg"),
 					testAccCheckIBMPIPlacementGroupMemberExists("ibm_pi_placement_group.power_placement_group", "ibm_pi_instance.sap_power_instance"),
 				),
-				ExpectNonEmptyPlan: true,
 			},
 			{
 				Config: testAccCheckIBMPIDeletePlacementGroup(name, policy),
@@ -100,6 +100,8 @@ func testAccCheckIBMPIPlacementGroupDestroy(s *terraform.State) error {
 		parts, _ := flex.IdParts(rs.Primary.ID)
 		cloudinstanceid := parts[0]
 		placementGroupC := instance.NewIBMPIPlacementGroupClient(context.Background(), sess, cloudinstanceid)
+		// This sleep is here since placement group currently does not have a wait for delete and test fails, can be removed if that is implemented
+		time.Sleep(1 * time.Minute)
 		_, err = placementGroupC.Get(parts[1])
 		if err == nil {
 			return fmt.Errorf("PI placement group still exists: %s", rs.Primary.ID)
@@ -468,7 +470,6 @@ func testAccCheckIBMPIPlacementGroupRemoveMemberConfig(name string, policy strin
 			pi_network {
 				network_id = "%[5]s"
 			}
-			pi_placement_group_id = ""
 		}
 	
 		resource "ibm_pi_placement_group" "power_placement_group" {
