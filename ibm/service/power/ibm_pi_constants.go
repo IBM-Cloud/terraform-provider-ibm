@@ -655,6 +655,8 @@ const (
 	Timeout_Active   = 2 * time.Minute
 	Timeout_Delay    = 60 * time.Second
 	Timeout_Warning  = 60 * time.Second
+	Retries          = 3
+	Retry_Delay      = 30 * time.Second
 	vpcRetryCount    = 2
 	vpcRetryDuration = time.Minute
 
