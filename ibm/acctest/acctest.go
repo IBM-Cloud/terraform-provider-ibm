@@ -182,6 +182,10 @@ var (
 	SecretsManagerPrivateCertificateConfigurationCryptoKeyProviderPrivateKeystoreId string
 	SecretsManagerSecretType                                                        string
 	SecretsManagerSecretID                                                          string
+	SecretsManagerCodeEngineProjectId                                               string
+	SecretsManagerCodeEngineRegion                                                  string
+	SecretsManagerCodeEngineJobName                                                 string
+	SecretsManagerServiceIdForCustomCredentials                                     string
 )
 
 var (
@@ -1567,6 +1571,26 @@ func init() {
 	SecretsManagerPrivateCertificateConfigurationCryptoKeyProviderPrivateKeystoreId = os.Getenv("SECRETS_MANAGER_PRIVATE_CERTIFICATE_CONFIGURATION_CRYPTO_KEY_PROVIDER_PRIVATE_KEYSTORE_ID")
 	if SecretsManagerPrivateCertificateConfigurationCryptoKeyProviderPrivateKeystoreId == "" {
 		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_PRIVATE_CERTIFICATE_CONFIGURATION_CRYPTO_KEY_PROVIDER_PRIVATE_KEYSTORE_ID for testing private certificate's configuration with crypto key tests, else tests fail if not set correctly")
+	}
+
+	SecretsManagerCodeEngineProjectId = os.Getenv("SECRETS_MANAGER_CODE_ENGINE_PROJECT_ID")
+	if SecretsManagerCodeEngineProjectId == "" {
+		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_CODE_ENGINE_PROJECT_ID for testing custom credential secret, else tests fail if not set correctly")
+	}
+
+	SecretsManagerCodeEngineJobName = os.Getenv("SECRETS_MANAGER_CODE_ENGINE_JOB_NAME")
+	if SecretsManagerCodeEngineJobName == "" {
+		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_CODE_ENGINE_JOB_NAME for testing custom credential secret, else tests fail if not set correctly")
+	}
+
+	SecretsManagerCodeEngineRegion = os.Getenv("SECRETS_MANAGER_CODE_ENGINE_REGION")
+	if SecretsManagerCodeEngineRegion == "" {
+		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_CODE_ENGINE_RGION for testing custom credential secret, else tests fail if not set correctly")
+	}
+
+	SecretsManagerServiceIdForCustomCredentials = os.Getenv("SECRETS_MANAGER_SERVICE_ID_FOR_CUSTOM_CREDENTIALS")
+	if SecretsManagerServiceIdForCustomCredentials == "" {
+		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_SERVICE_ID_FOR_CUSTOM_CREDENTIALS for testing custom credential secret, else tests fail if not set correctly")
 	}
 
 	Tg_cross_network_account_api_key = os.Getenv("IBM_TG_CROSS_ACCOUNT_API_KEY")
