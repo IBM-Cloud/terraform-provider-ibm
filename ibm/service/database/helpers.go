@@ -58,11 +58,22 @@ func (tm *TaskManager) matchingTaskInProgress(taskType string) (bool, *clouddata
 		if task.Status == nil || task.ResourceType == nil {
 			continue
 		}
+		id := *task.ID
+		createdAt := *task.CreatedAt
 		status := *task.Status
+		progress := *task.ProgressPercent
+		description := *task.Description
 		resourceType := *task.ResourceType
 
 		if (status == databaseTaskRunningStatus || status == databaseTaskQueuedStatus) && resourceType == taskType {
-			log.Printf("[INFO] Found matching task in progress: %s (status: %s)", resourceType, status)
+			log.Printf("[INFO] Found matching task in progress:\n"+
+				"  Type: %s\n"+
+				"  Created at: %s\n"+
+				"  Status: %s\n"+
+				"  Current progress percent: %d\n"+
+				"  Description: %s\n"+
+				"  ID: %s\n",
+				resourceType, createdAt, status, progress, description, id)
 			return true, &task, nil
 		}
 	}

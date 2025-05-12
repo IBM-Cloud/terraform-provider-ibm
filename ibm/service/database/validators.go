@@ -122,11 +122,11 @@ func fetchDeploymentVersion(instanceId string, location string, meta interface{}
 	return version
 }
 
-func validateUpgradeVersion(instanceId string, location string, upgradeVersion string, skipBackup bool, meta interface{}) (err error) {
+func validateUpgradeVersion(instanceId string, location string, oldVersion string, upgradeVersion string, skipBackup bool, meta interface{}) (err error) {
 	deploymentVersion := fetchDeploymentVersionFn(instanceId, location, meta)
 
 	if deploymentVersion == nil || deploymentVersion.hasUpgradeVersions() == false {
-		return fmt.Errorf("No available upgrade versions for your current version.")
+		return fmt.Errorf("No available upgrade versions for version %s", oldVersion)
 	}
 
 	if !deploymentVersion.isVersionUpgradeAllowed(upgradeVersion) {

@@ -16,6 +16,7 @@ func TestIsVersionUpgradeAllowed(t *testing.T) {
 	testcases := []struct {
 		description    string
 		version        Version
+		oldVersion     string
 		upgradeVersion string
 		expectedResult bool
 	}{
@@ -29,6 +30,7 @@ func TestIsVersionUpgradeAllowed(t *testing.T) {
 				},
 			},
 			upgradeVersion: "7.0",
+			oldVersion:     "6.0",
 			expectedResult: true,
 		},
 		{
@@ -41,6 +43,7 @@ func TestIsVersionUpgradeAllowed(t *testing.T) {
 				},
 			},
 			upgradeVersion: "7.1",
+			oldVersion:     "7.0",
 			expectedResult: false,
 		},
 		{
@@ -52,6 +55,7 @@ func TestIsVersionUpgradeAllowed(t *testing.T) {
 					{Method: inPlace, ToVersion: "7.2"},
 				},
 			},
+			oldVersion:     "7.0",
 			upgradeVersion: "8",
 			expectedResult: false,
 		},
@@ -61,6 +65,7 @@ func TestIsVersionUpgradeAllowed(t *testing.T) {
 				Version:     "14",
 				Transitions: []VersionTransition{},
 			},
+			oldVersion:     "14",
 			upgradeVersion: "7.2",
 			expectedResult: false,
 		},
@@ -78,6 +83,7 @@ func TestIsSkipBackupUpgradeAllowed(t *testing.T) {
 	testcases := []struct {
 		description    string
 		version        Version
+		oldVersion     string
 		upgradeVersion string
 		expectedResult bool
 	}{
@@ -90,6 +96,7 @@ func TestIsSkipBackupUpgradeAllowed(t *testing.T) {
 					{Method: inPlace, ToVersion: "7.0", SkipBackupSupported: core.BoolPtr(false)},
 				},
 			},
+			oldVersion:     "6.0",
 			upgradeVersion: "6.1",
 			expectedResult: true,
 		},
@@ -101,6 +108,7 @@ func TestIsSkipBackupUpgradeAllowed(t *testing.T) {
 					{Method: inPlace, ToVersion: "8", SkipBackupSupported: core.BoolPtr(false)},
 				},
 			},
+			oldVersion:     "7.0",
 			upgradeVersion: "8",
 			expectedResult: false,
 		},
@@ -112,6 +120,7 @@ func TestIsSkipBackupUpgradeAllowed(t *testing.T) {
 					{Method: inPlace, ToVersion: "8", SkipBackupSupported: nil},
 				},
 			},
+			oldVersion:     "7.0",
 			upgradeVersion: "8",
 			expectedResult: false,
 		},
@@ -121,6 +130,7 @@ func TestIsSkipBackupUpgradeAllowed(t *testing.T) {
 				Version:     "14",
 				Transitions: []VersionTransition{},
 			},
+			oldVersion:     "14",
 			upgradeVersion: "15",
 			expectedResult: false,
 		},
@@ -284,6 +294,7 @@ func TestValidateVersion(t *testing.T) {
 		description        string
 		instanceID         string
 		location           string
+		oldVersion         string
 		upgradeVersion     string
 		skipBackup         bool
 		mockCapabilityFunc func(capability string, instanceID string, platform string, location string, meta interface{}) (*clouddatabasesv5.Capability, error)
@@ -293,15 +304,17 @@ func TestValidateVersion(t *testing.T) {
 			description:        "When there are no upgrade paths for the upgrade version, Expect no upgrade versions error",
 			instanceID:         "test-instance",
 			location:           "us-south",
+			oldVersion:         "8",
 			upgradeVersion:     "9",
 			skipBackup:         false,
 			mockCapabilityFunc: MockGetDeploymentCapabilityNoTransitions,
-			expectedError:      "No available upgrade versions for your current version",
+			expectedError:      "No available upgrade versions for version 8",
 		},
 		{
 			description:        "When the upgrade version is no a valid version, Expect allowed versions error",
 			instanceID:         "test-instance",
 			location:           "us-south",
+			oldVersion:         "9",
 			upgradeVersion:     "10",
 			skipBackup:         false,
 			mockCapabilityFunc: MockGetDeploymentCapability,
@@ -311,6 +324,7 @@ func TestValidateVersion(t *testing.T) {
 			description:        "When skip backup is not allowed for upgrade version, Expect skip backup error",
 			instanceID:         "test-instance",
 			location:           "eu-gb",
+			oldVersion:         "6",
 			upgradeVersion:     "7",
 			skipBackup:         true,
 			mockCapabilityFunc: MockGetDeploymentCapability,
@@ -320,6 +334,7 @@ func TestValidateVersion(t *testing.T) {
 			description:        "When the upgrade version is valid, Expect no error",
 			instanceID:         "test-instance",
 			location:           "eu-gb",
+			oldVersion:         "6",
 			upgradeVersion:     "7",
 			skipBackup:         false,
 			mockCapabilityFunc: MockGetDeploymentCapability,
@@ -338,7 +353,7 @@ func TestValidateVersion(t *testing.T) {
 				return expandVersion(capability.Versions[0])
 			}
 
-			err := validateUpgradeVersion(tc.instanceID, tc.location, tc.upgradeVersion, tc.skipBackup, &MockMeta{})
+			err := validateUpgradeVersion(tc.instanceID, tc.location, tc.oldVersion, tc.upgradeVersion, tc.skipBackup, &MockMeta{})
 
 			if tc.expectedError != "" {
 				require.Error(t, err)
