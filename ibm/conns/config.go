@@ -3650,7 +3650,11 @@ func (c *Config) ClientSession() (interface{}, error) {
 	// CATALOG MANAGEMENT Service
 	globalcatalogURL := globalcatalogv1.DefaultServiceURL
 	if c.Visibility == "private" || c.Visibility == "public-and-private" {
-		globalcatalogURL = ContructEndpoint("private.globalcatalog", cloudEndpoint)
+		if c.Region == "us-south" || c.Region == "us-east" {
+			globalcatalogURL = ContructEndpoint(fmt.Sprintf("private.%s.globalcatalog", c.Region), fmt.Sprintf("%s", cloudEndpoint))
+		} else {
+			globalcatalogURL = ContructEndpoint("private.us-south.globalcatalog", fmt.Sprintf("%s", cloudEndpoint))
+		}
 	}
 	if fileMap != nil && c.Visibility != "public-and-private" {
 		globalcatalogURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_RESOURCE_CATALOG_API_ENDPOINT", c.Region, globalcatalogURL)
