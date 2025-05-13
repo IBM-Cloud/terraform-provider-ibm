@@ -40,7 +40,7 @@ Example usage:
 Review the argument references that you can specify for your data source.
 
 - `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
-- `pi_key_name`  - (Required, String) User defined name for the SSH key.
+- `pi_key_name`  - (Required, String) User defined name for the SSH key or SSH key ID.
 
 ## Attribute Reference
 
@@ -48,4 +48,9 @@ In addition to all argument reference list, you can access the following attribu
 
 - `id` - (String) User defined name for the SSH key
 - `creation_date` - (String) Date of SSH Key creation.
+- `description` - (String) Description of the SSH key.
+- `name` - (String) Name of SSH key.
 - `ssh_key` - (String) SSH RSA key.
+- `ssh_key_id` - (String) Unique ID of SSH key.
+- `primary_workspace` - (Boolean) Indicates if the current workspace owns the ssh key or not.
+- `visibility` - (String) Visibility of the SSH key.

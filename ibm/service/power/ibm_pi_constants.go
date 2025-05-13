@@ -150,6 +150,7 @@ const (
 	Arg_VirtualCoresAssigned                 = "pi_virtual_cores_assigned"
 	Arg_VirtualOpticalDevice                 = "pi_virtual_optical_device"
 	Arg_VirtualSerialNumber                  = "pi_virtual_serial_number"
+	Arg_Visibility                           = "pi_visibility"
 	Arg_VolumeCloneName                      = "pi_volume_clone_name"
 	Arg_VolumeCloneTaskID                    = "pi_volume_clone_task_id"
 	Arg_VolumeGroupAction                    = "pi_volume_group_action"
@@ -375,6 +376,7 @@ const (
 	Attr_PowerEdgeRouter                 = "power_edge_router"
 	Attr_Primary                         = "primary"
 	Attr_PrimaryRole                     = "primary_role"
+	Attr_PrimaryWorkspace                = "primary_workspace"
 	Attr_Processors                      = "processors"
 	Attr_ProcType                        = "proctype"
 	Attr_Product                         = "product"
@@ -430,6 +432,7 @@ const (
 	Attr_SPPPlacementGroupPolicy         = "policy"
 	Attr_SPPPlacementGroups              = "spp_placement_groups"
 	Attr_SSHKey                          = "ssh_key"
+	Attr_SSHKeyID                        = "ssh_key_id"
 	Attr_Start                           = "start"
 	Attr_StartTime                       = "start_time"
 	Attr_State                           = "state"
@@ -481,6 +484,7 @@ const (
 	Attr_VirtualCoresAssigned            = "virtual_cores_assigned"
 	Attr_VirtualSerialNumber             = "virtual_serial_number"
 	Attr_VirtualSerialNumbers            = "virtual_serial_numbers"
+	Attr_Visibility                      = "visibility"
 	Attr_VLanID                          = "vlan_id"
 	Attr_VolumeGroupID                   = "volume_group_id"
 	Attr_VolumeGroupName                 = "volume_group_name"
@@ -512,6 +516,8 @@ const (
 	StockVTL = "stock-vtl"
 
 	// Allowed Values
+	// Allowed Values
+	Account                   = "account"
 	Affinity                  = "affinity"
 	All                       = "all"
 	Allow                     = "allow"
@@ -574,6 +580,7 @@ const (
 	Vlan                      = "vlan"
 	vSCSI                     = "vSCSI"
 	Warning                   = "WARNING"
+	Workspace                 = "workspace"
 
 	// Actions
 	Action_HardReboot        = "hard-reboot"
