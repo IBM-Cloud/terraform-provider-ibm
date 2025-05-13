@@ -130,7 +130,7 @@ func TestAccIBMDatabaseInstanceMongodbUpgrade(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: acc.ConfigCompose(
-					testAccCheckIBMDatabaseInstanceMongodbBasic(databaseResourceGroup, testName),
+					testAccCheckIBMDatabaseInstanceMongodbVersion6(databaseResourceGroup, testName),
 					testAccCheckIBMDatabaseInstanceMongodbVersionUpgrade(databaseResourceGroup, testName)),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
@@ -183,8 +183,28 @@ func testAccCheckIBMDatabaseInstanceMongodbBasic(databaseResourceGroup string, n
 				`, databaseResourceGroup, name, acc.Region())
 }
 
+func testAccCheckIBMDatabaseInstanceMongodbVersion6(databaseResourceGroup string, name string) string {
+		// IMPORTANT NOTE: The version will have to be updated when version 6 is no longer available. Currently mongo standard can only upgrade to version 7.0
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "test_acc" {
+		name = "%[1]s"
+	}
+
+	resource "ibm_database" "%[2]s" {
+		resource_group_id            = data.ibm_resource_group.test_acc.id
+		name                         = "%[2]s"
+		service                      = "databases-for-mongodb"
+		plan                         = "standard"
+		location                     = "%[3]s"
+		version                		 = "6.0"
+		service_endpoints            = "private"
+		
+	}
+				`, databaseResourceGroup, name, acc.Region())
+}
+
 func testAccCheckIBMDatabaseInstanceMongodbVersionUpgrade(databaseResourceGroup string, name string) string {
-	// IMPORTANT NOTE: The version will have to be updated when versions deprecate etc. Currently mongo standard can only upgrade to version 7.0
+	// IMPORTANT NOTE: The version will have to be updated when version 6.0 is no longer available. Currently mongo standard can only upgrade to version 7.0
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
 		name = "%[1]s"
