@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 )
 
@@ -43,7 +44,9 @@ func ResourceIBMIsPrivatePathServiceGatewayOperations() *schema.Resource {
 func resourceIBMIsPrivatePathServiceGatewayOperationsCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_private_path_service_gateway_operations", "create", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	ppsgId := d.Get("private_path_service_gateway").(string)
@@ -55,8 +58,9 @@ func resourceIBMIsPrivatePathServiceGatewayOperationsCreate(context context.Cont
 
 		response, err := vpcClient.PublishPrivatePathServiceGatewayWithContext(context, publishPrivatePathServiceGatewayOptions)
 		if err != nil {
-			log.Printf("[DEBUG] PublishPrivatePathServiceGatewayWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("PublishPrivatePathServiceGatewayWithContext failed %s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("PublishPrivatePathServiceGatewayWithContext failed: %s\n%s", err.Error(), response), "ibm_is_private_path_service_gateway_operations", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
 	} else {
@@ -66,8 +70,9 @@ func resourceIBMIsPrivatePathServiceGatewayOperationsCreate(context context.Cont
 
 		response, err := vpcClient.UnpublishPrivatePathServiceGatewayWithContext(context, unpublishPrivatePathServiceGatewayOptions)
 		if err != nil {
-			log.Printf("[DEBUG] unpublishPrivatePathServiceGatewayWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("unpublishublishPrivatePathServiceGatewayWithContext failed %s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UnpublishPrivatePathServiceGatewayWithContext failed: %s\n%s", err.Error(), response), "ibm_is_private_path_service_gateway_operations", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
 	}
@@ -96,9 +101,10 @@ func resourceIBMIsPrivatePathServiceGatewayOperationsUpdate(context context.Cont
 
 		response, err := vpcClient.PublishPrivatePathServiceGatewayWithContext(context, publishPrivatePathServiceGatewayOptions)
 		if err != nil {
-			log.Printf("[DEBUG] PublishPrivatePathServiceGatewayWithContext failed %s\n%s", err, response)
 			resetPublishedSchemaValue(context, d)
-			return diag.FromErr(fmt.Errorf("PublishPrivatePathServiceGatewayWithContext failed %s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("PublishPrivatePathServiceGatewayWithContext failed: %s\n%s", err.Error(), response), "ibm_is_private_path_service_gateway_operations", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
 	} else {
@@ -108,9 +114,10 @@ func resourceIBMIsPrivatePathServiceGatewayOperationsUpdate(context context.Cont
 
 		response, err := vpcClient.UnpublishPrivatePathServiceGatewayWithContext(context, unpublishPrivatePathServiceGatewayOptions)
 		if err != nil {
-			log.Printf("[DEBUG] unpublishPrivatePathServiceGatewayWithContext failed %s\n%s", err, response)
 			resetPublishedSchemaValue(context, d)
-			return diag.FromErr(fmt.Errorf("unpublishublishPrivatePathServiceGatewayWithContext failed %s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UnpublishPrivatePathServiceGatewayWithContext failed: %s\n%s", err.Error(), response), "ibm_is_private_path_service_gateway_operations", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
 	}
