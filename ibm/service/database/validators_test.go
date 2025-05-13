@@ -342,8 +342,12 @@ func TestValidateVersion(t *testing.T) {
 		},
 	}
 
-	originalFetchFunc := fetchDeploymentVersionFn
-	defer func() { fetchDeploymentVersionFn = originalFetchFunc }()
+	 var fetchDeploymentVersionFn = fetchDeploymentVersion
+
+	// originalFetchFunc := fetchDeploymentVersionFn
+	// defer func() { fetchDeploymentVersionFn = originalFetchFunc }()
+
+	// var fetchDeploymentVersionFn = fetchDeploymentVersion
 
 	for _, tc := range tests {
 		t.Run(tc.description, func(t *testing.T) {
