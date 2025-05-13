@@ -14,6 +14,7 @@ import (
 
 	"github.com/IBM-Cloud/bluemix-go/api/globalsearch/globalsearchv2"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/platform-services-go-sdk/catalogmanagementv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -87,12 +88,16 @@ func DataSourceIBMISEndpointGatewayTargets() *schema.Resource {
 func dataSourceIBMISEndpointGatewayTargetsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	bmxSess, err := meta.(conns.ClientSession).BluemixSession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_endpoint_gateway_targets", "read", "initialize-bluemix-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	region := bmxSess.Config.Region
 	catalogManagementClient, err := meta.(conns.ClientSession).CatalogManagementV1()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_endpoint_gateway_targets", "read", "initialize-catalog-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	resourceInfo := make([]map[string]interface{}, 0)
 	getCatalogOptions := &catalogmanagementv1.SearchObjectsOptions{}
@@ -108,10 +113,11 @@ func dataSourceIBMISEndpointGatewayTargetsRead(context context.Context, d *schem
 		if start != int64(0) {
 			getCatalogOptions.Offset = &start
 		}
-		search, response, err := catalogManagementClient.SearchObjectsWithContext(context, getCatalogOptions)
+		search, _, err := catalogManagementClient.SearchObjectsWithContext(context, getCatalogOptions)
 		if err != nil {
-			log.Printf("[DEBUG] GetCatalogWithContext failed %s\n%s", err, response)
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("SearchObjectsWithContext failed: %s", err.Error()), "(Data) ibm_is_endpoint_gateway_targets", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		next := search.Next
 		if next == nil {
@@ -171,12 +177,15 @@ func dataSourceIBMISEndpointGatewayTargetsRead(context context.Context, d *schem
 	}
 	globalSearchClient, err := meta.(conns.ClientSession).GlobalSearchAPI()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_endpoint_gateway_targets", "read", "initialize-globalsearch-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	searchResult, err := globalSearchClient.Searches().PostQuery(getSearchOptions)
 	if err != nil {
-		log.Printf("[DEBUG] PostQuery on globalSearchApi for query string %s failed %s", queryString, err)
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("PostQuery failed: %s", err.Error()), "(Data) ibm_is_endpoint_gateway_targets", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	searchItems := searchResult.Items
 	for _, item := range searchItems {
@@ -188,7 +197,9 @@ func dataSourceIBMISEndpointGatewayTargetsRead(context context.Context, d *schem
 
 	}
 
-	d.Set(isVPEResources, resourceInfo)
+	if err = d.Set(isVPEResources, resourceInfo); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resources: %s", err), "(Data) ibm_is_endpoint_gateway_targets", "read", "set-resources").GetDiag()
+	}
 	d.SetId(dataSourceIBMISEndpointGatewayTargetsId(d))
 	return nil
 }
