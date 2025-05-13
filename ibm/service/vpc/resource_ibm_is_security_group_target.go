@@ -366,7 +366,7 @@ func isWaitForVNISgTargetCreateAvailable(sess *vpcv1.VpcV1, vniId string, timeou
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"pending", "updating", "waiting"},
-		Target:     []string{isLBProvisioningDone, ""},
+		Target:     []string{isLBProvisioningDone, "", "stable"},
 		Refresh:    isVNISgTargetRefreshFunc(sess, vniId),
 		Timeout:    timeout,
 		Delay:      10 * time.Second,
@@ -384,11 +384,11 @@ func isVNISgTargetRefreshFunc(vpcClient *vpcv1.VpcV1, vniId string) resource.Sta
 		}
 		vni, response, err := vpcClient.GetVirtualNetworkInterface(getVNIOptions)
 		if err != nil {
-			return nil, "", fmt.Errorf("[ERROR] Error Getting Load Balancer : %s\n%s", err, response)
+			return nil, "", fmt.Errorf("[ERROR] Error Getting virtual network interface : %s\n%s", err, response)
 		}
 
 		if *vni.LifecycleState == "failed" {
-			return vni, *vni.LifecycleState, fmt.Errorf("Network Interface creationg failed with status %s ", *vni.LifecycleState)
+			return vni, *vni.LifecycleState, fmt.Errorf("Virtual Network Interface creating failed with status %s ", *vni.LifecycleState)
 		}
 		return vni, *vni.LifecycleState, nil
 	}
