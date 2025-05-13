@@ -1,3 +1,10 @@
+# 1.78.2 (May 13, 2025)
+### Global Catalog 
+* Fix the regression of private endpoint for GC ([6235](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6235))
+
+### VPC
+* fix status issue with vni on is_security_group_target ([6233](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6233))
+
 # 1.78.1 (May 09, 2025)
 ## Bug Fixes
 
