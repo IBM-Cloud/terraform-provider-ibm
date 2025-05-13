@@ -104,6 +104,8 @@ func (v *Version) getAllowedVersionsList() []string {
 	return allowedList
 }
 
+var fetchDeploymentVersionFn = fetchDeploymentVersion
+
 func fetchDeploymentVersion(instanceId string, location string, meta interface{}) *Version {
 	capability, err := getDeploymentCapability(versions, instanceId, classicPlatform, location, meta)
 	if err != nil {
@@ -121,7 +123,7 @@ func fetchDeploymentVersion(instanceId string, location string, meta interface{}
 }
 
 func validateUpgradeVersion(instanceId string, location string, oldVersion string, upgradeVersion string, skipBackup bool, meta interface{}) (err error) {
-	deploymentVersion := fetchDeploymentVersion(instanceId, location, meta)
+	deploymentVersion := fetchDeploymentVersionFn(instanceId, location, meta)
 
 	if deploymentVersion == nil || deploymentVersion.hasUpgradeVersions() == false {
 		return fmt.Errorf("No available upgrade versions for version %s", oldVersion)

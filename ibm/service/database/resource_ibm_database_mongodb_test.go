@@ -184,7 +184,7 @@ func testAccCheckIBMDatabaseInstanceMongodbBasic(databaseResourceGroup string, n
 }
 
 func testAccCheckIBMDatabaseInstanceMongodbVersion6(databaseResourceGroup string, name string) string {
-		// IMPORTANT NOTE: The version will have to be updated when version 6 is no longer available. Currently mongo standard can only upgrade to version 7.0
+	// IMPORTANT NOTE: The version will have to be updated when version 6 is no longer available. Currently mongo standard can only upgrade to version 7.0
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
 		name = "%[1]s"
