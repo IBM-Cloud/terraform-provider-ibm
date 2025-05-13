@@ -38,6 +38,11 @@ func DataSourceIBMPIKeys() *schema.Resource {
 							Description: "Date of SSH key creation.",
 							Type:        schema.TypeString,
 						},
+						Attr_Description: {
+							Computed:    true,
+							Description: "Description of the ssh key.",
+							Type:        schema.TypeString,
+						},
 						Attr_Name: {
 							Computed:    true,
 							Description: "User defined name for the SSH key.",
@@ -46,6 +51,21 @@ func DataSourceIBMPIKeys() *schema.Resource {
 						Attr_SSHKey: {
 							Computed:    true,
 							Description: "SSH RSA key.",
+							Type:        schema.TypeString,
+						},
+						Attr_SSHKeyID: {
+							Computed:    true,
+							Description: "Unique ID of SSH key.",
+							Type:        schema.TypeString,
+						},
+						Attr_PrimaryWorkspace: {
+							Computed:    true,
+							Description: "Indicates if the current workspace owns the ssh key or not.",
+							Type:        schema.TypeBool,
+						},
+						Attr_Visibility: {
+							Computed:    true,
+							Description: "Visibility of the ssh key.",
 							Type:        schema.TypeString,
 						},
 					},
@@ -64,7 +84,7 @@ func dataSourceIBMPIKeysRead(ctx context.Context, d *schema.ResourceData, meta i
 
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
 
-	client := instance.NewIBMPIKeyClient(ctx, sess, cloudInstanceID)
+	client := instance.NewIBMPISSHKeyClient(ctx, sess, cloudInstanceID)
 	sshKeys, err := client.GetAll()
 	if err != nil {
 		log.Printf("[ERROR] get all keys failed %v", err)
@@ -74,9 +94,13 @@ func dataSourceIBMPIKeysRead(ctx context.Context, d *schema.ResourceData, meta i
 	result := make([]map[string]interface{}, 0, len(sshKeys.SSHKeys))
 	for _, sshKey := range sshKeys.SSHKeys {
 		key := map[string]interface{}{
-			Attr_CreationDate: sshKey.CreationDate.String(),
-			Attr_Name:         sshKey.Name,
-			Attr_SSHKey:       sshKey.SSHKey,
+			Attr_CreationDate:     sshKey.CreationDate.String(),
+			Attr_Description:      sshKey.Description,
+			Attr_Name:             sshKey.Name,
+			Attr_SSHKey:           sshKey.SSHKey,
+			Attr_SSHKeyID:         sshKey.ID,
+			Attr_PrimaryWorkspace: sshKey.PrimaryWorkspace,
+			Attr_Visibility:       sshKey.Visibility,
 		}
 		result = append(result, key)
 	}
