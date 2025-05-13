@@ -658,7 +658,7 @@ func createNetworkWithRetry(ctx context.Context, client *instance.IBMPINetworkCl
 
 	network, err := stateConf.WaitForStateContext(ctx)
 	if err != nil {
-		return nil, fmt.Errorf(lastErr)
+		return nil, fmt.Errorf("%s", lastErr)
 	}
 
 	networkResponse := network.(*models.Network)
@@ -703,7 +703,7 @@ func deleteNetworkWithRetry(ctx context.Context, client *instance.IBMPINetworkCl
 
 	_, err := stateConf.WaitForStateContext(ctx)
 	if err != nil {
-		return fmt.Errorf(lastErr)
+		return fmt.Errorf("%s", lastErr)
 	}
 
 	return nil
