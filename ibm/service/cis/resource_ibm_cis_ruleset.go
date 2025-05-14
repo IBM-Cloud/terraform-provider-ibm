@@ -177,6 +177,18 @@ var CISResourceResponseObject = &schema.Resource{
 									Optional:    true,
 									Description: "Ruleset ID of the ruleset to apply action to",
 								},
+								CISRulesetsRulePhases: {
+									Type:        schema.TypeList,
+									Optional:    true,
+									Description: "Phase of the ruleset to apply action to",
+									Elem:        &schema.Schema{Type: schema.TypeString},
+								},
+								CISRulesetsRuleProducts: {
+									Type:        schema.TypeList,
+									Optional:    true,
+									Description: "List of products of the ruleset to apply action to",
+									Elem:        &schema.Schema{Type: schema.TypeString},
+								},
 								CISRulesetList: {
 									Type:        schema.TypeList,
 									Optional:    true,
@@ -571,6 +583,25 @@ func expandCISRulesetsRulesActionParameters(obj interface{}) rulesetsv1.ActionPa
 		ruleList[i] = fmt.Sprint(v)
 	}
 	actionParameterRespObj.Rulesets = ruleList
+
+	ruleset := actionParameterObj[CISRuleset].(string)
+	if ruleset != "" {
+		actionParameterRespObj.Ruleset = &ruleset
+	}
+
+	phases := actionParameterObj[CISRulesetsRulePhases].([]interface{})
+	phasesList := make([]string, len(phases))
+	for i, v := range phases {
+		phasesList[i] = fmt.Sprint(v)
+	}
+	actionParameterRespObj.Phases = phasesList
+
+	products := actionParameterObj[CISRulesetsRuleProducts].([]interface{})
+	productsList := make([]string, len(products))
+	for i, v := range products {
+		productsList[i] = fmt.Sprint(v)
+	}
+	actionParameterRespObj.Products = productsList
 
 	finalResponse := make([]rulesetsv1.ActionParameters, 0)
 

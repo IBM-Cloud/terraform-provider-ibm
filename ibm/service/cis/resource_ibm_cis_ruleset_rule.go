@@ -137,6 +137,18 @@ var CISRulesetsRulesObject = &schema.Resource{
 						Optional:    true,
 						Description: "Ruleset ID of the ruleset to apply action to",
 					},
+					CISRulesetsRulePhases: {
+						Type:        schema.TypeList,
+						Optional:    true,
+						Description: "Phases of the ruleset",
+						Elem:        &schema.Schema{Type: schema.TypeString},
+					},
+					CISRulesetsRuleProducts: {
+						Type:        schema.TypeList,
+						Optional:    true,
+						Description: "Products of the ruleset",
+						Elem:        &schema.Schema{Type: schema.TypeString},
+					},
 					CISRulesetList: {
 						Type:        schema.TypeList,
 						Optional:    true,
@@ -433,9 +445,11 @@ func ResourceIBMCISRulesetRuleUpdate(d *schema.ResourceData, meta interface{}) e
 		rulesetsRuleObject := d.Get(CISRulesetsRule).([]interface{})[0].(map[string]interface{})
 		opt.SetDescription(rulesetsRuleObject[CISRulesetsDescription].(string))
 		opt.SetAction(rulesetsRuleObject[CISRulesetsRuleAction].(string))
-		if d.HasChange(CISRulesetsRuleActionParameters) {
+		if rulesetsRuleObject[CISRulesetsRuleActionParameters] != nil {
 			actionParameters := expandCISRulesetsRulesActionParameters(rulesetsRuleObject[CISRulesetsRuleActionParameters])
 			opt.SetActionParameters(&actionParameters)
+		} else if rulesetsRuleObject[CISRulesetsRuleAction].(string) == "skip" {
+			return fmt.Errorf("[ERROR] action_parameters are required for the 'skip' action")
 		}
 
 		opt.SetEnabled(rulesetsRuleObject[CISRulesetsRuleActionEnabled].(bool))
