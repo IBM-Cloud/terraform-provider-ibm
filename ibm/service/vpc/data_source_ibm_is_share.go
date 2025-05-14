@@ -41,6 +41,17 @@ func DataSourceIbmIsShare() *schema.Resource {
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Description: "Allowed transit encryption modes",
 			},
+			"allowed_access_protocols": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Description: "Allowed access protocols for this share",
+			},
+			"bandwidth": {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The bandwidth for this share.",
+			},
 			"created_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -691,6 +702,16 @@ func dataSourceIbmIsShareRead(context context.Context, d *schema.ResourceData, m
 			err = fmt.Errorf("Error setting allowed_transit_encryption_modes: %s", err)
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_share", "read", "set-allowed_transit_encryption_modes").GetDiag()
 		}
+	}
+	if !core.IsNil(share.AllowedAccessProtocols) {
+		if err = d.Set("allowed_access_protocols", share.AllowedAccessProtocols); err != nil {
+			err = fmt.Errorf("Error setting allowed_access_protocols: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_share", "read", "set-allowed_access_protocols").GetDiag()
+		}
+	}
+	if err = d.Set("bandwidth", share.Bandwidth); err != nil {
+		err = fmt.Errorf("Error setting bandwidth: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_share", "read", "set-bandwidth").GetDiag()
 	}
 	if err = d.Set("accessor_binding_role", share.AccessorBindingRole); err != nil {
 		err = fmt.Errorf("Error setting accessor_binding_role: %s", err)

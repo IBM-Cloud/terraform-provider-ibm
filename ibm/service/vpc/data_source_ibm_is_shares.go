@@ -50,6 +50,17 @@ func DataSourceIbmIsShares() *schema.Resource {
 							Computed:    true,
 							Description: "The access control mode for the share",
 						},
+						"allowed_access_protocols": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Description: "Allowed access protocols for this share",
+						},
+						"bandwidth": {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The bandwidth for this share.",
+						},
 						"created_at": {
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -710,6 +721,12 @@ func dataSourceShareCollectionSharesToMap(meta interface{}, sharesItem vpcv1.Sha
 	}
 	if !core.IsNil(sharesItem.AllowedTransitEncryptionModes) {
 		sharesMap["allowed_transit_encryption_modes"] = sharesItem.AllowedTransitEncryptionModes
+	}
+	if !core.IsNil(sharesItem.AllowedAccessProtocols) {
+		sharesMap["allowed_access_protocols"] = sharesItem.AllowedAccessProtocols
+	}
+	if sharesItem.Bandwidth != nil {
+		sharesMap["bandwidth"] = sharesItem.Bandwidth
 	}
 	if sharesItem.AccessorBindingRole != nil {
 		sharesMap["accessor_binding_role"] = sharesItem.AccessorBindingRole
