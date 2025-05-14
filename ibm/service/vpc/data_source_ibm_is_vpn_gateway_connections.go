@@ -4,12 +4,15 @@
 package vpc
 
 import (
+	"context"
 	"fmt"
+	"log"
 	"reflect"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -21,7 +24,7 @@ const (
 
 func DataSourceIBMISVPNGatewayConnections() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceIBMVPNGatewayConnectionsRead,
+		ReadContext: dataSourceIBMVPNGatewayConnectionsRead,
 
 		Schema: map[string]*schema.Schema{
 			"status": {
@@ -293,11 +296,13 @@ func DataSourceIBMISVPNGatewayConnections() *schema.Resource {
 	}
 }
 
-func dataSourceIBMVPNGatewayConnectionsRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceIBMVPNGatewayConnectionsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_vpn_gateway_connections", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	vpngatewayID := d.Get(isVPNGatewayID).(string)
 	listvpnGWConnectionOptions := sess.NewListVPNGatewayConnectionsOptions(vpngatewayID)
@@ -305,21 +310,26 @@ func dataSourceIBMVPNGatewayConnectionsRead(d *schema.ResourceData, meta interfa
 		status := statusIntf.(string)
 		listvpnGWConnectionOptions.Status = &status
 	}
-	availableVPNGatewayConnections, detail, err := sess.ListVPNGatewayConnections(listvpnGWConnectionOptions)
+	availableVPNGatewayConnections, _, err := sess.ListVPNGatewayConnectionsWithContext(context, listvpnGWConnectionOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error reading list of VPN Gateway Connections:%s\n%s", err, detail)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListVPNGatewayConnectionsWithContext failed %s", err), "(Data) ibm_is_vpn_gateway_connections", "read")
+		log.Printf("[DEBUG] %s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	vpngatewayconnections := make([]map[string]interface{}, 0)
 	for _, instance := range availableVPNGatewayConnections.Connections {
 		gatewayconnection, err := getvpnGatewayConnectionIntfData(instance)
 		if err != nil {
-			return err
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_vpn_gateway_connections", "read", "VPNGateways-to-map").GetDiag()
 		}
 		vpngatewayconnections = append(vpngatewayconnections, gatewayconnection)
 	}
 
 	d.SetId(dataSourceIBMVPNGatewayConnectionsID(d))
-	d.Set(isvpnGatewayConnections, vpngatewayconnections)
+	if err = d.Set("connections", vpngatewayconnections); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting connections %s", err), "(Data) ibm_is_vpn_gateway_connections", "read", "connections-set").GetDiag()
+	}
+
 	return nil
 }
 
