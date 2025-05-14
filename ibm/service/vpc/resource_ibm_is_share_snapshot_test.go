@@ -313,7 +313,7 @@ func TestResourceIBMIsShareSnapshotZoneReferenceToMap(t *testing.T) {
 		assert.Equal(t, result, model)
 	}
 
-	model := new(vpcv1.ZoneReference)
+	model := new(vpcv1.ShareSnapshotZone)
 	model.Href = core.StringPtr("https://us-south.iaas.cloud.ibm.com/v1/regions/us-south/zones/us-south-1")
 	model.Name = core.StringPtr("us-south-1")
 
