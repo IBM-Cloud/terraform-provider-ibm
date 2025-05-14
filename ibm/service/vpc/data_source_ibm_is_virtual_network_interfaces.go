@@ -442,7 +442,9 @@ func DataSourceIBMIsVirtualNetworkInterfaces() *schema.Resource {
 func dataSourceIBMIsVirtualNetworkInterfacesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_virtual_network_interfaces", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	listVirtualNetworkInterfacesOptions := &vpcv1.ListVirtualNetworkInterfacesOptions{}
@@ -458,8 +460,9 @@ func dataSourceIBMIsVirtualNetworkInterfacesRead(context context.Context, d *sch
 
 	allItems, err := pager.GetAll()
 	if err != nil {
-		log.Printf("[DEBUG] VirtualNetworkInterfacesPager.GetAll() failed %s", err)
-		return diag.FromErr(fmt.Errorf("VirtualNetworkInterfacesPager.GetAll() failed %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("VirtualNetworkInterfacesPager.GetAll() failed %s", err), "(Data) ibm_is_virtual_network_interfaces", "read")
+		log.Printf("[DEBUG] %s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(dataSourceIBMIsVirtualNetworkInterfacesID(d))
@@ -468,7 +471,7 @@ func dataSourceIBMIsVirtualNetworkInterfacesRead(context context.Context, d *sch
 	for _, modelItem := range allItems {
 		modelMap, err := dataSourceIBMIsVirtualNetworkInterfacesVirtualNetworkInterfaceToMap(&modelItem)
 		if err != nil {
-			return diag.FromErr(err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_virtual_network_interfaces", "read", "VirtualNetworkInterfaces-to-map").GetDiag()
 		}
 
 		tags, err := flex.GetGlobalTagsUsingCRN(meta, *modelItem.CRN, "", isUserTagType)
@@ -489,7 +492,7 @@ func dataSourceIBMIsVirtualNetworkInterfacesRead(context context.Context, d *sch
 	}
 
 	if err = d.Set("virtual_network_interfaces", mapSlice); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting virtual_network_interfaces %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting virtual_network_interfaces %s", err), "(Data) ibm_is_virtual_network_interfaces", "read", "virtual_network_interfaces-set").GetDiag()
 	}
 
 	return nil
