@@ -41,6 +41,11 @@ func DataSourceIBMIsShareTarget() *schema.Resource {
 				ExactlyOneOf: []string{"mount_target", "mount_target_name"},
 				Description:  "The share target name.",
 			},
+			"access_protocol": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The protocol to use to access the share for this share mount target.",
+			},
 			"transit_encryption": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -352,6 +357,11 @@ func dataSourceIBMIsShareTargetRead(context context.Context, d *schema.ResourceD
 	}
 	if err = d.Set("resource_type", shareTarget.ResourceType); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting resource_type: %s", err))
+	}
+	if shareTarget.AccessProtocol != nil {
+		if err = d.Set("access_protocol", *shareTarget.AccessProtocol); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting access_protocol: %s", err))
+		}
 	}
 	if shareTarget.TransitEncryption != nil {
 		if err = d.Set("transit_encryption", *shareTarget.TransitEncryption); err != nil {

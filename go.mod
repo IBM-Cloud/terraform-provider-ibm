@@ -235,6 +235,8 @@ replace github.com/hashicorp/consul/api v1.1.0 => github.com/hashicorp/consul/ap
 
 replace github.com/hashicorp/vault => github.com/hashicorp/vault v1.18.2
 
+replace github.com/IBM/vpc-go-sdk => ./common/github.com/IBM/vpc-go-sdk
+
 replace github.com/hashicorp/vault/api/auth/approle => github.com/hashicorp/vault/api/auth/approle v0.8.0
 
 exclude (
