@@ -81,7 +81,6 @@ func DataSourceIBMPIInstance() *schema.Resource {
 			},
 			Attr_LicenseRepositoryCapacity: {
 				Computed:    true,
-				Deprecated:  "This field is deprecated.",
 				Description: "The VTL license repository capacity TB value.",
 				Type:        schema.TypeInt,
 			},
