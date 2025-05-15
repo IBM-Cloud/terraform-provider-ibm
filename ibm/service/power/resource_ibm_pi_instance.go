@@ -232,7 +232,6 @@ func ResourceIBMPIInstance() *schema.Resource {
 			},
 			Arg_PlacementGroupID: {
 				Description: "Placement group ID",
-				Computed:    true,
 				Optional:    true,
 				Type:        schema.TypeString,
 			},
