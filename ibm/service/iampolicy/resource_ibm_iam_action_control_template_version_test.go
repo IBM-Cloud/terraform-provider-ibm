@@ -116,7 +116,7 @@ func testAccCheckIBMActionControlTemplateVersionConfig(name string, actionContro
 	return fmt.Sprintf(`
 		resource "ibm_iam_action_control_template" "action_control_template" {
 			name = "%s"
-			description = "Base template Testing"
+			description = "Create Action Control base templates through Terraform resources"
 			action_control {
 				actions = ["%s"]
 				service_name="am-test-service"
@@ -124,7 +124,7 @@ func testAccCheckIBMActionControlTemplateVersionConfig(name string, actionContro
 		}
 		resource "ibm_iam_action_control_template_version" "action_control_template_version" {
 			action_control_template_id = ibm_iam_action_control_template.action_control_template.action_control_template_id
-			description = "Terraform Basic action control template Testing"
+			description = "Create Action Control template versions through Terraform resources"
 			action_control {
 				actions = ["%s"]
 				service_name="am-test-service"
@@ -137,7 +137,7 @@ func testAccCheckIBMActionControlTemplateVersionUpdateConfig(name string, action
 	return fmt.Sprintf(`
 		resource "ibm_iam_action_control_template" "action_control_template" {
 			name = "%s"
-			description = "Base template Testing"
+			description = "Create Action Control template versions through Terraform resources"
 			action_control {
 				actions = ["%s"]
 				service_name="am-test-service"
@@ -145,7 +145,7 @@ func testAccCheckIBMActionControlTemplateVersionUpdateConfig(name string, action
 		}
 		resource "ibm_iam_action_control_template_version" "action_control_template_version" {
 			action_control_template_id = ibm_iam_action_control_template.action_control_template.action_control_template_id
-			description = "Terraform Basic action control template Testing"
+			description = "Update Action Control template versions through Terraform resources"
 			action_control {
 				actions = ["%s", "%s"]
 				service_name="am-test-service"
@@ -159,11 +159,11 @@ func testAccCheckIBMActionControlTemplateVersionConfigBasic(name string, actionC
 	return fmt.Sprintf(`
 		resource "ibm_iam_action_control_template" "action_control_template" {
 			name = "%s"
-			description = "Base template Testing"
+			description = "Create Action Control basic template through Terraform resources"
 		}
 		resource "ibm_iam_action_control_template_version" "action_control_template_version" {
 			action_control_template_id = ibm_iam_action_control_template.action_control_template.action_control_template_id
-			description = "Terraform Basic action control template Testing"
+			description = "Create Action Control template versions under basic template through Terraform resources"
 			action_control {
 				actions = ["%s"]
 				service_name="am-test-service"

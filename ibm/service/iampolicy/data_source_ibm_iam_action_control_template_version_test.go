@@ -35,7 +35,7 @@ func testAccCheckIBMActionControlTemplateVersionDataSourceConfigBasic(name strin
 	
 	resource "ibm_iam_action_control_template" "action_control_template" {
 		name = "%s"
-		description = "Base template Testing"
+		description = "Create Action Control templates through Terraform datasource"
         action_control {
 		actions = ["am-test-service.test.create" ]
 		service_name="am-test-service"
