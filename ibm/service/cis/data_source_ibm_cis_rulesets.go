@@ -57,6 +57,8 @@ const (
 	CISRulesetsRulePositionIndex                       = "index"
 	CISRulesetRuleId                                   = "rule_id"
 	CISRulesetOverridesScoreThreshold                  = "score_threshold"
+	CISRulesetsRulePhases                              = "phases"
+	CISRulesetsRuleProducts                            = "products"
 )
 
 var CISResponseObject = &schema.Resource{
@@ -220,6 +222,18 @@ var CISResponseObject = &schema.Resource{
 									Type:        schema.TypeString,
 									Computed:    true,
 									Description: "Ruleset ID of the ruleset to apply action to.",
+								},
+								CISRulesetsRulePhases: {
+									Type:        schema.TypeList,
+									Computed:    true,
+									Description: "Phase of the ruleset to apply action to",
+									Elem:        &schema.Schema{Type: schema.TypeString},
+								},
+								CISRulesetsRuleProducts: {
+									Type:        schema.TypeList,
+									Computed:    true,
+									Description: "List of products of the ruleset to apply action to",
+									Elem:        &schema.Schema{Type: schema.TypeString},
 								},
 								CISRulesetList: {
 									Type:        schema.TypeList,
@@ -525,6 +539,12 @@ func flattenCISRulesetsRuleActionParameters(rulesetsRuleActionParameterObj *rule
 	}
 	if _, ok := actionParametersOutput["rulesets"]; ok {
 		resultOutput[CISRulesetList] = rulesetsRuleActionParameterObj.Rulesets
+	}
+	if val, ok := actionParametersOutput["phases"]; ok {
+		resultOutput[CISRulesetsRulePhases] = val.([]string)
+	}
+	if val, ok := actionParametersOutput["products"]; ok {
+		resultOutput[CISRulesetsRuleProducts] = val.([]string)
 	}
 	if _, ok := actionParametersOutput["response"]; ok {
 		flattenCISRulesetsRuleActionParameterResponse := flattenCISRulesetsRuleActionParameterResponse(rulesetsRuleActionParameterObj.Response)
