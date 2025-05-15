@@ -2478,12 +2478,17 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 
 	// Construct an instance of the 'Configuration Aggregator' service.
-	var configBaseURL string
-	configBaseURL = ContructEndpoint(fmt.Sprintf("%s.apprapp", c.Region), cloudEndpoint)
-
+	configBaseURL := ContructEndpoint(fmt.Sprintf("%s", c.Region), fmt.Sprintf("%s.apprapp.", cloudEndpoint))
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		configBaseURL = ContructEndpoint(fmt.Sprintf("%s.private", c.Region), fmt.Sprintf("%s.apprapp", cloudEndpoint))
+	}
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		configBaseURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_APP_CONFIG_ENDPOINT", c.Region, appconfigurl)
+	}
+	os.Setenv("IBMCLOUD_APP_CONFIG_ENDPOINT", configBaseURL)
 	configurationAggregatorClientOptions := &configurationaggregatorv1.ConfigurationAggregatorV1Options{
 		Authenticator: authenticator,
-		URL:           configBaseURL,
+		URL:           EnvFallBack([]string{"IBMCLOUD_APP_CONFIG_ENDPOINT"}, configBaseURL),
 	}
 
 	// Construct the service client.

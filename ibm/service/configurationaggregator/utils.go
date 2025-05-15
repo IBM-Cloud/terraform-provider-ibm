@@ -26,12 +26,16 @@ func getConfigurationInstanceRegion(originalClient *configurationaggregatorv1.Co
 }
 
 func getClientWithConfigurationInstanceEndpoint(originalClient *configurationaggregatorv1.ConfigurationAggregatorV1, instanceId string, region string) *configurationaggregatorv1.ConfigurationAggregatorV1 {
-	// build the api endpoint
 	domain := cloudEndpoint
+	prefix := region
+	baseUrl := os.Getenv("IBMCLOUD_APP_CONFIG_ENDPOINT")
 	if strings.Contains(os.Getenv("IBMCLOUD_IAM_API_ENDPOINT"), "test") {
 		domain = testCloudEndpoint
 	}
-	endpoint := fmt.Sprintf("https://%s.apprapp.%s/apprapp/config_aggregator/v1/instances/%s", region, domain, instanceId)
+	if strings.Contains(baseUrl, "private") {
+		prefix = fmt.Sprintf("private.%s", region)
+	}
+	endpoint := fmt.Sprintf("https://%s.apprapp.%s/apprapp/config_aggregator/v1/instances/%s", prefix, domain, instanceId)
 
 	// clone the client and set endpoint
 	newClient := &configurationaggregatorv1.ConfigurationAggregatorV1{
@@ -42,7 +46,6 @@ func getClientWithConfigurationInstanceEndpoint(originalClient *configurationagg
 
 	return newClient
 }
-
 func AddConfigurationAggregatorInstanceFields(resource *schema.Resource) *schema.Resource {
 	resource.Schema["instance_id"] = &schema.Schema{
 		Type:        schema.TypeString,
