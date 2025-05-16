@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -54,7 +55,7 @@ func testAccCheckIBMPIDhcpDestroy(s *terraform.State) error {
 		client := instance.NewIBMPIDhcpClient(context.Background(), sess, cloudInstanceID)
 		_, err = client.Get(dhcpID)
 		if err == nil {
-			return fmt.Errorf("PI DHCP still exists: %s", rs.Primary.ID)
+			return flex.FmtErrorf("PI DHCP still exists: %s", rs.Primary.ID)
 		}
 	}
 
@@ -65,7 +66,7 @@ func testAccCheckIBMPIDhcpExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return flex.FmtErrorf("Not found: %s", n)
 		}
 		if rs.Primary.ID == "" {
 			return errors.New("No Record ID is set")

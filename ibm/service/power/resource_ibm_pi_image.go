@@ -224,8 +224,9 @@ func ResourceIBMPIImage() *schema.Resource {
 func resourceIBMPIImageCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		log.Printf("Failed to get the session")
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_image", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
@@ -245,7 +246,9 @@ func resourceIBMPIImageCreate(ctx context.Context, d *schema.ResourceData, meta 
 		}
 		imageResponse, err := client.Create(body)
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Create failed: %s", err.Error()), "ibm_pi_image", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
 		IBMPIImageID := imageResponse.ImageID
@@ -253,8 +256,9 @@ func resourceIBMPIImageCreate(ctx context.Context, d *schema.ResourceData, meta 
 
 		_, err = isWaitForIBMPIImageAvailable(ctx, client, *IBMPIImageID, d.Timeout(schema.TimeoutCreate))
 		if err != nil {
-			log.Printf("[DEBUG]  err %s", err)
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForIBMPIImageAvailable failed: %s", err.Error()), "ibm_pi_image", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
 		if _, ok := d.GetOk(Arg_UserTags); ok {
@@ -337,19 +341,25 @@ func resourceIBMPIImageCreate(ctx context.Context, d *schema.ResourceData, meta 
 		}
 		imageResponse, err := client.CreateCosImage(body)
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCosImage failed: %s", err.Error()), "ibm_pi_image", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
 		jobClient := instance.NewIBMPIJobClient(ctx, sess, cloudInstanceID)
 		_, err = waitForIBMPIJobCompleted(ctx, jobClient, *imageResponse.ID, d.Timeout(schema.TimeoutCreate))
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("waitForIBMPIJobCompleted failed: %s", err.Error()), "ibm_pi_image", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
 		// Once the job is completed find by name
 		image, err := client.Get(imageName)
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Get failed: %s", err.Error()), "ibm_pi_image", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
 		if _, ok := d.GetOk(Arg_UserTags); ok {
@@ -370,12 +380,16 @@ func resourceIBMPIImageCreate(ctx context.Context, d *schema.ResourceData, meta 
 func resourceIBMPIImageRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_image", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID, imageID, err := splitID(d.Id())
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("splitID failed: %s", err.Error()), "ibm_pi_image", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	imageC := instance.NewIBMPIImageClient(ctx, sess, cloudInstanceID)
@@ -388,8 +402,9 @@ func resourceIBMPIImageRead(ctx context.Context, d *schema.ResourceData, meta in
 			d.SetId("")
 			return nil
 		}
-		log.Printf("[DEBUG] get image failed %v", err)
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Get failed: %s", err.Error()), "ibm_pi_image", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	imageid := *imagedata.ImageID
@@ -402,8 +417,8 @@ func resourceIBMPIImageRead(ctx context.Context, d *schema.ResourceData, meta in
 		d.Set(Arg_UserTags, tags)
 	}
 	d.Set(Arg_CloudInstanceID, cloudInstanceID)
-	d.Set(Attr_ImageID, imageid)
 	d.Set(Arg_ImageName, imagedata.Name)
+	d.Set(Attr_ImageID, imageid)
 
 	return nil
 }
@@ -411,7 +426,9 @@ func resourceIBMPIImageRead(ctx context.Context, d *schema.ResourceData, meta in
 func resourceIBMPIImageUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	_, imageID, err := splitID(d.Id())
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("splitID failed: %s", err.Error()), "ibm_pi_image", "update")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	if d.HasChange(Arg_UserTags) {
@@ -430,18 +447,24 @@ func resourceIBMPIImageUpdate(ctx context.Context, d *schema.ResourceData, meta 
 func resourceIBMPIImageDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_image", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID, imageID, err := splitID(d.Id())
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("splitID failed: %s", err.Error()), "ibm_pi_image", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	imageC := instance.NewIBMPIImageClient(ctx, sess, cloudInstanceID)
 	err = imageC.Delete(imageID)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Delete failed: %s", err.Error()), "ibm_pi_image", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId("")
@@ -488,15 +511,15 @@ func waitForIBMPIJobCompleted(ctx context.Context, client *instance.IBMPIJobClie
 			job, err := client.Get(jobID)
 			if err != nil {
 				log.Printf("[DEBUG] get job failed %v", err)
-				return nil, "", fmt.Errorf(errors.GetJobOperationFailed, jobID, err)
+				return nil, "", flex.FmtErrorf(errors.GetJobOperationFailed, jobID, err)
 			}
 			if job == nil || job.Status == nil {
 				log.Printf("[DEBUG] get job failed with empty response")
-				return nil, "", fmt.Errorf("failed to get job status for job id %s", jobID)
+				return nil, "", flex.FmtErrorf("failed to get job status for job id %s", jobID)
 			}
 			if *job.Status.State == State_Failed {
 				log.Printf("[DEBUG] job status failed with message: %v", job.Status.Message)
-				return nil, State_Failed, fmt.Errorf("job status failed for job id %s with message: %v", jobID, job.Status.Message)
+				return nil, State_Failed, flex.FmtErrorf("job status failed for job id %s with message: %v", jobID, job.Status.Message)
 			}
 			return job, *job.Status.State, nil
 		},

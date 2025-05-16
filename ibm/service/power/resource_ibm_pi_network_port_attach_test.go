@@ -89,7 +89,7 @@ func testAccCheckIBMPINetworkPortAttachDestroy(s *terraform.State) error {
 		networkC := instance.NewIBMPINetworkClient(context.Background(), sess, cloudInstanceID)
 		_, err = networkC.GetPort(networkname, portID)
 		if err == nil {
-			return fmt.Errorf("PI Network Port still exists: %s", rs.Primary.ID)
+			return flex.FmtErrorf("PI Network Port still exists: %s", rs.Primary.ID)
 		}
 	}
 
@@ -102,7 +102,7 @@ func testAccCheckIBMPINetworkPortAttachExists(n string) resource.TestCheckFunc {
 		rs, ok := s.RootModule().Resources[n]
 
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return flex.FmtErrorf("Not found: %s", n)
 		}
 
 		if rs.Primary.ID == "" {

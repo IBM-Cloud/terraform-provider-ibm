@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -57,7 +58,7 @@ func testAccCheckIBMPIKeyDestroy(s *terraform.State) error {
 		sshkeyC := instance.NewIBMPIKeyClient(context.Background(), sess, cloudInstanceID)
 		_, err = sshkeyC.Get(key)
 		if err == nil {
-			return fmt.Errorf("PI key still exists: %s", rs.Primary.ID)
+			return flex.FmtErrorf("PI key still exists: %s", rs.Primary.ID)
 		}
 	}
 	return nil
@@ -69,7 +70,7 @@ func testAccCheckIBMPIKeyExists(n string) resource.TestCheckFunc {
 		rs, ok := s.RootModule().Resources[n]
 
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return flex.FmtErrorf("Not found: %s", n)
 		}
 
 		if rs.Primary.ID == "" {
