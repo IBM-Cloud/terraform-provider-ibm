@@ -4,7 +4,6 @@
 package database
 
 import (
-	"encoding/json"
 	"fmt"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -34,16 +33,10 @@ func getDeploymentCapability(capabilityId string, deploymentId string, platform 
 		return nil, fmt.Errorf("capability '%s' field is nil in response %s", capabilityId, response)
 	}
 
-	jsonData, err := json.Marshal(getDeploymentCapabilityResponse.Capability)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal capability response: %w", err)
+	capability, ok := getDeploymentCapabilityResponse.Capability.(*clouddatabasesv5.Capability)
+	if !ok {
+		return nil, fmt.Errorf("unexpected type for Capability")
 	}
 
-	var capability clouddatabasesv5.Capability
-	err = json.Unmarshal(jsonData, &capability)
-	if err != nil {
-		return nil, fmt.Errorf("failed to unmarshal capability response: %w", err)
-	}
-
-	return &capability, nil
+	return capability, nil
 }
