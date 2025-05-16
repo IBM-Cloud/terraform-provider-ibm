@@ -25,14 +25,12 @@ func DataSourceIBMPINetworkInterfaces() *schema.Resource {
 			// Arguments
 			Arg_CloudInstanceID: {
 				Description:  "The GUID of the service instance associated with an account.",
-				ForceNew:     true,
 				Required:     true,
 				Type:         schema.TypeString,
 				ValidateFunc: validation.NoZeroValues,
 			},
 			Arg_NetworkID: {
 				Description:  "Network ID.",
-				ForceNew:     true,
 				Required:     true,
 				Type:         schema.TypeString,
 				ValidateFunc: validation.NoZeroValues,
