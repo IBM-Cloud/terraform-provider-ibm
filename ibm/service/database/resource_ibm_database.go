@@ -2878,7 +2878,7 @@ func upgradeInProgressWarning(task *clouddatabasesv5.Task) diag.Diagnostics {
 
 	warning := diag.Diagnostic{
 		Severity: diag.Warning,
-		Summary:  "There is a version upgrade task in progress:",
+		Summary:  "A version upgrade task is in progress. Some tasks may be queued and will not proceed until it has completed.",
 		Detail: fmt.Sprintf("  Type: %s\n"+
 			"  Created at: %s\n"+
 			"  Status: %s\n"+

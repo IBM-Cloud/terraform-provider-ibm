@@ -249,7 +249,7 @@ func TestUpgradeInProgressWarning(t *testing.T) {
 	}
 
 	diags := upgradeInProgressWarning(&mockTask)
-	warningNote := "There is a version upgrade task in progress:"
+	warningNote := "A version upgrade task is in progress. Some tasks may be queued and will not proceed until it has completed."
 	detail := "  Type: upgrade\n" +
 		"  Created at: 2025-05-12T10:00:00.000Z\n" +
 		"  Status: running\n" +
