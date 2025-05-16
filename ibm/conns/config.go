@@ -2483,7 +2483,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		configBaseURL = ContructEndpoint(fmt.Sprintf("%s.private", c.Region), fmt.Sprintf("%s.apprapp", cloudEndpoint))
 	}
 	if fileMap != nil && c.Visibility != "public-and-private" {
-		configBaseURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_APP_CONFIG_ENDPOINT", c.Region, appconfigurl)
+		configBaseURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_APP_CONFIG_ENDPOINT", c.Region, configBaseURL)
 	}
 	os.Setenv("IBMCLOUD_APP_CONFIG_ENDPOINT", configBaseURL)
 	configurationAggregatorClientOptions := &configurationaggregatorv1.ConfigurationAggregatorV1Options{
