@@ -69,7 +69,7 @@ In addition to all argument reference list, you can access the following attribu
   - `type` - (String) The `ICMP` traffic type to allow.
 
 ## Import
-The `ibm_is_security_group` resource can be imported by using load balancer ID. 
+The `ibm_is_security_group` resource can be imported by using security group ID. 
 
 **Example**
 
