@@ -1688,7 +1688,7 @@ func ResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadataPrototy
 		}
 		model.Service = ServiceModel
 	}
-	if modelMap["other"] != nil && len(modelMap["other"].([]interface{})) > 0 && modelMap["other"].([]interface{})[0] != nil {
+	if modelMap["other"] != nil && len(modelMap["other"].([]interface{})) > 0 {
 		OtherModel, err := ResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadataOther(modelMap["other"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
@@ -1953,7 +1953,7 @@ func ResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataServiceCustomP
 	if modelMap["hidden"] != nil {
 		model.Hidden = core.BoolPtr(modelMap["hidden"].(bool))
 	}
-	if modelMap["i18n"] != nil && len(modelMap["i18n"].([]interface{})) > 0 && modelMap["i18n"].([]interface{})[0] != nil {
+	if modelMap["i18n"] != nil && len(modelMap["i18n"].([]interface{})) > 0 {
 		I18nModel, err := ResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataServiceCustomParametersI18n(modelMap["i18n"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
@@ -1971,7 +1971,7 @@ func ResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataServiceCustomP
 	if modelMap["value"] != nil && modelMap["value"].(string) != "" {
 		model.Value = core.StringPtr(modelMap["value"].(string))
 	}
-	if modelMap["i18n"] != nil && len(modelMap["i18n"].([]interface{})) > 0 && modelMap["i18n"].([]interface{})[0] != nil {
+	if modelMap["i18n"] != nil && len(modelMap["i18n"].([]interface{})) > 0 {
 		I18nModel, err := ResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataServiceCustomParametersI18n(modelMap["i18n"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
@@ -1983,70 +1983,70 @@ func ResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataServiceCustomP
 
 func ResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataServiceCustomParametersI18n(modelMap map[string]interface{}) (*partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersI18n, error) {
 	model := &partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersI18n{}
-	if modelMap["en"] != nil && len(modelMap["en"].([]interface{})) > 0 && modelMap["en"].([]interface{})[0] != nil {
+	if modelMap["en"] != nil && len(modelMap["en"].([]interface{})) > 0 {
 		EnModel, err := ResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataServiceCustomParametersI18nFields(modelMap["en"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
 		model.En = EnModel
 	}
-	if modelMap["de"] != nil && len(modelMap["de"].([]interface{})) > 0 && modelMap["de"].([]interface{})[0] != nil {
+	if modelMap["de"] != nil && len(modelMap["de"].([]interface{})) > 0 {
 		DeModel, err := ResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataServiceCustomParametersI18nFields(modelMap["de"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
 		model.De = DeModel
 	}
-	if modelMap["es"] != nil && len(modelMap["es"].([]interface{})) > 0 && modelMap["es"].([]interface{})[0] != nil {
+	if modelMap["es"] != nil && len(modelMap["es"].([]interface{})) > 0 {
 		EsModel, err := ResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataServiceCustomParametersI18nFields(modelMap["es"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
 		model.Es = EsModel
 	}
-	if modelMap["fr"] != nil && len(modelMap["fr"].([]interface{})) > 0 && modelMap["fr"].([]interface{})[0] != nil {
+	if modelMap["fr"] != nil && len(modelMap["fr"].([]interface{})) > 0 {
 		FrModel, err := ResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataServiceCustomParametersI18nFields(modelMap["fr"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
 		model.Fr = FrModel
 	}
-	if modelMap["it"] != nil && len(modelMap["it"].([]interface{})) > 0 && modelMap["it"].([]interface{})[0] != nil {
+	if modelMap["it"] != nil && len(modelMap["it"].([]interface{})) > 0 {
 		ItModel, err := ResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataServiceCustomParametersI18nFields(modelMap["it"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
 		model.It = ItModel
 	}
-	if modelMap["ja"] != nil && len(modelMap["ja"].([]interface{})) > 0 && modelMap["ja"].([]interface{})[0] != nil {
+	if modelMap["ja"] != nil && len(modelMap["ja"].([]interface{})) > 0 {
 		JaModel, err := ResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataServiceCustomParametersI18nFields(modelMap["ja"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
 		model.Ja = JaModel
 	}
-	if modelMap["ko"] != nil && len(modelMap["ko"].([]interface{})) > 0 && modelMap["ko"].([]interface{})[0] != nil {
+	if modelMap["ko"] != nil && len(modelMap["ko"].([]interface{})) > 0 {
 		KoModel, err := ResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataServiceCustomParametersI18nFields(modelMap["ko"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
 		model.Ko = KoModel
 	}
-	if modelMap["pt_br"] != nil && len(modelMap["pt_br"].([]interface{})) > 0 && modelMap["pt_br"].([]interface{})[0] != nil {
+	if modelMap["pt_br"] != nil && len(modelMap["pt_br"].([]interface{})) > 0 {
 		PtBrModel, err := ResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataServiceCustomParametersI18nFields(modelMap["pt_br"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
 		model.PtBr = PtBrModel
 	}
-	if modelMap["zh_tw"] != nil && len(modelMap["zh_tw"].([]interface{})) > 0 && modelMap["yh_tw"].([]interface{})[0] != nil {
+	if modelMap["zh_tw"] != nil && len(modelMap["zh_tw"].([]interface{})) > 0 {
 		ZhTwModel, err := ResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataServiceCustomParametersI18nFields(modelMap["zh_tw"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
 		model.ZhTw = ZhTwModel
 	}
-	if modelMap["zh_cn"] != nil && len(modelMap["zh_cn"].([]interface{})) > 0 && modelMap["zh_cn"].([]interface{})[0] != nil {
+	if modelMap["zh_cn"] != nil && len(modelMap["zh_cn"].([]interface{})) > 0 {
 		ZhCnModel, err := ResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataServiceCustomParametersI18nFields(modelMap["zh_cn"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
