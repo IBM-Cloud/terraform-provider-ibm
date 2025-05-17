@@ -1688,7 +1688,7 @@ func ResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadataPrototy
 		}
 		model.Service = ServiceModel
 	}
-	if modelMap["other"] != nil && len(modelMap["other"].([]interface{})) > 0 {
+	if modelMap["other"] != nil && len(modelMap["other"].([]interface{})) > 0 && modelMap["other"].([]interface{})[0] != nil {
 		OtherModel, err := ResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadataOther(modelMap["other"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
