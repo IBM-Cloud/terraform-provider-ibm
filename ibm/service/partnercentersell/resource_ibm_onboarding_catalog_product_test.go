@@ -22,28 +22,24 @@ import (
 
 func TestAccIbmOnboardingCatalogProductBasic(t *testing.T) {
 	var conf partnercentersellv1.GlobalCatalogProduct
-	baseName := fmt.Sprintf("test-name-terraform-%d-1", acctest.RandIntRange(10, 100))
-	productID := acc.PcsOnboardingProductWithApprovedProgrammaticName
-	objectId := fmt.Sprintf("test-object-id-terraform-%d-1", acctest.RandIntRange(10, 100))
-	name := baseName
+	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	active := "true"
-	disabled := "false"
+	disabled := "true"
 	kind := "service"
-	nameUpdate := baseName
+	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	activeUpdate := "false"
 	disabledUpdate := "false"
-	kindUpdate := "service"
+	kindUpdate := "composite"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheckPartnerCenterSell(t) },
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmOnboardingCatalogProductDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmOnboardingCatalogProductConfigBasic(productID, name, active, disabled, kind, objectId),
+				Config: testAccCheckIbmOnboardingCatalogProductConfigBasic(name, active, disabled, kind),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmOnboardingCatalogProductExists("ibm_onboarding_catalog_product.onboarding_catalog_product_instance", conf),
-					resource.TestCheckResourceAttr("ibm_onboarding_catalog_product.onboarding_catalog_product_instance", "product_id", productID),
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_product.onboarding_catalog_product_instance", "name", name),
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_product.onboarding_catalog_product_instance", "active", active),
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_product.onboarding_catalog_product_instance", "disabled", disabled),
@@ -51,9 +47,8 @@ func TestAccIbmOnboardingCatalogProductBasic(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmOnboardingCatalogProductConfigBasic(productID, nameUpdate, activeUpdate, disabledUpdate, kindUpdate, objectId),
+				Config: testAccCheckIbmOnboardingCatalogProductConfigBasic(nameUpdate, activeUpdate, disabledUpdate, kindUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_onboarding_catalog_product.onboarding_catalog_product_instance", "product_id", productID),
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_product.onboarding_catalog_product_instance", "name", nameUpdate),
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_product.onboarding_catalog_product_instance", "active", activeUpdate),
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_product.onboarding_catalog_product_instance", "disabled", disabledUpdate),
@@ -66,60 +61,30 @@ func TestAccIbmOnboardingCatalogProductBasic(t *testing.T) {
 
 func TestAccIbmOnboardingCatalogProductAllArgs(t *testing.T) {
 	var conf partnercentersellv1.GlobalCatalogProduct
-	productID := acc.PcsOnboardingProductWithApprovedProgrammaticName2
-	baseName := fmt.Sprintf("test-name-terraform-%d-1", acctest.RandIntRange(10, 100))
-	objectId := fmt.Sprintf("test-object-id-terraform-%d-1", acctest.RandIntRange(10, 100))
-	env := "current"
-	name := baseName
+	env := fmt.Sprintf("tf_env_%d", acctest.RandIntRange(10, 100))
+	objectID := fmt.Sprintf("tf_object_id_%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	active := "true"
-	disabled := "false"
+	disabled := "true"
 	kind := "service"
-	envUpdate := "current"
-	nameUpdate := baseName
+	envUpdate := fmt.Sprintf("tf_env_%d", acctest.RandIntRange(10, 100))
+	objectIDUpdate := fmt.Sprintf("tf_object_id_%d", acctest.RandIntRange(10, 100))
+	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	activeUpdate := "false"
 	disabledUpdate := "false"
-	kindUpdate := "service"
-	overviewUiEn := "display_name"
-	overviewUiEnUpdate := "display_name_2"
-	rcCompatible := "false"
-	rcCompatibleUpdate := "false"
-	bulletTitleName := "title"
-	bulletTitleNameUpdate := "title-2"
-	mediaCaption := "Some random minecraft Video"
-	mediaCaptionUpdate := "Some random minecraft Video 2"
-	compositeChildrenName := "childName"
-	compositeChildrenNameUpdate := "childName2"
-	supportDetailsResponseWaitTime := "1.0"
-	supportDetailsResponseWaitTimeUpdate := "2.0"
-	supportDetailsAvailabilityTimesDay := "1.0"
-	supportDetailsAvailabilityTimesDayUpdate := "2.0"
+	kindUpdate := "composite"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheckPartnerCenterSell(t) },
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmOnboardingCatalogProductDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmOnboardingCatalogProductConfig(
-					productID,
-					env,
-					name,
-					active,
-					disabled,
-					kind,
-					objectId,
-					overviewUiEn,
-					rcCompatible,
-					bulletTitleName,
-					mediaCaption,
-					compositeChildrenName,
-					supportDetailsResponseWaitTime,
-					supportDetailsAvailabilityTimesDay,
-				),
+				Config: testAccCheckIbmOnboardingCatalogProductConfig(env, objectID, name, active, disabled, kind),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmOnboardingCatalogProductExists("ibm_onboarding_catalog_product.onboarding_catalog_product_instance", conf),
-					resource.TestCheckResourceAttr("ibm_onboarding_catalog_product.onboarding_catalog_product_instance", "product_id", productID),
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_product.onboarding_catalog_product_instance", "env", env),
+					resource.TestCheckResourceAttr("ibm_onboarding_catalog_product.onboarding_catalog_product_instance", "object_id", objectID),
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_product.onboarding_catalog_product_instance", "name", name),
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_product.onboarding_catalog_product_instance", "active", active),
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_product.onboarding_catalog_product_instance", "disabled", disabled),
@@ -127,25 +92,10 @@ func TestAccIbmOnboardingCatalogProductAllArgs(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmOnboardingCatalogProductUpdateConfig(
-					productID,
-					envUpdate,
-					nameUpdate,
-					activeUpdate,
-					disabledUpdate,
-					kindUpdate,
-					objectId,
-					overviewUiEnUpdate,
-					rcCompatibleUpdate,
-					bulletTitleNameUpdate,
-					mediaCaptionUpdate,
-					compositeChildrenNameUpdate,
-					supportDetailsResponseWaitTimeUpdate,
-					supportDetailsAvailabilityTimesDayUpdate,
-				),
+				Config: testAccCheckIbmOnboardingCatalogProductConfig(envUpdate, objectIDUpdate, nameUpdate, activeUpdate, disabledUpdate, kindUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_onboarding_catalog_product.onboarding_catalog_product_instance", "product_id", productID),
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_product.onboarding_catalog_product_instance", "env", envUpdate),
+					resource.TestCheckResourceAttr("ibm_onboarding_catalog_product.onboarding_catalog_product_instance", "object_id", objectIDUpdate),
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_product.onboarding_catalog_product_instance", "name", nameUpdate),
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_product.onboarding_catalog_product_instance", "active", activeUpdate),
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_product.onboarding_catalog_product_instance", "disabled", disabledUpdate),
@@ -153,277 +103,230 @@ func TestAccIbmOnboardingCatalogProductAllArgs(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				ResourceName:      "ibm_onboarding_catalog_product.onboarding_catalog_product_instance",
+				ResourceName:      "ibm_onboarding_catalog_product.onboarding_catalog_product",
 				ImportState:       true,
-				ImportStateVerify: false,
-				ImportStateVerifyIgnore: []string{
-					"env", "product_id",
-				},
+				ImportStateVerify: true,
 			},
 		},
 	})
 }
 
-func testAccCheckIbmOnboardingCatalogProductConfigBasic(productID string, name string, active string, disabled string, kind string, objectId string) string {
+func testAccCheckIbmOnboardingCatalogProductConfigBasic(name string, active string, disabled string, kind string) string {
 	return fmt.Sprintf(`
 		resource "ibm_onboarding_catalog_product" "onboarding_catalog_product_instance" {
-			product_id = "%s"
+			product_id = ibm_onboarding_product.onboarding_product_instance.id
 			name = "%s"
 			active = %s
 			disabled = %s
 			kind = "%s"
-			object_id = "%s"
-			tags = ["tag", "support_ibm"]
+			tags = "FIXME"
 			object_provider {
 				name = "name"
-				email = "email@emai.com"
+				email = "email"
 			}
-			metadata {
-				rc_compatible = false
 		}
-		}
-	`, productID, name, active, disabled, kind, objectId)
+	`, name, active, disabled, kind)
 }
 
-func testAccCheckIbmOnboardingCatalogProductConfig(productID string, env string, name string, active string, disabled string, kind string, objectId string, overviewUiEn string, rcCompatible string, bulletTitleName string, mediaCaption string, compositeChildrenName string, supportDetailsResponseWaitTime string, supportDetailsAvailabilityTimesDay string) string {
+func testAccCheckIbmOnboardingCatalogProductConfig(env string, objectID string, name string, active string, disabled string, kind string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_onboarding_catalog_product" "onboarding_catalog_product_instance" {
-			product_id = "%s"
+			product_id = ibm_onboarding_product.onboarding_product_instance.id
 			env = "%s"
+			object_id = "%s"
 			name = "%s"
 			active = %s
 			disabled = %s
 			kind = "%s"
 			overview_ui {
 				en {
-					display_name = "%s"
+					display_name = "display_name"
 					description = "description"
 					long_description = "long_description"
 				}
 			}
-			tags = ["tag", "support_community"]
+			tags = "FIXME"
 			images {
 				image = "image"
 			}
 			object_provider {
 				name = "name"
-				email = "email@email.com"
+				email = "email"
 			}
 			metadata {
-				rc_compatible = "%s"
+				rc_compatible = true
 				ui {
 					strings {
 						en {
 							bullets {
-                        		title = "%s"
-                        		description = "some1"
-							}
-							media {
-                        		type = "youtube"
-                        		url = "https://www.youtube.com/embed/HtkpMgNFYtE"
-                        		caption = "%s"
-							}
-						}
-					}
-					urls {
-						doc_url = "doc_url"
-						terms_url = "terms_url"
-						instructions_url = "instructions_url"
-						catalog_details_url = "catalog_details_url"
-					}
-					hidden = true
-					side_by_side_index = 1.0
-				}
-				service {
-					rc_provisionable = true
-					iam_compatible = false
-					service_key_supported = true
-      				unique_api_key = true
-      				async_provisioning_supported = true
-      				async_unprovisioning_supported = true
-      				custom_create_page_hybrid_enabled = true
-					parameters {
-						associations = { "key" = "inner" }
-                		displayname = "test"
-                		name = "test"
-						type = "text"
-                		value = ["test"]
-                		description = "test"
-            		}
-				}
-				other {
-				    composite {
-                		children {
-                    		name = "%s"
-                    		kind = "service"
-                		}
-						children {
-                    		name = "secondChild"
-                    		kind = "service"
-                		}
-                		composite_kind = "service"
-                		composite_tag = "composite_tag"
-					}
-					pc {
-						support {
-							url = "url"
-							process_i18n = { "key" = "inner" }
-							status_url = "status_url"
-							locations = [ "locations" ]
-							languages = [ "languages" ]
-							support_type = "community"
-							support_escalation {
-								contact = "contact"
-								escalation_wait_time {
-									value = 1.0
-									type = "type"
-								}
-								response_wait_time {
-									value = 1.0
-									type = "type"
-								}
-							}
-							support_details {
-								type = "support_site"
-								contact = "contact"
-								response_wait_time {
-									value = "%s"
-									type = "type"
-								}
-								availability {
-									times {
-										day = "%s"
-										start_time = "start_time"
-										end_time = "end_time"
-								}
-									times {
-										day = "2.0"
-										start_time = "start_time"
-										end_time = "end_time"
-									}
-									timezone = "timezone"
-									always_available = true
-								}
-							}
-							support_details {
-								type = "support_site"
-								contact = "contact"
-								response_wait_time {
-									value = "1.0"
-									type = "type"
-								}
-								availability {
-									times {
-										day = "%s"
-										start_time = "start_time"
-										end_time = "end_time"
-									}
-									timezone = "timezone"
-									always_available = true
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-	`, productID, env, name, active, disabled, kind, overviewUiEn, rcCompatible, bulletTitleName, mediaCaption, compositeChildrenName, supportDetailsResponseWaitTime, supportDetailsAvailabilityTimesDay, supportDetailsAvailabilityTimesDay)
-}
-
-func testAccCheckIbmOnboardingCatalogProductUpdateConfig(productID string, env string, name string, active string, disabled string, kind string, objectId string, overviewUiEn string, rcCompatible string, bulletTitleName string, mediaCaption string, compositeChildrenName string, supportDetailsResponseWaitTime string, supportDetailsAvailabilityTimesDay string) string {
-	return fmt.Sprintf(`
-
-		resource "ibm_onboarding_catalog_product" "onboarding_catalog_product_instance" {
-			product_id = "%s"
-			env = "%s"
-			name = "%s"
-			active = %s
-			disabled = %s
-			kind = "%s"
-			object_id = "%s"
-			overview_ui {
-							en {
-					display_name = "%s"
 								description = "description"
-					long_description = "long_description"
-				}
-			}
-			tags = ["tag", "support_community"]
-			images {
-				image = "image"
-			}
-			object_provider {
-				name = "name"
-				email = "email@email.com"
-							}
-			metadata {
-				rc_compatible = "%s"
-				ui {
-				    strings {
-                		en {
-                    		bullets {
-                        		title = "%s"
-                        		description = "some1"
-							}
-							bullets {
-                        		title = "newBullet"
-                        		description = "some1"
+								title = "title"
 							}
 							media {
-                        		type = "youtube"
-                        		url = "https://www.youtube.com/embed/HtkpMgNFYtE"
-                        		caption = "%s"
+								caption = "caption"
+								thumbnail = "thumbnail"
+								type = "image"
+								url = "url"
 							}
-							media {
-                        		type = "youtube"
-                        		url = "https://www.youtube.com/embed/HtkpMgNFYtE"
-                        		caption = "newMedia"
+							navigation_items {
+								id = "id"
+								url = "url"
+								label = "label"
 							}
-							}
-							}
+						}
+					}
 					urls {
 						doc_url = "doc_url"
+						apidocs_url = "apidocs_url"
 						terms_url = "terms_url"
 						instructions_url = "instructions_url"
 						catalog_details_url = "catalog_details_url"
-						}
+						custom_create_page_url = "custom_create_page_url"
+						dashboard = "dashboard"
+					}
 					hidden = true
 					side_by_side_index = 1.0
-					}
+					embeddable_dashboard = "embeddable_dashboard"
+					accessible_during_provision = true
+					primary_offering_id = "primary_offering_id"
+				}
 				service {
 					rc_provisionable = true
-					iam_compatible = false
+					iam_compatible = true
 					service_key_supported = true
-      				unique_api_key = true
-      				async_provisioning_supported = true
-      				async_unprovisioning_supported = true
-      				custom_create_page_hybrid_enabled = true
+					unique_api_key = true
+					async_provisioning_supported = true
+					async_unprovisioning_supported = true
+					custom_create_page_hybrid_enabled = true
 					parameters {
-						associations = { "key" = "inner" }
-                		displayname = "test"
-                		name = "test"
+						displayname = "displayname"
+						name = "name"
 						type = "text"
-                		value = ["test"]
-                		description = "test"
-            		}
+						options {
+							displayname = "displayname"
+							value = "value"
+							i18n {
+								en {
+									displayname = "displayname"
+									description = "description"
+								}
+								de {
+									displayname = "displayname"
+									description = "description"
+								}
+								es {
+									displayname = "displayname"
+									description = "description"
+								}
+								fr {
+									displayname = "displayname"
+									description = "description"
+								}
+								it {
+									displayname = "displayname"
+									description = "description"
+								}
+								ja {
+									displayname = "displayname"
+									description = "description"
+								}
+								ko {
+									displayname = "displayname"
+									description = "description"
+								}
+								pt_br {
+									displayname = "displayname"
+									description = "description"
+								}
+								zh_tw {
+									displayname = "displayname"
+									description = "description"
+								}
+								zh_cn {
+									displayname = "displayname"
+									description = "description"
+								}
+							}
+						}
+						value = [ "value" ]
+						layout = "layout"
+						associations {
+							plan {
+								show_for = [ "show_for" ]
+								options_refresh = true
+							}
+							parameters {
+								name = "name"
+								show_for = [ "show_for" ]
+								options_refresh = true
+							}
+							location {
+								show_for = [ "show_for" ]
+							}
+						}
+						validation_url = "validation_url"
+						options_url = "options_url"
+						invalidmessage = "invalidmessage"
+						description = "description"
+						required = true
+						pattern = "pattern"
+						placeholder = "placeholder"
+						readonly = true
+						hidden = true
+						i18n {
+							en {
+								displayname = "displayname"
+								description = "description"
+							}
+							de {
+								displayname = "displayname"
+								description = "description"
+							}
+							es {
+								displayname = "displayname"
+								description = "description"
+							}
+							fr {
+								displayname = "displayname"
+								description = "description"
+							}
+							it {
+								displayname = "displayname"
+								description = "description"
+							}
+							ja {
+								displayname = "displayname"
+								description = "description"
+							}
+							ko {
+								displayname = "displayname"
+								description = "description"
+							}
+							pt_br {
+								displayname = "displayname"
+								description = "description"
+							}
+							zh_tw {
+								displayname = "displayname"
+								description = "description"
+							}
+							zh_cn {
+								displayname = "displayname"
+								description = "description"
+							}
+						}
+					}
 				}
 				other {
-				    composite {
-                		children {
-                    		name = "%s"
-                    		kind = "service"
-                		}
-                		composite_kind = "service"
-                		composite_tag = "composite_tag"
-            		}
 					pc {
 						support {
 							url = "url"
-							process_i18n = { "key" = "inner" }
 							status_url = "status_url"
 							locations = [ "locations" ]
 							languages = [ "languages" ]
+							process = "process"
+							process_i18n = { "key" = "inner" }
 							support_type = "community"
 							support_escalation {
 								contact = "contact"
@@ -440,12 +343,12 @@ func testAccCheckIbmOnboardingCatalogProductUpdateConfig(productID string, env s
 								type = "support_site"
 								contact = "contact"
 								response_wait_time {
-									value = "%s"
+									value = 1.0
 									type = "type"
 								}
 								availability {
 									times {
-										day = "%s"
+										day = 1.0
 										start_time = "start_time"
 										end_time = "end_time"
 									}
@@ -455,10 +358,18 @@ func testAccCheckIbmOnboardingCatalogProductUpdateConfig(productID string, env s
 							}
 						}
 					}
+					composite {
+						composite_kind = "service"
+						composite_tag = "composite_tag"
+						children {
+							kind = "service"
+							name = "name"
+						}
+					}
 				}
 			}
 		}
-	`, productID, env, name, active, disabled, kind, objectId, overviewUiEn, rcCompatible, bulletTitleName, mediaCaption, compositeChildrenName, supportDetailsResponseWaitTime, supportDetailsAvailabilityTimesDay)
+	`, env, objectID, name, active, disabled, kind)
 }
 
 func testAccCheckIbmOnboardingCatalogProductExists(n string, obj partnercentersellv1.GlobalCatalogProduct) resource.TestCheckFunc {
@@ -671,6 +582,23 @@ func TestResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataToMap(t 
 		globalCatalogMetadataServiceCustomParametersOptionsModel["value"] = "testString"
 		globalCatalogMetadataServiceCustomParametersOptionsModel["i18n"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersI18nModel}
 
+		globalCatalogMetadataServiceCustomParametersAssociationsPlanModel := make(map[string]interface{})
+		globalCatalogMetadataServiceCustomParametersAssociationsPlanModel["show_for"] = []string{"testString"}
+		globalCatalogMetadataServiceCustomParametersAssociationsPlanModel["options_refresh"] = true
+
+		globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel := make(map[string]interface{})
+		globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel["name"] = "testString"
+		globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel["show_for"] = []string{"testString"}
+		globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel["options_refresh"] = true
+
+		globalCatalogMetadataServiceCustomParametersAssociationsLocationModel := make(map[string]interface{})
+		globalCatalogMetadataServiceCustomParametersAssociationsLocationModel["show_for"] = []string{"testString"}
+
+		globalCatalogMetadataServiceCustomParametersAssociationsModel := make(map[string]interface{})
+		globalCatalogMetadataServiceCustomParametersAssociationsModel["plan"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersAssociationsPlanModel}
+		globalCatalogMetadataServiceCustomParametersAssociationsModel["parameters"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel}
+		globalCatalogMetadataServiceCustomParametersAssociationsModel["location"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersAssociationsLocationModel}
+
 		globalCatalogMetadataServiceCustomParametersModel := make(map[string]interface{})
 		globalCatalogMetadataServiceCustomParametersModel["displayname"] = "testString"
 		globalCatalogMetadataServiceCustomParametersModel["name"] = "testString"
@@ -678,7 +606,7 @@ func TestResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataToMap(t 
 		globalCatalogMetadataServiceCustomParametersModel["options"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersOptionsModel}
 		globalCatalogMetadataServiceCustomParametersModel["value"] = []string{"testString"}
 		globalCatalogMetadataServiceCustomParametersModel["layout"] = "testString"
-		globalCatalogMetadataServiceCustomParametersModel["associations"] = map[string]interface{}{"anyKey": "anyValue"}
+		globalCatalogMetadataServiceCustomParametersModel["associations"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersAssociationsModel}
 		globalCatalogMetadataServiceCustomParametersModel["validation_url"] = "testString"
 		globalCatalogMetadataServiceCustomParametersModel["options_url"] = "testString"
 		globalCatalogMetadataServiceCustomParametersModel["invalidmessage"] = "testString"
@@ -823,6 +751,23 @@ func TestResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataToMap(t 
 	globalCatalogMetadataServiceCustomParametersOptionsModel.Value = core.StringPtr("testString")
 	globalCatalogMetadataServiceCustomParametersOptionsModel.I18n = globalCatalogMetadataServiceCustomParametersI18nModel
 
+	globalCatalogMetadataServiceCustomParametersAssociationsPlanModel := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersAssociationsPlan)
+	globalCatalogMetadataServiceCustomParametersAssociationsPlanModel.ShowFor = []string{"testString"}
+	globalCatalogMetadataServiceCustomParametersAssociationsPlanModel.OptionsRefresh = core.BoolPtr(true)
+
+	globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersAssociationsParametersItem)
+	globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel.Name = core.StringPtr("testString")
+	globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel.ShowFor = []string{"testString"}
+	globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel.OptionsRefresh = core.BoolPtr(true)
+
+	globalCatalogMetadataServiceCustomParametersAssociationsLocationModel := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersAssociationsLocation)
+	globalCatalogMetadataServiceCustomParametersAssociationsLocationModel.ShowFor = []string{"testString"}
+
+	globalCatalogMetadataServiceCustomParametersAssociationsModel := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersAssociations)
+	globalCatalogMetadataServiceCustomParametersAssociationsModel.Plan = globalCatalogMetadataServiceCustomParametersAssociationsPlanModel
+	globalCatalogMetadataServiceCustomParametersAssociationsModel.Parameters = []partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersAssociationsParametersItem{*globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel}
+	globalCatalogMetadataServiceCustomParametersAssociationsModel.Location = globalCatalogMetadataServiceCustomParametersAssociationsLocationModel
+
 	globalCatalogMetadataServiceCustomParametersModel := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParameters)
 	globalCatalogMetadataServiceCustomParametersModel.Displayname = core.StringPtr("testString")
 	globalCatalogMetadataServiceCustomParametersModel.Name = core.StringPtr("testString")
@@ -830,7 +775,7 @@ func TestResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataToMap(t 
 	globalCatalogMetadataServiceCustomParametersModel.Options = []partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersOptions{*globalCatalogMetadataServiceCustomParametersOptionsModel}
 	globalCatalogMetadataServiceCustomParametersModel.Value = []string{"testString"}
 	globalCatalogMetadataServiceCustomParametersModel.Layout = core.StringPtr("testString")
-	globalCatalogMetadataServiceCustomParametersModel.Associations = map[string]interface{}{"anyKey": "anyValue"}
+	globalCatalogMetadataServiceCustomParametersModel.Associations = globalCatalogMetadataServiceCustomParametersAssociationsModel
 	globalCatalogMetadataServiceCustomParametersModel.ValidationURL = core.StringPtr("testString")
 	globalCatalogMetadataServiceCustomParametersModel.OptionsURL = core.StringPtr("testString")
 	globalCatalogMetadataServiceCustomParametersModel.Invalidmessage = core.StringPtr("testString")
@@ -1224,6 +1169,23 @@ func TestResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataServiceT
 		globalCatalogMetadataServiceCustomParametersOptionsModel["value"] = "testString"
 		globalCatalogMetadataServiceCustomParametersOptionsModel["i18n"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersI18nModel}
 
+		globalCatalogMetadataServiceCustomParametersAssociationsPlanModel := make(map[string]interface{})
+		globalCatalogMetadataServiceCustomParametersAssociationsPlanModel["show_for"] = []string{"testString"}
+		globalCatalogMetadataServiceCustomParametersAssociationsPlanModel["options_refresh"] = true
+
+		globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel := make(map[string]interface{})
+		globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel["name"] = "testString"
+		globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel["show_for"] = []string{"testString"}
+		globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel["options_refresh"] = true
+
+		globalCatalogMetadataServiceCustomParametersAssociationsLocationModel := make(map[string]interface{})
+		globalCatalogMetadataServiceCustomParametersAssociationsLocationModel["show_for"] = []string{"testString"}
+
+		globalCatalogMetadataServiceCustomParametersAssociationsModel := make(map[string]interface{})
+		globalCatalogMetadataServiceCustomParametersAssociationsModel["plan"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersAssociationsPlanModel}
+		globalCatalogMetadataServiceCustomParametersAssociationsModel["parameters"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel}
+		globalCatalogMetadataServiceCustomParametersAssociationsModel["location"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersAssociationsLocationModel}
+
 		globalCatalogMetadataServiceCustomParametersModel := make(map[string]interface{})
 		globalCatalogMetadataServiceCustomParametersModel["displayname"] = "testString"
 		globalCatalogMetadataServiceCustomParametersModel["name"] = "testString"
@@ -1231,7 +1193,7 @@ func TestResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataServiceT
 		globalCatalogMetadataServiceCustomParametersModel["options"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersOptionsModel}
 		globalCatalogMetadataServiceCustomParametersModel["value"] = []string{"testString"}
 		globalCatalogMetadataServiceCustomParametersModel["layout"] = "testString"
-		globalCatalogMetadataServiceCustomParametersModel["associations"] = map[string]interface{}{"anyKey": "anyValue"}
+		globalCatalogMetadataServiceCustomParametersModel["associations"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersAssociationsModel}
 		globalCatalogMetadataServiceCustomParametersModel["validation_url"] = "testString"
 		globalCatalogMetadataServiceCustomParametersModel["options_url"] = "testString"
 		globalCatalogMetadataServiceCustomParametersModel["invalidmessage"] = "testString"
@@ -1279,6 +1241,23 @@ func TestResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataServiceT
 	globalCatalogMetadataServiceCustomParametersOptionsModel.Value = core.StringPtr("testString")
 	globalCatalogMetadataServiceCustomParametersOptionsModel.I18n = globalCatalogMetadataServiceCustomParametersI18nModel
 
+	globalCatalogMetadataServiceCustomParametersAssociationsPlanModel := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersAssociationsPlan)
+	globalCatalogMetadataServiceCustomParametersAssociationsPlanModel.ShowFor = []string{"testString"}
+	globalCatalogMetadataServiceCustomParametersAssociationsPlanModel.OptionsRefresh = core.BoolPtr(true)
+
+	globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersAssociationsParametersItem)
+	globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel.Name = core.StringPtr("testString")
+	globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel.ShowFor = []string{"testString"}
+	globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel.OptionsRefresh = core.BoolPtr(true)
+
+	globalCatalogMetadataServiceCustomParametersAssociationsLocationModel := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersAssociationsLocation)
+	globalCatalogMetadataServiceCustomParametersAssociationsLocationModel.ShowFor = []string{"testString"}
+
+	globalCatalogMetadataServiceCustomParametersAssociationsModel := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersAssociations)
+	globalCatalogMetadataServiceCustomParametersAssociationsModel.Plan = globalCatalogMetadataServiceCustomParametersAssociationsPlanModel
+	globalCatalogMetadataServiceCustomParametersAssociationsModel.Parameters = []partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersAssociationsParametersItem{*globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel}
+	globalCatalogMetadataServiceCustomParametersAssociationsModel.Location = globalCatalogMetadataServiceCustomParametersAssociationsLocationModel
+
 	globalCatalogMetadataServiceCustomParametersModel := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParameters)
 	globalCatalogMetadataServiceCustomParametersModel.Displayname = core.StringPtr("testString")
 	globalCatalogMetadataServiceCustomParametersModel.Name = core.StringPtr("testString")
@@ -1286,7 +1265,7 @@ func TestResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataServiceT
 	globalCatalogMetadataServiceCustomParametersModel.Options = []partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersOptions{*globalCatalogMetadataServiceCustomParametersOptionsModel}
 	globalCatalogMetadataServiceCustomParametersModel.Value = []string{"testString"}
 	globalCatalogMetadataServiceCustomParametersModel.Layout = core.StringPtr("testString")
-	globalCatalogMetadataServiceCustomParametersModel.Associations = map[string]interface{}{"anyKey": "anyValue"}
+	globalCatalogMetadataServiceCustomParametersModel.Associations = globalCatalogMetadataServiceCustomParametersAssociationsModel
 	globalCatalogMetadataServiceCustomParametersModel.ValidationURL = core.StringPtr("testString")
 	globalCatalogMetadataServiceCustomParametersModel.OptionsURL = core.StringPtr("testString")
 	globalCatalogMetadataServiceCustomParametersModel.Invalidmessage = core.StringPtr("testString")
@@ -1338,6 +1317,23 @@ func TestResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceCustomPa
 		globalCatalogMetadataServiceCustomParametersOptionsModel["value"] = "testString"
 		globalCatalogMetadataServiceCustomParametersOptionsModel["i18n"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersI18nModel}
 
+		globalCatalogMetadataServiceCustomParametersAssociationsPlanModel := make(map[string]interface{})
+		globalCatalogMetadataServiceCustomParametersAssociationsPlanModel["show_for"] = []string{"testString"}
+		globalCatalogMetadataServiceCustomParametersAssociationsPlanModel["options_refresh"] = true
+
+		globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel := make(map[string]interface{})
+		globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel["name"] = "testString"
+		globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel["show_for"] = []string{"testString"}
+		globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel["options_refresh"] = true
+
+		globalCatalogMetadataServiceCustomParametersAssociationsLocationModel := make(map[string]interface{})
+		globalCatalogMetadataServiceCustomParametersAssociationsLocationModel["show_for"] = []string{"testString"}
+
+		globalCatalogMetadataServiceCustomParametersAssociationsModel := make(map[string]interface{})
+		globalCatalogMetadataServiceCustomParametersAssociationsModel["plan"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersAssociationsPlanModel}
+		globalCatalogMetadataServiceCustomParametersAssociationsModel["parameters"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel}
+		globalCatalogMetadataServiceCustomParametersAssociationsModel["location"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersAssociationsLocationModel}
+
 		model := make(map[string]interface{})
 		model["displayname"] = "testString"
 		model["name"] = "testString"
@@ -1345,7 +1341,7 @@ func TestResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceCustomPa
 		model["options"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersOptionsModel}
 		model["value"] = []string{"testString"}
 		model["layout"] = "testString"
-		model["associations"] = map[string]interface{}{"anyKey": "anyValue"}
+		model["associations"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersAssociationsModel}
 		model["validation_url"] = "testString"
 		model["options_url"] = "testString"
 		model["invalidmessage"] = "testString"
@@ -1381,6 +1377,23 @@ func TestResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceCustomPa
 	globalCatalogMetadataServiceCustomParametersOptionsModel.Value = core.StringPtr("testString")
 	globalCatalogMetadataServiceCustomParametersOptionsModel.I18n = globalCatalogMetadataServiceCustomParametersI18nModel
 
+	globalCatalogMetadataServiceCustomParametersAssociationsPlanModel := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersAssociationsPlan)
+	globalCatalogMetadataServiceCustomParametersAssociationsPlanModel.ShowFor = []string{"testString"}
+	globalCatalogMetadataServiceCustomParametersAssociationsPlanModel.OptionsRefresh = core.BoolPtr(true)
+
+	globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersAssociationsParametersItem)
+	globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel.Name = core.StringPtr("testString")
+	globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel.ShowFor = []string{"testString"}
+	globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel.OptionsRefresh = core.BoolPtr(true)
+
+	globalCatalogMetadataServiceCustomParametersAssociationsLocationModel := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersAssociationsLocation)
+	globalCatalogMetadataServiceCustomParametersAssociationsLocationModel.ShowFor = []string{"testString"}
+
+	globalCatalogMetadataServiceCustomParametersAssociationsModel := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersAssociations)
+	globalCatalogMetadataServiceCustomParametersAssociationsModel.Plan = globalCatalogMetadataServiceCustomParametersAssociationsPlanModel
+	globalCatalogMetadataServiceCustomParametersAssociationsModel.Parameters = []partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersAssociationsParametersItem{*globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel}
+	globalCatalogMetadataServiceCustomParametersAssociationsModel.Location = globalCatalogMetadataServiceCustomParametersAssociationsLocationModel
+
 	model := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParameters)
 	model.Displayname = core.StringPtr("testString")
 	model.Name = core.StringPtr("testString")
@@ -1388,7 +1401,7 @@ func TestResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceCustomPa
 	model.Options = []partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersOptions{*globalCatalogMetadataServiceCustomParametersOptionsModel}
 	model.Value = []string{"testString"}
 	model.Layout = core.StringPtr("testString")
-	model.Associations = map[string]interface{}{"anyKey": "anyValue"}
+	model.Associations = globalCatalogMetadataServiceCustomParametersAssociationsModel
 	model.ValidationURL = core.StringPtr("testString")
 	model.OptionsURL = core.StringPtr("testString")
 	model.Invalidmessage = core.StringPtr("testString")
@@ -1513,6 +1526,104 @@ func TestResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceCustomPa
 	model.Description = core.StringPtr("testString")
 
 	result, err := partnercentersell.ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceCustomParametersI18nFieldsToMap(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceCustomParametersAssociationsToMap(t *testing.T) {
+	checkResult := func(result map[string]interface{}) {
+		globalCatalogMetadataServiceCustomParametersAssociationsPlanModel := make(map[string]interface{})
+		globalCatalogMetadataServiceCustomParametersAssociationsPlanModel["show_for"] = []string{"testString"}
+		globalCatalogMetadataServiceCustomParametersAssociationsPlanModel["options_refresh"] = true
+
+		globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel := make(map[string]interface{})
+		globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel["name"] = "testString"
+		globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel["show_for"] = []string{"testString"}
+		globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel["options_refresh"] = true
+
+		globalCatalogMetadataServiceCustomParametersAssociationsLocationModel := make(map[string]interface{})
+		globalCatalogMetadataServiceCustomParametersAssociationsLocationModel["show_for"] = []string{"testString"}
+
+		model := make(map[string]interface{})
+		model["plan"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersAssociationsPlanModel}
+		model["parameters"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel}
+		model["location"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersAssociationsLocationModel}
+
+		assert.Equal(t, result, model)
+	}
+
+	globalCatalogMetadataServiceCustomParametersAssociationsPlanModel := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersAssociationsPlan)
+	globalCatalogMetadataServiceCustomParametersAssociationsPlanModel.ShowFor = []string{"testString"}
+	globalCatalogMetadataServiceCustomParametersAssociationsPlanModel.OptionsRefresh = core.BoolPtr(true)
+
+	globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersAssociationsParametersItem)
+	globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel.Name = core.StringPtr("testString")
+	globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel.ShowFor = []string{"testString"}
+	globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel.OptionsRefresh = core.BoolPtr(true)
+
+	globalCatalogMetadataServiceCustomParametersAssociationsLocationModel := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersAssociationsLocation)
+	globalCatalogMetadataServiceCustomParametersAssociationsLocationModel.ShowFor = []string{"testString"}
+
+	model := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersAssociations)
+	model.Plan = globalCatalogMetadataServiceCustomParametersAssociationsPlanModel
+	model.Parameters = []partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersAssociationsParametersItem{*globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel}
+	model.Location = globalCatalogMetadataServiceCustomParametersAssociationsLocationModel
+
+	result, err := partnercentersell.ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceCustomParametersAssociationsToMap(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceCustomParametersAssociationsPlanToMap(t *testing.T) {
+	checkResult := func(result map[string]interface{}) {
+		model := make(map[string]interface{})
+		model["show_for"] = []string{"testString"}
+		model["options_refresh"] = true
+
+		assert.Equal(t, result, model)
+	}
+
+	model := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersAssociationsPlan)
+	model.ShowFor = []string{"testString"}
+	model.OptionsRefresh = core.BoolPtr(true)
+
+	result, err := partnercentersell.ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceCustomParametersAssociationsPlanToMap(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceCustomParametersAssociationsParametersItemToMap(t *testing.T) {
+	checkResult := func(result map[string]interface{}) {
+		model := make(map[string]interface{})
+		model["name"] = "testString"
+		model["show_for"] = []string{"testString"}
+		model["options_refresh"] = true
+
+		assert.Equal(t, result, model)
+	}
+
+	model := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersAssociationsParametersItem)
+	model.Name = core.StringPtr("testString")
+	model.ShowFor = []string{"testString"}
+	model.OptionsRefresh = core.BoolPtr(true)
+
+	result, err := partnercentersell.ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceCustomParametersAssociationsParametersItemToMap(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceCustomParametersAssociationsLocationToMap(t *testing.T) {
+	checkResult := func(result map[string]interface{}) {
+		model := make(map[string]interface{})
+		model["show_for"] = []string{"testString"}
+
+		assert.Equal(t, result, model)
+	}
+
+	model := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersAssociationsLocation)
+	model.ShowFor = []string{"testString"}
+
+	result, err := partnercentersell.ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceCustomParametersAssociationsLocationToMap(model)
 	assert.Nil(t, err)
 	checkResult(result)
 }
@@ -2137,6 +2248,23 @@ func TestResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadataPro
 		globalCatalogMetadataServiceCustomParametersOptionsModel.Value = core.StringPtr("testString")
 		globalCatalogMetadataServiceCustomParametersOptionsModel.I18n = globalCatalogMetadataServiceCustomParametersI18nModel
 
+		globalCatalogMetadataServiceCustomParametersAssociationsPlanModel := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersAssociationsPlan)
+		globalCatalogMetadataServiceCustomParametersAssociationsPlanModel.ShowFor = []string{"testString"}
+		globalCatalogMetadataServiceCustomParametersAssociationsPlanModel.OptionsRefresh = core.BoolPtr(true)
+
+		globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersAssociationsParametersItem)
+		globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel.Name = core.StringPtr("testString")
+		globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel.ShowFor = []string{"testString"}
+		globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel.OptionsRefresh = core.BoolPtr(true)
+
+		globalCatalogMetadataServiceCustomParametersAssociationsLocationModel := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersAssociationsLocation)
+		globalCatalogMetadataServiceCustomParametersAssociationsLocationModel.ShowFor = []string{"testString"}
+
+		globalCatalogMetadataServiceCustomParametersAssociationsModel := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersAssociations)
+		globalCatalogMetadataServiceCustomParametersAssociationsModel.Plan = globalCatalogMetadataServiceCustomParametersAssociationsPlanModel
+		globalCatalogMetadataServiceCustomParametersAssociationsModel.Parameters = []partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersAssociationsParametersItem{*globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel}
+		globalCatalogMetadataServiceCustomParametersAssociationsModel.Location = globalCatalogMetadataServiceCustomParametersAssociationsLocationModel
+
 		globalCatalogMetadataServiceCustomParametersModel := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParameters)
 		globalCatalogMetadataServiceCustomParametersModel.Displayname = core.StringPtr("testString")
 		globalCatalogMetadataServiceCustomParametersModel.Name = core.StringPtr("testString")
@@ -2144,7 +2272,7 @@ func TestResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadataPro
 		globalCatalogMetadataServiceCustomParametersModel.Options = []partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersOptions{*globalCatalogMetadataServiceCustomParametersOptionsModel}
 		globalCatalogMetadataServiceCustomParametersModel.Value = []string{"testString"}
 		globalCatalogMetadataServiceCustomParametersModel.Layout = core.StringPtr("testString")
-		globalCatalogMetadataServiceCustomParametersModel.Associations = map[string]interface{}{"anyKey": "anyValue"}
+		globalCatalogMetadataServiceCustomParametersModel.Associations = globalCatalogMetadataServiceCustomParametersAssociationsModel
 		globalCatalogMetadataServiceCustomParametersModel.ValidationURL = core.StringPtr("testString")
 		globalCatalogMetadataServiceCustomParametersModel.OptionsURL = core.StringPtr("testString")
 		globalCatalogMetadataServiceCustomParametersModel.Invalidmessage = core.StringPtr("testString")
@@ -2289,6 +2417,23 @@ func TestResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadataPro
 	globalCatalogMetadataServiceCustomParametersOptionsModel["value"] = "testString"
 	globalCatalogMetadataServiceCustomParametersOptionsModel["i18n"] = []interface{}{globalCatalogMetadataServiceCustomParametersI18nModel}
 
+	globalCatalogMetadataServiceCustomParametersAssociationsPlanModel := make(map[string]interface{})
+	globalCatalogMetadataServiceCustomParametersAssociationsPlanModel["show_for"] = []interface{}{"testString"}
+	globalCatalogMetadataServiceCustomParametersAssociationsPlanModel["options_refresh"] = true
+
+	globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel := make(map[string]interface{})
+	globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel["name"] = "testString"
+	globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel["show_for"] = []interface{}{"testString"}
+	globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel["options_refresh"] = true
+
+	globalCatalogMetadataServiceCustomParametersAssociationsLocationModel := make(map[string]interface{})
+	globalCatalogMetadataServiceCustomParametersAssociationsLocationModel["show_for"] = []interface{}{"testString"}
+
+	globalCatalogMetadataServiceCustomParametersAssociationsModel := make(map[string]interface{})
+	globalCatalogMetadataServiceCustomParametersAssociationsModel["plan"] = []interface{}{globalCatalogMetadataServiceCustomParametersAssociationsPlanModel}
+	globalCatalogMetadataServiceCustomParametersAssociationsModel["parameters"] = []interface{}{globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel}
+	globalCatalogMetadataServiceCustomParametersAssociationsModel["location"] = []interface{}{globalCatalogMetadataServiceCustomParametersAssociationsLocationModel}
+
 	globalCatalogMetadataServiceCustomParametersModel := make(map[string]interface{})
 	globalCatalogMetadataServiceCustomParametersModel["displayname"] = "testString"
 	globalCatalogMetadataServiceCustomParametersModel["name"] = "testString"
@@ -2296,7 +2441,7 @@ func TestResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadataPro
 	globalCatalogMetadataServiceCustomParametersModel["options"] = []interface{}{globalCatalogMetadataServiceCustomParametersOptionsModel}
 	globalCatalogMetadataServiceCustomParametersModel["value"] = []interface{}{"testString"}
 	globalCatalogMetadataServiceCustomParametersModel["layout"] = "testString"
-	globalCatalogMetadataServiceCustomParametersModel["associations"] = map[string]interface{}{"anyKey": "anyValue"}
+	globalCatalogMetadataServiceCustomParametersModel["associations"] = []interface{}{globalCatalogMetadataServiceCustomParametersAssociationsModel}
 	globalCatalogMetadataServiceCustomParametersModel["validation_url"] = "testString"
 	globalCatalogMetadataServiceCustomParametersModel["options_url"] = "testString"
 	globalCatalogMetadataServiceCustomParametersModel["invalidmessage"] = "testString"
@@ -2690,6 +2835,23 @@ func TestResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadataSer
 		globalCatalogMetadataServiceCustomParametersOptionsModel.Value = core.StringPtr("testString")
 		globalCatalogMetadataServiceCustomParametersOptionsModel.I18n = globalCatalogMetadataServiceCustomParametersI18nModel
 
+		globalCatalogMetadataServiceCustomParametersAssociationsPlanModel := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersAssociationsPlan)
+		globalCatalogMetadataServiceCustomParametersAssociationsPlanModel.ShowFor = []string{"testString"}
+		globalCatalogMetadataServiceCustomParametersAssociationsPlanModel.OptionsRefresh = core.BoolPtr(true)
+
+		globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersAssociationsParametersItem)
+		globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel.Name = core.StringPtr("testString")
+		globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel.ShowFor = []string{"testString"}
+		globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel.OptionsRefresh = core.BoolPtr(true)
+
+		globalCatalogMetadataServiceCustomParametersAssociationsLocationModel := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersAssociationsLocation)
+		globalCatalogMetadataServiceCustomParametersAssociationsLocationModel.ShowFor = []string{"testString"}
+
+		globalCatalogMetadataServiceCustomParametersAssociationsModel := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersAssociations)
+		globalCatalogMetadataServiceCustomParametersAssociationsModel.Plan = globalCatalogMetadataServiceCustomParametersAssociationsPlanModel
+		globalCatalogMetadataServiceCustomParametersAssociationsModel.Parameters = []partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersAssociationsParametersItem{*globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel}
+		globalCatalogMetadataServiceCustomParametersAssociationsModel.Location = globalCatalogMetadataServiceCustomParametersAssociationsLocationModel
+
 		globalCatalogMetadataServiceCustomParametersModel := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParameters)
 		globalCatalogMetadataServiceCustomParametersModel.Displayname = core.StringPtr("testString")
 		globalCatalogMetadataServiceCustomParametersModel.Name = core.StringPtr("testString")
@@ -2697,7 +2859,7 @@ func TestResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadataSer
 		globalCatalogMetadataServiceCustomParametersModel.Options = []partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersOptions{*globalCatalogMetadataServiceCustomParametersOptionsModel}
 		globalCatalogMetadataServiceCustomParametersModel.Value = []string{"testString"}
 		globalCatalogMetadataServiceCustomParametersModel.Layout = core.StringPtr("testString")
-		globalCatalogMetadataServiceCustomParametersModel.Associations = map[string]interface{}{"anyKey": "anyValue"}
+		globalCatalogMetadataServiceCustomParametersModel.Associations = globalCatalogMetadataServiceCustomParametersAssociationsModel
 		globalCatalogMetadataServiceCustomParametersModel.ValidationURL = core.StringPtr("testString")
 		globalCatalogMetadataServiceCustomParametersModel.OptionsURL = core.StringPtr("testString")
 		globalCatalogMetadataServiceCustomParametersModel.Invalidmessage = core.StringPtr("testString")
@@ -2743,6 +2905,23 @@ func TestResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadataSer
 	globalCatalogMetadataServiceCustomParametersOptionsModel["value"] = "testString"
 	globalCatalogMetadataServiceCustomParametersOptionsModel["i18n"] = []interface{}{globalCatalogMetadataServiceCustomParametersI18nModel}
 
+	globalCatalogMetadataServiceCustomParametersAssociationsPlanModel := make(map[string]interface{})
+	globalCatalogMetadataServiceCustomParametersAssociationsPlanModel["show_for"] = []interface{}{"testString"}
+	globalCatalogMetadataServiceCustomParametersAssociationsPlanModel["options_refresh"] = true
+
+	globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel := make(map[string]interface{})
+	globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel["name"] = "testString"
+	globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel["show_for"] = []interface{}{"testString"}
+	globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel["options_refresh"] = true
+
+	globalCatalogMetadataServiceCustomParametersAssociationsLocationModel := make(map[string]interface{})
+	globalCatalogMetadataServiceCustomParametersAssociationsLocationModel["show_for"] = []interface{}{"testString"}
+
+	globalCatalogMetadataServiceCustomParametersAssociationsModel := make(map[string]interface{})
+	globalCatalogMetadataServiceCustomParametersAssociationsModel["plan"] = []interface{}{globalCatalogMetadataServiceCustomParametersAssociationsPlanModel}
+	globalCatalogMetadataServiceCustomParametersAssociationsModel["parameters"] = []interface{}{globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel}
+	globalCatalogMetadataServiceCustomParametersAssociationsModel["location"] = []interface{}{globalCatalogMetadataServiceCustomParametersAssociationsLocationModel}
+
 	globalCatalogMetadataServiceCustomParametersModel := make(map[string]interface{})
 	globalCatalogMetadataServiceCustomParametersModel["displayname"] = "testString"
 	globalCatalogMetadataServiceCustomParametersModel["name"] = "testString"
@@ -2750,7 +2929,7 @@ func TestResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadataSer
 	globalCatalogMetadataServiceCustomParametersModel["options"] = []interface{}{globalCatalogMetadataServiceCustomParametersOptionsModel}
 	globalCatalogMetadataServiceCustomParametersModel["value"] = []interface{}{"testString"}
 	globalCatalogMetadataServiceCustomParametersModel["layout"] = "testString"
-	globalCatalogMetadataServiceCustomParametersModel["associations"] = map[string]interface{}{"anyKey": "anyValue"}
+	globalCatalogMetadataServiceCustomParametersModel["associations"] = []interface{}{globalCatalogMetadataServiceCustomParametersAssociationsModel}
 	globalCatalogMetadataServiceCustomParametersModel["validation_url"] = "testString"
 	globalCatalogMetadataServiceCustomParametersModel["options_url"] = "testString"
 	globalCatalogMetadataServiceCustomParametersModel["invalidmessage"] = "testString"
@@ -2800,6 +2979,23 @@ func TestResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataServiceCus
 		globalCatalogMetadataServiceCustomParametersOptionsModel.Value = core.StringPtr("testString")
 		globalCatalogMetadataServiceCustomParametersOptionsModel.I18n = globalCatalogMetadataServiceCustomParametersI18nModel
 
+		globalCatalogMetadataServiceCustomParametersAssociationsPlanModel := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersAssociationsPlan)
+		globalCatalogMetadataServiceCustomParametersAssociationsPlanModel.ShowFor = []string{"testString"}
+		globalCatalogMetadataServiceCustomParametersAssociationsPlanModel.OptionsRefresh = core.BoolPtr(true)
+
+		globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersAssociationsParametersItem)
+		globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel.Name = core.StringPtr("testString")
+		globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel.ShowFor = []string{"testString"}
+		globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel.OptionsRefresh = core.BoolPtr(true)
+
+		globalCatalogMetadataServiceCustomParametersAssociationsLocationModel := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersAssociationsLocation)
+		globalCatalogMetadataServiceCustomParametersAssociationsLocationModel.ShowFor = []string{"testString"}
+
+		globalCatalogMetadataServiceCustomParametersAssociationsModel := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersAssociations)
+		globalCatalogMetadataServiceCustomParametersAssociationsModel.Plan = globalCatalogMetadataServiceCustomParametersAssociationsPlanModel
+		globalCatalogMetadataServiceCustomParametersAssociationsModel.Parameters = []partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersAssociationsParametersItem{*globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel}
+		globalCatalogMetadataServiceCustomParametersAssociationsModel.Location = globalCatalogMetadataServiceCustomParametersAssociationsLocationModel
+
 		model := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParameters)
 		model.Displayname = core.StringPtr("testString")
 		model.Name = core.StringPtr("testString")
@@ -2807,7 +3003,7 @@ func TestResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataServiceCus
 		model.Options = []partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersOptions{*globalCatalogMetadataServiceCustomParametersOptionsModel}
 		model.Value = []string{"testString"}
 		model.Layout = core.StringPtr("testString")
-		model.Associations = map[string]interface{}{"anyKey": "anyValue"}
+		model.Associations = globalCatalogMetadataServiceCustomParametersAssociationsModel
 		model.ValidationURL = core.StringPtr("testString")
 		model.OptionsURL = core.StringPtr("testString")
 		model.Invalidmessage = core.StringPtr("testString")
@@ -2843,6 +3039,23 @@ func TestResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataServiceCus
 	globalCatalogMetadataServiceCustomParametersOptionsModel["value"] = "testString"
 	globalCatalogMetadataServiceCustomParametersOptionsModel["i18n"] = []interface{}{globalCatalogMetadataServiceCustomParametersI18nModel}
 
+	globalCatalogMetadataServiceCustomParametersAssociationsPlanModel := make(map[string]interface{})
+	globalCatalogMetadataServiceCustomParametersAssociationsPlanModel["show_for"] = []interface{}{"testString"}
+	globalCatalogMetadataServiceCustomParametersAssociationsPlanModel["options_refresh"] = true
+
+	globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel := make(map[string]interface{})
+	globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel["name"] = "testString"
+	globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel["show_for"] = []interface{}{"testString"}
+	globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel["options_refresh"] = true
+
+	globalCatalogMetadataServiceCustomParametersAssociationsLocationModel := make(map[string]interface{})
+	globalCatalogMetadataServiceCustomParametersAssociationsLocationModel["show_for"] = []interface{}{"testString"}
+
+	globalCatalogMetadataServiceCustomParametersAssociationsModel := make(map[string]interface{})
+	globalCatalogMetadataServiceCustomParametersAssociationsModel["plan"] = []interface{}{globalCatalogMetadataServiceCustomParametersAssociationsPlanModel}
+	globalCatalogMetadataServiceCustomParametersAssociationsModel["parameters"] = []interface{}{globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel}
+	globalCatalogMetadataServiceCustomParametersAssociationsModel["location"] = []interface{}{globalCatalogMetadataServiceCustomParametersAssociationsLocationModel}
+
 	model := make(map[string]interface{})
 	model["displayname"] = "testString"
 	model["name"] = "testString"
@@ -2850,7 +3063,7 @@ func TestResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataServiceCus
 	model["options"] = []interface{}{globalCatalogMetadataServiceCustomParametersOptionsModel}
 	model["value"] = []interface{}{"testString"}
 	model["layout"] = "testString"
-	model["associations"] = map[string]interface{}{"anyKey": "anyValue"}
+	model["associations"] = []interface{}{globalCatalogMetadataServiceCustomParametersAssociationsModel}
 	model["validation_url"] = "testString"
 	model["options_url"] = "testString"
 	model["invalidmessage"] = "testString"
@@ -2975,6 +3188,104 @@ func TestResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataServiceCus
 	model["description"] = "testString"
 
 	result, err := partnercentersell.ResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataServiceCustomParametersI18nFields(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataServiceCustomParametersAssociations(t *testing.T) {
+	checkResult := func(result *partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersAssociations) {
+		globalCatalogMetadataServiceCustomParametersAssociationsPlanModel := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersAssociationsPlan)
+		globalCatalogMetadataServiceCustomParametersAssociationsPlanModel.ShowFor = []string{"testString"}
+		globalCatalogMetadataServiceCustomParametersAssociationsPlanModel.OptionsRefresh = core.BoolPtr(true)
+
+		globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersAssociationsParametersItem)
+		globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel.Name = core.StringPtr("testString")
+		globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel.ShowFor = []string{"testString"}
+		globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel.OptionsRefresh = core.BoolPtr(true)
+
+		globalCatalogMetadataServiceCustomParametersAssociationsLocationModel := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersAssociationsLocation)
+		globalCatalogMetadataServiceCustomParametersAssociationsLocationModel.ShowFor = []string{"testString"}
+
+		model := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersAssociations)
+		model.Plan = globalCatalogMetadataServiceCustomParametersAssociationsPlanModel
+		model.Parameters = []partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersAssociationsParametersItem{*globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel}
+		model.Location = globalCatalogMetadataServiceCustomParametersAssociationsLocationModel
+
+		assert.Equal(t, result, model)
+	}
+
+	globalCatalogMetadataServiceCustomParametersAssociationsPlanModel := make(map[string]interface{})
+	globalCatalogMetadataServiceCustomParametersAssociationsPlanModel["show_for"] = []interface{}{"testString"}
+	globalCatalogMetadataServiceCustomParametersAssociationsPlanModel["options_refresh"] = true
+
+	globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel := make(map[string]interface{})
+	globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel["name"] = "testString"
+	globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel["show_for"] = []interface{}{"testString"}
+	globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel["options_refresh"] = true
+
+	globalCatalogMetadataServiceCustomParametersAssociationsLocationModel := make(map[string]interface{})
+	globalCatalogMetadataServiceCustomParametersAssociationsLocationModel["show_for"] = []interface{}{"testString"}
+
+	model := make(map[string]interface{})
+	model["plan"] = []interface{}{globalCatalogMetadataServiceCustomParametersAssociationsPlanModel}
+	model["parameters"] = []interface{}{globalCatalogMetadataServiceCustomParametersAssociationsParametersItemModel}
+	model["location"] = []interface{}{globalCatalogMetadataServiceCustomParametersAssociationsLocationModel}
+
+	result, err := partnercentersell.ResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataServiceCustomParametersAssociations(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataServiceCustomParametersAssociationsPlan(t *testing.T) {
+	checkResult := func(result *partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersAssociationsPlan) {
+		model := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersAssociationsPlan)
+		model.ShowFor = []string{"testString"}
+		model.OptionsRefresh = core.BoolPtr(true)
+
+		assert.Equal(t, result, model)
+	}
+
+	model := make(map[string]interface{})
+	model["show_for"] = []interface{}{"testString"}
+	model["options_refresh"] = true
+
+	result, err := partnercentersell.ResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataServiceCustomParametersAssociationsPlan(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataServiceCustomParametersAssociationsParametersItem(t *testing.T) {
+	checkResult := func(result *partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersAssociationsParametersItem) {
+		model := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersAssociationsParametersItem)
+		model.Name = core.StringPtr("testString")
+		model.ShowFor = []string{"testString"}
+		model.OptionsRefresh = core.BoolPtr(true)
+
+		assert.Equal(t, result, model)
+	}
+
+	model := make(map[string]interface{})
+	model["name"] = "testString"
+	model["show_for"] = []interface{}{"testString"}
+	model["options_refresh"] = true
+
+	result, err := partnercentersell.ResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataServiceCustomParametersAssociationsParametersItem(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataServiceCustomParametersAssociationsLocation(t *testing.T) {
+	checkResult := func(result *partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersAssociationsLocation) {
+		model := new(partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersAssociationsLocation)
+		model.ShowFor = []string{"testString"}
+
+		assert.Equal(t, result, model)
+	}
+
+	model := make(map[string]interface{})
+	model["show_for"] = []interface{}{"testString"}
+
+	result, err := partnercentersell.ResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataServiceCustomParametersAssociationsLocation(model)
 	assert.Nil(t, err)
 	checkResult(result)
 }

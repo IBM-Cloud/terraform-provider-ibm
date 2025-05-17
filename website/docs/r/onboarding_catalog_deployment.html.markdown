@@ -8,8 +8,6 @@ subcategory: "Partner Center Sell"
 
 # ibm_onboarding_catalog_deployment
 
-**Note - Intended for internal use only. This resource is strictly experimental and subject to change without notice.**
-
 Create, update, and delete onboarding_catalog_deployments with this resource.
 
 ## Example Usage
@@ -79,7 +77,20 @@ resource "ibm_onboarding_catalog_deployment" "onboarding_catalog_deployment_inst
 				}
 				value = [ "value" ]
 				layout = "layout"
-				associations = { "key" = "anything as a string" }
+				associations {
+					plan {
+						show_for = [ "show_for" ]
+						options_refresh = true
+					}
+					parameters {
+						name = "name"
+						show_for = [ "show_for" ]
+						options_refresh = true
+					}
+					location {
+						show_for = [ "show_for" ]
+					}
+				}
 				validation_url = "validation_url"
 				options_url = "options_url"
 				invalidmessage = "invalidmessage"
@@ -197,7 +208,25 @@ Nested schema for **metadata**:
 		* `parameters` - (Optional, List)
 		  * Constraints: The maximum length is `1000` items. The minimum length is `0` items.
 		Nested schema for **parameters**:
-			* `associations` - (Optional, Map) A JSON structure to describe the interactions with pricing plans and/or other custom parameters.
+			* `associations` - (Optional, List) A JSON to describe other parameters or plan that are associated to this parameter.
+			Nested schema for **associations**:
+				* `location` - (Optional, List)
+				Nested schema for **location**:
+					* `show_for` - (Optional, List) An array of pricing plan IDs, or parameters or locations depending on parent.
+					  * Constraints: The list items must match regular expression `/^[ -~\\s]*$/`. The maximum length is `1000` items. The minimum length is `0` items.
+				* `parameters` - (Optional, List) Indicate this parameter is associated to some other parameters.
+				  * Constraints: The maximum length is `1000` items. The minimum length is `0` items.
+				Nested schema for **parameters**:
+					* `name` - (Optional, String) Indicate this parameter is associated to some other parameters.
+					  * Constraints: The maximum length is `2000` characters. The minimum length is `0` characters. The value must match regular expression `/^[ -~\\s]*$/`.
+					* `options_refresh` - (Optional, Boolean) Indicate if re-fetching the options is needed when the plan changed.
+					* `show_for` - (Optional, List) An array of pricing plan IDs, or parameters or locations depending on parent.
+					  * Constraints: The list items must match regular expression `/^[ -~\\s]*$/`. The maximum length is `1000` items. The minimum length is `0` items.
+				* `plan` - (Optional, List)
+				Nested schema for **plan**:
+					* `options_refresh` - (Optional, Boolean) Indicate if re-fetching the options is needed when the plan changed.
+					* `show_for` - (Optional, List) An array of pricing plan IDs, or parameters or locations depending on parent.
+					  * Constraints: The list items must match regular expression `/^[ -~\\s]*$/`. The maximum length is `1000` items. The minimum length is `0` items.
 			* `description` - (Optional, String) The description of the parameter that is displayed to help users with the value of the parameter.
 			  * Constraints: The maximum length is `2000` characters. The minimum length is `1` character. The value must match regular expression `/^[ -~\\s]*$/`.
 			* `displayname` - (Optional, String) The display name for custom service parameters.
@@ -395,7 +424,8 @@ You can import the `ibm_onboarding_catalog_deployment` resource by using `id`.
 The `id` property can be formed from `product_id`, `catalog_product_id`, `catalog_plan_id`, and `catalog_deployment_id` in the following format:
 
 <pre>
-product_id/catalog_product_id/catalog_plan_id/catalog_deployment_id</pre>
+&lt;product_id&gt;/&lt;catalog_product_id&gt;/&lt;catalog_plan_id&gt;/&lt;catalog_deployment_id&gt;
+</pre>
 * `product_id`: A string. The unique ID of the product.
 * `catalog_product_id`: A string. The unique ID of this global catalog product.
 * `catalog_plan_id`: A string. The unique ID of this global catalog plan.
@@ -403,5 +433,5 @@ product_id/catalog_product_id/catalog_plan_id/catalog_deployment_id</pre>
 
 # Syntax
 <pre>
-$ terraform import ibm_onboarding_catalog_deployment.onboarding_catalog_deployment product_id/catalog_product_id/catalog_plan_id/catalog_deployment_id
+$ terraform import ibm_onboarding_catalog_deployment.onboarding_catalog_deployment &lt;product_id&gt;/&lt;catalog_product_id&gt;/&lt;catalog_plan_id&gt;/&lt;catalog_deployment_id&gt;
 </pre>
