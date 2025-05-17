@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -151,15 +152,18 @@ func DataSourceIbmIsShareProfiles() *schema.Resource {
 func dataSourceIbmIsShareProfilesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("vpcClient creation failed: %s", err.Error()), "(Data) ibm_is_profiles", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	listShareProfilesOptions := &vpcv1.ListShareProfilesOptions{}
 
 	shareProfileCollection, response, err := vpcClient.ListShareProfilesWithContext(context, listShareProfilesOptions)
 	if err != nil {
-		log.Printf("[DEBUG] ListShareProfilesWithContext failed %s\n%s", err, response)
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListShareProfilesWithContext failed: %s\n%s", err.Error(), response), "(Data) ibm_is_profiles", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(dataSourceIbmIsShareProfilesID(d))
@@ -167,11 +171,13 @@ func dataSourceIbmIsShareProfilesRead(context context.Context, d *schema.Resourc
 	if shareProfileCollection.Profiles != nil {
 		err = d.Set("profiles", dataSourceShareProfileCollectionFlattenProfiles(shareProfileCollection.Profiles))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting profiles %s", err))
+			err = fmt.Errorf("Error setting profiles: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_profiles", "read", "set-profiles").GetDiag()
 		}
 	}
 	if err = d.Set("total_count", shareProfileCollection.TotalCount); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting total_count: %s", err))
+		err = fmt.Errorf("Error setting total_count: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_profiles", "read", "set-total_count").GetDiag()
 	}
 
 	return nil

@@ -58,13 +58,12 @@ func resourceIbmIsShareDeleteAccessorBindingCreate(context context.Context, d *s
 	}
 	response, err := vpcClient.DeleteShareAccessorBindingWithContext(context, deleteAccessBindingOptions)
 	if err != nil {
-		log.Printf("[DEBUG] DeleteShareAccessorBindingWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("[ERROR] DeleteShareAccessorBindingWithContext failed %s\n%s", err, response))
+		return flex.TerraformErrorf(err, fmt.Sprintf("DeleteShareAccessorBindingWithContext failed: %s\n%s", err.Error(), response), "ibm_is_share_delete_accessor_binding", "create").GetDiag()
 	}
 
 	_, err = isWaitForShareAccessorBindingDeleted(context, vpcClient, share_id, bindingId, d, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
-		return diag.FromErr(err)
+		return flex.TerraformErrorf(err, fmt.Sprintf("isWaitForShareAccessorBindingDeleted failed: %s", err.Error()), "ibm_is_share_delete_accessor_binding", "create").GetDiag()
 	}
 	d.SetId(share_id)
 	return nil
