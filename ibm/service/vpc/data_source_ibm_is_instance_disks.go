@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
@@ -77,16 +78,19 @@ func DataSourceIbmIsInstanceDisks() *schema.Resource {
 func dataSourceIbmIsInstanceDisksRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instance_disks", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	listInstanceDisksOptions := &vpcv1.ListInstanceDisksOptions{}
 
 	listInstanceDisksOptions.SetInstanceID(d.Get("instance").(string))
 
-	instanceDiskCollection, response, err := vpcClient.ListInstanceDisksWithContext(context, listInstanceDisksOptions)
+	instanceDiskCollection, _, err := vpcClient.ListInstanceDisksWithContext(context, listInstanceDisksOptions)
 	if err != nil {
-		log.Printf("[DEBUG] ListInstanceDisksWithContext failed %s\n%s", err, response)
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListInstanceDisksWithContext failed: %s", err.Error()), "(Data) ibm_is_instance_disks", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(dataSourceIbmIsInstanceDisksID(d))
@@ -94,7 +98,7 @@ func dataSourceIbmIsInstanceDisksRead(context context.Context, d *schema.Resourc
 	if instanceDiskCollection.Disks != nil {
 		err = d.Set(isInstanceDisks, dataSourceInstanceDiskCollectionFlattenDisks(instanceDiskCollection.Disks))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting disks %s", err))
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting disks: %s", err), "(Data) ibm_is_instance_disks", "read", "set-disks").GetDiag()
 		}
 	}
 

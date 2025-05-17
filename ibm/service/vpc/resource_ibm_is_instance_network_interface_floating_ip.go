@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -102,7 +103,9 @@ func resourceIBMISInstanceNetworkInterfaceFloatingIpCreate(context context.Conte
 
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_network_interface_floating_ip", "create", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	instanceId := d.Get(isInstanceID).(string)
@@ -111,7 +114,7 @@ func resourceIBMISInstanceNetworkInterfaceFloatingIpCreate(context context.Conte
 	if strings.Contains(nicId, "/") {
 		_, instanceNicId, err = ParseNICTerraformID(nicId)
 		if err != nil {
-			return diag.FromErr(err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_network_interface_floating_ip", "create", "sep-id-parts").GetDiag()
 		}
 	} else {
 		instanceNicId = nicId
@@ -125,14 +128,16 @@ func resourceIBMISInstanceNetworkInterfaceFloatingIpCreate(context context.Conte
 		ID:                 &instanceNicFipId,
 	}
 
-	fip, response, err := sess.AddInstanceNetworkInterfaceFloatingIPWithContext(context, options)
+	fip, _, err := sess.AddInstanceNetworkInterfaceFloatingIPWithContext(context, options)
 	if err != nil || fip == nil {
-		return diag.FromErr(fmt.Errorf("[DEBUG] Create Instance (%s) network interface (%s) floating ip (%s) err %s\n%s", instanceId, instanceNicId, instanceNicFipId, err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("AddInstanceNetworkInterfaceFloatingIPWithContext failed: %s", err.Error()), "ibm_is_instance_network_interface_floating_ip", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	d.SetId(MakeTerraformNICFipID(instanceId, instanceNicId, *fip.ID))
-	err = instanceNICFipGet(d, fip, instanceId, instanceNicId)
-	if err != nil {
-		return diag.FromErr(err)
+	diagErr := instanceNICFipGet(context, d, fip, instanceId, instanceNicId)
+	if diagErr != nil {
+		return diagErr
 	}
 
 	return nil
@@ -141,12 +146,14 @@ func resourceIBMISInstanceNetworkInterfaceFloatingIpCreate(context context.Conte
 func resourceIBMISInstanceNetworkInterfaceFloatingIpRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	instanceId, nicID, fipId, err := ParseNICFipTerraformID(d.Id())
 	if err != nil {
-		return diag.FromErr(err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_network_interface_floating_ip", "read", "sep-id-parts").GetDiag()
 	}
 
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_network_interface_floating_ip", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	options := &vpcv1.GetInstanceNetworkInterfaceFloatingIPOptions{
 		InstanceID:         &instanceId,
@@ -160,30 +167,44 @@ func resourceIBMISInstanceNetworkInterfaceFloatingIpRead(context context.Context
 			d.SetId("")
 			return nil
 		}
-		return diag.FromErr(fmt.Errorf("[ERROR] Error getting Instance (%s) network interface (%s): %s\n%s", instanceId, nicID, err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetInstanceNetworkInterfaceFloatingIPWithContext failed: %s", err.Error()), "ibm_is_instance_network_interface_floating_ip", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
-	err = instanceNICFipGet(d, fip, instanceId, nicID)
-	if err != nil {
-		return diag.FromErr(err)
+	diagErr := instanceNICFipGet(context, d, fip, instanceId, nicID)
+	if diagErr != nil {
+		return diagErr
 	}
 	return nil
 }
 
-func instanceNICFipGet(d *schema.ResourceData, fip *vpcv1.FloatingIP, instanceId, nicId string) error {
-
+func instanceNICFipGet(context context.Context, d *schema.ResourceData, fip *vpcv1.FloatingIP, instanceId, nicId string) diag.Diagnostics {
+	var err error
 	d.SetId(MakeTerraformNICFipID(instanceId, nicId, *fip.ID))
-	d.Set(floatingIPName, *fip.Name)
-	d.Set(floatingIPAddress, *fip.Address)
-	d.Set(floatingIPStatus, fip.Status)
-	d.Set(floatingIPZone, *fip.Zone.Name)
-
-	d.Set(floatingIPCRN, *fip.CRN)
-
-	target, ok := fip.Target.(*vpcv1.FloatingIPTarget)
-	if ok {
-		d.Set(floatingIPTarget, target.ID)
+	if err = d.Set(floatingIPName, *fip.Name); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_network_interface_floating_ip", "read", "set-name").GetDiag()
+	}
+	if err = d.Set(floatingIPAddress, *fip.Address); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_network_interface_floating_ip", "read", "set-address").GetDiag()
 	}
 
+	if err = d.Set(floatingIPStatus, fip.Status); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_network_interface_floating_ip", "read", "set-status").GetDiag()
+	}
+
+	if err = d.Set(floatingIPZone, *fip.Zone.Name); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_network_interface_floating_ip", "read", "set-zone").GetDiag()
+	}
+
+	if err = d.Set(floatingIPCRN, *fip.CRN); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_network_interface_floating_ip", "read", "set-crn").GetDiag()
+	}
+	target, ok := fip.Target.(*vpcv1.FloatingIPTarget)
+	if ok {
+		if err = d.Set(floatingIPTarget, target.ID); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_network_interface_floating_ip", "read", "set-target").GetDiag()
+		}
+	}
 	return nil
 }
 
@@ -192,11 +213,13 @@ func resourceIBMISInstanceNetworkInterfaceFloatingIpUpdate(context context.Conte
 	if d.HasChange(isInstanceNetworkInterfaceFloatingIPID) {
 		instanceId, nicId, _, err := ParseNICFipTerraformID(d.Id())
 		if err != nil {
-			return diag.FromErr(err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_network_interface_floating_ip", "update", "sep-id-parts").GetDiag()
 		}
 		sess, err := vpcClient(meta)
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_network_interface_floating_ip", "update", "initialize-client")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
 		floatingIpId := ""
@@ -209,12 +232,14 @@ func resourceIBMISInstanceNetworkInterfaceFloatingIpUpdate(context context.Conte
 			ID:                 &floatingIpId,
 		}
 
-		fip, response, err := sess.AddInstanceNetworkInterfaceFloatingIPWithContext(context, options)
+		fip, _, err := sess.AddInstanceNetworkInterfaceFloatingIPWithContext(context, options)
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error updating Instance: %s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("AddInstanceNetworkInterfaceFloatingIPWithContext failed: %s", err.Error()), "ibm_is_instance_network_interface_floating_ip", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		d.SetId(MakeTerraformNICFipID(instanceId, nicId, *fip.ID))
-		return diag.FromErr(instanceNICFipGet(d, fip, instanceId, nicId))
+		return instanceNICFipGet(context, d, fip, instanceId, nicId)
 	}
 	return nil
 }
@@ -222,21 +247,23 @@ func resourceIBMISInstanceNetworkInterfaceFloatingIpUpdate(context context.Conte
 func resourceIBMISInstanceNetworkInterfaceFloatingIpDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	instanceId, nicId, fipId, err := ParseNICFipTerraformID(d.Id())
 	if err != nil {
-		return diag.FromErr(err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_network_interface_floating_ip", "delete", "sep-id-parts").GetDiag()
 	}
 
-	err = instanceNetworkInterfaceFipDelete(context, d, meta, instanceId, nicId, fipId)
-	if err != nil {
-		return diag.FromErr(err)
+	diagErr := instanceNetworkInterfaceFipDelete(context, d, meta, instanceId, nicId, fipId)
+	if diagErr != nil {
+		return diagErr
 	}
 
 	return nil
 }
 
-func instanceNetworkInterfaceFipDelete(context context.Context, d *schema.ResourceData, meta interface{}, instanceId, nicId, fipId string) error {
+func instanceNetworkInterfaceFipDelete(context context.Context, d *schema.ResourceData, meta interface{}, instanceId, nicId, fipId string) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_network_interface_floating_ip", "delete", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	getBmsNicFipOptions := &vpcv1.GetInstanceNetworkInterfaceFloatingIPOptions{
@@ -249,7 +276,9 @@ func instanceNetworkInterfaceFipDelete(context context.Context, d *schema.Resour
 		if response != nil && response.StatusCode == 404 {
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error getting Instance (%s) network interface(%s) Floating Ip(%s) : %s\n%s", instanceId, nicId, fipId, err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetInstanceNetworkInterfaceFloatingIPWithContext failed: %s", err.Error()), "ibm_is_instance_network_interface_floating_ip", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	options := &vpcv1.RemoveInstanceNetworkInterfaceFloatingIPOptions{
@@ -259,11 +288,15 @@ func instanceNetworkInterfaceFipDelete(context context.Context, d *schema.Resour
 	}
 	response, err = sess.RemoveInstanceNetworkInterfaceFloatingIPWithContext(context, options)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error Deleting Instance (%s) network interface (%s) Floating Ip(%s) : %s\n%s", instanceId, nicId, fipId, err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("RemoveInstanceNetworkInterfaceFloatingIPWithContext failed: %s", err.Error()), "ibm_is_instance_network_interface_floating_ip", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	_, err = isWaitForInstanceNetworkInterfaceFloatingIpDeleted(sess, instanceId, nicId, fipId, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
-		return err
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForInstanceNetworkInterfaceFloatingIpDeleted failed: %s", err.Error()), "ibm_is_instance_network_interface_floating_ip", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	d.SetId("")
 	return nil

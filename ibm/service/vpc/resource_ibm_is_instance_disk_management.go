@@ -4,10 +4,14 @@
 package vpc
 
 import (
+	"context"
 	"fmt"
+	"log"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -15,11 +19,11 @@ const ()
 
 func ResourceIBMISInstanceDiskManagement() *schema.Resource {
 	return &schema.Resource{
-		Create:   resourceIBMisInstanceDiskManagementCreate,
-		Read:     resourceIBMisInstanceDiskManagementRead,
-		Update:   resourceIBMisInstanceDiskManagementUpdate,
-		Delete:   resourceIBMisInstanceDiskManagementDelete,
-		Importer: &schema.ResourceImporter{},
+		CreateContext: resourceIBMisInstanceDiskManagementCreate,
+		ReadContext:   resourceIBMisInstanceDiskManagementRead,
+		UpdateContext: resourceIBMisInstanceDiskManagementUpdate,
+		DeleteContext: resourceIBMisInstanceDiskManagementDelete,
+		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
 			"instance": {
@@ -69,10 +73,12 @@ func ResourceIBMISInstanceDiskManagementValidator() *validate.ResourceValidator 
 	return &ibmISInstanceDiskManagementValidator
 }
 
-func resourceIBMisInstanceDiskManagementCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMisInstanceDiskManagementCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_disk_management", "create", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	instance := d.Get("instance").(string)
 	disks := d.Get("disks")
@@ -93,24 +99,30 @@ func resourceIBMisInstanceDiskManagementCreate(d *schema.ResourceData, meta inte
 
 		instanceDiskPatch, err := instanceDiskPatchModel.AsPatch()
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for InstanceDiskPatch: %s", err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("instanceDiskPatchModel.AsPatch() failed: %s", err.Error()), "ibm_is_instance_disk_management", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		updateInstanceDiskOptions.SetInstanceDiskPatch(instanceDiskPatch)
 
-		_, response, err := sess.UpdateInstanceDisk(updateInstanceDiskOptions)
+		_, _, err = sess.UpdateInstanceDiskWithContext(context, updateInstanceDiskOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling UpdateInstanceDisk: %s %s", err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateInstanceDiskWithContext failed: %s", err.Error()), "ibm_is_instance_disk_management", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
 	}
 	d.SetId(instance)
-	return resourceIBMisInstanceDiskManagementRead(d, meta)
+	return resourceIBMisInstanceDiskManagementRead(context, d, meta)
 }
 
-func resourceIBMisInstanceDiskManagementUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMisInstanceDiskManagementUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_disk_management", "update", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if d.HasChange("disks") && !d.IsNewResource() {
 
@@ -131,27 +143,31 @@ func resourceIBMisInstanceDiskManagementUpdate(d *schema.ResourceData, meta inte
 
 			instanceDiskPatch, err := instanceDiskPatchModel.AsPatch()
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error calling asPatch for InstanceDiskPatch: %s", err)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("instanceDiskPatchModel.AsPatch() failed: %s", err.Error()), "ibm_is_instance_disk_management", "delete")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			updateInstanceDiskOptions.SetInstanceDiskPatch(instanceDiskPatch)
 
-			_, _, err = sess.UpdateInstanceDisk(updateInstanceDiskOptions)
+			_, _, err = sess.UpdateInstanceDiskWithContext(context, updateInstanceDiskOptions)
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error updating instance disk: %s", err)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateInstanceDiskWithContext failed: %s", err.Error()), "ibm_is_instance_disk_management", "delete")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 
 		}
 	}
-	return resourceIBMisInstanceDiskManagementRead(d, meta)
+	return resourceIBMisInstanceDiskManagementRead(context, d, meta)
 }
 
-func resourceIBMisInstanceDiskManagementDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMisInstanceDiskManagementDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 	d.SetId("")
 	return nil
 }
 
-func resourceIBMisInstanceDiskManagementRead(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMisInstanceDiskManagementRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 	d.Set("instance", d.Id())
 
