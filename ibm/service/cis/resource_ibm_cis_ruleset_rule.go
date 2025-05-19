@@ -448,10 +448,7 @@ func ResourceIBMCISRulesetRuleUpdate(d *schema.ResourceData, meta interface{}) e
 		if rulesetsRuleObject[CISRulesetsRuleActionParameters] != nil {
 			actionParameters := expandCISRulesetsRulesActionParameters(rulesetsRuleObject[CISRulesetsRuleActionParameters])
 			opt.SetActionParameters(&actionParameters)
-		} else if rulesetsRuleObject[CISRulesetsRuleAction].(string) == "skip" {
-			return fmt.Errorf("[ERROR] action_parameters are required for the 'skip' action")
 		}
-
 		opt.SetEnabled(rulesetsRuleObject[CISRulesetsRuleActionEnabled].(bool))
 		opt.SetExpression(rulesetsRuleObject[CISRulesetsRuleExpression].(string))
 		opt.SetRef(rulesetsRuleObject[CISRulesetsRuleRef].(string))
@@ -486,7 +483,7 @@ func ResourceIBMCISRulesetRuleUpdate(d *schema.ResourceData, meta interface{}) e
 		opt.SetRef(rulesetsRuleObject[CISRulesetsRuleAction].(string))
 		position, err := expandCISRulesetsRulesPositions(rulesetsRuleObject[CISRulesetsRulePosition])
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error while updating the zone Ruleset %s", err)
+			return fmt.Errorf("[ERROR] Error while updating the instance Ruleset %s", err)
 		}
 		opt.SetPosition(&position)
 
@@ -497,7 +494,7 @@ func ResourceIBMCISRulesetRuleUpdate(d *schema.ResourceData, meta interface{}) e
 		_, _, err = sess.UpdateInstanceRulesetRule(opt)
 
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error while updating the zone Ruleset %s", err)
+			return fmt.Errorf("[ERROR] Error while updating the instance Ruleset %s", err)
 		}
 
 		d.SetId(dataSourceCISRulesetsRuleCheckID(d, ruleId))
