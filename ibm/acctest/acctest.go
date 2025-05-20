@@ -421,8 +421,9 @@ var (
 
 // For IAM Access Management
 var (
-	TargetAccountId    string
-	TargetEnterpriseId string
+	TargetAccountId      string
+	TargetEnterpriseId   string
+	TargetAccountGroupId string
 )
 
 // For Partner Center Sell
@@ -2062,6 +2063,11 @@ func init() {
 	TargetEnterpriseId = os.Getenv("IBM_POLICY_ASSIGNMENT_TARGET_ENTERPRISE_ID")
 	if TargetEnterpriseId == "" {
 		fmt.Println("[INFO] Set the environment variable IBM_POLICY_ASSIGNMENT_TARGET_ENTERPRISE_ID for testing ibm_iam_policy_assignment resource else tests will fail if this is not set correctly")
+	}
+
+	TargetAccountGroupId = os.Getenv("IBM_ASSIGNMENT_TARGET_ACCOUNT_GROUP_ID")
+	if TargetAccountGroupId == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_ASSIGNMENT_TARGET_ACCOUNT_GROUP_ID for testing ibm_iam_action_control_assignment resource else tests will fail if this is not set correctly")
 	}
 
 	PcsRegistrationAccountId = os.Getenv("PCS_REGISTRATION_ACCOUNT_ID")
