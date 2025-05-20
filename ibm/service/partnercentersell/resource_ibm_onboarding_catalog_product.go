@@ -2,7 +2,7 @@
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.103.0-e8b84313-20250402-201816
+ * IBM OpenAPI Terraform Generator Version: 3.104.0-b4a47c49-20250418-184351
  */
 
 package partnercentersell
@@ -208,7 +208,7 @@ func ResourceIbmOnboardingCatalogProduct() *schema.Resource {
 																	Schema: map[string]*schema.Schema{
 																		"caption": &schema.Schema{
 																			Type:        schema.TypeString,
-																			Required:    true,
+																			Optional:    true,
 																			Description: "Provide a descriptive caption that indicates what the media illustrates. This caption is displayed in the catalog.",
 																		},
 																		"thumbnail": &schema.Schema{
@@ -218,12 +218,12 @@ func ResourceIbmOnboardingCatalogProduct() *schema.Resource {
 																		},
 																		"type": &schema.Schema{
 																			Type:        schema.TypeString,
-																			Required:    true,
+																			Optional:    true,
 																			Description: "The type of the media.",
 																		},
 																		"url": &schema.Schema{
 																			Type:        schema.TypeString,
-																			Required:    true,
+																			Optional:    true,
 																			Description: "The URL that links to the media that shows off the product.",
 																		},
 																	},
@@ -1731,12 +1731,18 @@ func ResourceIbmOnboardingCatalogProductMapToCatalogHighlightItem(modelMap map[s
 
 func ResourceIbmOnboardingCatalogProductMapToCatalogProductMediaItem(modelMap map[string]interface{}) (*partnercentersellv1.CatalogProductMediaItem, error) {
 	model := &partnercentersellv1.CatalogProductMediaItem{}
-	model.Caption = core.StringPtr(modelMap["caption"].(string))
+	if modelMap["caption"] != nil && modelMap["caption"].(string) != "" {
+		model.Caption = core.StringPtr(modelMap["caption"].(string))
+	}
 	if modelMap["thumbnail"] != nil && modelMap["thumbnail"].(string) != "" {
 		model.Thumbnail = core.StringPtr(modelMap["thumbnail"].(string))
 	}
-	model.Type = core.StringPtr(modelMap["type"].(string))
-	model.URL = core.StringPtr(modelMap["url"].(string))
+	if modelMap["type"] != nil && modelMap["type"].(string) != "" {
+		model.Type = core.StringPtr(modelMap["type"].(string))
+	}
+	if modelMap["url"] != nil && modelMap["url"].(string) != "" {
+		model.URL = core.StringPtr(modelMap["url"].(string))
+	}
 	return model, nil
 }
 
@@ -2379,12 +2385,18 @@ func ResourceIbmOnboardingCatalogProductCatalogHighlightItemToMap(model *partner
 
 func ResourceIbmOnboardingCatalogProductCatalogProductMediaItemToMap(model *partnercentersellv1.CatalogProductMediaItem) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["caption"] = *model.Caption
+	if model.Caption != nil {
+		modelMap["caption"] = *model.Caption
+	}
 	if model.Thumbnail != nil {
 		modelMap["thumbnail"] = *model.Thumbnail
 	}
-	modelMap["type"] = *model.Type
-	modelMap["url"] = *model.URL
+	if model.Type != nil {
+		modelMap["type"] = *model.Type
+	}
+	if model.URL != nil {
+		modelMap["url"] = *model.URL
+	}
 	return modelMap, nil
 }
 
@@ -3671,11 +3683,29 @@ func ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataUINavigationItemAsP
 func ResourceIbmOnboardingCatalogProductCatalogProductMediaItemAsPatch(patch map[string]interface{}, d *schema.ResourceData, rootPath string) {
 	var path string
 
+	path = rootPath + ".caption"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["caption"] = nil
+	} else if !exists {
+		delete(patch, "caption")
+	}
 	path = rootPath + ".thumbnail"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["thumbnail"] = nil
 	} else if !exists {
 		delete(patch, "thumbnail")
+	}
+	path = rootPath + ".type"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["type"] = nil
+	} else if !exists {
+		delete(patch, "type")
+	}
+	path = rootPath + ".url"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["url"] = nil
+	} else if !exists {
+		delete(patch, "url")
 	}
 }
 

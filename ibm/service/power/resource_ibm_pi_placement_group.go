@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
@@ -15,6 +16,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -139,10 +141,41 @@ func resourceIBMPIPlacementGroupDelete(ctx context.Context, d *schema.ResourceDa
 	cloudInstanceID := parts[0]
 	client := instance.NewIBMPIPlacementGroupClient(ctx, sess, cloudInstanceID)
 	err = client.Delete(parts[1])
-
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
+	_, err = isWaitForPIPlacementGroupDeleted(ctx, client, parts[1], d.Timeout(schema.TimeoutDelete))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	d.SetId("")
 	return nil
+}
+
+func isWaitForPIPlacementGroupDeleted(ctx context.Context, client *instance.IBMPIPlacementGroupClient, id string, timeout time.Duration) (interface{}, error) {
+	log.Printf("Waiting for placement group (%s) to be deleted.", id)
+
+	stateConf := &retry.StateChangeConf{
+		Pending:    []string{State_Deleting},
+		Target:     []string{State_NotFound},
+		Refresh:    isPIPlacementGroupDeleteRefreshFunc(client, id),
+		Delay:      10 * time.Second,
+		MinTimeout: 30 * time.Second,
+		Timeout:    timeout,
+	}
+
+	return stateConf.WaitForStateContext(ctx)
+}
+
+func isPIPlacementGroupDeleteRefreshFunc(client *instance.IBMPIPlacementGroupClient, id string) retry.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		pg, err := client.Get(id)
+		if err != nil && strings.Contains(err.Error(), NotFound) {
+			log.Printf("The power placement group does not exist")
+			return pg, State_NotFound, nil
+		}
+		return pg, State_Deleting, nil
+	}
 }
