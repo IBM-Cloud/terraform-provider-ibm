@@ -28,7 +28,7 @@ func getConfigurationInstanceRegion(originalClient *configurationaggregatorv1.Co
 func getClientWithConfigurationInstanceEndpoint(originalClient *configurationaggregatorv1.ConfigurationAggregatorV1, instanceId string, region string) *configurationaggregatorv1.ConfigurationAggregatorV1 {
 	domain := cloudEndpoint
 	prefix := region
-	baseUrl := os.Getenv("IBMCLOUD_APP_CONFIG_ENDPOINT")
+	baseUrl := originalClient.GetServiceURL()
 	if strings.Contains(os.Getenv("IBMCLOUD_IAM_API_ENDPOINT"), "test") {
 		domain = testCloudEndpoint
 	}
