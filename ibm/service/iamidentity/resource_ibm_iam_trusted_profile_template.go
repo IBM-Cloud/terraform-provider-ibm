@@ -122,7 +122,7 @@ func ResourceIBMTrustedProfileTemplate() *schema.Resource {
 								Schema: map[string]*schema.Schema{
 									"iam_id": {
 										Type:        schema.TypeString,
-										Required:    true,
+										Computed:    true,
 										Description: "IAM ID of the identity.",
 									},
 									"identifier": {
@@ -789,7 +789,9 @@ func resourceIBMTrustedProfileTemplateProfileClaimRuleConditionsToMap(model *iam
 
 func resourceIBMTrustedProfileTemplateProfileIdentityResponseToMap(model *iamidentityv1.ProfileIdentityResponse) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["iam_id"] = model.IamID
+	if model.IamID != nil {
+		modelMap["iam_id"] = model.IamID
+	}
 	modelMap["identifier"] = model.Identifier
 	modelMap["type"] = model.Type
 	if model.Accounts != nil {
