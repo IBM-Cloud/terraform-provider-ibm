@@ -166,6 +166,9 @@ Review the argument references that you can specify for your resource.
 
       Nested scheme of `action parameters`
       - `id` (Required, String) ID of the managed ruleset to be deployed.
+      - `ruleset` (Optional, String)  Skips the remaining rules in the current ruleset.
+      - `phases` (Optional, List) Skips the execution of one or more phases. Allowed values for phases are http_ratelimit, http_request_sbfm, http_request_firewall_managed.
+      - `products` (Optional, List) Skips specific security products. Allowed phases for products are zoneLockdown, uaBlock, bic, hot, securityLevel, rateLimit, waf.
       - `overrides` (Optional, List) Provides the parameters that are to be overridden.
 
         Nested scheme of `overrides`

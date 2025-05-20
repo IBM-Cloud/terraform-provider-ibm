@@ -89,6 +89,8 @@ Extra attributes when `version` is provide.
           - `action` (String) Action of the rule.
       - `version` (String) Latest version.
       - `ruleset` (String) ID of the ruleset.
+      - `phases` (List) Phases of the rule.
+      - `products` (List) Products of the rule.
       - `rulesets` (List) IDs of the rulesets.
       - `response` (Map) Custom response from the API.
         - `content` (String) Content of the response.
