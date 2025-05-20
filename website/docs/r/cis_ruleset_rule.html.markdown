@@ -110,7 +110,7 @@ Review the argument references that you can specify for your resource.
       - `id` (Optional, String) ID of the managed ruleset to be deployed. It is not required in custom rule.
       - `ruleset` (Optional, String)  Skips the remaining rules in the current ruleset.
       - `phases` (Optional, List) Skips the execution of one or more phases. Allowed values for phases are http_ratelimit, http_request_sbfm, http_request_firewall_managed.
-      - `products` (Optional, List) Skips specific security products. Allowed phases for products are zoneLockdown, uaBlock, bic, hot, securityLevel, rateLimit, waf.
+      - `products` (Optional, List) Skips specific security products. Allowed values for products are zoneLockdown, uaBlock, bic, hot, securityLevel, rateLimit, waf.
       - `response` (Optional, Map). Custom response used for custom rules.
 
         Nested scheme of `response`
