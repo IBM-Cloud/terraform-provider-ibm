@@ -11,7 +11,7 @@ require (
 	github.com/IBM/cloud-databases-go-sdk v0.7.1
 	github.com/IBM/cloud-db2-go-sdk v0.2.3
 	github.com/IBM/cloudant-go-sdk v0.8.0
-	github.com/IBM/code-engine-go-sdk v0.0.0-20241217191651-e1821f8c58c3
+	github.com/IBM/code-engine-go-sdk v0.0.0-20250402033120-47ba37a7f7ce
 	github.com/IBM/configuration-aggregator-go-sdk v0.0.2
 	github.com/IBM/container-registry-go-sdk v1.1.0
 	github.com/IBM/continuous-delivery-go-sdk/v2 v2.0.2
@@ -203,7 +203,7 @@ require (
 	go.uber.org/automaxprocs v1.6.0 // indirect
 	go.uber.org/ratelimit v0.2.0 // indirect
 	go.uber.org/zap v1.27.0 // indirect
-	golang.org/x/mod v0.21.0 // indirect
+	golang.org/x/mod v0.24.0 // indirect
 	golang.org/x/net v0.38.0 // indirect
 	golang.org/x/oauth2 v0.22.0 // indirect
 	golang.org/x/sync v0.12.0 // indirect
@@ -211,7 +211,7 @@ require (
 	golang.org/x/term v0.30.0 // indirect
 	golang.org/x/text v0.23.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
-	golang.org/x/tools v0.26.0 // indirect
+	golang.org/x/tools v0.31.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240814211410-ddb44dafa142 // indirect
 	google.golang.org/grpc v1.67.1 // indirect

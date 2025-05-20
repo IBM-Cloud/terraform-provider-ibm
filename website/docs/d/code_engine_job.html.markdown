@@ -85,6 +85,9 @@ Nested schema for **computed_env_variables**:
 * `run_commands` - (List) Set commands for the job that are passed to start job run containers. If not specified an empty string array will be applied and the command specified by the container image, will be used to start the container.
   * Constraints: The list items must match regular expression `/^.*$/`. The maximum length is `100` items. The minimum length is `0` items.
 
+* `run_compute_resource_token_enabled` - (Bool) Enable the use of a compute resource token mounted to the container file system.
+  * Constraints: The default value is `false`.
+
 * `run_env_variables` - (List) References to config maps, secrets or literal values, which are exposed as environment variables in the job run.
   * Constraints: The maximum length is `100` items. The minimum length is `0` items.
 Nested schema for **run_env_variables**:
