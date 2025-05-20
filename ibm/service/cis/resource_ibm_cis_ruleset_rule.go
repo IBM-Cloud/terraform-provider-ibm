@@ -290,7 +290,39 @@ func ResourceIBMCISRulesetRuleValidator() *validate.ResourceValidator {
 			Type:                       validate.TypeString,
 			CloudDataType:              "resource_instance",
 			CloudDataRange:             []string{"service:internet-svcs"},
-			Required:                   true})
+			Required:                   true,
+		},
+
+		validate.ValidateSchema{
+			Identifier:                 "ruleset",
+			ValidateFunctionIdentifier: validate.ValidateCloudData,
+			Type:                       validate.TypeString,
+			CloudDataType:              "resource_instance",
+			CloudDataRange:             []string{"service:internet-svcs"},
+			Optional:                   true,
+			AllowedValues:              "current",
+		},
+
+		validate.ValidateSchema{
+			Identifier:                 "phases",
+			ValidateFunctionIdentifier: validate.ValidateCloudData,
+			Type:                       validate.TypeString,
+			CloudDataType:              "resource_instance",
+			CloudDataRange:             []string{"service:internet-svcs"},
+			Optional:                   true,
+			AllowedValues:              "http_ratelimit, http_request_sbfm, http_request_firewall_managed",
+		},
+
+		validate.ValidateSchema{
+			Identifier:                 "products",
+			ValidateFunctionIdentifier: validate.ValidateCloudData,
+			Type:                       validate.TypeString,
+			CloudDataType:              "resource_instance",
+			CloudDataRange:             []string{"service:internet-svcs"},
+			Optional:                   true,
+			AllowedValues:              "zoneLockdown, uaBlock, bic, hot, securityLevel, rateLimit, waf",
+		})
+
 	ibmCISRulesetValidator := validate.ResourceValidator{
 		ResourceName: "ibm_cis_ruleset_rule",
 		Schema:       validateSchema}
