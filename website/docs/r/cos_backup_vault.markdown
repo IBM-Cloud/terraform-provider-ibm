@@ -8,7 +8,7 @@ description:
 ---
 
 # ibm_cos_backup_vault
-Creates a backup vault to store the objects to be backed up from a source bucket whenever a backup policy is applied.
+Creates a backup vault to store bucket backup data.
 
 ---
 
@@ -37,8 +37,8 @@ Review the argument references that you can specify for your resource.
 - `service_instance_id` - (Required, Forces new resource, String) CRN of the COS instance where the backup vault is to be created.
 - `region`- (Required, Forces new resource, String) The location of the COS backup vault.
 - `activity_tracking_management_events` - (Optional , Bool) Whether to send notification for the management events for backup vault.
-- `metrics_monitoring_usage_metrics` - (Optional , Bool)  Whether usage metrics are collected for this BackupVault.
--  `kms_key_crn` - (Optional, Forces new resource, String) Crn of the Key protect root key.
+- `metrics_monitoring_usage_metrics` - (Optional , Bool)  Whether usage metrics are collected for this backup vault.
+-  `kms_key_crn` - (Optional, Forces new resource, String) Crn of the key protect root key.
   
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.

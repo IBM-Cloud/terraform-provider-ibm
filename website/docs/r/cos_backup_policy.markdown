@@ -51,7 +51,7 @@ resource "ibm_cos_backup_vault" "backup-vault" {
 
 resource "ibm_iam_authorization_policy" "policy" {
 		roles                  = [
-			"Backup Manager", "Writer"
+			"Backup Manager", "Writer" , "Manager"
 		]
 		subject_attributes {
 		  name  = "accountId"
