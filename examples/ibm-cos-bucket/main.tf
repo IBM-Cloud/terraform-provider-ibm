@@ -296,7 +296,7 @@ resource "ibm_hpcs" "hpcs" {
   signature_threshold  = var.signature_threshold
   revocation_threshold = var.revocation_threshold
   dynamic "admins" {
-    for_each = var.admins
+    for_each = var.hpcs_crypto_unit_admins
     content {
       name  = admins.value.name
       key   = admins.value.key
