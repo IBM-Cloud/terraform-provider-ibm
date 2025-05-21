@@ -78,15 +78,6 @@ resource "ibm_cos_bucket" "standard-ams03-firewall" {
   resource_instance_id  = ibm_resource_instance.cos_instance.id
   single_site_location  = "sjc04"
   storage_class         = "standard"
-  activity_tracking {
-    read_data_events     = true
-    write_data_events    = true
-    management_events    = true
-  }
-  metrics_monitoring {
-    usage_metrics_enabled  = true
-    request_metrics_enabled = true
-  }
   allowed_ip = ["223.196.168.27", "223.196.161.38", "192.168.0.1"]
 }
 
@@ -95,15 +86,6 @@ resource "ibm_cos_bucket" "smart-us-south-firewall" {
   resource_instance_id  = ibm_resource_instance.cos_instance.id
   single_site_location  = "sjc04"
   storage_class         = "smart"
-  activity_tracking {
-    read_data_events     = true
-    write_data_events    = true
-    management_events    = true
-  }
-  metrics_monitoring {
-    usage_metrics_enabled  = true
-    request_metrics_enabled = true
-  }
   allowed_ip = ["223.196.168.27", "223.196.161.38", "192.168.0.1"]
 }
 
@@ -112,18 +94,35 @@ resource "ibm_cos_bucket" "cold-ap-firewall" {
   resource_instance_id  = ibm_resource_instance.cos_instance.id
   single_site_location  = "sjc04"
   storage_class         = "cold"
-  activity_tracking {
-    read_data_events     = true
-    write_data_events    = true
-    management_events    = true
-  }
-  metrics_monitoring {
-    usage_metrics_enabled  = true
-    request_metrics_enabled = true
-  }
   allowed_ip = ["223.196.168.27", "223.196.161.38", "192.168.0.1"]
 }
 
+#COS bucket with activity tracking enabled
+
+resource "ibm_cos_bucket" "new_activity_tracker_bucket" {
+  bucket_name          = "bucket-name"
+  resource_instance_id = ibm_resource_instance.cos_instance.id
+  region_location      = var.regional_loc
+  storage_class        = var.standard_storage_class
+  activity_tracking {
+    read_data_events  = true
+    write_data_events = true
+    management_events = true
+  }
+}
+
+
+# COS bucket with metrics monitoring enabled
+resource "ibm_cos_bucket" "new_metrics_monitoring_enabled_bucket" {
+  bucket_name          = "bucket-name"
+  resource_instance_id = ibm_resource_instance.cos_instance.id
+  region_location      = var.regional_loc
+  storage_class        = var.standard_storage_class
+  metrics_monitoring {
+    usage_metrics_enabled   = true
+    request_metrics_enabled = true
+  }
+}
 ### Configure archive and expire rules on COS Bucket
 
 resource "ibm_cos_bucket" "archive_expire_rule_cos" {
@@ -428,6 +427,105 @@ resource "ibm_cos_bucket" "cos_bucket_onerate" {
 
 
 ```
+
+# Transition from activity_tracker legacy usage to new usage
+
+### Legacy Behavior:
+It represents the CRN of the activity tracker instance, associated to the bucket, which receives the management event and opt-indata event. It follows the format `crn:v1:bluemix:public:logdnaat:<activity tracker region>:a/<account>:<activity tracker service instance>::`
+If CRN is set, management event and opt-in data event are sent to the AT CRN location.
+
+### New behavior: 
+The CRN of the activity tracker becomes optional.If CRN is not set, management events (if enabled) and data events (if enabled) are sent to the AT endpoint mapped to the bucket location.If CRN is set, legacy behavior is followed.
+
+## Example usage
+
+```terraform
+resource "ibm_cos_bucket" "new_activity_tracker_bucket" {
+  bucket_name           = "bucket-name"
+  resource_instance_id  = ibm_resource_instance.cos_instance.id
+   region_location  = "us-south"
+  storage_class         = "smart"
+  activity_tracking {
+    read_data_events     = true
+    write_data_events    = true
+    management_events    = true
+  }
+}
+```
+### Switch to new behavior:  
+Customer can remove the crn key-value pair by setting the value to empty string
+
+  **Note:**
+
+  CRN can be set if previously (i.e. legacy behavior) not provided when at least one of `read_data_events` or `write_data_events` or `management_events` is set to true. In this case, subsequentevents shall be sent to the AT CRN's location instead ofbased on the bucket's location. Although it is not recommended to switch back to legacy behavior 
+
+## Example usage
+
+```terraform
+resource "ibm_cos_bucket" "activity_tracker_transition_bucket" {
+  bucket_name           = "bucket-name"
+  resource_instance_id  = ibm_resource_instance.cos_instance.id
+   region_location  = "us-south"
+  storage_class         = "smart"
+  activity_tracking {
+    read_data_events     = true
+    write_data_events    = true
+    management_events    = true
+    activity_tracker_crn = ""
+  }
+}
+```
+
+# Transition from metrics_monitoring legacy usage to new usage
+
+### Legacy Behavior:
+It represents the CRN of the metrics monitoring service instance, associated to the bucket, which receives the management event and opt-indata event. It follows the format `crn:v1:bluemix:public:sysdig:<sysdig region>:a/<account>:<sysdig service instance>::`
+If Metrics Monitoring CRN is set, enabled metrics are sent to the CRN location.
+
+### New behavior: 
+The metrics monitoring crn becomes optional.If CRN is not set, enabled metrics are sent to Metrics enpoint mapped bucket location.If the CRN is set then legacy behvaior is followed.
+
+## Example usage
+
+```terraform
+
+resource "ibm_cos_bucket" "new_metrics_monitoring_enabled_bucket" {
+  bucket_name           = "bucket-name"
+  resource_instance_id  = ibm_resource_instance.cos_instance.id
+  region_location  = "us-south"
+  storage_class         = "smart"
+  metrics_monitoring {
+    usage_metrics_enabled  = true
+    request_metrics_enabled = true
+  }
+}
+```
+### Switch to new behavior:  
+Customer can remove the crn key-value pair by setting the value to empty string
+
+  **Note:**
+
+  CRN can be setif previously not set when atleast one metric is already enabled. In this case, subsequent metrics shall be sent to theMetrics CRN's location instead of based on the bucket'slocation. Although it is not recommended to switch back to legacy behavior 
+
+## Example usage
+
+```terraform
+
+resource "ibm_cos_bucket" "metrics_monitoring_transition_bucket" {
+  bucket_name           = "bucket-name"
+  resource_instance_id  = ibm_resource_instance.cos_instance.id
+  single_site_location  = "sjc04"
+  storage_class         = "smart"
+  metrics_monitoring {
+    usage_metrics_enabled  = true
+    request_metrics_enabled = true
+    metrics_monitoring_crn = ""
+  }
+}
+```
+
+
+
 # ibm_cos_object_lock_configuration
 
 COS Object Lock feature enables user to store the object in a bucket with an extra layer of protection against object changes and deletion.Object Lock can help prevent objects from being deleted or overwritten for a fixed amount of time or indefinitely by setting up retention period and legal hold for an object.
