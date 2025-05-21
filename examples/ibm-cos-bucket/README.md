@@ -62,16 +62,31 @@ resource "ibm_cos_bucket" "standard-ams03" {
   single_site_location  = var.single_site_loc
   storage_class         = var.standard_storage_class
   hard_quota            = var.quota
+
+  allowed_ip = ["223.196.168.27", "223.196.161.38", "192.168.0.1"]
+}
+
+resource "ibm_cos_bucket" "new_activity_tracker_bucket" {
+  bucket_name          = "bucket-name"
+  resource_instance_id = ibm_resource_instance.cos_instance.id
+  region_location      = var.regional_loc
+  storage_class        = var.standard_storage_class
   activity_tracking {
-    read_data_events     = true
-    write_data_events    = true
-    management_events    = true
+    read_data_events  = true
+    write_data_events = true
+    management_events = true
   }
+}
+
+resource "ibm_cos_bucket" "new_metrics_monitoring_enabled_bucket" {
+  bucket_name          = "bucket-name"
+  resource_instance_id = ibm_resource_instance.cos_instance.id
+  region_location      = var.regional_loc
+  storage_class        = var.standard_storage_class
   metrics_monitoring {
-    usage_metrics_enabled  = true
+    usage_metrics_enabled   = true
     request_metrics_enabled = true
   }
-  allowed_ip = ["223.196.168.27", "223.196.161.38", "192.168.0.1"]
 }
 
 resource "ibm_cos_bucket" "archive_expire_rule_cos" {

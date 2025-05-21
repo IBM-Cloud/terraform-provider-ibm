@@ -61,6 +61,7 @@ resource "ibm_cos_bucket" "new_metrics_monitoring_enabled_bucket" {
     request_metrics_enabled = true
   }
 }
+
 resource "ibm_cos_bucket" "lifecycle_rule_cos" {
   bucket_name          = var.bucket_name
   resource_instance_id = ibm_resource_instance.cos_instance.id
