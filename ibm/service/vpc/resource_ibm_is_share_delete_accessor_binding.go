@@ -45,7 +45,9 @@ func ResourceIbmIsShareDeleteAccessorBinding() *schema.Resource {
 func resourceIbmIsShareDeleteAccessorBindingCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("vpcClient creation failed: %s", err.Error()), "ibm_is_share_delete_accessor_binding", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	share_id := d.Get("share").(string)

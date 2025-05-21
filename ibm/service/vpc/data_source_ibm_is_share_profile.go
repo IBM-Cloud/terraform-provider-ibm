@@ -137,7 +137,7 @@ func DataSourceIbmIsShareProfile() *schema.Resource {
 func dataSourceIbmIsShareProfileRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("vpcClient creation failed: %s", err.Error()), "(Data) ibm_is_profile", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("vpcClient creation failed: %s", err.Error()), "(Data) ibm_is_share_profile", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -148,7 +148,7 @@ func dataSourceIbmIsShareProfileRead(context context.Context, d *schema.Resource
 
 	shareProfile, response, err := vpcClient.GetShareProfileWithContext(context, getShareProfileOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetShareProfileWithContext failed: %s\n%s", err.Error(), response), "(Data) ibm_is_profile", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetShareProfileWithContext failed: %s\n%s", err.Error(), response), "(Data) ibm_is_share_profile", "read")
 		log.Printf("[DEBUG] %s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -160,7 +160,7 @@ func dataSourceIbmIsShareProfileRead(context context.Context, d *schema.Resource
 		capacityList = append(capacityList, capacityMap)
 		if err = d.Set("capacity", capacityList); err != nil {
 			err = fmt.Errorf("Error setting capacity: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_profile", "read", "set-capacity").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_share_profile", "read", "set-capacity").GetDiag()
 		}
 	}
 	if shareProfile.Iops != nil {
@@ -170,21 +170,21 @@ func dataSourceIbmIsShareProfileRead(context context.Context, d *schema.Resource
 		iopsList = append(iopsList, iopsMap)
 		if err = d.Set("iops", iopsList); err != nil {
 			err = fmt.Errorf("Error setting iops: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_profile", "read", "set-iops").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_share_profile", "read", "set-iops").GetDiag()
 		}
 	}
 	d.SetId(*shareProfile.Name)
 	if err = d.Set("family", shareProfile.Family); err != nil {
 		err = fmt.Errorf("Error setting family: %s", err)
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_profile", "read", "set-family").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_share_profile", "read", "set-family").GetDiag()
 	}
 	if err = d.Set("href", shareProfile.Href); err != nil {
 		err = fmt.Errorf("Error setting href: %s", err)
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_profile", "read", "set-href").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_share_profile", "read", "set-href").GetDiag()
 	}
 	if err = d.Set("resource_type", shareProfile.ResourceType); err != nil {
 		err = fmt.Errorf("Error setting resource_type: %s", err)
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_profile", "read", "set-resource_type").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_share_profile", "read", "set-resource_type").GetDiag()
 	}
 
 	return nil

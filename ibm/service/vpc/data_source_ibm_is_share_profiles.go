@@ -152,7 +152,7 @@ func DataSourceIbmIsShareProfiles() *schema.Resource {
 func dataSourceIbmIsShareProfilesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("vpcClient creation failed: %s", err.Error()), "(Data) ibm_is_profiles", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("vpcClient creation failed: %s", err.Error()), "(Data) ibm_is_share_profiles", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -161,7 +161,7 @@ func dataSourceIbmIsShareProfilesRead(context context.Context, d *schema.Resourc
 
 	shareProfileCollection, response, err := vpcClient.ListShareProfilesWithContext(context, listShareProfilesOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListShareProfilesWithContext failed: %s\n%s", err.Error(), response), "(Data) ibm_is_profiles", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListShareProfilesWithContext failed: %s\n%s", err.Error(), response), "(Data) ibm_is_share_profiles", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -172,12 +172,12 @@ func dataSourceIbmIsShareProfilesRead(context context.Context, d *schema.Resourc
 		err = d.Set("profiles", dataSourceShareProfileCollectionFlattenProfiles(shareProfileCollection.Profiles))
 		if err != nil {
 			err = fmt.Errorf("Error setting profiles: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_profiles", "read", "set-profiles").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_share_profiles", "read", "set-profiles").GetDiag()
 		}
 	}
 	if err = d.Set("total_count", shareProfileCollection.TotalCount); err != nil {
 		err = fmt.Errorf("Error setting total_count: %s", err)
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_profiles", "read", "set-total_count").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_share_profiles", "read", "set-total_count").GetDiag()
 	}
 
 	return nil

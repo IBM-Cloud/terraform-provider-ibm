@@ -1690,7 +1690,7 @@ func resourceIbmIsShareDelete(context context.Context, d *schema.ResourceData, m
 				}
 				_, err = isWaitForTargetDelete(context, vpcClient, d, d.Id(), *targetsItem.ID)
 				if err != nil {
-					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Wait for target delete failed: %s", err.Error()), "ibm_is_share", "update")
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Wait for target delete failed: %s", err.Error()), "ibm_is_share", "delete")
 					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 					return tfErr.GetDiag()
 				}
@@ -1710,7 +1710,7 @@ func resourceIbmIsShareDelete(context context.Context, d *schema.ResourceData, m
 					d.SetId("")
 					return nil
 				}
-				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("share err %s\n%s", err, response), "ibm_is_share", "read")
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("share err %s\n%s", err, response), "ibm_is_share", "delete")
 				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 				return diag.FromErr(tfErr)
 			}
@@ -1744,7 +1744,7 @@ func resourceIbmIsShareDelete(context context.Context, d *schema.ResourceData, m
 					d.SetId("")
 					return nil
 				}
-				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("share err %s\n%s", err, response), "ibm_is_share", "read")
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("share err %s\n%s", err, response), "ibm_is_share", "delete")
 				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 				return diag.FromErr(tfErr)
 			}
@@ -1773,7 +1773,7 @@ func resourceIbmIsShareDelete(context context.Context, d *schema.ResourceData, m
 			d.SetId("")
 			return nil
 		}
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("share err %s\n%s", err, response), "ibm_is_share", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("shaGetShareWithContextre faialed %s\n%s", err, response), "ibm_is_share", "delete")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return diag.FromErr(tfErr)
 	}
@@ -1784,7 +1784,7 @@ func resourceIbmIsShareDelete(context context.Context, d *schema.ResourceData, m
 	deleteShareOptions.IfMatch = &ETag
 	_, response, err = vpcClient.DeleteShareWithContext(context, deleteShareOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("share err %s\n%s", err, response), "ibm_is_share", "delete")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteShareWithContext failed %s\n%s", err, response), "ibm_is_share", "delete")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return diag.FromErr(tfErr)
 	}
