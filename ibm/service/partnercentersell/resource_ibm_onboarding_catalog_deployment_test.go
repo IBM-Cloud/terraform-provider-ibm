@@ -25,7 +25,7 @@ func TestAccIbmOnboardingCatalogDeploymentBasic(t *testing.T) {
 	productID := acc.PcsOnboardingProductWithCatalogProduct
 	catalogProductID := acc.PcsOnboardingCatalogProductId
 	catalogPlanID := acc.PcsOnboardingCatalogPlanId
-	objectId := fmt.Sprintf("test-object-id-terraform-%d", acctest.RandIntRange(10, 100))
+	objectId := fmt.Sprintf("test-object-id-terraform-3-%d", acctest.RandIntRange(10, 100))
 	name := "test-deployment-name-terraform"
 	active := "true"
 	disabled := "false"
@@ -74,7 +74,7 @@ func TestAccIbmOnboardingCatalogDeploymentAllArgs(t *testing.T) {
 	productID := acc.PcsOnboardingProductWithCatalogProduct
 	catalogProductID := acc.PcsOnboardingCatalogProductId
 	catalogPlanID := acc.PcsOnboardingCatalogPlanId
-	objectId := fmt.Sprintf("test-object-id-terraform-2-%d", acctest.RandIntRange(10, 100))
+	objectId := fmt.Sprintf("test-object-id-terraform-3-%d", acctest.RandIntRange(10, 100))
 	env := "current"
 	name := "test-deployment-name-terraform"
 	active := "true"
