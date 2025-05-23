@@ -207,6 +207,7 @@ func testAccCheckIBMActionControlTemplateConfigBasic(name string) string {
 		resource "ibm_iam_action_control_template" "action_control_template" {
 			name = "%s"
 			description = "Create Action Control basic templates through Terraform resources"
+
 		}
 	`, name)
 }
@@ -231,6 +232,7 @@ func testAccCheckIBMActionControlTemplateConfigWithActionControlAndCommit(name s
 		resource "ibm_iam_action_control_template" "action_control_template" {
 			name = "%s"
 			description = "Commit Action Control templates through Terraform resources"
+
 			action_control {
 				actions = ["%s" ]
 				service_name="am-test-service"
