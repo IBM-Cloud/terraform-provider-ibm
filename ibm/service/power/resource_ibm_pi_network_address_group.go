@@ -110,7 +110,7 @@ func resourceIBMPINetworkAddressGroupCreate(ctx context.Context, d *schema.Resou
 	}
 
 	if v, ok := d.GetOk(Arg_UserTags); ok {
-		body.UserTags = flex.ExpandStringList(v.([]interface{}))
+		body.UserTags = flex.FlattenSet(v.(*schema.Set))
 	}
 
 	networkAddressGroup, err := nagC.Create(body)
