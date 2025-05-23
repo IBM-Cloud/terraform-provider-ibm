@@ -12,7 +12,7 @@ import (
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
-func TestAccIBMActionControlAssignmentsDataSourceBasic(t *testing.T) {
+func TestAccIBMIAMActionControlAssignmentsDataSourceBasic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,

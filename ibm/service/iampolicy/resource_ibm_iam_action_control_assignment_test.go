@@ -16,7 +16,7 @@ import (
 	"github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
 )
 
-func TestAccIBMActionControlAssignmentBasic(t *testing.T) {
+func TestAccIBMIAMActionControlAssignmentBasic(t *testing.T) {
 	var conf iampolicymanagementv1.ActionControlAssignment
 	var name string = fmt.Sprintf("TerraformTemplateTest%d", acctest.RandIntRange(10, 100))
 
@@ -38,7 +38,7 @@ func TestAccIBMActionControlAssignmentBasic(t *testing.T) {
 	})
 }
 
-func TestAccIBMActionControlAssignmentUpdate(t *testing.T) {
+func TestAccIBMIAMActionControlAssignmentUpdate(t *testing.T) {
 	var conf iampolicymanagementv1.ActionControlAssignment
 	var name string = fmt.Sprintf("TerraformTemplateTest%d", acctest.RandIntRange(10, 100))
 
@@ -67,7 +67,7 @@ func TestAccIBMActionControlAssignmentUpdate(t *testing.T) {
 	})
 }
 
-func TestAccIBMActionControlAssignmentAccountGroup(t *testing.T) {
+func TestAccIBMIAMActionControlAssignmentAccountGroup(t *testing.T) {
 	var conf iampolicymanagementv1.ActionControlAssignment
 	var name string = fmt.Sprintf("TerraformTemplateTest%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{

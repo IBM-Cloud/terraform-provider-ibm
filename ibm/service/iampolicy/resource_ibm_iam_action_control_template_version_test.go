@@ -117,10 +117,6 @@ func testAccCheckIBMActionControlTemplateVersionConfig(name string, actionContro
 		resource "ibm_iam_action_control_template" "action_control_template" {
 			name = "%s"
 			description = "Create Action Control base templates through Terraform resources"
-<<<<<<< HEAD
-
-=======
->>>>>>> 695f0b7e0 (incorporated review comments)
 			action_control {
 				actions = ["%s"]
 				service_name="am-test-service"

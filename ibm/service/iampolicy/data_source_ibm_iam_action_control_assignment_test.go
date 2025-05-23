@@ -13,7 +13,7 @@ import (
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
-func TestAccIBMActionControlAssignmentDataSourceBasic(t *testing.T) {
+func TestAccIBMIAMActionControlAssignmentDataSourceBasic(t *testing.T) {
 	name := fmt.Sprintf("TerraformTemplateTest%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
