@@ -221,18 +221,18 @@ var CISResponseObject = &schema.Resource{
 								CISRuleset: {
 									Type:        schema.TypeString,
 									Computed:    true,
-									Description: "Ruleset ID of the ruleset to apply action to.",
+									Description: "Ruleset of the rule",
 								},
 								CISRulesetsRulePhases: {
 									Type:        schema.TypeList,
 									Computed:    true,
-									Description: "Phase of the ruleset to apply action to",
+									Description: "Phases of the rule",
 									Elem:        &schema.Schema{Type: schema.TypeString},
 								},
 								CISRulesetsRuleProducts: {
 									Type:        schema.TypeList,
 									Computed:    true,
-									Description: "List of products of the ruleset to apply action to",
+									Description: "Products of the rule",
 									Elem:        &schema.Schema{Type: schema.TypeString},
 								},
 								CISRulesetList: {
@@ -503,7 +503,7 @@ func flattenCISRulesets(rulesetObj rulesetsv1.RulesetDetails) interface{} {
 		ruleDetails[CISRulesetsRuleActionDescription] = ruleDetailsObj.Description
 
 		// Not Applicable for now
-		ruleDetails[CISRulesetsRuleLogging] = ruleDetailsObj.Logging
+		//ruleDetails[CISRulesetsRuleLogging] = ruleDetailsObj.Logging
 
 		flattenedActionParameter := flattenCISRulesetsRuleActionParameters(ruleDetailsObj.ActionParameters)
 
@@ -541,10 +541,10 @@ func flattenCISRulesetsRuleActionParameters(rulesetsRuleActionParameterObj *rule
 		resultOutput[CISRulesetList] = rulesetsRuleActionParameterObj.Rulesets
 	}
 	if val, ok := actionParametersOutput["phases"]; ok {
-		resultOutput[CISRulesetsRulePhases] = val.([]string)
+		resultOutput[CISRulesetsRulePhases] = val.([]interface{})
 	}
 	if val, ok := actionParametersOutput["products"]; ok {
-		resultOutput[CISRulesetsRuleProducts] = val.([]string)
+		resultOutput[CISRulesetsRuleProducts] = val.([]interface{})
 	}
 	if _, ok := actionParametersOutput["response"]; ok {
 		flattenCISRulesetsRuleActionParameterResponse := flattenCISRulesetsRuleActionParameterResponse(rulesetsRuleActionParameterObj.Response)
