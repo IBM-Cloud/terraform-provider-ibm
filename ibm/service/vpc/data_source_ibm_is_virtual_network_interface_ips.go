@@ -9,6 +9,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
@@ -71,7 +72,9 @@ func DataSourceIBMIsVirtualNetworkInterfaceIPs() *schema.Resource {
 func dataSourceIsVirtualNetworkInterfaceIPsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := vpcClient(meta)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_virtual_network_interface_ips", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	listVirtualNetworkInterfaceIpsOptions := &vpcv1.ListVirtualNetworkInterfaceIpsOptions{}
@@ -80,13 +83,16 @@ func dataSourceIsVirtualNetworkInterfaceIPsRead(context context.Context, d *sche
 	var pager *vpcv1.VirtualNetworkInterfaceIpsPager
 	pager, err = vpcClient.NewVirtualNetworkInterfaceIpsPager(listVirtualNetworkInterfaceIpsOptions)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_is_virtual_network_interface_ips", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	allItems, err := pager.GetAll()
 	if err != nil {
-		log.Printf("[DEBUG] VirtualNetworkInterfaceIpsPager.GetAll() failed %s", err)
-		return diag.FromErr(fmt.Errorf("VirtualNetworkInterfaceIpsPager.GetAll() failed %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("VirtualNetworkInterfaceIpsPager.GetAll() failed %s", err), "(Data) ibm_is_virtual_network_interface_ips", "read")
+		log.Printf("[DEBUG] %s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(dataSourceVirtualNetworkInterfaceIPsID(d))
@@ -95,13 +101,13 @@ func dataSourceIsVirtualNetworkInterfaceIPsRead(context context.Context, d *sche
 	for _, modelItem := range allItems {
 		modelMap, err := dataSourceIBMIsReservedIpsReservedIPToMap(&modelItem)
 		if err != nil {
-			return diag.FromErr(err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_virtual_network_interface_ips", "read", "reserved_ips-to-map").GetDiag()
 		}
 		mapSlice = append(mapSlice, modelMap)
 	}
 
 	if err = d.Set("reserved_ips", mapSlice); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting reserved_ips for virtual network interface datasource %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting virtual_network_interfaces %s", err), "(Data) ibm_is_virtual_network_interface_ips", "read", "virtual_network_interfaces-set").GetDiag()
 	}
 
 	return nil
