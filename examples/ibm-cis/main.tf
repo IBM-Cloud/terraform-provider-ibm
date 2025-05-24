@@ -867,3 +867,11 @@ data ibm_cis_custom_lists custom_lists {
     cis_id    = ibm_cis.instance.id
     list_id   = ibm_cis.lists.list_id 
 }
+
+# create custom list_all
+resource ibm_cis_custom_list custom_list {
+    cis_id    = ibm_cis.instance.id
+    kind = var.list.kind
+    name = var.list.name
+    description = var.list.description
+}
