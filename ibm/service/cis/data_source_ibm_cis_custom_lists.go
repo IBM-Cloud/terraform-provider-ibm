@@ -161,13 +161,13 @@ func resourceIBMCISCustomListsRead(d *schema.ResourceData, meta interface{}) err
 	}
 
 	d.Set(CISCustomListID, listId)
-	d.SetId(resourceSourceCISListsCustomCheckID(d))
+	d.SetId(dataSourceCISCustomListsCheckID(d))
 	d.Set(CISCustomListsOutput, listsList)
 	d.Set(cisID, crn)
 
 	return nil
 }
 
-func resourceSourceCISListsCustomCheckID(d *schema.ResourceData) string {
+func dataSourceCISCustomListsCheckID(d *schema.ResourceData) string {
 	return "custom_lists" + ":" + d.Get(cisID).(string)
 }
