@@ -856,3 +856,14 @@ data ibm_cis_origin_certificates "test" {
   domain_id = ibm_cis_domain.example.id
   certificate_id = "25392180178235735583993116186144990011711092749"
 }
+
+# Get Managed lists
+data ibm_cis_managed_lists managed_lists {
+    cis_id    = ibm_cis.instance.id
+}
+
+# Get custom lists
+data ibm_cis_custom_lists custom_lists {
+    cis_id    = ibm_cis.instance.id
+    list_id   = ibm_cis.lists.list_id 
+}
