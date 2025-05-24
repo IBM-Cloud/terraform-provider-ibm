@@ -25,7 +25,7 @@ const (
 
 func DataSourceIBMCISCustomLists() *schema.Resource {
 	return &schema.Resource{
-		Read: resourceIBMCISCustomListsRead,
+		Read: DataSourceIBMCISCustomListsRead,
 		Schema: map[string]*schema.Schema{
 			cisID: {
 				Type:        schema.TypeString,
@@ -53,9 +53,6 @@ func DataSourceIBMCISCustomLists() *schema.Resource {
 							Type:        schema.TypeString,
 							Description: "CIS instance crn",
 							Optional:    true,
-							ValidateFunc: validate.InvokeDataSourceValidator(
-								"ibm_cis_custom_lists",
-								"cis_id"),
 						},
 						CISCustomListName: {
 							Type:        schema.TypeString,
@@ -108,7 +105,7 @@ func DataSourceIBMCISCustomListsValidator() *validate.ResourceValidator {
 	return &IBMCISCustomListsValidator
 }
 
-func resourceIBMCISCustomListsRead(d *schema.ResourceData, meta interface{}) error {
+func DataSourceIBMCISCustomListsRead(d *schema.ResourceData, meta interface{}) error {
 	sess, err := meta.(conns.ClientSession).CisListsSession()
 	if err != nil {
 		return err
