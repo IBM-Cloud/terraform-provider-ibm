@@ -875,3 +875,10 @@ resource ibm_cis_custom_list custom_list {
     name = var.list.name
     description = var.list.description
 }
+
+# Get custom list items
+data ibm_cis_custom_list_items custom_list_items {
+    cis_id    = ibm_cis.instance.id
+    list_id   = ibm_cis.lists.list_id 
+    item_id   = ibm_cis.lists.item.item_id
+}

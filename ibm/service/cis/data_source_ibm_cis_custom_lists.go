@@ -37,11 +37,8 @@ func DataSourceIBMCISCustomLists() *schema.Resource {
 			},
 			CISCustomListID: {
 				Type:        schema.TypeString,
-				Description: "CIS instance crn",
+				Description: "Custom List ID",
 				Optional:    true,
-				ValidateFunc: validate.InvokeDataSourceValidator(
-					"ibm_cis_custom_lists",
-					"cis_id"),
 			},
 			CISCustomListsOutput: {
 				Type:        schema.TypeList,
@@ -51,7 +48,7 @@ func DataSourceIBMCISCustomLists() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						CISCustomListID: {
 							Type:        schema.TypeString,
-							Description: "CIS instance crn",
+							Description: "Custom List ID",
 							Optional:    true,
 						},
 						CISCustomListName: {

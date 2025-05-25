@@ -16,7 +16,7 @@ import (
 
 const (
 	CISCustomList     = "ibm_cis_custom_list"
-	AllowedKindValues = "ip, asn, hostname, redirect"
+	AllowedKindValues = "ip, asn, hostname"
 )
 
 func ResourceIBMCISCustomList() *schema.Resource {
@@ -59,12 +59,12 @@ func ResourceIBMCISCustomList() *schema.Resource {
 			CISCustomListItemNumbers: {
 				Type:        schema.TypeInt,
 				Description: "Number of items in the List",
-				Optional:    true,
+				Computed:    true,
 			},
 			CISCustomListFilters: {
 				Type:        schema.TypeInt,
 				Description: "Number of times the list is used by rule expressions.",
-				Optional:    true,
+				Computed:    true,
 			},
 		},
 	}

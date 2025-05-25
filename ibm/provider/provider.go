@@ -345,6 +345,7 @@ func Provider() *schema.Provider {
 			"ibm_cis_origin_certificates":                   cis.DataSourceIBMCISOriginCertificateOrder(),
 			"ibm_cis_managed_lists":                         cis.DataSourceIBMCISManagedLists(),
 			"ibm_cis_custom_lists":                          cis.DataSourceIBMCISCustomLists(),
+			"ibm_cis_custom_list_items":                     cis.DataSourceIBMCISCustomListItems(),
 			"ibm_cloudant":                                  cloudant.DataSourceIBMCloudant(),
 			"ibm_cloudant_database":                         cloudant.DataSourceIBMCloudantDatabase(),
 			"ibm_database":                                  database.DataSourceIBMDatabaseInstance(),
@@ -2288,6 +2289,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_cis_origin_certificates":         cis.DataIBMCISOriginCertificateOrderValidator(),
 				"ibm_cis_managed_lists":               cis.DataSourceIBMCISManagedListsValidator(),
 				"ibm_cis_custom_lists":                cis.DataSourceIBMCISCustomListsValidator(),
+				"ibm_cis_custom_list_items":           cis.DataSourceIBMCISCustomListItemsValidator(),
 
 				"ibm_config_aggregator_configurations": configurationaggregator.DataSourceIbmConfigAggregatorValidator(),
 				"ibm_cos_bucket":                       cos.DataSourceIBMCosBucketValidator(),
