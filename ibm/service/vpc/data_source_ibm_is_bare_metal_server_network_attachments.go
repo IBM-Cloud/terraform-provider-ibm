@@ -234,7 +234,9 @@ func DataSourceIBMIsBareMetalServerNetworkAttachments() *schema.Resource {
 func dataSourceIBMIsBareMetalServerNetworkAttachmentsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := vpcClient(meta)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_bare_metal_server_network_attachments", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	listBareMetalServerNetworkAttachmentsOptions := &vpcv1.ListBareMetalServerNetworkAttachmentsOptions{}
@@ -244,13 +246,16 @@ func dataSourceIBMIsBareMetalServerNetworkAttachmentsRead(context context.Contex
 	var pager *vpcv1.BareMetalServerNetworkAttachmentsPager
 	pager, err = vpcClient.NewBareMetalServerNetworkAttachmentsPager(listBareMetalServerNetworkAttachmentsOptions)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_is_bare_metal_server_network_attachments", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	allItems, err := pager.GetAll()
 	if err != nil {
-		log.Printf("[DEBUG] BareMetalServerNetworkAttachmentsPager.GetAll() failed %s", err)
-		return diag.FromErr(fmt.Errorf("BareMetalServerNetworkAttachmentsPager.GetAll() failed %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("BareMetalServerNetworkAttachmentsPager.GetAll() failed %s", err), "(Data) ibm_is_bare_metal_server_network_attachments", "read")
+		log.Printf("[DEBUG] %s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(dataSourceIBMIsBareMetalServerNetworkAttachmentsID(d))
@@ -259,13 +264,13 @@ func dataSourceIBMIsBareMetalServerNetworkAttachmentsRead(context context.Contex
 	for _, modelItem := range allItems {
 		modelMap, err := dataSourceIBMIsBareMetalServerNetworkAttachmentsBareMetalServerNetworkAttachmentToMap(modelItem)
 		if err != nil {
-			return diag.FromErr(err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_bare_metal_server_network_attachments", "read", "BareMetalServers-to-map").GetDiag()
 		}
 		mapSlice = append(mapSlice, modelMap)
 	}
 
 	if err = d.Set("network_attachments", mapSlice); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting network_attachments %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting network_attachments %s", err), "(Data) ibm_is_bare_metal_server_network_attachments", "read", "network_attachments-set").GetDiag()
 	}
 
 	return nil
