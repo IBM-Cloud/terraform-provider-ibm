@@ -47,7 +47,7 @@ func DataSourceIBMCISCustomListItems() *schema.Resource {
 				Optional:    true,
 			},
 			CISCustomListItemsOutput: {
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Computed:    true,
 				Description: "Container for response information.",
 				Elem: &schema.Resource{
@@ -55,7 +55,7 @@ func DataSourceIBMCISCustomListItems() *schema.Resource {
 						CISCustomListItemID: {
 							Type:        schema.TypeString,
 							Description: "Custom List Item ID",
-							Optional:    true,
+							Computed:    true,
 						},
 						CISCustomListItemIp: {
 							Type:        schema.TypeString,
@@ -108,7 +108,7 @@ func DataSourceIBMCISCustomListItemsValidator() *validate.ResourceValidator {
 			Required:                   true})
 
 	IBMCISCustomListsValidator := validate.ResourceValidator{
-		ResourceName: CISCustomLists,
+		ResourceName: CISCustomListItems,
 		Schema:       validateSchema}
 	return &IBMCISCustomListsValidator
 }

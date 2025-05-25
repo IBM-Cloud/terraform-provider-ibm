@@ -1173,6 +1173,7 @@ func Provider() *schema.Provider {
 			"ibm_cis_advanced_certificate_pack_order": cis.ResourceIBMCISAdvancedCertificatePackOrder(),
 			"ibm_cis_origin_certificate_order":        cis.ResourceIBMCISOriginCertificateOrder(),
 			"ibm_cis_custom_list":                     cis.ResourceIBMCISCustomList(),
+			"ibm_cis_custom_list_items":               cis.ResourceIBMCISCustomListItems(),
 
 			"ibm_cloudant":                                  cloudant.ResourceIBMCloudant(),
 			"ibm_cloudant_database":                         cloudant.ResourceIBMCloudantDatabase(),
@@ -1958,6 +1959,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_cis_advanced_certificate_pack_order":      cis.ResourceIBMCISAdvancedCertificatePackOrderValidator(),
 				"ibm_cis_origin_certificate_order":             cis.ResourceIBMCISOriginCertificateOrderValidator(),
 				"ibm_cis_custom_list":                          cis.ResourceIBMCISCustomListValidator(),
+				"ibm_cis_custom_list_items":                    cis.ResourceIBMCISCustomListItemsValidator(),
 				"ibm_container_cluster":                        kubernetes.ResourceIBMContainerClusterValidator(),
 				"ibm_container_worker_pool":                    kubernetes.ResourceIBMContainerWorkerPoolValidator(),
 				"ibm_container_vpc_worker_pool":                kubernetes.ResourceIBMContainerVPCWorkerPoolValidator(),
