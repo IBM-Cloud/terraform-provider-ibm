@@ -143,10 +143,14 @@ resource "ibm_is_ssh_key" "testacc_sshkey" {
   public_key = "<your_public_ssh_key>"
 }
 
+data "ibm_is_image" "ubuntu" {
+  name = "ibm-ubuntu-20-04-6-minimal-amd64-6"
+}
+
 resource "ibm_is_instance" "testacc_instance" {
   name    = "testinstance1"
-  image   = "7eb4e35b-4257-56f8-d7da-326d85452591"
-  profile = "b-2x8"
+  image   = data.ibm_is_image.ubuntu.id
+  profile = "bx2-2x8"
 
   primary_network_interface {
     subnet = ibm_is_subnet.testacc_subnet.id
