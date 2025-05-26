@@ -1,3 +1,10 @@
+# 1.78.4 (May 26, 2025)
+### VPC Infrastructure
+* fix(auto_delete): fixed default true on vni ([6210](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6210))
+
+### Power Systems
+* NAG fix user tags crash, add user tags test ([6256](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6256))
+
 # 1.78.3 (May 20, 2025)
 ### Partner Center Sell 
 * feat(partner center sell): less restriction on catalog product media item ([6230](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6230))
