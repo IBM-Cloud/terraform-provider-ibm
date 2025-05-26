@@ -1024,16 +1024,18 @@ func ResourceIBMISInstance() *schema.Resource {
 									"primary_ip": &schema.Schema{
 										Type:          schema.TypeList,
 										Optional:      true,
+										MaxItems:      1,
 										ConflictsWith: []string{"primary_network_attachment.0.virtual_network_interface.0.id"},
 										Computed:      true,
 										Description:   "The primary IP address of the virtual network interface for the instance networkattachment.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"address": &schema.Schema{
-													Type:        schema.TypeString,
-													Optional:    true,
-													Computed:    true,
-													Description: "The IP address.If the address has not yet been selected, the value will be `0.0.0.0`.This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.",
+													Type:          schema.TypeString,
+													Optional:      true,
+													ConflictsWith: []string{"primary_network_attachment.0.virtual_network_interface.0.primary_ip.0.reserved_ip"},
+													Computed:      true,
+													Description:   "The IP address.If the address has not yet been selected, the value will be `0.0.0.0`.This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.",
 												},
 												"deleted": &schema.Schema{
 													Type:        schema.TypeList,
@@ -1055,16 +1057,18 @@ func ResourceIBMISInstance() *schema.Resource {
 													Description: "The URL for this reserved IP.",
 												},
 												"reserved_ip": &schema.Schema{
-													Type:        schema.TypeString,
-													Optional:    true,
-													Computed:    true,
-													Description: "The unique identifier for this reserved IP.",
+													Type:          schema.TypeString,
+													Optional:      true,
+													ConflictsWith: []string{"primary_network_attachment.0.virtual_network_interface.0.primary_ip.0.address", "primary_network_attachment.0.virtual_network_interface.0.primary_ip.0.auto_delete", "primary_network_attachment.0.virtual_network_interface.0.primary_ip.0.name"},
+													Computed:      true,
+													Description:   "The unique identifier for this reserved IP.",
 												},
 												"name": &schema.Schema{
-													Type:        schema.TypeString,
-													Optional:    true,
-													Computed:    true,
-													Description: "The name for this reserved IP. The name is unique across all reserved IPs in a subnet.",
+													Type:          schema.TypeString,
+													Optional:      true,
+													ConflictsWith: []string{"primary_network_attachment.0.virtual_network_interface.0.primary_ip.0.reserved_ip"},
+													Computed:      true,
+													Description:   "The name for this reserved IP. The name is unique across all reserved IPs in a subnet.",
 												},
 												"resource_type": &schema.Schema{
 													Type:        schema.TypeString,
@@ -1072,10 +1076,10 @@ func ResourceIBMISInstance() *schema.Resource {
 													Description: "The resource type.",
 												},
 												"auto_delete": &schema.Schema{
-													Type:        schema.TypeBool,
-													Optional:    true,
-													Default:     true,
-													Description: "Indicates whether this reserved ip will be automatically deleted when `target` is deleted.",
+													Type:          schema.TypeBool,
+													Optional:      true,
+													ConflictsWith: []string{"primary_network_attachment.0.virtual_network_interface.0.primary_ip.0.reserved_ip"},
+													Description:   "Indicates whether this reserved ip will be automatically deleted when `target` is deleted.",
 												},
 											},
 										},
@@ -5324,14 +5328,16 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 			ID:         &pnaId,
 		}
 		autoDelete := true
+		autoDeleteExists := false
 		if autoDeleteOk, ok := d.GetOkExists("primary_network_attachment.0.virtual_network_interface.0.primary_ip.0.auto_delete"); ok {
 			autoDelete = autoDeleteOk.(bool)
+			autoDeleteExists = true
 		}
 		pna, response, err := instanceC.GetInstanceNetworkAttachment(getInstanceNetworkAttachment)
 		if err != nil {
 			return fmt.Errorf("[ERROR] Error on GetInstanceNetworkAttachment in instance : %s\n%s", err, response)
 		}
-		primaryNetworkAttachmentMap, err := resourceIBMIsInstanceInstanceNetworkAttachmentReferenceToMap(instance.PrimaryNetworkAttachment, pna, instanceC, autoDelete)
+		primaryNetworkAttachmentMap, err := resourceIBMIsInstanceInstanceNetworkAttachmentReferenceToMap(instance.PrimaryNetworkAttachment, pna, instanceC, autoDelete, autoDeleteExists)
 		if err != nil {
 			return err
 		}
@@ -5413,8 +5419,10 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 			naId := *networkAttachmentsItem.ID
 			if *instance.PrimaryNetworkAttachment.ID != naId {
 				autoDelete := true
+				autoDeleteExists := false
 				if autoDeleteOk, ok := d.GetOkExists(fmt.Sprintf("network_attachments.%d.virtual_network_interface.0.primary_ip.0.auto_delete", i)); ok {
 					autoDelete = autoDeleteOk.(bool)
+					autoDeleteExists = true
 				}
 				getInstanceNetworkAttachment := &vpcv1.GetInstanceNetworkAttachmentOptions{
 					InstanceID: &id,
@@ -5424,7 +5432,7 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 				if err != nil {
 					return fmt.Errorf("[ERROR] Error on GetInstanceNetworkAttachment in instance : %s\n%s", err, response)
 				}
-				networkAttachmentsItemMap, err := resourceIBMIsInstanceInstanceNetworkAttachmentReferenceToMap(&networkAttachmentsItem, na, instanceC, autoDelete)
+				networkAttachmentsItemMap, err := resourceIBMIsInstanceInstanceNetworkAttachmentReferenceToMap(&networkAttachmentsItem, na, instanceC, autoDelete, autoDeleteExists)
 				if err != nil {
 					return err
 				}
@@ -7441,7 +7449,7 @@ func GetInstanceMetadataServiceOptions(d *schema.ResourceData) (metadataService 
 	return nil
 }
 
-func resourceIBMIsInstanceInstanceNetworkAttachmentReferenceToMap(model *vpcv1.InstanceNetworkAttachmentReference, pna *vpcv1.InstanceNetworkAttachment, instanceC *vpcv1.VpcV1, autoDelete bool) (map[string]interface{}, error) {
+func resourceIBMIsInstanceInstanceNetworkAttachmentReferenceToMap(model *vpcv1.InstanceNetworkAttachmentReference, pna *vpcv1.InstanceNetworkAttachment, instanceC *vpcv1.VpcV1, autoDelete, autoDeleteExists bool) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Deleted != nil {
 		deletedMap, err := resourceIBMIsInstanceInstanceNetworkAttachmentReferenceDeletedToMap(model.Deleted)
@@ -7486,7 +7494,7 @@ func resourceIBMIsInstanceInstanceNetworkAttachmentReferenceToMap(model *vpcv1.I
 		ips := []map[string]interface{}{}
 		for _, ipsItem := range vniDetails.Ips {
 			if *ipsItem.ID != primaryipId {
-				ipsItemMap, err := resourceIBMIsVirtualNetworkInterfaceReservedIPReferenceToMap(&ipsItem, autoDelete)
+				ipsItemMap, err := resourceIBMIsVirtualNetworkInterfaceReservedIPReferenceToMap(&ipsItem, autoDelete, autoDeleteExists)
 				if err != nil {
 					return nil, err
 				}

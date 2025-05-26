@@ -181,6 +181,7 @@ func ResourceIBMIsBareMetalServerNetworkAttachment() *schema.Resource {
 						},
 						"primary_ip": &schema.Schema{
 							Type:          schema.TypeList,
+							MaxItems:      1,
 							Optional:      true,
 							Computed:      true,
 							ConflictsWith: []string{"virtual_network_interface.0.id"},
@@ -188,10 +189,11 @@ func ResourceIBMIsBareMetalServerNetworkAttachment() *schema.Resource {
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"address": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Computed:    true,
-										Description: "The IP address.If the address has not yet been selected, the value will be `0.0.0.0`.This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.",
+										Type:          schema.TypeString,
+										Optional:      true,
+										ConflictsWith: []string{"virtual_network_interface.0.primary_ip.0.reserved_ip"},
+										Computed:      true,
+										Description:   "The IP address.If the address has not yet been selected, the value will be `0.0.0.0`.This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.",
 									},
 									"deleted": &schema.Schema{
 										Type:        schema.TypeList,
@@ -219,10 +221,11 @@ func ResourceIBMIsBareMetalServerNetworkAttachment() *schema.Resource {
 										Description: "The unique identifier for this reserved IP.",
 									},
 									"name": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Computed:    true,
-										Description: "The name for this reserved IP. The name is unique across all reserved IPs in a subnet.",
+										Type:          schema.TypeString,
+										Optional:      true,
+										ConflictsWith: []string{"virtual_network_interface.0.primary_ip.0.reserved_ip"},
+										Computed:      true,
+										Description:   "The name for this reserved IP. The name is unique across all reserved IPs in a subnet.",
 									},
 									"resource_type": &schema.Schema{
 										Type:        schema.TypeString,
@@ -1210,7 +1213,7 @@ func resourceIBMIsBareMetalServerNetworkAttachmentVirtualNetworkInterfaceReferen
 		ips := []map[string]interface{}{}
 		for _, ipsItem := range vniDetails.Ips {
 			if *ipsItem.ID != primaryipId {
-				ipsItemMap, err := resourceIBMIsVirtualNetworkInterfaceReservedIPReferenceToMap(&ipsItem, true)
+				ipsItemMap, err := resourceIBMIsVirtualNetworkInterfaceReservedIPReferenceToMap(&ipsItem, true, false)
 				if err != nil {
 					return nil, err
 				}

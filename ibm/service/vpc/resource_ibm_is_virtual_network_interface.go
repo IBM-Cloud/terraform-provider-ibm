@@ -168,16 +168,17 @@ func ResourceIBMIsVirtualNetworkInterface() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"address": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Computed:    true,
-							Description: "The IP address.If the address has not yet been selected, the value will be `0.0.0.0`.This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.",
+							Type:          schema.TypeString,
+							Optional:      true,
+							ConflictsWith: []string{"primary_ip.0.reserved_ip"},
+							Computed:      true,
+							Description:   "The IP address.If the address has not yet been selected, the value will be `0.0.0.0`.This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.",
 						},
 						"auto_delete": &schema.Schema{
-							Type:        schema.TypeBool,
-							Optional:    true,
-							Default:     true,
-							Description: "Indicates whether this reserved IP member will be automatically deleted when either target is deleted, or the reserved IP is unbound.",
+							Type:          schema.TypeBool,
+							Optional:      true,
+							ConflictsWith: []string{"primary_ip.0.reserved_ip"},
+							Description:   "Indicates whether this reserved IP member will be automatically deleted when either target is deleted, or the reserved IP is unbound.",
 						},
 						"deleted": &schema.Schema{
 							Type:        schema.TypeList,
@@ -199,16 +200,18 @@ func ResourceIBMIsVirtualNetworkInterface() *schema.Resource {
 							Description: "The URL for this reserved IP.",
 						},
 						"reserved_ip": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Computed:    true,
-							Description: "The unique identifier for this reserved IP.",
+							Type:          schema.TypeString,
+							Optional:      true,
+							ConflictsWith: []string{"primary_ip.0.address", "primary_ip.0.auto_delete", "primary_ip.0.name"},
+							Computed:      true,
+							Description:   "The unique identifier for this reserved IP.",
 						},
 						"name": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Computed:    true,
-							Description: "The name for this reserved IP. The name is unique across all reserved IPs in a subnet.",
+							Type:          schema.TypeString,
+							Optional:      true,
+							ConflictsWith: []string{"primary_ip.0.reserved_ip"},
+							Computed:      true,
+							Description:   "The name for this reserved IP. The name is unique across all reserved IPs in a subnet.",
 						},
 						"resource_type": &schema.Schema{
 							Type:        schema.TypeString,
@@ -535,7 +538,7 @@ func resourceIBMIsVirtualNetworkInterfaceRead(context context.Context, d *schema
 		ips := []map[string]interface{}{}
 		for _, ipsItem := range virtualNetworkInterface.Ips {
 			if *virtualNetworkInterface.PrimaryIP.ID != *ipsItem.ID {
-				ipsItemMap, err := resourceIBMIsVirtualNetworkInterfaceReservedIPReferenceToMap(&ipsItem, false)
+				ipsItemMap, err := resourceIBMIsVirtualNetworkInterfaceReservedIPReferenceToMap(&ipsItem, false, false)
 				if err != nil {
 					return diag.FromErr(err)
 				}
@@ -555,8 +558,12 @@ func resourceIBMIsVirtualNetworkInterfaceRead(context context.Context, d *schema
 		d.Set("protocol_state_filtering_mode", virtualNetworkInterface.ProtocolStateFilteringMode)
 	}
 	if !core.IsNil(virtualNetworkInterface.PrimaryIP) {
-		autodelete := d.Get("primary_ip.0.auto_delete").(bool)
-		primaryIPMap, err := resourceIBMIsVirtualNetworkInterfaceReservedIPReferenceToMap(virtualNetworkInterface.PrimaryIP, autodelete)
+		autodelete := true
+		autoDeleteExists := false
+		if autodeleteOk, autoDeleteExists := d.GetOkExists("primary_ip.0.auto_delete"); autoDeleteExists {
+			autodelete = autodeleteOk.(bool)
+		}
+		primaryIPMap, err := resourceIBMIsVirtualNetworkInterfaceReservedIPReferenceToMap(virtualNetworkInterface.PrimaryIP, autodelete, autoDeleteExists)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -979,10 +986,12 @@ func resourceIBMIsVirtualNetworkInterfaceMapToVirtualNetworkInterfacePrimaryIPRe
 	return model, nil
 }
 
-func resourceIBMIsVirtualNetworkInterfaceReservedIPReferenceToMap(model *vpcv1.ReservedIPReference, autodelete bool) (map[string]interface{}, error) {
+func resourceIBMIsVirtualNetworkInterfaceReservedIPReferenceToMap(model *vpcv1.ReservedIPReference, autodelete, autoDeleteExists bool) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["address"] = model.Address
-	modelMap["auto_delete"] = autodelete
+	if autoDeleteExists {
+		modelMap["auto_delete"] = autodelete
+	}
 	if model.Deleted != nil {
 		deletedMap, err := resourceIBMIsVirtualNetworkInterfaceReservedIPReferenceDeletedToMap(model.Deleted)
 		if err != nil {
