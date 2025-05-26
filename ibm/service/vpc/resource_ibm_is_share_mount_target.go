@@ -830,17 +830,18 @@ func ShareMountTargetMapToShareMountTargetPrototype(d *schema.ResourceData, vniM
 		}
 		if reservedIp != "" {
 			primaryIpPrototype.ID = &reservedIp
-		}
-		if reservedIpAddress != "" {
-			primaryIpPrototype.Address = &reservedIpAddress
-		}
+		} else {
+			if reservedIpAddress != "" {
+				primaryIpPrototype.Address = &reservedIpAddress
+			}
 
-		if reservedIpName != "" {
-			primaryIpPrototype.Name = &reservedIpName
-		}
-		if autoDeleteIntf, ok := d.GetOkExists("virtual_network_interface.0.primary_ip.0.auto_delete"); ok {
-			reservedIpAutoDelete := autoDeleteIntf.(bool)
-			primaryIpPrototype.AutoDelete = &reservedIpAutoDelete
+			if reservedIpName != "" {
+				primaryIpPrototype.Name = &reservedIpName
+			}
+			if autoDeleteIntf, ok := d.GetOkExists("mount_targets.0.virtual_network_interface.0.primary_ip.0.auto_delete"); ok {
+				reservedIpAutoDelete := autoDeleteIntf.(bool)
+				primaryIpPrototype.AutoDelete = &reservedIpAutoDelete
+			}
 		}
 		vniPrototype.PrimaryIP = primaryIpPrototype
 	}
