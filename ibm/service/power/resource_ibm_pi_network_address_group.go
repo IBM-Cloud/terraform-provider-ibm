@@ -31,6 +31,7 @@ func ResourceIBMPINetworkAddressGroup() *schema.Resource {
 		Importer:      &schema.ResourceImporter{},
 
 		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(5 * time.Minute),
 			Delete: schema.DefaultTimeout(5 * time.Minute),
 		},
 		CustomizeDiff: customdiff.Sequence(
