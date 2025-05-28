@@ -45,6 +45,7 @@ const (
 	tgGreTunnelId                       = "tunnel_id"
 	tgGreTunnelStatus                   = "status"
 	tgconTunnelName                     = "name"
+	tgCidr                              = "cidr"
 )
 
 func ResourceIBMTransitGatewayConnection() *schema.Resource {
@@ -82,7 +83,7 @@ func ResourceIBMTransitGatewayConnection() *schema.Resource {
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_tg_connection", tgNetworkType),
-				Description:  "Defines what type of network is connected via this connection. Allowable values (classic,directlink,vpc,gre_tunnel,unbound_gre_tunnel,power_virtual_server,redundant_gre)",
+				Description:  "Defines what type of network is connected via this connection. Allowable values (classic,directlink,vpc,gre_tunnel,unbound_gre_tunnel,power_virtual_server,redundant_gre, vpn_gateway)",
 			},
 			tgName: {
 				Type:         schema.TypeString,
@@ -269,13 +270,19 @@ func ResourceIBMTransitGatewayConnection() *schema.Resource {
 					},
 				},
 			},
+			tgCidr: {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "The network_type 'vpn_gateway' connections use 'cidr' to specify the CIDR to use for the VPN GRE tunnels",
+			},
 		},
 	}
 }
 func ResourceIBMTransitGatewayConnectionValidator() *validate.ResourceValidator {
 
 	validateSchema := make([]validate.ValidateSchema, 0)
-	networkType := "classic, directlink, vpc, gre_tunnel, unbound_gre_tunnel, power_virtual_server,redundant_gre"
+	networkType := "classic, directlink, vpc, gre_tunnel, unbound_gre_tunnel, power_virtual_server,redundant_gre,vpn_gateway"
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
 			Identifier:                 tgNetworkType,
@@ -405,6 +412,12 @@ func resourceIBMTransitGatewayConnectionCreate(d *schema.ResourceData, meta inte
 			tunnelCreateList = append(tunnelCreateList, *tunnelTemplateModel)
 		}
 	}
+
+	if _, ok := d.GetOk(tgCidr); ok {
+		cidr := d.Get(tgCidr).(string)
+		createTransitGatewayConnectionOptions.SetCidr(cidr)
+	}
+
 	if len(tunnelCreateList) > 0 {
 		createTransitGatewayConnectionOptions.SetTunnels(tunnelCreateList)
 	}
