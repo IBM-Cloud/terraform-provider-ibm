@@ -247,7 +247,7 @@ func networkSecurityGroupToMap(nsg *models.NetworkSecurityGroup, meta interface{
 	networkSecurityGroup := make(map[string]interface{})
 	if nsg.Crn != nil {
 		networkSecurityGroup[Attr_CRN] = nsg.Crn
-		userTags, err := flex.GetTagsUsingCRN(meta, string(*nsg.Crn))
+		userTags, err := flex.GetGlobalTagsUsingCRN(meta, string(*nsg.Crn), "", UserTagType)
 		if err != nil {
 			log.Printf("Error on get of pi network security group (%s) user_tags: %s", *nsg.ID, err)
 		}
