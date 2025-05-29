@@ -4,9 +4,12 @@
 package vpc
 
 import (
+	"context"
 	"fmt"
+	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM/vpc-go-sdk/vpcv1"
@@ -14,7 +17,7 @@ import (
 
 func DataSourceIBMISInstanceGroupMembership() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceIBMISInstanceGroupMembershipRead,
+		ReadContext: dataSourceIBMISInstanceGroupMembershipRead,
 
 		Schema: map[string]*schema.Schema{
 			isInstanceGroup: {
@@ -97,10 +100,12 @@ func DataSourceIBMISInstanceGroupMembership() *schema.Resource {
 	}
 }
 
-func dataSourceIBMISInstanceGroupMembershipRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceIBMISInstanceGroupMembershipRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instance_group_membership", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	instanceGroupID := d.Get(isInstanceGroup).(string)
 	// Support for pagination
@@ -114,9 +119,11 @@ func dataSourceIBMISInstanceGroupMembershipRead(d *schema.ResourceData, meta int
 		if start != "" {
 			listInstanceGroupMembershipsOptions.Start = &start
 		}
-		instanceGroupMembershipCollection, response, err := sess.ListInstanceGroupMemberships(&listInstanceGroupMembershipsOptions)
+		instanceGroupMembershipCollection, _, err := sess.ListInstanceGroupMembershipsWithContext(context, &listInstanceGroupMembershipsOptions)
 		if err != nil || instanceGroupMembershipCollection == nil {
-			return fmt.Errorf("[ERROR] Error Getting InstanceGroup Membership Collection %s\n%s", err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListInstanceGroupMembershipsWithContext failed: %s", err.Error()), "(Data) ibm_is_instance_group_membership", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
 		start = flex.GetNext(instanceGroupMembershipCollection.Next)
@@ -132,9 +139,18 @@ func dataSourceIBMISInstanceGroupMembershipRead(d *schema.ResourceData, meta int
 	for _, instanceGroupMembership := range allrecs {
 		if instanceGroupMembershipName == *instanceGroupMembership.Name {
 			d.SetId(fmt.Sprintf("%s/%s", instanceGroupID, *instanceGroupMembership.Instance.ID))
-			d.Set(isInstanceGroupMemershipDeleteInstanceOnMembershipDelete, *instanceGroupMembership.DeleteInstanceOnMembershipDelete)
-			d.Set(isInstanceGroupMembership, *instanceGroupMembership.ID)
-			d.Set(isInstanceGroupMembershipStatus, *instanceGroupMembership.Status)
+
+			if err = d.Set(isInstanceGroupMemershipDeleteInstanceOnMembershipDelete, *instanceGroupMembership.DeleteInstanceOnMembershipDelete); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting delete_instance_on_membership_delete: %s", err), "(Data) ibm_is_instance_group_membership", "read", "set-delete_instance_on_membership_delete").GetDiag()
+			}
+
+			if err = d.Set(isInstanceGroupMembership, *instanceGroupMembership.ID); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting instance_group_membership: %s", err), "(Data) ibm_is_instance_group_membership", "read", "set-instance_group_membership").GetDiag()
+			}
+
+			if err = d.Set(isInstanceGroupMembershipStatus, *instanceGroupMembership.Status); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting status: %s", err), "(Data) ibm_is_instance_group_membership", "read", "set-status").GetDiag()
+			}
 
 			instances := make([]map[string]interface{}, 0)
 			if instanceGroupMembership.Instance != nil {
@@ -145,7 +161,10 @@ func dataSourceIBMISInstanceGroupMembershipRead(d *schema.ResourceData, meta int
 				}
 				instances = append(instances, instance)
 			}
-			d.Set(isInstanceGroupMemershipInstance, instances)
+
+			if err = d.Set(isInstanceGroupMemershipInstance, instances); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting instance: %s", err), "(Data) ibm_is_instance_group_membership", "read", "set-instance").GetDiag()
+			}
 
 			instance_templates := make([]map[string]interface{}, 0)
 			if instanceGroupMembership.InstanceTemplate != nil {
@@ -156,13 +175,18 @@ func dataSourceIBMISInstanceGroupMembershipRead(d *schema.ResourceData, meta int
 				}
 				instance_templates = append(instance_templates, instance_template)
 			}
-			d.Set(isInstanceGroupMemershipInstanceTemplate, instance_templates)
-
+			if err = d.Set(isInstanceGroupMemershipInstanceTemplate, instance_templates); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting instance_template: %s", err), "(Data) ibm_is_instance_group_membership", "read", "set-instance_template").GetDiag()
+			}
 			if instanceGroupMembership.PoolMember != nil && instanceGroupMembership.PoolMember.ID != nil {
-				d.Set(isInstanceGroupMembershipLoadBalancerPoolMember, *instanceGroupMembership.PoolMember.ID)
+				if err = d.Set(isInstanceGroupMembershipLoadBalancerPoolMember, *instanceGroupMembership.PoolMember.ID); err != nil {
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting load_balancer_pool_member: %s", err), "(Data) ibm_is_instance_group_membership", "read", "set-load_balancer_pool_member").GetDiag()
+				}
 			}
 			return nil
 		}
 	}
-	return fmt.Errorf("Instance group membership %s not found", instanceGroupMembershipName)
+	tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Instance group membership %s not found", instanceGroupMembershipName), "(Data) ibm_is_instance_group_membership", "read")
+	log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+	return tfErr.GetDiag()
 }
