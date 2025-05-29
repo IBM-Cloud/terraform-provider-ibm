@@ -23,7 +23,7 @@ data "ibm_cd_toolchains" "cd_toolchains" {
 
 You can specify the following arguments for this data source.
 
-* `name` - (Optional, String) Name of toolchain to look up.
+* `name` - (Optional, String) Exact name of toolchain to look up. This parameter is case sensitive.
   * Constraints: The maximum length is `128` characters. The minimum length is `0` characters. The value must match regular expression `/^([^\\x00-\\x7F]|[a-zA-Z0-9-._ ])+$/`.
 * `resource_group_id` - (Required, String) The resource group ID where the toolchains exist.
   * Constraints: The maximum length is `32` characters. The minimum length is `32` characters. The value must match regular expression `/^[0-9a-f]{32}$/`.
