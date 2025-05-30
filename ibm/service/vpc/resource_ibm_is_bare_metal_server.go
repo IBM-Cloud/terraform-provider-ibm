@@ -592,10 +592,11 @@ func ResourceIBMIsBareMetalServer() *schema.Resource {
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"address": &schema.Schema{
-													Type:        schema.TypeString,
-													Optional:    true,
-													Computed:    true,
-													Description: "The IP address.If the address has not yet been selected, the value will be `0.0.0.0`.This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.",
+													Type:          schema.TypeString,
+													Optional:      true,
+													ConflictsWith: []string{"primary_network_attachment.0.virtual_network_interface.0.primary_ip.0.reserved_ip"},
+													Computed:      true,
+													Description:   "The IP address.If the address has not yet been selected, the value will be `0.0.0.0`.This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.",
 												},
 												"deleted": &schema.Schema{
 													Type:        schema.TypeList,
@@ -623,10 +624,11 @@ func ResourceIBMIsBareMetalServer() *schema.Resource {
 													Description: "The unique identifier for this reserved IP.",
 												},
 												"name": &schema.Schema{
-													Type:        schema.TypeString,
-													Optional:    true,
-													Computed:    true,
-													Description: "The name for this reserved IP. The name is unique across all reserved IPs in a subnet.",
+													Type:          schema.TypeString,
+													Optional:      true,
+													ConflictsWith: []string{"primary_network_attachment.0.virtual_network_interface.0.primary_ip.0.reserved_ip"},
+													Computed:      true,
+													Description:   "The name for this reserved IP. The name is unique across all reserved IPs in a subnet.",
 												},
 												"resource_type": &schema.Schema{
 													Type:        schema.TypeString,
@@ -4546,7 +4548,7 @@ func resourceIBMIsBareMetalServerBareMetalServerNetworkAttachmentReferenceToMap(
 		ips := []map[string]interface{}{}
 		for _, ipsItem := range vniDetails.Ips {
 			if *ipsItem.ID != primaryipId {
-				ipsItemMap, err := resourceIBMIsVirtualNetworkInterfaceReservedIPReferenceToMap(&ipsItem, true)
+				ipsItemMap, err := resourceIBMIsVirtualNetworkInterfaceReservedIPReferenceToMap(&ipsItem, true, false)
 				if err != nil {
 					return nil, err
 				}
@@ -4636,39 +4638,39 @@ func resourceIBMIsBareMetalServerMapToBareMetalServerPrimaryNetworkAttachmentPro
 }
 func resourceIBMIsBareMetalServerMapToVirtualNetworkInterfaceIPsReservedIPPrototype(modelMap map[string]interface{}) (vpcv1.VirtualNetworkInterfaceIPPrototypeIntf, error) {
 	model := &vpcv1.VirtualNetworkInterfaceIPPrototype{}
-	if modelMap["id"] != nil && modelMap["id"].(string) != "" {
-		model.ID = core.StringPtr(modelMap["id"].(string))
-	}
-	if modelMap["href"] != nil && modelMap["href"].(string) != "" {
+	if modelMap["reserved_ip"] != nil && modelMap["reserved_ip"].(string) != "" {
+		model.ID = core.StringPtr(modelMap["reserved_ip"].(string))
+	} else if modelMap["href"] != nil && modelMap["href"].(string) != "" {
 		model.Href = core.StringPtr(modelMap["href"].(string))
-	}
-	if modelMap["address"] != nil && modelMap["address"].(string) != "" {
-		model.Address = core.StringPtr(modelMap["address"].(string))
-	}
-	if modelMap["auto_delete"] != nil {
-		model.AutoDelete = core.BoolPtr(modelMap["auto_delete"].(bool))
-	}
-	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
-		model.Name = core.StringPtr(modelMap["name"].(string))
+	} else {
+		if modelMap["address"] != nil && modelMap["address"].(string) != "" {
+			model.Address = core.StringPtr(modelMap["address"].(string))
+		}
+		if modelMap["auto_delete"] != nil {
+			model.AutoDelete = core.BoolPtr(modelMap["auto_delete"].(bool))
+		}
+		if modelMap["name"] != nil && modelMap["name"].(string) != "" {
+			model.Name = core.StringPtr(modelMap["name"].(string))
+		}
 	}
 	return model, nil
 }
 func resourceIBMIsBareMetalServerMapToVirtualNetworkInterfacePrimaryIPReservedIPPrototype(modelMap map[string]interface{}) (vpcv1.VirtualNetworkInterfacePrimaryIPPrototypeIntf, error) {
 	model := &vpcv1.VirtualNetworkInterfacePrimaryIPPrototype{}
-	if modelMap["id"] != nil && modelMap["id"].(string) != "" {
-		model.ID = core.StringPtr(modelMap["id"].(string))
-	}
-	if modelMap["href"] != nil && modelMap["href"].(string) != "" {
+	if modelMap["reserved_ip"] != nil && modelMap["reserved_ip"].(string) != "" {
+		model.ID = core.StringPtr(modelMap["reserved_ip"].(string))
+	} else if modelMap["href"] != nil && modelMap["href"].(string) != "" {
 		model.Href = core.StringPtr(modelMap["href"].(string))
-	}
-	if modelMap["address"] != nil && modelMap["address"].(string) != "" {
-		model.Address = core.StringPtr(modelMap["address"].(string))
-	}
-	if modelMap["auto_delete"] != nil {
-		model.AutoDelete = core.BoolPtr(modelMap["auto_delete"].(bool))
-	}
-	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
-		model.Name = core.StringPtr(modelMap["name"].(string))
+	} else {
+		if modelMap["address"] != nil && modelMap["address"].(string) != "" {
+			model.Address = core.StringPtr(modelMap["address"].(string))
+		}
+		if modelMap["auto_delete"] != nil {
+			model.AutoDelete = core.BoolPtr(modelMap["auto_delete"].(bool))
+		}
+		if modelMap["name"] != nil && modelMap["name"].(string) != "" {
+			model.Name = core.StringPtr(modelMap["name"].(string))
+		}
 	}
 	return model, nil
 }
