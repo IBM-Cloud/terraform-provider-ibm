@@ -250,15 +250,18 @@ func DataSourceIBMIsPrivatePathServiceGateways() *schema.Resource {
 func dataSourceIBMIsPrivatePathServiceGatewaysRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_private_path_service_gateways", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	listPrivatePathServiceGatewaysOptions := &vpcv1.ListPrivatePathServiceGatewaysOptions{}
 
 	privatePathServiceGatewayCollection, response, err := vpcClient.ListPrivatePathServiceGatewaysWithContext(context, listPrivatePathServiceGatewaysOptions)
 	if err != nil {
-		log.Printf("[DEBUG] ListPrivatePathServiceGatewaysWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("ListPrivatePathServiceGatewaysWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error listing PPSGs: %s\n%s", err.Error(), response), "(Data) ibm_is_private_path_service_gateways", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(dataSourceIBMIsPrivatePathServiceGatewaysID(d))
@@ -268,13 +271,13 @@ func dataSourceIBMIsPrivatePathServiceGatewaysRead(context context.Context, d *s
 		for _, modelItem := range privatePathServiceGatewayCollection.PrivatePathServiceGateways {
 			modelMap, err := dataSourceIBMIsPrivatePathServiceGatewaysPrivatePathServiceGatewayToMap(&modelItem)
 			if err != nil {
-				return diag.FromErr(err)
+				return flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMIsPrivatePathServiceGatewaysPrivatePathServiceGatewayToMap failed: %s", err.Error()), "(Data) ibm_is_private_path_service_gateways", "read").GetDiag()
 			}
 			privatePathServiceGateways = append(privatePathServiceGateways, modelMap)
 		}
 	}
 	if err = d.Set("private_path_service_gateways", privatePathServiceGateways); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting private_path_service_gateways %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting default_access_policy: %s", err), "(Data) ibm_is_private_path_service_gateways", "read", "set-private_path_service_gateways").GetDiag()
 	}
 
 	return nil
