@@ -111,6 +111,23 @@ func ResourceIBMISReservedIPPatch() *schema.Resource {
 	}
 }
 
+func ResourceIBMISSubnetReservedIPPatchValidator() *validate.ResourceValidator {
+
+	validateSchema := make([]validate.ValidateSchema, 0)
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 isReservedIPName,
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			Regexp:                     `^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$`,
+			MinValueLength:             1,
+			MaxValueLength:             63})
+
+	ibmISSubnetReservedIPCResourceValidator := validate.ResourceValidator{ResourceName: "ibm_is_subnet_reserved_ip_patch", Schema: validateSchema}
+	return &ibmISSubnetReservedIPCResourceValidator
+}
+
 // resourceIBMISReservedIPCreate Creates a reserved IP given a subnet ID
 func resourceIBMISReservedIPPatchCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
