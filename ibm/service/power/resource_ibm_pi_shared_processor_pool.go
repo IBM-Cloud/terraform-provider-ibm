@@ -197,7 +197,9 @@ func ResourceIBMPISharedProcessorPool() *schema.Resource {
 func resourceIBMPISharedProcessorPoolCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_shared_processor_pool", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
@@ -222,14 +224,25 @@ func resourceIBMPISharedProcessorPoolCreate(ctx context.Context, d *schema.Resou
 	}
 
 	spp, err := client.Create(body)
-	if err != nil || spp == nil {
-		return diag.Errorf("error creating the shared processor pool: %v", err)
+	if err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Create failed: %s", err.Error()), "ibm_pi_shared_processor_pool", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+	}
+
+	if spp == nil {
+		err = flex.FmtErrorf("response returned empty")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("operation failed: %s", err.Error()), "ibm_pi_shared_processor_pool", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", cloudInstanceID, *spp.ID))
 	_, err = isWaitForPISharedProcessorPoolAvailable(ctx, d, client, *spp.ID)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForPISharedProcessorPoolAvailable failed: %s", err.Error()), "ibm_pi_shared_processor_pool", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	diagErr := detectSPPPlacementGroupChange(ctx, sess, cloudInstanceID, d, *spp.ID)
@@ -275,7 +288,7 @@ func isPISharedProcessorPoolRefreshFunc(client *instance.IBMPISharedProcessorPoo
 			return pool, State_Active, nil
 		}
 		if pool.SharedProcessorPool.Status == State_Failed {
-			err = fmt.Errorf("failed to create the shared processor pool")
+			err = flex.FmtErrorf("failed to create the shared processor pool")
 			return pool, pool.SharedProcessorPool.Status, err
 		}
 		return pool, State_Configuring, nil
@@ -283,22 +296,33 @@ func isPISharedProcessorPoolRefreshFunc(client *instance.IBMPISharedProcessorPoo
 }
 
 func resourceIBMPISharedProcessorPoolRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_shared_processor_pool", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	parts, err := flex.IdParts(d.Id())
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IdParts failed: %s", err.Error()), "ibm_pi_shared_processor_pool", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID := parts[0]
 	client := instance.NewIBMPISharedProcessorPoolClient(ctx, sess, cloudInstanceID)
 
 	response, err := client.Get(parts[1])
-	if err != nil || response == nil {
-		return diag.Errorf("error reading the shared processor pool: %v", err)
+	if err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Get failed: %s", err.Error()), "ibm_pi_shared_processor_pool", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+	}
+	if response == nil {
+		err = flex.FmtErrorf("response returned empty")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("operation failed: %s", err.Error()), "ibm_pi_shared_processor_pool", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.Set(Arg_CloudInstanceID, cloudInstanceID)
@@ -369,12 +393,16 @@ func resourceIBMPISharedProcessorPoolRead(ctx context.Context, d *schema.Resourc
 func resourceIBMPISharedProcessorPoolUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_shared_processor_pool", "update")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID, sppID, err := splitID(d.Id())
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("splitID failed: %s", err.Error()), "ibm_pi_shared_processor_pool", "update")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	client := instance.NewIBMPISharedProcessorPoolClient(ctx, sess, cloudInstanceID)
@@ -391,7 +419,9 @@ func resourceIBMPISharedProcessorPoolUpdate(ctx context.Context, d *schema.Resou
 
 	_, err = client.Update(sppID, body)
 	if err != nil {
-		return diag.Errorf("error updating the shared processor pool: %v", err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Update failed: %s", err.Error()), "ibm_pi_shared_processor_pool", "update")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	diagErr := detectSPPPlacementGroupChange(ctx, sess, cloudInstanceID, d, sppID)
@@ -445,7 +475,9 @@ func detectSPPPlacementGroupChange(ctx context.Context, sess *ibmpisession.IBMPI
 				if err != nil {
 					// ignore delete member error where the spp is already not in the PG
 					if !strings.Contains(err.Error(), "is not part of spp placement group") {
-						return diag.FromErr(err)
+						tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteMember failed: %s", err.Error()), "ibm_pi_shared_processor_pool", "create/update")
+						log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+						return tfErr.GetDiag()
 					}
 				}
 			}
@@ -460,7 +492,9 @@ func detectSPPPlacementGroupChange(ctx context.Context, sess *ibmpisession.IBMPI
 				// add spp to a new placement group
 				_, err := pgClient.AddMember(placementGroupID, sppID)
 				if err != nil {
-					return diag.FromErr(err)
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("AddMember failed: %s", err.Error()), "ibm_pi_shared_processor_pool", "create/update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
 			}
 		}
@@ -486,18 +520,23 @@ func getDifferences(a, z []string) []string {
 func resourceIBMPISharedProcessorPoolDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_shared_processor_pool", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	parts, err := flex.IdParts(d.Id())
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IdParts failed: %s", err.Error()), "ibm_pi_shared_processor_pool", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	cloudInstanceID := parts[0]
 	client := instance.NewIBMPISharedProcessorPoolClient(ctx, sess, cloudInstanceID)
 	err = client.Delete(parts[1])
-
 	if err != nil {
-		return diag.Errorf("error deleting the shared processor pool: %v", err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Delete failed: %s", err.Error()), "ibm_pi_shared_processor_pool", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	d.SetId("")
 	return nil
