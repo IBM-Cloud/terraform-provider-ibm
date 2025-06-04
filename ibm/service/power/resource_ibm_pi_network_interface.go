@@ -239,7 +239,7 @@ func resourceIBMPINetworkInterfaceRead(ctx context.Context, d *schema.ResourceDa
 	d.Set(Attr_Status, networkInterface.Status)
 	if networkInterface.Crn != nil {
 		d.Set(Attr_CRN, networkInterface.Crn)
-		tags, err := flex.GetTagsUsingCRN(meta, string(*networkInterface.Crn))
+		tags, err := flex.GetGlobalTagsUsingCRN(meta, string(*networkInterface.Crn), "", UserTagType)
 		if err != nil {
 			log.Printf("Error on get of network interface (%s) pi_user_tags: %s", *networkInterface.ID, err)
 		}
