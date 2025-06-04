@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/IBM/cloud-databases-go-sdk/clouddatabasesv5"
-	"github.com/IBM/go-sdk-core/core"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/stretchr/testify/require"
 	"gotest.tools/assert"
 )

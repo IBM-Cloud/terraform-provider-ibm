@@ -33,10 +33,5 @@ func getDeploymentCapability(capabilityId string, deploymentId string, platform 
 		return nil, fmt.Errorf("capability '%s' field is nil in response %s", capabilityId, response)
 	}
 
-	capability, ok := getDeploymentCapabilityResponse.Capability.(*clouddatabasesv5.Capability)
-	if !ok {
-		return nil, fmt.Errorf("unexpected type for Capability")
-	}
-
-	return capability, nil
+	return getDeploymentCapabilityResponse.Capability, nil
 }
