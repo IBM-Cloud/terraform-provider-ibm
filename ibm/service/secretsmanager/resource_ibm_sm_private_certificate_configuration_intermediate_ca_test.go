@@ -185,8 +185,8 @@ func privateCertificateIntermediateCAConfigCryptoKey() string {
 			issuer = ibm_sm_private_certificate_configuration_root_ca.sm_private_cert_root_ca_crypto_key.name
 			common_name = "ibm.com"
 			crypto_key {
-				allow_generate_key = true
-				label = "e2e-tf-test"
+				allow_generate_key = false
+				label = "e2e-tf-ca"
 				provider {
 					type = "%s"
 					instance_crn = "%s"

@@ -368,7 +368,7 @@ func getUkoUrl(context context.Context, region string, instance_id string, ukoCl
 			return "", err
 		}
 		url := (*uko)["public"]
-		log.Printf(url)
+		log.Println(url)
 		return "https://" + url, nil
 	}
 

@@ -61,7 +61,7 @@ func TestAccIBMPIPlacementGroupBasic(t *testing.T) {
 			{
 				Config: testAccCheckIBMPIPlacementGroupRemoveMemberConfig(name, policy),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMPIPlacementGroupMemberDoesNotExist("ibm_pi_placement_group.power_placement_group", "ibm_pi_instance.power_instance"),
+					testAccCheckIBMPIPlacementGroupMemberDoesNotExist("ibm_pi_placement_group.power_placement_group_another", "ibm_pi_instance.power_instance"),
 				),
 			},
 			{
@@ -76,7 +76,6 @@ func TestAccIBMPIPlacementGroupBasic(t *testing.T) {
 					testAccCheckIBMPIPlacementGroupMemberExistsFromInstanceCreate("ibm_pi_placement_group.power_placement_group", "ibm_pi_instance.power_instance", "ibm_pi_instance.power_instance_in_pg"),
 					testAccCheckIBMPIPlacementGroupMemberExists("ibm_pi_placement_group.power_placement_group", "ibm_pi_instance.sap_power_instance"),
 				),
-				ExpectNonEmptyPlan: true,
 			},
 			{
 				Config: testAccCheckIBMPIDeletePlacementGroup(name, policy),
@@ -468,7 +467,6 @@ func testAccCheckIBMPIPlacementGroupRemoveMemberConfig(name string, policy strin
 			pi_network {
 				network_id = "%[5]s"
 			}
-			pi_placement_group_id = ""
 		}
 	
 		resource "ibm_pi_placement_group" "power_placement_group" {
