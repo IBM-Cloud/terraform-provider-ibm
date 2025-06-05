@@ -1,28 +1,25 @@
 ---
 layout: "ibm"
-page_title: "IBM : ibm_cd_toolchain_tool_appconfig"
+page_title: "IBM : ibm_cd_toolchain_tool_cos"
 description: |-
-  Manages cd_toolchain_tool_appconfig.
+  Manages cd_toolchain_tool_cos.
 subcategory: "Continuous Delivery"
 ---
 
-# ibm_cd_toolchain_tool_appconfig
+# ibm_cd_toolchain_tool_cos
 
-Create, update, and delete cd_toolchain_tool_appconfigs with this resource.
+Create, update, and delete cd_toolchain_tool_coss with this resource.
 
-See the [tool integration](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-app-configuration) page for more information.
+See the [tool integration](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-cos_integration) page for more information.
 
 ## Example Usage
 
 ```hcl
-resource "ibm_cd_toolchain_tool_appconfig" "cd_toolchain_tool_appconfig_instance" {
+resource "ibm_cd_toolchain_tool_cos" "cd_toolchain_tool_cos_instance" {
   parameters {
-		name = "appconfig_tool_01"
-		location = "us-south"
-		resource_group_name = "Default"
-		instance_id = "2a9e3c79-3595-45df-824d-9250aeb598c8"
-		environment_id = "environment_01"
-		collection_id = "collection_01"
+		name = "cos_tool_01"
+		auth_type = "apikey"
+		endpoint = "s3.direct.us-south.cloud-object-storage.appdomain.cloud"
   }
   toolchain_id = ibm_cd_toolchain.cd_toolchain.id
 }
@@ -36,15 +33,18 @@ You can specify the following arguments for this resource.
   * Constraints: The maximum length is `128` characters. The minimum length is `0` characters. The value must match regular expression `/^([^\\x00-\\x7F]|[a-zA-Z0-9-._ ])+$/`.
 * `parameters` - (Required, List) Unique key-value pairs representing parameters to be used to create the tool. A list of parameters for each tool integration can be found in the <a href="https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-integrations">Configuring tool integrations page</a>.
 Nested schema for **parameters**:
-	* `collection_id` - (Required, String) The ID of the App Configuration collection.
+	* `auth_type` - (Optional, String) The authentication type. Options are `apikey` IBM Cloud API Key or `hmac` HMAC (Hash Message Authentication Code). The default is `apikey`.
+	  * Constraints: Allowable values are: `apikey`, `hmac`.
+	* `bucket_name` - (Optional, String) The name of the Cloud Object Storage service bucket.
 	  * Constraints: The value must match regular expression `/\\S/`.
-	* `environment_id` - (Required, String) The ID of the App Configuration environment.
+	* `cos_api_key` - (Optional, String) The IBM Cloud API key used to access the Cloud Object Storage service. Only relevant when using `apikey` as the `auth_type`.
+	* `endpoint` - (Optional, String) The [Cloud Object Storage endpoint](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-endpoints) in IBM Cloud or other endpoint. For example for IBM Cloud Object Storage: `s3.direct.us-south.cloud-object-storage.appdomain.cloud`.
 	  * Constraints: The value must match regular expression `/\\S/`.
-	* `instance_id` - (Required, String) The guid of the App Configuration service instance.
-	  * Constraints: The value must match regular expression `/\\S/`.
-	* `location` - (Required, String) The IBM Cloud location where the App Configuration service instance is located.
-	* `name` - (Required, String) The name used to identify this tool integration. App Configuration references include this name to identify the App Configuration instance where the configuration values reside. All App Configuration tools integrated into a toolchain should have a unique name to allow resolution to function properly.
-	* `resource_group_name` - (Required, String) The name of the resource group where the App Configuration service instance is located.
+	* `hmac_access_key_id` - (Optional, String) The HMAC Access Key ID which is part of an HMAC (Hash Message Authentication Code) credential set. HMAC is identified by a combination of an Access Key ID and a Secret Access Key. Only relevant when `auth_type` is set to `hmac`.
+	* `hmac_secret_access_key` - (Optional, String) The HMAC Secret Access Key which is part of an HMAC (Hash Message Authentication Code) credential set. HMAC is identified by a combination of an Access Key ID and a Secret Access Key. Only relevant when `auth_type` is set to `hmac`.
+	* `instance_crn` - (Optional, String) The CRN (Cloud Resource Name) of the IBM Cloud Object Storage service instance, only relevant when using `apikey` as the `auth_type`.
+	  * Constraints: The value must match regular expression `/^crn:v1:(?:bluemix|staging):public:cloud-object-storage:[a-zA-Z0-9-]*\\b:a\/[0-9a-fA-F]*\\b:[0-9a-fA-F]{8}\\b-[0-9a-fA-F]{4}\\b-[0-9a-fA-F]{4}\\b-[0-9a-fA-F]{4}\\b-[0-9a-fA-F]{12}\\b::$/`.
+	* `name` - (Required, String) The name used to identify this tool integration.
 * `toolchain_id` - (Required, Forces new resource, String) ID of the toolchain to bind the tool to.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[89abAB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$/`.
 
@@ -52,7 +52,7 @@ Nested schema for **parameters**:
 
 After your resource is created, you can read values from the listed arguments and the following attributes.
 
-* `id` - The unique identifier of the cd_toolchain_tool_appconfig.
+* `id` - The unique identifier of the cd_toolchain_tool_cos.
 * `crn` - (String) Tool CRN.
 * `href` - (String) URI representing the tool.
 * `referent` - (List) Information on URIs to access this resource through the UI or API.
@@ -70,7 +70,7 @@ Nested schema for **referent**:
 
 ## Import
 
-You can import the `ibm_cd_toolchain_tool_appconfig` resource by using `id`.
+You can import the `ibm_cd_toolchain_tool_cos` resource by using `id`.
 The `id` property can be formed from `toolchain_id`, and `tool_id` in the following format:
 
 <pre>
@@ -81,5 +81,5 @@ The `id` property can be formed from `toolchain_id`, and `tool_id` in the follow
 
 # Syntax
 <pre>
-$ terraform import ibm_cd_toolchain_tool_appconfig.cd_toolchain_tool_appconfig &lt;toolchain_id&gt;/&lt;tool_id&gt;
+$ terraform import ibm_cd_toolchain_tool_cos.cd_toolchain_tool_cos &lt;toolchain_id&gt;/&lt;tool_id&gt;
 </pre>

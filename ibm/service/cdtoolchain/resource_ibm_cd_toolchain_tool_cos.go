@@ -24,12 +24,12 @@ import (
 	"github.com/IBM/go-sdk-core/v5/core"
 )
 
-func ResourceIBMCdToolchainToolSaucelabs() *schema.Resource {
+func ResourceIBMCdToolchainToolCos() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceIBMCdToolchainToolSaucelabsCreate,
-		ReadContext:   resourceIBMCdToolchainToolSaucelabsRead,
-		UpdateContext: resourceIBMCdToolchainToolSaucelabsUpdate,
-		DeleteContext: resourceIBMCdToolchainToolSaucelabsDelete,
+		CreateContext: resourceIBMCdToolchainToolCosCreate,
+		ReadContext:   resourceIBMCdToolchainToolCosRead,
+		UpdateContext: resourceIBMCdToolchainToolCosUpdate,
+		DeleteContext: resourceIBMCdToolchainToolCosDelete,
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
@@ -37,13 +37,13 @@ func ResourceIBMCdToolchainToolSaucelabs() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_cd_toolchain_tool_saucelabs", "toolchain_id"),
+				ValidateFunc: validate.InvokeValidator("ibm_cd_toolchain_tool_cos", "toolchain_id"),
 				Description:  "ID of the toolchain to bind the tool to.",
 			},
 			"name": &schema.Schema{
 				Type:         schema.TypeString,
 				Optional:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_cd_toolchain_tool_saucelabs", "name"),
+				ValidateFunc: validate.InvokeValidator("ibm_cd_toolchain_tool_cos", "name"),
 				Description:  "Name of the tool.",
 			},
 			"parameters": &schema.Schema{
@@ -54,17 +54,52 @@ func ResourceIBMCdToolchainToolSaucelabs() *schema.Resource {
 				Description: "Unique key-value pairs representing parameters to be used to create the tool. A list of parameters for each tool integration can be found in the <a href=\"https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-integrations\">Configuring tool integrations page</a>.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"username": &schema.Schema{
+						"name": &schema.Schema{
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "The user name for the Sauce Labs account.",
+							Description: "The name used to identify this tool integration.",
 						},
-						"access_key": &schema.Schema{
+						"auth_type": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "The authentication type. Options are `apikey` IBM Cloud API Key or `hmac` HMAC (Hash Message Authentication Code). The default is `apikey`.",
+						},
+						"cos_api_key": &schema.Schema{
 							Type:             schema.TypeString,
-							Required:         true,
+							Optional:         true,
 							DiffSuppressFunc: flex.SuppressHashedRawSecret,
 							Sensitive:        true,
-							Description:      "The access key for the Sauce Labs account. You can use a toolchain secret reference for this parameter. For more information, see [Protecting your sensitive data in Continuous Delivery](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-cd_data_security#cd_secure_credentials).",
+							Description:      "The IBM Cloud API key used to access the Cloud Object Storage service. Only relevant when using `apikey` as the `auth_type`.",
+						},
+						"instance_crn": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The CRN (Cloud Resource Name) of the IBM Cloud Object Storage service instance, only relevant when using `apikey` as the `auth_type`.",
+						},
+						"bucket_name": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The name of the Cloud Object Storage service bucket.",
+						},
+						"endpoint": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The [Cloud Object Storage endpoint](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-endpoints) in IBM Cloud or other endpoint. For example for IBM Cloud Object Storage: `s3.direct.us-south.cloud-object-storage.appdomain.cloud`.",
+						},
+						"hmac_access_key_id": &schema.Schema{
+							Type:             schema.TypeString,
+							Optional:         true,
+							DiffSuppressFunc: flex.SuppressHashedRawSecret,
+							Sensitive:        true,
+							Description:      "The HMAC Access Key ID which is part of an HMAC (Hash Message Authentication Code) credential set. HMAC is identified by a combination of an Access Key ID and a Secret Access Key. Only relevant when `auth_type` is set to `hmac`.",
+						},
+						"hmac_secret_access_key": &schema.Schema{
+							Type:             schema.TypeString,
+							Optional:         true,
+							DiffSuppressFunc: flex.SuppressHashedRawSecret,
+							Sensitive:        true,
+							Description:      "The HMAC Secret Access Key which is part of an HMAC (Hash Message Authentication Code) credential set. HMAC is identified by a combination of an Access Key ID and a Secret Access Key. Only relevant when `auth_type` is set to `hmac`.",
 						},
 					},
 				},
@@ -129,7 +164,7 @@ func ResourceIBMCdToolchainToolSaucelabs() *schema.Resource {
 	}
 }
 
-func ResourceIBMCdToolchainToolSaucelabsValidator() *validate.ResourceValidator {
+func ResourceIBMCdToolchainToolCosValidator() *validate.ResourceValidator {
 	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
@@ -152,14 +187,14 @@ func ResourceIBMCdToolchainToolSaucelabsValidator() *validate.ResourceValidator 
 		},
 	)
 
-	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_cd_toolchain_tool_saucelabs", Schema: validateSchema}
+	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_cd_toolchain_tool_cos", Schema: validateSchema}
 	return &resourceValidator
 }
 
-func resourceIBMCdToolchainToolSaucelabsCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMCdToolchainToolCosCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	cdToolchainClient, err := meta.(conns.ClientSession).CdToolchainV2()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cd_toolchain_tool_saucelabs", "create", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cd_toolchain_tool_cos", "create", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -167,11 +202,8 @@ func resourceIBMCdToolchainToolSaucelabsCreate(context context.Context, d *schem
 	createToolOptions := &cdtoolchainv2.CreateToolOptions{}
 
 	createToolOptions.SetToolchainID(d.Get("toolchain_id").(string))
-	createToolOptions.SetToolTypeID("saucelabs")
-	remapFields := map[string]string{
-		"access_key": "key",
-	}
-	parametersModel := GetParametersForCreate(d, ResourceIBMCdToolchainToolSaucelabs(), remapFields)
+	createToolOptions.SetToolTypeID("cloudobjectstorage")
+	parametersModel := GetParametersForCreate(d, ResourceIBMCdToolchainToolCos(), nil)
 	createToolOptions.SetParameters(parametersModel)
 	if _, ok := d.GetOk("name"); ok {
 		createToolOptions.SetName(d.Get("name").(string))
@@ -179,20 +211,20 @@ func resourceIBMCdToolchainToolSaucelabsCreate(context context.Context, d *schem
 
 	toolchainToolPost, _, err := cdToolchainClient.CreateToolWithContext(context, createToolOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateToolWithContext failed: %s", err.Error()), "ibm_cd_toolchain_tool_saucelabs", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateToolWithContext failed: %s", err.Error()), "ibm_cd_toolchain_tool_cos", "create")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", *createToolOptions.ToolchainID, *toolchainToolPost.ID))
 
-	return resourceIBMCdToolchainToolSaucelabsRead(context, d, meta)
+	return resourceIBMCdToolchainToolCosRead(context, d, meta)
 }
 
-func resourceIBMCdToolchainToolSaucelabsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMCdToolchainToolCosRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	cdToolchainClient, err := meta.(conns.ClientSession).CdToolchainV2()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cd_toolchain_tool_saucelabs", "read", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cd_toolchain_tool_cos", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -201,7 +233,7 @@ func resourceIBMCdToolchainToolSaucelabsRead(context context.Context, d *schema.
 
 	parts, err := flex.SepIdParts(d.Id(), "/")
 	if err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cd_toolchain_tool_saucelabs", "read", "sep-id-parts").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cd_toolchain_tool_cos", "read", "sep-id-parts").GetDiag()
 	}
 
 	getToolByIDOptions.SetToolchainID(parts[0])
@@ -227,73 +259,70 @@ func resourceIBMCdToolchainToolSaucelabsRead(context context.Context, d *schema.
 			d.SetId("")
 			return nil
 		}
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetToolByIDWithContext failed: %s", err.Error()), "ibm_cd_toolchain_tool_saucelabs", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetToolByIDWithContext failed: %s", err.Error()), "ibm_cd_toolchain_tool_cos", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 
 	if err = d.Set("toolchain_id", toolchainTool.ToolchainID); err != nil {
 		err = fmt.Errorf("Error setting toolchain_id: %s", err)
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cd_toolchain_tool_saucelabs", "read", "set-toolchain_id").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cd_toolchain_tool_cos", "read", "set-toolchain_id").GetDiag()
 	}
 	if !core.IsNil(toolchainTool.Name) {
 		if err = d.Set("name", toolchainTool.Name); err != nil {
 			err = fmt.Errorf("Error setting name: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cd_toolchain_tool_saucelabs", "read", "set-name").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cd_toolchain_tool_cos", "read", "set-name").GetDiag()
 		}
 	}
-	remapFields := map[string]string{
-		"access_key": "key",
-	}
-	parametersMap := GetParametersFromRead(toolchainTool.Parameters, ResourceIBMCdToolchainToolSaucelabs(), remapFields)
+	parametersMap := GetParametersFromRead(toolchainTool.Parameters, ResourceIBMCdToolchainToolCos(), nil)
 	if err = d.Set("parameters", []map[string]interface{}{parametersMap}); err != nil {
 		err = fmt.Errorf("Error setting parameters: %s", err)
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cd_toolchain_tool_saucelabs", "read", "set-parameters").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cd_toolchain_tool_cos", "read", "set-parameters").GetDiag()
 	}
 	if err = d.Set("resource_group_id", toolchainTool.ResourceGroupID); err != nil {
 		err = fmt.Errorf("Error setting resource_group_id: %s", err)
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cd_toolchain_tool_saucelabs", "read", "set-resource_group_id").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cd_toolchain_tool_cos", "read", "set-resource_group_id").GetDiag()
 	}
 	if err = d.Set("crn", toolchainTool.CRN); err != nil {
 		err = fmt.Errorf("Error setting crn: %s", err)
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cd_toolchain_tool_saucelabs", "read", "set-crn").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cd_toolchain_tool_cos", "read", "set-crn").GetDiag()
 	}
 	if err = d.Set("toolchain_crn", toolchainTool.ToolchainCRN); err != nil {
 		err = fmt.Errorf("Error setting toolchain_crn: %s", err)
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cd_toolchain_tool_saucelabs", "read", "set-toolchain_crn").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cd_toolchain_tool_cos", "read", "set-toolchain_crn").GetDiag()
 	}
 	if err = d.Set("href", toolchainTool.Href); err != nil {
 		err = fmt.Errorf("Error setting href: %s", err)
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cd_toolchain_tool_saucelabs", "read", "set-href").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cd_toolchain_tool_cos", "read", "set-href").GetDiag()
 	}
-	referentMap, err := ResourceIBMCdToolchainToolSaucelabsToolModelReferentToMap(toolchainTool.Referent)
+	referentMap, err := ResourceIBMCdToolchainToolCosToolModelReferentToMap(toolchainTool.Referent)
 	if err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cd_toolchain_tool_saucelabs", "read", "referent-to-map").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cd_toolchain_tool_cos", "read", "referent-to-map").GetDiag()
 	}
 	if err = d.Set("referent", []map[string]interface{}{referentMap}); err != nil {
 		err = fmt.Errorf("Error setting referent: %s", err)
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cd_toolchain_tool_saucelabs", "read", "set-referent").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cd_toolchain_tool_cos", "read", "set-referent").GetDiag()
 	}
 	if err = d.Set("updated_at", flex.DateTimeToString(toolchainTool.UpdatedAt)); err != nil {
 		err = fmt.Errorf("Error setting updated_at: %s", err)
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cd_toolchain_tool_saucelabs", "read", "set-updated_at").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cd_toolchain_tool_cos", "read", "set-updated_at").GetDiag()
 	}
 	if err = d.Set("state", toolchainTool.State); err != nil {
 		err = fmt.Errorf("Error setting state: %s", err)
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cd_toolchain_tool_saucelabs", "read", "set-state").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cd_toolchain_tool_cos", "read", "set-state").GetDiag()
 	}
 	if err = d.Set("tool_id", toolchainTool.ID); err != nil {
 		err = fmt.Errorf("Error setting tool_id: %s", err)
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cd_toolchain_tool_saucelabs", "read", "set-tool_id").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cd_toolchain_tool_cos", "read", "set-tool_id").GetDiag()
 	}
 
 	return nil
 }
 
-func resourceIBMCdToolchainToolSaucelabsUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMCdToolchainToolCosUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	cdToolchainClient, err := meta.(conns.ClientSession).CdToolchainV2()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cd_toolchain_tool_saucelabs", "update", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cd_toolchain_tool_cos", "update", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -302,7 +331,7 @@ func resourceIBMCdToolchainToolSaucelabsUpdate(context context.Context, d *schem
 
 	parts, err := flex.SepIdParts(d.Id(), "/")
 	if err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cd_toolchain_tool_saucelabs", "update", "sep-id-parts").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cd_toolchain_tool_cos", "update", "sep-id-parts").GetDiag()
 	}
 
 	updateToolOptions.SetToolchainID(parts[0])
@@ -314,7 +343,7 @@ func resourceIBMCdToolchainToolSaucelabsUpdate(context context.Context, d *schem
 	if d.HasChange("toolchain_id") {
 		errMsg := fmt.Sprintf("Cannot update resource property \"%s\" with the ForceNew annotation."+
 			" The resource must be re-created to update this property.", "toolchain_id")
-		return flex.DiscriminatedTerraformErrorf(nil, errMsg, "ibm_cd_toolchain_tool_saucelabs", "update", "toolchain_id-forces-new").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(nil, errMsg, "ibm_cd_toolchain_tool_cos", "update", "toolchain_id-forces-new").GetDiag()
 	}
 	if d.HasChange("name") {
 		newName := d.Get("name").(string)
@@ -322,10 +351,7 @@ func resourceIBMCdToolchainToolSaucelabsUpdate(context context.Context, d *schem
 		hasChange = true
 	}
 	if d.HasChange("parameters") {
-		remapFields := map[string]string{
-			"access_key": "key",
-		}
-		parameters := GetParametersForUpdate(d, ResourceIBMCdToolchainToolSaucelabs(), remapFields)
+		parameters := GetParametersForUpdate(d, ResourceIBMCdToolchainToolCos(), nil)
 		patchVals.Parameters = parameters
 		hasChange = true
 	}
@@ -334,23 +360,23 @@ func resourceIBMCdToolchainToolSaucelabsUpdate(context context.Context, d *schem
 		// Fields with `nil` values are omitted from the generic map,
 		// so we need to re-add them to support removing arguments
 		// in merge-patch operations sent to the service.
-		updateToolOptions.ToolchainToolPrototypePatch = ResourceIBMCdToolchainToolSaucelabsToolchainToolPrototypePatchAsPatch(patchVals, d)
+		updateToolOptions.ToolchainToolPrototypePatch = ResourceIBMCdToolchainToolCosToolchainToolPrototypePatchAsPatch(patchVals, d)
 
 		_, _, err = cdToolchainClient.UpdateToolWithContext(context, updateToolOptions)
 		if err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateToolWithContext failed: %s", err.Error()), "ibm_cd_toolchain_tool_saucelabs", "update")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateToolWithContext failed: %s", err.Error()), "ibm_cd_toolchain_tool_cos", "update")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
 	}
 
-	return resourceIBMCdToolchainToolSaucelabsRead(context, d, meta)
+	return resourceIBMCdToolchainToolCosRead(context, d, meta)
 }
 
-func resourceIBMCdToolchainToolSaucelabsDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMCdToolchainToolCosDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	cdToolchainClient, err := meta.(conns.ClientSession).CdToolchainV2()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cd_toolchain_tool_saucelabs", "delete", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cd_toolchain_tool_cos", "delete", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -359,7 +385,7 @@ func resourceIBMCdToolchainToolSaucelabsDelete(context context.Context, d *schem
 
 	parts, err := flex.SepIdParts(d.Id(), "/")
 	if err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cd_toolchain_tool_saucelabs", "delete", "sep-id-parts").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cd_toolchain_tool_cos", "delete", "sep-id-parts").GetDiag()
 	}
 
 	deleteToolOptions.SetToolchainID(parts[0])
@@ -367,7 +393,7 @@ func resourceIBMCdToolchainToolSaucelabsDelete(context context.Context, d *schem
 
 	_, err = cdToolchainClient.DeleteToolWithContext(context, deleteToolOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteToolWithContext failed: %s", err.Error()), "ibm_cd_toolchain_tool_saucelabs", "delete")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteToolWithContext failed: %s", err.Error()), "ibm_cd_toolchain_tool_cos", "delete")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -377,7 +403,7 @@ func resourceIBMCdToolchainToolSaucelabsDelete(context context.Context, d *schem
 	return nil
 }
 
-func ResourceIBMCdToolchainToolSaucelabsToolModelReferentToMap(model *cdtoolchainv2.ToolModelReferent) (map[string]interface{}, error) {
+func ResourceIBMCdToolchainToolCosToolModelReferentToMap(model *cdtoolchainv2.ToolModelReferent) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.UIHref != nil {
 		modelMap["ui_href"] = *model.UIHref
@@ -388,7 +414,7 @@ func ResourceIBMCdToolchainToolSaucelabsToolModelReferentToMap(model *cdtoolchai
 	return modelMap, nil
 }
 
-func ResourceIBMCdToolchainToolSaucelabsToolchainToolPrototypePatchAsPatch(patchVals *cdtoolchainv2.ToolchainToolPrototypePatch, d *schema.ResourceData) map[string]interface{} {
+func ResourceIBMCdToolchainToolCosToolchainToolPrototypePatchAsPatch(patchVals *cdtoolchainv2.ToolchainToolPrototypePatch, d *schema.ResourceData) map[string]interface{} {
 	patch, _ := patchVals.AsPatch()
 	var path string
 
@@ -403,7 +429,42 @@ func ResourceIBMCdToolchainToolSaucelabsToolchainToolPrototypePatchAsPatch(patch
 	path = "parameters"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["parameters"] = nil
+	} else if exists && patch["parameters"] != nil {
+		ResourceIBMCdToolchainToolCosToolModelParametersAsPatch(patch["parameters"].(map[string]interface{}), d)
 	}
 
 	return patch
+}
+
+func ResourceIBMCdToolchainToolCosToolModelParametersAsPatch(patch map[string]interface{}, d *schema.ResourceData) {
+	var path string
+
+	path = "parameters.0.auth_type"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["auth_type"] = nil
+	}
+	path = "parameters.0.cos_api_key"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["cos_api_key"] = nil
+	}
+	path = "parameters.0.instance_crn"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["instance_crn"] = nil
+	}
+	path = "parameters.0.bucket_name"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["bucket_name"] = nil
+	}
+	path = "parameters.0.endpoint"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["endpoint"] = nil
+	}
+	path = "parameters.0.hmac_access_key_id"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["hmac_access_key_id"] = nil
+	}
+	path = "parameters.0.hmac_secret_access_key"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["hmac_secret_access_key"] = nil
+	}
 }

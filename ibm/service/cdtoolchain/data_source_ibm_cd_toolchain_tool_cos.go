@@ -21,9 +21,9 @@ import (
 	"github.com/IBM/go-sdk-core/v5/core"
 )
 
-func DataSourceIBMCdToolchainToolNexus() *schema.Resource {
+func DataSourceIBMCdToolchainToolCos() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIBMCdToolchainToolNexusRead,
+		ReadContext: dataSourceIBMCdToolchainToolCosRead,
 
 		Schema: map[string]*schema.Schema{
 			"toolchain_id": &schema.Schema{
@@ -94,43 +94,45 @@ func DataSourceIBMCdToolchainToolNexus() *schema.Resource {
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The name for this tool integration.",
+							Description: "The name used to identify this tool integration.",
 						},
-						"type": &schema.Schema{
+						"auth_type": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The type of repository for the Nexus integration.",
+							Description: "The authentication type. Options are `apikey` IBM Cloud API Key or `hmac` HMAC (Hash Message Authentication Code). The default is `apikey`.",
 						},
-						"user_id": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The user id or email for authenticating to the Nexus repository.",
-						},
-						"token": &schema.Schema{
+						"cos_api_key": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Sensitive:   true,
-							Description: "The password or token for authenticating to the Nexus repository. You can use a toolchain secret reference for this parameter. For more information, see [Protecting your sensitive data in Continuous Delivery](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-cd_data_security#cd_secure_credentials).",
+							Description: "The IBM Cloud API key used to access the Cloud Object Storage service. Only relevant when using `apikey` as the `auth_type`.",
 						},
-						"release_url": &schema.Schema{
+						"instance_crn": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The URL of the Nexus release repository.",
+							Description: "The CRN (Cloud Resource Name) of the IBM Cloud Object Storage service instance, only relevant when using `apikey` as the `auth_type`.",
 						},
-						"mirror_url": &schema.Schema{
+						"bucket_name": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The URL of the Nexus virtual repository, which is a repository that can see your private repositories and is a cache of the public repositories.",
+							Description: "The name of the Cloud Object Storage service bucket.",
 						},
-						"snapshot_url": &schema.Schema{
+						"endpoint": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The URL of the Nexus snapshot repository.",
+							Description: "The [Cloud Object Storage endpoint](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-endpoints) in IBM Cloud or other endpoint. For example for IBM Cloud Object Storage: `s3.direct.us-south.cloud-object-storage.appdomain.cloud`.",
 						},
-						"server_url": &schema.Schema{
+						"hmac_access_key_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The URL of the Nexus server.",
+							Sensitive:   true,
+							Description: "The HMAC Access Key ID which is part of an HMAC (Hash Message Authentication Code) credential set. HMAC is identified by a combination of an Access Key ID and a Secret Access Key. Only relevant when `auth_type` is set to `hmac`.",
+						},
+						"hmac_secret_access_key": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Sensitive:   true,
+							Description: "The HMAC Secret Access Key which is part of an HMAC (Hash Message Authentication Code) credential set. HMAC is identified by a combination of an Access Key ID and a Secret Access Key. Only relevant when `auth_type` is set to `hmac`.",
 						},
 					},
 				},
@@ -144,10 +146,10 @@ func DataSourceIBMCdToolchainToolNexus() *schema.Resource {
 	}
 }
 
-func dataSourceIBMCdToolchainToolNexusRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMCdToolchainToolCosRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	cdToolchainClient, err := meta.(conns.ClientSession).CdToolchainV2()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_cd_toolchain_tool_nexus", "read", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_cd_toolchain_tool_cos", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -159,71 +161,68 @@ func dataSourceIBMCdToolchainToolNexusRead(context context.Context, d *schema.Re
 
 	toolchainTool, _, err := cdToolchainClient.GetToolByIDWithContext(context, getToolByIDOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetToolByIDWithContext failed: %s", err.Error()), "(Data) ibm_cd_toolchain_tool_nexus", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetToolByIDWithContext failed: %s", err.Error()), "(Data) ibm_cd_toolchain_tool_cos", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 
-	if *toolchainTool.ToolTypeID != "nexus" {
+	if *toolchainTool.ToolTypeID != "cloudobjectstorage" {
 		return flex.TerraformErrorf(err, fmt.Sprintf("Retrieved tool is not the correct type: %s", err), "(Data) ibm_cd_toolchain_tool", "read").GetDiag()
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", *getToolByIDOptions.ToolchainID, *getToolByIDOptions.ToolID))
 
 	if err = d.Set("resource_group_id", toolchainTool.ResourceGroupID); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_group_id: %s", err), "(Data) ibm_cd_toolchain_tool_nexus", "read", "set-resource_group_id").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_group_id: %s", err), "(Data) ibm_cd_toolchain_tool_cos", "read", "set-resource_group_id").GetDiag()
 	}
 
 	if err = d.Set("crn", toolchainTool.CRN); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting crn: %s", err), "(Data) ibm_cd_toolchain_tool_nexus", "read", "set-crn").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting crn: %s", err), "(Data) ibm_cd_toolchain_tool_cos", "read", "set-crn").GetDiag()
 	}
 
 	if err = d.Set("toolchain_crn", toolchainTool.ToolchainCRN); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting toolchain_crn: %s", err), "(Data) ibm_cd_toolchain_tool_nexus", "read", "set-toolchain_crn").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting toolchain_crn: %s", err), "(Data) ibm_cd_toolchain_tool_cos", "read", "set-toolchain_crn").GetDiag()
 	}
 
 	if err = d.Set("href", toolchainTool.Href); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting href: %s", err), "(Data) ibm_cd_toolchain_tool_nexus", "read", "set-href").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting href: %s", err), "(Data) ibm_cd_toolchain_tool_cos", "read", "set-href").GetDiag()
 	}
 
 	referent := []map[string]interface{}{}
-	referentMap, err := DataSourceIBMCdToolchainToolNexusToolModelReferentToMap(toolchainTool.Referent)
+	referentMap, err := DataSourceIBMCdToolchainToolCosToolModelReferentToMap(toolchainTool.Referent)
 	if err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_cd_toolchain_tool_nexus", "read", "referent-to-map").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_cd_toolchain_tool_cos", "read", "referent-to-map").GetDiag()
 	}
 	referent = append(referent, referentMap)
 	if err = d.Set("referent", referent); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting referent: %s", err), "(Data) ibm_cd_toolchain_tool_nexus", "read", "set-referent").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting referent: %s", err), "(Data) ibm_cd_toolchain_tool_cos", "read", "set-referent").GetDiag()
 	}
 
 	if !core.IsNil(toolchainTool.Name) {
 		if err = d.Set("name", toolchainTool.Name); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_cd_toolchain_tool_nexus", "read", "set-name").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_cd_toolchain_tool_cos", "read", "set-name").GetDiag()
 		}
 	}
 
 	if err = d.Set("updated_at", flex.DateTimeToString(toolchainTool.UpdatedAt)); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting updated_at: %s", err), "(Data) ibm_cd_toolchain_tool_nexus", "read", "set-updated_at").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting updated_at: %s", err), "(Data) ibm_cd_toolchain_tool_cos", "read", "set-updated_at").GetDiag()
 	}
 
 	parameters := []map[string]interface{}{}
-	remapFields := map[string]string{
-		"server_url": "dashboard_url",
-	}
-	parametersMap := GetParametersFromRead(toolchainTool.Parameters, DataSourceIBMCdToolchainToolNexus(), remapFields)
+	parametersMap := GetParametersFromRead(toolchainTool.Parameters, DataSourceIBMCdToolchainToolCos(), nil)
 	parameters = append(parameters, parametersMap)
 	if err = d.Set("parameters", parameters); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting parameters: %s", err), "(Data) ibm_cd_toolchain_tool_nexus", "read", "set-parameters").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting parameters: %s", err), "(Data) ibm_cd_toolchain_tool_cos", "read", "set-parameters").GetDiag()
 	}
 
 	if err = d.Set("state", toolchainTool.State); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting state: %s", err), "(Data) ibm_cd_toolchain_tool_nexus", "read", "set-state").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting state: %s", err), "(Data) ibm_cd_toolchain_tool_cos", "read", "set-state").GetDiag()
 	}
 
 	return nil
 }
 
-func DataSourceIBMCdToolchainToolNexusToolModelReferentToMap(model *cdtoolchainv2.ToolModelReferent) (map[string]interface{}, error) {
+func DataSourceIBMCdToolchainToolCosToolModelReferentToMap(model *cdtoolchainv2.ToolModelReferent) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.UIHref != nil {
 		modelMap["ui_href"] = *model.UIHref
