@@ -129,9 +129,18 @@ func TestAccIBMDatabaseInstanceMongodbUpgrade(t *testing.T) {
 		CheckDestroy: testAccCheckIBMDatabaseInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: acc.ConfigCompose(
-					testAccCheckIBMDatabaseInstanceMongodbVersion6(databaseResourceGroup, testName),
-					testAccCheckIBMDatabaseInstanceMongodbVersionUpgrade(databaseResourceGroup, testName)),
+				Config: testAccCheckIBMDatabaseInstanceMongodbVersion6(databaseResourceGroup, testName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
+					resource.TestCheckResourceAttr(name, "name", testName),
+					resource.TestCheckResourceAttr(name, "service", "databases-for-mongodb"),
+					resource.TestCheckResourceAttr(name, "plan", "standard"),
+					resource.TestCheckResourceAttr(name, "location", acc.Region()),
+					resource.TestCheckResourceAttr(name, "version", "6.0"),
+				),
+			},
+			{
+				Config: testAccCheckIBMDatabaseInstanceMongodbVersionUpgrade(databaseResourceGroup, testName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(name, "name", testName),
@@ -217,6 +226,7 @@ func testAccCheckIBMDatabaseInstanceMongodbVersionUpgrade(databaseResourceGroup 
 		plan                         = "standard"
 		location                     = "%[3]s"
 		version                		 = "7.0"
+		version_upgrade_skip_backup  = true
 		service_endpoints            = "private"
 	}
 				`, databaseResourceGroup, name, acc.Region())
