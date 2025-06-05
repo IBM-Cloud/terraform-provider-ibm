@@ -18,7 +18,7 @@ func DataSourceIBMDLGatewayMacsecConfig() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceIBMDLGatewayMacsecConfigRead,
 		Schema: map[string]*schema.Schema{
-			ID: {
+			dlGatewayId: {
 				Type:        schema.TypeString,
 				Description: "Gateway ID",
 				Required:    true,
@@ -74,7 +74,7 @@ func DataSourceIBMDLGatewayMacsecConfig() *schema.Resource {
 				Description: "The window size determines the number of frames in a window for replay protection.",
 			},
 			dlGatewaySakRekey: {
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Description: "Determines how SAK rekeying occurs.",
 				Computed:    true,
 				Elem: &schema.Resource{
@@ -137,7 +137,7 @@ func dataSourceIBMDLGatewayMacsecConfigRead(d *schema.ResourceData, meta interfa
 		return err
 	}
 
-	dlGatewayID := d.Get(ID).(string)
+	dlGatewayID := d.Get(dlGatewayId).(string)
 
 	// Get MacSec gateway
 	// Construct an instance of the GetGatewayMacsecOptions model
@@ -187,8 +187,8 @@ func dataSourceIBMDLGatewayMacsecConfigRead(d *schema.ResourceData, meta interfa
 		if gatewaySakRekey.Interval != nil {
 			sakReKey[dlGatewaySakRekeyInterval] = *gatewaySakRekey.Interval
 		}
-		d.Set(dlGatewaySakRekey, sakReKey)
 	}
+	d.Set(dlGatewaySakRekey, []map[string]interface{}{sakReKey})
 
 	statusReasonsList := make([]map[string]interface{}, 0)
 	if len(result.StatusReasons) > 0 {

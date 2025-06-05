@@ -14,7 +14,7 @@ func DataSourceIBMDLGatewayMacsecCaks() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceIBMDLGatewayMacsecCaksRead,
 		Schema: map[string]*schema.Schema{
-			ID: {
+			dlGatewayId: {
 				Type:        schema.TypeString,
 				Description: "Gateway ID",
 				Required:    true,
@@ -116,7 +116,7 @@ func DataSourceIBMDLGatewayMacsecCaks() *schema.Resource {
 
 func dataSourceIBMDLGatewayMacsecCaksRead(d *schema.ResourceData, meta interface{}) error {
 	directLink, err := directlinkClient(meta)
-	gatewayID := d.Get(ID).(string)
+	gatewayID := d.Get(dlGatewayId).(string)
 
 	if err != nil {
 		return err

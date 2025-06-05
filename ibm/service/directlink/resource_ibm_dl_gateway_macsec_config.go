@@ -19,7 +19,7 @@ func ResourceIBMDLGatewayMacsecConfig() *schema.Resource {
 		Update:   resourceIBMdlGatewayMacsecConfigUpdate,
 		Importer: &schema.ResourceImporter{},
 		Schema: map[string]*schema.Schema{
-			ID: {
+			dlGatewayId: {
 				Type:        schema.TypeString,
 				Description: "Gateway ID",
 				Required:    true,
@@ -31,7 +31,7 @@ func ResourceIBMDLGatewayMacsecConfig() *schema.Resource {
 			},
 			dlActive: {
 				Type:        schema.TypeBool,
-				Computed:    true,
+				Required:    true,
 				Description: "Indicate whether MACsec protection should be active (true) or inactive (false) for this MACsec enabled gateway",
 			},
 			dlCipherSuite: {
@@ -56,7 +56,7 @@ func ResourceIBMDLGatewayMacsecConfig() *schema.Resource {
 			},
 			dlSecurityPolicy: {
 				Type:        schema.TypeString,
-				Computed:    true,
+				Required:    true,
 				Description: "Determines how packets without MACsec headers are handled.",
 			},
 			dlMacSecConfigStatus: {
@@ -64,7 +64,6 @@ func ResourceIBMDLGatewayMacsecConfig() *schema.Resource {
 				Computed:    true,
 				Description: "The current status of MACsec on the device for this gateway",
 			},
-
 			dlUpdatedAt: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -72,24 +71,23 @@ func ResourceIBMDLGatewayMacsecConfig() *schema.Resource {
 			},
 			dlWindowSize: {
 				Type:        schema.TypeInt,
-				Computed:    true,
+				Optional:    true,
 				Description: "The window size determines the number of frames in a window for replay protection.",
 			},
 			dlGatewaySakRekey: {
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Description: "Determines how SAK rekeying occurs.",
-				Computed:    true,
+				Required:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						dlGatewaySakRekeyInterval: {
 							Type:        schema.TypeInt,
-							Computed:    true,
 							Optional:    true,
 							Description: "SAK ReKey Interval",
 						},
 						dlGatewaySakRekeyMode: {
 							Type:        schema.TypeString,
-							Computed:    true,
+							Required:    true,
 							Description: "SAK ReKey Mode",
 						},
 					},
@@ -129,6 +127,39 @@ func ResourceIBMDLGatewayMacsecConfig() *schema.Resource {
 					},
 				},
 			},
+			dlGatewayMacsecCaksList: {
+				Type:        schema.TypeList,
+				Description: "CAKs",
+				Required:    true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						dlGatewayMacsecHPCSKey: {
+							Type:        schema.TypeSet,
+							Required:    true,
+							Description: "HPCS Key",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									dlGatewayMacsecHPCSCrn: {
+										Type:        schema.TypeString,
+										Required:    true,
+										Description: "The CRN of the referenced key.",
+									},
+								},
+							},
+						},
+						dlGatewayMacsecCakName: {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The name identifies the connectivity association key (CAK) within the MACsec key chain.",
+						},
+						dlGatewayMacsecCakSession: {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Current status of the instance.",
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -139,12 +170,56 @@ func resourceIBMdlGatewayMacsecConfigCreate(d *schema.ResourceData, meta interfa
 		return err
 	}
 
-	gatewayID := d.Id()
+	gatewayID := d.Get(dlGatewayId).(string)
+	active := d.Get(dlActive).(bool)
 
-	opts := &directlinkv1.SetGatewayMacsecOptions{
-		ID: &gatewayID,
+	caks := d.Get(dlGatewayMacsecCaksList).([]interface{})
+	caksList := []directlinkv1.GatewayMacsecCakPrototype{}
+	for _, cak := range caks {
+		cakMap := cak.(map[string]interface{})
+
+		name := cakMap[dlGatewayMacsecCakName].(string)
+		session := cakMap[dlGatewayMacsecCakSession].(string)
+
+		keyMap := cakMap[dlGatewayMacsecHPCSKey].(*schema.Set).List()[0].(map[string]interface{})
+		crn := keyMap[dlGatewayMacsecHPCSCrn].(string)
+		keyItem := directlinkv1.HpcsKeyIdentity{Crn: &crn}
+
+		cakItem := &directlinkv1.GatewayMacsecCakPrototype{
+			Key:     &keyItem,
+			Name:    &name,
+			Session: &session,
+		}
+
+		caksList = append(caksList, *cakItem)
 	}
 
+	securityPolicy := d.Get(dlSecurityPolicy).(string)
+	windowSize := int64(d.Get(dlWindowSize).(int))
+
+	opts := &directlinkv1.SetGatewayMacsecOptions{
+		ID:             &gatewayID,
+		Active:         &active,
+		Caks:           caksList,
+		SecurityPolicy: &securityPolicy,
+		WindowSize:     &windowSize,
+	}
+	sakReKeyIntf := d.Get(dlGatewaySakRekey).(*schema.Set).List()[0].(map[string]interface{})
+	mode := sakReKeyIntf["mode"].(string)
+
+	if val, ok := sakReKeyIntf["interval"]; ok {
+		intervalInt64 := int64(val.(int))
+		sakRekeyPrototypeModel := new(directlinkv1.SakRekeyPrototypeSakRekeyTimerModePrototype)
+		sakRekeyPrototypeModel.Interval = &intervalInt64
+		sakRekeyPrototypeModel.Mode = &mode
+		opts.SetSakRekey(sakRekeyPrototypeModel)
+
+	} else {
+		sakRekeyPrototypeModel := new(directlinkv1.SakRekeyPrototypeSakRekeyPacketNumberRolloverModePrototype)
+		sakRekeyPrototypeModel.Mode = &mode
+		opts.SetSakRekey(sakRekeyPrototypeModel)
+	}
+	// opts.SetIfMatch("W/'448-f9e0936758c298f63724af237c32f326dd0d5d4b54069096b87fcbba'")
 	result, response, err := directLink.SetGatewayMacsec(opts)
 
 	if err != nil {
@@ -187,8 +262,8 @@ func resourceIBMdlGatewayMacsecConfigCreate(d *schema.ResourceData, meta interfa
 		if gatewaySakRekey.Interval != nil {
 			sakReKey[dlGatewaySakRekeyInterval] = *gatewaySakRekey.Interval
 		}
-		d.Set(dlGatewaySakRekey, sakReKey)
 	}
+	d.Set(dlGatewaySakRekey, []map[string]interface{}{sakReKey})
 
 	statusReasonsList := make([]map[string]interface{}, 0)
 	if len(result.StatusReasons) > 0 {
@@ -213,7 +288,7 @@ func resourceIBMdlGatewayMacsecConfigRead(d *schema.ResourceData, meta interface
 		return err
 	}
 
-	dlGatewayID := d.Get(ID).(string)
+	dlGatewayID := d.Get(dlGatewayId).(string)
 
 	// Get MacSec gateway
 	// Construct an instance of the GetGatewayMacsecOptions model
@@ -263,8 +338,8 @@ func resourceIBMdlGatewayMacsecConfigRead(d *schema.ResourceData, meta interface
 		if gatewaySakRekey.Interval != nil {
 			sakReKey[dlGatewaySakRekeyInterval] = *gatewaySakRekey.Interval
 		}
-		d.Set(dlGatewaySakRekey, sakReKey)
 	}
+	d.Set(dlGatewaySakRekey, []map[string]interface{}{sakReKey})
 
 	statusReasonsList := make([]map[string]interface{}, 0)
 	if len(result.StatusReasons) > 0 {

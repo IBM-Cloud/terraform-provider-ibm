@@ -1,12 +1,12 @@
 ---
 subcategory: "Direct Link Gateway Macsec CAK"
 layout: "ibm"
-page_title: "IBM : dl_gateway_macsec_cak"
+page_title: "IBM : ibm_dl_gateway_macsec_cak"
 description: |-
   Manages IBM Cloud Infrastructure Direct Link Gateway Macsec CAK.
 ---
 
-# dl_gateway_macsec_cak
+# ibm_dl_gateway_macsec_cak
 
 For a given IBM Cloud Infrastructure Direct Link Gateway, Get a MACsec CAK by its identifier. A connectivity association key (CAK) used in the MACsec Key Agreement (MKA) protocol. MACsec CAKs consist of both a name and key. The CAK's name must be a hexadecimal string of even lengths between 2 to 64 inclusive. The CAK's key must be a [Hyper Protect Crypto Service Standard Key](https://cloud.ibm.com/docs/hs-crypto?topic=hs-crypto-get-started) type=standard with key material a hexadecimal string exactly 64 characters in length.
 
@@ -17,8 +17,8 @@ For more information, about IBM Cloud Direct Link, see [getting started with IBM
 
 ---
 ```terraform
-data "dl_gateway_macsec_cak" "test" {
-    id = "0a06fb9b-820f-4c44-8a31-77f1f0806d28"
+data "ibm_dl_gateway_macsec_cak" "test" {
+    gateway = "0a06fb9b-820f-4c44-8a31-77f1f0806d28"
     cak_id = "ef4dcb1a-fee4-41c7-9e11-9cd99e65c1f4"
     version = "2019-12-13"
 }
@@ -27,7 +27,7 @@ data "dl_gateway_macsec_cak" "test" {
 ## Argument reference
 Review the argument reference that you can specify for your resource. 
 
-- `id` - (Required, String) Direct Link gateway identifier.
+- `gateway` - (Required, String) Direct Link gateway identifier.
 - `cak_id` - (Required, String) Direct Link gateway MACsec CAK identifier.
 - `version` - (Required, String) Requests the version of the API as a date in the format `YYYY-MM-DD`. Any date from 2019-12-13 up to the current date may be provided. Specify the current date to request the latest version.
 
