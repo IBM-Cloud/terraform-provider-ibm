@@ -102,8 +102,8 @@ github.com/IBM/appconfiguration-go-admin-sdk v0.4.4 h1:VQ+mVavoo3/xrBaVSyxE+B6Ue
 github.com/IBM/appconfiguration-go-admin-sdk v0.4.4/go.mod h1:E9cXu9w0EClhZq+E9wBw8QzNLKZd2bNdMrTXwVSWJ1s=
 github.com/IBM/appid-management-go-sdk v0.0.0-20210908164609-dd0e0eaf732f h1:4c1kqY4GqmkQ+tO03rneDb74Tv7BhTj8jDiDB1p8mdM=
 github.com/IBM/appid-management-go-sdk v0.0.0-20210908164609-dd0e0eaf732f/go.mod h1:d22kTYY7RYBWcQlZpqrSdshpB/lJ16viWS5Sbjtlc8s=
-github.com/IBM/cloud-databases-go-sdk v0.7.1 h1:5kK4/3NUsGxZzmuUe+1ftajpOQbeDVh5VeemrPgROP4=
-github.com/IBM/cloud-databases-go-sdk v0.7.1/go.mod h1:JYucI1PdwqbAd8XGdDAchxzxRP7bxOh1zUnseovHKsc=
+github.com/IBM/cloud-databases-go-sdk v0.8.0 h1:uMFqhnc/roVTzfCaUsJ23eaHKjChhGpM1F7Mpxik0bo=
+github.com/IBM/cloud-databases-go-sdk v0.8.0/go.mod h1:JYucI1PdwqbAd8XGdDAchxzxRP7bxOh1zUnseovHKsc=
 github.com/IBM/cloud-db2-go-sdk v0.2.3 h1:R+8uFXSZFOsBDC7nKqW9DgyGgT9Pop589ziUIaw2Tek=
 github.com/IBM/cloud-db2-go-sdk v0.2.3/go.mod h1:jEJMNXX2KOE+Hhk3M8CBq0qi9CZ0eRK36xmhuBPSiNA=
 github.com/IBM/cloudant-go-sdk v0.8.0 h1:XzaqZFy5fm1Q9+iK52X5zRW39SHaahT9pf5SRgVTsTY=

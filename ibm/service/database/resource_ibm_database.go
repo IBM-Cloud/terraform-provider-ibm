@@ -46,9 +46,16 @@ const (
 )
 
 const (
-	databaseTaskSuccessStatus  = "completed"
-	databaseTaskProgressStatus = "running"
-	databaseTaskFailStatus     = "failed"
+	databaseTaskCompletedStatus = "completed"
+	databaseTaskQueuedStatus    = "queued"
+	databaseTaskRunningStatus   = "running"
+	databaseTaskFailedStatus    = "failed"
+	databaseTaskExpiredStatus   = "expired"
+)
+
+const (
+	taskUpgrade = "upgrade"
+	taskRestore = "restore"
 )
 
 const (
@@ -141,7 +148,9 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 			resourceIBMDatabaseInstanceDiff,
 			validateGroupsDiff,
 			validateUsersDiff,
-			validateRemoteLeaderIDDiff),
+			validateRemoteLeaderIDDiff,
+			validateVersionDiff,
+		),
 
 		Importer: &schema.ResourceImporter{},
 
@@ -241,11 +250,15 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				Description: "The configuration schema in JSON format",
 			},
 			"version": {
-				Description: "The database version to provision if specified",
+				Description: "The database version to provision if specified or the database version to upgrade to",
 				Type:        schema.TypeString,
-				Optional:    true,
 				Computed:    true,
-				ForceNew:    true,
+				Optional:    true,
+			},
+			"version_upgrade_skip_backup": {
+				Description: "Option to skip the backup when upgrading version. Only applicable to databases that do not support PITR. Skipping the backup means that your deployment becomes available more quickly, but there is no immediate backup available. This is not recommended as it could result in data loss",
+				Type:        schema.TypeBool,
+				Optional:    true,
 			},
 			"service_endpoints": {
 				Description:  "Types of the service endpoints. Possible values are 'public', 'private', 'public-and-private'.",
@@ -1759,6 +1772,20 @@ func resourceIBMDatabaseInstanceRead(context context.Context, d *schema.Resource
 		return publicServiceEndpointsWarning()
 	}
 
+	tm := &TaskManager{
+		Client:     cloudDatabasesClient,
+		InstanceID: instanceID,
+	}
+
+	upgradeInProgress, upgradeTask, err := tm.matchingTaskInProgress(taskUpgrade)
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("[ERROR] Error getting tasks for instance: %w", err))
+	}
+
+	if upgradeInProgress {
+		return upgradeInProgressWarning(upgradeTask)
+	}
+
 	return nil
 
 }
@@ -2198,7 +2225,41 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 		}
 	}
 
+	if d.HasChange("version") {
+		version := d.Get("version").(string)
+		skipBackup := d.Get("version_upgrade_skip_backup") == true
+
+		timeoutHelper := TimeoutHelper{Now: time.Now()}
+		expirationDatetime := timeoutHelper.calculateExpirationDatetime(d.Timeout(schema.TimeoutUpdate))
+
+		log.Printf("[INFO] Triggering upgrade to version %s, %v, %s", version, skipBackup, expirationDatetime)
+		versionUpgradeOptions := &clouddatabasesv5.SetDatabaseInplaceVersionUpgradeOptions{
+			ID:                 core.StringPtr(instanceID),
+			Version:            core.StringPtr(version),
+			SkipBackup:         core.BoolPtr(skipBackup),
+			ExpirationDatetime: &expirationDatetime,
+		}
+
+		versionUpgradeResponse, response, err := cloudDatabasesClient.SetDatabaseInplaceVersionUpgrade(versionUpgradeOptions)
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("[ERROR] error upgrading version of instance: %v\nResponse: %v", err, response))
+		}
+
+		if versionUpgradeResponse == nil || versionUpgradeResponse.Task == nil || versionUpgradeResponse.Task.ID == nil {
+			return diag.FromErr(fmt.Errorf("[ERROR] received nil for version upgrade"))
+		}
+
+		taskID := *versionUpgradeResponse.Task.ID
+
+		_, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("[ERROR] error waiting for version upgrade task to complete: %w", err))
+
+		}
+	}
+
 	return resourceIBMDatabaseInstanceRead(context, d, meta)
+
 }
 
 func resourceIBMDatabaseInstanceDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -2397,11 +2458,13 @@ func waitForDatabaseTaskComplete(taskId string, d *schema.ResourceData, meta int
 			}
 
 			switch *getTaskResponse.Task.Status {
-			case "failed":
+			case databaseTaskExpiredStatus:
+				return false, fmt.Errorf("[Error] Database Task expired")
+			case databaseTaskFailedStatus:
 				return false, fmt.Errorf("[Error] Database Task failed")
-			case "complete", "":
+			case databaseTaskCompletedStatus, "":
 				return true, nil
-			case "queued", "running":
+			case databaseTaskQueuedStatus, databaseTaskRunningStatus:
 				break
 			}
 		}
@@ -2810,6 +2873,26 @@ func appendSwitchoverWarning() diag.Diagnostics {
 	return diags
 }
 
+func upgradeInProgressWarning(task *clouddatabasesv5.Task) diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	warning := diag.Diagnostic{
+		Severity: diag.Warning,
+		Summary:  "A version upgrade task is in progress. Some tasks may be queued and will not proceed until it has completed.",
+		Detail: fmt.Sprintf("  Type: %s\n"+
+			"  Created at: %s\n"+
+			"  Status: %s\n"+
+			"  Progress percent: %d\n"+
+			"  Description: %s\n"+
+			"  ID: %s\n",
+			*task.ResourceType, *task.CreatedAt, *task.Status, *task.ProgressPercent, *task.Description, *task.ID),
+	}
+
+	diags = append(diags, warning)
+
+	return diags
+}
+
 func publicServiceEndpointsWarning() diag.Diagnostics {
 	var diags diag.Diagnostics
 
@@ -3128,6 +3211,22 @@ func validateRemoteLeaderIDDiff(_ context.Context, diff *schema.ResourceDiff, me
 	}
 
 	return nil
+}
+
+func validateVersionDiff(_ context.Context, diff *schema.ResourceDiff, meta interface{}) (err error) {
+	instanceID := diff.Id()
+	oldVersion, newVersion := diff.GetChange("version")
+
+	if instanceID == "" || oldVersion == newVersion {
+		return nil
+	}
+
+	skipBackup := diff.Get("version_upgrade_skip_backup") == true
+	oldVersionStr, _ := oldVersion.(string)
+	newVersionStr, _ := newVersion.(string)
+	location := diff.Get("location").(string)
+
+	return validateUpgradeVersion(instanceID, location, oldVersionStr, newVersionStr, skipBackup, meta)
 }
 
 func (c *userChange) isDelete() bool {
