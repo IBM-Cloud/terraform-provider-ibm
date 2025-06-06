@@ -166,7 +166,7 @@ func resourceIBMdlGatewayVCRead(d *schema.ResourceData, meta interface{}) error 
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error Getting Directlink Gateway Connection (%s): %s\n%s", ID, err, response)
+		return flex.FmtErrorf("[ERROR] Error Getting Directlink Gateway Connection (%s): %s\n%s", ID, err, response)
 	}
 
 	if instance.Name != nil {
@@ -195,7 +195,7 @@ func resourceIBMdlGatewayVCRead(d *schema.ResourceData, meta interface{}) error 
 	instanceIntf, response, err := directLink.GetGateway(getGatewayOptions)
 
 	if (err != nil) || (instanceIntf == nil) {
-		return fmt.Errorf("[ERROR] Error Getting Direct Link Gateway (Dedicated Template): %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error Getting Direct Link Gateway (Dedicated Template): %s\n%s", err, response)
 	}
 	dlgw := instanceIntf.(*directlinkv1.GetGatewayResponse)
 	d.Set(flex.RelatedCRN, *dlgw.Crn)
@@ -284,7 +284,7 @@ func resourceIBMdlGatewayVCExists(d *schema.ResourceData, meta interface{}) (boo
 		return false, err
 	}
 	if len(parts) < 2 {
-		return false, fmt.Errorf("[ERROR] Incorrect ID %s: Id should be a combination of gatewayID/gatewayVCID", d.Id())
+		return false, flex.FmtErrorf("[ERROR] Incorrect ID %s: Id should be a combination of gatewayID/gatewayVCID", d.Id())
 	}
 	gatewayId := parts[0]
 	ID := parts[1]
@@ -299,7 +299,7 @@ func resourceIBMdlGatewayVCExists(d *schema.ResourceData, meta interface{}) (boo
 			d.SetId("")
 			return false, nil
 		}
-		return false, fmt.Errorf("[ERROR] Error Getting Direct Link Gateway (Dedicated Template) Virtual Connection: %s\n%s", err, response)
+		return false, flex.FmtErrorf("[ERROR] Error Getting Direct Link Gateway (Dedicated Template) Virtual Connection: %s\n%s", err, response)
 	}
 
 	if response.StatusCode == 404 {
