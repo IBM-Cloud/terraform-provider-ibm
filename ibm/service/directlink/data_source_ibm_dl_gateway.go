@@ -4,13 +4,13 @@
 package directlink
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/IBM/networking-go-sdk/directlinkv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 )
 
@@ -373,7 +373,7 @@ func dataSourceIBMDLGatewayVirtualConnectionsRead(d *schema.ResourceData, meta i
 	listVcOptions.SetGatewayID(dlGatewayId)
 	listGatewayVirtualConnections, response, err := directLink.ListGatewayVirtualConnections(listVcOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while listing directlink gateway's virtual connections XXX %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error while listing directlink gateway's virtual connections XXX %s\n%s", err, response)
 	}
 	gatewayVCs := make([]map[string]interface{}, 0)
 	for _, instance := range listGatewayVirtualConnections.VirtualConnections {
@@ -621,7 +621,7 @@ func dataSourceIBMDLGatewayRead(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	if !found {
-		return fmt.Errorf("[ERROR] Error Gateway with name  (%s) not found ", dlGatewayName)
+		return flex.FmtErrorf("[ERROR] Error Gateway with name  (%s) not found ", dlGatewayName)
 	}
 	return dataSourceIBMDLGatewayVirtualConnectionsRead(d, meta)
 }
