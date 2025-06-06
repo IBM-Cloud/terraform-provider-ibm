@@ -472,7 +472,7 @@ func resourceIBMIsBackupPolicyDelete(context context.Context, d *schema.Resource
 	deleteBackupPolicyOptions.SetIfMatch(d.Get("version").(string))
 	_, response, err := vpcClient.DeleteBackupPolicyWithContext(context, deleteBackupPolicyOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteBackupPolicyWithContext failed: %s%\n%s", err.Error(), response), "ibm_is_backup_policy", "delete")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteBackupPolicyWithContext failed: %s\n%s", err.Error(), response), "ibm_is_backup_policy", "delete")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
