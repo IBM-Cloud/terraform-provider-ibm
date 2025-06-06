@@ -111,10 +111,30 @@ func resourceIBMISSecurityGroupTargetCreate(d *schema.ResourceData, meta interfa
 	createSecurityGroupTargetBindingOptions := &vpcv1.CreateSecurityGroupTargetBindingOptions{}
 	createSecurityGroupTargetBindingOptions.SecurityGroupID = &securityGroupID
 	createSecurityGroupTargetBindingOptions.ID = &targetID
+	isSGTargetPrefixKey := "security_group_key_" + targetID
+	conns.IbmMutexKV.Lock(isSGTargetPrefixKey)
+	defer conns.IbmMutexKV.Unlock(isSGTargetPrefixKey)
 
 	sg, response, err := sess.CreateSecurityGroupTargetBinding(createSecurityGroupTargetBindingOptions)
 	if err != nil || sg == nil {
-		return fmt.Errorf("[ERROR] Error while creating Security Group Target Binding %s\n%s", err, response)
+
+		if strings.Contains(strings.ToLower(err.Error()), "load balancer") && ((strings.Contains(strings.ToUpper(err.Error()), "UPDATE_PENDING")) || (strings.Contains(strings.ToUpper(err.Error()), "CREATE_PENDING"))) {
+			log.Printf("[INFO] Load balancer with ID '%s' is in UPDATE_PENDING state. Waiting for it to become available before retrying...", targetID)
+
+			// Wait for the load balancer to become available
+			_, waitErr := isWaitForSGTargetLBAvailable(sess, targetID, d.Timeout(schema.TimeoutCreate))
+			if waitErr != nil {
+				return fmt.Errorf("[ERROR] Error waiting for load balancer to become available while creating Security Group Target Binding: %s", waitErr)
+			}
+
+			sg, response, err = sess.CreateSecurityGroupTargetBinding(createSecurityGroupTargetBindingOptions)
+			// Check for errors after the initial attempt or retry
+			if err != nil || sg == nil {
+				return fmt.Errorf("[ERROR] Error while creating Security Group Target Binding %s\n%s", err, response)
+			}
+		} else {
+			return fmt.Errorf("[ERROR] Error while creating Security Group Target Binding %s\n%s", err, response)
+		}
 	}
 	sgtarget := sg.(*vpcv1.SecurityGroupTargetReference)
 	d.SetId(fmt.Sprintf("%s/%s", securityGroupID, *sgtarget.ID))
@@ -125,7 +145,7 @@ func resourceIBMISSecurityGroupTargetCreate(d *schema.ResourceData, meta interfa
 		if errsgt != nil {
 			return errsgt
 		}
-	} else if crn != nil && *crn != "" && strings.Contains(*crn, "virtual_network_interfaces") {
+	} else if crn != nil && *crn != "" && strings.Contains(*crn, "virtual-network-interface") {
 		vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 		if err != nil {
 			return err
@@ -206,6 +226,10 @@ func resourceIBMISSecurityGroupTargetDelete(d *schema.ResourceData, meta interfa
 		}
 		return fmt.Errorf("[ERROR] Error Getting Security Group Targets (%s): %s\n%s", securityGroupID, err, response)
 	}
+	// Acquire a lock based on the target ID to prevent simultaneous delete on same target
+	isSGTargetPrefixKey := "security_group_key_" + securityGroupTargetID
+	conns.IbmMutexKV.Lock(isSGTargetPrefixKey)
+	defer conns.IbmMutexKV.Unlock(isSGTargetPrefixKey)
 
 	deleteSecurityGroupTargetBindingOptions := sess.NewDeleteSecurityGroupTargetBindingOptions(securityGroupID, securityGroupTargetID)
 	response, err = sess.DeleteSecurityGroupTargetBinding(deleteSecurityGroupTargetBindingOptions)
@@ -342,7 +366,7 @@ func isWaitForVNISgTargetCreateAvailable(sess *vpcv1.VpcV1, vniId string, timeou
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"pending", "updating", "waiting"},
-		Target:     []string{isLBProvisioningDone, ""},
+		Target:     []string{isLBProvisioningDone, "", "stable"},
 		Refresh:    isVNISgTargetRefreshFunc(sess, vniId),
 		Timeout:    timeout,
 		Delay:      10 * time.Second,
@@ -360,12 +384,47 @@ func isVNISgTargetRefreshFunc(vpcClient *vpcv1.VpcV1, vniId string) resource.Sta
 		}
 		vni, response, err := vpcClient.GetVirtualNetworkInterface(getVNIOptions)
 		if err != nil {
-			return nil, "", fmt.Errorf("[ERROR] Error Getting Load Balancer : %s\n%s", err, response)
+			return nil, "", fmt.Errorf("[ERROR] Error Getting virtual network interface : %s\n%s", err, response)
 		}
 
 		if *vni.LifecycleState == "failed" {
-			return vni, *vni.LifecycleState, fmt.Errorf("Network Interface creationg failed with status %s ", *vni.LifecycleState)
+			return vni, *vni.LifecycleState, fmt.Errorf("Virtual Network Interface creating failed with status %s ", *vni.LifecycleState)
 		}
 		return vni, *vni.LifecycleState, nil
+	}
+}
+
+// New function to wait for a load balancer to become available before attaching a security group
+func isWaitForSGTargetLBAvailable(sess *vpcv1.VpcV1, lbId string, timeout time.Duration) (interface{}, error) {
+	log.Printf("Waiting for load balancer (%s) to be available before attaching security group.", lbId)
+
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"retry", isLBProvisioning, "update_pending"},
+		Target:     []string{isLBProvisioningDone, ""},
+		Refresh:    isSGTargetLBRefreshFunc(sess, lbId),
+		Timeout:    timeout,
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+
+	return stateConf.WaitForState()
+}
+
+// Refresh function for checking load balancer status before security group attachment
+func isSGTargetLBRefreshFunc(sess *vpcv1.VpcV1, lbId string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		getlboptions := &vpcv1.GetLoadBalancerOptions{
+			ID: &lbId,
+		}
+		lb, response, err := sess.GetLoadBalancer(getlboptions)
+		if err != nil {
+			return nil, "", fmt.Errorf("[ERROR] Error Getting Load Balancer : %s\n%s", err, response)
+		}
+
+		if *lb.ProvisioningStatus == "active" || *lb.ProvisioningStatus == "failed" {
+			return lb, isLBProvisioningDone, nil
+		}
+
+		return lb, isLBProvisioning, nil
 	}
 }

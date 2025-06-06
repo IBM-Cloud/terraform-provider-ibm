@@ -45,7 +45,6 @@ provider "ibm" {
 | Service | Endpoint Variable |
 |---------|-----------------|
 |Account Management|IBMCLOUD_ACCOUNT_MANAGEMENT_API_ENDPOINT|
-|API Gateway|IBMCLOUD_API_GATEWAY_ENDPOINT|
 |App Id|IBMCLOUD_APPID_MANAGEMENT_API_ENDPOINT|
 |Atracker|IBMCLOUD_ATRACKER_API_ENDPOINT|
 |Catalog Management|IBMCLOUD_CATALOG_MANAGEMENT_API_ENDPOINT|
@@ -54,6 +53,7 @@ provider "ibm" {
 |Internet Services|IBMCLOUD_CIS_API_ENDPOINT|
 |Cloud Shell|IBMCLOUD_CLOUD_SHELL_API_ENDPOINT|
 |Compilance (Posture Management)|IBMCLOUD_COMPLIANCE_API_ENDPOINT|
+|Configuration Aggregator|IBMCLOUD_APP_CONFIG_ENDPOINT|
 |Container Registry|IBMCLOUD_CR_API_ENDPOINT|
 |Cloud Logs | IBMCLOUD_LOGS_API_ENDPOINT |
 |Kubernetes Service|IBMCLOUD_CS_API_ENDPOINT|

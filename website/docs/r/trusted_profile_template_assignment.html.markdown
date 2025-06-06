@@ -96,12 +96,12 @@ Nested schema for **resources**:
 	* `target` - (String) Target account where the IAM resource is created.
 * `status` - (String) Assignment status.
 
-
 ## Import
 
 You can import the `ibm_iam_trusted_profile_template_assignment` resource by using `id`. Assignment record Id.
 
-# Syntax
-```
-$ terraform import ibm_iam_trusted_profile_template_assignment.trusted_profile_template_assignment_instance <id>
+### Syntax
+
+```bash
+$ terraform import ibm_iam_trusted_profile_template_assignment.trusted_profile_template_assignment_instance $id
 ```

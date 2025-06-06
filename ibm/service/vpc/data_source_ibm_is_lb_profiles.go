@@ -64,6 +64,30 @@ func DataSourceIBMISLbProfiles() *schema.Resource {
 								},
 							},
 						},
+						"targetable_load_balancer_profiles": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The load balancer profiles that load balancers with this profile can target",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"family": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The product family this load balancer profile belongs to",
+									},
+									"href": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The URL for this load balancer profile",
+									},
+									"name": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The globally unique name for this load balancer profile",
+									},
+								},
+							},
+						},
 						"availability": {
 							Type:        schema.TypeList,
 							Computed:    true,
@@ -313,6 +337,11 @@ func dataSourceIBMISLbProfilesRead(context context.Context, d *schema.ResourceDa
 			AccessModesList = append(AccessModesList, AccessModesMap)
 			l[isLBAccessModes] = AccessModesList
 		}
+
+		if profileCollector.TargetableLoadBalancerProfiles != nil {
+			l["targetable_load_balancer_profiles"] = dataSourceLbProfileFlattenTargetableLoadBalancerProfiles(profileCollector.TargetableLoadBalancerProfiles)
+		}
+
 		if profileCollector.Availability != nil {
 			availabilitySupport := profileCollector.Availability.(*vpcv1.LoadBalancerProfileAvailability)
 			availabilitySupportMap := map[string]interface{}{}

@@ -6,8 +6,10 @@ package vpc
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -106,7 +108,9 @@ func dataSourceIBMISBareMetalServerNICReservedIPRead(context context.Context, d 
 
 	sess, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_bare_metal_server_network_interface_reserved_ip", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	bareMetalServer := d.Get(isBareMetalServerID).(string)
@@ -117,21 +121,39 @@ func dataSourceIBMISBareMetalServerNICReservedIPRead(context context.Context, d 
 	reserveIP, response, err := sess.GetBareMetalServerNetworkInterfaceIPWithContext(context, options)
 
 	if err != nil || response == nil || reserveIP == nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error fetching the reserved IP %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetBareMetalServerNetworkInterfaceIPWithContext failed: %s", err.Error()), "(Data) ibm_is_bare_metal_server_network_interface_reserved_ip", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(*reserveIP.ID)
-	d.Set(isBareMetalServerNicIpAutoDelete, *reserveIP.AutoDelete)
-	d.Set(isBareMetalServerNICReservedIPCreatedAt, (*reserveIP.CreatedAt).String())
-	d.Set(isBareMetalServerNICReservedIPhref, *reserveIP.Href)
-	d.Set(isBareMetalServerNicIpName, *reserveIP.Name)
-	d.Set(isBareMetalServerNICReservedIPOwner, *reserveIP.Owner)
-	d.Set(isBareMetalServerNICReservedIPType, *reserveIP.ResourceType)
-	d.Set(isBareMetalServerNicIpAddress, *reserveIP.Address)
+	if err = d.Set(isBareMetalServerNicIpAutoDelete, *reserveIP.AutoDelete); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting auto_delete: %s", err), "(Data) ibm_is_bare_metal_server_network_interface_reserved_ip", "read", "set-auto_delete").GetDiag()
+	}
+	if err = d.Set(isBareMetalServerNICReservedIPCreatedAt, (*reserveIP.CreatedAt).String()); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting created_at: %s", err), "(Data) ibm_is_bare_metal_server_network_interface_reserved_ip", "read", "set-created_at").GetDiag()
+	}
+	if err = d.Set(isBareMetalServerNICReservedIPhref, *reserveIP.Href); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting href: %s", err), "(Data) ibm_is_bare_metal_server_network_interface_reserved_ip", "read", "set-href").GetDiag()
+	}
+	if err = d.Set(isBareMetalServerNicIpName, *reserveIP.Name); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_is_bare_metal_server_network_interface_reserved_ip", "read", "set-name").GetDiag()
+	}
+	if err = d.Set(isBareMetalServerNICReservedIPOwner, *reserveIP.Owner); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting owner: %s", err), "(Data) ibm_is_bare_metal_server_network_interface_reserved_ip", "read", "set-owner").GetDiag()
+	}
+	if err = d.Set(isBareMetalServerNICReservedIPType, *reserveIP.ResourceType); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_type: %s", err), "(Data) ibm_is_bare_metal_server_network_interface_reserved_ip", "read", "set-resource_type").GetDiag()
+	}
+	if err = d.Set(isBareMetalServerNicIpAddress, *reserveIP.Address); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting address: %s", err), "(Data) ibm_is_bare_metal_server_network_interface_reserved_ip", "read", "set-address").GetDiag()
+	}
 	if reserveIP.Target != nil {
 		target, ok := reserveIP.Target.(*vpcv1.ReservedIPTarget)
 		if ok {
-			d.Set(isBareMetalServerNICReservedIPTarget, target.ID)
+			if err = d.Set(isBareMetalServerNICReservedIPTarget, target.ID); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting target: %s", err), "(Data) ibm_is_bare_metal_server_network_interface_reserved_ip", "read", "set-target").GetDiag()
+			}
 		}
 	}
 	return nil // By default there should be no error

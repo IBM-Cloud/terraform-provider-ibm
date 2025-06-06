@@ -52,6 +52,30 @@ func DataSourceIBMISLbProfile() *schema.Resource {
 					},
 				},
 			},
+			"targetable_load_balancer_profiles": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The load balancer profiles that load balancers with this profile can target",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"family": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The product family this load balancer profile belongs to",
+						},
+						"href": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The URL for this load balancer profile",
+						},
+						"name": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The globally unique name for this load balancer profile",
+						},
+					},
+				},
+			},
 			"href": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -156,10 +180,14 @@ func dataSourceIBMISLbProfileRead(context context.Context, d *schema.ResourceDat
 			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting access_modes: %s", err), "(Data) ibm_is_lb_profile", "read", "set-access_modes").GetDiag()
 		}
 	}
-	log.Printf("[INFO] lbprofile udp %v", loadBalancerProfile.UDPSupported)
+
+	if loadBalancerProfile.TargetableLoadBalancerProfiles != nil {
+		d.Set("targetable_load_balancer_profiles", dataSourceLbProfileFlattenTargetableLoadBalancerProfiles(loadBalancerProfile.TargetableLoadBalancerProfiles))
+	}
+	log.Printf("[INFO] loadBalancerProfile udp %v", loadBalancerProfile.UDPSupported)
 	if loadBalancerProfile.UDPSupported != nil {
 		udpSupport := loadBalancerProfile.UDPSupported
-		log.Printf("[INFO] lbprofile udp %s", reflect.TypeOf(udpSupport).String())
+		log.Printf("[INFO] loadBalancerProfile udp %s", reflect.TypeOf(udpSupport).String())
 
 		switch reflect.TypeOf(udpSupport).String() {
 		case "*vpcv1.LoadBalancerProfileUDPSupportedFixed":
@@ -286,4 +314,30 @@ func dataSourceIBMIsLbProfileLoadBalancerProfileFailsafePolicyActionsDependentTo
 	modelMap := make(map[string]interface{})
 	modelMap["type"] = *model.Type
 	return modelMap, nil
+}
+
+func dataSourceLbProfileFlattenTargetableLoadBalancerProfiles(result []vpcv1.LoadBalancerProfileReference) (targetableLoadBalancerProfiles []map[string]interface{}) {
+	for _, targetableLoadBalancerProfileItem := range result {
+		targetableLoadBalancerProfiles = append(targetableLoadBalancerProfiles, dataSourceLbProfileTargetableLoadBalancerProfilesToMap(targetableLoadBalancerProfileItem))
+	}
+
+	return targetableLoadBalancerProfiles
+}
+
+func dataSourceLbProfileTargetableLoadBalancerProfilesToMap(targetableLoadBalancerProfileItem vpcv1.LoadBalancerProfileReference) (targetableLoadBalancerProfileMap map[string]interface{}) {
+	targetableLoadBalancerProfileMap = map[string]interface{}{}
+
+	if targetableLoadBalancerProfileItem.Family != nil {
+		targetableLoadBalancerProfileMap["family"] = targetableLoadBalancerProfileItem.Family
+	}
+
+	if targetableLoadBalancerProfileItem.Href != nil {
+		targetableLoadBalancerProfileMap["href"] = targetableLoadBalancerProfileItem.Href
+	}
+
+	if targetableLoadBalancerProfileItem.Name != nil {
+		targetableLoadBalancerProfileMap["name"] = targetableLoadBalancerProfileItem.Name
+	}
+
+	return targetableLoadBalancerProfileMap
 }

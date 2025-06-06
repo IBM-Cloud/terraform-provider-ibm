@@ -1,3 +1,114 @@
+# 1.78.1 (May 09, 2025)
+## Bug Fixes
+
+### HPCS
+* Correct missing instance_id and region after import ([6211](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6211))
+
+### Backup/Recovery
+* Fix backup recovery client error handling ([6225](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6225))
+* Fix connector client usage ([6223](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6223))
+
+### Transit Gateway
+* Fixed TGW-146: Removed useless lines in logs when creating Transit Gateway resources([6143](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6143))
+
+
+### MQ Service
+* Remove undocumented custom accept language header ([6222](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6222))
+
+## Build System
+
+### General
+* Use the same environment key for global catalog and fix the path ([6217](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6217))
+
+## Documentation
+
+### Transit Gateway
+* Added HOWTO.md with local development guide and examples for Transit Gateway resources ([6143](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6143))
+
+## Enhancements
+
+### Transit Gateway
+* Simplified resource schema by removing computed attributes that are only used in tunnel blocks ([6143](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6143))
+
+# 1.78.0 (Apr 30, 2025)
+
+## Features
+
+### Load Balancing
+* Server Name Indicator (SNI) routing for ALB ([6145](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6145))
+
+### VPC Infrastructure
+* Handle pending LB states during SG binding for security_group_target ([6171](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6171))
+
+## Bug Fixes
+
+### Tekton
+* Fix null pointers when importing resources ([6125](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6125))
+
+### CIS
+* Fix ep ruleset override enable issue ([6174](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6174))
+* Updated domain settings ([6163](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6163))
+
+### VPC Infrastructure
+* Fix simultaneous update of bandwidth and profile for is_instance ([6155](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6155))
+
+### Power Systems
+* Fix data source crash when vm has no volumes ([6166](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6166))
+
+### Atracker
+* Do not return region if it is not defined for resource ([6194](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6194))
+
+### DNS Services
+* Add GLB healthcheck 3XX, 4XX and 5XX responses ([6139](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6139))
+
+### IAM
+* Fix IAM access groups template example ([6196](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6196))
+* Fix IAM trusted profiles templates examples ([6198](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6198))
+* Fix IAM policy template example docs ([6192](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6192))
+* fix(doc): iam account settings template example docs ([6199](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6199))
+
+### Power Systems
+* Fix warnings in pi data source and resources ([6159](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6159))
+* Deprecate CRN attribute from ibm_pi_volume_snapshot(s)([6168](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6168))
+
+## Enhancements
+
+### VPC Infrastructure
+* Improved error handling for is_flow_log ([6129](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6129))
+* Improved error handling for is_floating_ip(s) ([6132](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6132))
+* Improved error handling for vpc snapshot ([6144](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6144))
+* Improved error handling for vpc reservations ([6146](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6146))
+* Improved error handling for vpc public gateway ([6147](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6147))
+* Improved error handling for vpc placement groups ([6148](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6148))
+* Improved error handling for vpc operating system ([6149](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6149))
+* Improved error handling for vpc ([6186](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6186))
+* ALB as PPNLB enhancement for is_lb_pool_member ([6131](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6131))
+* Added aes192 encryption algorithm in is_ipsec_policy validator ([6134](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6134))
+
+### Schematics
+* Support for terraform v1.10 in schematics workspace ([6197](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6197))
+
+### Log Routing
+* Remove Logdna target option for IBM Cloud Logs Routing ([6135](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6135))
+
+## Documentation
+
+### Key Management
+* Detailed reference for kms_key expiration_data argument ([6154](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6154))
+
+## Build System
+
+### General
+* Bump x/net and jwt modules to avoid vulnerabilities
+* Remove API gateway service and deprecated github.com/dgrijalva/jwt-go
+* Migrate from bluemix-go to platform-go sdk for global catalog calls ([6202](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6202))
+
+## Tests
+
+### VPC Infrastructure
+* Updated is_ike_policy and is_ipsec_policy tests ([6138](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6138))
+
+
 # 1.77.1 (Apr 14, 2025)
 Enhancements
 * feat(partner center sell): less restriction on global catalog object names ([6122](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6122))

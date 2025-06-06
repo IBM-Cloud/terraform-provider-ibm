@@ -454,7 +454,9 @@ func DataSourceIBMIsBackupPolicyJobs() *schema.Resource {
 func dataSourceIBMIsBackupPolicyJobsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := vpcClient(meta)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("vpcClient creation failed: %s", err.Error()), "(Data) ibm_is_backup_policy_jobs", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	listBackupPolicyJobsOptions := &vpcv1.ListBackupPolicyJobsOptions{}
@@ -509,8 +511,10 @@ func dataSourceIBMIsBackupPolicyJobsRead(context context.Context, d *schema.Reso
 
 		backupPolicyJobCollection, response, err := vpcClient.ListBackupPolicyJobsWithContext(context, listBackupPolicyJobsOptions)
 		if err != nil {
-			log.Printf("[DEBUG] ListBackupPolicyJobsWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("ListBackupPolicyJobsWithContext failed %s\n%s", err, response))
+			err = fmt.Errorf("[ERROR] ListBackupPolicyJobsWithContext failed %s\n%s", err, response)
+			tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_is_backup_policy_jobs", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
 		if backupPolicyJobCollection != nil && *backupPolicyJobCollection.TotalCount == int64(0) {
@@ -528,7 +532,8 @@ func dataSourceIBMIsBackupPolicyJobsRead(context context.Context, d *schema.Reso
 	if allrecs != nil {
 		err = d.Set("jobs", dataSourceBackupPolicyJobCollectionFlattenJobs(allrecs))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting jobs %s", err))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting jobs %s", err), "(Data) ibm_is_backup_policy_jobs", "read")
+			return tfErr.GetDiag()
 		}
 	}
 

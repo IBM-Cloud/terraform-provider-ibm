@@ -10,6 +10,7 @@ import (
 	"reflect"
 	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -217,10 +218,12 @@ func DataSourceIBMIsFloatingIps() *schema.Resource {
 	}
 }
 
-func dataSourceIBMIsFloatingIpsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	sess, err := vpcClient(meta)
+func dataSourceIBMIsFloatingIpsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_ibm_is_floating_ips", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	start := ""
 	allFloatingIPs := []vpcv1.FloatingIP{}
@@ -234,10 +237,11 @@ func dataSourceIBMIsFloatingIpsRead(context context.Context, d *schema.ResourceD
 		if start != "" {
 			floatingIPOptions.Start = &start
 		}
-		floatingIPs, response, err := sess.ListFloatingIps(floatingIPOptions)
+		floatingIPs, _, err := vpcClient.ListFloatingIpsWithContext(ctx, floatingIPOptions)
 		if err != nil {
-			log.Printf("[DEBUG] Error Fetching floating IPs  %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("[ERROR] Error Fetching floating IPs %s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListFloatingIpsWithContext failed %s", err), "(Data) ibm_ibm_is_floating_ips", "read")
+			log.Printf("[DEBUG] %s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		start = flex.GetNext(floatingIPs.Next)
 		allFloatingIPs = append(allFloatingIPs, floatingIPs.FloatingIps...)
@@ -262,7 +266,8 @@ func dataSourceIBMIsFloatingIpsRead(context context.Context, d *schema.ResourceD
 	}
 	if suppliedFilter {
 		if len(matchFloatingIps) == 0 {
-			return diag.FromErr(fmt.Errorf("no FloatingIps found with name %s", name))
+			err = fmt.Errorf("no FloatingIps found with name %s", name)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_floating_ips", "read", "no-floating-ips-found").GetDiag()
 		}
 		d.SetId(name)
 	} else {
@@ -272,7 +277,7 @@ func dataSourceIBMIsFloatingIpsRead(context context.Context, d *schema.ResourceD
 	if matchFloatingIps != nil {
 		err = d.Set("floating_ips", dataSourceFloatingIPCollectionFlattenFloatingIps(matchFloatingIps, d, meta))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting floating_ips %s", err))
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting floating_ips %s", err), "(Data) ibm_ibm_is_floating_ips", "read", "floating_ips-set").GetDiag()
 		}
 	}
 	return nil

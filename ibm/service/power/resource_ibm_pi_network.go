@@ -5,13 +5,16 @@ package power
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"net"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
+	"github.com/IBM-Cloud/power-go-client/power/client/p_cloud_networks"
 	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -19,7 +22,6 @@ import (
 	"github.com/apparentlymart/go-cidr/cidr"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -298,7 +300,7 @@ func resourceIBMPINetworkCreate(ctx context.Context, d *schema.ResourceData, met
 		}
 	}
 
-	networkResponse, err := client.Create(body)
+	networkResponse, err := createNetworkWithRetry(ctx, client, body)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -449,7 +451,7 @@ func resourceIBMPINetworkDelete(ctx context.Context, d *schema.ResourceData, met
 	}
 
 	client := instance.NewIBMPINetworkClient(ctx, sess, cloudInstanceID)
-	err = client.Delete(networkID)
+	err = deleteNetworkWithRetry(ctx, client, networkID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -504,7 +506,7 @@ func isWaitForIBMPINetworkDeleted(ctx context.Context, client *instance.IBMPINet
 	return stateConf.WaitForStateContext(ctx)
 }
 
-func isIBMPINetworkRefreshDeleteFunc(client *instance.IBMPINetworkClient, id string) resource.StateRefreshFunc {
+func isIBMPINetworkRefreshDeleteFunc(client *instance.IBMPINetworkClient, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		network, err := client.Get(id)
 		if err != nil {
@@ -640,4 +642,83 @@ func networkAddressTranslationToMap(nat *models.NetworkAddressTranslation) map[s
 		natMap[Attr_SourceIP] = nat.SourceIP
 	}
 	return natMap
+}
+
+func createNetworkWithRetry(ctx context.Context, client *instance.IBMPINetworkClient, body *models.NetworkCreate) (*models.Network, error) {
+	lastErr := ""
+
+	stateConf := &retry.StateChangeConf{
+		Pending:        []string{State_Retry},
+		Target:         []string{State_Active, State_Failed},
+		Refresh:        retryNetworkCreationFunc(client, body, &lastErr),
+		MinTimeout:     Retry_Delay,
+		NotFoundChecks: Retries,
+		Timeout:        10 * time.Minute,
+	}
+
+	network, err := stateConf.WaitForStateContext(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("%s", lastErr)
+	}
+
+	networkResponse := network.(*models.Network)
+	return networkResponse, nil
+}
+
+func retryNetworkCreationFunc(client *instance.IBMPINetworkClient, body *models.NetworkCreate, errPointer *string) retry.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		network, err := client.Create(body)
+		uErr := errors.Unwrap(err)
+
+		if err != nil {
+			*errPointer = err.Error()
+			switch uErr.(type) {
+			case *p_cloud_networks.PcloudNetworksPostBadRequest:
+				log.Printf("[DEBUG] err %s on network create", err)
+				return nil, State_Failed, err
+			case *p_cloud_networks.PcloudNetworksPostUnprocessableEntity:
+				log.Printf("[DEBUG] err %s on network create", err)
+				return nil, State_Failed, err
+			}
+
+			log.Printf("[DEBUG] err %s on network create, retrying...", err)
+			return nil, State_Retry, nil
+		}
+
+		return network, State_Active, nil
+	}
+}
+
+func deleteNetworkWithRetry(ctx context.Context, client *instance.IBMPINetworkClient, id string) error {
+	lastErr := ""
+
+	stateConf := &retry.StateChangeConf{
+		Pending:        []string{State_Retry},
+		Target:         []string{State_NotFound},
+		Refresh:        retryNetworkDeleteFunc(client, id, &lastErr),
+		MinTimeout:     Retry_Delay,
+		NotFoundChecks: Retries,
+		Timeout:        10 * time.Minute,
+	}
+
+	_, err := stateConf.WaitForStateContext(ctx)
+	if err != nil {
+		return fmt.Errorf("%s", lastErr)
+	}
+
+	return nil
+}
+
+func retryNetworkDeleteFunc(client *instance.IBMPINetworkClient, id string, errPointer *string) retry.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		err := client.Delete(id)
+
+		if err != nil && !strings.Contains(strings.ToLower(err.Error()), NotFound) {
+			*errPointer = err.Error()
+			log.Printf("[DEBUG] err %s on network delete, retrying...", err)
+			return nil, State_Retry, nil
+		}
+
+		return "", State_NotFound, nil
+	}
 }

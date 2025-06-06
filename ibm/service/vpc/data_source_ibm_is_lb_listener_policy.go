@@ -101,7 +101,7 @@ func DataSourceIBMISLBListenerPolicy() *schema.Resource {
 			"target": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "- If `action` is `forward`, the response is a `LoadBalancerPoolReference`- If `action` is `redirect`, the response is a `LoadBalancerListenerPolicyRedirectURL`- If `action` is `https_redirect`, the response is a `LoadBalancerListenerHTTPSRedirect`.",
+				Description: "- If `action` is `forward` or `forward_to_pool`, the response is a `LoadBalancerPoolReference`- If `action` is `forward_to_listener`, specify a `LoadBalancerListenerIdentity` in this load balancer to forward to. -  If `action` is `redirect`, the response is a `LoadBalancerListenerPolicyRedirectURL`- If `action` is `https_redirect`, the response is a `LoadBalancerListenerHTTPSRedirect`.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"deleted": &schema.Schema{
@@ -126,12 +126,12 @@ func DataSourceIBMISLBListenerPolicy() *schema.Resource {
 						"id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The unique identifier for this load balancer pool.",
+							Description: "The unique identifier for this load balancer pool or load balancer listener",
 						},
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The user-defined name for this load balancer pool.",
+							Description: "The user-defined name for this load balancer pool or load balancer listener.",
 						},
 						"http_status_code": &schema.Schema{
 							Type:        schema.TypeInt,

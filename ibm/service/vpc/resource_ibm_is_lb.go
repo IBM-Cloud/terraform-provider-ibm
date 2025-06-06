@@ -50,7 +50,8 @@ const (
 	isLBSecurityGroups               = "security_groups"
 	isLBSecurityGroupsSupported      = "security_group_supported"
 
-	isLBAccessTags = "access_tags"
+	isAttachedLoadBalancerPoolMembers = "attached_load_balancer_pool_members"
+	isLBAccessTags                    = "access_tags"
 )
 
 func ResourceIBMISLB() *schema.Resource {
@@ -102,7 +103,39 @@ func ResourceIBMISLB() *schema.Resource {
 				ValidateFunc: validate.InvokeValidator("ibm_is_lb", isLBType),
 				Description:  "Load Balancer type",
 			},
-
+			isAttachedLoadBalancerPoolMembers: {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The load balancer pool members attached to this load balancer.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"deleted": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "If present, this property indicates the referenced resource has been deleted and providessome supplementary information.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"more_info": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Link to documentation about deleted resources.",
+									},
+								},
+							},
+						},
+						"href": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The URL for this load balancer pool member.",
+						},
+						"id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The unique identifier for this load balancer pool member.",
+						},
+					},
+				},
+			},
 			isLBAvailability: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -571,9 +604,14 @@ func lbGet(context context.Context, d *schema.ResourceData, meta interface{}, id
 		err = fmt.Errorf("Error setting availability: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb", "read", "set-availability").GetDiag()
 	}
-	if err = d.Set("access_mode", loadBalancer.AccessMode); err != nil {
-		err = fmt.Errorf("Error setting access_mode: %s", err)
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb", "read", "set-access_mode").GetDiag()
+	if loadBalancer.AttachedLoadBalancerPoolMembers != nil {
+		d.Set(isAttachedLoadBalancerPoolMembers, dataSourceAttachedLoadBalancerPoolFlattenMembers(loadBalancer.AttachedLoadBalancerPoolMembers))
+	}
+	if loadBalancer.AccessMode != nil {
+		if err = d.Set(isLBAccessMode, *loadBalancer.AccessMode); err != nil {
+			err = fmt.Errorf("Error setting access_mode: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb", "read", "set-access_mode").GetDiag()
+		}
 	}
 	if err = d.Set("instance_groups_supported", loadBalancer.InstanceGroupsSupported); err != nil {
 		err = fmt.Errorf("Error setting instance_groups_supported: %s", err)
