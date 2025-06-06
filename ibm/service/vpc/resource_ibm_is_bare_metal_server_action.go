@@ -9,6 +9,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -119,7 +120,9 @@ func ResourceIBMISBareMetalServerActionValidator() *validate.ResourceValidator {
 func resourceIBMISBareMetalServerActionCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_action", "create", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	bareMetalServerId := ""
 	if bmsId, ok := d.GetOk(isBareMetalServerID); ok {
@@ -143,11 +146,15 @@ func resourceIBMISBareMetalServerActionCreate(context context.Context, d *schema
 
 		_, err = sess.StopBareMetalServerWithContext(context, createBareMetalServerStopOptions)
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("StopBareMetalServerWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server_action", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		_, waitErr := isWaitForBareMetalServerActionStop(sess, d.Timeout(schema.TimeoutCreate), bareMetalServerId, d)
 		if waitErr != nil {
-			return diag.FromErr(waitErr)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForBareMetalServerActionStop failed: %s", err.Error()), "ibm_is_bare_metal_server_action", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	} else if bareMetalServerAction == "start" {
 
@@ -157,11 +164,15 @@ func resourceIBMISBareMetalServerActionCreate(context context.Context, d *schema
 
 		_, err := sess.StartBareMetalServerWithContext(context, createBareMetalServerStartOptions)
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("StartBareMetalServerWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server_action", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		_, waitErr := isWaitForBareMetalServerActionAvailable(sess, bareMetalServerId, d.Timeout(schema.TimeoutDelete), d)
 		if waitErr != nil {
-			return diag.FromErr(waitErr)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForBareMetalServerActionAvailable failed: %s", err.Error()), "ibm_is_bare_metal_server_action", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	} else if bareMetalServerAction == "restart" {
 		createBareMetalServerRestartOptions := &vpcv1.RestartBareMetalServerOptions{
@@ -170,17 +181,21 @@ func resourceIBMISBareMetalServerActionCreate(context context.Context, d *schema
 
 		_, err := sess.RestartBareMetalServerWithContext(context, createBareMetalServerRestartOptions)
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("RestartBareMetalServerWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server_action", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		_, waitErr := isWaitForBareMetalServerActionAvailable(sess, bareMetalServerId, d.Timeout(schema.TimeoutDelete), d)
 		if waitErr != nil {
-			return diag.FromErr(waitErr)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("RestartBareMetalServerWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server_action", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 	d.SetId(bareMetalServerId)
-	err = bareMetalServerActionGet(context, sess, bareMetalServerId, d)
-	if err != nil {
-		return diag.FromErr(err)
+	diagErr := bareMetalServerActionGet(context, sess, bareMetalServerId, d)
+	if diagErr != nil {
+		return diagErr
 	}
 	return nil
 }
@@ -188,17 +203,19 @@ func resourceIBMISBareMetalServerActionCreate(context context.Context, d *schema
 func resourceIBMISBareMetalServerActionRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_action", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	id := d.Id()
-	err = bareMetalServerActionGet(context, sess, id, d)
-	if err != nil {
-		return diag.FromErr(err)
+	diagErr := bareMetalServerActionGet(context, sess, id, d)
+	if diagErr != nil {
+		return diagErr
 	}
 	return nil
 }
 
-func bareMetalServerActionGet(context context.Context, sess *vpcv1.VpcV1, id string, d *schema.ResourceData) error {
+func bareMetalServerActionGet(context context.Context, sess *vpcv1.VpcV1, id string, d *schema.ResourceData) diag.Diagnostics {
 	options := &vpcv1.GetBareMetalServerOptions{
 		ID: &id,
 	}
@@ -208,10 +225,16 @@ func bareMetalServerActionGet(context context.Context, sess *vpcv1.VpcV1, id str
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error getting Bare Metal Server (%s): %s\n%s", id, err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetBareMetalServerWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server_action", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	d.SetId(*bms.ID)
-	d.Set(isBareMetalServerStatus, *bms.Status)
+
+	if err = d.Set(isBareMetalServerStatus, *bms.Status); err != nil {
+		err = fmt.Errorf("Error setting status: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_action", "read", "set-status").GetDiag()
+	}
 	statusReasonsList := make([]map[string]interface{}, 0)
 	if bms.StatusReasons != nil {
 		for _, sr := range bms.StatusReasons {
@@ -226,7 +249,11 @@ func bareMetalServerActionGet(context context.Context, sess *vpcv1.VpcV1, id str
 			}
 		}
 	}
-	d.Set(isBareMetalServerStatusReasons, statusReasonsList)
+
+	if err = d.Set(isBareMetalServerStatusReasons, statusReasonsList); err != nil {
+		err = fmt.Errorf("Error setting status_reasons: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_action", "read", "set-status_reasons").GetDiag()
+	}
 	return nil
 }
 
@@ -235,7 +262,9 @@ func resourceIBMISBareMetalServerActionUpdate(context context.Context, d *schema
 	if d.HasChange(isBareMetalServerAction) {
 		sess, err := vpcClient(meta)
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_action", "update", "initialize-client")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		bareMetalServerId := d.Id()
 
@@ -257,11 +286,15 @@ func resourceIBMISBareMetalServerActionUpdate(context context.Context, d *schema
 
 			_, err := sess.StopBareMetalServerWithContext(context, createBareMetalServerStopOptions)
 			if err != nil {
-				return diag.FromErr(err)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("StopBareMetalServerWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server_action", "delete")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			_, waitErr := isWaitForBareMetalServerActionStop(sess, d.Timeout(schema.TimeoutUpdate), bareMetalServerId, d)
 			if waitErr != nil {
-				return diag.FromErr(waitErr)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForBareMetalServerActionStop failed: %s", err.Error()), "ibm_is_bare_metal_server_action", "delete")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 		} else if bareMetalServerAction == "start" {
 			createBareMetalServerStartOptions := &vpcv1.StartBareMetalServerOptions{
@@ -270,11 +303,15 @@ func resourceIBMISBareMetalServerActionUpdate(context context.Context, d *schema
 
 			_, err := sess.StartBareMetalServerWithContext(context, createBareMetalServerStartOptions)
 			if err != nil {
-				return diag.FromErr(err)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("StartBareMetalServerWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server_action", "delete")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			_, waitErr := isWaitForBareMetalServerActionAvailable(sess, bareMetalServerId, d.Timeout(schema.TimeoutDelete), d)
 			if waitErr != nil {
-				return diag.FromErr(waitErr)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForBareMetalServerActionAvailable failed: %s", err.Error()), "ibm_is_bare_metal_server_action", "delete")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 		} else if bareMetalServerAction == "restart" {
 			createBareMetalServerRestartOptions := &vpcv1.RestartBareMetalServerOptions{
@@ -283,16 +320,20 @@ func resourceIBMISBareMetalServerActionUpdate(context context.Context, d *schema
 
 			_, err := sess.RestartBareMetalServerWithContext(context, createBareMetalServerRestartOptions)
 			if err != nil {
-				return diag.FromErr(err)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("RestartBareMetalServerWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server_action", "delete")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			_, waitErr := isWaitForBareMetalServerActionAvailable(sess, bareMetalServerId, d.Timeout(schema.TimeoutDelete), d)
 			if waitErr != nil {
-				return diag.FromErr(waitErr)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForBareMetalServerActionAvailable failed: %s", err.Error()), "ibm_is_bare_metal_server_action", "delete")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 		}
-		err = bareMetalServerActionGet(context, sess, bareMetalServerId, d)
-		if err != nil {
-			return diag.FromErr(err)
+		diagErr := bareMetalServerActionGet(context, sess, bareMetalServerId, d)
+		if diagErr != nil {
+			return diagErr
 		}
 	}
 	return nil

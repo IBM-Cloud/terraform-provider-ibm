@@ -202,7 +202,9 @@ func DataSourceIBMIsInstanceNetworkAttachment() *schema.Resource {
 func dataSourceIBMIsInstanceNetworkAttachmentRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := vpcClient(meta)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instance_network_attachment", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	getInstanceNetworkAttachmentOptions := &vpcv1.GetInstanceNetworkAttachmentOptions{}
@@ -210,76 +212,77 @@ func dataSourceIBMIsInstanceNetworkAttachmentRead(context context.Context, d *sc
 	getInstanceNetworkAttachmentOptions.SetInstanceID(d.Get("instance").(string))
 	getInstanceNetworkAttachmentOptions.SetID(d.Get("network_attachment").(string))
 
-	instanceByNetworkAttachment, response, err := vpcClient.GetInstanceNetworkAttachmentWithContext(context, getInstanceNetworkAttachmentOptions)
+	instanceByNetworkAttachment, _, err := vpcClient.GetInstanceNetworkAttachmentWithContext(context, getInstanceNetworkAttachmentOptions)
 	if err != nil {
-		log.Printf("[DEBUG] GetInstanceNetworkAttachmentWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetInstanceNetworkAttachmentWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetInstanceNetworkAttachmentWithContext failed: %s", err.Error()), "(Data) ibm_is_instance_network_attachment", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", *getInstanceNetworkAttachmentOptions.InstanceID, *getInstanceNetworkAttachmentOptions.ID))
 
 	if err = d.Set("created_at", flex.DateTimeToString(instanceByNetworkAttachment.CreatedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting created_at: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting created_at: %s", err), "(Data) ibm_is_instance_network_attachment", "read", "set-created_at").GetDiag()
 	}
 
 	if err = d.Set("href", instanceByNetworkAttachment.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting href: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting href: %s", err), "(Data) ibm_is_instance_network_attachment", "read", "set-href").GetDiag()
 	}
 
 	if err = d.Set("lifecycle_state", instanceByNetworkAttachment.LifecycleState); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting lifecycle_state: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting lifecycle_state: %s", err), "(Data) ibm_is_instance_network_attachment", "read", "set-lifecycle_state").GetDiag()
 	}
 
 	if err = d.Set("name", instanceByNetworkAttachment.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting name: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_is_instance_network_attachment", "read", "set-name").GetDiag()
 	}
 
 	if err = d.Set("port_speed", flex.IntValue(instanceByNetworkAttachment.PortSpeed)); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting port_speed: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting port_speed: %s", err), "(Data) ibm_is_instance_network_attachment", "read", "set-port_speed").GetDiag()
 	}
 
 	primaryIP := []map[string]interface{}{}
 	if instanceByNetworkAttachment.PrimaryIP != nil {
 		modelMap, err := dataSourceIBMIsInstanceNetworkAttachmentReservedIPReferenceToMap(instanceByNetworkAttachment.PrimaryIP)
 		if err != nil {
-			return diag.FromErr(err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instance_network_attachment", "read", "primary_ip-to-map").GetDiag()
 		}
 		primaryIP = append(primaryIP, modelMap)
 	}
 	if err = d.Set("primary_ip", primaryIP); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting primary_ip %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting primary_ip: %s", err), "(Data) ibm_is_instance_network_attachment", "read", "set-primary_ip").GetDiag()
 	}
 
 	if err = d.Set("resource_type", instanceByNetworkAttachment.ResourceType); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting resource_type: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_type: %s", err), "(Data) ibm_is_instance_network_attachment", "read", "set-resource_type").GetDiag()
 	}
 
 	subnet := []map[string]interface{}{}
 	if instanceByNetworkAttachment.Subnet != nil {
 		modelMap, err := dataSourceIBMIsInstanceNetworkAttachmentSubnetReferenceToMap(instanceByNetworkAttachment.Subnet)
 		if err != nil {
-			return diag.FromErr(err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instance_network_attachment", "read", "subnet-to-map").GetDiag()
 		}
 		subnet = append(subnet, modelMap)
 	}
 	if err = d.Set("subnet", subnet); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting subnet %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting subnet: %s", err), "(Data) ibm_is_instance_network_attachment", "read", "set-subnet").GetDiag()
 	}
 
 	if err = d.Set("type", instanceByNetworkAttachment.Type); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting type: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting type: %s", err), "(Data) ibm_is_instance_network_attachment", "read", "set-type").GetDiag()
 	}
 
 	virtualNetworkInterface := []map[string]interface{}{}
 	if instanceByNetworkAttachment.VirtualNetworkInterface != nil {
 		modelMap, err := dataSourceIBMIsInstanceNetworkAttachmentVirtualNetworkInterfaceReferenceAttachmentContextToMap(instanceByNetworkAttachment.VirtualNetworkInterface)
 		if err != nil {
-			return diag.FromErr(err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instance_network_attachment", "read", "virtual_network_interface-to-map").GetDiag()
 		}
 		virtualNetworkInterface = append(virtualNetworkInterface, modelMap)
 	}
 	if err = d.Set("virtual_network_interface", virtualNetworkInterface); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting virtual_network_interface %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting virtual_network_interface: %s", err), "(Data) ibm_is_instance_network_attachment", "read", "set-virtual_network_interface").GetDiag()
 	}
 
 	return nil
