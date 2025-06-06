@@ -689,7 +689,7 @@ Review the argument reference that you can specify for your resource.
 - `version` - (Optional, String) The version of the database to be provisioned or upgraded to. If omitted, the database is created with the latest supported major and minor version. This field can be updated to perform an in-place upgrade without forcing the creation of a new resource. The database will be put into READ-ONLY mode during upgrade. It is highly recommended to test before upgrading. To learn more, refer to the version upgrade documentation.
 
   > ⚠️ **Warning:** Upgrading may require more time than the default timeout.  
-  > A longer timeout value can be set with using the timeouts attribute.
+  > A longer timeout value can be set using the timeouts attribute.
 
 - `version_upgrade_skip_backup` - (Optional, Boolean) Whether to skip taking a backup before upgrading the database version. This is only applicable to databases that do not support point-in-time restore (PITR). To learn more, refer to the version upgrade documentation.
 
