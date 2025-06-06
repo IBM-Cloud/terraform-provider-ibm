@@ -4,12 +4,15 @@
 package vpc
 
 import (
+	"context"
 	"fmt"
+	"log"
 	"reflect"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -86,7 +89,7 @@ const (
 
 func DataSourceIBMISInstanceTemplates() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceIBMISInstanceTemplatesRead,
+		ReadContext: dataSourceIBMISInstanceTemplatesRead,
 		Schema: map[string]*schema.Schema{
 			isInstanceTemplates: {
 				Type:        schema.TypeList,
@@ -961,15 +964,19 @@ func DataSourceIBMISInstanceTemplates() *schema.Resource {
 	}
 }
 
-func dataSourceIBMISInstanceTemplatesRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceIBMISInstanceTemplatesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	instanceC, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instance_templates", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	listInstanceTemplatesOptions := &vpcv1.ListInstanceTemplatesOptions{}
-	availableTemplates, _, err := instanceC.ListInstanceTemplates(listInstanceTemplatesOptions)
+	availableTemplates, _, err := instanceC.ListInstanceTemplatesWithContext(context, listInstanceTemplatesOptions)
 	if err != nil {
-		return err
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListInstanceTemplatesWithContext failed: %s", err.Error()), "(Data) ibm_is_instance_templates", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	templates := make([]map[string]interface{}, 0)
 	for _, instTempl := range availableTemplates.Templates {
@@ -1036,7 +1043,7 @@ func dataSourceIBMISInstanceTemplatesRead(d *schema.ResourceData, meta interface
 			for _, clusterNetworkAttachmentsItem := range instance.ClusterNetworkAttachments {
 				clusterNetworkAttachmentsItemMap, err := DataSourceIBMIsInstanceTemplatesInstanceClusterNetworkAttachmentPrototypeInstanceContextToMap(&clusterNetworkAttachmentsItem) // #nosec G601
 				if err != nil {
-					return err
+					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instance_templates", "read", "cluster_network_attachments-to-map").GetDiag()
 				}
 				clusterNetworkAttachments = append(clusterNetworkAttachments, clusterNetworkAttachmentsItemMap)
 			}
@@ -1097,7 +1104,7 @@ func dataSourceIBMISInstanceTemplatesRead(d *schema.ResourceData, meta interface
 			for _, modelItem := range instance.NetworkAttachments {
 				modelMap, err := dataSourceIBMIsInstanceTemplateInstanceNetworkAttachmentPrototypeToMap(&modelItem)
 				if err != nil {
-					return err
+					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instance_templates", "read", "network_attachments-to-map").GetDiag()
 				}
 				networkAttachments = append(networkAttachments, modelMap)
 			}
@@ -1108,7 +1115,7 @@ func dataSourceIBMISInstanceTemplatesRead(d *schema.ResourceData, meta interface
 		if instance.PrimaryNetworkAttachment != nil {
 			modelMap, err := dataSourceIBMIsInstanceTemplateInstanceNetworkAttachmentPrototypeToMap(instance.PrimaryNetworkAttachment)
 			if err != nil {
-				return err
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instance_templates", "read", "primary_network_attachment-to-map").GetDiag()
 			}
 			primaryNetworkAttachment = append(primaryNetworkAttachment, modelMap)
 		}
@@ -1331,7 +1338,9 @@ func dataSourceIBMISInstanceTemplatesRead(d *schema.ResourceData, meta interface
 		templates = append(templates, template)
 	}
 	d.SetId(dataSourceIBMISInstanceTemplatesID(d))
-	d.Set(isInstanceTemplates, templates)
+	if err = d.Set("templates", templates); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting templates: %s", err), "(Data) ibm_is_instance_templates", "read", "set-templates").GetDiag()
+	}
 	return nil
 }
 
