@@ -160,7 +160,7 @@ func resourceIBMTransitGatewayRouteReportCreate(d *schema.ResourceData, meta int
 
 	tgRouteReport, response, err := client.CreateTransitGatewayRouteReport(createTransitGatewayRouteReportOptions)
 	if err != nil {
-		return fmt.Errorf("Create Transit Gateway Route Report err %s\n%s", err, response)
+		return flex.FmtErrorf("Create Transit Gateway Route Report err %s\n%s", err, response)
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", gatewayId, *tgRouteReport.ID))
@@ -193,7 +193,7 @@ func isTransitGatewayRouteReportRefreshFunc(client *transitgatewayapisv1.Transit
 	return func() (interface{}, string, error) {
 		parts, err := flex.IdParts(id)
 		if err != nil {
-			return nil, "", fmt.Errorf("Error Getting Transit Gateway Route Report: %s", err)
+			return nil, "", flex.FmtErrorf("Error Getting Transit Gateway Route Report: %s", err)
 		}
 
 		gatewayId := parts[0]
@@ -205,7 +205,7 @@ func isTransitGatewayRouteReportRefreshFunc(client *transitgatewayapisv1.Transit
 
 		routeReport, response, getRouteErr := client.GetTransitGatewayRouteReport(getTransitGatewayRouteReportOptions)
 		if getRouteErr != nil {
-			return nil, "", fmt.Errorf("Error Getting Transit Gateway Route Report: %s\n%s", err, response)
+			return nil, "", flex.FmtErrorf("Error Getting Transit Gateway Route Report: %s\n%s", err, response)
 		}
 
 		if *routeReport.Status == "complete" {
@@ -239,7 +239,7 @@ func resourceIBMTransitGatewayRouteReportRead(d *schema.ResourceData, meta inter
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("Error Getting Transit Gateway Route Report (%s): %s\n%s", routeReportID, err, response)
+		return flex.FmtErrorf("Error Getting Transit Gateway Route Report (%s): %s\n%s", routeReportID, err, response)
 	}
 
 	d.Set(tgRouteReportId, *instance.ID)
@@ -359,7 +359,7 @@ func resourceIBMTransitGatewayRouteReportDelete(d *schema.ResourceData, meta int
 		if response != nil && response.StatusCode == 404 {
 			return nil
 		}
-		return fmt.Errorf("Error deleting Transit Gateway Route Report(%s): %s\n%s", ID, err, response)
+		return flex.FmtErrorf("Error deleting Transit Gateway Route Report(%s): %s\n%s", ID, err, response)
 	}
 
 	d.SetId("")
