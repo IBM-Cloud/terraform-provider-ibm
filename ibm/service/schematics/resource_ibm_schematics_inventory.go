@@ -254,37 +254,43 @@ func resourceIBMSchematicsInventoryUpdate(context context.Context, d *schema.Res
 
 	hasChange := false
 
+	/*************************************************************************************** /
+	 * The Schematics Inventory PATCH API is not currently working, so I changed here to     *
+	 * send the complete payload to the Replace Inventory API (PUT method) once there is a   *
+	 * change identified by this plugin.                                                     *
+	 ****************************************************************************************/
 	if d.HasChange("name") {
-		updateInventoryOptions.SetName(d.Get("name").(string))
 		hasChange = true
 	}
 	if d.HasChange("description") {
-		updateInventoryOptions.SetDescription(d.Get("description").(string))
 		hasChange = true
 	}
 	if d.HasChange("location") {
-		updateInventoryOptions.SetLocation(d.Get("location").(string))
 		hasChange = true
 	}
 	if d.HasChange("resource_group") {
-		updateInventoryOptions.SetResourceGroup(d.Get("resource_group").(string))
 		hasChange = true
 	}
 	if d.HasChange("inventories_ini") {
-		updateInventoryOptions.SetInventoriesIni(d.Get("inventories_ini").(string))
 		hasChange = true
 	}
 	if d.HasChange("resource_queries") {
-		resourceQueriesAttr := d.Get("resource_queries").([]string)
-		if len(resourceQueriesAttr) > 0 {
-			resourceQueries := d.Get("resource_queries").([]string)
-			updateInventoryOptions.SetResourceQueries(resourceQueries)
-		}
-
 		hasChange = true
 	}
 
 	if hasChange {
+		updateInventoryOptions.SetName(d.Get("name").(string))
+		updateInventoryOptions.SetDescription(d.Get("description").(string))
+		updateInventoryOptions.SetLocation(d.Get("location").(string))
+		updateInventoryOptions.SetResourceGroup(d.Get("resource_group").(string))
+		updateInventoryOptions.SetInventoriesIni(d.Get("inventories_ini").(string))
+
+		resourceQueriesAttr := d.Get("resource_queries").([]interface{})
+		if len(resourceQueriesAttr) > 0 {
+			// resourceQueries := d.Get("resource_queries").([]string)
+			updateInventoryOptions.SetResourceQueries(flex.ExpandStringList(d.Get("resource_queries").([]interface{})))
+		}
+
 		_, response, err := schematicsClient.ReplaceInventoryWithContext(context, updateInventoryOptions)
 		if err != nil {
 
