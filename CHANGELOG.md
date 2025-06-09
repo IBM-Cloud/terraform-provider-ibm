@@ -1,3 +1,11 @@
+# 1.79.1 (June 09, 2025)
+
+## Bug Fixes
+
+### VPC Infrastructure
+* fix(is-image): fixed the access_tags set on is_image ([6280](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6280))
+
+
 # 1.79.0 (June 09, 2025)
 
 ## Bug Fixes
