@@ -17,20 +17,44 @@ Create, update, or delete [IBM Cloud Satellite Cluster](https://cloud.ibm.com/do
 
 ```terraform
 resource "ibm_satellite_cluster" "create_cluster" {
-	name                   = "%s"  
-	location               = var.location
-	enable_config_admin    = true
-	kube_version           = "4.6_openshift"
-	resource_group_id      = data.ibm_resource_group.rg.id
-	wait_for_worker_update = true
-	dynamic "zones" {
-		for_each = var.zones
-		content {
-			id	= zones.value
-		}
-	}
+  name                   = "%s"
+  location               = var.location
+  enable_config_admin    = true
+  kube_version           = "4.6_openshift"
+  resource_group_id      = data.ibm_resource_group.rg.id
+  wait_for_worker_update = true
+  dynamic "zones" {
+    for_each = var.zones
+    content {
+      id	= zones.value
+    }
+  }
 }
 
+```
+
+### Create a KMS Enabled satellite cluster:
+
+```hcl
+resource "ibm_satellite_cluster" "create_cluster" {
+  name                   = "%s"
+  location               = var.location
+  enable_config_admin    = true
+  kube_version           = "4.6_openshift"
+  resource_group_id      = data.ibm_resource_group.rg.id
+  wait_for_worker_update = true
+  dynamic "zones" {
+    for_each = var.zones
+    content {
+      id	= zones.value
+    }
+  } 
+  kms_config {
+    instance_id = "12043812-757f-4e1e-8436-6af3245e6a69"
+    crk_id = "0792853c-b9f9-4b35-9d9e-ffceab51d3c1"
+    private_endpoint = false
+  }
+}
 ```
 
 ### Create satellite cluster with calico ip autodetection
@@ -92,7 +116,7 @@ The `ibm_satellite_cluster` provides the following [Timeouts](https://www.terraf
 
 ## Argument reference
 
-Review the argument references that you can specify for your resource. 
+Review the argument references that you can specify for your resource.
 
 - `name` - (Required, String) The unique name for the new IBM Cloud Satellite cluster.
 - `location` - (Required, String) The name or ID of the Satellite location.
@@ -105,17 +129,21 @@ Review the argument references that you can specify for your resource.
 - `host_labels` - (Optional, Set(Strings)) Labels to add to the default worker pool, formatted as `cpu:4` key-value pairs. Satellite uses host labels to automatically assign hosts to worker pools with matching labels.
 - `default_worker_pool_labels` - (Optional, String) The labels on all the workers in the default worker pool.
 - `pull_secret` - (Optional, String) The Red Hat pull secret to create the OpenShift cluster.
-- `zone` - (Optional, List) The zone for the worker pool in a multi-zone cluster. 
+- `zone` - (Optional, List) The zone for the worker pool in a multi-zone cluster.
 - `infrastructure_topology` - (Optional, String) Specify whether the cluster should run a single worker node or the default number of worker nodes. Only works with kube version 4.11 and newer. To create a single-node cluster, specify 'single-replica'. To create a default cluster with multiple worker nodes, specify 'highly-available'. The 'highly-available' option is applied by default. Available options: single-replica, highly-available (default: "highly-available")
+* `kms_config` -  (Optional, list) Used to attach a key protect instance to a cluster. Nested `kms_config` block has the following structure:
+    * `instance_id` - The guid of the key protect instance.
+    * `crk_id` - Id of the customer root key (CRK).
+    * `private_endpoint` - Set this to true to configure the KMS private service endpoint. Default is false.
 
-   Nested scheme for `zone`:
+  Nested scheme for `zone`:
     - `id` - The name of the zone.
 - `resource_group_id` - (Optional, String) The ID of the resource group.  You can retrieve the value from data source `ibm_resource_group`.
 - `tags` - (Optional, Array of Strings) List of tags associated with this cluster.
 -  `wait_for_worker_update` - (Optional, Bool) Set to **true** to wait for kube version of woker nodes to update during the worker node kube version update. **NOTE** setting `wait_for_worker_update` to **false** is not recommended. This results in upgrading all the worker nodes in the cluster at the same time causing the cluster downtime.
-- `patch_version` - (Optional, String) Set this to update the worker nodes with the required patch version. 
-   The `patch_version` should be in the format - `patch_version_fixpack_version`. For more information, see [Kuberentes version](https://cloud.ibm.com/docs/containers?topic=containers-cs_versions).
-    **NOTE**: To update the patch/fixpack versions of the worker nodes, Run the command `ibmcloud ks workers -c <cluster_name_or_id> --output json`, fetch the required patch & fixpack versions from `kubeVersion.target` and set the patch_version parameter.
+- `patch_version` - (Optional, String) Set this to update the worker nodes with the required patch version.
+  The `patch_version` should be in the format - `patch_version_fixpack_version`. For more information, see [Kuberentes version](https://cloud.ibm.com/docs/containers?topic=containers-cs_versions).
+  **NOTE**: To update the patch/fixpack versions of the worker nodes, Run the command `ibmcloud ks workers -c <cluster_name_or_id> --output json`, fetch the required patch & fixpack versions from `kubeVersion.target` and set the patch_version parameter.
 - `retry_patch_version` - (Optional, Integer) This argument helps to retry the update of `patch_version` if the previous update fails. Increment the value to retry the update of `patch_version` on worker nodes.
 - `tags` - (Optional, Array of Strings) Tags associated with the container cluster instance.
 - `pod_subnet` - Specify a custom subnet CIDR to provide private IP addresses for pods. The subnet must be at least `/23` or larger. For more information, see [Configuring VPC subnets](https://cloud.ibm.com/docs/containers?topic=containers-vpc-subnets).
