@@ -145,26 +145,26 @@ func dataSourceIBMDLGatewayMacsecCaksRead(d *schema.ResourceData, meta interface
 			cakItem[dlGatewayMacsecCakName] = *cak.Name
 			cakItem[dlGatewayMacsecCakSession] = *cak.Session
 			cakItem[dlGatewayMacsecCakStatus] = *cak.Status
-			cakItem[dlCreatedAt] = *cak.CreatedAt
-			cakItem[dlUpdatedAt] = *cak.UpdatedAt
+			cakItem[dlCreatedAt] = cak.CreatedAt.String()
+			cakItem[dlUpdatedAt] = cak.UpdatedAt.String()
 			cakItem[dlGatewayMacsecCakID] = *cak.ID
 
 			hpcsKey := map[string]interface{}{}
 			if cak.Key != nil {
 				hpcsKey[dlGatewayMacsecHPCSCrn] = *cak.Key.Crn
-				cakItem[dlGatewayMacsecHPCSKey] = hpcsKey
+				cakItem[dlGatewayMacsecHPCSKey] = []map[string]interface{}{hpcsKey}
 			}
 
 			activeDelta := map[string]interface{}{}
 			if cak.ActiveDelta != nil {
 				hpcsKey := map[string]interface{}{}
 				if cak.ActiveDelta.Key != nil {
-					hpcsKey[dlGatewayMacsecHPCSCrn] = *&cak.ActiveDelta.Key.Crn
-					activeDelta[dlGatewayMacsecHPCSKey] = hpcsKey
+					hpcsKey[dlGatewayMacsecHPCSCrn] = cak.ActiveDelta.Key.Crn
+					activeDelta[dlGatewayMacsecHPCSKey] = []map[string]interface{}{hpcsKey}
 				}
-				activeDelta[dlGatewayMacsecCakName] = *&cak.ActiveDelta.Name
+				activeDelta[dlGatewayMacsecCakName] = cak.ActiveDelta.Name
 				// activeDelta[dlGatewayMacsecCakStatus] = *result.ActiveDelta.Status
-				cakItem[dlGatewayMacsecCakActiveDelta] = activeDelta
+				cakItem[dlGatewayMacsecCakActiveDelta] = []map[string]interface{}{activeDelta}
 			}
 
 			caksList = append(caksList, cakItem)

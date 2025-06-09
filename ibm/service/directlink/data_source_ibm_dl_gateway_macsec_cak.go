@@ -152,7 +152,7 @@ func dataSourceIBMDLGatewayMacsecCakRead(d *schema.ResourceData, meta interface{
 	hpcsKey := map[string]interface{}{}
 	if result.Key != nil {
 		hpcsKey[dlGatewayMacsecHPCSCrn] = *result.Key.Crn
-		d.Set(dlGatewayMacsecHPCSKey, hpcsKey)
+		d.Set(dlGatewayMacsecHPCSKey, []map[string]interface{}{hpcsKey})
 	}
 
 	activeDelta := map[string]interface{}{}
@@ -160,12 +160,12 @@ func dataSourceIBMDLGatewayMacsecCakRead(d *schema.ResourceData, meta interface{
 		hpcsKey := map[string]interface{}{}
 		if result.ActiveDelta.Key != nil {
 			hpcsKey[dlGatewayMacsecHPCSCrn] = *result.ActiveDelta.Key.Crn
-			activeDelta[dlGatewayMacsecHPCSKey] = hpcsKey
+			activeDelta[dlGatewayMacsecHPCSKey] = []map[string]interface{}{hpcsKey}
 		}
 
 		activeDelta[dlGatewayMacsecCakName] = *result.ActiveDelta.Name
 		// activeDelta[dlGatewayMacsecCakStatus] = *result.ActiveDelta.Status
-		d.Set(dlGatewayMacsecCakActiveDelta, activeDelta)
+		d.Set(dlGatewayMacsecCakActiveDelta, []map[string]interface{}{activeDelta})
 	}
 
 	d.Set(dlGatewayMacsecCakID, result.ID)

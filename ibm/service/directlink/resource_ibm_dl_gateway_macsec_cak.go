@@ -26,7 +26,7 @@ func ResourceIBMDLGatewayMacsecCak() *schema.Resource {
 			dlGatewayId: {
 				Type:        schema.TypeString,
 				Description: "Gateway ID",
-				Computed:    true,
+				Required:    true,
 			},
 			dlGatewayMacsecCakID: {
 				Type:        schema.TypeString,
@@ -205,7 +205,7 @@ func resourceIBMdlGatewayMacsecCakCreate(d *schema.ResourceData, meta interface{
 	name := d.Get(dlGatewayMacsecCakName).(string)
 	// version := d.Get(dlGatewayMAcsecVersion).(string)
 	session := d.Get(dlGatewayMacsecCakSession).(string)
-	keyMapIntf := d.Get(dlGatewayMacsecHPCSKey).(map[string]interface{})
+	keyMapIntf := d.Get(dlGatewayMacsecHPCSKey).(*schema.Set).List()[0].(map[string]interface{})
 	crn := keyMapIntf[dlCrn].(string)
 	key, _ := directLink.NewHpcsKeyIdentity(crn)
 
@@ -223,9 +223,6 @@ func resourceIBMdlGatewayMacsecCakCreate(d *schema.ResourceData, meta interface{
 }
 
 func resourceIBMdlGatewayMacsecCakRead(d *schema.ResourceData, meta interface{}) error {
-	dtype := d.Get(dlType).(string)
-	log.Printf("[INFO] Inside resourceIBMdlGatewayMacsecCakRead: %s", dtype)
-
 	directLink, err := directlinkClient(meta)
 	if err != nil {
 		return err
@@ -269,7 +266,7 @@ func resourceIBMdlGatewayMacsecCakRead(d *schema.ResourceData, meta interface{})
 	hpcsKey := map[string]interface{}{}
 	if instance.Key != nil {
 		hpcsKey[dlGatewayMacsecHPCSCrn] = *instance.Key.Crn
-		cakItem[dlGatewayMacsecHPCSKey] = hpcsKey
+		cakItem[dlGatewayMacsecHPCSKey] = map[string]interface{}(hpcsKey)
 	}
 
 	activeDelta := map[string]interface{}{}
@@ -277,12 +274,12 @@ func resourceIBMdlGatewayMacsecCakRead(d *schema.ResourceData, meta interface{})
 		hpcsKey := map[string]interface{}{}
 		if instance.ActiveDelta.Key != nil {
 			hpcsKey[dlGatewayMacsecHPCSCrn] = *instance.ActiveDelta.Key.Crn
-			activeDelta[dlGatewayMacsecHPCSKey] = hpcsKey
+			activeDelta[dlGatewayMacsecHPCSKey] = map[string]interface{}(hpcsKey)
 		}
 
 		activeDelta[dlGatewayMacsecCakName] = *instance.ActiveDelta.Name
 		// activeDelta[dlGatewayMacsecCakStatus] = *instance.ActiveDelta.Status
-		cakItem[dlGatewayMacsecCakActiveDelta] = activeDelta
+		cakItem[dlGatewayMacsecCakActiveDelta] = map[string]interface{}(activeDelta)
 	}
 
 	d.Set(dlGatewayMacsecCak, cakItem)
@@ -303,17 +300,13 @@ func resourceIBMdlGatewayMacsecCakUpdate(d *schema.ResourceData, meta interface{
 
 	gatewayMacsecCakPatch := map[string]interface{}{}
 
-	if d.HasChange(dlGatewayMacsecCakName) {
-		name := d.Get(dlGatewayMacsecCakName).(string)
-		gatewayMacsecCakPatch[dlGatewayMacsecCakName] = &name
-	}
+	name := d.Get(dlGatewayMacsecCakName).(string)
+	gatewayMacsecCakPatch[dlGatewayMacsecCakName] = &name
 
-	if d.HasChange(dlGatewayMacsecHPCSKey) {
-		keyMapIntf := d.Get(dlGatewayMacsecHPCSKey).(map[string]interface{})
-		crn := keyMapIntf[dlCrn].(string)
-		key, _ := directLink.NewHpcsKeyIdentity(crn)
-		gatewayMacsecCakPatch[dlGatewayMacsecHPCSKey] = &key
-	}
+	keyMapIntf := d.Get(dlGatewayMacsecHPCSKey).(*schema.Set).List()[0].(map[string]interface{})
+	crn := keyMapIntf[dlCrn].(string)
+	key, _ := directLink.NewHpcsKeyIdentity(crn)
+	gatewayMacsecCakPatch[dlGatewayMacsecHPCSKey] = &key
 
 	patchGatewayOptions := directLink.NewUpdateGatewayMacsecCakOptions(gatewayID, getMacsecCakID, gatewayMacsecCakPatch)
 	_, response, err := directLink.UpdateGatewayMacsecCak(patchGatewayOptions)
