@@ -137,6 +137,7 @@ var (
 	imageName                       string
 	functionNamespace               string
 	HpcsInstanceID                  string
+	ToolchainID                     string
 )
 
 // MQ on Cloud
@@ -2121,6 +2122,11 @@ func init() {
 	PcsIamServiceRegistrationId = os.Getenv("PCS_IAM_REGISTRATION_ID")
 	if PcsIamServiceRegistrationId == "" {
 		fmt.Println("[WARN] Set the environment variable PCS_IAM_TEGISTRATION_ID for testing iam_onboarding resource else tests will fail if this is not set correctly")
+	}
+
+	ToolchainID = os.Getenv("TOOLCHAIN_ID")
+	if ToolchainID == "" {
+		fmt.Println("[WARN] Set the environment variable TOOLCHAIN_ID for testing the COS toolchain integration tool else tests will fail if this is not set correctly")
 	}
 }
 
