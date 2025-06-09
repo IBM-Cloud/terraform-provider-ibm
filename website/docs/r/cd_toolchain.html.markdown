@@ -54,6 +54,6 @@ After your resource is created, you can read values from the listed arguments an
 You can import the `ibm_cd_toolchain` resource by using `id`. Toolchain ID.
 
 # Syntax
-```
-$ terraform import ibm_cd_toolchain.cd_toolchain <id>
-```
+<pre>
+$ terraform import ibm_cd_toolchain.cd_toolchain &lt;id&gt;
+</pre>
