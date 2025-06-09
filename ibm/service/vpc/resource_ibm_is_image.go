@@ -860,7 +860,7 @@ func imgGet(context context.Context, d *schema.ResourceData, meta interface{}, i
 		log.Printf(
 			"Error on get of resource vpc Image (%s) access tags: %s", d.Id(), err)
 	}
-	if err = d.Set("encryption", accesstags); err != nil {
+	if err = d.Set("access_tags", accesstags); err != nil {
 		err = fmt.Errorf("Error setting access_tags: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_image", "read", "set-access_tags").GetDiag()
 	}

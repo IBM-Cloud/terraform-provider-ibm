@@ -4,17 +4,20 @@
 package vpc
 
 import (
+	"context"
 	"fmt"
+	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func DataSourceIBMISSecurityGroupTarget() *schema.Resource {
 	return &schema.Resource{
 
-		Read: dataSourceIBMISSecurityGroupTargetRead,
+		ReadContext: dataSourceIBMISSecurityGroupTargetRead,
 
 		Schema: map[string]*schema.Schema{
 
@@ -57,11 +60,13 @@ func DataSourceIBMISSecurityGroupTarget() *schema.Resource {
 	}
 }
 
-func dataSourceIBMISSecurityGroupTargetRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceIBMISSecurityGroupTargetRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_security_group_target", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	securityGroupID := d.Get("security_group").(string)
@@ -76,9 +81,11 @@ func dataSourceIBMISSecurityGroupTargetRead(d *schema.ResourceData, meta interfa
 		if start != "" {
 			listSecurityGroupTargetsOptions.Start = &start
 		}
-		groups, response, err := sess.ListSecurityGroupTargets(listSecurityGroupTargetsOptions)
+		groups, _, err := sess.ListSecurityGroupTargetsWithContext(context, listSecurityGroupTargetsOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Getting InstanceGroup Managers %s\n%s", err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListSecurityGroupTargetsWithContext failed %s", err), "(Data) ibm_is_security_group_target", "read")
+			log.Printf("[DEBUG] %s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		if *groups.TotalCount == int64(0) {
 			break
@@ -96,18 +103,30 @@ func dataSourceIBMISSecurityGroupTargetRead(d *schema.ResourceData, meta interfa
 	for _, securityGroupTargetReferenceIntf := range allrecs {
 		securityGroupTargetReference := securityGroupTargetReferenceIntf.(*vpcv1.SecurityGroupTargetReference)
 		if *securityGroupTargetReference.Name == name {
-			d.Set("target", *securityGroupTargetReference.ID)
-			d.Set("crn", securityGroupTargetReference.CRN)
+			if err = d.Set("target", *securityGroupTargetReference.ID); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting target %s", err), "(Data) ibm_is_security_group_target", "read", "set-target").GetDiag()
+			}
+			if err = d.Set("crn", securityGroupTargetReference.CRN); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting crn %s", err), "(Data) ibm_is_security_group_target", "read", "set-crn").GetDiag()
+			}
 			// d.Set("resource_type", *securityGroupTargetReference.ResourceType)
 			if securityGroupTargetReference.Deleted != nil {
-				d.Set("more_info", *securityGroupTargetReference.Deleted.MoreInfo)
+				if err = d.Set("more_info", *securityGroupTargetReference.Deleted.MoreInfo); err != nil {
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting targets %s", err), "(Data) ibm_is_security_group_target", "read", "set-more_info").GetDiag()
+				}
 			}
 			if securityGroupTargetReference != nil && securityGroupTargetReference.ResourceType != nil {
-				d.Set("resource_type", *securityGroupTargetReference.ResourceType)
+				if err = d.Set("resource_type", *securityGroupTargetReference.ResourceType); err != nil {
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_type %s", err), "(Data) ibm_is_security_group_target", "read", "set-resource_type").GetDiag()
+				}
 			}
 			d.SetId(fmt.Sprintf("%s/%s", securityGroupID, *securityGroupTargetReference.ID))
+
 			return nil
 		}
 	}
-	return fmt.Errorf("Security Group Target %s not found", name)
+	err = fmt.Errorf("Security Group Target %s not found", name)
+	tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListSecurityGroupTargetsWithContext failed %s", err), "(Data) ibm_is_security_group_target", "read")
+	log.Printf("[DEBUG] %s", tfErr.GetDebugMessage())
+	return tfErr.GetDiag()
 }

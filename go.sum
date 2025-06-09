@@ -102,8 +102,8 @@ github.com/IBM/appconfiguration-go-admin-sdk v0.4.4 h1:VQ+mVavoo3/xrBaVSyxE+B6Ue
 github.com/IBM/appconfiguration-go-admin-sdk v0.4.4/go.mod h1:E9cXu9w0EClhZq+E9wBw8QzNLKZd2bNdMrTXwVSWJ1s=
 github.com/IBM/appid-management-go-sdk v0.0.0-20210908164609-dd0e0eaf732f h1:4c1kqY4GqmkQ+tO03rneDb74Tv7BhTj8jDiDB1p8mdM=
 github.com/IBM/appid-management-go-sdk v0.0.0-20210908164609-dd0e0eaf732f/go.mod h1:d22kTYY7RYBWcQlZpqrSdshpB/lJ16viWS5Sbjtlc8s=
-github.com/IBM/cloud-databases-go-sdk v0.7.1 h1:5kK4/3NUsGxZzmuUe+1ftajpOQbeDVh5VeemrPgROP4=
-github.com/IBM/cloud-databases-go-sdk v0.7.1/go.mod h1:JYucI1PdwqbAd8XGdDAchxzxRP7bxOh1zUnseovHKsc=
+github.com/IBM/cloud-databases-go-sdk v0.8.0 h1:uMFqhnc/roVTzfCaUsJ23eaHKjChhGpM1F7Mpxik0bo=
+github.com/IBM/cloud-databases-go-sdk v0.8.0/go.mod h1:JYucI1PdwqbAd8XGdDAchxzxRP7bxOh1zUnseovHKsc=
 github.com/IBM/cloud-db2-go-sdk v0.2.3 h1:R+8uFXSZFOsBDC7nKqW9DgyGgT9Pop589ziUIaw2Tek=
 github.com/IBM/cloud-db2-go-sdk v0.2.3/go.mod h1:jEJMNXX2KOE+Hhk3M8CBq0qi9CZ0eRK36xmhuBPSiNA=
 github.com/IBM/cloudant-go-sdk v0.8.0 h1:XzaqZFy5fm1Q9+iK52X5zRW39SHaahT9pf5SRgVTsTY=
@@ -147,8 +147,8 @@ github.com/IBM/logs-router-go-sdk v1.0.7 h1:uQjQAAcQdo3XvhY6MC7HakhZaXIUsGfUmKj2
 github.com/IBM/logs-router-go-sdk v1.0.7/go.mod h1:tCN2vFgu5xG0ob9iJcxi5M4bJ6mWmu3nhmRPnvlwev0=
 github.com/IBM/mqcloud-go-sdk v0.2.0 h1:QOWk8ZGk0QfIL0MOGTKzNdM3Qe0Hk+ifAFtNSFQo5HU=
 github.com/IBM/mqcloud-go-sdk v0.2.0/go.mod h1:VZQKMtqmcdXKhmLhLiPuS/UHMs/5yo2tA/nD83cQt9E=
-github.com/IBM/networking-go-sdk v0.51.5 h1:75lKAx17y++hirXK5GcEM23mTRhHnhsv6gmhz70ex1Q=
-github.com/IBM/networking-go-sdk v0.51.5/go.mod h1:wyEnRnBnROgGmSn5UrryycIrbBujHKXf0PmI1NSwcjY=
+github.com/IBM/networking-go-sdk v0.51.6 h1:7hKoFJOWq4pGenJX5OzIk4LpWKG7HfWw41sYDeX1nDs=
+github.com/IBM/networking-go-sdk v0.51.6/go.mod h1:wyEnRnBnROgGmSn5UrryycIrbBujHKXf0PmI1NSwcjY=
 github.com/IBM/platform-services-go-sdk v0.81.2 h1:ZE52eDNiblpIQrsRf5VySi1y3AH6H/KI3eNNKDKdN/g=
 github.com/IBM/platform-services-go-sdk v0.81.2/go.mod h1:XOowH+JnIih3FA7uilLVM/9VH7XgCmJ4T/i6eZi7gkw=
 github.com/IBM/project-go-sdk v0.3.5 h1:L+YClFUa14foS0B/hOOY9n7sIdsT5/XQicnXOyJSpyM=

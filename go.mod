@@ -8,7 +8,7 @@ require (
 	github.com/IBM-Cloud/power-go-client v1.11.0
 	github.com/IBM/appconfiguration-go-admin-sdk v0.4.4
 	github.com/IBM/appid-management-go-sdk v0.0.0-20210908164609-dd0e0eaf732f
-	github.com/IBM/cloud-databases-go-sdk v0.7.1
+	github.com/IBM/cloud-databases-go-sdk v0.8.0
 	github.com/IBM/cloud-db2-go-sdk v0.2.3
 	github.com/IBM/cloudant-go-sdk v0.8.0
 	github.com/IBM/code-engine-go-sdk v0.0.0-20241217191651-e1821f8c58c3
@@ -27,7 +27,7 @@ require (
 	github.com/IBM/logs-go-sdk v0.4.0
 	github.com/IBM/logs-router-go-sdk v1.0.7
 	github.com/IBM/mqcloud-go-sdk v0.2.0
-	github.com/IBM/networking-go-sdk v0.51.5
+	github.com/IBM/networking-go-sdk v0.51.6
 	github.com/IBM/platform-services-go-sdk v0.81.2
 	github.com/IBM/project-go-sdk v0.3.5
 	github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5

@@ -11,14 +11,15 @@ import (
 	"context"
 	"fmt"
 	"log"
-
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func ResourceIBMIAMTrustedProfile() *schema.Resource {
@@ -185,8 +186,23 @@ func resourceIBMIamTrustedProfileRead(context context.Context, d *schema.Resourc
 	getProfileOptions := &iamidentityv1.GetProfileOptions{}
 
 	getProfileOptions.SetProfileID(d.Id())
+	var trustedProfile *iamidentityv1.TrustedProfile
+	var response *core.DetailedResponse
 
-	trustedProfile, response, err := iamIdentityClient.GetProfileWithContext(context, getProfileOptions)
+	err = retry.RetryContext(context, 5*time.Minute, func() *retry.RetryError {
+		trustedProfile, response, err = iamIdentityClient.GetProfileWithContext(context, getProfileOptions)
+		if err != nil || trustedProfile == nil {
+			if response != nil && response.StatusCode == 404 {
+				return retry.RetryableError(err)
+			}
+			return retry.NonRetryableError(err)
+		}
+		return nil
+	})
+
+	if conns.IsResourceTimeoutError(err) {
+		trustedProfile, response, err = iamIdentityClient.GetProfileWithContext(context, getProfileOptions)
+	}
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
