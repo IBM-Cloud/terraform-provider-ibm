@@ -13,9 +13,11 @@ Creates a backup policy on a given source bucket.
 
 **Note:**
 
- you must have `writer` or `backup manager` platform roles on source bucket and backup vault. And from backup vault to target bucket.
- Add depends_on on ibm_iam_authorization_policy.policy in template to make sure.
- The source bucket should have object versioning enabled.
+ The source bucket must have object versioning enabled.
+
+ **Note:**
+
+ Backup policies require a service-to-service IAM policy granting sync permissions from the source to the target bucket. Adding a `depends_on` for `ibm_iam_authorization_policy.policy` ensures that this policy is in place.
 
 ---
 
