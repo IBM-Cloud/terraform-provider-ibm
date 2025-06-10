@@ -34,7 +34,7 @@ func ResourceIBMCOSBackupPolicy() *schema.Resource {
 				ForceNew:    true,
 				Description: "Bucket Crn of the source bucket.",
 			},
-			"delete_after_days": {
+			"initial_delete_after_days": {
 				Type:         schema.TypeInt,
 				Computed:     true, // Computed means it can be set by Terraform but can't be updated by users
 				Optional:     true,
@@ -73,7 +73,7 @@ func resourceIBMCOSBackupPolicyCreate(ctx context.Context, d *schema.ResourceDat
 	bucketCRN := d.Get("bucket_crn").(string)
 	bucketName := strings.Split(bucketCRN, ":bucket:")[1]
 	policyName := d.Get("policy_name").(string)
-	deleteAfterDays := d.Get("delete_after_days").(int)
+	deleteAfterDays := d.Get("initial_delete_after_days").(int)
 	targetBackupVaultCRN := d.Get("target_backup_vault_crn").(string)
 	backupType := d.Get("backup_type").(string)
 	rcClient, err := meta.(conns.ClientSession).CosConfigV1API()
@@ -131,7 +131,7 @@ func resourceIBMCOSBackupPolicyRead(ctx context.Context, d *schema.ResourceData,
 			d.Set("policy_name", aws.String(*res.PolicyName))
 		}
 		if res.InitialRetention.DeleteAfterDays != nil {
-			d.Set("delete_after_days", int((*res.InitialRetention.DeleteAfterDays)))
+			d.Set("initial_delete_after_days", int((*res.InitialRetention.DeleteAfterDays)))
 		}
 		if res.TargetBackupVaultCrn != nil {
 			d.Set("target_backup_vault_crn", aws.String(*res.TargetBackupVaultCrn))

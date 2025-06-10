@@ -23,7 +23,7 @@ func TestAccIBMCOSBackupPolicyDataSource_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_cos_backup_policy.policy", "bucket_name"),
 					resource.TestCheckResourceAttrSet("data.ibm_cos_backup_policy.policy", "policy_id"),
 					resource.TestCheckResourceAttr("data.ibm_cos_backup_policy.policy", "backup_type", "continuous"),
-					resource.TestCheckResourceAttrSet("data.ibm_cos_backup_policy.policy", "delete_after_days"),
+					resource.TestCheckResourceAttrSet("data.ibm_cos_backup_policy.policy", "initial_delete_after_days"),
 				),
 			},
 		},

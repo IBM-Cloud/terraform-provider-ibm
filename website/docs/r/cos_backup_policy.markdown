@@ -102,7 +102,7 @@ resource "ibm_iam_authorization_policy" "policy" {
 
 resource "ibm_cos_backup_policy" "policy" {
   bucket_crn      = ibm_cos_bucket.bucket.crn
-  delete_after_days = 2
+  initial_delete_after_days = 2
   policy_name = "policy_name"
   target_backup_vault_crn = ibm_cos_backup_vault.backup-vault.backup_vault_crn
   backup_type = "continuous"
@@ -113,10 +113,10 @@ resource "ibm_cos_backup_policy" "policy" {
 ## Argument reference
 Review the argument references that you can specify for your resource. 
 - `bucket_crn` - (Required, Forces new resource, String) CRN of the source bucket.
-- `delete_after_days` - (Required, String) Number of days after which the data contained within the RecoveryRange will be deleted.
+- `initial_delete_after_days` - (Required, String) Number of days after which the data contained within the RecoveryRange will be deleted.
 
   **Note:**
-Once set the value of `delete_after_days` cannot be updated.
+Once set the value of `initial_delete_after_days` cannot be updated.
 
 - `policy_name` - (Required, Forces new resource, String) Name of the policy.
 - `backup_type`- (Required, Forces new resource, String) Backup type. Currently only  `continuous` is supported.

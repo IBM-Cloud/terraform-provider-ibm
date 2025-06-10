@@ -18,7 +18,6 @@ func TestAccIBMCosBackup_Policy_Basic_Valid(t *testing.T) {
 	region := "us"
 	guid := strings.Split(acc.CosCRN, ":")[7]
 	policyName := fmt.Sprintf("backup-policy%d", acctest.RandIntRange(10, 100))
-
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
@@ -197,7 +196,7 @@ func TestAccIBMCosBackup_Policy_With_Initial_Retention_Valid(t *testing.T) {
 				Config: testAccCheckIBMCosBackup_Policy_With_Initial_Retention_Valid(acc.CosCRN, bucketName, acc.BackupVaultName, region, accountID, policyName, guid, acc.BackupVaultCrn, deleteAfterDays),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_cos_backup_policy.policy", "policy_name", policyName),
-					resource.TestCheckResourceAttr("ibm_cos_backup_policy.policy", "delete_after_days", strconv.Itoa(deleteAfterDays)),
+					resource.TestCheckResourceAttr("ibm_cos_backup_policy.policy", "initial_delete_after_days", strconv.Itoa(deleteAfterDays)),
 				),
 			},
 		},
@@ -221,7 +220,7 @@ func TestAccIBMCosBackup_Policy_With_Initial_Retention_Max_Days_Valid(t *testing
 				Config: testAccCheckIBMCosBackup_Policy_With_Initial_Retention_Valid(acc.CosCRN, bucketName, acc.BackupVaultName, region, accountID, policyName, guid, acc.BackupVaultCrn, deleteAfterDays),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_cos_backup_policy.policy", "policy_name", policyName),
-					resource.TestCheckResourceAttr("ibm_cos_backup_policy.policy", "delete_after_days", strconv.Itoa(deleteAfterDays)),
+					resource.TestCheckResourceAttr("ibm_cos_backup_policy.policy", "initial_delete_after_days", strconv.Itoa(deleteAfterDays)),
 				),
 			},
 		},
@@ -243,7 +242,7 @@ func TestAccIBMCosBackup_Policy_With_Initial_Retention_Zero_Days_Invalid(t *test
 		Steps: []resource.TestStep{
 			{
 				Config:      testAccCheckIBMCosBackup_Policy_With_Initial_Retention_Valid(acc.CosCRN, bucketName, acc.BackupVaultName, region, accountID, policyName, guid, acc.BackupVaultCrn, deleteAfterDays),
-				ExpectError: regexp.MustCompile(`"delete_after_days" must contain a valid int value should be in range\(1, 36500\), got 0`),
+				ExpectError: regexp.MustCompile(`"initial_delete_after_days" must contain a valid int value should be in range\(1, 36500\), got 0`),
 			},
 		},
 	})
@@ -264,7 +263,7 @@ func TestAccIBMCosBackup_Policy_With_Initial_Retention_Less_Than_Zero_Days_Inval
 		Steps: []resource.TestStep{
 			{
 				Config:      testAccCheckIBMCosBackup_Policy_With_Initial_Retention_Valid(acc.CosCRN, bucketName, acc.BackupVaultName, region, accountID, policyName, guid, acc.BackupVaultCrn, deleteAfterDays),
-				ExpectError: regexp.MustCompile(`"delete_after_days" must contain a valid int value should be in range\(1, 36500\), got -1`),
+				ExpectError: regexp.MustCompile(`"initial_delete_after_days" must contain a valid int value should be in range\(1, 36500\), got -1`),
 			},
 		},
 	})
@@ -285,7 +284,7 @@ func TestAccIBMCosBackup_Policy_With_Initial_Retention_More_Than_36500_Days_Inva
 		Steps: []resource.TestStep{
 			{
 				Config:      testAccCheckIBMCosBackup_Policy_With_Initial_Retention_Valid(acc.CosCRN, bucketName, acc.BackupVaultName, region, accountID, policyName, guid, acc.BackupVaultCrn, deleteAfterDays),
-				ExpectError: regexp.MustCompile(`"delete_after_days" must contain a valid int value should be in range\(1, 36500\), got 36501`),
+				ExpectError: regexp.MustCompile(`"initial_delete_after_days" must contain a valid int value should be in range\(1, 36500\), got 36501`),
 			},
 		},
 	})
@@ -379,7 +378,7 @@ resource "ibm_iam_authorization_policy" "policy" {
 resource "ibm_cos_backup_policy" "policy" {
 	bucket_crn      = ibm_cos_bucket.bucket.crn
 	policy_name = "%s"
-	delete_after_days       = 2
+	initial_delete_after_days  = 2
 	target_backup_vault_crn = "%s"
 	backup_type = "continuous"
 }
@@ -504,7 +503,7 @@ resource "ibm_iam_authorization_policy" "policy2" {
 resource "ibm_cos_backup_policy" "policy1" {
 	bucket_crn      = ibm_cos_bucket.bucket.crn
 	policy_name = "%s"
-	delete_after_days       = 2
+	initial_delete_after_days  = 2
 	target_backup_vault_crn = "%s"
 	backup_type = "continuous"
 }
@@ -512,7 +511,7 @@ resource "ibm_cos_backup_policy" "policy1" {
 resource "ibm_cos_backup_policy" "policy2" {
 	bucket_crn      = ibm_cos_bucket.bucket.crn
 	policy_name = "%s"
-	delete_after_days       = 2
+	initial_delete_after_days  = 2
 	target_backup_vault_crn = "%s"
 	backup_type = "continuous"
 	}
@@ -587,7 +586,7 @@ resource "ibm_iam_authorization_policy" "policy" {
 resource "ibm_cos_backup_policy" "policy" {
 	bucket_crn      = ibm_cos_bucket.bucket.crn
 	policy_name = "%s"
-	delete_after_days       = 2
+	initial_delete_after_days  = 2
 	target_backup_vault_crn = "%s"
 	backup_type = "continuous"
 }
@@ -664,7 +663,7 @@ resource "ibm_iam_authorization_policy" "policy" {
 resource "ibm_cos_backup_policy" "policy" {
 	bucket_crn      = ibm_cos_bucket.bucket.crn
 	policy_name = "%s"
-	delete_after_days       = 2
+	initial_delete_after_days  = 2
 	target_backup_vault_crn = "%s"
 	backup_type = "continuous"
 }
@@ -739,7 +738,7 @@ resource "ibm_iam_authorization_policy" "policy" {
 resource "ibm_cos_backup_policy" "policy" {
 	bucket_crn      = ibm_cos_bucket.bucket.crn
 	policy_name = "%s"
-	delete_after_days       = 2
+	initial_delete_after_days  = 2
 	target_backup_vault_crn = "%s"
 	backup_type = "continuous"
 }
@@ -812,7 +811,7 @@ resource "ibm_iam_authorization_policy" "policy" {
 resource "ibm_cos_backup_policy" "policy" {
 	bucket_crn      = ibm_cos_bucket.bucket.crn
 	policy_name = "%s"
-	delete_after_days       = 2
+	initial_delete_after_days  = 2
 	target_backup_vault_crn = "%s"
 	backup_type = "continuous"
 }
@@ -887,7 +886,7 @@ resource "ibm_iam_authorization_policy" "policy" {
 resource "ibm_cos_backup_policy" "policy1" {
 	bucket_crn      = ibm_cos_bucket.bucket.crn
 	policy_name = "%s"
-	delete_after_days       = 2
+	initial_delete_after_days  = 2
 	target_backup_vault_crn = "%s"
 	backup_type = "continuous"
 }
@@ -895,7 +894,7 @@ resource "ibm_cos_backup_policy" "policy1" {
 resource "ibm_cos_backup_policy" "policy2" {
 	bucket_crn      = ibm_cos_bucket.bucket.crn
 	policy_name = "%s"
-	delete_after_days       = 2
+	initial_delete_after_days  = 2
 	target_backup_vault_crn = "%s"
 	backup_type = "continuous"
    }
@@ -970,7 +969,7 @@ resource "ibm_iam_authorization_policy" "policy" {
 resource "ibm_cos_backup_policy" "policy" {
 	bucket_crn      = ibm_cos_bucket.bucket.crn
 	policy_name = "%s"
-	delete_after_days       = 2
+	initial_delete_after_days  = 2
 	target_backup_vault_crn = "%s"
 	backup_type = "invalid"
 }
@@ -1047,7 +1046,7 @@ resource "ibm_iam_authorization_policy" "policy" {
 resource "ibm_cos_backup_policy" "policy" {
 	bucket_crn      = ibm_cos_bucket.bucket.crn
 	policy_name = "%s"
-	delete_after_days       = "%d"
+	initial_delete_after_days       = "%d"
 	target_backup_vault_crn = "%s"
 	backup_type = "continuous"
 }

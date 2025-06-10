@@ -21,7 +21,7 @@ func DataSourceIBMCosBackupPolicy() *schema.Resource {
 				Required:    true,
 				Description: "Name of the source bucket",
 			},
-			"delete_after_days": {
+			"initial_delete_after_days": {
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Description: "Number of days after which the objects inside backup vault should be deleted.",
@@ -74,7 +74,7 @@ func dataSourceIBMCosBackupPolicyRead(d *schema.ResourceData, meta interface{}) 
 			policy_name = *res.PolicyName
 		}
 		if res.InitialRetention.DeleteAfterDays != nil {
-			d.Set("delete_after_days", int((*res.InitialRetention.DeleteAfterDays)))
+			d.Set("initial_delete_after_days", int((*res.InitialRetention.DeleteAfterDays)))
 		}
 		if res.TargetBackupVaultCrn != nil {
 			d.Set("target_backup_vault_crn", aws.String(*res.TargetBackupVaultCrn))

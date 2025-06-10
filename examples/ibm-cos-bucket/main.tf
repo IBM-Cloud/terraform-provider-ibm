@@ -725,13 +725,13 @@ resource "ibm_cos_bucket_lifecycle_configuration" "lifecycle" {
     }
     filter {
       and {
-        prefix = "%s"
+        prefix = "foo"
         tags {
-          key   = "%s"
-          value = "%s"
+          key   = "key"
+          value = "value"
         }
-        object_size_greater_than = "%d"
-        object_size_less_than    = "%d"
+        object_size_greater_than = 20
+        object_size_less_than    = 40
       }
     }
     rule_id = "id"
@@ -759,12 +759,12 @@ resource "ibm_cos_bucket_lifecycle_configuration" "lifecycle" {
     filter {
       and {
         tags {
-          key   = "%s"
-          value = "%s"
+          key   = "key1"
+          value = "value1"
         }
         tags {
-          key   = "%s"
-          value = "%s"
+          key   = "key2"
+          value = "value2"
         }
       }
     }
@@ -849,7 +849,7 @@ resource "ibm_iam_authorization_policy" "policy" {
 
 resource "ibm_cos_backup_policy" "policy" {
   bucket_crn              = ibm_cos_bucket.bucket.crn
-  delete_after_days       = 2
+  initial_delete_after_days       = 2
   policy_name             = "policy_name"
   target_backup_vault_crn = ibm_cos_backup_vault.backup-vault.backup_vault_crn
   backup_type             = "continuous"

@@ -27,6 +27,6 @@ Review the argument references that you can specify for your data source.
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
 - `policy_name` - (String) Name of the policy.
-- `delete_after_days` - (Int) Number of days after which the data contained in a RecoveryRange will be deleted.
+- `initial_delete_after_days` - (Int) Number of days after which the data contained in a RecoveryRange will be deleted.
 - `backup_type`- (String) CRN of the backuo vault.
 - `target_backup_vault_crn` - (String) Type of backup supported.

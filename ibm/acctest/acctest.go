@@ -604,12 +604,12 @@ func init() {
 		BackupVaultName2 = ""
 		fmt.Println("[WARN] Set the environment variable IBM_COS_Backup_Vault2 with a VALID BACKUP VAULT NAME  for testing ibm_cos_backup_vault* resources")
 	}
-	BackupVaultCrn = os.Getenv("IBM_COS_Backup_Crn")
+	BackupVaultCrn = os.Getenv("IBM_COS_Backup_Vault_Crn")
 	if BackupVaultCrn == "" {
 		BackupVaultCrn = ""
 		fmt.Println("[WARN] Set the environment variable IBM_COS_Backup_Crn with a VALID BACKUP VAULT CRN  for testing ibm_cos_backup_vault* resources")
 	}
-	BackupVaultCrn2 = os.Getenv("IBM_COS_Backup_Crn2")
+	BackupVaultCrn2 = os.Getenv("IBM_COS_Backup_Vault_Crn2")
 	if BackupVaultCrn2 == "" {
 		BackupVaultCrn2 = ""
 		fmt.Println("[WARN] Set the environment variable IBM_COS_Backup_Crn2 with a VALID BACKUP VAULT CRN  for testing ibm_cos_backup_vault* resources")
