@@ -8844,6 +8844,11 @@ func setVolumePrototypesInState(d *schema.ResourceData, instance *vpcv1.Instance
 					vol["volume_name"] = *volumeRef.Name
 					vol["volume_profile"] = *volumeRef.Profile.Name
 					vol["volume_iops"] = *volumeRef.Iops
+					tags := make([]interface{}, len(volumeRef.UserTags))
+					for i, v := range volumeRef.UserTags {
+						tags[i] = v
+					}
+					vol["volume_tags"] = schema.NewSet(schema.HashString, tags)
 					vol["volume_capacity"] = *volumeRef.Capacity
 					vol["volume_bandwidth"] = volumeRef.Bandwidth
 					vol["volume_crn"] = *volume.Volume.CRN
