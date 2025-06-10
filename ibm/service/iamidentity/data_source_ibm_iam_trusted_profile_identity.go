@@ -1,5 +1,9 @@
-// Copyright IBM Corp. 2023 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
+
+/*
+ * IBM OpenAPI Terraform Generator Version: 3.98.0-8be2046a-20241205-162752
+ */
 
 package iamidentity
 
@@ -13,6 +17,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
 )
 
@@ -71,7 +77,9 @@ func DataSourceIBMIamTrustedProfileIdentity() *schema.Resource {
 func dataSourceIBMIamTrustedProfileIdentityRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamIdentityClient, err := meta.(conns.ClientSession).IAMIdentityV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_iam_trusted_profile_identity", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	getProfileIdentityOptions := &iamidentityv1.GetProfileIdentityOptions{}
@@ -80,28 +88,41 @@ func dataSourceIBMIamTrustedProfileIdentityRead(context context.Context, d *sche
 	getProfileIdentityOptions.SetIdentityType(d.Get("identity_type").(string))
 	getProfileIdentityOptions.SetIdentifierID(d.Get("identifier_id").(string))
 
-	profileIdentityResponse, response, err := iamIdentityClient.GetProfileIdentityWithContext(context, getProfileIdentityOptions)
+	profileIdentityResponse, _, err := iamIdentityClient.GetProfileIdentityWithContext(context, getProfileIdentityOptions)
 	if err != nil {
-		log.Printf("[DEBUG] GetProfileIdentityWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetProfileIdentityWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetProfileIdentityWithContext failed: %s", err.Error()), "(Data) ibm_iam_trusted_profile_identity", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(dataSourceIBMIamTrustedProfileIdentityID(d))
 
 	if err = d.Set("iam_id", profileIdentityResponse.IamID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting iam_id: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting iam_id: %s", err), "(Data) ibm_iam_trusted_profile_identity", "read", "set-iam_id").GetDiag()
 	}
 
 	if err = d.Set("identifier", profileIdentityResponse.Identifier); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting identifier: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting identifier: %s", err), "(Data) ibm_iam_trusted_profile_identity", "read", "set-identifier").GetDiag()
 	}
 
 	if err = d.Set("type", profileIdentityResponse.Type); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting type: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting type: %s", err), "(Data) ibm_iam_trusted_profile_identity", "read", "set-type").GetDiag()
 	}
 
-	if err = d.Set("description", profileIdentityResponse.Description); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting description: %s", err))
+	if !core.IsNil(profileIdentityResponse.Accounts) {
+		accounts := []interface{}{}
+		for _, accountsItem := range profileIdentityResponse.Accounts {
+			accounts = append(accounts, accountsItem)
+		}
+		if err = d.Set("accounts", accounts); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting accounts: %s", err), "(Data) ibm_iam_trusted_profile_identity", "read", "set-accounts").GetDiag()
+		}
+	}
+
+	if !core.IsNil(profileIdentityResponse.Description) {
+		if err = d.Set("description", profileIdentityResponse.Description); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting description: %s", err), "(Data) ibm_iam_trusted_profile_identity", "read", "set-description").GetDiag()
+		}
 	}
 
 	return nil
