@@ -339,9 +339,10 @@ func dataSourceIBMIsShareTargetRead(context context.Context, d *schema.ResourceD
 
 	d.SetId(fmt.Sprintf("%s/%s", share_id, *shareTarget.ID))
 	if shareTarget.AccessControlMode != nil {
-		d.Set("access_control_mode", *shareTarget.AccessControlMode)
-		err = fmt.Errorf("Error setting access_control_mode: %s", err)
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_share_mount_target", "read", "set-access_control_mode").GetDiag()
+		if err = d.Set("access_control_mode", *shareTarget.AccessControlMode); err != nil {
+			err = fmt.Errorf("Error setting access_control_mode: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_share_mount_target", "read", "set-access_control_mode").GetDiag()
+		}
 	}
 	if err = d.Set("created_at", shareTarget.CreatedAt.String()); err != nil {
 		err = fmt.Errorf("Error setting created_at: %s", err)
