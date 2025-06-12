@@ -10,6 +10,7 @@ import (
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -47,12 +48,12 @@ func testAccCheckIBMPrivateDNSSecondaryZoneDestroy(s *terraform.State) error {
 			continue
 		}
 		if rs.Primary.ID == "" {
-			return fmt.Errorf("No resource primary ID is set")
+			return flex.FmtErrorf("No resource primary ID is set")
 		}
 
 		partslist := strings.Split(rs.Primary.ID, "/")
 		if len(partslist) < 3 {
-			return fmt.Errorf("Invalid resource primary ID. Must contain 3 parts.")
+			return flex.FmtErrorf("Invalid resource primary ID. Must contain 3 parts.")
 		}
 		instanceID := partslist[0]
 		customResolverID := partslist[1]
@@ -64,7 +65,7 @@ func testAccCheckIBMPrivateDNSSecondaryZoneDestroy(s *terraform.State) error {
 		)
 		_, _, err := pdnsClient.GetSecondaryZone(getSecondaryZoneOptions)
 		if err != nil {
-			return fmt.Errorf("testAccCheckIBMPrivateDNSZoneDestroy: Error checking if instance (%s) has been destroyed: %s", rs.Primary.ID, err)
+			return flex.FmtErrorf("testAccCheckIBMPrivateDNSZoneDestroy: Error checking if instance (%s) has been destroyed: %s", rs.Primary.ID, err)
 		}
 	}
 	return nil
