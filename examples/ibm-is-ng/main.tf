@@ -2,6 +2,14 @@ resource "ibm_is_vpc" "vpc1" {
   name = "vpc1"
 }
 
+// default routing table
+resource "ibm_is_vpc_default_routing_table" "example" {
+  default_routing_table         = ibm_is_vpc.vpc1.default_routing_table
+  route_direct_link_ingress     = true
+  route_transit_gateway_ingress = false
+  route_vpc_zone_ingress        = false
+}
+
 resource "ibm_is_vpc_address_prefix" "testacc_vpc_address_prefix" {
   name       = "vpcaddressprefix"
   zone       = var.zone1

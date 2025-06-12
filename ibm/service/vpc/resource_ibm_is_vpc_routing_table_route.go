@@ -25,6 +25,7 @@ const (
 	rAction      = "action"
 	rNextHop     = "next_hop"
 	rName        = "name"
+	rPriority    = "priority"
 	rZone        = "zone"
 )
 
