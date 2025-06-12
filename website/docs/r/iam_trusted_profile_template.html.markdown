@@ -1,12 +1,12 @@
 ---
 layout: "ibm"
-page_title: "IBM : ibm_trusted_profile_template"
+page_title: "IBM : ibm_iam_trusted_profile_template"
 description: |-
-  Manages IAM trusted profile templates
+  Manages iam_trusted_profile_template
 subcategory: "Identity & Access Management (IAM)"
 ---
 
-# ibm_trusted_profile_template
+# ibm_iam_trusted_profile_template
 
 Create, update, commit, and delete trusted profile templates with this resource.
 
@@ -31,7 +31,6 @@ resource "ibm_iam_trusted_profile_template" "trusted_profile_template_instance" 
 			}
 		}
 		identities {
-			iam_id = "IBMid-123456789"
 			identifier = "IBMid-123456789"
 			type = "user"
 			accounts = ["3213asv21s3d2vsd6bv54sfb321dfb"]
@@ -50,7 +49,6 @@ resource "ibm_iam_trusted_profile_template" "trusted_profile_template_instance" 
 		name = "Profile from Template"
 		description = "description of profile from template"
 		identities {
-			iam_id = "iam-ServiceId-abcd83bd-e218-48af-8073-c0c1b3980001"
 			identifier = "ServiceId-abcd83bd-e218-48af-8073-c0c1b3980001"
 			type = "serviceid"
 		}
@@ -77,7 +75,6 @@ resource "ibm_iam_trusted_profile_template" "trusted_profile_template_instance" 
 		name = "Profile from Template"
 		description = "description of profile from template"
 		identities {
-			iam_id = format("crn-%s", var.instance_crn)
       		identifier = var.instance_crn
 			type = "crn"
 		}
@@ -100,7 +97,6 @@ resource "ibm_iam_trusted_profile_template" "trusted_profile_template_instance" 
 		name = "Profile from Template"
 		description = "description of profile from template"
 		identities {
-			iam_id = "iam-ServiceId-abcd83bd-e218-48af-8073-c0c1b3980001"
 			identifier = "ServiceId-abcd83bd-e218-48af-8073-c0c1b3980001"
 			type = "serviceid"
 		}
@@ -124,7 +120,6 @@ resource "ibm_iam_trusted_profile_template" "trusted_profile_template_v2" {
 		name = "Profile from Template"
 		description = "description of profile from template"
 		identities {
-			iam_id = "iam-ServiceId-abcd83bd-e218-48af-8073-c0c1b3980001"
 			identifier = "ServiceId-abcd83bd-e218-48af-8073-c0c1b3980001"
 			type = "serviceid"
 		}
@@ -163,7 +158,6 @@ Nested schema for **profile**:
 	  Nested schema for **identities**:
 		* `accounts` - (Optional, List) Only valid for the type user. Accounts from which a user can assume the trusted profile.
 		* `description` - (Optional, String) Description of the identity that can assume the trusted profile. This is optional field for all the types of identities. When this field is not set for the identity type 'serviceid' then the description of the service id is used. Description is recommended for the identity type 'crn' E.g. 'Instance 1234 of IBM Cloud Service project'.
-		* `iam_id` - (Required, String) IAM ID of the identity.
 		* `identifier` - (Required, String) Identifier of the identity that can assume the trusted profiles. This can be a user identifier (IAM id), serviceid or crn. Internally it uses account id of the service id for the identifier 'serviceid' and for the identifier 'crn' it uses account id contained in the CRN.
 		* `type` - (Required, String) Type of the identity.
 			* Constraints: Allowable values are: `user`, `serviceid`, `crn`.

@@ -170,7 +170,6 @@ func testAccCheckIBMTrustedProfileTemplateConfig(name string, description string
 					}
 				}
 				identities {
-					iam_id = "crn-crn:v1:staging:public:iam-identity::a/684e0f537b4548eb8d2c9593881a6b03:::"
 					identifier = "crn:v1:staging:public:iam-identity::a/684e0f537b4548eb8d2c9593881a6b03:::"
 					type = "crn"
 				}
