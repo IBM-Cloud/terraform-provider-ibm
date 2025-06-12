@@ -86,6 +86,7 @@ Review the argument references that you can specify for your data source.
 	  Nested scheme for `supported_instance_profiles`:
 	  - `href` - (String) The URL for this virtual server instance profile.
 	  - `name` - (String) The global unique name for this virtual server instance profile.
+	- `status` - (String) The status of the dedicated host profile. Values coule be,  `previous`: This dedicated host profile is an older revision, but remains provisionable and usable. `current`: This profile is the latest revision.
 	- `vcpu_architecture` - (List)  Nested `vcpu_architecture` blocks have the following structure:
 
 	  Nested scheme for `vcpu_architecture`:
@@ -101,5 +102,10 @@ Review the argument references that you can specify for your data source.
 	  - `type` - (String) The type for this profile field.
 	  - `value` - (String) The value for this profile field.
 	  - `values` - (String) The permitted values for this profile field.
+	- `vcpu_manufacturer` - (List)  Nested `vcpu_manufacturer` blocks have the following structure:
+
+	  Nested scheme for `vcpu_manufacturer`:
+	  - `type` - (String) The type for this profile field.
+	  - `value` - (String) The VCPU manufacturer for a dedicated host with this profile.
 - `total_count` - (String) The total number of resources across all pages.
 

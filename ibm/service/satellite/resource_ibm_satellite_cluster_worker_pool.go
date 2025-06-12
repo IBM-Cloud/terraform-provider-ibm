@@ -109,8 +109,10 @@ func ResourceIBMSatelliteClusterWorkerPool() *schema.Resource {
 				Computed: true,
 			},
 			"entitlement": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: flex.ApplyOnce,
+				Description:      "Entitlement option reduces additional OCP Licence cost in Openshift Clusters",
 			},
 			"operating_system": {
 				Type:        schema.TypeString,
@@ -230,7 +232,7 @@ func resourceIBMSatelliteClusterWorkerPoolCreate(d *schema.ResourceData, meta in
 	hostLabels := make(map[string]string)
 	if v, ok := d.GetOk("host_labels"); ok {
 		hl := v.(*schema.Set)
-		hostLabels = flex.FlattenHostLabels(hl.List())
+		hostLabels = flex.FlattenKeyValues(hl.List())
 		createWorkerPoolOptions.HostLabels = hostLabels
 	} else {
 		createWorkerPoolOptions.HostLabels = hostLabels
@@ -259,6 +261,11 @@ func resourceIBMSatelliteClusterWorkerPoolCreate(d *schema.ResourceData, meta in
 	if v, ok := d.GetOk("isolation"); ok {
 		isolation := v.(string)
 		createWorkerPoolOptions.Isolation = &isolation
+	}
+
+	if v, ok := d.GetOk("entitlement"); ok {
+		entitlement := v.(string)
+		createWorkerPoolOptions.Entitlement = &entitlement
 	}
 
 	instance, response, err := satClient.CreateSatelliteWorkerPool(createWorkerPoolOptions)
@@ -357,7 +364,7 @@ func resourceIBMSatelliteClusterWorkerPoolUpdate(d *schema.ResourceData, meta in
 		clusterNameOrID := d.Get("cluster").(string)
 		workerPoolName := d.Get("name").(string)
 		count := d.Get("worker_count").(int)
-		targetEnv, err := getVpcClusterTargetHeader(d, meta)
+		targetEnv, err := getVpcClusterTargetHeader(d)
 		if err != nil {
 			return err
 		}
@@ -439,7 +446,7 @@ func resourceIBMSatelliteClusterWorkerPoolDelete(d *schema.ResourceData, meta in
 		return err
 	}
 
-	targetEnv, err := getVpcClusterTargetHeader(d, meta)
+	targetEnv, err := getVpcClusterTargetHeader(d)
 	if err != nil {
 		return err
 	}
@@ -465,7 +472,7 @@ func resourceIBMSatelliteClusterWorkerPoolDelete(d *schema.ResourceData, meta in
 	d.SetId("")
 	return nil
 }
-func getVpcClusterTargetHeader(d *schema.ResourceData, meta interface{}) (v2.ClusterTargetHeader, error) {
+func getVpcClusterTargetHeader(d *schema.ResourceData) (v2.ClusterTargetHeader, error) {
 	targetEnv := v2.ClusterTargetHeader{}
 	var resourceGroup string
 	if rg, ok := d.GetOk("resource_group_id"); ok {

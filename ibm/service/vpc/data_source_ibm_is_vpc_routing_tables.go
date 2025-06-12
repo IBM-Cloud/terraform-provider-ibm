@@ -6,17 +6,21 @@ package vpc
 import (
 	//"encoding/json"
 
+	"context"
+	"fmt"
 	"log"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 const (
 	isRoutingTableAcceptRoutesFrom      = "accept_routes_from"
 	isRoutingTableID                    = "routing_table"
+	isRoutingTableCrn                   = "routing_table_crn"
 	isRoutingTableHref                  = "href"
 	isRoutingTableName                  = "name"
 	isRoutingTableResourceType          = "resource_type"
@@ -35,7 +39,7 @@ const (
 
 func DataSourceIBMISVPCRoutingTables() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceIBMISVPCRoutingTablesList,
+		ReadContext: dataSourceIBMISVPCRoutingTablesList,
 		Schema: map[string]*schema.Schema{
 			isVpcID: {
 				Type:        schema.TypeString,
@@ -71,6 +75,19 @@ func DataSourceIBMISVPCRoutingTables() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Routing Table ID",
+						},
+						isRoutingTableCrn: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The crn of routing table",
+						},
+						"advertise_routes_to": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The ingress sources to advertise routes to. Routes in the table with `advertise` enabled will be advertised to these sources.The enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the unexpected property value was encountered.",
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
 						},
 						isRoutingTableHref: {
 							Type:        schema.TypeString,
@@ -160,6 +177,45 @@ func DataSourceIBMISVPCRoutingTables() *schema.Resource {
 								},
 							},
 						},
+						rtResourceGroup: {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The resource group for this volume.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									rtResourceGroupHref: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The URL for this resource group.",
+									},
+									rtResourceGroupId: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The unique identifier for this resource group.",
+									},
+									rtResourceGroupName: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The user-defined name for this resource group.",
+									},
+								},
+							},
+						},
+
+						rtTags: {
+							Type:     schema.TypeSet,
+							Computed: true,
+							Elem:     &schema.Schema{Type: schema.TypeString},
+							Set:      flex.ResourceIBMVPCHash,
+						},
+
+						rtAccessTags: {
+							Type:        schema.TypeSet,
+							Computed:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Set:         flex.ResourceIBMVPCHash,
+							Description: "List of access tags",
+						},
 					},
 				},
 			},
@@ -167,10 +223,12 @@ func DataSourceIBMISVPCRoutingTables() *schema.Resource {
 	}
 }
 
-func dataSourceIBMISVPCRoutingTablesList(d *schema.ResourceData, meta interface{}) error {
+func dataSourceIBMISVPCRoutingTablesList(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_vpc_routing_tables", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	vpcID := d.Get(isVpcID).(string)
@@ -186,10 +244,11 @@ func dataSourceIBMISVPCRoutingTablesList(d *schema.ResourceData, meta interface{
 		if start != "" {
 			listOptions.Start = &start
 		}
-		result, detail, err := sess.ListVPCRoutingTables(listOptions)
+		result, _, err := sess.ListVPCRoutingTablesWithContext(context, listOptions)
 		if err != nil {
-			log.Printf("Error reading list of VPC Routing Tables:%s\n%s", err, detail)
-			return err
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListVPCRoutingTablesWithContext failed %s", err), "(Data) ibm_is_vpc_routing_tables", "read")
+			log.Printf("[DEBUG] %s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		start = flex.GetNext(result.Next)
 		allrecs = append(allrecs, result.RoutingTables...)
@@ -213,6 +272,9 @@ func dataSourceIBMISVPCRoutingTablesList(d *schema.ResourceData, meta interface{
 		rtable[isRoutingTableAcceptRoutesFrom] = acceptRoutesFromInfo
 		if routingTable.ID != nil {
 			rtable[isRoutingTableID] = *routingTable.ID
+		}
+		if routingTable.CRN != nil {
+			rtable[isRoutingTableCrn] = *routingTable.CRN
 		}
 		if routingTable.Href != nil {
 			rtable[isRoutingTableHref] = *routingTable.Href
@@ -241,6 +303,9 @@ func dataSourceIBMISVPCRoutingTablesList(d *schema.ResourceData, meta interface{
 		if routingTable.RouteVPCZoneIngress != nil {
 			rtable[isRoutingTableVPCZoneIngress] = *routingTable.RouteVPCZoneIngress
 		}
+		if routingTable.AdvertiseRoutesTo != nil {
+			rtable["advertise_routes_to"] = routingTable.AdvertiseRoutesTo
+		}
 		if routingTable.IsDefault != nil {
 			rtable[isRoutingTableDefault] = *routingTable.IsDefault
 		}
@@ -267,12 +332,40 @@ func dataSourceIBMISVPCRoutingTablesList(d *schema.ResourceData, meta interface{
 			}
 		}
 		rtable[isRoutingTableRoutesList] = routesInfo
+
+		resourceGroupList := []map[string]interface{}{}
+		if routingTable.ResourceGroup != nil {
+			resourceGroupMap := routingTableResourceGroupToMap(*routingTable.ResourceGroup)
+			resourceGroupList = append(resourceGroupList, resourceGroupMap)
+		}
+		rtable[rtResourceGroup] = resourceGroupList
+
+		tags, err := flex.GetGlobalTagsUsingCRN(meta, *routingTable.CRN, "", rtUserTagType)
+		if err != nil {
+			log.Printf(
+				"An error occured during reading of routing table (%s) tags : %s", d.Id(), err)
+		}
+		rtable[rtTags] = tags
+
+		accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *routingTable.CRN, "", rtAccessTagType)
+		if err != nil {
+			log.Printf(
+				"An error occured during reading of routing table (%s) access tags: %s", d.Id(), err)
+		}
+		rtable[rtAccessTags] = accesstags
+
 		vpcRoutingTables = append(vpcRoutingTables, rtable)
 	}
 
 	d.SetId(dataSourceIBMISVPCRoutingTablesID(d))
-	d.Set(isVpcID, vpcID)
-	d.Set(isRoutingTables, vpcRoutingTables)
+
+	if err = d.Set(isVpcID, vpcID); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting vpc: %s", err), "(Data) ibm_is_vpc_routing_tables", "read", "set-vpc").GetDiag()
+	}
+	if err = d.Set("routing_tables", vpcRoutingTables); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting routing_tables %s", err), "(Data) ibm_is_vpc_routing_tables", "read", "routing_tables-set").GetDiag()
+	}
+
 	return nil
 }
 

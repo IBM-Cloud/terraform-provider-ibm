@@ -8,7 +8,7 @@ subcategory: "Secrets Manager"
 
 # ibm_sm_private_certificate_configuration_root_ca
 
-Provides a resource for PrivateCertificateConfigurationRootCA. This allows PrivateCertificateConfigurationRootCA to be created, updated and deleted.
+Provides a resource for an internally signed root certificate authority. This allows a root CA to be created, updated and deleted. Note that a root CA cannot be deleted if there are intermediate CAs signed by it. Therefore, arguments that are marked as `Forces new resource` should not be modified if there are dependent intermediate CAs.
 
 ## Example Usage
 
@@ -18,7 +18,30 @@ resource "ibm_sm_private_certificate_configuration_root_ca" "private_certificate
   region        = "us-south"
   name          = "my_root_ca"
   common_name   = "ibm.com"
+  alt_names     = ["alt-name-1", "alt-name-2"]
+  permitted_dns_domains = ["exampleString"]
+  ou            = ["example_ou"]
+  organization  = ["example_organization"]
+  country       = ["US"]
+  locality      = ["example_locality"]
+  province      = ["example_province"]
+  street_address  = ["example street address"]
+  postal_code   = ["example_postal_code"]
+  ip_sans       = "127.0.0.1"
+  uri_sans      = "https://www.example.com/test"
+  other_sans    = ["1.2.3.5.4.3.201.10.4.3;utf8:test@example.com"]
+  exclude_cn_from_sans = false
+  ttl           = "2190h"
   max_ttl       = "8760h"
+  max_path_length = -1
+  issuing_certificates_urls_encoded = true
+  key_type      = "rsa"
+  key_bits      = 4096
+  format        = "pem"
+  private_key_format = "der"
+  crl_expiry    = "72h"
+  crl_disable   = false
+  crl_distribution_points_encoded   = true
 }
 ```
 
@@ -38,6 +61,7 @@ Review the argument reference that you can specify for your resource.
     * Constraints: The list items must match regular expression `/(.*?)/`. The maximum length is `10` items. The minimum length is `0` items.
 * `crl_disable` - (Optional, Boolean) Disables or enables certificate revocation list (CRL) building.If CRL building is disabled, a signed but zero-length CRL is returned when downloading the CRL. If CRL building is enabled, it will rebuild the CRL.
 * `crl_distribution_points_encoded` - (Optional, Boolean) Determines whether to encode the certificate revocation list (CRL) distribution points in the certificates that are issued by this certificate authority.
+* `crl_expiry` - (Optional, Boolean) The time until the certificate revocation list (CRL) expires.The value can be supplied as a string representation of a duration in hours, such as `48h`. The default is 72 hours.
 * `exclude_cn_from_sans` - (Optional, Forces new resource, Boolean) Controls whether the common name is excluded from Subject Alternative Names (SANs).If the common name set to `true`, it is not included in DNS or Email SANs if they apply. This field can be useful if the common name is a human-readable identifier, instead of a hostname or an email address.
 * `expiration_date` - (Optional, Forces new resource, String) The date a secret is expired. The date format follows RFC 3339.
 * `format` - (Optional, Forces new resource, String) The format of the returned data.
@@ -67,14 +91,29 @@ Review the argument reference that you can specify for your resource.
     * Constraints: The default value is `der`. Allowable values are: `der`, `pkcs8`.
 * `province` - (Optional, Forces new resource, List) The Province (ST) values to define in the subject field of the resulting certificate.
     * Constraints: The list items must match regular expression `/(.*?)/`. The maximum length is `10` items. The minimum length is `0` items.
-* `serial_number` - (Optional, Forces new resource, String) The serial number to assign to the generated certificate. To assign a random serial number, you can omit this field.
-    * Constraints: The maximum length is `64` characters. The minimum length is `32` characters. The value must match regular expression `/[^a-fA-F0-9]/`.
 * `street_address` - (Optional, Forces new resource, List) The street address values to define in the subject field of the resulting certificate.
     * Constraints: The list items must match regular expression `/(.*?)/`. The maximum length is `10` items. The minimum length is `0` items.
 * `ttl` - (Optional, String) The requested time-to-live (TTL) for certificates that are created by this CA. This field's value cannot be longer than the `max_ttl` limit.The value can be supplied as a string representation of a duration in hours, for example '8760h'. In the API response, this value is returned in seconds (integer).
   * Constraints: The maximum length is `10` characters. The minimum length is `2` characters. The value must match regular expression `/^[0-9]+[s,m,h,d]{0,1}$/`.
 * `uri_sans` - (Optional, Forces new resource, String) The URI Subject Alternative Names to define for the CA certificate, in a comma-delimited list.
     * Constraints: The maximum length is `2048` characters. The minimum length is `2` characters. The value must match regular expression `/(.*?)/`.
+* `crypto_key` - (Optional, Forces new resource, List) The data that is associated with a cryptographic key.
+  Nested scheme for **crypto_key**:
+    * `provider` - (Required, Forces new resource, List) The data that is associated with a cryptographic provider.
+      Nested scheme for **provider**:
+        * `type` - (Required, Forces new resource, String) The type of cryptographic provider.
+            * Constraints: Allowable values are: `hyper_protect_crypto_services`.
+        * `instance_crn` - (Required, Forces new resource, String) The HPCS instance CRN.
+            * Constraints: The maximum length is `512` characters. The minimum length is `9` characters. The value must match regular expression `^crn:v[0-9](:([A-Za-z0-9-._~!$&'()*+,;=@/]|%[0-9A-Z]{2})*){8}$`.
+        * `pin_iam_credentials_secret_id` - (Required, Forces new resource, String) The secret Id of iam credentials with api key to access HPCS instance.
+            * Constraints: Value length should be 36. The value must match regular expression `/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/`.
+        * `private_keystore_id` - (Required, Forces new resource, String) The HPCS private key store space id.
+            * Constraints: Value length should be 36. The value must match regular expression `/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/`.
+    * `id` - (Optional, Forces new resource, String) The ID of a PKCS#11 key to use. If the key does not exist and generation is enabled, this ID is given to the generated key. If the key exists, and generation is disabled, then this ID is used to look up the key. This value or the crypto key label must be specified.
+        * Constraints: Value length should be 36. The value must match regular expression `/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/`.
+    * `label` - (Optional, Forces new resource, String) The label of the key to use. If the key does not exist and generation is enabled, this field is the label that is given to the generated key. If the key exists, and generation is disabled, then this label is used to look up the key. This value or the crypto key ID must be specified.
+        * Constraints: The maximum length is `255` characters. The minimum length is `1` characters. The value must match regular expression `/^[A-Za-z0-9._ /-]+$/`.
+    * `allow_generate_key` - (Optional, Forces new resource, Boolean) The indication of whether a new key is generated by the crypto provider if the given key name cannot be found. Default is `false`.
 
 ## Attribute Reference
 
@@ -105,6 +144,8 @@ Nested scheme for **data**:
 * `max_ttl_seconds` - (Integer) The maximum time-to-live (TTL) for certificates that are created by this CA in seconds.
 * `secret_type` - (String) The secret type. Supported types are arbitrary, certificates (imported, public, and private), IAM credentials, key-value, and user credentials.
   * Constraints: Allowable values are: `arbitrary`, `imported_cert`, `public_cert`, `iam_credentials`, `kv`, `username_password`, `private_cert`.
+* `serial_number` - (String) The unique serial number that was assigned to a certificate by the issuing certificate authority.
+    * Constraints: The maximum length is `64` characters. The minimum length is `32` characters. The value must match regular expression `/[^a-fA-F0-9]/`.
 * `status` - (String) The status of the certificate authority. The status of a root certificate authority is either `configured` or `expired`. For intermediate certificate authorities, possible statuses include `signing_required`,`signed_certificate_required`, `certificate_template_required`, `configured`, `expired` or `revoked`.
   * Constraints: Allowable values are: `signing_required`, `signed_certificate_required`, `certificate_template_required`, `configured`, `expired`, `revoked`.
 * `updated_at` - (String) The date when a resource was recently modified. The date format follows RFC 3339.

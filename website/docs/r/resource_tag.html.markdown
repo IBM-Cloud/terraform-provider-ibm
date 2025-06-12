@@ -24,15 +24,30 @@ resource "ibm_resource_tag" "tag" {
 	tags        = var.tag_names
 }
 
+resource "ibm_resource_tag" "tag_with_timeout" {
+	resource_id = ibm_satellite_location.location.crn
+	tags        = var.tag_names
+	timeout		{
+		create = "45s"
+	}
+}
+
 ```
+
+## Timeouts
+The `ibm_resource_tag` resource provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
+
+- **create**: The default timeout for tag creation is 30 seconds. 
+
 
 ## Argument reference
 Review the argument references that you can specify for your resource.
 
 - `resource_id` - (Required, String) The CRN of the resource on which the tags is be attached.
-- `resource_type` - (Optional, String) The resource type on which the tags should be attached.
-- `tag_type` - (Optional, String) Type of the tag. Supported values are: `user`, `service`, or `access`. The default value is user.
+- `resource_type` - (Optional, String) The resource type on which the tags should be attached. This is valid for Classic Infrastructure resources only. The `resource_type` allowed values are: `SoftLayer_Virtual_DedicatedHost`, `SoftLayer_Hardware`, `SoftLayer_Hardware_Server`, `SoftLayer_Network_Application_Delivery_Controller`, `SoftLayer_Network_Vlan`, `SoftLayer_Network_Vlan_Firewall`, `SoftLayer_Network_Component_Firewall`, `SoftLayer_Network_Firewall_Module_Context`, `SoftLayer_Virtual_Guest`. A wrong value would result in an error in the `terraform apply` command.
+- `tag_type` - (Optional, String) Type of the tag. Supported values are: `user` or `access`. The default value is user.
 - `tags` - (Required, Array of strings) List of tags associated with resource instance.
+- `replace` - (Optional, Bool) If true, it indicates that the attaching operation is a replacement operation
 
 ## Attributes reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.

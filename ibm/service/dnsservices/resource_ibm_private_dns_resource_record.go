@@ -229,9 +229,8 @@ func resourceIBMPrivateDNSResourceRecordCreate(d *schema.ResourceData, meta inte
 		ttl = v.(int)
 	}
 
-	createResourceRecordOptions := sess.NewCreateResourceRecordOptions(instanceID, zoneID)
+	createResourceRecordOptions := sess.NewCreateResourceRecordOptions(instanceID, zoneID, recordType)
 	createResourceRecordOptions.SetName(name)
-	createResourceRecordOptions.SetType(recordType)
 	createResourceRecordOptions.SetTTL(int64(ttl))
 
 	switch recordType {
@@ -344,11 +343,11 @@ func resourceIBMPrivateDNSResourceRecordRead(d *schema.ResourceData, meta interf
 	d.Set(pdnsRecordName, recordName)
 	d.Set(pdnsRecordType, response.Type)
 	d.Set(pdnsRecordTTL, response.TTL)
-	d.Set(pdnsRecordCreatedOn, response.CreatedOn)
-	d.Set(pdnsRecordModifiedOn, response.ModifiedOn)
+	d.Set(pdnsRecordCreatedOn, response.CreatedOn.String())
+	d.Set(pdnsRecordModifiedOn, response.ModifiedOn.String())
 
 	if *response.Type == "SRV" {
-		data := response.Rdata.(map[string]interface{})
+		data := response.Rdata
 		d.Set(pdnsSrvPort, data["port"])
 		d.Set(pdnsSrvPriority, data["priority"])
 		d.Set(pdnsSrvWeight, data["weight"])
@@ -358,24 +357,24 @@ func resourceIBMPrivateDNSResourceRecordRead(d *schema.ResourceData, meta interf
 	}
 
 	if *response.Type == "MX" {
-		data := response.Rdata.(map[string]interface{})
+		data := response.Rdata
 		d.Set(pdnsMxPreference, data["preference"])
 		d.Set(pdnsRdata, data["exchange"].(string))
 	}
 	if *response.Type == "A" || *response.Type == "AAAA" {
-		data := response.Rdata.(map[string]interface{})
+		data := response.Rdata
 		d.Set(pdnsRdata, data["ip"].(string))
 	}
 	if *response.Type == "CNAME" {
-		data := response.Rdata.(map[string]interface{})
+		data := response.Rdata
 		d.Set(pdnsRdata, data["cname"].(string))
 	}
 	if *response.Type == "PTR" {
-		data := response.Rdata.(map[string]interface{})
+		data := response.Rdata
 		d.Set(pdnsRdata, data["ptrdname"].(string))
 	}
 	if *response.Type == "TXT" {
-		data := response.Rdata.(map[string]interface{})
+		data := response.Rdata
 		d.Set(pdnsRdata, data["text"].(string))
 	}
 
@@ -395,7 +394,7 @@ func resourceIBMPrivateDNSResourceRecordUpdate(d *schema.ResourceData, meta inte
 	conns.IbmMutexKV.Lock(mk)
 	defer conns.IbmMutexKV.Unlock(mk)
 
-	updateResourceRecordOptions := sess.NewUpdateResourceRecordOptions(idSet[0], idSet[1], idSet[2])
+	updateResourceRecordOptions := sess.NewUpdateResourceRecordOptions(idSet[0], idSet[1], idSet[2], "", nil)
 
 	var rdata string
 

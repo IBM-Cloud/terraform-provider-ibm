@@ -82,7 +82,7 @@ Review the argument references that you can specify for your resource.
 - `flavor` - (Required, Forces new resource, String) The flavor of the worker node.
 - `host_pool_id` - (Optional, String) The ID of the dedicated host pool the worker pool is associated with.
 - `labels` (Optional, Map) A list of labels that you want to add to all the worker nodes in the worker pool.
-- `operating_system` - (Optional, Forces new resource, String) The operating system of the workers in the worker pool. For supported options, see [Red Hat OpenShift on IBM Cloud version information](https://cloud.ibm.com/docs/openshift?topic=openshift-openshift_versions) or [IBM Cloud Kubernetes Service version information](https://cloud.ibm.com/docs/containers?topic=containers-cs_versions).
+- `operating_system` - (Optional, String) The operating system of the workers in the worker pool. For supported options, see [Red Hat OpenShift on IBM Cloud version information](https://cloud.ibm.com/docs/openshift?topic=openshift-openshift_versions) or [IBM Cloud Kubernetes Service version information](https://cloud.ibm.com/docs/containers?topic=containers-cs_versions). **Note:** You will need to update or replace your workers for the change to take effect. Using terraform you can set the `ibm_container_vpc_cluster.update_all_workers` parameter to `true`.
 - `secondary_storage` - (Optional, Forces new resource, String) The secondary storage option for the workers in the worker pool.
 - `resource_group_id` - (Optional, Forces new resource, String) The ID of the resource group. To retrieve the ID, run `ibmcloud resource groups` or use the `ibm_resource_group` data source. If no value is provided, the `default` resource group is used.
 - `taints` - (Optional, Set) A nested block that sets or removes Kubernetes taints for all worker nodes in a worker pool
@@ -104,12 +104,16 @@ Review the argument references that you can specify for your resource.
 - `crk` - Root Key ID for boot volume encryption.
 - `kms_instance_id` - Instance ID for boot volume encryption. 
 - `kms_account_id` - Account ID for boot volume encryption, if other account is providing the kms.
+- `import_on_create` - (Optional, Bool) Import an existing WorkerPool from the cluster, instead of creating a new.
+- `orphan_on_delete` - (Optional, Bool) Orphan the Worker Pool resource, instead of deleting it. The argument allows the user to remove the worker pool from the state, without deleting the actual cloud resource. The worker pool can be re-imported into the state using the `import_on_create` argument.
+- `security_groups` - (Optional, List) Enables users to define specific security groups for their workers.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
 - `id` - (String) The unique identifier of the worker pool. The ID is composed of `<cluster_name_id>/<worker_pool_id>`.
 - `worker_pool_id` -  (String) The unique identifier of the worker pool.
+- `autoscale_enabled` - (Bool) Autoscaling is enabled on the workerpool
 
 ## Import
 

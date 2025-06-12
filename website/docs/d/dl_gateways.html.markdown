@@ -1,4 +1,4 @@
-
+---
 subcategory: "Direct Link Gateway"
 layout: "ibm"
 page_title: "IBM : dl_gateways"
@@ -72,4 +72,4 @@ You can access the following attribute references after your data source is crea
   - `resource_group` - (String) The resource group identifier.
   - `speed_mbps` - (String) The gateway speed in MBPS.
   - `type` - (String) The gateway type.
-  - `vlan` - (String) The VLAN allocated for the gateway. Only set for `type=connect` gateways created directly through the IBM portal.
+  - `vlan` - (String) The VLAN allocated for the gateway.

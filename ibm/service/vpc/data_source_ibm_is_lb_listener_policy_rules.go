@@ -9,6 +9,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
@@ -91,7 +92,9 @@ func DataSourceIBMISLBListenerPolicyRules() *schema.Resource {
 func dataSourceIBMIsLbListenerPolicyRulesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := vpcClient(meta)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_lb_listener_policy_rules", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	listLoadBalancerListenerPolicyRulesOptions := &vpcv1.ListLoadBalancerListenerPolicyRulesOptions{}
@@ -99,10 +102,11 @@ func dataSourceIBMIsLbListenerPolicyRulesRead(context context.Context, d *schema
 	listLoadBalancerListenerPolicyRulesOptions.SetListenerID(d.Get(isLBListenerPolicyRuleListenerID).(string))
 	listLoadBalancerListenerPolicyRulesOptions.SetPolicyID(d.Get(isLBListenerPolicyRulePolicyID).(string))
 
-	loadBalancerListenerPolicyRuleCollection, response, err := vpcClient.ListLoadBalancerListenerPolicyRulesWithContext(context, listLoadBalancerListenerPolicyRulesOptions)
+	loadBalancerListenerPolicyRuleCollection, _, err := vpcClient.ListLoadBalancerListenerPolicyRulesWithContext(context, listLoadBalancerListenerPolicyRulesOptions)
 	if err != nil {
-		log.Printf("[DEBUG] ListLoadBalancerListenerPolicyRulesWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("ListLoadBalancerListenerPolicyRulesWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListLoadBalancerListenerPolicyRulesWithContext failed: %s", err.Error()), "(Data) ibm_is_lb_listener_policy_rules", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(dataSourceIBMIsLbListenerPolicyRulesID(d))
@@ -110,7 +114,7 @@ func dataSourceIBMIsLbListenerPolicyRulesRead(context context.Context, d *schema
 	if loadBalancerListenerPolicyRuleCollection.Rules != nil {
 		err = d.Set("rules", dataSourceLoadBalancerListenerPolicyRuleCollectionFlattenRules(loadBalancerListenerPolicyRuleCollection.Rules))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting rules %s", err))
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting rules: %s", err), "(Data) ibm_is_lb_listener_policy_rules", "read", "set-rules").GetDiag()
 		}
 	}
 

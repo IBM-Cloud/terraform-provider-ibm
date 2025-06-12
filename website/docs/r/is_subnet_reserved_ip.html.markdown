@@ -7,7 +7,7 @@ description: |-
 ---
 
 # ibm_is_subnet_reserved_ip
-Create, update, or delete a subnet. For more information, about associated reserved IP subnet, see [reserved IP subnet](https://cloud.ibm.com/docs/vpc?topic=vpc-troubleshoot-reserved-ip).
+Create, update, or delete a subnet reserved IP. For more information, about associated reserved IP subnet, see [reserved IP subnet](https://cloud.ibm.com/docs/vpc?topic=vpc-troubleshoot-reserved-ip).
 
 **Note:** 
 VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
@@ -90,34 +90,36 @@ resource "ibm_is_subnet_reserved_ip" "example5" {
 ## Argument reference
 Review the argument references that you can specify for your resource. 
 
-- `address` - (Optional, Forces new resource, String) The IP address.
-- `auto_delete`- (Optional, Bool)  If reserved IP is auto deleted.
-- `name` - (Optional, String) The name of the reserved IP. 
+- `address` - (Optional, Forces new resource, String) The IP address to reserve, which must not already be reserved on the subnet. If unspecified, an available address on the subnet will automatically be selected.
+- `auto_delete`- (Optional, Bool)  Indicates whether this reserved IP member will be automatically deleted when either target is deleted, or the reserved IP is unbound. Must be false if the reserved IP is unbound.
+- `name` - (Optional, String) The name for this reserved IP. The name must not be used by another reserved IP in the subnet. Names starting with ibm- are reserved for provider-owned resources, and are not allowed. If unspecified, the name will be a hyphenated list of randomly-selected words. 
   
   ~> **NOTE:** raise  error if name is given with a prefix `ibm- `.
 - `subnet` - (Required, Forces new resource, String) The subnet ID for the reserved IP.
-- `target` - (Optional, string) The ID for the target endpoint gateway for the reserved IP.
-
+- `target` - (Optional, string) The target to bind this reserved IP to. The target must be in the same VPC. If unspecified, the reserved IP will be created unbound. The following targets are supported:
+    - An endpoint gateway not already bound to a reserved IP in the subnet's zone.
+    - A virtual network interface.
+    
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
 - `created_at` - (Timestamp) The date and time that the reserved IP was created.",
 - `href` - (String) The URL for this reserved IP.
 - `id` - (String) The combination of the subnet ID and reserved IP ID, separated by **/**.
-- `lifecycle_state` - (String) The lifecycle state of the reserved IP. [ deleting, failed, pending, stable, suspended, updating, waiting ]
+- `lifecycle_state` - (String) The lifecycle state of the reserved IP. [ **deleting**, **failed**, **pending**, **stable**, **suspended**, **updating**, **waiting** ]
 - `owner` - (String) The owner of a reserved IP, defining whether it is managed by the user or the provider.
-- `reserved_ip` - (String) The reserved IP.
+- `reserved_ip` - (String) The unique identifier for this reserved IP.
 - `resource_type` - (String) The resource type.
 - `target` - (String) The ID for the target for the reserved IP.
 - `target_crn` - (String) The crn of the target for the reserved IP.
 
 ## Import
-The `ibm_is_subnet_reserved_ip` and `ibm_is_subnet` resource can be imported by using subnet ID and reserved IP ID separated by **/**.
+The `ibm_is_subnet_reserved_ip` resource can be imported by using subnet ID and reserved IP ID separated by **/**.
 
 **Syntax**
 
 ```
-$ terraform import ibm_is_subnet.example <subnet_ID>/<subnet_reserved_IP_ID>
+$ terraform import ibm_is_subnet_reserved_ip.example <subnet_ID>/<subnet_reserved_IP_ID>
 ```
 
 **Example**

@@ -37,6 +37,8 @@ func TestAccIbmSmPrivateCertificateDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_sm_private_certificate.sm_private_certificate", "validity.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_private_certificate.sm_private_certificate", "certificate"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_private_certificate.sm_private_certificate", "private_key"),
+					resource.TestCheckResourceAttrSet("data.ibm_sm_private_certificate.sm_private_certificate_by_name", "name"),
+					resource.TestCheckResourceAttrSet("data.ibm_sm_private_certificate.sm_private_certificate_by_name", "secret_group_name"),
 				),
 			},
 		},
@@ -88,8 +90,15 @@ func testAccCheckIbmSmPrivateCertificateDataSourceConfigBasic() string {
 			region        = "%s"
 			secret_id = ibm_sm_private_certificate.sm_private_certificate_instance.secret_id
 		}
+
+		data "ibm_sm_private_certificate" "sm_private_certificate_by_name" {
+			instance_id   = "%s"
+			region = "%s"
+			name = ibm_sm_private_certificate.sm_private_certificate_instance.name
+			secret_group_name = "default"
+		}
 	`, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion, acc.SecretsManagerInstanceID,
 		acc.SecretsManagerInstanceRegion, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion,
 		acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion, acc.SecretsManagerInstanceID,
-		acc.SecretsManagerInstanceRegion)
+		acc.SecretsManagerInstanceRegion, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion)
 }

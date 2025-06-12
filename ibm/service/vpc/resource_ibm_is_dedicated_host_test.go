@@ -33,6 +33,7 @@ func TestAccIbmIsDedicatedHostBasic(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmIsDedicatedHostExists(resname, conf),
 					resource.TestCheckResourceAttr(resname, "name", dhname),
+					resource.TestCheckResourceAttrSet(resname, "numa"),
 					resource.TestCheckResourceAttr(resname, "disks.#", "2"),
 					resource.TestCheckResourceAttrSet(resname, "disks.0.name"),
 					resource.TestCheckResourceAttrSet(resname, "disks.0.size"),

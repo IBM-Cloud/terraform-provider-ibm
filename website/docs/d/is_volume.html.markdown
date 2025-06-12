@@ -37,7 +37,8 @@ data "ibm_is_volume" "example" {
 ## Argument reference
 Review the argument references that you can specify for your data source. 
 
-- `name` - (Required, String) The name of the volume.
+- `identifier` - (Optional, String) The id of the volume. (one of `identifier`, `name` is required)
+- `name` - (Optional, String) The name of the volume. (one of `identifier`, `name` is required)
 - `zone` - (Optional, String) The zone name of the volume.
 
 ## Attribute reference
@@ -46,9 +47,20 @@ In addition to all argument reference list, you can access the following attribu
 - `access_tags`  - (List) Access management tags associated for the volume.
 - `active` - (Boolean) Indicates whether a running virtual server instance has an attachment to this volume.
 - `attachment_state` - (Boolean) The attachment state of the volume
+- `adjustable_capacity_states` - (List) The attachment states that support adjustable capacity for this volume. Allowable list items are: `attached`, `unattached`, `unusable`. 
+- `adjustable_iops_states` - (List) The attachment states that support adjustable IOPS for this volume. Allowable list items are: `attached`, `unattached`, `unusable`.
 - `bandwidth` - The maximum bandwidth (in megabits per second) for the volume
 - `busy` - (Boolean) Indicates whether this volume is performing an operation that must be serialized. This must be `false` to perform an operation that is specified to require serialization.
 - `capacity` - (String) The capacity of the volume in gigabytes.
+- `catalog_offering` - (List) The catalog offering this volume was created from. If a virtual server instance is provisioned with a boot_volume_attachment specifying this volume, the virtual server instance will use this volume's catalog offering, including its pricing plan.If absent, this volume was not created from a catalog offering.
+
+  Nested scheme for `catalog_offering`:
+    - `version_crn` - (String) The CRN for this version of a catalog offering
+    - `plan_crn` - (String) The CRN for this catalog offering version's billing plan
+    - `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.
+    
+      Nested schema for `deleted`:
+        - `more_info`  - (String) Link to documentation about deleted resources.
 - `created_at` - (String) The date and time that the volume was created.
 - `crn` - (String) The crn of this volume.
 - `encryption_key` - (String) The key to use for encrypting this volume.
@@ -82,3 +94,5 @@ In addition to all argument reference list, you can access the following attribu
   - `message` - (String)  An explanation of the status reason
   - `more_info` - (String) Link to documentation about this status reason
 - `tags` - (String) User Tags associated with the volume. (https://cloud.ibm.com/apidocs/tagging#types-of-tags)
+- `unattached_capacity_update_supported` - (Boolean) Indicates whether the capacity for the volume can be changed when not attached to a running virtual server instance.
+- `unattached_iops_update_supported` - (Boolean) Indicates whether the IOPS for the volume can be changed when not attached to a running virtual server instance.

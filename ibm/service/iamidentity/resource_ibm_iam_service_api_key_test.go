@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Copyright IBM Corp. 2017, 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package iamidentity_test
@@ -22,6 +22,7 @@ func TestAccIBMIAMServiceAPIKey_Basic(t *testing.T) {
 	serviceName := fmt.Sprintf("terraform_iam_ser_%d", acctest.RandIntRange(10, 100))
 	name := fmt.Sprintf("terraform_iam_%d", acctest.RandIntRange(10, 100))
 	updateName := fmt.Sprintf("terraform_iam_%d", acctest.RandIntRange(10, 100))
+	storeValue := true
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -29,16 +30,17 @@ func TestAccIBMIAMServiceAPIKey_Basic(t *testing.T) {
 		CheckDestroy: testAccCheckIBMIAMServiceAPIKeyDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMIAMServiceAPIKeyBasic(serviceName, name),
+				Config: testAccCheckIBMIAMServiceAPIKeyBasic(serviceName, name, storeValue),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMIAMServiceAPIKeyExists("ibm_iam_service_api_key.testacc_apiKey", apiKey),
+					testAccCheckIBMIAMServiceAPIKeyExistsWithValidation("ibm_iam_service_api_key.testacc_apiKey", apiKey, storeValue),
 					resource.TestCheckResourceAttr("ibm_iam_service_api_key.testacc_apiKey", "name", name),
+					resource.TestCheckResourceAttrSet("ibm_iam_service_api_key.testacc_apiKey", "apikey"),
 				),
 			},
 			{
 				Config: testAccCheckIBMIAMServiceAPIKeyUpdateWithSameName(serviceName, name),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMIAMServiceAPIKeyExists("ibm_iam_service_api_key.testacc_apiKey", apiKey),
+					testAccCheckIBMIAMServiceAPIKeyExistsWithValidation("ibm_iam_service_api_key.testacc_apiKey", apiKey, storeValue),
 					resource.TestCheckResourceAttr("ibm_iam_service_api_key.testacc_apiKey", "name", name),
 					resource.TestCheckResourceAttr("ibm_iam_service_api_key.testacc_apiKey", "description", "Service API Key for test scenario1"),
 				),
@@ -54,11 +56,34 @@ func TestAccIBMIAMServiceAPIKey_Basic(t *testing.T) {
 	})
 }
 
+func TestAccIBMIAMServiceAPIKey_doNotStoreApikeyValue(t *testing.T) {
+	var apiKey string
+	serviceName := fmt.Sprintf("terraform_iam_ser_%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("terraform_iam_%d", acctest.RandIntRange(10, 100))
+	storeValue := false
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMIAMServiceAPIKeyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMServiceAPIKeyBasic(serviceName, name, storeValue),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMServiceAPIKeyExistsWithValidation("ibm_iam_service_api_key.testacc_apiKey", apiKey, storeValue),
+					resource.TestCheckResourceAttr("ibm_iam_service_api_key.testacc_apiKey", "name", name),
+				),
+			},
+		},
+	})
+}
+
 func TestAccIBMIAMServiceAPIKey_import(t *testing.T) {
 	var apiKey string
 	serviceName := fmt.Sprintf("terraform_iam_ser_%d", acctest.RandIntRange(10, 100))
 	name := fmt.Sprintf("terraform_iam_%d", acctest.RandIntRange(10, 100))
 	resourceName := "ibm_iam_service_api_key.testacc_apiKey"
+	storeValue := true
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -68,7 +93,7 @@ func TestAccIBMIAMServiceAPIKey_import(t *testing.T) {
 			{
 				Config: testAccCheckIBMIAMServiceAPIKeyImport(serviceName, name),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMIAMServiceAPIKeyExists(resourceName, apiKey),
+					testAccCheckIBMIAMServiceAPIKeyExistsWithValidation(resourceName, apiKey, storeValue),
 					resource.TestCheckResourceAttr(resourceName, "name", name),
 					resource.TestCheckResourceAttr(resourceName, "description", "Service API Key for test scenario2"),
 				),
@@ -77,6 +102,9 @@ func TestAccIBMIAMServiceAPIKey_import(t *testing.T) {
 				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"store_value",
+				},
 			},
 		},
 	})
@@ -105,7 +133,7 @@ func testAccCheckIBMIAMServiceAPIKeyDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckIBMIAMServiceAPIKeyExists(n string, apiKey string) resource.TestCheckFunc {
+func testAccCheckIBMIAMServiceAPIKeyExistsWithValidation(n string, apiKey string, apikeyValueExpected bool) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -127,12 +155,22 @@ func testAccCheckIBMIAMServiceAPIKeyExists(n string, apiKey string) resource.Tes
 			return err
 		}
 
+		if apikeyValueExpected {
+			if foundAPIKey.Apikey == nil {
+				return fmt.Errorf("apikey value should be present")
+			}
+		} else {
+			if foundAPIKey.Apikey != nil {
+				return fmt.Errorf("apikey value should not be present")
+			}
+		}
+
 		apiKey = *foundAPIKey.ID
 		return nil
 	}
 }
 
-func testAccCheckIBMIAMServiceAPIKeyBasic(serviceName, name string) string {
+func testAccCheckIBMIAMServiceAPIKeyBasic(serviceName, name string, storeValue bool) string {
 	return fmt.Sprintf(`
 		
 		resource "ibm_iam_service_id" "serviceID" {
@@ -142,8 +180,9 @@ func testAccCheckIBMIAMServiceAPIKeyBasic(serviceName, name string) string {
 		  resource "ibm_iam_service_api_key" "testacc_apiKey" {
 			name = "%s"
 			iam_service_id = ibm_iam_service_id.serviceID.iam_id
+			store_value = "%t"
 	  	}
-	`, serviceName, name)
+	`, serviceName, name, storeValue)
 }
 
 func testAccCheckIBMIAMServiceAPIKeyUpdateWithSameName(serviceName, name string) string {

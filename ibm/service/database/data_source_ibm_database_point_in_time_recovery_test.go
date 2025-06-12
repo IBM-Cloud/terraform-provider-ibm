@@ -47,9 +47,9 @@ func testAccCheckIBMDatabaseDataSourceConfig3(name string) string {
 		plan              = "standard"
 		location          = "%[2]s"
 		tags              = ["one:two"]
+		service_endpoints = "private"
 	}
-
-				`, name, acc.IcdDbRegion)
+	`, name, acc.Region())
 }
 
 func testAccCheckIBMDatabasePitrDataSourceConfigBasic(name string) string {

@@ -4,10 +4,12 @@
 package vpc
 
 import (
+	"context"
 	"fmt"
-	"reflect"
+	"log"
 
-	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -29,7 +31,7 @@ const (
 
 func DataSourceIBMISReservedIP() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSdataSourceIBMISReservedIPRead,
+		ReadContext: dataSdataSourceIBMISReservedIPRead,
 		Schema: map[string]*schema.Schema{
 			/*
 				Request Parameters
@@ -104,76 +106,126 @@ func DataSourceIBMISReservedIP() *schema.Resource {
 				Computed:    true,
 				Description: "The crn for target.",
 			},
+			"target_reference": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The target this reserved IP is bound to.If absent, this reserved IP is provider-owned or unbound.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"crn": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The CRN for this endpoint gateway.",
+						},
+						"deleted": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"more_info": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Link to documentation about deleted resources.",
+									},
+								},
+							},
+						},
+						"href": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The URL for this endpoint gateway.",
+						},
+						"id": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The unique identifier for this endpoint gateway.",
+						},
+						"name": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The name for this endpoint gateway. The name is unique across all endpoint gateways in the VPC.",
+						},
+						"resource_type": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The resource type.",
+						},
+					},
+				},
+			},
 		},
 	}
 }
 
 // dataSdataSourceIBMISReservedIPRead is used when the reserved IPs are read from the vpc
-func dataSdataSourceIBMISReservedIPRead(d *schema.ResourceData, meta interface{}) error {
+func dataSdataSourceIBMISReservedIPRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_subnet_reserved_ip", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	subnetID := d.Get(isSubNetID).(string)
 	reservedIPID := d.Get(isReservedIPID).(string)
 
 	options := sess.NewGetSubnetReservedIPOptions(subnetID, reservedIPID)
-	reserveIP, response, err := sess.GetSubnetReservedIP(options)
+	reservedIP, response, err := sess.GetSubnetReservedIPWithContext(context, options)
 
-	if err != nil || response == nil || reserveIP == nil {
-		return fmt.Errorf("[ERROR] Error fetching the reserved IP %s\n%s", err, response)
+	if err != nil || response == nil || reservedIP == nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetSubnetReservedIPWithContext failed: %s", err.Error()), "(Data) ibm_is_subnet_reserved_ip", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
-	d.SetId(*reserveIP.ID)
-	d.Set(isReservedIPAutoDelete, *reserveIP.AutoDelete)
-	d.Set(isReservedIPAddress, *reserveIP.Address)
-	d.Set(isReservedIPCreatedAt, (*reserveIP.CreatedAt).String())
-	d.Set(isReservedIPhref, *reserveIP.Href)
-	d.Set(isReservedIPName, *reserveIP.Name)
-	d.Set(isReservedIPOwner, *reserveIP.Owner)
-	if reserveIP.LifecycleState != nil {
-		d.Set(isReservedIPLifecycleState, *reserveIP.LifecycleState)
+	d.SetId(*reservedIP.ID)
+	if err = d.Set("auto_delete", reservedIP.AutoDelete); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting auto_delete: %s", err), "(Data) ibm_is_subnet_reserved_ip", "read", "set-auto_delete").GetDiag()
 	}
-	d.Set(isReservedIPType, *reserveIP.ResourceType)
-	if reserveIP.Target != nil {
-		targetIntf := reserveIP.Target
-		switch reflect.TypeOf(targetIntf).String() {
-		case "*vpcv1.ReservedIPTargetEndpointGatewayReference":
-			{
-				target := targetIntf.(*vpcv1.ReservedIPTargetEndpointGatewayReference)
-				d.Set(isReservedIPTargetCrn, target.CRN)
-				d.Set(isReservedIPTarget, target.ID)
-			}
-		case "*vpcv1.ReservedIPTargetNetworkInterfaceReferenceTargetContext":
-			{
-				target := targetIntf.(*vpcv1.ReservedIPTargetNetworkInterfaceReferenceTargetContext)
-				d.Set(isReservedIPTarget, target.ID)
-			}
-		case "*vpcv1.ReservedIPTargetLoadBalancerReference":
-			{
-				target := targetIntf.(*vpcv1.ReservedIPTargetLoadBalancerReference)
-				d.Set(isReservedIPTargetCrn, target.CRN)
-				d.Set(isReservedIPTarget, target.ID)
-			}
-		case "*vpcv1.ReservedIPTargetVPNGatewayReference":
-			{
-				target := targetIntf.(*vpcv1.ReservedIPTargetVPNGatewayReference)
-				d.Set(isReservedIPTargetCrn, target.CRN)
-				d.Set(isReservedIPTarget, target.ID)
-			}
-		case "*vpcv1.ReservedIPTarget":
-			{
-				target := targetIntf.(*vpcv1.ReservedIPTarget)
-				d.Set(isReservedIPTargetCrn, target.CRN)
-				d.Set(isReservedIPTarget, target.ID)
-			}
-		case "*vpcv1.ReservedIPTargetGenericResourceReference":
-			{
-				target := targetIntf.(*vpcv1.ReservedIPTargetGenericResourceReference)
-				d.Set(isReservedIPTargetCrn, target.CRN)
-			}
+	if err = d.Set("address", reservedIP.Address); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting address: %s", err), "(Data) ibm_is_subnet_reserved_ip", "read", "set-address").GetDiag()
+	}
+	if err = d.Set("created_at", flex.DateTimeToString(reservedIP.CreatedAt)); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting created_at: %s", err), "(Data) ibm_is_subnet_reserved_ip", "read", "set-created_at").GetDiag()
+	}
+	if err = d.Set("href", reservedIP.Href); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting href: %s", err), "(Data) ibm_is_subnet_reserved_ip", "read", "set-href").GetDiag()
+	}
+	if err = d.Set("name", reservedIP.Name); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_is_subnet_reserved_ip", "read", "set-name").GetDiag()
+	}
+	if err = d.Set("owner", reservedIP.Owner); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting owner: %s", err), "(Data) ibm_is_subnet_reserved_ip", "read", "set-owner").GetDiag()
+	}
+	if reservedIP.LifecycleState != nil {
+		if err = d.Set("lifecycle_state", reservedIP.LifecycleState); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting lifecycle_state: %s", err), "(Data) ibm_is_subnet_reserved_ip", "read", "set-lifecycle_state").GetDiag()
+		}
+	}
+	if err = d.Set("resource_type", reservedIP.ResourceType); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_type: %s", err), "(Data) ibm_is_subnet_reserved_ip", "read", "set-resource_type").GetDiag()
+	}
+	target := []map[string]interface{}{}
+	if reservedIP.Target != nil {
+		modelMap, err := dataSourceIBMIsReservedIPReservedIPTargetToMap(reservedIP.Target)
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_subnet_reserved_ip", "read", "target_reference-to-map").GetDiag()
+		}
+		target = append(target, modelMap)
+	}
+	if err = d.Set("target_reference", target); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting target_reference: %s", err), "(Data) ibm_is_subnet_reserved_ip", "read", "set-target_reference").GetDiag()
+	}
+	if len(target) > 0 {
+
+		if err = d.Set(isReservedIPTarget, target[0]["id"]); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting target: %s", err), "(Data) ibm_is_subnet_reserved_ip", "read", "set-target").GetDiag()
+		}
+
+		if err = d.Set(isReservedIPTargetCrn, target[0]["crn"]); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting target_crn: %s", err), "(Data) ibm_is_subnet_reserved_ip", "read", "set-target_crn").GetDiag()
 		}
 	}
 	return nil // By default there should be no error

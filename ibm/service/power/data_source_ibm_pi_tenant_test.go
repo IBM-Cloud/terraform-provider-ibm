@@ -13,8 +13,6 @@ import (
 )
 
 func TestAccIBMPITenantDataSource_basic(t *testing.T) {
-
-	//name := "Trial Tenant"
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
@@ -31,9 +29,7 @@ func TestAccIBMPITenantDataSource_basic(t *testing.T) {
 
 func testAccCheckIBMPITenantDataSourceConfig() string {
 	return fmt.Sprintf(`
-	
-data "ibm_pi_tenant" "testacc_ds_tenant" {
-    pi_cloud_instance_id = "%s"
-}`, acc.Pi_cloud_instance_id)
-
+		data "ibm_pi_tenant" "testacc_ds_tenant" {
+			pi_cloud_instance_id = "%s"
+		}`, acc.Pi_cloud_instance_id)
 }

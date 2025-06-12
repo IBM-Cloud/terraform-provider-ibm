@@ -38,7 +38,7 @@ variable "service_offering" {
 }
 
 variable "plan" {
-  default = "lite"
+  default = "standard"
 }
 
 variable "cluster_name" {

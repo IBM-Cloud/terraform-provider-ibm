@@ -152,8 +152,9 @@ The `ibm_is_instance_volume_attachment` resource provides the following [Timeout
 - **delete**: The deletion of the instance volume attachment is considered failed when no response is received for 10 minutes.
 
 ## Argument reference
-Review the argument references that you can specify for your resource. 
+Review the argument references that you can specify for your resource.
 
+- `bandwidth` - (Optional, Integer) The maximum bandwidth (in megabits per second) for the volume. For this property to be specified, the volume storage_generation must be 2.
 - `capacity` - (Optional, Integer) The capacity of the volume in gigabytes.
 
   ~> **NOTE**
@@ -194,6 +195,11 @@ Review the argument references that you can specify for your resource.
         **&#x2022;** Can be updated only if volume is attached to an running virtual server instance.</br>
         **&#x2022;** Stopped instances will be started on update of volume.</br>
 - `snapshot` - (Optional, String) The unique identifier for this snapshot from which to clone the new volume. 
+
+  ~> **NOTE**
+        **&#x2022;** one of `capacity` or `snapshot` must be present for volume creation.</br>
+        **&#x2022;** If `capacity` is not present or less than `minimum_capacity` of the snapshot, `minimum_capacity` is taken as the volume capacity.</br>
+- `snapshot_crn` - (Optional, String) The CRN for this snapshot from which to clone the new volume. 
 
   ~> **NOTE**
         **&#x2022;** one of `capacity` or `snapshot` must be present for volume creation.</br>

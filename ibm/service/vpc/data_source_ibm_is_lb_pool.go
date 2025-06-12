@@ -31,6 +31,62 @@ func DataSourceIBMISLBPool() *schema.Resource {
 				ExactlyOneOf: []string{"name", "identifier"},
 				Description:  "The pool identifier.",
 			},
+			"failsafe_policy": &schema.Schema{
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"action": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "A load balancer failsafe policy action:- `forward`: Forwards requests to the `target` pool.- `fail`: Rejects requests with an HTTP `503` status code.The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.",
+						},
+						"healthy_member_threshold_count": &schema.Schema{
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The healthy member count at which the failsafe policy action will be triggered. At present, this is always `0`, but may be modifiable in the future.",
+						},
+						"target": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "If `action` is `forward`, the target pool to forward to.If `action` is `fail`, this property will be absent.The targets supported by this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"deleted": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"more_info": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Link to documentation about deleted resources.",
+												},
+											},
+										},
+									},
+									"href": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The URL for this load balancer pool.",
+									},
+									"id": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The unique identifier for this load balancer pool.",
+									},
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The name for this load balancer pool. The name is unique across all pools for the load balancer.",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
 			"name": {
 				Type:         schema.TypeString,
 				Computed:     true,
@@ -209,7 +265,9 @@ func DataSourceIBMISLBPool() *schema.Resource {
 func dataSourceIBMIsLbPoolRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_lb_pool", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	var loadBalancerPool *vpcv1.LoadBalancerPool
@@ -220,10 +278,11 @@ func dataSourceIBMIsLbPoolRead(context context.Context, d *schema.ResourceData, 
 		getLoadBalancerPoolOptions.SetLoadBalancerID(d.Get("lb").(string))
 		getLoadBalancerPoolOptions.SetID(v.(string))
 
-		loadBalancerPoolInfo, response, err := sess.GetLoadBalancerPoolWithContext(context, getLoadBalancerPoolOptions)
+		loadBalancerPoolInfo, _, err := sess.GetLoadBalancerPoolWithContext(context, getLoadBalancerPoolOptions)
 		if err != nil {
-			log.Printf("[DEBUG] GetLoadBalancerPoolWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("GetLoadBalancerPoolWithContext failed %s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetLoadBalancerPoolWithContext failed: %s", err.Error()), "(Data) ibm_is_lb_pool", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		loadBalancerPool = loadBalancerPoolInfo
 
@@ -232,10 +291,11 @@ func dataSourceIBMIsLbPoolRead(context context.Context, d *schema.ResourceData, 
 
 		listLoadBalancerPoolsOptions.SetLoadBalancerID(d.Get("lb").(string))
 
-		loadBalancerPoolCollection, response, err := sess.ListLoadBalancerPoolsWithContext(context, listLoadBalancerPoolsOptions)
+		loadBalancerPoolCollection, _, err := sess.ListLoadBalancerPoolsWithContext(context, listLoadBalancerPoolsOptions)
 		if err != nil {
-			log.Printf("[DEBUG] ListLoadBalancerPoolsWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("ListLoadBalancerPoolsWithContext failed %s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListLoadBalancerPoolsWithContext failed: %s", err.Error()), "(Data) ibm_is_lb_pool", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
 		name := v.(string)
@@ -247,64 +307,79 @@ func dataSourceIBMIsLbPoolRead(context context.Context, d *schema.ResourceData, 
 		}
 		if loadBalancerPool == nil {
 			log.Printf("[DEBUG] No LoadBalancerPool found with name (%s)", name)
-			return diag.FromErr(fmt.Errorf("No LoadBalancerPool found with name (%s)", name))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("No LoadBalancerPool found with name: %s", name), "(Data) ibm_is_lb_pool", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
 	}
 
 	d.SetId(*loadBalancerPool.ID)
 	if err = d.Set("algorithm", loadBalancerPool.Algorithm); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting algorithm: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting algorithm: %s", err), "(Data) ibm_is_lb_pool", "read", "set-algorithm").GetDiag()
+	}
+	failsafePolicy := []map[string]interface{}{}
+	if loadBalancerPool.FailsafePolicy != nil {
+		modelMap, err := dataSourceIBMIsLbPoolLoadBalancerPoolFailsafePolicyToMap(loadBalancerPool.FailsafePolicy)
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_lb_pool", "read", "failsafe_policy-to-map").GetDiag()
+		}
+		failsafePolicy = append(failsafePolicy, modelMap)
+	}
+	if err = d.Set("failsafe_policy", failsafePolicy); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting failsafe_policy: %s", err), "(Data) ibm_is_lb_pool", "read", "set-failsafe_policy").GetDiag()
 	}
 	if err = d.Set("created_at", flex.DateTimeToString(loadBalancerPool.CreatedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting created_at: %s", err), "(Data) ibm_is_lb_pool", "read", "set-created_at").GetDiag()
 	}
 
 	if loadBalancerPool.HealthMonitor != nil {
-		err = d.Set("health_monitor", dataSourceLoadBalancerPoolFlattenHealthMonitor(*loadBalancerPool.HealthMonitor))
+		poolHealthMonitor := loadBalancerPool.HealthMonitor.(*vpcv1.LoadBalancerPoolHealthMonitor)
+		err = d.Set("health_monitor", dataSourceLoadBalancerPoolFlattenHealthMonitor(*poolHealthMonitor))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting health_monitor %s", err))
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting health_monitor: %s", err), "(Data) ibm_is_lb_pool", "read", "set-health_monitor").GetDiag()
 		}
 	}
 	if err = d.Set("href", loadBalancerPool.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting href: %s", err), "(Data) ibm_is_lb_pool", "read", "set-href").GetDiag()
 	}
 
 	if loadBalancerPool.InstanceGroup != nil {
 		err = d.Set("instance_group", dataSourceLoadBalancerPoolFlattenInstanceGroup(*loadBalancerPool.InstanceGroup))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting instance_group %s", err))
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting instance_group: %s", err), "(Data) ibm_is_lb_pool", "read", "set-instance_group").GetDiag()
 		}
 	}
 
 	if loadBalancerPool.Members != nil {
 		err = d.Set("members", dataSourceLoadBalancerPoolFlattenMembers(loadBalancerPool.Members))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting members %s", err))
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting members: %s", err), "(Data) ibm_is_lb_pool", "read", "set-members").GetDiag()
 		}
 	}
 
 	if err = d.Set("identifier", loadBalancerPool.ID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting identifier: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting identifier: %s", err), "(Data) ibm_is_lb_pool", "read", "set-identifier").GetDiag()
 	}
 
 	if err = d.Set("name", loadBalancerPool.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_is_lb_pool", "read", "set-name").GetDiag()
 	}
 	if err = d.Set("protocol", loadBalancerPool.Protocol); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting protocol: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting protocol: %s", err), "(Data) ibm_is_lb_pool", "read", "set-protocol").GetDiag()
 	}
 	if err = d.Set("provisioning_status", loadBalancerPool.ProvisioningStatus); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting provisioning_status: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting provisioning_status: %s", err), "(Data) ibm_is_lb_pool", "read", "set-provisioning_status").GetDiag()
 	}
+
 	if err = d.Set("proxy_protocol", loadBalancerPool.ProxyProtocol); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting proxy_protocol: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting proxy_protocol: %s", err), "(Data) ibm_is_lb_pool", "read", "set-proxy_protocol").GetDiag()
 	}
 
 	if loadBalancerPool.SessionPersistence != nil {
 		err = d.Set("session_persistence", dataSourceLoadBalancerPoolFlattenSessionPersistence(*loadBalancerPool.SessionPersistence))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting session_persistence %s", err))
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting session_persistence: %s", err), "(Data) ibm_is_lb_pool", "read", "set-session_persistence").GetDiag()
 		}
 	}
 
@@ -377,7 +452,7 @@ func dataSourceLoadBalancerPoolInstanceGroupToMap(instanceGroupItem vpcv1.Instan
 	return instanceGroupMap
 }
 
-func dataSourceLoadBalancerPoolInstanceGroupDeletedToMap(deletedItem vpcv1.InstanceGroupReferenceDeleted) (deletedMap map[string]interface{}) {
+func dataSourceLoadBalancerPoolInstanceGroupDeletedToMap(deletedItem vpcv1.Deleted) (deletedMap map[string]interface{}) {
 	deletedMap = map[string]interface{}{}
 
 	if deletedItem.MoreInfo != nil {
@@ -414,7 +489,7 @@ func dataSourceLoadBalancerPoolMembersToMap(membersItem vpcv1.LoadBalancerPoolMe
 	return membersMap
 }
 
-func dataSourceLoadBalancerPoolMembersDeletedToMap(deletedItem vpcv1.LoadBalancerPoolMemberReferenceDeleted) (deletedMap map[string]interface{}) {
+func dataSourceLoadBalancerPoolMembersDeletedToMap(deletedItem vpcv1.Deleted) (deletedMap map[string]interface{}) {
 	deletedMap = map[string]interface{}{}
 
 	if deletedItem.MoreInfo != nil {
@@ -443,4 +518,39 @@ func dataSourceLoadBalancerPoolSessionPersistenceToMap(sessionPersistenceItem vp
 	}
 
 	return sessionPersistenceMap
+}
+
+func dataSourceIBMIsLbPoolLoadBalancerPoolFailsafePolicyToMap(model *vpcv1.LoadBalancerPoolFailsafePolicy) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["action"] = *model.Action
+	modelMap["healthy_member_threshold_count"] = flex.IntValue(model.HealthyMemberThresholdCount)
+	if model.Target != nil {
+		targetMap, err := dataSourceIBMIsLbPoolLoadBalancerPoolReferenceToMap(model.Target)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["target"] = []map[string]interface{}{targetMap}
+	}
+	return modelMap, nil
+}
+
+func dataSourceIBMIsLbPoolLoadBalancerPoolReferenceToMap(model *vpcv1.LoadBalancerPoolReference) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Deleted != nil {
+		deletedMap, err := dataSourceIBMIsLbPoolDeletedToMap(model.Deleted)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["deleted"] = []map[string]interface{}{deletedMap}
+	}
+	modelMap["href"] = *model.Href
+	modelMap["id"] = *model.ID
+	modelMap["name"] = *model.Name
+	return modelMap, nil
+}
+
+func dataSourceIBMIsLbPoolDeletedToMap(model *vpcv1.Deleted) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["more_info"] = *model.MoreInfo
+	return modelMap, nil
 }

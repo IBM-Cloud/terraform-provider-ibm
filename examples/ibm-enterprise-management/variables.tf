@@ -58,6 +58,17 @@ variable "enterprise_account_owner_iam_id" {
   type        = string
   default     = "owner_iam_id"
 }
+variable "enterprise_account_traits" {
+  description = "The traits object can be used to opt-out of Multi-Factor Authenticatin or for setting enterprise IAM settings setting when creating a child account in the enterprise."
+  type        = set()
+  default     = { enterprise_iam_managed = false }
+}
+
+variable "enterprise_account_options" {
+  description = "The options object can be used to set properties on child accounts of an enterprise. You can pass a field to to create IAM service id with IAM api key when creating a child account in the enterprise."
+  type        = set()
+  default     = { create_iam_service_id_with_apikey_and_owner_policies : false }
+}
 
 // Data source arguments for enterprises
 variable "enterprises_name" {

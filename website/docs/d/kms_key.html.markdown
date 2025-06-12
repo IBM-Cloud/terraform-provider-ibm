@@ -32,7 +32,7 @@ resource "ibm_cos_bucket" "smart-us-south" {
   resource_instance_id = "cos-instance-id"
   region_location      = "us-south"
   storage_class        = "smart"
-  key_protect          = data.ibm_kms_key.test.key.0.crn
+  kms_key_crn          = data.ibm_kms_key.test.key.0.crn
 }
 ```
 
@@ -40,6 +40,8 @@ resource "ibm_cos_bucket" "smart-us-south" {
 
 1) Data of the key can be retrieved either using a key name or an alias name (if created for the key or keys) .
 2) limit is an optional parameter used with the keyname, which iterates and fetches the key till the limit given. When the limit is not passed then the first 2000 keys are fetched according to SDK default behaviour. 
+3) `key_protect` attribute has been renamed as `kms_key_crn` , hence it is recommended to all the new users to use `kms_key_crn`.Although the support for older attribute name `key_protect` will be continued for existing customers.
+
 
 ## Argument reference
 Review the argument references that you can specify for your data source.  

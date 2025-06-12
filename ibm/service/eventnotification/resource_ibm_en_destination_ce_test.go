@@ -37,6 +37,7 @@ func TestAccIBMEnCodeEngineAllArgs(t *testing.T) {
 					testAccCheckIBMEnCodeEngineDestinationExists("ibm_en_destination_ce.en_destination_resource_1", config),
 					resource.TestCheckResourceAttr("ibm_en_destination_ce.en_destination_resource_1", "name", name),
 					resource.TestCheckResourceAttr("ibm_en_destination_ce.en_destination_resource_1", "type", "ibmce"),
+					resource.TestCheckResourceAttr("ibm_en_destination_ce.en_destination_resource_1", "collect_failed_events", "false"),
 					resource.TestCheckResourceAttr("ibm_en_destination_ce.en_destination_resource_1", "description", description),
 				),
 			},
@@ -45,6 +46,7 @@ func TestAccIBMEnCodeEngineAllArgs(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_en_destination_ce.en_destination_resource_1", "name", newName),
 					resource.TestCheckResourceAttr("ibm_en_destination_ce.en_destination_resource_1", "type", "ibmce"),
+					resource.TestCheckResourceAttr("ibm_en_destination_ce.en_destination_resource_1", "collect_failed_events", "false"),
 					resource.TestCheckResourceAttr("ibm_en_destination_ce.en_destination_resource_1", "description", newDescription),
 				),
 			},
@@ -73,6 +75,7 @@ func testAccCheckIBMEnCodeEngineDestinationConfig(instanceName, name, descriptio
 		description = "%s"
 		config {
 			params {
+				type = "application"
 				verb = "POST"
 				url  = "https://test.codetestcodeengine.com"
 			}

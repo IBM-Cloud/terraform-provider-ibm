@@ -15,6 +15,12 @@ variable "atracker_target_target_type" {
   default     = "cloud_object_storage"
 }
 
+variable "atracker_target_region" {
+  description = "Included this optional field if you used it to create a target in a different region other than the one you are connected."
+  type        = string
+  default     = "us-south"
+}
+
 // Resource arguments for atracker_route
 variable "atracker_route_name" {
   description = "The name of the route. The name must be 1000 characters or less and cannot include any special characters other than `(space) - . _ :`."
@@ -28,8 +34,11 @@ variable "atracker_route_receive_global_events" {
 }
 variable "atracker_route_rules" {
   description = "Routing rules that will be evaluated in their order of the array."
-  type        = list(object({ example=string }))
-  default     = [ { "target_ids" : [ "target_ids" ] } ]
+  type        = list(object({
+    target_ids = list(string)
+    locations = list(string)
+  }))
+  default     = [ ]
 }
 
 // Data source arguments for atracker_targets
@@ -51,6 +60,13 @@ variable "atracker_settings_metadata_region_primary" {
   type        = string
   default     = "us-south"
 }
+
+variable "atracker_settings_metadata_region_backup" {
+  description = "To store all your meta data in a single region."
+  type        = string
+  default     = "us-east"
+}
+
 variable "atracker_settings_private_api_endpoint_only" {
   description = "If you set this true then you cannot access api through public network."
   type        = bool
@@ -66,5 +82,4 @@ variable "atracker_settings_permitted_target_regions" {
   type        = list(string)
   default     = [ "us-south" ]
 }
-
 // Data source arguments for atracker_endpoints

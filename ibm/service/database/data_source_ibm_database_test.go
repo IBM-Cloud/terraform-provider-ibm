@@ -13,7 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccIBMDatabaseDataSource_basic(t *testing.T) {
+func TestAccIBMDatabaseDataSourceBasic(t *testing.T) {
 	t.Parallel()
 	databaseResourceGroup := "default"
 	var databaseInstanceOne string
@@ -34,18 +34,12 @@ func TestAccIBMDatabaseDataSource_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(dataName, "name", testName),
 					resource.TestCheckResourceAttr(dataName, "service", "databases-for-postgresql"),
 					resource.TestCheckResourceAttr(dataName, "plan", "standard"),
-					resource.TestCheckResourceAttr(dataName, "location", acc.IcdDbRegion),
+					resource.TestCheckResourceAttr(dataName, "location", acc.Region()),
 					resource.TestCheckResourceAttr(dataName, "adminuser", "admin"),
-					resource.TestCheckResourceAttr(dataName, "members_memory_allocation_mb", "2048"),
-					resource.TestCheckResourceAttr(dataName, "members_disk_allocation_mb", "10240"),
-					resource.TestCheckResourceAttr(dataName, "whitelist.#", "0"),
+					resource.TestCheckResourceAttr(dataName, "groups.0.memory.0.allocation_mb", "8192"),
+					resource.TestCheckResourceAttr(dataName, "groups.0.disk.0.allocation_mb", "10240"),
 					resource.TestCheckResourceAttr(dataName, "allowlist.#", "0"),
-					resource.TestCheckResourceAttr(dataName, "connectionstrings.#", "1"),
-					resource.TestCheckResourceAttr(dataName, "connectionstrings.0.name", "admin"),
-					resource.TestCheckResourceAttr(dataName, "connectionstrings.0.hosts.#", "1"),
-					resource.TestCheckResourceAttr(dataName, "connectionstrings.0.scheme", "postgres"),
 					resource.TestCheckResourceAttr(dataName, "tags.#", "1"),
-					resource.TestCheckResourceAttrSet(dataName, "cert_file_path"),
 				),
 			},
 		},
@@ -70,7 +64,16 @@ func testAccCheckIBMDatabaseDataSourceConfig(databaseResourceGroup string, name 
 		plan              = "standard"
 		location          = "%[3]s"
 		tags              = ["one:two"]
+		service_endpoints = "public"
+
+		group {
+			group_id = "member"
+
+			host_flavor {
+				id = "multitenant"
+			}
+		}
 	}
 
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
+	`, databaseResourceGroup, name, acc.Region())
 }

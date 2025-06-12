@@ -19,24 +19,6 @@ variable "endpoint_type" {
   default     = "private"
 }
 
-// Data source arguments for secrets_manager_secrets
-variable "secrets_manager_secrets_secret_type" {
-  description = "The secret type."
-  type        = string
-  default     = null
-}
-
-// Data source arguments for secrets_manager_secret
-variable "secrets_manager_secret_secret_type" {
-  description = "The secret type. Supported options include: arbitrary, iam_credentials, username_password."
-  type        = string
-  default     = "arbitrary"
-}
-variable "secrets_manager_secret_id" {
-  description = "The v4 UUID that uniquely identifies the secret."
-  type        = string
-}
-
 // Resource arguments for sm_secret_group
 variable "sm_secret_group_description" {
   description = "An extended description of your secret group.To protect your privacy, do not use personal data, such as your name or location, as a description for your secret group."
@@ -77,7 +59,7 @@ variable "sm_imported_certificate_labels" {
   default     = [ "my-label" ]
 }
 variable "sm_imported_certificate_secret_group_id" {
-  description = "A v4 UUID identifier, or `default` secret group."
+  description = "A UUID identifier, or `default` secret group."
   type        = string
   default     = "default"
 }
@@ -124,9 +106,16 @@ variable "sm_public_certificate_labels" {
   default     = [ "my-label" ]
 }
 variable "sm_public_certificate_secret_group_id" {
-  description = "A v4 UUID identifier, or `default` secret group."
+  description = "A UUID identifier, or `default` secret group."
   type        = string
   default     = "default"
+}
+
+// Resource arguments for sm_public_certificate_action_validate_manual_dns
+variable "sm_public_certificate_action_validate_manual_dns_secret_id" {
+  description = "The ID of the secret."
+  type        = string
+  default     = "0b5571f7-21e6-42b7-91c5-3f5ac9793a46"
 }
 
 // Resource arguments for sm_kv_secret
@@ -151,7 +140,7 @@ variable "sm_kv_secret_labels" {
   default     = [ "my-label" ]
 }
 variable "sm_kv_secret_secret_group_id" {
-  description = "A v4 UUID identifier, or `default` secret group."
+  description = "A UUID identifier, or `default` secret group."
   type        = string
   default     = "default"
 }
@@ -183,7 +172,7 @@ variable "sm_iam_credentials_secret_labels" {
   default     = [ "my-label" ]
 }
 variable "sm_iam_credentials_secret_secret_group_id" {
-  description = "A v4 UUID identifier, or `default` secret group."
+  description = "A UUID identifier, or `default` secret group."
   type        = string
   default     = "default"
 }
@@ -202,6 +191,54 @@ variable "sm_iam_credentials_secret_reuse_api_key" {
   type        = bool
   default     = true
 }
+
+// Resource arguments for sm_service_credentials_secret
+variable "sm_service_credentials_name" {
+  description = "The human-readable name of your secret."
+  type        = string
+  default     = "my-service-credentials-secret"
+}
+variable "sm_service_credentials_secret_custom_metadata" {
+  description = "The secret metadata that a user can customize."
+  type        = any
+  default     = "anything as a string"
+}
+variable "sm_service_credentials_secret_description" {
+  description = "An extended description of your secret.To protect your privacy, do not use personal data, such as your name or location, as a description for your secret group."
+  type        = string
+  default     = "Extended description for this secret."
+}
+variable "sm_service_credentials_secret_labels" {
+  description = "Labels that you can use to search for secrets in your instance.Up to 30 labels can be created."
+  type        = list(string)
+  default     = [ "my-label" ]
+}
+variable "sm_service_credentials_secret_secret_group_id" {
+  description = "A UUID identifier, or `default` secret group."
+  type        = string
+  default     = "default"
+}
+variable "sm_service_credentials_secret_source_service_instance_crn" {
+  description = "A CRN that uniquely identifies a service credentials source"
+  type        = string
+  default     = "crn:v1:staging:public:cloud-object-storage:global:a/111f5fb10986423e9saa8512f1db7e65:111133c8-49ea-41xe-8c40-122038246f5b::"
+}
+variable "sm_service_credentials_secret_source_service_role_crn" {
+  description = "The service-specific custom role object, CRN role is accepted. Refer to the service’s documentation for supported roles."
+  type        = string
+  default     = "crn:v1:bluemix:public:iam::::serviceRole:Writer"
+}
+variable "sm_service_credentials_secret_source_service_parameters" {
+  description = "Configuration options represented as key-value pairs. Service-defined options are used in the generation of credentials for some services."
+  type        = string
+  default     = {}
+}
+variable "sm_service_credentials_secret_ttl" {
+  description = "The time-to-live (TTL) or lease duration to assign to generated credentials. The TTL defines for how long generated credentials remain valid. The value should be a string that specifies the number of seconds. Minimum duration is 86400 (1 day). Maximum is 7776000 seconds (90 days)."
+  type        = string
+  default     = "86401"
+}
+
 
 // Resource arguments for sm_arbitrary_secret
 variable "sm_arbitrary_secret_name" {
@@ -230,7 +267,7 @@ variable "sm_arbitrary_secret_labels" {
   default     = [ "my-label" ]
 }
 variable "sm_arbitrary_secret_secret_group_id" {
-  description = "A v4 UUID identifier, or `default` secret group."
+  description = "A UUID identifier, or `default` secret group."
   type        = string
   default     = "default"
 }
@@ -267,7 +304,7 @@ variable "sm_username_password_secret_labels" {
   default     = [ "my-label" ]
 }
 variable "sm_username_password_secret_secret_group_id" {
-  description = "A v4 UUID identifier, or `default` secret group."
+  description = "A UUID identifier, or `default` secret group."
   type        = string
   default     = "default"
 }
@@ -280,6 +317,41 @@ variable "sm_username_password_secret_password" {
   description = "The password that is assigned to the secret."
   type        = string
   default     = "password"
+}
+variable "sm_custom_credentials_secret_group_id" {
+  description = "A UUID identifier, or `default` secret group."
+  type        = string
+  default     = "default"
+}
+variable "sm_custom_credentials_labels" {
+  description = "Labels that you can use to search for secrets in your instance.Up to 30 labels can be created."
+  type        = list(string)
+  default     = [ "my-label" ]
+}
+variable "sm_custom_credentials_name" {
+  description = "The human-readable name of your secret."
+  type        = string
+  default     = "my-custom-credentials-secret"
+}
+variable "sm_arbitrary_secret_metadata_id" {
+  description = "The ID of the secret."
+  type        = string
+  default     = "0b5571f7-21e6-42b7-91c5-3f5ac9793a46"
+}
+variable "custom_credentials_project_id" {
+  description = "The Code Engine project ID."
+  type        = string
+  default     = "0b5571f7-21e6-42b7-91c5-3f5ac9793a46"
+}
+variable "custom_credentials_job_name" {
+  description = "The Code Engine job name."
+  type        = string
+  default     = "my-code-engine-job"
+}
+variable "custom_credentials_api_key_ref" {
+  description = "The ID of the IAM credentials secret used by the custom credentials configuration."
+  type        = string
+  default     = "0b5571f7-21e6-42b7-91c5-3f5ac9793a46"
 }
 
 // Resource arguments for sm_private_certificate
@@ -309,7 +381,7 @@ variable "sm_private_certificate_labels" {
   default     = [ "my-label" ]
 }
 variable "sm_private_certificate_secret_group_id" {
-  description = "A v4 UUID identifier, or `default` secret group."
+  description = "A UUID identifier, or `default` secret group."
   type        = string
   default     = "default"
 }
@@ -505,6 +577,30 @@ variable "sm_private_certificate_configuration_template_basic_constraints_valid_
   default     = true
 }
 
+// Resource arguments for sm_private_certificate_configuration_action_sign_csr
+variable "sm_private_certificate_configuration_action_sign_csr_name" {
+  description = "The name that uniquely identifies a configuration."
+  type        = string
+  default     = "my_root_ca"
+}
+variable "sm_private_certificate_configuration_action_sign_csr_csr" {
+  description = "The certificate signing request."
+  type        = string
+  default     = "csr"
+}
+
+// Resource arguments for sm_private_certificate_configuration_action_set_signed
+variable "sm_private_certificate_configuration_action_set_signed_name" {
+  description = "The name that uniquely identifies a configuration."
+  type        = string
+  default     = "my_intermediate_ca"
+}
+variable "sm_private_certificate_configuration_action_set_signed_certificate" {
+  description = "The PEM-encoded certificate."
+  type        = string
+  default     = "certificate"
+}
+
 // Resource arguments for sm_public_certificate_configuration_ca_lets_encrypt
 variable "sm_public_certificate_configuration_ca_lets_encrypt_name" {
   description = "A human-readable unique name to assign to your configuration."
@@ -674,6 +770,14 @@ variable "sm_iam_credentials_secret_metadata_id" {
   default     = "0b5571f7-21e6-42b7-91c5-3f5ac9793a46"
 }
 
+// Data source arguments for sm_service_credentials_secret_metadata
+variable "sm_service_credentials_secret_metadata_id" {
+  description = "The ID of the secret."
+  type        = string
+  default     = "0b5571f7-21e6-42b7-91c5-3f5ac9793a46"
+}
+
+
 // Data source arguments for sm_arbitrary_secret_metadata
 variable "sm_arbitrary_secret_metadata_id" {
   description = "The ID of the secret."
@@ -709,8 +813,22 @@ variable "sm_kv_secret_id" {
   default     = "0b5571f7-21e6-42b7-91c5-3f5ac9793a46"
 }
 
+// Data source arguments for sm_custom_credentials_secret
+variable "sm_custom_credentials_secret_id" {
+  description = "The ID of the secret."
+  type        = string
+  default     = "0b5571f7-21e6-42b7-91c5-3f5ac9793a46"
+}
+
 // Data source arguments for sm_iam_credentials_secret
 variable "sm_iam_credentials_secret_id" {
+  description = "The ID of the secret."
+  type        = string
+  default     = "0b5571f7-21e6-42b7-91c5-3f5ac9793a46"
+}
+
+// Data source arguments for sm_service_credentials_secret
+variable "sm_service_credentials_secret_id" {
   description = "The ID of the secret."
   type        = string
   default     = "0b5571f7-21e6-42b7-91c5-3f5ac9793a46"

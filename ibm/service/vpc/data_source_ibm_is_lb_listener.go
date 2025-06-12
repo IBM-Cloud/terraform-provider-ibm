@@ -223,7 +223,9 @@ func DataSourceIBMISLBListener() *schema.Resource {
 func dataSourceIBMIsLbListenerRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := vpcClient(meta)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_lb_listener", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	getLoadBalancerListenerOptions := &vpcv1.GetLoadBalancerListenerOptions{}
@@ -231,74 +233,76 @@ func dataSourceIBMIsLbListenerRead(context context.Context, d *schema.ResourceDa
 	getLoadBalancerListenerOptions.SetLoadBalancerID(d.Get(isLBListenerLBID).(string))
 	getLoadBalancerListenerOptions.SetID(d.Get(isLBListenerID).(string))
 
-	loadBalancerListener, response, err := vpcClient.GetLoadBalancerListenerWithContext(context, getLoadBalancerListenerOptions)
+	loadBalancerListener, _, err := vpcClient.GetLoadBalancerListenerWithContext(context, getLoadBalancerListenerOptions)
 	if err != nil {
-		log.Printf("[DEBUG] GetLoadBalancerListenerWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetLoadBalancerListenerWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetLoadBalancerListenerWithContext failed: %s", err.Error()), "(Data) ibm_is_lb_listener", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(*loadBalancerListener.ID)
 	if err = d.Set("accept_proxy_protocol", loadBalancerListener.AcceptProxyProtocol); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting accept_proxy_protocol: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting accept_proxy_protocol: %s", err), "(Data) ibm_is_lb_listener", "read", "set-accept_proxy_protocol").GetDiag()
 	}
 
 	if loadBalancerListener.CertificateInstance != nil {
 		err = d.Set("certificate_instance", dataSourceLoadBalancerListenerFlattenCertificateInstance(*loadBalancerListener.CertificateInstance))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting certificate_instance %s", err))
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting certificate_instance: %s", err), "(Data) ibm_is_lb_listener", "read", "set-certificate_instance").GetDiag()
 		}
 	}
 	if loadBalancerListener.ConnectionLimit != nil {
 		if err = d.Set("connection_limit", flex.IntValue(loadBalancerListener.ConnectionLimit)); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting connection_limit: %s", err))
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting connection_limit: %s", err), "(Data) ibm_is_lb_listener", "read", "set-connection_limit").GetDiag()
 		}
 	}
 	if loadBalancerListener.IdleConnectionTimeout != nil {
 		if err = d.Set(isLBListenerIdleConnectionTimeout, flex.IntValue(loadBalancerListener.IdleConnectionTimeout)); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting idle_connection_timeout: %s", err))
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting idle_connection_timeout: %s", err), "(Data) ibm_is_lb_listener", "read", "set-idle_connection_timeout").GetDiag()
 		}
 	}
-	if err = d.Set("created_at", loadBalancerListener.CreatedAt.String()); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
+
+	if err = d.Set("created_at", flex.DateTimeToString(loadBalancerListener.CreatedAt)); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting created_at: %s", err), "(Data) ibm_is_lb_listener", "read", "set-created_at").GetDiag()
 	}
 
 	if loadBalancerListener.DefaultPool != nil {
 		err = d.Set("default_pool", dataSourceLoadBalancerListenerFlattenDefaultPool(*loadBalancerListener.DefaultPool))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting default_pool %s", err))
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting default_pool: %s", err), "(Data) ibm_is_lb_listener", "read", "set-default_pool").GetDiag()
 		}
 	}
 	if err = d.Set("href", loadBalancerListener.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting href: %s", err), "(Data) ibm_is_lb_listener", "read", "set-href").GetDiag()
 	}
 
 	if loadBalancerListener.HTTPSRedirect != nil {
 		err = d.Set("https_redirect", dataSourceLoadBalancerListenerFlattenHTTPSRedirect(*loadBalancerListener.HTTPSRedirect))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting https_redirect %s", err))
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting https_redirect: %s", err), "(Data) ibm_is_lb_listener", "read", "set-https_redirect").GetDiag()
 		}
 	}
 
 	if loadBalancerListener.Policies != nil {
 		err = d.Set("policies", dataSourceLoadBalancerListenerFlattenPolicies(loadBalancerListener.Policies))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting policies %s", err))
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting policies: %s", err), "(Data) ibm_is_lb_listener", "read", "set-policies").GetDiag()
 		}
 	}
 	if err = d.Set("port", flex.IntValue(loadBalancerListener.Port)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting port: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting port: %s", err), "(Data) ibm_is_lb_listener", "read", "set-port").GetDiag()
 	}
 	if err = d.Set("port_max", flex.IntValue(loadBalancerListener.PortMax)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting port_max: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting port_max: %s", err), "(Data) ibm_is_lb_listener", "read", "set-port_max").GetDiag()
 	}
 	if err = d.Set("port_min", flex.IntValue(loadBalancerListener.PortMin)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting port_min: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting port_min: %s", err), "(Data) ibm_is_lb_listener", "read", "set-port_min").GetDiag()
 	}
 	if err = d.Set("protocol", loadBalancerListener.Protocol); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting protocol: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting protocol: %s", err), "(Data) ibm_is_lb_listener", "read", "set-protocol").GetDiag()
 	}
 	if err = d.Set("provisioning_status", loadBalancerListener.ProvisioningStatus); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting provisioning_status: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting provisioning_status: %s", err), "(Data) ibm_is_lb_listener", "read", "set-provisioning_status").GetDiag()
 	}
 
 	return nil
@@ -352,7 +356,7 @@ func dataSourceLoadBalancerListenerDefaultPoolToMap(defaultPoolItem vpcv1.LoadBa
 	return defaultPoolMap
 }
 
-func dataSourceLoadBalancerListenerDefaultPoolDeletedToMap(deletedItem vpcv1.LoadBalancerPoolReferenceDeleted) (deletedMap map[string]interface{}) {
+func dataSourceLoadBalancerListenerDefaultPoolDeletedToMap(deletedItem vpcv1.Deleted) (deletedMap map[string]interface{}) {
 	deletedMap = map[string]interface{}{}
 
 	if deletedItem.MoreInfo != nil {
@@ -408,7 +412,7 @@ func dataSourceLoadBalancerListenerHTTPSRedirectListenerToMap(listenerItem vpcv1
 	return listenerMap
 }
 
-func dataSourceLoadBalancerListenerListenerDeletedToMap(deletedItem vpcv1.LoadBalancerListenerReferenceDeleted) (deletedMap map[string]interface{}) {
+func dataSourceLoadBalancerListenerListenerDeletedToMap(deletedItem vpcv1.Deleted) (deletedMap map[string]interface{}) {
 	deletedMap = map[string]interface{}{}
 
 	if deletedItem.MoreInfo != nil {
@@ -445,7 +449,7 @@ func dataSourceLoadBalancerListenerPoliciesToMap(policiesItem vpcv1.LoadBalancer
 	return policiesMap
 }
 
-func dataSourceLoadBalancerListenerPoliciesDeletedToMap(deletedItem vpcv1.LoadBalancerListenerPolicyReferenceDeleted) (deletedMap map[string]interface{}) {
+func dataSourceLoadBalancerListenerPoliciesDeletedToMap(deletedItem vpcv1.Deleted) (deletedMap map[string]interface{}) {
 	deletedMap = map[string]interface{}{}
 
 	if deletedItem.MoreInfo != nil {

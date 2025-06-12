@@ -57,3 +57,4 @@ In addition to all argument reference list, you can access the following attribu
 - `object_lock_mode` - (String) This is the retention mode for an object.
 - `object_lock_retain_until_date` - (String) A date after which the object can be deleted from the COS bucket.
 - `object_lock_legal_hold_status` - (String) If the value of this attribute is **ON**, then the object cannot be deleted from the COS bucket.
+- - `website_redirect` - (String) If this value is set then incoming request will be redirected to the set value..

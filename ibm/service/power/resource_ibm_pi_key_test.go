@@ -11,13 +11,12 @@ import (
 	"testing"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 
+	"github.com/IBM-Cloud/power-go-client/clients/instance"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-
-	st "github.com/IBM-Cloud/power-go-client/clients/instance"
 )
 
 func TestAccIBMPIKey_basic(t *testing.T) {
@@ -41,8 +40,8 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 		},
 	})
 }
-func testAccCheckIBMPIKeyDestroy(s *terraform.State) error {
 
+func testAccCheckIBMPIKeyDestroy(s *terraform.State) error {
 	sess, err := acc.TestAccProvider.Meta().(conns.ClientSession).IBMPISession()
 	if err != nil {
 		return err
@@ -55,15 +54,15 @@ func testAccCheckIBMPIKeyDestroy(s *terraform.State) error {
 		if err != nil {
 			return err
 		}
-		sshkeyC := st.NewIBMPIKeyClient(context.Background(), sess, cloudInstanceID)
+		sshkeyC := instance.NewIBMPIKeyClient(context.Background(), sess, cloudInstanceID)
 		_, err = sshkeyC.Get(key)
 		if err == nil {
 			return fmt.Errorf("PI key still exists: %s", rs.Primary.ID)
 		}
 	}
-
 	return nil
 }
+
 func testAccCheckIBMPIKeyExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 
@@ -87,13 +86,12 @@ func testAccCheckIBMPIKeyExists(n string) resource.TestCheckFunc {
 			return err
 		}
 
-		client := st.NewIBMPIKeyClient(context.Background(), sess, cloudInstanceID)
+		client := instance.NewIBMPIKeyClient(context.Background(), sess, cloudInstanceID)
 		_, err = client.Get(key)
 		if err != nil {
 			return err
 		}
 		return nil
-
 	}
 }
 
@@ -103,6 +101,5 @@ func testAccCheckIBMPIKeyConfig(publicKey, name string) string {
 			pi_cloud_instance_id = "%s"
 			pi_key_name          = "%s"
 			pi_ssh_key           = "%s"
-		  }
-	`, acc.Pi_cloud_instance_id, name, publicKey)
+		}`, acc.Pi_cloud_instance_id, name, publicKey)
 }

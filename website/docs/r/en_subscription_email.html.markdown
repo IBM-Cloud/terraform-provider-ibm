@@ -17,7 +17,7 @@ resource "ibm_en_subscription_email" "email_subscription" {
   instance_guid    = ibm_resource_instance.en_terraform_test_resource.guid
   name             = "Email Certificate Subscription"
   description      = "Subscription for Certificate expiration alert"
-  destination_id   = "email_destination_id"
+  destination_id   = [for s in toset(data.ibm_en_destinations.destinations.destinations): s.id if s.type == "smtp_ibm"].0
   topic_id         = ibm_en_topic.topic1.topic_id
   attributes {
       add_notification_payload = true

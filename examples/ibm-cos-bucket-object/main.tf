@@ -62,3 +62,13 @@ resource "ibm_cos_bucket_object" "object_object_lock" {
   object_lock_legal_hold_status = "ON"
   force_delete = true
 }
+
+// COS static web hosting 
+
+resource "ibm_cos_bucket_object" "object" {
+  bucket_crn      = ibm_cos_bucket.object_lock.crn
+  bucket_location = ibm_cos_bucket.object_lock.cross_region_location
+  key             = "page1.html"
+  website_redirect = "page2.html"
+}
+

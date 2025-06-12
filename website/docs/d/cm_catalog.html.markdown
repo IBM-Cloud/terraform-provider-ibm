@@ -22,7 +22,8 @@ data "ibm_cm_catalog" "cm_catalog" {
 
 Review the argument reference that you can specify for your data source.
 
-* `catalog_identifier` - (Required, Forces new resource, String) Catalog identifier.
+* `catalog_identifier` - (Optional, String) Catalog identifier.
+* `label` - (Optional, String) Catalog label.
 
 ## Attribute Reference
 
@@ -30,15 +31,21 @@ In addition to all argument references listed, you can access the following attr
 
 * `id` - The unique identifier of the ibm_cm_catalog.
 * `catalog_filters` - (List) Filters for account and catalog filters.
-Nested scheme for **catalog_filters**:
-	* `category_filters` - (Map) Filter against offering properties.
+Nested schema for **catalog_filters**:
+	* `category_filters` - (List) Filter against offering properties.
+	Nested schema for **category_filters**:
+    	* `category_name` - (String) Name of the category.
+    	* `include` -  (Boolean) Whether to include the category in the catalog filter.
+    	* `filter` - (List) Filter terms related to the category.
+		Nested schema for **filter**:
+			* `filter_terms` - (List) List of values to match against. If include is true, then if the offering has one of the values then the offering is included. If include is false, then if the offering has one of the values then the offering is excluded.
 	* `id_filters` - (List) Filter on offering ID's. There is an include filter and an exclule filter. Both can be set.
-	Nested scheme for **id_filters**:
+	Nested schema for **id_filters**:
 		* `exclude` - (List) Offering filter terms.
-		Nested scheme for **exclude**:
+		Nested schema for **exclude**:
 			* `filter_terms` - (List) List of values to match against. If include is true, then if the offering has one of the values then the offering is included. If include is false, then if the offering has one of the values then the offering is excluded.
 		* `include` - (List) Offering filter terms.
-		Nested scheme for **include**:
+		Nested schema for **include**:
 			* `filter_terms` - (List) List of values to match against. If include is true, then if the offering has one of the values then the offering is included. If include is false, then if the offering has one of the values then the offering is excluded.
 	* `include_all` - (Boolean) -> true - Include all of the public catalog when filtering. Further settings will specifically exclude some offerings. false - Exclude all of the public catalog when filtering. Further settings will specifically include some offerings.
 
@@ -77,37 +84,20 @@ Nested scheme for **features**:
 
 * `short_description` - (String) Description in the requested language.
 
-* `syndication_settings` - (List) Feature information.
-Nested scheme for **syndication_settings**:
-	* `authorization` - (List) Feature information.
-	Nested scheme for **authorization**:
-		* `last_run` - (String) Date and time last updated.
-		* `token` - (String) Array of syndicated namespaces.
-	* `clusters` - (List) Syndication clusters.
-	Nested scheme for **clusters**:
-		* `all_namespaces` - (Boolean) Syndicated to all namespaces on cluster.
-		* `id` - (String) Cluster ID.
-		* `name` - (String) Cluster name.
-		* `namespaces` - (List) Syndicated namespaces.
-		* `region` - (String) Cluster region.
-		* `resource_group_name` - (String) Resource group ID.
-		* `type` - (String) Syndication type.
-	* `history` - (List) Feature information.
-	Nested scheme for **history**:
-		* `clusters` - (List) Array of syndicated namespaces.
-		Nested scheme for **clusters**:
-			* `all_namespaces` - (Boolean) Syndicated to all namespaces on cluster.
-			* `id` - (String) Cluster ID.
-			* `name` - (String) Cluster name.
-			* `namespaces` - (List) Syndicated namespaces.
-			* `region` - (String) Cluster region.
-			* `resource_group_name` - (String) Resource group ID.
-			* `type` - (String) Syndication type.
-		* `last_run` - (String) Date and time last syndicated.
-		* `namespaces` - (List) Array of syndicated namespaces.
-	* `remove_related_components` - (Boolean) Remove related components.
-
 * `tags` - (List) List of tags associated with this catalog.
+
+* `target_account_contexts` - (List) List of target account contexts for this catalog.
+Nested scheme for **target_account_contexts**:
+	* `api_key` - (String) API key of the target account.
+	* `name` - (String) Unique name/identifier for this target account context.
+	* `label` - (String) Label for this target account context.
+	* `project_id` - (String) Project ID.
+	* `trusted_profile` - (List) Trusted profile information.
+	Nested scheme for **trusted_profile**:
+		* `trusted_profile_id` - (String) Trusted profile ID.
+		* `catalog_crn` - (String) CRN of this catalog.
+		* `catalog_name` - (String) Name of this catalog.
+		* `target_service_id` - (String) Target service ID.
 
 * `updated` - (String) The date-time this catalog was last updated.
 

@@ -8,17 +8,49 @@ subcategory: "Secrets Manager"
 
 # ibm_sm_private_certificate_configuration_template
 
-Provides a resource for PrivateCertificateConfigurationTemplate. This allows PrivateCertificateConfigurationTemplate to be created, updated and deleted.
+Provides a resource for a certificate template for private certificate secrets. This allows a certificate template to be created, updated and deleted. Note that a certificate template cannot be deleted if one or more private certificates exist that were generated with this template. Therefore, arguments that are marked as `Forces new resource` should not be modified if secrets generated with this template exist.
 
 ## Example Usage
 
 ```hcl
 resource "ibm_sm_private_certificate_configuration_template" "certificate_template" {
-  instance_id           = ibm_resource_instance.sm_instance.guid
+  depends_on     = [ ibm_sm_private_certificate_configuration_intermediate_ca.intermediate_CA ]
+  instance_id    = ibm_resource_instance.sm_instance.guid
   region                = "us-south"
   name                  = "my_template"
-  certificate_authority = "my_intermediate_ca"
-  allowed_domains       = ["example.com"]
+  certificate_authority = ibm_sm_private_certificate_configuration_intermediate_ca.intermediate_CA.name
+  ou            = ["example_ou"]
+  organization  = ["example_organization"]
+  country       = ["US"]
+  locality      = ["example_locality"]
+  province      = ["example_province"]
+  street_address  = ["example street address"]
+  postal_code   = ["example_postal_code"]
+  ttl           = "2190h"
+  max_ttl       = "8760h"
+  key_type      = "rsa"
+  key_bits      = 4096
+  allowed_domains    = ["example.com"]
+  allow_any_name    = true
+  allow_bare_domains = false
+  allow_glob_domains = false
+  allow_ip_sans      = true
+  allow_localhost    = true
+  allow_subdomains   = false
+  allowed_domains_template = false
+  allowed_other_sans = []
+  allowed_uri_sans   = ["https://www.example.com/test"]
+  enforce_hostnames  = false
+  server_flag           = false
+  client_flag           = false
+  code_signing_flag     = false
+  email_protection_flag = false
+  key_usage           = ["DigitalSignature","KeyAgreement","KeyEncipherment"]
+  use_csr_common_name = true
+  use_csr_sans        = true
+  require_cn          = true
+  basic_constraints_valid_for_non_ca = false
+  not_before_duration = "30s"
 }
 ```
 
@@ -67,6 +99,7 @@ Review the argument reference that you can specify for your resource.
   * Constraints: The list items must match regular expression `/^[a-zA-Z]+$/`. The maximum length is `100` items. The minimum length is `0` items.
 * `locality` - (Optional, Forces new resource, List) The Locality (L) values to define in the subject field of the resulting certificate.
   * Constraints: The list items must match regular expression `/(.*?)/`. The maximum length is `10` items. The minimum length is `0` items.
+* `max_ttl` - (Optional, String) The maximum time-to-live (TTL) for certificates that are created by this template.
 * `name` - (Required, String) A human-readable unique name to assign to your configuration.
 * `organization` - (Optional, Forces new resource, List) The Organization (O) values to define in the subject field of the resulting certificate.
   * Constraints: The list items must match regular expression `/(.*?)/`. The maximum length is `10` items. The minimum length is `0` items.
@@ -80,10 +113,11 @@ Review the argument reference that you can specify for your resource.
   * Constraints: The list items must match regular expression `/(.*?)/`. The maximum length is `100` items. The minimum length is `0` items.
 * `require_cn` - (Optional, Boolean) Determines whether to require a common name to create a private certificate.By default, a common name is required to generate a certificate. To make the `common_name` field optional, set the `require_cn` option to `false`.
 * `server_flag` - (Optional, Boolean) Determines whether private certificates are flagged for server use.
-* `serial_number` - (Optional, Forces new resource, String) The serial number to assign to the generated certificate. To assign a random serial number, you can omit this field.
+* `serial_number` - (Optional, Forces new resource, String) Deprecated. Unused field. 
   * Constraints: The maximum length is `64` characters. The minimum length is `32` characters. The value must match regular expression `/[^a-fA-F0-9]/`.
 * `street_address` - (Optional, Forces new resource, List) The street address values to define in the subject field of the resulting certificate.
   * Constraints: The list items must match regular expression `/(.*?)/`. The maximum length is `10` items. The minimum length is `0` items.
+* `ttl` - The requested time-to-live (TTL) for certificates that are created by this template. This field's value can't be longer than the max_ttl limit.
 * `use_csr_common_name` - (Optional, Boolean) When used with the `private_cert_configuration_action_sign_csr` action, this field determines whether to use the common name (CN) from a certificate signing request (CSR) instead of the CN that's included in the data of the certificate.Does not include any requested Subject Alternative Names (SANs) in the CSR. To use the alternative names, include the `use_csr_sans` property.
 * `use_csr_sans` - (Optional, Boolean) When used with the `private_cert_configuration_action_sign_csr` action, this field determines whether to use the Subject Alternative Names(SANs) from a certificate signing request (CSR) instead of the SANs that are included in the data of the certificate.Does not include the common name in the CSR. To use the common name, include the `use_csr_common_name` property.
 

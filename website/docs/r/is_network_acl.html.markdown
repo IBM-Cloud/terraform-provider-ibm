@@ -71,7 +71,7 @@ Review the argument references that you can specify for your resource.
 - `rules`- (Optional, Array of Strings) A list of rules for a network ACL. The order in which the rules are added to the list determines the priority of the rules. For example, the first rule that you want to enforce must be specified as the first rule in this list.
 
   Nested scheme for `rules`:
-  - `name` - (Required, String) The user-defined name for this rule.
+  - `name` - (Optional, String) The user-defined name for this rule.
   - `action` - (Required, String)  `Allow` or `deny` matching network traffic.
   - `source` - (Required, String) The source IP address or CIDR block.
   - `destination` - (Required, String) The destination IP address or CIDR block.

@@ -8,14 +8,14 @@ import (
 	"log"
 	"testing"
 
-	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-
 	"github.com/IBM/networking-go-sdk/transitgatewayapisv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 )
 
 func TestAccIBMTransitGatewayConnection_basic(t *testing.T) {
@@ -82,6 +82,15 @@ func TestAccIBMTransitGatewayConnection_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMTransitGatewayConnectionExists("ibm_tg_connection.test_ibm_tg_dl_connection", tgConnection),
 					resource.TestCheckResourceAttr("ibm_tg_connection.test_ibm_tg_dl_connection", "name", tgConnectionName),
+				),
+			},
+			// tg power vs test
+			{
+				//Create test case
+				Config: testAccCheckIBMTransitGatewayPowerVSConnectionConfig(gatewayName, tgConnectionName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMTransitGatewayConnectionExists("ibm_tg_connection.test_tg_powervs_connection", tgConnection),
+					resource.TestCheckResourceAttr("ibm_tg_connection.test_tg_powervs_connection", "name", tgConnectionName),
 				),
 			},
 		},
@@ -218,6 +227,23 @@ resource "ibm_tg_connection" "test_ibm_tg_dl_connection"{
 	  `, dlGatewayName, gatewayName, dlConnectionName)
 
 }
+func testAccCheckIBMTransitGatewayPowerVSConnectionConfig(gatewayName, powerVSConnName string) string {
+	return fmt.Sprintf(`	   	
+resource "ibm_tg_gateway" "test_tg_gateway"{
+		name="%s"
+		location="us-south"
+		global=true
+}	 
+	
+resource "ibm_tg_connection" "test_tg_powervs_connection"{
+		gateway = "${ibm_tg_gateway.test_tg_gateway.id}"
+		network_type = "power_virtual_server"
+		name = "%s"
+		network_id = "%s"
+}	   
+	  `, gatewayName, powerVSConnName, acc.Tg_power_vs_network_id)
+}
+
 func transitgatewayClient(meta interface{}) (*transitgatewayapisv1.TransitGatewayApisV1, error) {
 	sess, err := meta.(conns.ClientSession).TransitGatewayV1API()
 	return sess, err

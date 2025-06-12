@@ -43,6 +43,8 @@ In addition to all argument references listed, you can access the following attr
 
 - `type` - (String) Destination type slack.
 
+- `collect_failed_events` - (boolean) Toggle switch to enable collect failed event in Cloud Object Storage bucket.
+
 - `config` - (List) Payload describing a destination configuration.
   Nested scheme for **config**:
 
@@ -50,6 +52,8 @@ In addition to all argument references listed, you can access the following attr
 
   Nested scheme for **params**:
 
+  - `type` - (String) The type of slack destination. The supported values are incoming_webhook and direct_message
   - `url` - (String) Slack Webhook url.
+  - `token`- (String) Token of slack application
 
 - `updated_at` - (String) Last updated time.

@@ -42,10 +42,20 @@ In addition to all argument reference list, you can access the following attribu
 - `id` - The unique identifier of the BackupPolicy.
 - `created_at` - (String) The date and time that the backup policy was created.
 - `crn` - (String) The CRN for this backup policy.
+- `health_reasons` - (List) The reasons for the current health_state (if any).
+
+  Nested scheme for `health_reasons`:
+  - `code` - (String) A snake case string succinctly identifying the reason for this health state.
+  - `message` - (String) An explanation of the reason for this health state.
+  - `more_info` - (String) Link to documentation about the reason for this health state.
+- `health_state` - (String) The health of this resource.
 - `href` - (String) The URL for this backup policy.
 - `last_job_completed_at` - (String) he date and time that the most recent job for this backup policy completed.
 - `lifecycle_state` - (String) The lifecycle state of the backup policy.
 - `match_resource_types` - (List) A resource type this backup policy applies to. Resources that have both a matching type and a matching user tag will be subject to the backup policy.
+~> **Note**
+  `match_resource_types` is deprecated. Please use `match_resource_type` instead.
+- `match_resource_type` - (Optional, String) The resource type this backup policy will apply to. Resources that have both a matching type and a matching user tag will be subject to the backup policy.
 - `match_user_tags` - (List) The user tags this backup policy applies to. Resources that have both a matching user tag and a matching type will be subject to the backup policy.
 - `name` - (String) The unique user-defined name for this backup policy.
 - `plans` - (List) The plans for the backup policy.
@@ -66,4 +76,11 @@ In addition to all argument reference list, you can access the following attribu
   - `id` - (String) The unique identifier for this resource group.
   - `name` - (String) The user-defined name for this resource group.
 - `resource_type` - (String) The type of resource referenced.
+- `scope` - (List) If present, the scope for this backup policy.
+
+  Nested `scope` blocks have the following structure:
+  - `crn` - (String) The CRN for this enterprise.
+  - `id` - (String) The unique identifier for this enterprise or account.
+  - `resource_type` - (String) The resource type.
+
 

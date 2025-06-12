@@ -12,7 +12,9 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -37,16 +39,20 @@ const (
 	isVPNGatewayPrivateIPAddress  = "private_ip_address"
 	isVPNGatewayPrivateIPAddress2 = "private_ip_address2"
 	isVPNGatewayAccessTags        = "access_tags"
+	isVPNGatewayHealthState       = "health_state"
+	isVPNGatewayHealthReasons     = "health_reasons"
+	isVPNGatewayLifecycleState    = "lifecycle_state"
+	isVPNGatewayLifecycleReasons  = "lifecycle_reasons"
 )
 
 func ResourceIBMISVPNGateway() *schema.Resource {
 	return &schema.Resource{
-		Create:   resourceIBMISVPNGatewayCreate,
-		Read:     resourceIBMISVPNGatewayRead,
-		Update:   resourceIBMISVPNGatewayUpdate,
-		Delete:   resourceIBMISVPNGatewayDelete,
-		Exists:   resourceIBMISVPNGatewayExists,
-		Importer: &schema.ResourceImporter{},
+		CreateContext: resourceIBMISVPNGatewayCreate,
+		ReadContext:   resourceIBMISVPNGatewayRead,
+		UpdateContext: resourceIBMISVPNGatewayUpdate,
+		DeleteContext: resourceIBMISVPNGatewayDelete,
+		Exists:        resourceIBMISVPNGatewayExists,
+		Importer:      &schema.ResourceImporter{},
 
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(10 * time.Minute),
@@ -94,6 +100,37 @@ func ResourceIBMISVPNGateway() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The status of the VPN gateway",
+			},
+
+			isVPNGatewayHealthState: &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The health of this resource.- `ok`: Healthy- `degraded`: Suffering from compromised performance, capacity, or connectivity- `faulted`: Completely unreachable, inoperative, or otherwise entirely incapacitated- `inapplicable`: The health state does not apply because of the current lifecycle state. A resource with a lifecycle state of `failed` or `deleting` will have a health state of `inapplicable`. A `pending` resource may also have this state.",
+			},
+			isVPNGatewayHealthReasons: {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"code": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "A snake case string succinctly identifying the reason for this health state.",
+						},
+
+						"message": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "An explanation of the reason for this health state.",
+						},
+
+						"more_info": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Link to documentation about the reason for this health state.",
+						},
+					},
+				},
 			},
 
 			isVPNGatewayPublicIPAddress: {
@@ -177,6 +214,37 @@ func ResourceIBMISVPNGateway() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Created Time of the VPN Gateway",
+			},
+			isVPNGatewayLifecycleState: &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The lifecycle state of the VPN route.",
+			},
+			isVPNGatewayLifecycleReasons: {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The reasons for the current lifecycle_state (if any).",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"code": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "A snake case string succinctly identifying the reason for this lifecycle state.",
+						},
+
+						"message": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "An explanation of the reason for this lifecycle state.",
+						},
+
+						"more_info": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Link to documentation about the reason for this lifecycle state.",
+						},
+					},
+				},
 			},
 			isVPNGatewayMode: {
 				Type:         schema.TypeString,
@@ -311,24 +379,26 @@ func ResourceIBMISVPNGatewayValidator() *validate.ResourceValidator {
 	return &ibmISVPNGatewayResourceValidator
 }
 
-func resourceIBMISVPNGatewayCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMISVPNGatewayCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 	log.Printf("[DEBUG] VPNGateway create")
 	name := d.Get(isVPNGatewayName).(string)
 	subnetID := d.Get(isVPNGatewaySubnet).(string)
 	mode := d.Get(isVPNGatewayMode).(string)
 
-	err := vpngwCreate(d, meta, name, subnetID, mode)
+	err := vpngwCreate(context, d, meta, name, subnetID, mode)
 	if err != nil {
 		return err
 	}
-	return resourceIBMISVPNGatewayRead(d, meta)
+	return resourceIBMISVPNGatewayRead(context, d, meta)
 }
 
-func vpngwCreate(d *schema.ResourceData, meta interface{}, name, subnetID, mode string) error {
+func vpngwCreate(context context.Context, d *schema.ResourceData, meta interface{}, name, subnetID, mode string) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_gateway", "create", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	vpnGatewayPrototype := &vpcv1.VPNGatewayPrototype{
 		Subnet: &vpcv1.SubnetIdentity{
@@ -348,9 +418,11 @@ func vpngwCreate(d *schema.ResourceData, meta interface{}, name, subnetID, mode 
 		}
 	}
 
-	vpnGatewayIntf, response, err := sess.CreateVPNGateway(options)
+	vpnGatewayIntf, _, err := sess.CreateVPNGatewayWithContext(context, options)
 	if err != nil {
-		return fmt.Errorf("[DEBUG] Create vpc VPN Gateway %s\n%s", err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateVPNGatewayWithContext failed: %s", err.Error()), "ibm_is_vpn_gateway", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	vpnGateway := vpnGatewayIntf.(*vpcv1.VPNGateway)
 
@@ -359,7 +431,9 @@ func vpngwCreate(d *schema.ResourceData, meta interface{}, name, subnetID, mode 
 
 	_, err = isWaitForVpnGatewayAvailable(sess, *vpnGateway.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
-		return err
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForVpnGatewayAvailable failed: %s", err.Error()), "ibm_is_vpn_gateway", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	v := os.Getenv("IC_ENV_TAGS")
@@ -410,7 +484,7 @@ func isVpnGatewayRefreshFunc(vpnGateway *vpcv1.VpcV1, id string) resource.StateR
 		}
 		vpnGateway := vpnGatewayIntf.(*vpcv1.VPNGateway)
 
-		if *vpnGateway.Status == "available" || *vpnGateway.Status == "failed" || *vpnGateway.Status == "running" {
+		if *vpnGateway.LifecycleState == "stable" || *vpnGateway.LifecycleState == "failed" || *vpnGateway.LifecycleState == "suspended" {
 			return vpnGateway, isVPNGatewayProvisioningDone, nil
 		}
 
@@ -418,51 +492,93 @@ func isVpnGatewayRefreshFunc(vpnGateway *vpcv1.VpcV1, id string) resource.StateR
 	}
 }
 
-func resourceIBMISVPNGatewayRead(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMISVPNGatewayRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	id := d.Id()
 
-	err := vpngwGet(d, meta, id)
+	err := vpngwGet(context, d, meta, id)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func vpngwGet(d *schema.ResourceData, meta interface{}, id string) error {
+func vpngwGet(context context.Context, d *schema.ResourceData, meta interface{}, id string) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_gateway", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	getVpnGatewayOptions := &vpcv1.GetVPNGatewayOptions{
 		ID: &id,
 	}
-	vpnGatewayIntf, response, err := sess.GetVPNGateway(getVpnGatewayOptions)
+	vpnGatewayIntf, response, err := sess.GetVPNGatewayWithContext(context, getVpnGatewayOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error Getting Vpn Gateway (%s): %s\n%s", id, err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetVPNGatewayWithContext failed: %s", err.Error()), "ibm_is_vpn_gateway", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	vpnGateway := vpnGatewayIntf.(*vpcv1.VPNGateway)
 
-	d.Set(isVPNGatewayName, *vpnGateway.Name)
-	d.Set(isVPNGatewaySubnet, *vpnGateway.Subnet.ID)
-	d.Set(isVPNGatewayStatus, *vpnGateway.Status)
+	if !core.IsNil(vpnGateway.Name) {
+		if err = d.Set("name", vpnGateway.Name); err != nil {
+			err = fmt.Errorf("Error setting name: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_gateway", "read", "set-name").GetDiag()
+		}
+	}
+	if !core.IsNil(vpnGateway.Subnet) {
+		if err = d.Set(isVPNGatewaySubnet, *vpnGateway.Subnet.ID); err != nil {
+			err = fmt.Errorf("Error setting subnet: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_gateway", "read", "set-subnet").GetDiag()
+		}
+	}
+
+	if err = d.Set("health_state", vpnGateway.HealthState); err != nil {
+		err = fmt.Errorf("Error setting health_state: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_gateway", "read", "set-health_state").GetDiag()
+	}
+	if err = d.Set("health_reasons", resourceVPNGatewayRouteFlattenHealthReasons(vpnGateway.HealthReasons)); err != nil {
+		err = fmt.Errorf("Error setting health_reasons: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_gateway", "read", "set-health_reasons").GetDiag()
+	}
+	if err = d.Set("lifecycle_state", vpnGateway.LifecycleState); err != nil {
+		err = fmt.Errorf("Error setting lifecycle_state: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_gateway", "read", "set-lifecycle_state").GetDiag()
+	}
+	if err = d.Set("lifecycle_reasons", resourceVPNGatewayFlattenLifecycleReasons(vpnGateway.LifecycleReasons)); err != nil {
+		err = fmt.Errorf("Error setting lifecycle_reasons: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_gateway", "read", "set-lifecycle_reasons").GetDiag()
+	}
 	members := []vpcv1.VPNGatewayMember{}
 	for _, member := range vpnGateway.Members {
 		members = append(members, member)
 	}
 	if len(members) > 0 {
-		d.Set(isVPNGatewayPublicIPAddress, *members[0].PublicIP.Address)
+		if err = d.Set(isVPNGatewayPublicIPAddress, *members[0].PublicIP.Address); err != nil {
+			err = fmt.Errorf("Error setting public_ip_address: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_gateway", "read", "set-public_ip_address").GetDiag()
+		}
 		if members[0].PrivateIP != nil && members[0].PrivateIP.Address != nil {
-			d.Set(isVPNGatewayPrivateIPAddress, *members[0].PrivateIP.Address)
+			if err = d.Set(isVPNGatewayPrivateIPAddress, *members[0].PrivateIP.Address); err != nil {
+				err = fmt.Errorf("Error setting private_ip_address: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_gateway", "read", "set-private_ip_address").GetDiag()
+			}
 		}
 	}
 	if len(members) > 1 {
-		d.Set(isVPNGatewayPublicIPAddress2, *members[1].PublicIP.Address)
+		if err = d.Set(isVPNGatewayPublicIPAddress2, *members[1].PublicIP.Address); err != nil {
+			err = fmt.Errorf("Error setting public_ip_address2: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_gateway", "read", "set-public_ip_address2").GetDiag()
+		}
 		if members[1].PrivateIP != nil && members[1].PrivateIP.Address != nil {
-			d.Set(isVPNGatewayPrivateIPAddress2, *members[1].PrivateIP.Address)
+			if err = d.Set(isVPNGatewayPrivateIPAddress2, *members[1].PrivateIP.Address); err != nil {
+				err = fmt.Errorf("Error setting private_ip_address2: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_gateway", "read", "set-private_ip_address2").GetDiag()
+			}
 		}
 
 	}
@@ -471,29 +587,56 @@ func vpngwGet(d *schema.ResourceData, meta interface{}, id string) error {
 		log.Printf(
 			"Error on get of resource vpc VPN Gateway (%s) tags: %s", d.Id(), err)
 	}
-	d.Set(isVPNGatewayTags, tags)
-
+	if err = d.Set(isVPNGatewayTags, tags); err != nil {
+		err = fmt.Errorf("Error setting tags: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_gateway", "read", "set-tags").GetDiag()
+	}
 	accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *vpnGateway.CRN, "", isAccessTagType)
 	if err != nil {
 		log.Printf(
 			"Error on get of resource VPC VPN Gateway (%s) access tags: %s", d.Id(), err)
 	}
-	d.Set(isVPNGatewayAccessTags, accesstags)
 
+	if err = d.Set(isVPNGatewayAccessTags, accesstags); err != nil {
+		err = fmt.Errorf("Error setting access_tags: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_gateway", "read", "set-access_tags").GetDiag()
+	}
 	controller, err := flex.GetBaseController(meta)
 	if err != nil {
-		return err
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetBaseController failed: %s", err.Error()), "ibm_is_vpn_gateway", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
-	d.Set(flex.ResourceControllerURL, controller+"/vpc/network/vpngateways")
-	d.Set(flex.ResourceName, *vpnGateway.Name)
-	d.Set(flex.ResourceCRN, *vpnGateway.CRN)
-	d.Set(isVPNGatewayCRN, *vpnGateway.CRN)
-	d.Set(flex.ResourceStatus, *vpnGateway.Status)
+	if err = d.Set(flex.ResourceControllerURL, controller+"/vpc/network/vpngateways"); err != nil {
+		err = fmt.Errorf("Error setting resource_controller_url: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_gateway", "read", "set-resource_controller_url").GetDiag()
+	}
+	if err = d.Set(flex.ResourceName, *vpnGateway.Name); err != nil {
+		err = fmt.Errorf("Error setting resource_name: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_gateway", "read", "set-resource_name").GetDiag()
+	}
+	if err = d.Set(flex.ResourceCRN, *vpnGateway.CRN); err != nil {
+		err = fmt.Errorf("Error setting resource_crn: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_gateway", "read", "set-resource_crn").GetDiag()
+	}
+	if err = d.Set("crn", vpnGateway.CRN); err != nil {
+		err = fmt.Errorf("Error setting crn: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_gateway", "read", "set-crn").GetDiag()
+	}
 	if vpnGateway.ResourceGroup != nil {
-		d.Set(flex.ResourceGroupName, *vpnGateway.ResourceGroup.Name)
-		d.Set(isVPNGatewayResourceGroup, *vpnGateway.ResourceGroup.ID)
+		if err = d.Set(flex.ResourceGroupName, vpnGateway.ResourceGroup.Name); err != nil {
+			err = fmt.Errorf("Error setting resource_group_name: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_gateway", "read", "set-resource_group_name").GetDiag()
+		}
+		if err = d.Set(isVPNGatewayResourceGroup, vpnGateway.ResourceGroup.ID); err != nil {
+			err = fmt.Errorf("Error setting resource_group: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_gateway", "read", "set-resource_group").GetDiag()
+		}
 	}
-	d.Set(isVPNGatewayMode, *vpnGateway.Mode)
+	if err = d.Set(isVPNGatewayMode, *vpnGateway.Mode); err != nil {
+		err = fmt.Errorf("Error setting mode: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_gateway", "read", "set-mode").GetDiag()
+	}
 	if vpnGateway.Members != nil {
 		vpcMembersIpsList := make([]map[string]interface{}, 0)
 		for _, memberIP := range vpnGateway.Members {
@@ -501,30 +644,33 @@ func vpngwGet(d *schema.ResourceData, meta interface{}, id string) error {
 			if memberIP.PublicIP != nil {
 				currentMemberIP["address"] = *memberIP.PublicIP.Address
 				currentMemberIP["role"] = *memberIP.Role
-				currentMemberIP["status"] = *memberIP.Status
 				vpcMembersIpsList = append(vpcMembersIpsList, currentMemberIP)
 			}
 			if memberIP.PrivateIP != nil && memberIP.PrivateIP.Address != nil {
 				currentMemberIP["private_address"] = *memberIP.PrivateIP.Address
 			}
 		}
-		d.Set(isVPNGatewayMembers, vpcMembersIpsList)
+		if err = d.Set(isVPNGatewayMembers, vpcMembersIpsList); err != nil {
+			err = fmt.Errorf("Error setting members: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_gateway", "read", "set-members").GetDiag()
+		}
 	}
-	if vpnGateway.CreatedAt != nil {
-		d.Set(isVPNGatewayCreatedAt, (vpnGateway.CreatedAt).String())
+	if err = d.Set("created_at", flex.DateTimeToString(vpnGateway.CreatedAt)); err != nil {
+		err = fmt.Errorf("Error setting created_at: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_gateway", "read", "set-created_at").GetDiag()
 	}
 	if vpnGateway.VPC != nil {
 		vpcList := []map[string]interface{}{}
 		vpcList = append(vpcList, dataSourceVPNServerCollectionVPNGatewayVpcReferenceToMap(vpnGateway.VPC))
-		err = d.Set("vpc", vpcList)
-		if err != nil {
-			return fmt.Errorf("Error setting the vpc: %s", err)
+		if err = d.Set("vpc", vpcList); err != nil {
+			err = fmt.Errorf("Error setting vpc: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_gateway", "read", "set-vpc").GetDiag()
 		}
 	}
 	return nil
 }
 
-func resourceIBMISVPNGatewayUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMISVPNGatewayUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	id := d.Id()
 	name := ""
 	hasChanged := false
@@ -534,25 +680,29 @@ func resourceIBMISVPNGatewayUpdate(d *schema.ResourceData, meta interface{}) err
 		hasChanged = true
 	}
 
-	err := vpngwUpdate(d, meta, id, name, hasChanged)
+	err := vpngwUpdate(context, d, meta, id, name, hasChanged)
 	if err != nil {
 		return err
 	}
-	return resourceIBMISVPNGatewayRead(d, meta)
+	return resourceIBMISVPNGatewayRead(context, d, meta)
 }
 
-func vpngwUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChanged bool) error {
+func vpngwUpdate(context context.Context, d *schema.ResourceData, meta interface{}, id, name string, hasChanged bool) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_gateway", "update", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if d.HasChange(isVPNGatewayTags) {
 		getVpnGatewayOptions := &vpcv1.GetVPNGatewayOptions{
 			ID: &id,
 		}
-		vpnGatewayIntf, response, err := sess.GetVPNGateway(getVpnGatewayOptions)
+		vpnGatewayIntf, _, err := sess.GetVPNGatewayWithContext(context, getVpnGatewayOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error getting Volume : %s\n%s", err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetVPNGatewayWithContext failed: %s", err.Error()), "ibm_is_vpn_gateway", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		vpnGateway := vpnGatewayIntf.(*vpcv1.VPNGateway)
 
@@ -567,9 +717,11 @@ func vpngwUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasC
 		getVpnGatewayOptions := &vpcv1.GetVPNGatewayOptions{
 			ID: &id,
 		}
-		vpnGatewayIntf, response, err := sess.GetVPNGateway(getVpnGatewayOptions)
+		vpnGatewayIntf, _, err := sess.GetVPNGatewayWithContext(context, getVpnGatewayOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error getting Volume : %s\n%s", err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetVPNGatewayWithContext failed: %s", err.Error()), "ibm_is_vpn_gateway", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		vpnGateway := vpnGatewayIntf.(*vpcv1.VPNGateway)
 
@@ -589,55 +741,67 @@ func vpngwUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasC
 		}
 		vpnGatewayPatch, err := vpnGatewayPatchModel.AsPatch()
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for VPNGatewayPatch: %s", err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("vpnGatewayPatchModel.AsPatch() failed: %s", err.Error()), "ibm_is_vpn_gateway", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		options.VPNGatewayPatch = vpnGatewayPatch
-		_, response, err := sess.UpdateVPNGateway(options)
+		_, _, err = sess.UpdateVPNGatewayWithContext(context, options)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error updating vpc Vpn Gateway: %s\n%s", err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateVPNGatewayWithContext failed: %s", err.Error()), "ibm_is_vpn_gateway", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 	return nil
 }
 
-func resourceIBMISVPNGatewayDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMISVPNGatewayDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 	id := d.Id()
 
-	err := vpngwDelete(d, meta, id)
+	err := vpngwDelete(context, d, meta, id)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func vpngwDelete(d *schema.ResourceData, meta interface{}, id string) error {
+func vpngwDelete(context context.Context, d *schema.ResourceData, meta interface{}, id string) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_gateway", "delete", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	getVpnGatewayOptions := &vpcv1.GetVPNGatewayOptions{
 		ID: &id,
 	}
-	_, response, err := sess.GetVPNGateway(getVpnGatewayOptions)
+	_, response, err := sess.GetVPNGatewayWithContext(context, getVpnGatewayOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error Getting Vpn Gateway (%s): %s\n%s", id, err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetVPNGatewayWithContext failed: %s", err.Error()), "ibm_is_vpn_gateway", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	options := &vpcv1.DeleteVPNGatewayOptions{
 		ID: &id,
 	}
-	response, err = sess.DeleteVPNGateway(options)
+	response, err = sess.DeleteVPNGatewayWithContext(context, options)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error Deleting Vpn Gateway : %s\n%s", err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteVPNGatewayWithContext failed: %s", err.Error()), "ibm_is_vpn_gateway", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	_, err = isWaitForVpnGatewayDeleted(sess, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
-		return err
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForVpnGatewayDeleted failed: %s", err.Error()), "ibm_is_vpn_gateway", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	d.SetId("")
 	return nil
@@ -684,7 +848,9 @@ func resourceIBMISVPNGatewayExists(d *schema.ResourceData, meta interface{}) (bo
 func vpngwExists(d *schema.ResourceData, meta interface{}, id string) (bool, error) {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return false, err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_gateway", "delete", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return false, tfErr
 	}
 	getVpnGatewayOptions := &vpcv1.GetVPNGatewayOptions{
 		ID: &id,
@@ -694,7 +860,41 @@ func vpngwExists(d *schema.ResourceData, meta interface{}, id string) (bool, err
 		if response != nil && response.StatusCode == 404 {
 			return false, nil
 		}
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetVPNGateway failed: %s", err.Error()), "ibm_is_vpn_gateway", "exists")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return false, fmt.Errorf("[ERROR] Error getting Vpn Gatewa: %s\n%s", err, response)
 	}
 	return true, nil
+}
+
+func resourceVPNGatewayRouteFlattenHealthReasons(healthReasons []vpcv1.VPNGatewayHealthReason) (healthReasonsList []map[string]interface{}) {
+	healthReasonsList = make([]map[string]interface{}, 0)
+	for _, lr := range healthReasons {
+		currentLR := map[string]interface{}{}
+		if lr.Code != nil && lr.Message != nil {
+			currentLR[isInstanceLifecycleReasonsCode] = *lr.Code
+			currentLR[isInstanceLifecycleReasonsMessage] = *lr.Message
+			if lr.MoreInfo != nil {
+				currentLR[isInstanceLifecycleReasonsMoreInfo] = *lr.MoreInfo
+			}
+			healthReasonsList = append(healthReasonsList, currentLR)
+		}
+	}
+	return healthReasonsList
+}
+
+func resourceVPNGatewayFlattenLifecycleReasons(lifecycleReasons []vpcv1.VPNGatewayLifecycleReason) (lifecycleReasonsList []map[string]interface{}) {
+	lifecycleReasonsList = make([]map[string]interface{}, 0)
+	for _, lr := range lifecycleReasons {
+		currentLR := map[string]interface{}{}
+		if lr.Code != nil && lr.Message != nil {
+			currentLR[isInstanceLifecycleReasonsCode] = *lr.Code
+			currentLR[isInstanceLifecycleReasonsMessage] = *lr.Message
+			if lr.MoreInfo != nil {
+				currentLR[isInstanceLifecycleReasonsMoreInfo] = *lr.MoreInfo
+			}
+			lifecycleReasonsList = append(lifecycleReasonsList, currentLR)
+		}
+	}
+	return lifecycleReasonsList
 }

@@ -43,3 +43,14 @@ variable "bucket_name" {
   type        = string
   default = "test_buck"
 }
+variable "kmip_adapter_name" {
+   description = "The KMIP adapter name"
+  type        = string
+  default = "myadapter"
+}
+
+variable "kmip_cert_name" {
+   description = "The KMIP client certificate name"
+  type        = string
+  default = "mycert"
+}

@@ -3,7 +3,7 @@ subcategory: 'Event Notifications'
 layout: 'ibm'
 page_title: 'IBM : ibm_en_destination_chrome'
 description: |-
-  Manages Event Notification Webhook destinations.
+  Manages Event Notification Chrome destinations.
 ---
 
 # ibm_en_destination_chrome
@@ -14,10 +14,11 @@ Create, update, or delete a Chrome destination by using IBM Cloud™ Event Notif
 
 ```terraform
 resource "ibm_en_destination_chrome" "chrome_en_destination" {
-  instance_guid = ibm_resource_instance.en_terraform_test_resource.guid
-  name          = "My Chrome Destination"
-  type          = "push_chrome"
-  description   = "Destination Chrome for event notification"
+  instance_guid         = ibm_resource_instance.en_terraform_test_resource.guid
+  name                  = "My Chrome Destination"
+  type                  = "push_chrome"
+  collect_failed_events = false
+  description           = "Destination Chrome for event notification"
   config {
     params {
       api_key     = "The FCM api key for project"
@@ -39,6 +40,8 @@ Review the argument reference that you can specify for your resource.
 - `description` - (Optional, String) The Destination description.
 
 - `type` - (Required, String) push_chrome.
+
+- `collect_failed_events` - (boolean) Toggle switch to enable collect failed event in Cloud Object Storage bucket.
 
 - `config` - (Optional, List) Payload describing a destination configuration.
 

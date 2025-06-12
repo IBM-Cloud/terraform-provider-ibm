@@ -6,12 +6,9 @@ package secretsmanager
 import (
 	"context"
 	"fmt"
-	"log"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/secrets-manager-go-sdk/v2/secretsmanagerv2"
 )
@@ -22,9 +19,11 @@ func DataSourceIbmSmUsernamePasswordSecret() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"secret_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The ID of the secret.",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ExactlyOneOf: []string{"secret_id", "name"},
+				Description:  "The ID of the secret.",
 			},
 			"created_by": &schema.Schema{
 				Type:        schema.TypeString,
@@ -73,14 +72,23 @@ func DataSourceIbmSmUsernamePasswordSecret() *schema.Resource {
 				Description: "The number of locks of the secret.",
 			},
 			"name": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The human-readable name of your secret.",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ExactlyOneOf: []string{"secret_id", "name"},
+				RequiredWith: []string{"secret_group_name"},
+				Description:  "The human-readable name of your secret.",
 			},
 			"secret_group_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "A v4 UUID identifier, or `default` secret group.",
+				Description: "A UUID identifier, or `default` secret group.",
+			},
+			"secret_group_name": &schema.Schema{
+				Type:         schema.TypeString,
+				Optional:     true,
+				RequiredWith: []string{"name"},
+				Description:  "The human-readable name of your secret group.",
 			},
 			"secret_type": &schema.Schema{
 				Type:        schema.TypeString,
@@ -107,6 +115,35 @@ func DataSourceIbmSmUsernamePasswordSecret() *schema.Resource {
 				Computed:    true,
 				Description: "The number of versions of the secret.",
 			},
+			"password_generation_policy": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Policy for auto-generated passwords.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"length": &schema.Schema{
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The length of auto-generated passwords.",
+						},
+						"include_digits": &schema.Schema{
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Include digits in auto-generated passwords.",
+						},
+						"include_symbols": &schema.Schema{
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Include symbols in auto-generated passwords.",
+						},
+						"include_uppercase": &schema.Schema{
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Include uppercase letters in auto-generated passwords.",
+						},
+					},
+				},
+			},
 			"rotation": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -127,11 +164,6 @@ func DataSourceIbmSmUsernamePasswordSecret() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The units for the secret rotation time interval.",
-						},
-						"rotate_keys": &schema.Schema{
-							Type:        schema.TypeBool,
-							Computed:    true,
-							Description: "Determines whether Secrets Manager rotates the private key for your public certificate automatically.Default is `false`. If it is set to `true`, the service generates and stores a new private key for your rotated certificate.",
 						},
 					},
 				},
@@ -162,43 +194,34 @@ func DataSourceIbmSmUsernamePasswordSecret() *schema.Resource {
 }
 
 func dataSourceIbmSmUsernamePasswordSecretRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
-	if err != nil {
-		return diag.FromErr(err)
+	secret, region, instanceId, diagError := getSecretByIdOrByName(context, d, meta, UsernamePasswordSecretType, UsernamePasswordSecretResourceName)
+	if diagError != nil {
+		return diagError
 	}
 
-	region := getRegion(secretsManagerClient, d)
-	instanceId := d.Get("instance_id").(string)
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
+	usernamePasswordSecret := secret.(*secretsmanagerv2.UsernamePasswordSecret)
 
-	getSecretOptions := &secretsmanagerv2.GetSecretOptions{}
+	d.SetId(fmt.Sprintf("%s/%s/%s", region, instanceId, *usernamePasswordSecret.ID))
 
-	secretId := d.Get("secret_id").(string)
-	getSecretOptions.SetID(secretId)
-
-	usernamePasswordSecretIntf, response, err := secretsManagerClient.GetSecretWithContext(context, getSecretOptions)
-	if err != nil {
-		log.Printf("[DEBUG] GetSecretWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetSecretWithContext failed %s\n%s", err, response))
-	}
-	usernamePasswordSecret := usernamePasswordSecretIntf.(*secretsmanagerv2.UsernamePasswordSecret)
-
-	d.SetId(fmt.Sprintf("%s/%s/%s", region, instanceId, secretId))
-
+	var err error
 	if err = d.Set("region", region); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting region: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting region"), fmt.Sprintf("(Data) %s", UsernamePasswordSecretResourceName), "read")
+		return tfErr.GetDiag()
 	}
 
 	if err = d.Set("created_by", usernamePasswordSecret.CreatedBy); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting created_by: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting created_by"), fmt.Sprintf("(Data) %s", UsernamePasswordSecretResourceName), "read")
+		return tfErr.GetDiag()
 	}
 
-	if err = d.Set("created_at", flex.DateTimeToString(usernamePasswordSecret.CreatedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
+	if err = d.Set("created_at", DateTimeToRFC3339(usernamePasswordSecret.CreatedAt)); err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting created_at"), fmt.Sprintf("(Data) %s", UsernamePasswordSecretResourceName), "read")
+		return tfErr.GetDiag()
 	}
 
 	if err = d.Set("crn", usernamePasswordSecret.Crn); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting crn"), fmt.Sprintf("(Data) %s", UsernamePasswordSecretResourceName), "read")
+		return tfErr.GetDiag()
 	}
 
 	if usernamePasswordSecret.CustomMetadata != nil {
@@ -208,79 +231,111 @@ func dataSourceIbmSmUsernamePasswordSecretRead(context context.Context, d *schem
 		}
 
 		if err = d.Set("custom_metadata", flex.Flatten(convertedMap)); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting custom_metadata: %s", err))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting custom_metadata"), fmt.Sprintf("(Data) %s", UsernamePasswordSecretResourceName), "read")
+			return tfErr.GetDiag()
 		}
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting custom_metadata %s", err))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting custom_metadata"), fmt.Sprintf("(Data) %s", UsernamePasswordSecretResourceName), "read")
+			return tfErr.GetDiag()
 		}
 	}
 
 	if err = d.Set("description", usernamePasswordSecret.Description); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting description: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting description"), fmt.Sprintf("(Data) %s", UsernamePasswordSecretResourceName), "read")
+		return tfErr.GetDiag()
 	}
 
 	if err = d.Set("downloaded", usernamePasswordSecret.Downloaded); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting downloaded: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting downloaded"), fmt.Sprintf("(Data) %s", UsernamePasswordSecretResourceName), "read")
+		return tfErr.GetDiag()
 	}
 
 	if err = d.Set("locks_total", flex.IntValue(usernamePasswordSecret.LocksTotal)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting locks_total: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting locks_total"), fmt.Sprintf("(Data) %s", UsernamePasswordSecretResourceName), "read")
+		return tfErr.GetDiag()
 	}
 
 	if err = d.Set("name", usernamePasswordSecret.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting name"), fmt.Sprintf("(Data) %s", UsernamePasswordSecretResourceName), "read")
+		return tfErr.GetDiag()
 	}
 
 	if err = d.Set("secret_group_id", usernamePasswordSecret.SecretGroupID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting secret_group_id: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting secret_group_id"), fmt.Sprintf("(Data) %s", UsernamePasswordSecretResourceName), "read")
+		return tfErr.GetDiag()
 	}
 
 	if err = d.Set("secret_type", usernamePasswordSecret.SecretType); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting secret_type: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting secret_type"), fmt.Sprintf("(Data) %s", UsernamePasswordSecretResourceName), "read")
+		return tfErr.GetDiag()
 	}
 
 	if err = d.Set("state", flex.IntValue(usernamePasswordSecret.State)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting state: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting state"), fmt.Sprintf("(Data) %s", UsernamePasswordSecretResourceName), "read")
+		return tfErr.GetDiag()
 	}
 
 	if err = d.Set("state_description", usernamePasswordSecret.StateDescription); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting state_description: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting state_description"), fmt.Sprintf("(Data) %s", UsernamePasswordSecretResourceName), "read")
+		return tfErr.GetDiag()
 	}
 
-	if err = d.Set("updated_at", flex.DateTimeToString(usernamePasswordSecret.UpdatedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
+	if err = d.Set("updated_at", DateTimeToRFC3339(usernamePasswordSecret.UpdatedAt)); err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting updated_at"), fmt.Sprintf("(Data) %s", UsernamePasswordSecretResourceName), "read")
+		return tfErr.GetDiag()
 	}
 
 	if err = d.Set("versions_total", flex.IntValue(usernamePasswordSecret.VersionsTotal)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting versions_total: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting versions_total"), fmt.Sprintf("(Data) %s", UsernamePasswordSecretResourceName), "read")
+		return tfErr.GetDiag()
 	}
 
 	rotation := []map[string]interface{}{}
 	if usernamePasswordSecret.Rotation != nil {
 		modelMap, err := dataSourceIbmSmUsernamePasswordSecretRotationPolicyToMap(usernamePasswordSecret.Rotation)
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, "", fmt.Sprintf("(Data) %s", UsernamePasswordSecretResourceName), "read")
+			return tfErr.GetDiag()
 		}
 		rotation = append(rotation, modelMap)
 	}
 	if err = d.Set("rotation", rotation); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting rotation %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting rotation"), fmt.Sprintf("(Data) %s", UsernamePasswordSecretResourceName), "read")
+		return tfErr.GetDiag()
 	}
 
-	if err = d.Set("expiration_date", flex.DateTimeToString(usernamePasswordSecret.ExpirationDate)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting expiration_date: %s", err))
+	passwordPolicy := []map[string]interface{}{}
+	if usernamePasswordSecret.PasswordGenerationPolicy != nil {
+		modelMap, err := passwordGenerationPolicyToMap(usernamePasswordSecret.PasswordGenerationPolicy)
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, "", fmt.Sprintf("(Data) %s", UsernamePasswordSecretResourceName), "read")
+			return tfErr.GetDiag()
+		}
+		passwordPolicy = append(passwordPolicy, modelMap)
+	}
+	if err = d.Set("password_generation_policy", passwordPolicy); err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting password_generation_policy"), fmt.Sprintf("(Data) %s", UsernamePasswordSecretResourceName), "read")
+		return tfErr.GetDiag()
 	}
 
-	if err = d.Set("next_rotation_date", flex.DateTimeToString(usernamePasswordSecret.NextRotationDate)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting next_rotation_date: %s", err))
+	if err = d.Set("expiration_date", DateTimeToRFC3339(usernamePasswordSecret.ExpirationDate)); err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting expiration_date"), fmt.Sprintf("(Data) %s", UsernamePasswordSecretResourceName), "read")
+		return tfErr.GetDiag()
+	}
+
+	if err = d.Set("next_rotation_date", DateTimeToRFC3339(usernamePasswordSecret.NextRotationDate)); err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting next_rotation_date"), fmt.Sprintf("(Data) %s", UsernamePasswordSecretResourceName), "read")
+		return tfErr.GetDiag()
 	}
 
 	if err = d.Set("username", usernamePasswordSecret.Username); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting username: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting username"), fmt.Sprintf("(Data) %s", UsernamePasswordSecretResourceName), "read")
+		return tfErr.GetDiag()
 	}
 
 	if err = d.Set("password", usernamePasswordSecret.Password); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting password: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting password"), fmt.Sprintf("(Data) %s", UsernamePasswordSecretResourceName), "read")
+		return tfErr.GetDiag()
 	}
 
 	return nil
@@ -300,9 +355,6 @@ func dataSourceIbmSmUsernamePasswordSecretRotationPolicyToMap(model secretsmanag
 		}
 		if model.Unit != nil {
 			modelMap["unit"] = *model.Unit
-		}
-		if model.RotateKeys != nil {
-			modelMap["rotate_keys"] = *model.RotateKeys
 		}
 		return modelMap, nil
 	} else {

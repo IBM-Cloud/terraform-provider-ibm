@@ -17,6 +17,7 @@ import (
 )
 
 func TestAccIbmSmPublicCertificateConfigurationCALetsEncryptBasic(t *testing.T) {
+	var resourceName = "ibm_sm_public_certificate_configuration_ca_lets_encrypt.sm_public_certificate_configuration_ca_lets_encrypt"
 	var conf secretsmanagerv2.PublicCertificateConfigurationCALetsEncrypt
 
 	resource.Test(t, resource.TestCase{
@@ -31,7 +32,7 @@ func TestAccIbmSmPublicCertificateConfigurationCALetsEncryptBasic(t *testing.T) 
 				),
 			},
 			resource.TestStep{
-				ResourceName:      "ibm_sm_public_certificate_configuration_ca_lets_encrypt.sm_public_certificate_configuration_ca_lets_encrypt",
+				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -45,7 +46,7 @@ func testAccCheckIbmSmPublicCertificateConfigurationCALetsEncryptConfigBasic() s
 		resource "ibm_sm_public_certificate_configuration_ca_lets_encrypt" "sm_public_certificate_configuration_ca_lets_encrypt" {
 			instance_id   = "%s"
 			region        = "%s"
-			name = "public_cert_ca_lets_encrypt-terraform-test-datasource"
+			name = "public_cert_ca_lets_encrypt-terraform-test"
 			lets_encrypt_environment = "%s"
 			lets_encrypt_private_key = "%s"
 		}

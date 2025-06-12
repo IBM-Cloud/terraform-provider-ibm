@@ -38,3 +38,9 @@ Review the argument references that you can specify for your data source.
 In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
 - `zones` - (String) The list of zones in an IBM Cloud region.  For example, **us-south-1**,**us-south-2**.
+- `zone_info` - (List) Collection of zones.
+  Nested schema for **zone_info**:
+	- `data_center` - (String) The physical data center assigned to this logical zone. If absent, no physical data center has been assigned.
+	- `name` - (String) The name of the zone.
+	- `status` - (String) The status of the zone.
+	- `universal_name` - (String) The universal name for this zone. Will be absent if this zone has a status of unassigned.

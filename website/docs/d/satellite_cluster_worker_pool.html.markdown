@@ -49,3 +49,4 @@ In addition to all argument references list, you can access the following attrib
 - `isolation`  - (String) Isolation of the worker node.
 - `auto_scale_enabled`  - (String) Enable auto scalling for worker pool.
 - `worker_count` - (String) The number of workers that are attached.
+- `openshift_license_source` - (String) The license source for OpenShift.

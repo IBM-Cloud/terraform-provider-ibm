@@ -1,4 +1,4 @@
-
+---
 subcategory: "Direct Link Gateway"
 layout: "ibm"
 page_title: "IBM : dl_gateway"
@@ -47,6 +47,8 @@ resource ibm_dl_gateway test_dl_gateway {
   location_name = data.ibm_dl_routers.test_dl_routers.location_name
   customer_name = "Customer1" 
   carrier_name = "Carrier1"
+  vlan=3965
+  #remove_vlan=false
 
 } 
 ```
@@ -138,15 +140,13 @@ Review the argument reference that you can specify for your resource.
 - `resource_group` - (Optional, Forces new resource, String) The resource group. If unspecified, the account's default resource group is used.
 - `speed_mbps`- (Required, Integer) The gateway speed in MBPS. For example, `10.254.30.78/30`.
 - `type` - (Required, Forces new resource, String) The gateway type, allowed values are `dedicated` and `connect`.
-- `default_export_route_filter` - (String) The default directional route filter action    that applies to routes that do not match any directional route filters. 
-- `default_import_route_filter` - (String) The default directional route filter action    that applies to routes that do not match any directional route filters. 
+- `default_export_route_filter` - (String) The default directional route filter action that applies to routes that do not match any directional route filters. 
+- `default_import_route_filter` - (String) The default directional route filter action that applies to routes that do not match any directional route filters. 
+- `vlan` - (Optional, Integer) The VLAN allocated for the gateway. You can set only for `type=dedicated` gateways. Allowed vlan range is 2-3967.
+- `remove_vlan` - (Optional, Bool) The default value for this attribute is false. Set the value to true, if you want to remove the vlan value set earlier. You can remove vlan only for `type=dedicated` gateways. This attribute value conflicts with `vlan` attribute. You cannot set a `vlan` as well as `remove_vlan` at the same time.  
 
 ## Attribute reference
 In addition to all argument references list, you can access the following attribute references after your resource is created.
-
-
-
-
   
 - `as_prepends` - (List) List of AS Prepend configuration informationNested scheme for
   - `created_at`- (String) The date and time AS Prepend was created.
@@ -163,16 +163,16 @@ In addition to all argument references list, you can access the following attrib
 - `location_display_name` - (String) The gateway location long name.
 - `link_status` - (String) The gateway link status. You can include only on `type=dedicated` gateways. For example, `down`, `up`.
 - `link_status_updated_at` - (String) Date and time link status was updated.
-- `operational_status` - (String) The gateway operational status. For gateways pending LOA approval, patch operational_status to the appropriate value to approve or reject its LOA. For example, `loa_accepted`.
+- `operational_status` - (String) The Gateway operational status. For gateways pending LOA approval, patch `operational_status` to the appropriate value to approve or reject its LOA. For example, `loa_accepted`.
 - `provider_api_managed` - (String) Indicates whether gateway changes need to be made via a provider portal.
-- `vlan` - (String) The VLAN allocated for the gateway. You can set only for `type=connect` gateways created directly through the IBM portal.
+- `vlan` - (String) The VLAN allocated for the gateway. If the vlan is set by user, then this attribute value is shown only for gateway owners. Otherwise, this attribute value is shown as 0.
 
 **Note**
 The `Operational_status(Gateway operational status)` and `loa_reject_reason(LOA reject reason)` cannot be updated by using Terraform as the status and reason keeps changing with the different workflow actions.
 
 
 ## Import
-The `ibm_dl_gateway` resource can be imported by using gateway ID. 
+The `ibm_dl_gateway` resource can be imported by using gateway ID.
 
 **Syntax**
 

@@ -52,5 +52,6 @@ In addition to all argument references listed, you can access the following attr
 - `attributes` - (Required, List)
 
   - `add_notification_payload` - (Boolean) Whether to add the notification payload to the email.
+  - `template_id_notification` - (String) The templete id for notification
 
 - `updated_at` - (String) Last updated time.

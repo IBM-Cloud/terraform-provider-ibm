@@ -19,33 +19,10 @@ data "ibm_container_addons" "addons" {
 
 ```
 
-## Example usage
- The following example sets the parameters for add-ons that support it:
-
- ```terraform
-resource "ibm_container_addons" "addons" {
-  cluster = ibm_container_addons.addons.cluster
-  manage_all_addons = false
-  addons {
-    name = "openshift-data-foundation"
-    version = "4.12.0"
-    parameters_json = <<PARAMETERS_JSON
-		{
-			"osdSize":"200Gi",
-			"numOfOsd":"2",
-			"osdStorageClassName":"ibmc-vpc-block-metro-10iops-tier",
-			"odfDeploy":"true"
-		}
-		PARAMETERS_JSON
-    }
-}
- ```
-
 ## Argument reference
 Review the argument references that you can specify for your data source. 
 
 - `cluster` - (Required, String) The name or ID of the cluster.
-- `manage_all_addons` - (Optional, Bool) To manage all add-ons installed in the cluster using terraform by importing it into the state file, default is set to `true`.
 
 ## Attribute reference
 In addition to the argument reference list, you can access the following attribute reference after your resource is created.
@@ -64,9 +41,5 @@ In addition to the argument reference list, you can access the following attribu
 	- `target_version`-  (String) The add-on target version.
 	- `version` - (String) The add-on version. Omit the version, if you need to use the default version.
 	- `vlan_spanning_required`-  (String) The VLAN spanning required for multi-zone clusters.
-	- `options` - (String) The add-on options
-	- `parameters_json` -  (Optional,String) Add-On parameters to pass in a JSON string format.
-	- `managed_addons` -  (List(String)) Used to keep track of the add-on names when `manage_all_addons` is set to `false`.
-
 - `id` - (String) The ID of an add-ons.
 - `resource_group_id` - (String) The ID of the cluster resource group in which the `addons` is installed.

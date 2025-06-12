@@ -27,6 +27,22 @@ func TestAccIbmSmConfigurationsDataSourceBasic(t *testing.T) {
 	})
 }
 
+func TestAccIbmSmConfigurationsDataSourceCryptoKey(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIbmSmConfigurationsDataSourceConfigCryptoKey(),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("data.ibm_sm_configurations.sm_configurations", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_sm_configurations.sm_configurations", "configurations.#"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIbmSmConfigurationsDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		resource "ibm_sm_iam_credentials_configuration" "sm_iam_credentials_configuration_instance" {
@@ -82,4 +98,13 @@ func testAccCheckIbmSmConfigurationsDataSourceConfigBasic() string {
 		acc.SecretsManagerPublicCertificateCisCrn, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion,
 		acc.SecretsManagerPublicCertificateClassicInfrastructureUsername, acc.SecretsManagerPublicCertificateClassicInfrastructurePassword,
 		acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion)
+}
+
+func testAccCheckIbmSmConfigurationsDataSourceConfigCryptoKey() string {
+	return privateCertificateIntermediateCAConfigCryptoKey() + fmt.Sprintf(`
+		data "ibm_sm_configurations" "sm_configurations" {
+			instance_id   = "%s"
+			region        = "%s"
+		}
+	`, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion)
 }

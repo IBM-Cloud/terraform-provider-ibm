@@ -245,6 +245,11 @@ func DataSourceIbmIsDedicatedHostProfiles() *schema.Resource {
 								},
 							},
 						},
+						"status": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The status of the dedicated host profile.",
+						},
 						"vcpu_architecture": {
 							Type: schema.TypeList,
 
@@ -311,6 +316,25 @@ func DataSourceIbmIsDedicatedHostProfiles() *schema.Resource {
 								},
 							},
 						},
+						"vcpu_manufacturer": &schema.Schema{
+							Type: schema.TypeList,
+
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The type for this profile field.",
+									},
+									"value": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "TThe VCPU manufacturer for a dedicated host with this profile.",
+									},
+								},
+							},
+						},
 					},
 				},
 			},
@@ -326,7 +350,9 @@ func DataSourceIbmIsDedicatedHostProfiles() *schema.Resource {
 func dataSourceIbmIsDedicatedHostProfilesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host_profiles", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	listDedicatedHostProfilesOptions := &vpcv1.ListDedicatedHostProfilesOptions{}
@@ -339,8 +365,9 @@ func dataSourceIbmIsDedicatedHostProfilesRead(context context.Context, d *schema
 		}
 		dedicatedHostProfileCollection, response, err := vpcClient.ListDedicatedHostProfilesWithContext(context, listDedicatedHostProfilesOptions)
 		if err != nil {
-			log.Printf("[DEBUG] ListDedicatedHostProfilesWithContext failed %s\n%s", err, response)
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListDedicatedHostProfilesWithContext failed: %s\n%s", err, response), "ibm_is_dedicated_host_profiles", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		start = flex.GetNext(dedicatedHostProfileCollection.Next)
 		allrecs = append(allrecs, dedicatedHostProfileCollection.Profiles...)
@@ -355,11 +382,13 @@ func dataSourceIbmIsDedicatedHostProfilesRead(context context.Context, d *schema
 
 		err = d.Set("profiles", dataSourceDedicatedHostProfileCollectionFlattenProfiles(allrecs))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting profiles %s", err))
+			err = fmt.Errorf("[ERROR] Error setting profiles: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host_profiles", "read", "set-profiles").GetDiag()
 		}
 
 		if err = d.Set("total_count", len(allrecs)); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting total_count: %s", err))
+			err = fmt.Errorf("[ERROR] Error setting total_count: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host_profiles", "read", "set-total_count").GetDiag()
 		}
 	}
 	return nil
@@ -370,7 +399,7 @@ func dataSourceIbmIsDedicatedHostProfilesID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
 
-func dataSourceDedicatedHostProfileCollectionFlattenFirst(result vpcv1.DedicatedHostProfileCollectionFirst) (finalList []map[string]interface{}) {
+func dataSourceDedicatedHostProfileCollectionFlattenFirst(result vpcv1.PageLink) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
 	finalMap := dataSourceDedicatedHostProfileCollectionFirstToMap(result)
 	finalList = append(finalList, finalMap)
@@ -378,7 +407,7 @@ func dataSourceDedicatedHostProfileCollectionFlattenFirst(result vpcv1.Dedicated
 	return finalList
 }
 
-func dataSourceDedicatedHostProfileCollectionFirstToMap(firstItem vpcv1.DedicatedHostProfileCollectionFirst) (firstMap map[string]interface{}) {
+func dataSourceDedicatedHostProfileCollectionFirstToMap(firstItem vpcv1.PageLink) (firstMap map[string]interface{}) {
 	firstMap = map[string]interface{}{}
 
 	if firstItem.Href != nil {
@@ -388,7 +417,7 @@ func dataSourceDedicatedHostProfileCollectionFirstToMap(firstItem vpcv1.Dedicate
 	return firstMap
 }
 
-func dataSourceDedicatedHostProfileCollectionFlattenNext(result vpcv1.DedicatedHostProfileCollectionNext) (finalList []map[string]interface{}) {
+func dataSourceDedicatedHostProfileCollectionFlattenNext(result vpcv1.PageLink) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
 	finalMap := dataSourceDedicatedHostProfileCollectionNextToMap(result)
 	finalList = append(finalList, finalMap)
@@ -396,7 +425,7 @@ func dataSourceDedicatedHostProfileCollectionFlattenNext(result vpcv1.DedicatedH
 	return finalList
 }
 
-func dataSourceDedicatedHostProfileCollectionNextToMap(nextItem vpcv1.DedicatedHostProfileCollectionNext) (nextMap map[string]interface{}) {
+func dataSourceDedicatedHostProfileCollectionNextToMap(nextItem vpcv1.PageLink) (nextMap map[string]interface{}) {
 	nextMap = map[string]interface{}{}
 
 	if nextItem.Href != nil {
@@ -448,6 +477,9 @@ func dataSourceDedicatedHostProfileCollectionProfilesToMap(profilesItem vpcv1.De
 		socketCountList = append(socketCountList, socketCountMap)
 		profilesMap["socket_count"] = socketCountList
 	}
+	if profilesItem.Status != nil {
+		profilesMap["status"] = *profilesItem.Status
+	}
 	if profilesItem.SupportedInstanceProfiles != nil {
 		supportedInstanceProfilesList := []map[string]interface{}{}
 		for _, supportedInstanceProfilesItem := range profilesItem.SupportedInstanceProfiles {
@@ -466,6 +498,13 @@ func dataSourceDedicatedHostProfileCollectionProfilesToMap(profilesItem vpcv1.De
 		vcpuCountMap := dataSourceDedicatedHostProfileCollectionProfilesVcpuCountToMap(*profilesItem.VcpuCount.(*vpcv1.DedicatedHostProfileVcpu))
 		vcpuCountList = append(vcpuCountList, vcpuCountMap)
 		profilesMap["vcpu_count"] = vcpuCountList
+	}
+	// AMD Support, changes for manufacturer details.
+	if profilesItem.VcpuManufacturer != nil {
+		vcpuManufacturerList := []map[string]interface{}{}
+		vcpuManufacturerMap := dataSourceDedicatedHostProfileCollectionProfilesVcpuManufacturerToMap(*profilesItem.VcpuManufacturer)
+		vcpuManufacturerList = append(vcpuManufacturerList, vcpuManufacturerMap)
+		profilesMap["vcpu_manufacturer"] = vcpuManufacturerList
 	}
 
 	return profilesMap
@@ -551,6 +590,20 @@ func dataSourceDedicatedHostProfileCollectionProfilesVcpuArchitectureToMap(vcpuA
 	}
 
 	return vcpuArchitectureMap
+}
+
+// AMD Changes, manufacturer details added.
+func dataSourceDedicatedHostProfileCollectionProfilesVcpuManufacturerToMap(vcpuManufacturerItem vpcv1.DedicatedHostProfileVcpuManufacturer) (vcpuManufacturerMap map[string]interface{}) {
+	vcpuManufacturerMap = map[string]interface{}{}
+
+	if vcpuManufacturerItem.Type != nil {
+		vcpuManufacturerMap["type"] = vcpuManufacturerItem.Type
+	}
+	if vcpuManufacturerItem.Value != nil {
+		vcpuManufacturerMap["value"] = vcpuManufacturerItem.Value
+	}
+
+	return vcpuManufacturerMap
 }
 
 func dataSourceDedicatedHostProfileCollectionProfilesVcpuCountToMap(vcpuCountItem vpcv1.DedicatedHostProfileVcpu) (vcpuCountMap map[string]interface{}) {

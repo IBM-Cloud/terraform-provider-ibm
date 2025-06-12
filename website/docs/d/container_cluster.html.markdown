@@ -33,6 +33,8 @@ Review the argument references that you can specify for your data source.
 - `name` - (Optional, String) The name or ID of the cluster.
 - `list_bounded_services`- (Optional, Bool) If set to **false** services which are bound to the cluster are not going to be listed. The default value is **true**.
 - `resource_group_id` - (Optional, String) The ID of the resource group where your cluster is provisioned into. To list resource groups, run `ibmcloud resource groups` or use the `ibm_resource_group` data source.
+- `wait_till` - (Optional, String) The cluster creation happens in multi-stages. To avoid the longer wait times for resource execution. This argument in the resource will wait for the specified stage and complete the execution. The supported stages are  `MasterNodeReady` Resource waits till the master node is ready.  `OneWorkerNodeReady` Resource waits till one worker node is in to ready state. `Normal` Terraform marks the creation of your cluster complete when the cluster is in a [Normal](https://cloud.ibm.com/docs/containers?topic=containers-cluster-states-reference#cluster-state-normal) state. At the moment wait_till `Normal` also ignores the critical and warning states the are temporary happen during cluster creation, but cannot distinguish it from actual critical or warning states. If you do not specify this option, the provider will not wait.
+- `wait_till_timeout` - ( Optional, Int ) This parameter can be used to set the `wait_till` timeout in minutes. The `wait_till_timeout` can only be used with `wait_till`. The default value is 20 minutes.
 
 **Deprecated reference**
 
@@ -72,6 +74,7 @@ In addition to all argument reference list, you can access the following attribu
 - `public_service_endpoint_url` - (String) The URL of the public service endpoint for your cluster.
 - `private_service_endpoint` -  (Bool) Indicates if the private service endpoint is enabled (**true**) or disabled (**false**) for a cluster. 
 - `private_service_endpoint_url` - (String) The URL of the private service endpoint for your cluster.
+- `state` - (String) The state of the cluster.
 - `vlans`- (List of objects) A list of VLANs that are attached to the cluster. 
 
   Nested scheme for `vlans`:

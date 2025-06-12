@@ -89,7 +89,7 @@ Review the argument references that you can specify for your resource.
 - `bare_metal_server` - (Required, String) The id for this bare metal server.
 - `enable_infrastructure_nat` - (Optional, Boolean) If true, the VPC infrastructure performs any needed NAT operations. If false, the packet is passed unmodified to/from the network interface, allowing the workload to perform any needed NAT operations.
 - `hard_stop` - (Optional, Boolean) Default is `true`. Applicable for `pci` type only, controls if the server should be hard stopped.
-- `interface_type` - (Optional, String) The type of the network interface.[**pci**, **hipersocket**]. `allowed_vlans` is required for `pci` type.
+- `interface_type` - (Optional, String) The type of the network interface.[**pci**]. `allowed_vlans` is required for `pci` type.
 - `name` - (Optional, String) The user-defined name for this network interface
 - `primary_ip` - (Optional, List)
 	- `address` - (Optional, String) title: IPv4 The IP address. This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.

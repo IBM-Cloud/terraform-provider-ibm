@@ -4,12 +4,14 @@
 package vpc
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -20,8 +22,8 @@ const (
 
 func DataSourceIBMISEndpointGateways() *schema.Resource {
 	return &schema.Resource{
-		Read:     dataSourceIBMISEndpointGatewaysRead,
-		Importer: &schema.ResourceImporter{},
+		ReadContext: dataSourceIBMISEndpointGatewaysRead,
+		Importer:    &schema.ResourceImporter{},
 		Schema: map[string]*schema.Schema{
 			"resource_group": {
 				Type:        schema.TypeString,
@@ -47,6 +49,11 @@ func DataSourceIBMISEndpointGateways() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Endpoint gateway name",
+						},
+						isVirtualEndpointGatewayAllowDnsResolutionBinding: {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Indicates whether to allow this endpoint gateway to participate in DNS resolution bindings with a VPC that has dns.enable_hub set to true.",
 						},
 						isVirtualEndpointGatewayResourceType: {
 							Type:        schema.TypeString,
@@ -85,6 +92,32 @@ func DataSourceIBMISEndpointGateways() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Endpoint gateway lifecycle state",
+						},
+						isVirtualEndpointGatewayLifecycleReasons: {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The reasons for the current lifecycle_state (if any).",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"code": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "A snake case string succinctly identifying the reason for this lifecycle state.",
+									},
+
+									"message": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "An explanation of the reason for this lifecycle state.",
+									},
+
+									"more_info": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Link to documentation about the reason for this lifecycle state.",
+									},
+								},
+							},
 						},
 						isVirtualEndpointGatewaySecurityGroups: {
 							Type:        schema.TypeSet,
@@ -167,12 +200,13 @@ func DataSourceIBMISEndpointGateways() *schema.Resource {
 	}
 }
 
-func dataSourceIBMISEndpointGatewaysRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceIBMISEndpointGatewaysRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_virtual_endpoint_gateways", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
-
 	start := ""
 	allrecs := []vpcv1.EndpointGateway{}
 	options := sess.NewListEndpointGatewaysOptions()
@@ -191,7 +225,9 @@ func dataSourceIBMISEndpointGatewaysRead(d *schema.ResourceData, meta interface{
 		}
 		result, response, err := sess.ListEndpointGateways(options)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error fetching endpoint gateways %s\n%s", err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("[ERROR] Error fetching endpoint gateways %s\n%s", err, response), "(Data) ibm_is_virtual_endpoint_gateways", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		start = flex.GetNext(result.Next)
 		allrecs = append(allrecs, result.EndpointGateways...)
@@ -208,9 +244,11 @@ func dataSourceIBMISEndpointGatewaysRead(d *schema.ResourceData, meta interface{
 		endpointGatewayOutput[isVirtualEndpointGatewayResourceType] = (*endpointGateway.ResourceType)
 		endpointGatewayOutput[isVirtualEndpointGatewayHealthState] = *endpointGateway.HealthState
 		endpointGatewayOutput[isVirtualEndpointGatewayLifecycleState] = *endpointGateway.LifecycleState
+		endpointGatewayOutput[isVirtualEndpointGatewayLifecycleReasons] = resourceEGWFlattenLifecycleReasons(endpointGateway.LifecycleReasons)
 		endpointGatewayOutput[isVirtualEndpointGatewayResourceGroupID] = *endpointGateway.ResourceGroup.ID
 		endpointGatewayOutput[isVirtualEndpointGatewayCRN] = *endpointGateway.CRN
 		endpointGatewayOutput[isVirtualEndpointGatewayVpcID] = *endpointGateway.VPC.ID
+		endpointGatewayOutput[isVirtualEndpointGatewayAllowDnsResolutionBinding] = endpointGateway.AllowDnsResolutionBinding
 		endpointGatewayOutput[isVirtualEndpointGatewayTarget] =
 			flattenEndpointGatewayTarget(endpointGateway.Target.(*vpcv1.EndpointGatewayTarget))
 		if endpointGateway.SecurityGroups != nil {

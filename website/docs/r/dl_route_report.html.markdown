@@ -70,11 +70,17 @@ Review the argument reference that you can specify for your resource.
 ## Attribute reference
 In addition to all argument references list, you can access the following attribute references after your resource is created.
 - `created_at` - (String) The date and time resource created.
+- `advertised_routes` - (List) List of connection prefixes advertised to the on-prem network.
+    Nested scheme for `advertised_routes`:
+    - `as_path` - (String) The BGP AS path of the route.
+    - `prefix` - (String) The prefix used in the route.
 - `gateway_routes` - (List) List of local/direct routes.
     Nested scheme for `gateway_routes`:
     - `prefix` - (String) The prefix used in the route.
 - `on_prem_routes` - (List) List of on premises routes
     Nested scheme for `on_prem_routes`:
+    - `as_path` - (String) The BGP AS path of the route.
+    - `next_hop` - (String) Next hop address.
     - `prefix` - (String) The prefix used in the route.
 - `overlapping_routes` - (List) List of overlapping routes.
     Nested scheme for `overlapping_routes`:
@@ -90,6 +96,8 @@ In addition to all argument references list, you can access the following attrib
     Nested scheme for `virtual_connection_routes`
     - `routes` - (List) List of connection routes.
         Nested scheme for `routes`:
+        - `active` - (Bool) Indicates whether the route is the preferred path of the prefix.
+        - `local_preference` - (String) The local preference of the route. This attribute can manipulate the chosen path on routes.
         - `prefix` - (String) The prefix used in the route.
     - `virtual_connection_id` - (String) Virtual Connection ID
     - `virtual_connection_name` - (String) Virtual Connection name

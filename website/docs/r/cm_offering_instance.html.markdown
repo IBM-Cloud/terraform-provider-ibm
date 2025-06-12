@@ -23,6 +23,7 @@ resource "ibm_cm_offering_instance" "cm_offering_instance" {
   cluster_region = "placeholder"
   cluster_namespaces = [ "placeholder", "placeholder2" ]
   cluster_all_namespaces = false
+  plan_id = "placeholder"
 }
 ```
 ## Timeouts
@@ -45,6 +46,8 @@ Review the argument reference that you can specify for your resource.
 - `kind_format` - (Required, String) The format an instance such as **helm**, **operator**, **operator-bundle**, **ova**. **Note** Currently the only supported formats are **operator** and **operator-bundle**.
 - `label` - (Required, String) The label for this instance.
 - `offering_id` - (Required, String) The offering ID an instance is created.
+- `parent_crn` - (Optional, String) CRN of the parent instance.
+- `plan_id` - (Optional, String) The plan ID.
 - `version` - (Required, String) The version an instance was installed from (but not from the version ID).
 
 

@@ -53,10 +53,17 @@ resource "ibm_is_vpn_gateway" "example" {
 resource "ibm_is_vpn_gateway_connection" "example" {
   name          = "example-vpn-gateway-connection"
   vpn_gateway   = ibm_is_vpn_gateway.example.id
-  peer_address  = ibm_is_vpn_gateway.example.public_ip_address
   preshared_key = "VPNDemoPassword"
-  local_cidrs   = [ibm_is_subnet.example.ipv4_cidr_block]
-  peer_cidrs    = [ibm_is_subnet.example2.ipv4_cidr_block]
+  # peer_address  = ibm_is_vpn_gateway.example.public_ip_address # deprecated, replaced with peer block
+  # peer_cidrs    = [ibm_is_subnet.example2.ipv4_cidr_block] # deprecated, replaced with peer block
+  peer {
+      address  = ibm_is_vpn_gateway.example.public_ip_address
+      cidrs    = [ibm_is_subnet.example2.ipv4_cidr_block]   
+  }
+  # local_cidrs   = [ibm_is_subnet.example.ipv4_cidr_block] # deprecated, replaced with local block
+  local {
+      cidrs   = [ibm_is_subnet.example.ipv4_cidr_block]
+  }
 }
 
 ```
@@ -73,10 +80,18 @@ resource "ibm_is_vpn_gateway" "example" {
 resource "ibm_is_vpn_gateway_connection" "example" {
   name          = "example-vpn-gateway-connection"
   vpn_gateway   = ibm_is_vpn_gateway.example.id
-  peer_address  = ibm_is_vpn_gateway.example.public_ip_address != "0.0.0.0" ? ibm_is_vpn_gateway.example.public_ip_address : ibm_is_vpn_gateway.example.public_ip_address2
   preshared_key = "VPNDemoPassword"
-  local_cidrs   = [ibm_is_subnet.example.ipv4_cidr_block]
-  peer_cidrs    = [ibm_is_subnet.example2.ipv4_cidr_block]
+
+  # local_cidrs   = [ibm_is_subnet.example.ipv4_cidr_block] # depcreated
+  local {
+    cidrs = [ibm_is_subnet.example.ipv4_cidr_block]
+  }
+  # peer_cidrs    = [ibm_is_subnet.example2.ipv4_cidr_block] # depcreated
+  # peer_address  = ibm_is_vpn_gateway.example.public_ip_address != "0.0.0.0" ? ibm_is_vpn_gateway.example.public_ip_address : ibm_is_vpn_gateway.example.public_ip_address2 # depcreated
+  peer {
+    address   = ibm_is_vpn_gateway.example.public_ip_address != "0.0.0.0" ? ibm_is_vpn_gateway.example.public_ip_address : ibm_is_vpn_gateway.example.public_ip_address2
+    cidrs     = [ibm_is_subnet.example2.ipv4_cidr_block]
+  }
 }
 
 ```
@@ -92,13 +107,31 @@ Review the argument references that you can specify for your resource.
 
 - `action` - (Optional, String)  Dead peer detection actions. Supported values are **restart**, **clear**, **hold**, or **none**. Default value is `restart`.
 - `admin_state_up` - (Optional, Bool) The VPN gateway connection status. Default value is **false**. If set to false, the VPN gateway connection is shut down.
+- `distribute_traffic` - (Optional, Bool) Indicates whether the traffic is distributed between the `up` tunnels of the VPN gateway connection when the VPC route's next hop is a VPN connection. If `false`, the traffic is only routed through the `up` tunnel with the lower `public_ip` address. Distributing traffic across tunnels of route-based VPN gateway connections. Traffic across tunnels can be distributed with a status of up in a route-based VPN gateway connection. When creating or updating a route-based VPN gateway connection, set the distribute_traffic property to true (default is false). Existing connections will have the `distribute_traffic` property set to false.
+- `establish_mode` - (Optional, String) The establish mode of the VPN gateway connection:- `bidirectional`: Either side of the VPN gateway can initiate IKE protocol   negotiations or rekeying processes.- `peer_only`: Only the peer can initiate IKE protocol negotiations for this VPN gateway   connection. Additionally, the peer is responsible for initiating the rekeying process   after the connection is established. If rekeying does not occur, the VPN gateway   connection will be brought down after its lifetime expires.
 - `ike_policy` - (Optional, String) The ID of the IKE policy. Updating value from ID to `""` or making it `null` or removing it  will remove the existing policy.
 - `interval` - (Optional, Integer) Dead peer detection interval in seconds. Default value is 2.
 - `ipsec_policy` - (Optional, String) The ID of the IPSec policy. Updating value from ID to `""` or making it `null` or removing it  will remove the existing policy.
-- `local_cidrs` - (Optional, Forces new resource, List) List of local CIDRs for this resource.
+- `local` - (Optional, List) 
+  Nested schema for **local**:
+	- `ike_identities` - (Required, List) The local IKE identities.A VPN gateway in static route mode consists of two members in active-active mode. The first identity applies to the first member, and the second identity applies to the second member.
+	  Nested schema for **ike_identities**:
+		- `type` - (Required, String) The IKE identity type. [ **fqdn**, **hostname**, **ipv4_address**, **key_id** ] The enumerated values for this property will expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the backup policy on which the unexpected property value was encountered.
+		- `value` - (Optional, String) The IKE identity FQDN value.
+- `local_cidrs` - (Optional, DEPRECATED, Forces new resource, List) List of local CIDRs for this resource. `local_cidrs` is deprecated and use `local` block instead. 
 - `name` - (Required, String) The name of the VPN gateway connection.
-- `peer_cidrs` - (Optional, Forces new resource, List) List of peer CIDRs for this resource.
-- `peer_address` - (Required, String) The IP address of the peer VPN gateway.
+- `peer` - (Optional, List) 
+  Nested schema for **peer**:
+	- `address` - (Optional, String) The IP address of the peer VPN gateway for this connection.
+	- `fqdn` - (Optional, String) The FQDN of the peer VPN gateway for this connection.
+	- `ike_identity` - (Required, List) The peer IKE identity.
+	  Nested schema for **ike_identity**:
+		- `type` - (Required, String) The IKE identity type. [ **fqdn**, **hostname**, **ipv4_address**, **key_id** ] The enumerated values for this property will expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the backup policy on which the unexpected property value was encountered.
+		- `value` - (Optional, String) The IKE identity FQDN value.
+	- `type` - (Computed, String) Indicates whether `peer.address` or `peer.fqdn` is used.
+
+- `peer_cidrs` - (Optional, DEPRECATED, Forces new resource, List) List of peer CIDRs for this resource. `peer_cidrs` is deprecated and use `peer` block instead.
+- `peer_address` - (Optional, DEPRECATED, String) The IP address of the peer VPN gateway. `peer_address` is deprecated and use `peer` block instead.
 - `preshared_key` - (Required, Forces new resource, String) The preshared key.
 - `timeout` - (Optional, Integer) Dead peer detection timeout in seconds. Default value is 10.
 - `vpn_gateway` - (Required, Forces new resource, String) The unique identifier of the VPN gateway.
@@ -114,6 +147,12 @@ In addition to all argument reference list, you can access the following attribu
 - `mode` -  (String) The mode of the `VPN gateway` either **policy** or **route**.
 - `resource_type` -  (String) The resource type (vpn_gateway_connection).
 - `status` -  (String) The status of a VPN gateway connection either `down` or `up`.
+- `status_reasons` - (List) Array of reasons for the current status (if any).
+
+  Nested `status_reasons`:
+    - `code` - (String) The status reason code.
+    - `message` - (String) An explanation of the status reason.
+    - `more_info` - (String) Link to documentation about this status reason
 - `tunnels` -  (List) The VPN tunnel configuration for the VPN gateway connection (in static route mode).
 
   Nested scheme for `tunnels`

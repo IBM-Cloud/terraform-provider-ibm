@@ -3,6 +3,11 @@ variable "ibmcloud_api_key" {
   type        = string
 }
 
+variable "ibmcloud_region" {
+  description = "IBM Cloud Region"
+  type        = string
+}
+
 // Resource arguments for code_engine_project
 variable "code_engine_project_name" {
   description = "The name of the project."
@@ -65,7 +70,7 @@ variable "code_engine_config_map_data" {
 variable "code_engine_secret_name" {
   description = "The name of the secret. Use a name that is unique within the project."
   type        = string
-  default     = "my-secret"
+  default     = "my-generic-secret"
 }
 variable "code_engine_secret_format" {
   description = "The format of the secret. Use a name that is unique within the project."
@@ -88,6 +93,79 @@ variable "code_engine_job_name" {
   description = "The name of the job. Use a name that is unique within the project."
   type        = string
   default     = "my-job"
+}
+
+// Resource arguments for code_engine_secret with format service_access
+variable "code_engine_secret_service_access_name" {
+  description = "The name of the service access secret"
+  type        = string
+  default     = "my-service-access"
+}
+
+variable "code_engine_secret_service_access_resource_key" {
+  description = "The ID of a resource key to access a resource instance."
+  type        = string
+}
+
+variable "code_engine_secret_service_access_service_instance" {
+  description = "The ID of a service instance."
+  type        = string
+}
+
+// Resource arguments for code_engine_binding
+variable "code_engine_binding_prefix" {
+  description = "The name of the service access secret"
+  type        = string
+  default     = "MY_PREFIX"
+}
+
+// Resource arguments for code_engine_domain_mapping
+variable "code_engine_domain_mapping_name" {
+  description = "The name of the domain mapping."
+  type        = string
+}
+
+// Resource arguments for code_engine_function
+variable "code_engine_function_name" {
+  description = "The name of the function."
+  type        = string
+  default     = "my-function"
+}
+variable "code_engine_function_runtime" {
+  description = "The runtime of the function."
+  type        = string
+  default     = "nodejs-20"
+}
+variable "code_engine_function_code_reference_file_path" {
+  description = "The path to a file containing the source code."
+  type        = string
+}
+
+// Resource arguments for code_engine_secret with format tls
+variable "code_engine_secret_tls_name" {
+  description = "The name of the tls secret."
+  type        = string
+  default     = "my-tls-secret"
+}
+variable "code_engine_secret_tls_key_file_path" {
+  description = "The path to the .key file containing the private key of the TLS certificate."
+  type        = string
+}
+variable "code_engine_secret_tls_crt_file_path" {
+  description = "The path to the .crt file containing the signed TLS certificate."
+  type        = string
+}
+
+// Resource arguments for code_engine_allowed_outbound_destination
+variable "code_engine_allowed_outbound_destination_name" {
+  description = "The name of the allowed outbound destination."
+  type        = string
+  default     = "my-allowed-outbound-destination"
+}
+variable "code_engine_allowed_outbound_destination_cidr_block" {
+  description = "The IPv4 address range of the allowed outbound destination."
+  type        = string
+  default     = "192.68.3.0/24"
 }
 
 // Data source arguments for code_engine_project

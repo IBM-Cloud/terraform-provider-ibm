@@ -44,7 +44,7 @@ func TestAccIBMEnSMSSubscriptionAllArgs(t *testing.T) {
 					resource.TestCheckResourceAttrSet("ibm_en_subscription_sms.en_subscription_resource_1", "destination_type"),
 					resource.TestCheckResourceAttrSet("ibm_en_subscription_sms.en_subscription_resource_1", "subscription_id"),
 					resource.TestCheckResourceAttrSet("ibm_en_subscription_sms.en_subscription_resource_1", "attributes.#"),
-					resource.TestCheckResourceAttrSet("ibm_en_subscription_sms.en_subscription_resource_1", "attributes.0.to"),
+					resource.TestCheckResourceAttrSet("ibm_en_subscription_sms.en_subscription_resource_1", "attributes.0.invited"),
 				),
 			},
 			{
@@ -86,7 +86,7 @@ func testAccCheckIBMEnSMSSubscriptionConfig(instanceName, name, description stri
 		topic_id       = ibm_en_topic.en_topic_resource_2.topic_id
 		destination_id = "set sms destination id"
 		attributes {
-			to = ["+16382922821", "+18976569023"]
+			invited = ["+16382922821", "+18976569023"]
 		}
 	}
 	`, instanceName, name, description)

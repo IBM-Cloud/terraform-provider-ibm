@@ -12,6 +12,8 @@ Create, update, or delete an IBM Cloud Internet Services instance. The ibmcloud_
 
 If `resource_group_id` is not specified, the CIS instance is created in the default resource group. The API_KEY must have been assigned permissions for this group.
 
+**Note - Migrating from one plan to another is considered a modification of an existing resource, and not a destruction or creation of a resource.**
+
 ## Example usage
 
 ```terraform
@@ -21,7 +23,7 @@ data "ibm_resource_group" "group" {
 
 resource "ibm_cis" "cis_instance" {
   name              = "test"
-  plan              = "standard"
+  plan              = "standard-next"
   resource_group_id = data.ibm_resource_group.group.id
   tags              = ["tag1", "tag2"]
   location          = "global"
@@ -66,7 +68,7 @@ In addition to all argument reference list, you can access the following attribu
 
 The `ibm_cis` resource can be imported by using the `id`. The ID is formed from the Cloud Resource Name (CRN)  from the **Overview** page of the Internet Services instance. These will be located under the **Domain** heading. 
 
-* CRN is a 120 digit character string of the form: `crn:v1:bluemix:public:internet-svcs:global:a/4ea1882a2d3401ed1e459979941966ea:31fa970d-51d0-4b05-893e-251cba75a7b3::`
+* CRN is unique ID of the form: `crn:v1:bluemix:public:internet-svcs:global:a/{IBM-account}:{service-instance}::`
 
 **Syntax**
 

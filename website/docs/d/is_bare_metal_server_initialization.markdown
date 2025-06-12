@@ -1,12 +1,12 @@
 ---
 subcategory: "VPC infrastructure"
 layout: "ibm"
-page_title: "IBM : bare_metal_server_disk"
+page_title: "IBM : ibm_is_bare_metal_server_initialization"
 description: |-
   Manages IBM Cloud Bare Metal Server Disk.
 ---
 
-# ibm\_is_bare_metal_server_disk
+# ibm\_is_bare_metal_server_initialization
 
 Import the details of configuration variables used to initialize the bare metal server, such as the image used, SSH keys, and any configured usernames and passwords as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax. For more information, about bare metal servers, see [About Bare Metal Servers for VPC](https://cloud.ibm.com/docs/vpc?topic=vpc-about-bare-metal-servers).
 

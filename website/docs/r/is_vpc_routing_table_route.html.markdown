@@ -30,6 +30,7 @@ resource "ibm_is_vpc" "example" {
 resource "ibm_is_vpc_routing_table" "example" {
   vpc                           = ibm_is_vpc.example.id
   name                          = "example-routing-table"
+  advertise_routes_to           = ["direct_link", "transit_gateway"]
   route_direct_link_ingress     = true
   route_transit_gateway_ingress = false
   route_vpc_zone_ingress        = false
@@ -41,6 +42,7 @@ resource "ibm_is_vpc_routing_table_route" "example" {
   name          = "custom-route-2"
   destination   = "192.168.4.0/24"
   action        = "deliver"
+  advertise     = true
   next_hop      = ibm_is_vpn_gateway_connection.example.gateway_connection // Example value "10.0.0.4"
 }
 ```
@@ -63,9 +65,10 @@ resource "ibm_is_vpc_routing_table_route" "example" {
 Review the argument references that you can specify for your resource. 
 
 - `action` - (Optional, String) The action to perform with a packet matching the route `delegate`, `delegate_vpc`, `deliver`, `drop`.
+- `advertise` - (Optional, Bool) Indicates whether this route will be advertised to the ingress sources specified by the `advertise_routes_to` routing table's property.
 - `destination` - (Required, Forces new resource, String) The destination of the route. 
 - `name` - (Optional, String) The user-defined name of the route. If unspecified, the name will be a hyphenated list of randomly selected words. You need to provide unique name within the VPC routing table the route resides in.
-- `next_hop` - (Required, String) The next hop of the route. It accepts IP address or a VPN connection ID. For `action` other than `deliver`, you must specify `0.0.0.0`. 
+- `next_hop` - (Required, String) The next hop of the route. It accepts IP address or a VPN gateway connection ID (`ibm_is_vpn_gateway_connection`) of a VPN Gateway (`ibm_is_vpn_gateway`) with the `mode = "route"` argument and in the same VPC as the route table for this route for an egress route. For action other than deliver, you must specify `0.0.0.0`.
 - `routing_table` - (Required, String) The routing table ID.
 - `vpc` - (Required, Forces new resource, String) The VPC ID.
 - `zone` - (Required, Forces new resource, String)  Name of the zone. 

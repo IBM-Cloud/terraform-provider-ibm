@@ -165,7 +165,7 @@ func TestAccIBMKMSInstancePolicy_invalid_interval_check(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      testAccCheckIBMKmsInstancePolicyStandardConfigCheck(instanceName, rotation_interval, dual_auth_delete),
-				ExpectError: regexp.MustCompile("must contain a valid int value should be in range(1, 12)"),
+				ExpectError: regexp.MustCompile(`.*must contain a valid int value should be in range\(1, 12\).*`),
 			},
 		},
 	})
@@ -189,7 +189,7 @@ func testAccCheckIBMKmsInstancePolicyStandardConfigCheck(instanceName string, ro
 			enabled = %t
 		  }
 	  }
-`, instanceName, rotation_interval, dual_auth_delete)
+`, addPrefixToResourceName(instanceName), rotation_interval, dual_auth_delete)
 }
 
 func testAccCheckIBMKmsInstancePolicyDualAuthCheck(instanceName string, dual_auth_delete bool) string {
@@ -206,7 +206,7 @@ func testAccCheckIBMKmsInstancePolicyDualAuthCheck(instanceName string, dual_aut
 			enabled = %t
 		  }
 	  }
-`, instanceName, dual_auth_delete)
+`, addPrefixToResourceName(instanceName), dual_auth_delete)
 }
 
 func testAccCheckIBMKmsInstancePolicyWithKey(instanceName string, metrics bool, rotation int, keyName string) string {
@@ -236,7 +236,7 @@ func testAccCheckIBMKmsInstancePolicyWithKey(instanceName string, metrics bool, 
 			instance_id = ibm_kms_key.test.instance_id
 			key_id = ibm_kms_key.test.key_id
 		}
-`, instanceName, metrics, rotation, keyName)
+`, addPrefixToResourceName(instanceName), metrics, rotation, keyName)
 
 }
 
@@ -251,11 +251,12 @@ func testAccCheckIBMKmsInstancePolicyRotationCheck(instanceName string, rotation
 	  resource "ibm_kms_instance_policies" "test" {
 		instance_id = ibm_resource_instance.kp_instance.guid
 		  rotation {
+			enabled = true
 			interval_month = %d
 		  }
 	  }
 
-`, instanceName, rotation_interval)
+`, addPrefixToResourceName(instanceName), rotation_interval)
 }
 
 func testAccCheckIBMKmsInstancePolicyMetricCheck(instanceName string, metric bool) string {
@@ -272,7 +273,7 @@ func testAccCheckIBMKmsInstancePolicyMetricCheck(instanceName string, metric boo
 			enabled = %t
 		  }
 	  }
-`, instanceName, metric)
+`, addPrefixToResourceName(instanceName), metric)
 }
 
 func testAccCheckIBMKmsInstancePolicyKciaCheck(instanceName string, kcia bool) string {
@@ -289,7 +290,7 @@ func testAccCheckIBMKmsInstancePolicyKciaCheck(instanceName string, kcia bool) s
 			enabled = %t
 		  }
 	  }
-`, instanceName, kcia)
+`, addPrefixToResourceName(instanceName), kcia)
 }
 
 func testAccCheckIBMKmsInstancePolicyKciaWithAtttributesCheck(instanceName string, kcia bool) string {
@@ -311,5 +312,5 @@ func testAccCheckIBMKmsInstancePolicyKciaWithAtttributesCheck(instanceName strin
 			enforce_token       = false
 		  }
 	  }
-`, instanceName, kcia)
+`, addPrefixToResourceName(instanceName), kcia)
 }

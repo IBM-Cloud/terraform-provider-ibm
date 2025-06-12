@@ -24,7 +24,7 @@ provider "ibm" {
 
 ```terraform
 
-    data "is_bare_metal_server_network_interface_floating_ip" "test" {
+    data "ibm_is_bare_metal_server_network_interface_floating_ip" "test" {
 		  bare_metal_server   = ibm_is_bare_metal_server.example.id
 		  floating_ip         = ibm_is_floating_ip.example.id
 		  network_interface   = ibm_is_bare_metal_server_network_interface.example.id

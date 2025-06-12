@@ -52,6 +52,24 @@ In addition to the argument reference list, you can access the following attribu
   - `type` - (String) The type for this profile field.
   - `value` - (String) The value for this profile field.
   - `values` - (String) The permitted values for this profile field.
+
+- `cluster_network_attachment_count` - (List) Nested `cluster_network_attachment_count` blocks have the following structure:
+
+  Nested schema for **cluster_network_attachment_count**:
+	- `default` - (Integer)
+	- `max` - (Integer) The maximum value for this profile field.
+	- `min` - (Integer) The minimum value for this profile field.
+	- `step` - (Integer)
+	- `type` - (String) The type for this profile field.
+	- `values` - (List) The permitted values for this profile field.
+
+- `confidential_compute_modes` - (List) 
+
+  Nested schema for **confidential_compute_modes**:
+	- `default` - (String) The default confidential compute mode for this profile.
+	- `type` - (String) The type for this profile field.
+	- `values` - (List) The supported confidential compute modes.
+
 - `total_volume_bandwidth`  Nested `total_volume_bandwidth` blocks have the following structure:
   - `type` - The type for this profile field.
   - `value` - The value for this profile field.
@@ -89,6 +107,7 @@ In addition to the argument reference list, you can access the following attribu
       - `default` - (String) The disk interface used for attaching the disk.The enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the unexpected property value was encountered.
       - `type` - (String) The type for this profile field.
       - `values` - (String) The supported disk interfaces used for attaching the disk.
+- `status` - (String) The status of the instance profile. Values coule be, `previous`: This instance profile is an older revision, but remains provisionable and usable. `current`: This profile is the latest revision.
 - `family` - (String) The family of the virtual server instance profile.
 - `gpu_count` - (List) Nested `gpu_count` blocks have the following structure:
   Nested scheme for `gpu_count`:
@@ -116,6 +135,10 @@ In addition to the argument reference list, you can access the following attribu
   Nested scheme for `gpu_model`:
   - `type` - (String) The type for this profile field.
   - `values` - (String) The permitted values for this profile field.
+- `reservation_terms` - (List) Nested `reservation_terms` blocks have the following structure:
+  Nested scheme for `reservation_terms`:
+  - `type` - (String) The type for this profile field.
+  - `values` - (String) The supported committed use terms for a reservation using this profile.
 - `href` - (String) The URL for this virtual server instance profile.
 - `memory` - (List) Nested `memory` blocks have the following structure:
 
@@ -127,17 +150,40 @@ In addition to the argument reference list, you can access the following attribu
   - `type` - (String) The type for this profile field.
   - `value` - (String) The value for this profile field.
   - `values` - (String) The permitted values for this profile field.
+- `network_attachment_count` - (List) The number of network attachments supported on an instance with this profile
+
+  Nested scheme for `network_attachment_count`:
+  - `max` - (Integer) The maximum number of network attachments supported by an instance using this profile.
+  - `min` - (Integer) The minimum number of network attachments supported by an instance using this profile.
+  - `type` - (String) The type for this profile field, Ex: range or dependent.
+
 - `network_interface_count` - (List)
 
   Nested scheme for `network_interface_count`:
   - `max` - (Integer) The maximum number of vNICs supported by an instance using this profile.
   - `min` - (Integer) The minimum number of vNICs supported by an instance using this profile.
   - `type` - (String) The type for this profile field, Ex: range or dependent.
+- `numa_count` - (Integer) The number of NUMA nodes for the Instance Profile.
 - `port_speed` - (List) Nested `port_speed` blocks have the following structure:
 
   Nested scheme for `port_speed`:
   - `type` - (String) The type for this profile field.
   - `value` - (String) The value for this profile field.
+
+- `secure_boot_modes` - (List) 
+
+  Nested schema for **secure_boot_modes**:
+	- `default` - (Boolean) The default secure boot mode for this profile.
+	- `type` - (String) The type for this profile field.
+	- `values` - (List) The supported `enable_secure_boot` values for an instance using this profile.
+
+- `supported_cluster_network_profiles` - (List) The cluster network profiles that support this instance profile.
+
+  Nested schema for **supported_cluster_network_profiles**:
+	- `href` - (String) The URL for this cluster network profile.
+	- `name` - (String) The globally unique name for this cluster network profile.
+	- `resource_type` - (String) The resource type.
+
 - `vcpu_architecture` - (List) Nested `vcpu_architecture` blocks have the following structure:
 
   Nested scheme for `vcpu_architecture`:
@@ -154,3 +200,9 @@ In addition to the argument reference list, you can access the following attribu
   - `type` - (String) The type for this profile field.
   - `value` - (String) The value for this profile field.
   - `values` - (String) The permitted values for this profile field.
+- `vcpu_manufacturer` - (List) Nested `vcpu_manufacturer` blocks have the following structure:
+
+  Nested scheme for `vcpu_manufacturer`:
+  - `default` - (String) The default VCPU manufacturer for an instance with this profile.
+  - `type` - (String) The type for this profile field.
+  - `value` - (String) The VCPU manufacturer for an instance with this profile.

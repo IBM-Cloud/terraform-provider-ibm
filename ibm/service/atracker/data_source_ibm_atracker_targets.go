@@ -1,5 +1,9 @@
-// Copyright IBM Corp. 2022 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
+
+/*
+ * IBM OpenAPI Terraform Generator Version: 3.101.0-62624c1e-20250225-192301
+ */
 
 package atracker
 
@@ -7,120 +11,93 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/IBM/platform-services-go-sdk/atrackerv1"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/platform-services-go-sdk/atrackerv2"
 )
 
 func DataSourceIBMAtrackerTargets() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: DataSourceIBMAtrackerTargetsRead,
+		ReadContext: dataSourceIBMAtrackerTargetsRead,
 
 		Schema: map[string]*schema.Schema{
-			"name": {
+			"region": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Limit the query to the specified region.",
+			},
+			"name": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The name of the target resource.",
 			},
-			"targets": {
+			"targets": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "A list of target resources.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"id": {
+						"id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The uuid of the target resource.",
 						},
-						"name": {
+						"name": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The name of the target resource.",
 						},
-						"crn": {
+						"crn": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The crn of the target resource.",
 						},
-						"target_type": {
+						"target_type": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The type of the target.",
 						},
-						"region": {
+						"region": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Included this optional field if you used it to create a target in a different region other than the one you are connected.",
 						},
-						"encrypt_key": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Deprecated:  "use encryption_key instead",
-							Description: "The encryption key that is used to encrypt events before Activity Tracker services buffer them on storage. This credential is masked in the response.",
-						},
-						"encryption_key": {
-							Type:        schema.TypeString,
-							Sensitive:   true,
-							Computed:    true,
-							Description: "The encryption key that is used to encrypt events before Activity Tracker services buffer them on storage. This credential is masked in the response.",
-						},
-						"cos_endpoint": {
+						"cos_endpoint": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "Property values for a Cloud Object Storage Endpoint.",
+							Description: "Property values for a Cloud Object Storage Endpoint in responses.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"endpoint": {
+									"endpoint": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The host name of the Cloud Object Storage endpoint.",
 									},
-									"target_crn": {
+									"target_crn": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The CRN of the Cloud Object Storage instance.",
 									},
-									"bucket": {
+									"bucket": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The bucket name under the Cloud Object Storage instance.",
 									},
-									"api_key": {
+									"api_key": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Sensitive:   true,
 										Description: "The IAM API key that has writer access to the Cloud Object Storage instance. This credential is masked in the response. This is required if service_to_service is not enabled.",
 									},
-									"service_to_service_enabled": {
+									"service_to_service_enabled": &schema.Schema{
 										Type:        schema.TypeBool,
 										Computed:    true,
-										Description: "ATracker service is enabled to support service to service authentication. If service to service is enabled then set this flag is true and do not supply apikey.",
-									},
-								},
-							},
-						},
-						"logdna_endpoint": {
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "Property values for a LogDNA Endpoint.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"target_crn": {
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "The CRN of the LogDNA instance.",
-									},
-									"ingestion_key": {
-										Type:        schema.TypeString,
-										Sensitive:   true,
-										Computed:    true,
-										Description: "The LogDNA ingestion key is used for routing logs to a specific LogDNA instance.",
+										Description: "Determines if IBM Cloud Activity Tracker Event Routing has service to service authentication enabled. Set this flag to true if service to service is enabled and do not supply an apikey.",
 									},
 								},
 							},
@@ -149,57 +126,51 @@ func DataSourceIBMAtrackerTargets() *schema.Resource {
 										Computed:    true,
 										Description: "The messsage hub topic defined in the Event Streams instance.",
 									},
-									"api_key": &schema.Schema{ // pragma: allowlist secret
+									"api_key": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Sensitive:   true,
-										Description: "The user password (api key) for the message hub topic in the Event Streams instance.",
+										Description: "The user password (api key) for the message hub topic in the Event Streams instance. This is required if service_to_service is not enabled.",
+									},
+									"service_to_service_enabled": &schema.Schema{
+										Type:        schema.TypeBool,
+										Computed:    true,
+										Description: "Determines if IBM Cloud Activity Tracker Event Routing has service to service authentication enabled. Set this flag to true if service to service is enabled and do not supply an apikey.",
 									},
 								},
 							},
 						},
-						"cos_write_status": {
+						"cloudlogs_endpoint": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
-							Deprecated:  "use write_status instead",
-							Description: "The status of the write attempt with the provided cos_endpoint parameters.",
+							Description: "Property values for the IBM Cloud Logs endpoint in responses.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"status": {
+									"target_crn": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "The status such as failed or success.",
-									},
-									"last_failure": {
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "The timestamp of the failure.",
-									},
-									"reason_for_last_failure": {
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "Detailed description of the cause of the failure.",
+										Description: "The CRN of the IBM Cloud Logs instance.",
 									},
 								},
 							},
 						},
-						"write_status": {
+						"write_status": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
 							Description: "The status of the write attempt to the target with the provided endpoint parameters.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"status": {
+									"status": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The status such as failed or success.",
 									},
-									"last_failure": {
+									"last_failure": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The timestamp of the failure.",
 									},
-									"reason_for_last_failure": {
+									"reason_for_last_failure": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "Detailed description of the cause of the failure.",
@@ -207,29 +178,22 @@ func DataSourceIBMAtrackerTargets() *schema.Resource {
 								},
 							},
 						},
-						"created": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Deprecated:  "use created_at instead",
-							Description: "The timestamp of the target creation time.",
-						},
-						"updated": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Deprecated:  "use updated_at instead",
-							Description: "The timestamp of the target last updated time.",
-						},
-						"created_at": {
+						"created_at": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The timestamp of the target creation time.",
 						},
-						"updated_at": {
+						"updated_at": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The timestamp of the target last updated time.",
 						},
-						"api_version": {
+						"message": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "An optional message containing information about the target.",
+						},
+						"api_version": &schema.Schema{
 							Type:        schema.TypeInt,
 							Computed:    true,
 							Description: "The API version of the target.",
@@ -241,107 +205,71 @@ func DataSourceIBMAtrackerTargets() *schema.Resource {
 	}
 }
 
-func DataSourceIBMAtrackerTargetsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	atrackerClientv1, atrackerClientv2, err := getAtrackerClients(meta)
+func dataSourceIBMAtrackerTargetsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	atrackerClient, err := meta.(conns.ClientSession).AtrackerV2()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_atracker_targets", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
-	// TODO: Remove after deprecation
-	listTargetsOptions := &atrackerv1.ListTargetsOptions{}
-	targetListV1, responseV1, err := atrackerClientv1.ListTargetsWithContext(context, listTargetsOptions)
-	if err == nil {
-		// Use the provided filter argument and construct a new list with only the requested resource(s)
-		var matchTargets []atrackerv1.Target
-		var name string
-		var suppliedFilter bool
 
-		if v, ok := d.GetOk("name"); ok {
-			name = v.(string)
-			suppliedFilter = true
-			for _, data := range targetListV1.Targets {
-				if *data.Name == name {
-					matchTargets = append(matchTargets, data)
-				}
-			}
-		} else {
-			matchTargets = targetListV1.Targets
-		}
-		targetListV1.Targets = matchTargets
+	listTargetsOptions := &atrackerv2.ListTargetsOptions{}
 
-		if suppliedFilter {
-			if len(targetListV1.Targets) == 0 {
-				return diag.FromErr(fmt.Errorf("no Targets found with name %s", name))
-			}
-			d.SetId(name)
-		} else {
-			d.SetId(DataSourceIBMAtrackerTargetsID(d))
-		}
+	if _, ok := d.GetOk("region"); ok {
+		listTargetsOptions.SetRegion(d.Get("region").(string))
+	}
 
-		if targetListV1.Targets != nil {
-			err = d.Set("targets", dataSourceTargetListFlattenTargetsV1(targetListV1.Targets))
-			if err != nil {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error setting targets %s", err))
+	targetList, _, err := atrackerClient.ListTargetsWithContext(context, listTargetsOptions)
+	if err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListTargetsWithContext failed: %s", err.Error()), "(Data) ibm_atracker_targets", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+	}
+
+	// Use the provided filter argument and construct a new list with only the requested resource(s)
+	var matchTargets []atrackerv2.Target
+	var name string
+	var suppliedFilter bool
+
+	if v, ok := d.GetOk("name"); ok {
+		name = v.(string)
+		suppliedFilter = true
+		for _, data := range targetList.Targets {
+			if *data.Name == name {
+				matchTargets = append(matchTargets, data)
 			}
 		}
-		return nil
-	} else if err != nil && responseV1 != nil && strings.Contains(responseV1.String(), BLOCKED_V1_RESOURCE) {
-		listTargetsOptions := &atrackerv2.ListTargetsOptions{}
+	} else {
+		matchTargets = targetList.Targets
+	}
+	targetList.Targets = matchTargets
 
-		targetList, response, err := atrackerClientv2.ListTargetsWithContext(context, listTargetsOptions)
+	if suppliedFilter {
+		if len(targetList.Targets) == 0 {
+			return flex.DiscriminatedTerraformErrorf(nil, fmt.Sprintf("no Targets found with name %s", name), "(Data) ibm_atracker_targets", "read", "no-collection-found").GetDiag()
+		}
+		d.SetId(name)
+	} else {
+		d.SetId(dataSourceIBMAtrackerTargetsID(d))
+	}
+
+	targets := []map[string]interface{}{}
+	for _, targetsItem := range targetList.Targets {
+		targetsItemMap, err := DataSourceIBMAtrackerTargetsTargetToMap(&targetsItem) // #nosec G601
 		if err != nil {
-			log.Printf("[DEBUG] ListTargetsWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("ListTargetsWithContext failed %s\n%s", err, response))
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_atracker_targets", "read", "targets-to-map").GetDiag()
 		}
-
-		// Use the provided filter argument and construct a new list with only the requested resource(s)
-		var matchTargets []atrackerv2.Target
-		var name string
-		var suppliedFilter bool
-
-		if v, ok := d.GetOk("name"); ok {
-			name = v.(string)
-			suppliedFilter = true
-			for _, data := range targetList.Targets {
-				if *data.Name == name {
-					matchTargets = append(matchTargets, data)
-				}
-			}
-		} else {
-			matchTargets = targetList.Targets
-		}
-		targetList.Targets = matchTargets
-
-		if suppliedFilter {
-			if len(targetList.Targets) == 0 {
-				return diag.FromErr(fmt.Errorf("no Targets found with name %s", name))
-			}
-			d.SetId(name)
-		} else {
-			d.SetId(DataSourceIBMAtrackerTargetsID(d))
-		}
-
-		targets := []map[string]interface{}{}
-		if targetList.Targets != nil {
-			for _, modelItem := range targetList.Targets {
-				modelMap, err := DataSourceIBMAtrackerTargetsTargetToMap(&modelItem)
-				if err != nil {
-					return diag.FromErr(err)
-				}
-				targets = append(targets, modelMap)
-			}
-		}
-		if err = d.Set("targets", targets); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting targets %s", err))
-		}
-		return nil
+		targets = append(targets, targetsItemMap)
+	}
+	if err = d.Set("targets", targets); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting targets: %s", err), "(Data) ibm_atracker_targets", "read", "set-targets").GetDiag()
 	}
 
-	log.Printf("[DEBUG] ListTargetsWithContext failed %s\n%s", err, responseV1)
-	return diag.FromErr(fmt.Errorf("ListTargetsWithContext failed %s\n%s", err, responseV1))
+	return nil
 }
 
-// DataSourceIBMAtrackerTargetsID returns a reasonable ID for the list.
-func DataSourceIBMAtrackerTargetsID(d *schema.ResourceData) string {
+// dataSourceIBMAtrackerTargetsID returns a reasonable ID for the list.
+func dataSourceIBMAtrackerTargetsID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
 
@@ -369,19 +297,19 @@ func DataSourceIBMAtrackerTargetsTargetToMap(model *atrackerv2.Target) (map[stri
 		}
 		modelMap["cos_endpoint"] = []map[string]interface{}{cosEndpointMap}
 	}
-	if model.LogdnaEndpoint != nil {
-		logdnaEndpointMap, err := DataSourceIBMAtrackerTargetsLogdnaEndpointToMap(model.LogdnaEndpoint)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["logdna_endpoint"] = []map[string]interface{}{logdnaEndpointMap}
-	}
 	if model.EventstreamsEndpoint != nil {
 		eventstreamsEndpointMap, err := DataSourceIBMAtrackerTargetsEventstreamsEndpointToMap(model.EventstreamsEndpoint)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["eventstreams_endpoint"] = []map[string]interface{}{eventstreamsEndpointMap}
+	}
+	if model.CloudlogsEndpoint != nil {
+		cloudlogsEndpointMap, err := DataSourceIBMAtrackerTargetsCloudLogsEndpointToMap(model.CloudlogsEndpoint)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["cloudlogs_endpoint"] = []map[string]interface{}{cloudlogsEndpointMap}
 	}
 	if model.WriteStatus != nil {
 		writeStatusMap, err := DataSourceIBMAtrackerTargetsWriteStatusToMap(model.WriteStatus)
@@ -399,8 +327,6 @@ func DataSourceIBMAtrackerTargetsTargetToMap(model *atrackerv2.Target) (map[stri
 	if model.APIVersion != nil {
 		modelMap["api_version"] = *model.APIVersion
 	}
-	// TODO: Deprecated, to remove
-	modelMap["encryption_key"] = REDACTED_TEXT
 	return modelMap, nil
 }
 
@@ -421,14 +347,6 @@ func DataSourceIBMAtrackerTargetsCosEndpointToMap(model *atrackerv2.CosEndpoint)
 	return modelMap, nil
 }
 
-func DataSourceIBMAtrackerTargetsLogdnaEndpointToMap(model *atrackerv2.LogdnaEndpoint) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.TargetCRN != nil {
-		modelMap["target_crn"] = *model.TargetCRN
-	}
-	return modelMap, nil
-}
-
 func DataSourceIBMAtrackerTargetsEventstreamsEndpointToMap(model *atrackerv2.EventstreamsEndpoint) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.TargetCRN != nil {
@@ -442,6 +360,17 @@ func DataSourceIBMAtrackerTargetsEventstreamsEndpointToMap(model *atrackerv2.Eve
 	}
 	if model.APIKey != nil {
 		modelMap["api_key"] = *model.APIKey // pragma: allowlist secret
+	}
+	if model.ServiceToServiceEnabled != nil {
+		modelMap["service_to_service_enabled"] = *model.ServiceToServiceEnabled
+	}
+	return modelMap, nil
+}
+
+func DataSourceIBMAtrackerTargetsCloudLogsEndpointToMap(model *atrackerv2.CloudLogsEndpoint) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.TargetCRN != nil {
+		modelMap["target_crn"] = *model.TargetCRN
 	}
 	return modelMap, nil
 }
@@ -458,87 +387,4 @@ func DataSourceIBMAtrackerTargetsWriteStatusToMap(model *atrackerv2.WriteStatus)
 		modelMap["reason_for_last_failure"] = *model.ReasonForLastFailure
 	}
 	return modelMap, nil
-}
-
-func dataSourceTargetListFlattenTargetsV1(result []atrackerv1.Target) (targets []map[string]interface{}) {
-	for _, targetsItem := range result {
-		targets = append(targets, dataSourceTargetListTargetsToMapV1(targetsItem))
-	}
-
-	return targets
-}
-
-func dataSourceTargetListTargetsToMapV1(targetsItem atrackerv1.Target) (targetsMap map[string]interface{}) {
-	targetsMap = map[string]interface{}{}
-
-	if targetsItem.ID != nil {
-		targetsMap["id"] = targetsItem.ID
-	}
-	if targetsItem.Name != nil {
-		targetsMap["name"] = targetsItem.Name
-	}
-	if targetsItem.CRN != nil {
-		targetsMap["crn"] = targetsItem.CRN
-	}
-	if targetsItem.TargetType != nil {
-		targetsMap["target_type"] = targetsItem.TargetType
-	}
-	if targetsItem.EncryptKey != nil {
-		targetsMap["encrypt_key"] = targetsItem.EncryptKey
-	}
-	if targetsItem.CosEndpoint != nil {
-		cosEndpointList := []map[string]interface{}{}
-		cosEndpointMap := dataSourceTargetListTargetsCosEndpointToMapV1(*targetsItem.CosEndpoint)
-		cosEndpointList = append(cosEndpointList, cosEndpointMap)
-		targetsMap["cos_endpoint"] = cosEndpointList
-	}
-	if targetsItem.CosWriteStatus != nil {
-		cosWriteStatusList := []map[string]interface{}{}
-		cosWriteStatusMap := dataSourceTargetListTargetsCosWriteStatusToMapV1(*targetsItem.CosWriteStatus)
-		cosWriteStatusList = append(cosWriteStatusList, cosWriteStatusMap)
-		targetsMap["cos_write_status"] = cosWriteStatusList
-	}
-	if targetsItem.Created != nil {
-		targetsMap["created"] = targetsItem.Created.String()
-	}
-	if targetsItem.Updated != nil {
-		targetsMap["updated"] = targetsItem.Updated.String()
-	}
-
-	return targetsMap
-}
-
-func dataSourceTargetListTargetsCosEndpointToMapV1(cosEndpointItem atrackerv1.CosEndpoint) (cosEndpointMap map[string]interface{}) {
-	cosEndpointMap = map[string]interface{}{}
-
-	if cosEndpointItem.Endpoint != nil {
-		cosEndpointMap["endpoint"] = cosEndpointItem.Endpoint
-	}
-	if cosEndpointItem.TargetCRN != nil {
-		cosEndpointMap["target_crn"] = cosEndpointItem.TargetCRN
-	}
-	if cosEndpointItem.Bucket != nil {
-		cosEndpointMap["bucket"] = cosEndpointItem.Bucket
-	}
-	if cosEndpointItem.APIKey != nil {
-		cosEndpointMap["api_key"] = cosEndpointItem.APIKey
-	}
-
-	return cosEndpointMap
-}
-
-func dataSourceTargetListTargetsCosWriteStatusToMapV1(cosWriteStatusItem atrackerv1.CosWriteStatus) (cosWriteStatusMap map[string]interface{}) {
-	cosWriteStatusMap = map[string]interface{}{}
-
-	if cosWriteStatusItem.Status != nil {
-		cosWriteStatusMap["status"] = cosWriteStatusItem.Status
-	}
-	if cosWriteStatusItem.LastFailure != nil {
-		cosWriteStatusMap["last_failure"] = cosWriteStatusItem.LastFailure.String()
-	}
-	if cosWriteStatusItem.ReasonForLastFailure != nil {
-		cosWriteStatusMap["reason_for_last_failure"] = cosWriteStatusItem.ReasonForLastFailure
-	}
-
-	return cosWriteStatusMap
 }

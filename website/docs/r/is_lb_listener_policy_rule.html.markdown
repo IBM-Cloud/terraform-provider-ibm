@@ -62,6 +62,48 @@ resource "ibm_is_lb_listener_policy_rule" "example" {
 }
 ```
 
+### Create load load balancer listener policy rule , with sni_hostname .
+
+```terraform
+resource "ibm_is_lb" "example" {
+  name    = "example-lb"
+  subnets = [ibm_is_subnet.example.id]
+}
+
+resource "ibm_is_lb_listener" "example" {
+  lb       = ibm_is_lb.example.id
+  port     = "9086"
+  protocol = "http"
+}
+resource "ibm_is_lb_listener_policy" "example" {
+  lb                      = ibm_is_lb.example.id
+  listener                = ibm_is_lb_listener.example.listener_id
+  action                  = "redirect"
+  priority                = 2
+  name                    = "example-listener"
+  target_http_status_code = 302
+  target_url              = "https://www.redirect.com"
+  rules {
+    condition = "contains"
+    type      = "header"
+    field     = "1"
+    value     = "2"
+  }
+}
+
+resource "ibm_is_lb_listener_policy_rule" "example" {
+  lb        = ibm_is_lb.example.id
+  listener  = ibm_is_lb_listener.example.listener_id
+  policy    = ibm_is_lb_listener_policy.example.policy_id
+  condition = "equals"
+  type      = "sni_hostname"
+  field     = "MY-APP-HEADER"
+  value     = "New-value"
+}
+```
+
+
+
 ## Timeouts
 The `ibm_is_lb_listener_policy` rule provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
@@ -77,7 +119,7 @@ Review the argument references that you can specify for your resource.
 - `lb` - (Required, Forces new resource, String) The ID of the load balancer for which you want to create a listener policy rule.
 - `listener` - (Required, Forces new resource, String) The ID of the load balancer listener for which you want to create a policy rule. 
 - `policy` - (Required, Forces new resource, String) The ID of the load balancer listener policy for which you want to create a policy rule. 
-- `type` - (Required, String) The object where you want to apply the rule. Supported values are `header`, `hostname`, and `path`.
+- `type` - (Required, String) The object where you want to apply the rule. Supported values are `header`, `hostname`,`sni_hostname` and `path`.
 - `value` - (Required, String) The value that must match the rule condition. The value can be between 1 and 128 characters long. No.
 
 ## Attribute reference

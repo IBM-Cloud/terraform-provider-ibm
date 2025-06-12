@@ -1,5 +1,4 @@
 ---
-
 subcategory: "Power Systems"
 layout: "ibm"
 page_title: "IBM: pi_dhcp"
@@ -11,7 +10,7 @@ description: |-
 
 Retrieve information about a DHCP Server. For more information, see [getting started with IBM Power Systems Virtual Servers](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-getting-started).
 
-## Example usage
+## Example Usage
 
 ```terraform
 data "ibm_pi_dhcp" "example" {
@@ -20,31 +19,12 @@ data "ibm_pi_dhcp" "example" {
 }
 ```
 
-## Argument reference
-Review the argument references that you can specify for your data source.
+### Notes
 
-- `pi_cloud_instance_id` - (Required, String) Cloud Instance ID of a PCloud Instance.
-- `pi_dhcp_id` - (Required, String) The ID of the DHCP Server.
-
-## Attribute reference
-In addition to all argument reference list, you can access the following attribute references after your data source is created.
-
-- `id` - (String) The ID of the DHCP Server.
-- `leases` - (List) The list of DHCP Server PVM Instance leases.
-  Nested scheme for `leases`:
-  - `instance_ip` - (String) The IP of the PVM Instance.
-  - `instance_mac` - (String) The MAC Address of the PVM Instance.
-- `network` - (String) The ID of the DHCP Server private network (deprecated - replaced by `network_id`).
-- `network_id`- (String) The ID of the DHCP Server private network.
-- `network_name` - The name of the DHCP Server private network.
-- `status` - (String) The status of the DHCP Server.
-
-**Note**
-
-* Please find [supported Regions](https://cloud.ibm.com/apidocs/power-cloud#endpoint) for endpoints.
-* If a Power cloud instance is provisioned at `lon04`, The provider level attributes should be as follows:
-  * `region` - `lon`
-  * `zone` - `lon04`
+- Please find [supported Regions](https://cloud.ibm.com/apidocs/power-cloud#endpoint) for endpoints.
+- If a Power cloud instance is provisioned at `lon04`, The provider level attributes should be as follows:
+  - `region` - `lon`
+  - `zone` - `lon04`
 
 Example usage:
 
@@ -54,3 +34,24 @@ Example usage:
       zone      =   "lon04"
     }
   ```
+
+## Argument Reference
+
+Review the argument references that you can specify for your data source.
+
+- `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
+- `pi_dhcp_id` - (Required, String) ID of the DHCP Server.
+
+## Attribute Reference
+
+In addition to all argument reference list, you can access the following attribute references after your data source is created.
+
+- `dhcp_id` - (Deprecated, String) ID of the DHCP Server.
+- `leases` - (List) List of DHCP Server PVM Instance leases.
+  Nested scheme for `leases`:
+  - `instance_ip` - (String) IP of the PVM Instance.
+  - `instance_mac` - (String) MAC Address of the PVM Instance.
+- `network` - (String) ID of the DHCP Server private network (deprecated - replaced by `network_id`).
+- `network_id`- (String) ID of the DHCP Server private network.
+- `network_name` - (String) Name of the DHCP Server private network.
+- `status` - (String) Status of the DHCP Server.

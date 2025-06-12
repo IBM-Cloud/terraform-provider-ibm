@@ -13,16 +13,37 @@ Create, update, or delete an environment by using IBM Cloud™ App Configuration
 ## Example usage
 
 ```terraform
+# Example 1
 resource "ibm_app_config_feature" "app_config_feature" {
   guid = "guid"
   name = "name"
   type = "type"
   tags = "tags"
+  format="format"
   feature_id = "feature_id"
   enabled_value = "enabled_value"
   environment_id = "environment_id"
   disabled_value = "disabled_value"
   rollout_percentage = "rollout_percentage"
+  enabled = false
+}
+
+# Example 2
+resource "ibm_app_config_feature" "app_config_feature" {
+  guid = "guid"
+  name = "name"
+  type = "type"
+  tags = "tags"
+  format="format"
+  feature_id = "feature_id"
+  enabled_value = "enabled_value"
+  environment_id = "environment_id"
+  disabled_value = "disabled_value"
+  rollout_percentage = "rollout_percentage"
+  collections {
+    collection_id = "collection_id"
+  }
+  enabled = true
 }
 ```
 
@@ -33,10 +54,12 @@ Review the argument reference that you can specify for your resource.
 - `guid` - (Required, String) The GUID of the App Configuration service. Fetch GUID from the service instance credentials section of the dashboard.
 - `environment_id` - (Required, String) The environment ID.
 - `name` - (Required, String) The feature name.
+- `format` - Format of the property (TEXT, JSON, YAML) and this is a required attribute when TYPE STRING is used, not required for BOOLEAN and NUMERIC types.
 - `feature_id` - (Required, String) The feature ID.
 - `type` - (Required, String) The feature type. Supported values are **BOOLEAN**, **STRING**, or **NUMERIC**.
 - `enabled_value` - (Required, String) The value of the feature when it is enabled. The value can be **BOOLEAN**, **STRING**, or **NUMERIC** value as per the `type` attribute.
 - `disabled_value` - (Required, String) The value of the feature when it is disabled. The value can be **BOOLEAN**, **STRING**, or **NUMERIC** value as per the `type` attribute.
+- `enabled` - (Optional, Boolean) The value of the state of feature. (Note:- If enabled is set to *false*, collections is optional but for setting enabled to *true* collections is required to be set).
 - `description` - (Optional, String) The feature description.
 - `tags` - (Optional, String) Tags associated with the feature.
 - `rollout_percentage` - (String) Rollout percentage of the feature.
