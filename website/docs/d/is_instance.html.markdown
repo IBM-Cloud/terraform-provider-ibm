@@ -48,6 +48,21 @@ resource "ibm_is_image" "example" {
 
 }
 
+resource "ibm_is_reservation" "example" {
+  capacity {
+    total = 5
+  }
+  committed_use {
+    term = "one_year"
+  }
+  profile {
+    name          = "ba2-2x8"
+    resource_type = "instance_profile"
+  }
+  zone = "us-east-3"
+  name = "reservation-name"
+}
+
 resource "ibm_is_instance" "example" {
   name    = "example-instance"
   image   = ibm_is_image.example.id
@@ -61,6 +76,13 @@ resource "ibm_is_instance" "example" {
   network_interfaces {
     name   = "eth1"
     subnet = ibm_is_subnet.example.id
+  }
+
+  reservation_affinity {
+    policy = "manual"
+    pool {
+      id = ibm_is_reservation.example.id
+    }
   }
 
   vpc  = ibm_is_vpc.example.id
@@ -101,7 +123,29 @@ In addition to all argument reference list, you can access the following attribu
   Nested scheme for `catalog_offering`:
     - `offering_crn` - (String) The CRN for this catalog offering. Identifies a catalog offering by this unique property
     - `version_crn` - (String) The CRN for this version of a catalog offering. Identifies a version of a catalog offering by this unique property
-   
+    - `plan_crn` - (String) The CRN for this catalog offering version's billing plan
+    - `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.
+		  Nested schema for `deleted`:
+        - `more_info`  - (String) Link to documentation about deleted resources.
+
+- `cluster_network` - (List) If present, the cluster network that this virtual server instance resides in.
+  Nested schema for **cluster_network**:
+	- `crn` - (String) The CRN for this cluster network.
+	- `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
+	  Nested schema for **deleted**:
+		- `more_info` - (String) Link to documentation about deleted resources.
+	- `href` - (String) The URL for this cluster network.
+	- `id` - (String) The unique identifier for this cluster network.
+	- `name` - (String) The name for this cluster network. The name must not be used by another cluster network in the region.
+	- `resource_type` - (String) The resource type.
+- `cluster_network_attachments` - (List) The cluster network attachments for this virtual server instance.The cluster network attachments are ordered for consistent instance configuration.
+  Nested schema for **cluster_network_attachments**:
+	- `href` - (String) The URL for this instance cluster network attachment.
+	- `id` - (String) The unique identifier for this instance cluster network attachment.
+	- `name` - (String) The name for this instance cluster network attachment. The name is unique across all network attachments for the instance.
+	- `resource_type` - (String) The resource type.
+
+- `confidential_compute_mode` - (String) The confidential compute mode to use for this virtual server instance.If unspecified, the default confidential compute mode from the profile will be used. 
 - `crn` - (String) The CRN of the instance.
 - `disks` - (List) Collection of the instance's disks. Nested `disks` blocks has the following structure:
 
@@ -113,6 +157,7 @@ In addition to all argument reference list, you can access the following attribu
   - `name` - (String) The user-defined name for this disk.
   - `resource_type` - (String) The resource type.
   - `size` - (String) The size of the disk in GB.
+- `enable_secure_boot` - (Boolean) Indicates whether secure boot is enabled for this virtual server instance.If unspecified, the default secure boot mode from the profile will be used.
 - `gpu`- (List) A list of graphics processing units that are allocated to the instance.
 
   Nested scheme for `gpu`:
@@ -120,6 +165,13 @@ In addition to all argument reference list, you can access the following attribu
   - `manufacture` - (String) The manufacturer of the GPU.
   - `memory`- (Integer) The amount of memory that was allocated to the GPU.
   - `model` - (String) The model of the GPU. 
+- `health_reasons` - (List) The reasons for the current health_state (if any).
+
+    Nested scheme for `health_reasons`:
+    - `code` - (String) A snake case string succinctly identifying the reason for this health state.
+    - `message` - (String) An explanation of the reason for this health state.
+    - `more_info` - (String) Link to documentation about the reason for this health state.
+- `health_state` - (String) The health of this resource.
 - `id` - (String) The ID that was assigned to the Virtual Servers for VPC instance.
 - `image` - (String) The ID of the virtual server image that is used in the instance.
 - `keys`- (List) A list of SSH keys that were added to the instance during creation.
@@ -155,6 +207,43 @@ In addition to all argument reference list, you can access the following attribu
      - `enabled` - (Boolean) Indicates whether the metadata service endpoint will be available to the virtual server instance.
      - `protocol` - (String) The communication protocol to use for the metadata service endpoint.
      - `response_hop_limit` - (Integer) The hop limit (IP time to live) for IP response packets from the metadata service.
+
+- `network_attachments` - (List) The network attachments for this virtual server instance, including the primary network attachment.
+  Nested schema for **network_attachments**:
+	- `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
+	Nested schema for **deleted**:
+		- `more_info` - (String) Link to documentation about deleted resources.
+	- `href` - (String) The URL for this network attachment.
+	- `id` - (String) The unique identifier for this network attachment.
+	- `name` - (String)
+	- `primary_ip` - (List) The primary IP address of the virtual network interface for the network attachment.
+	  Nested schema for **primary_ip**:
+		- `address` - (String) The IP address.If the address has not yet been selected, the value will be `0.0.0.0`.This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
+		- `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
+		  Nested schema for **deleted**:
+			- `more_info` - (String) Link to documentation about deleted resources.
+		- `href` - (String) The URL for this reserved IP.
+		- `id` - (String) The unique identifier for this reserved IP.
+		- `name` - (String) The name for this reserved IP. The name is unique across all reserved IPs in a subnet.
+		- `resource_type` - (String) The resource type.
+	- `resource_type` - (String) The resource type.
+	- `subnet` - (List) The subnet of the virtual network interface for the network attachment.
+	  Nested schema for **subnet**:
+		- `crn` - (String) The CRN for this subnet.
+		- `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
+		  Nested schema for **deleted**:
+			- `more_info` - (String) Link to documentation about deleted resources.
+		- `href` - (String) The URL for this subnet.
+		- `id` - (String) The unique identifier for this subnet.
+		- `name` - (String) The name for this subnet. The name is unique across all subnets in the VPC.
+		- `resource_type` - (String) The resource type.
+  - `virtual_network_interface` - (List) The virtual network interface for this bare metal server network attachment.
+  Nested schema for **virtual_network_interface**:
+    - `crn` - (String) The CRN for this virtual network interface.
+    - `href` - (String) The URL for this virtual network interface.
+    - `id` - (String) The unique identifier for this virtual network interface.
+    - `name` - (String) The name for this virtual network interface. The name is unique across all virtual network interfaces in the VPC.
+    - `resource_type` - (String) The resource type.
     
 - `network_interfaces`- (List) A list of more network interfaces that the instance uses.
 
@@ -172,6 +261,7 @@ In addition to all argument reference list, you can access the following attribu
   - `primary_ipv4_address` - (String) The IPv4 address range that the subnet uses. Same as `primary_ip.0.address`
   - `subnet` - (String) The ID of the subnet that is used in the more network interface.
   - `security_groups` (List)A list of security groups that were created for the interface.
+- `numa_count` - (Integer) The number of NUMA nodes this virtual server instance is provisioned on. This property may be absent if the instance's `status` is not `running`.
 - `password` - (String) The password that you can use to access your instance.
 - `placement_target`- (List) The placement restrictions for the virtual server instance.
 
@@ -183,6 +273,44 @@ In addition to all argument reference list, you can access the following attribu
   - `id` - (String) The unique identifier for this placement target resource.
   - `name` - (String) The unique user-defined name for this placement target resource. If unspecified, the name will be a hyphenated list of randomly-selected words.
   - `resource_type` - (String) The type of resource referenced.
+- `primary_network_attachment` - (List) The primary network attachment for this virtual server instance.
+  Nested schema for **primary_network_attachment**:
+	- `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
+	  Nested schema for **deleted**:
+		- `more_info` - (String) Link to documentation about deleted resources.
+	- `href` - (String) The URL for this network attachment.
+	- `id` - (String) The unique identifier for this network attachment.
+	- `name` - (String)
+	- `primary_ip` - (List) The primary IP address of the virtual network interface for the network attachment.
+	  Nested schema for **primary_ip**:
+		- `address` - (String) The IP address.If the address has not yet been selected, the value will be `0.0.0.0`.This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
+		- `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
+		  Nested schema for **deleted**:
+			- `more_info` - (String) Link to documentation about deleted resources.
+		- `href` - (String) The URL for this reserved IP.
+		- `id` - (String) The unique identifier for this reserved IP.
+		- `name` - (String) The name for this reserved IP. The name is unique across all reserved IPs in a subnet.
+		- `resource_type` - (String) The resource type.
+	- `resource_type` - (String) The resource type.
+	- `subnet` - (List) The subnet of the virtual network interface for the network attachment.
+	  Nested schema for **subnet**:
+		- `crn` - (String) The CRN for this subnet.
+		- `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
+		  Nested schema for **deleted**:
+			- `more_info` - (String) Link to documentation about deleted resources.
+		- `href` - (String) The URL for this subnet.
+		- `id` - (String) The unique identifier for this subnet.
+		- `name` - (String) The name for this subnet. The name is unique across all subnets in the VPC.
+		- `resource_type` - (String) The resource type.
+  - `virtual_network_interface` - (List) The virtual network interface for this bare metal server network attachment.
+  Nested schema for **virtual_network_interface**:
+    - `crn` - (String) The CRN for this virtual network interface.
+    - `href` - (String) The URL for this virtual network interface.
+    - `id` - (String) The unique identifier for this virtual network interface.
+    - `name` - (String) The name for this virtual network interface. The name is unique across all virtual network interfaces in the VPC.
+    - `resource_type` - (String) The resource type.
+    
+
 - `primary_network_interface`- (List) A list of primary network interfaces that were created for the instance. 
 
   Nested scheme for `primary_network_interface`:
@@ -199,6 +327,34 @@ In addition to all argument reference list, you can access the following attribu
   - `primary_ipv4_address` - (String) The IPv4 address range that the subnet uses. Same as `primary_ip.0.address`
   - `subnet` - (String) The ID of the subnet that is used in the primary network interface.
   - `security_groups` (List)A list of security groups that were created for the interface.
+- `reservation`- (List) The reservation used by this virtual server instance. 
+
+  Nested scheme for `reservation`:
+  - `crn` - (String) The CRN for this reservation.
+  - `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.
+        
+      Nested `deleted` blocks have the following structure: 
+      - `more_info` - (String) Link to documentation about deleted resources.
+  - `href` - (String) The URL for this reservation.
+  - `id` - (String) The unique identifier for this reservation.
+  - `name` - (string) The name for this reservation. The name is unique across all reservations in the region.
+  - `resource_type` - (string) The resource type.
+- `reservation_affinity`- (List) The instance reservation affinity. 
+
+  Nested scheme for `reservation_affinity`:
+  - `policy` - (String) The reservation affinity policy to use for this virtual server instance.
+  - `pool` - (List) The pool of reservations available for use by this virtual server instance.
+        
+    Nested `pool` blocks have the following structure: 
+    - `crn` - (String) The CRN for this reservation.
+    - `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.
+
+      Nested `deleted` blocks have the following structure:
+      - `more_info` - (String) Link to documentation about deleted resources. 
+    - `href` - (String) The URL for this reservation.
+    - `id` - (String) The unique identifier for this reservation.
+    - `name` - (string) The name for this reservation. The name is unique across all reservations in the region.
+    - `resource_type` - (string) The resource type.
 - `resource_controller_url` - (String) The URL of the IBM Cloud dashboard that you can use to see details for your instance.  
 - `resource_group` - (String) The resource group id, where the instance was created.
 - `status` - (String) The status of the instance.
@@ -215,6 +371,7 @@ In addition to all argument reference list, you can access the following attribu
 
   Nested scheme for `vcpu`:
   - `architecture` - (String) The architecture of the virtual CPU.
+  - `manufacturer` - (String) The manufacturer of the virtual CPU.
   - `count`- (Integer) The number of virtual CPUs that are allocated to the instance.
 - `volume_attachments`- (List) A list of volume attachments that were created for the instance. 
 

@@ -104,6 +104,9 @@ Review the argument references that you can specify for your resource.
 - `public_gateway` - (Optional, String) The ID of the public gateway for the subnet that you want to attach to the subnet. You create the public gateway with the [`ibm_is_public_gateway` resource](#provider-public-gateway).
 - `resource_group` - (Optional, Forces new resource, String) The ID of the resource group where you want to create the subnet.
 - `routing_table` - (Optional, String) The routing table ID associated with the subnet.
+- `routing_table_crn` - (Optional, String) The routing table crn associated with the subnet.
+  ~> **Note** 
+  `routing_table` and `routing_table_crn` are mutually exclusive.
 - `tags`  - (Optional, List of Strings) The tags associated with the subnet.
 - `total_ipv4_address_count` - (Optional, Forces new resource, String) The total number of IPv4 addresses. Either `ipv4_cidr_block` or `total_pv4_address_count` input parameters must be provided in the resource.
   

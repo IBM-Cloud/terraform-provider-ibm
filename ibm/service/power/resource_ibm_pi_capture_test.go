@@ -9,11 +9,11 @@ import (
 	"fmt"
 	"testing"
 
-	st "github.com/IBM-Cloud/power-go-client/clients/instance"
-	"github.com/IBM-Cloud/power-go-client/helpers"
+	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/power"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -38,6 +38,7 @@ func TestAccIBMPICaptureBasic(t *testing.T) {
 		},
 	})
 }
+
 func TestAccIBMPICaptureWithVolume(t *testing.T) {
 	captureRes := "ibm_pi_capture.capture_instance"
 	name := fmt.Sprintf("tf-pi-capture-%d", acctest.RandIntRange(10, 100))
@@ -47,13 +48,49 @@ func TestAccIBMPICaptureWithVolume(t *testing.T) {
 		CheckDestroy: testAccCheckIBMPICaptureDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMPICaptureWithVolumeConfig(name, helpers.PIInstanceHealthOk),
+				Config: testAccCheckIBMPICaptureWithVolumeConfig(name, power.OK),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMPICaptureExists(captureRes),
 					resource.TestCheckResourceAttr(captureRes, "pi_capture_name", name),
 					resource.TestCheckResourceAttrSet(captureRes, "image_id"),
 				),
-				ExpectNonEmptyPlan: true,
+			},
+		},
+	})
+}
+
+func TestAccIBMPICaptureUserTags(t *testing.T) {
+	captureRes := "ibm_pi_capture.capture_instance"
+	name := fmt.Sprintf("tf-pi-capture-%d", acctest.RandIntRange(10, 100))
+	userTagsString := `["env:dev", "test_tag"]`
+	userTagsStringUpdated := `["env:dev", "test_tag","test_tag2"]`
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPICaptureDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMPICaptureUserTagsConfig(name, userTagsString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPICaptureExists(captureRes),
+					resource.TestCheckResourceAttr(captureRes, "pi_capture_name", name),
+					resource.TestCheckResourceAttrSet(captureRes, "image_id"),
+					resource.TestCheckResourceAttr(captureRes, "pi_user_tags.#", "2"),
+					resource.TestCheckTypeSetElemAttr(captureRes, "pi_user_tags.*", "env:dev"),
+					resource.TestCheckTypeSetElemAttr(captureRes, "pi_user_tags.*", "test_tag"),
+				),
+			},
+			{
+				Config: testAccCheckIBMPICaptureUserTagsConfig(name, userTagsStringUpdated),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPICaptureExists(captureRes),
+					resource.TestCheckResourceAttr(captureRes, "pi_capture_name", name),
+					resource.TestCheckResourceAttrSet(captureRes, "image_id"),
+					resource.TestCheckResourceAttr(captureRes, "pi_user_tags.#", "3"),
+					resource.TestCheckTypeSetElemAttr(captureRes, "pi_user_tags.*", "env:dev"),
+					resource.TestCheckTypeSetElemAttr(captureRes, "pi_user_tags.*", "test_tag"),
+					resource.TestCheckTypeSetElemAttr(captureRes, "pi_user_tags.*", "test_tag2"),
+				),
 			},
 		},
 	})
@@ -117,7 +154,7 @@ func testAccCheckIBMPICaptureExists(n string) resource.TestCheckFunc {
 		if err != nil {
 			return err
 		}
-		client := st.NewIBMPIImageClient(context.Background(), sess, cloudInstanceID)
+		client := instance.NewIBMPIImageClient(context.Background(), sess, cloudInstanceID)
 
 		_, err = client.Get(captureID)
 		if err != nil {
@@ -143,7 +180,7 @@ func testAccCheckIBMPICaptureDestroy(s *terraform.State) error {
 		if err != nil {
 			return err
 		}
-		imageClient := st.NewIBMPIImageClient(context.Background(), sess, cloudInstanceID)
+		imageClient := instance.NewIBMPIImageClient(context.Background(), sess, cloudInstanceID)
 		_, err = imageClient.Get(captureID)
 		if err == nil {
 			return fmt.Errorf("PI Image still exists: %s", rs.Primary.ID)
@@ -177,32 +214,44 @@ func testAccCheckIBMPICaptureConfigBasic(name string) string {
 	`, acc.Pi_cloud_instance_id, name, acc.Pi_instance_name)
 }
 
-func testAccCheckIBMPICaptureCloudStorageConfig(name string) string {
-	return fmt.Sprintf(`
-	resource "ibm_pi_capture" "capture_instance" {
-		pi_cloud_instance_id="%[1]s"
-		pi_capture_name  = "%s"
-		pi_instance_name = "%s"
-		pi_capture_destination = "cloud-storage"
-		pi_capture_cloud_storage_region = "us-east"
-		pi_capture_cloud_storage_access_key = "%s"
-		pi_capture_cloud_storage_secret_key = "%s"
-		pi_capture_storage_image_path = "%s"
-	}
-	`, acc.Pi_cloud_instance_id, name, acc.Pi_instance_name, acc.Pi_capture_cloud_storage_access_key, acc.Pi_capture_cloud_storage_secret_key, acc.Pi_capture_storage_image_path)
-}
-
-func testAccCheckIBMPICaptureBothConfig(name string) string {
+func testAccCheckIBMPICaptureUserTagsConfig(name string, userTagsString string) string {
 	return fmt.Sprintf(`
 	resource "ibm_pi_capture" "capture_instance" {
 		pi_cloud_instance_id="%[1]s"
 		pi_capture_name = "%s"
 		pi_instance_name = "%s"
-		pi_capture_destination  = "both"
-		pi_capture_cloud_storage_region = "us-east"
+		pi_capture_destination = "image-catalog"
+		pi_user_tags = %s
+	}
+	`, acc.Pi_cloud_instance_id, name, acc.Pi_instance_name, userTagsString)
+}
+
+func testAccCheckIBMPICaptureCloudStorageConfig(name string) string {
+	return fmt.Sprintf(`
+	resource "ibm_pi_capture" "capture_instance" {
+		pi_cloud_instance_id="%s"
+		pi_capture_name  = "%s"
+		pi_instance_name = "%s"
+		pi_capture_destination = "cloud-storage"
+		pi_capture_cloud_storage_region = "%s"
 		pi_capture_cloud_storage_access_key = "%s"
 		pi_capture_cloud_storage_secret_key = "%s"
 		pi_capture_storage_image_path = "%s"
 	}
-	`, acc.Pi_cloud_instance_id, name, acc.Pi_instance_name, acc.Pi_capture_cloud_storage_access_key, acc.Pi_capture_cloud_storage_secret_key, acc.Pi_capture_storage_image_path)
+	`, acc.Pi_cloud_instance_id, name, acc.Pi_instance_name, acc.Pi_capture_cloud_storage_region, acc.Pi_capture_cloud_storage_access_key, acc.Pi_capture_cloud_storage_secret_key, acc.Pi_capture_storage_image_path)
+}
+
+func testAccCheckIBMPICaptureBothConfig(name string) string {
+	return fmt.Sprintf(`
+	resource "ibm_pi_capture" "capture_instance" {
+		pi_cloud_instance_id="%s"
+		pi_capture_name = "%s"
+		pi_instance_name = "%s"
+		pi_capture_destination  = "both"
+		pi_capture_cloud_storage_region = "%s"
+		pi_capture_cloud_storage_access_key = "%s"
+		pi_capture_cloud_storage_secret_key = "%s"
+		pi_capture_storage_image_path = "%s"
+	}
+	`, acc.Pi_cloud_instance_id, name, acc.Pi_instance_name, acc.Pi_capture_cloud_storage_region, acc.Pi_capture_cloud_storage_access_key, acc.Pi_capture_cloud_storage_secret_key, acc.Pi_capture_storage_image_path)
 }

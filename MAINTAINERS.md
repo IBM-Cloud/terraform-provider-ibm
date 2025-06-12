@@ -5,9 +5,9 @@ Maintainers
 
 | Name | GitHub | email
 |------|--------|------|
-| Ashish Thakur | [ashishth09][ashishth09] | <ashishth@in.ibm.com>
 | Harini | [hkantare][hkantare] | <hkantare@in.ibm.com>
 | Kavya Handadi | [kavya498][kavya498] | <hkavya26@in.ibm.com>
+| Ujjwal Kumar | [uibm][uibm] | <Ujjwal.Kumar1@ibm.com>
 | Vijay R Kalangumvathakkal | [vkalangu][vkalangu] | <vkalangu@in.ibm.com>
 
 
@@ -25,6 +25,7 @@ Maintainers
 | Anilkumar Mallakkanavar | [Anil-CM][Anil-CM] | <amallak1@in.ibm.com>
 | Praveen Gostu | [Praveengostu][Praveengostu] | <praveek9@in.ibm.com>
 | Sakshi Agarwal | [sakshiag][sakshiag] | <sakshiag@in.ibm.com>
+| Ashish Thakur | [ashishth09][ashishth09] | <ashishth@in.ibm.com>
 
 
 [ashishth09]: https://github.com/ashishth09
@@ -35,3 +36,4 @@ Maintainers
 [Anil-CM]: https://github.com/Anil-CM
 [Praveengostu]: https://github.com/Praveengostu
 [sakshiag]: https://github.com/sakshiag
+[uibm]: https://github.com/uibm

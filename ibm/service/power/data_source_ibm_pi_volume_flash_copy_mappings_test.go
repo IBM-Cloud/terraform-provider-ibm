@@ -29,9 +29,8 @@ func TestAccIBMPIVolumeFlashCopyMappingsDataSource_basic(t *testing.T) {
 
 func testAccCheckIBMPIVolumeFlashCopyMappingsDataSourceConfig() string {
 	return fmt.Sprintf(`
-data "ibm_pi_volume_flash_copy_mappings" "testacc_volume_flash_copy_mappings" {
-    pi_cloud_instance_id = "%s"
-	pi_volume_id         = "%s"
-}`, acc.Pi_cloud_instance_id, acc.Pi_volume_id)
-
+		data "ibm_pi_volume_flash_copy_mappings" "testacc_volume_flash_copy_mappings" {
+			pi_cloud_instance_id = "%s"
+			pi_volume_id         = "%s"
+		}`, acc.Pi_cloud_instance_id, acc.Pi_volume_id)
 }

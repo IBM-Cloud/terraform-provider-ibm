@@ -33,10 +33,40 @@ func TestAccIBMISVirtualEndpointGatewayDataSource_basic(t *testing.T) {
 		},
 	})
 }
+func TestAccIBMISVirtualEndpointGatewayDataSource_AllowDnsResolutionBinding(t *testing.T) {
+	resName := "data.ibm_is_virtual_endpoint_gateway.data_test"
+	vpcname1 := fmt.Sprintf("tfvpngw-vpc-%d", acctest.RandIntRange(10, 100))
+	enable_hub := false
+	allowbinding := true
+	name1 := fmt.Sprintf("tfvpngw-createname-%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckisVirtualEndpointGatewayDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISVirtualEndpointGatewayAllowDnsResolutionBindingDataSourceConfig(vpcname1, name1, enable_hub, allowbinding),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						resName, "name", name1),
+					resource.TestCheckResourceAttr(
+						resName, "allow_dns_resolution_binding", fmt.Sprintf("%t", allowbinding)),
+				),
+			},
+		},
+	})
+}
 
 func testAccCheckIBMISVirtualEndpointGatewayDataSourceConfig(vpcname1, subnetname1, name1 string) string {
 	// status filter defaults to empty
 	return testAccCheckisVirtualEndpointGatewayConfigBasic(vpcname1, subnetname1, name1) + fmt.Sprintf(`
+	data "ibm_is_virtual_endpoint_gateway" "data_test" {
+        name = ibm_is_virtual_endpoint_gateway.endpoint_gateway.name
+	}`)
+}
+func testAccCheckIBMISVirtualEndpointGatewayAllowDnsResolutionBindingDataSourceConfig(vpcname1, name1 string, enable_hub, allowbinding bool) string {
+	// status filter defaults to empty
+	return testAccCheckisVirtualEndpointGatewayConfigAllowDnsResolutionBinding(vpcname1, name1, enable_hub, allowbinding) + fmt.Sprintf(`
 	data "ibm_is_virtual_endpoint_gateway" "data_test" {
         name = ibm_is_virtual_endpoint_gateway.endpoint_gateway.name
 	}`)

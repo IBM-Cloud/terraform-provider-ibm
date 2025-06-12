@@ -9,6 +9,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
@@ -233,17 +234,20 @@ func DataSourceIBMISLBListeners() *schema.Resource {
 func dataSourceIBMIsLbListenersRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := vpcClient(meta)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_lb_listeners", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	listLoadBalancerListenersOptions := &vpcv1.ListLoadBalancerListenersOptions{}
 
 	listLoadBalancerListenersOptions.SetLoadBalancerID(d.Get(isLBListenerLBID).(string))
 
-	loadBalancerListenerCollection, response, err := vpcClient.ListLoadBalancerListenersWithContext(context, listLoadBalancerListenersOptions)
+	loadBalancerListenerCollection, _, err := vpcClient.ListLoadBalancerListenersWithContext(context, listLoadBalancerListenersOptions)
 	if err != nil {
-		log.Printf("[DEBUG] ListLoadBalancerListenersWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("ListLoadBalancerListenersWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListLoadBalancerListenersWithContext failed: %s", err.Error()), "(Data) ibm_is_lb_listeners", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(dataSourceIBMIsLbListenersID(d))
@@ -251,7 +255,7 @@ func dataSourceIBMIsLbListenersRead(context context.Context, d *schema.ResourceD
 	if loadBalancerListenerCollection.Listeners != nil {
 		err = d.Set("listeners", dataSourceLoadBalancerListenerCollectionFlattenListeners(loadBalancerListenerCollection.Listeners))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting listeners %s", err))
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting listeners: %s", err), "(Data) ibm_is_lb_listeners", "read", "set-listeners").GetDiag()
 		}
 	}
 
@@ -368,7 +372,7 @@ func dataSourceLoadBalancerListenerCollectionListenersDefaultPoolToMap(defaultPo
 	return defaultPoolMap
 }
 
-func dataSourceLoadBalancerListenerCollectionDefaultPoolDeletedToMap(deletedItem vpcv1.LoadBalancerPoolReferenceDeleted) (deletedMap map[string]interface{}) {
+func dataSourceLoadBalancerListenerCollectionDefaultPoolDeletedToMap(deletedItem vpcv1.Deleted) (deletedMap map[string]interface{}) {
 	deletedMap = map[string]interface{}{}
 
 	if deletedItem.MoreInfo != nil {
@@ -416,7 +420,7 @@ func dataSourceLoadBalancerListenerCollectionHTTPSRedirectListenerToMap(listener
 	return listenerMap
 }
 
-func dataSourceLoadBalancerListenerCollectionListenerDeletedToMap(deletedItem vpcv1.LoadBalancerListenerReferenceDeleted) (deletedMap map[string]interface{}) {
+func dataSourceLoadBalancerListenerCollectionListenerDeletedToMap(deletedItem vpcv1.Deleted) (deletedMap map[string]interface{}) {
 	deletedMap = map[string]interface{}{}
 
 	if deletedItem.MoreInfo != nil {
@@ -445,7 +449,7 @@ func dataSourceLoadBalancerListenerCollectionListenersPoliciesToMap(policiesItem
 	return policiesMap
 }
 
-func dataSourceLoadBalancerListenerCollectionPoliciesDeletedToMap(deletedItem vpcv1.LoadBalancerListenerPolicyReferenceDeleted) (deletedMap map[string]interface{}) {
+func dataSourceLoadBalancerListenerCollectionPoliciesDeletedToMap(deletedItem vpcv1.Deleted) (deletedMap map[string]interface{}) {
 	deletedMap = map[string]interface{}{}
 
 	if deletedItem.MoreInfo != nil {

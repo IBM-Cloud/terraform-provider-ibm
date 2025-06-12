@@ -38,6 +38,7 @@ In addition to the argument reference list, you can access the following attribu
   - `ibm_ids` - (Array of Strings) A list of IBM ID that belong to the access group.
   - `id` - (String) The ID of the IAM access group.
   - `name` - (String) The name of the IAM access group.
+  - `crn` - (String) CRN of the access group
   - `rules`- (List) A list of dynamic rules that are applied to the IAM access group.
 
     Nested scheme for `rules`:

@@ -4,6 +4,9 @@ This example shows how to Create a Key protect instance, generate a key and inte
 
 This sample configuration will create the key protect instance, cos-bucket instance, root key, and integrate the key with a cos bucket after creating the bucket.
 
+  **Note:**
+  
+ `key_protect` attribute to associate a kms_key with a COS bucket has been renamed as `kms_key_crn` , hence it is recommended to all the new users to use `kms_key_crn`.Although the support for older attribute name `key_protect` will be continued for existing custom
 
 To run, configure your IBM Cloud provider
 
@@ -62,7 +65,7 @@ resource "ibm_cos_bucket" "flex-us-south" {
   resource_instance_id = ibm_resource_instance.cos_instance.id
   region_location      = var.location
   storage_class        = "flex"
-  key_protect          = ibm_kms_key.test.id
+  kms_key_crn          = ibm_kms_key.test.id
 }
 
 ```
@@ -80,11 +83,10 @@ resource "ibm_cos_bucket" "flex-us-south" {
   resource_instance_id = var.cosinstance
   region_location      = var.location
   storage_class        = "flex"
-  key_protect          = data.ibm_kms_keys.test.keys.0.crn
+  kms_key_crn         = data.ibm_kms_keys.test.keys.0.crn
 }
 
 ```
-
 ## Assumptions
 
 1. It's assumed that user has valid authorizations set for integrating kms keys with other services. This can be done using `ibm_iam_authorization_policy` resource
@@ -96,6 +98,7 @@ resource "ibm_cos_bucket" "flex-us-south" {
 ## Notes
 
 1. Before doing terraform destroy if force_delete flag is introduced after provisioning keys, a terraform apply must be done before terraform destroy for force_delete flag to take effect.
+2. KMIP adapters with active KMIP objects cannot be deleted by Terraform.
 
 ## Examples
 

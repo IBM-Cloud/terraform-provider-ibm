@@ -71,6 +71,9 @@ Review the argument references that you can specify for your resource.
   **&#x2022;** For more information, about creating access tags, see [working with tags](https://cloud.ibm.com/docs/account?topic=account-tag&interface=ui#create-access-console).</br>
   **&#x2022;** You must have the access listed in the [Granting users access to tag resources](https://cloud.ibm.com/docs/account?topic=account-access) for `access_tags`</br>
   **&#x2022;** `access_tags` must be in the format `key:value`.
+- `adjustable_capacity_states` - (List) The attachment states that support adjustable capacity for this volume. Allowable list items are: `attached`, `unattached`, `unusable`. 
+- `adjustable_iops_states` - (List) The attachment states that support adjustable IOPS for this volume. Allowable list items are: `attached`, `unattached`, `unusable`.
+- `bandwidth` - (Optional, Integer) The maximum bandwidth (in megabits per second) for the volume. For this property to be specified, the volume storage_generation must be 2.
 - `capacity` - (Optional, Integer) (The capacity of the volume in gigabytes. This defaults to `100`, minimum to `10 ` and maximum to `16000`.
 
   ~> **NOTE:** Supports only expansion on update (must be attached to a running instance and must not be less than the current volume capacity). Can be updated only if volume is attached to an running virtual server instance. Stopped instance will be started on update of capacity of the volume.If `source_snapshot` is provided `capacity` must be at least the snapshot's minimum_capacity. The maximum value may increase in the future and If unspecified, the capacity will be the source snapshot's minimum_capacity.
@@ -104,11 +107,21 @@ Review the argument references that you can specify for your resource.
 - `resource_group` - (Optional, Forces new resource, String) The resource group ID for this volume.
 - `resource_controller_url` - (Optional, Forces new resource, String) The URL of the IBM Cloud dashboard that can be used to explore and view details about this instance.
 - `source_snapshot` - The ID of snapshot from which to clone the volume.
+- `source_snapshot_crn` - The CRN of snapshot from which to clone the volume.
 - `tags`- (Optional, Array of Strings) A list of user tags that you want to add to your volume. (https://cloud.ibm.com/apidocs/tagging#types-of-tags)
 - `zone` - (Required, Forces new resource, String) The location of the volume.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
+- `catalog_offering` - (List) The catalog offering this volume was created from. If a virtual server instance is provisioned with a boot_volume_attachment specifying this volume, the virtual server instance will use this volume's catalog offering, including its pricing plan.If absent, this volume was not created from a catalog offering.
+
+  Nested scheme for `catalog_offering`:
+    - `version_crn` - (String) The CRN for this version of a catalog offering
+    - `plan_crn` - (String) The CRN for this catalog offering version's billing plan
+    - `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.
+    
+      Nested schema for `deleted`:
+        - `more_info`  - (String) Link to documentation about deleted resources.
 - `encryption_type` - (String) The type of encryption used in the volume [**provider_managed**, **user_managed**].
 - `health_reasons` - (List) The reasons for the current health_state (if any).
 

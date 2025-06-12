@@ -40,7 +40,9 @@ Review the argument references that you can specify for your data source.
 ## Attribute reference
 In addition to the argument reference list, you can access the following attribute references after your data source is created. 
 
+- `access_tags`  - (List) Access management tags associated for the default routing table.
 - `created_at` - (Timestamp)  The date and time that the default routing table was created.
+- `crn` -  (String) The crn for this default routing table.
 - `default_routing_table` - (String) The unique identifier for this routing table.
 - `href` - (String) The routing table URL.
 - `id` - (String) The unique identifier for this routing table. Same as `default_routing_table`.
@@ -62,3 +64,4 @@ In addition to the argument reference list, you can access the following attribu
   Nested scheme for `subnets`:
 	- `id` - (String) The unique ID of the subnet.
 	- `name` - (String) The name of the subnet.
+- `tags` - (List) Tags associated with the default routing table.  

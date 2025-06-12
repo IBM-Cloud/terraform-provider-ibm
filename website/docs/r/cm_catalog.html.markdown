@@ -26,6 +26,24 @@ resource "ibm_cm_catalog" "cm_catalog" {
 
 Review the argument reference that you can specify for your resource.
 
+* `catalog_filters` - (List, Optional) Filters for account and catalog filters.
+Nested schema for **catalog_filters**:
+	* `category_filters` - (List, Optional) Filter against offering properties.
+	Nested schema for **category_filters**:
+    	* `category_name` - (String, Required) Name of the category.
+    	* `include` -  (Boolean, Optional) Whether to include the category in the catalog filter.
+    	* `filter` - (List, Optional) Filter terms related to the category.
+		Nested schema for **filter**:
+			* `filter_terms` - (List, Optional) List of values to match against. If include is true, then if the offering has one of the values then the offering is included. If include is false, then if the offering has one of the values then the offering is excluded.
+	* `id_filters` - (List, Optional) Filter on offering ID's. There is an include filter and an exclule filter. Both can be set.
+	Nested schema for **id_filters**:
+		* `exclude` - (List, Optional) Offering filter terms.
+		Nested schema for **exclude**:
+			* `filter_terms` - (List, Optional) List of values to match against. If include is true, then if the offering has one of the values then the offering is included. If include is false, then if the offering has one of the values then the offering is excluded.
+		* `include` - (List, Optional) Offering filter terms.
+		Nested schema for **include**:
+			* `filter_terms` - (List, Optional) List of values to match against. If include is true, then if the offering has one of the values then the offering is included. If include is false, then if the offering has one of the values then the offering is excluded.
+	* `include_all` - (Boolean, Optional) -> true - Include all of the public catalog when filtering. Further settings will specifically exclude some offerings. false - Exclude all of the public catalog when filtering. Further settings will specifically include some offerings.
 * `catalog_icon_url` - (Optional, String) URL for an icon associated with this catalog.
 * `catalog_banner_url` - (Optional, String) URL for a banner image for this catalog.
 * `disabled` - (Optional, Boolean) Denotes whether a catalog is disabled.
@@ -34,6 +52,16 @@ Review the argument reference that you can specify for your resource.
 * `resource_group_id` - (Optional, String) Resource group id the catalog is owned by.
 * `short_description` - (Optional, String) Description in the requested language.
 * `tags` - (Optional, List) List of tags associated with this catalog.
+* `target_account_contexts` - (Optional, List) List of target account contexts for this catalog. Can only be configured on an update, not on a create.
+Nested scheme for **target_account_contexts**:
+	* `api_key` - (Optional, String) API key of the target account.
+	* `name` - (Optional, String) Unique name/identifier for this target account context.
+	* `label` - (Optional, String) Label for this target account context.
+	* `project_id` - (Optional, String) Project ID.
+	* `trusted_profile` - (Optional, List) Trusted profile information.
+	Nested scheme for **trusted_profile**:
+		* `trusted_profile_id` - (Optional, String) Trusted profile ID.
+		* `target_service_id` - (Optional, String) Target service ID.
 
 ## Attribute Reference
 
@@ -53,6 +81,18 @@ In addition to all argument references listed, you can access the following attr
 * `rev` - (String) Cloudant revision.
 * `short_description` - (String) Description in the requested language.
 * `tags` - (List) List of tags associated with this catalog.
+* `target_account_contexts` - (List) List of target account contexts for this catalog.
+Nested scheme for **target_account_contexts**:
+	* `api_key` - (String) API key of the target account.
+	* `name` - (String) Unique name/identifier for this target account context.
+	* `label` - (String) Label for this target account context.
+	* `project_id` - (String) Project ID.
+	* `trusted_profile` - (List) Trusted profile information.
+	Nested scheme for **trusted_profile**:
+		* `trusted_profile_id` - (String) Trusted profile ID.
+		* `catalog_crn` - (String) CRN of this catalog.
+		* `catalog_name` - (String) Name of this catalog.
+		* `target_service_id` - (String) Target service ID.
 * `updated` - (String) The date-time this catalog was last updated.
 * `url` - (String) The url for this specific catalog.
 

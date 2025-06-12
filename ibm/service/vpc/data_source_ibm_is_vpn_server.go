@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -128,6 +129,31 @@ func DataSourceIBMIsVPNServer() *schema.Resource {
 				Computed:    true,
 				Description: "The health of this resource.- `ok`: Healthy- `degraded`: Suffering from compromised performance, capacity, or connectivity- `faulted`: Completely unreachable, inoperative, or otherwise entirely incapacitated- `inapplicable`: The health state does not apply because of the current lifecycle state. A resource with a lifecycle state of `failed` or `deleting` will have a health state of `inapplicable`. A `pending` resource may also have this state.",
 			},
+			"health_reasons": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"code": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "A snake case string succinctly identifying the reason for this health state.",
+						},
+
+						"message": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "An explanation of the reason for this health state.",
+						},
+
+						"more_info": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Link to documentation about the reason for this health state.",
+						},
+					},
+				},
+			},
 			"hostname": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -142,6 +168,32 @@ func DataSourceIBMIsVPNServer() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The lifecycle state of the VPN server.",
+			},
+			"lifecycle_reasons": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The reasons for the current lifecycle_state (if any).",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"code": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "A snake case string succinctly identifying the reason for this lifecycle state.",
+						},
+
+						"message": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "An explanation of the reason for this lifecycle state.",
+						},
+
+						"more_info": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Link to documentation about the reason for this lifecycle state.",
+						},
+					},
+				},
 			},
 			"port": &schema.Schema{
 				Type:        schema.TypeInt,
@@ -376,9 +428,11 @@ func DataSourceIBMIsVPNServer() *schema.Resource {
 }
 
 func dataSourceIBMIsVPNServerRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	sess, err := vpcClient(meta)
+	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_vpn_server", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	var vpnServer *vpcv1.VPNServer
@@ -387,10 +441,11 @@ func dataSourceIBMIsVPNServerRead(context context.Context, d *schema.ResourceDat
 
 		getVPNServerOptions := &vpcv1.GetVPNServerOptions{}
 		getVPNServerOptions.SetID(v.(string))
-		vpnServerInfo, response, err := sess.GetVPNServerWithContext(context, getVPNServerOptions)
+		vpnServerInfo, _, err := vpcClient.GetVPNServerWithContext(context, getVPNServerOptions)
 		if err != nil {
-			log.Printf("[DEBUG] GetVPNServerWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("[ERROR] GetVPNServerWithContext failed %s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetVPNServerWithContext failed: %s", err.Error()), "(Data) ibm_is_vpn_server", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		vpnServer = vpnServerInfo
 	} else if v, ok := d.GetOk("name"); ok {
@@ -404,10 +459,11 @@ func dataSourceIBMIsVPNServerRead(context context.Context, d *schema.ResourceDat
 			if start != "" {
 				listVPNServersOptions.Start = &start
 			}
-			vpnServerCollection, response, err := sess.ListVPNServersWithContext(context, listVPNServersOptions)
+			vpnServerCollection, _, err := vpcClient.ListVPNServersWithContext(context, listVPNServersOptions)
 			if err != nil {
-				log.Printf("[DEBUG] ListVPNServersWithContext failed %s\n%s", err, response)
-				return diag.FromErr(fmt.Errorf("[ERROR] ListVPNServersWithContext failed %s\n%s", err, response))
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetVPNServerWithContext failed: %s", err.Error()), "(Data) ibm_is_vpn_server", "read")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			start = flex.GetNext(vpnServerCollection.Next)
 			allrecs = append(allrecs, vpnServerCollection.VPNServers...)
@@ -428,16 +484,16 @@ func dataSourceIBMIsVPNServerRead(context context.Context, d *schema.ResourceDat
 		}
 	}
 
-	d.SetId(fmt.Sprintf("%s", *vpnServer.ID))
+	d.SetId(*vpnServer.ID)
 	err = d.Set("identifier", vpnServer.ID)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting identifier %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_vpn_server", "read", "identifier").GetDiag()
 	}
 
 	if vpnServer.Certificate != nil {
 		err = d.Set("certificate", dataSourceVPNServerFlattenCertificate(*vpnServer.Certificate))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting certificate %s", err))
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting certificate: %s", err), "(Data) ibm_is_vpn_server", "read", "set-certificate").GetDiag()
 		}
 	}
 
@@ -463,94 +519,104 @@ func dataSourceIBMIsVPNServerRead(context context.Context, d *schema.ResourceDat
 	}
 	err = d.Set("client_authentication", vpnServerAuthenticationPrototypeArray)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting client_authentication %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting client_authentication: %s", err), "(Data) ibm_is_vpn_server", "read", "set-client_authentication").GetDiag()
 	}
 
 	if err = d.Set("client_auto_delete", vpnServer.ClientAutoDelete); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting client_auto_delete: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting client_auto_delete: %s", err), "(Data) ibm_is_vpn_server", "read", "set-client_auto_delete").GetDiag()
 	}
 	if err = d.Set("client_auto_delete_timeout", flex.IntValue(vpnServer.ClientAutoDeleteTimeout)); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting client_auto_delete_timeout: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting client_auto_delete_timeout: %s", err), "(Data) ibm_is_vpn_server", "read", "set-client_auto_delete_timeout").GetDiag()
 	}
 
 	if vpnServer.ClientDnsServerIps != nil {
 		err = d.Set("client_dns_server_ips", dataSourceVPNServerFlattenClientDnsServerIps(vpnServer.ClientDnsServerIps))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting client_dns_server_ips %s", err))
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_vpn_server", "read", "client_dns_server_ips-to-map").GetDiag()
 		}
 	}
 	if err = d.Set("client_idle_timeout", flex.IntValue(vpnServer.ClientIdleTimeout)); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting client_idle_timeout: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting client_idle_timeout: %s", err), "(Data) ibm_is_vpn_server", "read", "set-client_idle_timeout").GetDiag()
 	}
 	if err = d.Set("client_ip_pool", vpnServer.ClientIPPool); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting client_ip_pool: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting client_ip_pool: %s", err), "(Data) ibm_is_vpn_server", "read", "set-client_ip_pool").GetDiag()
 	}
 	if err = d.Set("created_at", flex.DateTimeToString(vpnServer.CreatedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting created_at: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting created_at: %s", err), "(Data) ibm_is_vpn_server", "read", "set-created_at").GetDiag()
 	}
 	if err = d.Set("crn", vpnServer.CRN); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting crn: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting crn: %s", err), "(Data) ibm_is_vpn_server", "read", "set-crn").GetDiag()
 	}
 	if err = d.Set("enable_split_tunneling", vpnServer.EnableSplitTunneling); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting enable_split_tunneling: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting enable_split_tunneling: %s", err), "(Data) ibm_is_vpn_server", "read", "set-enable_split_tunneling").GetDiag()
 	}
 	if err = d.Set("health_state", vpnServer.HealthState); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting health_state: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting health_state: %s", err), "(Data) ibm_is_vpn_server", "read", "set-health_state").GetDiag()
+	}
+	if vpnServer.HealthReasons != nil {
+		if err := d.Set("health_reasons", resourceVPNServerFlattenHealthReasons(vpnServer.HealthReasons)); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting health_reasons: %s", err), "(Data) ibm_is_vpn_server", "read", "set-health_reasons").GetDiag()
+		}
 	}
 	if err = d.Set("hostname", vpnServer.Hostname); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting hostname: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting hostname: %s", err), "(Data) ibm_is_vpn_server", "read", "set-hostname").GetDiag()
 	}
 	if err = d.Set("href", vpnServer.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting href: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting href: %s", err), "(Data) ibm_is_vpn_server", "read", "set-href").GetDiag()
 	}
 	if err = d.Set("lifecycle_state", vpnServer.LifecycleState); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting lifecycle_state: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting lifecycle_state: %s", err), "(Data) ibm_is_vpn_server", "read", "set-lifecycle_state").GetDiag()
+	}
+	if vpnServer.LifecycleReasons != nil {
+		if err := d.Set("lifecycle_reasons", resourceVPNServerFlattenLifecycleReasons(vpnServer.LifecycleReasons)); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting lifecycle_reasons: %s", err), "(Data) ibm_is_vpn_server", "read", "set-lifecycle_reasons").GetDiag()
+		}
 	}
 	if err = d.Set("name", vpnServer.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting name: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_is_vpn_server", "read", "set-name").GetDiag()
 	}
 	if err = d.Set("port", flex.IntValue(vpnServer.Port)); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting port: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting port: %s", err), "(Data) ibm_is_vpn_server", "read", "set-port").GetDiag()
 	}
 
 	if vpnServer.PrivateIps != nil {
 		err = d.Set("private_ips", dataSourceVPNServerFlattenPrivateIps(vpnServer.PrivateIps))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting private_ips %s", err))
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting private_ips: %s", err), "(Data) ibm_is_vpn_server", "read", "set-private_ips").GetDiag()
 		}
 	}
 	if err = d.Set("protocol", vpnServer.Protocol); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting protocol: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting protocol: %s", err), "(Data) ibm_is_vpn_server", "read", "set-protocol").GetDiag()
 	}
 
 	if vpnServer.ResourceGroup != nil {
 		err = d.Set("resource_group", dataSourceVPNServerFlattenResourceGroup(*vpnServer.ResourceGroup))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting resource_group %s", err))
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_group: %s", err), "(Data) ibm_is_vpn_server", "read", "set-resource_group").GetDiag()
 		}
 	}
 	if err = d.Set("resource_type", vpnServer.ResourceType); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting resource_type: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_type: %s", err), "(Data) ibm_is_vpn_server", "read", "set-resource_type").GetDiag()
 	}
 
 	if vpnServer.SecurityGroups != nil {
 		err = d.Set("security_groups", dataSourceVPNServerFlattenSecurityGroups(vpnServer.SecurityGroups))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting security_groups %s", err))
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting security_groups: %s", err), "(Data) ibm_is_vpn_server", "read", "set-security_groups").GetDiag()
 		}
 	}
 
 	if vpnServer.Subnets != nil {
 		err = d.Set("subnets", dataSourceVPNServerFlattenSubnets(vpnServer.Subnets))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting subnets %s", err))
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting subnets: %s", err), "(Data) ibm_is_vpn_server", "read", "set-subnets").GetDiag()
 		}
 	}
 
 	if vpnServer.VPC != nil {
 		err = d.Set("vpc", dataSourceVPNServerFlattenVpcReference(vpnServer.VPC))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting the vpc: %s", err))
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting vpc: %s", err), "(Data) ibm_is_vpn_server", "read", "set-vpc").GetDiag()
 		}
 	}
 
@@ -646,7 +712,7 @@ func dataSourceVPNServerPrivateIpsToMap(privateIpsItem vpcv1.ReservedIPReference
 	return privateIpsMap
 }
 
-func dataSourceVPNServerPrivateIpsDeletedToMap(deletedItem vpcv1.ReservedIPReferenceDeleted) (deletedMap map[string]interface{}) {
+func dataSourceVPNServerPrivateIpsDeletedToMap(deletedItem vpcv1.Deleted) (deletedMap map[string]interface{}) {
 	deletedMap = map[string]interface{}{}
 
 	if deletedItem.MoreInfo != nil {
@@ -713,7 +779,7 @@ func dataSourceVPNServerSecurityGroupsToMap(securityGroupsItem vpcv1.SecurityGro
 	return securityGroupsMap
 }
 
-func dataSourceVPNServerSecurityGroupsDeletedToMap(deletedItem vpcv1.SecurityGroupReferenceDeleted) (deletedMap map[string]interface{}) {
+func dataSourceVPNServerSecurityGroupsDeletedToMap(deletedItem vpcv1.Deleted) (deletedMap map[string]interface{}) {
 	deletedMap = map[string]interface{}{}
 
 	if deletedItem.MoreInfo != nil {
@@ -756,7 +822,7 @@ func dataSourceVPNServerSubnetsToMap(subnetsItem vpcv1.SubnetReference) (subnets
 	return subnetsMap
 }
 
-func dataSourceVPNServerSubnetsDeletedToMap(deletedItem vpcv1.SubnetReferenceDeleted) (deletedMap map[string]interface{}) {
+func dataSourceVPNServerSubnetsDeletedToMap(deletedItem vpcv1.Deleted) (deletedMap map[string]interface{}) {
 	deletedMap = map[string]interface{}{}
 
 	if deletedItem.MoreInfo != nil {
@@ -796,7 +862,7 @@ func dataSourceVPNServerVpcToMap(vpcItem vpcv1.VPCReference) (vpcsMap map[string
 	return vpcsMap
 }
 
-func dataSourceVPNServerVpcsDeletedToMap(deletedItem vpcv1.VPCReferenceDeleted) (deletedMap map[string]interface{}) {
+func dataSourceVPNServerVpcsDeletedToMap(deletedItem vpcv1.Deleted) (deletedMap map[string]interface{}) {
 	deletedMap = map[string]interface{}{}
 
 	if deletedItem.MoreInfo != nil {

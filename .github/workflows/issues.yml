@@ -6,9 +6,9 @@ jobs:
   labelIssues:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3.5.2
+    - uses: actions/checkout@v4.2.2
     - name: Apply Issue Labels
-      uses: github/issue-labeler@v3.1
+      uses: github/issue-labeler@v3.4
       with:
         repo-token: "${{ secrets.GITHUB_TOKEN }}"
         configuration-path: .github/labeler-issue.yml

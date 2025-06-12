@@ -18,7 +18,7 @@ import (
 )
 
 func TestAccIBMIAMAuthorizationPolicy_Basic(t *testing.T) {
-	var conf iampolicymanagementv1.Policy
+	var conf iampolicymanagementv1.PolicyTemplateMetaData
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -38,8 +38,38 @@ func TestAccIBMIAMAuthorizationPolicy_Basic(t *testing.T) {
 	})
 }
 
+func TestAccIBMIAMAuthorizationPolicyUpdate_Basic(t *testing.T) {
+	var conf iampolicymanagementv1.PolicyTemplateMetaData
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMIAMAuthorizationPolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMAuthorizationPolicyBasic(),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMAuthorizationPolicyExists("ibm_iam_authorization_policy.policy", conf),
+					resource.TestCheckResourceAttr("ibm_iam_authorization_policy.policy", "source_service_name", "cloud-object-storage"),
+					resource.TestCheckResourceAttr("ibm_iam_authorization_policy.policy", "target_service_name", "kms"),
+					resource.TestCheckResourceAttr("ibm_iam_authorization_policy.policy", "description", "Authorization Policy for test scenario"),
+				),
+			},
+			{
+				Config: testAccCheckIBMIAMAuthorizationPolicyUpdate(acc.Tg_cross_network_account_id),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMAuthorizationPolicyExists("ibm_iam_authorization_policy.policy", conf),
+					resource.TestCheckResourceAttr("ibm_iam_authorization_policy.policy", "source_service_name", "cloud-object-storage"),
+					resource.TestCheckResourceAttr("ibm_iam_authorization_policy.policy", "source_service_account", acc.Tg_cross_network_account_id),
+					resource.TestCheckResourceAttr("ibm_iam_authorization_policy.policy", "description", "Authorization Policy for test scenario"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccIBMIAMAuthorizationPolicy_Resource_Instance(t *testing.T) {
-	var conf iampolicymanagementv1.Policy
+	var conf iampolicymanagementv1.PolicyTemplateMetaData
 	instanceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	resourceName := "ibm_iam_authorization_policy.policy"
 	resource.Test(t, resource.TestCase{
@@ -67,7 +97,7 @@ func TestAccIBMIAMAuthorizationPolicy_Resource_Instance(t *testing.T) {
 
 // TODO: Invalid authorizatoin header
 func TestAccIBMIAMAuthorizationPolicy_Resource_Group(t *testing.T) {
-	var conf iampolicymanagementv1.Policy
+	var conf iampolicymanagementv1.PolicyTemplateMetaData
 	sResourceGroup := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	tResourceGroup := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	resourceName := "ibm_iam_authorization_policy.policy"
@@ -85,16 +115,16 @@ func TestAccIBMIAMAuthorizationPolicy_Resource_Group(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerifyIgnore: []string{"transaction_id"},
 			},
 		},
 	})
 }
 
 func TestAccIBMIAMAuthorizationPolicy_ResourceType(t *testing.T) {
-	var conf iampolicymanagementv1.Policy
+	var conf iampolicymanagementv1.PolicyTemplateMetaData
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -107,14 +137,14 @@ func TestAccIBMIAMAuthorizationPolicy_ResourceType(t *testing.T) {
 					testAccCheckIBMIAMAuthorizationPolicyExists("ibm_iam_authorization_policy.policy", conf),
 					resource.TestCheckResourceAttr("ibm_iam_authorization_policy.policy", "source_service_name", "is"),
 					resource.TestCheckResourceAttr("ibm_iam_authorization_policy.policy", "source_resource_type", "load-balancer"),
-					resource.TestCheckResourceAttr("ibm_iam_authorization_policy.policy", "target_service_name", "cloudcerts"),
+					resource.TestCheckResourceAttr("ibm_iam_authorization_policy.policy", "target_service_name", "secrets-manager"),
 				),
 			},
 		},
 	})
 }
 func TestAccIBMIAMAuthorizationPolicyDelegatorRole(t *testing.T) {
-	var conf iampolicymanagementv1.Policy
+	var conf iampolicymanagementv1.PolicyTemplateMetaData
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -134,7 +164,7 @@ func TestAccIBMIAMAuthorizationPolicyDelegatorRole(t *testing.T) {
 }
 
 func TestAccIBMIAMAuthorizationPolicy_ResourceAttributes(t *testing.T) {
-	var conf iampolicymanagementv1.Policy
+	var conf iampolicymanagementv1.PolicyTemplateMetaData
 	sServiceInstance := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	tServiceInstance := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
@@ -154,8 +184,119 @@ func TestAccIBMIAMAuthorizationPolicy_ResourceAttributes(t *testing.T) {
 	})
 }
 
+func TestAccIBMIAMAuthorizationPolicy_SourceResourceGroupId(t *testing.T) {
+	var conf iampolicymanagementv1.PolicyTemplateMetaData
+	resourceName := "ibm_iam_authorization_policy.policy"
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMIAMAuthorizationPolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMAuthorizationPolicySourceResourceGroupId(),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMAuthorizationPolicyExists("ibm_iam_authorization_policy.policy", conf),
+					resource.TestCheckResourceAttrSet("ibm_iam_authorization_policy.policy", "id"),
+					resource.TestCheckResourceAttr("ibm_iam_authorization_policy.policy", "source_service_name", ""),
+					resource.TestCheckResourceAttr("ibm_iam_authorization_policy.policy", "target_service_name", "cloud-object-storage"),
+				),
+			},
+			{
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"transaction_id"},
+			},
+		},
+	})
+}
+
+func TestAccIBMIAMAuthorizationPolicy_SourceResourceGroupId_ResourceAttributes(t *testing.T) {
+	var conf iampolicymanagementv1.PolicyTemplateMetaData
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMIAMAuthorizationPolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMAuthorizationPolicySourceResourceGroupIdResourceAttributes(acc.Tg_cross_network_account_id, acc.Tg_cross_network_account_id),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMAuthorizationPolicyExists("ibm_iam_authorization_policy.policy", conf),
+					resource.TestCheckResourceAttrSet("ibm_iam_authorization_policy.policy", "id"),
+					resource.TestCheckResourceAttr("ibm_iam_authorization_policy.policy", "source_service_name", ""),
+					resource.TestCheckResourceAttr("ibm_iam_authorization_policy.policy", "target_service_name", "cloud-object-storage"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMIAMAuthorizationPolicy_SourceResourceGroupId_ResourceAttributes_WildCard(t *testing.T) {
+	var conf iampolicymanagementv1.PolicyTemplateMetaData
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMIAMAuthorizationPolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMAuthorizationPolicySourceResourceGroupIdResourceAttributesWildCard(acc.Tg_cross_network_account_id, acc.Tg_cross_network_account_id),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMAuthorizationPolicyExists("ibm_iam_authorization_policy.policy", conf),
+					resource.TestCheckResourceAttrSet("ibm_iam_authorization_policy.policy", "id"),
+					resource.TestCheckResourceAttr("ibm_iam_authorization_policy.policy", "source_service_name", ""),
+					resource.TestCheckResourceAttr("ibm_iam_authorization_policy.policy", "target_service_name", "cloud-object-storage"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMIAMAuthorizationPolicy_TargetResourceType(t *testing.T) {
+	var conf iampolicymanagementv1.PolicyTemplateMetaData
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMIAMAuthorizationPolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMAuthorizationPolicyTargetResourceType(),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMAuthorizationPolicyExists("ibm_iam_authorization_policy.policy", conf),
+					resource.TestCheckResourceAttr("ibm_iam_authorization_policy.policy", "target_service_name", ""),
+					resource.TestCheckResourceAttr("ibm_iam_authorization_policy.policy", "source_service_name", "project"),
+					resource.TestCheckResourceAttr("ibm_iam_authorization_policy.policy", "target_resource_type", "resource-group"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMIAMAuthorizationPolicy_TargetResourceTypeAndResourceAttributes(t *testing.T) {
+	var conf iampolicymanagementv1.PolicyTemplateMetaData
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMIAMAuthorizationPolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMAuthorizationPolicyResourceTypeAndResourceAttributes(acc.Tg_cross_network_account_id, acc.Tg_cross_network_account_id),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMAuthorizationPolicyExists("ibm_iam_authorization_policy.policy", conf),
+					resource.TestCheckResourceAttr("ibm_iam_authorization_policy.policy", "target_service_name", ""),
+					resource.TestCheckResourceAttr("ibm_iam_authorization_policy.policy", "source_service_name", "project"),
+					resource.TestCheckResourceAttr("ibm_iam_authorization_policy.policy", "target_resource_type", "resource-group"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccIBMIAMAuthorizationPolicy_With_Transaction_id(t *testing.T) {
-	var conf iampolicymanagementv1.Policy
+	var conf iampolicymanagementv1.PolicyTemplateMetaData
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -169,6 +310,25 @@ func TestAccIBMIAMAuthorizationPolicy_With_Transaction_id(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_iam_authorization_policy.policy", "source_service_name", "databases-for-redis"),
 					resource.TestCheckResourceAttr("ibm_iam_authorization_policy.policy", "target_service_name", "kms"),
 					resource.TestCheckResourceAttr("ibm_iam_authorization_policy.policy", "transaction_id", "terrformAuthorizationPolicy"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMIAMAuthorizationPolicy_SourceResourceGroupIdWithStringExistsInSubjectAttributes(t *testing.T) {
+	var conf iampolicymanagementv1.PolicyTemplateMetaData
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMIAMAuthorizationPolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMAuthorizationPolicySourceResourceGroupIdWithStringExistsInSubjectAttributes(acc.Tg_cross_network_account_id, acc.Tg_cross_network_account_id),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMAuthorizationPolicyExists("ibm_iam_authorization_policy.policy", conf),
+					resource.TestCheckResourceAttrSet("ibm_iam_authorization_policy.policy", "id"),
 				),
 			},
 		},
@@ -202,7 +362,7 @@ func testAccCheckIBMIAMAuthorizationPolicyDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckIBMIAMAuthorizationPolicyExists(n string, obj iampolicymanagementv1.Policy) resource.TestCheckFunc {
+func testAccCheckIBMIAMAuthorizationPolicyExists(n string, obj iampolicymanagementv1.PolicyTemplateMetaData) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -241,6 +401,18 @@ func testAccCheckIBMIAMAuthorizationPolicyBasic() string {
 	`
 }
 
+func testAccCheckIBMIAMAuthorizationPolicyUpdate(accountId string) string {
+	return fmt.Sprintf(`
+	resource "ibm_iam_authorization_policy" "policy" {
+		source_service_name = "cloud-object-storage"
+		source_service_account = "%s"
+		target_service_name = "kms"
+		roles               = ["Reader"]
+		description = "Authorization Policy for test scenario"
+	  }
+	`, accountId)
+}
+
 func testAccCheckIBMIAMAuthorizationPolicyResourceInstance(instanceName string) string {
 	return fmt.Sprintf(`
 		  
@@ -260,9 +432,9 @@ func testAccCheckIBMIAMAuthorizationPolicyResourceInstance(instanceName string) 
 	  
 	  resource "ibm_iam_authorization_policy" "policy" {
 		source_service_name         = "cloud-object-storage"
-		source_resource_instance_id = ibm_resource_instance.instance1.id
+		source_resource_instance_id = ibm_resource_instance.instance1.guid
 		target_service_name         = "kms"
-		target_resource_instance_id = ibm_resource_instance.instance2.id
+		target_resource_instance_id = ibm_resource_instance.instance2.guid
 		roles                       = ["Reader"]
 	  }
 	  
@@ -274,8 +446,8 @@ func testAccCheckIBMIAMAuthorizationPolicyResourceType() string {
 	resource "ibm_iam_authorization_policy" "policy" {
 		source_service_name  = "is"
 		source_resource_type = "load-balancer"
-		target_service_name  = "cloudcerts"
-		roles                = ["Reader"]
+		target_service_name  = "secrets-manager"
+		roles                = ["SecretsReader"]
 	  }
 	`
 }
@@ -336,7 +508,7 @@ func testAccCheckIBMIAMAuthorizationPolicyResourceAttributes(sServiceInstance, t
 		}
 		subject_attributes {
 			name   = "serviceInstance"
-			value = ibm_resource_instance.cos.id
+			value = ibm_resource_instance.cos.guid
 		}
 		subject_attributes {
 			name   = "serviceName"
@@ -352,7 +524,7 @@ func testAccCheckIBMIAMAuthorizationPolicyResourceAttributes(sServiceInstance, t
 		}
 		resource_attributes {
 			name   = "serviceInstance"
-			value = ibm_resource_instance.kms.id
+			value = ibm_resource_instance.kms.guid
 		}
 	}
 	`, sServiceInstance, tServiceInstance, sAccountID, tAccountID)
@@ -367,4 +539,131 @@ func testAccCheckIBMIAMAuthorizationPolicyTransactionId() string {
 		transaction_id 				= "terrformAuthorizationPolicy"
 	  }
 	`
+}
+
+func testAccCheckIBMIAMAuthorizationPolicySourceResourceGroupId() string {
+	return fmt.Sprintf(`
+	  resource "ibm_iam_authorization_policy" "policy" {
+			source_resource_group_id    = "123-456-abc-def"
+			target_service_name         = "cloud-object-storage"
+			roles                       = ["Reader"]
+	  }
+
+	`)
+}
+
+func testAccCheckIBMIAMAuthorizationPolicySourceResourceGroupIdResourceAttributes(sAccountID, tAccountID string) string {
+
+	return fmt.Sprintf(`
+
+	resource "ibm_iam_authorization_policy" "policy" {
+		roles    = ["Reader"]
+		subject_attributes {
+			name   = "accountId"
+			value  = "%s"
+		}
+		subject_attributes {
+			name   = "resourceGroupId"
+			value  = "def-abc-456-123"
+		}
+
+		resource_attributes {
+			name   = "serviceName"
+			value  = "cloud-object-storage"
+		}
+		resource_attributes {
+			name   = "accountId"
+			value  = "%s"
+		}
+	}
+	`, sAccountID, tAccountID)
+}
+
+func testAccCheckIBMIAMAuthorizationPolicySourceResourceGroupIdResourceAttributesWildCard(sAccountID, tAccountID string) string {
+	return fmt.Sprintf(`
+	resource "ibm_iam_authorization_policy" "policy" {
+		roles    = ["Reader"]
+		subject_attributes {
+			name   = "accountId"
+			value  = "%s"
+		}
+		subject_attributes {
+			name   = "resourceGroupId"
+			value  = "*"
+		}
+
+		resource_attributes {
+			name   = "serviceName"
+			value  = "cloud-object-storage"
+		}
+		resource_attributes {
+			name   = "accountId"
+			value  = "%s"
+		}
+	}
+	`, sAccountID, tAccountID)
+}
+
+func testAccCheckIBMIAMAuthorizationPolicyTargetResourceType() string {
+	return `
+	resource "ibm_iam_authorization_policy" "policy" {
+		source_service_name = "project"
+		target_resource_type  = "resource-group"
+		roles                = ["Viewer"]
+	  }
+	`
+}
+
+func testAccCheckIBMIAMAuthorizationPolicyResourceTypeAndResourceAttributes(sAccountID, tAccountID string) string {
+
+	return fmt.Sprintf(`
+
+	resource "ibm_iam_authorization_policy" "policy" {
+		roles    = ["Viewer"]
+		subject_attributes {
+			name   = "accountId"
+			value  = "%s"
+		}
+		subject_attributes {
+			name   = "serviceName"
+			value  = "project"
+		}
+
+		resource_attributes {
+			name   = "resourceType"
+			value  = "resource-group"
+		}
+		resource_attributes {
+			name   = "accountId"
+			value  = "%s"
+		}
+
+	}
+	`, sAccountID, tAccountID)
+}
+
+func testAccCheckIBMIAMAuthorizationPolicySourceResourceGroupIdWithStringExistsInSubjectAttributes(sAccountID, tAccountID string) string {
+	return fmt.Sprintf(`
+	resource "ibm_iam_authorization_policy" "policy" {
+		roles    = ["Reader"]
+		subject_attributes {
+			name   = "accountId"
+			value  = "%s"
+		}
+		subject_attributes {
+			name     = "resourceGroupId"
+			operator = "stringExists"
+			value    = "true"
+		}
+
+		resource_attributes {
+			name   = "serviceName"
+			value  = "cloud-object-storage"
+		}
+		resource_attributes {
+			name   = "accountId"
+			value  = "%s"
+		}
+	}
+	`, sAccountID, tAccountID)
 }

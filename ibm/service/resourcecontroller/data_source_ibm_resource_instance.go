@@ -4,11 +4,13 @@
 package resourcecontroller
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/url"
 	"reflect"
 
+	"github.com/IBM/platform-services-go-sdk/globalcatalogv1"
 	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	rg "github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -24,9 +26,18 @@ func DataSourceIBMResourceInstance() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Description: "Resource instance name for example, myobjectstorage",
-				Type:        schema.TypeString,
-				Required:    true,
+				Description:  "Resource instance name for example, myobjectstorage",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ExactlyOneOf: []string{"identifier", "name"},
+			},
+			"identifier": {
+				Description:   "Resource instance guid",
+				Type:          schema.TypeString,
+				Optional:      true,
+				ExactlyOneOf:  []string{"identifier", "name"},
+				ConflictsWith: []string{"resource_group_id", "name", "location", "service"},
 			},
 
 			"resource_group_id": {
@@ -82,6 +93,19 @@ func DataSourceIBMResourceInstance() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Guid of resource instance",
+			},
+
+			// ### Modification addded onetime_credentials to Resource scehama
+			"onetime_credentials": {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "onetime_credentials of resource instance",
+			},
+
+			"parameters_json": {
+				Description: "Parameters asociated with instance in json string",
+				Type:        schema.TypeString,
+				Computed:    true,
 			},
 
 			flex.ResourceName: {
@@ -155,97 +179,150 @@ func getInstancesNext(next *string) (string, error) {
 }
 
 func DataSourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{}) error {
-	name := d.Get("name").(string)
+	var instance rc.ResourceInstance
 	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return err
 	}
-
-	resourceInstanceListOptions := rc.ListResourceInstancesOptions{
-		Name: &name,
-	}
-
-	if rsGrpID, ok := d.GetOk("resource_group_id"); ok {
-		rg := rsGrpID.(string)
-		resourceInstanceListOptions.ResourceGroupID = &rg
-	}
-
-	rsCatClient, err := meta.(conns.ClientSession).ResourceCatalogAPI()
+	globalClient, err := meta.(conns.ClientSession).GlobalCatalogV1API()
 	if err != nil {
 		return err
 	}
-	rsCatRepo := rsCatClient.ResourceCatalog()
-
-	if service, ok := d.GetOk("service"); ok {
-
-		serviceOff, err := rsCatRepo.FindByName(service.(string), true)
-		if err != nil {
-			return fmt.Errorf("[ERROR] Error retrieving service offering: %s", err)
+	if _, ok := d.GetOk("name"); ok {
+		name := d.Get("name").(string)
+		resourceInstanceListOptions := rc.ListResourceInstancesOptions{
+			Name: &name,
 		}
-		resourceId := serviceOff[0].ID
-		resourceInstanceListOptions.ResourceID = &resourceId
-	}
 
-	next_url := ""
-	var instances []rc.ResourceInstance
-	for {
-		if next_url != "" {
-			resourceInstanceListOptions.Start = &next_url
+		if rsGrpID, ok := d.GetOk("resource_group_id"); ok {
+			rg := rsGrpID.(string)
+			resourceInstanceListOptions.ResourceGroupID = &rg
 		}
-		listInstanceResponse, resp, err := rsConClient.ListResourceInstances(&resourceInstanceListOptions)
-		if err != nil {
-			return fmt.Errorf("[ERROR] Error retrieving resource instance: %s with resp code: %s", err, resp)
-		}
-		next_url, err = getInstancesNext(listInstanceResponse.NextURL)
-		if err != nil {
-			return fmt.Errorf("[DEBUG] ListResourceInstances failed. Error occurred while parsing NextURL: %s", err)
 
-		}
-		instances = append(instances, listInstanceResponse.Resources...)
-		if next_url == "" {
-			break
-		}
-	}
+		if service, ok := d.GetOk("service"); ok {
 
-	var filteredInstances []rc.ResourceInstance
-	var location string
+			name := service.(string)
+			options := globalcatalogv1.ListCatalogEntriesOptions{
+				Q: &name,
+			}
+			service, _, err := globalClient.ListCatalogEntries(&options)
+			if err != nil {
+				return fmt.Errorf("[ERROR] Error retrieving service offering: %s", err)
+			}
+			if len(service.Resources) > 0 {
+				var kind = "*"
+				childOptions := globalcatalogv1.GetChildObjectsOptions{
+					ID:   service.Resources[0].ID,
+					Kind: &kind,
+					Q:    &name,
+				}
+				childService, _, err := globalClient.GetChildObjects(&childOptions)
+				if err != nil {
+					return fmt.Errorf("[ERROR] Error retrieving service offering: %s", err)
+				}
+				if *childService.ResourceCount > 0 {
+					for i, s := range childService.Resources {
+						if *s.Name == name && isService(*s.Kind) {
+							resourceInstanceListOptions.ResourceID = childService.Resources[i].ID
+						}
 
-	if loc, ok := d.GetOk("location"); ok {
-		location = loc.(string)
-		for _, instance := range instances {
-			if flex.GetLocationV2(instance) == location {
-				filteredInstances = append(filteredInstances, instance)
+					}
+
+				} else {
+					for i, s := range service.Resources {
+						if *s.Name == name && isService(*s.Kind) {
+							resourceInstanceListOptions.ResourceID = service.Resources[i].ID
+						}
+
+					}
+				}
 			}
 		}
-	} else {
-		filteredInstances = instances
+
+		next_url := ""
+		var instances []rc.ResourceInstance
+		for {
+			if next_url != "" {
+				resourceInstanceListOptions.Start = &next_url
+			}
+			listInstanceResponse, resp, err := rsConClient.ListResourceInstances(&resourceInstanceListOptions)
+			if err != nil {
+				return fmt.Errorf("[ERROR] Error retrieving resource instance: %s with resp code: %s", err, resp)
+			}
+			next_url, err = getInstancesNext(listInstanceResponse.NextURL)
+			if err != nil {
+				return fmt.Errorf("[DEBUG] ListResourceInstances failed. Error occurred while parsing NextURL: %s", err)
+
+			}
+			instances = append(instances, listInstanceResponse.Resources...)
+			if next_url == "" {
+				break
+			}
+		}
+
+		var filteredInstances []rc.ResourceInstance
+		var location string
+
+		if loc, ok := d.GetOk("location"); ok {
+			location = loc.(string)
+			for _, instance := range instances {
+				if flex.GetLocationV2(instance) == location {
+					filteredInstances = append(filteredInstances, instance)
+				}
+			}
+		} else {
+			filteredInstances = instances
+		}
+
+		if len(filteredInstances) == 0 {
+			return fmt.Errorf("[ERROR] No resource instance found with name [%s]\nIf not specified please specify more filters like resource_group_id if instance doesn't exists in default group, location or service", name)
+		}
+		if len(filteredInstances) > 1 {
+			return fmt.Errorf("[ERROR] More than one resource instance found with name matching [%s]\nIf not specified please specify more filters like resource_group_id if instance doesn't exists in default group, location or service", name)
+		}
+		instance = filteredInstances[0]
+	} else if _, ok := d.GetOk("identifier"); ok {
+		instanceGUID := d.Get("identifier").(string)
+		getResourceInstanceOptions := &rc.GetResourceInstanceOptions{
+			ID: &instanceGUID,
+		}
+		instances, res, err := rsConClient.GetResourceInstance(getResourceInstanceOptions)
+		if err != nil {
+			return fmt.Errorf("[ERROR] No resource instance found with id [%s\n%v]", instanceGUID, res)
+		}
+		instance = *instances
+		d.Set("name", instance.Name)
 	}
-
-	if len(filteredInstances) == 0 {
-		return fmt.Errorf("[ERROR] No resource instance found with name [%s]\nIf not specified please specify more filters like resource_group_id if instance doesn't exists in default group, location or service", name)
-	}
-
-	var instance rc.ResourceInstance
-
-	if len(filteredInstances) > 1 {
-		return fmt.Errorf("[ERROR] More than one resource instance found with name matching [%s]\nIf not specified please specify more filters like resource_group_id if instance doesn't exists in default group, location or service", name)
-	}
-	instance = filteredInstances[0]
-
 	d.SetId(*instance.ID)
 	d.Set("status", instance.State)
 	d.Set("resource_group_id", instance.ResourceGroupID)
 	d.Set("location", instance.RegionID)
-	serviceOff, err := rsCatRepo.GetServiceName(*instance.ResourceID)
+
+	options := globalcatalogv1.GetCatalogEntryOptions{
+
+		ID: instance.ResourceID,
+	}
+	service, _, err := globalClient.GetCatalogEntry(&options)
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error retrieving service offering: %s", err)
 	}
 
-	d.Set("service", serviceOff)
+	d.Set("service", service.Name)
 
 	d.Set(flex.ResourceName, instance.Name)
 	d.Set(flex.ResourceCRN, instance.CRN)
 	d.Set(flex.ResourceStatus, instance.State)
+	// ### Modifiction : Setting the onetime credientials
+	d.Set("onetime_credentials", instance.OnetimeCredentials)
+	if instance.Parameters != nil {
+		params, err := json.Marshal(instance.Parameters)
+		if err != nil {
+			return fmt.Errorf("[ERROR] Error marshalling instance parameters: %s", err)
+		}
+		if err = d.Set("parameters_json", string(params)); err != nil {
+			return fmt.Errorf("[ERROR] Error setting instance parameters json: %s", err)
+		}
+	}
 	rMgtClient, err := meta.(conns.ClientSession).ResourceManagerV2API()
 	if err != nil {
 		return err
@@ -273,11 +350,15 @@ func DataSourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{})
 	}
 	d.Set(flex.ResourceControllerURL, rcontroller+"/services/")
 
-	servicePlan, err := rsCatRepo.GetServicePlanName(*instance.ResourcePlanID)
+	planOptions := globalcatalogv1.GetCatalogEntryOptions{
+
+		ID: instance.ResourcePlanID,
+	}
+	plan, _, err := globalClient.GetCatalogEntry(&planOptions)
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error retrieving plan: %s", err)
 	}
-	d.Set("plan", servicePlan)
+	d.Set("plan", plan.Name)
 	d.Set("crn", instance.CRN)
 	tags, err := flex.GetTagsUsingCRN(meta, *instance.CRN)
 	if err != nil {
@@ -287,4 +368,12 @@ func DataSourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{})
 	d.Set("tags", tags)
 
 	return nil
+}
+
+func isService(kind string) bool {
+	// TODO: COS is 'iaas' kind, but considered to be a service
+	if kind == "service" || kind == "iaas" || kind == "composite" {
+		return true
+	}
+	return false
 }

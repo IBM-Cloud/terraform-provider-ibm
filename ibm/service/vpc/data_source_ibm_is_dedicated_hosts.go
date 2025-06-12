@@ -64,7 +64,12 @@ func DataSourceIbmIsDedicatedHosts() *schema.Resource {
 										Computed:    true,
 										Description: "The VCPU architecture.",
 									},
-									"count": {
+									"manufacturer": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The VCPU manufacturer.",
+									},
+									"count": &schema.Schema{
 										Type:        schema.TypeInt,
 										Computed:    true,
 										Description: "The number of VCPUs assigned.",
@@ -270,6 +275,39 @@ func DataSourceIbmIsDedicatedHosts() *schema.Resource {
 							Computed:    true,
 							Description: "The unique user-defined name for this dedicated host. If unspecified, the name will be a hyphenated list of randomly-selected words.",
 						},
+						"numa": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The dedicated host NUMA configuration",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"count": {
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "The total number of NUMA nodes for this dedicated host",
+									},
+									"nodes": {
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "The NUMA nodes for this dedicated host.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"available_vcpu": {
+													Type:        schema.TypeInt,
+													Computed:    true,
+													Description: "The available VCPU for this NUMA node.",
+												},
+												"vcpu": {
+													Type:        schema.TypeInt,
+													Computed:    true,
+													Description: "The total VCPU capacity for this NUMA node.",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
 						"profile": {
 							Type:        schema.TypeList,
 							Computed:    true,
@@ -344,7 +382,12 @@ func DataSourceIbmIsDedicatedHosts() *schema.Resource {
 										Computed:    true,
 										Description: "The VCPU architecture.",
 									},
-									"count": {
+									"manufacturer": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The VCPU manufacturer.",
+									},
+									"count": &schema.Schema{
 										Type:        schema.TypeInt,
 										Computed:    true,
 										Description: "The number of VCPUs assigned.",
@@ -379,7 +422,9 @@ func DataSourceIbmIsDedicatedHosts() *schema.Resource {
 func dataSourceIbmIsDedicatedHostsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_hosts", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	listDedicatedHostsOptions := &vpcv1.ListDedicatedHostsOptions{}
@@ -407,8 +452,9 @@ func dataSourceIbmIsDedicatedHostsRead(context context.Context, d *schema.Resour
 		}
 		dedicatedHostCollection, response, err := vpcClient.ListDedicatedHostsWithContext(context, listDedicatedHostsOptions)
 		if err != nil {
-			log.Printf("[DEBUG] ListDedicatedHostsWithContext failed %s\n%s", err, response)
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListDedicatedHostsWithContext failed: %s\n%s", err, response), "ibm_is_dedicated_hosts", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		start = flex.GetNext(dedicatedHostCollection.Next)
 		allrecs = append(allrecs, dedicatedHostCollection.DedicatedHosts...)
@@ -423,11 +469,13 @@ func dataSourceIbmIsDedicatedHostsRead(context context.Context, d *schema.Resour
 
 		err = d.Set("dedicated_hosts", dataSourceDedicatedHostCollectionFlattenDedicatedHosts(allrecs, meta))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting dedicated_hosts %s", err))
+			err = fmt.Errorf("[ERROR] Error setting dedicated_hosts %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_hosts", "read", "set-dedicated_hosts").GetDiag()
 		}
 
 		if err = d.Set("total_count", len(allrecs)); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting total_count: %s", err))
+			err = fmt.Errorf("[ERROR] Error setting total_count: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_hosts", "read", "set-total_count").GetDiag()
 		}
 	}
 	return nil
@@ -499,6 +547,9 @@ func dataSourceDedicatedHostCollectionDedicatedHostsToMap(dedicatedHostsItem vpc
 	if dedicatedHostsItem.Name != nil {
 		dedicatedHostsMap["name"] = dedicatedHostsItem.Name
 	}
+	if dedicatedHostsItem.Numa != nil {
+		dedicatedHostsMap["numa"] = dataSourceDedicatedHostFlattenNumaNodes(*dedicatedHostsItem.Numa)
+	}
 	if dedicatedHostsItem.Profile != nil {
 		profileList := []map[string]interface{}{}
 		profileMap := dataSourceDedicatedHostCollectionDedicatedHostsProfileToMap(*dedicatedHostsItem.Profile)
@@ -552,6 +603,10 @@ func dataSourceDedicatedHostCollectionDedicatedHostsAvailableVcpuToMap(available
 	if availableVcpuItem.Architecture != nil {
 		availableVcpuMap["architecture"] = availableVcpuItem.Architecture
 	}
+	// Added AMD Support for the manufacturer.
+	if availableVcpuItem.Manufacturer != nil {
+		availableVcpuMap["manufacturer"] = availableVcpuItem.Manufacturer
+	}
 	if availableVcpuItem.Count != nil {
 		availableVcpuMap["count"] = availableVcpuItem.Count
 	}
@@ -587,7 +642,7 @@ func dataSourceDedicatedHostCollectionDedicatedHostsGroupToMap(groupItem vpcv1.D
 	return groupMap
 }
 
-func dataSourceDedicatedHostCollectionGroupDeletedToMap(deletedItem vpcv1.DedicatedHostGroupReferenceDeleted) (deletedMap map[string]interface{}) {
+func dataSourceDedicatedHostCollectionGroupDeletedToMap(deletedItem vpcv1.Deleted) (deletedMap map[string]interface{}) {
 	deletedMap = map[string]interface{}{}
 
 	if deletedItem.MoreInfo != nil {
@@ -597,7 +652,7 @@ func dataSourceDedicatedHostCollectionGroupDeletedToMap(deletedItem vpcv1.Dedica
 	return deletedMap
 }
 
-func dataSourceDedicatedHostCollectionInstancesDeletedToMap(deletedItem vpcv1.InstanceReferenceDeleted) (deletedMap map[string]interface{}) {
+func dataSourceDedicatedHostCollectionInstancesDeletedToMap(deletedItem vpcv1.Deleted) (deletedMap map[string]interface{}) {
 	deletedMap = map[string]interface{}{}
 
 	if deletedItem.MoreInfo != nil {
@@ -664,6 +719,10 @@ func dataSourceDedicatedHostCollectionDedicatedHostsVcpuToMap(vcpuItem vpcv1.Vcp
 	if vcpuItem.Architecture != nil {
 		vcpuMap["architecture"] = vcpuItem.Architecture
 	}
+	// Added AMD Support for the manufacturer.
+	if vcpuItem.Manufacturer != nil {
+		vcpuMap["manufacturer"] = vcpuItem.Manufacturer
+	}
 	if vcpuItem.Count != nil {
 		vcpuMap["count"] = vcpuItem.Count
 	}
@@ -671,7 +730,7 @@ func dataSourceDedicatedHostCollectionDedicatedHostsVcpuToMap(vcpuItem vpcv1.Vcp
 	return vcpuMap
 }
 
-func dataSourceDedicatedHostCollectionFlattenFirst(result vpcv1.DedicatedHostCollectionFirst) (finalList []map[string]interface{}) {
+func dataSourceDedicatedHostCollectionFlattenFirst(result vpcv1.PageLink) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
 	finalMap := dataSourceDedicatedHostCollectionFirstToMap(result)
 	finalList = append(finalList, finalMap)
@@ -679,7 +738,7 @@ func dataSourceDedicatedHostCollectionFlattenFirst(result vpcv1.DedicatedHostCol
 	return finalList
 }
 
-func dataSourceDedicatedHostCollectionFirstToMap(firstItem vpcv1.DedicatedHostCollectionFirst) (firstMap map[string]interface{}) {
+func dataSourceDedicatedHostCollectionFirstToMap(firstItem vpcv1.PageLink) (firstMap map[string]interface{}) {
 	firstMap = map[string]interface{}{}
 
 	if firstItem.Href != nil {
@@ -689,7 +748,7 @@ func dataSourceDedicatedHostCollectionFirstToMap(firstItem vpcv1.DedicatedHostCo
 	return firstMap
 }
 
-func dataSourceDedicatedHostCollectionFlattenNext(result vpcv1.DedicatedHostCollectionNext) (finalList []map[string]interface{}) {
+func dataSourceDedicatedHostCollectionFlattenNext(result vpcv1.PageLink) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
 	finalMap := dataSourceDedicatedHostCollectionNextToMap(result)
 	finalList = append(finalList, finalMap)
@@ -697,7 +756,7 @@ func dataSourceDedicatedHostCollectionFlattenNext(result vpcv1.DedicatedHostColl
 	return finalList
 }
 
-func dataSourceDedicatedHostCollectionNextToMap(nextItem vpcv1.DedicatedHostCollectionNext) (nextMap map[string]interface{}) {
+func dataSourceDedicatedHostCollectionNextToMap(nextItem vpcv1.PageLink) (nextMap map[string]interface{}) {
 	nextMap = map[string]interface{}{}
 
 	if nextItem.Href != nil {

@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2022 All Rights Reserved.
+// Copyright IBM Corp. 2022, 2023 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package cdtoolchain_test
@@ -50,6 +50,12 @@ func TestAccIBMCdToolchainDataSourceAllArgs(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
+		ExternalProviders: map[string]resource.ExternalProvider{
+			"time": {
+				Source:            "hashicorp/time",
+				VersionConstraint: ">=0.9.1",
+			},
+		},
 		Steps: []resource.TestStep{
 			resource.TestStep{
 				Config: testAccCheckIBMCdToolchainDataSourceConfig(toolchainName, toolchainResourceGroupName, toolchainDescription),
@@ -67,6 +73,7 @@ func TestAccIBMCdToolchainDataSourceAllArgs(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain.cd_toolchain", "created_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain.cd_toolchain", "updated_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain.cd_toolchain", "created_by"),
+					resource.TestCheckResourceAttr("data.ibm_cd_toolchain.cd_toolchain", "tags.#", "0"),
 				),
 			},
 		},
@@ -102,8 +109,14 @@ func testAccCheckIBMCdToolchainDataSourceConfig(toolchainName string, toolchainR
 			description = "%s"
 		}
 
+		resource "time_sleep" "wait_time" {
+			create_duration = "10s"
+			depends_on = [ibm_cd_toolchain.cd_toolchain]
+		}
+		  
 		data "ibm_cd_toolchain" "cd_toolchain" {
 			toolchain_id = ibm_cd_toolchain.cd_toolchain.id
+			depends_on = [time_sleep.wait_time]
 		}
 	`, toolchainResourceGroupName, toolchainName, toolchainDescription)
 }

@@ -22,6 +22,11 @@ Run `terraform destroy` when you don't need these resources.
 
 Create an IBM Cloud Object Storage bucket. The bucket is used to store your data:
 
+  **Note:**
+
+A bucket name can be reused as soon as 15 minutes after the contents of the bucket have been deleted and the bucket has been deleted. Then, the objects and bucket are irrevocably deleted and can not be restored.
+For more information, please refer to [this link](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-faq-bucket#faq-reuse-name)
+
 ```terraform
 
 data "ibm_resource_group" "cos_group" {
@@ -52,22 +57,21 @@ resource "ibm_resource_instance" "metrics_monitor" {
   }
 }
 resource "ibm_cos_bucket" "standard-ams03" {
-  bucket_name          = var.bucket_name
-  resource_instance_id = ibm_resource_instance.cos_instance.id
-  single_site_location = "sjc04"
-  #cross_region_location = var.region
-  storage_class        = var.storage
+  bucket_name           = var.bucket_name
+  resource_instance_id  = ibm_resource_instance.cos_instance.id
+  single_site_location  = var.single_site_loc
+  storage_class         = var.standard_storage_class
+  hard_quota            = var.quota
   activity_tracking {
     read_data_events     = true
     write_data_events    = true
-    activity_tracker_crn = ibm_resource_instance.activity_tracker.id
+    management_events    = true
   }
   metrics_monitoring {
     usage_metrics_enabled  = true
     request_metrics_enabled = true
-    metrics_monitoring_crn = ibm_resource_instance.metrics_monitor.id
   }
-  allowed_ip =  ["223.196.168.27","223.196.161.38","192.168.0.1"]
+  allowed_ip = ["223.196.168.27", "223.196.161.38", "192.168.0.1"]
 }
 
 resource "ibm_cos_bucket" "archive_expire_rule_cos" {
@@ -399,6 +403,143 @@ resource ibm_cos_bucket_object_lock_configuration "objectlock" {
   }
 }
 ```
+
+
+## COS Static Webhosting
+
+Provides an  Static web hosting configuration resource. This resource is used to  configure the website to use your documents as an index for the site and to potentially display errors.It can also be used to configure more advanced options including routing rules and request redirect for your domain.
+
+## Example usage
+The following example creates an instance of IBM Cloud Object Storage, creates a bucket and adds a website configuration on the bucket.Along with the basic bucket configuration , example of redirect all requests and adding routing rules have been given below.
+
+```terraform
+
+# Create a bucket
+resource "ibm_cos_bucket" "cos_bucket_website_configuration" {
+  bucket_name           = var.bucket_name
+  resource_instance_id  = ibm_resource_instance.cos_instance.id
+  region_location       = var.regional_loc
+  storage_class         = var.standard_storage_class
+
+}
+# Give public access to above mentioned bucket
+resource "ibm_iam_access_group_policy" "policy" { 
+  depends_on = [ibm_cos_bucket.cos_bucket_website_configuration] 
+  access_group_id = data.ibm_iam_access_group.public_access_group.groups[0].id 
+  roles = ["Object Reader"] 
+
+  resources { 
+    service = "cloud-object-storage" 
+    resource_type = "bucket" 
+    resource_instance_id = "COS instance guid" 
+    resource = data.ibm_cos_bucket.cos_bucket_website_configuration.bucket_name 
+  } 
+} 
+
+# Add basic website configuration on a COS bucket
+resource ibm_cos_bucket_website_configuration "website_configuration" {
+  bucket_crn = "bucket_crn"
+  bucket_location = data.ibm_cos_bucket.cos_bucket_website_configuration.regional_location
+  website_configuration {
+    error_document{
+      key = "error.html"
+    }
+    index_document{
+      suffix = "index.html"
+    }
+  }
+}
+
+# Add a request redirect website configuration on a COS bucket
+resource ibm_cos_bucket_website_configuration "website_configuration" {
+  bucket_crn = "bucket_crn"
+  bucket_location = data.ibm_cos_bucket.cos_bucket_website_configuration.regional_location
+  website_configuration {
+    redirect_all_requests_to{
+			host_name = "exampleBucketName"
+			protocol = "https"
+		}
+  }
+}
+
+
+# Add a website configuration on a COS bucket with routing rule
+
+resource ibm_cos_bucket_website_configuration "website_configuration" {
+  bucket_crn = "bucket_crn"
+  bucket_location = data.ibm_cos_bucket.cos_bucket_website_configuration.regional_location
+  website_configuration {
+    error_document{
+      key = "error.html"
+    }
+    index_document{
+      suffix = "index.html"
+    }
+    routing_rule {
+      condition {
+        key_prefix_equals = "pages/"
+      }
+      redirect {
+        replace_key_prefix_with = "web_pages/"
+      }
+    }
+  }
+}
+
+# Add a website configuration on a COS bucket with JSON routing rule
+resource ibm_cos_bucket_website_configuration "website_configuration" {
+  bucket_crn = "bucket_crn"
+  bucket_location = data.ibm_cos_bucket.cos_bucket_website_configuration.regional_location
+  website_configuration {
+    error_document{
+      key = "error.html"
+      }
+    index_document{
+      suffix = "index.html"
+    }
+    routing_rules = <<EOF
+			[{
+			    "Condition": {
+			        "KeyPrefixEquals": "pages/"
+			     },
+			     "Redirect": {
+			        "ReplaceKeyPrefixWith": "webpages/"
+			     }
+			 }]
+			 EOF
+  }
+}
+```
+## ibm_cos_bucket_lifecycle_configuration
+
+Provides an independent resource to manage the lifecycle configuration for a bucket.For more information please refer to [`ibm_cos_bucket_lifecycle_configuration`](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/ibm_cos_bucket_lifecycle_configuration)
+
+## Example usage
+
+```terraform
+resource "ibm_cos_bucket" "cos_bucket" {
+  bucket_name           = var.bucket_name
+  resource_instance_id  = ibm_resource_instance.cos_instance.id
+  region_location       = var.regional_loc
+  storage_class         = var.standard_storage_class
+
+}
+resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle" {
+  bucket_crn = ibm_cos_bucket.cos_bucket.crn
+  bucket_location = ibm_cos_bucket.cos_bucket.region_location
+  lifecycle_rule {
+    expiration{
+      days = 1
+    }
+    filter {
+      prefix = "foo"
+    }  
+    rule_id = "id"
+    status = "enable"
+  
+  }
+}
+```
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 
 ## Requirements
@@ -422,12 +563,13 @@ resource ibm_cos_bucket_object_lock_configuration "objectlock" {
 | satellite_location_id | satellite location. | `string` | no |
 | storage | The storage class that you want to use for the bucket. Supported values are **standard, vault, cold, flex, and smart**.| `string` | no |
 | region | The location for a cross-regional bucket. Supported values are **us, eu, and ap**. | `string` | no |
-| read_data_events | Enables sending log data to Activity Tracker and LogDNA to provide visibility into object read and write events. | `array` | no
-| write_data_events | All object write events (i.e. uploads) will be sent to Activity Tracker. | `bool` | no
-| activity_tracker_crn | Required the first time activity_tracking is configured. | `string` | yes
-| usage_metrics_enabled | Specify **true or false** to set usage metrics (i.e. bytes_used). | `bool` | no
-| request_metrics_enabled | Specify true or false to set cos request metrics (i.e. get, put, or post request). | `bool` | no
-| metrics_monitoring_crn | Required the first time metrics_monitoring is configured. The instance of IBM Cloud Monitoring that will receive the bucket metrics. | `string` | yes
+| read_data_events | If set to **true**, all object read events (i.e. downloads) will be sent to Activity Tracker. | `bool` | no
+| write_data_events | If set to **true**, all object write events (i.e. uploads) will be sent to Activity Tracker. | `bool` | no
+| management_events |If set to **true**, all bucket management events will be sent to Activity Tracker.This field only applies if `activity_tracker_crn` is not populated. | `bool` | no
+| activity_tracker_crn |When the `activity_tracker_crn` is not populated, then enabled events are sent to the Activity Tracker instance associated to the container's location unless otherwise specified in the Activity Tracker Event Routing service configuration.If `activity_tracker_crn` is populated, then enabled events are sent to the Activity Tracker instance specified and bucket management events are always enabled. | `string` | no
+| usage_metrics_enabled |If set to **true**, all usage metrics (i.e. `bytes_used`) will be sent to the monitoring service.| `bool` | no
+| request_metrics_enabled | If set to **true**, all request metrics (i.e. `rest.object.head`) will be sent to the monitoring service. | `bool` | no
+| metrics_monitoring_crn | When the `metrics_monitoring_crn` is not populated, then enabled metrics are sent to the monitoring instance associated to the container's location unless otherwise specified in the Metrics Router service configuration.If `metrics_monitoring_crn` is populated, then enabled events are sent to the Metrics Monitoring instance specified. | `string` | no
 | regional_loc | The location for a regional bucket. Supported values are **au-syd, eu-de, eu-gb, jp-tok, us-east, or us-south**. | `string` | no
 | type | Specifies the archive type to which you want the object to transition. Supported values are  **Glacier or Accelerated**. | `string` |yes
 | rule_id | Unique identifier for the rule. | `string` | no
@@ -446,17 +588,42 @@ resource ibm_cos_bucket_object_lock_configuration "objectlock" {
 | object_lock | enables Object Lock on a bucket. | `bool` | no
 | bucket\_crn | The CRN of the source COS bucket. | `string` | yes |
 | bucket\_location | The location of the source COS bucket. | `string` | yes |
-| destination_bucket_crn | The CRN of your destination bucket that you want to replicate to. | `String` | yes
-| deletemarker_replication_status | Specifies whether Object storage replicates delete markers.  Specify true for Enabling it or false for Disabling it. | `String` | no
-| status | Specifies whether the rule is enabled. Specify true for Enabling it or false for Disabling it. | `String` | yes
-| rule_id | The rule id. | `String` | no
-| priority | A priority is associated with each rule. The rule will be applied in a higher priority if there are multiple rules configured. The higher the number, the higher the priority | `String` | no
-| prefix | An object key name prefix that identifies the subset of objects to which the rule applies. | `String` | no
-| bucket_crn | The CRN of the COS bucket on which Object Lock is enabled or should be enabled. | `String` | yes
-| bucket_location | Location of the COS bucket. | `String` | yes
-| endpoint_type | Endpoint types of the COS bucket. | `String` | no
-| object_lock_enabled | Enable Object Lock on an existing COS bucket. | `String` | yes
-| mode | Retention mode for the Object Lock configuration. | `String` | yes
+| destination_bucket_crn | The CRN of your destination bucket that you want to replicate to. | `string` | yes
+| deletemarker_replication_status | Specifies whether Object storage replicates delete markers.  Specify true for Enabling it or false for Disabling it. | `string` | no
+| status | Specifies whether the rule is enabled. Specify true for Enabling it or false for Disabling it. | `string` | yes
+| rule_id | The rule id. | `string` | no
+| priority | A priority is associated with each rule. The rule will be applied in a higher priority if there are multiple rules configured. The higher the number, the higher the priority | `string` | no
+| prefix | An object key name prefix that identifies the subset of objects to which the rule applies. | `string` | no
+| bucket_crn | The CRN of the COS bucket on which Object Lock is enabled or should be enabled. | `string` | yes
+| bucket_location | Location of the COS bucket. | `string` | yes
+| endpoint_type | Endpoint types of the COS bucket. | `string` | no
+| object_lock_enabled | Enable Object Lock on an existing COS bucket. | `string` | yes
+| mode | Retention mode for the Object Lock configuration. | `string` | yes
 | years | Retention period in terms of years after which the object can be deleted. | `int` | no
 | days | Retention period in terms of days after which the object can be deleted. | `int` | no
+| key | Object key name to use when a 4XX class error occurs given as error document. | `string` | no
+| suffix | The home or default page of the website when static web hosting configuration is added. | `string` | Yes
+| hostname | Name of the host where requests are redirected. | `string` | Yes
+| protocol | Protocol to use when redirecting requests. The default is the protocol that is used in the original request. | `string` | No
+| http_error_code_returned_equals | HTTP error code when the redirect is applied. | `string` | No
+| key_prefix_equals | Object key name prefix when the redirect is applied. | `string` | No
+| host_name | Host name to use in the redirect request. | `string` | Yes
+| protocol | Protocol to use when redirecting requests. | `string` | No
+| http_redirect_code | HTTP redirect code to use on the response. | `string` | No
+| replace_key_with | Specific object key to use in the redirect request. | `string` | No
+| replace_key_prefix_with | Object key prefix to use in the redirect request. | `string` | No
+| days | Days after which the lifecycle rule expiration will be applied on the object. | `int` | No
+| date | Date after which the lifecycle rule expiration will be applied on the object. | `int` | No
+| expire_object_delete_marker | Indicates whether ibm will remove a delete marker with no noncurrent versions. | `bool` | No
+| days | Days after which the lifecycle rule transition will be applied on the object. | `int` | No
+| date | Date after which the lifecycle rule transition will be applied on the object. | `int` | No
+| storage_class | Class of storage used to store the object. | `string` | No
+| noncurrent_days | Number of days an object is noncurrent before lifecycle action is performed. | `int` | No
+| days_after_initiatiob | Number of days after which incomplete multipart uploads are aborted. | `int` | No
+| id | Unique identifier for lifecycle rule. | `int` | Yes
+| status | Whether the rule is currently being applied. | `int` | Yes
+| object_size_greater_than | Expiration rule will be applicable to the objects having size greater than specified value of his argument. | `int` | No
+| object_size_less_than | Expiration rule will be applicable to the objects having size lesser than specified value of his argument. | `int` | No
+| tag | Expiration rule will be applicable to the objects having the key-value tags specified by this attribute. | `object` | Yes
+
 {: caption="inputs"}

@@ -11,6 +11,7 @@ import (
 	"encoding/base64"
 	"encoding/pem"
 	"fmt"
+	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -120,20 +121,30 @@ func dataSourceIBMISBareMetalServerInitializationRead(context context.Context, d
 	bareMetalServerID := d.Get(isBareMetalServerID).(string)
 	sess, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_bare_metal_server_initialization", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	options := &vpcv1.GetBareMetalServerInitializationOptions{
 		ID: &bareMetalServerID,
 	}
 
-	initialization, response, err := sess.GetBareMetalServerInitializationWithContext(context, options)
+	initialization, _, err := sess.GetBareMetalServerInitializationWithContext(context, options)
 	if err != nil || initialization == nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error getting Bare Metal Server (%s) initialization : %s\n%s", bareMetalServerID, err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetBareMetalServerInitializationWithContext failed: %s", err.Error()), "(Data) ibm_is_bare_metal_server_initialization", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	d.SetId(bareMetalServerID)
 	if initialization.Image != nil {
-		d.Set(isBareMetalServerImage, initialization.Image.ID)
-		d.Set(isBareMetalServerImageName, initialization.Image.Name)
+
+		if err = d.Set(isBareMetalServerImage, initialization.Image.ID); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting image: %s", err), "(Data) ibm_is_bare_metal_server_initialization", "read", "set-image").GetDiag()
+		}
+
+		if err = d.Set(isBareMetalServerImageName, initialization.Image.Name); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting image_name: %s", err), "(Data) ibm_is_bare_metal_server_initialization", "read", "set-image_name").GetDiag()
+		}
 	}
 
 	var keys []string
@@ -143,7 +154,10 @@ func dataSourceIBMISBareMetalServerInitializationRead(context context.Context, d
 			keys = append(keys, *key.ID)
 		}
 	}
-	d.Set(isBareMetalServerKeys, flex.NewStringSet(schema.HashString, keys))
+
+	if err = d.Set(isBareMetalServerKeys, flex.NewStringSet(schema.HashString, keys)); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting keys: %s", err), "(Data) ibm_is_bare_metal_server_initialization", "read", "set-keys").GetDiag()
+	}
 	accList := make([]map[string]interface{}, 0)
 	if initialization.UserAccounts != nil {
 
@@ -165,20 +179,20 @@ func dataSourceIBMISBareMetalServerInitializationRead(context context.Context, d
 				if keyFlag != "" {
 					block, err := pem.Decode(keybytes)
 					if block == nil {
-						return diag.FromErr(fmt.Errorf("[ERROR] Failed to load the private key from the given key contents. Instead of the key file path, please make sure the private key is pem format"))
+						err := fmt.Errorf("[ERROR] Failed to load the private key from the given key contents. Instead of the key file path, please make sure the private key is pem format (%v)", err)
+						return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_bare_metal_server_initialization", "read", "decode-pem").GetDiag()
+
 					}
 					isEncrypted := false
-					switch block.Type {
-					case "RSA PRIVATE KEY":
-						isEncrypted = x509.IsEncryptedPEMBlock(block)
-					case "OPENSSH PRIVATE KEY":
+					if block.Type == "OPENSSH PRIVATE KEY" {
 						var err error
 						isEncrypted, err = isOpenSSHPrivKeyEncrypted(block.Bytes)
 						if err != nil {
-							return diag.FromErr(fmt.Errorf("[ERROR] Failed to check if the provided open ssh key is encrypted or not %s", err))
+							err = fmt.Errorf("[ERROR] Failed to check if the provided open ssh key is encrypted or not %s", err)
+							return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_bare_metal_server_initialization", "read", "check-encryption").GetDiag()
 						}
-					default:
-						return diag.FromErr(fmt.Errorf("[ERROR] PEM and OpenSSH private key formats with RSA key type are supported, can not support this key file type: %s", err))
+					} else {
+						isEncrypted = x509.IsEncryptedPEMBlock(block)
 					}
 					passphrase := ""
 					var privateKey interface{}
@@ -186,24 +200,28 @@ func dataSourceIBMISBareMetalServerInitializationRead(context context.Context, d
 						if pass, ok := d.GetOk(isBareMetalServerPassphrase); ok {
 							passphrase = pass.(string)
 						} else {
-							return diag.FromErr(fmt.Errorf("[ERROR] Mandatory field 'passphrase' not provided"))
+							err := fmt.Errorf("[ERROR] Mandatory field 'passphrase' not provided")
+							return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_bare_metal_server_initialization", "read", "missing-passphrase").GetDiag()
 						}
 						var err error
 						privateKey, err = sshkeys.ParseEncryptedRawPrivateKey(keybytes, []byte(passphrase))
 						if err != nil {
-							return diag.FromErr(fmt.Errorf("[ERROR] Fail to decrypting the private key: %s", err))
+							err := fmt.Errorf("[ERROR] Fail to decrypting the private key: %s", err)
+							return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_bare_metal_server_initialization", "read", "decrypt-private_key").GetDiag()
 						}
 					} else {
 						var err error
 						privateKey, err = sshkeys.ParseEncryptedRawPrivateKey(keybytes, nil)
 						if err != nil {
-							return diag.FromErr(fmt.Errorf("[ERROR] Fail to decrypting the private key: %s", err))
+							err := fmt.Errorf("[ERROR] Fail to decrypting the private key: %s", err)
+							return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_bare_metal_server_initialization", "read", "fail-decrypt-private_key").GetDiag()
 						}
 					}
 					var ok bool
 					rsaKey, ok = privateKey.(*rsa.PrivateKey)
 					if !ok {
-						return diag.FromErr(fmt.Errorf("[ERROR] Failed to convert to RSA private key"))
+						err := fmt.Errorf("[ERROR] Failed to convert to RSA private key")
+						return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_bare_metal_server_initialization", "read", "convert-rsa").GetDiag()
 					}
 				}
 			}
@@ -215,7 +233,8 @@ func dataSourceIBMISBareMetalServerInitializationRead(context context.Context, d
 					rng := rand.Reader
 					clearPassword, err := rsa.DecryptPKCS1v15(rng, rsaKey, ciphertext)
 					if err != nil {
-						return diag.FromErr(fmt.Errorf("[ERROR] Can not decrypt the password with the given key, %s", err))
+						err := fmt.Errorf("[ERROR] Can not decrypt the password with the given key, %s", err)
+						return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_bare_metal_server_initialization", "read", "decrypt-password").GetDiag()
 					}
 					password = string(clearPassword)
 				}
@@ -223,7 +242,10 @@ func dataSourceIBMISBareMetalServerInitializationRead(context context.Context, d
 			}
 			accList = append(accList, currAccount)
 		}
-		d.Set(isBareMetalServerUserAccounts, accList)
+
+		if err = d.Set(isBareMetalServerUserAccounts, accList); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting user_accounts: %s", err), "(Data) ibm_is_bare_metal_server_initialization", "read", "set-user_accounts").GetDiag()
+		}
 	}
 	return nil
 }

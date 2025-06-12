@@ -10,62 +10,64 @@ description: |-
 
 Provides a private DNS custom resolver resource. This allows DNS custom resolver to create, update, and delete. For more information, about customer resolver, see [create-custom-resolver](https://cloud.ibm.com/apidocs/dns-svcs#create-custom-resolver).
 
-
 ## Example usage
 
 ```terraform
-
-  	data "ibm_resource_group" "rg" {
-		is_default	   =  true
-	}
-	resource "ibm_is_vpc" "test-pdns-cr-vpc" {
-		name		   =  "test-pdns-custom-resolver-vpc"
-		resource_group	   =  data.ibm_resource_group.rg.id
-	}
-	resource "ibm_is_subnet" "test-pdns-cr-subnet1" {
-		name		   =  "test-pdns-cr-subnet1"
-		vpc		   =  ibm_is_vpc.test-pdns-cr-vpc.id
-		zone		   =  "us-south-1"
-		ipv4_cidr_block	   =  "10.240.0.0/24"
-		resource_group	   =  data.ibm_resource_group.rg.id
-	}
-	resource "ibm_is_subnet" "test-pdns-cr-subnet2" {
-		name		   =  "test-pdns-cr-subnet2"
-		vpc      	   =  ibm_is_vpc.test-pdns-cr-vpc.id
-		zone		   =  "us-south-1"
-		ipv4_cidr_block	   =  "10.240.64.0/24"
-		resource_group	   =  data.ibm_resource_group.rg.id
-	}
-	resource "ibm_resource_instance" "test-pdns-cr-instance" {
-		name		   =  "test-pdns-cr-instance"
-		resource_group_id  =  data.ibm_resource_group.rg.id
-		location           =  "global"
-		service		   =  "dns-svcs"
-		plan		   =  "standard-dns"
-	}
-	resource "ibm_dns_custom_resolver" "test" {
-		name		   =  "test-customresolver"
-		instance_id 	   =  ibm_resource_instance.test-pdns-cr-instance.guid
-		description	   =  "new test CR - TF"
-		high_availability  =  true
-		enabled 	   =  true
-		locations {
-		     subnet_crn  = ibm_is_subnet.test-pdns-cr-subnet1.crn
-		     enabled	 = true
-		}
-		locations {
-		     subnet_crn  = ibm_is_subnet.test-pdns-cr-subnet1.crn
-		     enabled	 = true
-		}
-		locations {
-		     subnet_crn	 = ibm_is_subnet.test-pdns-cr-subnet2.crn
-		     enabled     = false
-		}
-	}
+    
+    data "ibm_resource_group" "rg" {
+        is_default  =  true
+    }
+    resource "ibm_is_vpc" "test-pdns-cr-vpc" {
+        name            =  "test-pdns-custom-resolver-vpc"
+        resource_group  =  data.ibm_resource_group.rg.id
+    }
+    resource "ibm_is_subnet" "test-pdns-cr-subnet1" {
+        name               =  "test-pdns-cr-subnet1"
+        vpc                =  ibm_is_vpc.test-pdns-cr-vpc.id
+        zone               =  "us-south-1"
+        ipv4_cidr_block    =  "10.240.0.0/24"
+        resource_group     =  data.ibm_resource_group.rg.id
+    }
+    resource "ibm_is_subnet" "test-pdns-cr-subnet2" {
+        name               =  "test-pdns-cr-subnet2"
+        vpc                =  ibm_is_vpc.test-pdns-cr-vpc.id
+        zone               =  "us-south-1"
+        ipv4_cidr_block    =  "10.240.64.0/24"
+        resource_group     =  data.ibm_resource_group.rg.id
+    }
+    resource "ibm_resource_instance" "test-pdns-cr-instance" {
+        name               =  "test-pdns-cr-instance"
+        resource_group_id  =  data.ibm_resource_group.rg.id
+        location           =  "global"
+        service            =  "dns-svcs"
+        plan               =  "standard-dns"
+    }
+    resource "ibm_dns_custom_resolver" "test" {
+        name               =  "test-customresolver"
+        instance_id        =  ibm_resource_instance.test-pdns-cr-instance.guid
+        description        =  "new test CR - TF"
+        high_availability  =  true
+        enabled            =  true
+        profile            =  "essential"
+        allow_disruptive_updates = false
+        locations {
+             subnet_crn  = ibm_is_subnet.test-pdns-cr-subnet1.crn
+             enabled     = true
+        }
+        locations {
+             subnet_crn  = ibm_is_subnet.test-pdns-cr-subnet1.crn
+             enabled     = true
+        }
+        locations {
+             subnet_crn  = ibm_is_subnet.test-pdns-cr-subnet2.crn
+             enabled     = false
+        }
+    }
 ```
 
 ## Argument reference
-Review the argument reference that you can specify for your resource. 
+
+Review the argument reference that you can specify for your resource.
 
 - `instance_id` - (Required, String) The GUID of the private DNS service instance.
 - `name`- (Required, String) The name of the custom resolver.
@@ -73,11 +75,18 @@ Review the argument reference that you can specify for your resource.
 - `description` - (Optional, String) Descriptive text of the custom resolver.
 - `high_availability` - (Optional, Bool) High Availability is enabled by Default. To meet high availability status, configure custom resolvers with a minimum of two resolver locations.
 - `locations`- (Optional, List) The list of locations where this custom resolver is deployed.  A custom resolver can have a maximum of three locations, either within the same subnet or in different subnets.
+- `profile` - (Optional, String) The profile name of the custom resolver. Supported values are `ESSENTIAL`, `ADVANCED`, `PREMIER`. Default value is `ESSENTIAL`.
+- `allow_disruptive_updates` - (Optional, Boolean) Whether disruptive update is allowed for the custom resolver. Default value is false.
+
+### Note
+
+Change in `location` order will cause `dns_server_ip` to change.
 
 ## Attribute reference
-In addition to all argument reference list, you can access the following attribute references after your resource is created. 
 
-- `created_on` - (Timestamp) The time (created On) of the DNS Custom Resolver. 
+In addition to all argument reference list, you can access the following attribute references after your resource is created.
+
+- `created_on` - (Timestamp) The time (created On) of the DNS Custom Resolver.
 - `custom_resolver_id` - (String) The unique ID of the private DNS custom resolver.
 - `modified_on` - (Timestamp) The time (modified On) of the DNS Custom Resolver.
 - `health`- (String) The status of DNS Custom Resolver's health. Possible values are `DEGRADED`, `CRITICAL`, `HEALTHY`.
@@ -89,23 +98,32 @@ In addition to all argument reference list, you can access the following attribu
   - `enabled`- (Bool) Whether the location is enabled.
   - `location_id`- (String) The location ID.
 
- Nested scheme for `rules`:
- - `rule_id` - (String) The rule ID is unique identifier of the custom resolver forwarding rule.
- - `description`- (String) Descriptive text of the forwarding rule.
- - `type` - (String) Type of the forwarding rule.Constraints: Allowable values are: `zone`, `hostname`.
- - `match` - (String) The matching zone or hostname.
- - `forward_to` - (List) The upstream DNS servers will be forwarded to.
+  Nested scheme for `rules`:
+  - `rule_id` - (String) The rule ID is unique identifier of the custom resolver forwarding rule.
+  - `description`- (String) Descriptive text of the forwarding rule.
+  - `type` - (String) Type of the forwarding rule.
+    - Constraints: Allowable values are: `zone`, `hostname`.
+  - `match` - (String) The matching zone or hostname.
+  - `forward_to` - (List) List of the upstream DNS servers that the matching DNS queries will be forwarded to.
+  - `views` (List) List of views attached to the custom resolver.
+
+    Nested scheme for `views`:
+    - `name` - (String) Name of the view.
+    - `description` - (String) Description of the view.
+    - `expression` - (String) Expression of the view.
+    - `forward_to` - (List) List of the upstream DNS servers that the matching DNS queries will be forwarded to.
 
 ## Import
+
 The `ibm_dns_custom_resolver` can be imported by using private DNS instance ID, Custom Resolver ID.
 The `id` property can be formed from `custom_resolver_id` and `instance_id` in the following format:
 
-```
-<custom_resolver_id>:<instance_id>
+```terraform
+terraform import ibm_dns_custom_resolver.example <custom_resolver_id>:<instance_id>
 ```
 
-**Example**
+### Example
 
-```
-$ terraform import ibm_dns_custom_resolver.example 270edfad-8574-4ce0-86bf-5c158d3e38fe:345ca2c4-83bf-4c04-bb09-5d8ec4d425a8
+```terraform
+terraform import ibm_dns_custom_resolver.example 270edfad-8574-4ce0-86bf-5c158d3e38fe:345ca2c4-83bf-4c04-bb09-5d8ec4d425a8
 ```

@@ -29,6 +29,8 @@ func TestAccIbmSmArbitrarySecretDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_sm_arbitrary_secret.sm_arbitrary_secret", "secret_type"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_arbitrary_secret.sm_arbitrary_secret", "updated_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_arbitrary_secret.sm_arbitrary_secret", "versions_total"),
+					resource.TestCheckResourceAttrSet("data.ibm_sm_arbitrary_secret.sm_arbitrary_secret_by_name", "name"),
+					resource.TestCheckResourceAttrSet("data.ibm_sm_arbitrary_secret.sm_arbitrary_secret_by_name", "secret_group_name"),
 				),
 			},
 		},
@@ -53,5 +55,12 @@ func testAccCheckIbmSmArbitrarySecretDataSourceConfigBasic() string {
 			region = "%s"
 			secret_id = ibm_sm_arbitrary_secret.sm_arbitrary_secret_instance.secret_id
 		}
-	`, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion)
+
+		data "ibm_sm_arbitrary_secret" "sm_arbitrary_secret_by_name" {
+			instance_id   = "%s"
+			region = "%s"
+			name = ibm_sm_arbitrary_secret.sm_arbitrary_secret_instance.name
+			secret_group_name = "default"
+		}
+	`, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion)
 }

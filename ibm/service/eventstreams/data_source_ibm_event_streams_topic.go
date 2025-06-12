@@ -4,15 +4,18 @@
 package eventstreams
 
 import (
+	"context"
 	"fmt"
 	"log"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func DataSourceIBMEventStreamsTopic() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceIBMEventStreamsTopicRead,
+		ReadContext: dataSourceIBMEventStreamsTopicRead,
 		Schema: map[string]*schema.Schema{
 			"resource_instance_id": {
 				Type:        schema.TypeString,
@@ -49,16 +52,18 @@ func DataSourceIBMEventStreamsTopic() *schema.Resource {
 	}
 }
 
-func dataSourceIBMEventStreamsTopicRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceIBMEventStreamsTopicRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	adminClient, instanceCRN, err := createSaramaAdminClient(d, meta)
 	if err != nil {
-		log.Printf("[DEBUG]dataSourceIBMEventStreamsTopicRead createSaramaAdminClient err %s", err)
-		return err
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMEventStreamsTopicRead createSaramaAdminClient: %s", err), "ibm_event_streams_topic", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	topics, err := adminClient.ListTopics()
 	if err != nil {
-		log.Printf("[DEBUG]dataSourceIBMEventStreamsTopicRead ListTopics err %s", err)
-		return err
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMEventStreamsTopicRead ListTopics: %s", err), "ibm_event_streams_topic", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	topicName := d.Get("name").(string)
 	for name := range topics {
@@ -70,6 +75,8 @@ func dataSourceIBMEventStreamsTopicRead(d *schema.ResourceData, meta interface{}
 			return nil
 		}
 	}
-	log.Printf("[DEBUG]dataSourceIBMEventStreamsTopicRead topic %s does not exist", topicName)
-	return fmt.Errorf("topic %s does not exist", topicName)
+	tfErr := flex.TerraformErrorf(fmt.Errorf("topic %s does not exist", topicName),
+		fmt.Sprintf("dataSourceIBMEventStreamsTopicRead topic %s does not exist", topicName), "ibm_event_streams_topic", "read")
+	log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+	return tfErr.GetDiag()
 }

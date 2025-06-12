@@ -17,6 +17,7 @@ resource "ibm_en_destination_safari" "safari_en_destination" {
   instance_guid = ibm_resource_instance.en_terraform_test_resource.guid
   name                         = "EN Safari Destination"
   type                         = "push_safari"
+  collect_failed_events        = false
   certificate                  = "${path.module}/Certificates/safaricert.p12"
   icon_16x16                   = "${path.module}/Certificates/safariicon.png"
   icon_16x16_2x                = "${path.module}/Certificates/safariicon.png"
@@ -55,6 +56,8 @@ Review the argument reference that you can specify for your resource.
 - `description` - (Optional, String) The Destination description.
 
 - `type` - (Required, String) push_safari.
+
+- `collect_failed_events` - (boolean) Toggle switch to enable collect failed event in Cloud Object Storage bucket.
 
 - `certificate` - (Required, binary) Certificate file. The file type allowed is .p8 and .p12
 

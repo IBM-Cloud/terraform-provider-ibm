@@ -9,6 +9,7 @@ import (
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
@@ -25,6 +26,33 @@ func TestAccIBMISImagesDataSource_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resName, "images.0.name"),
 					resource.TestCheckResourceAttrSet(resName, "images.0.status"),
 					resource.TestCheckResourceAttrSet(resName, "images.0.architecture"),
+				),
+			},
+		},
+	})
+}
+func TestAccIBMISImagesDataSource_All(t *testing.T) {
+	resName := "data.ibm_is_images.test1"
+	imageName := fmt.Sprintf("tfimage-name-%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISImagesDataSourceAllConfig(imageName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(resName, "images.0.operating_system.0.name"),
+					resource.TestCheckResourceAttrSet(resName, "images.0.operating_system.0.dedicated_host_only"),
+					resource.TestCheckResourceAttrSet(resName, "images.0.operating_system.0.display_name"),
+					resource.TestCheckResourceAttrSet(resName, "images.0.operating_system.0.family"),
+					resource.TestCheckResourceAttrSet(resName, "images.0.operating_system.0.href"),
+					resource.TestCheckResourceAttrSet(resName, "images.0.operating_system.0.vendor"),
+					resource.TestCheckResourceAttrSet(resName, "images.0.operating_system.0.version"),
+					resource.TestCheckResourceAttrSet(resName, "images.0.operating_system.0.architecture"),
+					resource.TestCheckResourceAttrSet(resName, "images.0.status"),
+					resource.TestCheckResourceAttrSet(resName, "images.0.resource_group.0.id"),
+					resource.TestCheckResourceAttrSet(resName, "images.0.resource_group.0.name"),
 				),
 			},
 		},
@@ -91,6 +119,12 @@ func testAccCheckIBMISImagesDataSourceConfig() string {
 	return fmt.Sprintf(`
       data "ibm_is_images" "test1" {
       }`)
+}
+func testAccCheckIBMISImagesDataSourceAllConfig(imageName string) string {
+	return fmt.Sprintf(`
+	data "ibm_is_images" "test1" {
+		status = "available"
+	}`)
 }
 func testAccCheckIBMISCatalogImagesDataSourceConfig() string {
 	// status filter defaults to empty

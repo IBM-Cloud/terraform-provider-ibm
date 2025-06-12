@@ -217,7 +217,7 @@ func testAccCheckIBMKmsKeyPolicyStandardConfigCheck(instanceName, KeyName string
 			enabled = %t
 		  }
 	  }
-`, instanceName, KeyName, rotation_interval, dual_auth_delete)
+`, addPrefixToResourceName(instanceName), KeyName, rotation_interval, dual_auth_delete)
 }
 
 func testAccCheckIBMKmsKeyPolicyDualAuthCheck(instanceName, KeyName string, dual_auth_delete bool) string {
@@ -245,7 +245,7 @@ func testAccCheckIBMKmsKeyPolicyDualAuthCheck(instanceName, KeyName string, dual
 		instance_id = ibm_kms_key_policies.Policy.instance_id
 		key_id = ibm_kms_key_policies.Policy.key_id
 	  }
-`, instanceName, KeyName, dual_auth_delete)
+`, addPrefixToResourceName(instanceName), KeyName, dual_auth_delete)
 }
 
 func testAccCheckIBMKmsKeyPolicyDualAuthCheckWithAlias(instanceName, KeyName string, alias string, dual_auth_delete bool) string {
@@ -280,7 +280,7 @@ func testAccCheckIBMKmsKeyPolicyDualAuthCheckWithAlias(instanceName, KeyName str
 		instance_id = ibm_kms_key_policies.Policy.instance_id
 		key_id = ibm_kms_key_policies.Policy.key_id
 	  }
-`, instanceName, KeyName, alias, dual_auth_delete)
+`, addPrefixToResourceName(instanceName), KeyName, alias, dual_auth_delete)
 }
 
 func testAccCheckIBMKmsKeyPolicyRotationCheck(instanceName, KeyName string, rotation_interval int) string {
@@ -309,5 +309,5 @@ func testAccCheckIBMKmsKeyPolicyRotationCheck(instanceName, KeyName string, rota
 		key_id = ibm_kms_key_policies.Policy.key_id
 	  }
 
-`, instanceName, KeyName, rotation_interval)
+`, addPrefixToResourceName(instanceName), KeyName, rotation_interval)
 }

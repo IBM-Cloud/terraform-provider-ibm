@@ -14,11 +14,12 @@ Provides a resource for ArbitrarySecret. This allows ArbitrarySecret to be creat
 
 ```hcl
 resource "ibm_sm_arbitrary_secret" "sm_arbitrary_secret" {
+  name          = "secret-name"
   instance_id   = ibm_resource_instance.sm_instance.guid
   region        = "us-south"
   custom_metadata = {"key":"value"}
   description = "Extended description for this secret."
-  expiration_date = "2022-04-12T23:20:50.520Z"
+  expiration_date = "2022-04-12T23:20:50Z"
   labels = ["my-label"]
   payload = "secret-credentials"
   secret_group_id = ibm_sm_secret_group.sm_secret_group.secret_group_id
@@ -39,11 +40,11 @@ Review the argument reference that you can specify for your resource.
 * `labels` - (Optional, List) Labels that you can use to search for secrets in your instance.Up to 30 labels can be created.
   * Constraints: The list items must match regular expression `/(.*?)/`. The maximum length is `30` items. The minimum length is `0` items.
 * `name` - (Required, String) The human-readable name of your secret.
-  * Constraints: The maximum length is `256` characters. The minimum length is `2` characters. The value must match regular expression `^[A-Za-z0-9][A-Za-z0-9]*(?:_*-*\\.*[A-Za-z0-9]+)*$`.
+  * Constraints: The maximum length is `256` characters. The minimum length is `2` characters. The value must match regular expression `^[A-Za-z0-9_][A-Za-z0-9_]*(?:_*-*\.*[A-Za-z0-9]*)*[A-Za-z0-9]+$`.
 * `region` - (Optional, Forces new resource, String) The region of the Secrets Manager instance. If not provided defaults to the region defined in the IBM provider configuration.
 * `payload` - (Required, String) The arbitrary secret's data payload. You can manually rotate the secret by modifying this argument. Modifying the payload creates a new version of the secret.
   * Constraints: The maximum length is `100000` characters. The minimum length is `0` characters. The value must match regular expression `/(.*?)/`.
-* `secret_group_id` - (Optional, Forces new resource, String) A v4 UUID identifier, or `default` secret group.
+* `secret_group_id` - (Optional, Forces new resource, String) A UUID identifier, or `default` secret group.
   * Constraints: The maximum length is `36` characters. The minimum length is `7` characters. The value must match regular expression `/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|default)$/`.
 
 ## Attribute Reference

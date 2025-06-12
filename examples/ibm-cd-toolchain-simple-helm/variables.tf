@@ -48,7 +48,7 @@ variable "app_image_name" {
 variable "cluster_name" {
   type        = string
   description = "Name of the kubernetes cluster where the application will be deployed."
-  default     = "mycluster-free"
+  default     = "mycluster"
 }
 
 variable "cluster_namespace" {

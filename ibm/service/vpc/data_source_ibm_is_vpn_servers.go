@@ -9,6 +9,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -124,6 +125,31 @@ func DataSourceIBMIsVPNServers() *schema.Resource {
 							Computed:    true,
 							Description: "The health of this resource.- `ok`: Healthy- `degraded`: Suffering from compromised performance, capacity, or connectivity- `faulted`: Completely unreachable, inoperative, or otherwise entirely incapacitated- `inapplicable`: The health state does not apply because of the current lifecycle state. A resource with a lifecycle state of `failed` or `deleting` will have a health state of `inapplicable`. A `pending` resource may also have this state.",
 						},
+						"health_reasons": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"code": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "A snake case string succinctly identifying the reason for this health state.",
+									},
+
+									"message": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "An explanation of the reason for this health state.",
+									},
+
+									"more_info": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Link to documentation about the reason for this health state.",
+									},
+								},
+							},
+						},
 						"hostname": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -143,6 +169,32 @@ func DataSourceIBMIsVPNServers() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The lifecycle state of the VPN server.",
+						},
+						"lifecycle_reasons": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The reasons for the current lifecycle_state (if any).",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"code": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "A snake case string succinctly identifying the reason for this lifecycle state.",
+									},
+
+									"message": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "An explanation of the reason for this lifecycle state.",
+									},
+
+									"more_info": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Link to documentation about the reason for this lifecycle state.",
+									},
+								},
+							},
 						},
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
@@ -386,9 +438,11 @@ func DataSourceIBMIsVPNServers() *schema.Resource {
 }
 
 func dataSourceIBMIsVPNServersRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	sess, err := vpcClient(meta)
+	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_vpn_servers", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	resourceGrp := d.Get("resource_group_id").(string)
@@ -405,10 +459,11 @@ func dataSourceIBMIsVPNServersRead(context context.Context, d *schema.ResourceDa
 		if start != "" {
 			listVPNServersOptions.Start = &start
 		}
-		vpnServerCollection, response, err := sess.ListVPNServersWithContext(context, listVPNServersOptions)
+		vpnServerCollection, _, err := vpcClient.ListVPNServersWithContext(context, listVPNServersOptions)
 		if err != nil {
-			log.Printf("[DEBUG] ListVPNServersWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("[ERROR] ListVPNServersWithContext failed %s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("[DEBUG] ListVPNServersWithContext failed %s", err), "(Data) ibm_is_vpn_servers", "read")
+			log.Printf("[DEBUG] %s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		start = flex.GetNext(vpnServerCollection.Next)
 		allrecs = append(allrecs, vpnServerCollection.VPNServers...)
@@ -422,7 +477,9 @@ func dataSourceIBMIsVPNServersRead(context context.Context, d *schema.ResourceDa
 	if allrecs != nil {
 		err = d.Set("vpn_servers", dataSourceVPNServerCollectionFlattenVPNServers(allrecs, meta))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting vpn_servers %s", err))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("[ERROR] Error setting vpn_servers %s", err), "(Data) ibm_is_vpn_servers", "read")
+			log.Printf("[DEBUG] %s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 
@@ -434,7 +491,7 @@ func dataSourceIBMIsVPNServersID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
 
-func dataSourceVPNServerCollectionFlattenFirst(result vpcv1.VPNServerCollectionFirst) (finalList []map[string]interface{}) {
+func dataSourceVPNServerCollectionFlattenFirst(result vpcv1.PageLink) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
 	finalMap := dataSourceVPNServerCollectionFirstToMap(result)
 	finalList = append(finalList, finalMap)
@@ -442,7 +499,7 @@ func dataSourceVPNServerCollectionFlattenFirst(result vpcv1.VPNServerCollectionF
 	return finalList
 }
 
-func dataSourceVPNServerCollectionFirstToMap(firstItem vpcv1.VPNServerCollectionFirst) (firstMap map[string]interface{}) {
+func dataSourceVPNServerCollectionFirstToMap(firstItem vpcv1.PageLink) (firstMap map[string]interface{}) {
 	firstMap = map[string]interface{}{}
 
 	if firstItem.Href != nil {
@@ -452,7 +509,7 @@ func dataSourceVPNServerCollectionFirstToMap(firstItem vpcv1.VPNServerCollection
 	return firstMap
 }
 
-func dataSourceVPNServerCollectionFlattenNext(result vpcv1.VPNServerCollectionNext) (finalList []map[string]interface{}) {
+func dataSourceVPNServerCollectionFlattenNext(result vpcv1.PageLink) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
 	finalMap := dataSourceVPNServerCollectionNextToMap(result)
 	finalList = append(finalList, finalMap)
@@ -460,7 +517,7 @@ func dataSourceVPNServerCollectionFlattenNext(result vpcv1.VPNServerCollectionNe
 	return finalList
 }
 
-func dataSourceVPNServerCollectionNextToMap(nextItem vpcv1.VPNServerCollectionNext) (nextMap map[string]interface{}) {
+func dataSourceVPNServerCollectionNextToMap(nextItem vpcv1.PageLink) (nextMap map[string]interface{}) {
 	nextMap = map[string]interface{}{}
 
 	if nextItem.Href != nil {
@@ -539,6 +596,9 @@ func dataSourceVPNServerCollectionVPNServersToMap(vpnServersItem vpcv1.VPNServer
 	if vpnServersItem.HealthState != nil {
 		vpnServersMap["health_state"] = vpnServersItem.HealthState
 	}
+	if vpnServersItem.HealthReasons != nil {
+		vpnServersMap["health_reasons"] = resourceVPNServerFlattenHealthReasons(vpnServersItem.HealthReasons)
+	}
 	if vpnServersItem.Hostname != nil {
 		vpnServersMap["hostname"] = vpnServersItem.Hostname
 	}
@@ -550,6 +610,9 @@ func dataSourceVPNServerCollectionVPNServersToMap(vpnServersItem vpcv1.VPNServer
 	}
 	if vpnServersItem.LifecycleState != nil {
 		vpnServersMap["lifecycle_state"] = vpnServersItem.LifecycleState
+	}
+	if vpnServersItem.LifecycleReasons != nil {
+		vpnServersMap["lifecycle_reasons"] = resourceVPNServerFlattenLifecycleReasons(vpnServersItem.LifecycleReasons)
 	}
 	if vpnServersItem.Name != nil {
 		vpnServersMap["name"] = vpnServersItem.Name
@@ -676,7 +739,7 @@ func dataSourceVPNServerCollectionVPNServersPrivateIpsToMap(privateIpsItem vpcv1
 	return privateIpsMap
 }
 
-func dataSourceVPNServerCollectionPrivateIpsDeletedToMap(deletedItem vpcv1.ReservedIPReferenceDeleted) (deletedMap map[string]interface{}) {
+func dataSourceVPNServerCollectionPrivateIpsDeletedToMap(deletedItem vpcv1.Deleted) (deletedMap map[string]interface{}) {
 	deletedMap = map[string]interface{}{}
 
 	if deletedItem.MoreInfo != nil {
@@ -727,7 +790,7 @@ func dataSourceVPNServerCollectionVPNServersSecurityGroupsToMap(securityGroupsIt
 	return securityGroupsMap
 }
 
-func dataSourceVPNServerCollectionSecurityGroupsDeletedToMap(deletedItem vpcv1.SecurityGroupReferenceDeleted) (deletedMap map[string]interface{}) {
+func dataSourceVPNServerCollectionSecurityGroupsDeletedToMap(deletedItem vpcv1.Deleted) (deletedMap map[string]interface{}) {
 	deletedMap = map[string]interface{}{}
 
 	if deletedItem.MoreInfo != nil {
@@ -765,7 +828,7 @@ func dataSourceVPNServerCollectionVPNServersSubnetsToMap(subnetsItem vpcv1.Subne
 	return subnetsMap
 }
 
-func dataSourceVPNServerCollectionSubnetsDeletedToMap(deletedItem vpcv1.SubnetReferenceDeleted) (deletedMap map[string]interface{}) {
+func dataSourceVPNServerCollectionSubnetsDeletedToMap(deletedItem vpcv1.Deleted) (deletedMap map[string]interface{}) {
 	deletedMap = map[string]interface{}{}
 
 	if deletedItem.MoreInfo != nil {
@@ -804,7 +867,7 @@ func dataSourceVPNServerCollectionVPNServersVpcReferenceToMap(vpcsItem *vpcv1.VP
 	return vpcsMap
 }
 
-func dataSourceVPNServerCollectionVpcsDeletedToMap(deletedItem vpcv1.VPCReferenceDeleted) (deletedMap map[string]interface{}) {
+func dataSourceVPNServerCollectionVpcsDeletedToMap(deletedItem vpcv1.Deleted) (deletedMap map[string]interface{}) {
 	deletedMap = map[string]interface{}{}
 
 	if deletedItem.MoreInfo != nil {

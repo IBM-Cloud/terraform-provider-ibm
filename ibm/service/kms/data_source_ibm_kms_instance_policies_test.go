@@ -115,5 +115,5 @@ func testAccCheckIBMKmsDataSourceInstancePolicyWithPolicyType(instanceName strin
 		policy_type = var.policy_type
 		
 	}
-`, instanceName, enablePolicy, interval_month, dadenabled)
+`, addPrefixToResourceName(instanceName), enablePolicy, interval_month, dadenabled)
 }

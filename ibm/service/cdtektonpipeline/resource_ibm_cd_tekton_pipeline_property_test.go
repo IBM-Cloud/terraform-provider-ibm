@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2023 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package cdtektonpipeline_test
@@ -14,15 +14,13 @@ import (
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.com/IBM/continuous-delivery-go-sdk/cdtektonpipelinev2"
+	"github.com/IBM/continuous-delivery-go-sdk/v2/cdtektonpipelinev2"
 )
 
 func TestAccIBMCdTektonPipelinePropertyBasic(t *testing.T) {
 	var conf cdtektonpipelinev2.Property
 	name := "property1"
 	typeVar := "text"
-	typeVarUpdate := "text"
-
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
@@ -31,16 +29,9 @@ func TestAccIBMCdTektonPipelinePropertyBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIBMCdTektonPipelinePropertyConfigBasic("", name, typeVar),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMCdTektonPipelinePropertyExists("ibm_cd_tekton_pipeline_property.cd_tekton_pipeline_property", conf),
-					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_property.cd_tekton_pipeline_property", "name", name),
-					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_property.cd_tekton_pipeline_property", "type", typeVar),
-				),
-			},
-			resource.TestStep{
-				Config: testAccCheckIBMCdTektonPipelinePropertyConfigBasic("", name, typeVarUpdate),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_property.cd_tekton_pipeline_property", "name", name),
-					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_property.cd_tekton_pipeline_property", "type", typeVarUpdate),
+					testAccCheckIBMCdTektonPipelinePropertyExists("ibm_cd_tekton_pipeline_property.cd_tekton_pipeline_property_instance", conf),
+					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_property.cd_tekton_pipeline_property_instance", "name", name),
+					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_property.cd_tekton_pipeline_property_instance", "type", typeVar),
 				),
 			},
 		},
@@ -50,11 +41,12 @@ func TestAccIBMCdTektonPipelinePropertyBasic(t *testing.T) {
 func TestAccIBMCdTektonPipelinePropertyAllArgs(t *testing.T) {
 	var conf cdtektonpipelinev2.Property
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	typeVar := "text"
 	value := fmt.Sprintf("tf_value_%d", acctest.RandIntRange(10, 100))
+	typeVar := "text"
+	locked := "true"
 	path := fmt.Sprintf("tf_path_%d", acctest.RandIntRange(10, 100))
-	typeVarUpdate := "text"
 	valueUpdate := fmt.Sprintf("tf_value_%d", acctest.RandIntRange(10, 100))
+	lockedUpdate := "false"
 	pathUpdate := fmt.Sprintf("tf_path_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -63,26 +55,29 @@ func TestAccIBMCdTektonPipelinePropertyAllArgs(t *testing.T) {
 		CheckDestroy: testAccCheckIBMCdTektonPipelinePropertyDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMCdTektonPipelinePropertyConfig("", name, typeVar, value, path),
+				Config: testAccCheckIBMCdTektonPipelinePropertyConfig("", name, value, typeVar, locked, path),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMCdTektonPipelinePropertyExists("ibm_cd_tekton_pipeline_property.cd_tekton_pipeline_property", conf),
-					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_property.cd_tekton_pipeline_property", "name", name),
-					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_property.cd_tekton_pipeline_property", "type", typeVar),
-					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_property.cd_tekton_pipeline_property", "value", value),
+					testAccCheckIBMCdTektonPipelinePropertyExists("ibm_cd_tekton_pipeline_property.cd_tekton_pipeline_property_instance", conf),
+					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_property.cd_tekton_pipeline_property_instance", "name", name),
+					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_property.cd_tekton_pipeline_property_instance", "value", value),
+					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_property.cd_tekton_pipeline_property_instance", "type", typeVar),
+					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_property.cd_tekton_pipeline_property_instance", "locked", locked),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIBMCdTektonPipelinePropertyConfig("", name, typeVarUpdate, valueUpdate, pathUpdate),
+				Config: testAccCheckIBMCdTektonPipelinePropertyConfig("", name, valueUpdate, typeVar, lockedUpdate, pathUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_property.cd_tekton_pipeline_property", "name", name),
-					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_property.cd_tekton_pipeline_property", "type", typeVarUpdate),
-					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_property.cd_tekton_pipeline_property", "value", valueUpdate),
+					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_property.cd_tekton_pipeline_property_instance", "name", name),
+					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_property.cd_tekton_pipeline_property_instance", "value", valueUpdate),
+					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_property.cd_tekton_pipeline_property_instance", "type", typeVar),
+					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_property.cd_tekton_pipeline_property_instance", "locked", lockedUpdate),
 				),
 			},
 			resource.TestStep{
-				ResourceName:      "ibm_cd_tekton_pipeline_property.cd_tekton_pipeline_property",
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            "ibm_cd_tekton_pipeline_property.cd_tekton_pipeline_property_instance",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"pipeline_id"},
 			},
 		},
 	})
@@ -105,7 +100,7 @@ func testAccCheckIBMCdTektonPipelinePropertyConfigBasic(pipelineID string, name 
 				name = "pipeline-name"
 			}
 		}
-		resource "ibm_cd_tekton_pipeline" "cd_tekton_pipeline" {
+		resource "ibm_cd_tekton_pipeline" "cd_tekton_pipeline_instance" {
 			pipeline_id = ibm_cd_toolchain_tool_pipeline.ibm_cd_toolchain_tool_pipeline.tool_id
 			next_build_number = 5
 			worker {
@@ -115,19 +110,19 @@ func testAccCheckIBMCdTektonPipelinePropertyConfigBasic(pipelineID string, name 
 				ibm_cd_toolchain_tool_pipeline.ibm_cd_toolchain_tool_pipeline
 			]
 		}
-		resource "ibm_cd_tekton_pipeline_property" "cd_tekton_pipeline_property" {
-			pipeline_id = ibm_cd_tekton_pipeline.cd_tekton_pipeline.pipeline_id
+		resource "ibm_cd_tekton_pipeline_property" "cd_tekton_pipeline_property_instance" {
+			pipeline_id = ibm_cd_tekton_pipeline.cd_tekton_pipeline_instance.pipeline_id
 			name = "property1"
 			type = "text"
 			value = "prop1"
 			depends_on = [
-				ibm_cd_tekton_pipeline.cd_tekton_pipeline
+				ibm_cd_tekton_pipeline.cd_tekton_pipeline_instance
 			]
 		}
 	`, rgName, tcName)
 }
 
-func testAccCheckIBMCdTektonPipelinePropertyConfig(pipelineID string, name string, typeVar string, value string, path string) string {
+func testAccCheckIBMCdTektonPipelinePropertyConfig(pipelineID string, name string, value string, typeVar string, locked string, path string) string {
 	rgName := acc.CdResourceGroupName
 	tcName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	return fmt.Sprintf(`
@@ -144,7 +139,7 @@ func testAccCheckIBMCdTektonPipelinePropertyConfig(pipelineID string, name strin
 				name = "pipeline-name"
 			}
 		}
-		resource "ibm_cd_tekton_pipeline" "cd_tekton_pipeline" {
+		resource "ibm_cd_tekton_pipeline" "cd_tekton_pipeline_instance" {
 			pipeline_id = ibm_cd_toolchain_tool_pipeline.ibm_cd_toolchain_tool_pipeline.tool_id
 			next_build_number = 5
 			worker {
@@ -154,16 +149,17 @@ func testAccCheckIBMCdTektonPipelinePropertyConfig(pipelineID string, name strin
 				ibm_cd_toolchain_tool_pipeline.ibm_cd_toolchain_tool_pipeline
 			]
 		}
-		resource "ibm_cd_tekton_pipeline_property" "cd_tekton_pipeline_property" {
-			pipeline_id = ibm_cd_tekton_pipeline.cd_tekton_pipeline.pipeline_id
+		resource "ibm_cd_tekton_pipeline_property" "cd_tekton_pipeline_property_instance" {
+			pipeline_id = ibm_cd_tekton_pipeline.cd_tekton_pipeline_instance.pipeline_id
 			name = "%s"
 			type = "text"
 			value = "%s"
+			locked = "%s"
 			depends_on = [
-				ibm_cd_tekton_pipeline.cd_tekton_pipeline
+				ibm_cd_tekton_pipeline.cd_tekton_pipeline_instance
 			]
 		}
-	`, rgName, tcName, name, value)
+	`, rgName, tcName, name, value, locked)
 }
 
 func testAccCheckIBMCdTektonPipelinePropertyExists(n string, obj cdtektonpipelinev2.Property) resource.TestCheckFunc {

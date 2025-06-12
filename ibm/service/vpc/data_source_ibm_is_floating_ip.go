@@ -4,12 +4,15 @@
 package vpc
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"reflect"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -39,7 +42,7 @@ const (
 
 func DataSourceIBMISFloatingIP() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceIBMISFloatingIPRead,
+		ReadContext: dataSourceIBMISFloatingIPRead,
 
 		Schema: map[string]*schema.Schema{
 
@@ -181,19 +184,21 @@ func DataSourceIBMISFloatingIP() *schema.Resource {
 	}
 }
 
-func dataSourceIBMISFloatingIPRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceIBMISFloatingIPRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	floatingIPName := d.Get(isFloatingIPName).(string)
-	err := floatingIPGet(d, meta, floatingIPName)
-	if err != nil {
-		return err
+	diag := floatingIPGet(ctx, d, meta, floatingIPName)
+	if diag != nil {
+		return diag
 	}
 	return nil
 }
 
-func floatingIPGet(d *schema.ResourceData, meta interface{}, name string) error {
-	sess, err := vpcClient(meta)
+func floatingIPGet(ctx context.Context, d *schema.ResourceData, meta interface{}, name string) diag.Diagnostics { // Changed return type
+	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_ibm_is_floating_ip", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	start := ""
@@ -203,9 +208,11 @@ func floatingIPGet(d *schema.ResourceData, meta interface{}, name string) error 
 		if start != "" {
 			floatingIPOptions.Start = &start
 		}
-		floatingIPs, response, err := sess.ListFloatingIps(floatingIPOptions)
+		floatingIPs, _, err := vpcClient.ListFloatingIpsWithContext(ctx, floatingIPOptions) // Use WithContext
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Fetching floating IPs %s\n%s", err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListFloatingIpsWithContext failed: %s", err.Error()), "(Data) ibm_ibm_is_floating_ip", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		start = flex.GetNext(floatingIPs.Next)
 		allFloatingIPs = append(allFloatingIPs, floatingIPs.FloatingIps...)
@@ -214,42 +221,61 @@ func floatingIPGet(d *schema.ResourceData, meta interface{}, name string) error 
 		}
 	}
 
-	for _, ip := range allFloatingIPs {
-		if *ip.Name == name {
+	for _, floatingIP := range allFloatingIPs {
+		if *floatingIP.Name == name {
 
-			d.Set(floatingIPName, *ip.Name)
-			d.Set(floatingIPAddress, *ip.Address)
-			d.Set(floatingIPStatus, *ip.Status)
-			d.Set(floatingIPZone, *ip.Zone.Name)
+			if err = d.Set("name", floatingIP.Name); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_ibm_is_floating_ip", "read", "set-name").GetDiag()
+			}
+			if err = d.Set("address", floatingIP.Address); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting address: %s", err), "(Data) ibm_ibm_is_floating_ip", "read", "set-address").GetDiag()
+			}
+			if err = d.Set("status", floatingIP.Status); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting status: %s", err), "(Data) ibm_ibm_is_floating_ip", "read", "set-status").GetDiag()
+			}
+			if err = d.Set(floatingIPZone, *floatingIP.Zone.Name); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting zone: %s", err), "(Data) ibm_ibm_is_floating_ip", "read", "set-zone").GetDiag()
+			}
+			if err = d.Set("crn", floatingIP.CRN); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting crn: %s", err), "(Data) ibm_ibm_is_floating_ip", "read", "set-crn").GetDiag()
+			}
 
-			d.Set(floatingIPCRN, *ip.CRN)
-			if ip.Target != nil {
-				targetId, targetMap := dataSourceFloatingIPCollectionFloatingIpTargetToMap(ip.Target)
-				d.Set(floatingIPTarget, targetId)
+			if floatingIP.Target != nil {
+				targetId, targetMap := dataSourceFloatingIPCollectionFloatingIpTargetToMap(floatingIP.Target)
+				if err = d.Set(floatingIPTarget, targetId); err != nil { // We don't use targetID, it's not even useful in set
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting target: %s", err), "(Data) ibm_ibm_is_floating_ip", "read", "set-target").GetDiag()
+				}
 				targetList := []map[string]interface{}{}
 				targetList = append(targetList, targetMap)
-				d.Set(floatingIPTargets, targetList)
+				if err = d.Set(floatingIPTargets, targetList); err != nil {
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting target_list: %s", err), "(Data) ibm_ibm_is_floating_ip", "read", "set-target_list").GetDiag()
+				}
 			}
 
-			tags, err := flex.GetGlobalTagsUsingCRN(meta, *ip.CRN, "", isUserTagType)
+			tags, err := flex.GetGlobalTagsUsingCRN(meta, *floatingIP.CRN, "", isUserTagType)
 			if err != nil {
-				fmt.Printf("[ERROR] Error on get of vpc Floating IP (%s) tags: %s", *ip.Address, err)
+				log.Printf("Error on get of vpc Floating IP (%s) tags: %s", *floatingIP.Address, err)
+			}
+			if err = d.Set(floatingIPTags, tags); err != nil { // Use d.Set and check error
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting tags: %s", err), "(Data) ibm_ibm_is_floating_ip", "read", "set-tags").GetDiag()
 			}
 
-			d.Set(floatingIPTags, tags)
-			accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *ip.CRN, "", isAccessTagType)
+			accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *floatingIP.CRN, "", isAccessTagType)
 			if err != nil {
 				log.Printf(
 					"Error on get of resource floating ip (%s) access tags: %s", d.Id(), err)
 			}
-			d.Set(isFloatingIPAccessTags, accesstags)
-			d.SetId(*ip.ID)
+			if err = d.Set(isFloatingIPAccessTags, accesstags); err != nil { // Use d.Set and check error
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting access_tags: %s", err), "(Data) ibm_ibm_is_floating_ip", "read", "set-access_tags").GetDiag()
+			}
+			d.SetId(*floatingIP.ID)
 
 			return nil
 		}
 	}
 
-	return fmt.Errorf("[ERROR] No floatingIP found with name  %s", name)
+	err = fmt.Errorf("No floatingIP found with name %s", name)
+	return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_floating_ip", "read", "not-found").GetDiag()
 
 }
 
@@ -379,7 +405,7 @@ func dataSourceFloatingIPCollectionFloatingIpTargetToMap(targetItemIntf vpcv1.Fl
 	return targetId, targetMap
 }
 
-func dataSourceFloatingIPTargetNicDeletedToMap(deletedItem vpcv1.NetworkInterfaceReferenceDeleted) (deletedMap map[string]interface{}) {
+func dataSourceFloatingIPTargetNicDeletedToMap(deletedItem vpcv1.Deleted) (deletedMap map[string]interface{}) {
 	deletedMap = map[string]interface{}{}
 
 	if deletedItem.MoreInfo != nil {
@@ -388,7 +414,7 @@ func dataSourceFloatingIPTargetNicDeletedToMap(deletedItem vpcv1.NetworkInterfac
 
 	return deletedMap
 }
-func dataSourceFloatingIPTargetPgDeletedToMap(deletedItem vpcv1.PublicGatewayReferenceDeleted) (deletedMap map[string]interface{}) {
+func dataSourceFloatingIPTargetPgDeletedToMap(deletedItem vpcv1.Deleted) (deletedMap map[string]interface{}) {
 	deletedMap = map[string]interface{}{}
 
 	if deletedItem.MoreInfo != nil {

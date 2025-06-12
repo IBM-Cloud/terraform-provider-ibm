@@ -14,29 +14,31 @@ import (
 )
 
 func TestAccIBMCbrZoneDataSourceBasic(t *testing.T) {
+	accountID, _ := getTestAccountAndZoneID()
+
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		PreCheck:  func() { acc.TestAccPreCheckCbr(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMCbrZoneDataSourceConfigBasic(),
+				Config: testAccCheckIBMCbrZoneDataSourceConfigBasic(accountID),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone", "zone_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone", "crn"),
-					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone", "address_count"),
-					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone", "excluded_count"),
-					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone", "name"),
-					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone", "account_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone", "description"),
-					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone", "addresses.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone", "excluded.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone", "href"),
-					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone", "created_at"),
-					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone", "created_by_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone", "last_modified_at"),
-					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone", "last_modified_by_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone_instance", "zone_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone_instance", "crn"),
+					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone_instance", "address_count"),
+					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone_instance", "excluded_count"),
+					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone_instance", "name"),
+					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone_instance", "account_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone_instance", "description"),
+					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone_instance", "addresses.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone_instance", "excluded.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone_instance", "href"),
+					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone_instance", "created_at"),
+					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone_instance", "created_by_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone_instance", "last_modified_at"),
+					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone_instance", "last_modified_by_id"),
 				),
 			},
 		},
@@ -45,63 +47,63 @@ func TestAccIBMCbrZoneDataSourceBasic(t *testing.T) {
 
 func TestAccIBMCbrZoneDataSourceAllArgs(t *testing.T) {
 	zoneName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	zoneAccountID := "12ab34cd56ef78ab90cd12ef34ab56cd"
+	zoneAccountID, _ := getTestAccountAndZoneID()
 	zoneDescription := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		PreCheck:  func() { acc.TestAccPreCheckCbr(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
 				Config: testAccCheckIBMCbrZoneDataSourceConfig(zoneName, zoneAccountID, zoneDescription),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone", "zone_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone", "crn"),
-					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone", "address_count"),
-					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone", "excluded_count"),
-					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone", "name"),
-					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone", "account_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone", "description"),
-					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone", "addresses.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone", "addresses.0.type"),
-					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone", "addresses.0.value"),
-					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone", "excluded.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone", "excluded.0.type"),
-					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone", "excluded.0.value"),
-					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone", "href"),
-					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone", "created_at"),
-					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone", "created_by_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone", "last_modified_at"),
-					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone", "last_modified_by_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone_instance", "zone_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone_instance", "crn"),
+					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone_instance", "address_count"),
+					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone_instance", "excluded_count"),
+					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone_instance", "name"),
+					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone_instance", "account_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone_instance", "description"),
+					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone_instance", "addresses.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone_instance", "addresses.0.type"),
+					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone_instance", "addresses.0.value"),
+					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone_instance", "excluded.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone_instance", "excluded.0.type"),
+					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone_instance", "excluded.0.value"),
+					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone_instance", "href"),
+					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone_instance", "created_at"),
+					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone_instance", "created_by_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone_instance", "last_modified_at"),
+					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone_instance", "last_modified_by_id"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckIBMCbrZoneDataSourceConfigBasic() string {
+func testAccCheckIBMCbrZoneDataSourceConfigBasic(accountID string) string {
 	return fmt.Sprintf(`
-		resource "ibm_cbr_zone" "cbr_zone" {
+		resource "ibm_cbr_zone" "cbr_zone_instance" {
 			name = "Test Zone Data Source Config Basic"
 			description = "Test Zone Data Source Config Basic"
-			account_id = "12ab34cd56ef78ab90cd12ef34ab56cd"
+			account_id = "%s"
 			addresses {
 				type = "ipRange"
 				value = "169.23.22.0-169.23.22.255"
 			}
 		}
 
-		data "ibm_cbr_zone" "cbr_zone" {
-			zone_id = ibm_cbr_zone.cbr_zone.id
+		data "ibm_cbr_zone" "cbr_zone_instance" {
+			zone_id = ibm_cbr_zone.cbr_zone_instance.id
 		}
-	`)
+	`, accountID)
 }
 
 func testAccCheckIBMCbrZoneDataSourceConfig(zoneName string, zoneAccountID string, zoneDescription string) string {
 	return fmt.Sprintf(`
-		resource "ibm_cbr_zone" "cbr_zone" {
+		resource "ibm_cbr_zone" "cbr_zone_instance" {
 			name = "%s"
 			account_id = "%s"
 			description = "%s"
@@ -115,8 +117,8 @@ func testAccCheckIBMCbrZoneDataSourceConfig(zoneName string, zoneAccountID strin
 			}
 		}
 
-		data "ibm_cbr_zone" "cbr_zone" {
-			zone_id = ibm_cbr_zone.cbr_zone.id
+		data "ibm_cbr_zone" "cbr_zone_instance" {
+			zone_id = ibm_cbr_zone.cbr_zone_instance.id
 		}
 	`, zoneName, zoneAccountID, zoneDescription)
 }

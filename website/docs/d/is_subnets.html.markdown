@@ -65,9 +65,13 @@ data "ibm_is_subnets" "example4" {
 
 Review the argument references that you can specify for your data source. 
 
-* `resource_group` - (Optional, string) The id of the resource group.
-* `routing_table` - (Optional, string) The id of the routing table.
-* `routing_table_name` - (Optional, string) The name of the routing table.
+- `resource_group` - (Optional, string) The id of the resource group.
+- `routing_table` - (Optional, string) The id of the routing table.
+- `routing_table_name` - (Optional, string) The name of the routing table.
+- `vpc` - (Optional, string) The id of the vpc.
+- `vpc_crn` - (Optional, string) The crn of the vpc.
+- `vpc_name` - (Optional, string) The name of vpc.
+- `zone` - (Optional, string) The name of the zone.
 
 ## Attribute reference
 You can access the following attribute references after your data source is created. 
@@ -88,6 +92,7 @@ You can access the following attribute references after your data source is crea
     - `status` - (String) The status of the subnet.
   - `routing_table` -  (List) The routing table for this subnet. 
     Nested scheme for `routing_table`:
+      - `crn` -  (String) The crn for this routing table.
       - `deleted` -  (List) If present, this property indicates the referenced resource has been deleted and provides some supplementary information.
       Nested scheme for `deleted`:
         - `more_info` -  (String) Link to documentation about deleted resources.

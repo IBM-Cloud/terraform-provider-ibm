@@ -18,7 +18,7 @@ import (
 )
 
 func TestAccIbmSmSecretGroupBasic(t *testing.T) {
-	var conf secretsmanagerv2.SecretGroup
+	resourceName := "ibm_sm_secret_group.sm_secret_group"
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 
@@ -30,14 +30,14 @@ func TestAccIbmSmSecretGroupBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIbmSmSecretGroupConfigBasic(name),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmSmSecretGroupExists("ibm_sm_secret_group.sm_secret_group", conf),
-					resource.TestCheckResourceAttr("ibm_sm_secret_group.sm_secret_group", "name", name),
+					testAccCheckIbmSmSecretGroupExists(resourceName, name, ""),
+					resource.TestCheckResourceAttr(resourceName, "name", name),
 				),
 			},
 			resource.TestStep{
 				Config: testAccCheckIbmSmSecretGroupConfigBasic(nameUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_sm_secret_group.sm_secret_group", "name", nameUpdate),
+					resource.TestCheckResourceAttr(resourceName, "name", nameUpdate),
 				),
 			},
 		},
@@ -45,7 +45,7 @@ func TestAccIbmSmSecretGroupBasic(t *testing.T) {
 }
 
 func TestAccIbmSmSecretGroupAllArgs(t *testing.T) {
-	var conf secretsmanagerv2.SecretGroup
+	resourceName := "ibm_sm_secret_group.sm_secret_group"
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	description := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
@@ -59,20 +59,24 @@ func TestAccIbmSmSecretGroupAllArgs(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIbmSmSecretGroupConfig(name, description),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmSmSecretGroupExists("ibm_sm_secret_group.sm_secret_group", conf),
-					resource.TestCheckResourceAttr("ibm_sm_secret_group.sm_secret_group", "name", name),
-					resource.TestCheckResourceAttr("ibm_sm_secret_group.sm_secret_group", "description", description),
+					testAccCheckIbmSmSecretGroupExists(resourceName, name, description),
+					resource.TestCheckResourceAttrSet(resourceName, "secret_group_id"),
+					resource.TestCheckResourceAttrSet(resourceName, "created_at"),
+					resource.TestCheckResourceAttrSet(resourceName, "updated_at"),
+					resource.TestCheckResourceAttr(resourceName, "name", name),
+					resource.TestCheckResourceAttr(resourceName, "description", description),
 				),
 			},
 			resource.TestStep{
 				Config: testAccCheckIbmSmSecretGroupConfig(nameUpdate, descriptionUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_sm_secret_group.sm_secret_group", "name", nameUpdate),
-					resource.TestCheckResourceAttr("ibm_sm_secret_group.sm_secret_group", "description", descriptionUpdate),
+					testAccCheckIbmSmSecretGroupExists(resourceName, nameUpdate, descriptionUpdate),
+					resource.TestCheckResourceAttr(resourceName, "name", nameUpdate),
+					resource.TestCheckResourceAttr(resourceName, "description", descriptionUpdate),
 				),
 			},
 			resource.TestStep{
-				ResourceName:      "ibm_sm_secret_group.sm_secret_group",
+				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -92,6 +96,9 @@ func testAccCheckIbmSmSecretGroupConfigBasic(name string) string {
 }
 
 func testAccCheckIbmSmSecretGroupConfig(name string, description string) string {
+	if description == "" {
+		return testAccCheckIbmSmSecretGroupConfigBasic(name)
+	}
 	return fmt.Sprintf(`
 
 		resource "ibm_sm_secret_group" "sm_secret_group" {
@@ -103,7 +110,7 @@ func testAccCheckIbmSmSecretGroupConfig(name string, description string) string 
 	`, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion, name, description)
 }
 
-func testAccCheckIbmSmSecretGroupExists(n string, obj secretsmanagerv2.SecretGroup) resource.TestCheckFunc {
+func testAccCheckIbmSmSecretGroupExists(n string, expectedName, expectedDescription string) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -129,7 +136,12 @@ func testAccCheckIbmSmSecretGroupExists(n string, obj secretsmanagerv2.SecretGro
 			return err
 		}
 
-		obj = *secretGroup
+		if err := verifyAttr(*secretGroup.Name, expectedName, "group name"); err != nil {
+			return err
+		}
+		if err := verifyAttr(*secretGroup.Description, expectedDescription, "group description"); err != nil {
+			return err
+		}
 		return nil
 	}
 }

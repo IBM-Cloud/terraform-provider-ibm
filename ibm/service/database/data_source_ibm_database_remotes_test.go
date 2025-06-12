@@ -51,6 +51,7 @@ func testAccCheckIBMDatabaseDataSourceConfig4(name string) string {
 		plan              = "standard"
 		location          = "%[2]s"
 		tags              = ["one:two"]
+		service_endpoints = "private"
 	}
 
 	resource "ibm_database" "db_replica" {
@@ -61,13 +62,14 @@ func testAccCheckIBMDatabaseDataSourceConfig4(name string) string {
 		plan              = "standard"
 		location          = "%[2]s"
 		tags              = ["one:two"]
+		service_endpoints = "private"
 
     depends_on = [
       ibm_database.db,
     ]
 	}
 
-				`, name, acc.IcdDbRegion)
+				`, name, acc.Region())
 }
 
 func testAccCheckIBMDatabaseRemotesDataSourceConfigBasic(name string) string {
@@ -82,7 +84,7 @@ func testAccCheckIBMDatabaseRemotesDataSourceConfigBasic(name string) string {
 
 		data "ibm_database_remotes" "database_remotes" {
 			deployment_id = ibm_database.db.id
-			
+
 		depends_on = [
 			ibm_database.db_replica,
 		]

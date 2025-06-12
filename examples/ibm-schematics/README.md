@@ -7,6 +7,11 @@ These types of resources are supported:
 * schematics_workspace
 * schematics_action
 * schematics_job
+* schematics_policy
+* schematics_agent
+* schematics_agent_prs
+* schematics_agent_deploy
+* schematics_agent_health
 
 ## Usage
 
@@ -89,6 +94,64 @@ resource "schematics_job" "schematics_job_instance" {
   x_github_token = var.schematics_job_x_github_token
 }
 ```
+schematics_policy resource:
+
+```hcl
+resource "schematics_policy" "schematics_policy_instance" {
+  name = var.schematics_policy_name
+  description = var.schematics_policy_description
+  resource_group = var.schematics_policy_resource_group
+  tags = var.schematics_policy_tags
+  location = var.schematics_policy_location
+  state = var.schematics_policy_state
+  kind = var.schematics_policy_kind
+  target = var.schematics_policy_target
+  parameter = var.schematics_policy_parameter
+  scoped_resources = var.schematics_policy_scoped_resources
+}
+```
+schematics_agent resource:
+
+```hcl
+resource "schematics_agent" "schematics_agent_instance" {
+  name = var.schematics_agent_name
+  resource_group = var.schematics_agent_resource_group
+  version = var.schematics_agent_version
+  schematics_location = var.schematics_agent_schematics_location
+  agent_location = var.schematics_agent_agent_location
+  agent_infrastructure = var.schematics_agent_agent_infrastructure
+  description = var.schematics_agent_description
+  tags = var.schematics_agent_tags
+  agent_metadata = var.schematics_agent_agent_metadata
+  agent_inputs = var.schematics_agent_agent_inputs
+  user_state = var.schematics_agent_user_state
+  agent_kpi = var.schematics_agent_agent_kpi
+}
+```
+schematics_agent_prs resource:
+
+```hcl
+resource "schematics_agent_prs" "schematics_agent_prs_instance" {
+  agent_id = var.schematics_agent_prs_agent_id
+  force = var.schematics_agent_prs_force
+}
+```
+schematics_agent_deploy resource:
+
+```hcl
+resource "schematics_agent_deploy" "schematics_agent_deploy_instance" {
+  agent_id = var.schematics_agent_deploy_agent_id
+  force = var.schematics_agent_deploy_force
+}
+```
+schematics_agent_health resource:
+
+```hcl
+resource "schematics_agent_health" "schematics_agent_health_instance" {
+  agent_id = var.schematics_agent_health_agent_id
+  force = var.schematics_agent_health_force
+}
+```
 
 ## SchematicsV1 Data sources
 
@@ -128,6 +191,54 @@ data "schematics_job" "schematics_job_instance" {
   job_id = var.schematics_job_job_id
 }
 ```
+schematics_policies data source:
+
+```hcl
+data "schematics_policies" "schematics_policies_instance" {
+  policy_kind = var.schematics_policies_policy_kind
+}
+```
+schematics_policy data source:
+
+```hcl
+data "schematics_policy" "schematics_policy_instance" {
+  policy_id = var.schematics_policy_policy_id
+}
+```
+schematics_agents data source:
+
+```hcl
+data "schematics_agents" "schematics_agents_instance" {
+}
+```
+schematics_agent data source:
+
+```hcl
+data "schematics_agent" "schematics_agent_instance" {
+  agent_id = var.schematics_agent_agent_id
+}
+```
+schematics_agent_prs data source:
+
+```hcl
+data "schematics_agent_prs" "schematics_agent_prs_instance" {
+  agent_id = var.schematics_agent_prs_agent_id
+}
+```
+schematics_agent_deploy data source:
+
+```hcl
+data "schematics_agent_deploy" "schematics_agent_deploy_instance" {
+  agent_id = var.schematics_agent_deploy_agent_id
+}
+```
+schematics_agent_health data source:
+
+```hcl
+data "schematics_agent_health" "schematics_agent_health_instance" {
+  agent_id = var.schematics_agent_health_agent_id
+}
+```
 
 ## Assumptions
 
@@ -141,13 +252,13 @@ data "schematics_job" "schematics_job_instance" {
 
 | Name | Version |
 |------|---------|
-| terraform | ~> 0.12 |
+| terraform | ~> 1.5 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| ibm | 1.13.1 |
+| ibm | 1.58.1 |
 
 ## Inputs
 
@@ -207,7 +318,37 @@ data "schematics_job" "schematics_job_instance" {
 | workspace_id | The ID of the workspace for which you want to retrieve detailed information. To find the workspace ID, use the `GET /v1/workspaces` API. | `string` | true |
 | action_id | Use GET or actions API to look up the action IDs in your IBM Cloud account. | `string` | true |
 | job_id | Use GET jobs API to look up the Job IDs in your IBM Cloud account. | `string` | true |
-
+| schematics_policy_name | Name of Schematics customization policy. | `string` | true |
+| schematics_policy_description | The description of Schematics customization policy. | `string` | false |
+| schematics_policy_resource_group | The resource group name for the policy.  By default, Policy will be created in `default` Resource Group. | `string` | false |
+| schematics_policy_tags | Tags for the Schematics customization policy. | `list(string)` | false |
+| schematics_policy_location | List of locations supported by IBM Cloud Schematics service.  While creating your workspace or action, choose the right region, since it cannot be changed.  Note, this does not limit the location of the IBM Cloud resources, provisioned using Schematics. | `string` | false |
+| schematics_policy_kind | Policy kind or categories for managing and deriving policy decision  * `agent_assignment_policy` Agent assignment policy for job execution. | `string` | false |
+| target | The objects for the Schematics policy. | `` | false |
+| parameter | The parameter to tune the Schematics policy. | `` | false |
+| scoped_resources | List of scoped Schematics resources targeted by the policy. | `list()` | false |
+| schematics_agent_name | The name of the agent (must be unique, for an account). | `string` | true |
+| schematics_agent_resource_group | The resource-group name for the agent.  By default, agent will be registered in Default Resource Group. | `string` | true |
+| schematics_agent_version | Agent version. | `string` | true |
+| schematics_agent_schematics_location | List of locations supported by IBM Cloud Schematics service.  While creating your workspace or action, choose the right region, since it cannot be changed.  Note, this does not limit thejegccnhbrgfulbgbrnftiuudlikviubvnnhlbkcfrhl
+e location of the IBM Cloud resources, provisioned using Schematics. | `string` | true |
+| schematics_agent_agent_location | The location where agent is deployed in the user environment. | `string` | true |
+| agent_infrastructure | The infrastructure parameters used by the agent. | `` | true |
+| schematics_agent_description | Agent description. | `string` | false |
+| schematics_agent_tags | Tags for the agent. | `list(string)` | false |
+| agent_metadata | The metadata of an agent. | `list()` | false |
+| agent_inputs | Additional input variables for the agent. | `list()` | false |
+| user_state | User defined status of the agent. | `` | false |
+| agent_kpi | Schematics Agent key performance indicators. | `` | false |
+| schematics_agent_prs_agent_id | Agent ID to get the details of agent. | `string` | true |
+| schematics_agent_prs_force | Equivalent to -force options in the command line, default is false. | `bool` | false |
+| schematics_agent_deploy_agent_id | Agent ID to get the details of agent. | `string` | true |
+| schematics_agent_deploy_force | Equivalent to -force options in the command line, default is false. | `bool` | false |
+| schematics_agent_health_agent_id | Agent ID to get the details of agent. | `string` | true |
+| schematics_agent_health_force | Equivalent to -force options in the command line, default is false. | `bool` | false |
+| schematics_policies_policy_kind | Policy kind or categories for managing and deriving policy decision  * `agent_assignment_policy` Agent assignment policy for job execution. | `string` | false |
+| schematics_policy_policy_id | ID to get the details of policy. | `string` | true |
+| schematics_agent_agent_id | Agent ID to get the details of agent. | `string` | true |
 ## Outputs
 
 | Name | Description |
@@ -217,6 +358,8 @@ data "schematics_job" "schematics_job_instance" {
 | schematics_job | schematics_job object |
 | schematics_output | schematics_output object |
 | schematics_state | schematics_state object |
-| schematics_workspace | schematics_workspace object |
-| schematics_action | schematics_action object |
-| schematics_job | schematics_job object |
+| ibm_schematics_policy | schematics_policy resource instance |
+| ibm_schematics_agent | schematics_agent resource instance |
+| ibm_schematics_agent_prs | schematics_agent_prs resource instance |
+| ibm_schematics_agent_deploy | schematics_agent_deploy resource instance |
+| ibm_schematics_agent_health | schematics_agent_health resource instance |

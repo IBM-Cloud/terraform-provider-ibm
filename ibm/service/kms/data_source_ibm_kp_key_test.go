@@ -47,5 +47,5 @@ func testAccCheckIBMKpDataSourceConfig(instanceName, keyName string) string {
 	data "ibm_kp_key" "test" {
 		key_protect_id = "${ibm_kp_key.test.key_protect_id}" 
 	}
-`, instanceName, keyName)
+`, addPrefixToResourceName(instanceName), keyName)
 }

@@ -30,6 +30,7 @@ func TestAccIbmSmUsernamePasswordSecretMetadataDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_sm_username_password_secret_metadata.sm_username_password_secret_metadata", "updated_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_username_password_secret_metadata.sm_username_password_secret_metadata", "versions_total"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_username_password_secret_metadata.sm_username_password_secret_metadata", "rotation.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_sm_username_password_secret_metadata.sm_username_password_secret_metadata", "password_generation_policy.#"),
 				),
 			},
 		},

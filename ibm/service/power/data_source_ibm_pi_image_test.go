@@ -13,7 +13,6 @@ import (
 )
 
 func TestAccIBMPIImageDataSource_basic(t *testing.T) {
-
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
@@ -30,9 +29,8 @@ func TestAccIBMPIImageDataSource_basic(t *testing.T) {
 
 func testAccCheckIBMPIImageDataSourceConfig() string {
 	return fmt.Sprintf(`
-	data "ibm_pi_image" "testacc_ds_image" {
-		pi_image_name = "%s"
-		pi_cloud_instance_id = "%s"
-	}`, acc.Pi_image, acc.Pi_cloud_instance_id)
-
+		data "ibm_pi_image" "testacc_ds_image" {
+			pi_image_name = "%s"
+			pi_cloud_instance_id = "%s"
+		}`, acc.Pi_image, acc.Pi_cloud_instance_id)
 }

@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
@@ -22,7 +21,7 @@ func TestAccIBMEventStreamsSchemaDataSourceBasic(t *testing.T) {
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMEventStreamsSchemaDataSourceConfigBasic(MZREnterpriseInstanceName, mySchemaID),
+				Config: testAccCheckIBMEventStreamsSchemaDataSourceConfigBasic(getTestInstanceName(mzrKey), mySchemaID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_resource_instance.es_instance", "extensions.kafka_http_url"),
 					resource.TestCheckResourceAttrSet("data.ibm_event_streams_schema.es_schema", "kafka_http_url"),
@@ -31,7 +30,7 @@ func TestAccIBMEventStreamsSchemaDataSourceBasic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckIBMEventStreamsSchemaDataSourceConfigBasic(SZREnterpriseInstanceName, mySchemaID),
+				Config: testAccCheckIBMEventStreamsSchemaDataSourceConfigBasic(getTestInstanceName(szrKey), mySchemaID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_resource_instance.es_instance", "extensions.kafka_http_url"),
 					resource.TestCheckResourceAttrSet("data.ibm_event_streams_schema.es_schema", "kafka_http_url"),

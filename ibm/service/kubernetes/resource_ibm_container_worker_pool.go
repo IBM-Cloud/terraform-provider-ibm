@@ -5,9 +5,11 @@ package kubernetes
 
 import (
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
+	v2 "github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
@@ -57,10 +59,11 @@ func ResourceIBMContainerWorkerPool() *schema.Resource {
 			},
 
 			"size_per_zone": {
-				Type:         schema.TypeInt,
-				Required:     true,
-				ValidateFunc: validate.ValidateSizePerZone,
-				Description:  "Number of nodes per zone",
+				Type:             schema.TypeInt,
+				Required:         true,
+				ValidateFunc:     validate.ValidateSizePerZone,
+				Description:      "Number of nodes per zone",
+				DiffSuppressFunc: SuppressResizeForAutoscaledWorkerpool,
 			},
 
 			"entitlement": {
@@ -74,7 +77,6 @@ func ResourceIBMContainerWorkerPool() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Optional:    true,
-				ForceNew:    true,
 				Description: "The operating system of the workers in the worker pool.",
 			},
 
@@ -184,10 +186,30 @@ func ResourceIBMContainerWorkerPool() *schema.Resource {
 				ForceNew:         true,
 				DiffSuppressFunc: flex.ApplyOnce,
 			},
+
 			flex.ResourceControllerURL: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The URL of the IBM Cloud dashboard that can be used to explore and view details about this cluster",
+			},
+
+			"import_on_create": {
+				Type:             schema.TypeBool,
+				Optional:         true,
+				DiffSuppressFunc: flex.ApplyOnce,
+				Description:      "Import an existing workerpool from the cluster instead of creating a new",
+			},
+
+			"orphan_on_delete": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Orphan the workerpool resource instead of deleting it",
+			},
+
+			"autoscale_enabled": {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Autoscaling is enabled on the workerpool",
 			},
 		},
 	}
@@ -223,6 +245,25 @@ func resourceIBMContainerWorkerPoolCreate(d *schema.ResourceData, meta interface
 	}
 
 	clusterNameorID := d.Get("cluster").(string)
+
+	if ioc, ok := d.GetOk("import_on_create"); ok && ioc.(bool) {
+
+		workerPoolsAPI := csClient.WorkerPools()
+		targetEnv, err := getWorkerPoolTargetHeader(d, meta)
+		if err != nil {
+			return err
+		}
+
+		res, err := workerPoolsAPI.GetWorkerPool(clusterNameorID, "default", targetEnv)
+		if err != nil {
+			return err
+		}
+
+		d.SetId(fmt.Sprintf("%s/%s", clusterNameorID, res.ID))
+
+		return resourceIBMContainerWorkerPoolRead(d, meta)
+
+	}
 
 	workerPoolConfig := v1.WorkerPoolConfig{
 		Name:        d.Get("worker_pool_name").(string),
@@ -332,6 +373,7 @@ func resourceIBMContainerWorkerPoolRead(d *schema.ResourceData, meta interface{}
 	} else {
 		d.Set("disk_encryption", false)
 	}
+	d.Set("autoscale_enabled", workerPool.AutoscaleEnabled)
 	controller, err := flex.GetBaseController(meta)
 	if err != nil {
 		return err
@@ -397,6 +439,28 @@ func resourceIBMContainerWorkerPoolUpdate(d *schema.ResourceData, meta interface
 		}
 	}
 
+	if d.HasChange("operating_system") {
+		operatingSystem := d.Get("operating_system").(string)
+		targetEnv, err := getVpcClusterTargetHeader(d)
+		if err != nil {
+			return err
+		}
+		ClusterClient, err := meta.(conns.ClientSession).VpcContainerAPI()
+		if err != nil {
+			return err
+		}
+		Env := v2.ClusterTargetHeader{ResourceGroup: targetEnv.ResourceGroup}
+
+		err = ClusterClient.WorkerPools().SetWorkerPoolOperatingSystem(v2.SetWorkerPoolOperatingSystem{
+			Cluster:         clusterNameorID,
+			WorkerPool:      workerPoolNameorID,
+			OperatingSystem: operatingSystem,
+		}, Env)
+		if err != nil {
+			return fmt.Errorf("[ERROR] Error updating the operating_system %s: %s", operatingSystem, err)
+		}
+	}
+
 	return resourceIBMContainerWorkerPoolRead(d, meta)
 }
 
@@ -418,13 +482,22 @@ func resourceIBMContainerWorkerPoolDelete(d *schema.ResourceData, meta interface
 		return err
 	}
 
-	err = workerPoolsAPI.DeleteWorkerPool(clusterNameorID, workerPoolNameorID, targetEnv)
-	if err != nil {
-		return err
+	var orphan_on_delete bool = false
+	if orod, ok := d.GetOk("orphan_on_delete"); ok {
+		orphan_on_delete = orod.(bool)
 	}
-	_, err = WaitForWorkerDelete(clusterNameorID, workerPoolNameorID, meta, d.Timeout(schema.TimeoutUpdate), targetEnv)
-	if err != nil {
-		return fmt.Errorf("[ERROR] Error waiting for removing workers of worker pool (%s) of cluster (%s): %s", workerPoolNameorID, clusterNameorID, err)
+
+	if orphan_on_delete {
+		log.Printf("[WARN] orphaning %s workerpool", workerPoolNameorID)
+	} else {
+		err = workerPoolsAPI.DeleteWorkerPool(clusterNameorID, workerPoolNameorID, targetEnv)
+		if err != nil {
+			return err
+		}
+		_, err = WaitForWorkerDelete(clusterNameorID, workerPoolNameorID, meta, d.Timeout(schema.TimeoutUpdate), targetEnv)
+		if err != nil {
+			return fmt.Errorf("[ERROR] Error waiting for removing workers of worker pool (%s) of cluster (%s): %s", workerPoolNameorID, clusterNameorID, err)
+		}
 	}
 	return nil
 }

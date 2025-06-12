@@ -1,6 +1,6 @@
 # IBM Cloud resource instance example
 
-The following example creates an instance of IBM Cloud resource. Instance could be of any resource, for example Cloud Object Storage, Activity Tracker, metrics monitor etc. By specifying the right value to argument `service`, we can provision respective resource instance.
+The following example creates an instance of IBM Cloud resource. Instance could be of any resource, for example Cloud Object Storage, Activity Tracker Event Routing, metrics monitor etc. By specifying the right value to argument `service`, we can provision respective resource instance.
 Document reference https://servicedata-application-2f.za7agtyv6vj.us-east.codeengine.appdomain.cloud/
 
 Following types of resources are supported:

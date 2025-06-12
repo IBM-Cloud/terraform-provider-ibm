@@ -54,6 +54,7 @@ Review the argument reference that you can specify for your data source.
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
 - `action` - (String) The action to perform with a packet matching the route, allowable values are: `delegate`, `delegate_vpc`, `deliver`, `drop`.
+- `advertise` - (Boolean) Indicates whether this route will be advertised to the ingress sources specified by the `advertise_routes_to` routing table property.
 	- `delegate`: delegate to the system's built-in routes
 	- `delegate_vpc`: delegate to the system's built-in routes, ignoring Internet-bound  routes
 	- `deliver`: deliver the packet to the specified `next_hop`

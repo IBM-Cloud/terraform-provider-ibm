@@ -42,9 +42,10 @@ func ResourceIBMEnterpriseAccountGroup() *schema.Resource {
 				ValidateFunc: validate.ValidateAllowedEnterpriseNameValue(),
 			},
 			"primary_contact_iam_id": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The IAM ID of the primary contact for this account group, such as `IBMid-0123ABC`. The IAM ID must already exist.",
+				Type:         schema.TypeString,
+				Required:     true,
+				Description:  "The IAM ID of the primary contact for this account group, such as `IBMid-0123ABC`. The IAM ID must already exist.",
+				ValidateFunc: validate.ValidateRegexps("^IBMid\\-[A-Z,0-9]{10}$"),
 			},
 			"url": {
 				Type:        schema.TypeString,
@@ -236,7 +237,20 @@ func resourceIbmEnterpriseAccountGroupUpdate(context context.Context, d *schema.
 
 func resourceIbmEnterpriseAccountGroupDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
-	d.SetId("")
+	enterpriseManagementClient, err := meta.(conns.ClientSession).EnterpriseManagementV1()
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	deleteAccountGroupOptions := &enterprisemanagementv1.DeleteAccountGroupOptions{}
+
+	deleteAccountGroupOptions.SetAccountGroupID(d.Id())
+
+	response, err := enterpriseManagementClient.DeleteAccountGroupWithContext(context, deleteAccountGroupOptions)
+	if err != nil {
+		log.Printf("[DEBUG] DeleteAccountGroupWithContext failed %s\n%s", err, response)
+		return diag.FromErr(fmt.Errorf("DeleteAccountGroupWithContext failed %s\n%s", err, response))
+	}
 
 	return nil
 }

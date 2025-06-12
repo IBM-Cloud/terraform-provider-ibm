@@ -16,18 +16,18 @@ import (
 	"github.com/IBM/secrets-manager-go-sdk/v2/secretsmanagerv2"
 )
 
-func TestAccIbmSmIamCredentialsConfigurationBasic(t *testing.T) {
-	var conf secretsmanagerv2.IAMCredentialsConfiguration
+//SecretsManagerIamCredentialsConfigurationApiKey = os.Getenv("SECRETS_MANAGER_IAM_CREDENTIALS_CONFIGURATION_API_KEY")
 
+func TestAccIbmSmIamCredentialsConfigurationBasic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmSmIamCredentialsConfigurationDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmSmIamCredentialsConfigurationConfigBasic(),
+				Config: testAccCheckIbmSmIamCredentialsConfigurationConfigBasic(acc.SecretsManagerIamCredentialsConfigurationApiKey),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmSmIamCredentialsConfigurationExists("ibm_sm_iam_credentials_configuration.sm_iam_credentials_configuration", conf),
+					testAccCheckIbmSmIamCredentialsConfigurationExists("ibm_sm_iam_credentials_configuration.sm_iam_credentials_configuration", acc.SecretsManagerIamCredentialsConfigurationApiKey),
 				),
 			},
 			resource.TestStep{
@@ -39,7 +39,7 @@ func TestAccIbmSmIamCredentialsConfigurationBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmSmIamCredentialsConfigurationConfigBasic() string {
+func testAccCheckIbmSmIamCredentialsConfigurationConfigBasic(apiKey string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_sm_iam_credentials_configuration" "sm_iam_credentials_configuration" {
@@ -48,10 +48,10 @@ func testAccCheckIbmSmIamCredentialsConfigurationConfigBasic() string {
 			name = "terraform-test-datasource-iam-configuration"
 			api_key = "%s"
 		}
-	`, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion, acc.SecretsManagerIamCredentialsConfigurationApiKey)
+	`, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion, apiKey)
 }
 
-func testAccCheckIbmSmIamCredentialsConfigurationExists(n string, obj secretsmanagerv2.IAMCredentialsConfiguration) resource.TestCheckFunc {
+func testAccCheckIbmSmIamCredentialsConfigurationExists(n string, expectedApiKey string) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -78,7 +78,9 @@ func testAccCheckIbmSmIamCredentialsConfigurationExists(n string, obj secretsman
 		}
 
 		iAMCredentialsConfiguration := iAMCredentialsConfigurationIntf.(*secretsmanagerv2.IAMCredentialsConfiguration)
-		obj = *iAMCredentialsConfiguration
+		if *iAMCredentialsConfiguration.ApiKey != expectedApiKey {
+			return fmt.Errorf("Wrong API Key")
+		}
 		return nil
 	}
 }

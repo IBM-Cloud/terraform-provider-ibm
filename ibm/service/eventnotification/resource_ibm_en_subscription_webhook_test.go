@@ -99,6 +99,7 @@ func testAccCheckIBMEnWebhookSubscriptionConfig(instanceName, name, description 
 		destination_id = ibm_en_destination_webhook.en_webhook_destination_resource_2.destination_id
 		attributes {
 			signing_enabled          = true
+			template_id_notification = 886fgehuc-8605-41eb-85a1-86749377263
 		}
 	}
 	`, instanceName, name, description)

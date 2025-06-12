@@ -46,6 +46,8 @@ In addition to all argument references listed, you can access the following attr
 
   - `type` - (String) Destination type Email/SMS/Webhook.
 
+  - `collect_failed_events` - (boolean) Toggle switch to enable collect failed event in Cloud Object Storage bucket.
+
   - `updated_at` - (String) Lats updated time.
 
 - `total_count` - (Integer) Total number of destinations.

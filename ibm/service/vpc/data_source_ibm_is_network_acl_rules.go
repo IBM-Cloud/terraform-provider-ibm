@@ -4,12 +4,15 @@
 package vpc
 
 import (
+	"context"
 	"fmt"
+	"log"
 	"reflect"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -19,7 +22,7 @@ const (
 
 func DataSourceIBMISNetworkACLRules() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceIBMISNetworkACLRulesRead,
+		ReadContext: dataSourceIBMISNetworkACLRulesRead,
 
 		Schema: map[string]*schema.Schema{
 			"direction": {
@@ -174,19 +177,21 @@ func DataSourceIBMISNetworkACLRules() *schema.Resource {
 	}
 }
 
-func dataSourceIBMISNetworkACLRulesRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceIBMISNetworkACLRulesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	nwACLID := d.Get(isNwACLID).(string)
-	err := networkACLRulesList(d, meta, nwACLID)
+	err := networkACLRulesList(context, d, meta, nwACLID)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func networkACLRulesList(d *schema.ResourceData, meta interface{}, nwACLID string) error {
+func networkACLRulesList(context context.Context, d *schema.ResourceData, meta interface{}, nwACLID string) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_network_acl_rules", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	start := ""
 	allrecs := []vpcv1.NetworkACLRuleItemIntf{}
@@ -203,9 +208,11 @@ func networkACLRulesList(d *schema.ResourceData, meta interface{}, nwACLID strin
 			listNetworkACLRulesOptions.Start = &start
 		}
 
-		ruleList, response, err := sess.ListNetworkACLRules(listNetworkACLRulesOptions)
+		ruleList, _, err := sess.ListNetworkACLRulesWithContext(context, listNetworkACLRulesOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Fetching network acl ruless %s\n%s", err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListNetworkACLRulesWithContext failed %s", err), "(Data) ibm_is_network_acl_rules", "read")
+			log.Printf("[DEBUG] %s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		start = flex.GetNext(ruleList.Next)
 
@@ -306,7 +313,9 @@ func networkACLRulesList(d *schema.ResourceData, meta interface{}, nwACLID strin
 		rulesInfo = append(rulesInfo, l)
 	}
 	d.SetId(dataSourceIBMISNetworkACLRulesId(d))
-	d.Set(isNetworkACLRules, rulesInfo)
+	if err = d.Set("rules", rulesInfo); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting rules %s", err), "(Data) ibm_is_network_acl_rules", "read", "rules-set").GetDiag()
+	}
 	return nil
 }
 

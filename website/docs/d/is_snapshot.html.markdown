@@ -102,7 +102,33 @@ In addition to all argument reference list, you can access the following attribu
     - `name` - (String) The unique user defined name for this backup policy plan. If unspecified, the name will be a hyphenated list of randomly selected words.
     - `resource_type` - (String) The type of resource referenced.
 - `bootable` - (Bool) Indicates if a boot volume attachment can be created with a volume created from this snapshot.
+- `catalog_offering` - (List) The catalog offering inherited from the snapshot's source. If a virtual server instance is provisioned with a source_snapshot specifying this snapshot, the virtual server instance will use this snapshot's catalog offering, including its pricing plan. If absent, this snapshot is not associated with a catalog offering.
+
+  Nested scheme for `catalog_offering`:
+    - `version_crn` - (String) The CRN for this version of a catalog offering
+    - `plan_crn` - (String) The CRN for this catalog offering version's billing plan
+    - `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.
+    
+      Nested schema for `deleted`:
+        - `more_info`  - (String) Link to documentation about deleted resources.
 - `clones` - (List) The list of zones where clones of this snapshot exist.
+- `copies` - (List) The copies of this snapshot in other regions.
+  
+   Nested scheme for `copies`:
+    - `crn` - (String) The CRN for the copied snapshot.
+    - `deleted` - (List) If present, this property indicates the referenced resource has been deleted and provides some supplementary information.
+   
+      Nested scheme for `deleted`:
+      - `more_info` - (String) Link to documentation about deleted resources.
+    - `href` - (String) The URL for the copied snapshot.
+    - `id` - (String) The unique identifier for the copied snapshot.
+    - `name` - (String) The name for the copied snapshot. The name is unique across all snapshots in the copied snapshot's native region.
+    - `remote` - (List) If present, this property indicates the referenced resource is remote to this region,and identifies the native region.
+  
+      Nested scheme for `remote`:
+      - `href` - (String) The URL for this region.
+      - `name` - (String) The globally unique name for this region.
+    - `resource_type` - (String) The resource type.
 - `crn` - (String) The CRN for this snapshot.
 - `encryption` - (String) The type of encryption used on the source volume. Supported values are **provider_managed**, **user_managed**.
 - `encryption_key` - (String) The CRN of the `Key Protect Root Key` or `Hyper Protect Crypto Services Root Key` for this resource. The root key used to wrap the data encryption key for the source volume. This property will be present for volumes with an encryption type of `user_managed`.
@@ -111,7 +137,35 @@ In addition to all argument reference list, you can access the following attribu
 - `minimum_capacity` - (Integer) The minimum capacity of a volume created from this snapshot. When a snapshot is created, this sets to the capacity of the source_volume.
 - `operating_system` - (String) The globally unique name for the operating system included in this image.
 - `resource_type` - (String) The resource type.
+- `service_tags` - (List) The [service tags](https://cloud.ibm.com/apidocs/tagging#types-of-tags) prefixed with `is.snapshot:` associated with this snapshot.
 - `size` - (Integer) The size of this snapshot rounded up to the next gigabyte.
+- `snapshot_consistency_group` - (List) The snapshot consistency group which created this snapshot.
+
+    Nested scheme for `snapshot_consistency_group`:
+    - `crn` - (String) The CRN of this snapshot consistency group.
+    - `deleted` - (List) If present, this property indicates the referenced resource has been deleted and provides some supplementary information.
+    
+      Nested scheme for `deleted`:
+      - `more_info` - (String) Link to documentation about deleted resources.
+    - `href` - (String) The URL for the snapshot consistency group.
+    - `id` - (String) The unique identifier for the snapshot consistency group.
+    - `name` - (String) TThe name for the snapshot consistency group. The name is unique across all snapshot consistency groups in the region.
+    - `resource_type` - (String) The resource type.
 - `source_image` - (String) If present, the unique identifier for the image from which the data on this volume was most directly provisioned.
+- `source_snapshot` - (String) If present, the source snapshot this snapshot was created from.
+  Nested scheme for `source_snapshot`:
+  - `crn` - (String) The CRN of the source snapshot.
+  - `deleted` - (List) If present, this property indicates the referenced resource has been deleted and provides some supplementary information.
+   
+      Nested scheme for `deleted`:
+      - `more_info` - (String) Link to documentation about deleted resources.
+  - `href` - (String) The URL for the source snapshot.
+  - `id` - (String) The unique identifier for the source snapshot.
+  - `name` - (String) The name for the source snapshot. The name is unique across all snapshots in the source snapshot's native region.
+  - `remote` - (List) If present, this property indicates the referenced resource is remote to this region,and identifies the native region.
+      Nested scheme for `remote`:
+      - `href` - (String) The URL for this region.
+      - `name` - (String) The globally unique name for this region.
+  - `resource_type` - (String) The resource type.
 - `captured_at` - (String) The date and time that this snapshot was captured.
 - `tags` - (String) Tags associated with the snapshot.

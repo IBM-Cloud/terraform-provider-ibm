@@ -180,17 +180,6 @@ Nested scheme for **source**:
 * `source_readme_url` - (Optional, String) URL of the `README` file, for the source URL.
 * `source_type` - (Optional, String) Type of source for the Template.
   * Constraints: Allowable values are: local, git_hub, git_hub_enterprise, git_lab, ibm_git_lab, ibm_cloud_catalog, external_scm, cos_bucket
-* `state` - (Optional, List) Computed state of the Action.
-Nested scheme for **state**:
-	* `status_code` - (Optional, String) Status of automation (workspace or action).
-	  * Constraints: Allowable values are: normal, pending, disabled, critical
-	* `status_job_id` - (Optional, String) Job id reference for this status.
-	* `status_message` - (Optional, String) Automation status message - to be displayed along with the status_code.
-* `sys_lock` - (Optional, List) System lock status.
-Nested scheme for **sys_lock**:
-	* `sys_locked` - (Optional, Boolean) Is the automation locked by a Schematic job ?.
-	* `sys_locked_by` - (Optional, String) Name of the User who performed the job, that lead to the locking of the automation.
-	* `sys_locked_at` - (Optional, String) When the User performed the job that lead to locking of the automation ?.
 * `tags` - (Optional, List) Action tags.
 * `targets_ini` - (Optional, String) Inventory of host and host group for the playbook in `INI` file format. For example, `"targets_ini": "[webserverhost]  172.22.192.6  [dbhost]  172.22.192.5"`. For more information, about an inventory host group syntax, see [Inventory host groups](https://cloud.ibm.com/docs/schematics?topic=schematics-schematics-cli-reference#schematics-inventory-host-grps).
 * `user_state` - (Optional, List) User defined status of the Schematics object.
@@ -215,6 +204,17 @@ In addition to all argument references listed, you can access the following attr
 * `source_created_by` - (String) E-mail address of user who created the Action Playbook Source.
 * `source_updated_at` - (String) The action playbook updation time.
 * `source_updated_by` - (String) E-mail address of user who updated the action playbook source.
+* `state` - (List) Computed state of the Action.
+Nested scheme for **state**:
+	* `status_code` - (String) Status of automation (workspace or action).
+	  * Constraints: Allowable values are: normal, pending, disabled, critical
+	* `status_job_id` - (String) Job id reference for this status.
+	* `status_message` - (String) Automation status message - to be displayed along with the status_code.
+* `sys_lock` - (List) System lock status.
+Nested scheme for **sys_lock**:
+	* `sys_locked` - (Boolean) Is the automation locked by a Schematic job ?.
+	* `sys_locked_by` - (String) Name of the User who performed the job, that lead to the locking of the automation.
+	* `sys_locked_at` - (String) When the User performed the job that lead to locking of the automation ?.
 * `updated_at` - (String) Action updation time.
 * `updated_by` - (String) E-mail address of the user who updated an action.
 

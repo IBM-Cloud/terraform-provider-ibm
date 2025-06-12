@@ -50,11 +50,12 @@ func testAccCheckIBMDatabaseDataSourceConfig2(name string) string {
 		name              = "%[1]s"
 		service           = "databases-for-postgresql"
 		plan              = "standard"
-		location          = "au-syd"
+		location          = "%[2]s"
 		tags              = ["one:two"]
+		service_endpoints = "public"
 	}
 
-				`, name)
+				`, name, acc.Region())
 }
 
 func testAccCheckIBMDatabaseInstancePostgresql(name string) string {

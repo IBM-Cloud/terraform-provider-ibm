@@ -6,6 +6,7 @@ package secretsmanager
 import (
 	"context"
 	"fmt"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"log"
 	"strings"
 
@@ -29,19 +30,22 @@ func ResourceIbmSmEnRegistration() *schema.Resource {
 			"event_notifications_instance_crn": &schema.Schema{
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_sm_en_registration", "event_notifications_instance_crn"),
+				ForceNew:     true,
+				ValidateFunc: validate.InvokeValidator(EnRegistrationResourceName, "event_notifications_instance_crn"),
 				Description:  "A CRN that uniquely identifies an IBM Cloud resource.",
 			},
 			"event_notifications_source_name": &schema.Schema{
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_sm_en_registration", "event_notifications_source_name"),
+				ForceNew:     true,
+				ValidateFunc: validate.InvokeValidator(EnRegistrationResourceName, "event_notifications_source_name"),
 				Description:  "The name that is displayed as a source that is in your Event Notifications instance.",
 			},
 			"event_notifications_source_description": &schema.Schema{
 				Type:         schema.TypeString,
 				Optional:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_sm_en_registration", "event_notifications_source_description"),
+				ForceNew:     true,
+				ValidateFunc: validate.InvokeValidator(EnRegistrationResourceName, "event_notifications_source_description"),
 				Description:  "An optional description for the source  that is in your Event Notifications instance.",
 			},
 		},
@@ -80,19 +84,20 @@ func ResourceIbmSmEnRegistrationValidator() *validate.ResourceValidator {
 		},
 	)
 
-	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_sm_en_registration", Schema: validateSchema}
+	resourceValidator := validate.ResourceValidator{ResourceName: EnRegistrationResourceName, Schema: validateSchema}
 	return &resourceValidator
 }
 
 func resourceIbmSmEnRegistrationCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
+	secretsManagerClient, endpointsFile, err := getSecretsManagerSession(meta.(conns.ClientSession))
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, "", EnRegistrationResourceName, "create")
+		return tfErr.GetDiag()
 	}
 
 	region := getRegion(secretsManagerClient, d)
 	instanceId := d.Get("instance_id").(string)
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d), endpointsFile)
 
 	createNotificationsRegistrationOptions := &secretsmanagerv2.CreateNotificationsRegistrationOptions{}
 
@@ -105,7 +110,8 @@ func resourceIbmSmEnRegistrationCreate(context context.Context, d *schema.Resour
 	_, response, err := secretsManagerClient.CreateNotificationsRegistrationWithContext(context, createNotificationsRegistrationOptions)
 	if err != nil {
 		log.Printf("[DEBUG] CreateNotificationsRegistrationWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("CreateNotificationsRegistrationWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateNotificationsRegistrationWithContext failed %s\n%s", err, response), EnRegistrationResourceName, "create")
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", region, instanceId))
@@ -114,18 +120,20 @@ func resourceIbmSmEnRegistrationCreate(context context.Context, d *schema.Resour
 }
 
 func resourceIbmSmEnRegistrationRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
+	secretsManagerClient, endpointsFile, err := getSecretsManagerSession(meta.(conns.ClientSession))
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, "", EnRegistrationResourceName, "read")
+		return tfErr.GetDiag()
 	}
 
 	id := strings.Split(d.Id(), "/")
 	if len(id) != 2 {
-		return diag.Errorf("Wrong format of resource ID. To import event notification registration use the format `<region>/<instance_id>`")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Wrong format of resource ID. To import event notification registration use the format `<region>/<instance_id>`"), EnRegistrationResourceName, "read")
+		return tfErr.GetDiag()
 	}
 	region := id[0]
 	instanceId := id[1]
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d), endpointsFile)
 
 	getNotificationsRegistrationOptions := &secretsmanagerv2.GetNotificationsRegistrationOptions{}
 
@@ -136,32 +144,37 @@ func resourceIbmSmEnRegistrationRead(context context.Context, d *schema.Resource
 			return nil
 		}
 		log.Printf("[DEBUG] GetNotificationsRegistrationWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetNotificationsRegistrationWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetNotificationsRegistrationWithContext failed %s\n%s", err, response), EnRegistrationResourceName, "read")
+		return tfErr.GetDiag()
 	}
 
 	if err = d.Set("instance_id", instanceId); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting instance_id: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting instance_id"), EnRegistrationResourceName, "read")
+		return tfErr.GetDiag()
 	}
 	if err = d.Set("region", region); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting region: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting region"), EnRegistrationResourceName, "read")
+		return tfErr.GetDiag()
 	}
 	if err = d.Set("event_notifications_instance_crn", notificationsRegistration.EventNotificationsInstanceCrn); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting event_notifications_instance_crn: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting event_notifications_instance_crn"), EnRegistrationResourceName, "read")
+		return tfErr.GetDiag()
 	}
 
 	return nil
 }
 
 func resourceIbmSmEnRegistrationUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
+	secretsManagerClient, endpointsFile, err := getSecretsManagerSession(meta.(conns.ClientSession))
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf(""), EnRegistrationResourceName, "update")
+		return tfErr.GetDiag()
 	}
 
 	id := strings.Split(d.Id(), "/")
 	region := id[0]
 	instanceId := id[1]
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d), endpointsFile)
 
 	createNotificationsRegistrationOptions := &secretsmanagerv2.CreateNotificationsRegistrationOptions{}
 
@@ -180,8 +193,9 @@ func resourceIbmSmEnRegistrationUpdate(context context.Context, d *schema.Resour
 	if hasChange {
 		_, response, err := secretsManagerClient.CreateNotificationsRegistrationWithContext(context, createNotificationsRegistrationOptions)
 		if err != nil {
-			log.Printf("[DEBUG] CreateNotificationsRegistrationWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("CreateNotificationsRegistrationWithContext failed %s\n%s", err, response))
+			log.Printf("[DEBUG] UpdateNotificationsRegistrationWithContext failed %s\n%s", err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateNotificationsRegistrationWithContext failed %s\n%s", err, response), EnRegistrationResourceName, "update")
+			return tfErr.GetDiag()
 		}
 	}
 
@@ -189,22 +203,24 @@ func resourceIbmSmEnRegistrationUpdate(context context.Context, d *schema.Resour
 }
 
 func resourceIbmSmEnRegistrationDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
+	secretsManagerClient, endpointsFile, err := getSecretsManagerSession(meta.(conns.ClientSession))
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, "", EnRegistrationResourceName, "delete")
+		return tfErr.GetDiag()
 	}
 
 	id := strings.Split(d.Id(), "/")
 	region := id[0]
 	instanceId := id[1]
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d), endpointsFile)
 
 	deleteNotificationsRegistrationOptions := &secretsmanagerv2.DeleteNotificationsRegistrationOptions{}
 
 	response, err := secretsManagerClient.DeleteNotificationsRegistrationWithContext(context, deleteNotificationsRegistrationOptions)
 	if err != nil {
 		log.Printf("[DEBUG] DeleteNotificationsRegistrationWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("DeleteNotificationsRegistrationWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteNotificationsRegistrationWithContext failed %s\n%s", err, response), EnRegistrationResourceName, "delete")
+		return tfErr.GetDiag()
 	}
 
 	d.SetId("")

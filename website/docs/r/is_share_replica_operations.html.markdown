@@ -6,26 +6,43 @@ description: |-
 subcategory: "VPC infrastructure"
 ---
 
-# ibm\_is_share_target
+# is_share_replica_operations
 
-Provides a resource for ShareTarget. This allows ShareTarget to be created, updated and deleted.
-
-~> **NOTE**
-IBM Cloud® File Storage for VPC is available for customers with special approval. Contact your IBM Sales representative if you are interested in getting access.
-
-~> **NOTE**
-This is a Beta feature and it is subject to change in the GA release 
+Provides a resource for managing the share operations failover and split.
 
 ~> **NOTE**
 `ibm_is_share_replica_operations` is used for either failing over to replica share or splitting the source and replica shares. 
 When a failover is performed, replica share becomes the source, and the source share becomes replica. Hence terraform configuration should be modified and adjusted accordingly.
+
+
+## Example Usage
+
+```terraform
+resource "ibm_is_share" "example" {
+  name = "my-share"
+  size = 200
+  profile = "dp2"
+  zone = "us-south-2"
+}
+```
+## Example Usage (Create a replica share)
+
+```terraform
+resource "ibm_is_share" "example1" {
+    zone = "us-south-3"
+    source_share = ibm_is_share.example.id
+    name = "my-replica1"
+    profile = "dp2"
+    replication_cron_spec = "0 */5 * * *"
+}
+```
 
 ## Example Usage
 
 ```hcl
 // Split source share and replica share
 resource "ibm_is_share_replica_operations" "test" {
-  share_replica = ibm_is_share.replica.id
+  share_replica = ibm_is_share.example1.id
   split_share = true
 }
 ```
@@ -34,7 +51,7 @@ resource "ibm_is_share_replica_operations" "test" {
 ```hcl
 // failover to replica share
 resource "ibm_is_share_replica_operations" "test" {
-  share_replica = ibm_is_share.replica.id
+  share_replica = ibm_is_share.example1.id
   fallback_policy = "split"
   timeout = 500
 }
@@ -50,7 +67,6 @@ The following arguments are supported:
 - `split_share` - (Boolean, string) If set to true the replication relationship between source share and replica will be removed.
 
 ~>**Note**
-
 `split_share` and `fallback_policy` are mutually exclusive
 
 ## Attribute Reference

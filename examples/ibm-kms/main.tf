@@ -34,5 +34,56 @@ resource "ibm_cos_bucket" "flex-us-south" {
   resource_instance_id = ibm_resource_instance.cos_instance.id
   region_location      = "us-south"
   storage_class        = "flex"
-  key_protect          = ibm_kms_key.test.id
+  kms_key_crn          = ibm_kms_key.test.id
+}
+
+resource "ibm_kms_kmip_adapter" "myadapter" {
+    instance_id = "${ibm_kms_key.test.instance_id}" 
+    profile = "native_1.0"
+    profile_data = {
+      "crk_id" = ibm_kms_key.test.key_id
+    }
+    description = "adding a description"
+    name = var.kmip_adapter_name
+}
+
+resource "ibm_kms_kmip_client_cert" "mycert" {
+  instance_id = "${ibm_kms_key.test.instance_id}" 
+  adapter_id = "${ibm_kms_kmip_adapter.myadapter.id}"
+  certificate = file("${path.module}/localhost.crt")
+  name = var.kmip_cert_name
+}
+
+data "ibm_kms_kmip_adapter" "adapter_data" {
+  instance_id = "${ibm_kms_key.test.instance_id}" 
+  name = "${ibm_kms_kmip_adapter.myadapter.name}"
+  # adapter_id = "${ibm_kms_kmip_adapter.myadapter.adapter_id}"
+}
+
+data "ibm_kms_kmip_client_cert" "cert1" {
+  instance_id = "${ibm_kms_key.test.instance_id}" 
+  adapter_name = "${ibm_kms_kmip_adapter.myadapter.name}"
+  cert_id = "${ibm_kms_kmip_client_cert.mycert.id}"
+}
+
+data "ibm_kms_kmip_adapters" "adapters" {
+  instance_id = "${ibm_kms_key.test.instance_id}" 
+}
+
+data "ibm_kms_kmip_client_certs" "cert_list" {
+  instance_id = "${ibm_kms_key.test.instance_id}" 
+  adapter_name = "${ibm_kms_kmip_adapter.myadapter.name}"
+}
+
+data "ibm_kms_kmip_objects" "objects_list" {
+  instance_id = "${ibm_kms_key.test.instance_id}" 
+  adapter_id = "${ibm_kms_kmip_adapter.myadapter.id}"
+  object_state_filter = [1,2,3,4]
+}
+
+data "ibm_kms_kmip_object" "object1" {
+  count = length(data.ibm_kms_kmip_objects.objects_list.objects) > 0 ? 1 : 0
+  instance_id = "${ibm_kms_key.test.instance_id}" 
+  adapter_id = "${ibm_kms_kmip_adapter.myadapter.id}"
+  object_id = "${data.ibm_kms_kmip_objects.objects_list.objects.0.object_id}"
 }

@@ -97,6 +97,25 @@ resource "ibm_cos_bucket_object" "cos_object_objectlock" {
 }
 ```
 
+# Website redirect 
+
+Requests can be redirected for an object to another object or URL by setting the website redirect location in the metadata of the object.
+
+**Note:**
+COS bucket with website configuration and public access enabled is a pre-requisite.For adding website configuration to a bucket please follow [static_web_hosting]()
+
+## Example usage
+
+```terraform
+
+resource "ibm_cos_bucket_object" "cos_object_objectlock" {
+  bucket_crn      = "bucket-crn"
+  bucket_location = "us-south"
+  key             = "page1.html"
+  website_redirect = "/page2.html"
+}
+```
+
 
 ## Argument reference
 Review the argument references that you can specify for your resource.
@@ -109,6 +128,7 @@ Review the argument references that you can specify for your resource.
 - `endpoint_type` - (Optional, String) The type of endpoint used to access COS. Supported values are `public`, `private`, or `direct`. Default value is `public`.
 - `etag` - (Optional, String) MD5 hexdigest used to trigger updates. The only meaningful value is `filemd5("path/to/file")`.
 - `key` - (Required, Forces new resource, String) The name of an object in the COS bucket.
+- `website_redirect` - (Optional, String) Target URL for website redirect.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.

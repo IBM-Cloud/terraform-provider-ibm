@@ -57,7 +57,7 @@ func DataSourceIBMCISFirewallRules() *schema.Resource {
 						cisFirewallrulesAction: {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The firewall action to perform, \"log\" action is only available for enterprise plan instances.",
+							Description: "The firewall action to perform, \"log\" action is only available for enterprise plans instances.",
 						},
 						cisFilter: {
 							Type:        schema.TypeMap,

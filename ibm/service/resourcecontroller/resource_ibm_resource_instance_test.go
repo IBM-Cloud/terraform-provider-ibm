@@ -423,3 +423,46 @@ func testAccCheckIBMResourceInstanceServiceendpoints(serviceName string) string 
 			
 	`, serviceName)
 }
+
+// /#### Adding new test case for onetime_credentials
+func TestAccIBMResourceInstanceWithOnetimeCredentials(t *testing.T) {
+	serviceName := fmt.Sprintf("tf-Pgress-%d", acctest.RandIntRange(10, 100))
+	resourceName := "ibm_resource_instance.instance"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMResourceInstanceDestroy,
+		Steps: []resource.TestStep{
+
+			{
+				Config: testAccCheckIBMResourceInstanceOnetimeCredentals(serviceName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMResourceInstanceExists(resourceName),
+					resource.TestCheckResourceAttr(resourceName, "name", serviceName),
+					resource.TestCheckResourceAttr(resourceName, "service", "cloud-object-storage"),
+					resource.TestCheckResourceAttr(resourceName, "plan", "lite"),
+					resource.TestCheckResourceAttr(resourceName, "location", "global"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMResourceInstanceOnetimeCredentals(serviceName string) string {
+	return fmt.Sprintf(`
+    
+    resource "ibm_resource_instance" "instance" {
+        name     = "%s"
+        location = "global"
+        service  = "cloud-object-storage"
+        plan     = "lite"
+        parameters = {
+          onetime_credentials = true,
+        }
+      
+        
+    }
+            
+    `, serviceName)
+}

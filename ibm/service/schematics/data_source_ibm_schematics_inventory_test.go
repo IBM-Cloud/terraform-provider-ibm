@@ -33,7 +33,7 @@ func TestAccIBMSchematicsInventoryDataSourceAllArgs(t *testing.T) {
 	inventoryResourceRecordName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	inventoryResourceRecordDescription := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
 	inventoryResourceRecordLocation := "us-south"
-	inventoryResourceRecordResourceGroup := fmt.Sprintf("tf_resource_group_%d", acctest.RandIntRange(10, 100))
+	inventoryResourceRecordResourceGroup := "Default"
 	inventoryResourceRecordInventoriesIni := fmt.Sprintf("tf_inventories_ini_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
