@@ -9,6 +9,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
@@ -129,7 +130,9 @@ func DataSourceIBMISLBPoolMembers() *schema.Resource {
 func dataSourceIBMIsLbPoolMembersRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_lb_pool_members", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	listLoadBalancerPoolMembersOptions := &vpcv1.ListLoadBalancerPoolMembersOptions{}
@@ -137,10 +140,11 @@ func dataSourceIBMIsLbPoolMembersRead(context context.Context, d *schema.Resourc
 	listLoadBalancerPoolMembersOptions.SetLoadBalancerID(d.Get("lb").(string))
 	listLoadBalancerPoolMembersOptions.SetPoolID(d.Get("pool").(string))
 
-	loadBalancerPoolMemberCollection, response, err := sess.ListLoadBalancerPoolMembersWithContext(context, listLoadBalancerPoolMembersOptions)
+	loadBalancerPoolMemberCollection, _, err := sess.ListLoadBalancerPoolMembersWithContext(context, listLoadBalancerPoolMembersOptions)
 	if err != nil {
-		log.Printf("[DEBUG] ListLoadBalancerPoolMembersWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("ListLoadBalancerPoolMembersWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListLoadBalancerPoolMembersWithContext failed: %s", err.Error()), "(Data) ibm_is_lb_pool_members", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(dataSourceIBMIsLbPoolMembersID(d))
@@ -148,7 +152,7 @@ func dataSourceIBMIsLbPoolMembersRead(context context.Context, d *schema.Resourc
 	if loadBalancerPoolMemberCollection.Members != nil {
 		err = d.Set("members", dataSourceLoadBalancerPoolMemberCollectionFlattenMembers(loadBalancerPoolMemberCollection.Members))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting members %s", err))
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting members: %s", err), "(Data) ibm_is_lb_pool_members", "read", "set-members").GetDiag()
 		}
 	}
 
@@ -231,7 +235,7 @@ func dataSourceLoadBalancerPoolMemberCollectionMembersTargetToMap(targetItem vpc
 	return targetMap
 }
 
-func dataSourceLoadBalancerPoolMemberCollectionTargetDeletedToMap(deletedItem vpcv1.InstanceReferenceDeleted) (deletedMap map[string]interface{}) {
+func dataSourceLoadBalancerPoolMemberCollectionTargetDeletedToMap(deletedItem vpcv1.Deleted) (deletedMap map[string]interface{}) {
 	deletedMap = map[string]interface{}{}
 
 	if deletedItem.MoreInfo != nil {

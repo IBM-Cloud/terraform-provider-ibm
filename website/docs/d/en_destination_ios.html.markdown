@@ -43,6 +43,8 @@ In addition to all argument references listed, you can access the following attr
 
 - `type` - (String) Destination type push_ios.
 
+- `collect_failed_events` - (boolean) Toggle switch to enable collect failed event in Cloud Object Storage bucket.
+
 - `certificate_content_type` - (String) The type of certificate, Values are p8/p12.
 
 - `certificate` - (binary) Certificate file. The file type allowed is .p8 and .p12

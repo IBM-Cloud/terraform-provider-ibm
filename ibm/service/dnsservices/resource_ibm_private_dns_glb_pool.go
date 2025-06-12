@@ -178,10 +178,10 @@ func resourceIBMPrivateDNSGLBPoolCreate(d *schema.ResourceData, meta interface{}
 	}
 
 	instanceID := d.Get(pdnsInstanceID).(string)
-	CreatePoolOptions := sess.NewCreatePoolOptions(instanceID)
-
 	poolname := d.Get(pdnsGlbPoolName).(string)
-	CreatePoolOptions.SetName(poolname)
+	poolorigins := d.Get(pdnsGlbPoolOrigins).(*schema.Set)
+
+	CreatePoolOptions := sess.NewCreatePoolOptions(instanceID, poolname, expandPDNSGlbPoolOrigins(poolorigins))
 
 	if description, ok := d.GetOk(pdnsGlbPoolDescription); ok {
 		CreatePoolOptions.SetDescription(description.(string))
@@ -205,9 +205,6 @@ func resourceIBMPrivateDNSGLBPoolCreate(d *schema.ResourceData, meta interface{}
 	if subnets, ok := d.GetOk(pdnsGlbPoolSubnet); ok {
 		CreatePoolOptions.SetHealthcheckSubnets(flex.ExpandStringList(subnets.([]interface{})))
 	}
-
-	poolorigins := d.Get(pdnsGlbPoolOrigins).(*schema.Set)
-	CreatePoolOptions.SetOrigins(expandPDNSGlbPoolOrigins(poolorigins))
 
 	result, resp, err := sess.CreatePool(CreatePoolOptions)
 	if err != nil {
@@ -244,8 +241,8 @@ func resourceIBMPrivateDNSGLBPoolRead(d *schema.ResourceData, meta interface{}) 
 	d.Set(pdnsGlbPoolChannel, response.NotificationChannel)
 	d.Set(pdnsGlbPoolRegion, response.HealthcheckRegion)
 	d.Set(pdnsGlbPoolSubnet, response.HealthcheckSubnets)
-	d.Set(pdnsGlbPoolCreatedOn, response.CreatedOn)
-	d.Set(pdnsGlbPoolModifiedOn, response.ModifiedOn)
+	d.Set(pdnsGlbPoolCreatedOn, response.CreatedOn.String())
+	d.Set(pdnsGlbPoolModifiedOn, response.ModifiedOn.String())
 	d.Set(pdnsGlbPoolOrigins, flattenPDNSGlbPoolOrigins(response.Origins))
 
 	return nil

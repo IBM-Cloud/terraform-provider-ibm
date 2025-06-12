@@ -2,6 +2,10 @@ TEST?=$$(go list ./... |grep -v 'vendor')
 GOFMT_FILES?=$$(find .  -path ./.direnv -prune -false -o -name '*.go' |grep -v vendor)
 COVER_TEST?=$$(go list ./... |grep -v 'vendor')
 TEST_TIMEOUT?=700m
+VERSION ?= 0.0.1
+OS_ARCH := $(shell go env GOOS)_$(shell go env GOARCH)
+PLUGIN_DIR := $(HOME)/.terraform.d/plugins/registry.terraform.io/ibm-cloud/ibm/$(VERSION)/$(OS_ARCH)
+TEST_NAME ?= ""
 
 default: build
 
@@ -11,9 +15,13 @@ tools:
 	@go get github.com/mitchellh/gox
 	@go get golang.org/x/tools/cmd/cover
 
-
 build: fmtcheck vet
 	go install
+
+build-local: build
+	mkdir -p $(PLUGIN_DIR)
+	mv $(HOME)/go/bin/terraform-provider-ibm $(PLUGIN_DIR)/terraform-provider-ibm_v$(VERSION)
+	./scripts/post-build.sh $(VERSION)
 
 bin: fmtcheck vet tools
 	@TF_RELEASE=1 sh -c "'$(CURDIR)/scripts/build.sh'"
@@ -27,7 +35,15 @@ test: fmtcheck
 		xargs -t -n4 go test $(TESTARGS) -timeout=30s -parallel=4
 
 testacc: fmtcheck
-	TF_ACC=1 go test $(TEST) -v $(TESTARGS) -timeout $(TEST_TIMEOUT)
+	TF_ACC=1 go test $(TEST) -v $(TESTARGS) -timeout $(TEST_TIMEOUT) 
+
+test-vpc:
+	@if [ "$(TEST_NAME)" = "" ]; then \
+		echo "Error: Please provide a test name using TEST_NAME=YourTestName"; \
+		exit 1; \
+	fi
+	@echo "Running VPC test: $(TEST_NAME)"
+	@$(MAKE) testacc TEST=./ibm/service/vpc TESTARGS='-run=$(TEST_NAME)'
 
 testrace: fmtcheck
 	TF_ACC= go test -race $(TEST) $(TESTARGS)
@@ -69,4 +85,4 @@ test-compile: fmtcheck
 	fi
 	go test -c $(TEST) $(TESTARGS)
 
-.PHONY: build bin dev test testacc testrace cover vet fmt fmtcheck errcheck vendor-status test-compile
+.PHONY: build build-local bin dev test testacc testrace cover vet fmt fmtcheck errcheck vendor-status test-compile

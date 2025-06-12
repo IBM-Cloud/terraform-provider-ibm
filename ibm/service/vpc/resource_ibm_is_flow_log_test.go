@@ -64,6 +64,37 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 	},
 	)
 }
+func TestAccIBMISFlowLog_vni(t *testing.T) {
+	var instance string
+	vpcname := fmt.Sprintf("flowlog-vpc-%d", acctest.RandIntRange(10, 100))
+	flowlogname := fmt.Sprintf("flowlog-instance-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("flowlog-subnet-%d", acctest.RandIntRange(10, 100))
+
+	vniname := fmt.Sprintf("tf-ssh-%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("terraform%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us-south"
+	bucketClass := "standard"
+	bucketRegionType := "cross_region_location"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISFlowLogDestroy,
+		Steps: []resource.TestStep{
+
+			{
+				//Create test case
+				Config: testAccCheckIBMISFlowLogVniConfig(vpcname, vniname, flowlogname, subnetname, bucketName, bucketRegionType, bucketRegion, bucketClass, true),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISFlowLogExists("ibm_is_flow_log.test_flow_log", instance),
+					resource.TestCheckResourceAttr("ibm_is_flow_log.test_flow_log", "name", flowlogname),
+					resource.TestCheckResourceAttr("data.ibm_is_flow_log.is_flow_log_name", "target.0.resource_type", "virtual_network_interface"),
+				),
+			},
+		},
+	},
+	)
+}
 
 func testAccCheckIBMISFlowLogConfig(vpcname, name, flowlogname, sshname, publicKey, subnetname, serviceName, bucketName, bucketRegionType, bucketRegion, bucketClass string, isActive bool) string {
 	return fmt.Sprintf(`	  	
@@ -124,6 +155,46 @@ func testAccCheckIBMISFlowLogConfig(vpcname, name, flowlogname, sshname, publicK
 	  } 
 	  
 	  `, vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, sshname, publicKey, name, acc.IsImage, acc.InstanceProfileName, acc.ISZoneName, serviceName, bucketName, bucketRegion, bucketClass, flowlogname, isActive)
+
+}
+func testAccCheckIBMISFlowLogVniConfig(vpcname, vniname, flowlogname, subnetname, bucketName, bucketRegionType, bucketRegion, bucketClass string, isActive bool) string {
+	return fmt.Sprintf(`	  	
+	
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	}
+	
+	resource "ibm_is_subnet" "testacc_subnet" {
+		name            = "%s"
+		vpc             = ibm_is_vpc.testacc_vpc.id
+		zone            = "%s"
+		total_ipv4_address_count = 16
+	}
+
+	resource "ibm_is_virtual_network_interface" "testacc_vni"{
+		name = "%s"
+		subnet = ibm_is_subnet.testacc_subnet.id
+	}
+
+	resource "ibm_cos_bucket" "bucket2" {
+		bucket_name          = "%s"
+		resource_instance_id = "%s"
+		region_location      = "%s"
+		storage_class        = "%s"
+	}	  
+	// Authorisation policy is required between vpc Flowlogs and Object Storage
+	
+	resource "ibm_is_flow_log" "test_flow_log" {
+		name    = "%s"
+		target = ibm_is_virtual_network_interface.testacc_vni.id
+		storage_bucket = ibm_cos_bucket.bucket2.bucket_name
+		active = %v
+	}
+	data "ibm_is_flow_log" "is_flow_log_name" {
+		name = ibm_is_flow_log.test_flow_log.name
+	}
+	  
+	  `, vpcname, subnetname, acc.ISZoneName, vniname, bucketName, acc.ISResourceCrn, bucketRegion, bucketClass, flowlogname, isActive)
 
 }
 func vpcClient(meta interface{}) (*vpcv1.VpcV1, error) {

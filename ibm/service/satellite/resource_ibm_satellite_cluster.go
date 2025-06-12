@@ -124,6 +124,12 @@ func ResourceIBMSatelliteCluster() *schema.Resource {
 				},
 				Description: "The OpenShift Container Platform version",
 			},
+			"entitlement": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: flex.ApplyOnce,
+				Description:      "Entitlement option reduces additional OCP Licence cost in Openshift Clusters",
+			},
 			"operating_system": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -274,6 +280,13 @@ func ResourceIBMSatelliteCluster() *schema.Resource {
 				Sensitive:   true,
 				Description: "The IBM Cloud Identity and Access Management (IAM) service CRN token for the service that creates the cluster.",
 			},
+			"calico_ip_autodetection": {
+				Type:             schema.TypeMap,
+				Optional:         true,
+				Description:      "Set IP autodetection to use correct interface for Calico",
+				Elem:             &schema.Schema{Type: schema.TypeString},
+				DiffSuppressFunc: flex.ApplyOnce,
+			},
 		},
 	}
 }
@@ -386,8 +399,21 @@ func resourceIBMSatelliteClusterCreate(d *schema.ResourceData, meta interface{})
 	if v, ok := d.GetOk("host_labels"); ok {
 		hostLabels := make(map[string]string)
 		hl := v.(*schema.Set)
-		hostLabels = flex.FlattenHostLabels(hl.List())
+		hostLabels = flex.FlattenKeyValues(hl.List())
 		createClusterOptions.Labels = hostLabels
+	}
+
+	if v, ok := d.GetOk("entitlement"); ok {
+		entitlement := v.(string)
+		createClusterOptions.DefaultWorkerPoolEntitlement = &entitlement
+	}
+
+	if m, ok := d.GetOk("calico_ip_autodetection"); ok {
+		methods := make(map[string]string)
+		for k, v := range m.(map[string]interface{}) {
+			methods[k] = v.(string)
+		}
+		createClusterOptions.SetCalicoIPAutodetectionMethods(methods)
 	}
 
 	if v, ok := d.GetOk("crn_token"); ok {
@@ -958,7 +984,7 @@ func WaitForSatelliteClusterVersionUpdate(d *schema.ResourceData, meta interface
 		Timeout:                   d.Timeout(schema.TimeoutUpdate),
 		Delay:                     20 * time.Second,
 		MinTimeout:                10 * time.Second,
-		ContinuousTargetOccurence: 5,
+		ContinuousTargetOccurence: 3,
 	}
 
 	return stateConf.WaitForState()

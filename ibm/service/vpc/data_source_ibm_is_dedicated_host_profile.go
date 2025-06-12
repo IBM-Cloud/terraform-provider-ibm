@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
@@ -238,6 +239,11 @@ func DataSourceIbmIsDedicatedHostProfile() *schema.Resource {
 					},
 				},
 			},
+			"status": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The status of the dedicated host profile.",
+			},
 			"vcpu_architecture": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -302,6 +308,24 @@ func DataSourceIbmIsDedicatedHostProfile() *schema.Resource {
 					},
 				},
 			},
+			"vcpu_manufacturer": &schema.Schema{
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"type": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The type for this profile field.",
+						},
+						"value": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The VCPU manufacturer for a dedicated host with this profile.",
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -309,7 +333,9 @@ func DataSourceIbmIsDedicatedHostProfile() *schema.Resource {
 func dataSourceIbmIsDedicatedHostProfileRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host_profile", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	name := d.Get("name").(string)
@@ -318,64 +344,89 @@ func dataSourceIbmIsDedicatedHostProfileRead(context context.Context, d *schema.
 	}
 	dedicatedHostProfile, response, err := vpcClient.GetDedicatedHostProfileWithContext(context, getDedicatedHostProfileOptions)
 	if err != nil {
-		log.Printf("[DEBUG] ListDedicatedHostProfilesWithContext failed %s\n%s", err, response)
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetDedicatedHostProfileWithContext failed: %s\n%s", err, response), "ibm_is_dedicated_host_profile", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if dedicatedHostProfile == nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] No Dedicated Host Profile found with name %s", name))
+		err = fmt.Errorf("No Dedicated Host Profile found with name %s", name)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host_profile", "read", "profile-not-found").GetDiag()
 	}
 	d.SetId(dataSourceIbmIsDedicatedHostProfileID(d))
 
 	if err = d.Set("class", dedicatedHostProfile.Class); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting class: %s", err))
+		err = fmt.Errorf("[ERROR] Error setting class: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host_profile", "read", "set-class").GetDiag()
 	}
 
 	if dedicatedHostProfile.Disks != nil {
 		err = d.Set("disks", dataSourceDedicatedHostProfileFlattenDisks(dedicatedHostProfile.Disks))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting disks %s", err))
+			err = fmt.Errorf("[ERROR] Error setting disks: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host_profile", "read", "set-disks").GetDiag()
 		}
 	}
-
+	if dedicatedHostProfile.Status != nil {
+		if err = d.Set("status", dedicatedHostProfile.Status); err != nil {
+			err = fmt.Errorf("[ERROR] Error setting status: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host_profile", "read", "set-status").GetDiag()
+		}
+	}
 	if err = d.Set("family", dedicatedHostProfile.Family); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting family: %s", err))
+		err = fmt.Errorf("[ERROR] Error setting family: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host_profile", "read", "set-family").GetDiag()
 	}
 	if err = d.Set("href", dedicatedHostProfile.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting href: %s", err))
+		err = fmt.Errorf("[ERROR] Error setting href: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host_profile", "read", "set-href").GetDiag()
 	}
 
 	if dedicatedHostProfile.Memory != nil {
 		err = d.Set("memory", dataSourceDedicatedHostProfileFlattenMemory(*dedicatedHostProfile.Memory.(*vpcv1.DedicatedHostProfileMemory)))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting memory %s", err))
+			err = fmt.Errorf("[ERROR] Error setting memory: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host_profile", "read", "set-memory").GetDiag()
 		}
 	}
 
 	if dedicatedHostProfile.SocketCount != nil {
 		err = d.Set("socket_count", dataSourceDedicatedHostProfileFlattenSocketCount(*dedicatedHostProfile.SocketCount.(*vpcv1.DedicatedHostProfileSocket)))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting socket_count %s", err))
+			err = fmt.Errorf("[ERROR] Error setting socket_count: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host_profile", "read", "set-socket_count").GetDiag()
 		}
 	}
 
 	if dedicatedHostProfile.SupportedInstanceProfiles != nil {
 		err = d.Set("supported_instance_profiles", dataSourceDedicatedHostProfileFlattenSupportedInstanceProfiles(dedicatedHostProfile.SupportedInstanceProfiles))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting supported_instance_profiles %s", err))
+			err = fmt.Errorf("[ERROR] Error setting supported_instance_profiles: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host_profile", "read", "set-supported_instance_profiles").GetDiag()
 		}
 	}
 
 	if dedicatedHostProfile.VcpuArchitecture != nil {
 		err = d.Set("vcpu_architecture", dataSourceDedicatedHostProfileFlattenVcpuArchitecture(*dedicatedHostProfile.VcpuArchitecture))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting vcpu_architecture %s", err))
+			err = fmt.Errorf("[ERROR] Error setting vcpu_architecture: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host_profile", "read", "set-vcpu_architecture").GetDiag()
 		}
 	}
 
 	if dedicatedHostProfile.VcpuCount != nil {
 		err = d.Set("vcpu_count", dataSourceDedicatedHostProfileFlattenVcpuCount(*dedicatedHostProfile.VcpuCount.(*vpcv1.DedicatedHostProfileVcpu)))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting vcpu_count %s", err))
+			err = fmt.Errorf("[ERROR] Error setting vcpu_count: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host_profile", "read", "set-vcpu_count").GetDiag()
+		}
+	}
+
+	// Changes for the AMD Support, manufacturer information.
+	if dedicatedHostProfile.VcpuManufacturer != nil {
+		err = d.Set("vcpu_manufacturer", dataSourceDedicatedHostProfileFlattenVcpuManufacturer(*dedicatedHostProfile.VcpuManufacturer))
+		if err != nil {
+			err = fmt.Errorf("[ERROR] Error setting vcpu_manufacturer: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host_profile", "read", "set-vcpu_manufacturer").GetDiag()
 		}
 	}
 
@@ -500,6 +551,29 @@ func dataSourceDedicatedHostProfileVcpuArchitectureToMap(vcpuArchitectureItem vp
 	}
 
 	return vcpuArchitectureMap
+}
+
+// Changes for AMD Support, manufacturer details.
+func dataSourceDedicatedHostProfileFlattenVcpuManufacturer(result vpcv1.DedicatedHostProfileVcpuManufacturer) (finalList []map[string]interface{}) {
+	finalList = []map[string]interface{}{}
+	finalMap := dataSourceDedicatedHostProfileVcpuManufacturerToMap(result)
+	finalList = append(finalList, finalMap)
+
+	return finalList
+}
+
+// AMD Support for manufacturer
+func dataSourceDedicatedHostProfileVcpuManufacturerToMap(vcpuManufacturerItem vpcv1.DedicatedHostProfileVcpuManufacturer) (vcpuManufacturerMap map[string]interface{}) {
+	vcpuManufacturerMap = map[string]interface{}{}
+
+	if vcpuManufacturerItem.Type != nil {
+		vcpuManufacturerMap["type"] = vcpuManufacturerItem.Type
+	}
+	if vcpuManufacturerItem.Value != nil {
+		vcpuManufacturerMap["value"] = vcpuManufacturerItem.Value
+	}
+
+	return vcpuManufacturerMap
 }
 
 func dataSourceDedicatedHostProfileFlattenVcpuCount(result vpcv1.DedicatedHostProfileVcpu) (finalList []map[string]interface{}) {

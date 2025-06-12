@@ -50,5 +50,16 @@ In addition to the argument reference list, you can access the following attribu
   - `resource_type` -  (String) The resource type.
   - `target` - (String) The ID of the target for the reserved IP.
   - `target_crn` - (String) The crn of the target for the reserved IP.
-- `total_count` -  (String) The total number of resources across all pages.
+  - `target_reference` - (List) The target this reserved IP is bound to. If absent, this reserved IP is provider-owned or unbound.
+	  
+      Nested schema for **target_reference**:
+      - `crn` - (String) The CRN for this endpoint gateway.
+      - `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
 
+          Nested schema for **deleted**:
+          - `more_info` - (String) Link to documentation about deleted resources.
+      - `href` - (String) The URL for this endpoint gateway.
+      - `id` - (String) The unique identifier for this endpoint gateway.
+      - `name` - (String) The name for this endpoint gateway. The name is unique across all endpoint gateways in the VPC.
+      - `resource_type` - (String) The resource type.
+- `total_count` -  (String) The total number of resources across all pages.

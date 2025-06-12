@@ -49,6 +49,8 @@ resource "enterprise_account" "enterprise_account_instance" {
   parent = var.enterprise_account_parent
   name = var.enterprise_account_name
   owner_iam_id = var.enterprise_account_owner_iam_id
+  traits = var.enterprise_account_traits
+  options = var.enterprise_account_options
 }
 ```
 
@@ -114,6 +116,8 @@ data "accounts" "accounts_instance" {
 | name | The name of the enterprise. | `string` | false |
 | name | The name of the account group. | `string` | false |
 | name | The name of the account. | `string` | false |
+| traits | The traits object can be used to opt-out of Multi-Factor Authenticatin '`mfa` or for setting enterprise IAM settings `enterprise_iam_managed` setting when creating a child account in the enterprise. | `set` | false |
+| options | The options object can be used to set properties on child accounts of an enterprise. You can pass a field to to create IAM service id with IAM api key when creating a child account in the enterprise. | `set` | false |
 
 ## Outputs
 

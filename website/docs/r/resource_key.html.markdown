@@ -137,9 +137,9 @@ Review the argument references that you can specify for your resource.
 
 - `name` - (Required, Forces new resource, String)  A descriptive name used to identify a resource key.
 - `parameters` (Optional, Map) Arbitrary parameters to pass to the resource in JSON format. If you want to create service credentials by using the private service endpoint, include the `service-endpoints =  "private"` parameter.
-- `role` - (Optional, Forces new resource, String) The name of the user role. Valid roles are `Writer`, `Reader`, `Manager`, `Administrator`, `Operator`, `Viewer`, and `Editor`. This argument is Optional only during creation of service credentials for Cloud Databases and other non-IAM-enabled services and is Required for all other IAM-enabled services.
+- `role` - (Optional, Forces new resource, String) The name of the user role. Valid roles are `NONE`,`Writer`, `Reader`, `Manager`, `Administrator`, `Operator`, `Viewer`, and `Editor`. This argument is Optional only during creation of service credentials for Cloud Databases and other non-IAM-enabled services and is Required for all other IAM-enabled services.
 - `resource_instance_id` - (Optional, Forces new resource, String) The ID of the resource instance associated with the resource key. **Note** Conflicts with `resource_alias_id`.
-- `resource_alias_id` - (Optional, Forces new resource, String) The ID of the resource alias associated with the resource key. **Note** Conflicts with `resource_instance_id`.
+- `resource_alias_id` - (Optional, Forces new resource, String, Deprecated) The ID of the resource alias associated with the resource key. **Note** Conflicts with `resource_instance_id`.
 - `tags` (Optional, Array of strings) Tags associated with the resource key instance. **Note** Tags are managed locally and not stored on the IBM Cloud Service Endpoint at this moment.
 
 
@@ -165,6 +165,7 @@ In addition to all argument reference list, you can access the following attribu
 - `updated_at` - (Timestamp) The date when the key was last updated.
 - `updated_by` - (String) The subject who updated the key.
 - `url` - (String) When you created a new key, a relative URL path is created identifying the location of the key.
+- `onetime_credentials` - (Bool) A boolean that dictates if the onetime_credentials is true or false.
 
 ## Note
 Credentials will be seen as redacted, if the user does not have access equal to or greater than the access of the service credentials. Please refer to the documentation to access credentials - https://cloud.ibm.com/docs/account?topic=account-service_credentials&interface=ui#viewing-credentials-ui.

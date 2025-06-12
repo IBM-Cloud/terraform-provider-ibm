@@ -361,7 +361,9 @@ func DataSourceIBMIsNetworkAcls() *schema.Resource {
 func dataSourceIBMIsNetworkAclsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_network_acls", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	resource_group_id := d.Get("resource_group").(string)
 	start := ""
@@ -374,10 +376,11 @@ func dataSourceIBMIsNetworkAclsRead(context context.Context, d *schema.ResourceD
 		if start != "" {
 			listNetworkAclsOptions.Start = &start
 		}
-		networkACLCollection, response, err := vpcClient.ListNetworkAclsWithContext(context, listNetworkAclsOptions)
+		networkACLCollection, _, err := vpcClient.ListNetworkAclsWithContext(context, listNetworkAclsOptions)
 		if err != nil || networkACLCollection == nil {
-			log.Printf("[DEBUG] ListNetworkAclsWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("ListNetworkAclsWithContext failed %s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListNetworkAclsWithContext failed %s", err), "(Data) ibm_is_network_acls", "read")
+			log.Printf("[DEBUG] %s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		start = flex.GetNext(networkACLCollection.Next)
 		allrecs = append(allrecs, networkACLCollection.NetworkAcls...)
@@ -390,7 +393,7 @@ func dataSourceIBMIsNetworkAclsRead(context context.Context, d *schema.ResourceD
 
 	err = d.Set("network_acls", dataSourceNetworkACLCollectionFlattenNetworkAcls(allrecs, d, meta))
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting network_acls %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting network_acls %s", err), "(Data) ibm_is_network_acls", "read", "network_acls-set").GetDiag()
 	}
 
 	return nil
@@ -502,7 +505,7 @@ func dataSourceNetworkACLCollectionRulesBeforeToMap(beforeItem vpcv1.NetworkACLR
 	return beforeMap
 }
 
-func dataSourceNetworkACLCollectionBeforeDeletedToMap(deletedItem vpcv1.NetworkACLRuleReferenceDeleted) (deletedMap map[string]interface{}) {
+func dataSourceNetworkACLCollectionBeforeDeletedToMap(deletedItem vpcv1.Deleted) (deletedMap map[string]interface{}) {
 	deletedMap = map[string]interface{}{}
 
 	if deletedItem.MoreInfo != nil {
@@ -537,7 +540,7 @@ func dataSourceNetworkACLCollectionNetworkAclsSubnetsToMap(subnetsItem vpcv1.Sub
 	return subnetsMap
 }
 
-func dataSourceNetworkACLCollectionSubnetsDeletedToMap(deletedItem vpcv1.SubnetReferenceDeleted) (deletedMap map[string]interface{}) {
+func dataSourceNetworkACLCollectionSubnetsDeletedToMap(deletedItem vpcv1.Deleted) (deletedMap map[string]interface{}) {
 	deletedMap = map[string]interface{}{}
 
 	if deletedItem.MoreInfo != nil {
@@ -572,7 +575,7 @@ func dataSourceNetworkACLCollectionNetworkAclsVPCToMap(vpcItem vpcv1.VPCReferenc
 	return vpcMap
 }
 
-func dataSourceNetworkACLCollectionVPCDeletedToMap(deletedItem vpcv1.VPCReferenceDeleted) (deletedMap map[string]interface{}) {
+func dataSourceNetworkACLCollectionVPCDeletedToMap(deletedItem vpcv1.Deleted) (deletedMap map[string]interface{}) {
 	deletedMap = map[string]interface{}{}
 
 	if deletedItem.MoreInfo != nil {

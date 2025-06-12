@@ -1,5 +1,4 @@
 ---
-
 subcategory: "Power Systems"
 layout: "ibm"
 page_title: "IBM: pi_volume_flash_copy_mappings"
@@ -8,9 +7,11 @@ description: |-
 ---
 
 # ibm_pi_volume_flash_copy_mappings
+
 Retrieves information about flash copy mappings of a volume. For more information, about managing a volume group, see [moving data to the cloud](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-moving-data-to-the-cloud).
 
-## Example usage
+## Example Usage
+
 The following example retrieves information about flash copy mappings of a volume in Power Systems Virtual Server.
 
 ```terraform
@@ -19,13 +20,16 @@ data "pi_volume_flash_copy_mappings" "ds_volume_flash_copy_mappings" {
   pi_cloud_instance_id = "49fba6c9-23f8-40bc-9899-aca322ee7d5b"
 }
 ```
-**Notes**
-* Please find [supported Regions](https://cloud.ibm.com/apidocs/power-cloud#endpoint) for endpoints.
-* If a Power cloud instance is provisioned at `lon04`, The provider level attributes should be as follows:
-  * `region` - `lon`
-  * `zone` - `lon04`
+
+### Notes
+
+- Please find [supported Regions](https://cloud.ibm.com/apidocs/power-cloud#endpoint) for endpoints.
+- If a Power cloud instance is provisioned at `lon04`, The provider level attributes should be as follows:
+  - `region` - `lon`
+  - `zone` - `lon04`
   
-  Example usage:
+Example usage:
+
   ```terraform
     provider "ibm" {
       region    =   "lon"
@@ -33,16 +37,18 @@ data "pi_volume_flash_copy_mappings" "ds_volume_flash_copy_mappings" {
     }
   ```
   
-## Argument reference
-Review the argument references that you can specify for your data source. 
+## Argument Reference
+
+Review the argument references that you can specify for your data source.
 
 - `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
 - `pi_volume_id` - (Required, String) The ID of the volume for which you want to retrieve detailed information.
 
-## Attribute reference
-In addition to all argument reference list, you can access the following attribute references after your data source is created. 
+## Attribute Reference
 
-- `flash_copy_mappings` - (List of objects) - The flash copy mappings details of a volume.
+In addition to all argument reference list, you can access the following attribute references after your data source is created.
+
+- `flash_copy_mappings` - (List) List of flash copy mappings details of a volume.
 
   Nested scheme for `flash_copy_mappings`:
       - `copy_rate` - (Integer) The rate of flash copy operation of a volume.

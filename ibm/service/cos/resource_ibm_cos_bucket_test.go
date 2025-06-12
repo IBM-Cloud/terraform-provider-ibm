@@ -84,6 +84,31 @@ func TestAccIBMCosBucket_Basic(t *testing.T) {
 	})
 }
 
+func TestAccIBMCosBucket_Basic_Single_Site_Location(t *testing.T) {
+
+	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("terraform%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "ams03"
+	bucketClass := "standard"
+	bucketRegionType := "single_site_location"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMCosBucket_basic_ssl(serviceName, bucketName, bucketRegionType, bucketRegion, bucketClass),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance", "ibm_cos_bucket.bucket", bucketRegionType, bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "storage_class", bucketClass),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "single_site_location", bucketRegion),
+				),
+			},
+		},
+	})
+}
 func TestAccIBMCosBucket_AllowedIP(t *testing.T) {
 	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	bucketName := fmt.Sprintf("terraform%d", acctest.RandIntRange(10, 100))
@@ -148,15 +173,18 @@ func TestAccIBMCosBucket_Direct(t *testing.T) {
 		},
 	})
 }
-func TestAccIBMCosBucket_ActivityTracker_Monitor(t *testing.T) {
+
+// *** F1881 Activity tracker test cases  ***
+func TestAccIBMCosBucket_ActivityTracker_Read_True_Write_False_ActivityTrackerCrn_NotSet_ManagementEvents_False(t *testing.T) {
 
 	cosServiceName := fmt.Sprintf("cos_instance_%d", acctest.RandIntRange(10, 100))
-	activityServiceName := fmt.Sprintf("activity_tracker_%d", acctest.RandIntRange(10, 100))
-	monitorServiceName := fmt.Sprintf("metrics_monitor_%d", acctest.RandIntRange(10, 100))
 	bucketName := fmt.Sprintf("tf-bucket%d", acctest.RandIntRange(10, 100))
-	bucketRegion := "ams03"
+	bucketRegion := "us-south"
 	bucketClass := "standard"
-	bucketRegionType := "single_site_location"
+	bucketRegionType := "region_location"
+	readDataEvents := true
+	writeDataEvents := false
+	managementEvents := false
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -164,30 +192,1044 @@ func TestAccIBMCosBucket_ActivityTracker_Monitor(t *testing.T) {
 		CheckDestroy: testAccCheckIBMCosBucketDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMCosBucket_activityTracker_monitor(cosServiceName, activityServiceName, monitorServiceName, bucketName, bucketRegionType, bucketRegion, bucketClass),
+				Config: testAccCheckIBMCosBucket_activityTracker_Without_Crn(cosServiceName, bucketName, bucketRegionType, bucketRegion, bucketClass, readDataEvents, writeDataEvents, managementEvents),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance2", "ibm_cos_bucket.bucket2", bucketRegionType, bucketRegion, bucketName),
 					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "bucket_name", bucketName),
 					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "storage_class", bucketClass),
-					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "single_site_location", bucketRegion),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "region_location", bucketRegion),
 					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.#", "1"),
-					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "metrics_monitoring.#", "1"),
-				),
-			},
-			{
-				Config: testAccCheckIBMCosBucket_update_activityTracker_monitor(cosServiceName, activityServiceName, monitorServiceName, bucketName, bucketRegionType, bucketRegion, bucketClass),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance2", "ibm_cos_bucket.bucket2", bucketRegionType, bucketRegion, bucketName),
-					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "bucket_name", bucketName),
-					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "storage_class", bucketClass),
-					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "single_site_location", bucketRegion),
-					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.#", "0"),
-					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "metrics_monitoring.#", "0"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.0.read_data_events", "true"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.0.write_data_events", "false"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.0.management_events", "false"),
 				),
 			},
 		},
 	})
 }
+
+func TestAccIBMCosBucket_ActivityTracker_Read_False_Write_True_ActivityTrackerCrn_NotSet_ManagementEvents_False(t *testing.T) {
+
+	cosServiceName := fmt.Sprintf("cos_instance_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("tf-bucket%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us-south"
+	bucketClass := "standard"
+	bucketRegionType := "region_location"
+	readDataEvents := false
+	writeDataEvents := true
+	managementEvents := false
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMCosBucket_activityTracker_Without_Crn(cosServiceName, bucketName, bucketRegionType, bucketRegion, bucketClass, readDataEvents, writeDataEvents, managementEvents),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance2", "ibm_cos_bucket.bucket2", bucketRegionType, bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "storage_class", bucketClass),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "region_location", bucketRegion),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.#", "1"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.0.read_data_events", "false"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.0.write_data_events", "true"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.0.management_events", "false"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMCosBucket_ActivityTracker_Read_False_Write_False_ActivityTrackerCrn_NotSet_ManagementEvents_True(t *testing.T) {
+
+	cosServiceName := fmt.Sprintf("cos_instance_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("tf-bucket%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us-south"
+	bucketClass := "standard"
+	bucketRegionType := "region_location"
+	readDataEvents := false
+	writeDataEvents := false
+	managementEvents := true
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMCosBucket_activityTracker_Without_Crn(cosServiceName, bucketName, bucketRegionType, bucketRegion, bucketClass, readDataEvents, writeDataEvents, managementEvents),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance2", "ibm_cos_bucket.bucket2", bucketRegionType, bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "storage_class", bucketClass),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "region_location", bucketRegion),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.#", "1"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.0.read_data_events", "false"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.0.write_data_events", "false"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.0.management_events", "true"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMCosBucket_ActivityTracker_Read_True_Write_True_ActivityTrackerCrn_NotSet_ManagementEvents_False(t *testing.T) {
+
+	cosServiceName := fmt.Sprintf("cos_instance_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("tf-bucket%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us-south"
+	bucketClass := "standard"
+	bucketRegionType := "region_location"
+	readDataEvents := true
+	writeDataEvents := true
+	managementEvents := false
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMCosBucket_activityTracker_Without_Crn(cosServiceName, bucketName, bucketRegionType, bucketRegion, bucketClass, readDataEvents, writeDataEvents, managementEvents),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance2", "ibm_cos_bucket.bucket2", bucketRegionType, bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "storage_class", bucketClass),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "region_location", bucketRegion),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.#", "1"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.0.read_data_events", "true"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.0.write_data_events", "true"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.0.management_events", "false"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMCosBucket_ActivityTracker_Read_False_Write_False_ActivityTrackerCrn_NotSet_ManagementEvents_False(t *testing.T) {
+
+	cosServiceName := fmt.Sprintf("cos_instance_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("tf-bucket%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us-south"
+	bucketClass := "standard"
+	bucketRegionType := "region_location"
+	readDataEvents := false
+	writeDataEvents := false
+	managementEvents := false
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMCosBucket_activityTracker_Without_Crn(cosServiceName, bucketName, bucketRegionType, bucketRegion, bucketClass, readDataEvents, writeDataEvents, managementEvents),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance2", "ibm_cos_bucket.bucket2", bucketRegionType, bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "storage_class", bucketClass),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "region_location", bucketRegion),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.#", "1"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.0.read_data_events", "false"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.0.write_data_events", "false"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.0.management_events", "false"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMCosBucket_ActivityTracker_Read_True_Write_False_ActivityTrackerCrn_NotSet_ManagementEvents_True(t *testing.T) {
+
+	cosServiceName := fmt.Sprintf("cos_instance_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("tf-bucket%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us-south"
+	bucketClass := "standard"
+	bucketRegionType := "region_location"
+	readDataEvents := true
+	writeDataEvents := false
+	managementEvents := true
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMCosBucket_activityTracker_Without_Crn(cosServiceName, bucketName, bucketRegionType, bucketRegion, bucketClass, readDataEvents, writeDataEvents, managementEvents),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance2", "ibm_cos_bucket.bucket2", bucketRegionType, bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "storage_class", bucketClass),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "region_location", bucketRegion),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.#", "1"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.0.read_data_events", "true"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.0.write_data_events", "false"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.0.management_events", "true"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMCosBucket_ActivityTracker_Read_False_Write_True_ActivityTrackerCrn_NotSet_ManagementEvents_True(t *testing.T) {
+
+	cosServiceName := fmt.Sprintf("cos_instance_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("tf-bucket%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us-south"
+	bucketClass := "standard"
+	bucketRegionType := "region_location"
+	readDataEvents := false
+	writeDataEvents := true
+	managementEvents := true
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMCosBucket_activityTracker_Without_Crn(cosServiceName, bucketName, bucketRegionType, bucketRegion, bucketClass, readDataEvents, writeDataEvents, managementEvents),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance2", "ibm_cos_bucket.bucket2", bucketRegionType, bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "storage_class", bucketClass),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "region_location", bucketRegion),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.#", "1"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.0.read_data_events", "false"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.0.write_data_events", "true"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.0.management_events", "true"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMCosBucket_ActivityTracker_Read_True_Write_True_ActivityTrackerCrn_NotSet_ManagementEvents_True(t *testing.T) {
+
+	cosServiceName := fmt.Sprintf("cos_instance_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("tf-bucket%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us-south"
+	bucketClass := "standard"
+	bucketRegionType := "region_location"
+	readDataEvents := true
+	writeDataEvents := true
+	managementEvents := true
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMCosBucket_activityTracker_Without_Crn(cosServiceName, bucketName, bucketRegionType, bucketRegion, bucketClass, readDataEvents, writeDataEvents, managementEvents),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance2", "ibm_cos_bucket.bucket2", bucketRegionType, bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "storage_class", bucketClass),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "region_location", bucketRegion),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.#", "1"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.0.read_data_events", "true"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.0.write_data_events", "true"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.0.management_events", "true"),
+				),
+			},
+		},
+	})
+}
+
+// *** with crn ***
+
+func TestAccIBMCosBucket_ActivityTracker_Read_True_Write_False_ActivityTrackerCrn_Set_ManagementEvents_Not_Set(t *testing.T) {
+
+	cosServiceName := fmt.Sprintf("cos_instance_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("tf-bucket%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us-south"
+	bucketClass := "standard"
+	bucketRegionType := "region_location"
+	readDataEvents := true
+	writeDataEvents := false
+	activityTrackerInstanceCRN := acc.ActivityTrackerInstanceCRN
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMCosBucket_activityTracker_With_Crn_ManagementEvents_NotSet(cosServiceName, bucketName, bucketRegionType, bucketRegion, bucketClass, activityTrackerInstanceCRN, readDataEvents, writeDataEvents),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance2", "ibm_cos_bucket.bucket2", bucketRegionType, bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "storage_class", bucketClass),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "region_location", bucketRegion),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.#", "1"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.0.read_data_events", "true"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.0.write_data_events", "false"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.0.activity_tracker_crn", activityTrackerInstanceCRN),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMCosBucket_ActivityTracker_Read_False_Write_True_ActivityTrackerCrn_Set_ManagementEvents_Not_Set(t *testing.T) {
+
+	cosServiceName := fmt.Sprintf("cos_instance_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("tf-bucket%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us-south"
+	bucketClass := "standard"
+	bucketRegionType := "region_location"
+	readDataEvents := false
+	writeDataEvents := true
+	activityTrackerInstanceCRN := acc.ActivityTrackerInstanceCRN
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMCosBucket_activityTracker_With_Crn_ManagementEvents_NotSet(cosServiceName, bucketName, bucketRegionType, bucketRegion, bucketClass, activityTrackerInstanceCRN, readDataEvents, writeDataEvents),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance2", "ibm_cos_bucket.bucket2", bucketRegionType, bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "storage_class", bucketClass),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "region_location", bucketRegion),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.#", "1"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.0.read_data_events", "false"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.0.write_data_events", "true"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.0.management_events", "false"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.0.activity_tracker_crn", activityTrackerInstanceCRN),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMCosBucket_ActivityTracker_Read_True_Write_True_ActivityTrackerCrn_Set_ManagementEvents_Not_Set(t *testing.T) {
+
+	cosServiceName := fmt.Sprintf("cos_instance_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("tf-bucket%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us-south"
+	bucketClass := "standard"
+	bucketRegionType := "region_location"
+	readDataEvents := true
+	writeDataEvents := true
+	activityTrackerInstanceCRN := acc.ActivityTrackerInstanceCRN
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMCosBucket_activityTracker_With_Crn_ManagementEvents_NotSet(cosServiceName, bucketName, bucketRegionType, bucketRegion, bucketClass, activityTrackerInstanceCRN, readDataEvents, writeDataEvents),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance2", "ibm_cos_bucket.bucket2", bucketRegionType, bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "storage_class", bucketClass),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "region_location", bucketRegion),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.#", "1"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.0.read_data_events", "true"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.0.write_data_events", "true"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.0.management_events", "false"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.0.activity_tracker_crn", activityTrackerInstanceCRN),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMCosBucket_ActivityTracker_Read_False_Write_False_ActivityTrackerCrn_Set_ManagementEvents_Not_Set(t *testing.T) {
+
+	cosServiceName := fmt.Sprintf("cos_instance_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("tf-bucket%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us-south"
+	bucketClass := "standard"
+	bucketRegionType := "region_location"
+	readDataEvents := false
+	writeDataEvents := false
+	activityTrackerInstanceCRN := acc.ActivityTrackerInstanceCRN
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMCosBucket_activityTracker_With_Crn_ManagementEvents_NotSet(cosServiceName, bucketName, bucketRegionType, bucketRegion, bucketClass, activityTrackerInstanceCRN, readDataEvents, writeDataEvents),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance2", "ibm_cos_bucket.bucket2", bucketRegionType, bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "storage_class", bucketClass),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "region_location", bucketRegion),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.#", "1"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.0.read_data_events", "false"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.0.write_data_events", "false"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.0.management_events", "false"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.0.activity_tracker_crn", activityTrackerInstanceCRN),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMCosBucket_ActivityTracker_Read_True_Write_False_ActivityTrackerCrn_Set_ManagementEvents_True(t *testing.T) {
+
+	cosServiceName := fmt.Sprintf("cos_instance_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("tf-bucket%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us-south"
+	bucketClass := "standard"
+	bucketRegionType := "region_location"
+	readDataEvents := true
+	writeDataEvents := false
+	managementEvents := true
+	activityTrackerInstanceCRN := acc.ActivityTrackerInstanceCRN
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMCosBucket_activityTracker_With_Crn(cosServiceName, bucketName, bucketRegionType, bucketRegion, bucketClass, activityTrackerInstanceCRN, readDataEvents, writeDataEvents, managementEvents),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance2", "ibm_cos_bucket.bucket2", bucketRegionType, bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "storage_class", bucketClass),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "region_location", bucketRegion),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.#", "1"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.0.read_data_events", "true"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.0.write_data_events", "false"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.0.management_events", "true"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.0.activity_tracker_crn", activityTrackerInstanceCRN),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMCosBucket_ActivityTracker_Read_False_Write_True_ActivityTrackerCrn_Set_ManagementEvents_True(t *testing.T) {
+
+	cosServiceName := fmt.Sprintf("cos_instance_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("tf-bucket%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us-south"
+	bucketClass := "standard"
+	bucketRegionType := "region_location"
+	readDataEvents := false
+	writeDataEvents := true
+	managementEvents := true
+	activityTrackerInstanceCRN := acc.ActivityTrackerInstanceCRN
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMCosBucket_activityTracker_With_Crn(cosServiceName, bucketName, bucketRegionType, bucketRegion, bucketClass, activityTrackerInstanceCRN, readDataEvents, writeDataEvents, managementEvents),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance2", "ibm_cos_bucket.bucket2", bucketRegionType, bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "storage_class", bucketClass),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "region_location", bucketRegion),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.#", "1"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.0.read_data_events", "false"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.0.write_data_events", "true"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.0.management_events", "true"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.0.activity_tracker_crn", activityTrackerInstanceCRN),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMCosBucket_ActivityTracker_Read_True_Write_True_ActivityTrackerCrn_Set_ManagementEvents_True(t *testing.T) {
+
+	cosServiceName := fmt.Sprintf("cos_instance_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("tf-bucket%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us-south"
+	bucketClass := "standard"
+	bucketRegionType := "region_location"
+	readDataEvents := true
+	writeDataEvents := true
+	managementEvents := true
+	activityTrackerInstanceCRN := acc.ActivityTrackerInstanceCRN
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMCosBucket_activityTracker_With_Crn(cosServiceName, bucketName, bucketRegionType, bucketRegion, bucketClass, activityTrackerInstanceCRN, readDataEvents, writeDataEvents, managementEvents),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance2", "ibm_cos_bucket.bucket2", bucketRegionType, bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "storage_class", bucketClass),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "region_location", bucketRegion),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.#", "1"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.0.read_data_events", "true"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.0.write_data_events", "true"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.0.management_events", "true"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.0.activity_tracker_crn", activityTrackerInstanceCRN),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMCosBucket_ActivityTracker_Read_False_Write_False_ActivityTrackerCrn_Set_ManagementEvents_True(t *testing.T) {
+
+	cosServiceName := fmt.Sprintf("cos_instance_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("tf-bucket%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us-south"
+	bucketClass := "standard"
+	bucketRegionType := "region_location"
+	readDataEvents := false
+	writeDataEvents := false
+	managementEvents := true
+	activityTrackerInstanceCRN := acc.ActivityTrackerInstanceCRN
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMCosBucket_activityTracker_With_Crn(cosServiceName, bucketName, bucketRegionType, bucketRegion, bucketClass, activityTrackerInstanceCRN, readDataEvents, writeDataEvents, managementEvents),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance2", "ibm_cos_bucket.bucket2", bucketRegionType, bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "storage_class", bucketClass),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "region_location", bucketRegion),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.#", "1"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.0.read_data_events", "false"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.0.write_data_events", "false"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.0.management_events", "true"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.0.activity_tracker_crn", activityTrackerInstanceCRN),
+				),
+			},
+		},
+	})
+}
+func TestAccIBMCosBucket_ActivityTracker_Read_False_Write_False_ManagementEvents_False_ActivityTrackerCrn_Set(t *testing.T) {
+
+	cosServiceName := fmt.Sprintf("cos_instance_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("tf-bucket%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us-south"
+	bucketClass := "standard"
+	bucketRegionType := "region_location"
+	readDataEvents := false
+	writeDataEvents := false
+	managementEvents := false
+	activityTrackerInstanceCRN := acc.ActivityTrackerInstanceCRN
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccCheckIBMCosBucket_activityTracker_With_Crn(cosServiceName, bucketName, bucketRegionType, bucketRegion, bucketClass, activityTrackerInstanceCRN, readDataEvents, writeDataEvents, managementEvents),
+				ExpectError: regexp.MustCompile("Error Update COS Bucket: Cannot have an Activity Tracking CRN without opting for management events"),
+			},
+		},
+	})
+}
+func TestAccIBMCosBucket_Upload_Object_Activity_Tracker_Enabled_With_CRN(t *testing.T) {
+
+	cosServiceName := fmt.Sprintf("cos_instance_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("tf-bucket%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us-south"
+	bucketClass := "standard"
+	key := fmt.Sprintf("tf-testacc-cos-%d", acctest.RandIntRange(10, 100))
+	bucketRegionType := "region_location"
+	objectBody := "Acceptance Testing"
+	activityTrackerInstanceCRN := acc.ActivityTrackerInstanceCRN
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMCosBucket_Upload_Object_Activity_Tracker_Enabled_With_CRN(cosServiceName, activityTrackerInstanceCRN, bucketName, bucketRegionType, bucketRegion, bucketClass, key, objectBody),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance2", "ibm_cos_bucket.bucket2", bucketRegionType, bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "storage_class", bucketClass),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "region_location", bucketRegion),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.#", "1"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.0.read_data_events", "true"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.0.write_data_events", "true"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.0.management_events", "true"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.0.activity_tracker_crn", activityTrackerInstanceCRN),
+					resource.TestCheckResourceAttr("ibm_cos_bucket_object.testacc", "body", objectBody),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMCosBucket_Upload_Object_Activity_Tracker_Enabled_Without_CRN(t *testing.T) {
+
+	cosServiceName := fmt.Sprintf("cos_instance_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("tf-bucket%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us-south"
+	bucketClass := "standard"
+	key := fmt.Sprintf("tf-testacc-cos-%d", acctest.RandIntRange(10, 100))
+	bucketRegionType := "region_location"
+	objectBody := "Acceptance Testing"
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMCosBucket_upload_Object_Activity_Tracker_Enabled_Without_CRN(cosServiceName, bucketName, bucketRegionType, bucketRegion, bucketClass, key, objectBody),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance2", "ibm_cos_bucket.bucket2", bucketRegionType, bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "storage_class", bucketClass),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "region_location", bucketRegion),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.#", "1"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.0.read_data_events", "true"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.0.write_data_events", "true"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.0.management_events", "true"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket_object.testacc", "body", objectBody),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMCosBucket_ActivityTracker_Read_Invalid_Write_Invalid_ManagementEvents_Invalid_With_Crn(t *testing.T) {
+
+	cosServiceName := fmt.Sprintf("cos_instance_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("tf-bucket%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us-south"
+	bucketClass := "standard"
+	bucketRegionType := "region_location"
+	activityTrackerInstanceCRN := acc.ActivityTrackerInstanceCRN
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccCheckIBMCosBucket_activityTracker_Read_Invalid_Write_Invalid_ManagementEvents_Invalid_With_Crn(cosServiceName, activityTrackerInstanceCRN, bucketName, bucketRegionType, bucketRegion, bucketClass),
+				ExpectError: regexp.MustCompile("Error: Incorrect attribute value type"),
+			},
+		},
+	})
+}
+
+func TestAccIBMCosBucket_ActivityTracker_Read_True_Write_True_ManagementEvents_True_With_Crn_Invalid(t *testing.T) {
+
+	cosServiceName := fmt.Sprintf("cos_instance_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("tf-bucket%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us-south"
+	bucketClass := "standard"
+	bucketRegionType := "region_location"
+	readDataEvents := true
+	writeDataEvents := true
+	managementEvents := true
+	crnValue := "Invalid"
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccCheckIBMCosBucket_activityTracker_With_Crn(cosServiceName, bucketName, bucketRegionType, bucketRegion, bucketClass, crnValue, readDataEvents, writeDataEvents, managementEvents),
+				ExpectError: regexp.MustCompile("Error Update COS Bucket: Malformed activity tracker CRN"),
+			},
+		},
+	})
+}
+
+//Metrics monitoring test cases:
+
+func TestAccIBMCosBucket_MetricsMonitoring_RequestEnabled_True_UsageEnabled_False_MonitoringCrn_NotSet(t *testing.T) {
+
+	cosServiceName := fmt.Sprintf("cos_instance_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("tf-bucket%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us-south"
+	bucketClass := "standard"
+	bucketRegionType := "region_location"
+	requestEnabled := true
+	usageEnabled := false
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMCosBucket_metricsMonitoring_Without_Crn(cosServiceName, bucketName, bucketRegionType, bucketRegion, bucketClass, requestEnabled, usageEnabled),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance2", "ibm_cos_bucket.bucket2", bucketRegionType, bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "storage_class", bucketClass),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "region_location", bucketRegion),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "metrics_monitoring.#", "1"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "metrics_monitoring.0.request_metrics_enabled", "true"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "metrics_monitoring.0.usage_metrics_enabled", "false"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMCosBucket_MetricsMonitoring_RequestEnabled_False_UsageEnabled_True_MonitoringCrn_NotSet(t *testing.T) {
+
+	cosServiceName := fmt.Sprintf("cos_instance_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("tf-bucket%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us-south"
+	bucketClass := "standard"
+	bucketRegionType := "region_location"
+	requestEnabled := false
+	usageEnabled := true
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMCosBucket_metricsMonitoring_Without_Crn(cosServiceName, bucketName, bucketRegionType, bucketRegion, bucketClass, requestEnabled, usageEnabled),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance2", "ibm_cos_bucket.bucket2", bucketRegionType, bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "storage_class", bucketClass),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "region_location", bucketRegion),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "metrics_monitoring.#", "1"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "metrics_monitoring.0.request_metrics_enabled", "false"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "metrics_monitoring.0.usage_metrics_enabled", "true"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMCosBucket_MetricsMonitoring_RequestEnabled_True_UsageEnabled_True_MonitoringCrn_NotSet(t *testing.T) {
+
+	cosServiceName := fmt.Sprintf("cos_instance_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("tf-bucket%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us-south"
+	bucketClass := "standard"
+	bucketRegionType := "region_location"
+	requestEnabled := true
+	usageEnabled := true
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMCosBucket_metricsMonitoring_Without_Crn(cosServiceName, bucketName, bucketRegionType, bucketRegion, bucketClass, requestEnabled, usageEnabled),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance2", "ibm_cos_bucket.bucket2", bucketRegionType, bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "storage_class", bucketClass),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "region_location", bucketRegion),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "metrics_monitoring.#", "1"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "metrics_monitoring.0.request_metrics_enabled", "true"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "metrics_monitoring.0.usage_metrics_enabled", "true"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMCosBucket_MetricsMonitoring_RequestEnabled_False_UsageEnabled_False_MonitoringCrn_NotSet(t *testing.T) {
+
+	cosServiceName := fmt.Sprintf("cos_instance_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("tf-bucket%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us-south"
+	bucketClass := "standard"
+	bucketRegionType := "region_location"
+	requestEnabled := false
+	usageEnabled := false
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMCosBucket_metricsMonitoring_Without_Crn(cosServiceName, bucketName, bucketRegionType, bucketRegion, bucketClass, requestEnabled, usageEnabled),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance2", "ibm_cos_bucket.bucket2", bucketRegionType, bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "storage_class", bucketClass),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "region_location", bucketRegion),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "metrics_monitoring.#", "1"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "metrics_monitoring.0.request_metrics_enabled", "false"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "metrics_monitoring.0.usage_metrics_enabled", "false"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMCosBucket_MetricsMonitoring_RequestEnabled_True_UsageEnabled_False_MonitoringCrn_Set(t *testing.T) {
+
+	cosServiceName := fmt.Sprintf("cos_instance_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("tf-bucket%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us-south"
+	bucketClass := "standard"
+	bucketRegionType := "region_location"
+	requestEnabled := true
+	usageEnabled := false
+	metricsMonitoringCrn := acc.MetricsMonitoringCRN
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMCosBucket_metricsMonitoring_With_Crn(cosServiceName, metricsMonitoringCrn, bucketName, bucketRegionType, bucketRegion, bucketClass, requestEnabled, usageEnabled),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance2", "ibm_cos_bucket.bucket2", bucketRegionType, bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "storage_class", bucketClass),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "region_location", bucketRegion),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "metrics_monitoring.#", "1"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "metrics_monitoring.0.request_metrics_enabled", "true"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "metrics_monitoring.0.usage_metrics_enabled", "false"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "metrics_monitoring.0.metrics_monitoring_crn", metricsMonitoringCrn),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMCosBucket_MetricsMonitoring_RequestEnabled_False_UsageEnabled_True_MonitoringCrn_Set(t *testing.T) {
+
+	cosServiceName := fmt.Sprintf("cos_instance_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("tf-bucket%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us-south"
+	bucketClass := "standard"
+	bucketRegionType := "region_location"
+	requestEnabled := false
+	usageEnabled := true
+	metricsMonitoringCrn := acc.MetricsMonitoringCRN
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMCosBucket_metricsMonitoring_With_Crn(cosServiceName, metricsMonitoringCrn, bucketName, bucketRegionType, bucketRegion, bucketClass, requestEnabled, usageEnabled),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance2", "ibm_cos_bucket.bucket2", bucketRegionType, bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "storage_class", bucketClass),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "region_location", bucketRegion),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "metrics_monitoring.#", "1"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "metrics_monitoring.0.request_metrics_enabled", "false"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "metrics_monitoring.0.usage_metrics_enabled", "true"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "metrics_monitoring.0.metrics_monitoring_crn", metricsMonitoringCrn),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMCosBucket_MetricsMonitoring_RequestEnabled_True_UsageEnabled_True_MonitoringCrn_Set(t *testing.T) {
+
+	cosServiceName := fmt.Sprintf("cos_instance_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("tf-bucket%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us-south"
+	bucketClass := "standard"
+	bucketRegionType := "region_location"
+	requestEnabled := true
+	usageEnabled := true
+	metricsMonitoringCrn := acc.MetricsMonitoringCRN
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMCosBucket_metricsMonitoring_With_Crn(cosServiceName, metricsMonitoringCrn, bucketName, bucketRegionType, bucketRegion, bucketClass, requestEnabled, usageEnabled),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance2", "ibm_cos_bucket.bucket2", bucketRegionType, bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "storage_class", bucketClass),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "region_location", bucketRegion),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "metrics_monitoring.#", "1"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "metrics_monitoring.0.request_metrics_enabled", "true"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "metrics_monitoring.0.usage_metrics_enabled", "true"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "metrics_monitoring.0.metrics_monitoring_crn", metricsMonitoringCrn),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMCosBucket_MetricsMonitoring_RequestEnabled_False_UsageEnabled_False_MonitoringCrn_Set(t *testing.T) {
+
+	cosServiceName := fmt.Sprintf("cos_instance_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("tf-bucket%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us-south"
+	bucketClass := "standard"
+	bucketRegionType := "region_location"
+	requestEnabled := false
+	usageEnabled := false
+	metricsMonitoringCrn := acc.MetricsMonitoringCRN
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMCosBucket_metricsMonitoring_With_Crn(cosServiceName, metricsMonitoringCrn, bucketName, bucketRegionType, bucketRegion, bucketClass, requestEnabled, usageEnabled),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance2", "ibm_cos_bucket.bucket2", bucketRegionType, bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "storage_class", bucketClass),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "region_location", bucketRegion),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "metrics_monitoring.#", "1"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "metrics_monitoring.0.request_metrics_enabled", "false"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "metrics_monitoring.0.usage_metrics_enabled", "false"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "metrics_monitoring.0.metrics_monitoring_crn", metricsMonitoringCrn),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMCosBucket_MetricsMonitoring_Upload_Object_RequestMetrics_True_UsageMetrics_True_MonitoringCrn_Set(t *testing.T) {
+
+	cosServiceName := fmt.Sprintf("cos_instance_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("tf-bucket%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us-south"
+	bucketClass := "standard"
+	bucketRegionType := "region_location"
+	key := fmt.Sprintf("tf-testacc-cos-%d", acctest.RandIntRange(10, 100))
+	objectBody := "Acceptance Testing"
+	metricsMonitoringCrn := acc.MetricsMonitoringCRN
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMCosBucket_metricsMonitoring_Upload_Object_RequestMetrics_True_UsageMetrics_True_With_Crn(cosServiceName, metricsMonitoringCrn, bucketName, bucketRegionType, bucketRegion, bucketClass, key, objectBody),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance2", "ibm_cos_bucket.bucket2", bucketRegionType, bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "storage_class", bucketClass),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "region_location", bucketRegion),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "metrics_monitoring.#", "1"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "metrics_monitoring.0.request_metrics_enabled", "true"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "metrics_monitoring.0.usage_metrics_enabled", "true"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "metrics_monitoring.0.metrics_monitoring_crn", metricsMonitoringCrn),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMCosBucket_MetricsMonitoring_Upload_Object_RequestMetrics_True_UsageMetrics_True_Without_Crn(t *testing.T) {
+
+	cosServiceName := fmt.Sprintf("cos_instance_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("tf-bucket%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us-south"
+	bucketClass := "standard"
+	bucketRegionType := "region_location"
+	key := fmt.Sprintf("tf-testacc-cos-%d", acctest.RandIntRange(10, 100))
+	objectBody := "Acceptance Testing"
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMCosBucket_metricsMonitoring_Upload_Object_RequestMetrics_True_UsageMetrics_True_Without_Crn(cosServiceName, bucketName, bucketRegionType, bucketRegion, bucketClass, key, objectBody),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance2", "ibm_cos_bucket.bucket2", bucketRegionType, bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "storage_class", bucketClass),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "region_location", bucketRegion),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "metrics_monitoring.#", "1"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "metrics_monitoring.0.request_metrics_enabled", "true"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "metrics_monitoring.0.usage_metrics_enabled", "true"),
+				),
+			},
+		},
+	})
+}
+func TestAccIBMCosBucket_MetricsMonitoring_RequestMetrics_Invalid_UsageMetrics_Invalid_MonitoringCrn_Set(t *testing.T) {
+
+	cosServiceName := fmt.Sprintf("cos_instance_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("tf-bucket%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us-south"
+	bucketClass := "standard"
+	bucketRegionType := "region_location"
+	metricsMonitoringCrn := acc.MetricsMonitoringCRN
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccCheckIBMCosBucket_metricsMonitoring_RequestMetrics_Invalid_UsageMetrics_Invalid_With_Crn(cosServiceName, metricsMonitoringCrn, bucketName, bucketRegionType, bucketRegion, bucketClass),
+				ExpectError: regexp.MustCompile("Error: Incorrect attribute value type"),
+			},
+		},
+	})
+}
+
+func TestAccIBMCosBucket_MetricsMonitoring_Crn_Invalid(t *testing.T) {
+
+	cosServiceName := fmt.Sprintf("cos_instance_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("tf-bucket%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us-south"
+	bucketClass := "standard"
+	bucketRegionType := "region_location"
+	metricsMonitoringCrn := acc.MetricsMonitoringCRN
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccCheckIBMCosBucket_metricsMonitoring_Crn_Invalid(cosServiceName, metricsMonitoringCrn, bucketName, bucketRegionType, bucketRegion, bucketClass),
+				ExpectError: regexp.MustCompile("Error Update COS Bucket: Malformed Monitoring CRN."),
+			},
+		},
+	})
+}
+
+// func TestAccIBMCosBucket_MetricsMonitoring_New_Instance(t *testing.T) {
+
+// 	cosServiceName := fmt.Sprintf("cos_instance_%d", acctest.RandIntRange(10, 100))
+// 	bucketName := fmt.Sprintf("tf-bucket%d", acctest.RandIntRange(10, 100))
+// 	bucketRegion := "us-south"
+// 	bucketClass := "standard"
+// 	bucketRegionType := "region_location"
+// 	monitorServiceName := fmt.Sprintf("metrics_monitor_%d", acctest.RandIntRange(10, 100))
+// 	resource.Test(t, resource.TestCase{
+// 		PreCheck:     func() { acc.TestAccPreCheck(t) },
+// 		Providers:    acc.TestAccProviders,
+// 		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+// 		Steps: []resource.TestStep{
+// 			{
+// 				Config: testAccCheckIBMCosBucket_metricsMonitoring_RequestMetrics_New_Instance(cosServiceName, monitorServiceName, bucketName, bucketRegionType, bucketRegion, bucketClass),
+// 				Check: resource.ComposeAggregateTestCheckFunc(
+// 					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance2", "ibm_cos_bucket.bucket2", bucketRegionType, bucketRegion, bucketName),
+// 					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "bucket_name", bucketName),
+// 					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "storage_class", bucketClass),
+// 					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "region_location", bucketRegion),
+// 					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "metrics_monitoring.#", "1"),
+// 					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "metrics_monitoring.0.request_metrics_enabled", "true"),
+// 					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "metrics_monitoring.0.usage_metrics_enabled", "true"),
+// 				),
+// 			},
+// 		},
+// 	})
+// }
+
+// *** f1881 tests cases end ***
 
 func TestAccIBMCosBucket_Archive_Expiration(t *testing.T) {
 
@@ -538,6 +1580,42 @@ func TestAccIBMCosBucket_Retention(t *testing.T) {
 				Config: testAccCheckIBMCosBucket_retention(cosServiceName, bucketName, bucketRegionType, bucketRegion, bucketClass, default_retention, maximum_retention, minimum_retention),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance", "ibm_cos_bucket.bucket", bucketRegionType, bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "storage_class", bucketClass),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "region_location", bucketRegion),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "retention_rule.#", "1"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMCosBucket_Retention_Rule_Existing_bucket(t *testing.T) {
+	cosCrn := acc.CosCRN
+	bucketName := fmt.Sprintf("terraform%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us-south"
+	bucketClass := "standard"
+	bucketRegionType := "region_location"
+	default_retention := 0
+	maximum_retention := 1
+	minimum_retention := 0
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMCosBucket_retention_basic_bucket(bucketName, cosCrn, bucketRegionType, bucketRegion, bucketClass),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "storage_class", bucketClass),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "region_location", bucketRegion),
+				),
+			},
+			{
+				Config: testAccCheckIBMCosBucket_retention_existing_bucket(bucketName, cosCrn, bucketRegionType, bucketRegion, bucketClass, default_retention, maximum_retention, minimum_retention),
+				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "bucket_name", bucketName),
 					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "storage_class", bucketClass),
 					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "region_location", bucketRegion),
@@ -1255,6 +2333,113 @@ func TestAccIBMCOSHPCS(t *testing.T) {
 	})
 }
 
+// new hpcs
+func TestAccIBMCOSKPKmsParamValid(t *testing.T) {
+
+	instanceName := fmt.Sprintf("kms_%d", acctest.RandIntRange(10, 100))
+	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("terraform%d", acctest.RandIntRange(10, 100))
+	keyName := fmt.Sprintf("key_%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us"
+	bucketClass := "standard"
+	bucketRegionType := "cross_region_location"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMKeyProtectRootkeyWithCOSBucketKmsParam(instanceName, keyName, serviceName, bucketName, bucketRegion, bucketClass),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance", "ibm_cos_bucket.bucket", bucketRegionType, bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "bucket_name", bucketName),
+				),
+			},
+		},
+	})
+}
+func TestAccIBMCOSKPKmsParamWithInvalidCRN(t *testing.T) {
+
+	instanceName := fmt.Sprintf("kms_%d", acctest.RandIntRange(10, 100))
+	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("terraform%d", acctest.RandIntRange(10, 100))
+	keyName := fmt.Sprintf("key_%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us"
+	bucketClass := "standard"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccCheckIBMKeyProtectRootkeyWithCOSBucketKmsParamWithInvalidCRN(instanceName, keyName, serviceName, bucketName, bucketRegion, bucketClass),
+				ExpectError: regexp.MustCompile("InvalidArgument: Invalid ibm-sse-kp-customer-root-key-crn: received only 7 of required 10 segments"),
+			},
+		},
+	})
+}
+
+func TestAccIBMCOSHPCSKmsParam(t *testing.T) {
+	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("terraform%d", acctest.RandIntRange(10, 100))
+	keyName := fmt.Sprintf("key_%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us-south"
+	bucketClass := "standard"
+	bucketRegionType := "cross_region_location"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMHPCSRootkeyWithCOSBucketKmsParam(keyName, serviceName, bucketName, bucketRegion, bucketClass),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance", "ibm_cos_bucket.bucket", bucketRegionType, bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "kms_key_crn", acc.HpcsRootKeyCrn),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMCOSHPCSKmsParamWithInvalidCRN(t *testing.T) {
+	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("terraform%d", acctest.RandIntRange(10, 100))
+	keyName := fmt.Sprintf("key_%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us-south"
+	bucketClass := "standard"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccCheckIBMHPCSRootkeyWithCOSBucketKmsParamWithInvalidCRN(keyName, serviceName, bucketName, bucketRegion, bucketClass),
+				ExpectError: regexp.MustCompile("InvalidArgument: Invalid ibm-sse-kp-customer-root-key-crn: received only 7 of required 10 segments"),
+			},
+		},
+	})
+}
+
+func TestAccIBMCOSKMSBothParamProvided(t *testing.T) {
+	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("terraform%d", acctest.RandIntRange(10, 100))
+	keyName := fmt.Sprintf("key_%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us-south"
+	bucketClass := "standard"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccCheckIBMHPCSRootkeyWithCOSBucketKMSBothParamProvided(keyName, serviceName, bucketName, bucketRegion, bucketClass),
+				ExpectError: regexp.MustCompile("Error: Conflicting configuration arguments"),
+			},
+		},
+	})
+}
 func testAccCheckIBMCosBucket_basic(serviceName string, bucketName string, regiontype string, region string, storageClass string) string {
 
 	return fmt.Sprintf(`
@@ -1278,6 +2463,30 @@ func testAccCheckIBMCosBucket_basic(serviceName string, bucketName string, regio
 	}
 	  
 		  
+	`, serviceName, bucketName, storageClass, region)
+}
+
+func testAccCheckIBMCosBucket_basic_ssl(serviceName string, bucketName string, regiontype string, region string, storageClass string) string {
+
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "group" {
+		is_default=true
+	}
+
+	resource "ibm_resource_instance" "instance" {
+		name              = "%s"
+		service           = "cloud-object-storage"
+		plan              = "standard"
+		location          = "global"
+		resource_group_id = data.ibm_resource_group.group.id
+	}
+
+	resource "ibm_cos_bucket" "bucket" {
+		bucket_name          = "%s"
+		resource_instance_id = ibm_resource_instance.instance.id
+		storage_class        = "%s"
+		single_site_location = "%s"
+	}
 	`, serviceName, bucketName, storageClass, region)
 }
 
@@ -1507,7 +2716,9 @@ func testAccCheckIBMCosBucket_updateWithSameName(serviceName string, bucketName 
 	`, serviceName, bucketName, storageClass, region)
 }
 
-func testAccCheckIBMCosBucket_activityTracker_monitor(cosServiceName, activityServiceName, monitorServiceName, bucketName, regiontype, region, storageClass string) string {
+// f1881
+
+func testAccCheckIBMCosBucket_activityTracker_Without_Crn(cosServiceName string, bucketName string, regiontype string, region string, storageClass string, readDataEvents bool, writeDataEvents bool, managementEvents bool) string {
 
 	return fmt.Sprintf(`
 
@@ -1521,84 +2732,392 @@ func testAccCheckIBMCosBucket_activityTracker_monitor(cosServiceName, activitySe
 		plan              = "standard"
 		location          = "global"
 	  }
-	  resource "ibm_resource_instance" "activity_tracker2" {
-		name              = "%s"
-		resource_group_id = data.ibm_resource_group.cos_group.id
-		service           = "logdnaat"
-		plan              = "7-day"
-		location          = "us-south"
-	  }
-	  resource "ibm_resource_instance" "metrics_monitor2" {
-		name              = "%s"
-		resource_group_id = data.ibm_resource_group.cos_group.id
-		service           = "sysdig-monitor"
-		plan              = "graduated-tier"
-		location          = "us-south"
-		parameters        = {
-			default_receiver = true
-		}
-	  }
 	  resource "ibm_cos_bucket" "bucket2" {
 		bucket_name          = "%s"
 		resource_instance_id = ibm_resource_instance.instance2.id
-		single_site_location = "%s"
+		region_location = "%s"
 		storage_class        = "%s"
 		activity_tracking {
-		  read_data_events     = true
-		  write_data_events    = true
-		  activity_tracker_crn = ibm_resource_instance.activity_tracker2.id
-		}
-		metrics_monitoring {
-		  usage_metrics_enabled  = true
-		  request_metrics_enabled = true
-		  metrics_monitoring_crn = ibm_resource_instance.metrics_monitor2.id
+		  read_data_events      = %v
+		  write_data_events     = %v
+		  management_events     = %v
 		}
 	  }  
-	`, cosServiceName, activityServiceName, monitorServiceName, bucketName, region, storageClass)
+	`, cosServiceName, bucketName, region, storageClass, readDataEvents, writeDataEvents, managementEvents)
 }
 
-func testAccCheckIBMCosBucket_update_activityTracker_monitor(cosServiceName, activityServiceName, monitorServiceName, bucketName, regiontype, region, storageClass string) string {
+func testAccCheckIBMCosBucket_activityTracker_With_Crn(cosServiceName string, bucketName string, regiontype string, region string, storageClass string, activityTrackerCRN string, readDataEvents bool, writeDataEvents bool, managementEvents bool) string {
 
-	return fmt.Sprintf(`	
+	return fmt.Sprintf(`
+
 	data "ibm_resource_group" "cos_group" {
 		is_default=true
-	}
-	  
-	resource "ibm_resource_instance" "instance2" {
+	  }
+	  resource "ibm_resource_instance" "instance2" {
 		name              = "%s"
 		resource_group_id = data.ibm_resource_group.cos_group.id
 		service           = "cloud-object-storage"
 		plan              = "standard"
 		location          = "global"
 	  }
-	  
-	resource "ibm_resource_instance" "activity_tracker2" {
-		name              = "%s"
-		resource_group_id = data.ibm_resource_group.cos_group.id
-		service           = "logdnaat"
-		plan              = "7-day"
-		location          = "us-south"
-	}
-	  
-	resource "ibm_resource_instance" "metrics_monitor2" {
-		name              = "%s"
-		resource_group_id = data.ibm_resource_group.cos_group.id
-		service           = "sysdig-monitor"
-		plan              = "graduated-tier"
-		location          = "us-south"
-		parameters        = {
-			default_receiver = true
-		}
-	}
-	resource "ibm_cos_bucket" "bucket2" {
+	  resource "ibm_cos_bucket" "bucket2" {
 		bucket_name          = "%s"
 		resource_instance_id = ibm_resource_instance.instance2.id
-		single_site_location = "%s"
+		region_location = "%s"
 		storage_class        = "%s"
-	}	  
-	`, cosServiceName, activityServiceName, monitorServiceName, bucketName, region, storageClass)
+		activity_tracking {
+		  read_data_events      = %v
+		  write_data_events     = %v
+		  management_events     = %v
+		  activity_tracker_crn = "%s"
+		}
+	  }  
+	`, cosServiceName, bucketName, region, storageClass, readDataEvents, writeDataEvents, managementEvents, activityTrackerCRN)
 }
 
+func testAccCheckIBMCosBucket_activityTracker_With_Crn_ManagementEvents_NotSet(cosServiceName string, bucketName string, regiontype string, region string, storageClass string, activityTrackerCRN string, readDataEvents bool, writeDataEvents bool) string {
+
+	return fmt.Sprintf(`
+
+	data "ibm_resource_group" "cos_group" {
+		is_default=true
+	  }
+	  resource "ibm_resource_instance" "instance2" {
+		name              = "%s"
+		resource_group_id = data.ibm_resource_group.cos_group.id
+		service           = "cloud-object-storage"
+		plan              = "standard"
+		location          = "global"
+	  }
+	  resource "ibm_cos_bucket" "bucket2" {
+		bucket_name          = "%s"
+		resource_instance_id = ibm_resource_instance.instance2.id
+		region_location = "%s"
+		storage_class        = "%s"
+		activity_tracking {
+		  read_data_events      = %v
+		  write_data_events     = %v
+		  activity_tracker_crn = "%s"
+		}
+	  }  
+	`, cosServiceName, bucketName, region, storageClass, readDataEvents, writeDataEvents, activityTrackerCRN)
+}
+
+func testAccCheckIBMCosBucket_activityTracker_Read_Invalid_Write_Invalid_ManagementEvents_Invalid_With_Crn(cosServiceName, activityTrackerCRN, bucketName, regiontype, region, storageClass string) string {
+
+	return fmt.Sprintf(`
+
+	data "ibm_resource_group" "cos_group" {
+		is_default=true
+	  }
+	  resource "ibm_resource_instance" "instance2" {
+		name              = "%s"
+		resource_group_id = data.ibm_resource_group.cos_group.id
+		service           = "cloud-object-storage"
+		plan              = "standard"
+		location          = "global"
+	  }
+	  resource "ibm_cos_bucket" "bucket2" {
+		bucket_name          = "%s"
+		resource_instance_id = ibm_resource_instance.instance2.id
+		region_location = "%s"
+		storage_class        = "%s"
+		activity_tracking {
+		  read_data_events     = "invalid"
+		  write_data_events     = "invalid"
+		  management_events     = "invalid"
+		  activity_tracker_crn = "%s"
+		}
+	  }  
+	`, cosServiceName, bucketName, region, storageClass, activityTrackerCRN)
+}
+
+func testAccCheckIBMCosBucket_Upload_Object_Activity_Tracker_Enabled_With_CRN(cosServiceName, activityTrackerCRN, bucketName, regiontype, region, storageClass, key, object_body string) string {
+
+	return fmt.Sprintf(`
+
+	data "ibm_resource_group" "cos_group" {
+		is_default=true
+	  }
+	  resource "ibm_resource_instance" "instance2" {
+		name              = "%s"
+		resource_group_id = data.ibm_resource_group.cos_group.id
+		service           = "cloud-object-storage"
+		plan              = "standard"
+		location          = "global"
+	  }
+	  resource "ibm_cos_bucket" "bucket2" {
+		bucket_name          = "%s"
+		resource_instance_id = ibm_resource_instance.instance2.id
+		region_location = "%s"
+		storage_class        = "%s"
+		activity_tracking {
+		  read_data_events     = true
+		  write_data_events     = true
+		  management_events     = true
+		  activity_tracker_crn = "%s"
+		}
+	  } 
+	  resource "ibm_cos_bucket_object" "testacc" {
+		bucket_crn	    = ibm_cos_bucket.bucket2.crn
+		bucket_location = ibm_cos_bucket.bucket2.region_location
+		key 					  = "%s.txt"
+		content			    = "%s"
+	} 
+	`, cosServiceName, bucketName, region, storageClass, activityTrackerCRN, key, object_body)
+}
+
+func testAccCheckIBMCosBucket_upload_Object_Activity_Tracker_Enabled_Without_CRN(cosServiceName, bucketName, regiontype, region, storageClass, key, object_body string) string {
+
+	return fmt.Sprintf(`
+
+	data "ibm_resource_group" "cos_group" {
+		is_default=true
+	  }
+	  resource "ibm_resource_instance" "instance2" {
+		name              = "%s"
+		resource_group_id = data.ibm_resource_group.cos_group.id
+		service           = "cloud-object-storage"
+		plan              = "standard"
+		location          = "global"
+	  }
+	  resource "ibm_cos_bucket" "bucket2" {
+		bucket_name          = "%s"
+		resource_instance_id = ibm_resource_instance.instance2.id
+		region_location = "%s"
+		storage_class        = "%s"
+		activity_tracking {
+		  read_data_events     = true
+		  write_data_events     = true
+		  management_events     = true
+		}
+	  }
+	  resource "ibm_cos_bucket_object" "testacc" {
+		bucket_crn	    = ibm_cos_bucket.bucket2.crn
+		bucket_location = ibm_cos_bucket.bucket2.region_location
+		key 					  = "%s.txt"
+		content			    = "%s"
+	}
+	`, cosServiceName, bucketName, region, storageClass, key, object_body)
+}
+
+func testAccCheckIBMCosBucket_metricsMonitoring_Without_Crn(cosServiceName, bucketName, regiontype, region, storageClass string, requestMetricsEnabled, usageMetricsEnabled bool) string {
+
+	return fmt.Sprintf(`
+
+	data "ibm_resource_group" "cos_group" {
+		is_default=true
+	  }
+	  resource "ibm_resource_instance" "instance2" {
+		name              = "%s"
+		resource_group_id = data.ibm_resource_group.cos_group.id
+		service           = "cloud-object-storage"
+		plan              = "standard"
+		location          = "global"
+	  }
+	  resource "ibm_cos_bucket" "bucket2" {
+		bucket_name          = "%s"
+		resource_instance_id = ibm_resource_instance.instance2.id
+		region_location = "%s"
+		storage_class        = "%s"
+		metrics_monitoring {
+		  request_metrics_enabled = %v
+		  usage_metrics_enabled = %v
+		}
+	  }  
+	`, cosServiceName, bucketName, region, storageClass, requestMetricsEnabled, usageMetricsEnabled)
+}
+
+func testAccCheckIBMCosBucket_metricsMonitoring_With_Crn(cosServiceName, metricsMonitoringCrn, bucketName, regiontype, region, storageClass string, requestMetricsEnabled, usageMetricsEnabled bool) string {
+
+	return fmt.Sprintf(`
+
+	data "ibm_resource_group" "cos_group" {
+		is_default=true
+	  }
+	  resource "ibm_resource_instance" "instance2" {
+		name              = "%s"
+		resource_group_id = data.ibm_resource_group.cos_group.id
+		service           = "cloud-object-storage"
+		plan              = "standard"
+		location          = "global"
+	  }
+	  resource "ibm_cos_bucket" "bucket2" {
+		bucket_name          = "%s"
+		resource_instance_id = ibm_resource_instance.instance2.id
+		region_location = "%s"
+		storage_class        = "%s"
+		metrics_monitoring {
+		  request_metrics_enabled = %v
+		  usage_metrics_enabled = %v
+		  metrics_monitoring_crn = "%s"
+		}
+	  }  
+	`, cosServiceName, bucketName, region, storageClass, requestMetricsEnabled, usageMetricsEnabled, metricsMonitoringCrn)
+}
+
+func testAccCheckIBMCosBucket_metricsMonitoring_RequestMetrics_Invalid_UsageMetrics_Invalid_With_Crn(cosServiceName, metricsMonitoringCrn, bucketName, regiontype, region, storageClass string) string {
+
+	return fmt.Sprintf(`
+
+	data "ibm_resource_group" "cos_group" {
+		is_default=true
+	  }
+	  resource "ibm_resource_instance" "instance2" {
+		name              = "%s"
+		resource_group_id = data.ibm_resource_group.cos_group.id
+		service           = "cloud-object-storage"
+		plan              = "standard"
+		location          = "global"
+	  }
+	  resource "ibm_cos_bucket" "bucket2" {
+		bucket_name          = "%s"
+		resource_instance_id = ibm_resource_instance.instance2.id
+		region_location = "%s"
+		storage_class        = "%s"
+		metrics_monitoring {
+		  usage_metrics_enabled = "invalid"
+		  request_metrics_enabled = "invalid"
+		  metrics_monitoring_crn = "%s"
+		}
+	  }  
+	`, cosServiceName, bucketName, region, storageClass, metricsMonitoringCrn)
+}
+
+func testAccCheckIBMCosBucket_metricsMonitoring_Crn_Invalid(cosServiceName, metricsMonitoringCrn, bucketName, regiontype, region, storageClass string) string {
+
+	return fmt.Sprintf(`
+
+	data "ibm_resource_group" "cos_group" {
+		is_default=true
+	  }
+	  resource "ibm_resource_instance" "instance2" {
+		name              = "%s"
+		resource_group_id = data.ibm_resource_group.cos_group.id
+		service           = "cloud-object-storage"
+		plan              = "standard"
+		location          = "global"
+	  }
+	  resource "ibm_cos_bucket" "bucket2" {
+		bucket_name          = "%s"
+		resource_instance_id = ibm_resource_instance.instance2.id
+		region_location = "%s"
+		storage_class        = "%s"
+		metrics_monitoring {
+		  usage_metrics_enabled = true
+		  request_metrics_enabled = true
+		  metrics_monitoring_crn = "invalid"
+		}
+	  }  
+	`, cosServiceName, bucketName, region, storageClass)
+}
+
+func testAccCheckIBMCosBucket_metricsMonitoring_Upload_Object_RequestMetrics_True_UsageMetrics_True_With_Crn(cosServiceName, metricsMonitoringCrn, bucketName, regiontype, region, storageClass, key, objectBody string) string {
+
+	return fmt.Sprintf(`
+
+	data "ibm_resource_group" "cos_group" {
+		is_default=true
+	  }
+	  resource "ibm_resource_instance" "instance2" {
+		name              = "%s"
+		resource_group_id = data.ibm_resource_group.cos_group.id
+		service           = "cloud-object-storage"
+		plan              = "standard"
+		location          = "global"
+	  }
+	  resource "ibm_cos_bucket" "bucket2" {
+		bucket_name          = "%s"
+		resource_instance_id = ibm_resource_instance.instance2.id
+		region_location = "%s"
+		storage_class        = "%s"
+		metrics_monitoring {
+		  usage_metrics_enabled = true
+		  request_metrics_enabled = true
+		  metrics_monitoring_crn = "%s"
+		}
+	  }  
+	  resource "ibm_cos_bucket_object" "testacc" {
+		bucket_crn	    = ibm_cos_bucket.bucket2.crn
+		bucket_location = ibm_cos_bucket.bucket2.region_location
+		key 			    = "%s.txt"
+		content			    = "%s"
+	} 
+	`, cosServiceName, bucketName, region, storageClass, metricsMonitoringCrn, key, objectBody)
+}
+
+func testAccCheckIBMCosBucket_metricsMonitoring_Upload_Object_RequestMetrics_True_UsageMetrics_True_Without_Crn(cosServiceName, bucketName, regiontype, region, storageClass, key, objectBody string) string {
+
+	return fmt.Sprintf(`
+
+	data "ibm_resource_group" "cos_group" {
+		is_default=true
+	  }
+	  resource "ibm_resource_instance" "instance2" {
+		name              = "%s"
+		resource_group_id = data.ibm_resource_group.cos_group.id
+		service           = "cloud-object-storage"
+		plan              = "standard"
+		location          = "global"
+	  }
+	  resource "ibm_cos_bucket" "bucket2" {
+		bucket_name          = "%s"
+		resource_instance_id = ibm_resource_instance.instance2.id
+		region_location = "%s"
+		storage_class        = "%s"
+		metrics_monitoring {
+		  usage_metrics_enabled = true
+		  request_metrics_enabled = true
+		}
+	  }  
+	  resource "ibm_cos_bucket_object" "testacc" {
+		bucket_crn	    = ibm_cos_bucket.bucket2.crn
+		bucket_location = ibm_cos_bucket.bucket2.region_location
+		key 			    = "%s.txt"
+		content			    = "%s"
+	} 
+	`, cosServiceName, bucketName, region, storageClass, key, objectBody)
+}
+
+// func testAccCheckIBMCosBucket_metricsMonitoring_RequestMetrics_New_Instance(cosServiceName, metricsMonitoringName, bucketName, regiontype, region, storageClass string) string {
+
+// 	return fmt.Sprintf(`
+
+//		data "ibm_resource_group" "cos_group" {
+//			is_default=true
+//		  }
+//		  resource "ibm_resource_instance" "instance2" {
+//			name              = "%s"
+//			resource_group_id = data.ibm_resource_group.cos_group.id
+//			service           = "cloud-object-storage"
+//			plan              = "standard"
+//			location          = "global"
+//		  }
+//		  resource "ibm_resource_instance" "metrics_monitor2" {
+//			name              = "%s"
+//			resource_group_id = data.ibm_resource_group.cos_group.id
+//			service           = "sysdig-monitor"
+//			plan              = "graduated-tier"
+//			location          = "us-south"
+//			parameters        = {
+//				default_receiver = true
+//			}
+//		}
+//		  resource "ibm_cos_bucket" "bucket2" {
+//			bucket_name          = "%s"
+//			resource_instance_id = ibm_resource_instance.instance2.id
+//			region_location = "%s"
+//			storage_class        = "%s"
+//			metrics_monitoring {
+//			  usage_metrics_enabled = true
+//			  request_metrics_enabled = true
+//			  metrics_monitoring_crn = ibm_resource_instance.metrics_monitor2.id
+//			}
+//		  }
+//		`, cosServiceName, metricsMonitoringName, bucketName, region, storageClass)
+//	}
+//
+// f1881 end
 func testAccCheckIBMCosBucket_archive(cosServiceName string, bucketName string, regiontype string, region string, storageClass string, ruleId string, enable bool, archiveDays int, ruleType string) string {
 
 	return fmt.Sprintf(`
@@ -2004,6 +3523,42 @@ func testAccCheckIBMCosBucket_retention(cosServiceName string, bucketName string
 	`, cosServiceName, bucketName, region, storageClass, default_retention, maximum_retention, minimum_retention)
 }
 
+func testAccCheckIBMCosBucket_retention_basic_bucket(bucketName string, cosCrn string, regiontype string, region string, storageClass string) string {
+
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "cos_group" {
+		name = "Default"
+	}
+
+	resource "ibm_cos_bucket" "bucket" {
+		bucket_name           = "%s"
+		resource_instance_id  = "%s"
+	    region_location       = "%s"
+		storage_class         = "%s"
+	}
+	`, bucketName, cosCrn, region, storageClass)
+}
+func testAccCheckIBMCosBucket_retention_existing_bucket(bucketName string, cosCrn string, regiontype string, region string, storageClass string, default_retention int, maximum_retention int, minimum_retention int) string {
+
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "cos_group" {
+		name = "Default"
+	}
+
+	resource "ibm_cos_bucket" "bucket" {
+		bucket_name           = "%s"
+		resource_instance_id  = "%s"
+	    region_location       = "%s"
+		storage_class         = "%s"
+		retention_rule {
+			default = %d
+			maximum = %d
+			minimum = %d
+			permanent = false
+		}
+	}
+	`, bucketName, cosCrn, region, storageClass, default_retention, maximum_retention, minimum_retention)
+}
 func testAccCheckIBMCosBucket_object_versioning(cosServiceName string, bucketName string, regiontype string, region string, storageClass string, enable bool) string {
 
 	return fmt.Sprintf(`
@@ -2478,6 +4033,130 @@ func testAccCheckIBMHPCSRootkeyWithCOSBucket(KeyName, serviceName, bucketName, b
 		key_protect			= "%s"
 	}
 `, serviceName, bucketName, bucketRegion, bucketClass, acc.HpcsRootKeyCrn)
+}
+func testAccCheckIBMKeyProtectRootkeyWithCOSBucketKmsParam(instanceName, KeyName, serviceName, bucketName, bucketRegion, bucketClass string) string {
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "group" {
+		is_default=true
+	}
+	resource "ibm_resource_instance" "kms_instance1" {
+		name              = "%s"
+		service           = "kms"
+		plan              = "tiered-pricing"
+		location          = "us-south"
+	  }
+
+	  resource "ibm_kms_key" "test" {
+		instance_id = "${ibm_resource_instance.kms_instance1.guid}"
+		key_name = "%s"
+		standard_key =  false
+		force_delete = true
+	}
+
+	resource "ibm_resource_instance" "instance" {
+		name     = "%s"
+		service  = "cloud-object-storage"
+		plan     = "standard"
+		location = "global"
+	}
+
+	resource "ibm_cos_bucket" "bucket" {
+		bucket_name          = "%s"
+		resource_instance_id = ibm_resource_instance.instance.id
+		cross_region_location = "%s"
+		storage_class        = "%s"
+		kms_key_crn          = ibm_kms_key.test.id
+	}
+`, instanceName, KeyName, serviceName, bucketName, bucketRegion, bucketClass)
+}
+func testAccCheckIBMKeyProtectRootkeyWithCOSBucketKmsParamWithInvalidCRN(instanceName, KeyName, serviceName, bucketName, bucketRegion, bucketClass string) string {
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "group" {
+		is_default=true
+	}
+	
+	resource "ibm_resource_instance" "instance" {
+		name     = "%s"
+		service  = "cloud-object-storage"
+		plan     = "standard"
+		location = "global"
+	}
+
+	resource "ibm_cos_bucket" "bucket" {
+		bucket_name          = "%s"
+		resource_instance_id = ibm_resource_instance.instance.id
+		cross_region_location = "%s"
+		storage_class        = "%s"
+		kms_key_crn          = "crn:v1:staging:public:kms:us-south:invalid"
+	}
+`, instanceName, bucketName, bucketRegion, bucketClass)
+}
+
+func testAccCheckIBMHPCSRootkeyWithCOSBucketKmsParam(KeyName, serviceName, bucketName, bucketRegion, bucketClass string) string {
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "group" {
+		is_default=true
+	}
+	resource "ibm_resource_instance" "instance" {
+		name     = "%s"
+		service  = "cloud-object-storage"
+		plan     = "standard"
+		location = "global"
+	}
+
+	resource "ibm_cos_bucket" "bucket" {
+		bucket_name          = "%s"
+		resource_instance_id = ibm_resource_instance.instance.id
+		region_location 	= "%s"
+		storage_class       = "%s"
+		kms_key_crn			= "%s"
+	}
+`, serviceName, bucketName, bucketRegion, bucketClass, acc.HpcsRootKeyCrn)
+}
+
+func testAccCheckIBMHPCSRootkeyWithCOSBucketKMSBothParamProvided(KeyName, serviceName, bucketName, bucketRegion, bucketClass string) string {
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "group" {
+		is_default=true
+	}
+	resource "ibm_resource_instance" "instance" {
+		name     = "%s"
+		service  = "cloud-object-storage"
+		plan     = "standard"
+		location = "global"
+	}
+
+	resource "ibm_cos_bucket" "bucket" {
+		bucket_name          = "%s"
+		resource_instance_id = ibm_resource_instance.instance.id
+		region_location 	= "%s"
+		storage_class       = "%s"
+		kms_key_crn			= "%s"
+		key_protect 		= "%s"
+	}
+`, serviceName, bucketName, bucketRegion, bucketClass, acc.HpcsRootKeyCrn, acc.HpcsRootKeyCrn)
+}
+
+func testAccCheckIBMHPCSRootkeyWithCOSBucketKmsParamWithInvalidCRN(KeyName, serviceName, bucketName, bucketRegion, bucketClass string) string {
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "group" {
+		is_default=true
+	}
+	resource "ibm_resource_instance" "instance" {
+		name     = "%s"
+		service  = "cloud-object-storage"
+		plan     = "standard"
+		location = "global"
+	}
+
+	resource "ibm_cos_bucket" "bucket" {
+		bucket_name          = "%s"
+		resource_instance_id = ibm_resource_instance.instance.id
+		region_location 	= "%s"
+		storage_class       = "%s"
+		kms_key_crn			= "crn:v1:staging:public:hs-crypto:us-south:invalid"
+	}
+`, serviceName, bucketName, bucketRegion, bucketClass)
 }
 
 func TestSingleSiteLocationRegex(t *testing.T) {

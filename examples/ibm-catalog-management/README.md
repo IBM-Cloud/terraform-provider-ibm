@@ -39,7 +39,6 @@ resource "ibm_cm_catalog" "cm_catalog_instance" {
   resource_group_id = var.cm_catalog_resource_group_id
   owning_account = var.cm_catalog_owning_account
   catalog_filters = var.cm_catalog_catalog_filters
-  syndication_settings = var.cm_catalog_syndication_settings
   kind = var.cm_catalog_kind
   metadata = var.cm_catalog_metadata
 }
@@ -225,7 +224,6 @@ data "cm_offering_instance" "cm_offering_instance_instance" {
 | resource_group_id | Resource group id the catalog is owned by. | `string` | false |
 | owning_account | Account that owns catalog. | `string` | false |
 | catalog_filters | Filters for account and catalog filters. | `` | false |
-| syndication_settings | Feature information. | `` | false |
 | kind | Kind of catalog. Supported kinds are offering and vpe. | `string` | false |
 | metadata | Catalog specific metadata. | `map()` | false |
 | catalog_id | Catalog identifier. | `string` | true |

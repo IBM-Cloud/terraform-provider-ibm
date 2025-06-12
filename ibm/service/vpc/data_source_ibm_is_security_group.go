@@ -4,12 +4,14 @@
 package vpc
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"reflect"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -20,12 +22,14 @@ const (
 	isSgRuleDirection = "direction"
 	isSgRuleIPVersion = "ip_version"
 	isSgRuleRemote    = "remote"
+	isSgRuleLocal     = "local"
 	isSgRuleType      = "type"
 	isSgRuleCode      = "code"
 	isSgRulePortMax   = "port_max"
 	isSgRulePortMin   = "port_min"
 	isSgRuleProtocol  = "protocol"
 	isSgVPC           = "vpc"
+	isSgVPCName       = "vpc_name"
 	isSgTags          = "tags"
 	isSgCRN           = "crn"
 )
@@ -33,7 +37,7 @@ const (
 func DataSourceIBMISSecurityGroup() *schema.Resource {
 	return &schema.Resource{
 
-		Read: dataSourceIBMISSecurityGroupRuleRead,
+		ReadContext: dataSourceIBMISSecurityGroupRuleRead,
 
 		Schema: map[string]*schema.Schema{
 
@@ -45,9 +49,22 @@ func DataSourceIBMISSecurityGroup() *schema.Resource {
 
 			isSecurityGroupVPC: {
 				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "Security group's vpc id",
+			},
+			isSgVPCName: {
+				Type:          schema.TypeString,
+				Optional:      true,
+				Computed:      true,
+				ConflictsWith: []string{isSecurityGroupVPC},
+				Description:   "Security group's vpc name",
+			},
+			isSecurityGroupResourceGroup: {
+				Type:        schema.TypeString,
+				Optional:    true,
 				Computed:    true,
 				Description: "Security group's resource group id",
-				ForceNew:    true,
 			},
 
 			isSgRules: {
@@ -79,6 +96,26 @@ func DataSourceIBMISSecurityGroup() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Security group id: an IP address, a CIDR block, or a single security group identifier",
+						},
+
+						"local": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The local IP address or range of local IP addresses to which this rule will allow inbound traffic (or from which, for outbound traffic). A CIDR block of 0.0.0.0/0 allows traffic to all local IP addresses (or from all local IP addresses, for outbound rules).",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"address": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The IP address.This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.",
+									},
+									"cidr_block": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The CIDR block. This property may add support for IPv6 CIDR blocks in the future. When processing a value in this property, verify that the CIDR block is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected CIDR block format was encountered.",
+									},
+								},
+							},
 						},
 
 						isSgRuleType: {
@@ -158,34 +195,59 @@ func DataSourceIBMISSecurityGroup() *schema.Resource {
 	}
 }
 
-func dataSourceIBMISSecurityGroupRuleRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceIBMISSecurityGroupRuleRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 	sgName := d.Get(isSgName).(string)
-	err := securityGroupGet(d, meta, sgName)
+	vpcId := ""
+	vpcName := ""
+	rgId := ""
+	if vpcIdOk, ok := d.GetOk(isSgVPC); ok {
+		vpcId = vpcIdOk.(string)
+	}
+	if rgIdOk, ok := d.GetOk(isSecurityGroupResourceGroup); ok {
+		rgId = rgIdOk.(string)
+	}
+	if vpcNameOk, ok := d.GetOk(isSgVPCName); ok {
+		vpcName = vpcNameOk.(string)
+	}
+	err := securityGroupGet(context, d, meta, sgName, vpcId, vpcName, rgId)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func securityGroupGet(d *schema.ResourceData, meta interface{}, name string) error {
+func securityGroupGet(context context.Context, d *schema.ResourceData, meta interface{}, name, vpcId, vpcName, rgId string) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_security_group", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	// Support for pagination
 	start := ""
 	allrecs := []vpcv1.SecurityGroup{}
 
+	listSgOptions := &vpcv1.ListSecurityGroupsOptions{}
+	if vpcId != "" {
+		listSgOptions.VPCID = &vpcId
+	}
+	if vpcName != "" {
+		listSgOptions.VPCName = &vpcName
+	}
+	if rgId != "" {
+		listSgOptions.ResourceGroupID = &rgId
+	}
 	for {
-		listSgOptions := &vpcv1.ListSecurityGroupsOptions{}
 		if start != "" {
 			listSgOptions.Start = &start
 		}
-		sgs, response, err := sess.ListSecurityGroups(listSgOptions)
+		sgs, _, err := sess.ListSecurityGroupsWithContext(context, listSgOptions)
 		if err != nil || sgs == nil {
-			return fmt.Errorf("[ERROR] Error Getting Security Groups %s\n%s", err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListSecurityGroupsWithContext failed: %s", err.Error()), "(Data) ibm_is_security_group", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		if *sgs.TotalCount == int64(0) {
 			break
@@ -199,26 +261,42 @@ func securityGroupGet(d *schema.ResourceData, meta interface{}, name string) err
 
 	}
 
-	for _, group := range allrecs {
-		if *group.Name == name {
+	for _, securityGroup := range allrecs {
+		if *securityGroup.Name == name {
 
-			d.Set(isSgName, *group.Name)
-			d.Set(isSgVPC, *group.VPC.ID)
-			d.Set(isSgCRN, *group.CRN)
-			tags, err := flex.GetGlobalTagsUsingCRN(meta, *group.CRN, "", isUserTagType)
+			if err = d.Set("name", securityGroup.Name); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_is_security_group", "read", "set-name").GetDiag()
+			}
+			if err = d.Set("vpc", securityGroup.VPC.ID); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting vpc: %s", err), "(Data) ibm_is_security_group", "read", "set-vpc").GetDiag()
+			}
+			if err = d.Set("vpc_name", securityGroup.VPC.Name); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting vpc_name: %s", err), "(Data) ibm_is_security_group", "read", "set-vpc_name").GetDiag()
+			}
+			if err = d.Set("resource_group", securityGroup.ResourceGroup.ID); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_group: %s", err), "(Data) ibm_is_security_group", "read", "set-resource_group").GetDiag()
+			}
+			if err = d.Set("crn", securityGroup.CRN); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting crn: %s", err), "(Data) ibm_is_security_group", "read", "set-crn").GetDiag()
+			}
+			tags, err := flex.GetGlobalTagsUsingCRN(meta, *securityGroup.CRN, "", isUserTagType)
 			if err != nil {
 				log.Printf(
-					"An error occured during reading of security group (%s) tags : %s", *group.ID, err)
+					"An error occured during reading of security group (%s) tags : %s", *securityGroup.ID, err)
 			}
-			d.Set(isSgTags, tags)
-			accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *group.CRN, "", isAccessTagType)
+			if err = d.Set(isSgTags, tags); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting tags: %s", err), "(Data) ibm_is_security_group", "read", "set-tags").GetDiag()
+			}
+			accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *securityGroup.CRN, "", isAccessTagType)
 			if err != nil {
 				log.Printf(
 					"Error on get of security group (%s) access tags: %s", d.Id(), err)
 			}
-			d.Set(isSecurityGroupAccessTags, accesstags)
+			if err = d.Set(isSecurityGroupAccessTags, accesstags); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting access_tags: %s", err), "(Data) ibm_is_security_group", "read", "set-access_tags").GetDiag()
+			}
 			rules := make([]map[string]interface{}, 0)
-			for _, sgrule := range group.Rules {
+			for _, sgrule := range securityGroup.Rules {
 				switch reflect.TypeOf(sgrule).String() {
 				case "*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolIcmp":
 					{
@@ -248,6 +326,15 @@ func securityGroupGet(d *schema.ResourceData, meta interface{}, name string) err
 								}
 							}
 						}
+						local, ok := rule.Local.(*vpcv1.SecurityGroupRuleLocal)
+						if ok {
+							if local != nil && !reflect.ValueOf(local).IsNil() {
+								localList := []map[string]interface{}{}
+								localMap := dataSourceSecurityGroupRuleLocalToMap(local)
+								localList = append(localList, localMap)
+								r["local"] = localList
+							}
+						}
 						rules = append(rules, r)
 					}
 
@@ -271,6 +358,15 @@ func securityGroupGet(d *schema.ResourceData, meta interface{}, name string) err
 								} else if remote.CIDRBlock != nil {
 									r[isSgRuleRemote] = remote.CIDRBlock
 								}
+							}
+						}
+						local, ok := rule.Local.(*vpcv1.SecurityGroupRuleLocal)
+						if ok {
+							if local != nil && !reflect.ValueOf(local).IsNil() {
+								localList := []map[string]interface{}{}
+								localMap := dataSourceSecurityGroupRuleLocalToMap(local)
+								localList = append(localList, localMap)
+								r["local"] = localList
 							}
 						}
 						rules = append(rules, r)
@@ -303,35 +399,58 @@ func securityGroupGet(d *schema.ResourceData, meta interface{}, name string) err
 								}
 							}
 						}
+						local, ok := rule.Local.(*vpcv1.SecurityGroupRuleLocal)
+						if ok {
+							if local != nil && !reflect.ValueOf(local).IsNil() {
+								localList := []map[string]interface{}{}
+								localMap := dataSourceSecurityGroupRuleLocalToMap(local)
+								localList = append(localList, localMap)
+								r["local"] = localList
+							}
+						}
 						rules = append(rules, r)
 					}
 				}
 			}
+			if err = d.Set(isSgRules, rules); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting rules: %s", err), "(Data) ibm_is_security_group", "read", "set-rules").GetDiag()
+			}
+			d.SetId(*securityGroup.ID)
 
-			d.Set(isSgRules, rules)
-			d.SetId(*group.ID)
-
-			if group.ResourceGroup != nil {
-				if group.ResourceGroup.Name != nil {
-					d.Set(flex.ResourceGroupName, *group.ResourceGroup.Name)
+			if securityGroup.ResourceGroup != nil {
+				if securityGroup.ResourceGroup.Name != nil {
+					if err = d.Set(flex.ResourceGroupName, securityGroup.ResourceGroup.Name); err != nil {
+						return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_group_name: %s", err), "(Data) ibm_is_security_group", "read", "set-resource_group_name").GetDiag()
+					}
 				}
 			}
 
 			controller, err := flex.GetBaseController(meta)
 			if err != nil {
-				return err
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetBaseController failed: %s", err.Error()), "(Data) ibm_is_security_group", "read")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
-			d.Set(flex.ResourceControllerURL, controller+"/vpc/network/securityGroups")
-			if group.Name != nil {
-				d.Set(flex.ResourceName, *group.Name)
+			if err = d.Set(flex.ResourceControllerURL, controller+"/vpc/network/securityGroups"); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_controller_url: %s", err), "(Data) ibm_is_security_group", "read", "set-resource_controller_url").GetDiag()
+			}
+			if securityGroup.Name != nil {
+				if err = d.Set(flex.ResourceName, securityGroup.Name); err != nil {
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_name: %s", err), "(Data) ibm_is_security_group", "read", "set-resource_name").GetDiag()
+				}
 			}
 
-			if group.CRN != nil {
-				d.Set(flex.ResourceCRN, *group.CRN)
+			if securityGroup.CRN != nil {
+				if err = d.Set(flex.ResourceCRN, securityGroup.CRN); err != nil {
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_crn: %s", err), "(Data) ibm_is_security_group", "read", "set-resource_crn").GetDiag()
+				}
 			}
 			return nil
 		}
 	}
-	return fmt.Errorf("[ERROR] No Security Group found with name %s", name)
+	err = fmt.Errorf("[ERROR] No Security Group found with name %s", name)
+	tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListSecurityGroupsWithContext failed: %s", err.Error()), "(Data) ibm_is_security_group", "read")
+	log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+	return tfErr.GetDiag()
 
 }

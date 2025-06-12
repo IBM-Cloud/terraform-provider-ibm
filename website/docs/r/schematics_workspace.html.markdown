@@ -67,7 +67,7 @@ Nested scheme for **shared_data**:
 Nested scheme for **template_values_metadata**:
 	* `aliases` - (Optional, List) The list of aliases for the variable name.
 	* `cloud_data_type` - (Optional, String) Cloud data type of the variable. eg. resource_group_id, region, vpc_id.
-	* `default_value` - (Optional, String) Default value for the variable only if the override value is not specified.
+	* `default` - (Optional, String) Default value for the variable only if the override value is not specified.
 	* `description` - (Optional, String) The description of the meta data.
 	* `group_by` - (Optional, String) The display name of the group this variable belongs to.
 	* `hidden` - (Optional, Boolean) If **true**, the variable is not displayed on UI or Command line.
@@ -79,6 +79,7 @@ Nested scheme for **template_values_metadata**:
 	* `max_value` - (Optional, Integer) The maximum value of the variable. Applicable for the integer type.
 	* `min_length` - (Optional, Integer) The minimum length of the variable value. Applicable for the string type.
 	* `min_value` - (Optional, Integer) The minimum value of the variable. Applicable for the integer type.
+	* `name` - (String) Name of the variable.
 	* `options` - (Optional, List) The list of possible values for this variable.  If type is **integer** or **date**, then the array of string is  converted to array of integers or date during the runtime.
 	* `position` - (Optional, Integer) The relative position of this variable in a list.
 	* `required` - (Optional, Boolean) If the variable required?.

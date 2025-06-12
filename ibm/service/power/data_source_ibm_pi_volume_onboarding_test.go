@@ -29,8 +29,8 @@ func TestAccIBMPIVolumeOnboardingDataSource_basic(t *testing.T) {
 
 func testAccCheckIBMPIVolumeOnboardingDataSourceConfig() string {
 	return fmt.Sprintf(`
-data "ibm_pi_volume_onboarding" "testacc_ds_volume_onboarding" {
-	pi_cloud_instance_id    = "%s"
-	pi_volume_onboarding_id = "%s"
-}`, acc.Pi_cloud_instance_id, acc.Pi_volume_onboarding_id)
+		data "ibm_pi_volume_onboarding" "testacc_ds_volume_onboarding" {
+			pi_cloud_instance_id    = "%s"
+			pi_volume_onboarding_id = "%s"
+		}`, acc.Pi_cloud_instance_id, acc.Pi_volume_onboarding_id)
 }

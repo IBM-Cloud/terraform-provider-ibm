@@ -72,7 +72,7 @@ data "ibm_is_instance" "example" {
   passphrase  = ""
 }
 
-data "is_instance_disks" "example" {
+data "ibm_is_instance_disks" "example" {
   instance = data.ibm_is_instance.example.id
 }
 ```

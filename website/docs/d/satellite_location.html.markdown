@@ -29,6 +29,8 @@ In addition to all argument reference list, you can access the following attribu
 - `coreos_enabled` - (Bool) If Red Hat CoreOS features are enabled within the Satellite location.
 - `crn` - (String) The CRN for this satellite location.
 - `created_on` - (Timestamp) The created time of the satellite location.
+- `physical_address` -  (String) The physical address of the Satellite location which is deployed on premise.
+- `capabilities` - (Array of Strings) Satellite capabilities(in the Kubernetes Service API, the parameter 'capabilities' is called['capabilitiesManagedBySatellite'](https://cloud.ibm.com/apidocs/kubernetes/containers-v1-v2#createsatellitelocation)) attached to the Satellite location.
 - `description` - (String) Description of the new Satellite location.
 - `id` - (String) The unique identifier of the location.
 - `ingress_hostname` - (String) The Ingress hostname.

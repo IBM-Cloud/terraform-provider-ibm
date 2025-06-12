@@ -11,6 +11,7 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -104,6 +105,25 @@ func DataSourceIBMIsSecurityGroupRule() *schema.Resource {
 					},
 				},
 			},
+			"local": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The local IP address or range of local IP addresses to which this rule will allow inbound traffic (or from which, for outbound traffic). A CIDR block of 0.0.0.0/0 allows traffic to all local IP addresses (or from all local IP addresses, for outbound rules).",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"address": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The IP address.This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.",
+						},
+						"cidr_block": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The CIDR block. This property may add support for IPv6 CIDR blocks in the future. When processing a value in this property, verify that the CIDR block is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected CIDR block format was encountered.",
+						},
+					},
+				},
+			},
 			"code": &schema.Schema{
 				Type:        schema.TypeInt,
 				Computed:    true,
@@ -131,7 +151,9 @@ func DataSourceIBMIsSecurityGroupRule() *schema.Resource {
 func dataSourceIBMIsSecurityGroupRuleRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_security_group_rule", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	getSecurityGroupRuleOptions := &vpcv1.GetSecurityGroupRuleOptions{}
@@ -139,10 +161,11 @@ func dataSourceIBMIsSecurityGroupRuleRead(context context.Context, d *schema.Res
 	getSecurityGroupRuleOptions.SetSecurityGroupID(d.Get("security_group").(string))
 	getSecurityGroupRuleOptions.SetID(d.Get("security_group_rule").(string))
 
-	securityGroupRuleIntf, response, err := vpcClient.GetSecurityGroupRuleWithContext(context, getSecurityGroupRuleOptions)
+	securityGroupRuleIntf, _, err := vpcClient.GetSecurityGroupRuleWithContext(context, getSecurityGroupRuleOptions)
 	if err != nil || securityGroupRuleIntf == nil {
-		log.Printf("[DEBUG] GetSecurityGroupRuleWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetSecurityGroupRuleWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetSecurityGroupRuleWithContext failed: %s", err.Error()), "(Data) ibm_is_security_group_rule", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	switch reflect.TypeOf(securityGroupRuleIntf).String() {
@@ -152,25 +175,33 @@ func dataSourceIBMIsSecurityGroupRuleRead(context context.Context, d *schema.Res
 
 			d.SetId(*securityGroupRule.ID)
 			if err = d.Set("direction", securityGroupRule.Direction); err != nil {
-				return diag.FromErr(fmt.Errorf("Error setting direction: %s", err))
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting direction: %s", err), "(Data) ibm_is_security_group_rule", "read", "set-direction").GetDiag()
 			}
 			if err = d.Set("href", securityGroupRule.Href); err != nil {
-				return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting href: %s", err), "(Data) ibm_is_security_group_rule", "read", "set-href").GetDiag()
 			}
 			if err = d.Set("ip_version", securityGroupRule.IPVersion); err != nil {
-				return diag.FromErr(fmt.Errorf("Error setting ip_version: %s", err))
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting ip_version: %s", err), "(Data) ibm_is_security_group_rule", "read", "set-ip_version").GetDiag()
 			}
 			if err = d.Set("protocol", securityGroupRule.Protocol); err != nil {
-				return diag.FromErr(fmt.Errorf("Error setting protocol: %s", err))
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting protocol: %s", err), "(Data) ibm_is_security_group_rule", "read", "set-protocol").GetDiag()
 			}
 			if securityGroupRule.Remote != nil {
 				securityGroupRuleRemote, err := dataSourceSecurityGroupRuleFlattenRemote(securityGroupRule.Remote)
 				if err != nil {
-					return diag.FromErr(fmt.Errorf("Error flattening securityGroupRule.Remote %s", err))
+					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_security_group_rule", "read", "remote-to-map").GetDiag()
 				}
-				err = d.Set("remote", securityGroupRuleRemote)
+				if err = d.Set("remote", securityGroupRuleRemote); err != nil {
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting remote: %s", err), "(Data) ibm_is_security_group_rule", "read", "set-remote").GetDiag()
+				}
+			}
+			if securityGroupRule.Local != nil {
+				securityGroupRuleLocal, err := dataSourceSecurityGroupRuleFlattenLocal(securityGroupRule.Local)
 				if err != nil {
-					return diag.FromErr(fmt.Errorf("Error setting remote %s", err))
+					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_security_group_rule", "read", "local-to-map").GetDiag()
+				}
+				if err = d.Set("local", securityGroupRuleLocal); err != nil {
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting local: %s", err), "(Data) ibm_is_security_group_rule", "read", "set-local").GetDiag()
 				}
 			}
 
@@ -181,33 +212,45 @@ func dataSourceIBMIsSecurityGroupRuleRead(context context.Context, d *schema.Res
 
 			d.SetId(*securityGroupRule.ID)
 			if err = d.Set("direction", securityGroupRule.Direction); err != nil {
-				return diag.FromErr(fmt.Errorf("Error setting direction: %s", err))
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting direction: %s", err), "(Data) ibm_is_security_group_rule", "read", "set-direction").GetDiag()
 			}
 			if err = d.Set("href", securityGroupRule.Href); err != nil {
-				return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting href: %s", err), "(Data) ibm_is_security_group_rule", "read", "set-href").GetDiag()
 			}
 			if err = d.Set("ip_version", securityGroupRule.IPVersion); err != nil {
-				return diag.FromErr(fmt.Errorf("Error setting ip_version: %s", err))
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting ip_version: %s", err), "(Data) ibm_is_security_group_rule", "read", "set-ip_version").GetDiag()
 			}
 			if err = d.Set("protocol", securityGroupRule.Protocol); err != nil {
-				return diag.FromErr(fmt.Errorf("Error setting protocol: %s", err))
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting protocol: %s", err), "(Data) ibm_is_security_group_rule", "read", "set-protocol").GetDiag()
 			}
 			if securityGroupRule.Remote != nil {
 				securityGroupRuleRemote, err := dataSourceSecurityGroupRuleFlattenRemote(securityGroupRule.Remote)
 				if err != nil {
-					return diag.FromErr(fmt.Errorf("Error flattening securityGroupRule.Remote %s", err))
+					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_security_group_rule", "read", "remote-to-map").GetDiag()
 				}
-				err = d.Set("remote", securityGroupRuleRemote)
+				if err = d.Set("remote", securityGroupRuleRemote); err != nil {
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting remote: %s", err), "(Data) ibm_is_security_group_rule", "read", "set-remote").GetDiag()
+				}
+			}
+			if securityGroupRule.Local != nil {
+				securityGroupRuleLocal, err := dataSourceSecurityGroupRuleFlattenLocal(securityGroupRule.Local)
 				if err != nil {
-					return diag.FromErr(fmt.Errorf("Error setting remote %s", err))
+					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_security_group_rule", "read", "local-to-map").GetDiag()
+				}
+				if err = d.Set("local", securityGroupRuleLocal); err != nil {
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting local: %s", err), "(Data) ibm_is_security_group_rule", "read", "set-local").GetDiag()
 				}
 			}
 
-			if err = d.Set("code", flex.IntValue(securityGroupRule.Code)); err != nil {
-				return diag.FromErr(fmt.Errorf("Error setting code: %s", err))
+			if !core.IsNil(securityGroupRule.Code) {
+				if err = d.Set("code", flex.IntValue(securityGroupRule.Code)); err != nil {
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting code: %s", err), "(Data) ibm_is_security_group_rule", "read", "set-code").GetDiag()
+				}
 			}
-			if err = d.Set("type", flex.IntValue(securityGroupRule.Type)); err != nil {
-				return diag.FromErr(fmt.Errorf("Error setting type: %s", err))
+			if !core.IsNil(securityGroupRule.Type) {
+				if err = d.Set("type", flex.IntValue(securityGroupRule.Type)); err != nil {
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting type: %s", err), "(Data) ibm_is_security_group_rule", "read", "set-type").GetDiag()
+				}
 			}
 		}
 	case "*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolTcpudp":
@@ -216,32 +259,44 @@ func dataSourceIBMIsSecurityGroupRuleRead(context context.Context, d *schema.Res
 
 			d.SetId(*securityGroupRule.ID)
 			if err = d.Set("direction", securityGroupRule.Direction); err != nil {
-				return diag.FromErr(fmt.Errorf("Error setting direction: %s", err))
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting direction: %s", err), "(Data) ibm_is_security_group_rule", "read", "set-direction").GetDiag()
 			}
 			if err = d.Set("href", securityGroupRule.Href); err != nil {
-				return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting href: %s", err), "(Data) ibm_is_security_group_rule", "read", "set-href").GetDiag()
 			}
 			if err = d.Set("ip_version", securityGroupRule.IPVersion); err != nil {
-				return diag.FromErr(fmt.Errorf("Error setting ip_version: %s", err))
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting ip_version: %s", err), "(Data) ibm_is_security_group_rule", "read", "set-ip_version").GetDiag()
 			}
 			if err = d.Set("protocol", securityGroupRule.Protocol); err != nil {
-				return diag.FromErr(fmt.Errorf("Error setting protocol: %s", err))
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting protocol: %s", err), "(Data) ibm_is_security_group_rule", "read", "set-protocol").GetDiag()
 			}
 			if securityGroupRule.Remote != nil {
 				securityGroupRuleRemote, err := dataSourceSecurityGroupRuleFlattenRemote(securityGroupRule.Remote)
 				if err != nil {
-					return diag.FromErr(fmt.Errorf("Error flattening securityGroupRule.Remote %s", err))
+					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_security_group_rule", "read", "remote-to-map").GetDiag()
 				}
-				err = d.Set("remote", securityGroupRuleRemote)
+				if err = d.Set("remote", securityGroupRuleRemote); err != nil {
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting remote: %s", err), "(Data) ibm_is_security_group_rule", "read", "set-remote").GetDiag()
+				}
+			}
+			if securityGroupRule.Local != nil {
+				securityGroupRuleLocal, err := dataSourceSecurityGroupRuleFlattenLocal(securityGroupRule.Local)
 				if err != nil {
-					return diag.FromErr(fmt.Errorf("Error setting remote %s", err))
+					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_security_group_rule", "read", "local-to-map").GetDiag()
+				}
+				if err = d.Set("local", securityGroupRuleLocal); err != nil {
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting local: %s", err), "(Data) ibm_is_security_group_rule", "read", "set-local").GetDiag()
 				}
 			}
-			if err = d.Set("port_max", flex.IntValue(securityGroupRule.PortMax)); err != nil {
-				return diag.FromErr(fmt.Errorf("Error setting port_max: %s", err))
+			if !core.IsNil(securityGroupRule.PortMax) {
+				if err = d.Set("port_max", flex.IntValue(securityGroupRule.PortMax)); err != nil {
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting port_max: %s", err), "(Data) ibm_is_security_group_rule", "read", "set-port_max").GetDiag()
+				}
 			}
-			if err = d.Set("port_min", flex.IntValue(securityGroupRule.PortMin)); err != nil {
-				return diag.FromErr(fmt.Errorf("Error setting port_min: %s", err))
+			if !core.IsNil(securityGroupRule.PortMin) {
+				if err = d.Set("port_min", flex.IntValue(securityGroupRule.PortMin)); err != nil {
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting port_min: %s", err), "(Data) ibm_is_security_group_rule", "read", "set-port_min").GetDiag()
+				}
 			}
 		}
 	}
@@ -289,7 +344,25 @@ func dataSourceSecurityGroupRuleRemoteToMap(remoteItem *vpcv1.SecurityGroupRuleR
 	return remoteMap
 }
 
-func dataSourceSecurityGroupRuleRemoteDeletedToMap(deletedItem *vpcv1.SecurityGroupReferenceDeleted) (resultMap map[string]interface{}) {
+func dataSourceSecurityGroupRuleFlattenLocal(m vpcv1.SecurityGroupRuleLocalIntf) ([]map[string]interface{}, error) {
+	var ruleList []map[string]interface{}
+	ruleMap := dataSourceSecurityGroupRuleLocalToMap(m.(*vpcv1.SecurityGroupRuleLocal))
+	ruleList = append(ruleList, ruleMap)
+	return ruleList, nil
+}
+
+func dataSourceSecurityGroupRuleLocalToMap(localItem *vpcv1.SecurityGroupRuleLocal) (localMap map[string]interface{}) {
+	localMap = map[string]interface{}{}
+	if localItem.Address != nil {
+		localMap["address"] = *localItem.Address
+	}
+	if localItem.CIDRBlock != nil {
+		localMap["cidr_block"] = *localItem.CIDRBlock
+	}
+	return localMap
+}
+
+func dataSourceSecurityGroupRuleRemoteDeletedToMap(deletedItem *vpcv1.Deleted) (resultMap map[string]interface{}) {
 	resultMap = map[string]interface{}{}
 
 	if deletedItem.MoreInfo != nil {

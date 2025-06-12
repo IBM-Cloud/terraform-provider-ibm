@@ -5,6 +5,7 @@ package vpc_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
@@ -29,6 +30,71 @@ func TestAccIBMISImageDataSource_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resName, "architecture"),
 					resource.TestCheckResourceAttrSet(resName, "visibility"),
 					resource.TestCheckResourceAttrSet(resName, "status"),
+				),
+			},
+		},
+	})
+}
+func TestAccIBMISImageDataSource_id404(t *testing.T) {
+	imageId := "8843-5fr454ft-f6-4565-9555-5f889f5f3f7777"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccCheckIBMISImageDataSource404Config(imageId),
+				ExpectError: regexp.MustCompile("Error fetching image with id"),
+			},
+		},
+	})
+}
+func TestAccIBMISImageDataSource_All(t *testing.T) {
+	resName := "data.ibm_is_image.test1"
+	imageName := fmt.Sprintf("tfimage-name-%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISImageDataSourceAllConfig(imageName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(resName, "operating_system.0.name"),
+					resource.TestCheckResourceAttrSet(resName, "operating_system.0.dedicated_host_only"),
+					resource.TestCheckResourceAttrSet(resName, "operating_system.0.display_name"),
+					resource.TestCheckResourceAttrSet(resName, "operating_system.0.family"),
+					resource.TestCheckResourceAttrSet(resName, "operating_system.0.href"),
+					resource.TestCheckResourceAttrSet(resName, "operating_system.0.vendor"),
+					resource.TestCheckResourceAttrSet(resName, "operating_system.0.version"),
+					resource.TestCheckResourceAttrSet(resName, "operating_system.0.architecture"),
+					resource.TestCheckResourceAttrSet(resName, "status"),
+					resource.TestCheckResourceAttrSet(resName, "resource_group.0.id"),
+					resource.TestCheckResourceAttrSet(resName, "resource_group.0.name"),
+				),
+			},
+		},
+	})
+}
+func TestAccIBMISImageDataSource_ilc(t *testing.T) {
+	resName := "data.ibm_is_image.test1"
+	imageName := fmt.Sprintf("tfimage-name-%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISImageDataSourceConfigIlc(imageName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resName, "name", imageName),
+					resource.TestCheckResourceAttrSet(resName, "os"),
+					resource.TestCheckResourceAttrSet(resName, "architecture"),
+					resource.TestCheckResourceAttrSet(resName, "visibility"),
+					resource.TestCheckResourceAttrSet(resName, "status"),
+					resource.TestCheckResourceAttrSet(resName, "created_at"),
+					resource.TestCheckResourceAttrSet(resName, "deprecation_at"),
+					resource.TestCheckResourceAttrSet(resName, "obsolescence_at"),
 				),
 			},
 		},
@@ -119,6 +185,36 @@ func testAccCheckIBMISImageDataSourceConfig(imageName string) string {
 		name = ibm_is_image.isExampleImage.name
 	}`, acc.Image_cos_url, imageName, acc.Image_operating_system)
 }
+
+func testAccCheckIBMISImageDataSource404Config(imageId string) string {
+	return fmt.Sprintf(`
+	data "ibm_is_image" "test1" {
+		identifier = "%s"
+	}`, imageId)
+}
+
+func testAccCheckIBMISImageDataSourceAllConfig(imageName string) string {
+	return fmt.Sprintf(`
+	data "ibm_is_images" "test1" {
+		status = "available"
+	}
+	data "ibm_is_image" "test1" {
+		name = data.ibm_is_images.test1.images.0.name
+	}`)
+}
+
+func testAccCheckIBMISImageDataSourceConfigIlc(imageName string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_image" "isExampleImage" {
+		href = "%s"
+		name = "%s"
+		operating_system = "%s"
+	}
+	data "ibm_is_image" "test1" {
+		name = ibm_is_image.isExampleImage.name
+	}`, acc.Image_cos_url, imageName, acc.Image_operating_system)
+}
+
 func testAccCheckIBMISCatalogImageDataSourceConfig() string {
 	return fmt.Sprintf(`
 	data "ibm_is_images" "test1" {

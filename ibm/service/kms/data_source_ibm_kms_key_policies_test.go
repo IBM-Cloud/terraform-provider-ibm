@@ -63,5 +63,5 @@ func testAccCheckIBMKmsDataSourceKeyPolicyConfigNew(instanceName, keyName string
 		instance_id = "${ibm_kms_key_policies.test2.instance_id}"
 		key_id = "${ibm_kms_key_policies.test2.key_id}"
 	}
-`, instanceName, keyName, rotationEnable, interval_month, enabled)
+`, addPrefixToResourceName(instanceName), keyName, rotationEnable, interval_month, enabled)
 }

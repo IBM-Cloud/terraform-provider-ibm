@@ -34,6 +34,174 @@ func TestAccIBMISImage_basic(t *testing.T) {
 					testAccCheckIBMISImageExists("ibm_is_image.isExampleImage", image),
 					resource.TestCheckResourceAttr(
 						"ibm_is_image.isExampleImage", "name", name),
+					resource.TestCheckResourceAttrSet("ibm_is_image.isExampleImage", "user_data_format"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMISImage_accessTags(t *testing.T) {
+	var image string
+	name := fmt.Sprintf("tfimg-access-tags-%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheckImage(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: checkImageDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISImageAccessTagsConfig(name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISImageExists("ibm_is_image.isExampleImage", image),
+					resource.TestCheckResourceAttr("ibm_is_image.isExampleImage", "name", name),
+					resource.TestCheckResourceAttr("ibm_is_image.isExampleImage", "operating_system", acc.Image_operating_system),
+					resource.TestCheckResourceAttrSet("ibm_is_image.isExampleImage", "user_data_format"),
+					resource.TestCheckResourceAttrSet("ibm_is_image.isExampleImage", "status"),
+					resource.TestCheckResourceAttrSet("ibm_is_image.isExampleImage", "visibility"),
+
+					// Access tags validation
+					resource.TestCheckResourceAttr("ibm_is_image.isExampleImage", "access_tags.#", "1"),
+					resource.TestCheckResourceAttr("ibm_is_image.isExampleImage", "access_tags.0", "test:access"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMISImageAccessTagsConfig(name string) string {
+	return fmt.Sprintf(`
+		resource "ibm_is_image" "isExampleImage" {
+			href             = "%s"
+			name             = "%s"
+			operating_system = "%s"
+			access_tags      = ["test:access"]
+		}
+	`, acc.Image_cos_url, name, acc.Image_operating_system)
+}
+
+func TestAccIBMISImage_lifecycle(t *testing.T) {
+	var image string
+	name := fmt.Sprintf("tfimg-name-%d", acctest.RandIntRange(10, 100))
+	deprecationAt := "2023-09-28T15:10:00.000Z"
+	obsolescenceAt := "2023-11-28T15:10:00.000Z"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheckImage(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: checkImageDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISImageLifecycleConfig(name, deprecationAt, obsolescenceAt),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISImageExists("ibm_is_image.isExampleImage", image),
+					resource.TestCheckResourceAttr(
+						"ibm_is_image.isExampleImage", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_is_image.isExampleImage", "deprecation_at", deprecationAt),
+					resource.TestCheckResourceAttr(
+						"ibm_is_image.isExampleImage", "obsolescence_at", obsolescenceAt),
+				),
+			},
+		},
+	})
+}
+func TestAccIBMISImage_lifecycle_test_steps(t *testing.T) {
+	var image string
+	name := fmt.Sprintf("tfimg-name-%d", acctest.RandIntRange(10, 100))
+	deprecationAt := "2023-09-28T15:10:00.000Z"
+	obsolescenceAt := "2023-11-28T15:10:00.000Z"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheckImage(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: checkImageDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISImageConfig(name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISImageExists("ibm_is_image.isExampleImage", image),
+					resource.TestCheckResourceAttr(
+						"ibm_is_image.isExampleImage", "name", name),
+				),
+			},
+			{
+				Config: testAccCheckIBMISImageLifecycleConfig(name, deprecationAt, obsolescenceAt),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISImageExists("ibm_is_image.isExampleImage", image),
+					resource.TestCheckResourceAttr(
+						"ibm_is_image.isExampleImage", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_is_image.isExampleImage", "deprecation_at", deprecationAt),
+					resource.TestCheckResourceAttr(
+						"ibm_is_image.isExampleImage", "obsolescence_at", obsolescenceAt),
+				),
+			},
+			{
+				Config: testAccCheckIBMISImageLifecycleConfig(name, deprecationAt, "null"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISImageExists("ibm_is_image.isExampleImage", image),
+					resource.TestCheckResourceAttr(
+						"ibm_is_image.isExampleImage", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_is_image.isExampleImage", "status", "available"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_image.isExampleImage", "deprecation_at", deprecationAt),
+					resource.TestCheckResourceAttr(
+						"ibm_is_image.isExampleImage", "obsolescence_at", "null"),
+				),
+			},
+			{
+				Config: testAccCheckIBMISImageLifecycleConfig(name, "null", "null"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISImageExists("ibm_is_image.isExampleImage", image),
+					resource.TestCheckResourceAttr(
+						"ibm_is_image.isExampleImage", "status", "available"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_image.isExampleImage", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_is_image.isExampleImage", "deprecation_at", "null"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_image.isExampleImage", "obsolescence_at", "null"),
+				),
+			},
+		},
+	})
+}
+func TestAccIBMISImage_lifecycle_test_deprecate_obsolete(t *testing.T) {
+	var image string
+	name := fmt.Sprintf("tfimg-name-%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheckImage(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: checkImageDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISImageConfig(name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISImageExists("ibm_is_image.isExampleImage", image),
+					resource.TestCheckResourceAttr(
+						"ibm_is_image.isExampleImage", "name", name),
+				),
+			},
+			{
+				Config: testAccCheckIBMISImageLifecycleDeprecateConfig(name, true),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISImageExists("ibm_is_image.isExampleImage", image),
+					resource.TestCheckResourceAttr(
+						"ibm_is_image.isExampleImage", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_is_image.isExampleImage", "status", "deprecated"),
+				),
+			},
+			{
+				Config: testAccCheckIBMISImageLifecycleObsoleteConfig(name, true, true),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISImageExists("ibm_is_image.isExampleImage", image),
+					resource.TestCheckResourceAttr(
+						"ibm_is_image.isExampleImage", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_is_image.isExampleImage", "status", "obsolete"),
 				),
 			},
 		},
@@ -160,6 +328,38 @@ func testAccCheckIBMISImageConfig(name string) string {
 			operating_system = "%s"
 		}
 	`, acc.Image_cos_url, name, acc.Image_operating_system)
+}
+func testAccCheckIBMISImageLifecycleConfig(name, deprecationAt, obsolescenceAt string) string {
+	return fmt.Sprintf(`
+		resource "ibm_is_image" "isExampleImage" {
+			href = "%s"
+			name = "%s"
+			operating_system = "%s"
+			deprecation_at = "%s"
+			obsolescence_at = "%s"
+		}
+	`, acc.Image_cos_url, name, acc.Image_operating_system, deprecationAt, obsolescenceAt)
+}
+func testAccCheckIBMISImageLifecycleDeprecateConfig(name string, deprecate bool) string {
+	return fmt.Sprintf(`
+		resource "ibm_is_image" "isExampleImage" {
+			href = "%s"
+			name = "%s"
+			operating_system = "%s"
+			deprecate = %t
+		}
+	`, acc.Image_cos_url, name, acc.Image_operating_system, deprecate)
+}
+func testAccCheckIBMISImageLifecycleObsoleteConfig(name string, deprecate, obsolete bool) string {
+	return fmt.Sprintf(`
+		resource "ibm_is_image" "isExampleImage" {
+			href = "%s"
+			name = "%s"
+			operating_system = "%s"
+			deprecate = %t
+			obsolete = %t
+		}
+	`, acc.Image_cos_url, name, acc.Image_operating_system, deprecate, obsolete)
 }
 func testAccCheckIBMISImageConfig1(vpcname, subnetname, sshname, publicKey, instanceName, name string) string {
 	return fmt.Sprintf(`

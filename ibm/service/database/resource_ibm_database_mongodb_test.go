@@ -5,7 +5,6 @@ package database_test
 
 import (
 	"fmt"
-	"regexp"
 	"testing"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
@@ -34,16 +33,12 @@ func TestAccIBMDatabaseInstanceMongodbBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "databases-for-mongodb"),
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
-					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
+					resource.TestCheckResourceAttr(name, "location", acc.Region()),
 					resource.TestCheckResourceAttr(name, "adminuser", "admin"),
-					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "3072"),
-					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "30720"),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "1"),
 					resource.TestCheckResourceAttr(name, "users.#", "1"),
-					resource.TestCheckResourceAttr(name, "connectionstrings.#", "2"),
-					resource.TestCheckResourceAttr(name, "connectionstrings.1.name", "admin"),
-					resource.TestMatchResourceAttr(name, "connectionstrings.1.certname", regexp.MustCompile("[-a-z0-9]*")),
-					resource.TestMatchResourceAttr(name, "connectionstrings.1.certbase64", regexp.MustCompile("^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$")),
+					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "12288"),
+					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "30720"),
 				),
 			},
 			{
@@ -53,14 +48,11 @@ func TestAccIBMDatabaseInstanceMongodbBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "databases-for-mongodb"),
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
-					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
-					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "6144"),
-					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "30720"),
+					resource.TestCheckResourceAttr(name, "location", acc.Region()),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "2"),
 					resource.TestCheckResourceAttr(name, "users.#", "2"),
-					resource.TestCheckResourceAttr(name, "connectionstrings.#", "3"),
-					resource.TestCheckResourceAttr(name, "connectionstrings.2.name", "admin"),
-					resource.TestCheckResourceAttr(name, "connectionstrings.0.scheme", "mongodb"),
+					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "15360"),
+					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "30720"),
 				),
 			},
 			{
@@ -70,12 +62,11 @@ func TestAccIBMDatabaseInstanceMongodbBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "databases-for-mongodb"),
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
-					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
-					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "3072"),
-					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "30720"),
+					resource.TestCheckResourceAttr(name, "location", acc.Region()),
+					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "12288"),
+					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "30720"),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "0"),
 					resource.TestCheckResourceAttr(name, "users.#", "0"),
-					resource.TestCheckResourceAttr(name, "connectionstrings.#", "1"),
 				),
 			},
 			// {
@@ -93,8 +84,8 @@ func TestAccIBMDatabaseInstanceMongodbImport(t *testing.T) {
 	t.Parallel()
 	databaseResourceGroup := "default"
 	var databaseInstanceOne string
+
 	serviceName := fmt.Sprintf("tf-Mongo-%d", acctest.RandIntRange(10, 100))
-	//serviceName := "test_acc"
 	resourceName := "ibm_database." + serviceName
 
 	resource.Test(t, resource.TestCase{
@@ -109,7 +100,7 @@ func TestAccIBMDatabaseInstanceMongodbImport(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "name", serviceName),
 					resource.TestCheckResourceAttr(resourceName, "service", "databases-for-mongodb"),
 					resource.TestCheckResourceAttr(resourceName, "plan", "standard"),
-					resource.TestCheckResourceAttr(resourceName, "location", acc.IcdDbRegion),
+					resource.TestCheckResourceAttr(resourceName, "location", acc.Region()),
 				),
 			},
 			{
@@ -117,7 +108,47 @@ func TestAccIBMDatabaseInstanceMongodbImport(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
-					"wait_time_minutes", "connectionstrings", "plan_validation"},
+					"wait_time_minutes", "deletion_protection"},
+			},
+		},
+	})
+}
+
+func TestAccIBMDatabaseInstanceMongodbUpgrade(t *testing.T) {
+	// IMPORTANT NOTE: The version in testAccCheckIBMDatabaseInstanceMongodbVersionUpgrade will have to be updated when versions deprecate etc. Currently mongo standard can only upgrade to version 7.0
+	t.Parallel()
+	databaseResourceGroup := "default"
+	var databaseInstanceOne string
+	rnd := fmt.Sprintf("tf-Mongo-%d", acctest.RandIntRange(10, 100))
+	testName := rnd
+	name := "ibm_database." + testName
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMDatabaseInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMDatabaseInstanceMongodbVersion6(databaseResourceGroup, testName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
+					resource.TestCheckResourceAttr(name, "name", testName),
+					resource.TestCheckResourceAttr(name, "service", "databases-for-mongodb"),
+					resource.TestCheckResourceAttr(name, "plan", "standard"),
+					resource.TestCheckResourceAttr(name, "location", acc.Region()),
+					resource.TestCheckResourceAttr(name, "version", "6.0"),
+				),
+			},
+			{
+				Config: testAccCheckIBMDatabaseInstanceMongodbVersionUpgrade(databaseResourceGroup, testName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
+					resource.TestCheckResourceAttr(name, "name", testName),
+					resource.TestCheckResourceAttr(name, "service", "databases-for-mongodb"),
+					resource.TestCheckResourceAttr(name, "plan", "standard"),
+					resource.TestCheckResourceAttr(name, "location", acc.Region()),
+					resource.TestCheckResourceAttr(name, "version", "7.0"),
+				),
 			},
 		},
 	})
@@ -128,26 +159,77 @@ func testAccCheckIBMDatabaseInstanceMongodbBasic(databaseResourceGroup string, n
 	data "ibm_resource_group" "test_acc" {
 		name = "%[1]s"
 	}
-	  
+
 	resource "ibm_database" "%[2]s" {
 		resource_group_id            = data.ibm_resource_group.test_acc.id
 		name                         = "%[2]s"
 		service                      = "databases-for-mongodb"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
-		members_memory_allocation_mb = 3072
-		members_disk_allocation_mb   = 30720
+		adminpassword                = "secure-Password12345"
+		service_endpoints            = "public"
+		group {
+			group_id = "member"
+			memory {
+				allocation_mb = 4096
+			}
+			host_flavor {
+				id = "multitenant"
+			}
+			disk {
+				allocation_mb = 10240
+			}
+		}
 		users {
 		  name     = "user123"
-		  password = "password12"
+		  password = "secure-Password12345"
 		}
 		allowlist {
 		  address     = "172.168.1.2/32"
 		  description = "desc1"
 		}
 	}
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
+				`, databaseResourceGroup, name, acc.Region())
+}
+
+func testAccCheckIBMDatabaseInstanceMongodbVersion6(databaseResourceGroup string, name string) string {
+	// IMPORTANT NOTE: The version will have to be updated when version 6 is no longer available. Currently mongo standard can only upgrade to version 7.0
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "test_acc" {
+		name = "%[1]s"
+	}
+
+	resource "ibm_database" "%[2]s" {
+		resource_group_id            = data.ibm_resource_group.test_acc.id
+		name                         = "%[2]s"
+		service                      = "databases-for-mongodb"
+		plan                         = "standard"
+		location                     = "%[3]s"
+		version                		 = "6.0"
+		service_endpoints            = "private"
+		
+	}
+				`, databaseResourceGroup, name, acc.Region())
+}
+
+func testAccCheckIBMDatabaseInstanceMongodbVersionUpgrade(databaseResourceGroup string, name string) string {
+	// IMPORTANT NOTE: The version will have to be updated when version 6.0 is no longer available. Currently mongo standard can only upgrade to version 7.0
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "test_acc" {
+		name = "%[1]s"
+	}
+
+	resource "ibm_database" "%[2]s" {
+		resource_group_id            = data.ibm_resource_group.test_acc.id
+		name                         = "%[2]s"
+		service                      = "databases-for-mongodb"
+		plan                         = "standard"
+		location                     = "%[3]s"
+		version                		 = "7.0"
+		version_upgrade_skip_backup  = true
+		service_endpoints            = "private"
+	}
+				`, databaseResourceGroup, name, acc.Region())
 }
 
 func testAccCheckIBMDatabaseInstanceMongodbFullyspecified(databaseResourceGroup string, name string) string {
@@ -155,23 +237,34 @@ func testAccCheckIBMDatabaseInstanceMongodbFullyspecified(databaseResourceGroup 
 	data "ibm_resource_group" "test_acc" {
 		name = "%[1]s"
 	}
-	  
+
 	resource "ibm_database" "%[2]s" {
 		resource_group_id            = data.ibm_resource_group.test_acc.id
 		name                         = "%[2]s"
 		service                      = "databases-for-mongodb"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
-		members_memory_allocation_mb = 6144
-		members_disk_allocation_mb   = 30720
+		adminpassword                = "secure-Password12345"
+		service_endpoints            = "public"
+		group {
+			group_id = "member"
+			memory {
+				allocation_mb = 5120
+			}
+			host_flavor {
+				id = "multitenant"
+			}
+			disk {
+				allocation_mb = 10240
+			}
+		}
 		users {
 		  name     = "user123"
-		  password = "password12"
+		  password = "secure-Password12345"
 		}
 		users {
 		  name     = "user124"
-		  password = "password12"
+		  password = "secure-Password12345"
 		}
 		allowlist {
 		  address     = "172.168.1.2/32"
@@ -182,7 +275,7 @@ func testAccCheckIBMDatabaseInstanceMongodbFullyspecified(databaseResourceGroup 
 		  description = "desc"
 		}
 	}
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
+				`, databaseResourceGroup, name, acc.Region())
 }
 
 func testAccCheckIBMDatabaseInstanceMongodbReduced(databaseResourceGroup string, name string) string {
@@ -190,19 +283,30 @@ func testAccCheckIBMDatabaseInstanceMongodbReduced(databaseResourceGroup string,
 	data "ibm_resource_group" "test_acc" {
 		name = "%[1]s"
 	}
-	  
+
 	resource "ibm_database" "%[2]s" {
 		resource_group_id            = data.ibm_resource_group.test_acc.id
 		name                         = "%[2]s"
 		service                      = "databases-for-mongodb"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
-		members_memory_allocation_mb = 3072
-		members_disk_allocation_mb   = 30720
+		adminpassword                = "secure-Password12345"
+		service_endpoints            = "public"
+		group {
+			group_id = "member"
+			memory {
+				allocation_mb = 4096
+			}
+			host_flavor {
+				id = "multitenant"
+			}
+			disk {
+				allocation_mb = 10240
+			}
+		}
 	}
-	  
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
+
+				`, databaseResourceGroup, name, acc.Region())
 }
 
 func testAccCheckIBMDatabaseInstanceMongodbImport(databaseResourceGroup string, name string) string {
@@ -211,14 +315,15 @@ func testAccCheckIBMDatabaseInstanceMongodbImport(databaseResourceGroup string, 
 		is_default = true
 		# name = "%[1]s"
 	}
-	  
+
 	resource "ibm_database" "%[2]s" {
 		resource_group_id = data.ibm_resource_group.test_acc.id
 		name              = "%[2]s"
 		service           = "databases-for-mongodb"
 		plan              = "standard"
 		location          = "%[3]s"
+		service_endpoints            = "public"
 	}
-	  
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
+
+				`, databaseResourceGroup, name, acc.Region())
 }

@@ -6,12 +6,9 @@ package secretsmanager
 import (
 	"context"
 	"fmt"
-	"log"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/secrets-manager-go-sdk/v2/secretsmanagerv2"
 )
@@ -22,9 +19,11 @@ func DataSourceIbmSmArbitrarySecret() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"secret_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The ID of the secret.",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ExactlyOneOf: []string{"secret_id", "name"},
+				Description:  "The ID of the secret.",
 			},
 			"created_by": &schema.Schema{
 				Type:        schema.TypeString,
@@ -73,14 +72,23 @@ func DataSourceIbmSmArbitrarySecret() *schema.Resource {
 				Description: "The number of locks of the secret.",
 			},
 			"name": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The human-readable name of your secret.",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ExactlyOneOf: []string{"secret_id", "name"},
+				RequiredWith: []string{"secret_group_name"},
+				Description:  "The human-readable name of your secret.",
 			},
 			"secret_group_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "A v4 UUID identifier, or `default` secret group.",
+				Description: "A UUID identifier, or `default` secret group.",
+			},
+			"secret_group_name": &schema.Schema{
+				Type:         schema.TypeString,
+				Optional:     true,
+				RequiredWith: []string{"name"},
+				Description:  "The human-readable name of your secret group.",
 			},
 			"secret_type": &schema.Schema{
 				Type:        schema.TypeString,
@@ -123,42 +131,32 @@ func DataSourceIbmSmArbitrarySecret() *schema.Resource {
 }
 
 func dataSourceIbmSmArbitrarySecretRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
-	if err != nil {
-		return diag.FromErr(err)
+	secret, region, instanceId, diagError := getSecretByIdOrByName(context, d, meta, ArbitrarySecretType, ArbitrarySecretResourceName)
+	if diagError != nil {
+		return diagError
 	}
 
-	region := getRegion(secretsManagerClient, d)
-	instanceId := d.Get("instance_id").(string)
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
+	arbitrarySecret := secret.(*secretsmanagerv2.ArbitrarySecret)
+	d.SetId(fmt.Sprintf("%s/%s/%s", region, instanceId, *arbitrarySecret.ID))
 
-	getSecretOptions := &secretsmanagerv2.GetSecretOptions{}
-
-	secretId := d.Get("secret_id").(string)
-	getSecretOptions.SetID(secretId)
-
-	secretIntf, response, err := secretsManagerClient.GetSecretWithContext(context, getSecretOptions)
-	if err != nil {
-		log.Printf("[DEBUG] GetSecretWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetSecretWithContext failed %s\n%s", err, response))
-	}
-	arbitrarySecret := secretIntf.(*secretsmanagerv2.ArbitrarySecret)
-
-	d.SetId(fmt.Sprintf("%s/%s/%s", region, instanceId, secretId))
-
+	var err error
 	if err = d.Set("region", region); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting region: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting region"), fmt.Sprintf("(Data) %s", ArbitrarySecretResourceName), "read")
+		return tfErr.GetDiag()
 	}
 	if err = d.Set("created_by", arbitrarySecret.CreatedBy); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting created_by: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting created_by"), fmt.Sprintf("(Data) %s", ArbitrarySecretResourceName), "read")
+		return tfErr.GetDiag()
 	}
 
 	if err = d.Set("created_at", DateTimeToRFC3339(arbitrarySecret.CreatedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting created_at"), fmt.Sprintf("(Data) %s", ArbitrarySecretResourceName), "read")
+		return tfErr.GetDiag()
 	}
 
 	if err = d.Set("crn", arbitrarySecret.Crn); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting crn"), fmt.Sprintf("(Data) %s", ArbitrarySecretResourceName), "read")
+		return tfErr.GetDiag()
 	}
 
 	if arbitrarySecret.CustomMetadata != nil {
@@ -168,59 +166,73 @@ func dataSourceIbmSmArbitrarySecretRead(context context.Context, d *schema.Resou
 		}
 
 		if err = d.Set("custom_metadata", flex.Flatten(convertedMap)); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting custom_metadata: %s", err))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting custom_metadata"), fmt.Sprintf("(Data) %s", ArbitrarySecretResourceName), "read")
+			return tfErr.GetDiag()
 		}
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting custom_metadata %s", err))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting custom_metadata"), fmt.Sprintf("(Data) %s", ArbitrarySecretResourceName), "read")
+			return tfErr.GetDiag()
 		}
 	}
 
 	if err = d.Set("description", arbitrarySecret.Description); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting description: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting description"), fmt.Sprintf("(Data) %s", ArbitrarySecretResourceName), "read")
+		return tfErr.GetDiag()
 	}
 
 	if err = d.Set("downloaded", arbitrarySecret.Downloaded); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting downloaded: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting downloaded"), fmt.Sprintf("(Data) %s", ArbitrarySecretResourceName), "read")
+		return tfErr.GetDiag()
 	}
 
 	if err = d.Set("locks_total", flex.IntValue(arbitrarySecret.LocksTotal)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting locks_total: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting locks_total"), fmt.Sprintf("(Data) %s", ArbitrarySecretResourceName), "read")
+		return tfErr.GetDiag()
 	}
 
 	if err = d.Set("name", arbitrarySecret.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting name"), fmt.Sprintf("(Data) %s", ArbitrarySecretResourceName), "read")
+		return tfErr.GetDiag()
 	}
 
 	if err = d.Set("secret_group_id", arbitrarySecret.SecretGroupID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting secret_group_id: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting secret_group_id"), fmt.Sprintf("(Data) %s", ArbitrarySecretResourceName), "read")
+		return tfErr.GetDiag()
 	}
 
 	if err = d.Set("secret_type", arbitrarySecret.SecretType); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting secret_type: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting secret_type"), fmt.Sprintf("(Data) %s", ArbitrarySecretResourceName), "read")
+		return tfErr.GetDiag()
 	}
 
 	if err = d.Set("state", flex.IntValue(arbitrarySecret.State)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting state: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting state"), fmt.Sprintf("(Data) %s", ArbitrarySecretResourceName), "read")
+		return tfErr.GetDiag()
 	}
 
 	if err = d.Set("state_description", arbitrarySecret.StateDescription); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting state_description: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting state_description"), fmt.Sprintf("(Data) %s", ArbitrarySecretResourceName), "read")
+		return tfErr.GetDiag()
 	}
 
 	if err = d.Set("updated_at", DateTimeToRFC3339(arbitrarySecret.UpdatedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting updated_at"), fmt.Sprintf("(Data) %s", ArbitrarySecretResourceName), "read")
+		return tfErr.GetDiag()
 	}
 
 	if err = d.Set("versions_total", flex.IntValue(arbitrarySecret.VersionsTotal)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting versions_total: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting versions_total"), fmt.Sprintf("(Data) %s", ArbitrarySecretResourceName), "read")
+		return tfErr.GetDiag()
 	}
 
 	if err = d.Set("expiration_date", DateTimeToRFC3339(arbitrarySecret.ExpirationDate)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting expiration_date: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting expiration_date"), fmt.Sprintf("(Data) %s", ArbitrarySecretResourceName), "read")
+		return tfErr.GetDiag()
 	}
 
 	if err = d.Set("payload", arbitrarySecret.Payload); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting payload: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting payload"), fmt.Sprintf("(Data) %s", ArbitrarySecretResourceName), "read")
+		return tfErr.GetDiag()
 	}
 
 	return nil

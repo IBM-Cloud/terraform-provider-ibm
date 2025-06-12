@@ -8,12 +8,12 @@ subcategory: "Context Based Restrictions"
 
 # ibm_cbr_zone
 
-Provides a resource for cbr_zone. This allows cbr_zone to be created, updated and deleted.
+Create, update, and delete cbr_zones with this resource.
 
-## Example Usage to create a zone with excluded addresses
+## Example Usage
 
 ```hcl
-resource "ibm_cbr_zone" "cbr_zone" {
+resource "ibm_cbr_zone" "cbr_zone_instance" {
   account_id = "12ab34cd56ef78ab90cd12ef34ab56cd"
   addresses {
     type = "ipAddress"
@@ -42,15 +42,15 @@ resource "ibm_cbr_zone" "cbr_zone" {
 
 ## Argument Reference
 
-Review the argument reference that you can specify for your resource.
+You can specify the following arguments for this resource.
 
 * `account_id` - (Optional, String) The id of the account owning this zone.
   * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9\-]+$/`.
 * `addresses` - (Optional, List) The list of addresses in the zone.
-  * Constraints: The maximum length is `1000` items. The minimum length is `1` item.
-Nested scheme for **addresses**:
+  * Constraints: The maximum length is `1000` items. The minimum length is `0` items.
+Nested schema for **addresses**:
 	* `ref` - (Optional, List) A service reference value.
-	Nested scheme for **ref**:
+	Nested schema for **ref**:
 		* `account_id` - (Required, String) The id of the account owning the service.
 		  * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9\-]+$/`.
 		* `location` - (Optional, String) The location.
@@ -69,9 +69,9 @@ Nested scheme for **addresses**:
   * Constraints: The maximum length is `300` characters. The minimum length is `0` characters. The value must match regular expression `/^[\x20-\xFE]*$/`.
 * `excluded` - (Optional, List) The list of excluded addresses in the zone. Only addresses of type `ipAddress`, `ipRange`, and `subnet` can be excluded.
   * Constraints: The maximum length is `1000` items.
-Nested scheme for **excluded**:
+Nested schema for **excluded**:
 	* `ref` - (Optional, List) A service reference value.
-	Nested scheme for **ref**:
+	Nested schema for **ref**:
 		* `account_id` - (Required, String) The id of the account owning the service.
 		  * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9\-]+$/`.
 		* `location` - (Optional, String) The location.
@@ -91,7 +91,7 @@ Nested scheme for **excluded**:
 
 ## Attribute Reference
 
-In addition to all argument references listed, you can access the following attribute references after your resource is created.
+After your resource is created, you can read values from the listed arguments and the following attributes.
 
 * `id` - The unique identifier of the cbr_zone.
 * `address_count` - (Integer) The number of addresses in the zone.
@@ -103,63 +103,13 @@ In addition to all argument references listed, you can access the following attr
 * `last_modified_at` - (String) The last time the resource was modified.
 * `last_modified_by_id` - (String) IAM ID of the user or service which modified the resource.
 
-* `version` - Version of the cbr_zone.
-
-## Provider Configuration
-
-The IBM Cloud provider offers a flexible means of providing credentials for authentication. The following methods are supported, in this order, and explained below:
-
-- Static credentials
-- Environment variables
-
-To find which credentials are required for this resource, see the service table [here](https://cloud.ibm.com/docs/ibm-cloud-provider-for-terraform?topic=ibm-cloud-provider-for-terraform-provider-reference#required-parameters).
-
-### Static credentials
-
-You can provide your static credentials by adding the `ibmcloud_api_key`, `iaas_classic_username`, and `iaas_classic_api_key` arguments in the IBM Cloud provider block.
-
-Usage:
-```
-provider "ibm" {
-    ibmcloud_api_key = ""
-    iaas_classic_username = ""
-    iaas_classic_api_key = ""
-}
-```
-
-### Environment variables
-
-You can provide your credentials by exporting the `IC_API_KEY`, `IAAS_CLASSIC_USERNAME`, and `IAAS_CLASSIC_API_KEY` environment variables, representing your IBM Cloud platform API key, IBM Cloud Classic Infrastructure (SoftLayer) user name, and IBM Cloud infrastructure API key, respectively.
-
-```
-provider "ibm" {}
-```
-
-Usage:
-```
-export IC_API_KEY="ibmcloud_api_key"
-export IAAS_CLASSIC_USERNAME="iaas_classic_username"
-export IAAS_CLASSIC_API_KEY="iaas_classic_api_key"
-terraform plan
-```
-
-Note:
-
-1. Create or find your `ibmcloud_api_key` and `iaas_classic_api_key` [here](https://cloud.ibm.com/iam/apikeys).
-  - Select `My IBM Cloud API Keys` option from view dropdown for `ibmcloud_api_key`
-  - Select `Classic Infrastructure API Keys` option from view dropdown for `iaas_classic_api_key`
-2. For iaas_classic_username
-  - Go to [Users](https://cloud.ibm.com/iam/users)
-  - Click on user.
-  - Find user name in the `VPN password` section under `User Details` tab
-
-For more informaton, see [here](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs#authentication).
+* `etag` - ETag identifier for cbr_zone.
 
 ## Import
 
 You can import the `ibm_cbr_zone` resource by using `id`. The globally unique ID of the zone.
 
 # Syntax
-```
-$ terraform import ibm_cbr_zone.cbr_zone <id>
-```
+<pre>
+$ terraform import ibm_cbr_zone.cbr_zone &lt;id&gt;
+</pre>

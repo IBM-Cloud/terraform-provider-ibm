@@ -9,8 +9,8 @@ import (
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-
 	"github.com/IBM/networking-go-sdk/directlinkv1"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -87,6 +87,7 @@ func testAccCheckIBMDLGatewayVCConfig(vctype, vcName, gatewayname, custname, car
 	  `, vpcname, gatewayname, custname, carriername, vcName, vctype)
 
 }
+
 func testAccCheckIBMDLGatewayVCDestroy(s *terraform.State) error {
 	directLink, err := directlinkClient(acc.TestAccProvider.Meta())
 	if err != nil {

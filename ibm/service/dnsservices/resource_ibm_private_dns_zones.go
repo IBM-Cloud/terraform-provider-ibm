@@ -115,8 +115,7 @@ func resourceIBMPrivateDNSZoneCreate(d *schema.ResourceData, meta interface{}) e
 	if v, ok := d.GetOk(pdnsZoneLabel); ok {
 		zoneLabel = v.(string)
 	}
-	createZoneOptions := sess.NewCreateDnszoneOptions(instanceID)
-	createZoneOptions.SetName(zoneName)
+	createZoneOptions := sess.NewCreateDnszoneOptions(instanceID, zoneName)
 	createZoneOptions.SetDescription(zoneDescription)
 	createZoneOptions.SetLabel(zoneLabel)
 	response, detail, err := sess.CreateDnszone(createZoneOptions)
@@ -148,8 +147,8 @@ func resourceIBMPrivateDNSZoneRead(d *schema.ResourceData, meta interface{}) err
 	d.Set(pdnsZoneName, response.Name)
 	d.Set(pdnsZoneDescription, response.Description)
 	d.Set(pdnsZoneLabel, response.Label)
-	d.Set(pdnsZoneCreatedOn, response.CreatedOn)
-	d.Set(pdnsZoneModifiedOn, response.ModifiedOn)
+	d.Set(pdnsZoneCreatedOn, response.CreatedOn.String())
+	d.Set(pdnsZoneModifiedOn, response.ModifiedOn.String())
 	d.Set(pdnsZoneState, response.State)
 
 	return nil

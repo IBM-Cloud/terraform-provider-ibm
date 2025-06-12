@@ -73,8 +73,8 @@ func testAccCheckIBMIAMAuthorizationPoliciesDataSourceMultiplePolicies() string 
 		resource "ibm_iam_authorization_policy" "policy1" {
 			source_service_name  = "is"
 			source_resource_type = "load-balancer"
-			target_service_name  = "cloudcerts"
-			roles                = ["Reader"]
+			target_service_name  = "secrets-manager"
+			roles                = ["SecretsReader"]
 		}
 		`
 }

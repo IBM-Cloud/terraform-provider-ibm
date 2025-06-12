@@ -383,6 +383,8 @@ func expandAddOns(d *schema.ResourceData, meta interface{}, cluster string, targ
 
 	if !manageAllAddons {
 		d.Set("managed_addons", flex.FlattenStringList(addOnName))
+	} else {
+		d.Set("managed_addons", nil)
 	}
 
 	return addOns, nil
@@ -430,17 +432,15 @@ func resourceIBMContainerAddOnsRead(d *schema.ResourceData, meta interface{}) er
 		return err
 	}
 	d.Set("cluster", cluster)
-	manageAllAddons := d.Get("manage_all_addons").(bool)
 	var addOns *schema.Set
-	if !manageAllAddons {
-
-		addOns, err = flattenAddOn(d, result)
-
-	} else {
-
+	manageAllAddons := d.Get("manage_all_addons")
+	managed_addons := d.Get("managed_addons").([]interface{})
+	if manageAllAddons.(bool) || len(managed_addons) == 0 {
 		addOns, err = flattenAddOns(result)
+		d.Set("managed_addons", nil)
+	} else {
+		addOns, err = flattenAddOn(d, result)
 	}
-
 	if err != nil {
 		fmt.Printf("Error Flattening Addons list %s", err)
 	}
@@ -528,9 +528,20 @@ func flattenAddOns(result []v1.AddOn) (resp *schema.Set, err error) {
 }
 func resourceIBMContainerAddOnsUpdate(d *schema.ResourceData, meta interface{}) error {
 	manageAllAddons := d.Get("manage_all_addons").(bool)
+	managed_addons := d.Get("managed_addons").([]interface{})
 	var addOnName []string
+	// If the user wants terraform to manage the defined addons
 	if !manageAllAddons {
-		managed_addons := d.Get("managed_addons").([]interface{})
+		// User has requested to manage addons after terraform creation and initialisation, but there is no change in the addon configuration
+		if len(managed_addons) == 0 {
+			if !d.HasChange("addons") {
+				addOnSet := d.Get("addons").(*schema.Set).List()
+				for _, aoSet := range addOnSet {
+					ao, _ := aoSet.(map[string]interface{})
+					addOnName = append(addOnName, ao["name"].(string))
+				}
+			}
+		}
 		for _, v := range managed_addons {
 			addOnName = append(addOnName, v.(string))
 		}
@@ -557,6 +568,14 @@ func resourceIBMContainerAddOnsUpdate(d *schema.ResourceData, meta interface{}) 
 			newList = new(schema.Set)
 		}
 		os := oldList.(*schema.Set)
+		// manage_all_addons was not previously set to false and the user has added additional or upgraded the existing addons, we set managed_addons to hold the old values
+		if !manageAllAddons && len(managed_addons) == 0 {
+			addOnSet := os.List()
+			for _, aoSet := range addOnSet {
+				ao, _ := aoSet.(map[string]interface{})
+				addOnName = append(addOnName, ao["name"].(string))
+			}
+		}
 		ns := newList.(*schema.Set)
 		for _, nA := range ns.List() {
 			newPack := nA.(map[string]interface{})
@@ -665,6 +684,8 @@ func resourceIBMContainerAddOnsUpdate(d *schema.ResourceData, meta interface{}) 
 
 	if !manageAllAddons {
 		d.Set("managed_addons", flex.FlattenStringList(addOnName))
+	} else {
+		d.Set("managed_addons", nil)
 	}
 
 	return resourceIBMContainerAddOnsRead(d, meta)

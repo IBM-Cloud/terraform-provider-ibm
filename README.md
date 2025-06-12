@@ -124,52 +124,37 @@ Issuing `make testacc` will now run the testcase with names matching `TestAccIBM
 
 You will also need to export the following environment variables for running the Acceptance tests.
 * `IC_API_KEY`- The IBM Cloud API Key
+* `IC_REGION` - The IBM Cloud [region](https://cloud.ibm.com/docs/overview?topic=overview-locations) used by test resources - defaults to `us-south`
 * `IAAS_CLASSIC_API_KEY` - The IBM Cloud Classic Infrastructure API Key
 * `IAAS_CLASSIC_USERNAME` - The IBM Cloud Classic Infrastructure username associated with the Classic InfrastAPI Key.
 
 Additional environment variables may be required depending on the tests being run. Check console log for warning messages about required variables. 
 
+Alternatively, look for the name of the function by PreCheck under the specific test case and inspect [ibm/acctest/acctest.go](https://github.com/IBM-Cloud/terraform-provider-ibm/blob/master/ibm/acctest/acctest.go) to find the list of environment variables required for the test.
 
-# IBM Cloud Ansible Modules
+```
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+```
 
-An implementation of generated Ansible modules using the
-[IBM Cloud Terraform Provider].
+## Related projects
 
-## Prerequisites
+### Ansible Collection for IBM Cloud
 
-1. Install [Python3]
+An Ansible Collection package contains many Ansible Modules,
+each Ansible Module is a wrapper around resource or data source
+elements of the **Terraform Provider for IBM Cloud**.
+At each execution of an Ansible Module, on-the-fly Terraform
+code is generated and executed for the intended outcome.
 
-2. [RedHat Ansible] 2.8+
+Compatible with Ansible Core 2.12+, various
+[example Ansible Playbooks](https://github.com/IBM-Cloud/ansible-collection-ibm#example-ansible-playbooks)
+are provided to show how to use
+the Ansible Modules from the Ansible Collection for IBM Cloud.
 
-    ```
-    pip install "ansible>=2.8.0"
-    ```
-
-
-## Install
-
-1. Download IBM Cloud Ansible modules from [release page]
-
-2. Extract module archive.
-
-    ```
-    unzip ibmcloud_ansible_modules.zip
-    ```
-
-3. Add modules and module_utils to the [Ansible search path]. E.g.:
-
-    ```
-    cp build/modules/* $HOME/.ansible/plugins/modules/.
-    cp build/module_utils/* $HOME/.ansible/plugins/module_utils/.
-
-    ```
-
-### Example Projects
-
-1. [VPC Virtual Server Instance](examples/ansible/examples/simple-vm-ssh/)
-
-2. [Power Virtual Server Instance](examples/ansible/examples/simple-vm-power-vs/)
-
+See more information on the package index entry
+[ibm.cloudcollection Ansible Collection - Ansible Galaxy](https://galaxy.ansible.com/ui/repo/published/ibm/cloudcollection).
 
 [IBM Cloud Terraform Provider]: https://github.com/IBM-Cloud/terraform-provider-ibm
 [Python3]: https://www.python.org/downloads/

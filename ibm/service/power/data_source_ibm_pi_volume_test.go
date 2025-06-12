@@ -13,6 +13,7 @@ import (
 )
 
 func TestAccIBMPIVolumeDataSource_basic(t *testing.T) {
+	volumeRes := "data.ibm_pi_volume.testacc_ds_volume"
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
@@ -20,7 +21,7 @@ func TestAccIBMPIVolumeDataSource_basic(t *testing.T) {
 			{
 				Config: testAccCheckIBMPIVolumeDataSourceConfig(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_pi_volume.testacc_ds_volume", "id"),
+					resource.TestCheckResourceAttrSet(volumeRes, "id"),
 				),
 			},
 		},
@@ -29,11 +30,10 @@ func TestAccIBMPIVolumeDataSource_basic(t *testing.T) {
 
 func testAccCheckIBMPIVolumeDataSourceConfig() string {
 	return fmt.Sprintf(`
-data "ibm_pi_volume" "testacc_ds_volume" {
-    pi_volume_name       = "%s"
-    pi_cloud_instance_id = "%s"
-}`, acc.Pi_volume_name, acc.Pi_cloud_instance_id)
-
+		data "ibm_pi_volume" "testacc_ds_volume" {
+			pi_volume_name       = "%s"
+			pi_cloud_instance_id = "%s"
+		}`, acc.Pi_volume_name, acc.Pi_cloud_instance_id)
 }
 
 func TestAccIBMPIVolumeDataSource_replication(t *testing.T) {
@@ -55,9 +55,8 @@ func TestAccIBMPIVolumeDataSource_replication(t *testing.T) {
 
 func testAccCheckIBMPIVolumeDataSourceReplicationConfig() string {
 	return fmt.Sprintf(`
-data "ibm_pi_volume" "testacc_ds_volume" {
-    pi_volume_name       = "%s"
-    pi_cloud_instance_id = "%s"
-}`, acc.Pi_replication_volume_name, acc.Pi_cloud_instance_id)
-
+		data "ibm_pi_volume" "testacc_ds_volume" {
+			pi_volume_name       = "%s"
+			pi_cloud_instance_id = "%s"
+		}`, acc.Pi_replication_volume_name, acc.Pi_cloud_instance_id)
 }

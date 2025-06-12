@@ -6,7 +6,7 @@ provider "ibm" {
 resource "ibm_cbr_zone" "cbr_zone_instance" {
   name = "A terraform example of network zone"
   account_id = var.ibmcloud_account_id
-  description = "A terraform example of network zone"
+  description = var.cbr_zone_description
   addresses {
     type = "ipAddress"
     value = "169.23.56.234"
@@ -15,10 +15,22 @@ resource "ibm_cbr_zone" "cbr_zone_instance" {
     type = "ipRange"
     value = "169.23.22.0-169.23.22.255"
   }
-  excluded {
+  addresses {
+    type = "vpc"
+    value = var.cbr_zone_vpc
+  }
+  addresses {
+    type = "serviceRef"
+    ref {
+      service_name = "cloud-object-storage"
+      account_id = var.ibmcloud_account_id
+      location = "na"
+   }
+ }
+ excluded {
     type  = "ipAddress"
     value = "169.23.22.10"
-  }
+ }
 }
 
 // Provision cbr_rule resource instance
@@ -28,6 +40,14 @@ resource "ibm_cbr_rule" "cbr_rule_instance" {
     attributes {
       name = "networkZoneId"
       value = ibm_cbr_zone.cbr_zone_instance.id
+    }
+    attributes {
+      name  = "mfa"
+      value = "LEVEL1"
+    }
+    attributes {
+      name  = "endpointType"
+      value = "public"
     }
   }
   resources {

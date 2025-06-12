@@ -68,7 +68,7 @@ Review the argument references that you can specify for your resource.
 - `labels` - (Optional, Map) A list of labels that you want to add to your worker pool. The labels can help you find the worker pool more easily later.
 - `machine_type` - (Required, Forces new resource, String) The machine type for your worker node. The machine type determines the amount of memory, CPU, and disk space that is available to the worker node. For an overview of supported machine types, see [Planning your worker node setup](https://cloud.ibm.com/docs/containers?topic=containers-planning_worker_nodes).
 - `name` - (Required, Forces new resource, String) The name of the worker pool.
-- `operating_system` - (Optional, Forces new resource, String) The operating system of the workers in the worker pool. For supported options, see [Red Hat OpenShift on IBM Cloud version information](https://cloud.ibm.com/docs/openshift?topic=openshift-openshift_versions) or [IBM Cloud Kubernetes Service version information](https://cloud.ibm.com/docs/containers?topic=containers-cs_versions).
+- `operating_system` - (Optional, String) The operating system of the workers in the worker pool. For supported options, see [Red Hat OpenShift on IBM Cloud version information](https://cloud.ibm.com/docs/openshift?topic=openshift-openshift_versions) or [IBM Cloud Kubernetes Service version information](https://cloud.ibm.com/docs/containers?topic=containers-cs_versions). **Note:** You will need to update or replace your workers for the change to take effect. Using terraform you can set the `ibm_container_cluster.update_all_workers` parameter to `true`.
 - `resource_group_id` - (Optional, Forces new resource, String) The ID of the resource group where your cluster is provisioned into. To list resource groups, run `ibmcloud resource groups` or use the `ibm_resource_group` data source.
 - `size_per_zone`  - (Required, Integer) The number of worker nodes per zone that you want to add to the worker pool.
 - `taints` - (Optional, Set) A nested block that sets or removes Kubernetes taints for all worker nodes in a worker pool
@@ -77,6 +77,8 @@ Review the argument references that you can specify for your resource.
   - `key` - (Required, String) Key for taint.
   - `value` - (Required, String) Value for taint.
   - `effect` - (Required, String) Effect for taint. Accepted values are `NoSchedule`, `PreferNoSchedule`, and `NoExecute`.
+- `import_on_create` - (Optional, Bool) Import an existing WorkerPool from the cluster, instead of creating a new.
+- `orphan_on_delete` - (Optional, Bool) Orphan the Worker Pool resource, instead of deleting it. The argument allows the user to remove the worker pool from the state, without deleting the actual cloud resource. The worker pool can be re-imported into the state using the `import_on_create` argument.
  
 
 **Deprecated reference**

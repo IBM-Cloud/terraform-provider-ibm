@@ -8,7 +8,7 @@ subcategory: "Code Engine"
 
 # ibm_code_engine_build
 
-Provides a read-only data source for code_engine_build. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+Provides a read-only data source to retrieve information about a code_engine_build. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
 
 ## Example Usage
 
@@ -21,18 +21,19 @@ data "ibm_code_engine_build" "code_engine_build" {
 
 ## Argument Reference
 
-Review the argument reference that you can specify for your data source.
+You can specify the following arguments for this data source.
 
 * `name` - (Required, Forces new resource, String) The name of your build.
-  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[a-z0-9]([\\-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([\\-a-z0-9]*[a-z0-9])?)*$/`.
+  * Constraints: The maximum length is `63` characters. The minimum length is `1` character. The value must match regular expression `/^[a-z0-9]([\\-a-z0-9]*[a-z0-9])?$/`.
 * `project_id` - (Required, Forces new resource, String) The ID of the project.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}$/`.
 
 ## Attribute Reference
 
-In addition to all argument references listed, you can access the following attribute references after your data source is created.
+After your data source is created, you can read values from the following attributes.
 
 * `id` - The unique identifier of the code_engine_build.
+
 * `build_id` - (String) The identifier of the resource.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}$/`.
 
@@ -50,10 +51,12 @@ In addition to all argument references listed, you can access the following attr
 * `output_secret` - (String) The secret that is required to access the image registry. Make sure that the secret is granted with push permissions towards the specified container registry namespace.
   * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[a-z0-9]([\\-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([\\-a-z0-9]*[a-z0-9])?)*$/`.
 
+* `region` - (String) The region of the project the resource is located in. Possible values: 'au-syd', 'br-sao', 'ca-tor', 'eu-de', 'eu-gb', 'jp-osa', 'jp-tok', 'us-east', 'us-south'.
+
 * `resource_type` - (String) The type of the build.
   * Constraints: Allowable values are: `build_v2`.
 
-* `source_context_dir` - (String) Option directory in the repository that contains the buildpacks file or the Dockerfile.
+* `source_context_dir` - (String) Optional directory in the repository that contains the buildpacks file or the Dockerfile.
   * Constraints: The maximum length is `253` characters. The minimum length is `0` characters. The value must match regular expression `/^(.*)+$/`.
 
 * `source_revision` - (String) Commit, tag, or branch in the source repository to pull. This field is optional if the `source_type` is `git` and uses the HEAD of default branch if not specified. If the `source_type` value is `local`, this field must be omitted.
@@ -72,19 +75,19 @@ In addition to all argument references listed, you can access the following attr
   * Constraints: Allowable values are: `ready`, `failed`.
 
 * `status_details` - (List) The detailed status of the build.
-Nested scheme for **status_details**:
+Nested schema for **status_details**:
 	* `reason` - (String) Optional information to provide more context in case of a 'failed' or 'warning' status.
 	  * Constraints: Allowable values are: `registered`, `strategy_not_found`, `cluster_build_strategy_not_found`, `set_owner_reference_failed`, `spec_source_secret_not_found`, `spec_output_secret_ref_not_found`, `spec_runtime_secret_ref_not_found`, `multiple_secret_ref_not_found`, `runtime_paths_can_not_be_empty`, `remote_repository_unreachable`, `failed`.
 
-* `strategy_size` - (String) Optional size for the build, which determines the amount of resources used. Build sizes are `small`, `medium`, `large`, `xlarge`.
+* `strategy_size` - (String) Optional size for the build, which determines the amount of resources used. Build sizes are `small`, `medium`, `large`, `xlarge`, `xxlarge`.
   * Constraints: The default value is `medium`. The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/[\\S]*/`.
 
 * `strategy_spec_file` - (String) Optional path to the specification file that is used for build strategies for building an image.
-  * Constraints: The default value is `Dockerfile`. The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[\\S]*$/`.
+  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[\\S]*$/`.
 
 * `strategy_type` - (String) The strategy to use for building the image.
   * Constraints: The default value is `dockerfile`. The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/[\\S]*/`.
 
 * `timeout` - (Integer) The maximum amount of time, in seconds, that can pass before the build must succeed or fail.
-  * Constraints: The maximum value is `3600`. The minimum value is `1`.
+  * Constraints: The default value is `600`. The maximum value is `3600`. The minimum value is `1`.
 

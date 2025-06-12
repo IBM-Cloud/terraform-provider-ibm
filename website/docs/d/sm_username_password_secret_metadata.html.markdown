@@ -64,16 +64,22 @@ In addition to all argument references listed, you can access the following attr
 
 * `next_rotation_date` - (String) The date that the secret is scheduled for automatic rotation.The service automatically creates a new version of the secret on its next rotation date. This field exists only for secrets that have an existing rotation policy.
 
+* `password_generation_policy` - (List) Policy for auto-generated passwords.
+  Nested scheme for **password_generation_policy**:
+    * `length` - (Integer) The length of auto-generated passwords.
+    * `include_digits` - (Boolean) Include digits in auto-generated passwords.
+    * `include_symbols` - (Boolean) Include symbols in auto-generated passwords.
+    * `include_uppercase` - (Boolean) Include uppercase letters in auto-generated passwords.
+
 * `rotation` - (List) Determines whether Secrets Manager rotates your secrets automatically.
 Nested scheme for **rotation**:
 	* `auto_rotate` - (Boolean) Determines whether Secrets Manager rotates your secret automatically.Default is `false`. If `auto_rotate` is set to `true` the service rotates your secret based on the defined interval.
 	* `interval` - (Integer) The length of the secret rotation time interval.
 	  * Constraints: The minimum value is `1`.
-	* `rotate_keys` - (Boolean) Determines whether Secrets Manager rotates the private key for your public certificate automatically.Default is `false`. If it is set to `true`, the service generates and stores a new private key for your rotated certificate.
 	* `unit` - (String) The units for the secret rotation time interval.
 	  * Constraints: Allowable values are: `day`, `month`.
 
-* `secret_group_id` - (String) A v4 UUID identifier, or `default` secret group.
+* `secret_group_id` - (String) A UUID identifier, or `default` secret group.
   * Constraints: The maximum length is `36` characters. The minimum length is `7` characters. The value must match regular expression `/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|default)$/`.
 
 * `secret_type` - (String) The secret type. Supported types are arbitrary, certificates (imported, public, and private), IAM credentials, key-value, and user credentials.

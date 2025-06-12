@@ -4,12 +4,14 @@
 package vpc
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -21,7 +23,7 @@ const (
 
 func DataSourceIBMISVPNGateways() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceIBMVPNGatewaysRead,
+		ReadContext: dataSourceIBMVPNGatewaysRead,
 
 		Schema: map[string]*schema.Schema{
 			"resource_group": {
@@ -98,7 +100,67 @@ func DataSourceIBMISVPNGateways() *schema.Resource {
 							Computed:    true,
 							Description: "The status of the VPN gateway",
 						},
+						isVPNGatewayHealthState: &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The health of this resource.- `ok`: Healthy- `degraded`: Suffering from compromised performance, capacity, or connectivity- `faulted`: Completely unreachable, inoperative, or otherwise entirely incapacitated- `inapplicable`: The health state does not apply because of the current lifecycle state. A resource with a lifecycle state of `failed` or `deleting` will have a health state of `inapplicable`. A `pending` resource may also have this state.",
+						},
+						isVPNGatewayHealthReasons: {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"code": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "A snake case string succinctly identifying the reason for this health state.",
+									},
 
+									"message": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "An explanation of the reason for this health state.",
+									},
+
+									"more_info": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Link to documentation about the reason for this health state.",
+									},
+								},
+							},
+						},
+						isVPNGatewayLifecycleState: &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The lifecycle state of the VPN route.",
+						},
+						isVPNGatewayLifecycleReasons: {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The reasons for the current lifecycle_state (if any).",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"code": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "A snake case string succinctly identifying the reason for this lifecycle state.",
+									},
+
+									"message": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "An explanation of the reason for this lifecycle state.",
+									},
+
+									"more_info": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Link to documentation about the reason for this lifecycle state.",
+									},
+								},
+							},
+						},
 						isVPNGatewaySubnet: {
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -178,11 +240,13 @@ func DataSourceIBMISVPNGateways() *schema.Resource {
 	}
 }
 
-func dataSourceIBMVPNGatewaysRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceIBMVPNGatewaysRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_vpn_gateways", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	listvpnGWOptions := sess.NewListVPNGatewaysOptions()
@@ -200,9 +264,11 @@ func dataSourceIBMVPNGatewaysRead(d *schema.ResourceData, meta interface{}) erro
 		if start != "" {
 			listvpnGWOptions.Start = &start
 		}
-		availableVPNGateways, detail, err := sess.ListVPNGateways(listvpnGWOptions)
+		availableVPNGateways, _, err := sess.ListVPNGatewaysWithContext(context, listvpnGWOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error reading list of VPN Gateways:%s\n%s", err, detail)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListVPNGatewaysWithContext failed %s", err), "(Data) ibm_is_vpn_gateways", "read")
+			log.Printf("[DEBUG] %s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		start = flex.GetNext(availableVPNGateways.Next)
 		allrecs = append(allrecs, availableVPNGateways.VPNGateways...)
@@ -218,7 +284,10 @@ func dataSourceIBMVPNGatewaysRead(d *schema.ResourceData, meta interface{}) erro
 		gateway[isVPNGatewayName] = *data.Name
 		gateway[isVPNGatewayCreatedAt] = data.CreatedAt.String()
 		gateway[isVPNGatewayResourceType] = *data.ResourceType
-		gateway[isVPNGatewayStatus] = *data.Status
+		gateway[isVPNGatewayHealthState] = *data.HealthState
+		gateway[isVPNGatewayHealthReasons] = resourceVPNGatewayRouteFlattenHealthReasons(data.HealthReasons)
+		gateway[isVPNGatewayLifecycleState] = *data.LifecycleState
+		gateway[isVPNGatewayLifecycleReasons] = resourceVPNGatewayFlattenLifecycleReasons(data.LifecycleReasons)
 		gateway[isVPNGatewayMode] = *data.Mode
 		gateway[isVPNGatewayResourceGroup] = *data.ResourceGroup.ID
 		gateway[isVPNGatewaySubnet] = *data.Subnet.ID
@@ -243,7 +312,6 @@ func dataSourceIBMVPNGatewaysRead(d *schema.ResourceData, meta interface{}) erro
 				if memberIP.PublicIP != nil {
 					currentMemberIP["address"] = *memberIP.PublicIP.Address
 					currentMemberIP["role"] = *memberIP.Role
-					currentMemberIP["status"] = *memberIP.Status
 					vpcMembersIpsList = append(vpcMembersIpsList, currentMemberIP)
 				}
 				if memberIP.PrivateIP != nil && memberIP.PrivateIP.Address != nil {
@@ -263,7 +331,9 @@ func dataSourceIBMVPNGatewaysRead(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	d.SetId(dataSourceIBMVPNGatewaysID(d))
-	d.Set(isvpnGateways, vpngateways)
+	if err = d.Set("vpn_gateways", vpngateways); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting vpn_gateways %s", err), "(Data) ibm_is_vpn_gateways", "read", "vpn_gateways-set").GetDiag()
+	}
 	return nil
 }
 
@@ -297,7 +367,7 @@ func dataSourceVPNServerCollectionVPNGatewayVpcReferenceToMap(vpcsItem *vpcv1.VP
 	return vpcsMap
 }
 
-func dataSourceVPNGatewayCollectionVpcsDeletedToMap(deletedItem vpcv1.VPCReferenceDeleted) (deletedMap map[string]interface{}) {
+func dataSourceVPNGatewayCollectionVpcsDeletedToMap(deletedItem vpcv1.Deleted) (deletedMap map[string]interface{}) {
 	deletedMap = map[string]interface{}{}
 
 	if deletedItem.MoreInfo != nil {

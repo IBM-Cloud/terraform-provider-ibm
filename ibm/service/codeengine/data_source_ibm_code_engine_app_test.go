@@ -42,6 +42,7 @@ func TestAccIbmCodeEngineAppDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttr("data.ibm_code_engine_app.code_engine_app_instance", "scale_memory_limit", "4G"),
 					resource.TestCheckResourceAttr("data.ibm_code_engine_app.code_engine_app_instance", "scale_min_instances", "0"),
 					resource.TestCheckResourceAttr("data.ibm_code_engine_app.code_engine_app_instance", "scale_request_timeout", "300"),
+					resource.TestCheckResourceAttr("data.ibm_code_engine_app.code_engine_app_instance", "computed_env_variables.#", "6"),
 				),
 			},
 		},
@@ -53,7 +54,7 @@ func TestAccIbmCodeEngineAppDataSourceExtended(t *testing.T) {
 	appName := fmt.Sprintf("tf-data-app-extended-%d", acctest.RandIntRange(10, 1000))
 	appImagePort := "8080"
 	appManagedDomainMappings := "local_public"
-	appRunAsUser := "0"
+	appRunAsUser := "10"
 	appRunServiceAccount := "default"
 	appScaleConcurrency := fmt.Sprintf("%d", acctest.RandIntRange(50, 100))
 	appScaleConcurrencyTarget := fmt.Sprintf("%d", acctest.RandIntRange(20, 50))
@@ -90,6 +91,8 @@ func TestAccIbmCodeEngineAppDataSourceExtended(t *testing.T) {
 					resource.TestCheckResourceAttr("data.ibm_code_engine_app.code_engine_app_instance", "scale_memory_limit", appScaleMemoryLimit),
 					resource.TestCheckResourceAttr("data.ibm_code_engine_app.code_engine_app_instance", "scale_min_instances", appScaleMinInstances),
 					resource.TestCheckResourceAttr("data.ibm_code_engine_app.code_engine_app_instance", "scale_request_timeout", appScaleRequestTimeout),
+					resource.TestCheckResourceAttr("data.ibm_code_engine_app.code_engine_app_instance", "computed_env_variables.#", "6"),
+					resource.TestCheckResourceAttr("data.ibm_code_engine_app.code_engine_app_instance", "run_env_variables.#", "1"),
 				),
 			},
 		},
@@ -109,7 +112,8 @@ func testAccCheckIbmCodeEngineAppDataSourceConfigBasic(projectID string, appImag
 
 			lifecycle {
 				ignore_changes = [
-					run_env_variables
+					probe_liveness,
+					probe_readiness
 				]
 			}
 		}
@@ -153,7 +157,8 @@ func testAccCheckIbmCodeEngineAppDataSourceConfig(projectID string, appImageRefe
 
 			lifecycle {
 				ignore_changes = [
-					run_env_variables
+					probe_liveness,
+					probe_readiness
 				]
 			}
 		}

@@ -32,5 +32,5 @@ resource "ibm_cos_bucket" "flex-us-south" {
   resource_instance_id = ibm_resource_instance.cos_instance.id
   region_location      = "us-south"
   storage_class        = "flex"
-  key_protect          = ibm_kp_key.test.id
+  kms_key_crn          = ibm_kp_key.test.id
 }

@@ -35,13 +35,36 @@ func TestAccIBMISVpnGatewayConnectionsDataSource_basic(t *testing.T) {
 		},
 	})
 }
+func TestAccIBMISVpnGatewayConnectionsDataSource_distributeTraffic(t *testing.T) {
+	var vpnGatewayConnection string
+	node := "data.ibm_is_vpn_gateway_connections.test1"
+	vpcname := fmt.Sprintf("tfvpnuat-vpc-%d", acctest.RandIntRange(100, 200))
+	subnetname := fmt.Sprintf("tfvpnuat-subnet-%d", acctest.RandIntRange(100, 200))
+	vpngwname := fmt.Sprintf("tfvpnuat-vpngw-%d", acctest.RandIntRange(100, 200))
+	name := fmt.Sprintf("tfvpnuat-createname-%d", acctest.RandIntRange(100, 200))
+	dt := true
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISVpnGatewayconnectionsDataSourceDistributeTrafficConfig(vpcname, subnetname, vpngwname, name, dt),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISVPNGatewayConnectionExists("ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection", vpnGatewayConnection),
+					resource.TestCheckResourceAttrSet(node, "connections.#"),
+				),
+			},
+		},
+	})
+}
 
 func testAccCheckIBMISVpnGatewayconnectionsDataSourceConfig(vpc, subnet, vpngwname, name string) string {
 	// status filter defaults to empty
 	return fmt.Sprintf(`
 	
 	data "ibm_resource_group" "rg" {
-		name = "Proof of Concepts"
+		is_default = true
 	}
 	resource "ibm_is_vpc" "testacc_vpc" {
 		name = "%s"
@@ -69,5 +92,41 @@ func testAccCheckIBMISVpnGatewayconnectionsDataSourceConfig(vpc, subnet, vpngwna
 	data "ibm_is_vpn_gateway_connections" "test1" {
 		vpn_gateway = ibm_is_vpn_gateway.testacc_vpnGateway.id
 	}`, vpc, subnet, acc.ISZoneName, acc.ISCIDR, vpngwname, name)
+
+}
+func testAccCheckIBMISVpnGatewayconnectionsDataSourceDistributeTrafficConfig(vpc, subnet, vpngwname, name string, distributeTraffic bool) string {
+	// status filter defaults to empty
+	return fmt.Sprintf(`
+	
+	data "ibm_resource_group" "rg" {
+		is_default = true
+	}
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+		resource_group = data.ibm_resource_group.rg.id
+	}
+	resource "ibm_is_subnet" "testacc_subnet" {
+		name = "%s"
+		vpc = "${ibm_is_vpc.testacc_vpc.id}"
+		zone = "%s"
+		ipv4_cidr_block = "%s"
+		resource_group = data.ibm_resource_group.rg.id
+	}
+	resource "ibm_is_vpn_gateway" "testacc_vpnGateway" {
+	name = "%s"
+	subnet = "${ibm_is_subnet.testacc_subnet.id}"
+	resource_group = data.ibm_resource_group.rg.id
+	
+	}
+	resource "ibm_is_vpn_gateway_connection" "testacc_VPNGatewayConnection" {
+		name = "%s"
+		vpn_gateway = "${ibm_is_vpn_gateway.testacc_vpnGateway.id}"
+		peer_address = "1.2.3.4"
+		preshared_key = "VPNDemoPassword"
+		distribute_traffic = %t
+	}
+	data "ibm_is_vpn_gateway_connections" "test1" {
+		vpn_gateway = ibm_is_vpn_gateway.testacc_vpnGateway.id
+	}`, vpc, subnet, acc.ISZoneName, acc.ISCIDR, vpngwname, name, distributeTraffic)
 
 }

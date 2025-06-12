@@ -37,6 +37,8 @@ Review the argument references that you can specify for your data source.
 In addition to the argument reference list, you can access the following attribute references after your data source is created. 
 
 - `access_tags`  - (List) Access management tags associated for the virtual endpoint gateway.
+
+- `allow_dns_resolution_binding` - (Bool) Indicates whether to allow this endpoint gateway to participate in DNS resolution bindings with a VPC that has dns.enable_hub set to true.
 - `created_at` - (Timestamp) The created date and time of the endpoint gateway.
 - `crn` - (String) The CRN for this endpoint gateway.
 - `health_state` - (String) Endpoint gateway health state. `ok: Healthy`, `degraded: Suffering from compromised performance, capacity, or connectivity`, `faulted: Completely unreachable, inoperative, or entirely incapacitated`, `inapplicable: The health state does not apply because of the current lifecycle state`. A resource with a lifecycle state of failed or deleting will have a health state of inapplicable. A pending resource may have this state.
@@ -52,6 +54,7 @@ In addition to the argument reference list, you can access the following attribu
 - `target` - (List) The endpoint gateway target.
 
   Nested scheme for `target`:
+  - `crn` - (String) The target CRN.
   - `name` - (String) The target name.
   - `resource_type` - (String) The resource type of the subnet reserved IP.
 - `vpc` - (String) The VPC ID.

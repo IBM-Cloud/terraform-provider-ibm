@@ -58,6 +58,8 @@ In addition to all argument references listed, you can access the following attr
 	- `action` - (String) Dead Peer Detection actions.
 	- `interval` - (Integer) Dead Peer Detection interval in seconds.
 	- `timeout` - (Integer) Dead Peer Detection timeout in seconds. Must be at least the interval.
+- `distribute_traffic` - (Boolean) Indicates whether the traffic is distributed between the `up` tunnels of the VPN gateway connection when the VPC route's next hop is a VPN connection. If `false`, the traffic is only routed through the `up` tunnel with the lower `public_ip` address. Distributing traffic across tunnels of route-based VPN gateway connections. Traffic across tunnels can be distributed with a status of up in a route-based VPN gateway connection. When creating or updating a route-based VPN gateway connection, set the distribute_traffic property to true (default is false). Existing connections will have the `distribute_traffic` property set to false.
+- `establish_mode` - (String) The establish mode of the VPN gateway connection:- `bidirectional`: Either side of the VPN gateway can initiate IKE protocol   negotiations or rekeying processes.- `peer_only`: Only the peer can initiate IKE protocol negotiations for this VPN gateway   connection. Additionally, the peer is responsible for initiating the rekeying process   after the connection is established. If rekeying does not occur, the VPN gateway   connection will be brought down after its lifetime expires.
 
 - `href` - (String) The VPN connection's canonical URL.
 
@@ -83,9 +85,26 @@ In addition to all argument references listed, you can access the following attr
 
 - `local_cidrs` - (List) The local CIDRs for this resource.
 
+- `local` - (List) 
+	Nested schema for **local**:
+	- `ike_identities` - (List) The local IKE identities.A VPN gateway in static route mode consists of two members in active-active mode. The first identity applies to the first member, and the second identity applies to the second member.
+		Nested schema for **ike_identities**:
+		- `type` - (String) The IKE identity type. [ **fqdn**, **hostname**, **ipv4_address**, **key_id** ] The enumerated values for this property will expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the backup policy on which the unexpected property value was encountered.
+		- `value` - (String) The IKE identity FQDN value.
+
 - `mode` - (String) The mode of the VPN gateway.
 
 - `name` - (String) The user-defined name for this VPN gateway connection.
+
+- `peer` - (List) 
+	Nested schema for **peer**:
+	- `address` - (String) The IP address of the peer VPN gateway for this connection.
+	- `fqdn` - (String) The FQDN of the peer VPN gateway for this connection.
+	- `ike_identity` - (List) The peer IKE identity.
+		Nested schema for **ike_identity**:
+		- `type` - (String) The IKE identity type. [ **fqdn**, **hostname**, **ipv4_address**, **key_id** ] The enumerated values for this property will expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the backup policy on which the unexpected property value was encountered.
+		- `value` - (String) The IKE identity FQDN value.
+	- `type` - (String) Indicates whether `peer.address` or `peer.fqdn` is used.
 
 - `peer_address` - (String) The IP address of the peer VPN gateway.
 
@@ -98,6 +117,13 @@ In addition to all argument references listed, you can access the following attr
 - `routing_protocol` - (String) Routing protocols are disabled for this VPN gateway connection.
 
 - `status` - (String) The status of a VPN gateway connection.
+
+- `status_reasons` - (List) Array of reasons for the current status (if any).
+
+  Nested `status_reasons`:
+    - `code` - (String) The status reason code.
+    - `message` - (String) An explanation of the status reason.
+    - `more_info` - (String) Link to documentation about this status reason
 
 - `tunnels` - (List) The VPN tunnel configuration for this VPN gateway connection (in static route mode).
   Nested scheme for **tunnels**:
