@@ -4,10 +4,10 @@
 package directlink
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/networking-go-sdk/directlinkv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -119,7 +119,7 @@ func dataSourceIBMDLOfferingLocationsRead(d *schema.ResourceData, meta interface
 	listOfferingTypeLocationsOptions.SetOfferingType(d.Get(dlOfferingType).(string))
 	listLocations, response, err := directLink.ListOfferingTypeLocations(listOfferingTypeLocationsOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while listing directlink gateway's locations %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error while listing directlink gateway's locations %s\n%s", err, response)
 	}
 
 	locations := make([]map[string]interface{}, 0)
