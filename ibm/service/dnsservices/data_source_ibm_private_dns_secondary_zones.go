@@ -100,7 +100,7 @@ func dataSourceIBMDNSSecondaryZonesRead(context context.Context, d *schema.Resou
 	sess, err := meta.(conns.ClientSession).PrivateDNSClientSession()
 	if err != nil {
 		// return diag.FromErr(err)
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMDNSSecondaryZonesRead DNSSecondaryZonesClient initialization failed: %s", err.Error()), "ibm_dns_custom_resolver_secondary_zone", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMDNSSecondaryZonesRead Client initialization failed: %s", err.Error()), "ibm_dns_custom_resolver_secondary_zone", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}

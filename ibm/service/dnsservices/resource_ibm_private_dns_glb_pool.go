@@ -226,7 +226,7 @@ func resourceIBMPrivateDNSGLBPoolRead(d *schema.ResourceData, meta interface{}) 
 	getPoolOptions := sess.NewGetPoolOptions(idset[0], idset[1])
 	presponse, resp, err := sess.GetPool(getPoolOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error fetching pdns GLB Pool:%s\n%s", err, resp)
+		return flex.FmtErrorf("[ERROR] Error fetching pdns GLB Pool:%s\n%s", err, resp)
 	}
 
 	response := *presponse
@@ -314,7 +314,7 @@ func resourceIBMPrivateDNSGLBPoolUpdate(d *schema.ResourceData, meta interface{}
 		}
 		_, detail, err := sess.UpdatePool(updatePoolOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error updating pdns GLB Pool:%s\n%s", err, detail)
+			return flex.FmtErrorf("[ERROR] Error updating pdns GLB Pool:%s\n%s", err, detail)
 		}
 	}
 
@@ -331,7 +331,7 @@ func resourceIBMPrivateDNSGLBPoolDelete(d *schema.ResourceData, meta interface{}
 	DeletePoolOptions := sess.NewDeletePoolOptions(idset[0], idset[1])
 	response, err := sess.DeletePool(DeletePoolOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error deleting pdns GLB Pool:%s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error deleting pdns GLB Pool:%s\n%s", err, response)
 	}
 	_, err = waitForPDNSGlbPoolDelete(d, meta)
 	if err != nil {
@@ -349,7 +349,7 @@ func resourceIBMPrivateDNSGLBPoolExists(d *schema.ResourceData, meta interface{}
 
 	idset := strings.Split(d.Id(), "/")
 	if len(idset) < 2 {
-		return false, fmt.Errorf("[ERROR] Incorrect ID %s: Id should be a combination of InstanceID/poolID", d.Id())
+		return false, flex.FmtErrorf("[ERROR] Incorrect ID %s: Id should be a combination of InstanceID/poolID", d.Id())
 	}
 
 	getPoolOptions := sess.NewGetPoolOptions(idset[0], idset[1])
