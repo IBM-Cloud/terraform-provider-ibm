@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Copyright IBM Corp. 2017, 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package vpc
@@ -8,36 +8,35 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"reflect"
 	"strings"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
-
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-const ()
-
 func ResourceIBMISVPCDefaultNetworkACL() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceIBMISVPCDefaultNetworkACLCreate,
-		Read:   resourceIBMISVPCDefaultNetworkACLRead,
-		Update: resourceIBMISVPCDefaultNetworkACLUpdate,
-		Delete: resourceIBMISVPCDefaultNetworkACLDelete,
-		Exists: resourceIBMISVPCDefaultNetworkACLExists,
+		CreateContext: resourceIBMISVPCDefaultNetworkACLCreate,
+		ReadContext:   resourceIBMISVPCDefaultNetworkACLRead,
+		UpdateContext: resourceIBMISVPCDefaultNetworkACLUpdate,
+		DeleteContext: resourceIBMISVPCDefaultNetworkACLDelete,
+		Exists:        resourceIBMISVPCDefaultNetworkACLExists,
 		Importer: &schema.ResourceImporter{
-			State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
-				d.Set(isVPCDefaultNetworkACL, d.Id())
+			StateContext: func(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+				// For import, the ID should be in format vpc_id/network_acl_id
 				return []*schema.ResourceData{d}, nil
 			},
 		},
 
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(10 * time.Minute),
+			Update: schema.DefaultTimeout(10 * time.Minute),
 			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
 
@@ -54,29 +53,18 @@ func ResourceIBMISVPCDefaultNetworkACL() *schema.Resource {
 		),
 
 		Schema: map[string]*schema.Schema{
-
 			isVPCDefaultNetworkACL: {
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
-				Description: "Default network ACL ID",
+				Description: "The VPC ID",
 			},
-
 			isNetworkACLName: {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "Network ACL name",
-			},
-			isNetworkACLVPC: {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Network ACL VPC name",
-			},
-			isNetworkACLResourceGroup: {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Resource group ID for the network ACL",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validate.InvokeValidator("ibm_is_vpc_default_network_acl", isNetworkACLName),
+				Description:  "Network ACL name",
 			},
 			isNetworkACLTags: {
 				Type:        schema.TypeSet,
@@ -86,7 +74,6 @@ func ResourceIBMISVPCDefaultNetworkACL() *schema.Resource {
 				Set:         flex.ResourceIBMVPCHash,
 				Description: "List of tags",
 			},
-
 			isNetworkACLAccessTags: {
 				Type:        schema.TypeSet,
 				Optional:    true,
@@ -95,11 +82,53 @@ func ResourceIBMISVPCDefaultNetworkACL() *schema.Resource {
 				Set:         flex.ResourceIBMVPCHash,
 				Description: "List of access management tags",
 			},
-
 			isNetworkACLCRN: {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The crn of the resource",
+				Description: "The CRN of the resource",
+			},
+			isNetworkACLResourceGroup: {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The resource group for this network ACL",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"href": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The URL for this resource group",
+						},
+						"id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The unique identifier for this resource group",
+						},
+						"name": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The user-defined name for this resource group",
+						},
+					},
+				},
+			},
+			"subnets": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The subnets to which this network ACL is attached",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The unique identifier for this subnet",
+						},
+						"name": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The user-defined name for this subnet",
+						},
+					},
+				},
 			},
 			flex.ResourceControllerURL: {
 				Type:        schema.TypeString,
@@ -111,247 +140,32 @@ func ResourceIBMISVPCDefaultNetworkACL() *schema.Resource {
 				Computed:    true,
 				Description: "The name of the resource",
 			},
-
 			flex.ResourceCRN: {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The crn of the resource",
+				Description: "The CRN of the resource",
 			},
-
 			flex.ResourceGroupName: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The resource group name in which resource is provisioned",
-			},
-			isNetworkACLRules: {
-				Type:     schema.TypeList,
-				Optional: true,
-				Computed: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						isNetworkACLRuleID: {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						isNetworkACLRuleName: {
-							Type:         schema.TypeString,
-							Required:     true,
-							ForceNew:     false,
-							ValidateFunc: validate.InvokeValidator("ibm_is_vpc_default_network_acl", isNetworkACLRuleName),
-						},
-						isNetworkACLRuleAction: {
-							Type:         schema.TypeString,
-							Required:     true,
-							ForceNew:     false,
-							ValidateFunc: validate.InvokeValidator("ibm_is_vpc_default_network_acl", isNetworkACLRuleAction),
-						},
-						isNetworkACLRuleIPVersion: {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						isNetworkACLRuleSource: {
-							Type:         schema.TypeString,
-							Required:     true,
-							ForceNew:     false,
-							ValidateFunc: validate.InvokeValidator("ibm_is_vpc_default_network_acl", isNetworkACLRuleSource),
-						},
-						isNetworkACLRuleDestination: {
-							Type:         schema.TypeString,
-							Required:     true,
-							ForceNew:     false,
-							ValidateFunc: validate.InvokeValidator("ibm_is_vpc_default_network_acl", isNetworkACLRuleDestination),
-						},
-						isNetworkACLRuleDirection: {
-							Type:         schema.TypeString,
-							Required:     true,
-							ForceNew:     false,
-							Description:  "Direction of traffic to enforce, either inbound or outbound",
-							ValidateFunc: validate.InvokeValidator("ibm_is_vpc_default_network_acl", isNetworkACLRuleDirection),
-						},
-						isNetworkACLSubnets: {
-							Type:     schema.TypeInt,
-							Computed: true,
-						},
-						isNetworkACLRuleICMP: {
-							Type:     schema.TypeList,
-							MinItems: 0,
-							MaxItems: 1,
-							Optional: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									isNetworkACLRuleICMPCode: {
-										Type:         schema.TypeInt,
-										Optional:     true,
-										ValidateFunc: validate.InvokeValidator("ibm_is_vpc_default_network_acl", isNetworkACLRuleICMPCode),
-									},
-									isNetworkACLRuleICMPType: {
-										Type:         schema.TypeInt,
-										Optional:     true,
-										ValidateFunc: validate.InvokeValidator("ibm_is_vpc_default_network_acl", isNetworkACLRuleICMPType),
-									},
-								},
-							},
-						},
-
-						isNetworkACLRuleTCP: {
-							Type:     schema.TypeList,
-							MinItems: 0,
-							MaxItems: 1,
-							Optional: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									isNetworkACLRulePortMax: {
-										Type:         schema.TypeInt,
-										Optional:     true,
-										Default:      65535,
-										ValidateFunc: validate.InvokeValidator("ibm_is_vpc_default_network_acl", isNetworkACLRulePortMax),
-									},
-									isNetworkACLRulePortMin: {
-										Type:         schema.TypeInt,
-										Optional:     true,
-										Default:      1,
-										ValidateFunc: validate.InvokeValidator("ibm_is_vpc_default_network_acl", isNetworkACLRulePortMin),
-									},
-									isNetworkACLRuleSourcePortMax: {
-										Type:         schema.TypeInt,
-										Optional:     true,
-										Default:      65535,
-										ValidateFunc: validate.InvokeValidator("ibm_is_vpc_default_network_acl", isNetworkACLRuleSourcePortMax),
-									},
-									isNetworkACLRuleSourcePortMin: {
-										Type:         schema.TypeInt,
-										Optional:     true,
-										Default:      1,
-										ValidateFunc: validate.InvokeValidator("ibm_is_vpc_default_network_acl", isNetworkACLRuleSourcePortMin),
-									},
-								},
-							},
-						},
-
-						isNetworkACLRuleUDP: {
-							Type:     schema.TypeList,
-							MinItems: 0,
-							MaxItems: 1,
-							Optional: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									isNetworkACLRulePortMax: {
-										Type:         schema.TypeInt,
-										Optional:     true,
-										Default:      65535,
-										ValidateFunc: validate.InvokeValidator("ibm_is_vpc_default_network_acl", isNetworkACLRulePortMax),
-									},
-									isNetworkACLRulePortMin: {
-										Type:         schema.TypeInt,
-										Optional:     true,
-										Default:      1,
-										ValidateFunc: validate.InvokeValidator("ibm_is_vpc_default_network_acl", isNetworkACLRulePortMin),
-									},
-									isNetworkACLRuleSourcePortMax: {
-										Type:         schema.TypeInt,
-										Optional:     true,
-										Default:      65535,
-										ValidateFunc: validate.InvokeValidator("ibm_is_vpc_default_network_acl", isNetworkACLRuleSourcePortMax),
-									},
-									isNetworkACLRuleSourcePortMin: {
-										Type:         schema.TypeInt,
-										Optional:     true,
-										Default:      1,
-										ValidateFunc: validate.InvokeValidator("ibm_is_vpc_default_network_acl", isNetworkACLRuleSourcePortMin),
-									},
-								},
-							},
-						},
-					},
-				},
 			},
 		},
 	}
 }
 
 func ResourceIBMISVPCDefaultNetworkACLValidator() *validate.ResourceValidator {
-
 	validateSchema := make([]validate.ValidateSchema, 0)
-	direction := "inbound, outbound"
-	action := "allow, deny"
 
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
-			Identifier:                 isNetworkACLRuleAction,
-			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
-			Type:                       validate.TypeString,
-			Required:                   true,
-			AllowedValues:              action})
-	validateSchema = append(validateSchema,
-		validate.ValidateSchema{
-			Identifier:                 isNetworkACLRuleDirection,
-			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
-			Type:                       validate.TypeString,
-			Required:                   true,
-			AllowedValues:              direction})
-	validateSchema = append(validateSchema,
-		validate.ValidateSchema{
-			Identifier:                 isNetworkACLRuleName,
+			Identifier:                 isNetworkACLName,
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
-			Required:                   true,
+			Optional:                   true,
 			Regexp:                     `^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$`,
 			MinValueLength:             1,
 			MaxValueLength:             63})
-	validateSchema = append(validateSchema,
-		validate.ValidateSchema{
-			Identifier:                 isNetworkACLRuleDestination,
-			ValidateFunctionIdentifier: validate.ValidateIPorCIDR,
-			Type:                       validate.TypeString,
-			Required:                   true})
-	validateSchema = append(validateSchema,
-		validate.ValidateSchema{
-			Identifier:                 isNetworkACLRuleSource,
-			ValidateFunctionIdentifier: validate.ValidateIPorCIDR,
-			Type:                       validate.TypeString,
-			Required:                   true})
-	validateSchema = append(validateSchema,
-		validate.ValidateSchema{
-			Identifier:                 isNetworkACLRuleICMPType,
-			ValidateFunctionIdentifier: validate.IntBetween,
-			Type:                       validate.TypeInt,
-			MinValue:                   "0",
-			MaxValue:                   "254"})
-	validateSchema = append(validateSchema,
-		validate.ValidateSchema{
-			Identifier:                 isNetworkACLRuleICMPCode,
-			ValidateFunctionIdentifier: validate.IntBetween,
-			Type:                       validate.TypeInt,
-			MinValue:                   "0",
-			MaxValue:                   "255"})
-	validateSchema = append(validateSchema,
-		validate.ValidateSchema{
-			Identifier:                 isNetworkACLRulePortMin,
-			ValidateFunctionIdentifier: validate.IntBetween,
-			Type:                       validate.TypeInt,
-			MinValue:                   "1",
-			MaxValue:                   "65535"})
-	validateSchema = append(validateSchema,
-		validate.ValidateSchema{
-			Identifier:                 isNetworkACLRulePortMax,
-			ValidateFunctionIdentifier: validate.IntBetween,
-			Type:                       validate.TypeInt,
-			MinValue:                   "1",
-			MaxValue:                   "65535"})
-	validateSchema = append(validateSchema,
-		validate.ValidateSchema{
-			Identifier:                 isNetworkACLRuleSourcePortMin,
-			ValidateFunctionIdentifier: validate.IntBetween,
-			Type:                       validate.TypeInt,
-			MinValue:                   "1",
-			MaxValue:                   "65535"})
-	validateSchema = append(validateSchema,
-		validate.ValidateSchema{
-			Identifier:                 isNetworkACLRuleSourcePortMax,
-			ValidateFunctionIdentifier: validate.IntBetween,
-			Type:                       validate.TypeInt,
-			MinValue:                   "1",
-			MaxValue:                   "65535"})
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
 			Identifier:                 "tags",
@@ -375,499 +189,281 @@ func ResourceIBMISVPCDefaultNetworkACLValidator() *validate.ResourceValidator {
 	return &ibmISVPCDefaultNetworkACLResourceValidator
 }
 
-func resourceIBMISVPCDefaultNetworkACLCreate(d *schema.ResourceData, meta interface{}) error {
-
-	id := d.Get(isVPCDefaultNetworkACL).(string)
-	err := nwaclVPCDefaultCreate(d, meta, id)
-	if err != nil {
-		return err
-	}
-	return resourceIBMISVPCDefaultNetworkACLRead(d, meta)
-
-}
-
-func nwaclVPCDefaultCreate(d *schema.ResourceData, meta interface{}, id string) error {
+func resourceIBMISVPCDefaultNetworkACLCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
-	}
-	options := &vpcv1.GetNetworkACLOptions{
-		ID: &id,
-	}
-
-	// validate each rule before attempting to create the ACL
-	var rules []interface{}
-	if rls, ok := d.GetOk(isNetworkACLRules); ok {
-		rules = rls.([]interface{})
-	}
-	err = validateVPCDefaultInlineRules(rules)
-	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_default_network_acl", "create", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
-	nwacl, response, err := sess.GetNetworkACL(options)
-	if err != nil {
-		return fmt.Errorf("[DEBUG] Error while creating vpc default Network ACL resource err %s\n%s", err, response)
-	}
-	d.SetId(*nwacl.ID)
-	log.Printf("[INFO] Network ACL : %s", *nwacl.ID)
-	nwaclid := *nwacl.ID
+	vpcID := d.Get(isVPCDefaultNetworkACL).(string)
 
-	//Remove default rules
-	err = clearVPCDefaultRules(sess, nwaclid)
-	if err != nil {
-		return err
+	// Get the VPC to obtain the default network ACL
+	getVpcOptions := &vpcv1.GetVPCOptions{
+		ID: &vpcID,
 	}
 
-	err = createVPCDefaultInlineRules(sess, nwaclid, rules)
+	vpc, _, err := sess.GetVPCWithContext(context, getVpcOptions)
 	if err != nil {
-		return err
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetVPCWithContext failed: %s", err.Error()), "ibm_is_vpc_default_network_acl", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
+
+	if vpc.DefaultNetworkACL == nil {
+		tfErr := flex.TerraformErrorf(fmt.Errorf("VPC does not have a default network ACL"), "VPC does not have a default network ACL", "ibm_is_vpc_default_network_acl", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+	}
+
+	defaultNetworkACLID := *vpc.DefaultNetworkACL.ID
+	d.SetId(fmt.Sprintf("%s/%s", vpcID, defaultNetworkACLID))
+
+	// Handle tags on creation
 	v := os.Getenv("IC_ENV_TAGS")
 	if _, ok := d.GetOk(isNetworkACLTags); ok || v != "" {
 		oldList, newList := d.GetChange(isNetworkACLTags)
-		err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *nwacl.CRN, "", isUserTagType)
+		err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *vpc.DefaultNetworkACL.CRN, "", isUserTagType)
 		if err != nil {
-			log.Printf(
-				"Error on create of resource network acl (%s) tags: %s", d.Id(), err)
+			log.Printf("Error on create of resource default network acl (%s) tags: %s", d.Id(), err)
 		}
 	}
 	if _, ok := d.GetOk(isNetworkACLAccessTags); ok {
 		oldList, newList := d.GetChange(isNetworkACLAccessTags)
-		err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *nwacl.CRN, "", isAccessTagType)
+		err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *vpc.DefaultNetworkACL.CRN, "", isAccessTagType)
 		if err != nil {
-			log.Printf(
-				"Error on create of resource network acl (%s) access tags: %s", d.Id(), err)
+			log.Printf("Error on create of resource default network acl (%s) access tags: %s", d.Id(), err)
 		}
 	}
-	return nil
+
+	return resourceIBMISVPCDefaultNetworkACLRead(context, d, meta)
 }
 
-func resourceIBMISVPCDefaultNetworkACLRead(d *schema.ResourceData, meta interface{}) error {
-	id := d.Id()
-	err := nwaclVPCDefaultGet(d, meta, id)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func nwaclVPCDefaultGet(d *schema.ResourceData, meta interface{}, id string) error {
+func resourceIBMISVPCDefaultNetworkACLRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_default_network_acl", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
+
+	// Parse ID to get VPC ID and Network ACL ID
+	parts := strings.Split(d.Id(), "/")
+	if len(parts) != 2 {
+		tfErr := flex.TerraformErrorf(fmt.Errorf("invalid ID format"), "ID should be in format vpc_id/network_acl_id", "ibm_is_vpc_default_network_acl", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+	}
+
+	vpcID := parts[0]
+	networkACLID := parts[1]
+
 	getNetworkAclOptions := &vpcv1.GetNetworkACLOptions{
-		ID: &id,
+		ID: &networkACLID,
 	}
-	nwacl, response, err := sess.GetNetworkACL(getNetworkAclOptions)
+	nwacl, response, err := sess.GetNetworkACLWithContext(context, getNetworkAclOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error getting Network ACL(%s) : %s\n%s", id, err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetNetworkACLWithContext failed: %s", err.Error()), "ibm_is_vpc_default_network_acl", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
-	d.Set(isNetworkACLName, *nwacl.Name)
-	d.Set(isNetworkACLVPC, *nwacl.VPC.ID)
+
+	d.Set(isVPCDefaultNetworkACL, vpcID)
+	d.Set("default_network_acl", networkACLID)
+
+	if !core.IsNil(nwacl.Name) {
+		if err = d.Set(isNetworkACLName, *nwacl.Name); err != nil {
+			err = fmt.Errorf("Error setting name: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_default_network_acl", "read", "set-name").GetDiag()
+		}
+	}
+
+	if err = d.Set(isNetworkACLCRN, *nwacl.CRN); err != nil {
+		err = fmt.Errorf("Error setting crn: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_default_network_acl", "read", "set-crn").GetDiag()
+	}
+
+	// Handle resource group
+	resourceGroupList := []map[string]interface{}{}
 	if nwacl.ResourceGroup != nil {
-		d.Set(isNetworkACLResourceGroup, *nwacl.ResourceGroup.ID)
-		d.Set(flex.ResourceGroupName, *nwacl.ResourceGroup.Name)
+		resourceGroupMap := map[string]interface{}{
+			"href": *nwacl.ResourceGroup.Href,
+			"id":   *nwacl.ResourceGroup.ID,
+			"name": *nwacl.ResourceGroup.Name,
+		}
+		resourceGroupList = append(resourceGroupList, resourceGroupMap)
+		if err = d.Set(flex.ResourceGroupName, *nwacl.ResourceGroup.Name); err != nil {
+			err = fmt.Errorf("Error setting resource_group_name: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_default_network_acl", "read", "set-resource_group_name").GetDiag()
+		}
 	}
+	if err = d.Set(isNetworkACLResourceGroup, resourceGroupList); err != nil {
+		err = fmt.Errorf("Error setting resource_group: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_default_network_acl", "read", "set-resource_group").GetDiag()
+	}
+
+	// Handle subnets
+	subnets := make([]map[string]interface{}, 0)
+	for _, subnet := range nwacl.Subnets {
+		subnetMap := map[string]interface{}{
+			"id":   *subnet.ID,
+			"name": *subnet.Name,
+		}
+		subnets = append(subnets, subnetMap)
+	}
+	if err = d.Set("subnets", subnets); err != nil {
+		err = fmt.Errorf("Error setting subnets: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_default_network_acl", "read", "set-subnets").GetDiag()
+	}
+
+	// Handle tags
 	tags, err := flex.GetGlobalTagsUsingCRN(meta, *nwacl.CRN, "", isUserTagType)
 	if err != nil {
-		log.Printf(
-			"Error on get of resource network acl (%s) tags: %s", d.Id(), err)
+		log.Printf("Error on get of resource default network acl (%s) tags: %s", d.Id(), err)
+	}
+	if err = d.Set(isNetworkACLTags, tags); err != nil {
+		err = fmt.Errorf("Error setting tags: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_default_network_acl", "read", "set-tags").GetDiag()
 	}
 
 	accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *nwacl.CRN, "", isAccessTagType)
 	if err != nil {
-		log.Printf(
-			"Error on get of resource network acl (%s) access tags: %s", d.Id(), err)
+		log.Printf("Error on get of resource default network acl (%s) access tags: %s", d.Id(), err)
+	}
+	if err = d.Set(isNetworkACLAccessTags, accesstags); err != nil {
+		err = fmt.Errorf("Error setting access_tags: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_default_network_acl", "read", "set-access_tags").GetDiag()
 	}
 
-	d.Set(isNetworkACLTags, tags)
-	d.Set(isNetworkACLAccessTags, accesstags)
-	d.Set(isNetworkACLCRN, *nwacl.CRN)
-	rules := make([]interface{}, 0)
-	if len(nwacl.Rules) > 0 {
-		for _, rulex := range nwacl.Rules {
-			log.Println("[DEBUG] Type of the Rule", reflect.TypeOf(rulex))
-			rule := make(map[string]interface{})
-			rule[isNetworkACLSubnets] = len(nwacl.Subnets)
-			switch reflect.TypeOf(rulex).String() {
-			case "*vpcv1.NetworkACLRuleItemNetworkACLRuleProtocolIcmp":
-				{
-					rulex := rulex.(*vpcv1.NetworkACLRuleItemNetworkACLRuleProtocolIcmp)
-					rule[isNetworkACLRuleID] = *rulex.ID
-					rule[isNetworkACLRuleName] = *rulex.Name
-					rule[isNetworkACLRuleAction] = *rulex.Action
-					rule[isNetworkACLRuleIPVersion] = *rulex.IPVersion
-					rule[isNetworkACLRuleSource] = *rulex.Source
-					rule[isNetworkACLRuleDestination] = *rulex.Destination
-					rule[isNetworkACLRuleDirection] = *rulex.Direction
-					rule[isNetworkACLRuleTCP] = make([]map[string]int, 0, 0)
-					rule[isNetworkACLRuleUDP] = make([]map[string]int, 0, 0)
-					icmp := make([]map[string]int, 1, 1)
-					if rulex.Code != nil && rulex.Type != nil {
-						icmp[0] = map[string]int{
-							isNetworkACLRuleICMPCode: int(*rulex.Code),
-							isNetworkACLRuleICMPType: int(*rulex.Type),
-						}
-					}
-					rule[isNetworkACLRuleICMP] = icmp
-				}
-			case "*vpcv1.NetworkACLRuleItemNetworkACLRuleProtocolTcpudp":
-				{
-					rulex := rulex.(*vpcv1.NetworkACLRuleItemNetworkACLRuleProtocolTcpudp)
-					rule[isNetworkACLRuleID] = *rulex.ID
-					rule[isNetworkACLRuleName] = *rulex.Name
-					rule[isNetworkACLRuleAction] = *rulex.Action
-					rule[isNetworkACLRuleIPVersion] = *rulex.IPVersion
-					rule[isNetworkACLRuleSource] = *rulex.Source
-					rule[isNetworkACLRuleDestination] = *rulex.Destination
-					rule[isNetworkACLRuleDirection] = *rulex.Direction
-					if *rulex.Protocol == "tcp" {
-						rule[isNetworkACLRuleICMP] = make([]map[string]int, 0, 0)
-						rule[isNetworkACLRuleUDP] = make([]map[string]int, 0, 0)
-						tcp := make([]map[string]int, 1, 1)
-						tcp[0] = map[string]int{
-							isNetworkACLRuleSourcePortMax: checkNetworkACLNil(rulex.SourcePortMax),
-							isNetworkACLRuleSourcePortMin: checkNetworkACLNil(rulex.SourcePortMin),
-						}
-						tcp[0][isNetworkACLRulePortMax] = checkNetworkACLNil(rulex.DestinationPortMax)
-						tcp[0][isNetworkACLRulePortMin] = checkNetworkACLNil(rulex.DestinationPortMin)
-						rule[isNetworkACLRuleTCP] = tcp
-					} else if *rulex.Protocol == "udp" {
-						rule[isNetworkACLRuleICMP] = make([]map[string]int, 0, 0)
-						rule[isNetworkACLRuleTCP] = make([]map[string]int, 0, 0)
-						udp := make([]map[string]int, 1, 1)
-						udp[0] = map[string]int{
-							isNetworkACLRuleSourcePortMax: checkNetworkACLNil(rulex.SourcePortMax),
-							isNetworkACLRuleSourcePortMin: checkNetworkACLNil(rulex.SourcePortMin),
-						}
-						udp[0][isNetworkACLRulePortMax] = checkNetworkACLNil(rulex.DestinationPortMax)
-						udp[0][isNetworkACLRulePortMin] = checkNetworkACLNil(rulex.DestinationPortMin)
-						rule[isNetworkACLRuleUDP] = udp
-					}
-				}
-			case "*vpcv1.NetworkACLRuleItemNetworkACLRuleProtocolAll":
-				{
-					rulex := rulex.(*vpcv1.NetworkACLRuleItemNetworkACLRuleProtocolAll)
-					rule[isNetworkACLRuleID] = *rulex.ID
-					rule[isNetworkACLRuleName] = *rulex.Name
-					rule[isNetworkACLRuleAction] = *rulex.Action
-					rule[isNetworkACLRuleIPVersion] = *rulex.IPVersion
-					rule[isNetworkACLRuleSource] = *rulex.Source
-					rule[isNetworkACLRuleDestination] = *rulex.Destination
-					rule[isNetworkACLRuleDirection] = *rulex.Direction
-					rule[isNetworkACLRuleICMP] = make([]map[string]int, 0, 0)
-					rule[isNetworkACLRuleTCP] = make([]map[string]int, 0, 0)
-					rule[isNetworkACLRuleUDP] = make([]map[string]int, 0, 0)
-				}
-			}
-			rules = append(rules, rule)
-		}
-	}
-	d.Set(isNetworkACLRules, rules)
 	controller, err := flex.GetBaseController(meta)
 	if err != nil {
-		return err
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetBaseController failed: %s", err.Error()), "ibm_is_vpc_default_network_acl", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
-	d.Set(flex.ResourceControllerURL, controller+"/vpc-ext/network/acl")
-	d.Set(flex.ResourceName, *nwacl.Name)
-	// d.Set(flex.ResourceCRN, *nwacl.Crn)
+	if err = d.Set(flex.ResourceControllerURL, controller+"/vpc-ext/network/acl"); err != nil {
+		err = fmt.Errorf("Error setting resource_controller_url: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_default_network_acl", "read", "set-resource_controller_url").GetDiag()
+	}
+	if err = d.Set(flex.ResourceName, *nwacl.Name); err != nil {
+		err = fmt.Errorf("Error setting resource_name: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_default_network_acl", "read", "set-resource_name").GetDiag()
+	}
+	if err = d.Set(flex.ResourceCRN, *nwacl.CRN); err != nil {
+		err = fmt.Errorf("Error setting resource_crn: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_default_network_acl", "read", "set-resource_crn").GetDiag()
+	}
+
 	return nil
 }
 
-func resourceIBMISVPCDefaultNetworkACLUpdate(d *schema.ResourceData, meta interface{}) error {
-	id := d.Id()
-
-	name := ""
-	hasChanged := false
-
-	if d.HasChange(isNetworkACLName) {
-		name = d.Get(isNetworkACLName).(string)
-		hasChanged = true
-	}
-
-	err := nwaclVPCDefaultUpdate(d, meta, id, name, hasChanged)
-	if err != nil {
-		return err
-	}
-	return resourceIBMISVPCDefaultNetworkACLRead(d, meta)
-}
-
-func nwaclVPCDefaultUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChanged bool) error {
+func resourceIBMISVPCDefaultNetworkACLUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_default_network_acl", "update", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
-	rules := d.Get(isNetworkACLRules).([]interface{})
-	if hasChanged {
+
+	// Parse ID to get Network ACL ID
+	parts := strings.Split(d.Id(), "/")
+	if len(parts) != 2 {
+		tfErr := flex.TerraformErrorf(fmt.Errorf("invalid ID format"), "ID should be in format vpc_id/network_acl_id", "ibm_is_vpc_default_network_acl", "update")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+	}
+
+	networkACLID := parts[1]
+	hasChanged := false
+
+	// Handle name change
+	if d.HasChange(isNetworkACLName) {
+		name := d.Get(isNetworkACLName).(string)
 		updateNetworkACLOptions := &vpcv1.UpdateNetworkACLOptions{
-			ID: &id,
+			ID: &networkACLID,
 		}
 		networkACLPatchModel := &vpcv1.NetworkACLPatch{
 			Name: &name,
 		}
 		networkACLPatch, err := networkACLPatchModel.AsPatch()
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for NetworkACLPatch: %s", err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("networkACLPatchModel.AsPatch() failed: %s", err.Error()), "ibm_is_vpc_default_network_acl", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		updateNetworkACLOptions.NetworkACLPatch = networkACLPatch
-		_, response, err := sess.UpdateNetworkACL(updateNetworkACLOptions)
+		_, _, err = sess.UpdateNetworkACLWithContext(context, updateNetworkACLOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Updating Network ACL(%s) : %s\n%s", id, err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateNetworkACLWithContext failed: %s", err.Error()), "ibm_is_vpc_default_network_acl", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
+		hasChanged = true
 	}
+
+	// Handle tags update
 	if d.HasChange(isNetworkACLTags) {
 		oldList, newList := d.GetChange(isNetworkACLTags)
 		err := flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, d.Get(isNetworkACLCRN).(string), "", isUserTagType)
 		if err != nil {
-			log.Printf(
-				"Error on update of resource network acl (%s) tags: %s", d.Id(), err)
+			log.Printf("Error on update of resource default network acl (%s) tags: %s", d.Id(), err)
 		}
+		hasChanged = true
 	}
+
 	if d.HasChange(isNetworkACLAccessTags) {
 		oldList, newList := d.GetChange(isNetworkACLAccessTags)
 		err := flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, d.Get(isNetworkACLCRN).(string), "", isAccessTagType)
 		if err != nil {
-			log.Printf(
-				"Error on update of resource network acl (%s) access tags: %s", d.Id(), err)
+			log.Printf("Error on update of resource default network acl (%s) access tags: %s", d.Id(), err)
 		}
+		hasChanged = true
 	}
-	if d.HasChange(isNetworkACLRules) {
-		err := validateVPCDefaultInlineRules(rules)
-		if err != nil {
-			return err
-		}
-		//Delete all existing rules
-		err = clearVPCDefaultRules(sess, id)
-		if err != nil {
-			return err
-		}
-		//Create the rules as per the def
-		err = createVPCDefaultInlineRules(sess, id, rules)
-		if err != nil {
-			return err
-		}
+
+	if hasChanged {
+		return resourceIBMISVPCDefaultNetworkACLRead(context, d, meta)
 	}
+
 	return nil
 }
 
-func resourceIBMISVPCDefaultNetworkACLDelete(d *schema.ResourceData, meta interface{}) error {
-
+func resourceIBMISVPCDefaultNetworkACLDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	// Default network ACL cannot be deleted, just remove from Terraform state
 	d.SetId("")
 	return nil
 }
 
 func resourceIBMISVPCDefaultNetworkACLExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	id := d.Id()
-	exists, err := nwaclVPCDefaultExists(meta, id)
-	return exists, err
-}
-
-func nwaclVPCDefaultExists(meta interface{}, id string) (bool, error) {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return false, err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_default_network_acl", "exists", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return false, tfErr
 	}
+
+	// Parse ID to get Network ACL ID
+	parts := strings.Split(d.Id(), "/")
+	if len(parts) != 2 {
+		return false, fmt.Errorf("[ERROR] Incorrect ID %s: ID should be a combination of vpcID/networkACLID", d.Id())
+	}
+
+	networkACLID := parts[1]
 	getNetworkAclOptions := &vpcv1.GetNetworkACLOptions{
-		ID: &id,
+		ID: &networkACLID,
 	}
 	_, response, err := sess.GetNetworkACL(getNetworkAclOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			return false, nil
 		}
-		return false, fmt.Errorf("[ERROR] Error getting Network ACL: %s\n%s", err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetNetworkACL failed: %s", err.Error()), "ibm_is_vpc_default_network_acl", "exists")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return false, tfErr
 	}
 	return true, nil
-}
-
-func checkVPCDefaultNetworkACLNil(ptr *int64) int {
-	if ptr == nil {
-		return 0
-	}
-	return int(*ptr)
-}
-
-func clearVPCDefaultRules(nwaclC *vpcv1.VpcV1, nwaclid string) error {
-	start := ""
-	allrecs := []vpcv1.NetworkACLRuleItemIntf{}
-	for {
-		listNetworkAclRulesOptions := &vpcv1.ListNetworkACLRulesOptions{
-			NetworkACLID: &nwaclid,
-		}
-		if start != "" {
-			listNetworkAclRulesOptions.Start = &start
-		}
-		rawrules, response, err := nwaclC.ListNetworkACLRules(listNetworkAclRulesOptions)
-		if err != nil {
-			return fmt.Errorf("[ERROR] Error Listing network ACL rules : %s\n%s", err, response)
-		}
-		start = flex.GetNext(rawrules.Next)
-		allrecs = append(allrecs, rawrules.Rules...)
-		if start == "" {
-			break
-		}
-	}
-
-	for _, rule := range allrecs {
-		deleteNetworkAclRuleOptions := &vpcv1.DeleteNetworkACLRuleOptions{
-			NetworkACLID: &nwaclid,
-		}
-		switch reflect.TypeOf(rule).String() {
-		case "*vpcv1.NetworkACLRuleItemNetworkACLRuleProtocolIcmp":
-			rule := rule.(*vpcv1.NetworkACLRuleItemNetworkACLRuleProtocolIcmp)
-			deleteNetworkAclRuleOptions.ID = rule.ID
-		case "*vpcv1.NetworkACLRuleItemNetworkACLRuleProtocolTcpudp":
-			rule := rule.(*vpcv1.NetworkACLRuleItemNetworkACLRuleProtocolTcpudp)
-			deleteNetworkAclRuleOptions.ID = rule.ID
-		case "*vpcv1.NetworkACLRuleItemNetworkACLRuleProtocolAll":
-			rule := rule.(*vpcv1.NetworkACLRuleItemNetworkACLRuleProtocolAll)
-			deleteNetworkAclRuleOptions.ID = rule.ID
-		}
-
-		response, err := nwaclC.DeleteNetworkACLRule(deleteNetworkAclRuleOptions)
-		if err != nil {
-			return fmt.Errorf("[ERROR] Error Deleting network ACL rule : %s\n%s", err, response)
-		}
-	}
-	return nil
-}
-
-func validateVPCDefaultInlineRules(rules []interface{}) error {
-	for _, rule := range rules {
-		rulex := rule.(map[string]interface{})
-		action := rulex[isNetworkACLRuleAction].(string)
-		if (action != "allow") && (action != "deny") {
-			return fmt.Errorf("[ERROR] Invalid action. valid values are allow|deny")
-		}
-
-		direction := rulex[isNetworkACLRuleDirection].(string)
-		direction = strings.ToLower(direction)
-
-		icmp := len(rulex[isNetworkACLRuleICMP].([]interface{})) > 0
-		tcp := len(rulex[isNetworkACLRuleTCP].([]interface{})) > 0
-		udp := len(rulex[isNetworkACLRuleUDP].([]interface{})) > 0
-
-		if (icmp && tcp) || (icmp && udp) || (tcp && udp) {
-			return fmt.Errorf("Only one of icmp|tcp|udp can be defined per rule")
-		}
-
-	}
-	return nil
-}
-
-func createVPCDefaultInlineRules(nwaclC *vpcv1.VpcV1, nwaclid string, rules []interface{}) error {
-	before := ""
-
-	for i := 0; i <= len(rules)-1; i++ {
-		rulex := rules[i].(map[string]interface{})
-
-		name := rulex[isNetworkACLRuleName].(string)
-		source := rulex[isNetworkACLRuleSource].(string)
-		destination := rulex[isNetworkACLRuleDestination].(string)
-		action := rulex[isNetworkACLRuleAction].(string)
-		direction := rulex[isNetworkACLRuleDirection].(string)
-		icmp := rulex[isNetworkACLRuleICMP].([]interface{})
-		tcp := rulex[isNetworkACLRuleTCP].([]interface{})
-		udp := rulex[isNetworkACLRuleUDP].([]interface{})
-		icmptype := int64(-1)
-		icmpcode := int64(-1)
-		minport := int64(-1)
-		maxport := int64(-1)
-		sourceminport := int64(-1)
-		sourcemaxport := int64(-1)
-		protocol := "all"
-
-		ruleTemplate := &vpcv1.NetworkACLRulePrototype{
-			Action:      &action,
-			Destination: &destination,
-			Direction:   &direction,
-			Source:      &source,
-			Name:        &name,
-		}
-
-		if before != "" {
-			ruleTemplate.Before = &vpcv1.NetworkACLRuleBeforePrototype{
-				ID: &before,
-			}
-		}
-
-		if len(icmp) > 0 {
-			protocol = "icmp"
-			ruleTemplate.Protocol = &protocol
-			if !isVPCDefaultNil(icmp[0]) {
-				icmpval := icmp[0].(map[string]interface{})
-				if val, ok := icmpval[isNetworkACLRuleICMPType]; ok {
-					icmptype = int64(val.(int))
-					ruleTemplate.Type = &icmptype
-				}
-				if val, ok := icmpval[isNetworkACLRuleICMPCode]; ok {
-					icmpcode = int64(val.(int))
-					ruleTemplate.Code = &icmpcode
-				}
-			}
-		} else if len(tcp) > 0 {
-			protocol = "tcp"
-			ruleTemplate.Protocol = &protocol
-			tcpval := tcp[0].(map[string]interface{})
-			if val, ok := tcpval[isNetworkACLRulePortMin]; ok {
-				minport = int64(val.(int))
-				ruleTemplate.DestinationPortMin = &minport
-			}
-			if val, ok := tcpval[isNetworkACLRulePortMax]; ok {
-				maxport = int64(val.(int))
-				ruleTemplate.DestinationPortMax = &maxport
-			}
-			if val, ok := tcpval[isNetworkACLRuleSourcePortMin]; ok {
-				sourceminport = int64(val.(int))
-				ruleTemplate.SourcePortMin = &sourceminport
-			}
-			if val, ok := tcpval[isNetworkACLRuleSourcePortMax]; ok {
-				sourcemaxport = int64(val.(int))
-				ruleTemplate.SourcePortMax = &sourcemaxport
-			}
-		} else if len(udp) > 0 {
-			protocol = "udp"
-			ruleTemplate.Protocol = &protocol
-			udpval := udp[0].(map[string]interface{})
-			if val, ok := udpval[isNetworkACLRulePortMin]; ok {
-				minport = int64(val.(int))
-				ruleTemplate.DestinationPortMin = &minport
-			}
-			if val, ok := udpval[isNetworkACLRulePortMax]; ok {
-				maxport = int64(val.(int))
-				ruleTemplate.DestinationPortMax = &maxport
-			}
-			if val, ok := udpval[isNetworkACLRuleSourcePortMin]; ok {
-				sourceminport = int64(val.(int))
-				ruleTemplate.SourcePortMin = &sourceminport
-			}
-			if val, ok := udpval[isNetworkACLRuleSourcePortMax]; ok {
-				sourcemaxport = int64(val.(int))
-				ruleTemplate.SourcePortMax = &sourcemaxport
-			}
-		}
-		if protocol == "all" {
-			ruleTemplate.Protocol = &protocol
-		}
-
-		createNetworkAclRuleOptions := &vpcv1.CreateNetworkACLRuleOptions{
-			NetworkACLID:            &nwaclid,
-			NetworkACLRulePrototype: ruleTemplate,
-		}
-		_, response, err := nwaclC.CreateNetworkACLRule(createNetworkAclRuleOptions)
-		if err != nil {
-			return fmt.Errorf("[ERROR] Error Creating network ACL rule : %s\n%s", err, response)
-		}
-	}
-	return nil
-}
-
-func isVPCDefaultNil(i interface{}) bool {
-	return i == nil || reflect.ValueOf(i).IsNil()
 }
