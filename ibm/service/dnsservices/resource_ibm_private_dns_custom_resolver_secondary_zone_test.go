@@ -65,7 +65,7 @@ func testAccCheckIBMPrivateDNSSecondaryZoneDestroy(s *terraform.State) error {
 		)
 		_, _, err := pdnsClient.GetSecondaryZone(getSecondaryZoneOptions)
 		if err != nil {
-			return flex.FmtErrorf("testAccCheckIBMDNSServicesZoneDestroy: Error checking if instance (%s) has been destroyed: %s", rs.Primary.ID, err)
+			return flex.FmtErrorf("testAccCheckIBMPrivateDNSZoneDestroy: Error checking if instance (%s) has been destroyed: %s", rs.Primary.ID, err)
 		}
 	}
 	return nil

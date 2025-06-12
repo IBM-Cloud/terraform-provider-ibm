@@ -200,7 +200,7 @@ func testAccCheckIBMPrivateDNSGlbDestroy(s *terraform.State) error {
 			res.StatusCode != 403 &&
 			!strings.Contains(err.Error(), "The service instance was disabled, any access is not allowed.") {
 
-			return flex.FmtErrorf("testAccCheckIBMDNSServicesZoneDestroy: Error checking if instance (%s) has been destroyed: %s", rs.Primary.ID, err)
+			return flex.FmtErrorf("testAccCheckIBMPrivateDNSZoneDestroy: Error checking if instance (%s) has been destroyed: %s", rs.Primary.ID, err)
 		}
 	}
 	return nil
@@ -227,7 +227,7 @@ func testAccCheckIBMPrivateDNSGlbLoadBalancerExists(n string, result *string) re
 		if err != nil &&
 			res.StatusCode != 403 &&
 			!strings.Contains(err.Error(), "The service instance was disabled, any access is not allowed.") {
-			return flex.FmtErrorf("testAccCheckIBMDNSServicesZoneExists: Error checking if instance (%s) has been destroyed: %s", rs.Primary.ID, err)
+			return flex.FmtErrorf("testAccCheckIBMPrivateDNSZoneExists: Error checking if instance (%s) has been destroyed: %s", rs.Primary.ID, err)
 		}
 		*result = *r.ID
 		return nil

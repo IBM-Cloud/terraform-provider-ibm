@@ -213,7 +213,7 @@ func testAccCheckIBMPrivateDNSGlbPoolDestroy(s *terraform.State) error {
 			res.StatusCode != 403 &&
 			!strings.Contains(err.Error(), "The service instance was disabled, any access is not allowed.") {
 
-			return flex.FmtErrorf("testAccCheckIBMDNSServicesGlbPoolDestroy: Error checking if instance (%s) has been destroyed: %s", rs.Primary.ID, err)
+			return flex.FmtErrorf("testAccCheckIBMPrivateDNSGlbPoolDestroy: Error checking if instance (%s) has been destroyed: %s", rs.Primary.ID, err)
 		}
 	}
 	return nil
