@@ -16,6 +16,7 @@ import (
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/power"
 )
 
@@ -59,7 +60,7 @@ func testAccCheckIBMPINetworkSecurityGroupExists(n string) resource.TestCheckFun
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return flex.FmtErrorf("Not found: %s", n)
 		}
 		if rs.Primary.ID == "" {
 			return errors.New("No Record ID is set")
@@ -98,7 +99,7 @@ func testAccCheckIBMPINetworkSecurityGroupDestroy(s *terraform.State) error {
 		nsgClient := instance.NewIBMIPINetworkSecurityGroupClient(context.Background(), sess, cloudInstanceID)
 		_, err = nsgClient.Get(nsgID)
 		if err == nil {
-			return fmt.Errorf("network_security_group still exists: %s", rs.Primary.ID)
+			return flex.FmtErrorf("network_security_group still exists: %s", rs.Primary.ID)
 		}
 	}
 
