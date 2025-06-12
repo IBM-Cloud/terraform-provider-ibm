@@ -146,6 +146,11 @@ func ResourceIBMCOSBucketObject() *schema.Resource {
 				ValidateFunc: validation.IsRFC3339Time,
 				Description:  "An object cannot be deleted when the current time is earlier than the retainUntilDate. After this date, the object can be deleted.",
 			},
+			"website_redirect": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Redirect a request to another object or an URL",
+			},
 		},
 	}
 }
@@ -202,6 +207,10 @@ func resourceIBMCOSBucketObjectCreate(ctx context.Context, d *schema.ResourceDat
 		Bucket: aws.String(bucketName),
 		Key:    aws.String(objectKey),
 		Body:   body,
+	}
+	//if website redirect location if given for a an object
+	if v, ok := d.GetOk("website_redirect"); ok {
+		putInput.WebsiteRedirectLocation = aws.String(v.(string))
 	}
 
 	if _, err := s3Client.PutObject(putInput); err != nil {
@@ -328,6 +337,9 @@ func resourceIBMCOSBucketObjectRead(ctx context.Context, d *schema.ResourceData,
 	if out.ObjectLockLegalHoldStatus != nil {
 		d.Set("object_lock_legal_hold_status", out.ObjectLockLegalHoldStatus)
 	}
+	if out.WebsiteRedirectLocation != nil {
+		d.Set("website_redirect", out.WebsiteRedirectLocation)
+	}
 	d.Set("key", objectKey)
 	d.Set("version_id", out.VersionId)
 	d.Set("object_sql_url", "cos://"+bucketLocation+"/"+bucketName+"/"+objectKey)
@@ -386,6 +398,11 @@ func resourceIBMCOSBucketObjectUpdate(ctx context.Context, d *schema.ResourceDat
 			Bucket: aws.String(bucketName),
 			Key:    aws.String(objectKey),
 			Body:   body,
+		}
+		if d.HasChange("website_redirect") {
+			if v, ok := d.GetOk("website_redirect"); ok {
+				putInput.WebsiteRedirectLocation = aws.String(v.(string))
+			}
 		}
 
 		if _, err := s3Client.PutObject(putInput); err != nil {
@@ -461,15 +478,16 @@ func resourceIBMCOSBucketObjectDelete(ctx context.Context, d *schema.ResourceDat
 
 func getCosEndpoint(bucketLocation string, endpointType string) string {
 	if bucketLocation != "" {
+		hostUrl := "cloud-object-storage.appdomain.cloud"
 		switch endpointType {
 		case "public":
-			return fmt.Sprintf("s3.%s.cloud-object-storage.appdomain.cloud", bucketLocation)
+			return fmt.Sprintf("s3.%s.%s", bucketLocation, hostUrl)
 		case "private":
-			return fmt.Sprintf("s3.private.%s.cloud-object-storage.appdomain.cloud", bucketLocation)
+			return fmt.Sprintf("s3.private.%s.%s", bucketLocation, hostUrl)
 		case "direct":
-			return fmt.Sprintf("s3.direct.%s.cloud-object-storage.appdomain.cloud", bucketLocation)
+			return fmt.Sprintf("s3.direct.%s.%s", bucketLocation, hostUrl)
 		default:
-			return fmt.Sprintf("s3.%s.cloud-object-storage.appdomain.cloud", bucketLocation)
+			return fmt.Sprintf("s3.%s.%s", bucketLocation, hostUrl)
 		}
 	}
 	return ""
@@ -477,8 +495,12 @@ func getCosEndpoint(bucketLocation string, endpointType string) string {
 
 func getS3Client(bxSession *bxsession.Session, bucketLocation string, endpointType string, instanceCRN string) (*s3.S3, error) {
 	var s3Conf *aws.Config
-
+	visibility := endpointType
+	if endpointType == "direct" {
+		visibility = "private"
+	}
 	apiEndpoint := getCosEndpoint(bucketLocation, endpointType)
+	apiEndpoint = conns.FileFallBack(bxSession.Config.EndpointsFile, visibility, "IBMCLOUD_COS_ENDPOINT", bucketLocation, apiEndpoint)
 	apiEndpoint = conns.EnvFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)
 	if apiEndpoint == "" {
 		return nil, fmt.Errorf("the endpoint doesn't exists for given location %s and endpoint type %s", bucketLocation, endpointType)

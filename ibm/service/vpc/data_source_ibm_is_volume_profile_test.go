@@ -29,11 +29,40 @@ func TestAccIBMISVolumeProfileDataSource_basic(t *testing.T) {
 		},
 	})
 }
+func TestAccIBMISVolumeProfileDataSource_sdpbasic(t *testing.T) {
+	resName := "data.ibm_is_volume_profile.test1"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISVolumeProfileDataSourceSdpConfig(),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resName, "name", "sdp"),
+					resource.TestCheckResourceAttrSet(resName, "family"),
+					resource.TestCheckResourceAttrSet(resName, "adjustable_capacity_states.#"),
+					resource.TestCheckResourceAttrSet(resName, "adjustable_capacity_states.0.values.#"),
+					resource.TestCheckResourceAttrSet(resName, "adjustable_iops_states.#"),
+					resource.TestCheckResourceAttrSet(resName, "adjustable_iops_states.0.values.#"),
+					resource.TestCheckResourceAttrSet(resName, "boot_capacity.#"),
+					resource.TestCheckResourceAttrSet(resName, "capacity.#"),
+					resource.TestCheckResourceAttrSet(resName, "iops.#"),
+				),
+			},
+		},
+	})
+}
 
 func testAccCheckIBMISVolumeProfileDataSourceConfig() string {
 	return fmt.Sprintf(`
-
-data "ibm_is_volume_profile" "test1" {
-	name = "%s"
-}`, acc.VolumeProfileName)
+	data "ibm_is_volume_profile" "test1" {
+		name = "%s"
+	}`, acc.VolumeProfileName)
+}
+func testAccCheckIBMISVolumeProfileDataSourceSdpConfig() string {
+	return fmt.Sprintf(`
+	data "ibm_is_volume_profile" "test1" {
+		name = "%s"
+	}`, "sdp")
 }

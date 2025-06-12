@@ -72,16 +72,16 @@ In addition to all argument reference list, you can access the following attribu
   - `href` - (String) The URL for this disk.
   - `id` - (String) The unique identifier for this disk.
   - `instance_disks` - (List) Instance disks that are on this dedicated host disk. Nested `instance_disks` blocks have the following structure:
-
-    Nested scheme for `instance_disks`:
-    - `deleted` - (List) If present, this property indicates the referenced resource has been deleted and providessome supplementary information. Nested `deleted` blocks have the following structure:
-			
-       Nested scheme for `deleted`:
-       - `more_info` - (String) Link to documentation about deleted resources.
-   - `href` - (String) The URL for this instance disk.
-   - `id` - (String) The unique identifier for this instance disk.
-   - `name` - (String) The user defined name for this disk.
-   - `resource_type` - (String) The resource type.
+  
+      Nested scheme for `instance_disks`:
+      - `deleted` - (List) If present, this property indicates the referenced resource has been deleted and providessome supplementary information. Nested `deleted` blocks have the following structure:
+          
+          Nested scheme for `deleted`:
+          - `more_info` - (String) Link to documentation about deleted resources.
+      - `href` - (String) The URL for this instance disk.
+      - `id` - (String) The unique identifier for this instance disk.
+      - `name` - (String) The user defined name for this disk.
+      - `resource_type` - (String) The resource type.
  - `interface_type` - (String) The disk interface used for attaching the disk. The enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the unexpected property value was encountered.
  - `lifecycle_state` - (String) The lifecycle state of this dedicated host disk.
  - `name` - (String) The user defined or system provided name for this disk.
@@ -108,6 +108,15 @@ In addition to all argument reference list, you can access the following attribu
 - `lifecycle_state`-  (String) The lifecycle state of the dedicated host resource.
 - `memory`-  (String) The total amount of memory in `GB` for this host.
 - `name`-  (String) The unique user defined name for this dedicated host.
+- `numa` - The NUMA configuration for this dedicated host.
+  
+  Nested scheme for `numa`:
+    - `count` - (Integer) The total number of NUMA nodes for this dedicated host.
+    - `nodes` - (List) The NUMA nodes for this dedicated host.
+      
+      Nested scheme for `nodes`:
+        - `available_vcpu` - (Integer) The available VCPU for this NUMA node.
+        - `vcpu` - (Integer) The total VCPU capacity for this NUMA node.
 - `profile`-  (String) The profile this dedicated host uses.
 - `provisionable`-  (String) Indicates whether this dedicated host is available for instance creation.
 - `resource_group`-  (String) The unique identifier of the resource group for this dedicated host.

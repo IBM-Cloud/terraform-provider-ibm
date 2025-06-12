@@ -20,7 +20,7 @@ import (
 )
 
 func TestAccIBMISBareMetalServerNetworkInterfaceAllowFloat_rip_basic(t *testing.T) {
-	var server string
+	var serverNic string
 	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
 	name := fmt.Sprintf("tf-server-%d", acctest.RandIntRange(10, 100))
 	subnetname := fmt.Sprintf("tfip-subnet-%d", acctest.RandIntRange(10, 100))
@@ -38,7 +38,7 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 			{
 				Config: testAccCheckIBMISBareMetalServerNetworkInterfaceAllowFloatRipConfig(vpcname, subnetname, subnetreservedipname, sshname, publicKey, name),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISBareMetalServerNetworkInterfaceAllowFloatExists("ibm_is_bare_metal_server_network_interface_allow_float.bms_nic", server),
+					testAccCheckIBMISBareMetalServerNetworkInterfaceAllowFloatExists("ibm_is_bare_metal_server_network_interface_allow_float.bms_nic", serverNic),
 					resource.TestCheckResourceAttr(
 						"ibm_is_bare_metal_server.testacc_bms", "name", name),
 					resource.TestCheckResourceAttr(
@@ -73,7 +73,7 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 	})
 }
 func TestAccIBMISBareMetalServerNetworkInterfaceAllowFloat_basic(t *testing.T) {
-	var server string
+	var serverNic string
 	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
 	name := fmt.Sprintf("tf-server-%d", acctest.RandIntRange(10, 100))
 	subnetname := fmt.Sprintf("tfip-subnet-%d", acctest.RandIntRange(10, 100))
@@ -90,11 +90,93 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 			{
 				Config: testAccCheckIBMISBareMetalServerNetworkInterfaceAllowFloatConfig(vpcname, subnetname, sshname, publicKey, name),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISBareMetalServerNetworkInterfaceAllowFloatExists("ibm_is_bare_metal_server_network_interface_allow_float.bms_nic", server),
+					testAccCheckIBMISBareMetalServerNetworkInterfaceAllowFloatExists("ibm_is_bare_metal_server_network_interface_allow_float.bms_nic", serverNic),
 					resource.TestCheckResourceAttr(
 						"ibm_is_bare_metal_server.testacc_bms", "name", name),
 					resource.TestCheckResourceAttr(
 						"ibm_is_bare_metal_server.testacc_bms", "zone", acc.ISZoneName),
+					resource.TestCheckResourceAttr(
+						"ibm_is_bare_metal_server_network_interface_allow_float.bms_nic", "allow_ip_spoofing", "false"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_bare_metal_server_network_interface_allow_float.bms_nic", "allow_interface_to_float", "true"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_bare_metal_server_network_interface_allow_float.bms_nic", "enable_infrastructure_nat", "false"),
+					resource.TestCheckResourceAttrWith("ibm_is_bare_metal_server_network_interface_allow_float.bms_nic", "primary_ip.0.address", func(v string) error {
+						if v == "0.0.0.0" {
+							return fmt.Errorf("Attribute 'address' %s is not updated", v)
+						}
+						return nil
+					}),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_bare_metal_server_network_interface_allow_float.bms_nic", "floating_bare_metal_server"),
+					resource.TestCheckResourceAttrWith("ibm_is_bare_metal_server_network_interface_allow_float.bms_nic", "floating_bare_metal_server", func(v string) error {
+						if v == "" {
+							return fmt.Errorf("Attribute 'floating_bare_metal_server' %s is not populated", v)
+						}
+						return nil
+					}),
+				),
+			},
+		},
+	})
+}
+func TestAccIBMISBareMetalServerNetworkInterfaceAllowFloat_sg_update(t *testing.T) {
+	var serverNic string
+	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tf-server-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tfip-subnet-%d", acctest.RandIntRange(10, 100))
+	publicKey := strings.TrimSpace(`
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
+`)
+	sshname := fmt.Sprintf("tf-sshname-%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISBareMetalServerNetworkInterfaceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISBareMetalServerNetworkInterfaceAllowFloatConfig(vpcname, subnetname, sshname, publicKey, name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISBareMetalServerNetworkInterfaceAllowFloatExists("ibm_is_bare_metal_server_network_interface_allow_float.bms_nic", serverNic),
+					resource.TestCheckResourceAttr(
+						"ibm_is_bare_metal_server.testacc_bms", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_is_bare_metal_server.testacc_bms", "zone", acc.ISZoneName),
+					resource.TestCheckResourceAttr(
+						"ibm_is_bare_metal_server_network_interface_allow_float.bms_nic", "allow_ip_spoofing", "false"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_bare_metal_server_network_interface_allow_float.bms_nic", "security_groups.#", "1"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_bare_metal_server_network_interface_allow_float.bms_nic", "allow_interface_to_float", "true"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_bare_metal_server_network_interface_allow_float.bms_nic", "enable_infrastructure_nat", "false"),
+					resource.TestCheckResourceAttrWith("ibm_is_bare_metal_server_network_interface_allow_float.bms_nic", "primary_ip.0.address", func(v string) error {
+						if v == "0.0.0.0" {
+							return fmt.Errorf("Attribute 'address' %s is not updated", v)
+						}
+						return nil
+					}),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_bare_metal_server_network_interface_allow_float.bms_nic", "floating_bare_metal_server"),
+					resource.TestCheckResourceAttrWith("ibm_is_bare_metal_server_network_interface_allow_float.bms_nic", "floating_bare_metal_server", func(v string) error {
+						if v == "" {
+							return fmt.Errorf("Attribute 'floating_bare_metal_server' %s is not populated", v)
+						}
+						return nil
+					}),
+				),
+			},
+			{
+				Config: testAccCheckIBMISBareMetalServerNetworkInterfaceAllowFloatSgUpdateConfig(vpcname, subnetname, sshname, publicKey, name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISBareMetalServerNetworkInterfaceAllowFloatExists("ibm_is_bare_metal_server_network_interface_allow_float.bms_nic", serverNic),
+					resource.TestCheckResourceAttr(
+						"ibm_is_bare_metal_server.testacc_bms", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_is_bare_metal_server.testacc_bms", "zone", acc.ISZoneName),
+					resource.TestCheckResourceAttr(
+						"ibm_is_bare_metal_server_network_interface_allow_float.bms_nic", "security_groups.#", "2"),
 					resource.TestCheckResourceAttr(
 						"ibm_is_bare_metal_server_network_interface_allow_float.bms_nic", "allow_ip_spoofing", "false"),
 					resource.TestCheckResourceAttr(
@@ -205,6 +287,61 @@ func testAccCheckIBMISBareMetalServerNetworkInterfaceAllowFloatConfig(vpcname, s
 
 		
 `, vpcname, subnetname, acc.ISZoneName, sshname, publicKey, acc.IsBareMetalServerProfileName, name, acc.IsBareMetalServerImage, acc.ISZoneName)
+}
+func testAccCheckIBMISBareMetalServerNetworkInterfaceAllowFloatSgUpdateConfig(vpcname, subnetname, sshname, publicKey, name string) string {
+	return fmt.Sprintf(`
+		resource "ibm_is_vpc" "testacc_vpc" {
+			name = "%s"
+		}
+	  
+		resource "ibm_is_subnet" "testacc_subnet" {
+			name            			= "%s"
+			vpc             			= ibm_is_vpc.testacc_vpc.id
+			zone            			= "%s"
+			total_ipv4_address_count 	= 16
+		}
+
+		resource "ibm_is_security_group" "testacc_sg1" {
+			name = "%s-security-group1"
+			vpc  = ibm_is_vpc.testacc_vpc.id
+		  }
+		  
+		resource "ibm_is_security_group" "testacc_sg2" {
+			name = "%s-security-group2"
+			vpc  = ibm_is_vpc.testacc_vpc.id
+		}
+		resource "ibm_is_ssh_key" "testacc_sshkey" {
+			name       			= "%s"
+			public_key 			= "%s"
+		}
+	  
+		resource "ibm_is_bare_metal_server" "testacc_bms" {
+			profile 			= "%s"
+			name 				= "%s"
+			image 				= "%s"
+			zone 				= "%s"
+			keys 				= [ibm_is_ssh_key.testacc_sshkey.id]
+			primary_network_interface {
+				allowed_vlans 	= [101, 102]
+				subnet     		= ibm_is_subnet.testacc_subnet.id
+			}
+			vpc 				= ibm_is_vpc.testacc_vpc.id
+		}
+
+		resource ibm_is_bare_metal_server_network_interface_allow_float bms_nic {
+			bare_metal_server 			= ibm_is_bare_metal_server.testacc_bms.id
+			
+			subnet 						= ibm_is_subnet.testacc_subnet.id
+			name   						= "eth21"
+			vlan 						= 101
+			allow_ip_spoofing 			= false
+			enable_infrastructure_nat 	= false
+			security_groups				= [ibm_is_security_group.testacc_sg1.id, ibm_is_security_group.testacc_sg2.id]
+
+		}
+
+		
+`, vpcname, subnetname, acc.ISZoneName, vpcname, vpcname, sshname, publicKey, acc.IsBareMetalServerProfileName, name, acc.IsBareMetalServerImage, acc.ISZoneName)
 }
 func testAccCheckIBMISBareMetalServerNetworkInterfaceAllowFloatRipConfig(vpcname, subnetname, subnetreservedipname, sshname, publicKey, name string) string {
 	return fmt.Sprintf(`

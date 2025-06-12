@@ -49,10 +49,17 @@ Review the argument reference that you can specify for your data source.
 
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
+- `access_tags`  - (List) Access management tags associated for the routing table.
 - `accept_routes_from` - (List) The filters specifying the resources that may create routes in this routing table.At present, only the `resource_type` filter is permitted, and only the `vpn_gateway` value is supported, but filter support is expected to expand in the future.
 	Nested scheme for **accept_routes_from**:
 	- `resource_type` - (String) The resource type.
+- `advertise_routes_to` - (Optional, List) The ingress sources to advertise routes to. Routes in the table with `advertise` enabled will be advertised to these sources.
+
+  ->**Options** An ingress source that routes can be advertised to:</br>
+        **&#x2022;** `direct_link` (requires `route_direct_link_ingress` be set to `true`)</br>
+        **&#x2022;** `transit_gateway` (requires `route_transit_gateway_ingress` be set to `true`)
 - `created_at` - (String) The date and time that this routing table was created.
+- `crn` -  (String) The crn for this routing table.
 - `href` - (String) The URL for this routing table.
 - `id` - (String) The unique identifier of the RoutingTable.
 - `is_default` - (Boolean) Indicates whether this is the default routing table for this VPC.
@@ -60,6 +67,12 @@ In addition to all argument references listed, you can access the following attr
   - Constraints: Allowable values are: `deleting`, `failed`, `pending`, `stable`, `suspended`, `updating`, `waiting`.
 - `name` - (String) The user-defined name for this routing table.
 - `resource_type` - (String) The resource type.
+- `resource_group` - (List) The resource group for this routing table. 
+	
+	Nested scheme for `resource_group`:
+    - `href` - (String) The URL for this resource group.
+    - `id` - (String) The unique identifier for this resource group.
+    - `name` - (String) The name for this resource group.
 - `route_direct_link_ingress` - (Boolean) Indicates whether this routing table is used to route traffic that originates from [Direct Link](https://cloud.ibm.com/docs/dl/) to this VPC.Incoming traffic will be routed according to the routing table with one exception: routes with an `action` of `deliver` are treated as `drop` unless the `next_hop` is an IP address within the VPC's address prefix ranges. Therefore, if an incoming packet matches a route with a `next_hop` of an internet-bound IP address or a VPN gateway connection, the packet will be dropped.
 - `route_internet_ingress` - (Boolean) Indicates whether this routing table is used to route traffic that originates from the internet.Incoming traffic will be routed according to the routing table with two exceptions:- Traffic destined for IP addresses associated with public gateways will not be  subject to routes in this routing table.- Routes with an action of deliver are treated as drop unless the `next_hop` is an  IP address bound to a network interface on a subnet in the route's `zone`.  Therefore, if an incoming packet matches a route with a `next_hop` of an  internet-bound IP address or a VPN gateway connection, the packet will be dropped.
 - `route_transit_gateway_ingress` - (Boolean) Indicates whether this routing table is used to route traffic that originates from from [Transit Gateway](https://cloud.ibm.com/cloud/transit-gateway/) to this VPC.Incoming traffic will be routed according to the routing table with one exception: routes with an `action` of `deliver` are treated as `drop` unless the `next_hop` is an IP address within the VPC's address prefix ranges. Therefore, if an incoming packet matches a route with a `next_hop` of an internet-bound IP address or a VPN gateway connection, the packet will be dropped.
@@ -81,3 +94,4 @@ In addition to all argument references listed, you can access the following attr
 	- `href` - (String) The URL for this subnet.
 	- `id` - (String) The unique identifier for this subnet.
 	- `name` - (String) The user-defined name for this subnet.
+- `tags` - (List) Tags associated with the routing table.	

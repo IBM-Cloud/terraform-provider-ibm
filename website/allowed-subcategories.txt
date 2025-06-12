@@ -1,16 +1,18 @@
-Activity Tracker
-API Gateway
+Activity Tracker Event Routing
 App ID Management
 App Configuration
 Catalog Management
+Ceph as a Service
 Classic infrastructure
 Cloud Database
 Cloud Foundry
 Cloudant Databases
 Code Engine
 Container Registry
+Configuration Aggregator
 Context Based Restrictions
 CD Tekton Pipeline
+Db2 SaaS
 Direct Link Gateway
 DNS Services
 Enterprise Management
@@ -18,6 +20,7 @@ Event Notifications
 Event Streams
 Functions
 Global Tagging
+IBM Backup Recovery
 IBM Cloud Shell
 Hyper Protect Crypto Service (HPCS)
 CD Toolchain
@@ -25,8 +28,14 @@ Identity & Access Management (IAM)
 Internet services
 Key Management Service
 Kubernetes Service
+Logs Routing
+Metrics Router
+MQaaS
 Object Storage
+Partner Center Sell
 Power Systems
+Privileged Access Gateway
+Project
 Push Notifications
 Resource management
 Satellite
@@ -34,4 +43,6 @@ Schematics
 Secrets Manager
 Security and Compliance Center
 Transit Gateway
+Usage Reports
+VCF as a Service
 VPC infrastructure

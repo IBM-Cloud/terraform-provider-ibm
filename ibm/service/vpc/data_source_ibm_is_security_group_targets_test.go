@@ -43,6 +43,35 @@ func TestAccIBMISSecurityGroupTargets_basic(t *testing.T) {
 		},
 	})
 }
+func TestAccIBMISSecurityGroupTargets_vni(t *testing.T) {
+	var securityGroup string
+	terraformTag := "data.ibm_is_security_group_targets.testacc_security_group_targets"
+
+	vpcname := fmt.Sprintf("tfsg-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tfsg-subnet-%d", acctest.RandIntRange(10, 100))
+	vniname := fmt.Sprintf("tfsg-vni-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tfsg-one-%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISSecurityGroupTargetsDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISsecurityGroupTargetsVniConfig(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, vniname, name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISSecurityGroupTargetsExists("ibm_is_security_group_target.testacc_security_group_target", &securityGroup),
+					resource.TestCheckResourceAttrSet(
+						terraformTag, "targets.0.crn"),
+					resource.TestCheckResourceAttr(
+						terraformTag, "targets.0.resource_type", "virtual_network_interface"),
+					resource.TestCheckResourceAttrSet(
+						terraformTag, "targets.0.target"),
+				),
+			},
+		},
+	})
+}
 
 func testAccCheckIBMISSecurityGroupTargetsDestroy(s *terraform.State) error {
 
@@ -141,12 +170,53 @@ func testAccCheckIBMISsecurityGroupTargetsConfig(vpcname, subnetname, zoneName, 
 
 	resource "ibm_is_security_group_target" "testacc_security_group_target" {
 	    security_group = ibm_is_security_group.testacc_security_group_one.id
-	    target = ibm_is_lb.testacc_LB.id
+		target = ibm_is_lb.testacc_LB.id
 	  }
 
 	data "ibm_is_security_group_targets" "testacc_security_group_targets" {
-		security_group = ibm_is_security_group.testacc_security_group_one.id
+		security_group = ibm_is_security_group_target.testacc_security_group_target.security_group
 	}
 
 	`, vpcname, subnetname, zoneName, cidr, name, lbname)
+}
+
+func testAccCheckIBMISsecurityGroupTargetsVniConfig(vpcname, subnetname, zoneName, cidr, vniname, name string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+	    name = "%s"
+	}
+
+	resource "ibm_is_subnet" "testacc_subnet" {
+	    name = "%s"
+	    vpc = ibm_is_vpc.testacc_vpc.id
+	    zone = "%s"
+	    ipv4_cidr_block = "%s"
+	}
+
+	resource "ibm_is_security_group" "testacc_security_group_one" {
+	    name = "%s"
+	    vpc = "${ibm_is_vpc.testacc_vpc.id}"
+	}
+
+	resource "ibm_is_virtual_network_interface" "testacc_vni"{
+		name 						= "%s"
+		allow_ip_spoofing 			= false
+		enable_infrastructure_nat 	= true
+		primary_ip {
+			auto_delete 	= false
+			address 		= cidrhost(cidrsubnet(ibm_is_subnet.testacc_subnet.ipv4_cidr_block, 4, 6), 0)
+		}
+		subnet = ibm_is_subnet.testacc_subnet.id
+	}
+
+	resource "ibm_is_security_group_target" "testacc_security_group_target" {
+	    security_group = ibm_is_security_group.testacc_security_group_one.id
+	    target = ibm_is_virtual_network_interface.testacc_vni.id
+	  }
+
+	data "ibm_is_security_group_targets" "testacc_security_group_targets" {
+		security_group = ibm_is_security_group_target.testacc_security_group_target.security_group
+	}
+
+	`, vpcname, subnetname, zoneName, cidr, name, vniname)
 }

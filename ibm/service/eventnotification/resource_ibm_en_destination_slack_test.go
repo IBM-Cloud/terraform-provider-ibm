@@ -37,6 +37,7 @@ func TestAccIBMEnSlackDestinationAllArgs(t *testing.T) {
 					testAccCheckIBMEnSlackDestinationExists("ibm_en_destination_slack.en_destination_resource_1", config),
 					resource.TestCheckResourceAttr("ibm_en_destination_slack.en_destination_resource_1", "name", name),
 					resource.TestCheckResourceAttr("ibm_en_destination_slack.en_destination_resource_1", "type", "slack"),
+					resource.TestCheckResourceAttr("ibm_en_destination_slack.en_destination_resource_1", "collect_failed_events", "false"),
 					resource.TestCheckResourceAttr("ibm_en_destination_slack.en_destination_resource_1", "description", description),
 				),
 			},
@@ -45,6 +46,7 @@ func TestAccIBMEnSlackDestinationAllArgs(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_en_destination_slack.en_destination_resource_1", "name", newName),
 					resource.TestCheckResourceAttr("ibm_en_destination_slack.en_destination_resource_1", "type", "slack"),
+					resource.TestCheckResourceAttr("ibm_en_destination_slack.en_destination_resource_1", "collect_failed_events", "false"),
 					resource.TestCheckResourceAttr("ibm_en_destination_slack.en_destination_resource_1", "description", newDescription),
 				),
 			},
@@ -73,6 +75,7 @@ func testAccCheckIBMEnSlackDestinationConfig(instanceName, name, description str
 		description = "%s"
 		config {
 			params {
+			    type = "incoming_webhook"
 				url  = "https://hooks.slack.com/services/G0gyhsush/TYodsjhs/GHTbfidsimkk"
 			}
 		}

@@ -24,6 +24,10 @@ func suppressKMSInstanceIDDiff(k, old, new string, d *schema.ResourceData) bool 
 	return old == getInstanceIDFromCRN(new)
 }
 
+func getInstanceIDFromResourceData(d *schema.ResourceData, key string) string {
+	return getInstanceIDFromCRN(d.Get(key).(string))
+}
+
 // Get Instance ID from CRN
 func getInstanceIDFromCRN(crn string) string {
 	crnSegments := strings.Split(crn, ":")
@@ -83,7 +87,12 @@ func ResourceIBMKmskey() *schema.Resource {
 				Computed:     true,
 				ValidateFunc: validate.ValidateAllowedStringValues([]string{"public", "private"}),
 				Description:  "public or private",
-				ForceNew:     true,
+			},
+			"description": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "description of the key",
 			},
 			"standard_key": {
 				Type:        schema.TypeBool,
@@ -93,10 +102,11 @@ func ResourceIBMKmskey() *schema.Resource {
 				Description: "Standard key type",
 			},
 			"payload": {
-				Type:     schema.TypeString,
-				Computed: true,
-				Optional: true,
-				ForceNew: true,
+				Type:      schema.TypeString,
+				Sensitive: true,
+				Computed:  true,
+				Optional:  true,
+				ForceNew:  true,
 			},
 			"encrypted_nonce": {
 				Type:        schema.TypeString,
@@ -125,13 +135,38 @@ func ResourceIBMKmskey() *schema.Resource {
 			"expiration_date": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "The date the key material expires. The date format follows RFC 3339. You can set an expiration date on any key on its creation. A key moves into the Deactivated state within one hour past its expiration date, if one is assigned. If you create a key without specifying an expiration date, the key does not expire",
+				Description: "The date and time that the key expires in the system, in RFC 3339 format (YYYY-MM-DD HH:MM:SS.SS, for example 2019-10-12T07:20:50.52Z). Use caution when setting an expiration date, as keys created with an expiration date automatically transition to the Deactivated state within one hour after expiration. In this state, the only allowed actions on the key are unwrap, rewrap, rotate, and delete. Deactivated keys cannot be used to encrypt (wrap) new data, even if rotated while deactivated. Rotation does not reset or extend the expiration date, nor does it allow the date to be changed. It is recommended that any data encrypted with an expiring or expired key be re-encrypted using a new customer root key (CRK) before the original CRK expires, to prevent service disruptions. Deleting and restoring a deactivated key does not move it back to the Active state. If the expiration_date attribute is omitted, the key does not expire.",
 				ForceNew:    true,
 			},
 			"instance_crn": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Key protect or hpcs instance CRN",
+			},
+
+			"registrations": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Registrations of the key across different services",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"key_id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The id of the key being used in the registration",
+						},
+						"resource_crn": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The CRN of the resource tied to the key registration",
+						},
+						"prevent_key_deletion": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Determines if the registration of the key prevents a deletion.",
+						},
+					},
+				},
 			},
 			flex.ResourceName: {
 				Type:        schema.TypeString,
@@ -177,9 +212,12 @@ func resourceIBMKmsKeyCreate(d *schema.ResourceData, meta interface{}) error {
 
 	kpAPI.Config.KeyRing = d.Get("key_ring_id").(string)
 
-	key, err := kpAPI.CreateImportedKey(context.Background(), keyData.Name, keyData.Expiration, keyData.Payload, keyData.EncryptedNonce, keyData.IV, keyData.Extractable)
+	key, err := kpAPI.CreateKeyWithOptions(context.Background(), keyData.Name, keyData.Extractable,
+		kp.WithExpiration(keyData.Expiration),
+		kp.WithPayload(keyData.Payload, &keyData.EncryptedNonce, &keyData.IV, false),
+		kp.WithDescription(keyData.Description))
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while creating key: %s", err)
+		return flex.FmtErrorf("[ERROR] Error while creating key: %s", err)
 	}
 
 	d.SetId(key.CRN)
@@ -216,7 +254,17 @@ func resourceIBMKmsKeyDelete(d *schema.ResourceData, meta interface{}) error {
 
 	_, err1 := kpAPI.DeleteKey(context.Background(), keyid, kp.ReturnRepresentation, f)
 	if err1 != nil {
-		return fmt.Errorf("[ERROR] Error while deleting: %s", err1)
+		registrations := d.Get("registrations").([]interface{})
+		var registrationLog error
+		if len(registrations) > 0 {
+			resourceCrns := make([]string, 0)
+			for _, registration := range registrations {
+				r := registration.(map[string]interface{})
+				resourceCrns = append(resourceCrns, r["resource_crn"].(string))
+			}
+			registrationLog = flex.FmtErrorf(". The key has the following active registrations which may interfere with deletion: %v", resourceCrns)
+		}
+		return flex.FmtErrorf("[ERROR] Error while deleting: %s%s", err1, registrationLog)
 	}
 	d.SetId("")
 	return nil
@@ -233,9 +281,10 @@ func resourceIBMKmsKeyExists(d *schema.ResourceData, meta interface{}) (bool, er
 
 	_, err = kpAPI.GetKey(context.Background(), keyid)
 	if err != nil {
-		kpError := err.(*kp.Error)
-		if kpError.StatusCode == 404 {
-			return false, nil
+		if kpError, ok := err.(*kp.Error); ok {
+			if kpError.StatusCode == 404 {
+				return false, nil
+			}
 		}
 		return false, err
 	}
@@ -265,7 +314,7 @@ func populateKPClient(d *schema.ResourceData, meta interface{}, instanceID strin
 
 	instanceData, resp, err := rsConClient.GetResourceInstance(&resourceInstanceGet)
 	if err != nil || instanceData == nil {
-		return nil, nil, fmt.Errorf("[ERROR] Error retrieving resource instance: %s with resp code: %s", err, resp)
+		return nil, nil, flex.FmtErrorf("[ERROR] Error retrieving resource instance: %s with resp code: %s", err, resp)
 	}
 	extensions := instanceData.Extensions
 	kpAPI.URL, err = KmsEndpointURL(kpAPI, endpointType, extensions)
@@ -284,6 +333,7 @@ func setKeyDetails(d *schema.ResourceData, meta interface{}, instanceID string, 
 	d.Set("key_id", key.ID)
 	d.Set("standard_key", key.Extractable)
 	d.Set("payload", d.Get("payload"))
+	d.Set("description", key.Description)
 	d.Set("encrypted_nonce", key.EncryptedNonce)
 	d.Set("iv_value", key.IV)
 	d.Set("key_name", key.Name)
@@ -317,6 +367,23 @@ func setKeyDetails(d *schema.ResourceData, meta interface{}, instanceID string, 
 
 	d.Set(flex.ResourceControllerURL, rcontroller+"/services/kms/"+url.QueryEscape(crn1)+"%3A%3A")
 
+	// Get the Registration of the key
+	registrations, err := kpAPI.ListRegistrations(context.Background(), key.ID, "")
+	if err != nil {
+		return err
+	}
+	// making a map[string]interface{} for terraform key.registration Attribute
+	rSlice := make([]map[string]interface{}, 0)
+	for _, r := range registrations.Registrations {
+		registration := map[string]interface{}{
+			"key_id":               r.KeyID,
+			"resource_crn":         r.ResourceCrn,
+			"prevent_key_deletion": r.PreventKeyDeletion,
+		}
+		rSlice = append(rSlice, registration)
+	}
+	d.Set("registrations", rSlice)
+
 	return nil
 }
 
@@ -344,7 +411,7 @@ func KmsEndpointURL(kpAPI *kp.Client, endpointType string, extensions map[string
 	}
 	u, err := url.Parse(url1)
 	if err != nil {
-		return nil, fmt.Errorf("[ERROR] Error Parsing KMS EndpointURL")
+		return nil, flex.FmtErrorf("[ERROR] Error Parsing KMS EndpointURL")
 	}
 	return u, nil
 }
@@ -358,7 +425,7 @@ func ExtractAndValidateKeyDataFromSchema(d *schema.ResourceData, meta interface{
 		// parse string to required time format
 		expiration_time, err := time.Parse(time.RFC3339, expiration_string)
 		if err != nil {
-			return kp.Key{}, "", fmt.Errorf("[ERROR] Invalid time format (the date format follows RFC 3339): %s", err)
+			return kp.Key{}, "", flex.FmtErrorf("[ERROR] Invalid time format (the date format follows RFC 3339): %s", err)
 		}
 		expiration = &expiration_time
 	} else {
@@ -370,6 +437,7 @@ func ExtractAndValidateKeyDataFromSchema(d *schema.ResourceData, meta interface{
 		Extractable:    d.Get("standard_key").(bool),
 		Expiration:     expiration,
 		Payload:        d.Get("payload").(string),
+		Description:    d.Get("description").(string),
 		EncryptedNonce: d.Get("encrypted_nonce").(string),
 		IV:             d.Get("iv_value").(string),
 	}
@@ -385,14 +453,16 @@ func populateSchemaData(d *schema.ResourceData, meta interface{}) (*kp.Client, e
 		return nil, err
 	}
 	// keyid := d.Id()
-	key, err := kpAPI.GetKey(context.Background(), keyid)
+	ctx := context.Background()
+	key, err := kpAPI.GetKey(ctx, keyid)
 	if err != nil {
-		kpError := err.(*kp.Error)
-		if kpError.StatusCode == 404 || kpError.StatusCode == 409 {
-			d.SetId("")
-			return nil, nil
+		if kpError, ok := err.(*kp.Error); ok {
+			if kpError.StatusCode == 404 || kpError.StatusCode == 409 {
+				d.SetId("")
+				return nil, nil
+			}
 		}
-		return nil, fmt.Errorf("[ERROR] Get Key failed with error while reading Key: %s", err)
+		return nil, flex.FmtErrorf("[ERROR] Get Key failed with error while reading Key: %s", err)
 	} else if key.State == 5 { //Refers to Deleted state of the Key
 		d.SetId("")
 		return nil, nil
@@ -402,5 +472,6 @@ func populateSchemaData(d *schema.ResourceData, meta interface{}) (*kp.Client, e
 	if err != nil {
 		return nil, err
 	}
+
 	return kpAPI, nil
 }

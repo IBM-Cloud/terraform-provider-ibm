@@ -40,6 +40,8 @@ In addition to the argument reference list, you can access the following attribu
 - `kind_format` - (String) The format this instance has such as `helm`, `operator`.
 - `label` - (String) The label for an instance.
 - `offering_id` - (String) The offering ID the instance that is created from.
+- `parent_crn` - (String) CRN of the parent instance.
+- `plan_id` - (String) The plan ID.
 - `url` - (String) The URL reference to an object.
 - `version` - (String) The version an instance is installed from (but not from the version ID).
 - `schematics_workspace_id` - (String) The ID of the schematics workspace, for offering instances installed through schematics

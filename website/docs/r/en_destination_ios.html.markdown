@@ -15,19 +15,20 @@ Create, update, or delete IOS destination by using IBM Cloud™ Event Notificati
 ```terraform
 resource "ibm_en_destination_ios" "ios_en_destination" {
   instance_guid = ibm_resource_instance.en_terraform_test_resource.guid
-  name        = "IOS Destination Auth"
-  type        = "push_ios"
+  name                     = "IOS Destination Auth"
+  type                     = "push_ios"
+  collect_failed_events    = false
   certificate_content_type = "p8"
-  certificate = "${path.module}/Certificates/Auth.p8"
-  description = "IOS destination with P8"
+  certificate              = "${path.module}/Certificates/Auth.p8"
+  description              = "IOS destination with P8"
   config {
     params {
-      cert_type = "p8"
+      cert_type  = "p8"
       is_sandbox = true
-      key_id = production
-      team_id = "2347"
-      bundle_id = "testp8"
-      pre_prod = false
+      key_id     = production
+      team_id    = "2347"
+      bundle_id  = "testp8"
+      pre_prod   = false
     }
   }
 }
@@ -63,6 +64,8 @@ Review the argument reference that you can specify for your resource.
 - `description` - (Optional, String) The Destination description.
 
 - `type` - (Required, String) push_ios.
+
+- `collect_failed_events` - (boolean) Toggle switch to enable collect failed event in Cloud Object Storage bucket.
 
 - `certificate_content_type` - (Required, String) The type of certificate, Values are p8/p12.
 

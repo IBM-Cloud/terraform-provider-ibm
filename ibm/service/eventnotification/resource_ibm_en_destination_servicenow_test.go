@@ -37,6 +37,7 @@ func TestAccIBMEnServiceNowDestinationAllArgs(t *testing.T) {
 					testAccCheckIBMEnServiceNowDestinationExists("ibm_en_destination_sn.en_destination_resource_1", config),
 					resource.TestCheckResourceAttr("ibm_en_destination_sn.en_destination_resource_1", "name", name),
 					resource.TestCheckResourceAttr("ibm_en_destination_sn.en_destination_resource_1", "type", "pagerduty"),
+					resource.TestCheckResourceAttr("ibm_en_destination_sn.en_destination_resource_1", "collect_failed_events", "false"),
 					resource.TestCheckResourceAttr("ibm_en_destination_sn.en_destination_resource_1", "description", description),
 				),
 			},
@@ -45,6 +46,7 @@ func TestAccIBMEnServiceNowDestinationAllArgs(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_en_destination_sn.en_destination_resource_1", "name", newName),
 					resource.TestCheckResourceAttr("ibm_en_destination_sn.en_destination_resource_1", "type", "pagerduty"),
+					resource.TestCheckResourceAttr("ibm_en_destination_sn.en_destination_resource_1", "collect_failed_events", "false"),
 					resource.TestCheckResourceAttr("ibm_en_destination_sn.en_destination_resource_1", "description", newDescription),
 				),
 			},

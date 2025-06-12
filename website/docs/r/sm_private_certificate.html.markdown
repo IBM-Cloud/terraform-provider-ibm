@@ -14,7 +14,7 @@ Provides a resource for PrivateCertificate. This allows PrivateCertificate to be
 
 ```hcl
 resource "ibm_sm_private_certificate" "sm_private_certificate"{
-  instance_id   = "6ebc4224-e983-496a-8a54-f40a0bfa9175"
+  instance_id   = ibm_resource_instance.sm_instance.guid
   region        = "us-south"
   name 			= "secret-name"
   certificate_template = resource.ibm_sm_private_certificate_configuration_template.my_template.name
@@ -27,7 +27,8 @@ resource "ibm_sm_private_certificate" "sm_private_certificate"{
 		interval = 1
 		unit = "day"
   }
-  secret_group_id = "default"
+  secret_group_id = ibm_sm_secret_group.sm_secret_group.secret_group_id
+  ttl = "48h"
 }
 ```
 
@@ -46,21 +47,20 @@ Review the argument reference that you can specify for your resource.
 * `custom_metadata` - (Optional, Map) The secret metadata that a user can customize.
 * `description` - (Optional, String) An extended description of your secret.To protect your privacy, do not use personal data, such as your name or location, as a description for your secret group.
   * Constraints: The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/(.*?)/`.
-* `expiration_date` - (Optional, Forces new resource, String) The date a secret is expired. The date format follows RFC 3339.
 * `labels` - (Optional, List) Labels that you can use to search for secrets in your instance.Up to 30 labels can be created.
   * Constraints: The list items must match regular expression `/(.*?)/`. The maximum length is `30` items. The minimum length is `0` items.
 * `name` - (Required, String) The human-readable name of your secret.
-    * Constraints: The maximum length is `256` characters. The minimum length is `2` characters. The value must match regular expression `^[A-Za-z0-9][A-Za-z0-9]*(?:_*-*\\.*[A-Za-z0-9]+)*$`.
+    * Constraints: The maximum length is `256` characters. The minimum length is `2` characters. The value must match regular expression `^[A-Za-z0-9_][A-Za-z0-9_]*(?:_*-*\.*[A-Za-z0-9]*)*[A-Za-z0-9]+$`.
 * `rotation` - (Optional, List) Determines whether Secrets Manager rotates your secrets automatically.
 Nested scheme for **rotation**:
-	* `auto_rotate` - (Optional, Boolean) Determines whether Secrets Manager rotates your secret automatically.Default is `false`. If `auto_rotate` is set to `true` the service rotates your secret based on the defined interval.
-	* `interval` - (Optional, Integer) The length of the secret rotation time interval.
-	  * Constraints: The minimum value is `1`.
-	* `rotate_keys` - (Optional, Boolean) Determines whether Secrets Manager rotates the private key for your public certificate automatically.Default is `false`. If it is set to `true`, the service generates and stores a new private key for your rotated certificate.
-	* `unit` - (Optional, String) The units for the secret rotation time interval.
-	  * Constraints: Allowable values are: `day`, `month`.
-* `secret_group_id` - (Optional, Forces new resource, String) A v4 UUID identifier, or `default` secret group.
+    * `auto_rotate` - (Optional, Boolean) Determines whether Secrets Manager rotates your secret automatically.Default is `false`. If `auto_rotate` is set to `true` the service rotates your secret based on the defined interval.
+    * `interval` - (Optional, Integer) The length of the secret rotation time interval.
+      * Constraints: The minimum value is `1`.
+    * `unit` - (Optional, String) The units for the secret rotation time interval.
+      * Constraints: Allowable values are: `day`, `month`.
+* `secret_group_id` - (Optional, Forces new resource, String) A UUID identifier, or `default` secret group.
   * Constraints: The maximum length is `36` characters. The minimum length is `7` characters. The value must match regular expression `/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|default)$/`.
+* `ttl` - (Optional, Forces new resource, String) The time-to-live (TTL) to assign to the private certificate. The value can be supplied as a string duration with time unit suffix - `d` for days, `h` for hours, `m` for minutes, or `s` for seconds. For example, `2d` or `48h` or `172800s`.
 
 ## Attribute Reference
 
@@ -80,6 +80,7 @@ In addition to all argument references listed, you can access the following attr
 * `crn` - (String) A CRN that uniquely identifies an IBM Cloud resource.
   * Constraints: The maximum length is `512` characters. The minimum length is `9` characters. The value must match regular expression `/^crn:v[0-9](:([A-Za-z0-9-._~!$&'()*+,;=@\/]|%[0-9A-Z]{2})*){8}$/`.
 * `downloaded` - (Boolean) Indicates whether the secret data that is associated with a secret version was retrieved in a call to the service API.
+* `expiration_date` - (String) The date the certificate is expired. The date format follows RFC 3339.
 * `issuer` - (Forces new resource, String) The distinguished name that identifies the entity that signed and issued the certificate.
   * Constraints: The maximum length is `128` characters. The minimum length is `2` characters. The value must match regular expression `/(.*?)/`.
 * `issuing_ca` - (String) The PEM-encoded certificate of the certificate authority that signed and issued this certificate.

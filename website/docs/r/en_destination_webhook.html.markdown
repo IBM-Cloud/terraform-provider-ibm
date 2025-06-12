@@ -14,10 +14,11 @@ Create, update, or delete a Webhook destination by using IBM Cloud™ Event Noti
 
 ```terraform
 resource "ibm_en_destination_webhook" "webhook_en_destination" {
-  instance_guid = ibm_resource_instance.en_terraform_test_resource.guid
-  name          = "My Webhook Destination"
-  type          = "webhook"
-  description   = "Destination webhook for event notification"
+  instance_guid         = ibm_resource_instance.en_terraform_test_resource.guid
+  name                  = "My Webhook Destination"
+  type                  = "webhook"
+  collect_failed_events = false
+  description           = "Destination webhook for event notification"
   config {
     params {
       verb = "POST"
@@ -42,6 +43,8 @@ Review the argument reference that you can specify for your resource.
 - `description` - (Optional, String) The Destination description.
 
 - `type` - (Required, String) Webhook.
+
+- `collect_failed_events` - (boolean) Toggle switch to enable collect failed event in Cloud Object Storage bucket.
 
 - `config` - (Optional, List) Payload describing a destination configuration.
 

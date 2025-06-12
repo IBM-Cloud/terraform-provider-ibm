@@ -25,6 +25,7 @@ func TestAccIbmIsDedicatedHostProfilesDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resName, "profiles.0.name"),
 					resource.TestCheckResourceAttrSet(resName, "profiles.0.class"),
 					resource.TestCheckResourceAttrSet(resName, "profiles.0.family"),
+					resource.TestCheckResourceAttrSet(resName, "profiles.0.vcpu_manufacturer.#"),
 				),
 			},
 		},

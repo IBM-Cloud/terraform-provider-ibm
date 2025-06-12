@@ -62,6 +62,29 @@ func TestAccIBMResourceInstanceDataSource_basic(t *testing.T) {
 		},
 	})
 }
+func TestAccIBMResourceInstanceDataSource_identifier(t *testing.T) {
+	instanceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMResourceInstanceDataSourceIdentifierConfig(instanceName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("data.ibm_resource_instance.testacc_ds_resource_instance", "name", instanceName),
+					resource.TestCheckResourceAttr("data.ibm_resource_instance.testacc_ds_resource_instance", "service", "cloud-object-storage"),
+					resource.TestCheckResourceAttr("data.ibm_resource_instance.testacc_ds_resource_instance", "plan", "standard"),
+					resource.TestCheckResourceAttr("data.ibm_resource_instance.testacc_ds_resource_instance", "location", "global"),
+					resource.TestCheckResourceAttr("data.ibm_resource_instance.testacc_ds_resource_instance_identifier", "name", instanceName),
+					resource.TestCheckResourceAttr("data.ibm_resource_instance.testacc_ds_resource_instance_identifier", "service", "cloud-object-storage"),
+					resource.TestCheckResourceAttr("data.ibm_resource_instance.testacc_ds_resource_instance_identifier", "plan", "standard"),
+					resource.TestCheckResourceAttr("data.ibm_resource_instance.testacc_ds_resource_instance_identifier", "location", "global"),
+				),
+			},
+		},
+	})
+}
 
 func setupResourceInstanceConfig(instanceName string, instanceName2 string) string {
 	return fmt.Sprintf(`
@@ -117,6 +140,31 @@ data "ibm_resource_instance" "testacc_ds_resource_instance" {
   resource_group_id = data.ibm_resource_group.group.id
 }
 `, instanceName, instanceName)
+
+}
+func testAccCheckIBMResourceInstanceDataSourceIdentifierConfig(instanceName string) string {
+	return fmt.Sprintf(`
+		data "ibm_resource_group" "group" {
+			is_default=true
+		}
+
+		resource "ibm_resource_instance" "instance" {
+			name     			= "%s"
+			service           	= "cloud-object-storage"
+			plan              	= "standard"
+			location          	= "global"
+		}
+
+		data "ibm_resource_instance" "testacc_ds_resource_instance" {
+			name              = ibm_resource_instance.instance.name
+			location          = "global"
+			resource_group_id = data.ibm_resource_group.group.id
+		}
+
+		data "ibm_resource_instance" "testacc_ds_resource_instance_identifier" {
+			identifier        = ibm_resource_instance.instance.id
+		}
+`, instanceName)
 
 }
 

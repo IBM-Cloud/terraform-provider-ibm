@@ -5,22 +5,19 @@ package cloudant_test
 
 import (
 	"fmt"
-	"reflect"
 	"strings"
 	"testing"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-
-	"github.com/IBM-Cloud/bluemix-go/models"
 )
 
 func TestAccIBMCloudant_basic(t *testing.T) {
-	var conf models.ServiceInstance
 	resourceName := "ibm_cloudant.instance"
 	serviceName := fmt.Sprintf("terraform-test-%s", acctest.RandString(8))
 	updateName := fmt.Sprintf("terraform-test-%s", acctest.RandString(8))
@@ -33,7 +30,7 @@ func TestAccIBMCloudant_basic(t *testing.T) {
 			{
 				Config: testAccCheckIBMCloudantResourceConfig(serviceName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMCloudantExists(resourceName, conf),
+					testAccCheckIBMCloudantExists(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "name", serviceName),
 					resource.TestCheckResourceAttr(resourceName, "service", "cloudantnosqldb"),
 					resource.TestCheckResourceAttr(resourceName, "plan", "standard"),
@@ -63,7 +60,6 @@ func TestAccIBMCloudant_basic(t *testing.T) {
 }
 
 func TestAccIBMCloudant_import(t *testing.T) {
-	var conf models.ServiceInstance
 	resourceName := "ibm_cloudant.instance"
 	serviceName := fmt.Sprintf("terraform-test-%s", acctest.RandString(8))
 
@@ -75,7 +71,7 @@ func TestAccIBMCloudant_import(t *testing.T) {
 			{
 				Config: testAccCheckIBMCloudantResourceConfigLite(serviceName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMCloudantExists(resourceName, conf),
+					testAccCheckIBMCloudantExists(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "name", serviceName),
 					resource.TestCheckResourceAttr(resourceName, "service", "cloudantnosqldb"),
 					resource.TestCheckResourceAttr(resourceName, "plan", "lite"),
@@ -97,7 +93,7 @@ func TestAccIBMCloudant_import(t *testing.T) {
 }
 
 func testAccCheckIBMCloudantDestroy(s *terraform.State) error {
-	rsContClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).ResourceControllerAPI()
+	rsContClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return err
 	}
@@ -107,17 +103,20 @@ func testAccCheckIBMCloudantDestroy(s *terraform.State) error {
 		}
 
 		instanceID := rs.Primary.ID
+		resourceInstanceGet := rc.GetResourceInstanceOptions{
+			ID: &instanceID,
+		}
 
 		// Try to find the key
-		instance, err := rsContClient.ResourceServiceInstance().GetInstance(instanceID)
+		instance, resp, err := rsContClient.GetResourceInstance(&resourceInstanceGet)
 
 		if err == nil {
-			if !reflect.DeepEqual(instance, models.ServiceInstance{}) && instance.State == "active" {
+			if *instance.State == "active" {
 				return fmt.Errorf("Resource Instance still exists: %s", rs.Primary.ID)
 			}
 		} else {
 			if !strings.Contains(err.Error(), "404") {
-				return fmt.Errorf("[ERROR] Error checking if Resource Instance (%s) has been destroyed: %s", rs.Primary.ID, err)
+				return fmt.Errorf("[ERROR] Error checking if Resource Instance (%s) has been destroyed: %s with resp code: %s", rs.Primary.ID, err, resp)
 			}
 		}
 	}
@@ -125,7 +124,7 @@ func testAccCheckIBMCloudantDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckIBMCloudantExists(resourceName string, obj models.ServiceInstance) resource.TestCheckFunc {
+func testAccCheckIBMCloudantExists(resourceName string) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[resourceName]
@@ -133,19 +132,21 @@ func testAccCheckIBMCloudantExists(resourceName string, obj models.ServiceInstan
 			return fmt.Errorf("Not found: %s", resourceName)
 		}
 
-		rsContClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).ResourceControllerAPI()
+		rsContClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).ResourceControllerV2API()
 		if err != nil {
 			return err
 		}
 		instanceID := rs.Primary.ID
-
-		instance, err := rsContClient.ResourceServiceInstance().GetInstance(instanceID)
-
-		if err != nil {
-			return err
+		resourceInstanceGet := rc.GetResourceInstanceOptions{
+			ID: &instanceID,
 		}
 
-		obj = instance
+		_, resp, err := rsContClient.GetResourceInstance(&resourceInstanceGet)
+
+		if err != nil {
+			return fmt.Errorf("Get resource instance error: %s with resp code: %s", err, resp)
+		}
+
 		return nil
 	}
 }

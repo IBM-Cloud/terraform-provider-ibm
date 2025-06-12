@@ -251,7 +251,9 @@ func DataSourceIBMIsInstanceNetworkInterface() *schema.Resource {
 func dataSourceIBMIsInstanceNetworkInterfaceRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instance_network_interface", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	instance_name := d.Get("instance_name").(string)
@@ -265,9 +267,11 @@ func dataSourceIBMIsInstanceNetworkInterfaceRead(context context.Context, d *sch
 			listInstancesOptions.Start = &start
 		}
 
-		instances, response, err := vpcClient.ListInstancesWithContext(context, listInstancesOptions)
+		instances, _, err := vpcClient.ListInstancesWithContext(context, listInstancesOptions)
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error Fetching Instances %s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListInstancesWithContext failed: %s", err.Error()), "(Data) ibm_is_instance_network_interface", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		start = flex.GetNext(instances.Next)
 		allrecs = append(allrecs, instances.Instances...)
@@ -283,40 +287,41 @@ func dataSourceIBMIsInstanceNetworkInterfaceRead(context context.Context, d *sch
 			listInstanceNetworkInterfacesOptions := &vpcv1.ListInstanceNetworkInterfacesOptions{
 				InstanceID: &ins_id,
 			}
-			networkInterfaceCollection, response, err := vpcClient.ListInstanceNetworkInterfacesWithContext(context, listInstanceNetworkInterfacesOptions)
+			networkInterfaceCollection, _, err := vpcClient.ListInstanceNetworkInterfacesWithContext(context, listInstanceNetworkInterfacesOptions)
 
 			if err != nil {
-				log.Printf("[DEBUG] ListSecurityGroupNetworkInterfacesWithContext failed %s\n%s", err, response)
-				return diag.FromErr(fmt.Errorf("ListSecurityGroupNetworkInterfacesWithContext failed %s\n%s", err, response))
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListInstanceNetworkInterfacesWithContext failed: %s", err.Error()), "(Data) ibm_is_instance_network_interface", "read")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			network_interface_name := d.Get("network_interface_name").(string)
 			for _, networkInterface := range networkInterfaceCollection.NetworkInterfaces {
 				if *networkInterface.Name == network_interface_name {
 					d.SetId(fmt.Sprintf("%s/%s", ins_id, *networkInterface.ID))
 					if err = d.Set("allow_ip_spoofing", networkInterface.AllowIPSpoofing); err != nil {
-						return diag.FromErr(fmt.Errorf("[ERROR] Error setting allow_ip_spoofing: %s", err))
+						return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting allow_ip_spoofing: %s", err), "(Data) ibm_is_instance_network_interface", "read", "set-allow_ip_spoofing").GetDiag()
 					}
 					if err = d.Set("created_at", flex.DateTimeToString(networkInterface.CreatedAt)); err != nil {
-						return diag.FromErr(fmt.Errorf("[ERROR] Error setting created_at: %s", err))
+						return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting created_at: %s", err), "(Data) ibm_is_instance_network_interface", "read", "set-created_at").GetDiag()
 					}
 
 					if networkInterface.FloatingIps != nil {
 						err = d.Set("floating_ips", dataSourceNetworkInterfaceFlattenFloatingIps(networkInterface.FloatingIps))
 						if err != nil {
-							return diag.FromErr(fmt.Errorf("[ERROR] Error setting floating_ips %s", err))
+							return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting floating_ips: %s", err), "(Data) ibm_is_instance_network_interface", "read", "set-floating_ips").GetDiag()
 						}
 					}
 					if err = d.Set("href", networkInterface.Href); err != nil {
-						return diag.FromErr(fmt.Errorf("[ERROR] Error setting href: %s", err))
+						return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting href: %s", err), "(Data) ibm_is_instance_network_interface", "read", "set-href").GetDiag()
 					}
 					if err = d.Set("name", networkInterface.Name); err != nil {
-						return diag.FromErr(fmt.Errorf("[ERROR] Error setting name: %s", err))
+						return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_is_instance_network_interface", "read", "set-name").GetDiag()
 					}
 					if err = d.Set("port_speed", flex.IntValue(networkInterface.PortSpeed)); err != nil {
-						return diag.FromErr(fmt.Errorf("[ERROR] Error setting port_speed: %s", err))
+						return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting port_speed: %s", err), "(Data) ibm_is_instance_network_interface", "read", "set-port_speed").GetDiag()
 					}
 					if err = d.Set("primary_ipv4_address", networkInterface.PrimaryIP.Address); err != nil {
-						return diag.FromErr(fmt.Errorf("[ERROR] Error setting primary_ipv4_address: %s", err))
+						return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting primary_ipv4_address: %s", err), "(Data) ibm_is_instance_network_interface", "read", "set-primary_ipv4_address").GetDiag()
 					}
 					if networkInterface.PrimaryIP != nil {
 						// reserved ip changes
@@ -338,39 +343,47 @@ func dataSourceIBMIsInstanceNetworkInterfaceRead(context context.Context, d *sch
 							currentPrimIp[isInstanceNicReservedIpResourceType] = *networkInterface.PrimaryIP.ResourceType
 						}
 						primaryIpList = append(primaryIpList, currentPrimIp)
-						d.Set(isInstanceNicPrimaryIP, primaryIpList)
+						if err = d.Set("primary_ip", primaryIpList); err != nil {
+							return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting primary_ip: %s", err), "(Data) ibm_is_instance_network_interface", "read", "set-primary_ip").GetDiag()
+						}
 					}
 					if err = d.Set("resource_type", networkInterface.ResourceType); err != nil {
-						return diag.FromErr(fmt.Errorf("[ERROR] Error setting resource_type: %s", err))
+						return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_type: %s", err), "(Data) ibm_is_instance_network_interface", "read", "set-resource_type").GetDiag()
 					}
 
 					if networkInterface.SecurityGroups != nil {
 						err = d.Set("security_groups", dataSourceNetworkInterfaceFlattenSecurityGroups(networkInterface.SecurityGroups))
 						if err != nil {
-							return diag.FromErr(fmt.Errorf("[ERROR] Error setting security_groups %s", err))
+							return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting security_groups: %s", err), "(Data) ibm_is_instance_network_interface", "read", "set-security_groups").GetDiag()
 						}
 					}
 					if err = d.Set("status", networkInterface.Status); err != nil {
-						return diag.FromErr(fmt.Errorf("[ERROR] Error setting status: %s", err))
+						return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting status: %s", err), "(Data) ibm_is_instance_network_interface", "read", "set-status").GetDiag()
 					}
 
 					if networkInterface.Subnet != nil {
 						err = d.Set("subnet", dataSourceNetworkInterfaceFlattenSubnet(*networkInterface.Subnet))
 						if err != nil {
-							return diag.FromErr(fmt.Errorf("[ERROR] Error setting subnet %s", err))
+							return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting subnet: %s", err), "(Data) ibm_is_instance_network_interface", "read", "set-subnet").GetDiag()
 						}
 					}
 					if err = d.Set("type", networkInterface.Type); err != nil {
-						return diag.FromErr(fmt.Errorf("[ERROR] Error setting type: %s", err))
+						return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting type: %s", err), "(Data) ibm_is_instance_network_interface", "read", "set-type").GetDiag()
 					}
 					return nil
 				}
 			}
-			return diag.FromErr(fmt.Errorf("Network interface %s not found.", network_interface_name))
+			err = fmt.Errorf("Network interface %s not found.", network_interface_name)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListInstanceNetworkInterfacesWithContext failed: %s", err.Error()), "(Data) ibm_is_instance_network_interface", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 
-	return diag.FromErr(fmt.Errorf("Instance %s not found. %s", instance_name, err))
+	err = fmt.Errorf("Instance %s not found. %s", instance_name, err)
+	tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListInstancesWithContext failed: %s", err.Error()), "(Data) ibm_is_instance_network_interface", "read")
+	log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+	return tfErr.GetDiag()
 }
 
 func dataSourceNetworkInterfaceFlattenFloatingIps(result []vpcv1.FloatingIPReference) (floatingIps []map[string]interface{}) {
@@ -409,7 +422,7 @@ func dataSourceNetworkInterfaceFloatingIpsToMap(floatingIpsItem vpcv1.FloatingIP
 	return floatingIpsMap
 }
 
-func dataSourceNetworkInterfaceFloatingIpsDeletedToMap(deletedItem vpcv1.FloatingIPReferenceDeleted) (deletedMap map[string]interface{}) {
+func dataSourceNetworkInterfaceFloatingIpsDeletedToMap(deletedItem vpcv1.Deleted) (deletedMap map[string]interface{}) {
 	deletedMap = map[string]interface{}{}
 
 	if deletedItem.MoreInfo != nil {
@@ -452,7 +465,7 @@ func dataSourceNetworkInterfaceSecurityGroupsToMap(securityGroupsItem vpcv1.Secu
 	return securityGroupsMap
 }
 
-func dataSourceNetworkInterfaceSecurityGroupsDeletedToMap(deletedItem vpcv1.SecurityGroupReferenceDeleted) (deletedMap map[string]interface{}) {
+func dataSourceNetworkInterfaceSecurityGroupsDeletedToMap(deletedItem vpcv1.Deleted) (deletedMap map[string]interface{}) {
 	deletedMap = map[string]interface{}{}
 
 	if deletedItem.MoreInfo != nil {
@@ -495,7 +508,7 @@ func dataSourceNetworkInterfaceSubnetToMap(subnetItem vpcv1.SubnetReference) (su
 	return subnetMap
 }
 
-func dataSourceNetworkInterfaceSubnetDeletedToMap(deletedItem vpcv1.SubnetReferenceDeleted) (deletedMap map[string]interface{}) {
+func dataSourceNetworkInterfaceSubnetDeletedToMap(deletedItem vpcv1.Deleted) (deletedMap map[string]interface{}) {
 	deletedMap = map[string]interface{}{}
 
 	if deletedItem.MoreInfo != nil {

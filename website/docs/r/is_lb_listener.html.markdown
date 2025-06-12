@@ -58,7 +58,7 @@ resource "ibm_is_lb_pool_member" "example" {
 }
 ```
 
-### Sample to create a load balancer listener policy for a `https_redirect` action.
+### Sample to create a load balancer listener with `https_redirect`.
 
 ```terraform
 resource "ibm_is_lb" "example2" {
@@ -77,9 +77,14 @@ resource "ibm_is_lb_listener" "example2" {
   lb                         = ibm_is_lb.example2.id
   port                       = "9087"
   protocol                   = "http"
-  https_redirect_listener    = ibm_is_lb_listener.example1.listener_id
-  https_redirect_status_code = 301
-  https_redirect_uri         = "/example?doc=geta"
+  idle_connection_timeout = 60 
+  https_redirect {
+    http_status_code = 302
+    listener {
+        id = ibm_is_lb_listener.example1.listener_id
+    }
+    uri = "/example?doc=get"
+  }
 }
 ```
 
@@ -147,7 +152,7 @@ resource "ibm_is_lb_listener" "example2" {
   port_max 	= 400
 }
 ```
-
+### Example to create a listener with 
 ## Timeouts
 The `ibm_is_lb_listener` resource provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
@@ -181,11 +186,12 @@ Review the argument references that you can specify for your resource.
 
 - `protocol` - (Required, String) The listener protocol. Enumeration type are `http`, `tcp`, `https` and `udp`. Network load balancer supports only `tcp` and `udp` protocol.
 - `default_pool` - (Optional, String) The load balancer pool unique identifier.
-    ~> **NOTE**
-    - The specified pool must -
-      - Belong to this load balancer
-      - Have the  same protocol as this listener, or have a compatible protocol. At present, the compatible protocols are http and https.
-      - Not already be the default_pool for another listener 
+
+    ~> **The specified pool must**
+      </br>&#x2022; Belong to this load balancer
+      </br>&#x2022; Have the  same protocol as this listener, or have a compatible protocol. At present, the compatible protocols are http and https.
+      </br>&#x2022; Not already be the default_pool for another listener 
+
 - `certificate_instance` - (Optional, String) The CRN of the certificate instance, it is applicable(mandatory) only to https protocol.
 
   !> **Removal Notification** Certificate Manager support is removed, please use Secrets Manager.
@@ -194,6 +200,19 @@ Review the argument references that you can specify for your resource.
 - `https_redirect_listener` - (Optional, String) ID of the listener that will be set as http redirect target.
 - `https_redirect_status_code` - (Optional, Integer) The HTTP status code to be returned in the redirect response, one of [301, 302, 303, 307, 308].
 - `https_redirect_uri` - (Optional, String) Target URI where traffic will be redirected.
+
+~**Note** 
+  `https_redirect_listener`, `https_redirect_status_code` and `https_redirect_uri` are deprecated and will be removed in future. Please use `https_redirect` instead
+
+- `https_redirect` - (Optional, List) If present, the target listener that requests are redirected to. Removing `https_redirect` would update the load balancer listener and disable the `https_redirect`
+  
+  Nested schema for **https_redirect**:
+	- `http_status_code` - (Required, Integer) The HTTP status code for this redirect. Allowable values are: `301`, `302`, `303`, `307`, `308`.
+	- `listener` - (Required, List)
+	  
+      Nested schema for **listener**:
+		- `id` - (Required, String) The unique identifier for this load balancer listener.
+	- `uri` - (Optional, String) The redirect relative target URI. Removing `uri` would update the load balancer listener and remove the `uri` from `https_redirect`
 - `idle_connection_timeout` - (Optional, Integer) The idle connection timeout of the listener in seconds. Supported for load balancers in the `application` family. Default value is `50`, allowed value is between `50` - `7200`.
 
 ## Attribute reference
@@ -201,7 +220,20 @@ In addition to all argument reference list, you can access the following attribu
 
 - `id` - (String) The unique identifier of the load balancer listener.
 - `status` - (String) The status of load balancer listener.
-
+- `https_redirect` - (List) If present, the target listener that requests are redirected to.
+  
+  Nested schema for **https_redirect**:
+	- `http_status_code` - (Integer) The HTTP status code for this redirect.
+	- `listener` - (List)
+	  
+      Nested schema for **listener**:
+		- `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
+		  
+          Nested schema for **deleted**:
+			- `more_info` - (String) Link to documentation about deleted resources.
+		- `href` - (String) The listener's canonical URL.
+		- `id` - (String) The unique identifier for this load balancer listener.
+	- `uri` - (String) The redirect relative target URI.
 ## Import
 The `ibm_is_lb_listener` resource can be imported by using the load balancer ID and listener ID.
 

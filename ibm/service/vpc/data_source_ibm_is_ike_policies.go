@@ -160,7 +160,9 @@ func DataSourceIBMIsIkePolicies() *schema.Resource {
 func dataSourceIBMIsIkePoliciesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_ike_policies", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	start := ""
@@ -170,10 +172,11 @@ func dataSourceIBMIsIkePoliciesRead(context context.Context, d *schema.ResourceD
 		if start != "" {
 			listIkePoliciesOptions.Start = &start
 		}
-		ikePolicyCollection, response, err := vpcClient.ListIkePoliciesWithContext(context, listIkePoliciesOptions)
+		ikePolicyCollection, _, err := vpcClient.ListIkePoliciesWithContext(context, listIkePoliciesOptions)
 		if err != nil || ikePolicyCollection == nil {
-			log.Printf("[DEBUG] ListIkePoliciesWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("ListIkePoliciesWithContext failed %s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListIkePoliciesWithContext failed %s", err), "(Data) ibm_is_ike_policies", "read")
+			log.Printf("[DEBUG] %s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		start = flex.GetNext(ikePolicyCollection.Next)
 		allrecs = append(allrecs, ikePolicyCollection.IkePolicies...)
@@ -186,7 +189,7 @@ func dataSourceIBMIsIkePoliciesRead(context context.Context, d *schema.ResourceD
 
 	err = d.Set("ike_policies", dataSourceIkePolicyCollectionFlattenIkePolicies(allrecs))
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting ike_policies %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting ike_policies %s", err), "(Data) ibm_is_ike_policies", "read", "ike_policies-set").GetDiag()
 	}
 
 	return nil
@@ -283,7 +286,7 @@ func dataSourceIkePolicyCollectionIkePoliciesConnectionsToMap(connectionsItem vp
 	return connectionsMap
 }
 
-func dataSourceIkePolicyCollectionConnectionsDeletedToMap(deletedItem vpcv1.VPNGatewayConnectionReferenceDeleted) (deletedMap map[string]interface{}) {
+func dataSourceIkePolicyCollectionConnectionsDeletedToMap(deletedItem vpcv1.Deleted) (deletedMap map[string]interface{}) {
 	deletedMap = map[string]interface{}{}
 
 	if deletedItem.MoreInfo != nil {

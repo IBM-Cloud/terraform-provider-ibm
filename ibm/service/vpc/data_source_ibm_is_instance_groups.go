@@ -328,7 +328,9 @@ func DataSourceIBMISInstanceGroups() *schema.Resource {
 func DataSourceIBMIsInstanceGroupsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instance_groups", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	start := ""
@@ -340,10 +342,11 @@ func DataSourceIBMIsInstanceGroupsRead(context context.Context, d *schema.Resour
 			listInstanceGroupsOptions.Start = &start
 		}
 
-		instanceGroupCollection, response, err := vpcClient.ListInstanceGroupsWithContext(context, listInstanceGroupsOptions)
+		instanceGroupCollection, _, err := vpcClient.ListInstanceGroupsWithContext(context, listInstanceGroupsOptions)
 		if err != nil {
-			log.Printf("[DEBUG] ListInstanceGroupsWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("ListInstanceGroupsWithContext failed %s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListInstanceGroupsWithContext failed %s", err), "(Data) ibm_is_instance_groups", "read")
+			log.Printf("[DEBUG] %s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		start = flex.GetNext(instanceGroupCollection.Next)
 		allrecs = append(allrecs, instanceGroupCollection.InstanceGroups...)
@@ -363,9 +366,8 @@ func DataSourceIBMIsInstanceGroupsRead(context context.Context, d *schema.Resour
 		}
 		instanceGroups = append(instanceGroups, instanceGroup)
 	}
-
 	if err = d.Set("instance_groups", instanceGroups); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting instance_groups %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting instance_groups %s", err), "(Data) ibm_is_instance_groups", "read", "instance_groups-set").GetDiag()
 	}
 
 	return nil
@@ -376,7 +378,7 @@ func DataSourceIBMIsInstanceGroupsID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
 
-func DataSourceIBMIsInstanceGroupsInstanceGroupCollectionFirstToMap(model *vpcv1.InstanceGroupCollectionFirst) (map[string]interface{}, error) {
+func DataSourceIBMIsInstanceGroupsInstanceGroupCollectionFirstToMap(model *vpcv1.PageLink) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Href != nil {
 		modelMap["href"] = *model.Href
@@ -496,7 +498,7 @@ func DataSourceIBMIsInstanceGroupsInstanceTemplateReferenceToMap(model *vpcv1.In
 	return modelMap, nil
 }
 
-func DataSourceIBMIsInstanceGroupsInstanceTemplateReferenceDeletedToMap(model *vpcv1.InstanceTemplateReferenceDeleted) (map[string]interface{}, error) {
+func DataSourceIBMIsInstanceGroupsInstanceTemplateReferenceDeletedToMap(model *vpcv1.Deleted) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.MoreInfo != nil {
 		modelMap["more_info"] = *model.MoreInfo
@@ -525,7 +527,7 @@ func DataSourceIBMIsInstanceGroupsLoadBalancerPoolReferenceToMap(model *vpcv1.Lo
 	return modelMap, nil
 }
 
-func DataSourceIBMIsInstanceGroupsLoadBalancerPoolReferenceDeletedToMap(model *vpcv1.LoadBalancerPoolReferenceDeleted) (map[string]interface{}, error) {
+func DataSourceIBMIsInstanceGroupsLoadBalancerPoolReferenceDeletedToMap(model *vpcv1.Deleted) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.MoreInfo != nil {
 		modelMap["more_info"] = *model.MoreInfo
@@ -554,7 +556,7 @@ func DataSourceIBMIsInstanceGroupsInstanceGroupManagerReferenceToMap(model *vpcv
 	return modelMap, nil
 }
 
-func DataSourceIBMIsInstanceGroupsInstanceGroupManagerReferenceDeletedToMap(model *vpcv1.InstanceGroupManagerReferenceDeleted) (map[string]interface{}, error) {
+func DataSourceIBMIsInstanceGroupsInstanceGroupManagerReferenceDeletedToMap(model *vpcv1.Deleted) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.MoreInfo != nil {
 		modelMap["more_info"] = *model.MoreInfo
@@ -603,7 +605,7 @@ func DataSourceIBMIsInstanceGroupsSubnetReferenceToMap(model *vpcv1.SubnetRefere
 	return modelMap, nil
 }
 
-func DataSourceIBMIsInstanceGroupsSubnetReferenceDeletedToMap(model *vpcv1.SubnetReferenceDeleted) (map[string]interface{}, error) {
+func DataSourceIBMIsInstanceGroupsSubnetReferenceDeletedToMap(model *vpcv1.Deleted) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.MoreInfo != nil {
 		modelMap["more_info"] = *model.MoreInfo
@@ -638,7 +640,7 @@ func DataSourceIBMIsInstanceGroupsVPCReferenceToMap(model *vpcv1.VPCReference) (
 	return modelMap, nil
 }
 
-func DataSourceIBMIsInstanceGroupsVPCReferenceDeletedToMap(model *vpcv1.VPCReferenceDeleted) (map[string]interface{}, error) {
+func DataSourceIBMIsInstanceGroupsVPCReferenceDeletedToMap(model *vpcv1.Deleted) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.MoreInfo != nil {
 		modelMap["more_info"] = *model.MoreInfo

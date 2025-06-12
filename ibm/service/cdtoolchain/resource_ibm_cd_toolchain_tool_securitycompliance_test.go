@@ -14,7 +14,7 @@ import (
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.com/IBM/continuous-delivery-go-sdk/cdtoolchainv2"
+	"github.com/IBM/continuous-delivery-go-sdk/v2/cdtoolchainv2"
 )
 
 func TestAccIBMCdToolchainToolSecuritycomplianceBasic(t *testing.T) {
@@ -90,10 +90,6 @@ func testAccCheckIBMCdToolchainToolSecuritycomplianceConfigBasic(tcName string, 
 			parameters {
 				name = "compliance"
 				evidence_namespace = "cd"
-				trigger_scan = "disabled"
-				api_key = "api_key"
-				scope = "my-scope"
-				profile = "IBM Cloud Security Best Practices v1.0.0"
 				evidence_repo_url = "https://github.example.com/<username>/compliance-evidence-<datestamp>"
 			}
 		}
@@ -116,10 +112,6 @@ func testAccCheckIBMCdToolchainToolSecuritycomplianceConfig(tcName string, rgNam
 			parameters {
 				name = "compliance"
 				evidence_namespace = "cd"
-				trigger_scan = "disabled"
-				api_key = "api_key"
-				scope = "my-scope"
-				profile = "IBM Cloud Security Best Practices v1.0.0"
 				evidence_repo_url = "https://github.example.com/<username>/compliance-evidence-<datestamp>"
 			}
 			name = "%s"

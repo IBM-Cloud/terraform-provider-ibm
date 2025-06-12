@@ -65,6 +65,7 @@ Review the argument references that you can specify for your data source.
 
 - `identifier` - (Optional, String) The ID of the subnet,`name` and `identifier` are mutually exclusive.
 - `name` - (Optional, String) The name of the subnet,`name` and `identifier` are mutually exclusive.
+- `vpc` - (Optional, String) Filters the collection to resources with a vpc property matching the specified identifier. Subnet `name` must be specified with `vpc` filter.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created. 
@@ -82,6 +83,7 @@ In addition to all argument reference list, you can access the following attribu
 - `routing_table` -  (List) The routing table for this subnet. 
   
   Nested scheme for `routing_table`:
+  - `crn` -  (String) The crn for this routing table.
   - `deleted` -  (List) If present, this property indicates the referenced resource has been deleted and provides some supplementary information.
 
     Nested scheme for `deleted`:

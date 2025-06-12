@@ -24,6 +24,8 @@ func TestAccIbmIsShareProfilesDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_is_share_profiles.is_share_profiles", "profiles.0.href"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_share_profiles.is_share_profiles", "profiles.0.name"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_share_profiles.is_share_profiles", "profiles.0.resource_type"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_share_profiles.is_share_profiles", "profiles.0.capacity.0.type"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_share_profiles.is_share_profiles", "profiles.0.iops.0.type"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_share_profiles.is_share_profiles", "total_count"),
 				),
 			},

@@ -23,13 +23,17 @@ data "ibm_is_ipsec_policies" "example" {
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
 - `ipsec_policies` - (List) Collection of IPsec policies.
-  Nested scheme for **ipsec_policies**:
+
+	Nested scheme for **ipsec_policies**:
 	- `authentication_algorithm` - (String) The authentication algorithm.
 	- `connections` - (List) The VPN gateway connections that use this IPsec policy.
-	  Nested scheme for **connections**:
+		
+		Nested scheme for **connections**:
 		- `deleted` - (List) If present, this property indicates the referenced resource has been deleted and providessome supplementary information.
-		  Nested scheme for **deleted**:
+
+			Nested scheme for **deleted**:
 			- `more_info` - (String) Link to documentation about deleted resources.
+
 		- `href` - (String) The VPN connection's canonical URL.
 		- `id` - (String) The unique identifier for this VPN gateway connection.
 		- `name` - (String) The user-defined name for this VPN connection.
@@ -43,7 +47,8 @@ In addition to all argument references listed, you can access the following attr
 	- `name` - (String) The user-defined name for this IPsec policy.
 	- `pfs` - (String) Perfect Forward Secrecy.
 	- `resource_group` - (List) The resource group object, for this IPsec policy.
-	  Nested scheme for **resource_group**:
+
+	  	Nested scheme for **resource_group**:
 		- `href` - (String) The URL for this resource group.
 		- `id` - (String) The unique identifier for this resource group.
 		- `name` - (String) The user-defined name for this resource group.

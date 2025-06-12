@@ -14,10 +14,11 @@ Create, update, or delete a servicenow destination by using IBM Cloud™ Event N
 
 ```terraform
 resource "ibm_en_destination_sn" "servicenow_en_destination" {
-  instance_guid = ibm_resource_instance.en_terraform_test_resource.guid
-  name          = "Service Now Destination"
-  type          = "servicenow"
-  description   = "Destination servicenow for event notification"
+  instance_guid         = ibm_resource_instance.en_terraform_test_resource.guid
+  name                  = "Service Now Destination"
+  type                  = "servicenow"
+  collect_failed_events = false
+  description           = "Destination servicenow for event notification"
   config {
     params {
       client_id  = "321efc4f9c974b03d0fd959a81d8d8e8fyeyee"
@@ -42,6 +43,8 @@ Review the argument reference that you can specify for your resource.
 - `description` - (Optional, String) The Destination description.
 
 - `type` - (Required, String) pagerduty.
+
+- `collect_failed_events` - (boolean) Toggle switch to enable collect failed event in Cloud Object Storage bucket.
 
 - `config` - (Optional, List) Payload describing a destination configuration.
 

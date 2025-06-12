@@ -47,6 +47,7 @@ In addition to all argument reference list, you can access the following attribu
 
   Nested scheme for `available_vcpu`:
   - `architecture` -  (String) The `VCPU` architecture.
+  - `manufacturer` -  (String) The `VCPU` manufacturer.
   - `count` -  (String) The number of `VCPUs` assigned.
 - `created_at` -  (String) The date and time that the dedicated host was created.
 - `crn` -  (String) The CRN for this dedicated host.
@@ -93,6 +94,15 @@ In addition to all argument reference list, you can access the following attribu
 - `lifecycle_state` -  (String) The lifecycle state of the dedicated host resource.
 - `memory` -  (String) The total amount of memory in `GB`` for this host.
 - `name` -  (String) The unique user defined name for this dedicated host. If unspecified, the name will be a hyphenated list of randomly-selected words.
+- `numa` - The dedicated host NUMA configuration.
+    
+      Nested scheme for `numa`:
+      - `count` - (Integer) The total number of NUMA nodes for this dedicated host.
+      - `nodes` - (List) The NUMA nodes for this dedicated host.
+      
+          Nested scheme for `nodes`:
+          - `available_vcpu` - (Integer) The available VCPU for this NUMA node.
+          - `vcpu` - (Integer) The total VCPU capacity for this NUMA node.
 - `profile` -  (List) The profile this dedicated host uses. 
 
   Nested scheme for `profile`:
@@ -112,5 +122,6 @@ In addition to all argument reference list, you can access the following attribu
 
   Nested scheme for `vcpu`:
   - `architecture` -  (String) The `VCPU` architecture.
+  - `manufacturer` -  (String) The `VCPU` manufacturer.
   - `count` -  (String) The number of `VCPUs` assigned.
 - `zone` -  (String) The globally unique name of the zone this dedicated host resides in.

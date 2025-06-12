@@ -50,7 +50,7 @@ resource "ibm_is_image" "example" {
 resource "ibm_is_instance" "example" {
   name    = "example-instance"
   image   = ibm_is_image.example.id
-  profile = "bc1-2x8"
+  profile = "bx2-2x8"
 
   primary_network_interface {
     subnet = ibm_is_subnet.example.id
@@ -72,7 +72,7 @@ data "ibm_is_instance" "example" {
   passphrase  = ""
 }
 
-data "is_instance_disks" "example" {
+data "ibm_is_instance_disks" "example" {
   instance = data.ibm_is_instance.example.id
 }
 ```

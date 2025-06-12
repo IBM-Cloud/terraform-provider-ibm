@@ -64,6 +64,20 @@ resource "ibm_is_image" "example" {
 
 }
 ```
+## Example usage (lifecycle)      
+```terraform
+resource "ibm_is_image" "example" {
+  name               = "example-image"
+  href               = "cos://us-south/buckettesttest/livecd.ubuntu-cpc.azure.vhd"
+  operating_system   = "ubuntu-16-04-amd64"
+  deprecation_at     = "2023-09-28T15:10:00.000Z"
+  obsolescence_at    = "2023-11-28T15:10:00.000Z"
+}
+```
+  ~> **NOTE**
+      `obsolescence_at` must be later than `deprecation_at` (if `deprecation_at` is set).
+
+
 
 ## Argument reference
 Review the argument references that you can specify for your resource. 
@@ -75,6 +89,23 @@ Review the argument references that you can specify for your resource.
   **&#x2022;** For more information, about creating access tags, see [working with tags](https://cloud.ibm.com/docs/account?topic=account-tag&interface=ui#create-access-console).</br>
   **&#x2022;** You must have the access listed in the [Granting users access to tag resources](https://cloud.ibm.com/docs/account?topic=account-access) for `access_tags`</br>
   **&#x2022;** `access_tags` must be in the format `key:value`.
+- `deprecate` - (Bool) This flag deprecates an image, resulting in its status becoming deprecated and deprecation_at being set to the current date and time. The image must:
+
+    - be an existing image and have a status of available
+    - have catalog_offering.managed set to false
+    - not have deprecation_at set
+
+A system-provided image is not allowed to be deprecated.
+- `deprecation_at` - (String) The deprecation date and time (UTC) for this image. If absent, no deprecation date and time has been set.
+  
+  ~> **NOTE**
+      Specify "null" to remove an existing deprecation date and time. If the image status is currently deprecated, it will become available.
+  	string($date-time)
+
+    - This cannot be set if the image has a status of `failed` or `deleting`, or if `catalog_offering`.`managed` is true.
+    - The date and time must not be in the past, and must be earlier than `obsolescence_at` (if `obsolescence_at` is set). Additionally, if the image status is currently deprecated, the value cannot  be changed (but may be removed).
+    - If the deprecation date and time is reached while the image has a status of pending, the image's     status will transition to deprecated upon its successful creation (or obsolete if the obsolescence     date and time was also reached).
+
 - `encrypted_data_key` - (Optional, Forces new resource, String) A base64-encoded, encrypted representation of the key that was used to encrypt the data for this image.
 - `encryption_key` - (Optional, Forces new resource, String) The CRN of the Key Protect Root Key or Hyper Protect Crypto Service Root Key for this resource.
 - `href` - (Optional, String) The path of an image to be uploaded. The Cloud Object Store (COS) location of the image file.
@@ -82,6 +113,22 @@ Review the argument references that you can specify for your resource.
   ~> **NOTE**
       either `href` or `source_volume` is required
 - `name` - (Required, String) The descriptive name used to identify an image.
+- `obsolete` - (Optional, Bool) This flag obsoletes an image, resulting in its status becoming obsolete and obsolescence_at being set to the current date and time. The image must:
+
+    - be an existing image and have a status of available or deprecated
+    - have catalog_offering.managed set to false
+    - not have deprecation_at set in the future
+    - not have obsolescence_at set
+    - A system-provided image is not allowed to be obsolescence.
+
+- `obsolescence_at` - (Optional, String) The obsolescence date and time (UTC) for this image. If absent, no obsolescence date and time has been set.
+  
+  ~> **NOTE**
+      Specify "null" to remove an existing obsolescence date and time. If the image status is currently obsolete, it will become deprecated if deprecation_at is in the past. Otherwise, it will become available.
+
+    - This cannot be set if the image has a status of failed or deleting, or if `catalog_offering`.`managed` is true.
+    - The date and time must not be in the past, and must be later than `deprecation_at` (if `deprecation_at` is set). Additionally, if the image status is currently obsolete, the value cannot  be changed (but may be removed).
+    - If the obsolescence date and time is reached while the image has a status of pending, the image's status will transition to obsolete upon its successful creation.
 - `operating_system` - (Required, String) Description of underlying OS of an image.
 
   ~> **NOTE**
@@ -104,6 +151,7 @@ Review the argument references that you can specify for your resource.
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
 - `architecture` - (String) The processor architecture that this image is based on.
+- `created_at` - (String) The date and time that the image was created
 - `crn` - (String) The CRN of the image.
 - `checksum`-  (String) The `SHA256` checksum of the image.
 - `encryption` - (String) The type of encryption used on the image.
@@ -112,6 +160,13 @@ In addition to all argument reference list, you can access the following attribu
 - `id` - (String) The unique identifier of the image.
 - `resourceGroup` - (String) The resource group to which the image belongs to.
 - `status`- (String) The status of an image such as `corrupt`, or `available`.
+- `user_data_format` - (String) The user data format for this image.
+  
+  ~> **Note:** </br> Supported values are : </br>
+  **&#x2022;** `cloud_init`: user_data will be interpreted according to the cloud-init standard.</br>
+  **&#x2022;** `esxi_kickstart`: user_data will be interpreted as a VMware ESXi installation script.</br>
+  **&#x2022;**  `ipxe`: user_data will be interpreted as a single URL to an iPXE script or as the text of an iPXE script.</br>
+  
 - `visibility` - (String) The access scope of an image such as `private` or `public`.
 
 

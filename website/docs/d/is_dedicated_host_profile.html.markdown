@@ -49,19 +49,20 @@ In addition to all argument reference list, you can access the following attribu
     - `value` - (String) The interface of the disk for a dedicated host with this profileThe enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the unexpected property value was encountered.
  - `quantity` - (List) The number of disks of this type for a dedicated host with this profile. Nested `quantity` blocks have the following structure:
 
-    Nested scheme for `quantity`:
-    - `type` - (String) The type for this profile field.
-    - `value` - (String) The value for this profile field.
+      Nested scheme for `quantity`:
+      - `type` - (String) The type for this profile field.
+      - `value` - (String) The value for this profile field.
  - `size` - (List) The size of the disk in GB (gigabytes). Nested `size` blocks have the following structure:
 
-    Nested scheme for `size`:
-    - `type` - (String) The type for this profile field.
-    - `value` - (String) The size of the disk in GB (gigabytes).
+      Nested scheme for `size`:
+      - `type` - (String) The type for this profile field.
+      - `value` - (String) The size of the disk in GB (gigabytes).
+  - `status` - (String) The status of the dedicated host profile. Values coule be,  `previous`: This dedicated host profile is an older revision, but remains provisionable and usable. `current`: This profile is the latest revision.
  - `supported_instance_interface_types` - (List) Nested `supported_instance_interface_types` blocks have the following structure:
 
-    Nested scheme for `supported_instance_interface_types`:
-    - `type` - (String) The type for this profile field.
-    - `value` - (String) The instance disk interfaces supported for a dedicated host with this profile.
+      Nested scheme for `supported_instance_interface_types`:
+      - `type` - (String) The type for this profile field.
+      - `value` - (String) The instance disk interfaces supported for a dedicated host with this profile.
 - `family`-  (String) The product family this dedicated host profile belongs to.
 - `href`-  (String) The URL for this dedicated host.
 - `id`-  (String) The unique identifier of the dedicated host profile.
@@ -105,3 +106,8 @@ In addition to all argument reference list, you can access the following attribu
   - `type`-  (String) The type for this profile field.
   - `value`-  (String) The value for this profile field.
   - `values`-  (String) The permitted values for this profile field.
+- `vcpu_manufacturer`-  (List) Nested `vcpu_manufacturer` blocks have the following structure.
+
+  Nested scheme for `vcpu_manufacturer`:
+  - `type`-  (String) The type for this profile field.
+  - `value`-  (String) The `VCPU` manufacturer for a dedicated host with this profile.

@@ -61,7 +61,14 @@ In addition to the argument reference list, you can access the following attribu
 		- `resource_type` - (String)The resource type [ **subnet_reserved_ip** ]
 
 	- `security_groups` - (Array) Collection of security groups
-	- `status` - (String) The status of the network interface. Supported values are [ **available**, **deleting**, **failed**, **pending** ]
+	- `status` - (String) The status of the network interface. 
+	
+		->**Supported Status** 
+			&#x2022; available 
+			</br>&#x2022; deleting
+			</br>&#x2022; failed
+			</br>&#x2022; pending
+
 	- `subnet` - (List) The associated subnet
 	- `type` - (String) The type of this bare metal server network interface. Supported values are [ **primary**, **secondary** ]
 	- `vlan` - (Integer) Indicates the 802.1Q VLAN ID tag that must be used for all traffic on this interface

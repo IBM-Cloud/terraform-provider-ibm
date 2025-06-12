@@ -160,7 +160,9 @@ func DataSourceIBMIsIpsecPolicies() *schema.Resource {
 func dataSourceIBMIsIpsecPoliciesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_ipsec_policies", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	start := ""
@@ -170,10 +172,11 @@ func dataSourceIBMIsIpsecPoliciesRead(context context.Context, d *schema.Resourc
 		if start != "" {
 			listIpsecPoliciesOptions.Start = &start
 		}
-		iPsecPolicyCollection, response, err := vpcClient.ListIpsecPoliciesWithContext(context, listIpsecPoliciesOptions)
+		iPsecPolicyCollection, _, err := vpcClient.ListIpsecPoliciesWithContext(context, listIpsecPoliciesOptions)
 		if err != nil || iPsecPolicyCollection == nil {
-			log.Printf("[DEBUG] ListIpsecPoliciesWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("ListIpsecPoliciesWithContext failed %s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListIpsecPoliciesWithContext failed %s", err), "(Data) ibm_is_ipsec_policies", "read")
+			log.Printf("[DEBUG] %s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		start = flex.GetNext(iPsecPolicyCollection.Next)
 		allrecs = append(allrecs, iPsecPolicyCollection.IpsecPolicies...)
@@ -186,7 +189,7 @@ func dataSourceIBMIsIpsecPoliciesRead(context context.Context, d *schema.Resourc
 
 	err = d.Set("ipsec_policies", dataSourceIPsecPolicyCollectionFlattenIpsecPolicies(allrecs))
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting ipsec_policies %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting ipsec_policies %s", err), "(Data) ibm_is_ipsec_policies", "read", "ipsec_policies-set").GetDiag()
 	}
 
 	return nil
@@ -283,7 +286,7 @@ func dataSourceIPsecPolicyCollectionIpsecPoliciesConnectionsToMap(connectionsIte
 	return connectionsMap
 }
 
-func dataSourceIPsecPolicyCollectionConnectionsDeletedToMap(deletedItem vpcv1.VPNGatewayConnectionReferenceDeleted) (deletedMap map[string]interface{}) {
+func dataSourceIPsecPolicyCollectionConnectionsDeletedToMap(deletedItem vpcv1.Deleted) (deletedMap map[string]interface{}) {
 	deletedMap = map[string]interface{}{}
 
 	if deletedItem.MoreInfo != nil {

@@ -4,7 +4,6 @@ This example shows how to Create a Key protect instance, generate a key and inte
 
 This sample configuration will create the key protect instance, cos-bucket instance, root key, and integrate the key with a cos bucket after creating the bucket.
 
-
 To run, configure your IBM Cloud provider
 
 These types of resources and datasources are supported:
@@ -17,6 +16,12 @@ These types of resources and datasources are supported:
 Terraform 0.12. Pin module version to `~> v1.4.0`. Branch - `master`.
 
 Terraform 0.11. Pin module version to `~> v0.25.0`. Branch - `terraform_v0.11.x`.
+
+## Deprecation Notice
+
+  The resource `ibm_kp_key` is deprecated and replaced with `ibm_kms_key`. 
+
+  Please refer to [https://github.com/IBM-Cloud/terraform-provider-ibm/tree/master/examples/ibm-kms](examples/ibm-kms) for examples.
 
 ## Usage
 
@@ -63,7 +68,7 @@ resource "ibm_cos_bucket" "flex-us-south" {
   resource_instance_id = ibm_resource_instance.cos_instance.id
   region_location      = var.location
   storage_class        = "flex"
-  key_protect          = ibm_kp_key.test.id
+  kms_key_crn          = ibm_kp_key.test.id
 }
 
 ```
@@ -81,7 +86,7 @@ resource "ibm_cos_bucket" "flex-us-south" {
   resource_instance_id = var.cosinstance
   region_location      = var.location
   storage_class        = "flex"
-  key_protect          = data.ibm_kp_key.test.keys.0.crn
+  kms_key_crn         = data.ibm_kp_key.test.keys.0.crn
 }
 
 ```

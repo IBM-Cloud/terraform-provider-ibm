@@ -30,8 +30,11 @@ func TestAccIbmSmUsernamePasswordSecretDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_sm_username_password_secret.sm_username_password_secret", "updated_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_username_password_secret.sm_username_password_secret", "versions_total"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_username_password_secret.sm_username_password_secret", "rotation.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_sm_username_password_secret.sm_username_password_secret", "password_generation_policy.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_username_password_secret.sm_username_password_secret", "username"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_username_password_secret.sm_username_password_secret", "password"),
+					resource.TestCheckResourceAttrSet("data.ibm_sm_username_password_secret.sm_username_password_secret_by_name", "name"),
+					resource.TestCheckResourceAttrSet("data.ibm_sm_username_password_secret.sm_username_password_secret_by_name", "secret_group_name"),
 				),
 			},
 		},
@@ -62,5 +65,12 @@ func testAccCheckIbmSmUsernamePasswordSecretDataSourceConfigBasic() string {
 			region = "%s"
 			secret_id = ibm_sm_username_password_secret.sm_username_password_secret_instance.secret_id
 		}
-	`, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion)
+
+		data "ibm_sm_username_password_secret" "sm_username_password_secret_by_name" {
+			instance_id   = "%s"
+			region = "%s"
+			name = ibm_sm_username_password_secret.sm_username_password_secret_instance.name
+			secret_group_name = "default"
+		}
+	`, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion)
 }

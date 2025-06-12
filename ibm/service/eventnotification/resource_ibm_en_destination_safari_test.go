@@ -37,6 +37,7 @@ func TestAccIBMEnSafariDestinationAllArgs(t *testing.T) {
 					testAccCheckIBMEnSafariDestinationExists("ibm_en_destination_safari.en_destination_resource_safari", config),
 					resource.TestCheckResourceAttr("ibm_en_destination_safari.en_destination_resource_safari", "name", name),
 					resource.TestCheckResourceAttr("ibm_en_destination_safari.en_destination_resource_safari", "type", "push_safari"),
+					resource.TestCheckResourceAttr("ibm_en_destination_safari.en_destination_resource_safari", "collect_failed_events", "false"),
 					resource.TestCheckResourceAttr("ibm_en_destination_safari.en_destination_resource_safari", "description", description),
 				),
 			},
@@ -45,6 +46,7 @@ func TestAccIBMEnSafariDestinationAllArgs(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_en_destination_safari.en_destination_resource_safari", "name", newName),
 					resource.TestCheckResourceAttr("ibm_en_destination_safari.en_destination_resource_safari", "type", "push_safari"),
+					resource.TestCheckResourceAttr("ibm_en_destination_safari.en_destination_resource_safari", "collect_failed_events", "false"),
 					resource.TestCheckResourceAttr("ibm_en_destination_safari.en_destination_resource_safari", "description", newDescription),
 				),
 			},

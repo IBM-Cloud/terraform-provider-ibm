@@ -99,11 +99,13 @@ func DataSourceIbmIsVpcAddressPrefixes() *schema.Resource {
 	}
 }
 
-func dataSourceIbmIsVpcAddressPrefixRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIbmIsVpcAddressPrefixRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_vpc_address_prefixes", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	start := ""
@@ -116,10 +118,11 @@ func dataSourceIbmIsVpcAddressPrefixRead(context context.Context, d *schema.Reso
 		if start != "" {
 			listVpcAddressPrefixesOptions.Start = &start
 		}
-		addressPrefixCollection, response, err := vpcClient.ListVPCAddressPrefixesWithContext(context, listVpcAddressPrefixesOptions)
+		addressPrefixCollection, _, err := vpcClient.ListVPCAddressPrefixesWithContext(ctx, listVpcAddressPrefixesOptions)
 		if err != nil {
-			log.Printf("[DEBUG] ListVpcAddressPrefixesWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("ListVpcAddressPrefixesWithContext failed %s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListVPCAddressPrefixesWithContext failed %s", err), "(Data) ibm_is_vpc_address_prefixes", "read")
+			log.Printf("[DEBUG] %s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		start = flex.GetNext(addressPrefixCollection.Next)
 		allrecs = append(allrecs, addressPrefixCollection.AddressPrefixes...)
@@ -147,7 +150,10 @@ func dataSourceIbmIsVpcAddressPrefixRead(context context.Context, d *schema.Reso
 
 	if suppliedFilter {
 		if len(matchAddressPrefixes) == 0 {
-			return diag.FromErr(fmt.Errorf("no AddressPrefixes found with name %s", name))
+			err = fmt.Errorf("No AddressPrefixes found with name %s", name)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListVPCAddressPrefixesWithContext failed %s", err), "(Data) ibm_is_vpc_address_prefixes", "read")
+			log.Printf("[DEBUG] %s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		d.SetId(name)
 	} else {
@@ -157,7 +163,7 @@ func dataSourceIbmIsVpcAddressPrefixRead(context context.Context, d *schema.Reso
 	if matchAddressPrefixes != nil {
 		err = d.Set("address_prefixes", dataSourceAddressPrefixCollectionFlattenAddressPrefixes(matchAddressPrefixes))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting address_prefixes %s", err))
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting address_prefixes %s", err), "(Data) ibm_is_vpc_address_prefixes", "read", "address_prefixes-set").GetDiag()
 		}
 	}
 
@@ -225,7 +231,7 @@ func dataSourceAddressPrefixCollectionAddressPrefixesZoneToMap(zoneItem vpcv1.Zo
 	return zoneMap
 }
 
-func dataSourceAddressPrefixCollectionFlattenFirst(result vpcv1.AddressPrefixCollectionFirst) (finalList []map[string]interface{}) {
+func dataSourceAddressPrefixCollectionFlattenFirst(result vpcv1.PageLink) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
 	finalMap := dataSourceAddressPrefixCollectionFirstToMap(result)
 	finalList = append(finalList, finalMap)
@@ -233,7 +239,7 @@ func dataSourceAddressPrefixCollectionFlattenFirst(result vpcv1.AddressPrefixCol
 	return finalList
 }
 
-func dataSourceAddressPrefixCollectionFirstToMap(firstItem vpcv1.AddressPrefixCollectionFirst) (firstMap map[string]interface{}) {
+func dataSourceAddressPrefixCollectionFirstToMap(firstItem vpcv1.PageLink) (firstMap map[string]interface{}) {
 	firstMap = map[string]interface{}{}
 
 	if firstItem.Href != nil {
@@ -243,7 +249,7 @@ func dataSourceAddressPrefixCollectionFirstToMap(firstItem vpcv1.AddressPrefixCo
 	return firstMap
 }
 
-func dataSourceAddressPrefixCollectionFlattenNext(result vpcv1.AddressPrefixCollectionNext) (finalList []map[string]interface{}) {
+func dataSourceAddressPrefixCollectionFlattenNext(result vpcv1.PageLink) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
 	finalMap := dataSourceAddressPrefixCollectionNextToMap(result)
 	finalList = append(finalList, finalMap)
@@ -251,7 +257,7 @@ func dataSourceAddressPrefixCollectionFlattenNext(result vpcv1.AddressPrefixColl
 	return finalList
 }
 
-func dataSourceAddressPrefixCollectionNextToMap(nextItem vpcv1.AddressPrefixCollectionNext) (nextMap map[string]interface{}) {
+func dataSourceAddressPrefixCollectionNextToMap(nextItem vpcv1.PageLink) (nextMap map[string]interface{}) {
 	nextMap = map[string]interface{}{}
 
 	if nextItem.Href != nil {

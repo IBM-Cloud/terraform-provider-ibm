@@ -9,6 +9,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -113,9 +114,11 @@ func DataSourceIBMIsVPNServerClients() *schema.Resource {
 }
 
 func dataSourceIBMIsVPNServerClientsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	sess, err := vpcClient(meta)
+	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_vpn_server_clients", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	start := ""
@@ -127,10 +130,11 @@ func dataSourceIBMIsVPNServerClientsRead(context context.Context, d *schema.Reso
 		if start != "" {
 			listVPNServerClientsOptions.Start = &start
 		}
-		vpnServerClientCollection, response, err := sess.ListVPNServerClientsWithContext(context, listVPNServerClientsOptions)
+		vpnServerClientCollection, _, err := vpcClient.ListVPNServerClientsWithContext(context, listVPNServerClientsOptions)
 		if err != nil {
-			log.Printf("[DEBUG] ListVPNServerClientsWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("[ERROR] ListVPNServerClientsWithContext failed %s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_is_vpn_server_clients", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		start = flex.GetNext(vpnServerClientCollection.Next)
 		allrecs = append(allrecs, vpnServerClientCollection.Clients...)
@@ -144,7 +148,7 @@ func dataSourceIBMIsVPNServerClientsRead(context context.Context, d *schema.Reso
 	if allrecs != nil {
 		err = d.Set("clients", dataSourceVPNServerClientCollectionFlattenClients(allrecs))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting clients %s", err))
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting clients %s", err), "(Data) ibm_is_vpn_server_clients", "read", "clients-set").GetDiag()
 		}
 	}
 	return nil
@@ -229,7 +233,7 @@ func dataSourceVPNServerClientCollectionClientsRemoteIPToMap(remoteIPItem vpcv1.
 	return remoteIPMap
 }
 
-func dataSourceVPNServerClientCollectionFlattenFirst(result vpcv1.VPNServerClientCollectionFirst) (finalList []map[string]interface{}) {
+func dataSourceVPNServerClientCollectionFlattenFirst(result vpcv1.PageLink) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
 	finalMap := dataSourceVPNServerClientCollectionFirstToMap(result)
 	finalList = append(finalList, finalMap)
@@ -237,7 +241,7 @@ func dataSourceVPNServerClientCollectionFlattenFirst(result vpcv1.VPNServerClien
 	return finalList
 }
 
-func dataSourceVPNServerClientCollectionFirstToMap(firstItem vpcv1.VPNServerClientCollectionFirst) (firstMap map[string]interface{}) {
+func dataSourceVPNServerClientCollectionFirstToMap(firstItem vpcv1.PageLink) (firstMap map[string]interface{}) {
 	firstMap = map[string]interface{}{}
 
 	if firstItem.Href != nil {
@@ -247,7 +251,7 @@ func dataSourceVPNServerClientCollectionFirstToMap(firstItem vpcv1.VPNServerClie
 	return firstMap
 }
 
-func dataSourceVPNServerClientCollectionFlattenNext(result vpcv1.VPNServerClientCollectionNext) (finalList []map[string]interface{}) {
+func dataSourceVPNServerClientCollectionFlattenNext(result vpcv1.PageLink) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
 	finalMap := dataSourceVPNServerClientCollectionNextToMap(result)
 	finalList = append(finalList, finalMap)
@@ -255,7 +259,7 @@ func dataSourceVPNServerClientCollectionFlattenNext(result vpcv1.VPNServerClient
 	return finalList
 }
 
-func dataSourceVPNServerClientCollectionNextToMap(nextItem vpcv1.VPNServerClientCollectionNext) (nextMap map[string]interface{}) {
+func dataSourceVPNServerClientCollectionNextToMap(nextItem vpcv1.PageLink) (nextMap map[string]interface{}) {
 	nextMap = map[string]interface{}{}
 
 	if nextItem.Href != nil {

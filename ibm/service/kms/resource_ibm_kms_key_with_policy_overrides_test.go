@@ -61,7 +61,6 @@ func TestAccIBMKMSKeyWithPolicyOverridesResource_basic(t *testing.T) {
 
 // Test for valid expiration date for create key operation
 func TestAccIBMKMSKeyWithPolicyOverridesResource_ValidExpDate(t *testing.T) {
-
 	instanceName := fmt.Sprintf("kms_%d", acctest.RandIntRange(10, 100))
 	keyName := fmt.Sprintf("key_%d", acctest.RandIntRange(10, 100))
 
@@ -123,7 +122,6 @@ func TestAccIBMKMSKeyWithPolicyOverridesResource_InvalidExpDate(t *testing.T) {
 
 // Test for Valid/Invalid policy for create key operation
 func TestAccIBMKMSKeyWithPolicyOverridesResource_Policies(t *testing.T) {
-
 	instanceName := fmt.Sprintf("kms_%d", acctest.RandIntRange(10, 100))
 	keyName := fmt.Sprintf("key_%d", acctest.RandIntRange(10, 100))
 	enabled_rotation := true
@@ -212,5 +210,5 @@ func testAccCheckIBMKmsKeyWithPolicyOverridesAllPolicies(instanceName string, ke
 			enabled = %t
 		}
 	  }
-`, instanceName, keyName, standard_key, enabled_rotation, rotation_interval, enabled_dual_auth)
+`, addPrefixToResourceName(instanceName), keyName, standard_key, enabled_rotation, rotation_interval, enabled_dual_auth)
 }

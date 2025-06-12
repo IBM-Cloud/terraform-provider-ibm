@@ -51,6 +51,7 @@ if [[ -n "${TF_RELEASE}" ]]; then
 fi
 
 # Build!
+VERSION="1.64.0"
 echo "==> Building..."
 gox \
     -os="${XC_OS}" \

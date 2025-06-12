@@ -41,7 +41,7 @@ resource "ibm_is_ssh_key" "example" {
 resource "ibm_is_instance" "example" {
   name    = "example-instance"
   image   = ibm_is_image.example.id
-  profile = "bc1-2x8"
+  profile = "bx2-2x8"
 
   primary_network_interface {
     subnet = ibm_is_subnet.example.id
@@ -63,7 +63,7 @@ data "ibm_is_instance" "example" {
   passphrase  = ""
 }
 
-data "is_instance_disk" "example" {
+data "ibm_is_instance_disk" "example" {
   instance = data.ibm_is_instance.example.id
   disk     = data.ibm_is_instance.example.disks.0.id
 }

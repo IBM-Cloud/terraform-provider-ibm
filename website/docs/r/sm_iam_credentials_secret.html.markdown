@@ -14,7 +14,7 @@ Provides a resource for IAMCredentialsSecret. This allows IAMCredentialsSecret t
 
 ```hcl
 resource "ibm_sm_iam_credentials_secret" "sm_iam_credentials_secret" {
-  instance_id   = "6ebc4224-e983-496a-8a54-f40a0bfa9175"
+  instance_id   = ibm_resource_instance.sm_instance.guid
   region        = "us-south"
   name 			= "secret-name"
   access_groups = ["AccessGroupId-45884031-54be-4dd7-86ff-112511e92699"]
@@ -26,7 +26,7 @@ resource "ibm_sm_iam_credentials_secret" "sm_iam_credentials_secret" {
 		interval = 1
 		unit = "day"
   }
-  secret_group_id = "default"
+  secret_group_id = ibm_sm_secret_group.sm_secret_group.secret_group_id
   service_id = "ServiceId-bb4ccc31-bd31-493a-bb58-52ec399800be"
   ttl = "1800"
 }
@@ -42,23 +42,23 @@ Review the argument reference that you can specify for your resource.
     * Constraints: Allowable values are: `private`, `public`.
 * `access_groups` - (Optional, Forces new resource, List) Access Groups that you can use for an `iam_credentials` secret.Up to 10 Access Groups can be used for each secret.
   * Constraints: The list items must match regular expression `/^AccessGroupId-[a-z0-9-]+[a-z0-9]$/`. The maximum length is `10` items. The minimum length is `1` item.
+* `account_id` - (Optional, Forces new resource, String) The ID of the account in which the IAM credentials are created. Use this field only if the target account is not the same as the account of the Secrets Manager instance. Otherwise, the field can be omitted.
 * `custom_metadata` - (Optional, Map) The secret metadata that a user can customize.
 * `description` - (Optional, String) An extended description of your secret.To protect your privacy, do not use personal data, such as your name or location, as a description for your secret group.
   * Constraints: The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/(.*?)/`.
 * `labels` - (Optional, List) Labels that you can use to search for secrets in your instance.Up to 30 labels can be created.
   * Constraints: The list items must match regular expression `/(.*?)/`. The maximum length is `30` items. The minimum length is `0` items.
 * `name` - (Required, String) The human-readable name of your secret.
-    * Constraints: The maximum length is `256` characters. The minimum length is `2` characters. The value must match regular expression `^[A-Za-z0-9][A-Za-z0-9]*(?:_*-*\\.*[A-Za-z0-9]+)*$`.
+    * Constraints: The maximum length is `256` characters. The minimum length is `2` characters. The value must match regular expression `^[A-Za-z0-9_][A-Za-z0-9_]*(?:_*-*\.*[A-Za-z0-9]*)*[A-Za-z0-9]+$`.
 * `reuse_api_key` - (Optional, Boolean) Determines whether to use the same service ID and API key for future read operations on an`iam_credentials` secret. Must be set to `true` for IAM credentials secrets managed by Terraform.
 * `rotation` - (Optional, List) Determines whether Secrets Manager rotates your secrets automatically.
 Nested scheme for **rotation**:
-	* `auto_rotate` - (Optional, Boolean) Determines whether Secrets Manager rotates your secret automatically.Default is `false`. If `auto_rotate` is set to `true` the service rotates your secret based on the defined interval.
-	* `interval` - (Optional, Integer) The length of the secret rotation time interval.
-	  * Constraints: The minimum value is `1`.
-	* `rotate_keys` - (Optional, Boolean) Determines whether Secrets Manager rotates the private key for your public certificate automatically.Default is `false`. If it is set to `true`, the service generates and stores a new private key for your rotated certificate.
-	* `unit` - (Optional, String) The units for the secret rotation time interval.
-	  * Constraints: Allowable values are: `day`, `month`.
-* `secret_group_id` - (Optional, Forces new resource, String) A v4 UUID identifier, or `default` secret group.
+    * `auto_rotate` - (Optional, Boolean) Determines whether Secrets Manager rotates your secret automatically.Default is `false`. If `auto_rotate` is set to `true` the service rotates your secret based on the defined interval.
+    * `interval` - (Optional, Integer) The length of the secret rotation time interval.
+      * Constraints: The minimum value is `1`.
+    * `unit` - (Optional, String) The units for the secret rotation time interval.
+      * Constraints: Allowable values are: `day`, `month`.
+* `secret_group_id` - (Optional, Forces new resource, String) A UUID identifier, or `default` secret group.
   * Constraints: The maximum length is `36` characters. The minimum length is `7` characters. The value must match regular expression `/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|default)$/`.
 * `service_id` - (Optional, Forces new resource, String) The service ID under which the API key (see the `api_key` field) is created.If you omit this parameter, Secrets Manager generates a new service ID for your secret at its creation and adds it to the access groups that you assign.Optionally, you can use this field to provide your own service ID if you prefer to manage its access directly or retain the service ID after your secret expires, is rotated, or deleted. If you provide a service ID, do not include the `access_groups` parameter.
   * Constraints: The maximum length is `50` characters. The minimum length is `40` characters. The value must match regular expression `/^[A-Za-z0-9][A-Za-z0-9]*(?:-?[A-Za-z0-9]+)*$/`.
@@ -91,7 +91,8 @@ In addition to all argument references listed, you can access the following attr
     * Constraints: Allowable values are: `arbitrary`, `imported_cert`, `public_cert`, `iam_credentials`, `kv`, `username_password`, `private_cert`.
 * `updated_at` - (String) The date when a resource was recently modified. The date format follows RFC 3339.
 * `versions_total` - (Integer) The number of versions of the secret.
-  * Constraints: The maximum value is `50`. The minimum value is `0`.
+    * Constraints: The maximum value is `50`. The minimum value is `0`.
+* `expiration_date` - (String) The date a secret is expired. The date format follows RFC 3339.
 
 ## Provider Configuration
 

@@ -29,7 +29,7 @@ provider "ibm" {
 resource "ibm_is_instance" "example" {
   name    = "example-instance"
   image   = ibm_is_image.example.id
-  profile = "bc1-2x8"
+  profile = "bx2-2x8"
 
   primary_network_interface {
     subnet     = ibm_is_subnet.example.id
@@ -81,8 +81,16 @@ Review the argument references that you can specify for your resource.
   **&#x2022;** For more information, about creating access tags, see [working with tags](https://cloud.ibm.com/docs/account?topic=account-tag&interface=ui#create-access-console).</br>
   **&#x2022;** You must have the access listed in the [Granting users access to tag resources](https://cloud.ibm.com/docs/account?topic=account-access) for `access_tags`</br>
   **&#x2022;** `access_tags` must be in the format `key:value`.
-- `name` - (Required, String) The unique user-defined name for the flow log collector.No.
-- `target` - (Required, Forces new resource, String) The ID of the target to collect flow logs. If the target is an instance, subnet, or VPC, flow logs is not collected for any network interfaces within the target that are more specific flow log collector.
+- `name` - (Required, String) The unique user-defined name for the flow log collector.
+- `target` - (Required, Forces new resource, String) The ID of the target to collect flow logs.
+
+  -> **Note:**
+  **&#x2022;** If the target is an instance network attachment, flow logs will be collected  for that instance network attachment.</br>
+  **&#x2022;** If the target is an instance network interface, flow logs will be collected  for that instance network interface.</br>
+  **&#x2022;** If the target is a virtual network interface, flow logs will be collected for the  the virtual network interface's `target` resource if the resource is:  - an instance network attachment.</br>
+  **&#x2022;** If the target is a virtual server instance, flow logs will be collected  for all network attachments or network interfaces on that instance.</br>
+  **&#x2022;** If the target is a subnet, flow logs will be collected  for all instance network interfaces and virtual network interfaces  attached to that subnet.</br>
+  **&#x2022;** If the target is a VPC, flow logs will be collected for all instance network  interfaces and virtual network interfaces  attached to all subnets within that VPC. If the target is an instance, subnet, or VPC, flow logs will not be collectedfor any instance network attachments or instance network interfaces within the targetthat are themselves the target of a more specific flow log collector.</br>
 - `storage_bucket` - (Required, Forces new resource, String) The name of the IBM Cloud Object Storage bucket where the collected flows will be logged. The bucket must exist and an IAM service authorization must grant IBM Cloud flow logs resources of VPC infrastructure services writer access to the bucket.
 - `active` - (Optional, String) Indicates whether the collector is active. If **false**, this collector is created in inactive mode. Default value is true.
 - `resource_group` - (Optional, Forces new resource, String) The resource group ID where the flow log is created.

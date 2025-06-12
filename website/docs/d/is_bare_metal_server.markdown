@@ -6,7 +6,7 @@ description: |-
   Manages IBM Cloud Bare Metal Server.
 ---
 
-# ibm\_is_bare_metal_server
+# ibm_is_bare_metal_server
 
 Import the details of an existing IBM Cloud Bare Metal Server as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax. For more information, about bare metal servers, see [About Bare Metal Servers for VPC](https://cloud.ibm.com/docs/vpc?topic=vpc-about-bare-metal-servers).
 
@@ -70,12 +70,84 @@ In addition to all argument reference list, you can access the following attribu
     - `resource_type` - (String) The resource type
     - `size` - (Integer) The size of the disk in GB (gigabytes)
 - `enable_secure_boot` - (Boolean) Indicates whether secure boot is enabled. If enabled, the image must support secure boot or the server will fail to boot.
+- `health_reasons` - (List) The reasons for the current health_state (if any).
+
+    Nested scheme for `health_reasons`:
+    - `code` - (String) A snake case string succinctly identifying the reason for this health state.
+    - `message` - (String) An explanation of the reason for this health state.
+    - `more_info` - (String) Link to documentation about the reason for this health state.
+- `health_state` - (String) The health of this resource.
 - `href` - (String) The URL for this bare metal server
 - `id` - (String) The unique identifier for this bare metal server
 - `image` - (String) Image used in the bare metal server.
 - `keys` - (String) Image used in the bare metal server.
 - `memory` - (Integer) The amount of memory, truncated to whole gibibytes
 - `name` - (String) The name of the bare metal server.
+- `network_attachments` - (List) The network attachments for this bare metal server, including the primary network attachment.
+  Nested schema for **network_attachments**:
+	- `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
+	  Nested schema for **deleted**:
+		- `more_info` - (String) Link to documentation about deleted resources.
+	- `href` - (String) The URL for this network attachment.
+	- `id` - (String) The unique identifier for this network attachment.
+	- `name` - (String)
+	- `primary_ip` - (List) The primary IP address of the virtual network interface for the network attachment.
+	  Nested schema for **primary_ip**:
+		- `address` - (String) The IP address.If the address has not yet been selected, the value will be `0.0.0.0`.This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
+		- `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
+		  Nested schema for **deleted**:
+			- `more_info` - (String) Link to documentation about deleted resources.
+		- `href` - (String) The URL for this reserved IP.
+		- `id` - (String) The unique identifier for this reserved IP.
+		- `name` - (String) The name for this reserved IP. The name is unique across all reserved IPs in a subnet.
+		- `resource_type` - (String) The resource type.
+
+	- `reservation`- (List) The reservation used by this bare metal server. 
+    Nested scheme for `reservation`:
+    - `crn` - (String) The CRN for this reservation.
+    - `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.
+
+      Nested `deleted` blocks have the following structure: 
+      - `more_info` - (String) Link to documentation about deleted resources.
+    - `href` - (String) The URL for this reservation.
+    - `id` - (String) The unique identifier for this reservation.
+    - `name` - (string) The name for this reservation. The name is unique across all reservations in the region.
+    - `resource_type` - (string) The resource type.
+  - `reservation_affinity`- (List) The bare metal server reservation affinity. 
+
+    Nested scheme for `reservation_affinity`:
+    - `policy` - (String) The reservation affinity policy to use for this bare metal server.
+    - `pool` - (List) The pool of reservations available for use by this bare metal server.
+
+      Nested `pool` blocks have the following structure: 
+      - `crn` - (String) The CRN for this reservation.
+      - `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.
+
+        Nested `deleted` blocks have the following structure:
+        - `more_info` - (String) Link to documentation about deleted resources. 
+      - `href` - (String) The URL for this reservation.
+      - `id` - (String) The unique identifier for this reservation.
+      - `name` - (string) The name for this reservation. The name is unique across all reservations in the region.
+      - `resource_type` - (string) The resource type.
+	- `resource_type` - (String) The resource type.
+  - `subnet` - (List) The subnet of the virtual network interface for the network attachment.
+	  Nested schema for **subnet**:
+		- `crn` - (String) The CRN for this subnet.
+		- `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
+		  Nested schema for **deleted**:
+			- `more_info` - (String) Link to documentation about deleted resources.
+		- `href` - (String) The URL for this subnet.
+		- `id` - (String) The unique identifier for this subnet.
+		- `name` - (String) The name for this subnet. The name is unique across all subnets in the VPC.
+		- `resource_type` - (String) The resource type.
+  - `virtual_network_interface` - (List) The virtual network interface for this bare metal server network attachment.
+  Nested schema for **virtual_network_interface**:
+    - `crn` - (String) The CRN for this virtual network interface.
+    - `href` - (String) The URL for this virtual network interface.
+    - `id` - (String) The unique identifier for this virtual network interface.
+    - `name` - (String) The name for this virtual network interface. The name is unique across all virtual network interfaces in the VPC.
+    - `resource_type` - (String) The resource type.
+    
 - `network_interfaces` - (List) A nested block describing the additional network interface of this instance.
   Nested scheme for `network_interfaces`:
     - `allow_ip_spoofing` - (Bool) Indicates whether source IP spoofing is allowed on this interface. If false, source IP spoofing is prevented on this interface. If true, source IP spoofing is allowed on this interface.
@@ -93,6 +165,42 @@ In addition to all argument reference list, you can access the following attribu
 
     - `security_groups` -  (Array) List of security groups.
     - `subnet` -  (String) ID of the subnet.
+- `primary_network_attachment` - (List) The primary network attachment.
+  Nested schema for **primary_network_attachment**:
+	- `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
+	  Nested schema for **deleted**:
+		- `more_info` - (String) Link to documentation about deleted resources.
+	- `href` - (String) The URL for this network attachment.
+	- `id` - (String) The unique identifier for this network attachment.
+	- `name` - (String)
+	- `primary_ip` - (List) The primary IP address of the virtual network interface for the network attachment.
+	  Nested schema for **primary_ip**:
+		- `address` - (String) The IP address.If the address has not yet been selected, the value will be `0.0.0.0`.This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
+		- `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
+		  Nested schema for **deleted**:
+			- `more_info` - (String) Link to documentation about deleted resources.
+		- `href` - (String) The URL for this reserved IP.
+		- `id` - (String) The unique identifier for this reserved IP.
+		- `name` - (String) The name for this reserved IP. The name is unique across all reserved IPs in a subnet.
+		- `resource_type` - (String) The resource type.
+	- `resource_type` - (String) The resource type.
+	- `subnet` - (List) The subnet of the virtual network interface for the network attachment.
+	  Nested schema for **subnet**:
+		- `crn` - (String) The CRN for this subnet.
+		- `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
+		  Nested schema for **deleted**:
+			- `more_info` - (String) Link to documentation about deleted resources.
+		- `href` - (String) The URL for this subnet.
+		- `id` - (String) The unique identifier for this subnet.
+		- `name` - (String) The name for this subnet. The name is unique across all subnets in the VPC.
+		- `resource_type` - (String) The resource type.
+  - `virtual_network_interface` - (List) The virtual network interface for this bare metal server network attachment.
+  Nested schema for **virtual_network_interface**:
+    - `crn` - (String) The CRN for this virtual network interface.
+    - `href` - (String) The URL for this virtual network interface.
+    - `id` - (String) The unique identifier for this virtual network interface.
+    - `name` - (String) The name for this virtual network interface. The name is unique across all virtual network interfaces in the VPC.
+    - `resource_type` - (String) The resource type.
 - `primary_network_interface` - (List) A nested block describing the primary network interface of this bare metal server.
   Nested scheme for `primary_network_interface`:
     - `allow_ip_spoofing` - (Bool) Indicates whether source IP spoofing is allowed on this interface. If false, source IP spoofing is prevented on this interface. If true, source IP spoofing is allowed on this interface.
@@ -112,7 +220,23 @@ In addition to all argument reference list, you can access the following attribu
 - `profile` - (String) The name for this bare metal server profile
 - `resource_group` - (String) resource group id of the bare metal server.
 - `resource_type` - (String) The type of resource referenced
-- `status` - (String) The status of the bare metal server [ **failed**, **pending**, **restarting**, **running**, **starting**, **stopped**, **stopping** ]
+- `firmware_update_type_available` - (String) The firmware update type available for the bare metal server.
+  
+  -> **Supported firmware update types** 
+    </br>&#x2022; none 
+    </br>&#x2022; optional 
+    </br>&#x2022; required
+- `status` - (String) The status of the bare metal server.
+
+  -> **Supported Status** 
+    &#x2022; failed
+    </br>&#x2022; pending
+    </br>&#x2022; restarting
+    </br>&#x2022; running
+    </br>&#x2022; starting
+    </br>&#x2022; stopped
+    </br>&#x2022; stopping
+    
 - `status_reasons` - (List) Array of reasons for the current status (if any).
   Nested scheme for `status_reasons`:
     - `code` - (String) The status reason code

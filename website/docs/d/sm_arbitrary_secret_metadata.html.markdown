@@ -14,7 +14,7 @@ Provides a read-only data source for the metadata of an arbitrary secret. You ca
 
 ```hcl
 data "ibm_sm_arbitrary_secret_metadata" "arbitrary_secret_metadata" {
-  instance_id   = "6ebc4224-e983-496a-8a54-f40a0bfa9175"
+  instance_id   = ibm_resource_instance.sm_instance.guid
   region        = "us-south"
   secret_id = "0b5571f7-21e6-42b7-91c5-3f5ac9793a46"
 }
@@ -62,7 +62,7 @@ In addition to all argument references listed, you can access the following attr
 * `name` - (String) The human-readable name of your secret.
   * Constraints: The maximum length is `256` characters. The minimum length is `2` characters. 
 
-* `secret_group_id` - (String) A v4 UUID identifier, or `default` secret group.
+* `secret_group_id` - (String) A UUID identifier, or `default` secret group.
   * Constraints: The maximum length is `36` characters. The minimum length is `7` characters. The value must match regular expression `/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|default)$/`.
 
 * `secret_type` - (String) The secret type. Supported types are arbitrary, certificates (imported, public, and private), IAM credentials, key-value, and user credentials.

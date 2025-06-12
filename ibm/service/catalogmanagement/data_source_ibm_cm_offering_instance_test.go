@@ -10,6 +10,7 @@ import (
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
@@ -17,13 +18,14 @@ func TestAccIBMCmOfferingInstanceDataSource(t *testing.T) {
 	clusterId := os.Getenv("CATMGMT_CLUSTERID")
 	clusterRegion := os.Getenv("CATMGMT_CLUSTERREGION")
 	resourceGroupID := os.Getenv("CATMGMT_RGID")
+	planId := fmt.Sprintf("plan_id_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMCmOfferingInstanceDataSourceConfig(clusterId, clusterRegion, resourceGroupID),
+				Config: testAccCheckIBMCmOfferingInstanceDataSourceConfig(clusterId, clusterRegion, resourceGroupID, planId),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_cm_offering_instance.cm_offering_instance_data", "label"),
 					resource.TestCheckResourceAttrSet("data.ibm_cm_offering_instance.cm_offering_instance_data", "url"),
@@ -34,7 +36,7 @@ func TestAccIBMCmOfferingInstanceDataSource(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMCmOfferingInstanceDataSourceConfig(clusterId string, clusterRegion string, resourceGroupID string) string {
+func testAccCheckIBMCmOfferingInstanceDataSourceConfig(clusterId string, clusterRegion string, resourceGroupID string, planId string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_cm_catalog" "cm_catalog" {
@@ -66,11 +68,12 @@ func testAccCheckIBMCmOfferingInstanceDataSourceConfig(clusterId string, cluster
 			cluster_all_namespaces = false
 			resource_group_id = "%s"
 			install_plan = "Automatic"
+			plan_id = "%s"
 		}
 
 		data "ibm_cm_offering_instance" "cm_offering_instance_data" {
 			instance_identifier = ibm_cm_offering_instance.cm_offering_instance.id
 		}
 		  
-		`, clusterId, clusterRegion, resourceGroupID)
+		`, clusterId, clusterRegion, resourceGroupID, planId)
 }

@@ -76,7 +76,8 @@ func dataSourceIBMSchematicsOutputRead(d *schema.ResourceData, meta interface{})
 
 	outputValuesList, response, err := schematicsClient.GetWorkspaceOutputs(getWorkspaceOutputsOptions)
 	if err != nil {
-		log.Printf("[DEBUG] GetWorkspaceOutputs failed %s\n%s", err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMSchematicsOutputRead GetWorkspaceOutputs failed with error: %s and response:\n%s", err, response), "ibm_schematics_output", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return err
 	}
 
@@ -94,7 +95,7 @@ func dataSourceIBMSchematicsOutputRead(d *schema.ResourceData, meta interface{})
 			outputJSON = string(outputByte[:])
 			// items := map[string]interface{}
 			for _, value := range output {
-				for key, val := range value.(map[string]interface{}) {
+				for key, val := range value {
 					val2 := val.(map[string]interface{})["value"]
 					items[key] = val2
 				}
@@ -122,38 +123,4 @@ func dataSourceIBMSchematicsOutputRead(d *schema.ResourceData, meta interface{})
 // dataSourceIBMSchematicsOutputID returns a reasonable ID for the list.
 func dataSourceIBMSchematicsOutputID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
-}
-
-func dataSourceOutputValuesListFlattenOutputValues(result []schematicsv1.OutputValuesInner) (outputValues interface{}) {
-	for _, outputValuesItem := range result {
-		outputValues = dataSourceOutputValuesListOutputValuesToMap(outputValuesItem)
-	}
-
-	return outputValues
-}
-
-func dataSourceOutputValuesListOutputValuesToMap(outputValuesItem schematicsv1.OutputValuesInner) (outputValuesMap map[string]interface{}) {
-	outputValuesMap = map[string]interface{}{}
-
-	if outputValuesItem.Folder != nil {
-		outputValuesMap["folder"] = outputValuesItem.Folder
-	}
-	if outputValuesItem.ID != nil {
-		outputValuesMap["id"] = outputValuesItem.ID
-	}
-
-	m := []flex.Map{}
-
-	for _, outputValues := range outputValuesItem.OutputValues {
-		m = append(m, flex.Flatten(outputValues.(map[string]interface{})))
-	}
-
-	if outputValuesItem.OutputValues != nil {
-		outputValuesMap["output_values"] = m
-	}
-	if outputValuesItem.ValueType != nil {
-		outputValuesMap["value_type"] = outputValuesItem.ValueType
-	}
-
-	return outputValuesMap
 }

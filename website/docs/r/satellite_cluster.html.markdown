@@ -33,6 +33,54 @@ resource "ibm_satellite_cluster" "create_cluster" {
 
 ```
 
+### Create satellite cluster with calico ip autodetection
+
+```terraform
+data "ibm_resource_group" "rg_cluster" {
+  name = var.resource_group
+}
+
+resource "ibm_satellite_cluster" "create_cluster" {
+  count = var.create_cluster ? 1 : 0
+
+  name                   = var.cluster
+  location               = var.location
+  resource_group_id      = data.ibm_resource_group.rg_cluster.id
+  enable_config_admin    = true
+  kube_version           = var.kube_version
+  wait_for_worker_update = (var.wait_for_worker_update ? var.wait_for_worker_update : true)
+  worker_count           = (var.worker_count != null ? var.worker_count : null)
+  host_labels            = (var.host_labels != null ? var.host_labels : null)
+  operating_system       = var.operating_system
+
+  dynamic "zones" {
+    for_each = (var.zones != null ? var.zones : null)
+    content {
+      id = zones.value
+    }
+  }
+
+  default_worker_pool_labels = (var.default_worker_pool_labels != null ? var.default_worker_pool_labels : null)
+  tags                       = (var.tags != null ? var.tags : null)
+  calico_ip_autodetection = (var.calico_ip_autodetection != null ? var.calico_ip_autodetection : null)
+
+  timeouts {
+    create = (var.create_timeout != null ? var.create_timeout : null)
+    update = (var.update_timeout != null ? var.update_timeout : null)
+    delete = (var.delete_timeout != null ? var.delete_timeout : null)
+  }
+
+}
+```
+
+Example value for `calico_ip_autodetection`:
+
+```terraform
+calico_ip_autodetection = {
+  "can-reach" = "www.ibm.com",
+}
+```
+
 ## Timeouts
 
 The `ibm_satellite_cluster` provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
@@ -50,6 +98,7 @@ Review the argument references that you can specify for your resource.
 - `location` - (Required, String) The name or ID of the Satellite location.
 - `kube_version` - (Optional, String) The Red Hart OpenShift Container Platform version.
 - `operating_system` - (Optional, String) Operating system of the default worker pool. Options are REDHAT_7_64, REDHAT_8_64, or RHCOS.
+- `entitlement` - (Optional, String) Entitlement reduces additional OCP Licence cost in OpenShift clusters. Use Cloud Pak with OCP Licence entitlement to create the OpenShift cluster. **Note** <ul><li> It is set only when the first time creation of the cluster, further modifications are not impacted. </li></ul> <ul><li> Set this argument to `cloud_pak` only if you use the cluster with a Cloud Pak that has an OpenShift entitlement.</li></ul>.
 - `zones` - (Optional, Array of Strings)  The name of the zones to create the default worker pool.
 - `worker_count` - (Optional, String) The number of worker nodes to create per zone in the default worker pool.
 - `enable_config_admin` - (Optional, Bool) User provided value to indicate opt-in agreement to SatCon admin agent.
@@ -71,6 +120,7 @@ Review the argument references that you can specify for your resource.
 - `tags` - (Optional, Array of Strings) Tags associated with the container cluster instance.
 - `pod_subnet` - Specify a custom subnet CIDR to provide private IP addresses for pods. The subnet must be at least `/23` or larger. For more information, see [Configuring VPC subnets](https://cloud.ibm.com/docs/containers?topic=containers-vpc-subnets).
 - `service_subnet` -  Specify a custom subnet CIDR to provide private IP addresses for services. The subnet must be at least `/24` or larger. For more information, see [Configuring VPC subnets](https://cloud.ibm.com/docs/containers?topic=containers-vpc-subnets#vpc_basics).
+- `calico_ip_autodetection` - (Optional, Map) "Set IP autodetection to use correct interface for Calico, works only with RHCOS"
 
 
 ## Attributes reference

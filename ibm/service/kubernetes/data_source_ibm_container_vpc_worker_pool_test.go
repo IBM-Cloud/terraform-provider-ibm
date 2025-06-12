@@ -13,8 +13,44 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccIBMContainerVPCClusterWorkerPoolDataSource_basic(t *testing.T) {
-	name := fmt.Sprintf("tf-vpc-worker-%d", acctest.RandIntRange(10, 100))
+func testAccIBMContainerVPCClusterWorkerPoolDataSourceBase(cluster_name string) string {
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "resource_group" {
+		is_default=true
+	}
+	
+	resource "ibm_container_vpc_cluster" "cluster" {
+	  name              = "%[3]s"
+	  vpc_id            = "%[1]s"
+	  flavor            = "cx2.2x4"
+	  worker_count      = 1
+	  resource_group_id = data.ibm_resource_group.resource_group.id
+	  wait_till         = "MasterNodeReady"
+	  zones {
+		subnet_id = "%[2]s"
+		name      = "us-south-1"
+	  }
+	}
+
+	resource "ibm_container_vpc_worker_pool" "test_pool" {
+		cluster           = ibm_container_vpc_cluster.cluster.id
+		vpc_id            = "%[1]s"
+		flavor            = "cx2.2x4"
+		worker_count      = 1
+		worker_pool_name  = "default"
+		zones {
+			subnet_id = "%[2]s"
+			name      = "us-south-1"
+		}
+		import_on_create  = "true"
+		orphan_on_delete = "true"
+	}
+		`, acc.IksClusterVpcID, acc.IksClusterSubnetID, cluster_name)
+}
+
+// TestAccIBMContainerVpcClusterWorkerPoolDataSourceBasic ...
+func TestAccIBMContainerVpcClusterWorkerPoolDataSourceBasic(t *testing.T) {
+	name := fmt.Sprintf("tf-vpc-wp-ds-basic-%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
@@ -29,8 +65,23 @@ func TestAccIBMContainerVPCClusterWorkerPoolDataSource_basic(t *testing.T) {
 	})
 }
 
-func TestAccIBMContainerVPCClusterWorkerPoolDataSource_dedicatedhost(t *testing.T) {
-	name := fmt.Sprintf("tf-vpc-worker-%d", acctest.RandIntRange(10, 100))
+func testAccCheckIBMContainerVPCClusterWorkerPoolDataSourceConfig(name string) string {
+	return testAccIBMContainerVPCClusterWorkerPoolDataSourceBase(name) + `
+	data "ibm_container_vpc_cluster_worker_pool" "testacc_ds_worker_pool" {
+	    cluster = "${ibm_container_vpc_cluster.cluster.id}"
+	    worker_pool_name = "${ibm_container_vpc_worker_pool.test_pool.worker_pool_name}"
+	}
+`
+}
+
+// TestAccIBMContainerVpcClusterWorkerPoolDataSourceDedicatedHost ...
+func TestAccIBMContainerVpcClusterWorkerPoolDataSourceDedicatedHost(t *testing.T) {
+	if acc.HostPoolID == "" {
+		fmt.Println("[WARN] Skipping TestAccIBMContainerVpcClusterWorkerPoolResourceDedicatedHost - IBM_CONTAINER_DEDICATEDHOST_POOL_ID is unset")
+		return
+	}
+
+	name := fmt.Sprintf("tf-vpc-wp-ds-dhost-%d", acctest.RandIntRange(10, 100))
 	hostpoolID := acc.HostPoolID
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
@@ -40,61 +91,6 @@ func TestAccIBMContainerVPCClusterWorkerPoolDataSource_dedicatedhost(t *testing.
 				Config: testAccCheckIBMContainerVPCClusterWorkerPoolDataSourceConfigDedicatedHost(name, hostpoolID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.ibm_container_vpc_worker_pool.vpc_worker_pool", "host_pool_id", hostpoolID),
-				),
-			},
-		},
-	})
-}
-
-func testAccCheckIBMContainerVPCClusterWorkerPoolDataSourceConfig(name string) string {
-	return testAccCheckIBMVpcContainerWorkerPoolBasic(name) + `
-	data "ibm_container_vpc_cluster_worker_pool" "testacc_ds_worker_pool" {
-	    cluster = "${ibm_container_vpc_cluster.cluster.id}"
-	    worker_pool_name = "${ibm_container_vpc_worker_pool.test_pool.worker_pool_name}"
-	}
-`
-}
-
-func TestAccIBMContainerVPCClusterWorkerPoolDataSourceEnvvar(t *testing.T) {
-	name := fmt.Sprintf("tf-vpc-wp-%d", acctest.RandIntRange(10, 100))
-	testChecks := []resource.TestCheckFunc{
-		resource.TestCheckResourceAttrSet("data.ibm_container_vpc_cluster_worker_pool.testacc_ds_worker_pool", "id"),
-	}
-	if acc.CrkID != "" {
-		testChecks = append(testChecks,
-			resource.TestCheckResourceAttr("data.ibm_container_vpc_cluster_worker_pool.testacc_ds_worker_pool", "crk", acc.CrkID),
-			resource.TestCheckResourceAttr("data.ibm_container_vpc_cluster_worker_pool.testacc_ds_worker_pool", "kms_instance_id", acc.KmsInstanceID),
-		)
-	}
-	if acc.WorkerPoolSecondaryStorage != "" {
-		testChecks = append(testChecks, resource.TestCheckResourceAttr(
-			"data.ibm_container_vpc_cluster_worker_pool.testacc_ds_worker_pool", "secondary_storage.0.name", acc.WorkerPoolSecondaryStorage))
-	}
-	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheck(t) },
-		Providers: acc.TestAccProviders,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckIBMContainerVPCClusterWorkerPoolDataSourceEnvvar(name),
-				Check:  resource.ComposeTestCheckFunc(testChecks...),
-			},
-		},
-	})
-}
-
-func TestAccIBMContainerVPCClusterWorkerPoolDataSourceKmsAccountEnvvar(t *testing.T) {
-	name := fmt.Sprintf("tf-vpc-wp-%d", acctest.RandIntRange(10, 100))
-	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheck(t) },
-		Providers: acc.TestAccProviders,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckIBMContainerVPCClusterWorkerPoolDataSourceKmsAccountEnvvar(name),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_container_vpc_cluster_worker_pool.testacc_ds_kms_worker_pool", "id"),
-					resource.TestCheckResourceAttr("data.ibm_container_vpc_cluster_worker_pool.testacc_ds_kms_worker_pool", "crk", acc.CrkID),
-					resource.TestCheckResourceAttr("data.ibm_container_vpc_cluster_worker_pool.testacc_ds_kms_worker_pool", "kms_instance_id", acc.KmsInstanceID),
-					resource.TestCheckResourceAttr("data.ibm_container_vpc_cluster_worker_pool.testacc_ds_kms_worker_pool", "kms_account_id", acc.KmsAccountID),
 				),
 			},
 		},
@@ -114,8 +110,59 @@ func testAccCheckIBMContainerVPCClusterWorkerPoolDataSourceConfigDedicatedHost(n
 `
 }
 
-func testAccCheckIBMContainerVPCClusterWorkerPoolDataSourceEnvvar(name string) string {
-	return testAccCheckIBMVpcContainerWorkerPoolEnvvar(name) + `
+// TestAccIBMContainerVpcClusterWorkerPoolDataSourceSecondaryStorage ...
+func TestAccIBMContainerVpcClusterWorkerPoolDataSourceSecondaryStorage(t *testing.T) {
+	name := fmt.Sprintf("tf-vpc-wp-ds-secstorage-%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMContainerVPCClusterWorkerPoolDataSourceSecStorage(name),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("data.ibm_container_vpc_cluster_worker_pool.testacc_ds_worker_pool", "id"),
+					resource.TestCheckResourceAttr(
+						"data.ibm_container_vpc_cluster_worker_pool.testacc_ds_worker_pool", "secondary_storage.0.name", acc.WorkerPoolSecondaryStorage)),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMContainerVPCClusterWorkerPoolDataSourceSecStorage(name string) string {
+	return testAccCheckIBMVpcContainerWorkerPoolSecStorage(name) + `
+	data "ibm_container_vpc_cluster_worker_pool" "testacc_ds_worker_pool" {
+	    cluster = "${ibm_container_vpc_worker_pool.test_pool.cluster}"
+	    worker_pool_name = "${ibm_container_vpc_worker_pool.test_pool.worker_pool_name}"
+	}
+	`
+}
+
+// TestAccIBMContainerVpcClusterWorkerPoolDataSourceKMS ...
+func TestAccIBMContainerVpcClusterWorkerPoolDataSourceKMS(t *testing.T) {
+	if acc.CrkID == "" {
+		fmt.Println("[WARN] Skipping TestAccIBMContainerVpcClusterWorkerPoolDataSourceKMS - IBM_CRK_ID is unset")
+		return
+	}
+	name := fmt.Sprintf("tf-vpc-wp-ds-kms-%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMContainerVPCClusterWorkerPoolDataSourceKMS(name),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("data.ibm_container_vpc_cluster_worker_pool.testacc_ds_worker_pool", "id"),
+					resource.TestCheckResourceAttr("data.ibm_container_vpc_cluster_worker_pool.testacc_ds_worker_pool", "autoscale_enabled", "false"),
+					resource.TestCheckResourceAttr("data.ibm_container_vpc_cluster_worker_pool.testacc_ds_worker_pool", "crk", acc.CrkID),
+					resource.TestCheckResourceAttr("data.ibm_container_vpc_cluster_worker_pool.testacc_ds_worker_pool", "kms_instance_id", acc.KmsInstanceID),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMContainerVPCClusterWorkerPoolDataSourceKMS(name string) string {
+	return testAccCheckIBMVpcContainerWorkerPoolKMS(name) + `
 	data "ibm_container_vpc_cluster_worker_pool" "testacc_ds_worker_pool" {
 	    cluster = "${ibm_container_vpc_worker_pool.test_pool.cluster}"
 	    worker_pool_name = "${ibm_container_vpc_worker_pool.test_pool.worker_pool_name}"
@@ -123,8 +170,31 @@ func testAccCheckIBMContainerVPCClusterWorkerPoolDataSourceEnvvar(name string) s
 `
 }
 
-func testAccCheckIBMContainerVPCClusterWorkerPoolDataSourceKmsAccountEnvvar(name string) string {
-	return testAccCheckIBMVpcContainerWorkerPoolKmsAccountEnvvar(name) + `
+// TestAccIBMContainerVpcClusterWorkerPoolDataSourceKmsAccount ...
+func TestAccIBMContainerVpcClusterWorkerPoolDataSourceKmsAccount(t *testing.T) {
+	if acc.KmsAccountID == "" {
+		fmt.Println("[WARN] Skipping TestAccIBMContainerVpcClusterWorkerPoolDataSourceKmsAccount - IBM_KMS_ACCOUNT_ID is unset")
+		return
+	}
+	name := fmt.Sprintf("tf-vpc-wp-ds-kmsacc-%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMContainerVPCClusterWorkerPoolDataSourceKmsAccount(name),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("data.ibm_container_vpc_cluster_worker_pool.testacc_ds_kms_worker_pool", "id"),
+					resource.TestCheckResourceAttr("data.ibm_container_vpc_cluster_worker_pool.testacc_ds_kms_worker_pool", "crk", acc.CrkID),
+					resource.TestCheckResourceAttr("data.ibm_container_vpc_cluster_worker_pool.testacc_ds_kms_worker_pool", "kms_instance_id", acc.KmsInstanceID),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMContainerVPCClusterWorkerPoolDataSourceKmsAccount(name string) string {
+	return testAccCheckIBMVpcContainerWorkerPoolKmsAccount(name) + `
 	data "ibm_container_vpc_cluster_worker_pool" "testacc_ds_kms_worker_pool" {
 	    cluster = "${ibm_container_vpc_worker_pool.test_pool.cluster}"
 	    worker_pool_name = "${ibm_container_vpc_worker_pool.test_pool.worker_pool_name}"

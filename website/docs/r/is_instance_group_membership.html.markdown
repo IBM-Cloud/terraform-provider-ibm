@@ -23,7 +23,7 @@ provider "ibm" {
 ## Example usage
 
 ```terraform
-resource "is_instance_group_membership" "example" {
+resource "ibm_is_instance_group_membership" "example" {
   instance_group            = ibm_is_instance_group.example.id
   instance_group_membership = data.ibm_is_instance_group_memberships.example.memberships.0.instance_group_membership
   name                      = "example-ig-membership"
@@ -57,9 +57,9 @@ In addition to all argument reference list, you can access the following attribu
   - `name` - (String) The unique user defined name for this instance template.
 - `load_balancer_pool_member` - (String) The unique identifier for this load balancer pool member.
 - `name` - (String) The user-defined name for this instance group membership. Names must be unique within the instance group.
-- `status` - (String) The status of the instance group membership are:</br>
-	**deleting** Membership is deleting dependent resources.</br>
-	**failed** Membership is unable to maintain dependent resources.</br>
-	**healthy** Membership is active and serving in the group.</br>
-	**pending** Membership is waiting for dependent resources.</br>
-	**unhealthy** Membership contains unhealthy dependent resources.
+- `status` - (String) The status of the instance group membership are:
+  </br>&#x2022; **deleting** Membership is deleting dependent resources.
+  </br>&#x2022; **failed** Membership is unable to maintain dependent resources.
+	</br>&#x2022; **healthy** Membership is active and serving in the group.
+	</br>&#x2022; **pending** Membership is waiting for dependent resources.
+	</br>&#x2022; **unhealthy** Membership contains unhealthy dependent resources.

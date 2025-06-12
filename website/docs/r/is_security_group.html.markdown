@@ -61,6 +61,7 @@ In addition to all argument reference list, you can access the following attribu
   - `code` - (String) The `ICMP` traffic code to allow.
   - `direction`-  (String) The direction of the traffic either `inbound` or `outbound`.
   - `ip_version` - (String) IP version: `ipv4`
+  - `local` - (String) 	The local IP address or range of local IP addresses to which this rule will allow inbound traffic (or from which, for outbound traffic). A CIDR block of 0.0.0.0/0 allows traffic to all local IP addresses (or from all local IP addresses, for outbound rules). an IP address, a `CIDR` block.
   - `protocol` - (String) The type of the protocol `all`, `icmp`, `tcp`, `udp`.
   - `port_max`- (Integer) The `TCP/UDP` port range that includes the maximum bound.
   - `port_min`- (Integer) The `TCP/UDP` port range that includes the minimum bound.
@@ -68,7 +69,7 @@ In addition to all argument reference list, you can access the following attribu
   - `type` - (String) The `ICMP` traffic type to allow.
 
 ## Import
-The `ibm_is_security_group` resource can be imported by using load balancer ID. 
+The `ibm_is_security_group` resource can be imported by using security group ID. 
 
 **Example**
 

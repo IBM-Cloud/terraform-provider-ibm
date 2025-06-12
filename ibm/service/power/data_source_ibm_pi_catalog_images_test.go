@@ -14,38 +14,34 @@ import (
 
 func testAccCheckIBMPICatalogImagesDataSourceBasicConfig() string {
 	return fmt.Sprintf(`
-	data "ibm_pi_catalog_images" "power_catalog_images_basic" {
-		pi_cloud_instance_id = "%s"
-	}
-	`, acc.Pi_cloud_instance_id)
+		data "ibm_pi_catalog_images" "power_catalog_images_basic" {
+			pi_cloud_instance_id = "%s"
+		}`, acc.Pi_cloud_instance_id)
 }
 
 func testAccCheckIBMPICatalogImagesDataSourceSAPConfig() string {
 	return fmt.Sprintf(`
-	data "ibm_pi_catalog_images" "power_catalog_images_sap" {
-		pi_cloud_instance_id = "%s"
-		sap = "true"
-	}
-	`, acc.Pi_cloud_instance_id)
+		data "ibm_pi_catalog_images" "power_catalog_images_sap" {
+			pi_cloud_instance_id = "%s"
+			sap = "true"
+		}`, acc.Pi_cloud_instance_id)
 }
 
 func testAccCheckIBMPICatalogImagesDataSourceVTLConfig() string {
 	return fmt.Sprintf(`
-	data "ibm_pi_catalog_images" "power_catalog_images_vtl" {
-		pi_cloud_instance_id = "%s"
-		vtl = "true"
-	}
-	`, acc.Pi_cloud_instance_id)
+		data "ibm_pi_catalog_images" "power_catalog_images_vtl" {
+			pi_cloud_instance_id = "%s"
+			vtl = "true"
+		}`, acc.Pi_cloud_instance_id)
 }
 
 func testAccCheckIBMPICatalogImagesDataSourceSAP_And_VTLConfig() string {
 	return fmt.Sprintf(`
-	data "ibm_pi_catalog_images" "power_catalog_images_sap_and_vtl" {
-		pi_cloud_instance_id = "%s"
-		sap = "true"
-		vtl = "true"
-	}
-	`, acc.Pi_cloud_instance_id)
+		data "ibm_pi_catalog_images" "power_catalog_images_sap_and_vtl" {
+			pi_cloud_instance_id = "%s"
+			sap = "true"
+			vtl = "true"
+		}`, acc.Pi_cloud_instance_id)
 }
 
 func TestAccIBMPICatalogImagesDataSourceBasic(t *testing.T) {

@@ -14,7 +14,7 @@ Provides a resource for PublicCertificateConfigurationCALetsEncrypt. This allows
 
 ```hcl
 resource "ibm_sm_public_certificate_configuration_ca_lets_encrypt" "sm_public_certificate_configuration_ca_lets_encrypt" {
-  instance_id   = "6ebc4224-e983-496a-8a54-f40a0bfa9175"
+  instance_id   = ibm_resource_instance.sm_instance.guid
   region        = "us-south"
   name          = "lets-encrypt-config"
   lets_encrypt_environment = "production"
@@ -32,8 +32,8 @@ Review the argument reference that you can specify for your resource.
   * Constraints: Allowable values are: `private`, `public`.
 * `lets_encrypt_environment` - (Required, String) The configuration of the Let's Encrypt CA environment.
   * Constraints: Allowable values are: `production`, `staging`.
-* `lets_encrypt_preferred_chain` - (Optional, String) Prefer the chain with an issuer matching this Subject Common Name.
-  * Constraints: The maximum length is `30` characters. The minimum length is `2` characters. The value must match regular expression `/(.*?)/`.
+* `lets_encrypt_preferred_chain` - (Optional, String) This field supports only the chains that Let's Encrypt provides. Keep empty to use the default or supply a valid Let's Encrypt-provided value. For a list of supported chains, see: https://letsencrypt.org/certificates/.
+  * Constraints: The value must match regular expression `/(.*?)/`.
 * `lets_encrypt_private_key` - (Required, String) The PEM encoded private key of your Lets Encrypt account.
   * Constraints: The maximum length is `100000` characters. The minimum length is `50` characters. The value must match regular expression `/(^-----BEGIN PRIVATE KEY-----.*?)/`.
 * `name` - (Required, String) A human-readable unique name to assign to your configuration.

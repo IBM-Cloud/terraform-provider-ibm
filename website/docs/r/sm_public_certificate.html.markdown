@@ -8,13 +8,13 @@ subcategory: "Secrets Manager"
 
 # ibm_sm_public_certificate
 
-Provides a resource for PublicCertificate. This allows PublicCertificate to be created, updated and deleted.
+Provides a resource for Secrets Manager public certificate secret. This allows a public certificate secret to be created, updated and deleted.
 
 ## Example Usage
 
 ```hcl
 resource "ibm_sm_public_certificate" "sm_public_certificate" {
-  instance_id   = "6ebc4224-e983-496a-8a54-f40a0bfa9175"
+  instance_id   = ibm_resource_instance.sm_instance.guid
   region        = "us-south"
   name 			= "secret-name"
   custom_metadata = {"key":"value"}
@@ -27,7 +27,7 @@ resource "ibm_sm_public_certificate" "sm_public_certificate" {
 		auto_rotate = true
 		rotate_keys = false
   }
-  secret_group_id = "default"
+  secret_group_id = ibm_sm_secret_group.sm_secret_group.secret_group_id
 }
 ```
 
@@ -40,9 +40,9 @@ Review the argument reference that you can specify for your resource.
 * `endpoint_type` - (Optional, String) - The endpoint type. If not provided the endpoint type is determined by the `visibility` argument provided in the provider configuration.
 	* Constraints: Allowable values are: `private`, `public`.
 * `name` - (Required, String) The human-readable name of your secret.
-  * Constraints: The maximum length is `256` characters. The minimum length is `2` characters. The value must match regular expression `^[A-Za-z0-9][A-Za-z0-9]*(?:_*-*\\.*[A-Za-z0-9]+)*$`.
+  * Constraints: The maximum length is `256` characters. The minimum length is `2` characters. The value must match regular expression `^[A-Za-z0-9_][A-Za-z0-9_]*(?:_*-*\.*[A-Za-z0-9]*)*[A-Za-z0-9]+$`.
 * `ca` - (Required, Forces new resource, String) The name of the certificate authority configuration.
-* `common_name` - (Required, Forces new resource, String) The Common Name (AKA CN) represents the server name protected by the SSL certificate.
+* `common_name` - (Optional, Forces new resource, String) The Common Name (AKA CN) represents the server name protected by the SSL certificate.
   * Constraints: The maximum length is `64` characters. The minimum length is `4` characters. The value must match regular expression `/^(\\*\\.)?(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9])\\.?$/`.
 * `custom_metadata` - (Optional, Map) The secret metadata that a user can customize.
 * `description` - (Optional, String) An extended description of your secret.To protect your privacy, do not use personal data, such as your name or location, as a description for your secret group.
@@ -55,17 +55,29 @@ Review the argument reference that you can specify for your resource.
 Nested scheme for **rotation**:
 	* `auto_rotate` - (Optional, Boolean) Determines whether Secrets Manager rotates your secret automatically.Default is `false`.
 	* `rotate_keys` - (Optional, Boolean) Determines whether Secrets Manager rotates the private key for your public certificate automatically.Default is `false`. If it is set to `true`, the service generates and stores a new private key for your rotated certificate.
-* `secret_group_id` - (Optional, Forces new resource, String) A v4 UUID identifier, or `default` secret group.
+* `secret_group_id` - (Optional, Forces new resource, String) A UUID identifier, or `default` secret group.
   * Constraints: The maximum length is `36` characters. The minimum length is `7` characters. The value must match regular expression `/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|default)$/`.
+* `alt_names` - (Optional, Forces new resource, List) With the Subject Alternative Name field, you can specify additional host names to be protected by a single SSL certificate.
+  * Constraints: The list items must match regular expression `/^(.*?)$/`. The maximum length is `99` items. The minimum length is `0` items.
+* `bundle_certs` - (Optional, Boolean) Indicates whether the issued certificate is bundled with intermediate certificates.
+* `akamai` - (Optional, List) The data required in order to use Akamai as the manual DNS provider. You can choose between two authentication methods: using .edgerc file or directly providing your Akamai's credentials. For more information see [here](https://techdocs.akamai.com/developer/docs/set-up-authentication-credentials)
+Nested scheme for **akamai**:
+    * `edgerc` - (Optional, Forces new resource, List) Using .edgerc file as the authentication method.
+    Nested scheme for **edgerc**:
+      * `path_to_edgerc` - (Optional, Forces new resource, String) Path to Akamai's configuration file.
+      * `config_section` - (Optional, Forces new resource, String) The section of the edgerc file to use. Default is `default`.
+    * `config` - (Optional, Forces new resource, List) Directly using your Akamai's authentication credentials.
+    Nested scheme for **config**:
+      * `client_secret` - (Optional, Forces new resource, String) Akamai's authentication credentials.
+      * `host` - (Optional, Forces new resource, String) Akamai's authentication credentials.
+      * `access_token` - (Optional, Forces new resource, String) Akamai's authentication credentials.
+      * `client_token` - (Optional, Forces new resource, String) Akamai's authentication credentials.
 
 ## Attribute Reference
 
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 
 * `secret_id` - The unique identifier of the PublicCertificate.
-* `alt_names` - (Forces new resource, List) With the Subject Alternative Name field, you can specify additional host names to be protected by a single SSL certificate.
-  * Constraints: The list items must match regular expression `/^(.*?)$/`. The maximum length is `99` items. The minimum length is `0` items.
-* `bundle_certs` - (Boolean) Indicates whether the issued certificate is bundled with intermediate certificates.
 * `certificate` - (Forces new resource, String) The PEM-encoded contents of your certificate.
   * Constraints: The maximum length is `100000` characters. The minimum length is `50` characters. The value must match regular expression `/^(-{5}BEGIN.+?-{5}[\\s\\S]+-{5}END.+?-{5})$/`.
 * `created_at` - (String) The date when a resource was created. The date format follows RFC 3339.

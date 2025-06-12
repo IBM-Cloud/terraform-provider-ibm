@@ -26,7 +26,7 @@ provider "ibm" {
 
 ```terraform
 resource "ibm_is_backup_policy_plan" "example" {
-  backup_policy_id = "backup_policy_id"
+  backup_policy_id = ibm_is_backup_policy.example.id
   cron_spec        = "0 12 * * *"
   name             = "example-backup-policy-plan"
 }
@@ -35,12 +35,30 @@ resource "ibm_is_backup_policy_plan" "example" {
 
 ```terraform
 resource "ibm_is_backup_policy_plan" "example" {
-  backup_policy_id = "backup_policy_id"
+  backup_policy_id = ibm_is_backup_policy.example.id
   cron_spec        = "0 12 * * *"
   name             = "example-backup-policy-plan"
   clone_policy {
     zones 			    = ["us-south-1", "us-south-2"]
     max_snapshots 	= 3
+  }
+}
+```
+
+## Example Usage for Cross Region Copy
+```terraform
+resource "ibm_is_backup_policy_plan" "example" {
+  backup_policy_id = ibm_is_backup_policy.example.id
+  cron_spec        = "30 */2 * * 1-5"
+  name             = "my-policy-plan"
+  deletion_trigger {
+    delete_after      = 20
+    delete_over_count = 20
+  }
+  remote_region_policy {
+    delete_over_count = 1
+    encryption_key    = "crn:v1:bluemix:public:kms:us-south:a/dffefjgfeg88992eb3b752286b87:e398349-2ef0-42a6-8fd2-0348r34:key:i4ouo34u-c4b1-447f-9646-3498349kr"
+    region            = "us-south"
   }
 }
 ```
@@ -74,6 +92,14 @@ backup_policy_plan_id
       ->**Note** Assign back to "null" to reset to no maximum.
 
 - `name` - (Optional, String) The user-defined name for this backup policy plan. Names must be unique within the backup policy this plan resides in. If unspecified, the name will be a hyphenated list of randomly-selected words.
+
+- `remote_region_policy` - (Optional, List) Backup policy plan cross region rule.
+
+  Nested scheme for `remote_region_policy`:
+	- `delete_over_count` - (Optional, Integer) The maximum number of recent remote copies to keep in this region. If no value is passed, then by default `delete_over_count` is 5. Range for `delete_over_count` is [1-100].
+	- `encryption_key` - (Optional, String) The root key to use to rewrap the data encryption key for the snapshot.If unspecified, the source's `encryption_key` will be used.The specified key may be in a different account, subject to IAM policies. The CRN of the [Key Protect Root Key](https://cloud.ibm.com/docs/key-protect?topic=key-protect-getting-started-tutorial) or [Hyper Protect Crypto Services Root Key](https://cloud.ibm.com/docs/hs-crypto?topic=hs-crypto-get-started) for this resource.
+	- `region` - (Required, String) Identifies a region by a unique property. The globally unique name for this region.
+
 
 ## Attribute Reference
 

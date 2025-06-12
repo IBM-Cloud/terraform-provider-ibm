@@ -18,7 +18,7 @@ data "ibm_resource_group" "web_group" {
 resource "ibm_cis" "web_domain" {
   name              = "web_domain"
   resource_group_id = data.ibm_resource_group.web_group.id
-  plan              = "standard"
+  plan              = "standard-next"
   location          = "global"
 }
 
@@ -483,7 +483,33 @@ data "ibm_cis_mtls_apps" "test" {
   domain_id = data.ibm_cis_domain.cis_domain.domain_id
 }
 
+# CIS Bot Management data source
+data "ibm_cis_bot_managements" "tests" {
+  cis_id    = data.ibm_cis.cis.id
+  domain = data.ibm_cis_domain.cis_domain.domain
+}
+# CIS Bot Management resource
+resource "ibm_cis_bot_management" "test" {
+    cis_id                          = data.ibm_cis.cis.id
+    domain = data.ibm_cis_domain.cis_domain.domain
+    fight_mode				= false
+    session_score			= false
+    enable_js				= false
+    auth_id_logging			= false
+    use_latest_model 		= false
+}
+
+# CIS Bot Analytics data source
+data "ibm_cis_bot_analytics" "tests" {
+  cis_id    = data.ibm_cis.cis.id
+  domain = data.ibm_cis_domain.cis_domain.domain
+  since = "2023-06-12T00:00:00Z"
+  until = "2023-06-13T00:00:00Z"
+  type = "score_source"
+}
+
 # CIS Logpush Job
+# logdna
 resource "ibm_cis_logpush_job" "test" {
     cis_id          = data.ibm_cis.cis.id
     domain_id       = data.ibm_cis_domain.cis_domain.domain_id
@@ -494,23 +520,72 @@ resource "ibm_cis_logpush_job" "test" {
     frequency       = "high"
     logdna =<<LOG
         {
-                        "hostname": "cistest-load.com",
+            "hostname": "cistest-load.com",
             "ingress_key": "e2f7xxxxx73a251caxxxxxxxxxxxx",
             "region": "in-che"
         }
         LOG
 }
+
+# IBM Cloud Logs
+resource "ibm_cis_logpush_job" "test" {
+    cis_id          = "crn:v1:staging:public:internet-svcs-ci:global:a/01652b251c3ae2787110a995d8db0135:1a9174b6-0106-417a-844b-c8eb43a72f63::"
+    domain_id       = "601b728b86e630c744c81740f72570c3"
+    name            = "MylogpushJob"
+    enabled         = false
+    logpull_options = "timestamps=rfc3339&timestamps=rfc3339"
+    dataset         = "http_requests"
+    frequency       = "high"
+    ibmcl {
+        instance_id ="604a309c-585c-4a42-955d-76239ccc1905"
+        api_key = "zxzeNQI22dxxxxxxxxxxxxxtn1EVK"
+        region = "us-south"
+    }
+}
+
+# COS
+resource "ibm_cis_logpush_job" "test" {
+    cis_id              = "crn:v1:staging:public:internet-svcs-ci:global:a/01652b251c3ae2787110a995d8db0135:1a9174b6-0106-417a-844b-c8eb43a72f63::"
+    domain_id           = "601b728b86e630c744c81740f72570c3"
+    name                = "MylogpushJob"
+    enabled             = false
+    logpull_options     = "timestamps=rfc3339&timestamps=rfc3339"
+    dataset             = "http_requests"
+    frequency           = "high"
+    ownership_challenge = "xxx"
+    cos =<<COS
+        {
+          "bucket_name": "examplse.cistest-load.com",
+          "id": "e2f72cxxxxxxxxxxxxa0b87859e",
+          "region": "in-che"
+    }
+    COS
+}
+
+# Genral destination
+resource "ibm_cis_logpush_job" "test" {
+    cis_id          = "crn:v1:staging:public:internet-svcs-ci:global:a/01652b251c3ae2787110a995d8db0135:1a9174b6-0106-417a-844b-c8eb43a72f63::"
+    domain_id       = "601b728b86e630c744c81740f72570c3"
+    name            = "MylogpushJob"
+    enabled         = false
+    logpull_options = "timestamps=rfc3339&timestamps=rfc3339"
+    dataset         = "http_requests"
+    frequency       = "high"
+    destination_conf = "s3://mybucket/logs?region=us-west-2"
+}
 # CIS Logpush Job Data source
+
 data "ibm_cis_logpush_jobs" "test" {
     cis_id          = data.ibm_cis.cis.id
     domain_id       = data.ibm_cis_domain.cis_domain.domain_id
+    job_id          = data.ibm_cis_domain.job.job_id
 }
 
 #CIS MTLS instance
-resource "ibm_cis_mtls" “test” {
+resource "ibm_cis_mtls" "test" {
   cis_id                    = ibm_cis.web_domain.id
   domain_id                 = ibm_cis_domain.web_domain.id
-  certificate               = <<EOT 
+  certificate               = <<EOT
                               "-----BEGIN CERTIFICATE----- 
                               -------END CERTIFICATE-----"
                               EOT
@@ -519,7 +594,7 @@ resource "ibm_cis_mtls" “test” {
 }
 
 #CIS MTLS app and policy instance
-resource "ibm_cis_mtls_app" “test” {
+resource "ibm_cis_mtls_app" "test" {
   cis_id                  = ibm_cis.web_domain.id
   domain_id               = ibm_cis_domain.web_domain.id
   name                    = "MY_APP"
@@ -528,7 +603,7 @@ resource "ibm_cis_mtls_app" “test” {
 }
 
 # Create Mtls APP and policy with certficate rule and common rule 
-resource "ibm_cis_mtls_app" “test2” {
+resource "ibm_cis_mtls_app" "test2" {
   cis_id                  = ibm_cis.web_domain.id
   domain_id               = ibm_cis_domain.web_domain.id
   name                    = "MY_APP"
@@ -540,7 +615,7 @@ resource "ibm_cis_mtls_app" “test2” {
 }
 
 # Create Mtls APP and policy with policy action
-resource "ibm_cis_mtls_app" “test3” {
+resource "ibm_cis_mtls_app" "test3" {
   cis_id                  = ibm_cis.web_domain.id
   domain_id               = ibm_cis_domain.web_domain.id
   name                    = "MY_APP"
@@ -553,14 +628,14 @@ resource "ibm_cis_mtls_app" “test3” {
 }
 
 # Upload zone level authentication certificate
-resource "ibm_cis_origin_auth" “test” {
+resource "ibm_cis_origin_auth" "test" {
   cis_id                    = ibm_cis.web_domain.id
   domain_id                 = ibm_cis_domain.web_domain.id
   certificate               = <<EOT
                               "-----BEGIN CERTIFICATE-----
                               ------END CERTIFICATE-------"
                               EOT
-  private_key               = <<EOT #pragma: whitelist secret
+  private_key               = <<EOT
                               "-----BEGIN-----
                                -----END-------"
                               EOT
@@ -568,14 +643,14 @@ resource "ibm_cis_origin_auth" “test” {
 }
 
 # Upload host level authentication certificate
-resource "ibm_cis_origin_auth" “test” {
+resource "ibm_cis_origin_auth" "test" {
   cis_id                    = ibm_cis.web_domain.id
   domain_id                 = ibm_cis_domain.web_domain.id
   certificate               = <<EOT
                               "-----BEGIN CERTIFICATE----
                               ------END CERTIFICATE------"
                               EOT
-  private_key               = <<EOT #pragma: whitelist secret
+  private_key               = <<EOT
                               "-----BEGIN-----
                                -----END-------"
                               EOT
@@ -584,14 +659,14 @@ resource "ibm_cis_origin_auth" “test” {
 }
 
 # Update zone level authentication setting
-resource "ibm_cis_origin_auth" “test” {
+resource "ibm_cis_origin_auth" "test" {
   cis_id                    = ibm_cis.web_domain.id
   domain_id                 = ibm_cis_domain.web_domain.id
   certificate               = <<EOT
                               "-----BEGIN CERTIFICATE-----
                                -----END CERTIFICATE-------"
                               EOT
-  private_key               = <<EOT  #pragma: whitelist secret
+  private_key               = <<EOT
                               "-----BEGIN------
                                -----END--------"
                               EOT
@@ -600,18 +675,184 @@ resource "ibm_cis_origin_auth" “test” {
 }
 
 # Update host level authentication setting
-resource "ibm_cis_origin_auth" “test” {
+resource "ibm_cis_origin_auth" "test" {
   cis_id                    = ibm_cis.web_domain.id
   domain_id                 = ibm_cis_domain.web_domain.id
   certificate               = <<EOT
                               "-----BEGIN CERTIFICATE-----
                                -----END CERTIFICATE-------"
                               EOT
-  private_key               = <<EOT #pragma: whitelist secret
+  private_key               = <<EOT
                               "-----BEGIN-----
                                -----END-------"
                               EOT
   hostname                  = "abc.abc.abc.com"
   enabled                   = true
   level                     = "hostname"
+}
+
+# CIS ruleset data source
+data "ibm_cis_rulesets" "tests" {
+    cis_id    = ibm_cis.instance.id
+    domain_id = data.ibm_cis_domain.cis_domain.domain_id
+    ruleset_id = data.ibm_cis_ruleset.cis_ruleset.ruleset_id
+}
+
+# CIS ruleset version data source
+data "ibm_cis_ruleset_versions" "tests" {
+    cis_id    = ibm_cis.instance.id
+    domain_id = data.ibm_cis_domain.cis_domain.domain_id
+    ruleset_id = data.ibm_cis_ruleset.cis_ruleset.ruleset_id
+    version = data.ibm_cis_ruleset.cis_ruleset.version
+}
+
+# CIS entry point version data source
+data "ibm_cis_ruleset_entrypoint_versions" "test"{
+    cis_id    = ibm_cis.instance.id
+    domain_id= data.ibm_cis_domain.cis_domain.domain_id
+    phase = "http_request_firewall_managed"
+    version = "2"
+    list_all = false
+} 
+
+# CIS ruleset rules by tag data source
+data "ibm_cis_ruleset_rules_by_tag" "test"{
+    cis_id    = ibm_cis.instance.id
+    ruleset_id = "dcdec3fe0cbe41edac08619503da8de5"
+    version = "2"
+    rulesets_rule_tag = "wordpress"
+}  
+
+# Update ruleset
+resource "ibm_cis_ruleset" "config" {
+    cis_id    = ibm_cis.instance.id
+    domain_id = data.ibm_cis_domain.cis_domain.domain_id
+    ruleset_id = "943c5da120114ea5831dc1edf8b6f769"
+    rulesets {
+      description = "Entry Point Ruleset"
+      rules {
+        id = ruleset.rule.id
+        action =  "execute"
+        action_parameters {
+          id = var.to_be_deployed_ruleset.id
+          overrides {
+            action = "log"
+            enabled = true
+            override_rules {
+                rule_id = var.overriden_rule.id
+                enabled = true
+                action = "block"
+            }
+            categories {
+                category = "wordpress"
+                enabled = true
+                action = "block"
+            }
+          }
+        }
+        description = var.rule.description
+        enabled = false
+        expression = "true"
+      }
+    }
+  }
+
+
+
+# Update ruleset entry point 
+resource "ibm_cis_ruleset_entrypoint_version" "config" {
+    cis_id    = ibm_cis.instance.id
+    domain_id = data.ibm_cis_domain.cis_domain.domain_id
+    phase = "http_request_firewall_managed"
+    rulesets {
+      description = "Entry Point ruleset"
+      rules {
+        action =  "execute"
+        action_parameters  {
+          id = var.to_be_deployed_ruleset.id
+          overrides  {
+            action = "log"
+            enabled = true
+            override_rules {
+                rule_id = var.overriden_rule.id
+                enabled = true
+                action = "block"
+            }
+            categories {
+                category = "wordpress"
+                enabled = true
+                action = "log"
+            }
+          }
+        }
+        description = var.rule.description
+        enabled = true
+        expression = "ip.src ne 1.1.1.1"
+      }
+    }
+  }
+
+# Update ruleset rule
+resource "ibm_cis_ruleset_rule" "config" {
+    cis_id    = ibm_cis.instance.id
+    domain_id = data.ibm_cis_domain.cis_domain.domain_id
+    ruleset_id = "943c5da120114ea5831dc1edf8b6f769"
+      rule {
+        action =  "execute"
+        action_parameters  {
+          id = var.to_be_deployed_ruleset.id
+          overrides {
+            action =  "block"
+            enabled = true
+            override_rules {
+              rule_id = var.overriden_rule.id
+              enabled = true
+              action = "block"
+            }
+            categories {
+              category = "wordpress"
+              enabled = true
+              action = "block"
+            }
+          }
+        }
+        description = var.rule.description
+        expression = "true"
+      }
+}
+
+# Detach ruleset version
+resource "ibm_cis_ruleset_version_detach" "tests" {
+    cis_id    = ibm_cis.instance.id
+    domain_id = data.ibm_cis_domain.cis_domain.domain_id
+    ruleset_id = "<id of the ruleset>"
+    version = "<ruleset version>"
+}
+
+# Order Advanced Certificate Pack
+resource "ibm_cis_advanced_certificate_pack_order" "test" {
+  cis_id    = data.ibm_cis.cis.id
+  domain_id = data.ibm_cis_domain.cis_domain.domain_id
+  hosts     = ["example.com"]
+  certificate_authority = "lets_encrypt"
+  cloudflare_branding = false
+  validation_method = "txt"
+  validity = 90
+}
+
+# Order Origin Certificate
+resource "ibm_cis_origin_certificate_order" "test" {
+  cis_id    = data.ibm_cis.cis.id
+  domain_id = data.ibm_cis_domain.cis_domain.domain_id
+  hostnames     = ["example.com"]
+  request_type = "origin-rsa"
+  requested_validity = 5475
+  csr = "-----BEGIN CERTIFICATE REQUEST-----\nMIICxzCC***TA67sdbcQ==\n-----END CERTIFICATE REQUEST-----"
+}
+
+# Get Origin Certificates
+data ibm_cis_origin_certificates "test" {
+  cis_id    = ibm_cis.instance.id
+  domain_id = ibm_cis_domain.example.id
+  certificate_id = "25392180178235735583993116186144990011711092749"
 }

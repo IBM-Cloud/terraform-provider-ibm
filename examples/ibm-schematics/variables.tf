@@ -132,7 +132,7 @@ variable "schematics_action_bastion" {
   default     = [ { example: "object" } ]
 }
 variable "schematics_action_targets_ini" {
-  description = "Inventory of host and host group for the playbook in `INI` file format. For example, `"targets_ini": "[webserverhost]  172.22.192.6  [dbhost]  172.22.192.5"`. For more information, about an inventory host group syntax, see [Inventory host groups](/docs/schematics?topic=schematics-schematics-cli-reference#schematics-inventory-host-grps)."
+  description = "Inventory of host and host group for the playbook in `INI` file format. For example, `'targets_ini': '[webserverhost]  172.22.192.6  [dbhost]  172.22.192.5'`. For more information, about an inventory host group syntax, see [Inventory host groups](/docs/schematics?topic=schematics-schematics-cli-reference#schematics-inventory-host-grps)."
   type        = string
   default     = "placeholder"
 }
@@ -286,4 +286,131 @@ variable "schematics_job_job_id" {
   description = "Use GET jobs API to look up the Job IDs in your IBM Cloud account."
   type        = string
   default     = "job_id"
+}
+
+
+// Resource arguments for schematics_policy
+variable "schematics_policy_name" {
+  description = "Name of Schematics customization policy."
+  type        = string
+  default     = "Agent1-DevWS"
+}
+variable "schematics_policy_description" {
+  description = "The description of Schematics customization policy."
+  type        = string
+  default     = "Policy for job execution of secured workspaces on agent1"
+}
+variable "schematics_policy_resource_group" {
+  description = "The resource group name for the policy.  By default, Policy will be created in `default` Resource Group."
+  type        = string
+  default     = "Default"
+}
+variable "schematics_policy_tags" {
+  description = "Tags for the Schematics customization policy."
+  type        = list(string)
+  default     = ["policy:secured-job"]
+}
+variable "schematics_policy_location" {
+  description = "List of locations supported by IBM Cloud Schematics service.  While creating your workspace or action, choose the right region, since it cannot be changed.  Note, this does not limit the location of the IBM Cloud resources, provisioned using Schematics."
+  type        = string
+  default     = "us-south"
+}
+variable "schematics_policy_kind" {
+  description = "Policy kind or categories for managing and deriving policy decision  * `agent_assignment_policy` Agent assignment policy for job execution."
+  type        = string
+  default     = "agent_assignment_policy"
+}
+
+// Resource arguments for schematics_agent
+variable "schematics_agent_name" {
+  description = "The name of the agent (must be unique, for an account)."
+  type        = string
+  default     = "MyDevAgent"
+}
+variable "schematics_agent_resource_group" {
+  description = "The resource-group name for the agent.  By default, agent will be registered in Default Resource Group."
+  type        = string
+  default     = "Default"
+}
+variable "schematics_agent_version" {
+  description = "Agent version."
+  type        = string
+  default     = "1.0.0-beta2"
+}
+variable "schematics_agent_schematics_location" {
+  description = "List of locations supported by IBM Cloud Schematics service.  While creating your workspace or action, choose the right region, since it cannot be changed.  Note, this does not limit the location of the IBM Cloud resources, provisioned using Schematics."
+  type        = string
+  default     = "us-south"
+}
+variable "schematics_agent_agent_location" {
+  description = "The location where agent is deployed in the user environment."
+  type        = string
+  default     = "us-south"
+}
+variable "schematics_agent_description" {
+  description = "Agent description."
+  type        = string
+  default     = "Create Agent"
+}
+variable "schematics_agent_tags" {
+  description = "Tags for the agent."
+  type        = list(string)
+  default     = [ "tags" ]
+}
+
+// Resource arguments for schematics_agent_prs
+variable "schematics_agent_prs_agent_id" {
+  description = "Agent ID to get the details of agent."
+  type        = string
+  default     = "agent_id"
+}
+variable "schematics_agent_prs_force" {
+  description = "Equivalent to -force options in the command line, default is false."
+  type        = bool
+  default     = true
+}
+
+// Resource arguments for schematics_agent_deploy
+variable "schematics_agent_deploy_agent_id" {
+  description = "Agent ID to get the details of agent."
+  type        = string
+  default     = "agent_id"
+}
+variable "schematics_agent_deploy_force" {
+  description = "Equivalent to -force options in the command line, default is false."
+  type        = bool
+  default     = true
+}
+
+// Resource arguments for schematics_agent_health
+variable "schematics_agent_health_agent_id" {
+  description = "Agent ID to get the details of agent."
+  type        = string
+  default     = "agent_id"
+}
+variable "schematics_agent_health_force" {
+  description = "Equivalent to -force options in the command line, default is false."
+  type        = bool
+  default     = true
+}
+
+// Data source arguments for schematics_policies
+variable "schematics_policies_policy_kind" {
+  description = "Policy kind or categories for managing and deriving policy decision  * `agent_assignment_policy` Agent assignment policy for job execution."
+  type        = string
+  default     = "agent_assignment_policy"
+}
+
+// Data source arguments for schematics_policy
+variable "schematics_policy_policy_id" {
+  description = "ID to get the details of policy."
+  type        = string
+  default     = "policy_id"
+}
+
+// Data source arguments for schematics_agent
+variable "schematics_agent_agent_id" {
+  description = "Agent ID to get the details of agent."
+  type        = string
+  default     = "agent_id"
 }

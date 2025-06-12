@@ -27,13 +27,19 @@ func TestAccIbmCodeEngineAppBasic(t *testing.T) {
 
 	projectID := acc.CeProjectId
 
+	envVars := `run_env_variables {
+			type  = "literal"
+			name  = "name"
+			value = "value"
+		}`
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmCodeEngineAppDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmCodeEngineAppConfigBasic(projectID, imageReference, name),
+				Config: testAccCheckIbmCodeEngineAppConfigBasic(projectID, imageReference, name, envVars),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmCodeEngineAppExists("ibm_code_engine_app.code_engine_app_instance", conf),
 					resource.TestCheckResourceAttrSet("ibm_code_engine_app.code_engine_app_instance", "app_id"),
@@ -43,7 +49,6 @@ func TestAccIbmCodeEngineAppBasic(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app_instance", "name", name),
 					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app_instance", "image_port", "8080"),
 					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app_instance", "managed_domain_mappings", "local_public"),
-					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app_instance", "run_as_user", "0"),
 					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app_instance", "run_service_account", "default"),
 					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app_instance", "scale_concurrency", "100"),
 					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app_instance", "scale_cpu_limit", "1"),
@@ -53,10 +58,13 @@ func TestAccIbmCodeEngineAppBasic(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app_instance", "scale_memory_limit", "4G"),
 					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app_instance", "scale_min_instances", "0"),
 					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app_instance", "scale_request_timeout", "300"),
+					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app_instance", "computed_env_variables.#", "6"),
+					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app_instance", "run_env_variables.#", "1"),
+					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app_instance", "run_volume_mounts.#", "0"),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmCodeEngineAppConfigBasic(projectID, imageReferenceUpdate, nameUpdate),
+				Config: testAccCheckIbmCodeEngineAppConfigBasic(projectID, imageReferenceUpdate, nameUpdate, ""),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("ibm_code_engine_app.code_engine_app_instance", "project_id"),
 					resource.TestCheckResourceAttrSet("ibm_code_engine_app.code_engine_app_instance", "app_id"),
@@ -65,7 +73,6 @@ func TestAccIbmCodeEngineAppBasic(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app_instance", "name", nameUpdate),
 					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app_instance", "image_port", "8080"),
 					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app_instance", "managed_domain_mappings", "local_public"),
-					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app_instance", "run_as_user", "0"),
 					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app_instance", "run_service_account", "default"),
 					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app_instance", "scale_concurrency", "100"),
 					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app_instance", "scale_cpu_limit", "1"),
@@ -75,6 +82,9 @@ func TestAccIbmCodeEngineAppBasic(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app_instance", "scale_memory_limit", "4G"),
 					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app_instance", "scale_min_instances", "0"),
 					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app_instance", "scale_request_timeout", "300"),
+					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app_instance", "computed_env_variables.#", "6"),
+					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app_instance", "run_env_variables.#", "0"),
+					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app_instance", "run_volume_mounts.#", "0"),
 				),
 			},
 		},
@@ -87,7 +97,7 @@ func TestAccIbmCodeEngineAppExtended(t *testing.T) {
 	imageReference := "icr.io/codeengine/helloworld"
 	imagePort := "8080"
 	managedDomainMappings := "local_public"
-	runAsUser := "0"
+	runAsUser := "10"
 	runServiceAccount := "default"
 	scaleConcurrency := fmt.Sprintf("%d", acctest.RandIntRange(50, 100))
 	scaleConcurrencyTarget := fmt.Sprintf("%d", acctest.RandIntRange(20, 50))
@@ -100,6 +110,26 @@ func TestAccIbmCodeEngineAppExtended(t *testing.T) {
 	scaleRequestTimeout := fmt.Sprintf("%d", acctest.RandIntRange(10, 30))
 	configMapName := "my-config-map"
 	configMapData := `{ "key" = "inner" }`
+
+	envVars := `run_env_variables {
+			type  = "literal"
+			name  = "key1"
+			value = "value1"
+		}
+
+		run_env_variables {
+			type  = "literal"
+			name  = "key2"
+			value = "value2"
+		}`
+
+	volumeMounts := `
+		run_volume_mounts {
+			mount_path = "/mount"
+			name       = "mymount"
+			reference  = ibm_code_engine_config_map.code_engine_config_map_instance.name
+			type       = "config_map"
+		}`
 
 	nameUpdate := fmt.Sprintf("tf-app-extended-update-%d", acctest.RandIntRange(10, 1000))
 	imageReferenceUpdate := "icr.io/codeengine/hello"
@@ -124,7 +154,7 @@ func TestAccIbmCodeEngineAppExtended(t *testing.T) {
 		CheckDestroy: testAccCheckIbmCodeEngineAppDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmCodeEngineAppConfig(projectID, configMapName, configMapData, imageReference, name, imagePort, managedDomainMappings, runAsUser, runServiceAccount, scaleConcurrency, scaleConcurrencyTarget, scaleCpuLimit, scaleEphemeralStorageLimit, scaleInitialInstances, scaleMaxInstances, scaleMemoryLimit, scaleMinInstances, scaleRequestTimeout),
+				Config: testAccCheckIbmCodeEngineAppConfig(projectID, configMapName, configMapData, imageReference, name, imagePort, managedDomainMappings, runAsUser, runServiceAccount, scaleConcurrency, scaleConcurrencyTarget, scaleCpuLimit, scaleEphemeralStorageLimit, scaleInitialInstances, scaleMaxInstances, scaleMemoryLimit, scaleMinInstances, scaleRequestTimeout, "", volumeMounts),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmCodeEngineAppExists("ibm_code_engine_app.code_engine_app_instance", conf),
 					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app_instance", "project_id", projectID),
@@ -143,10 +173,13 @@ func TestAccIbmCodeEngineAppExtended(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app_instance", "scale_memory_limit", scaleMemoryLimit),
 					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app_instance", "scale_min_instances", scaleMinInstances),
 					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app_instance", "scale_request_timeout", scaleRequestTimeout),
+					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app_instance", "computed_env_variables.#", "6"),
+					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app_instance", "run_env_variables.#", "2"),
+					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app_instance", "run_volume_mounts.#", "1"),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmCodeEngineAppConfig(projectID, configMapName, configMapData, imageReferenceUpdate, nameUpdate, imagePortUpdate, managedDomainMappingsUpdate, runAsUser, runServiceAccountUpdate, scaleConcurrencyUpdate, scaleConcurrencyTargetUpdate, scaleCpuLimitUpdate, scaleEphemeralStorageLimitUpdate, scaleInitialInstancesUpdate, scaleMaxInstancesUpdate, scaleMemoryLimitUpdate, scaleMinInstancesUpdate, scaleRequestTimeoutUpdate),
+				Config: testAccCheckIbmCodeEngineAppConfig(projectID, configMapName, configMapData, imageReferenceUpdate, nameUpdate, imagePortUpdate, managedDomainMappingsUpdate, runAsUser, runServiceAccountUpdate, scaleConcurrencyUpdate, scaleConcurrencyTargetUpdate, scaleCpuLimitUpdate, scaleEphemeralStorageLimitUpdate, scaleInitialInstancesUpdate, scaleMaxInstancesUpdate, scaleMemoryLimitUpdate, scaleMinInstancesUpdate, scaleRequestTimeoutUpdate, envVars, ""),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app_instance", "project_id", projectID),
 					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app_instance", "image_reference", imageReferenceUpdate),
@@ -165,6 +198,9 @@ func TestAccIbmCodeEngineAppExtended(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app_instance", "scale_min_instances", scaleMinInstancesUpdate),
 					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app_instance", "scale_request_timeout", scaleRequestTimeoutUpdate),
 					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app_instance", "scale_request_timeout", scaleRequestTimeoutUpdate),
+					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app_instance", "computed_env_variables.#", "6"),
+					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app_instance", "run_env_variables.#", "4"),
+					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app_instance", "run_volume_mounts.#", "0"),
 				),
 			},
 			resource.TestStep{
@@ -176,7 +212,7 @@ func TestAccIbmCodeEngineAppExtended(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmCodeEngineAppConfigBasic(projectID string, imageReference string, name string) string {
+func testAccCheckIbmCodeEngineAppConfigBasic(projectID string, imageReference string, name string, envVars string) string {
 	return fmt.Sprintf(`
 		data "ibm_code_engine_project" "code_engine_project_instance" {
 			project_id = "%s"
@@ -187,16 +223,19 @@ func testAccCheckIbmCodeEngineAppConfigBasic(projectID string, imageReference st
 			image_reference = "%s"
 			name = "%s"
 
+			%s
+
 			lifecycle {
 				ignore_changes = [
-					run_env_variables
+					probe_liveness,
+					probe_readiness
 				]
 			}
 		}
-	`, projectID, imageReference, name)
+	`, projectID, imageReference, name, envVars)
 }
 
-func testAccCheckIbmCodeEngineAppConfig(projectID string, configMapName string, configMapData string, imageReference string, name string, imagePort string, managedDomainMappings string, runAsUser string, runServiceAccount string, scaleConcurrency string, scaleConcurrencyTarget string, scaleCpuLimit string, scaleEphemeralStorageLimit string, scaleInitialInstances string, scaleMaxInstances string, scaleMemoryLimit string, scaleMinInstances string, scaleRequestTimeout string) string {
+func testAccCheckIbmCodeEngineAppConfig(projectID string, configMapName string, configMapData string, imageReference string, name string, imagePort string, managedDomainMappings string, runAsUser string, runServiceAccount string, scaleConcurrency string, scaleConcurrencyTarget string, scaleCpuLimit string, scaleEphemeralStorageLimit string, scaleInitialInstances string, scaleMaxInstances string, scaleMemoryLimit string, scaleMinInstances string, scaleRequestTimeout string, envVars string, volumeMounts string) string {
 	return fmt.Sprintf(`
 		data "ibm_code_engine_project" "code_engine_project_instance" {
 			project_id = "%s"
@@ -237,13 +276,18 @@ func testAccCheckIbmCodeEngineAppConfig(projectID string, configMapName string, 
 				value = "value"
 			}
 
+			%s
+
+			%s
+
 			lifecycle {
 				ignore_changes = [
-					run_env_variables
+					probe_liveness,
+					probe_readiness
 				]
 			}
 		}
-	`, projectID, configMapName, configMapData, imageReference, name, imagePort, managedDomainMappings, runAsUser, runServiceAccount, scaleConcurrency, scaleConcurrencyTarget, scaleCpuLimit, scaleEphemeralStorageLimit, scaleInitialInstances, scaleMaxInstances, scaleMemoryLimit, scaleMinInstances, scaleRequestTimeout)
+	`, projectID, configMapName, configMapData, imageReference, name, imagePort, managedDomainMappings, runAsUser, runServiceAccount, scaleConcurrency, scaleConcurrencyTarget, scaleCpuLimit, scaleEphemeralStorageLimit, scaleInitialInstances, scaleMaxInstances, scaleMemoryLimit, scaleMinInstances, scaleRequestTimeout, envVars, volumeMounts)
 }
 
 func testAccCheckIbmCodeEngineAppExists(n string, obj codeenginev2.App) resource.TestCheckFunc {

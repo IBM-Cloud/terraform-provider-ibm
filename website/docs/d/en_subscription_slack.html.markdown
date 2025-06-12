@@ -50,5 +50,7 @@ In addition to all argument references listed, you can access the following attr
 - `attributes` - (Required, List)
 
   - `attachment_color` - (String) The color code for slack attachment .
+  - `template_id_notification` - (String) The templete id for notification
+  - `channels` - (List) List of channels
 
 - `updated_at` - (String) Last updated time.

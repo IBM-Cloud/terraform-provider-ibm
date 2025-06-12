@@ -3,7 +3,7 @@ subcategory: 'Event Notifications'
 layout: 'ibm'
 page_title: 'IBM : ibm_en_destination_android'
 description: |-
-  Manages Event Notifications destinations.
+  Manages Event Notifications Android destination.
 ---
 
 # ibm_en_destination_android
@@ -14,10 +14,11 @@ Create, update, or delete a  FCM destination by using IBM Cloud™ Event Notific
 
 ```terraform
 resource "ibm_en_destination_android" "android_en_destination" {
-  instance_guid = ibm_resource_instance.en_terraform_test_resource.guid
-  name          = "Android Destination"
-  type          = "push_android"
-  description   = "The Android Destination"
+  instance_guid         = ibm_resource_instance.en_terraform_test_resource.guid
+  name                  = "Android Destination"
+  type                  = "push_android"
+  collect_failed_events = false
+  description           = "The Android Destination"
   config {
     params {
       project_id   = "5237288990"
@@ -41,6 +42,7 @@ Review the argument reference that you can specify for your resource.
 
 - `type` - (Required, String) push_android.
 
+- `collect_failed_events` - (boolean) Toggle switch to enable collect failed event in Cloud Object Storage bucket.
 
 - `config` - (Optional, List) Payload describing a destination configuration.
 

@@ -41,3 +41,5 @@ Review the argument references that you can specify for your data source.
 In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
 - `status` - (String) The status of the zone.
+- `data_center` - (String) The physical data center assigned to this logical zone. If absent, no physical data center has been assigned.
+- `universal_name` - (String) The universal name for this zone. Will be absent if this zone has a status of unassigned.

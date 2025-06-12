@@ -34,6 +34,29 @@ func TestAccIbmSmPrivateCertificateConfigurationRootCADataSourceBasic(t *testing
 	})
 }
 
+func TestAccIbmSmPrivateCertificateConfigurationRootCADataSourceCryptoKey(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIbmSmPrivateCertificateConfigurationRootCADataSourceConfigCryptoKey(),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("data.ibm_sm_private_certificate_configuration_root_ca.sm_private_certificate_configuration_root_ca_crypto_key", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_sm_private_certificate_configuration_root_ca.sm_private_certificate_configuration_root_ca_crypto_key", "name"),
+					resource.TestCheckResourceAttrSet("data.ibm_sm_private_certificate_configuration_root_ca.sm_private_certificate_configuration_root_ca_crypto_key", "config_type"),
+					resource.TestCheckResourceAttrSet("data.ibm_sm_private_certificate_configuration_root_ca.sm_private_certificate_configuration_root_ca_crypto_key", "secret_type"),
+					resource.TestCheckResourceAttrSet("data.ibm_sm_private_certificate_configuration_root_ca.sm_private_certificate_configuration_root_ca_crypto_key", "created_by"),
+					resource.TestCheckResourceAttrSet("data.ibm_sm_private_certificate_configuration_root_ca.sm_private_certificate_configuration_root_ca_crypto_key", "created_at"),
+					resource.TestCheckResourceAttrSet("data.ibm_sm_private_certificate_configuration_root_ca.sm_private_certificate_configuration_root_ca_crypto_key", "updated_at"),
+					resource.TestCheckResourceAttrSet("data.ibm_sm_private_certificate_configuration_root_ca.sm_private_certificate_configuration_root_ca_crypto_key", "common_name"),
+					resource.TestCheckResourceAttrSet("data.ibm_sm_private_certificate_configuration_root_ca.sm_private_certificate_configuration_root_ca_crypto_key", "crypto_key.#"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIbmSmPrivateCertificateConfigurationRootCADataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		resource "ibm_sm_private_certificate_configuration_root_ca" "ibm_sm_private_certificate_configuration_root_ca_instance" {
@@ -51,4 +74,14 @@ func testAccCheckIbmSmPrivateCertificateConfigurationRootCADataSourceConfigBasic
 			name = ibm_sm_private_certificate_configuration_root_ca.ibm_sm_private_certificate_configuration_root_ca_instance.name
 		}
 	`, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion)
+}
+
+func testAccCheckIbmSmPrivateCertificateConfigurationRootCADataSourceConfigCryptoKey() string {
+	return privateCertificateRootCAConfigCryptoKey() + fmt.Sprintf(`
+		data "ibm_sm_private_certificate_configuration_root_ca" "sm_private_certificate_configuration_root_ca_crypto_key" {
+			instance_id   = "%s"
+			region        = "%s"
+			name = ibm_sm_private_certificate_configuration_root_ca.sm_private_cert_root_ca_crypto_key.name
+		}`, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion)
+
 }

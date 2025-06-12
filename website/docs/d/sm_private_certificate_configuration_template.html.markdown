@@ -14,7 +14,7 @@ Provides a read-only data source for the configuration of a private certificate 
 
 ```hcl
 data "ibm_sm_private_certificate_configuration_template" "private_certificate_template" {
-  instance_id   = "6ebc4224-e983-496a-8a54-f40a0bfa9175"
+  instance_id   = ibm_resource_instance.sm_instance.guid
   region        = "us-south"
   name = "configuration-name"
 }

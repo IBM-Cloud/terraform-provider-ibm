@@ -204,6 +204,7 @@ func testAccCheckIBMISsecurityGroupRuleConfig(vpcname, name string) string {
 		group      = ibm_is_security_group.testacc_security_group.id
 		direction  = "inbound"
 		remote     = "127.0.0.1"
+		local 	   = "192.168.3.4"
 		tcp {
 		}
 	  }

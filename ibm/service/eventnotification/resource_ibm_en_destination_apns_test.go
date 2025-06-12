@@ -37,6 +37,7 @@ func TestAccIBMEnAPNSDestinationAllArgs(t *testing.T) {
 					testAccCheckIBMEnAPNSDestinationExists("ibm_en_apns_destination.en_destination_resource_apns", config),
 					resource.TestCheckResourceAttr("ibm_en_destination_ios.en_destination_resource_apns", "name", name),
 					resource.TestCheckResourceAttr("ibm_en_destination_ios.en_destination_resource_apns", "type", "push_ios"),
+					resource.TestCheckResourceAttr("ibm_en_destination_ios.en_destination_resource_apns", "collect_failed_events", "false"),
 					resource.TestCheckResourceAttr("ibm_en_destination_ios.en_destination_resource_apns", "description", description),
 				),
 			},
@@ -45,6 +46,7 @@ func TestAccIBMEnAPNSDestinationAllArgs(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_en_destination_ios.en_destination_resource_apns", "name", newName),
 					resource.TestCheckResourceAttr("ibm_en_destination_ios.en_destination_resource_apns", "type", "push_ios"),
+					resource.TestCheckResourceAttr("ibm_en_destination_ios.en_destination_resource_apns", "collect_failed_events", "false"),
 					resource.TestCheckResourceAttr("ibm_en_destination_ios.en_destination_resource_apns", "description", newDescription),
 				),
 			},
@@ -70,6 +72,7 @@ func testAccCheckIBMEnAPNSDestinationConfig(instanceName, name, description stri
 		instance_guid = ibm_resource_instance.en_destination_resource.guid
 		name        = "%s"
 		type        = "push_ios"
+		collect_failed_events = false
 		certificate_content_type = "p12"
         certificate = "${path.module}/cert.p12"
 		description = "%s"

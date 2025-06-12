@@ -4,12 +4,16 @@
 package vpc
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"reflect"
 	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -20,12 +24,12 @@ const (
 
 func ResourceIBMISSubnetNetworkACLAttachment() *schema.Resource {
 	return &schema.Resource{
-		Create:   resourceIBMISSubnetNetworkACLAttachmentCreate,
-		Read:     resourceIBMISSubnetNetworkACLAttachmentRead,
-		Update:   resourceIBMISSubnetNetworkACLAttachmentUpdate,
-		Delete:   resourceIBMISSubnetNetworkACLAttachmentDelete,
-		Exists:   resourceIBMISSubnetNetworkACLAttachmentExists,
-		Importer: &schema.ResourceImporter{},
+		CreateContext: resourceIBMISSubnetNetworkACLAttachmentCreate,
+		ReadContext:   resourceIBMISSubnetNetworkACLAttachmentRead,
+		UpdateContext: resourceIBMISSubnetNetworkACLAttachmentUpdate,
+		DeleteContext: resourceIBMISSubnetNetworkACLAttachmentDelete,
+		Exists:        resourceIBMISSubnetNetworkACLAttachmentExists,
+		Importer:      &schema.ResourceImporter{},
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(10 * time.Minute),
 			Update: schema.DefaultTimeout(10 * time.Minute),
@@ -194,10 +198,12 @@ func ResourceIBMISSubnetNetworkACLAttachment() *schema.Resource {
 	}
 }
 
-func resourceIBMISSubnetNetworkACLAttachmentCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMISSubnetNetworkACLAttachmentCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_network_acl_attachment", "create", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	subnet := d.Get(isSubnetID).(string)
@@ -211,46 +217,67 @@ func resourceIBMISSubnetNetworkACLAttachmentCreate(d *schema.ResourceData, meta 
 	replaceSubnetNetworkACLOptionsModel := new(vpcv1.ReplaceSubnetNetworkACLOptions)
 	replaceSubnetNetworkACLOptionsModel.ID = &subnet
 	replaceSubnetNetworkACLOptionsModel.NetworkACLIdentity = networkACLIdentityModel
-	resultACL, response, err := sess.ReplaceSubnetNetworkACL(replaceSubnetNetworkACLOptionsModel)
+	resultACL, _, err := sess.ReplaceSubnetNetworkACLWithContext(context, replaceSubnetNetworkACLOptionsModel)
 
 	if err != nil {
-		log.Printf("[DEBUG] Error while attaching a network ACL to a subnet %s\n%s", err, response)
-		return fmt.Errorf("[ERROR] Error while attaching a network ACL to a subnet %s\n%s", err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ReplaceSubnetNetworkACLWithContext failed: %s", err.Error()), "ibm_is_subnet_network_acl_attachment", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	d.SetId(subnet)
 	log.Printf("[INFO] Network ACL : %s", *resultACL.ID)
 	log.Printf("[INFO] Subnet ID : %s", subnet)
 
-	return resourceIBMISSubnetNetworkACLAttachmentRead(d, meta)
+	return resourceIBMISSubnetNetworkACLAttachmentRead(context, d, meta)
 }
 
-func resourceIBMISSubnetNetworkACLAttachmentRead(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMISSubnetNetworkACLAttachmentRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	id := d.Id()
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_network_acl_attachment", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	getSubnetNetworkACLOptionsModel := &vpcv1.GetSubnetNetworkACLOptions{
 		ID: &id,
 	}
-	nwacl, response, err := sess.GetSubnetNetworkACL(getSubnetNetworkACLOptionsModel)
+	nwacl, response, err := sess.GetSubnetNetworkACLWithContext(context, getSubnetNetworkACLOptionsModel)
 
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error getting subnet's (%s) attached network ACL: %s\n%s", id, err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetSubnetNetworkACLWithContext failed: %s", err.Error()), "ibm_is_subnet_network_acl_attachment", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
-	d.Set(isNetworkACLName, *nwacl.Name)
-	d.Set(isNetworkACLCRN, *nwacl.CRN)
-	d.Set(isNetworkACLVPC, *nwacl.VPC.ID)
-	d.Set(isNetworkACLID, *nwacl.ID)
+	if err = d.Set(isNetworkACLName, nwacl.Name); err != nil {
+		err = fmt.Errorf("Error setting name: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_network_acl_attachment", "read", "set-name").GetDiag()
+	}
+	if err = d.Set(isNetworkACLCRN, nwacl.CRN); err != nil {
+		err = fmt.Errorf("Error setting crn: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_network_acl_attachment", "read", "set-crn").GetDiag()
+	}
+	if !core.IsNil(nwacl.VPC) {
+		if err = d.Set(isNetworkACLVPC, *nwacl.VPC.ID); err != nil {
+			err = fmt.Errorf("Error setting vpc: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_network_acl_attachment", "read", "set-vpc").GetDiag()
+		}
+	}
+	if err = d.Set(isNetworkACLID, *nwacl.ID); err != nil {
+		err = fmt.Errorf("Error setting network_acl: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_network_acl_attachment", "read", "set-network_acl").GetDiag()
+	}
 	if nwacl.ResourceGroup != nil {
-		d.Set(isNetworkACLResourceGroup, *nwacl.ResourceGroup.ID)
+		if err = d.Set(isNetworkACLResourceGroup, *nwacl.ResourceGroup.ID); err != nil {
+			err = fmt.Errorf("Error setting resource_group: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_network_acl_attachment", "read", "set-resource_group").GetDiag()
+		}
 	}
-
 	rules := make([]interface{}, 0)
 	if len(nwacl.Rules) > 0 {
 		for _, rulex := range nwacl.Rules {
@@ -330,15 +357,21 @@ func resourceIBMISSubnetNetworkACLAttachmentRead(d *schema.ResourceData, meta in
 			rules = append(rules, rule)
 		}
 	}
-	d.Set(isNetworkACLRules, rules)
+	if err = d.Set(isNetworkACLRules, rules); err != nil {
+		err = fmt.Errorf("Error setting rules: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_network_acl_attachment", "read", "set-rules").GetDiag()
+	}
+
 	return nil
 }
 
-func resourceIBMISSubnetNetworkACLAttachmentUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMISSubnetNetworkACLAttachmentUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_network_acl_attachment", "update", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if d.HasChange(isNetworkACLID) {
 		subnet := d.Get(isSubnetID).(string)
@@ -352,38 +385,43 @@ func resourceIBMISSubnetNetworkACLAttachmentUpdate(d *schema.ResourceData, meta 
 		replaceSubnetNetworkACLOptionsModel := new(vpcv1.ReplaceSubnetNetworkACLOptions)
 		replaceSubnetNetworkACLOptionsModel.ID = &subnet
 		replaceSubnetNetworkACLOptionsModel.NetworkACLIdentity = networkACLIdentityModel
-		resultACL, response, err := sess.ReplaceSubnetNetworkACL(replaceSubnetNetworkACLOptionsModel)
+		resultACL, _, err := sess.ReplaceSubnetNetworkACLWithContext(context, replaceSubnetNetworkACLOptionsModel)
 
 		if err != nil {
-			log.Printf("[DEBUG] Error while attaching a network ACL to a subnet %s\n%s", err, response)
-			return fmt.Errorf("[ERROR] Error while attaching a network ACL to a subnet %s\n%s", err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ReplaceSubnetNetworkACLWithContext failed: %s", err.Error()), "ibm_is_subnet_network_acl_attachment", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		log.Printf("[INFO] Updated subnet %s with Network ACL : %s", subnet, *resultACL.ID)
 
 		d.SetId(subnet)
-		return resourceIBMISSubnetNetworkACLAttachmentRead(d, meta)
+		return resourceIBMISSubnetNetworkACLAttachmentRead(context, d, meta)
 	}
 
-	return resourceIBMISSubnetNetworkACLAttachmentRead(d, meta)
+	return resourceIBMISSubnetNetworkACLAttachmentRead(context, d, meta)
 }
 
-func resourceIBMISSubnetNetworkACLAttachmentDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMISSubnetNetworkACLAttachmentDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	id := d.Id()
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_network_acl_attachment", "delete", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	// Set the subnet with VPC default network ACL
 	getSubnetOptions := &vpcv1.GetSubnetOptions{
 		ID: &id,
 	}
-	subnet, response, err := sess.GetSubnet(getSubnetOptions)
+	subnet, response, err := sess.GetSubnetWithContext(context, getSubnetOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error Getting Subnet (%s): %s\n%s", id, err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetSubnetWithContext failed: %s", err.Error()), "ibm_is_subnet_network_acl_attachment", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	// Fetch VPC
 	vpcID := *subnet.VPC.ID
@@ -391,13 +429,15 @@ func resourceIBMISSubnetNetworkACLAttachmentDelete(d *schema.ResourceData, meta 
 	getvpcOptions := &vpcv1.GetVPCOptions{
 		ID: &vpcID,
 	}
-	vpc, response, err := sess.GetVPC(getvpcOptions)
+	vpc, response, err := sess.GetVPCWithContext(context, getvpcOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error getting VPC : %s\n%s", err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetVPCWithContext failed: %s", err.Error()), "ibm_is_subnet_network_acl_attachment", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	// Fetch default network ACL
@@ -411,11 +451,12 @@ func resourceIBMISSubnetNetworkACLAttachmentDelete(d *schema.ResourceData, meta 
 		replaceSubnetNetworkACLOptionsModel := new(vpcv1.ReplaceSubnetNetworkACLOptions)
 		replaceSubnetNetworkACLOptionsModel.ID = &id
 		replaceSubnetNetworkACLOptionsModel.NetworkACLIdentity = networkACLIdentityModel
-		resultACL, response, err := sess.ReplaceSubnetNetworkACL(replaceSubnetNetworkACLOptionsModel)
+		resultACL, _, err := sess.ReplaceSubnetNetworkACLWithContext(context, replaceSubnetNetworkACLOptionsModel)
 
 		if err != nil {
-			log.Printf("[DEBUG] Error while attaching a network ACL to a subnet %s\n%s", err, response)
-			return fmt.Errorf("[ERROR] Error while attaching a network ACL to a subnet %s\n%s", err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ReplaceSubnetNetworkACLWithContext failed: %s", err.Error()), "ibm_is_subnet_network_acl_attachment", "delete")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		log.Printf("[INFO] Updated subnet %s with VPC default Network ACL : %s", id, *resultACL.ID)
 	} else {
@@ -430,6 +471,8 @@ func resourceIBMISSubnetNetworkACLAttachmentExists(d *schema.ResourceData, meta 
 	id := d.Id()
 	sess, err := vpcClient(meta)
 	if err != nil {
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_network_acl_attachment", "exists", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return false, err
 	}
 	getSubnetNetworkACLOptionsModel := &vpcv1.GetSubnetNetworkACLOptions{
@@ -440,7 +483,9 @@ func resourceIBMISSubnetNetworkACLAttachmentExists(d *schema.ResourceData, meta 
 		if response != nil && response.StatusCode == 404 {
 			return false, nil
 		}
-		return false, fmt.Errorf("[ERROR] Error getting subnet's attached network ACL: %s\n%s", err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetSubnetNetworkACL failed: %s", err.Error()), "ibm_is_subnet_network_acl_attachment", "exists")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return false, tfErr
 	}
 	return true, nil
 }

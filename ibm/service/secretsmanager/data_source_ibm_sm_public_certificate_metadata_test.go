@@ -70,6 +70,6 @@ func testAccCheckIbmSmPublicCertificateMetadataDataSourceConfigBasic() string {
 		}
 	`, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion, acc.SecretsManagerPublicCertificateLetsEncryptEnvironment, acc.SecretsManagerPublicCertificateLetsEncryptPrivateKey,
 		acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion, acc.SecretsManagerPublicCertificateCisCrn,
-		acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion, acc.SecretsManagerPublicCertificateCommonName,
+		acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion, generatePublicCertCommonName(),
 		acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion)
 }

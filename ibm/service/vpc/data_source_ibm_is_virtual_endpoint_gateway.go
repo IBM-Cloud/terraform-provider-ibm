@@ -4,18 +4,20 @@
 package vpc
 
 import (
+	"context"
 	"fmt"
 	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func DataSourceIBMISEndpointGateway() *schema.Resource {
 	return &schema.Resource{
-		Read:     dataSourceIBMISEndpointGatewayRead,
-		Importer: &schema.ResourceImporter{},
+		ReadContext: dataSourceIBMISEndpointGatewayRead,
+		Importer:    &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
 			isVirtualEndpointGatewayName: {
@@ -61,12 +63,43 @@ func DataSourceIBMISEndpointGateway() *schema.Resource {
 				Computed:    true,
 				Description: "Endpoint gateway lifecycle state",
 			},
+			isVirtualEndpointGatewayLifecycleReasons: {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The reasons for the current lifecycle_state (if any).",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"code": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "A snake case string succinctly identifying the reason for this lifecycle state.",
+						},
+
+						"message": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "An explanation of the reason for this lifecycle state.",
+						},
+
+						"more_info": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Link to documentation about the reason for this lifecycle state.",
+						},
+					},
+				},
+			},
 			isVirtualEndpointGatewaySecurityGroups: {
 				Type:        schema.TypeSet,
 				Computed:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Set:         schema.HashString,
 				Description: "Endpoint gateway securitygroups list",
+			},
+			isVirtualEndpointGatewayAllowDnsResolutionBinding: {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Indicates whether to allow this endpoint gateway to participate in DNS resolution bindings with a VPC that has dns.enable_hub set to true.",
 			},
 			isVirtualEndpointGatewayIPs: {
 				Type:        schema.TypeList,
@@ -108,6 +141,11 @@ func DataSourceIBMISEndpointGateway() *schema.Resource {
 							Computed:    true,
 							Description: "The target name",
 						},
+						isVirtualEndpointGatewayTargetCRN: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The target crn",
+						},
 						isVirtualEndpointGatewayTargetResourceType: {
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -140,10 +178,12 @@ func DataSourceIBMISEndpointGateway() *schema.Resource {
 }
 
 func dataSourceIBMISEndpointGatewayRead(
-	d *schema.ResourceData, meta interface{}) error {
+	context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_virtual_endpoint_gateway", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	name := d.Get(isVirtualEndpointGatewayName).(string)
@@ -153,20 +193,30 @@ func dataSourceIBMISEndpointGatewayRead(
 
 	results, response, err := sess.ListEndpointGateways(options)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error fetching endpoint gateways %s\n%s", err, response)
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListEndpointGateways failed: %s\n%s", err.Error(), response), "(Data) ibm_is_virtual_endpoint_gateway", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
 	}
 	allrecs := results.EndpointGateways
 
 	if len(allrecs) == 0 {
-		return fmt.Errorf("[ERROR] No Virtual Endpoints Gateway found with given name %s", name)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListEndpointGateways failed: %s", err.Error()), "(Data) ibm_is_virtual_endpoint_gateway", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	result := allrecs[0]
 	d.SetId(*result.ID)
 	d.Set(isVirtualEndpointGatewayName, result.Name)
+	d.Set(isVirtualEndpointGatewayAllowDnsResolutionBinding, result.AllowDnsResolutionBinding)
 	d.Set(isVirtualEndpointGatewayCRN, result.CRN)
 	d.Set(isVirtualEndpointGatewayHealthState, result.HealthState)
 	d.Set(isVirtualEndpointGatewayCreatedAt, result.CreatedAt.String())
 	d.Set(isVirtualEndpointGatewayLifecycleState, result.LifecycleState)
+	if err := d.Set(isVirtualEndpointGatewayLifecycleReasons, resourceEGWFlattenLifecycleReasons(result.LifecycleReasons)); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_virtual_endpoint_gateway", "read", "lifecycle_reasons-to-map").GetDiag()
+	}
 	d.Set(isVirtualEndpointGatewayResourceType, result.ResourceType)
 	d.Set(isVirtualEndpointGatewayIPs, flattenIPs(result.Ips))
 	d.Set(isVirtualEndpointGatewayResourceGroupID, result.ResourceGroup.ID)

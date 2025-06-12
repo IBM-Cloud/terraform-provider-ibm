@@ -28,7 +28,7 @@ In addition to all argument references listed, you can access the following attr
 	- `access_tags`  - (List) Access management tags associated for the ssh key.
 	- `created_at` - (String) The date and time that the key was created.
 	- `crn` - (String) The CRN for this key.
-	- `fingerprint` - (String) The fingerprint for this key.  The value is returned base64-encoded and prefixed with the hash algorithm (always `SHA256`).
+	- `fingerprint` - (String) The fingerprint for this key.  The value is returned base64-encoded and prefixed with the hash algorithm.
 	- `href` - (String) The URL for this key.
 	  - Constraints: The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
 	- `id` - (String) The unique identifier for this key.
@@ -47,4 +47,4 @@ In addition to all argument references listed, you can access the following attr
 		- `name` - (String) The user-defined name for this resource group.
 		  - Constraints: The maximum length is `40` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9-_ ]+$/`.
 	- `type` - (String) The crypto-system used by this key.
-	  - Constraints: The default value is `rsa`. Allowable values are: `rsa`.
+	- `tags` - (List) User tags associated for the ssh key.

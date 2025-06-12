@@ -34,24 +34,39 @@ In addition to all argument references listed, you can access the following attr
 - `id` - The unique identifier of the LoadBalancerPool.
 - `algorithm` - (String) The load balancing algorithm.
 - `created_at` - (String) The date and time that this pool was created.
+- `failsafe_policy` - (List) 
+	Nested schema for **failsafe_policy**:
+	- `action` - (String) A load balancer failsafe policy action:- `forward`: Forwards requests to the `target` pool.- `fail`: Rejects requests with an HTTP `503` status code.The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future. Allowable values are: `fail`, `forward`.
+	- `healthy_member_threshold_count` - (Integer) The healthy member count at which the failsafe policy action will be triggered. At present, this is always `0`, but may be modifiable in the future.
+	- `target` - (List) If `action` is `forward`, the target pool to forward to.If `action` is `fail`, this property will be absent.The targets supported by this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.
+		Nested schema for **target**:
+		- `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
+			Nested schema for **deleted**:
+			- `more_info` - (String) Link to documentation about deleted resources.
+		- `href` - (String) The URL for this load balancer pool.
+		- `id` - (String) The unique identifier for this load balancer pool.
+		- `name` - (String) The name for this load balancer pool. The name is unique across all pools for the load balancer.
 - `health_monitor` - (List) The health monitor of this pool.
+	
 	Nested scheme for `health_monitor`:
-    	- `delay` - (Integer) The health check interval in seconds. Interval must be greater than timeout value.
-    	- `max_retries` - (Integer) The health check max retries.
-    	- `port` - (Integer) The health check port number. If specified, this overrides the ports specified in the server member resources.
-    	- `timeout` - (Integer) The health check timeout in seconds.
-    	- `type` - (String) The protocol type of this load balancer pool health monitor.The enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the health monitor on which the unexpected property value was encountered.
-    	- `url_path` - (String) The health check URL path. Applicable only if the health monitor `type` is `http` or`https`. This value must be in the format of an [origin-form request target](https://tools.ietf.org/html/rfc7230#section-5.3.1).
+	- `delay` - (Integer) The health check interval in seconds. Interval must be greater than timeout value.
+	- `max_retries` - (Integer) The health check max retries.
+	- `port` - (Integer) The health check port number. If specified, this overrides the ports specified in the server member resources.
+	- `timeout` - (Integer) The health check timeout in seconds.
+	- `type` - (String) The protocol type of this load balancer pool health monitor.The enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the health monitor on which the unexpected property value was encountered.
+	- `url_path` - (String) The health check URL path. Applicable only if the health monitor `type` is `http` or`https`. This value must be in the format of an [origin-form request target](https://tools.ietf.org/html/rfc7230#section-5.3.1).
 - `href` - (String) The pool's canonical URL.
 - `instance_group` - (List) The instance group that is managing this pool.
+
 	Nested scheme for `instance_group`:
-    	- `crn` - (String) The CRN for this instance group.
-    	- `deleted` - (List) If present, this property indicates the referenced resource has been deleted and providessome supplementary information.
-			Nested scheme for **deleted**:
-        		- `more_info` - (String) Link to documentation about deleted resources.
-        - `href` - (String) The URL for this instance group.
-        - `id` - (String) The unique identifier for this instance group.
-        - `name` - (String) The user-defined name for this instance group.
+	- `crn` - (String) The CRN for this instance group.
+	- `deleted` - (List) If present, this property indicates the referenced resource has been deleted and providessome supplementary information.
+	
+		Nested scheme for **deleted**:
+		- `more_info` - (String) Link to documentation about deleted resources.
+	- `href` - (String) The URL for this instance group.
+	- `id` - (String) The unique identifier for this instance group.
+	- `name` - (String) The user-defined name for this instance group.
 - `members` - (List) The backend server members of the pool.
 	Nested scheme for `members`:
 	- `deleted` - (List) If present, this property indicates the referenced resource has been deleted and providessome supplementary information.

@@ -32,6 +32,26 @@ func TestAccIBMKMSKeyDataSource_basic(t *testing.T) {
 	})
 }
 
+func TestAccIBMKMSKeyDataSource_description(t *testing.T) {
+	instanceName := fmt.Sprintf("kms_%d", acctest.RandIntRange(10, 100))
+	keyName := fmt.Sprintf("key_%d", acctest.RandIntRange(10, 100))
+	customDescription := "I am a custom description for the key"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMKmsKeyDataSourceConfigAndDescription(instanceName, keyName, customDescription),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_kms_key.test", "key_name", keyName),
+					resource.TestCheckResourceAttr("ibm_kms_key.test", "description", customDescription),
+				),
+			},
+		},
+	})
+}
+
 func TestAccIBMKMSKeyDataSource_Key(t *testing.T) {
 	instanceName := fmt.Sprintf("kms_%d", acctest.RandIntRange(10, 100))
 	// bucketName := fmt.Sprintf("bucket", acctest.RandIntRange(10, 100))
@@ -129,7 +149,7 @@ func testAccCheckIBMKmsKeyDataSourceKeyConfig(instanceName, keyName string) stri
 		limit = 2
 		key_name = "${ibm_kms_key.test.key_name}"
 	}
-`, instanceName, keyName)
+`, addPrefixToResourceName(instanceName), keyName)
 }
 
 func testAccCheckIBMKmsKeyDataSourceConfig(instanceName, keyName string) string {
@@ -150,7 +170,29 @@ func testAccCheckIBMKmsKeyDataSourceConfig(instanceName, keyName string) string 
 		instance_id = "${ibm_kms_key.test.instance_id}"
 		key_name = "${ibm_kms_key.test.key_name}"
 	}
-`, instanceName, keyName)
+`, addPrefixToResourceName(instanceName), keyName)
+}
+
+func testAccCheckIBMKmsKeyDataSourceConfigAndDescription(instanceName, keyName string, description string) string {
+	return fmt.Sprintf(`
+	resource "ibm_resource_instance" "kms_instance" {
+		name              = "%s"
+		service           = "kms"
+		plan              = "tiered-pricing"
+		location          = "us-south"
+	  }
+	  resource "ibm_kms_key" "test" {
+		instance_id = "${ibm_resource_instance.kms_instance.guid}"
+		key_name = "%s"
+		standard_key =  true
+		description  = "%s"
+		force_delete = true
+	}
+	data "ibm_kms_key" "test" {
+		instance_id = "${ibm_kms_key.test.instance_id}"
+		key_name = "${ibm_kms_key.test.key_name}"
+	}
+`, addPrefixToResourceName(instanceName), keyName, description)
 }
 
 func testAccCheckIBMKmsKeyDataSourceHpcsConfig(hpcsInstanceID string, KeyName string) string {
@@ -197,5 +239,5 @@ func testAccCheckIBMKmsDataSourceKeyPolicyConfig(instanceName, keyName string, i
 		instance_id = "${ibm_kms_key_policies.testPolicy.instance_id}"
 		key_id = "${ibm_kms_key.test.key_id}"
 	}
-`, instanceName, keyName, interval_month, enabled)
+`, addPrefixToResourceName(instanceName), keyName, interval_month, enabled)
 }

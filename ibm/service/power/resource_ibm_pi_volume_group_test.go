@@ -10,8 +10,9 @@ import (
 	"log"
 	"testing"
 
-	st "github.com/IBM-Cloud/power-go-client/clients/instance"
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
+
+	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -54,7 +55,6 @@ func TestAccIBMPIVolumeGroupUpdate(t *testing.T) {
 }
 
 func testAccCheckIBMPIVolumeGroupDestroy(s *terraform.State) error {
-
 	sess, err := acc.TestAccProvider.Meta().(conns.ClientSession).IBMPISession()
 	if err != nil {
 		return err
@@ -67,7 +67,7 @@ func testAccCheckIBMPIVolumeGroupDestroy(s *terraform.State) error {
 		if err != nil {
 			return err
 		}
-		vgC := st.NewIBMPIVolumeGroupClient(context.Background(), sess, cloudInstanceID)
+		vgC := instance.NewIBMPIVolumeGroupClient(context.Background(), sess, cloudInstanceID)
 		vg, err := vgC.Get(vgID)
 		if err == nil {
 			log.Println("volume-group*****", vg.Status)
@@ -77,9 +77,9 @@ func testAccCheckIBMPIVolumeGroupDestroy(s *terraform.State) error {
 
 	return nil
 }
+
 func testAccCheckIBMPIVolumeGroupExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-
 		rs, ok := s.RootModule().Resources[n]
 
 		if !ok {
@@ -98,7 +98,7 @@ func testAccCheckIBMPIVolumeGroupExists(n string) resource.TestCheckFunc {
 		if err != nil {
 			return err
 		}
-		client := st.NewIBMPIVolumeGroupClient(context.Background(), sess, cloudInstanceID)
+		client := instance.NewIBMPIVolumeGroupClient(context.Background(), sess, cloudInstanceID)
 
 		_, err = client.Get(vgID)
 		if err != nil {
@@ -111,44 +111,44 @@ func testAccCheckIBMPIVolumeGroupExists(n string) resource.TestCheckFunc {
 
 func testAccCheckIBMPIVolumeGroupConfig(name string) string {
 	return volumeConfig(name, acc.Pi_cloud_instance_id) + fmt.Sprintf(`
-	resource "ibm_pi_volume_group" "power_volume_group"{
-		pi_volume_group_name       = "%[1]s"
-		pi_cloud_instance_id 	   = "%[2]s"
-		pi_volume_ids              = [ibm_pi_volume.power_volume[0].volume_id,ibm_pi_volume.power_volume[1].volume_id]
-	  }
+		resource "ibm_pi_volume_group" "power_volume_group" {
+			pi_volume_group_name       = "%[1]s"
+			pi_cloud_instance_id 	   = "%[2]s"
+			pi_volume_ids              = [ibm_pi_volume.power_volume[0].volume_id,ibm_pi_volume.power_volume[1].volume_id]
+		}
 	`, name, acc.Pi_cloud_instance_id)
 }
 
 func testAccCheckIBMPIVolumeGroupUpdateConfig(name string) string {
 	return volumeConfig(name, acc.Pi_cloud_instance_id) + fmt.Sprintf(`
-	resource "ibm_pi_volume_group" "power_volume_group"{
-		pi_volume_group_name       = "%[1]s"
-		pi_cloud_instance_id 	   = "%[2]s"
-		pi_volume_ids              = [ibm_pi_volume.power_volume[2].volume_id]
-	  }
+		resource "ibm_pi_volume_group" "power_volume_group" {
+			pi_volume_group_name       = "%[1]s"
+			pi_cloud_instance_id 	   = "%[2]s"
+			pi_volume_ids              = [ibm_pi_volume.power_volume[2].volume_id]
+		}
 	`, name, acc.Pi_cloud_instance_id)
 }
 
 func testAccCheckIBMPIVolumeGroupEmptyVolumeConfig(name string) string {
 	return volumeConfig(name, acc.Pi_cloud_instance_id) + fmt.Sprintf(`
-	resource "ibm_pi_volume_group" "power_volume_group"{
-		pi_volume_group_name       = "%[1]s"
-		pi_cloud_instance_id 	   = "%[2]s"
-		pi_volume_ids              = []
-	  }
+		resource "ibm_pi_volume_group" "power_volume_group" {
+			pi_volume_group_name       = "%[1]s"
+			pi_cloud_instance_id 	   = "%[2]s"
+			pi_volume_ids              = []
+		}
 	`, name, acc.Pi_cloud_instance_id)
 }
 
 func volumeConfig(name, cloud_instance_id string) string {
 	return fmt.Sprintf(`
-	resource "ibm_pi_volume" "power_volume" {
-	count = 3
-	pi_volume_size         = 2
-	pi_volume_name         = "%[1]s-${count.index}"
-	pi_volume_shareable    = true
-	pi_volume_pool         = "Tier1-Flash-1"
-	pi_cloud_instance_id   = "%[2]s"
-	pi_replication_enabled = true
-	 }
-	`, name, cloud_instance_id)
+		resource "ibm_pi_volume" "power_volume" {
+			count = 3
+			pi_volume_size         = 2
+			pi_volume_name         = "%[1]s-${count.index}"
+			pi_volume_shareable    = true
+			pi_volume_pool         = "%[3]s"
+			pi_cloud_instance_id   = "%[2]s"
+			pi_replication_enabled = true
+		}
+	`, name, cloud_instance_id, acc.PiStoragePool)
 }

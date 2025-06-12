@@ -113,6 +113,30 @@ func DataSourceIBMIsBackupPolicyPlan() *schema.Resource {
 					},
 				},
 			},
+			"remote_region_policy": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Policies for creating remote copies of this backup.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"delete_over_count": &schema.Schema{
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The maximum number of recent remote copies to keep in this region.",
+						},
+						"encryption_key": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The CRN of the [Key Protect Root Key](https://cloud.ibm.com/docs/key-protect?topic=key-protect-getting-started-tutorial) or [Hyper Protect Crypto Services Root Key](https://cloud.ibm.com/docs/hs-crypto?topic=hs-crypto-get-started) for this resource.",
+						},
+						"region": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The globally unique name for this region.",
+						},
+					},
+				},
+			},
 			"resource_type": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -125,7 +149,9 @@ func DataSourceIBMIsBackupPolicyPlan() *schema.Resource {
 func dataSourceIBMIsBackupPolicyPlanRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("vpcClient creation failed: %s", err.Error()), "(Data) ibm_is_backup_policy_plan", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	var backupPolicyPlan *vpcv1.BackupPolicyPlan
 
@@ -138,8 +164,9 @@ func dataSourceIBMIsBackupPolicyPlanRead(context context.Context, d *schema.Reso
 
 		backupPolicyPlanInfo, response, err := sess.GetBackupPolicyPlanWithContext(context, getBackupPolicyPlanOptions)
 		if err != nil {
-			log.Printf("[DEBUG] GetBackupPolicyPlanWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("[ERROR] GetBackupPolicyPlanWithContext failed %s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetBackupPolicyPlanWithContext failed: %s\n%s", err.Error(), response), "(Data) ibm_is_backup_policy_plan", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		backupPolicyPlan = backupPolicyPlanInfo
 	} else if v, ok := d.GetOk("name"); ok {
@@ -151,8 +178,9 @@ func dataSourceIBMIsBackupPolicyPlanRead(context context.Context, d *schema.Reso
 
 		backupPolicyPlanCollection, response, err := sess.ListBackupPolicyPlansWithContext(context, listBackupPolicyPlansOptions)
 		if err != nil {
-			log.Printf("[DEBUG] ListBackupPolicyPlansWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("[ERROR] ListBackupPolicyPlansWithContext failed %s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListBackupPolicyPlansWithContext failed: %s\n%s", err.Error(), response), "(Data) ibm_is_backup_policy_plan", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		for _, backupPolicyPlanInfo := range backupPolicyPlanCollection.Plans {
 			if *backupPolicyPlanInfo.Name == name {
@@ -161,32 +189,35 @@ func dataSourceIBMIsBackupPolicyPlanRead(context context.Context, d *schema.Reso
 			}
 		}
 		if backupPolicyPlan == nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] No backup policy plan found with name (%s)", name))
+			err = fmt.Errorf("[ERROR] No backup policy plan found with name (%s)", name)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListBackupPolicyPlansWithContext failed: %s\n%s", err.Error(), response), "(Data) ibm_is_backup_policy_plan", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 
 	d.SetId(*backupPolicyPlan.ID)
 
 	if err = d.Set("active", backupPolicyPlan.Active); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting active: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting active: %s", err), "(Data) ibm_is_backup_policy_plan", "read", "set-active").GetDiag()
 	}
 	if err = d.Set("attach_user_tags", backupPolicyPlan.AttachUserTags); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting attach_user_tags: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting active: %s", err), "(Data) ibm_is_backup_policy_plan", "read", "set-attach_user_tags").GetDiag()
 	}
 	if err = d.Set("copy_user_tags", backupPolicyPlan.CopyUserTags); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting copy_user_tags: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting copy_user_tags: %s", err), "(Data) ibm_is_backup_policy_plan", "read", "set-copy_user_tags").GetDiag()
 	}
 	if err = d.Set("created_at", flex.DateTimeToString(backupPolicyPlan.CreatedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting created_at: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting created_at: %s", err), "(Data) ibm_is_backup_policy_plan", "read", "set-created_at").GetDiag()
 	}
 	if err = d.Set("cron_spec", backupPolicyPlan.CronSpec); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting cron_spec: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting cron_spec: %s", err), "(Data) ibm_is_backup_policy_plan", "read", "set-cron_spec").GetDiag()
 	}
 
 	if backupPolicyPlan.DeletionTrigger != nil {
 		err = d.Set("deletion_trigger", dataSourceBackupPolicyPlanFlattenDeletionTrigger(*backupPolicyPlan.DeletionTrigger))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting deletion_trigger %s", err))
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting deletion_trigger: %s", err), "(Data) ibm_is_backup_policy_plan", "read", "set-deletion_trigger").GetDiag()
 		}
 	}
 	if backupPolicyPlan.ClonePolicy != nil {
@@ -207,16 +238,29 @@ func dataSourceIBMIsBackupPolicyPlanRead(context context.Context, d *schema.Reso
 		d.Set("clone_policy", backupPolicyPlanClonePolicyMap)
 	}
 	if err = d.Set("href", backupPolicyPlan.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting href: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting href: %s", err), "(Data) ibm_is_backup_policy_plan", "read", "set-href").GetDiag()
 	}
 	if err = d.Set("lifecycle_state", backupPolicyPlan.LifecycleState); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting lifecycle_state: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting lifecycle_state: %s", err), "(Data) ibm_is_backup_policy_plan", "read", "set-lifecycle_state").GetDiag()
 	}
 	if err = d.Set("name", backupPolicyPlan.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting name: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_is_backup_policy_plan", "read", "set-name").GetDiag()
+	}
+	remoteRegionPolicies := []map[string]interface{}{}
+	if backupPolicyPlan.RemoteRegionPolicies != nil {
+		for _, remoteCopyPolicy := range backupPolicyPlan.RemoteRegionPolicies {
+			remoteRegionPoliciesMap, err := dataSourceIBMIsVPCBackupPolicyPlanRemoteCopyPolicyItemToMap(&remoteCopyPolicy)
+			if err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_backup_policy_plan", "read", "remote_region_policies-to-map").GetDiag()
+			}
+			remoteRegionPolicies = append(remoteRegionPolicies, remoteRegionPoliciesMap)
+		}
+	}
+	if err = d.Set("remote_region_policy", remoteRegionPolicies); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting remote_region_policies: %s", err), "(Data) ibm_is_backup_policy_plan", "read", "set-remote_region_policies").GetDiag()
 	}
 	if err = d.Set("resource_type", backupPolicyPlan.ResourceType); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting resource_type: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_type: %s", err), "(Data) ibm_is_backup_policy_plan", "read", "set-resource_type").GetDiag()
 	}
 
 	return nil
@@ -241,4 +285,18 @@ func dataSourceBackupPolicyPlanDeletionTriggerToMap(deletionTriggerItem vpcv1.Ba
 	}
 
 	return deletionTriggerMap
+}
+
+func dataSourceIBMIsVPCBackupPolicyPlanRemoteCopyPolicyItemToMap(remoteCopyPolicyItem *vpcv1.BackupPolicyPlanRemoteRegionPolicy) (map[string]interface{}, error) {
+	remoteCopyPolicyItemMap := make(map[string]interface{})
+	if remoteCopyPolicyItem.DeleteOverCount != nil {
+		remoteCopyPolicyItemMap["delete_over_count"] = *remoteCopyPolicyItem.DeleteOverCount
+	}
+	if remoteCopyPolicyItem.EncryptionKey != nil {
+		remoteCopyPolicyItemMap["encryption_key"] = *remoteCopyPolicyItem.EncryptionKey.CRN
+	}
+	if remoteCopyPolicyItem.Region.Name != nil {
+		remoteCopyPolicyItemMap["region"] = *remoteCopyPolicyItem.Region.Name
+	}
+	return remoteCopyPolicyItemMap, nil
 }

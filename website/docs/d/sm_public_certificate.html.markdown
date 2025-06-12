@@ -9,14 +9,26 @@ subcategory: "Secrets Manager"
 # ibm_sm_public_certificate
 
 Provides a read-only data source for a public certificate. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+The data source can be defined by providing the secret ID or the secret and secret group names.
 
 ## Example Usage
 
+By secret id
 ```hcl
 data "ibm_sm_public_certificate" "public_certificate" {
-  instance_id   = "6ebc4224-e983-496a-8a54-f40a0bfa9175"
+  instance_id   = ibm_resource_instance.sm_instance.guid
   region        = "us-south"
   secret_id = "0b5571f7-21e6-42b7-91c5-3f5ac9793a46"
+}
+```
+
+By secret name and group name
+```hcl
+data "ibm_sm_public_certificate" "public_certificate" {
+  instance_id   = ibm_resource_instance.sm_instance.guid
+  region        = "us-south"
+  name          = "secret-name"
+  secret_group_name = "group-name"
 }
 ```
 
@@ -28,8 +40,12 @@ Review the argument reference that you can specify for your data source.
 * `region` - (Optional, Forces new resource, String) The region of the Secrets Manager instance. If not provided defaults to the region defined in the IBM provider configuration.
 * `endpoint_type` - (Optional, String) - The endpoint type. If not provided the endpoint type is determined by the `visibility` argument provided in the provider configuration.
     * Constraints: Allowable values are: `private`, `public`.
-* `secret_id` - (Required, String) The ID of the secret.
-  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/`.
+* `secret_id` - (Optional, String) The ID of the secret.
+    * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/`.
+* `name` - (Optional, String) The human-readable name of your secret. To be used in combination with `secret_group_name`.
+    * Constraints: The maximum length is `256` characters. The minimum length is `2` characters. The value must match regular expression `^[A-Za-z0-9][A-Za-z0-9]*(?:_*-*\\.*[A-Za-z0-9]+)*$`.
+* `secret_group_name` - (Optional, String) The name of your existing secret group. To be used in combination with `name`.
+    * Constraints: The maximum length is `64` characters. The minimum length is `2` characters. The value must match regular expression `/(.*?)/`.
 
 ## Attribute Reference
 
@@ -114,7 +130,7 @@ Nested scheme for **rotation**:
 	* `auto_rotate` - (Boolean) Determines whether Secrets Manager rotates your secret automatically.Default is `false`.
 	* `rotate_keys` - (Boolean) Determines whether Secrets Manager rotates the private key for your public certificate automatically.Default is `false`. If it is set to `true`, the service generates and stores a new private key for your rotated certificate.
 
-* `secret_group_id` - (String) A v4 UUID identifier, or `default` secret group.
+* `secret_group_id` - (String) A UUID identifier, or `default` secret group.
   * Constraints: The maximum length is `36` characters. The minimum length is `7` characters. The value must match regular expression `/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|default)$/`.
 
 * `secret_type` - (String) The secret type. Supported types are arbitrary, certificates (imported, public, and private), IAM credentials, key-value, and user credentials.

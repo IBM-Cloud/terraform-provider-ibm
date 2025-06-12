@@ -21,6 +21,7 @@ resource "ibm_en_subscription_webhook" "webhook_subscription" {
   topic_id         = ibm_en_topic.topic1.topic_id
   attributes {
     signing_enabled          = true
+    template_id_notification = ibm_en_webhook_template.webhook_template.template_id
   }
 }
 ```
@@ -43,6 +44,7 @@ Review the argument reference that you can specify for your resource.
   Nested scheme for **attributes**:
 
   - `signing_enabled` - (Optional, Boolean) Signing enabled.
+  - `template_id_notification` - (Optional, String) The templete id for notification.
 
 ## Attribute reference
 

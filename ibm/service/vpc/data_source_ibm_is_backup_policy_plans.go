@@ -117,6 +117,30 @@ func DataSourceIBMIsBackupPolicyPlans() *schema.Resource {
 							Computed:    true,
 							Description: "The lifecycle state of this backup policy plan.",
 						},
+						"remote_region_policy": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "Backup policy plan cross region rule.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"delete_over_count": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "The maximum number of recent remote copies to keep in this region.",
+									},
+									"encryption_key": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The CRN of the [Key Protect Root Key](https://cloud.ibm.com/docs/key-protect?topic=key-protect-getting-started-tutorial) or [Hyper Protect Crypto Services Root Key](https://cloud.ibm.com/docs/hs-crypto?topic=hs-crypto-get-started) for this resource.",
+									},
+									"region": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The globally unique name for this region.",
+									},
+								},
+							},
+						},
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -137,7 +161,9 @@ func DataSourceIBMIsBackupPolicyPlans() *schema.Resource {
 func dataSourceIBMIsBackupPolicyPlansRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := vpcClient(meta)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("vpcClient creation failed: %s", err.Error()), "(Data) ibm_is_backup_policy_plans", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	listBackupPolicyPlansOptions := &vpcv1.ListBackupPolicyPlansOptions{}
@@ -146,8 +172,9 @@ func dataSourceIBMIsBackupPolicyPlansRead(context context.Context, d *schema.Res
 
 	backupPolicyPlanCollection, response, err := vpcClient.ListBackupPolicyPlansWithContext(context, listBackupPolicyPlansOptions)
 	if err != nil {
-		log.Printf("[DEBUG] ListBackupPolicyPlansWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("[ERROR] ListBackupPolicyPlansWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListBackupPolicyPlansWithContext failed: %s\n%s", err.Error(), response), "(Data) ibm_is_backup_policy_plans", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	// Use the provided filter argument and construct a new list with only the requested resource(s)
@@ -167,7 +194,10 @@ func dataSourceIBMIsBackupPolicyPlansRead(context context.Context, d *schema.Res
 	}
 	if suppliedFilter {
 		if len(backupPolicyPlanCollection.Plans) == 0 {
-			return diag.FromErr(fmt.Errorf("[ERROR] no plans found with name %s", name))
+			err = fmt.Errorf("[ERROR] no plans found with name %s", name)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListBackupPolicyPlansWithContext failed: %s\n%s", err.Error(), response), "(Data) ibm_is_backup_policy_plans", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		d.SetId(name)
 	} else {
@@ -177,7 +207,7 @@ func dataSourceIBMIsBackupPolicyPlansRead(context context.Context, d *schema.Res
 	if backupPolicyPlanCollection.Plans != nil {
 		err = d.Set("plans", dataSourceBackupPolicyPlanCollectionFlattenPlans(backupPolicyPlanCollection.Plans))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting plans %s", err))
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting plans: %s", err), "(Data) ibm_is_backup_policy_plans", "read", "set-plans").GetDiag()
 		}
 	}
 
@@ -232,6 +262,14 @@ func dataSourceBackupPolicyPlanCollectionPlansToMap(plansItem vpcv1.BackupPolicy
 	}
 	if plansItem.Name != nil {
 		plansMap["name"] = plansItem.Name
+	}
+	remoteRegionPolicies := []map[string]interface{}{}
+	if plansItem.RemoteRegionPolicies != nil {
+		for _, remoteCopyPolicy := range plansItem.RemoteRegionPolicies {
+			remoteRegionPoliciesMap, _ := dataSourceIBMIsVPCBackupPolicyPlanRemoteCopyPolicyItemToMap(&remoteCopyPolicy)
+			remoteRegionPolicies = append(remoteRegionPolicies, remoteRegionPoliciesMap)
+		}
+		plansMap["remote_region_policy"] = remoteRegionPolicies
 	}
 	if plansItem.ResourceType != nil {
 		plansMap["resource_type"] = plansItem.ResourceType

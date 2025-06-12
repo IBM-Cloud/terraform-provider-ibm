@@ -30,6 +30,7 @@ resource "ibm_is_vpc" "example" {
 resource "ibm_is_vpc_routing_table" "example" {
   vpc                           = ibm_is_vpc.example.id
   name                          = "example-routing-table"
+  advertise_routes_to           = ["direct_link", "transit_gateway"]
   route_direct_link_ingress     = true
   route_transit_gateway_ingress = false
   route_vpc_zone_ingress        = false
@@ -41,6 +42,7 @@ resource "ibm_is_vpc_routing_table_route" "example" {
   name          = "custom-route-2"
   destination   = "192.168.4.0/24"
   action        = "deliver"
+  advertise     = true
   next_hop      = ibm_is_vpn_gateway_connection.example.gateway_connection // Example value "10.0.0.4"
 }
 ```
@@ -63,18 +65,21 @@ resource "ibm_is_vpc_routing_table_route" "example" {
 Review the argument references that you can specify for your resource. 
 
 - `action` - (Optional, String) The action to perform with a packet matching the route `delegate`, `delegate_vpc`, `deliver`, `drop`.
+- `advertise` - (Optional, Bool) Indicates whether this route will be advertised to the ingress sources specified by the `advertise_routes_to` routing table's property.
 - `destination` - (Required, Forces new resource, String) The destination of the route. 
 - `name` - (Optional, String) The user-defined name of the route. If unspecified, the name will be a hyphenated list of randomly selected words. You need to provide unique name within the VPC routing table the route resides in.
-- `next_hop` - (Required, String) The next hop of the route. It accepts IP address or a VPN connection ID. For `action` other than `deliver`, you must specify `0.0.0.0`. 
+- `next_hop` - (Required, String) The next hop of the route. It accepts IP address or a VPN gateway connection ID (`ibm_is_vpn_gateway_connection`) of a VPN Gateway (`ibm_is_vpn_gateway`) with the `mode = "route"` argument and in the same VPC as the route table for this route for an egress route. For action other than deliver, you must specify `0.0.0.0`.
 - `routing_table` - (Required, String) The routing table ID.
 - `vpc` - (Required, Forces new resource, String) The VPC ID.
 - `zone` - (Required, Forces new resource, String)  Name of the zone. 
+- `priority` - (Optional, Integer) The route's priority. Smaller values have higher priority. If a routing table contains routes with the same destination, the route with the highest priority (smallest value) is selected. For Example (2), supports values from 0 to 4. Default is 2.
 
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
 - `creator` - (Optional, List) If present, the resource that created the route. Routes with this property present cannot bedirectly deleted. All routes with an `origin` of `learned` or `service` will have thisproperty set, and future `origin` values may also have this property set.
+
   Nested scheme for **creator**:
     - `crn` - (Optional, String) The VPN gateway's CRN.
       - Constraints: The maximum length is `512` characters. The minimum length is `9` characters.
@@ -96,7 +101,7 @@ In addition to all argument reference list, you can access the following attribu
 - `lifecycle_state` - (String) The lifecycle state of the route.
 - `origin` - (Optional, String) The origin of this route:- `service`: route was directly created by a service- `user`: route was directly created by a userThe enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the route on which the unexpected property value was encountered.
   - Constraints: Allowable values are: `learned`, `service`, `user`.
-- `priority` - (Optional, Integer) The route's priority. Smaller values have higher priority. If a routing table contains routes with the same destination, the route with the highest priority (smallest value) is selected. For Example (2), supports values from 0 to 4. Default is 2.
+- `priority` - (Optional, Integer) The route's priority. Smaller values have higher priority.
 - `resource_type` - (String) The resource type.
 
 ## Import

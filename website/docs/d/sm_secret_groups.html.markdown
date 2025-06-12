@@ -14,7 +14,7 @@ Provides a read-only data source for secret group collection. You can then refer
 
 ```hcl
 data "ibm_sm_secret_groups" "secret_groups" {
-  instance_id   = "6ebc4224-e983-496a-8a54-f40a0bfa9175"
+  instance_id   = ibm_resource_instance.sm_instance.guid
   region        = "us-south"
 }
 ```
@@ -39,7 +39,7 @@ Nested scheme for **secret_groups**:
 	* `created_at` - (String) The date when a resource was created. The date format follows RFC 3339.
 	* `description` - (String) An extended description of your secret group.To protect your privacy, do not use personal data, such as your name or location, as a description for your secret group.
 	  * Constraints: The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/(.*?)/`.
-	* `id` - (String) A v4 UUID identifier, or `default` secret group.
+	* `id` - (String) A UUID identifier, or `default` secret group.
 	  * Constraints: The maximum length is `36` characters. The minimum length is `7` characters. The value must match regular expression `/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|default)$/`.
 	* `name` - (String) The name of your existing secret group.
 	  * Constraints: The maximum length is `64` characters. The minimum length is `2` characters. The value must match regular expression `/(.*?)/`.
