@@ -133,7 +133,7 @@ func resourceIBMTransitGatewayConnectionPrefixFilterCreate(d *schema.ResourceDat
 
 	prefixFilter, response, err := client.CreateTransitGatewayConnectionPrefixFilter(createPrefixFilterOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Create Transit Gateway connection prefix filter err %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Create Transit Gateway connection prefix filter err %s\n%s", err, response)
 	}
 	d.SetId(fmt.Sprintf("%s/%s/%s", gatewayId, connectionId, *prefixFilter.ID))
 
@@ -165,7 +165,7 @@ func resourceIBMTransitGatewayConnectionPrefixFilterRead(d *schema.ResourceData,
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error while retrieving transit gateway connection prefix filter (%s): %s\n%s", filterId, err, response)
+		return flex.FmtErrorf("[ERROR] Error while retrieving transit gateway connection prefix filter (%s): %s\n%s", filterId, err, response)
 	}
 
 	d.Set(tgPrefixFilterId, *prefixFilter.ID)
@@ -240,7 +240,7 @@ func resourceIBMTransitGatewayConnectionPrefixFilterUpdate(d *schema.ResourceDat
 
 	_, response, err := client.UpdateTransitGatewayConnectionPrefixFilter(updatePrefixFilterOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error in Update Transit Gateway Connection Prefix Filter (%s): %s\n%s", filterId, err, response)
+		return flex.FmtErrorf("[ERROR] Error in Update Transit Gateway Connection Prefix Filter (%s): %s\n%s", filterId, err, response)
 	}
 
 	return resourceIBMTransitGatewayConnectionPrefixFilterRead(d, meta)
@@ -270,7 +270,7 @@ func resourceIBMTransitGatewayConnectionPrefixFilterDelete(d *schema.ResourceDat
 		if response != nil && response.StatusCode == 404 {
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error deleting Transit Gateway Connection Prefix Filter(%s): %s\n%s", filterId, err, response)
+		return flex.FmtErrorf("[ERROR] Error deleting Transit Gateway Connection Prefix Filter(%s): %s\n%s", filterId, err, response)
 	}
 
 	d.SetId("")
