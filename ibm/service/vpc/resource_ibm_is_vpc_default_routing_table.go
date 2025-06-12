@@ -1,36 +1,47 @@
-// Copyright IBM Corp. 2017, 2022 All Rights Reserved.
+// Copyright IBM Corp. 2017, 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package vpc
 
 import (
+	"context"
 	"fmt"
 	"log"
+	"os"
 	"strings"
 	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-const ()
-
 func ResourceIBMISVPCDefaultRoutingTable() *schema.Resource {
 	return &schema.Resource{
-		Create:   resourceIBMISVPCDefaultRoutingTableCreate,
-		Read:     resourceIBMISVPCDefaultRoutingTableRead,
-		Update:   resourceIBMISVPCDefaultRoutingTableUpdate,
-		Delete:   resourceIBMISVPCDefaultRoutingTableDelete,
-		Exists:   resourceIBMISVPCDefaultRoutingTableExists,
-		Importer: &schema.ResourceImporter{},
+		CreateContext: resourceIBMISVPCDefaultRoutingTableCreate,
+		ReadContext:   resourceIBMISVPCDefaultRoutingTableRead,
+		UpdateContext: resourceIBMISVPCDefaultRoutingTableUpdate,
+		DeleteContext: resourceIBMISVPCDefaultRoutingTableDelete,
+		Exists:        resourceIBMISVPCDefaultRoutingTableExists,
+		Importer:      &schema.ResourceImporter{},
 
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(10 * time.Minute),
 			Update: schema.DefaultTimeout(10 * time.Minute),
 			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
+
+		CustomizeDiff: customdiff.All(
+			customdiff.Sequence(
+				func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
+					return flex.ResourceValidateAccessTags(diff, v)
+				}),
+		),
+
 		Schema: map[string]*schema.Schema{
 			rtVpcID: {
 				Type:        schema.TypeString,
@@ -44,7 +55,15 @@ func ResourceIBMISVPCDefaultRoutingTable() *schema.Resource {
 				Computed:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Set:         schema.HashString,
-				Description: "The filters specifying the resources that may create routes in this routing table, The resource type: vpn_gateway or vpn_server",
+				Description: "The filters specifying the resources that may create routes in this routing table. The resource type: vpn_gateway or vpn_server",
+			},
+			"advertise_routes_to": {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Computed:    true,
+				Set:         schema.HashString,
+				Description: "The ingress sources to advertise routes to. Routes in the table with `advertise` enabled will be advertised to these sources.",
+				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 			rtRouteDirectLinkIngress: {
 				Type:        schema.TypeBool,
@@ -84,6 +103,11 @@ func ResourceIBMISVPCDefaultRoutingTable() *schema.Resource {
 				Computed:    true,
 				Description: "The routing table identifier.",
 			},
+			"crn": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The routing table CRN.",
+			},
 			rtHref: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -109,76 +133,6 @@ func ResourceIBMISVPCDefaultRoutingTable() *schema.Resource {
 				Computed:    true,
 				Description: "Indicates whether this is the default routing table for this VPC",
 			},
-			rtRoutes: &schema.Schema{
-				Type:        schema.TypeList,
-				Optional:    true,
-				Computed:    true,
-				Description: "The routes for this routing table.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						rDeleted: &schema.Schema{
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "If present, this property indicates the referenced resource has been deleted and providessome supplementary information.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									rMoreInfo: &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "Link to documentation about deleted resources.",
-									},
-								},
-							},
-						},
-						rtHref: &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The URL for this route.",
-						},
-						rId: &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The unique identifier for this route.",
-						},
-						rName: &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Computed:    true,
-							Description: "The user-defined name for this route.",
-						},
-						rAction: &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Computed:    true,
-							Description: "The user-defined name for this route.",
-						},
-						rNextHop: &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Computed:    true,
-							Description: "The user-defined name for this route.",
-						},
-						rZone: &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Computed:    true,
-							Description: "The user-defined name for this route.",
-						},
-						rPriority: &schema.Schema{
-							Type:        schema.TypeInt,
-							Optional:    true,
-							Computed:    true,
-							Description: "The user-defined name for this route.",
-						},
-						rDestination: &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Computed:    true,
-							Description: "The user-defined name for this route.",
-						},
-					},
-				},
-			},
 			rtSubnets: {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -197,198 +151,432 @@ func ResourceIBMISVPCDefaultRoutingTable() *schema.Resource {
 					},
 				},
 			},
+			rtResourceGroup: {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The resource group for this routing table.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						rtResourceGroupHref: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The URL for this resource group.",
+						},
+						rtResourceGroupId: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The unique identifier for this resource group.",
+						},
+						rtResourceGroupName: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The user-defined name for this resource group.",
+						},
+					},
+				},
+			},
+			rtTags: {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: validate.InvokeValidator("ibm_is_vpc_default_routing_table", "tags")},
+				Set:         flex.ResourceIBMVPCHash,
+				Description: "List of tags",
+			},
+			rtAccessTags: {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: validate.InvokeValidator("ibm_is_vpc_default_routing_table", "accesstag")},
+				Set:         flex.ResourceIBMVPCHash,
+				Description: "List of access management tags",
+			},
 		},
 	}
 }
 
 func ResourceIBMISVPCDefaultRoutingTableValidator() *validate.ResourceValidator {
-
 	validateSchema := make([]validate.ValidateSchema, 0)
-	actionAllowedValues := "delegate, delegate_vpc, deliver, drop"
 
-	validateSchema = append(validateSchema,
-		validate.ValidateSchema{
-			Identifier:                 rtName,
-			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
-			Type:                       validate.TypeString,
-			Required:                   false,
-			Regexp:                     `^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$`,
-			MinValueLength:             1,
-			MaxValueLength:             63})
+	validateSchema = append(validateSchema, validate.ValidateSchema{
+		Identifier:                 "accesstag",
+		ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+		Type:                       validate.TypeString,
+		Optional:                   true,
+		Regexp:                     `^([A-Za-z0-9_.-]|[A-Za-z0-9_.-][A-Za-z0-9_ .-]*[A-Za-z0-9_.-]):([A-Za-z0-9_.-]|[A-Za-z0-9_.-][A-Za-z0-9_ .-]*[A-Za-z0-9_.-])$`,
+		MinValueLength:             1,
+		MaxValueLength:             128,
+	})
 
-	validateSchema = append(validateSchema,
-		validate.ValidateSchema{
-			Identifier:                 rtAction,
-			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
-			Type:                       validate.TypeString,
-			Required:                   false,
-			AllowedValues:              actionAllowedValues})
+	validateSchema = append(validateSchema, validate.ValidateSchema{
+		Identifier:                 "tags",
+		ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+		Type:                       validate.TypeString,
+		Optional:                   true,
+		Regexp:                     `^[A-Za-z0-9:_ .-]+$`,
+		MinValueLength:             1,
+		MaxValueLength:             128,
+	})
 
-	ibmISVPCRoutingTableValidator := validate.ResourceValidator{ResourceName: "ibm_is_vpc_default_routing_table", Schema: validateSchema}
-	return &ibmISVPCRoutingTableValidator
+	ibmISVPCDefaultRoutingTableValidator := validate.ResourceValidator{
+		ResourceName: "ibm_is_vpc_default_routing_table",
+		Schema:       validateSchema,
+	}
+	return &ibmISVPCDefaultRoutingTableValidator
 }
 
-func resourceIBMISVPCDefaultRoutingTableCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMISVPCDefaultRoutingTableCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_default_routing_table", "create", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	vpcID := d.Get(rtVpcID).(string)
-	getVpcRoutingTableOptions := &vpcv1.GetVPCDefaultRoutingTableOptions{
+	getVpcDefaultRoutingTableOptions := &vpcv1.GetVPCDefaultRoutingTableOptions{
 		ID: &vpcID,
 	}
 
-	routeTable, response, err := sess.GetVPCDefaultRoutingTable(getVpcRoutingTableOptions)
+	routeTable, _, err := sess.GetVPCDefaultRoutingTableWithContext(context, getVpcDefaultRoutingTableOptions)
 	if err != nil {
-		log.Printf("[DEBUG] Create VPC Default Routing table err %s\n%s", err, response)
-		return err
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetVPCDefaultRoutingTableWithContext failed: %s", err.Error()), "ibm_is_vpc_default_routing_table", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", vpcID, *routeTable.ID))
 
-	return resourceIBMISVPCRoutingTableRead(d, meta)
-}
-
-func resourceIBMISVPCDefaultRoutingTableRead(d *schema.ResourceData, meta interface{}) error {
-	sess, err := vpcClient(meta)
-	if err != nil {
-		return err
+	// Handle tags on creation
+	v := os.Getenv("IC_ENV_TAGS")
+	if _, ok := d.GetOk(rtTags); ok || v != "" {
+		oldList, newList := d.GetChange(rtTags)
+		err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *routeTable.CRN, "", rtUserTagType)
+		if err != nil {
+			log.Printf("Error on create of resource default routing table (%s) tags: %s", d.Id(), err)
+		}
 	}
 
+	if _, ok := d.GetOk(rtAccessTags); ok {
+		oldList, newList := d.GetChange(rtAccessTags)
+		err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *routeTable.CRN, "", rtAccessTagType)
+		if err != nil {
+			log.Printf("Error on create of resource default routing table (%s) access tags: %s", d.Id(), err)
+		}
+	}
+
+	return resourceIBMISVPCDefaultRoutingTableRead(context, d, meta)
+}
+
+func resourceIBMISVPCDefaultRoutingTableUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	sess, err := vpcClient(meta)
+	if err != nil {
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_default_routing_table", "update", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+	}
+
+	// Get ETag for conditional update
 	idSet := strings.Split(d.Id(), "/")
 	getVpcRoutingTableOptions := sess.NewGetVPCRoutingTableOptions(idSet[0], idSet[1])
-	routeTable, response, err := sess.GetVPCRoutingTable(getVpcRoutingTableOptions)
+	routingTableGet, respGet, err := sess.GetVPCRoutingTableWithContext(context, getVpcRoutingTableOptions)
 	if err != nil {
-		if response != nil && response.StatusCode == 404 {
-			d.SetId("")
-			return nil
-		}
-		return fmt.Errorf("[ERROR] Error Getting VPC Routing table: %s\n%s", err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetVPCRoutingTableWithContext failed: %s", err.Error()), "ibm_is_vpc_default_routing_table", "update")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
-
-	d.Set(rtVpcID, idSet[0])
-	d.Set(rtID, routeTable.ID)
-	d.Set(rtName, routeTable.Name)
-	d.Set(rtHref, routeTable.Href)
-	d.Set(rtLifecycleState, routeTable.LifecycleState)
-	d.Set(rtCreateAt, routeTable.CreatedAt.String())
-	d.Set(rtResourceType, routeTable.ResourceType)
-	d.Set(rtRouteDirectLinkIngress, routeTable.RouteDirectLinkIngress)
-	d.Set(rtRouteInternetIngress, routeTable.RouteInternetIngress)
-	d.Set(rtRouteTransitGatewayIngress, routeTable.RouteTransitGatewayIngress)
-	d.Set(rtRouteVPCZoneIngress, routeTable.RouteVPCZoneIngress)
-	d.Set(rtIsDefault, routeTable.IsDefault)
-	acceptRoutesFromArray := make([]string, 0)
-	for i := 0; i < len(routeTable.AcceptRoutesFrom); i++ {
-		acceptRoutesFromArray = append(acceptRoutesFromArray, string(*(routeTable.AcceptRoutesFrom[i].ResourceType)))
-	}
-	if err = d.Set("accept_routes_from_resource_type", acceptRoutesFromArray); err != nil {
-		return fmt.Errorf("[ERROR] Error setting accept_routes_from_resource_type: %s", err)
-	}
-	subnets := make([]map[string]interface{}, 0)
-
-	for _, s := range routeTable.Subnets {
-		subnet := make(map[string]interface{})
-		subnet[ID] = *s.ID
-		subnet["name"] = *s.Name
-		subnets = append(subnets, subnet)
-	}
-
-	d.Set(rtSubnets, subnets)
-
-	return nil
-}
-
-func resourceIBMISVPCDefaultRoutingTableUpdate(d *schema.ResourceData, meta interface{}) error {
-	sess, err := vpcClient(meta)
-	if err != nil {
-		return err
-	}
-	//Etag
-	idSett := strings.Split(d.Id(), "/")
-	getVpcRoutingTableOptions := sess.NewGetVPCRoutingTableOptions(idSett[0], idSett[1])
-	_, respGet, err := sess.GetVPCRoutingTable(getVpcRoutingTableOptions)
 	eTag := respGet.Headers.Get("ETag")
 
-	idSet := strings.Split(d.Id(), "/")
+	// Handle access tags update
+	if d.HasChange(rtAccessTags) {
+		oldList, newList := d.GetChange(rtAccessTags)
+		err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *routingTableGet.CRN, "", rtAccessTagType)
+		if err != nil {
+			log.Printf("Error on update of resource default routing table (%s) access tags: %s", d.Id(), err)
+		}
+	}
+
+	// Handle regular tags update
+	if d.HasChange(rtTags) {
+		oldList, newList := d.GetChange(rtTags)
+		err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *routingTableGet.CRN, "", rtUserTagType)
+		if err != nil {
+			log.Printf("Error on update of resource default routing table (%s) tags: %s", d.Id(), err)
+		}
+	}
+
 	updateVpcRoutingTableOptions := new(vpcv1.UpdateVPCRoutingTableOptions)
 	updateVpcRoutingTableOptions.VPCID = &idSet[0]
 	updateVpcRoutingTableOptions.ID = &idSet[1]
 	hasChange := false
+
 	// Construct an instance of the RoutingTablePatch model
 	routingTablePatchModel := new(vpcv1.RoutingTablePatch)
 
-	if d.HasChange(rtName) {
-		name := d.Get(rtName).(string)
-		routingTablePatchModel.Name = core.StringPtr(name)
-		hasChange = true
-	}
+	removeAcceptRoutesFromFilter := false
 	if d.HasChange("accept_routes_from_resource_type") {
 		var aroutes []vpcv1.ResourceFilter
 		acptRoutes := d.Get("accept_routes_from_resource_type").(*schema.Set)
-		for _, val := range acptRoutes.List() {
-			value := val.(string)
-			resourceFilter := vpcv1.ResourceFilter{
-				ResourceType: &value,
+		if len(acptRoutes.List()) == 0 {
+			removeAcceptRoutesFromFilter = true
+		} else {
+			for _, val := range acptRoutes.List() {
+				value := val.(string)
+				resourceFilter := vpcv1.ResourceFilter{
+					ResourceType: &value,
+				}
+				aroutes = append(aroutes, resourceFilter)
 			}
-			aroutes = append(aroutes, resourceFilter)
 		}
 		routingTablePatchModel.AcceptRoutesFrom = aroutes
 		hasChange = true
 	}
+
+	removeAdvertiseRoutesTo := false
+	if d.HasChange("advertise_routes_to") {
+		var advertiseRoutesToList []string
+		advertiseRoutesTo := d.Get("advertise_routes_to").(*schema.Set)
+
+		if len(advertiseRoutesTo.List()) == 0 {
+			removeAdvertiseRoutesTo = true
+		} else {
+			for _, val := range advertiseRoutesTo.List() {
+				advertiseRoutesToList = append(advertiseRoutesToList, val.(string))
+			}
+		}
+		routingTablePatchModel.AdvertiseRoutesTo = advertiseRoutesToList
+		hasChange = true
+	}
+
 	if d.HasChange(rtRouteDirectLinkIngress) {
 		routeDirectLinkIngress := d.Get(rtRouteDirectLinkIngress).(bool)
 		routingTablePatchModel.RouteDirectLinkIngress = core.BoolPtr(routeDirectLinkIngress)
 		hasChange = true
 	}
+
 	if d.HasChange(rtRouteInternetIngress) {
 		rtRouteInternetIngress := d.Get(rtRouteInternetIngress).(bool)
 		routingTablePatchModel.RouteInternetIngress = core.BoolPtr(rtRouteInternetIngress)
+		hasChange = true
 	}
+
 	if d.HasChange(rtRouteTransitGatewayIngress) {
 		routeTransitGatewayIngress := d.Get(rtRouteTransitGatewayIngress).(bool)
 		routingTablePatchModel.RouteTransitGatewayIngress = core.BoolPtr(routeTransitGatewayIngress)
 		hasChange = true
 	}
+
 	if d.HasChange(rtRouteVPCZoneIngress) {
 		routeVPCZoneIngress := d.Get(rtRouteVPCZoneIngress).(bool)
 		routingTablePatchModel.RouteVPCZoneIngress = core.BoolPtr(routeVPCZoneIngress)
 		hasChange = true
 	}
+
 	if hasChange {
 		updateVpcRoutingTableOptions.IfMatch = &eTag
+
+		routingTablePatchModelAsPatch, asPatchErr := routingTablePatchModel.AsPatch()
+		if asPatchErr != nil {
+			tfErr := flex.TerraformErrorf(asPatchErr, fmt.Sprintf("routingTablePatchModel.AsPatch() failed: %s", asPatchErr.Error()), "ibm_is_vpc_default_routing_table", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
+
+		if removeAdvertiseRoutesTo {
+			routingTablePatchModelAsPatch["advertise_routes_to"] = []string{}
+		}
+		if removeAcceptRoutesFromFilter {
+			routingTablePatchModelAsPatch["accept_routes_from"] = []vpcv1.ResourceFilter{}
+		}
+
+		updateVpcRoutingTableOptions.RoutingTablePatch = routingTablePatchModelAsPatch
+		_, _, err = sess.UpdateVPCRoutingTableWithContext(context, updateVpcRoutingTableOptions)
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateVPCRoutingTableWithContext failed: %s", err.Error()), "ibm_is_vpc_default_routing_table", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
 	}
 
-	routingTablePatchModelAsPatch, asPatchErr := routingTablePatchModel.AsPatch()
-	if asPatchErr != nil {
-		return fmt.Errorf("[ERROR] Error calling asPatch for RoutingTablePatchModel: %s", asPatchErr)
-	}
-
-	updateVpcRoutingTableOptions.RoutingTablePatch = routingTablePatchModelAsPatch
-	_, response, err := sess.UpdateVPCRoutingTable(updateVpcRoutingTableOptions)
-	if err != nil {
-		log.Printf("[DEBUG] Update VPC Routing table err %s\n%s", err, response)
-		return err
-	}
-	return resourceIBMISVPCRoutingTableRead(d, meta)
+	return resourceIBMISVPCDefaultRoutingTableRead(context, d, meta)
 }
 
-func resourceIBMISVPCDefaultRoutingTableDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMISVPCDefaultRoutingTableDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	// Default routing table cannot be deleted, just remove from Terraform state
 	d.SetId("")
+	return nil
+}
+
+func resourceIBMISVPCDefaultRoutingTableRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	sess, err := vpcClient(meta)
+	if err != nil {
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_default_routing_table", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+	}
+
+	idSet := strings.Split(d.Id(), "/")
+	getVpcRoutingTableOptions := sess.NewGetVPCRoutingTableOptions(idSet[0], idSet[1])
+	routeTable, response, err := sess.GetVPCRoutingTableWithContext(context, getVpcRoutingTableOptions)
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetVPCRoutingTableWithContext failed: %s", err.Error()), "ibm_is_vpc_default_routing_table", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+	}
+
+	d.Set(rtVpcID, idSet[0])
+
+	if err = d.Set(rtID, routeTable.ID); err != nil {
+		err = fmt.Errorf("Error setting routing_table: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_default_routing_table", "read", "set-routing_table").GetDiag()
+	}
+
+	if err = d.Set("crn", routeTable.CRN); err != nil {
+		err = fmt.Errorf("Error setting crn: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_default_routing_table", "read", "set-crn").GetDiag()
+	}
+
+	if !core.IsNil(routeTable.Name) {
+		if err = d.Set("name", routeTable.Name); err != nil {
+			err = fmt.Errorf("Error setting name: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_default_routing_table", "read", "set-name").GetDiag()
+		}
+	}
+
+	if err = d.Set("href", routeTable.Href); err != nil {
+		err = fmt.Errorf("Error setting href: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_default_routing_table", "read", "set-href").GetDiag()
+	}
+
+	if err = d.Set("lifecycle_state", routeTable.LifecycleState); err != nil {
+		err = fmt.Errorf("Error setting lifecycle_state: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_default_routing_table", "read", "set-lifecycle_state").GetDiag()
+	}
+
+	if err = d.Set("created_at", flex.DateTimeToString(routeTable.CreatedAt)); err != nil {
+		err = fmt.Errorf("Error setting created_at: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_default_routing_table", "read", "set-created_at").GetDiag()
+	}
+
+	if err = d.Set("resource_type", routeTable.ResourceType); err != nil {
+		err = fmt.Errorf("Error setting resource_type: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_default_routing_table", "read", "set-resource_type").GetDiag()
+	}
+
+	if !core.IsNil(routeTable.RouteDirectLinkIngress) {
+		if err = d.Set("route_direct_link_ingress", routeTable.RouteDirectLinkIngress); err != nil {
+			err = fmt.Errorf("Error setting route_direct_link_ingress: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_default_routing_table", "read", "set-route_direct_link_ingress").GetDiag()
+		}
+	}
+
+	if !core.IsNil(routeTable.RouteInternetIngress) {
+		if err = d.Set("route_internet_ingress", routeTable.RouteInternetIngress); err != nil {
+			err = fmt.Errorf("Error setting route_internet_ingress: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_default_routing_table", "read", "set-route_internet_ingress").GetDiag()
+		}
+	}
+
+	if !core.IsNil(routeTable.RouteTransitGatewayIngress) {
+		if err = d.Set("route_transit_gateway_ingress", routeTable.RouteTransitGatewayIngress); err != nil {
+			err = fmt.Errorf("Error setting route_transit_gateway_ingress: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_default_routing_table", "read", "set-route_transit_gateway_ingress").GetDiag()
+		}
+	}
+
+	if !core.IsNil(routeTable.RouteVPCZoneIngress) {
+		if err = d.Set("route_vpc_zone_ingress", routeTable.RouteVPCZoneIngress); err != nil {
+			err = fmt.Errorf("Error setting route_vpc_zone_ingress: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_default_routing_table", "read", "set-route_vpc_zone_ingress").GetDiag()
+		}
+	}
+
+	if err = d.Set("is_default", routeTable.IsDefault); err != nil {
+		err = fmt.Errorf("Error setting is_default: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_default_routing_table", "read", "set-is_default").GetDiag()
+	}
+
+	// Handle accept_routes_from_resource_type
+	acceptRoutesFromArray := make([]string, 0)
+	for i := 0; i < len(routeTable.AcceptRoutesFrom); i++ {
+		acceptRoutesFromArray = append(acceptRoutesFromArray, string(*(routeTable.AcceptRoutesFrom[i].ResourceType)))
+	}
+	if err = d.Set("accept_routes_from_resource_type", acceptRoutesFromArray); err != nil {
+		err = fmt.Errorf("Error setting accept_routes_from_resource_type: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_default_routing_table", "read", "set-accept_routes_from_resource_type").GetDiag()
+	}
+
+	// Handle advertise_routes_to
+	advertiseRoutesToArray := make([]string, 0)
+	for i := 0; i < len(routeTable.AdvertiseRoutesTo); i++ {
+		advertiseRoutesToArray = append(advertiseRoutesToArray, routeTable.AdvertiseRoutesTo[i])
+	}
+	if err = d.Set("advertise_routes_to", advertiseRoutesToArray); err != nil {
+		err = fmt.Errorf("Error setting advertise_routes_to: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_default_routing_table", "read", "set-advertise_routes_to").GetDiag()
+	}
+
+	// Handle subnets
+	subnets := make([]map[string]interface{}, 0)
+	for _, s := range routeTable.Subnets {
+		subnet := make(map[string]interface{})
+		subnet["id"] = *s.ID
+		subnet["name"] = *s.Name
+		subnets = append(subnets, subnet)
+	}
+	if err = d.Set("subnets", subnets); err != nil {
+		err = fmt.Errorf("Error setting subnets: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_default_routing_table", "read", "set-subnets").GetDiag()
+	}
+
+	// Handle resource group
+	resourceGroupList := []map[string]interface{}{}
+	if routeTable.ResourceGroup != nil {
+		resourceGroupMap := routingTableResourceGroupToMap(*routeTable.ResourceGroup)
+		resourceGroupList = append(resourceGroupList, resourceGroupMap)
+	}
+	if err = d.Set(rtResourceGroup, resourceGroupList); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_group: %s", err), "ibm_is_vpc_default_routing_table", "read", "set-resource_group").GetDiag()
+	}
+
+	// Handle regular tags
+	tags, err := flex.GetGlobalTagsUsingCRN(meta, *routeTable.CRN, "", rtUserTagType)
+	if err != nil {
+		log.Printf("Error on get of resource default routing table (%s) tags: %s", d.Id(), err)
+	}
+	if err = d.Set(rtTags, tags); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting tags: %s", err), "ibm_is_vpc_default_routing_table", "read", "set-tags").GetDiag()
+	}
+
+	// Handle access tags
+	accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *routeTable.CRN, "", rtAccessTagType)
+	if err != nil {
+		log.Printf("Error on get of resource default routing table (%s) access tags: %s", d.Id(), err)
+	}
+	if err = d.Set(rtAccessTags, accesstags); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting access_tags: %s", err), "ibm_is_vpc_default_routing_table", "read", "set-access_tags").GetDiag()
+	}
+
 	return nil
 }
 
 func resourceIBMISVPCDefaultRoutingTableExists(d *schema.ResourceData, meta interface{}) (bool, error) {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return false, err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_default_routing_table", "exists", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return false, tfErr
 	}
 
 	idSet := strings.Split(d.Id(), "/")
 	if len(idSet) != 2 {
 		return false, fmt.Errorf("[ERROR] Incorrect ID %s: ID should be a combination of vpcID/routingTableID", d.Id())
 	}
+
 	getVpcRoutingTableOptions := sess.NewGetVPCRoutingTableOptions(idSet[0], idSet[1])
 	_, response, err := sess.GetVPCRoutingTable(getVpcRoutingTableOptions)
 	if err != nil {
@@ -396,7 +584,9 @@ func resourceIBMISVPCDefaultRoutingTableExists(d *schema.ResourceData, meta inte
 			d.SetId("")
 			return false, nil
 		}
-		return false, fmt.Errorf("[ERROR] Error Getting VPC Routing table : %s\n%s", err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetVPCRoutingTable failed: %s", err.Error()), "ibm_is_vpc_default_routing_table", "exists")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return false, tfErr
 	}
 	return true, nil
 }
