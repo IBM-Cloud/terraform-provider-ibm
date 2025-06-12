@@ -103,7 +103,6 @@ func DataSourceIBMPrivateDNSForwardingRules() *schema.Resource {
 func dataSourceIbmDnsCrForwardingRulesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).PrivateDNSClientSession()
 	if err != nil {
-		// return diag.FromErr(err)
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIbmDnsCrForwardingRulesRead Client initialization failed: %s", err.Error()), "ibm_dns_custom_resolver_forwarding_rule", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
@@ -115,7 +114,6 @@ func dataSourceIbmDnsCrForwardingRulesRead(context context.Context, d *schema.Re
 
 	result, resp, err := sess.ListForwardingRulesWithContext(context, opt)
 	if err != nil || result == nil {
-		// return diag.FromErr(flex.FmtErrorf("[ERROR] Error listing the forwarding rules %s:%s", err, resp))
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIbmDnsCustomResolverForwardingRulesRead ListForwardingRulesWithContext failed with error: %s and response:\n%s", err, resp), "ibm_dns_custom_resolver_forwarding_rule", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()

@@ -253,8 +253,7 @@ type location struct {
 func resouceIBMPrivateDNSCustomResolverCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).PrivateDNSClientSession()
 	if err != nil {
-		// return diag.FromErr(err)
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resouceIBMPrivateDNSCustomResolverCreate Client initialization failed: %s", err.Error()), "ibm_dns_custom_resolver", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resouceIBMDNSServicesCustomResolverCreate Client initialization failed: %s", err.Error()), "ibm_dns_custom_resolver", "create")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -285,7 +284,6 @@ func resouceIBMPrivateDNSCustomResolverCreate(context context.Context, d *schema
 		var expandcrLocations []dnssvcsv1.LocationInput
 		crLocations := d.Get(pdnsCustomResolverLocations).([]interface{})
 		if len(crLocations) > 3 {
-			// return diag.FromErr(flex.FmtErrorf("A custom resolver can have a maximum of three locations, either within the same subnet or in different subnets."))
 			err := fmt.Errorf("A custom resolver can have a maximum of three locations, either within the same subnet or in different subnets")
 			tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_dns_custom_resolver", "create")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
@@ -293,7 +291,6 @@ func resouceIBMPrivateDNSCustomResolverCreate(context context.Context, d *schema
 
 		}
 		if cr_highaval && len(crLocations) <= 1 {
-			// return diag.FromErr(flex.FmtErrorf("To meet high availability status, configure custom resolvers with a minimum of two resolver locations. A maximum of three locations can be configured within the same subnet location."))
 			err := fmt.Errorf("To meet high availability status, configure custom resolvers with a minimum of two resolver locations. A maximum of three locations can be configured within the same subnet location")
 			tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_dns_custom_resolver", "create")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
@@ -301,7 +298,6 @@ func resouceIBMPrivateDNSCustomResolverCreate(context context.Context, d *schema
 		}
 		expandcrLocations, loc_enable = expandPdnsCRLocations(crLocations)
 		if cr_enable.(bool) && !loc_enable {
-			// return diag.FromErr(flex.FmtErrorf("The Custom resolver cannot be enabled. There should be atleast one enabled location."))
 			err := fmt.Errorf("The Custom resolver cannot be enabled. There should be atleast one enabled location")
 			tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_dns_custom_resolver", "create")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
@@ -310,13 +306,11 @@ func resouceIBMPrivateDNSCustomResolverCreate(context context.Context, d *schema
 		customResolverOption.SetLocations(expandcrLocations)
 	} else {
 		if cr_highaval {
-			// return diag.FromErr(flex.FmtErrorf("To meet high availability status, configure custom resolvers with a minimum of two resolver locations. A maximum of three locations can be configured within the same subnet location."))
 			err := fmt.Errorf("To meet high availability status, configure custom resolvers with a minimum of two resolver locations. A maximum of three locations can be configured within the same subnet location")
 			tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_dns_custom_resolver", "create")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		} else if cr_enable.(bool) {
-			// return diag.FromErr(flex.FmtErrorf("The Custom resolver cannot be enabled. There should be atleast one enabled location."))
 			err := fmt.Errorf("The Custom resolver cannot be enabled. There should be atleast one enabled location")
 			tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_dns_custom_resolver", "create")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
@@ -327,7 +321,6 @@ func resouceIBMPrivateDNSCustomResolverCreate(context context.Context, d *schema
 	// Create a custom resolver
 	result, resp, err := sess.CreateCustomResolverWithContext(context, customResolverOption)
 	if err != nil || result == nil {
-		// return diag.FromErr(flex.FmtErrorf("[ERROR] Error reading the custom resolver %s:%s", err, resp))
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCustomResolverWithContext failed with error: %s and response:\n%s", err, resp), "ibm_dns_custom_resolver", "create")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
@@ -350,15 +343,13 @@ func resouceIBMPrivateDNSCustomResolverRead(context context.Context, d *schema.R
 
 	sess, err := meta.(conns.ClientSession).PrivateDNSClientSession()
 	if err != nil {
-		// return diag.FromErr(err)
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resouceIBMDNSServicesCustomResolverRead Client initialization failed: %s", err.Error()), "ibm_dns_custom_resolver", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DNSServicesCustomResolverRead Client initialization failed: %s", err.Error()), "ibm_dns_custom_resolver", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 
 	customResolverID, crn, err := flex.ConvertTftoCisTwoVar(d.Id())
 	if err != nil {
-		// return diag.FromErr(err)
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DNSServicesCustomResolverRead failed: %s", err.Error()), "ibm_dns_custom_resolver", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
@@ -372,7 +363,6 @@ func resouceIBMPrivateDNSCustomResolverRead(context context.Context, d *schema.R
 			d.SetId("")
 			return nil
 		}
-		// return diag.FromErr(flex.FmtErrorf("[ERROR] Error reading the custom resolver %s:%s", err, response))
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetCustomResolverWithContext failed with error: %s and response:\n%s", err, response), "ibm_dns_custom_resolver", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
@@ -382,7 +372,6 @@ func resouceIBMPrivateDNSCustomResolverRead(context context.Context, d *schema.R
 
 	fwresult, fwresp, fwerr := sess.ListForwardingRulesWithContext(context, fwopt)
 	if fwerr != nil || fwresult == nil {
-		// return diag.FromErr(flex.FmtErrorf("[ERROR] Error listing the forwarding rules %s:%s", fwerr, fwresp))
 		tfErr := flex.TerraformErrorf(fwerr, fmt.Sprintf("ListForwardingRulesWithContext failed with error: %s and response:\n%s", fwerr, fwresp), "ibm_dns_custom_resolver", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
@@ -415,7 +404,6 @@ func resouceIBMPrivateDNSCustomResolverRead(context context.Context, d *schema.R
 func resouceIBMPrivateDNSCustomResolverUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).PrivateDNSClientSession()
 	if err != nil {
-		// return diag.FromErr(err)
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resouceIBMDNSServicesCustomResolverUpdate Client initialization failed: %s", err.Error()), "ibm_private_dns_custom_resolver", "update")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
@@ -423,7 +411,6 @@ func resouceIBMPrivateDNSCustomResolverUpdate(context context.Context, d *schema
 
 	resolverID, instanceID, err := flex.ConvertTftoCisTwoVar(d.Id())
 	if err != nil {
-		// return diag.FromErr(err)
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resouceIBMDNSServicesCustomResolverUpdate failed: %s", err.Error()), "ibm_private_dns_custom_resolver", "update")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
@@ -451,14 +438,12 @@ func resouceIBMPrivateDNSCustomResolverUpdate(context context.Context, d *schema
 			var expandcrLocations []dnssvcsv1.LocationInput
 			crLocations := d.Get(pdnsCustomResolverLocations).([]interface{})
 			if len(crLocations) > 3 {
-				// return diag.FromErr(flex.FmtErrorf("A custom resolver can have a maximum of three locations, either within the same subnet or in different subnets."))
 				err := fmt.Errorf("A custom resolver can have a maximum of three locations, either within the same subnet or in different subnets")
 				tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_dns_custom_resolver", "update")
 				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 				return tfErr.GetDiag()
 			}
 			if cr_highaval && len(crLocations) <= 1 {
-				// return diag.FromErr(flex.FmtErrorf("To meet high availability status, configure custom resolvers with a minimum of two resolver locations .A maximum of three locations can be configured within the same subnet location."))
 				err := fmt.Errorf("To meet high availability status, configure custom resolvers with a minimum of two resolver locations .A maximum of three locations can be configured within the same subnet location")
 				tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_dns_custom_resolver", "update")
 				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
@@ -466,7 +451,6 @@ func resouceIBMPrivateDNSCustomResolverUpdate(context context.Context, d *schema
 			}
 			expandcrLocations, loc_enable = expandPdnsCRLocations(crLocations)
 			if cr_enable && !loc_enable {
-				// return diag.FromErr(flex.FmtErrorf("The Custom resolver cannot be enabled. There should be atleast one enabled location."))
 				err := fmt.Errorf("The Custom resolver cannot be enabled. There should be atleast one enabled location")
 				tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_dns_custom_resolver", "update")
 				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
@@ -475,13 +459,11 @@ func resouceIBMPrivateDNSCustomResolverUpdate(context context.Context, d *schema
 			fmt.Print("expandcrLocations", expandcrLocations)
 		} else {
 			if cr_highaval {
-				// return diag.FromErr(flex.FmtErrorf("To meet high availability status, configure custom resolvers with a minimum of two resolver locations. A maximum of three locations can be configured within the same subnet location."))
 				err := fmt.Errorf("To meet high availability status, configure custom resolvers with a minimum of two resolver locations. A maximum of three locations can be configured within the same subnet location")
 				tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_dns_custom_resolver", "update")
 				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 				return tfErr.GetDiag()
 			} else if cr_enable {
-				// return diag.FromErr(flex.FmtErrorf("The Custom resolver cannot be enabled. There should be atleast one enabled location."))
 				err := fmt.Errorf("The Custom resolver cannot be enabled. There should be atleast one enabled location")
 				tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_dns_custom_resolver", "update")
 				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
@@ -511,7 +493,6 @@ func resouceIBMPrivateDNSCustomResolverUpdate(context context.Context, d *schema
 		}
 		result, resp, err := sess.UpdateCustomResolverWithContext(context, opt)
 		if err != nil || result == nil {
-			// return diag.FromErr(flex.FmtErrorf("[ERROR] Error updating the custom resolver %s:%s", err, resp))
 			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateCustomResolverWithContext failed with error: %s and response:\n%s", err, resp), "ibm_dns_custom_resolver", "update")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
@@ -602,7 +583,6 @@ func resouceIBMPrivateDNSCustomResolverUpdate(context context.Context, d *schema
 					}
 				}
 				if !locationIdExists {
-					// return diag.FromErr(flex.FmtErrorf("[ERROR] The custom resolver location %s does not exist anymore: %v", newLoc.locationId, err))
 					err := fmt.Errorf("[ERROR] The custom resolver location %s does not exist anymore: %v", newLoc.locationId, err)
 					tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_dns_custom_resolver", "update")
 					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
@@ -628,7 +608,6 @@ func resouceIBMPrivateDNSCustomResolverDelete(context context.Context, d *schema
 
 	sess, err := meta.(conns.ClientSession).PrivateDNSClientSession()
 	if err != nil {
-		// return diag.FromErr(err)
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resouceIBMDNSServicesCustomResolverDelete Client initialization failed: %s", err.Error()), "ibm_private_dns_custom_resolver", "delete")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
@@ -636,17 +615,15 @@ func resouceIBMPrivateDNSCustomResolverDelete(context context.Context, d *schema
 
 	customResolverID, crn, err := flex.ConvertTftoCisTwoVar(d.Id())
 	if err != nil {
-		// return diag.FromErr(err)
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resouceIBMDNSServicesCustomResolverDelete failed: %s", err.Error()), "ibm_private_dns_custom_resolver", "delete")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
-	// Disable Cutsom Resolver before deleting
+	// Disable Custom Resolver before deleting
 	optEnabled := sess.NewUpdateCustomResolverOptions(crn, customResolverID)
 	optEnabled.SetEnabled(false)
 	result, resp, errEnabled := sess.UpdateCustomResolverWithContext(context, optEnabled)
 	if errEnabled != nil || result == nil {
-		// return diag.FromErr(flex.FmtErrorf("[ERROR] Error updating the custom resolver to disable before deleting %s:%s", errEnabled, resp))
 		err := fmt.Errorf("[ERROR] Error updating the custom resolver to disable before deleting %s:%s", errEnabled, resp)
 		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_dns_custom_resolver", "update")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
@@ -660,7 +637,6 @@ func resouceIBMPrivateDNSCustomResolverDelete(context context.Context, d *schema
 		if response != nil && response.StatusCode == 404 {
 			return nil
 		}
-		// return diag.FromErr(flex.FmtErrorf("[ERROR] Error deleting the custom resolver %s:%s", err, response))
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteCustomResolverWithContext failed with error: %s and response:\n%s", err, resp), "ibm_dns_custom_resolver", "delete")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
@@ -730,7 +706,6 @@ func expandPdnsCRLocations(crLocList []interface{}) (crLocations []dnssvcsv1.Loc
 func PDNSCustomResolverEnable(meta interface{}, instanceID string, customResolverID string) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).PrivateDNSClientSession()
 	if err != nil {
-		// return diag.FromErr(err)
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DNSServicesCustomResolverEnable initialization failed: %s", err.Error()), "ibm_dns_custom_resolver", "enable")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
@@ -749,7 +724,6 @@ func PDNSCustomResolverEnable(meta interface{}, instanceID string, customResolve
 			return nil
 		}
 	}
-	// return diag.FromErr(flex.FmtErrorf("[ERROR] Error Enabling the Custom resolver : MaxTimeout"))
 	tfErr := flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("DNSServicesCustomResolverEnable failed with error: %s:\n", err), "ibm_dns_custom_resolver", "enable", "max-timeout")
 	log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 	return tfErr.GetDiag()
@@ -759,7 +733,6 @@ func PDNSCustomResolverEnable(meta interface{}, instanceID string, customResolve
 func PDNSCustomResolverEnableLocation(meta interface{}, instanceID string, customResolverID string, locationID string) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).PrivateDNSClientSession()
 	if err != nil {
-		// return diag.FromErr(err)
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DNSServicesCustomResolverEnableLocation initialization failed: %s", err.Error()), "ibm_dns_custom_resolver", "enable")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
@@ -778,7 +751,6 @@ func PDNSCustomResolverEnableLocation(meta interface{}, instanceID string, custo
 			return nil
 		}
 	}
-	// return diag.FromErr(flex.FmtErrorf("[ERROR] Error Enabling the Custom resolver location : MaxTimeout"))
 	tfErr := flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("DNSServicesCustomResolverEnableLocation failed with error: %s:\n", err), "ibm_dns_custom_resolver", "enable", "max-timeout")
 	log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 	return tfErr.GetDiag()
@@ -787,7 +759,6 @@ func PDNSCustomResolverEnableLocation(meta interface{}, instanceID string, custo
 func PDNSCustomResolverDisableLocation(meta interface{}, instanceID string, customResolverID string, locationID string) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).PrivateDNSClientSession()
 	if err != nil {
-		// return diag.FromErr(err)
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DNSServicesCustomResolverDisableLocation Client initialization failed: %s", err.Error()), "ibm_dns_custom_resolver", "disable")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
@@ -796,7 +767,6 @@ func PDNSCustomResolverDisableLocation(meta interface{}, instanceID string, cust
 	updatelocation.SetEnabled(false)
 	result, resp, err := sess.UpdateCustomResolverLocation(updatelocation)
 	if err != nil || result == nil {
-		// return diag.FromErr(flex.FmtErrorf("[ERROR] Error Disabling the custom resolver location %s:%s", err, resp))
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DNSServicesCustomResolverDisableLocation Client failed with error: %s with response: %s\n", err, resp), "ibm_dns_custom_resolver", "disable")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
@@ -808,7 +778,6 @@ func PDNSCustomResolverDisableLocation(meta interface{}, instanceID string, cust
 func deleteCRLocation(meta interface{}, instanceID string, customResolverID string, locationID string) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).PrivateDNSClientSession()
 	if err != nil {
-		// return diag.FromErr(err)
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("deleteCustomResolverLocation Client initialization failed: %s", err.Error()), "ibm_dns_custom_resolver", "delete")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
@@ -819,7 +788,6 @@ func deleteCRLocation(meta interface{}, instanceID string, customResolverID stri
 		if resp != nil && resp.StatusCode == 404 {
 			return nil
 		}
-		// return diag.FromErr(flex.FmtErrorf("[ERROR] Error Deleting the custom resolver location %s:%s", errDel, resp))
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteCustomResolverLocation failed with error: %s with response: %s\n", errDel, resp), "ibm_dns_custom_resolver", "delete")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
@@ -830,7 +798,6 @@ func deleteCRLocation(meta interface{}, instanceID string, customResolverID stri
 func addCRLocation(meta interface{}, instanceID string, customResolverID string, subnet string) (string, diag.Diagnostics) {
 	sess, err := meta.(conns.ClientSession).PrivateDNSClientSession()
 	if err != nil {
-		// return "", diag.FromErr(err)
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("addCustomResolverLocation Client initialization failed: %s", err.Error()), "ibm_dns_custom_resolver", "create")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return "", tfErr.GetDiag()
@@ -840,7 +807,6 @@ func addCRLocation(meta interface{}, instanceID string, customResolverID string,
 	result, resp, err := sess.AddCustomResolverLocation(opt)
 	locationID := *result.ID
 	if err != nil || result == nil {
-		// return "", diag.FromErr(flex.FmtErrorf("[ERROR] Error creating the custom resolver location %s:%s", err, resp))
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("AddCustomResolverLocation failed with error: %s with response: %s\n", err, resp), "ibm_dns_custom_resolver", "create")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return "", tfErr.GetDiag()
@@ -851,7 +817,6 @@ func addCRLocation(meta interface{}, instanceID string, customResolverID string,
 func updateLocationSubnet(meta interface{}, instanceID string, customResolverID string, locationID string, subnet string) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).PrivateDNSClientSession()
 	if err != nil {
-		// return diag.FromErr(err)
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("updateLocationSubnet LocationSubnet initialization failed: %s", err.Error()), "ibm_dns_custom_resolver", "update")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
@@ -861,7 +826,6 @@ func updateLocationSubnet(meta interface{}, instanceID string, customResolverID 
 	updatelocation.SetEnabled(false)
 	result, resp, err := sess.UpdateCustomResolverLocation(updatelocation)
 	if err != nil || result == nil {
-		// return diag.FromErr(flex.FmtErrorf("[ERROR] Error Disable and updating the custom resolver location %s:%s", err, resp))
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateCustomResolverLocation failed with error: %s with response: %s\n", err, resp), "ibm_dns_custom_resolver", "update")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()

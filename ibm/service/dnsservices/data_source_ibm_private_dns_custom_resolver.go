@@ -103,7 +103,6 @@ func DataSourceIBMPrivateDNSCustomResolver() *schema.Resource {
 func dataSourceIBMDNSCustomResolverRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).PrivateDNSClientSession()
 	if err != nil {
-		// return diag.FromErr(err)
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMDNSCustomResolverRead Client initialization failed: %s", err.Error()), "ibm_dns_custom_resolver", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
@@ -113,7 +112,6 @@ func dataSourceIBMDNSCustomResolverRead(context context.Context, d *schema.Resou
 	opt := sess.NewListCustomResolversOptions(instanceID)
 	result, resp, err := sess.ListCustomResolversWithContext(context, opt)
 	if err != nil || result == nil {
-		// return diag.FromErr(flex.FmtErrorf("[ERROR] Error listing the custom resolvers %s:%s", err, resp))
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMDNSCustomResolverRead ListCustomResolversWithContext failed with error: %s and response:\n%s", err, resp), "ibm_dns_custom_resolver", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
