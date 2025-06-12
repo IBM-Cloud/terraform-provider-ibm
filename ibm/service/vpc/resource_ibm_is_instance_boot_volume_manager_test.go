@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Copyright IBM Corp. 2017, 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package vpc_test
@@ -19,347 +19,45 @@ import (
 )
 
 func TestAccIBMISInstanceBootVolumeManager_basic(t *testing.T) {
-	var vol string
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
-		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIBMISVolumeDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckIBMISInstanceBootVolumeManagerConfig(),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISInstanceBootVolumeManagerExists("ibm_is_instance_boot_volume_manager.boot", vol),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "bandwidth"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "capacity"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "crn"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "encryption_type"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "health_state"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "id"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "iops"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "name"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "profile"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "zone"),
-				),
-			},
-		},
-	})
-}
+	var volumeID string
 
-func TestAccIBMISInstanceBootVolumeManager_capacity_update(t *testing.T) {
-	var vol string
-	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
-	name := fmt.Sprintf("tf-server-%d", acctest.RandIntRange(10, 100))
-	subnetname := fmt.Sprintf("tfip-subnet-%d", acctest.RandIntRange(10, 100))
-	capacity0 := int64(0)
-	capacity := int64(180)
-	publicKey := strings.TrimSpace(`
-ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
-`)
-	sshname := fmt.Sprintf("tf-sshname-%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIBMISVolumeDestroy,
+		CheckDestroy: testAccCheckIBMISInstanceBootVolumeManagerDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckIBMISInstanceBootVolumeManagerConfig(),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISInstanceBootVolumeManagerExists("ibm_is_instance_boot_volume_manager.boot", vol),
+					testAccCheckIBMISInstanceBootVolumeManagerExists("ibm_is_instance_boot_volume_manager.test_boot_volume", volumeID),
 					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "bandwidth"),
+						"ibm_is_instance_boot_volume_manager.test_boot_volume", "boot_volume"),
 					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "capacity"),
+						"ibm_is_instance_boot_volume_manager.test_boot_volume", "bandwidth"),
 					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "crn"),
+						"ibm_is_instance_boot_volume_manager.test_boot_volume", "capacity"),
 					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "encryption_type"),
+						"ibm_is_instance_boot_volume_manager.test_boot_volume", "crn"),
 					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "health_state"),
+						"ibm_is_instance_boot_volume_manager.test_boot_volume", "encryption_type"),
 					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "id"),
+						"ibm_is_instance_boot_volume_manager.test_boot_volume", "health_state"),
 					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "iops"),
+						"ibm_is_instance_boot_volume_manager.test_boot_volume", "id"),
 					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "name"),
+						"ibm_is_instance_boot_volume_manager.test_boot_volume", "iops"),
 					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "profile"),
+						"ibm_is_instance_boot_volume_manager.test_boot_volume", "name"),
 					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "zone"),
-				),
-			},
-			{
-				Config: testAccCheckIBMISInstanceBootVolumeManagerCapacityUpdateConfig(vpcname, subnetname, sshname, publicKey, name, capacity0),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISVolumeExists("ibm_is_instance_boot_volume_manager.boot", vol),
+						"ibm_is_instance_boot_volume_manager.test_boot_volume", "profile"),
 					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "bandwidth"),
+						"ibm_is_instance_boot_volume_manager.test_boot_volume", "zone"),
 					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "capacity"),
+						"ibm_is_instance_boot_volume_manager.test_boot_volume", "status"),
 					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "crn"),
+						"ibm_is_instance_boot_volume_manager.test_boot_volume", "resource_group.#"),
 					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "encryption_type"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "health_state"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "id"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "iops"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "name"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "profile"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "zone"),
-					resource.TestCheckResourceAttrSet("ibm_is_instance_boot_volume_manager.boot", "tags.#"),
-				),
-			},
-			{
-				Config: testAccCheckIBMISInstanceBootVolumeManagerCapacityUpdateConfig(vpcname, subnetname, sshname, publicKey, name, capacity),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISVolumeExists("ibm_is_instance_boot_volume_manager.boot", vol),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "bandwidth"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "capacity"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "crn"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "encryption_type"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "health_state"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "id"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "iops"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "name"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "profile"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "zone"),
-					resource.TestCheckResourceAttrSet("ibm_is_instance_boot_volume_manager.boot", "tags.#"),
-					resource.TestCheckResourceAttr("ibm_is_instance_boot_volume_manager.boot", "capacity", fmt.Sprintf("%d", capacity)),
-				),
-			},
-		},
-	})
-}
-func TestAccIBMISInstanceBootVolumeManager_profile_update(t *testing.T) {
-	var vol string
-	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
-	name := fmt.Sprintf("tf-server-%d", acctest.RandIntRange(10, 100))
-	subnetname := fmt.Sprintf("tfip-subnet-%d", acctest.RandIntRange(10, 100))
-	profile0 := ""
-	profile := "10iops-tier"
-	publicKey := strings.TrimSpace(`
-ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
-`)
-	sshname := fmt.Sprintf("tf-sshname-%d", acctest.RandIntRange(10, 100))
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
-		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIBMISVolumeDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckIBMISInstanceBootVolumeManagerConfig(),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISInstanceBootVolumeManagerExists("ibm_is_instance_boot_volume_manager.boot", vol),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "bandwidth"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "capacity"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "crn"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "encryption_type"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "health_state"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "id"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "iops"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "name"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "profile"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "zone"),
-				),
-			},
-			{
-				Config: testAccCheckIBMISInstanceBootVolumeManagerProfileUpdateConfig(vpcname, subnetname, sshname, publicKey, name, profile0),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISVolumeExists("ibm_is_instance_boot_volume_manager.boot", vol),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "bandwidth"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "capacity"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "crn"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "encryption_type"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "health_state"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "id"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "iops"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "name"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "profile"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "zone"),
-					resource.TestCheckResourceAttrSet("ibm_is_instance_boot_volume_manager.boot", "tags.#"),
-				),
-			},
-			{
-				Config: testAccCheckIBMISInstanceBootVolumeManagerProfileUpdateConfig(vpcname, subnetname, sshname, publicKey, name, profile),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISVolumeExists("ibm_is_instance_boot_volume_manager.boot", vol),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "bandwidth"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "capacity"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "crn"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "encryption_type"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "health_state"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "id"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "iops"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "name"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "profile"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "zone"),
-					resource.TestCheckResourceAttrSet("ibm_is_instance_boot_volume_manager.boot", "tags.#"),
-					resource.TestCheckResourceAttr("ibm_is_instance_boot_volume_manager.boot", "profile", profile),
-				),
-			},
-		},
-	})
-}
-func TestAccIBMISInstanceBootVolumeManager_all_update(t *testing.T) {
-	var vol string
-	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
-	name := fmt.Sprintf("tf-server-%d", acctest.RandIntRange(10, 100))
-	volname := fmt.Sprintf("tf-vol-%d", acctest.RandIntRange(10, 100))
-	subnetname := fmt.Sprintf("tfip-subnet-%d", acctest.RandIntRange(10, 100))
-	profile := "10iops-tier"
-	capacity := int64(200)
-	tag1 := "env:prod"
-	tag2 := "boot:unattached"
-	tag3 := "delete:false"
-	accesstag := "access:qa"
-	publicKey := strings.TrimSpace(`
-ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
-`)
-	sshname := fmt.Sprintf("tf-sshname-%d", acctest.RandIntRange(10, 100))
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
-		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIBMISVolumeDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckIBMISInstanceBootVolumeManagerConfig(),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISInstanceBootVolumeManagerExists("ibm_is_instance_boot_volume_manager.boot", vol),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "bandwidth"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "capacity"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "crn"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "encryption_type"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "health_state"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "id"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "iops"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "name"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "profile"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "zone"),
-				),
-			},
-			{
-				Config: testAccCheckIBMISInstanceBootVolumeManagerAllUpdateConfig(vpcname, subnetname, sshname, publicKey, name, "", tag1, tag2, "", "", "", 0),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISVolumeExists("ibm_is_instance_boot_volume_manager.boot", vol),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "bandwidth"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "capacity"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "crn"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "encryption_type"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "health_state"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "id"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "iops"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "name"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "profile"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "zone"),
-					resource.TestCheckResourceAttrSet("ibm_is_instance_boot_volume_manager.boot", "tags.#"),
-				),
-			},
-			{
-				Config: testAccCheckIBMISInstanceBootVolumeManagerAllUpdateConfig(vpcname, subnetname, sshname, publicKey, name, profile, tag1, tag2, tag3, accesstag, volname, capacity),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISVolumeExists("ibm_is_instance_boot_volume_manager.boot", vol),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "bandwidth"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "capacity"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "crn"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "encryption_type"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "health_state"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "id"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "iops"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "name"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "profile"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "zone"),
-					resource.TestCheckResourceAttrSet("ibm_is_instance_boot_volume_manager.boot", "tags.#"),
-					resource.TestCheckResourceAttr("ibm_is_instance_boot_volume_manager.boot", "tags.#", "3"),
-					resource.TestCheckResourceAttr("ibm_is_instance_boot_volume_manager.boot", "access_tags.#", "1"),
-					resource.TestCheckResourceAttr("ibm_is_instance_boot_volume_manager.boot", "access_tags.#", "1"),
-					resource.TestCheckResourceAttr("ibm_is_instance_boot_volume_manager.boot", "profile", profile),
-					resource.TestCheckResourceAttr("ibm_is_instance_boot_volume_manager.boot", "name", volname),
-					resource.TestCheckResourceAttr("ibm_is_instance_boot_volume_manager.boot", "capacity", fmt.Sprintf("%d", capacity)),
+						"ibm_is_instance_boot_volume_manager.test_boot_volume", "volume_attachments.#"),
 				),
 			},
 		},
@@ -367,297 +65,273 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 }
 
 func TestAccIBMISInstanceBootVolumeManager_name_update(t *testing.T) {
-	var vol string
-	name1 := fmt.Sprintf("tfbootvoluat-%d", acctest.RandIntRange(10, 100))
-	name2 := fmt.Sprintf("tfbootvoluat-%d", acctest.RandIntRange(10, 100))
+	var volumeID string
+	name1 := fmt.Sprintf("tfbootvol-%d", acctest.RandIntRange(10, 100))
+	name2 := fmt.Sprintf("tfbootvol-updated-%d", acctest.RandIntRange(10, 100))
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIBMISVolumeDestroy,
+		CheckDestroy: testAccCheckIBMISInstanceBootVolumeManagerDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMISInstanceBootVolumeManagerConfig(),
+				Config: testAccCheckIBMISInstanceBootVolumeManagerConfigWithName(name1),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISInstanceBootVolumeManagerExists("ibm_is_instance_boot_volume_manager.boot", vol),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "bandwidth"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "capacity"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "crn"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "encryption_type"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "health_state"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "id"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "iops"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "name"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "profile"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "zone"),
-				),
-			},
-			{
-				Config: testAccCheckIBMISInstanceBootVolumeManagerNameUpdateConfig(name1),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISVolumeExists("ibm_is_instance_boot_volume_manager.boot", vol),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "bandwidth"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "capacity"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "crn"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "encryption_type"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "health_state"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "id"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "iops"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "name"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "profile"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "zone"),
+					testAccCheckIBMISInstanceBootVolumeManagerExists("ibm_is_instance_boot_volume_manager.test_boot_volume", volumeID),
 					resource.TestCheckResourceAttr(
-						"ibm_is_instance_boot_volume_manager.boot", "name", name1),
+						"ibm_is_instance_boot_volume_manager.test_boot_volume", "name", name1),
 				),
 			},
 			{
-				Config: testAccCheckIBMISInstanceBootVolumeManagerNameUpdateConfig(name2),
+				Config: testAccCheckIBMISInstanceBootVolumeManagerConfigWithName(name2),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISVolumeExists("ibm_is_instance_boot_volume_manager.boot", vol),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "bandwidth"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "capacity"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "crn"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "encryption_type"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "health_state"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "id"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "iops"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "name"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "profile"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "zone"),
+					testAccCheckIBMISInstanceBootVolumeManagerExists("ibm_is_instance_boot_volume_manager.test_boot_volume", volumeID),
 					resource.TestCheckResourceAttr(
-						"ibm_is_instance_boot_volume_manager.boot", "name", name2),
-				),
-			},
-		},
-	})
-}
-func TestAccIBMISInstanceBootVolumeManager_accesstag_update(t *testing.T) {
-	var vol string
-	tag1 := "access:qa"
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
-		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIBMISVolumeDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckIBMISInstanceBootVolumeManagerConfig(),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISInstanceBootVolumeManagerExists("ibm_is_instance_boot_volume_manager.boot", vol),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "bandwidth"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "capacity"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "crn"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "encryption_type"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "health_state"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "id"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "iops"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "name"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "profile"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "zone"),
-				),
-			},
-			{
-				Config: testAccCheckIBMISInstanceBootVolumeManagerAccessTagUpdateConfig(tag1),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISVolumeExists("ibm_is_instance_boot_volume_manager.boot", vol),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "bandwidth"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "capacity"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "crn"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "encryption_type"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "health_state"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "id"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "iops"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "name"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "profile"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "zone"),
-					resource.TestCheckResourceAttrSet("ibm_is_instance_boot_volume_manager.boot", "access_tags.#"),
-					resource.TestCheckResourceAttr("ibm_is_instance_boot_volume_manager.boot", "access_tags.#", "1"),
-				),
-			},
-		},
-	})
-}
-func TestAccIBMISInstanceBootVolumeManagerUsertag_basic(t *testing.T) {
-	var vol string
-	tag1 := "env:prod"
-	tag2 := "boot:unattached"
-	tag3 := "delete:false"
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
-		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIBMISVolumeDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckIBMISInstanceBootVolumeManagerConfig(),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISInstanceBootVolumeManagerExists("ibm_is_instance_boot_volume_manager.boot", vol),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "bandwidth"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "capacity"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "crn"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "encryption_type"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "health_state"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "id"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "iops"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "name"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "profile"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "zone"),
-				),
-			},
-			{
-				Config: testAccCheckIBMISInstanceBootVolumeManagerTagUpdateConfig(tag1, tag2, ""),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISVolumeExists("ibm_is_instance_boot_volume_manager.boot", vol),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "bandwidth"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "capacity"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "crn"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "encryption_type"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "health_state"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "id"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "iops"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "name"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "profile"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "zone"),
-					resource.TestCheckResourceAttrSet("ibm_is_instance_boot_volume_manager.boot", "tags.#"),
-					resource.TestCheckResourceAttr("ibm_is_instance_boot_volume_manager.boot", "tags.#", "2"),
-				),
-			},
-			{
-				Config: testAccCheckIBMISInstanceBootVolumeManagerTagUpdateConfig(tag1, tag2, tag3),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISVolumeExists("ibm_is_instance_boot_volume_manager.boot", vol),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "bandwidth"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "capacity"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "crn"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "encryption_type"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "health_state"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "id"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "iops"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "name"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "profile"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_boot_volume_manager.boot", "zone"),
-					resource.TestCheckResourceAttrSet("ibm_is_instance_boot_volume_manager.boot", "tags.#"),
-					resource.TestCheckResourceAttr("ibm_is_instance_boot_volume_manager.boot", "tags.#", "3"),
+						"ibm_is_instance_boot_volume_manager.test_boot_volume", "name", name2),
 				),
 			},
 		},
 	})
 }
 
-func TestAccIBMISInstanceBootVolumeManagerDelete_basic(t *testing.T) {
-	var vol string
-	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
-	name := fmt.Sprintf("tf-instnace-%d", acctest.RandIntRange(10, 100))
-	subnetname := fmt.Sprintf("tf-subnet-%d", acctest.RandIntRange(10, 100))
+func TestAccIBMISInstanceBootVolumeManager_capacity_update(t *testing.T) {
+	var volumeID string
+	capacity1 := 120
+	capacity2 := 180
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISInstanceBootVolumeManagerDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISInstanceBootVolumeManagerConfig(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISInstanceBootVolumeManagerExists("ibm_is_instance_boot_volume_manager.test_boot_volume", volumeID),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance_boot_volume_manager.test_boot_volume", "capacity"),
+				),
+			},
+			{
+				Config: testAccCheckIBMISInstanceBootVolumeManagerConfigWithCapacity(capacity1),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISInstanceBootVolumeManagerExists("ibm_is_instance_boot_volume_manager.test_boot_volume", volumeID),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance_boot_volume_manager.test_boot_volume", "capacity", fmt.Sprintf("%d", capacity1)),
+				),
+			},
+			{
+				Config: testAccCheckIBMISInstanceBootVolumeManagerConfigWithCapacity(capacity2),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISInstanceBootVolumeManagerExists("ibm_is_instance_boot_volume_manager.test_boot_volume", volumeID),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance_boot_volume_manager.test_boot_volume", "capacity", fmt.Sprintf("%d", capacity2)),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMISInstanceBootVolumeManager_profile_update(t *testing.T) {
+	var volumeID string
+	profile := "10iops-tier"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISInstanceBootVolumeManagerDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISInstanceBootVolumeManagerConfig(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISInstanceBootVolumeManagerExists("ibm_is_instance_boot_volume_manager.test_boot_volume", volumeID),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance_boot_volume_manager.test_boot_volume", "profile"),
+				),
+			},
+			{
+				Config: testAccCheckIBMISInstanceBootVolumeManagerConfigWithProfile(profile),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISInstanceBootVolumeManagerExists("ibm_is_instance_boot_volume_manager.test_boot_volume", volumeID),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance_boot_volume_manager.test_boot_volume", "profile", profile),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMISInstanceBootVolumeManager_iops_update(t *testing.T) {
+	var volumeID string
+	iops1 := 600
+	iops2 := 900
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISInstanceBootVolumeManagerDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISInstanceBootVolumeManagerConfigWithIOPS("custom", iops1),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISInstanceBootVolumeManagerExists("ibm_is_instance_boot_volume_manager.test_boot_volume", volumeID),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance_boot_volume_manager.test_boot_volume", "iops", fmt.Sprintf("%d", iops1)),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance_boot_volume_manager.test_boot_volume", "profile", "custom"),
+				),
+			},
+			{
+				Config: testAccCheckIBMISInstanceBootVolumeManagerConfigWithIOPS("custom", iops2),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISInstanceBootVolumeManagerExists("ibm_is_instance_boot_volume_manager.test_boot_volume", volumeID),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance_boot_volume_manager.test_boot_volume", "iops", fmt.Sprintf("%d", iops2)),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance_boot_volume_manager.test_boot_volume", "profile", "custom"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMISInstanceBootVolumeManager_tags(t *testing.T) {
+	var volumeID string
+	tag1 := "env:test"
+	tag2 := "team:dev"
+	tag3 := "boot:managed"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISInstanceBootVolumeManagerDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISInstanceBootVolumeManagerConfigWithTags(tag1, tag2),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISInstanceBootVolumeManagerExists("ibm_is_instance_boot_volume_manager.test_boot_volume", volumeID),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance_boot_volume_manager.test_boot_volume", "tags.#", "2"),
+				),
+			},
+			{
+				Config: testAccCheckIBMISInstanceBootVolumeManagerConfigWithTags(tag1, tag2, tag3),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISInstanceBootVolumeManagerExists("ibm_is_instance_boot_volume_manager.test_boot_volume", volumeID),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance_boot_volume_manager.test_boot_volume", "tags.#", "3"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMISInstanceBootVolumeManager_access_tags(t *testing.T) {
+	var volumeID string
+	accessTag := "project:test"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISInstanceBootVolumeManagerDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISInstanceBootVolumeManagerConfigWithAccessTags(accessTag),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISInstanceBootVolumeManagerExists("ibm_is_instance_boot_volume_manager.test_boot_volume", volumeID),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance_boot_volume_manager.test_boot_volume", "access_tags.#", "1"),
+				),
+			},
+			{
+				ResourceName:            "ibm_is_instance_boot_volume_manager.test_boot_volume",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"delete_volume", "delete_all_snapshots"},
+			},
+		},
+	})
+}
+
+func TestAccIBMISInstanceBootVolumeManager_complete_update(t *testing.T) {
+	var volumeID string
+	name := fmt.Sprintf("tfbootvol-%d", acctest.RandIntRange(10, 100))
+	updatedName := fmt.Sprintf("tfbootvol-updated-%d", acctest.RandIntRange(10, 100))
+	profile := "10iops-tier"
+	capacity := 200
+	tag1 := "env:prod"
+	tag2 := "boot:managed"
+	accessTag := "project:production"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISInstanceBootVolumeManagerDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISInstanceBootVolumeManagerConfig(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISInstanceBootVolumeManagerExists("ibm_is_instance_boot_volume_manager.test_boot_volume", volumeID),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance_boot_volume_manager.test_boot_volume", "name"),
+				),
+			},
+			{
+				Config: testAccCheckIBMISInstanceBootVolumeManagerCompleteConfig(name, profile, capacity, tag1, tag2, accessTag),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISInstanceBootVolumeManagerExists("ibm_is_instance_boot_volume_manager.test_boot_volume", volumeID),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance_boot_volume_manager.test_boot_volume", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance_boot_volume_manager.test_boot_volume", "profile", profile),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance_boot_volume_manager.test_boot_volume", "capacity", fmt.Sprintf("%d", capacity)),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance_boot_volume_manager.test_boot_volume", "tags.#", "2"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance_boot_volume_manager.test_boot_volume", "access_tags.#", "1"),
+				),
+			},
+			{
+				Config: testAccCheckIBMISInstanceBootVolumeManagerCompleteConfig(updatedName, profile, capacity+50, tag1, tag2, accessTag),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISInstanceBootVolumeManagerExists("ibm_is_instance_boot_volume_manager.test_boot_volume", volumeID),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance_boot_volume_manager.test_boot_volume", "name", updatedName),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance_boot_volume_manager.test_boot_volume", "capacity", fmt.Sprintf("%d", capacity+50)),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMISInstanceBootVolumeManager_delete_volume(t *testing.T) {
+	var volumeID string
+	vpcName := fmt.Sprintf("tfvpc-%d", acctest.RandIntRange(10, 100))
+	subnetName := fmt.Sprintf("tfsubnet-%d", acctest.RandIntRange(10, 100))
+	sshName := fmt.Sprintf("tfssh-%d", acctest.RandIntRange(10, 100))
+	instanceName := fmt.Sprintf("tfinstance-%d", acctest.RandIntRange(10, 100))
+	bootVolumeName := fmt.Sprintf("tfbootvol-%d", acctest.RandIntRange(10, 100))
 	publicKey := strings.TrimSpace(`
 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
 `)
-	sshname := fmt.Sprintf("tf-ssh-%d", acctest.RandIntRange(10, 100))
-	volName := fmt.Sprintf("tf-vol-%d", acctest.RandIntRange(10, 100))
-	iops1 := int64(600)
-	iops2 := int64(900)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIBMISVolumeDestroy,
+		CheckDestroy: testAccCheckIBMISInstanceBootVolumeManagerDestroyWithDeletion,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMISVolumeCustomConfig(vpcname, subnetname, sshname, publicKey, name, volName, iops1),
+				Config: testAccCheckIBMISInstanceBootVolumeManagerConfigWithDeletion(vpcName, subnetName, sshName, publicKey, instanceName, bootVolumeName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISVolumeExists("ibm_is_instance_boot_volume_manager.boot", vol),
+					testAccCheckIBMISInstanceBootVolumeManagerExists("ibm_is_instance_boot_volume_manager.test_boot_volume", volumeID),
 					resource.TestCheckResourceAttr(
-						"ibm_is_instance_boot_volume_manager.boot", "name", volName),
+						"ibm_is_instance_boot_volume_manager.test_boot_volume", "name", bootVolumeName),
 					resource.TestCheckResourceAttr(
-						"ibm_is_instance_boot_volume_manager.boot", "iops", fmt.Sprintf("%d", iops1)),
-				),
-			},
-
-			{
-				Config: testAccCheckIBMISVolumeCustomConfig(vpcname, subnetname, sshname, publicKey, name, volName, iops2),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISVolumeExists("ibm_is_instance_boot_volume_manager.boot", vol),
+						"ibm_is_instance_boot_volume_manager.test_boot_volume", "delete_volume", "true"),
 					resource.TestCheckResourceAttr(
-						"ibm_is_instance_boot_volume_manager.boot", "name", volName),
-					resource.TestCheckResourceAttr(
-						"ibm_is_instance_boot_volume_manager.boot", "iops", fmt.Sprintf("%d", iops2)),
+						"ibm_is_instance_boot_volume_manager.test_boot_volume", "delete_all_snapshots", "true"),
 				),
 			},
 		},
@@ -665,27 +339,51 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 }
 
 func testAccCheckIBMISInstanceBootVolumeManagerDestroy(s *terraform.State) error {
-
 	sess, _ := acc.TestAccProvider.Meta().(conns.ClientSession).VpcV1API()
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "ibm_is_vol" {
+		if rs.Type != "ibm_is_instance_boot_volume_manager" {
 			continue
 		}
 
-		getvolumeoptions := &vpcv1.GetVolumeOptions{
+		getVolumeOptions := &vpcv1.GetVolumeOptions{
 			ID: &rs.Primary.ID,
 		}
-		_, _, err := sess.GetVolume(getvolumeoptions)
+		_, response, err := sess.GetVolume(getVolumeOptions)
 
 		if err == nil {
-			return fmt.Errorf("[ERROR] Volume still exists: %s", rs.Primary.ID)
+			// Volume still exists, which is expected if delete_volume was false
+			continue
+		}
+		if response != nil && response.StatusCode != 404 {
+			return fmt.Errorf("Error checking for boot volume (%s) deletion: %s", rs.Primary.ID, err)
 		}
 	}
-
 	return nil
 }
 
-func testAccCheckIBMISInstanceBootVolumeManagerExists(n, volID string) resource.TestCheckFunc {
+func testAccCheckIBMISInstanceBootVolumeManagerDestroyWithDeletion(s *terraform.State) error {
+	sess, _ := acc.TestAccProvider.Meta().(conns.ClientSession).VpcV1API()
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "ibm_is_instance_boot_volume_manager" {
+			continue
+		}
+
+		getVolumeOptions := &vpcv1.GetVolumeOptions{
+			ID: &rs.Primary.ID,
+		}
+		_, response, err := sess.GetVolume(getVolumeOptions)
+
+		if err == nil {
+			return fmt.Errorf("Boot volume still exists: %s", rs.Primary.ID)
+		}
+		if response != nil && response.StatusCode != 404 {
+			return fmt.Errorf("Error checking for boot volume (%s) deletion: %s", rs.Primary.ID, err)
+		}
+	}
+	return nil
+}
+
+func testAccCheckIBMISInstanceBootVolumeManagerExists(n, volumeID string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 
@@ -698,243 +396,135 @@ func testAccCheckIBMISInstanceBootVolumeManagerExists(n, volID string) resource.
 		}
 
 		sess, _ := acc.TestAccProvider.Meta().(conns.ClientSession).VpcV1API()
-		getvolumeoptions := &vpcv1.GetVolumeOptions{
+		getVolumeOptions := &vpcv1.GetVolumeOptions{
 			ID: &rs.Primary.ID,
 		}
-		foundvol, _, err := sess.GetVolume(getvolumeoptions)
+		foundVolume, _, err := sess.GetVolume(getVolumeOptions)
 		if err != nil {
 			return err
 		}
-		volID = *foundvol.ID
+		volumeID = *foundVolume.ID
 		return nil
 	}
 }
 
 func testAccCheckIBMISInstanceBootVolumeManagerConfig() string {
-	return fmt.Sprintf(
-		`
-	resource "ibm_is_instance_boot_volume_manager" "boot"{
-		volume_id = "%s"
+	return fmt.Sprintf(`
+resource "ibm_is_instance_boot_volume_manager" "test_boot_volume" {
+	boot_volume = "%s"
+}`, acc.VSIUnattachedBootVolumeID)
+}
+
+func testAccCheckIBMISInstanceBootVolumeManagerConfigWithName(name string) string {
+	return fmt.Sprintf(`
+resource "ibm_is_instance_boot_volume_manager" "test_boot_volume" {
+	boot_volume = "%s"
+	name        = "%s"
+}`, acc.VSIUnattachedBootVolumeID, name)
+}
+
+func testAccCheckIBMISInstanceBootVolumeManagerConfigWithCapacity(capacity int) string {
+	return fmt.Sprintf(`
+resource "ibm_is_instance_boot_volume_manager" "test_boot_volume" {
+	boot_volume = "%s"
+	capacity    = %d
+}`, acc.VSIUnattachedBootVolumeID, capacity)
+}
+
+func testAccCheckIBMISInstanceBootVolumeManagerConfigWithProfile(profile string) string {
+	return fmt.Sprintf(`
+resource "ibm_is_instance_boot_volume_manager" "test_boot_volume" {
+	boot_volume = "%s"
+	profile     = "%s"
+}`, acc.VSIUnattachedBootVolumeID, profile)
+}
+
+func testAccCheckIBMISInstanceBootVolumeManagerConfigWithIOPS(profile string, iops int) string {
+	return fmt.Sprintf(`
+resource "ibm_is_instance_boot_volume_manager" "test_boot_volume" {
+	boot_volume = "%s"
+	profile     = "%s"
+	iops        = %d
+}`, acc.VSIUnattachedBootVolumeID, profile, iops)
+}
+
+func testAccCheckIBMISInstanceBootVolumeManagerConfigWithTags(tags ...string) string {
+	tagList := `["` + strings.Join(tags, `", "`) + `"]`
+	return fmt.Sprintf(`
+resource "ibm_is_instance_boot_volume_manager" "test_boot_volume" {
+	boot_volume = "%s"
+	tags        = %s
+}`, acc.VSIUnattachedBootVolumeID, tagList)
+}
+
+func testAccCheckIBMISInstanceBootVolumeManagerConfigWithAccessTags(accessTag string) string {
+	return fmt.Sprintf(`
+resource "ibm_is_instance_boot_volume_manager" "test_boot_volume" {
+	boot_volume = "%s"
+	access_tags = ["%s"]
+}`, acc.VSIUnattachedBootVolumeID, accessTag)
+}
+
+func testAccCheckIBMISInstanceBootVolumeManagerCompleteConfig(name, profile string, capacity int, tag1, tag2, accessTag string) string {
+	return fmt.Sprintf(`
+resource "ibm_is_instance_boot_volume_manager" "test_boot_volume" {
+	boot_volume = "%s"
+	name        = "%s"
+	profile     = "%s"
+	capacity    = %d
+	tags        = ["%s", "%s"]
+	access_tags = ["%s"]
+}`, acc.VSIUnattachedBootVolumeID, name, profile, capacity, tag1, tag2, accessTag)
+}
+
+func testAccCheckIBMISInstanceBootVolumeManagerConfigWithDeletion(vpcName, subnetName, sshName, publicKey, instanceName, bootVolumeName string) string {
+	return fmt.Sprintf(`
+resource "ibm_is_vpc" "test_vpc" {
+	name = "%s"
+}
+
+resource "ibm_is_subnet" "test_subnet" {
+	name                     = "%s"
+	vpc                      = ibm_is_vpc.test_vpc.id
+	zone                     = "%s"
+	total_ipv4_address_count = 16
+}
+
+resource "ibm_is_ssh_key" "test_ssh_key" {
+	name       = "%s"
+	public_key = "%s"
+}
+
+resource "ibm_is_volume" "test_boot_volume" {
+	name     = "%s"
+	profile  = "general-purpose"
+	zone     = "%s"
+	capacity = 100
+}
+
+resource "ibm_is_instance" "test_instance" {
+	name    = "%s"
+	image   = "%s"
+	profile = "%s"
+	
+	boot_volume {
+		volume_id           = ibm_is_instance_boot_volume_manager.test_boot_volume.id
+		auto_delete_volume  = false
 	}
-`, acc.VSIUnattachedBootVolumeID)
-
-}
-
-func testAccCheckIBMISInstanceBootVolumeManagerNameUpdateConfig(name string) string {
-	return fmt.Sprintf(
-		`
-	resource "ibm_is_instance_boot_volume_manager" "boot"{
-		volume_id 	= "%s"
-		name		= "%s"
+	
+	primary_network_interface {
+		subnet = ibm_is_subnet.test_subnet.id
 	}
-`, acc.VSIUnattachedBootVolumeID, name)
-
+	
+	vpc  = ibm_is_vpc.test_vpc.id
+	zone = "%s"
+	keys = [ibm_is_ssh_key.test_ssh_key.id]
 }
 
-func testAccCheckIBMISInstanceBootVolumeManagerTagUpdateConfig(tag1, tag2, tag3 string) string {
-	return fmt.Sprintf(
-		`
-		resource "ibm_is_instance_boot_volume_manager" "boot"{
-			volume_id 	= "%s"
-			tags		= "%s" == "" ? ["%s", "%s"] : ["%s", "%s", "%s"]
-		}
-`, acc.VSIUnattachedBootVolumeID, tag3, tag1, tag2, tag1, tag2, tag3)
-
-}
-func testAccCheckIBMISInstanceBootVolumeManagerAccessTagUpdateConfig(tag1 string) string {
-	return fmt.Sprintf(
-		`
-		resource "ibm_is_instance_boot_volume_manager" "boot"{
-			volume_id 	= "%s"
-			access_tags = ["%s"]
-		}
-`, acc.VSIUnattachedBootVolumeID, tag1)
-
-}
-
-func testAccCheckIBMISInstanceBootVolumeManagerCapacityUpdateConfig(vpcname, subnetname, sshname, publicKey, name string, capacity int64) string {
-	return fmt.Sprintf(
-		`
-		resource "ibm_is_vpc" "testacc_vpc" {
-			name = "%s"
-		}
-		  
-		resource "ibm_is_subnet" "testacc_subnet" {
-			name            			= "%s"
-			vpc             			= ibm_is_vpc.testacc_vpc.id
-			zone            			= "%s"
-			total_ipv4_address_count 	= 16
-		}
-		  
-		resource "ibm_is_ssh_key" "testacc_sshkey" {
-			name       = "%s"
-			public_key = "%s"
-		}
-	  
-		resource "ibm_is_instance" "testacc_instance" {
-			name    = "%s"
-			profile = "%s"
-			boot_volume {
-				volume_id 			= ibm_is_instance_boot_volume_manager.boot.id
-				auto_delete_volume 	= false
-			}
-			primary_network_interface {
-				subnet     = ibm_is_subnet.testacc_subnet.id
-			}
-			vpc  = ibm_is_vpc.testacc_vpc.id
-			zone = "%s"
-			keys = [ibm_is_ssh_key.testacc_sshkey.id]
-		}
-		resource "ibm_is_instance_boot_volume_manager" "boot" {
-			  volume_id  	= "%s"
-			  capacity 		= %d == 0 ? null : %d
-		}
-		`, vpcname, subnetname, acc.ISZoneName, sshname, publicKey, name, acc.InstanceProfileName, acc.ISZoneName, acc.VSIUnattachedBootVolumeID, capacity, capacity)
-
-}
-func testAccCheckIBMISInstanceBootVolumeManagerProfileUpdateConfig(vpcname, subnetname, sshname, publicKey, name, profile string) string {
-	return fmt.Sprintf(
-		`
-		resource "ibm_is_vpc" "testacc_vpc" {
-			name = "%s"
-		}
-		  
-		resource "ibm_is_subnet" "testacc_subnet" {
-			name            			= "%s"
-			vpc             			= ibm_is_vpc.testacc_vpc.id
-			zone            			= "%s"
-			total_ipv4_address_count 	= 16
-		}
-		  
-		resource "ibm_is_ssh_key" "testacc_sshkey" {
-			name       = "%s"
-			public_key = "%s"
-		}
-	  
-		resource "ibm_is_instance" "testacc_instance" {
-			name    = "%s"
-			profile = "%s"
-			boot_volume {
-				volume_id 			= ibm_is_instance_boot_volume_manager.boot.id
-				auto_delete_volume 	= false
-			}
-			primary_network_interface {
-				subnet     = ibm_is_subnet.testacc_subnet.id
-			}
-			vpc  = ibm_is_vpc.testacc_vpc.id
-			zone = "%s"
-			keys = [ibm_is_ssh_key.testacc_sshkey.id]
-		}
-		resource "ibm_is_instance_boot_volume_manager" "boot" {
-			  volume_id  	= "%s"
-			  profile 		= "%s" == "" ? null : "%s"
-		}
-		`, vpcname, subnetname, acc.ISZoneName, sshname, publicKey, name, acc.InstanceProfileName, acc.ISZoneName, acc.VSIUnattachedBootVolumeID, profile, profile)
-
-}
-func testAccCheckIBMISInstanceBootVolumeManagerAllUpdateConfig(vpcname, subnetname, sshname, publicKey, name, profile, tag1, tag2, tag3, accesstag, volname string, capacity int64) string {
-	return fmt.Sprintf(
-		`
-		resource "ibm_is_vpc" "testacc_vpc" {
-			name = "%s"
-		}
-		  
-		resource "ibm_is_subnet" "testacc_subnet" {
-			name            			= "%s"
-			vpc             			= ibm_is_vpc.testacc_vpc.id
-			zone            			= "%s"
-			total_ipv4_address_count 	= 16
-		}
-		  
-		resource "ibm_is_ssh_key" "testacc_sshkey" {
-			name       = "%s"
-			public_key = "%s"
-		}
-	  
-		resource "ibm_is_instance" "testacc_instance" {
-			name    = "%s"
-			profile = "%s"
-			boot_volume {
-				volume_id 			= ibm_is_instance_boot_volume_manager.boot.id
-				auto_delete_volume 	= false
-			}
-			primary_network_interface {
-				subnet     = ibm_is_subnet.testacc_subnet.id
-			}
-			vpc  = ibm_is_vpc.testacc_vpc.id
-			zone = "%s"
-			keys = [ibm_is_ssh_key.testacc_sshkey.id]
-		}
-		resource "ibm_is_instance_boot_volume_manager" "boot" {
-			  volume_id  	= "%s"
-			  profile 		= "%s" == "" ? null : "%s"
-			  capacity 		= %d == 0 ? null :  %d
-			  access_tags 	= "%s" == "" ? null : ["%s"]
-			  tags			= "%s" == "" ? null : ["%s", "%s", "%s"]
-			  name			= "%s" == "" ? null : "%s"
-		}
-		`, vpcname, subnetname, acc.ISZoneName, sshname, publicKey, name, acc.InstanceProfileName, acc.ISZoneName, acc.VSIUnattachedBootVolumeID, profile, profile, capacity, capacity, accesstag, accesstag, tag3, tag1, tag2, tag3, volname, volname)
-
-}
-
-func testAccCheckIBMISInstanceBootVolumeManagerAttachmentDeleteConfig(vpcname, subnetname, sshname, publicKey, insname, capacityArray string) string {
-	return fmt.Sprintf(
-		`
-		variable "vsi_vol_size" {
-			description = "capacity array"
-			default     =  %s
-		}
-
-		resource "ibm_is_volume" "storage"{
-			name 	 = "tf-vol-att-${count.index}"
-			count 	 = length(var.vsi_vol_size)
-			profile  = "general-purpose"
-			zone 	 = "%s"
-			capacity = var.vsi_vol_size[count.index]
-		}
-
-		resource "ibm_is_vpc" "testacc_vpc" {
-			name = "%s"
-		}
-		  
-		resource "ibm_is_subnet" "testacc_subnet" {
-			name            			= "%s"
-			vpc             			= ibm_is_vpc.testacc_vpc.id
-			zone            			= "%s"
-			total_ipv4_address_count 	= 16
-		}
-		  
-		resource "ibm_is_ssh_key" "testacc_sshkey" {
-			name       					= "%s"
-			public_key 					= "%s"
-		}
-		  
-		resource "ibm_is_instance" "testacc_instance" {
-			name    		= "%s"
-			image   		= "%s"
-			profile 		= "%s"
-			volumes = ibm_is_instance_boot_volume_manager.boot[*].id
-			primary_network_interface {
-				subnet     = ibm_is_subnet.testacc_subnet.id
-			}
-			vpc  = ibm_is_vpc.testacc_vpc.id
-			zone = "%s"
-			keys = [ibm_is_ssh_key.testacc_sshkey.id]
-		}
-`, capacityArray, acc.ISZoneName, vpcname, subnetname, acc.ISZoneName, sshname, publicKey, insname, acc.IsImage, acc.InstanceProfileName, acc.ISZoneName)
-
-}
-
-func testAccCheckIBMISInstanceBootVolumeManagerUsertagConfig(name, usertag string) string {
-	return fmt.Sprintf(
-		`
-    resource "ibm_is_volume" "storage"{
-        name = "%s"
-        profile = "10iops-tier"
-        zone = "us-south-1"
-        # capacity= 200
-        tags = ["%s"]
-    }
-`, name, usertag)
-
+resource "ibm_is_instance_boot_volume_manager" "test_boot_volume" {
+	boot_volume           = ibm_is_volume.test_boot_volume.id
+	name                  = "%s"
+	delete_volume         = true
+	delete_all_snapshots  = true
+}`, vpcName, subnetName, acc.ISZoneName, sshName, publicKey, bootVolumeName, acc.ISZoneName, instanceName, acc.IsImage, acc.InstanceProfileName, acc.ISZoneName, bootVolumeName)
 }

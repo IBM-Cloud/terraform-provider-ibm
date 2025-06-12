@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Copyright IBM Corp. 2017, 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package vpc
@@ -13,27 +13,34 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 const (
-	isInstanceBootVolumeManagerDelete = "delete"
+	isInstanceBootVolumeIdentifier    = "boot_volume"
+	isInstanceBootVolumeManagerDelete = "delete_volume"
 )
 
 func ResourceIBMISInstanceBootVolumeManager() *schema.Resource {
 	return &schema.Resource{
-		Create:   resourceIBMISInstanceBootVolumeManagerCreate,
-		Read:     resourceIBMISInstanceBootVolumeManagerRead,
-		Update:   resourceIBMISInstanceBootVolumeManagerUpdate,
-		Delete:   resourceIBMISInstanceBootVolumeManagerDelete,
-		Exists:   resourceIBMISInstanceBootVolumeManagerExists,
-		Importer: &schema.ResourceImporter{},
+		CreateContext: resourceIBMISInstanceBootVolumeManagerCreate,
+		ReadContext:   resourceIBMISInstanceBootVolumeManagerRead,
+		UpdateContext: resourceIBMISInstanceBootVolumeManagerUpdate,
+		DeleteContext: resourceIBMISInstanceBootVolumeManagerDelete,
+		Exists:        resourceIBMISInstanceBootVolumeManagerExists,
+		Importer: &schema.ResourceImporter{
+			StateContext: func(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+				return []*schema.ResourceData{d}, nil
+			},
+		},
 
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(10 * time.Minute),
+			Update: schema.DefaultTimeout(10 * time.Minute),
 			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
 
@@ -45,101 +52,162 @@ func ResourceIBMISInstanceBootVolumeManager() *schema.Resource {
 			),
 			customdiff.Sequence(
 				func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
-					return flex.ResourceVolumeValidate(diff)
-				}),
-			customdiff.Sequence(
-				func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
 					return flex.ResourceValidateAccessTags(diff, v)
 				}),
 		),
 
 		Schema: map[string]*schema.Schema{
-
-			isInstanceBootVolumeId: {
-				Type:         schema.TypeString,
-				Required:     true,
-				ForceNew:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_is_instance_boot_volume_manager", isVolumeName),
-				Description:  "Volume name",
+			isInstanceBootVolumeIdentifier: {
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "The unique identifier for the boot volume",
 			},
 			isVolumeName: {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Computed:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_is_instance_boot_volume_manager", isVolumeName),
-				Description:  "Volume name",
+				Description:  "The user-defined name for this boot volume",
 			},
-
 			isVolumeProfileName: {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Computed:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_is_instance_boot_volume_manager", isVolumeProfileName),
-				Description:  "Volume profile name",
+				Description:  "The globally unique name of the volume profile to use for this volume",
 			},
-
-			isVolumeZone: {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Zone name",
-			},
-
-			isVolumeEncryptionKey: {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Volume encryption key info",
-			},
-
-			isInstanceBootVolumeManagerDelete: {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Description: "Volume encryption key info",
-			},
-
-			isVolumeEncryptionType: {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Volume encryption type info",
-			},
-
 			isVolumeCapacity: {
 				Type:         schema.TypeInt,
 				Optional:     true,
 				Computed:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_is_instance_boot_volume_manager", isVolumeCapacity),
-				Description:  "Volume capacity value",
-			},
-			isVolumeSourceSnapshot: {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The unique identifier for this snapshot",
-			},
-			isVolumeResourceGroup: {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Resource group name",
+				Description:  "The capacity of the volume in gigabytes",
 			},
 			isVolumeIops: {
 				Type:         schema.TypeInt,
 				Optional:     true,
 				Computed:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_is_instance_boot_volume_manager", isVolumeIops),
-				Description:  "IOPS value for the Volume",
+				Description:  "The maximum I/O operations per second (IOPS) for the volume",
+			},
+			isInstanceBootVolumeManagerDelete: {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "If set to true, the boot volume will be deleted when this resource is destroyed",
+			},
+			isVolumeTags: {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: validate.InvokeValidator("ibm_is_instance_boot_volume_manager", "tags")},
+				Set:         flex.ResourceIBMVPCHash,
+				Description: "User tags for the boot volume",
+			},
+			isVolumeAccessTags: {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: validate.InvokeValidator("ibm_is_instance_boot_volume_manager", "accesstag")},
+				Set:         flex.ResourceIBMVPCHash,
+				Description: "Access management tags for the boot volume",
+			},
+			isVolumeDeleteAllSnapshots: {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "If set to true, all snapshots created from this volume will be deleted when the volume is deleted",
+			},
+
+			// Computed attributes
+			isVolumeZone: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The zone where this volume resides",
+			},
+			isVolumeEncryptionKey: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The CRN of the encryption key used to encrypt this volume",
+			},
+			isVolumeEncryptionType: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The type of encryption used on the volume",
+			},
+			isVolumeSourceSnapshot: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The unique identifier for the snapshot from which this volume was created",
+			},
+			isVolumeResourceGroup: {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The resource group for this volume",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"href": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The URL for this resource group",
+						},
+						"id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The unique identifier for this resource group",
+						},
+						"name": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The user-defined name for this resource group",
+						},
+					},
+				},
 			},
 			isVolumeCrn: {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "CRN value for the volume instance",
+				Description: "The CRN of the volume",
 			},
 			isVolumeStatus: {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Volume status",
+				Description: "The status of the volume",
 			},
-
+			isVolumeHealthState: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The health state of this volume",
+			},
+			isVolumeHealthReasons: {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The reasons for the current health_state (if any)",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						isVolumeHealthReasonsCode: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "A snake case string succinctly identifying the reason for this health state",
+						},
+						isVolumeHealthReasonsMessage: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "An explanation of the reason for this health state",
+						},
+						isVolumeHealthReasonsMoreInfo: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Link to documentation about the reason for this health state",
+						},
+					},
+				},
+			},
 			isVolumeStatusReasons: {
-				Type:     schema.TypeList,
-				Computed: true,
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The reasons for the current status (if any)",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						isVolumeStatusReasonsCode: {
@@ -147,13 +215,11 @@ func ResourceIBMISInstanceBootVolumeManager() *schema.Resource {
 							Computed:    true,
 							Description: "A snake case string succinctly identifying the status reason",
 						},
-
 						isVolumeStatusReasonsMessage: {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "An explanation of the status reason",
 						},
-
 						isVolumeStatusReasonsMoreInfo: {
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -162,113 +228,132 @@ func ResourceIBMISInstanceBootVolumeManager() *schema.Resource {
 					},
 				},
 			},
-			isVolumeHealthReasons: {
-				Type:     schema.TypeList,
-				Computed: true,
+			isVolumeBandwidth: {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The maximum bandwidth (in megabits per second) for the volume",
+			},
+			"volume_attachments": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The volume attachments for this volume",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						isVolumeHealthReasonsCode: {
-							Type:        schema.TypeString,
+						"delete_volume_on_instance_delete": {
+							Type:        schema.TypeBool,
 							Computed:    true,
-							Description: "A snake case string succinctly identifying the reason for this health state.",
+							Description: "If set to true, this volume will be deleted when the instance is deleted",
 						},
-
-						isVolumeHealthReasonsMessage: {
-							Type:        schema.TypeString,
+						"device": {
+							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "An explanation of the reason for this health state.",
+							Description: "A unique identifier for the device which is exposed to the instance operating system",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"id": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "A unique identifier for the device which is exposed to the instance operating system",
+									},
+								},
+							},
 						},
-
-						isVolumeHealthReasonsMoreInfo: {
+						"href": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Link to documentation about the reason for this health state.",
+							Description: "The URL for this volume attachment",
+						},
+						"id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The unique identifier for this volume attachment",
+						},
+						"instance": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The attached instance",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"crn": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The CRN for this virtual server instance",
+									},
+									"href": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The URL for this virtual server instance",
+									},
+									"id": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The unique identifier for this virtual server instance",
+									},
+									"name": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The user-defined name for this virtual server instance",
+									},
+								},
+							},
+						},
+						"name": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The user-defined name for this volume attachment",
+						},
+						"type": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The type of volume attachment",
 						},
 					},
 				},
 			},
-
-			isVolumeHealthState: {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The health of this resource.",
-			},
-			isVolumeDeleteAllSnapshots: {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Description: "Deletes all snapshots created from this volume",
-			},
-			isVolumeTags: {
-				Type:        schema.TypeSet,
-				Optional:    true,
-				Computed:    true,
-				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: validate.InvokeValidator("ibm_is_instance_boot_volume_manager", "tags")},
-				Set:         flex.ResourceIBMVPCHash,
-				Description: "UserTags for the volume instance",
-			},
-			isVolumeAccessTags: {
-				Type:        schema.TypeSet,
-				Optional:    true,
-				Computed:    true,
-				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: validate.InvokeValidator("ibm_is_instance_boot_volume_manager", "accesstag")},
-				Set:         flex.ResourceIBMVPCHash,
-				Description: "Access management tags for the volume instance",
-			},
-
 			flex.ResourceControllerURL: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The URL of the IBM Cloud dashboard that can be used to explore and view details about this instance",
 			},
-
 			flex.ResourceName: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The name of the resource",
 			},
-
 			flex.ResourceCRN: {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The crn of the resource",
+				Description: "The CRN of the resource",
 			},
-
 			flex.ResourceStatus: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The status of the resource",
 			},
-
 			flex.ResourceGroupName: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The resource group name in which resource is provisioned",
-			},
-
-			isVolumeBandwidth: {
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "The maximum bandwidth (in megabits per second) for the volume",
 			},
 		},
 	}
 }
 
 func ResourceIBMISInstanceBootVolumeManagerValidator() *validate.ResourceValidator {
-
 	validateSchema := make([]validate.ValidateSchema, 0)
+
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
 			Identifier:                 isVolumeName,
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
-			Required:                   true,
+			Optional:                   true,
 			Regexp:                     `^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$`,
 			MinValueLength:             1,
 			MaxValueLength:             63})
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
-			Identifier:                 isInstanceBootVolumeId,
+			Identifier:                 isInstanceBootVolumeIdentifier,
 			ValidateFunctionIdentifier: validate.ValidateNoZeroValues,
 			Type:                       validate.TypeString})
 	validateSchema = append(validateSchema,
@@ -294,7 +379,7 @@ func ResourceIBMISInstanceBootVolumeManagerValidator() *validate.ResourceValidat
 			ValidateFunctionIdentifier: validate.IntBetween,
 			Type:                       validate.TypeInt,
 			MinValue:                   "10",
-			MaxValue:                   "250"})
+			MaxValue:                   "16000"})
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
 			Identifier:                 isVolumeIops,
@@ -312,497 +397,639 @@ func ResourceIBMISInstanceBootVolumeManagerValidator() *validate.ResourceValidat
 			MinValueLength:             1,
 			MaxValueLength:             128})
 
-	ibmISVolumeResourceValidator := validate.ResourceValidator{ResourceName: "ibm_is_instance_boot_volume_manager", Schema: validateSchema}
-	return &ibmISVolumeResourceValidator
+	ibmISInstanceBootVolumeManagerResourceValidator := validate.ResourceValidator{ResourceName: "ibm_is_instance_boot_volume_manager", Schema: validateSchema}
+	return &ibmISInstanceBootVolumeManagerResourceValidator
 }
 
-func resourceIBMISInstanceBootVolumeManagerCreate(d *schema.ResourceData, meta interface{}) error {
-
-	volId := d.Get(isInstanceBootVolumeId).(string)
-	d.SetId(volId)
-	err := resourceIBMISInstanceBootVolumeManagerRead(d, meta)
-	if err != nil {
-		return err
-	}
-
-	return resourceIBMISInstanceBootVolumeManagerUpdate(d, meta)
-}
-
-func resourceIBMISInstanceBootVolumeManagerRead(d *schema.ResourceData, meta interface{}) error {
-
-	id := d.Id()
-	err := instancebootvolGet(d, meta, id)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func instancebootvolGet(d *schema.ResourceData, meta interface{}, id string) error {
+func resourceIBMISInstanceBootVolumeManagerCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_boot_volume_manager", "create", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
-	options := &vpcv1.GetVolumeOptions{
+
+	bootVolumeID := d.Get(isInstanceBootVolumeIdentifier).(string)
+
+	// Verify the boot volume exists
+	getVolumeOptions := &vpcv1.GetVolumeOptions{
+		ID: &bootVolumeID,
+	}
+	volume, _, err := sess.GetVolumeWithContext(context, getVolumeOptions)
+	if err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetVolumeWithContext failed: %s", err.Error()), "ibm_is_instance_boot_volume_manager", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+	}
+
+	d.SetId(bootVolumeID)
+
+	// Handle tags on creation
+	v := os.Getenv("IC_ENV_TAGS")
+	if _, ok := d.GetOk(isVolumeTags); ok || v != "" {
+		_, newList := d.GetChange(isVolumeTags)
+		userTagsArray := make([]string, 0)
+		if newList != nil {
+			for _, tag := range newList.(*schema.Set).List() {
+				userTagsArray = append(userTagsArray, tag.(string))
+			}
+		}
+		if v != "" {
+			envTags := strings.Split(v, ",")
+			userTagsArray = append(userTagsArray, envTags...)
+		}
+		if len(userTagsArray) > 0 {
+			volumePatchModel := &vpcv1.VolumePatch{
+				UserTags: userTagsArray,
+			}
+			volumePatch, err := volumePatchModel.AsPatch()
+			if err != nil {
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("volumePatchModel.AsPatch() failed: %s", err.Error()), "ibm_is_instance_boot_volume_manager", "create")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
+			}
+			updateVolumeOptions := &vpcv1.UpdateVolumeOptions{
+				ID:          &bootVolumeID,
+				VolumePatch: volumePatch,
+			}
+			_, _, err = sess.UpdateVolumeWithContext(context, updateVolumeOptions)
+			if err != nil {
+				log.Printf("Error on create of boot volume manager (%s) tags: %s", d.Id(), err)
+			}
+		}
+	}
+
+	if _, ok := d.GetOk(isVolumeAccessTags); ok {
+		oldList, newList := d.GetChange(isVolumeAccessTags)
+		err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *volume.CRN, "", isVolumeAccessTagType)
+		if err != nil {
+			log.Printf("Error on create of boot volume manager (%s) access tags: %s", d.Id(), err)
+		}
+	}
+
+	return resourceIBMISInstanceBootVolumeManagerUpdate(context, d, meta)
+}
+
+func resourceIBMISInstanceBootVolumeManagerRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	sess, err := vpcClient(meta)
+	if err != nil {
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_boot_volume_manager", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+	}
+
+	id := d.Id()
+	getVolumeOptions := &vpcv1.GetVolumeOptions{
 		ID: &id,
 	}
-	vol, response, err := sess.GetVolume(options)
+	volume, response, err := sess.GetVolumeWithContext(context, getVolumeOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error getting Instance boot volume (%s): %s\n%s", id, err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetVolumeWithContext failed: %s", err.Error()), "ibm_is_instance_boot_volume_manager", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
-	d.SetId(*vol.ID)
-	d.Set(isVolumeName, *vol.Name)
-	d.Set(isVolumeProfileName, *vol.Profile.Name)
-	d.Set(isVolumeZone, *vol.Zone.Name)
-	if vol.EncryptionKey != nil {
-		d.Set(isVolumeEncryptionKey, vol.EncryptionKey.CRN)
+
+	if err = d.Set(isInstanceBootVolumeId, id); err != nil {
+		err = fmt.Errorf("Error setting boot_volume: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_boot_volume_manager", "read", "set-boot_volume").GetDiag()
 	}
-	if vol.Encryption != nil {
-		d.Set(isVolumeEncryptionType, vol.Encryption)
+
+	if !core.IsNil(volume.Name) {
+		if err = d.Set(isVolumeName, *volume.Name); err != nil {
+			err = fmt.Errorf("Error setting name: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_boot_volume_manager", "read", "set-name").GetDiag()
+		}
 	}
-	d.Set(isVolumeIops, *vol.Iops)
-	d.Set(isVolumeCapacity, *vol.Capacity)
-	d.Set(isVolumeCrn, *vol.CRN)
-	if vol.SourceSnapshot != nil {
-		d.Set(isVolumeSourceSnapshot, *vol.SourceSnapshot.ID)
+
+	if !core.IsNil(volume.Profile) {
+		if err = d.Set(isVolumeProfileName, *volume.Profile.Name); err != nil {
+			err = fmt.Errorf("Error setting profile: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_boot_volume_manager", "read", "set-profile").GetDiag()
+		}
 	}
-	d.Set(isVolumeStatus, *vol.Status)
-	if vol.HealthState != nil {
-		d.Set(isVolumeHealthState, *vol.HealthState)
+
+	if !core.IsNil(volume.Zone) {
+		if err = d.Set(isVolumeZone, *volume.Zone.Name); err != nil {
+			err = fmt.Errorf("Error setting zone: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_boot_volume_manager", "read", "set-zone").GetDiag()
+		}
 	}
-	d.Set(isVolumeBandwidth, int(*vol.Bandwidth))
-	//set the status reasons
-	if vol.StatusReasons != nil {
+
+	if volume.EncryptionKey != nil {
+		if err = d.Set(isVolumeEncryptionKey, volume.EncryptionKey.CRN); err != nil {
+			err = fmt.Errorf("Error setting encryption_key: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_boot_volume_manager", "read", "set-encryption_key").GetDiag()
+		}
+	}
+
+	if volume.Encryption != nil {
+		if err = d.Set(isVolumeEncryptionType, *volume.Encryption); err != nil {
+			err = fmt.Errorf("Error setting encryption_type: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_boot_volume_manager", "read", "set-encryption_type").GetDiag()
+		}
+	}
+
+	if !core.IsNil(volume.Capacity) {
+		if err = d.Set(isVolumeCapacity, flex.IntValue(volume.Capacity)); err != nil {
+			err = fmt.Errorf("Error setting capacity: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_boot_volume_manager", "read", "set-capacity").GetDiag()
+		}
+	}
+
+	if !core.IsNil(volume.Iops) {
+		if err = d.Set(isVolumeIops, flex.IntValue(volume.Iops)); err != nil {
+			err = fmt.Errorf("Error setting iops: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_boot_volume_manager", "read", "set-iops").GetDiag()
+		}
+	}
+
+	if !core.IsNil(volume.CRN) {
+		if err = d.Set(isVolumeCrn, *volume.CRN); err != nil {
+			err = fmt.Errorf("Error setting crn: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_boot_volume_manager", "read", "set-crn").GetDiag()
+		}
+	}
+
+	if volume.SourceSnapshot != nil {
+		if err = d.Set(isVolumeSourceSnapshot, *volume.SourceSnapshot.ID); err != nil {
+			err = fmt.Errorf("Error setting source_snapshot: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_boot_volume_manager", "read", "set-source_snapshot").GetDiag()
+		}
+	}
+
+	if !core.IsNil(volume.Status) {
+		if err = d.Set(isVolumeStatus, *volume.Status); err != nil {
+			err = fmt.Errorf("Error setting status: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_boot_volume_manager", "read", "set-status").GetDiag()
+		}
+	}
+
+	if volume.HealthState != nil {
+		if err = d.Set(isVolumeHealthState, *volume.HealthState); err != nil {
+			err = fmt.Errorf("Error setting health_state: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_boot_volume_manager", "read", "set-health_state").GetDiag()
+		}
+	}
+
+	if !core.IsNil(volume.Bandwidth) {
+		if err = d.Set(isVolumeBandwidth, flex.IntValue(volume.Bandwidth)); err != nil {
+			err = fmt.Errorf("Error setting bandwidth: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_boot_volume_manager", "read", "set-bandwidth").GetDiag()
+		}
+	}
+
+	// Handle resource group
+	resourceGroupList := []map[string]interface{}{}
+	if volume.ResourceGroup != nil {
+		resourceGroupMap := map[string]interface{}{
+			"href": *volume.ResourceGroup.Href,
+			"id":   *volume.ResourceGroup.ID,
+			"name": *volume.ResourceGroup.Name,
+		}
+		resourceGroupList = append(resourceGroupList, resourceGroupMap)
+		if err = d.Set(flex.ResourceGroupName, *volume.ResourceGroup.Name); err != nil {
+			err = fmt.Errorf("Error setting resource_group_name: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_boot_volume_manager", "read", "set-resource_group_name").GetDiag()
+		}
+	}
+	if err = d.Set(isVolumeResourceGroup, resourceGroupList); err != nil {
+		err = fmt.Errorf("Error setting resource_group: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_boot_volume_manager", "read", "set-resource_group").GetDiag()
+	}
+
+	// Handle status reasons
+	if volume.StatusReasons != nil {
 		statusReasonsList := make([]map[string]interface{}, 0)
-		for _, sr := range vol.StatusReasons {
+		for _, sr := range volume.StatusReasons {
 			currentSR := map[string]interface{}{}
 			if sr.Code != nil && sr.Message != nil {
 				currentSR[isVolumeStatusReasonsCode] = *sr.Code
 				currentSR[isVolumeStatusReasonsMessage] = *sr.Message
 				if sr.MoreInfo != nil {
-					currentSR[isVolumeStatusReasonsMoreInfo] = *sr.Message
+					currentSR[isVolumeStatusReasonsMoreInfo] = *sr.MoreInfo
 				}
 				statusReasonsList = append(statusReasonsList, currentSR)
 			}
 		}
-		d.Set(isVolumeStatusReasons, statusReasonsList)
-	}
-	if vol.UserTags != nil {
-		if err = d.Set(isVolumeTags, vol.UserTags); err != nil {
-			return fmt.Errorf("Error setting user tags: %s", err)
+		if err = d.Set(isVolumeStatusReasons, statusReasonsList); err != nil {
+			err = fmt.Errorf("Error setting status_reasons: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_boot_volume_manager", "read", "set-status_reasons").GetDiag()
 		}
 	}
-	accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *vol.CRN, "", isVolumeAccessTagType)
-	if err != nil {
-		log.Printf(
-			"Error on get of resource volume (%s) access tags: %s", d.Id(), err)
-	}
-	d.Set(isVolumeAccessTags, accesstags)
-	if vol.HealthReasons != nil {
+
+	// Handle health reasons
+	if volume.HealthReasons != nil {
 		healthReasonsList := make([]map[string]interface{}, 0)
-		for _, sr := range vol.HealthReasons {
-			currentSR := map[string]interface{}{}
-			if sr.Code != nil && sr.Message != nil {
-				currentSR[isVolumeHealthReasonsCode] = *sr.Code
-				currentSR[isVolumeHealthReasonsMessage] = *sr.Message
-				if sr.MoreInfo != nil {
-					currentSR[isVolumeHealthReasonsMoreInfo] = *sr.Message
+		for _, hr := range volume.HealthReasons {
+			currentHR := map[string]interface{}{}
+			if hr.Code != nil && hr.Message != nil {
+				currentHR[isVolumeHealthReasonsCode] = *hr.Code
+				currentHR[isVolumeHealthReasonsMessage] = *hr.Message
+				if hr.MoreInfo != nil {
+					currentHR[isVolumeHealthReasonsMoreInfo] = *hr.MoreInfo
 				}
-				healthReasonsList = append(healthReasonsList, currentSR)
+				healthReasonsList = append(healthReasonsList, currentHR)
 			}
 		}
-		d.Set(isVolumeHealthReasons, healthReasonsList)
+		if err = d.Set(isVolumeHealthReasons, healthReasonsList); err != nil {
+			err = fmt.Errorf("Error setting health_reasons: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_boot_volume_manager", "read", "set-health_reasons").GetDiag()
+		}
 	}
+
+	// Handle volume attachments
+	if volume.VolumeAttachments != nil {
+		volumeAttachmentsList := make([]map[string]interface{}, 0)
+		for _, va := range volume.VolumeAttachments {
+			volumeAttachmentMap := map[string]interface{}{}
+			if va.DeleteVolumeOnInstanceDelete != nil {
+				volumeAttachmentMap["delete_volume_on_instance_delete"] = *va.DeleteVolumeOnInstanceDelete
+			}
+			if va.Device != nil {
+				deviceList := []map[string]interface{}{}
+				deviceMap := map[string]interface{}{
+					"id": *va.Device.ID,
+				}
+				deviceList = append(deviceList, deviceMap)
+				volumeAttachmentMap["device"] = deviceList
+			}
+			if va.Href != nil {
+				volumeAttachmentMap["href"] = *va.Href
+			}
+			if va.ID != nil {
+				volumeAttachmentMap["id"] = *va.ID
+			}
+			if va.Instance != nil {
+				instanceList := []map[string]interface{}{}
+				instanceMap := map[string]interface{}{}
+				if va.Instance.CRN != nil {
+					instanceMap["crn"] = *va.Instance.CRN
+				}
+				if va.Instance.Href != nil {
+					instanceMap["href"] = *va.Instance.Href
+				}
+				if va.Instance.ID != nil {
+					instanceMap["id"] = *va.Instance.ID
+				}
+				if va.Instance.Name != nil {
+					instanceMap["name"] = *va.Instance.Name
+				}
+				instanceList = append(instanceList, instanceMap)
+				volumeAttachmentMap["instance"] = instanceList
+			}
+			if va.Name != nil {
+				volumeAttachmentMap["name"] = *va.Name
+			}
+			if va.Type != nil {
+				volumeAttachmentMap["type"] = *va.Type
+			}
+			volumeAttachmentsList = append(volumeAttachmentsList, volumeAttachmentMap)
+		}
+		if err = d.Set("volume_attachments", volumeAttachmentsList); err != nil {
+			err = fmt.Errorf("Error setting volume_attachments: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_boot_volume_manager", "read", "set-volume_attachments").GetDiag()
+		}
+	}
+
+	// Handle tags
+	if volume.UserTags != nil {
+		if err = d.Set(isVolumeTags, volume.UserTags); err != nil {
+			err = fmt.Errorf("Error setting tags: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_boot_volume_manager", "read", "set-tags").GetDiag()
+		}
+	}
+
+	accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *volume.CRN, "", isVolumeAccessTagType)
+	if err != nil {
+		log.Printf("Error on get of boot volume manager (%s) access tags: %s", d.Id(), err)
+	}
+	if err = d.Set(isVolumeAccessTags, accesstags); err != nil {
+		err = fmt.Errorf("Error setting access_tags: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_boot_volume_manager", "read", "set-access_tags").GetDiag()
+	}
+
 	controller, err := flex.GetBaseController(meta)
 	if err != nil {
-		return err
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetBaseController failed: %s", err.Error()), "ibm_is_instance_boot_volume_manager", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
-	d.Set(flex.ResourceControllerURL, controller+"/vpc-ext/storage/storageVolumes")
-	d.Set(flex.ResourceName, *vol.Name)
-	d.Set(flex.ResourceCRN, *vol.CRN)
-	d.Set(flex.ResourceStatus, *vol.Status)
-	if vol.ResourceGroup != nil {
-		d.Set(flex.ResourceGroupName, vol.ResourceGroup.Name)
-		d.Set(isVolumeResourceGroup, *vol.ResourceGroup.ID)
+	if err = d.Set(flex.ResourceControllerURL, controller+"/vpc-ext/storage/storageVolumes"); err != nil {
+		err = fmt.Errorf("Error setting resource_controller_url: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_boot_volume_manager", "read", "set-resource_controller_url").GetDiag()
 	}
+	if err = d.Set(flex.ResourceName, *volume.Name); err != nil {
+		err = fmt.Errorf("Error setting resource_name: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_boot_volume_manager", "read", "set-resource_name").GetDiag()
+	}
+	if err = d.Set(flex.ResourceCRN, *volume.CRN); err != nil {
+		err = fmt.Errorf("Error setting resource_crn: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_boot_volume_manager", "read", "set-resource_crn").GetDiag()
+	}
+	if err = d.Set(flex.ResourceStatus, *volume.Status); err != nil {
+		err = fmt.Errorf("Error setting resource_status: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_boot_volume_manager", "read", "set-resource_status").GetDiag()
+	}
+
 	return nil
 }
 
-func resourceIBMISInstanceBootVolumeManagerUpdate(d *schema.ResourceData, meta interface{}) error {
-	err := instancebootvolUpdate(d, meta)
-	if err != nil {
-		return err
-	}
-	return resourceIBMISInstanceBootVolumeManagerRead(d, meta)
-}
-
-func instancebootvolUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMISInstanceBootVolumeManagerUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_boot_volume_manager", "update", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	id := d.Id()
-	name := ""
-	hasNameChanged := false
-	delete := false
+	hasChanged := false
 
-	if delete_all_snapshots, ok := d.GetOk(isVolumeDeleteAllSnapshots); ok && delete_all_snapshots.(bool) {
-		delete = true
-	}
-
-	var capacity int64
-	if delete {
-		deleteAllInstanceBootSnapshots(sess, id)
-	}
-
-	if d.HasChange(isVolumeAccessTags) {
-		options := &vpcv1.GetVolumeOptions{
+	// Handle volume property updates with instance state management
+	if d.HasChange(isVolumeProfileName) || d.HasChange(isVolumeIops) || d.HasChange(isVolumeCapacity) {
+		// Get volume details to check attachments
+		getVolumeOptions := &vpcv1.GetVolumeOptions{
 			ID: &id,
 		}
-		vol, response, err := sess.GetVolume(options)
+		volume, response, err := sess.GetVolumeWithContext(context, getVolumeOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR]Error getting Instance boot volume : %s\n%s", err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetVolumeWithContext failed: %s", err.Error()), "ibm_is_instance_boot_volume_manager", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
-		oldList, newList := d.GetChange(isVolumeAccessTags)
 
-		err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *vol.CRN, "", isVolumeAccessTagType)
+		// Check if volume is attached to an instance
+		if volume.VolumeAttachments != nil && len(volume.VolumeAttachments) > 0 {
+			instanceID := *volume.VolumeAttachments[0].Instance.ID
+
+			// Get instance status
+			getInstanceOptions := &vpcv1.GetInstanceOptions{
+				ID: &instanceID,
+			}
+			instance, _, err := sess.GetInstanceWithContext(context, getInstanceOptions)
+			if err != nil {
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetInstanceWithContext failed: %s", err.Error()), "ibm_is_instance_boot_volume_manager", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
+			}
+
+			// Ensure instance is running for volume updates
+			if instance != nil && *instance.Status != "running" {
+				actionType := "start"
+				createInstanceActionOptions := &vpcv1.CreateInstanceActionOptions{
+					InstanceID: &instanceID,
+					Type:       &actionType,
+				}
+				_, _, err = sess.CreateInstanceActionWithContext(context, createInstanceActionOptions)
+				if err != nil {
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateInstanceActionWithContext failed: %s", err.Error()), "ibm_is_instance_boot_volume_manager", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
+				}
+				_, err = isWaitForInstanceAvailable(sess, instanceID, d.Timeout(schema.TimeoutUpdate), d)
+				if err != nil {
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForInstanceAvailable failed: %s", err.Error()), "ibm_is_instance_boot_volume_manager", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
+				}
+			}
+		}
+
+		// Get fresh ETag for the update
+		getVolumeOptions = &vpcv1.GetVolumeOptions{
+			ID: &id,
+		}
+		_, response, err = sess.GetVolumeWithContext(context, getVolumeOptions)
 		if err != nil {
-			log.Printf(
-				"Error on update of resource Instance boot volume (%s) access tags: %s", id, err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetVolumeWithContext failed: %s", err.Error()), "ibm_is_instance_boot_volume_manager", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
-	}
+		eTag := response.Headers.Get("ETag")
 
-	optionsget := &vpcv1.GetVolumeOptions{
-		ID: &id,
-	}
-	_, response, err := sess.GetVolume(optionsget)
-	if err != nil {
-		if response != nil && response.StatusCode == 404 {
-			d.SetId("")
-			return nil
-		}
-		return fmt.Errorf("[ERROR] Error getting Instance boot volume (%s): %s\n%s", id, err, response)
-	}
-	eTag := response.Headers.Get("ETag")
-	options := &vpcv1.UpdateVolumeOptions{
-		ID: &id,
-	}
-	options.IfMatch = &eTag
+		volumePatchModel := &vpcv1.VolumePatch{}
 
-	// profile/ iops update
-	if d.HasChange(isVolumeProfileName) || d.HasChange(isVolumeIops) {
-		volumeProfilePatchModel := &vpcv1.VolumePatch{}
-		volId := d.Id()
-		getvoloptions := &vpcv1.GetVolumeOptions{
-			ID: &volId,
-		}
-		vol, response, err := sess.GetVolume(getvoloptions)
-		if err != nil || vol == nil {
-			return fmt.Errorf("[ERROR] Error retrieving Instance boot volume (%s) details: %s\n%s", volId, err, response)
-		}
-		if vol.VolumeAttachments == nil || len(vol.VolumeAttachments) < 1 {
-			return fmt.Errorf("[ERROR] Error updating Instance boot volume profile/iops because the specified volume %s is not attached to a virtual server instance ", volId)
-		}
-		volAtt := &vol.VolumeAttachments[0]
-		insId := *volAtt.Instance.ID
-		getinsOptions := &vpcv1.GetInstanceOptions{
-			ID: &insId,
-		}
-		instance, response, err := sess.GetInstance(getinsOptions)
-		if err != nil || instance == nil {
-			return fmt.Errorf("[ERROR] Error retrieving Instance (%s) to which the boot volume (%s) is attached : %s\n%s", insId, volId, err, response)
-		}
-		if instance != nil && *instance.Status != "running" {
-			actiontype := "start"
-			createinsactoptions := &vpcv1.CreateInstanceActionOptions{
-				InstanceID: &insId,
-				Type:       &actiontype,
-			}
-			_, response, err = sess.CreateInstanceAction(createinsactoptions)
-			if err != nil {
-				return fmt.Errorf("[ERROR] Error starting Instance (%s) to which the boot volume (%s) is attached  : %s\n%s", insId, volId, err, response)
-			}
-			_, err = isWaitForInstanceAvailable(sess, insId, d.Timeout(schema.TimeoutCreate), d)
-			if err != nil {
-				return err
-			}
-		}
 		if d.HasChange(isVolumeProfileName) {
 			profile := d.Get(isVolumeProfileName).(string)
-			volumeProfilePatchModel.Profile = &vpcv1.VolumeProfileIdentity{
+			volumePatchModel.Profile = &vpcv1.VolumeProfileIdentity{
 				Name: &profile,
 			}
-		} else if d.HasChange(isVolumeIops) {
-			profile := d.Get(isVolumeProfileName).(string)
-			volumeProfilePatchModel.Profile = &vpcv1.VolumeProfileIdentity{
-				Name: &profile,
-			}
-			iops := int64(d.Get(isVolumeIops).(int))
-			volumeProfilePatchModel.Iops = &iops
 		}
 
-		volumeProfilePatch, err := volumeProfilePatchModel.AsPatch()
-		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for VolumeProfilePatch in Instance boot volume : %s", err)
+		if d.HasChange(isVolumeIops) {
+			iops := int64(d.Get(isVolumeIops).(int))
+			volumePatchModel.Iops = &iops
 		}
-		options.VolumePatch = volumeProfilePatch
-		_, response, err = sess.UpdateVolume(options)
-		_, err = isWaitForInstanceBootVolumeManagerAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate), &eTag)
-		if err != nil {
-			return err
+
+		if d.HasChange(isVolumeCapacity) {
+			capacity := int64(d.Get(isVolumeCapacity).(int))
+			volumePatchModel.Capacity = &capacity
 		}
+
+		volumePatch, err := volumePatchModel.AsPatch()
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("volumePatchModel.AsPatch() failed: %s", err.Error()), "ibm_is_instance_boot_volume_manager", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
+
+		updateVolumeOptions := &vpcv1.UpdateVolumeOptions{
+			ID:          &id,
+			VolumePatch: volumePatch,
+			IfMatch:     &eTag,
+		}
+
+		_, _, err = sess.UpdateVolumeWithContext(context, updateVolumeOptions)
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateVolumeWithContext failed: %s", err.Error()), "ibm_is_instance_boot_volume_manager", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
+
+		_, err = isWaitForVolumeAvailable(sess, id, d.Timeout(schema.TimeoutUpdate))
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForVolumeAvailable failed: %s", err.Error()), "ibm_is_instance_boot_volume_manager", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
+		hasChanged = true
 	}
 
-	// capacity update
-	if d.HasChange(isVolumeCapacity) {
-		id := d.Id()
-		getvolumeoptions := &vpcv1.GetVolumeOptions{
+	// Handle name update
+	if d.HasChange(isVolumeName) {
+		name := d.Get(isVolumeName).(string)
+		volumePatchModel := &vpcv1.VolumePatch{
+			Name: &name,
+		}
+		volumePatch, err := volumePatchModel.AsPatch()
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("volumePatchModel.AsPatch() failed: %s", err.Error()), "ibm_is_instance_boot_volume_manager", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
+
+		updateVolumeOptions := &vpcv1.UpdateVolumeOptions{
+			ID:          &id,
+			VolumePatch: volumePatch,
+		}
+
+		_, _, err = sess.UpdateVolumeWithContext(context, updateVolumeOptions)
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateVolumeWithContext failed: %s", err.Error()), "ibm_is_instance_boot_volume_manager", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
+		hasChanged = true
+	}
+
+	// Handle tags update
+	if d.HasChange(isVolumeTags) {
+		userTagsSet := d.Get(isVolumeTags).(*schema.Set)
+		userTagsArray := make([]string, 0)
+		if userTagsSet != nil && userTagsSet.Len() > 0 {
+			for _, userTag := range userTagsSet.List() {
+				userTagsArray = append(userTagsArray, userTag.(string))
+			}
+		}
+
+		// Add environment tags
+		envTags := os.Getenv("IC_ENV_TAGS")
+		if envTags != "" {
+			envTagsArray := strings.Split(envTags, ",")
+			userTagsArray = append(userTagsArray, envTagsArray...)
+		}
+
+		volumePatchModel := &vpcv1.VolumePatch{
+			UserTags: userTagsArray,
+		}
+		volumePatch, err := volumePatchModel.AsPatch()
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("volumePatchModel.AsPatch() failed: %s", err.Error()), "ibm_is_instance_boot_volume_manager", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
+
+		updateVolumeOptions := &vpcv1.UpdateVolumeOptions{
+			ID:          &id,
+			VolumePatch: volumePatch,
+		}
+
+		_, _, err = sess.UpdateVolumeWithContext(context, updateVolumeOptions)
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateVolumeWithContext failed: %s", err.Error()), "ibm_is_instance_boot_volume_manager", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
+		hasChanged = true
+	}
+
+	// Handle access tags update
+	if d.HasChange(isVolumeAccessTags) {
+		getVolumeOptions := &vpcv1.GetVolumeOptions{
 			ID: &id,
 		}
-		vol, response, err := sess.GetVolume(getvolumeoptions)
+		volume, _, err := sess.GetVolumeWithContext(context, getVolumeOptions)
 		if err != nil {
-			if response != nil && response.StatusCode == 404 {
-				d.SetId("")
-				return nil
-			}
-			return fmt.Errorf("[ERROR] Error Getting Instance boot volume (%s): %s\n%s", id, err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetVolumeWithContext failed: %s", err.Error()), "ibm_is_instance_boot_volume_manager", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
-		if vol.VolumeAttachments == nil || len(vol.VolumeAttachments) == 0 || *vol.VolumeAttachments[0].ID == "" {
-			return fmt.Errorf("[ERROR] Error volume capacity can't be updated since Instance boot volume %s is not attached to any instance for VolumePatch", id)
-		}
-		insId := vol.VolumeAttachments[0].Instance.ID
-		getinsOptions := &vpcv1.GetInstanceOptions{
-			ID: insId,
-		}
-		instance, response, err := sess.GetInstance(getinsOptions)
-		if err != nil || instance == nil {
-			return fmt.Errorf("[ERROR] Error retrieving Instance (%s) : %s\n%s", *insId, err, response)
-		}
-		if instance != nil && *instance.Status != "running" {
-			actiontype := "start"
-			createinsactoptions := &vpcv1.CreateInstanceActionOptions{
-				InstanceID: insId,
-				Type:       &actiontype,
-			}
-			_, response, err = sess.CreateInstanceAction(createinsactoptions)
-			if err != nil {
-				return fmt.Errorf("[ERROR] Error starting Instance (%s) : %s\n%s", *insId, err, response)
-			}
-			_, err = isWaitForInstanceAvailable(sess, *insId, d.Timeout(schema.TimeoutCreate), d)
-			if err != nil {
-				return err
-			}
-		}
-		capacity = int64(d.Get(isVolumeCapacity).(int))
-		volumeCapacityPatchModel := &vpcv1.VolumePatch{}
-		volumeCapacityPatchModel.Capacity = &capacity
 
-		volumeCapacityPatch, err := volumeCapacityPatchModel.AsPatch()
+		oldList, newList := d.GetChange(isVolumeAccessTags)
+		err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *volume.CRN, "", isVolumeAccessTagType)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for volumeCapacityPatch in Instance boot volume : %s", err)
+			log.Printf("Error on update of boot volume manager (%s) access tags: %s", id, err)
 		}
-		options.VolumePatch = volumeCapacityPatch
-		_, response, err = sess.UpdateVolume(options)
-		if err != nil {
-			return fmt.Errorf("[ERROR] Error updating Instance boot volume: %s\n%s", err, response)
+		hasChanged = true
+	}
+
+	// Handle snapshot deletion if requested
+	if deleteAllSnapshots, ok := d.GetOk(isVolumeDeleteAllSnapshots); ok && deleteAllSnapshots.(bool) {
+		deleteSnapshotsOptions := &vpcv1.DeleteSnapshotsOptions{
+			SourceVolumeID: &id,
 		}
-		_, err = isWaitForInstanceBootVolumeManagerAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate), &eTag)
+		_, err := sess.DeleteSnapshotsWithContext(context, deleteSnapshotsOptions)
 		if err != nil {
-			return err
+			log.Printf("Error deleting snapshots from boot volume (%s): %s", id, err)
 		}
 	}
 
-	// user tags update
-	if d.HasChange(isVolumeTags) {
-		var userTags *schema.Set
-		if v, ok := d.GetOk(isVolumeTags); ok {
-			userTags = v.(*schema.Set)
-			if userTags != nil && userTags.Len() != 0 {
-				userTagsArray := make([]string, userTags.Len())
-				for i, userTag := range userTags.List() {
-					userTagStr := userTag.(string)
-					userTagsArray[i] = userTagStr
-				}
-				schematicTags := os.Getenv("IC_ENV_TAGS")
-				var envTags []string
-				if schematicTags != "" {
-					envTags = strings.Split(schematicTags, ",")
-					userTagsArray = append(userTagsArray, envTags...)
-				}
-				volumeNamePatchModel := &vpcv1.VolumePatch{}
-				volumeNamePatchModel.UserTags = userTagsArray
-				volumeNamePatch, err := volumeNamePatchModel.AsPatch()
-				if err != nil {
-					return fmt.Errorf("[ERROR] Error calling asPatch for volumeNamePatch in Instance boot volume: %s", err)
-				}
-				options.IfMatch = &eTag
-				options.VolumePatch = volumeNamePatch
-				_, response, err := sess.UpdateVolume(options)
-				if err != nil {
-					return fmt.Errorf("[ERROR] Error updating Instance boot volume : %s\n%s", err, response)
-				}
-				_, err = isWaitForInstanceBootVolumeManagerAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate), &eTag)
-				if err != nil {
-					return err
-				}
-			}
-		}
-	}
-
-	//name update
-	if d.HasChange(isVolumeName) {
-		name = d.Get(isVolumeName).(string)
-		hasNameChanged = true
-	}
-	volumeNamePatchModel := &vpcv1.VolumePatch{}
-	if hasNameChanged {
-		volumeNamePatchModel.Name = &name
-		volumeNamePatch, err := volumeNamePatchModel.AsPatch()
-		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for volumeNamePatch in Instance boot volume : %s", err)
-		}
-		options.VolumePatch = volumeNamePatch
-		_, response, err = sess.UpdateVolume(options)
-		eTag = response.Headers.Get("ETag")
-		if err != nil {
-			return err
-		}
-		_, err = isWaitForInstanceBootVolumeManagerAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate), &eTag)
-		if err != nil {
-			return err
-		}
+	if hasChanged {
+		return resourceIBMISInstanceBootVolumeManagerRead(context, d, meta)
 	}
 
 	return nil
 }
 
-func resourceIBMISInstanceBootVolumeManagerDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMISInstanceBootVolumeManagerDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	sess, err := vpcClient(meta)
+	if err != nil {
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_boot_volume_manager", "delete", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+	}
+
 	id := d.Id()
-	// check if force delete is true
+
+	// Check if force delete is enabled
 	if d.Get(isInstanceBootVolumeManagerDelete).(bool) {
-		sess, err := vpcClient(meta)
-		if err != nil {
-			return err
+		// Handle snapshot deletion if requested
+		if deleteAllSnapshots, ok := d.GetOk(isVolumeDeleteAllSnapshots); ok && deleteAllSnapshots.(bool) {
+			deleteSnapshotsOptions := &vpcv1.DeleteSnapshotsOptions{
+				SourceVolumeID: &id,
+			}
+			_, err := sess.DeleteSnapshotsWithContext(context, deleteSnapshotsOptions)
+			if err != nil {
+				log.Printf("Error deleting snapshots from boot volume (%s): %s", id, err)
+			}
 		}
 
-		options := &vpcv1.DeleteVolumeOptions{
+		deleteVolumeOptions := &vpcv1.DeleteVolumeOptions{
 			ID: &id,
 		}
-		response, err := sess.DeleteVolume(options)
+		_, err := sess.DeleteVolumeWithContext(context, deleteVolumeOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error deleting Volume : %s\n%s", err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteVolumeWithContext failed: %s", err.Error()), "ibm_is_instance_boot_volume_manager", "delete")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
-		_, err = isWaitForInstanceBootVolumeManagerDeleted(sess, id, d.Timeout(schema.TimeoutDelete))
+
+		_, err = isWaitForVolumeDeleted(sess, id, d.Timeout(schema.TimeoutDelete))
 		if err != nil {
-			return err
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForVolumeDeleted failed: %s", err.Error()), "ibm_is_instance_boot_volume_manager", "delete")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
+
 	d.SetId("")
 	return nil
 }
 
-func isWaitForInstanceBootVolumeManagerDeleted(vol *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {
-	log.Printf("Waiting for  (%s) to be deleted.", id)
-
-	stateConf := &resource.StateChangeConf{
-		Pending:    []string{"retry", isVolumeDeleting},
-		Target:     []string{"done", ""},
-		Refresh:    isInstanceBootVolumeManagerDeleteRefreshFunc(vol, id),
-		Timeout:    timeout,
-		Delay:      10 * time.Second,
-		MinTimeout: 10 * time.Second,
-	}
-
-	return stateConf.WaitForState()
-}
-
-func isInstanceBootVolumeManagerDeleteRefreshFunc(vol *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
-	return func() (interface{}, string, error) {
-		volgetoptions := &vpcv1.GetVolumeOptions{
-			ID: &id,
-		}
-		vol, response, err := vol.GetVolume(volgetoptions)
-		if err != nil {
-			if response != nil && response.StatusCode == 404 {
-				return vol, isVolumeDeleted, nil
-			}
-			return vol, "", fmt.Errorf("[ERROR] Error getting Instance boot volume: %s\n%s", err, response)
-		}
-		return vol, isVolumeDeleting, err
-	}
-}
-
 func resourceIBMISInstanceBootVolumeManagerExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-
-	id := d.Id()
-
-	exists, err := instancebootvolExists(d, meta, id)
-	return exists, err
-}
-
-func instancebootvolExists(d *schema.ResourceData, meta interface{}, id string) (bool, error) {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return false, err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_boot_volume_manager", "exists", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return false, tfErr
 	}
-	options := &vpcv1.GetVolumeOptions{
+
+	id := d.Id()
+	getVolumeOptions := &vpcv1.GetVolumeOptions{
 		ID: &id,
 	}
-	_, response, err := sess.GetVolume(options)
+	_, response, err := sess.GetVolume(getVolumeOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			return false, nil
 		}
-		return false, fmt.Errorf("[ERROR] Error getting Instance boot volume: %s\n%s", err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetVolume failed: %s", err.Error()), "ibm_is_instance_boot_volume_manager", "exists")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return false, tfErr
 	}
 	return true, nil
-}
-
-func isWaitForInstanceBootVolumeManagerAvailable(client *vpcv1.VpcV1, id string, timeout time.Duration, eTag *string) (interface{}, error) {
-	log.Printf("Waiting for Instance boot volume (%s) to be available.", id)
-
-	stateConf := &resource.StateChangeConf{
-		Pending:    []string{"retry", isVolumeProvisioning},
-		Target:     []string{isVolumeProvisioningDone, ""},
-		Refresh:    isInstanceBootVolumeManagerRefreshFunc(client, id, eTag),
-		Timeout:    timeout,
-		Delay:      10 * time.Second,
-		MinTimeout: 10 * time.Second,
-	}
-
-	return stateConf.WaitForState()
-}
-
-func isInstanceBootVolumeManagerRefreshFunc(client *vpcv1.VpcV1, id string, eTag *string) resource.StateRefreshFunc {
-	return func() (interface{}, string, error) {
-		volgetoptions := &vpcv1.GetVolumeOptions{
-			ID: &id,
-		}
-		vol, response, err := client.GetVolume(volgetoptions)
-		if err != nil {
-			return nil, "", fmt.Errorf("[ERROR] Error getting Instance boot volume: %s\n%s", err, response)
-		}
-
-		if *vol.Status == "available" {
-			return vol, isVolumeProvisioningDone, nil
-		}
-		*eTag = response.Headers.Get("ETag")
-
-		return vol, isVolumeProvisioning, nil
-	}
-}
-
-func deleteAllInstanceBootSnapshots(sess *vpcv1.VpcV1, id string) error {
-	delete_all_snapshots := new(vpcv1.DeleteSnapshotsOptions)
-	delete_all_snapshots.SourceVolumeID = &id
-	response, err := sess.DeleteSnapshots(delete_all_snapshots)
-	if err != nil {
-		return fmt.Errorf("[ERROR] Error deleting snapshots from Instance boot volume %s\n%s", err, response)
-	}
-	return nil
 }
