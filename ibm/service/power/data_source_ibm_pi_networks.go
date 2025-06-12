@@ -73,6 +73,7 @@ func DataSourceIBMPINetworks() *schema.Resource {
 						},
 						Attr_PeerID: {
 							Computed:    true,
+							Deprecated:  "This field is deprecated",
 							Description: "Network Peer ID.",
 							Type:        schema.TypeString,
 						},

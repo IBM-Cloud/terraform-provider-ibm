@@ -54,7 +54,7 @@ In addition to all argument reference list, you can access the following attribu
   - `mtu` - (Boolean) Maximum Transmission Unit option of the network.
   - `name` - (String) The name of a network.
   - `network_id` - (String) The ID of the network.
-  - `peer_id` - (String) Network peer ID (for on-prem locations only).
+  - `peer_id` - (Deprecated, String) Network peer ID (for on-prem locations only).
   - `type` - (String) The type of network.
   - `user_tags` - (List) List of user tags attached to the resource.
   - `vlan_id` - (String) The VLAN ID that the network is connected to.

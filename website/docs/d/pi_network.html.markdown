@@ -53,13 +53,12 @@ In addition to all argument reference list, you can access the following attribu
 - `dns`- (Set) The DNS Servers for the network.
 - `gateway` - (String) The network gateway that is attached to your network.
 - `id` - (String) The ID of the network.
-- `jumbo` - (Deprecated, Boolean) MTU Jumbo option of the network (for multi-zone locations only).
 - `mtu` - (Boolean) Maximum Transmission Unit option of the network.
-- `network_address_translation` - (List) Contains the network address translation details (for on-prem locations only).
+- `network_address_translation` - (Deprecated, List) Contains the network address translation details (for on-prem locations only).
 
     Nested schema for  `network_address_translation`:
-      - `source_ip` - (String) source IP address.
-- `peer_id` - (String) Network peer ID (for on-prem locations only).
+      - `source_ip` - (Deprecated, String) source IP address.
+- `peer_id` - (Deprecated, String) Network peer ID (for on-prem locations only).
 - `type` - (String) The type of network.
 - `used_ip_count` - (Float) The number of used IP addresses.
 - `used_ip_percent` - (Float) The percentage of IP addresses used.

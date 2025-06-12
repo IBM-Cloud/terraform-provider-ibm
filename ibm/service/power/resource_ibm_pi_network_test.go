@@ -208,6 +208,7 @@ func TestAccIBMPINetworkPeerOnPrem(t *testing.T) {
 		},
 	})
 }
+
 func testAccCheckIBMPINetworkDestroy(s *terraform.State) error {
 	sess, err := acc.TestAccProvider.Meta().(conns.ClientSession).IBMPISession()
 	if err != nil {

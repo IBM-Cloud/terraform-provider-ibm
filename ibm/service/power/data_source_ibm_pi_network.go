@@ -67,12 +67,6 @@ func DataSourceIBMPINetwork() *schema.Resource {
 				Description: "The network gateway that is attached to your network.",
 				Type:        schema.TypeString,
 			},
-			Attr_Jumbo: {
-				Computed:    true,
-				Deprecated:  "This field is deprecated, use mtu instead.",
-				Description: "MTU Jumbo option of the network (for multi-zone locations only).",
-				Type:        schema.TypeBool,
-			},
 			Attr_MTU: {
 				Computed:    true,
 				Description: "Maximum Transmission Unit option of the network.",
@@ -100,6 +94,7 @@ func DataSourceIBMPINetwork() *schema.Resource {
 			},
 			Attr_PeerID: {
 				Computed:    true,
+				Deprecated:  "This field is deprecated",
 				Description: "Network peer ID (for on prem locations only).",
 				Type:        schema.TypeString,
 			},
@@ -168,7 +163,6 @@ func dataSourceIBMPINetworkRead(ctx context.Context, d *schema.ResourceData, met
 		d.Set(Attr_DNS, networkdata.DNSServers)
 	}
 	d.Set(Attr_Gateway, networkdata.Gateway)
-	d.Set(Attr_Jumbo, networkdata.Jumbo)
 	d.Set(Attr_MTU, networkdata.Mtu)
 	if networkdata.Name != nil {
 		d.Set(Attr_Name, networkdata.Name)
