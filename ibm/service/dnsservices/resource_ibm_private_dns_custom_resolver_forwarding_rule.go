@@ -6,7 +6,6 @@ package dnsservices
 import (
 	"context"
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -137,7 +136,6 @@ func resourceIbmDnsCrForwardingRuleCreate(context context.Context, d *schema.Res
 	dnsSvcsClient, err := meta.(conns.ClientSession).PrivateDNSClientSession()
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceIbmDnsCustomResolverForwardingRuleCreate initialization failed: %s", err.Error()), "ibm_dns_cr_forward_rule_zone", "create")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 	instanceID := d.Get(pdnsInstanceID).(string)
@@ -174,7 +172,6 @@ func resourceIbmDnsCrForwardingRuleCreate(context context.Context, d *schema.Res
 		} else {
 			err := fmt.Errorf("[ERROR] Cannot create the forwarding rules. One of the fields from forward_to or views must be provided")
 			tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_dns_custom_resolver_forwarding_rule", "create")
-			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
 	}
@@ -183,7 +180,6 @@ func resourceIbmDnsCrForwardingRuleCreate(context context.Context, d *schema.Res
 
 	if err != nil || result == nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateForwardingRuleWithContext failed with error: %s and response:\n%s", err, resp), "ibm_dns_custom_resolver_forwarding_rule", "create")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 	d.SetId(flex.ConvertCisToTfThreeVar(*result.ID, resolverID, instanceID))
@@ -195,7 +191,6 @@ func resourceIbmDnsCrForwardingRuleRead(context context.Context, d *schema.Resou
 	dnsSvcsClient, err := meta.(conns.ClientSession).PrivateDNSClientSession()
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DnsCrForwardingRuleClient initialization failed: %s", err.Error()), "ibm_dns_custom_resolver_forwarding_rule", "read")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 	ruleID, resolverID, instanceID, err := flex.ConvertTfToCisThreeVar(d.Id())
@@ -208,7 +203,6 @@ func resourceIbmDnsCrForwardingRuleRead(context context.Context, d *schema.Resou
 			return nil
 		}
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetForwardingRuleWithContext failed: %s", err.Error()), "ibm_dns_custom_resolver_forwarding_rule", "read")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 	d.Set(pdnsInstanceID, instanceID)
@@ -226,14 +220,12 @@ func resourceIbmDnsCrForwardingRuleUpdate(context context.Context, d *schema.Res
 	dnsSvcsClient, err := meta.(conns.ClientSession).PrivateDNSClientSession()
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceIbmDnsCrForwardingRuleUpdate Client initialization failed: %s", err.Error()), "ibm_dns_custom_resolver_forwarding_rule", "update")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 	ruleID, resolverID, instanceID, err := flex.ConvertTfToCisThreeVar(d.Id())
 
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DnsCrForwardingRuleClient initialization failed: %s", err.Error()), "ibm_dns_custom_resolver_forwarding_rule", "update")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 	opt := dnsSvcsClient.NewUpdateForwardingRuleOptions(instanceID, resolverID, ruleID)
@@ -252,7 +244,6 @@ func resourceIbmDnsCrForwardingRuleUpdate(context context.Context, d *schema.Res
 			if _, ok := d.GetOk(pdnsCRFRViews); !ok {
 				err := fmt.Errorf("[ERROR] Cannot update the forwarding rules. One of the fields from forward_to or views must be provided")
 				tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_dns_custom_resolver_forwarding_rule", "update")
-				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 				return tfErr.GetDiag()
 
 			}
@@ -275,7 +266,6 @@ func resourceIbmDnsCrForwardingRuleUpdate(context context.Context, d *schema.Res
 		result, resp, err := dnsSvcsClient.UpdateForwardingRuleWithContext(context, opt)
 		if err != nil || result == nil {
 			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateForwardingRuleWithContext failed with error: %s and response:\n%s", err, resp), "ibm_dns_custom_resolver_forwarding_rule", "update")
-			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
 
@@ -287,7 +277,6 @@ func resourceIbmDnsCrForwardingRuleDelete(context context.Context, d *schema.Res
 	dnsSvcsClient, err := meta.(conns.ClientSession).PrivateDNSClientSession()
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceIbmDnsCrForwardingRuleDelete Client initialization failed: %s", err.Error()), "ibm_dns_custom_resolver_forwarding_rule", "delete")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 	ruleID, resolverID, instanceID, err := flex.ConvertTfToCisThreeVar(d.Id())
@@ -298,7 +287,6 @@ func resourceIbmDnsCrForwardingRuleDelete(context context.Context, d *schema.Res
 			return nil
 		}
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteForwardingRuleWithContext failed: %s", err.Error()), "ibm_dns_custom_resolver_forwarding_rule", "delete")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 	d.SetId("")

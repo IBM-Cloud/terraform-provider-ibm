@@ -6,7 +6,6 @@ package dnsservices
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -104,7 +103,6 @@ func dataSourceIbmDnsCrForwardingRulesRead(context context.Context, d *schema.Re
 	sess, err := meta.(conns.ClientSession).PrivateDNSClientSession()
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIbmDnsCrForwardingRulesRead Client initialization failed: %s", err.Error()), "ibm_dns_custom_resolver_forwarding_rule", "read")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 	instanceID := d.Get(pdnsInstanceID).(string)
@@ -115,7 +113,6 @@ func dataSourceIbmDnsCrForwardingRulesRead(context context.Context, d *schema.Re
 	result, resp, err := sess.ListForwardingRulesWithContext(context, opt)
 	if err != nil || result == nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIbmDnsCustomResolverForwardingRulesRead ListForwardingRulesWithContext failed with error: %s and response:\n%s", err, resp), "ibm_dns_custom_resolver_forwarding_rule", "read")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 

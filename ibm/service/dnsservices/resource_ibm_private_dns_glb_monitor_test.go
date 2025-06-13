@@ -10,7 +10,6 @@ import (
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -214,7 +213,7 @@ func testAccCheckIBMPrivateDNSGlbMonitorDestroy(s *terraform.State) error {
 			res.StatusCode != 403 &&
 			!strings.Contains(err.Error(), "The service instance was disabled, any access is not allowed.") {
 
-			return flex.FmtErrorf("testAccCheckIBMPrivateDNSZoneDestroy: Error checking if instance (%s) has been destroyed: %s", rs.Primary.ID, err)
+			return fmt.Errorf("testAccCheckIBMPrivateDNSZoneDestroy: Error checking if instance (%s) has been destroyed: %s", rs.Primary.ID, err)
 		}
 	}
 	return nil
@@ -224,7 +223,7 @@ func testAccCheckIBMPrivateDNSGlbMonitorExists(n string, result string) resource
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			return flex.FmtErrorf("Not found: %s", n)
+			return fmt.Errorf("Not found: %s", n)
 		}
 		pdnsClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).PrivateDNSClientSession()
 		if err != nil {
@@ -240,7 +239,7 @@ func testAccCheckIBMPrivateDNSGlbMonitorExists(n string, result string) resource
 		if err != nil &&
 			res.StatusCode != 403 &&
 			!strings.Contains(err.Error(), "The service instance was disabled, any access is not allowed.") {
-			return flex.FmtErrorf("testAccCheckIBMPrivateDNSZoneExists: Error checking if instance (%s) has been destroyed: %s", rs.Primary.ID, err)
+			return fmt.Errorf("testAccCheckIBMPrivateDNSZoneExists: Error checking if instance (%s) has been destroyed: %s", rs.Primary.ID, err)
 		}
 		result = *r.ID
 		return nil

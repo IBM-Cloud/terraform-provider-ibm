@@ -10,7 +10,6 @@ import (
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -123,12 +122,12 @@ func testAccCheckIBMDNSLinkedZoneDestroy(s *terraform.State) error {
 			continue
 		}
 		if rs.Primary.ID == "" {
-			return flex.FmtErrorf("No resource primary ID is set")
+			return fmt.Errorf("No resource primary ID is set")
 		}
 
 		partslist := strings.Split(rs.Primary.ID, "/")
 		if len(partslist) < 2 {
-			return flex.FmtErrorf("Invalid resource primary ID. Must contain 2 parts.")
+			return fmt.Errorf("Invalid resource primary ID. Must contain 2 parts.")
 		}
 		instanceID := partslist[0]
 		linkedDnsZoneID := partslist[1]
@@ -138,7 +137,7 @@ func testAccCheckIBMDNSLinkedZoneDestroy(s *terraform.State) error {
 		)
 		_, _, err := pdnsClient.GetLinkedZone(getLinkedZoneOptions)
 		if err != nil {
-			return flex.FmtErrorf("testAccCheckIBMDNSLinkedZoneDestroy: Error checking if instance (%s) has been destroyed: %s", rs.Primary.ID, err)
+			return fmt.Errorf("testAccCheckIBMDNSLinkedZoneDestroy: Error checking if instance (%s) has been destroyed: %s", rs.Primary.ID, err)
 		}
 	}
 	return nil
@@ -196,7 +195,7 @@ func testAccCheckIBMDNSLinkedZoneExists(n string, linkedZoneID *string) resource
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			return flex.FmtErrorf("Linked Zone not found: %s", n)
+			return fmt.Errorf("Linked Zone not found: %s", n)
 		}
 		pdnsClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).PrivateDNSClientSession()
 		if err != nil {
@@ -211,7 +210,7 @@ func testAccCheckIBMDNSLinkedZoneExists(n string, linkedZoneID *string) resource
 		)
 		linkedZone, _, err := pdnsClient.GetLinkedZone(getLinkedZoneOptions)
 		if err != nil {
-			return flex.FmtErrorf("Error Fetching Linked Zone: %s", err)
+			return fmt.Errorf("Error Fetching Linked Zone: %s", err)
 		}
 		*linkedZoneID = *linkedZone.ID
 		return nil

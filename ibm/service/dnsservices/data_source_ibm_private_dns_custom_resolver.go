@@ -6,7 +6,6 @@ package dnsservices
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -104,7 +103,6 @@ func dataSourceIBMDNSCustomResolverRead(context context.Context, d *schema.Resou
 	sess, err := meta.(conns.ClientSession).PrivateDNSClientSession()
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMDNSCustomResolverRead Client initialization failed: %s", err.Error()), "ibm_dns_custom_resolver", "read")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 	instanceID := d.Get(pdnsInstanceID).(string)
@@ -113,7 +111,6 @@ func dataSourceIBMDNSCustomResolverRead(context context.Context, d *schema.Resou
 	result, resp, err := sess.ListCustomResolversWithContext(context, opt)
 	if err != nil || result == nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMDNSCustomResolverRead ListCustomResolversWithContext failed with error: %s and response:\n%s", err, resp), "ibm_dns_custom_resolver", "read")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 
