@@ -95,14 +95,6 @@ func ResourceIBMPINetwork() *schema.Resource {
 				Optional: true,
 				Type:     schema.TypeList,
 			},
-			Arg_NetworkAccessConfig: {
-				Computed:     true,
-				Deprecated:   "This field is deprecated please use pi_network_peer instead",
-				Description:  "The network communication configuration option of the network (for satellite locations only).",
-				Optional:     true,
-				Type:         schema.TypeString,
-				ValidateFunc: validate.ValidateAllowedStringValues([]string{Internal_Only, Outbound_Only, Bidirectional_Static_Route, Bidirectional_BGP, Bidirectional_L2Out}),
-			},
 			Arg_NetworkMTU: {
 				Computed:    true,
 				Description: "Maximum Transmission Unit option of the network. Minimum is 1450 and maximum is 9000.",
@@ -241,9 +233,6 @@ func resourceIBMPINetworkCreate(ctx context.Context, d *schema.ResourceData, met
 		var mtu int64 = int64(v.(int))
 		body.Mtu = &mtu
 	}
-	if v, ok := d.GetOk(Arg_NetworkAccessConfig); ok {
-		body.AccessConfig = models.AccessConfig(v.(string))
-	}
 	if _, ok := d.GetOk(Arg_NetworkPeer); ok {
 		peerModel := networkMapToNetworkCreatePeer(d.Get(Arg_NetworkPeer + ".0").(map[string]interface{}))
 		body.Peer = peerModel
@@ -350,7 +339,6 @@ func resourceIBMPINetworkRead(ctx context.Context, d *schema.ResourceData, meta 
 	d.Set(Arg_Cidr, networkdata.Cidr)
 	d.Set(Arg_DNS, networkdata.DNSServers)
 	d.Set(Arg_Gateway, networkdata.Gateway)
-	d.Set(Arg_NetworkAccessConfig, networkdata.AccessConfig)
 	d.Set(Arg_NetworkMTU, networkdata.Mtu)
 	d.Set(Arg_NetworkName, networkdata.Name)
 	d.Set(Arg_NetworkType, networkdata.Type)

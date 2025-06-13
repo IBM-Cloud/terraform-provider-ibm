@@ -66,7 +66,6 @@ Review the argument references that you can specify for your resource.
 - `pi_ipaddress_range` - (Optional, List of Map) List of one or more ip address range(s). The `pi_ipaddress_range` object structure is documented below. The `pi_ipaddress_range` block supports:
   - `pi_ending_ip_address` - (Required, String) The ending ip address.
   - `pi_starting_ip_address` - (Required, String) The staring ip address. **Note** if the `pi_gateway` or `pi_ipaddress_range` is not provided, it will calculate the value based on CIDR respectively.
-- `pi_network_access_config` - (Deprecated, Optional, String) The network communication configuration option of the network (for on-prem locations only). Please use `pi_network_peer`.
 - `pi_network_mtu` - (Optional, Integer) Maximum Transmission Unit option of the network. Minimum is 1450 and maximum is 9000.
 - `pi_network_name` - (Required, String) The name of the network.
 - `pi_network_type` - (Required, String) The type of network that you want to create. Valid values are `pub-vlan`, `vlan` and `dhcp-vlan`.

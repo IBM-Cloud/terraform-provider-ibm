@@ -46,7 +46,6 @@ Review the argument references that you can specify for your data source.
 
 In addition to all argument reference list, you can access the following attribute references after your data source is created.
 
-- `access_config` - (Deprecated, String) The network communication configuration option of the network (for on-prem locations only). Use `peer_id` instead.
 - `available_ip_count` - (Float) The total number of IP addresses that you have in your network.
 - `cidr` - (String) The CIDR of the network.
 - `crn` - (String) The CRN of this resource.

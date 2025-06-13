@@ -35,12 +35,6 @@ func DataSourceIBMPINetwork() *schema.Resource {
 			},
 
 			// Attributes
-			Attr_AccessConfig: {
-				Computed:    true,
-				Deprecated:  "This field is deprecated please use peer_id instead.",
-				Description: "The network communication configuration option of the network (for on prem locations only). Use `peer_id` instead.",
-				Type:        schema.TypeString,
-			},
 			Attr_AvailableIPCount: {
 				Computed:    true,
 				Description: "The total number of IP addresses that you have in your network.",
@@ -144,7 +138,6 @@ func dataSourceIBMPINetworkRead(ctx context.Context, d *schema.ResourceData, met
 	}
 
 	d.SetId(*networkdata.NetworkID)
-	d.Set(Attr_AccessConfig, networkdata.AccessConfig)
 	if networkdata.IPAddressMetrics.Available != nil {
 		d.Set(Attr_AvailableIPCount, networkdata.IPAddressMetrics.Available)
 	}
