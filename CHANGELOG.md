@@ -1,3 +1,37 @@
+# 1.79.2 (June 13, 2025)
+
+## Bug Fixes
+
+### VPC Infrastructure
+* fixed the access_tags set on is_image ([6280](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6280))
+* ensure user-tags on volume_prototype are correctly set ([6279](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6279))
+* fix setting accesscontrolmode on mount target ([6285](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6285))
+
+
+## Enhancements
+
+### Cloud Databases
+* In place upgrade ([6275](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6275))
+
+### General
+* Update go version to 1.24 ([6264](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6264))
+
+### IAM
+* Add retry for GET operations with exponential retry ([6292](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6292))
+
+
+## Documentation
+
+### General
+* update workflow badge to use GitHub Actions URL format ([6282](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6282))
+
+# 1.79.1 (June 09, 2025)
+
+## Bug Fixes
+
+### VPC Infrastructure
+* fix(is-image): fixed the access_tags set on is_image ([6280](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6280))
+
 # 1.79.0 (June 09, 2025)
 
 ## Bug Fixes
