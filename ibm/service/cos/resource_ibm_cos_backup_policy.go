@@ -34,6 +34,13 @@ func ResourceIBMCOSBackupPolicy() *schema.Resource {
 				ForceNew:    true,
 				Description: "Bucket Crn of the source bucket.",
 			},
+			"initial_delete_after_days": {
+				Type:         schema.TypeInt,
+				Computed:     true, // Computed means it can be set by Terraform but can't be updated by users
+				Optional:     true,
+				ValidateFunc: validate.ValidateAllowedRangeInt(1, 36500),
+				Description:  "Number of days after which the objects inside backup vault should be deleted.",
+			},
 			"policy_name": {
 				Type:        schema.TypeString,
 				Required:    true,
@@ -66,6 +73,7 @@ func resourceIBMCOSBackupPolicyCreate(ctx context.Context, d *schema.ResourceDat
 	bucketCRN := d.Get("bucket_crn").(string)
 	bucketName := strings.Split(bucketCRN, ":bucket:")[1]
 	policyName := d.Get("policy_name").(string)
+	deleteAfterDays := d.Get("initial_delete_after_days").(int)
 	targetBackupVaultCRN := d.Get("target_backup_vault_crn").(string)
 	backupType := d.Get("backup_type").(string)
 	rcClient, err := meta.(conns.ClientSession).CosConfigV1API()
@@ -73,7 +81,10 @@ func resourceIBMCOSBackupPolicyCreate(ctx context.Context, d *schema.ResourceDat
 		return diag.Errorf("Failed to create rc client %v", err)
 	}
 	createBucketBackupPolicyOptions := &rc.CreateBackupPolicyOptions{
-		Bucket:               aws.String(bucketName),
+		Bucket: aws.String(bucketName),
+		InitialRetention: &rc.DeleteAfterDays{
+			DeleteAfterDays: aws.Int64(int64(deleteAfterDays)),
+		},
 		PolicyName:           aws.String(policyName),
 		TargetBackupVaultCrn: aws.String(targetBackupVaultCRN),
 		BackupType:           aws.String(backupType),
@@ -118,6 +129,9 @@ func resourceIBMCOSBackupPolicyRead(ctx context.Context, d *schema.ResourceData,
 	if res != nil {
 		if res.PolicyName != nil {
 			d.Set("policy_name", aws.String(*res.PolicyName))
+		}
+		if res.InitialRetention.DeleteAfterDays != nil {
+			d.Set("initial_delete_after_days", int((*res.InitialRetention.DeleteAfterDays)))
 		}
 		if res.TargetBackupVaultCrn != nil {
 			d.Set("target_backup_vault_crn", aws.String(*res.TargetBackupVaultCrn))

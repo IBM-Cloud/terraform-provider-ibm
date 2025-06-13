@@ -540,6 +540,97 @@ resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle" {
   }
 }
 ```
+
+## Bucket Backup 
+
+Provides 2 seperate resources - `ibm_cos_backup_vault` and `ibm_cos_backup_policy` to manage the backup policies and the backup vaults to store the backup of a COS bucket.
+
+## Example usage
+
+```terraform
+resource "ibm_cos_bucket" "backup-source-bucket" {
+  bucket_name           = "bucket-name"
+  resource_instance_id  = "cos_instance_id"
+  cross_region_location = "us"
+  storage_class         = "standard"
+  object_versioning {
+    enable = true
+  }
+
+}
+
+
+resource "ibm_cos_backup_vault" "backup-vault" {
+  backup_vault_name                   = "backup_vault_name"
+  service_instance_id                 = "cos_instance_id to create backup vault"
+  region                              = "us"
+  activity_tracking_management_events = true
+  metrics_monitoring_usage_metrics    = true
+  kms_key_crn                         = "crn:v1:staging:public:kms:us-south:a/997xxxxxxxxxxxxxxxxxxxxxx54:5xxxxxxxa-fxxb-4xx8-9xx4-f1xxxxxxxxx5:key:af5667d5-dxx5-4xxf-8xxf-exxxxxxxf1d"
+}
+
+
+resource "ibm_iam_authorization_policy" "policy" {
+  roles = [
+    "Backup Manager", "Writer"
+  ]
+  subject_attributes {
+    name  = "accountId"
+    value = "account_id of the cos account"
+  }
+  subject_attributes {
+    name  = "serviceName"
+    value = "cloud-object-storage"
+  }
+  subject_attributes {
+    name  = "serviceInstance"
+    value = "exxxxx34-xxxx-xxxx-xxxx-d6xxxxxxxx9"
+  }
+  subject_attributes {
+    name  = "resource"
+    value = "source-bucket-name"
+  }
+  subject_attributes {
+    name  = "resourceType"
+    value = "bucket"
+  }
+  resource_attributes {
+    name     = "accountId"
+    operator = "stringEquals"
+    value    = "account id of the cos account of backup vault"
+  }
+  resource_attributes {
+    name     = "serviceName"
+    operator = "stringEquals"
+    value    = "cloud-object-storage"
+  }
+  resource_attributes {
+    name     = "serviceInstance"
+    operator = "stringEquals"
+    value    = "exxxxx34-xxxx-xxxx-xxxx-d6xxxxxxxx9"
+  }
+  resource_attributes {
+    name     = "resource"
+    operator = "stringEquals"
+    value    = "backup-vault-name"
+  }
+  resource_attributes {
+    name     = "resourceType"
+    operator = "stringEquals"
+    value    = "backup-vault"
+  }
+}
+
+resource "ibm_cos_backup_policy" "policy" {
+  bucket_crn              = ibm_cos_bucket.bucket.crn
+  initial_delete_after_days       = 2
+  policy_name             = "policy_name"
+  target_backup_vault_crn = ibm_cos_backup_vault.backup-vault.backup_vault_crn
+  backup_type             = "continuous"
+}
+
+```
+
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 
 ## Requirements
@@ -625,5 +716,14 @@ resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle" {
 | object_size_greater_than | Expiration rule will be applicable to the objects having size greater than specified value of his argument. | `int` | No
 | object_size_less_than | Expiration rule will be applicable to the objects having size lesser than specified value of his argument. | `int` | No
 | tag | Expiration rule will be applicable to the objects having the key-value tags specified by this attribute. | `object` | Yes
-
+| backup_vault_name                   | Name of the backup vault.                                                                                                                                                                                                                                                                                                                                                                                      | `string` | Yes      |
+| service_instance_id                 | CRN of the COS instance where the backup vault is to be created.                                                                                                                                                                                                                                                                                                                                               | `string` | Yes      |
+| activity_tracking_management_events | Whether to send notification for the management events for backup vault.                                                                                                                                                                                                                                                                                                                                       | `bool`   | No       |
+| metrics_monitoring_usage_metrics    | Whether usage metrics are collected for this backup vault.                                                                                                                                                                                                                                                                                                                                                     | `bool`   | No       |
+| kms_key_crn                         | Crn of the Key protect root.                                                                                                                                                                                                                                                                                                                                                                                   | `string` | No       |
+| bucket_crn                          | CRN of the source bucket.                                                                                                                                                                                                                                                                                                                                                                                      | `string` | Yes      |
+| initial_delete_after_days                   | Number of days after which the data contained within the RecoveryRange will be deleted.                                                                                                                                                                                                                                                                                                                        | `int`    | Yes      |
+| policy_name                         | Name of the policy.                                                                                                                                                                                                                                                                                                                                                                                            | `string` | Yes      |
+| backup_type                         | Backup type. Currently only  `continuous` is supported.                                                                                                                                                                                                                                                                                                                                                        | `string` | Yes      |
+| target_backup_vault_crn             | CRN of the target backup vault.                                                                                                                                                                                                                                                                                                                                                                                | `string` | Yes      |
 {: caption="inputs"}
