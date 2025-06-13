@@ -138,11 +138,14 @@ In addition to all argument reference list, you can access the following attribu
 - `activity_tracking` (List) Nested block with the following structure.
 
   Nested scheme for `activity_tracking`:
-  - `activity_tracker_crn` - (string)When the `activity_tracker_crn` is not populated, then enabled events are sent to the Activity Tracker instance associated to the container's location unless otherwise specified in the Activity Tracker Event Routing service configuration.If `activity_tracker_crn` is populated, then enabled events are sent to the Activity Tracker instance specified and bucket management events are always enabled.
 
   - `read_data_events` - (bool)  If set to **true**, all object read events (i.e. downloads) will be sent to Activity Tracker.
   - `write_data_events`- (bool) If set to **true**, all object write events (that is `uploads`) is sent to Activity Tracker.
   - `management_events`- (bool) If set to **true**, all bucket management events will be sent to Activity Tracker.This field only applies if `activity_tracker_crn` is not populated. 
+  - `activity_tracker_crn` - (string)When the `activity_tracker_crn` is not populated, then enabled events are sent to the Activity Tracker instance associated to the container's location unless otherwise specified in the Activity Tracker Event Routing service configuration.If `activity_tracker_crn` is populated, then enabled events are sent to the Activity Tracker instance specified and bucket management events are always enabled.
+  **Note:**
+
+ It is recommended to not use the `activity_tracker_crn`.
 
 - `archive_rule` (List) Nested block with the following structure.
 
@@ -179,12 +182,14 @@ In addition to all argument reference list, you can access the following attribu
 - `metrics_monitoring`- (List) Nested block with the following structure.
    
   Nested scheme for `metrics_monitoring`:
-  - `metrics_monitoring_crn` - (string)When the `metrics_monitoring_crn` is not populated, then enabled metrics are sent to the monitoring instance associated to the container's location unless otherwise specified in the Metrics Router service configuration.If `metrics_monitoring_crn` is populated, then enabled events are sent to the Metrics Monitoring instance specified.
-  
   -	`request_metrics_enabled` - (bool) If set to **true**, all request metrics (i.e. `rest.object.head`) will be sent to the monitoring service..
   - `usage_metrics_enabled`- (bool) If set to **true**, all usage metrics (i.e. `bytes_used`) will be sent to the monitoring service.
-- `noncurrent_version_expiration` (List) Nested block with the following structure.
+  - `metrics_monitoring_crn` - (string)When the `metrics_monitoring_crn` is not populated, then enabled metrics are sent to the monitoring instance associated to the container's location unless otherwise specified in the Metrics Router service configuration.If `metrics_monitoring_crn` is populated, then enabled events are sent to the Metrics Monitoring instance specified.
+  **Note:**
+
+ It is recommended to not use the `metrics_monitoring_crn`.
   
+- `noncurrent_version_expiration` (List) Nested block with the following structure. 
   Nested scheme for `noncurrent_version_expiration`:
   - `enable` - (bool) A rule can either be `enabled` or `disabled`. A rule is active only when enabled.
   - `noncurrent_days` - (Int) Configuration parameter in your policy that says how long to retain a non-current version before deleting it. Must be greater than 0.
