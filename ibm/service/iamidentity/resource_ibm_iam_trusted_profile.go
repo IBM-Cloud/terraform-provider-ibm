@@ -189,15 +189,33 @@ func resourceIBMIamTrustedProfileRead(context context.Context, d *schema.Resourc
 	var trustedProfile *iamidentityv1.TrustedProfile
 	var response *core.DetailedResponse
 
+	var (
+		initialDelaySec = 2  // seconds
+		maxDelaySec     = 60 // max delay in seconds
+
+	)
+
 	err = retry.RetryContext(context, 5*time.Minute, func() *retry.RetryError {
-		trustedProfile, response, err = iamIdentityClient.GetProfileWithContext(context, getProfileOptions)
-		if err != nil || trustedProfile == nil {
-			if response != nil && response.StatusCode == 404 {
-				return retry.RetryableError(err)
+		retryCount := 0
+
+		return func() *retry.RetryError {
+			// Calculate exponential delay
+			delaySec := initialDelaySec * (1 << retryCount) // equivalent to initialDelaySec * 2^retryCount
+			if delaySec > maxDelaySec {
+				delaySec = maxDelaySec
 			}
-			return retry.NonRetryableError(err)
-		}
-		return nil
+			time.Sleep(time.Duration(delaySec) * time.Second)
+
+			trustedProfile, response, err = iamIdentityClient.GetProfileWithContext(context, getProfileOptions)
+			if err != nil || trustedProfile == nil {
+				retryCount++
+				if response != nil && response.StatusCode == 404 {
+					return retry.RetryableError(err)
+				}
+				return retry.NonRetryableError(err)
+			}
+			return nil
+		}()
 	})
 
 	if conns.IsResourceTimeoutError(err) {
