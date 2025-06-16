@@ -122,6 +122,8 @@ Review the argument references that you can specify for your resource.
   - `days`- (Int) Specifies number of days after which the object can be deleted from the COS bucket.
   - `years`- (Int) Specifies number of years after which the object can be deleted from the COS bucket.
 
+**Note:**
+  The parameter `days` and `years` are mutually exclusive please provide only one of them.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
