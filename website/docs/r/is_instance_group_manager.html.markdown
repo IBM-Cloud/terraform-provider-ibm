@@ -303,6 +303,18 @@ resource "ibm_is_instance_group_manager_action" "webapp_weekend_scale_down" {
 
 ```
 
+## Argument reference
+Review the argument references that you can specify for your resource. 
+
+- `aggregation_window` - (Optional, Integer) The time window in seconds to aggregate metrics prior to evaluation.
+- `cooldown` - (Optional, Integer) The duration of time in seconds to pause further scale actions after scaling has taken place.
+- `enable_manager` - (Optional, Bool)  Enable or disable the instance group manager. Default value is **true**.
+- `instance_group` - (Required, String) The instance group ID where instance group manager is created.
+- `manager_type` - (Optional, String) The type of instance group manager. Default value is `autoscale`. Valid values are `autoscale` and `scheduled`.
+- `max_membership_count`- (Required, Integer) The maximum number of members in a managed instance group.
+- `min_membership_count` - (Optional, Integer) The minimum number of members in a managed instance group. Default value is `1`.
+- `name` - (Optional, String) The name of the instance group manager.
+
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
