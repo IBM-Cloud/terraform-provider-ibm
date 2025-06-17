@@ -4,11 +4,13 @@
 package directlink
 
 import (
+	"context"
 	"fmt"
 	"log"
 
 	"github.com/IBM/networking-go-sdk/directlinkv1"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
@@ -16,12 +18,12 @@ import (
 
 func ResourceIBMDLGatewayMacsecCak() *schema.Resource {
 	return &schema.Resource{
-		Create:   resourceIBMdlGatewayMacsecCakCreate,
-		Read:     resourceIBMdlGatewayMacsecCakRead,
-		Delete:   resourceIBMdlGatewayMacsecCakDelete,
-		Exists:   resourceIBMdlGatewayMacsecCakExists,
-		Update:   resourceIBMdlGatewayMacsecCakUpdate,
-		Importer: &schema.ResourceImporter{},
+		CreateContext: resourceIBMdlGatewayMacsecCakCreate,
+		ReadContext:   resourceIBMdlGatewayMacsecCakRead,
+		DeleteContext: resourceIBMdlGatewayMacsecCakDelete,
+		Exists:        resourceIBMdlGatewayMacsecCakExists,
+		UpdateContext: resourceIBMdlGatewayMacsecCakUpdate,
+		Importer:      &schema.ResourceImporter{},
 		Schema: map[string]*schema.Schema{
 			dlGatewayId: {
 				Type:        schema.TypeString,
@@ -195,10 +197,10 @@ func ResourceIBMdlGatewayMacsecCakValidator() *validate.ResourceValidator {
 	return &ibmISDLGatewayResourceValidator
 }
 
-func resourceIBMdlGatewayMacsecCakCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMdlGatewayMacsecCakCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	directLink, err := directlinkClient(meta)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	gatewayID := d.Get(dlGatewayId).(string)
@@ -213,19 +215,19 @@ func resourceIBMdlGatewayMacsecCakCreate(d *schema.ResourceData, meta interface{
 
 	result, response, err := directLink.CreateGatewayMacsecCak(createGatewayMacsecCakOptions)
 	if err != nil {
-		return fmt.Errorf("[DEBUG] Create Direct Link Gateway Macsec CAK - err %s\n%s", err, response)
+		return diag.FromErr(fmt.Errorf("[DEBUG] Create Direct Link Gateway Macsec CAK - err %s\n%s", err, response))
 	}
 
 	d.SetId(gatewayID)
 	d.Set(dlGatewayMacsecCakID, *result.ID)
 
-	return resourceIBMdlGatewayMacsecCakRead(d, meta)
+	return resourceIBMdlGatewayMacsecCakRead(context, d, meta)
 }
 
-func resourceIBMdlGatewayMacsecCakRead(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMdlGatewayMacsecCakRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	directLink, err := directlinkClient(meta)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	gatewayID := d.Id()
@@ -241,7 +243,7 @@ func resourceIBMdlGatewayMacsecCakRead(d *schema.ResourceData, meta interface{})
 	instance, response, err := directLink.GetGatewayMacsecCak(getGatewayMacsecCakOptionsModel)
 	if err != nil {
 		log.Println("[WARN] Error Get DL Gateway Macsec CAK ", response, err)
-		return err
+		return diag.FromErr(err)
 	}
 
 	cakItem := map[string]interface{}{}
@@ -288,11 +290,11 @@ func resourceIBMdlGatewayMacsecCakRead(d *schema.ResourceData, meta interface{})
 	return nil
 }
 
-func resourceIBMdlGatewayMacsecCakUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMdlGatewayMacsecCakUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 	directLink, err := directlinkClient(meta)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	gatewayID := d.Id()
@@ -312,17 +314,17 @@ func resourceIBMdlGatewayMacsecCakUpdate(d *schema.ResourceData, meta interface{
 	_, response, err := directLink.UpdateGatewayMacsecCak(patchGatewayOptions)
 	if err != nil {
 		log.Printf("[DEBUG] Update Direct Link Gateway Macsec CAK err %s\n%s", err, response)
-		return err
+		return diag.FromErr(err)
 	}
 
-	return resourceIBMdlGatewayMacsecCakRead(d, meta)
+	return resourceIBMdlGatewayMacsecCakRead(context, d, meta)
 }
 
-func resourceIBMdlGatewayMacsecCakDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMdlGatewayMacsecCakDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 	directLink, err := directlinkClient(meta)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	gatewayID := d.Id()
@@ -337,7 +339,7 @@ func resourceIBMdlGatewayMacsecCakDelete(d *schema.ResourceData, meta interface{
 
 	if err != nil && response.StatusCode != 404 {
 		log.Printf("Error deleting Direct Link Gateway Macsec CAK : %s", response)
-		return err
+		return diag.FromErr(err)
 	}
 
 	d.SetId("")

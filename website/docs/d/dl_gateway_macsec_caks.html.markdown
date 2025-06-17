@@ -1,5 +1,5 @@
 ---
-subcategory: "Direct Link Gateway Macsec CAKs"
+subcategory: "Direct Link Gateway"
 layout: "ibm"
 page_title: "IBM : ibm_dl_gateway_macsec_caks"
 description: |-

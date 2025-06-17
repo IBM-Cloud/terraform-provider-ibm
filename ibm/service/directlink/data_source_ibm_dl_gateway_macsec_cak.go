@@ -4,15 +4,17 @@
 package directlink
 
 import (
+	"context"
 	"log"
 
 	"github.com/IBM/networking-go-sdk/directlinkv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func DataSourceIBMDLGatewayMacsecCak() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceIBMDLGatewayMacsecCakRead,
+		ReadContext: dataSourceIBMDLGatewayMacsecCakRead,
 		Schema: map[string]*schema.Schema{
 			dlGatewayId: {
 				Type:        schema.TypeString,
@@ -105,13 +107,13 @@ func DataSourceIBMDLGatewayMacsecCak() *schema.Resource {
 	}
 }
 
-func dataSourceIBMDLGatewayMacsecCakRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceIBMDLGatewayMacsecCakRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	directLink, err := directlinkClient(meta)
 	gatewayID := d.Get(dlGatewayId).(string)
 	getMacsecCakID := d.Get(dlGatewayMacsecCakID).(string)
 
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	// Get Gateway MAcsec CAK
@@ -127,7 +129,7 @@ func dataSourceIBMDLGatewayMacsecCakRead(d *schema.ResourceData, meta interface{
 
 	if err != nil {
 		log.Println("[WARN] Error Get DL Gateway Macsec", response, err)
-		return err
+		return diag.FromErr(err)
 	}
 
 	if result.Status != nil {

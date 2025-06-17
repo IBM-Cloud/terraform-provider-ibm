@@ -4,20 +4,22 @@
 package directlink
 
 import (
+	"context"
 	"log"
 
 	"github.com/IBM/networking-go-sdk/directlinkv1"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func ResourceIBMDLGatewayMacsecConfig() *schema.Resource {
 	return &schema.Resource{
-		Create:   resourceIBMdlGatewayMacsecConfigCreate,
-		Read:     resourceIBMdlGatewayMacsecConfigRead,
-		Delete:   resourceIBMdlGatewayMacsecConfigDelete,
-		Update:   resourceIBMdlGatewayMacsecConfigUpdate,
-		Importer: &schema.ResourceImporter{},
+		CreateContext: resourceIBMdlGatewayMacsecConfigCreate,
+		ReadContext:   resourceIBMdlGatewayMacsecConfigRead,
+		DeleteContext: resourceIBMdlGatewayMacsecConfigDelete,
+		UpdateContext: resourceIBMdlGatewayMacsecConfigUpdate,
+		Importer:      &schema.ResourceImporter{},
 		Schema: map[string]*schema.Schema{
 			dlGatewayId: {
 				Type:        schema.TypeString,
@@ -164,10 +166,10 @@ func ResourceIBMDLGatewayMacsecConfig() *schema.Resource {
 	}
 }
 
-func resourceIBMdlGatewayMacsecConfigCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMdlGatewayMacsecConfigCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	directLink, err := directlinkClient(meta)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	gatewayID := d.Get(dlGatewayId).(string)
@@ -224,7 +226,7 @@ func resourceIBMdlGatewayMacsecConfigCreate(d *schema.ResourceData, meta interfa
 
 	if err != nil {
 		log.Printf("Error setting Direct Link Gateway Macsec Config : %s", response)
-		return err
+		return diag.FromErr(err)
 	}
 	if result.Active != nil {
 		d.Set(dlActive, *result.Active)
@@ -282,10 +284,10 @@ func resourceIBMdlGatewayMacsecConfigCreate(d *schema.ResourceData, meta interfa
 	return nil
 }
 
-func resourceIBMdlGatewayMacsecConfigRead(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMdlGatewayMacsecConfigRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	directLink, err := directlinkClient(meta)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	dlGatewayID := d.Get(dlGatewayId).(string)
@@ -299,7 +301,7 @@ func resourceIBMdlGatewayMacsecConfigRead(d *schema.ResourceData, meta interface
 	result, response, err := directLink.GetGatewayMacsec(getGatewayMacsecOptionsModel)
 	if err != nil {
 		log.Println("[WARN] Error Get DL Gateway Macsec", response, err)
-		return err
+		return diag.FromErr(err)
 	}
 
 	if result.Active != nil {
@@ -358,11 +360,11 @@ func resourceIBMdlGatewayMacsecConfigRead(d *schema.ResourceData, meta interface
 	return nil
 }
 
-func resourceIBMdlGatewayMacsecConfigUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMdlGatewayMacsecConfigUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 	directLink, err := directlinkClient(meta)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	gatewayID := d.Id()
@@ -392,17 +394,17 @@ func resourceIBMdlGatewayMacsecConfigUpdate(d *schema.ResourceData, meta interfa
 	_, response, err := directLink.UpdateGatewayMacsec(updateGatewayMacsecOptions)
 	if err != nil {
 		log.Printf("[DEBUG] Update Direct Link Gateway Macsec Config err %s\n%s", err, response)
-		return err
+		return diag.FromErr(err)
 	}
 
-	return resourceIBMdlGatewayMacsecConfigRead(d, meta)
+	return resourceIBMdlGatewayMacsecConfigRead(context, d, meta)
 }
 
-func resourceIBMdlGatewayMacsecConfigDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMdlGatewayMacsecConfigDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 	directLink, err := directlinkClient(meta)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	gatewayID := d.Id()
@@ -415,7 +417,7 @@ func resourceIBMdlGatewayMacsecConfigDelete(d *schema.ResourceData, meta interfa
 
 	if err != nil && response.StatusCode != 404 {
 		log.Printf("Error unsetting Direct Link Gateway Macsec Config : %s", response)
-		return err
+		return diag.FromErr(err)
 	}
 
 	d.SetId("")

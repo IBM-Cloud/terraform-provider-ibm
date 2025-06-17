@@ -1,5 +1,5 @@
 ---
-subcategory: "Direct Link Gateway Macsec Config"
+subcategory: "Direct Link Gateway"
 layout: "ibm"
 page_title: "IBM : ibm_dl_gateway_macsec_config"
 description: |-

@@ -4,9 +4,11 @@
 package directlink
 
 import (
+	"context"
 	"log"
 
 	"github.com/IBM/networking-go-sdk/directlinkv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -16,7 +18,7 @@ const (
 
 func DataSourceIBMDLGatewayMacsecConfig() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceIBMDLGatewayMacsecConfigRead,
+		ReadContext: dataSourceIBMDLGatewayMacsecConfigRead,
 		Schema: map[string]*schema.Schema{
 			dlGatewayId: {
 				Type:        schema.TypeString,
@@ -131,10 +133,10 @@ func DataSourceIBMDLGatewayMacsecConfig() *schema.Resource {
 	}
 }
 
-func dataSourceIBMDLGatewayMacsecConfigRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceIBMDLGatewayMacsecConfigRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	directLink, err := directlinkClient(meta)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	dlGatewayID := d.Get(dlGatewayId).(string)
@@ -148,7 +150,7 @@ func dataSourceIBMDLGatewayMacsecConfigRead(d *schema.ResourceData, meta interfa
 	result, response, err := directLink.GetGatewayMacsec(getGatewayMacsecOptionsModel)
 	if err != nil {
 		log.Println("[WARN] Error Get DL Gateway Macsec", response, err)
-		return err
+		return diag.FromErr(err)
 	}
 
 	if result.Active != nil {
