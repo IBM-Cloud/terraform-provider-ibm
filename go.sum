@@ -126,8 +126,8 @@ github.com/IBM/go-sdk-core/v5 v5.6.3/go.mod h1:tt/B9rxLkRtglE7pvqLuYikgCXaZFL3bt
 github.com/IBM/go-sdk-core/v5 v5.9.5/go.mod h1:YlOwV9LeuclmT/qi/LAK2AsobbAP42veV0j68/rlZsE=
 github.com/IBM/go-sdk-core/v5 v5.10.2/go.mod h1:WZPFasUzsKab/2mzt29xPcfruSk5js2ywAPwW4VJjdI=
 github.com/IBM/go-sdk-core/v5 v5.17.4/go.mod h1:KsAAI7eStAWwQa4F96MLy+whYSh39JzNjklZRbN/8ns=
-github.com/IBM/go-sdk-core/v5 v5.19.1 h1:sleVks1O4XjgF4YEGvyDh6PZbP6iZhlTPeDkQc8nWDs=
-github.com/IBM/go-sdk-core/v5 v5.19.1/go.mod h1:Q3BYO6iDA2zweQPDGbNTtqft5tDcEpm6RTuqMlPcvbw=
+github.com/IBM/go-sdk-core/v5 v5.20.1 h1:dzeyifh1kfRLw8VfAIIS5okZYuqLTqplPZP/Kcsgdlo=
+github.com/IBM/go-sdk-core/v5 v5.20.1/go.mod h1:Q3BYO6iDA2zweQPDGbNTtqft5tDcEpm6RTuqMlPcvbw=
 github.com/IBM/ibm-backup-recovery-sdk-go v1.0.3 h1:9TZHocmCfgmF8TGVrpP1kFyQbjcqLNW7+bM07lefpKQ=
 github.com/IBM/ibm-backup-recovery-sdk-go v1.0.3/go.mod h1:jsYutWlnGysdCNoAk0zoIXb2vfKM9TmMpiUkI4pVuXY=
 github.com/IBM/ibm-cos-sdk-go v1.12.0 h1:Wrk3ve4JS3euhl7XjNFd3RlvPT56199G2/rKaPWpRKU=
@@ -147,8 +147,8 @@ github.com/IBM/logs-router-go-sdk v1.0.7 h1:uQjQAAcQdo3XvhY6MC7HakhZaXIUsGfUmKj2
 github.com/IBM/logs-router-go-sdk v1.0.7/go.mod h1:tCN2vFgu5xG0ob9iJcxi5M4bJ6mWmu3nhmRPnvlwev0=
 github.com/IBM/mqcloud-go-sdk v0.2.0 h1:QOWk8ZGk0QfIL0MOGTKzNdM3Qe0Hk+ifAFtNSFQo5HU=
 github.com/IBM/mqcloud-go-sdk v0.2.0/go.mod h1:VZQKMtqmcdXKhmLhLiPuS/UHMs/5yo2tA/nD83cQt9E=
-github.com/IBM/networking-go-sdk v0.51.6 h1:7hKoFJOWq4pGenJX5OzIk4LpWKG7HfWw41sYDeX1nDs=
-github.com/IBM/networking-go-sdk v0.51.6/go.mod h1:wyEnRnBnROgGmSn5UrryycIrbBujHKXf0PmI1NSwcjY=
+github.com/IBM/networking-go-sdk v0.51.7 h1:bZEJeogqri4TGT8vNVQJn/NeTMJVWRMCqBp4zjgFmY0=
+github.com/IBM/networking-go-sdk v0.51.7/go.mod h1:N3CxPvzInT58Nref4JI3DLIhPzL10CPiZZwsugw8NV8=
 github.com/IBM/platform-services-go-sdk v0.81.2 h1:ZE52eDNiblpIQrsRf5VySi1y3AH6H/KI3eNNKDKdN/g=
 github.com/IBM/platform-services-go-sdk v0.81.2/go.mod h1:XOowH+JnIih3FA7uilLVM/9VH7XgCmJ4T/i6eZi7gkw=
 github.com/IBM/project-go-sdk v0.3.5 h1:L+YClFUa14foS0B/hOOY9n7sIdsT5/XQicnXOyJSpyM=
