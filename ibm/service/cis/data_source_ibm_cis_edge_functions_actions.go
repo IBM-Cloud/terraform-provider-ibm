@@ -4,7 +4,6 @@
 package cis
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -139,7 +138,7 @@ func dataSourceIBMCISEdgeFunctionsActionsRead(d *schema.ResourceData, meta inter
 	opt := cisClient.NewListEdgeFunctionsActionsOptions()
 	result, _, err := cisClient.ListEdgeFunctionsActions(opt)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error: %v", err)
+		return flex.FmtErrorf("[ERROR] Error: %v", err)
 	}
 	scriptInfo := make([]map[string]interface{}, 0)
 	for _, script := range result.Result {

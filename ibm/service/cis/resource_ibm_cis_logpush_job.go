@@ -271,7 +271,7 @@ func ResourceIBMCISLogpushJobRead(d *schema.ResourceData, meta interface{}) erro
 	}
 	logpushID, zoneID, crn, err := flex.ConvertTfToCisThreeVar(d.Id())
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error Converting ConvertTfToCisThreeVar in Read")
+		return flex.FmtErrorf("[ERROR] Error Converting ConvertTfToCisThreeVar in Read")
 	}
 	sess.Crn = core.StringPtr(crn)
 	sess.ZoneID = core.StringPtr(zoneID)
@@ -283,7 +283,7 @@ func ResourceIBMCISLogpushJobRead(d *schema.ResourceData, meta interface{}) erro
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error While Reading the Logpushjobs for LogDNA %s:%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error While Reading the Logpushjobs for LogDNA %s:%s", err, response)
 	}
 	d.Set(cisID, crn)
 	d.Set(cisDomainID, zoneID)
@@ -319,7 +319,7 @@ func ResourceIBMCISLogpushJobUpdate(d *schema.ResourceData, meta interface{}) er
 	logpushID, _, _, err := flex.ConvertTfToCisThreeVar(d.Id())
 
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error Converting ConvertTfToCisThreeVar in Update")
+		return flex.FmtErrorf("[ERROR] Error Converting ConvertTfToCisThreeVar in Update")
 	}
 	if d.HasChange(cisLogpushEnabled) ||
 		d.HasChange(cisLogpullOpt) ||
@@ -373,7 +373,7 @@ func ResourceIBMCISLogpushJobUpdate(d *schema.ResourceData, meta interface{}) er
 		}
 		result, resp, err := sess.UpdateLogpushJobV2(options)
 		if err != nil || result == nil {
-			return fmt.Errorf("[ERROR] Error While Updating the Logpushjobs for LogDNA  %v, %v", err, resp)
+			return flex.FmtErrorf("[ERROR] Error While Updating the Logpushjobs for LogDNA  %v, %v", err, resp)
 		}
 	}
 	return ResourceIBMCISLogpushJobRead(d, meta)
@@ -390,7 +390,7 @@ func ResourceIBMCISLogpushJobDelete(d *schema.ResourceData, meta interface{}) er
 
 	logpushID, _, _, err := flex.ConvertTfToCisThreeVar(d.Id())
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error Converting ConvertTfToCisThreeVar in Delete")
+		return flex.FmtErrorf("[ERROR] Error Converting ConvertTfToCisThreeVar in Delete")
 	}
 	opt := sess.NewDeleteLogpushJobV2Options(logpushID)
 	_, response, err := sess.DeleteLogpushJobV2(opt)
@@ -398,7 +398,7 @@ func ResourceIBMCISLogpushJobDelete(d *schema.ResourceData, meta interface{}) er
 		if response != nil && response.StatusCode == 404 {
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error While Deleting the Logpushjob for LogDNA %s:%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error While Deleting the Logpushjob for LogDNA %s:%s", err, response)
 	}
 	d.SetId("")
 	return nil

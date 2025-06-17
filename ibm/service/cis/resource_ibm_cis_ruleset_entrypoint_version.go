@@ -4,8 +4,6 @@
 package cis
 
 import (
-	"fmt"
-
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
@@ -65,12 +63,12 @@ func ResourceIBMCISRulesetEntryPointVersionValidator() *validate.ResourceValidat
 func ResourceIBMCISRulesetEntryPointVersionRead(d *schema.ResourceData, meta interface{}) error {
 	sess, err := meta.(conns.ClientSession).CisRulesetsSession()
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while getting the CisRulesetsSession %s", err)
+		return flex.FmtErrorf("[ERROR] Error while getting the CisRulesetsSession %s", err)
 	}
 
 	ruleset_phase, zoneId, crn, err := flex.ConvertTfToCisThreeVar(d.Id())
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while ConvertTftoCisThreeVar %s", err)
+		return flex.FmtErrorf("[ERROR] Error while ConvertTftoCisThreeVar %s", err)
 	}
 	sess.Crn = core.StringPtr(crn)
 
@@ -79,7 +77,7 @@ func ResourceIBMCISRulesetEntryPointVersionRead(d *schema.ResourceData, meta int
 		opt := sess.Clone().NewGetZoneEntrypointRulesetOptions(ruleset_phase)
 		result, resp, err := sess.GetZoneEntrypointRuleset(opt)
 		if err != nil {
-			return fmt.Errorf("[WARN] Get zone ruleset failed: %v", resp)
+			return flex.FmtErrorf("[WARN] Get zone ruleset failed: %v", resp)
 		}
 		rulesetObj := flattenCISRulesets(*result.Result)
 
@@ -92,7 +90,7 @@ func ResourceIBMCISRulesetEntryPointVersionRead(d *schema.ResourceData, meta int
 		opt := sess.NewGetInstanceEntrypointRulesetOptions(ruleset_phase)
 		result, resp, err := sess.GetInstanceEntrypointRuleset(opt)
 		if err != nil {
-			return fmt.Errorf("[WARN] Get zone ruleset failed: %v", resp)
+			return flex.FmtErrorf("[WARN] Get zone ruleset failed: %v", resp)
 		}
 		rulesetObj := flattenCISRulesets(*result.Result)
 
@@ -109,7 +107,7 @@ func ResourceIBMCISRulesetEntryPointVersionRead(d *schema.ResourceData, meta int
 func ResourceIBMCISRulesetEntryPointVersionUpdate(d *schema.ResourceData, meta interface{}) error {
 	sess, err := meta.(conns.ClientSession).CisRulesetsSession()
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while getting the CisRulesetsSession %s", err)
+		return flex.FmtErrorf("[ERROR] Error while getting the CisRulesetsSession %s", err)
 	}
 
 	crn := d.Get(cisID).(string)
@@ -134,7 +132,7 @@ func ResourceIBMCISRulesetEntryPointVersionUpdate(d *schema.ResourceData, meta i
 
 		result, resp, err := sess.UpdateZoneEntrypointRuleset(opt)
 		if err != nil || result == nil {
-			return fmt.Errorf("[ERROR] Error while Update Zone Entrypoint Rulesets %s %s", err, resp)
+			return flex.FmtErrorf("[ERROR] Error while Update Zone Entrypoint Rulesets %s %s", err, resp)
 		}
 
 	} else {
@@ -149,7 +147,7 @@ func ResourceIBMCISRulesetEntryPointVersionUpdate(d *schema.ResourceData, meta i
 
 		result, resp, err := sess.UpdateInstanceEntrypointRuleset(opt)
 		if err != nil || result == nil {
-			return fmt.Errorf("[ERROR] Error while Update Entrypoint Rulesets %s %s", err, resp)
+			return flex.FmtErrorf("[ERROR] Error while Update Entrypoint Rulesets %s %s", err, resp)
 		}
 
 	}
