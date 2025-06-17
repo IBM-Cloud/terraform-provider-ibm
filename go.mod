@@ -22,7 +22,7 @@ require (
 	github.com/IBM/eventstreams-go-sdk v1.4.0
 	github.com/IBM/go-sdk-core v1.1.0
 	github.com/IBM/go-sdk-core/v3 v3.2.4
-	github.com/IBM/go-sdk-core/v5 v5.19.0
+	github.com/IBM/go-sdk-core/v5 v5.20.1
 	github.com/IBM/ibm-backup-recovery-sdk-go v1.0.3
 	github.com/IBM/ibm-cos-sdk-go v1.12.0
 	github.com/IBM/ibm-cos-sdk-go-config/v2 v2.2.0
@@ -32,7 +32,7 @@ require (
 	github.com/IBM/logs-go-sdk v0.4.0
 	github.com/IBM/logs-router-go-sdk v1.0.7
 	github.com/IBM/mqcloud-go-sdk v0.2.0
-	github.com/IBM/networking-go-sdk v0.51.3
+	github.com/IBM/networking-go-sdk v0.51.7
 	github.com/IBM/platform-services-go-sdk v0.77.0
 	github.com/IBM/project-go-sdk v0.3.5
 	github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5
@@ -118,7 +118,7 @@ require (
 	github.com/go-ozzo/ozzo-validation/v4 v4.3.0 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
-	github.com/go-playground/validator/v10 v10.24.0 // indirect
+	github.com/go-playground/validator/v10 v10.26.0 // indirect
 	github.com/go-test/deep v1.1.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
@@ -206,13 +206,14 @@ require (
 	go.opentelemetry.io/otel/metric v1.28.0 // indirect
 	go.opentelemetry.io/otel/trace v1.28.0 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
+	go.uber.org/automaxprocs v1.6.0 // indirect
 	go.uber.org/ratelimit v0.2.0 // indirect
 	go.uber.org/zap v1.27.0 // indirect
 	golang.org/x/mod v0.21.0 // indirect
-	golang.org/x/net v0.37.0 // indirect
+	golang.org/x/net v0.38.0 // indirect
 	golang.org/x/oauth2 v0.22.0 // indirect
 	golang.org/x/sync v0.12.0 // indirect
-	golang.org/x/sys v0.31.0 // indirect
+	golang.org/x/sys v0.32.0 // indirect
 	golang.org/x/term v0.30.0 // indirect
 	golang.org/x/text v0.23.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
