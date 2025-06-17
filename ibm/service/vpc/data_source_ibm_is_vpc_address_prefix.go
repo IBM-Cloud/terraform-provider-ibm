@@ -101,7 +101,9 @@ func DataSourceIBMIsVPCAddressPrefix() *schema.Resource {
 func dataSourceIBMIsVPCAddressPrefixRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_vpc_address_prefix", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	vpc_id := d.Get("vpc").(string)
@@ -117,9 +119,11 @@ func dataSourceIBMIsVPCAddressPrefixRead(context context.Context, d *schema.Reso
 			if start != "" {
 				listVpcsOptions.Start = &start
 			}
-			vpcs, response, err := vpcClient.ListVpcs(listVpcsOptions)
+			vpcs, _, err := vpcClient.ListVpcsWithContext(context, listVpcsOptions)
 			if err != nil {
-				return diag.FromErr(fmt.Errorf("Error Fetching vpcs %s\n%s", err, response))
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListVpcsWithContext failed: %s", err.Error()), "(Data) ibm_is_vpc_address_prefix", "read")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			start = flex.GetNext(vpcs.Next)
 			allrecs = append(allrecs, vpcs.Vpcs...)
@@ -136,8 +140,10 @@ func dataSourceIBMIsVPCAddressPrefixRead(context context.Context, d *schema.Reso
 			}
 		}
 		if !vpc_found {
-			log.Printf("[DEBUG] VPC with given name not found %s\n", vpc_name)
-			return diag.FromErr(fmt.Errorf("VPC with given name not found %s\n", vpc_name))
+			err = fmt.Errorf("VPC with given name not found %s", vpc_name)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListVpcsWithContext failed: %s", err.Error()), "(Data) ibm_is_vpc_address_prefix", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 	if address_prefix_id != "" {
@@ -146,10 +152,11 @@ func dataSourceIBMIsVPCAddressPrefixRead(context context.Context, d *schema.Reso
 		getVPCAddressPrefixOptions.SetVPCID(vpc_id)
 		getVPCAddressPrefixOptions.SetID(address_prefix_id)
 
-		addressPrefix1, response, err := vpcClient.GetVPCAddressPrefixWithContext(context, getVPCAddressPrefixOptions)
+		addressPrefix1, _, err := vpcClient.GetVPCAddressPrefixWithContext(context, getVPCAddressPrefixOptions)
 		if err != nil {
-			log.Printf("[DEBUG] GetVPCAddressPrefixWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("GetVPCAddressPrefixWithContext failed %s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetVPCAddressPrefixWithContext failed: %s", err.Error()), "(Data) ibm_is_vpc_address_prefix", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		addressPrefix = addressPrefix1
 
@@ -163,10 +170,11 @@ func dataSourceIBMIsVPCAddressPrefixRead(context context.Context, d *schema.Reso
 			if start != "" {
 				listVpcAddressPrefixesOptions.Start = &start
 			}
-			addressPrefixCollection, response, err := vpcClient.ListVPCAddressPrefixesWithContext(context, listVpcAddressPrefixesOptions)
+			addressPrefixCollection, _, err := vpcClient.ListVPCAddressPrefixesWithContext(context, listVpcAddressPrefixesOptions)
 			if err != nil {
-				log.Printf("[DEBUG] ListVpcAddressPrefixesWithContext failed %s\n%s", err, response)
-				return diag.FromErr(fmt.Errorf("ListVpcAddressPrefixesWithContext failed %s\n%s", err, response))
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListVPCAddressPrefixesWithContext failed: %s", err.Error()), "(Data) ibm_is_vpc_address_prefix", "read")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			start = flex.GetNext(addressPrefixCollection.Next)
 			allrecs = append(allrecs, addressPrefixCollection.AddressPrefixes...)
@@ -183,45 +191,47 @@ func dataSourceIBMIsVPCAddressPrefixRead(context context.Context, d *schema.Reso
 			}
 		}
 		if !address_prefix_found {
-			log.Printf("[DEBUG] Address Prefix with given name not found %s\n", address_prefix_name)
-			return diag.FromErr(fmt.Errorf("Address Prefix with given name not found %s\n", address_prefix_name))
+			err = fmt.Errorf("Address Prefix with given name not found %s", address_prefix_name)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListVPCAddressPrefixesWithContext failed: %s", err.Error()), "(Data) ibm_is_vpc_address_prefix", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 	d.SetId(*addressPrefix.ID)
 	if err = d.Set("cidr", addressPrefix.CIDR); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting cidr: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting cidr: %s", err), "(Data) ibm_is_vpc_address_prefix", "read", "set-cidr").GetDiag()
 	}
 
 	if err = d.Set("created_at", flex.DateTimeToString(addressPrefix.CreatedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting created_at: %s", err), "(Data) ibm_is_vpc_address_prefix", "read", "set-created_at").GetDiag()
 	}
 
 	if err = d.Set("has_subnets", addressPrefix.HasSubnets); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting has_subnets: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting has_subnets: %s", err), "(Data) ibm_is_vpc_address_prefix", "read", "set-has_subnets").GetDiag()
 	}
 
 	if err = d.Set("href", addressPrefix.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting href: %s", err), "(Data) ibm_is_vpc_address_prefix", "read", "set-href").GetDiag()
 	}
 
 	if err = d.Set("is_default", addressPrefix.IsDefault); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting is_default: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting is_default: %s", err), "(Data) ibm_is_vpc_address_prefix", "read", "set-is_default").GetDiag()
 	}
 
 	if err = d.Set("name", addressPrefix.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_is_vpc_address_prefix", "read", "set-name").GetDiag()
 	}
 
 	zone := []map[string]interface{}{}
 	if addressPrefix.Zone != nil {
 		modelMap, err := dataSourceIBMIsVPCAddressPrefixZoneReferenceToMap(addressPrefix.Zone)
 		if err != nil {
-			return diag.FromErr(err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_vpc_address_prefix", "read", "zone-to-map").GetDiag()
 		}
 		zone = append(zone, modelMap)
 	}
 	if err = d.Set("zone", zone); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting zone %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting zone: %s", err), "(Data) ibm_is_vpc_address_prefix", "read", "set-zone").GetDiag()
 	}
 
 	return nil

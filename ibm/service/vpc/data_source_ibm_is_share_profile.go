@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -136,7 +137,9 @@ func DataSourceIbmIsShareProfile() *schema.Resource {
 func dataSourceIbmIsShareProfileRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("vpcClient creation failed: %s", err.Error()), "(Data) ibm_is_share_profile", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	getShareProfileOptions := &vpcv1.GetShareProfileOptions{}
@@ -145,8 +148,9 @@ func dataSourceIbmIsShareProfileRead(context context.Context, d *schema.Resource
 
 	shareProfile, response, err := vpcClient.GetShareProfileWithContext(context, getShareProfileOptions)
 	if err != nil {
-		log.Printf("[DEBUG] GetShareProfileWithContext failed %s\n%s", err, response)
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetShareProfileWithContext failed: %s\n%s", err.Error(), response), "(Data) ibm_is_share_profile", "read")
+		log.Printf("[DEBUG] %s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	if shareProfile.Capacity != nil {
@@ -155,7 +159,8 @@ func dataSourceIbmIsShareProfileRead(context context.Context, d *schema.Resource
 		capacityMap := dataSourceShareProfileCapacityToMap(*capacity)
 		capacityList = append(capacityList, capacityMap)
 		if err = d.Set("capacity", capacityList); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting capacity: %s", err))
+			err = fmt.Errorf("Error setting capacity: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_share_profile", "read", "set-capacity").GetDiag()
 		}
 	}
 	if shareProfile.Iops != nil {
@@ -164,18 +169,22 @@ func dataSourceIbmIsShareProfileRead(context context.Context, d *schema.Resource
 		iopsMap := dataSourceShareProfileIopsToMap(*iops)
 		iopsList = append(iopsList, iopsMap)
 		if err = d.Set("iops", iopsList); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting iops: %s", err))
+			err = fmt.Errorf("Error setting iops: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_share_profile", "read", "set-iops").GetDiag()
 		}
 	}
 	d.SetId(*shareProfile.Name)
 	if err = d.Set("family", shareProfile.Family); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting family: %s", err))
+		err = fmt.Errorf("Error setting family: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_share_profile", "read", "set-family").GetDiag()
 	}
 	if err = d.Set("href", shareProfile.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+		err = fmt.Errorf("Error setting href: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_share_profile", "read", "set-href").GetDiag()
 	}
 	if err = d.Set("resource_type", shareProfile.ResourceType); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting resource_type: %s", err))
+		err = fmt.Errorf("Error setting resource_type: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_share_profile", "read", "set-resource_type").GetDiag()
 	}
 
 	return nil
@@ -203,9 +212,9 @@ func dataSourceShareProfileIopsToMap(iops vpcv1.ShareProfileIops) (iopsMap map[s
 }
 func dataSourceShareProfileCapacityToMap(capacity vpcv1.ShareProfileCapacity) (capacityMap map[string]interface{}) {
 	capacityMap = map[string]interface{}{}
-	if capacity.Default != nil {
-		capacityMap["default"] = int(*capacity.Default)
-	}
+	// if capacity.Default != nil {
+	// 	capacityMap["default"] = int(*capacity.Default)
+	// }
 	capacityMap["max"] = capacity.Max
 	capacityMap["min"] = capacity.Min
 	capacityMap["step"] = capacity.Step

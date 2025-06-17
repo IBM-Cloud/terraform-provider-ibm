@@ -40,6 +40,46 @@ func TestAccIBMISImage_basic(t *testing.T) {
 		},
 	})
 }
+
+func TestAccIBMISImage_accessTags(t *testing.T) {
+	var image string
+	name := fmt.Sprintf("tfimg-access-tags-%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheckImage(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: checkImageDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISImageAccessTagsConfig(name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISImageExists("ibm_is_image.isExampleImage", image),
+					resource.TestCheckResourceAttr("ibm_is_image.isExampleImage", "name", name),
+					resource.TestCheckResourceAttr("ibm_is_image.isExampleImage", "operating_system", acc.Image_operating_system),
+					resource.TestCheckResourceAttrSet("ibm_is_image.isExampleImage", "user_data_format"),
+					resource.TestCheckResourceAttrSet("ibm_is_image.isExampleImage", "status"),
+					resource.TestCheckResourceAttrSet("ibm_is_image.isExampleImage", "visibility"),
+
+					// Access tags validation
+					resource.TestCheckResourceAttr("ibm_is_image.isExampleImage", "access_tags.#", "1"),
+					resource.TestCheckResourceAttr("ibm_is_image.isExampleImage", "access_tags.0", "test:access"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMISImageAccessTagsConfig(name string) string {
+	return fmt.Sprintf(`
+		resource "ibm_is_image" "isExampleImage" {
+			href             = "%s"
+			name             = "%s"
+			operating_system = "%s"
+			access_tags      = ["test:access"]
+		}
+	`, acc.Image_cos_url, name, acc.Image_operating_system)
+}
+
 func TestAccIBMISImage_lifecycle(t *testing.T) {
 	var image string
 	name := fmt.Sprintf("tfimg-name-%d", acctest.RandIntRange(10, 100))

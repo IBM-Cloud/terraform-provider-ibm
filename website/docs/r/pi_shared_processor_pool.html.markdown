@@ -10,7 +10,7 @@ description: |-
 
 Create, update or delete a shared processor pool.
 
-## Example usage
+## Example Usage
 
 The following example enables you to create a shared processor pool with a group 2 reserved cores on a s922 host group:
 
@@ -47,7 +47,7 @@ ibm_pi_shared_processor_pool provides the following [timeouts](https://www.terra
 - **delete** - (Default 60 minutes) Used for deleting a shared processor pool.
 - **update** - (Default 60 minutes) Used for updating a shared processor pool.
 
-## Argument reference
+## Argument Reference
 
 Review the argument references that you can specify for your resource.
 
@@ -60,13 +60,14 @@ Review the argument references that you can specify for your resource.
 - `pi_shared_processor_pool_reserved_cores` - (Required, Integer) The amount of reserved cores for the shared processor pool.
 - `pi_user_tags` - (Optional, List) The user tags attached to this resource.
 
-## Attribute reference
+## Attribute Reference
 
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
 - `allocated_cores` - (Float) The allocated cores in the shared processor pool.
 - `available_cores` - (Integer) The available cores in the shared processor pool.
 - `crn` - (String) The CRN of this resource.
+- `dedicated_host_id` - (String) The dedicated host ID where the shared processor pool resides.
 - `host_id` - (Integer) The host ID where the shared processor pool resides.
 - `instances` - (List of Map) The list of server instances that are deployed in the shared processor pool.
   

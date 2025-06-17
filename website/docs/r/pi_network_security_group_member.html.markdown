@@ -58,12 +58,14 @@ Review the argument references that you can specify for your resource.
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
 - `crn` - (String) The network security group's crn.
+- `default` - (Boolean) Indicates if the network security group is the default network security group in the workspace.
 - `id` - (String) The unique identifier of the network security group resource. Composed of `<cloud_instance_id>/<network_security_group_id>/<network_security_group_member_id>`
 - `members` - (List) The list of IPv4 addresses and\or network interfaces in the network security group.
 
     Nested schema for `members`:
       - `id` - (String) The id of the member in a network security group.
       - `mac_address` - (String) The mac address of a network interface included if the type is `network-interface`.
+      - `network_interface_id` - (String) The network ID of a network interface included if the type is `network-interface`.
       - `target` - (String) If `ipv4-address` type, then IPv4 address or if `network-interface` type, then network interface id.
       - `type` - (String) The type of member. Supported values are: `ipv4-address`, `network-interface`.
 
@@ -83,7 +85,7 @@ In addition to all argument reference list, you can access the following attribu
         
         Nested schema for `protocol`:
           - `icmp_type` - (String) If icmp type, a ICMP packet type affected by ICMP rules and if not present then all types are matched.
-          - `tcp_flags` - (String) If tcp type, the list of TCP flags and if not present then all flags are matched. Supported values are: `syn`, `ack`, `fin`, `rst`, `urg`, `psh`, `wnd`, `chk`, `seq`.
+          - `tcp_flags` - (String) If tcp type, the list of TCP flags and if not present then all flags are matched. Supported values are: `syn`, `ack`, `fin`, `rst`.
           - `type` - (String) The protocol of the network traffic. Supported values are: `icmp`, `tcp`, `udp`, `all`.
       - `remote` - (List) List of remote.
         

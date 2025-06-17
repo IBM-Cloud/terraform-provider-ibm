@@ -8,17 +8,49 @@ subcategory: "Secrets Manager"
 
 # ibm_sm_private_certificate_configuration_template
 
-Provides a resource for PrivateCertificateConfigurationTemplate. This allows PrivateCertificateConfigurationTemplate to be created, updated and deleted.
+Provides a resource for a certificate template for private certificate secrets. This allows a certificate template to be created, updated and deleted. Note that a certificate template cannot be deleted if one or more private certificates exist that were generated with this template. Therefore, arguments that are marked as `Forces new resource` should not be modified if secrets generated with this template exist.
 
 ## Example Usage
 
 ```hcl
 resource "ibm_sm_private_certificate_configuration_template" "certificate_template" {
-  instance_id           = ibm_resource_instance.sm_instance.guid
+  depends_on     = [ ibm_sm_private_certificate_configuration_intermediate_ca.intermediate_CA ]
+  instance_id    = ibm_resource_instance.sm_instance.guid
   region                = "us-south"
   name                  = "my_template"
-  certificate_authority = "my_intermediate_ca"
-  allowed_domains       = ["example.com"]
+  certificate_authority = ibm_sm_private_certificate_configuration_intermediate_ca.intermediate_CA.name
+  ou            = ["example_ou"]
+  organization  = ["example_organization"]
+  country       = ["US"]
+  locality      = ["example_locality"]
+  province      = ["example_province"]
+  street_address  = ["example street address"]
+  postal_code   = ["example_postal_code"]
+  ttl           = "2190h"
+  max_ttl       = "8760h"
+  key_type      = "rsa"
+  key_bits      = 4096
+  allowed_domains    = ["example.com"]
+  allow_any_name    = true
+  allow_bare_domains = false
+  allow_glob_domains = false
+  allow_ip_sans      = true
+  allow_localhost    = true
+  allow_subdomains   = false
+  allowed_domains_template = false
+  allowed_other_sans = []
+  allowed_uri_sans   = ["https://www.example.com/test"]
+  enforce_hostnames  = false
+  server_flag           = false
+  client_flag           = false
+  code_signing_flag     = false
+  email_protection_flag = false
+  key_usage           = ["DigitalSignature","KeyAgreement","KeyEncipherment"]
+  use_csr_common_name = true
+  use_csr_sans        = true
+  require_cn          = true
+  basic_constraints_valid_for_non_ca = false
+  not_before_duration = "30s"
 }
 ```
 

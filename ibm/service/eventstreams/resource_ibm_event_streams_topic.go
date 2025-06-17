@@ -11,8 +11,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/IBM-Cloud/bluemix-go/session"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM-Cloud/terraform-provider-ibm/version"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/sarama"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -27,7 +30,6 @@ const (
 )
 
 var (
-	brokerVersion       = sarama.V3_3_0_0
 	adminClientTimeout  = 30 * time.Second
 	allowedTopicConfigs = []string{
 		"cleanup.policy",
@@ -37,12 +39,6 @@ var (
 		"segment.bytes",
 		"segment.index.bytes",
 		"message.audit.enable", // enterprise only
-	}
-	defaultConfigs = map[string]interface{}{
-		"cleanup.policy":  defaultCleanupPolicy,
-		"retention.ms":    defaultRetentionMs,
-		"retention.bytes": defaultRetentionBytes,
-		"segment.bytes":   defaultSegmentBytes,
 	}
 )
 
@@ -272,15 +268,6 @@ func createSaramaAdminClient(d *schema.ResourceData, meta interface{}) (sarama.C
 		log.Printf("[DEBUG] createSaramaAdminClient BluemixSession err %s", err)
 		return nil, "", err
 	}
-	apiKey := bxSession.Config.BluemixAPIKey
-	if len(apiKey) == 0 {
-		log.Printf("[DEBUG] createSaramaAdminClient BluemixAPIKey is empty")
-		return nil, "", fmt.Errorf("failed to get IBM cloud API key")
-	}
-	if err != nil {
-		log.Printf("[DEBUG] createSaramaAdminClient ResourceControllerAPI err %s", err)
-		return nil, "", err
-	}
 	instanceCRN := d.Get("resource_instance_id").(string)
 	if len(instanceCRN) == 0 {
 		topicID := d.Id()
@@ -301,20 +288,30 @@ func createSaramaAdminClient(d *schema.ResourceData, meta interface{}) (sarama.C
 	slices.Sort(brokerAddress)
 	d.Set("kafka_brokers_sasl", brokerAddress)
 	log.Printf("[INFO] createSaramaAdminClient kafka_brokers_sasl is set to %s", brokerAddress)
-	tenantID := strings.TrimPrefix(strings.Split(adminURL, ".")[0], "https://")
-
+	var adminClient sarama.ClusterAdmin
+	var ok bool
+	if adminClient, ok = clientPool[instanceCRN]; ok {
+		log.Printf("[DEBUG] createSaramaAdminClient got client from pool for instance %s", instanceCRN)
+		return adminClient, instanceCRN, nil
+	}
 	config := sarama.NewConfig()
-	config.ClientID = "terraform-provider-ibm"
+	config.ClientID = fmt.Sprintf("terraform-provider-ibm/%s", version.Version)
 	config.Net.SASL.Enable = true
+	config.Net.TLS.Enable = true
+	config.Version = sarama.MaxVersion
+	tenantID := strings.TrimPrefix(strings.Split(adminURL, ".")[0], "https://")
 	if tenantID != "" && tenantID != "admin" {
 		config.Net.SASL.AuthIdentity = tenantID
+	} else {
+		config.Net.SASL.AuthIdentity = instanceCRN
 	}
-	config.Net.SASL.User = "token"
-	config.Net.SASL.Password = apiKey
-	config.Net.TLS.Enable = true
-	config.Version = brokerVersion
 	config.Admin.Timeout = adminClientTimeout
-	adminClient, err := sarama.NewClusterAdmin(brokerAddress, config)
+	config.Net.SASL.Mechanism = sarama.SASLTypeOAuth
+	config.Net.SASL.TokenProvider, err = newAccessTokenProvider(bxSession)
+	if err != nil {
+		return nil, "", err
+	}
+	adminClient, err = sarama.NewClusterAdmin(brokerAddress, config)
 	if err != nil {
 		log.Printf("[DEBUG] createSaramaAdminClient NewClusterAdmin err %s", err)
 		return nil, "", err
@@ -361,4 +358,37 @@ func getInstanceCRN(topicID string) string {
 	crnSegments[8] = ""
 	crnSegments[9] = ""
 	return strings.Join(crnSegments, ":")
+}
+
+type accessTokenProvider struct {
+	authenticator *core.IamAuthenticator
+}
+
+func newAccessTokenProvider(sess *session.Session) (*accessTokenProvider, error) {
+	iamEndpoint, err := sess.Config.EndpointLocator.IAMEndpoint()
+	if err != nil {
+		log.Printf("[DEBUG] newAccessTokenProvider.IAMEndpoint() error:%s", err)
+		return nil, err
+	}
+	authenticator, err := core.NewIamAuthenticatorBuilder().
+		SetURL(iamEndpoint).
+		SetApiKey(sess.Config.BluemixAPIKey).
+		SetRefreshToken(sess.Config.IAMRefreshToken).
+		SetClientIDSecret("bx", "bx").
+		Build()
+	if err != nil {
+		log.Printf("[DEBUG] newAccessTokenProvider.NewIamAuthenticatorBuilder() error:%s", err)
+		return nil, err
+	}
+	return &accessTokenProvider{authenticator}, nil
+}
+
+// Token() implements sarama.AccessTokenProvider interface for sasl.mechanism=OAUTHBEARER
+func (tp *accessTokenProvider) Token() (*sarama.AccessToken, error) {
+	token, err := tp.authenticator.GetToken()
+	if err != nil {
+		log.Printf("[DEBUG] accessTokenProvider.GetToken() error:%s", err)
+		return nil, err
+	}
+	return &sarama.AccessToken{Token: token}, nil
 }

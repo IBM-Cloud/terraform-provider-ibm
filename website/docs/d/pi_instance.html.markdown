@@ -10,7 +10,7 @@ description: |-
 
 Retrieve information about a Power Systems Virtual Server instance. For more information, about Power Virtual Server instance, see [getting started with IBM Power Systems Virtual Servers](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-getting-started).
 
-## Example usage
+## Example Usage
 
 ```terraform
 data "ibm_pi_instance" "ds_instance" {
@@ -35,18 +35,19 @@ Example usage:
     }
   ```
 
-## Argument reference
+## Argument Reference
 
 Review the argument references that you can specify for your data source.
 
 - `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
 - `pi_instance_name` - (Required, String) The unique identifier or name of the instance.
 
-## Attribute reference
+## Attribute Reference
 
 In addition to all argument reference list, you can access the following attribute references after your data source is created.
 
 - `crn` - (String) The CRN of this resource.
+- `dedicated_host_id` - (String) The dedicated host ID where the shared processor pool resides.
 - `deployment_type` - (String) The custom deployment type.
 - `fault` - (Map) Fault information, if any.
   
@@ -65,7 +66,7 @@ In addition to all argument reference list, you can access the following attribu
 - `ibmi_rds` - (Boolean) IBM i Rational Dev Studio.
 - `ibmi_rds_users` - (Integer) IBM i Rational Dev Studio Number of User Licenses.
 - `id` - (String) The unique identifier of the instance.
-- `license_repository_capacity` - (Deprecated, Integer) The VTL license repository capacity TB value. Only available with VTL instances.
+- `license_repository_capacity` - (Integer) The VTL license repository capacity TB value. Only available with VTL instances.
 - `maxmem`- (Float) The maximum amount of memory that can be allocated to the instance without shutting down or rebooting the `LPAR`.
 - `maxproc`- (Float) The maximum number of processors that can be allocated to the instance without shutting down or rebooting the `LPAR`.
 - `max_virtual_cores` - (Integer) The maximum number of virtual cores that can be assigned without rebooting the instance.
@@ -78,10 +79,12 @@ In addition to all argument reference list, you can access the following attribu
   Nested scheme for `networks`:
   - `external_ip` - (String) The external IP address of the instance.
   - `ip` - (String) The IP address of the instance.
-  - `macaddress` - (String) The MAC address of the instance. Deprecated please use `mac_address` instead.
   - `mac_address` - (String) The MAC address of the instance.
   - `network_id` - (String) The network ID of the instance.
+  - `network_interface_id` - (String) ID of the network interface.
   - `network_name` - (String) The network name of the instance.
+  - `network_security_group_ids` - (List) IDs of the network necurity groups that the network interface is a member of.
+  - `network_security_groups_href` - (List) Links to the network security groups that the network interface is a member of.
   - `type` - (String) The type of the network.
 
 - `pin_policy` - (String) The pinning policy of the instance.
@@ -98,4 +101,9 @@ In addition to all argument reference list, you can access the following attribu
 - `storage_type` - (String) The storage type where server is deployed.
 - `user_tags` - (List) List of user tags attached to the resource.
 - `virtual_cores_assigned` - (Integer) The virtual cores that are assigned to the instance.
+- `virtual_serial_number` - (List) Virtual serial number information
+
+  Nested scheme for `virtual_serial_number`:
+  - `description` - (String) Description for virtual serial number.
+  - `serial` - (String) Virtual serial number.
 - `volumes` - (List) List of volume IDs that are attached to the instance.

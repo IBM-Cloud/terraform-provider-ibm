@@ -6,8 +6,10 @@ package vpc
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -111,7 +113,9 @@ func dataSourceIBMISInstanceNICReservedIPRead(context context.Context, d *schema
 
 	sess, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instance_network_interface_reserved_ip", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	instance := d.Get(isInstanceID).(string)
@@ -122,21 +126,40 @@ func dataSourceIBMISInstanceNICReservedIPRead(context context.Context, d *schema
 	reserveIP, response, err := sess.GetInstanceNetworkInterfaceIPWithContext(context, options)
 
 	if err != nil || response == nil || reserveIP == nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error fetching the reserved IP %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetInstanceProfileWithContext failed: %s", err.Error()), "(Data) ibm_is_instance_network_interface_reserved_ip", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(*reserveIP.ID)
-	d.Set(isInstanceNICReservedIPAutoDelete, *reserveIP.AutoDelete)
-	d.Set(isInstanceNICReservedIPCreatedAt, (*reserveIP.CreatedAt).String())
-	d.Set(isInstanceNICReservedIPhref, *reserveIP.Href)
-	d.Set(isInstanceNICReservedIPName, *reserveIP.Name)
-	d.Set(isInstanceNICReservedIPOwner, *reserveIP.Owner)
-	d.Set(isInstanceNICReservedIPType, *reserveIP.ResourceType)
-	d.Set(isInstanceNICReservedIPAddress, *reserveIP.Address)
+
+	if err = d.Set(isInstanceNICReservedIPAutoDelete, *reserveIP.AutoDelete); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting auto_delete: %s", err), "(Data) ibm_is_instance_network_interface_reserved_ip", "read", "set-auto_delete").GetDiag()
+	}
+	if err = d.Set(isInstanceNICReservedIPCreatedAt, (*reserveIP.CreatedAt).String()); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting created_at: %s", err), "(Data) ibm_is_instance_network_interface_reserved_ip", "read", "set-created_at").GetDiag()
+	}
+	if err = d.Set(isInstanceNICReservedIPhref, *reserveIP.Href); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting href: %s", err), "(Data) ibm_is_instance_network_interface_reserved_ip", "read", "set-href").GetDiag()
+	}
+	if err = d.Set(isInstanceNICReservedIPName, *reserveIP.Name); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_is_instance_network_interface_reserved_ip", "read", "set-name").GetDiag()
+	}
+	if err = d.Set(isInstanceNICReservedIPOwner, *reserveIP.Owner); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting owner: %s", err), "(Data) ibm_is_instance_network_interface_reserved_ip", "read", "set-owner").GetDiag()
+	}
+	if err = d.Set(isInstanceNICReservedIPType, *reserveIP.ResourceType); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_type: %s", err), "(Data) ibm_is_instance_network_interface_reserved_ip", "read", "set-resource_type").GetDiag()
+	}
+	if err = d.Set(isInstanceNICReservedIPAddress, *reserveIP.Address); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting address: %s", err), "(Data) ibm_is_instance_network_interface_reserved_ip", "read", "set-address").GetDiag()
+	}
 	if reserveIP.Target != nil {
 		target, ok := reserveIP.Target.(*vpcv1.ReservedIPTarget)
 		if ok {
-			d.Set(isInstanceNICReservedIPTarget, target.ID)
+			if err = d.Set(isInstanceNICReservedIPTarget, target.ID); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting target: %s", err), "(Data) ibm_is_instance_network_interface_reserved_ip", "read", "set-target").GetDiag()
+			}
 		}
 	}
 	return nil // By default there should be no error

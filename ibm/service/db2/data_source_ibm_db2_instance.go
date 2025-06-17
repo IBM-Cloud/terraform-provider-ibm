@@ -40,6 +40,30 @@ func DataSourceIBMDb2Instance() *schema.Resource {
 		Type:        schema.TypeString,
 	}
 
+	riSchema["disk_encryption_instance_crn"] = &schema.Schema{
+		Description: "Cross Regional disk encryption crn",
+		Optional:    true,
+		Type:        schema.TypeString,
+	}
+
+	riSchema["disk_encryption_crn"] = &schema.Schema{
+		Description: "Cross Regional disk encryption crn",
+		Optional:    true,
+		Type:        schema.TypeString,
+	}
+
+	riSchema["oracle_compatibility"] = &schema.Schema{
+		Description: "Indicates whether is has compatibility for oracle or not",
+		Optional:    true,
+		Type:        schema.TypeString,
+	}
+
+	riSchema["subscription_id"] = &schema.Schema{
+		Description: "For PerformanceSubscription plans a Subscription ID is required. It is not required for Performance plans.",
+		Optional:    true,
+		Type:        schema.TypeString,
+	}
+
 	return &schema.Resource{
 		Read:   dataSourceIBMDb2InstanceRead,
 		Schema: riSchema,
@@ -158,7 +182,7 @@ func dataSourceIBMDb2InstanceRead(d *schema.ResourceData, meta interface{}) erro
 	d.Set(flex.ResourceName, instance.Name)
 	d.Set(flex.ResourceCRN, instance.CRN)
 	d.Set(flex.ResourceStatus, instance.State)
-	// ### Modifiction : Setting the onetime credientials
+	// ### Modification : Setting the onetime credentials
 	d.Set("onetime_credentials", instance.OnetimeCredentials)
 	if instance.Parameters != nil {
 		params, err := json.Marshal(instance.Parameters)
@@ -212,7 +236,10 @@ func dataSourceIBMDb2InstanceRead(d *schema.ResourceData, meta interface{}) erro
 	d.Set("high_availability", instance.Parameters["high_availability"])
 	d.Set("instance_type", instance.Parameters["instance_type"])
 	d.Set("backup_location", instance.Parameters["backup_location"])
+	d.Set("disk_encryption_instance_crn", instance.Parameters["disk_encryption_instance_crn"])
+	d.Set("disk_encryption_crn", instance.Parameters["disk_encryption_crn"])
+	d.Set("oracle_compatibility", instance.Parameters["oracle_compatibility"])
+	d.Set("subscription_id", instance.Parameters["subscription_id"])
 
 	return nil
-
 }

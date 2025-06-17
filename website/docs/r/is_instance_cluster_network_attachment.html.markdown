@@ -8,10 +8,7 @@ subcategory: "VPC infrastructure"
 
 # ibm_is_instance_cluster_network_attachment
 
-Create, update, and delete InstanceClusterNetworkAttachments with this resource.
-
-~>**Select Availability** 
-Cluster Networks for VPC is available for select customers only. Contact IBM Support if you are interested in using this functionality. [About cluster networks](https://cloud.ibm.com/docs/vpc?topic=vpc-about-cluster-network)
+Create, update, and delete InstanceClusterNetworkAttachments with this resource. [About cluster networks](https://cloud.ibm.com/docs/vpc?topic=vpc-about-cluster-network)
 
 ## Example Usage
 

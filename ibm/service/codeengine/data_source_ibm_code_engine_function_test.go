@@ -40,6 +40,7 @@ func TestAccIbmCodeEngineFunctionDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttr("data.ibm_code_engine_function.code_engine_function_instance", "scale_down_delay", "1"),
 					resource.TestCheckResourceAttr("data.ibm_code_engine_function.code_engine_function_instance", "scale_max_execution_time", "60"),
 					resource.TestCheckResourceAttr("data.ibm_code_engine_function.code_engine_function_instance", "scale_memory_limit", "4G"),
+					resource.TestCheckResourceAttr("data.ibm_code_engine_function.code_engine_function_instance", "computed_env_variables.#", "6"),
 				),
 			},
 		},
@@ -77,6 +78,8 @@ func TestAccIbmCodeEngineFunctionDataSourceExtended(t *testing.T) {
 					resource.TestCheckResourceAttr("data.ibm_code_engine_function.code_engine_function_instance", "scale_down_delay", functionScaleDownDelay),
 					resource.TestCheckResourceAttr("data.ibm_code_engine_function.code_engine_function_instance", "scale_max_execution_time", functionScaleMaxExecutionTime),
 					resource.TestCheckResourceAttr("data.ibm_code_engine_function.code_engine_function_instance", "scale_memory_limit", functionScaleMemoryLimit),
+					resource.TestCheckResourceAttr("data.ibm_code_engine_function.code_engine_function_instance", "computed_env_variables.#", "6"),
+					resource.TestCheckResourceAttr("data.ibm_code_engine_function.code_engine_function_instance", "run_env_variables.#", "1"),
 				),
 			},
 		},
@@ -94,12 +97,6 @@ func testAccCheckIbmCodeEngineFunctionDataSourceConfigBasic(projectID string, fu
 			code_reference = "%s"
 			name = "%s"
 			runtime = "%s"
-
-			lifecycle {
-				ignore_changes = [
-					run_env_variables
-				]
-			}
 		}
 
 		data "ibm_code_engine_function" "code_engine_function_instance" {
@@ -130,12 +127,6 @@ func testAccCheckIbmCodeEngineFunctionDataSourceConfig(projectID string, functio
 				type  = "literal"
 				name  = "name"
 				value = "value"
-			}
-
-			lifecycle {
-				ignore_changes = [
-					run_env_variables
-				]
 			}
 		}
 

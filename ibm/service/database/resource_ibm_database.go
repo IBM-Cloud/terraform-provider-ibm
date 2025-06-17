@@ -46,9 +46,16 @@ const (
 )
 
 const (
-	databaseTaskSuccessStatus  = "completed"
-	databaseTaskProgressStatus = "running"
-	databaseTaskFailStatus     = "failed"
+	databaseTaskCompletedStatus = "completed"
+	databaseTaskQueuedStatus    = "queued"
+	databaseTaskRunningStatus   = "running"
+	databaseTaskFailedStatus    = "failed"
+	databaseTaskExpiredStatus   = "expired"
+)
+
+const (
+	taskUpgrade = "upgrade"
+	taskRestore = "restore"
 )
 
 const (
@@ -141,8 +148,9 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 			resourceIBMDatabaseInstanceDiff,
 			validateGroupsDiff,
 			validateUsersDiff,
+			validateRemoteLeaderIDDiff,
 			validateVersionDiff,
-			validateRemoteLeaderIDDiff),
+		),
 
 		Importer: &schema.ResourceImporter{},
 
@@ -216,7 +224,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				ValidateFunc: validation.All(
-					validation.StringLenBetween(15, 32),
+					validation.StringLenBetween(15, 72),
 					DatabaseUserPasswordValidator("database"),
 				),
 				Sensitive: true,
@@ -242,11 +250,15 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				Description: "The configuration schema in JSON format",
 			},
 			"version": {
-				Description:      "The database version to provision if specified",
-				Type:             schema.TypeString,
-				Optional:         true,
-				Computed:         true,
-				DiffSuppressFunc: flex.ApplyOnce,
+				Description: "The database version to provision if specified or the database version to upgrade to",
+				Type:        schema.TypeString,
+				Computed:    true,
+				Optional:    true,
+			},
+			"version_upgrade_skip_backup": {
+				Description: "Option to skip the backup when upgrading version. Only applicable to databases that do not support PITR. Skipping the backup means that your deployment becomes available more quickly, but there is no immediate backup available. This is not recommended as it could result in data loss",
+				Type:        schema.TypeBool,
+				Optional:    true,
 			},
 			"service_endpoints": {
 				Description:  "Types of the service endpoints. Possible values are 'public', 'private', 'public-and-private'.",
@@ -1178,40 +1190,8 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 		rsInst.ResourceGroup = &defaultRg
 	}
 
-	initialNodeCount, err := getInitialNodeCount(serviceName, plan, meta)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
 	params := Params{}
-	if group, ok := d.GetOk("group"); ok {
-		groups := expandGroups(group.(*schema.Set).List())
-		var memberGroup *Group
-		for _, g := range groups {
-			if g.ID == "member" {
-				memberGroup = g
-				break
-			}
-		}
 
-		if memberGroup != nil {
-			if memberGroup.Memory != nil {
-				params.Memory = memberGroup.Memory.Allocation * initialNodeCount
-			}
-
-			if memberGroup.Disk != nil {
-				params.Disk = memberGroup.Disk.Allocation * initialNodeCount
-			}
-
-			if memberGroup.CPU != nil {
-				params.CPU = memberGroup.CPU.Allocation * initialNodeCount
-			}
-
-			if memberGroup.HostFlavor != nil {
-				params.HostFlavor = memberGroup.HostFlavor.ID
-			}
-		}
-	}
 	if version, ok := d.GetOk("version"); ok {
 		params.Version = version.(string)
 	}
@@ -1247,6 +1227,64 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 
 	if offlineRestore, ok := d.GetOk("offline_restore"); ok {
 		params.OfflineRestore = offlineRestore.(bool)
+	}
+
+	var initialNodeCount int
+	var sourceCRN string
+
+	if params.PITRDeploymentID != "" {
+		sourceCRN = params.PITRDeploymentID
+	}
+
+	if params.RemoteLeaderID != "" {
+		sourceCRN = params.RemoteLeaderID
+	}
+
+	if sourceCRN != "" {
+		group, err := getMemberGroup(sourceCRN, meta)
+
+		if err != nil {
+			return diag.FromErr(
+				fmt.Errorf("[ERROR] Error fetching source formation group: %s", err)) // raise error
+		}
+
+		if group != nil {
+			initialNodeCount = group.Members.Allocation
+		}
+	} else {
+		initialNodeCount, err = getInitialNodeCount(serviceName, plan, meta)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	var memberGroup *Group
+
+	if group, ok := d.GetOk("group"); ok {
+		groups := expandGroups(group.(*schema.Set).List())
+
+		for _, g := range groups {
+			if g.ID == "member" {
+				memberGroup = g
+				break
+			}
+		}
+	}
+
+	if memberGroup != nil && memberGroup.Memory != nil {
+		params.Memory = memberGroup.Memory.Allocation * initialNodeCount
+	}
+
+	if memberGroup != nil && memberGroup.Disk != nil {
+		params.Disk = memberGroup.Disk.Allocation * initialNodeCount
+	}
+
+	if memberGroup != nil && memberGroup.CPU != nil {
+		params.CPU = memberGroup.CPU.Allocation * initialNodeCount
+	}
+
+	if memberGroup != nil && memberGroup.HostFlavor != nil {
+		params.HostFlavor = memberGroup.HostFlavor.ID
 	}
 
 	serviceEndpoint := d.Get("service_endpoints").(string)
@@ -1314,7 +1352,7 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 			if g.CPU != nil && g.CPU.Allocation*nodeCount != currentGroup.CPU.Allocation {
 				groupScaling.CPU = &clouddatabasesv5.GroupScalingCPU{AllocationCount: core.Int64Ptr(int64(g.CPU.Allocation * nodeCount))}
 			}
-			if g.HostFlavor != nil && g.HostFlavor.ID != currentGroup.HostFlavor.ID {
+			if g.HostFlavor != nil {
 				groupScaling.HostFlavor = &clouddatabasesv5.GroupScalingHostFlavor{ID: core.StringPtr(g.HostFlavor.ID)}
 			}
 
@@ -1604,14 +1642,6 @@ func resourceIBMDatabaseInstanceRead(context context.Context, d *schema.Resource
 		if endpoint, ok := instance.Parameters["service-endpoints"]; ok {
 			d.Set("service_endpoints", endpoint)
 		}
-
-		if encryptionInstance, ok := instance.Parameters["disk_encryption_instance_crn"]; ok {
-			d.Set("key_protect_instance", encryptionInstance)
-		}
-
-		if encryptionKey, ok := instance.Parameters["disk_encryption_key_crn"]; ok {
-			d.Set("key_protect_key", encryptionKey)
-		}
 	}
 
 	d.Set(flex.ResourceName, *instance.Name)
@@ -1732,14 +1762,23 @@ func resourceIBMDatabaseInstanceRead(context context.Context, d *schema.Resource
 		}
 	}
 
-	// This can be removed any time after August once all old multitenant instances are switched over to the new multitenant
-	if groupList.Groups[0].HostFlavor == nil && (groupList.Groups[0].CPU != nil && *groupList.Groups[0].CPU.AllocationCount == 0) {
-		return appendSwitchoverWarning()
-	}
-
 	endpoint, _ := instance.Parameters["service-endpoints"]
 	if endpoint == "public" || endpoint == "public-and-private" {
 		return publicServiceEndpointsWarning()
+	}
+
+	tm := &TaskManager{
+		Client:     cloudDatabasesClient,
+		InstanceID: instanceID,
+	}
+
+	upgradeInProgress, upgradeTask, err := tm.matchingTaskInProgress(taskUpgrade)
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("[ERROR] Error getting tasks for instance: %w", err))
+	}
+
+	if upgradeInProgress {
+		return upgradeInProgressWarning(upgradeTask)
 	}
 
 	return nil
@@ -1891,7 +1930,7 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 			if group.CPU != nil && group.CPU.Allocation*nodeCount != currentGroup.CPU.Allocation {
 				groupScaling.CPU = &clouddatabasesv5.GroupScalingCPU{AllocationCount: core.Int64Ptr(int64(group.CPU.Allocation * nodeCount))}
 			}
-			if group.HostFlavor != nil && group.HostFlavor.ID != currentGroup.HostFlavor.ID {
+			if group.HostFlavor != nil {
 				groupScaling.HostFlavor = &clouddatabasesv5.GroupScalingHostFlavor{ID: core.StringPtr(group.HostFlavor.ID)}
 			}
 
@@ -2181,7 +2220,41 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 		}
 	}
 
+	if d.HasChange("version") {
+		version := d.Get("version").(string)
+		skipBackup := d.Get("version_upgrade_skip_backup") == true
+
+		timeoutHelper := TimeoutHelper{Now: time.Now()}
+		expirationDatetime := timeoutHelper.calculateExpirationDatetime(d.Timeout(schema.TimeoutUpdate))
+
+		log.Printf("[INFO] Triggering upgrade to version %s, %v, %s", version, skipBackup, expirationDatetime)
+		versionUpgradeOptions := &clouddatabasesv5.SetDatabaseInplaceVersionUpgradeOptions{
+			ID:                 core.StringPtr(instanceID),
+			Version:            core.StringPtr(version),
+			SkipBackup:         core.BoolPtr(skipBackup),
+			ExpirationDatetime: &expirationDatetime,
+		}
+
+		versionUpgradeResponse, response, err := cloudDatabasesClient.SetDatabaseInplaceVersionUpgrade(versionUpgradeOptions)
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("[ERROR] error upgrading version of instance: %v\nResponse: %v", err, response))
+		}
+
+		if versionUpgradeResponse == nil || versionUpgradeResponse.Task == nil || versionUpgradeResponse.Task.ID == nil {
+			return diag.FromErr(fmt.Errorf("[ERROR] received nil for version upgrade"))
+		}
+
+		taskID := *versionUpgradeResponse.Task.ID
+
+		_, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("[ERROR] error waiting for version upgrade task to complete: %w", err))
+
+		}
+	}
+
 	return resourceIBMDatabaseInstanceRead(context, d, meta)
+
 }
 
 func resourceIBMDatabaseInstanceDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -2380,11 +2453,13 @@ func waitForDatabaseTaskComplete(taskId string, d *schema.ResourceData, meta int
 			}
 
 			switch *getTaskResponse.Task.Status {
-			case "failed":
+			case databaseTaskExpiredStatus:
+				return false, fmt.Errorf("[Error] Database Task expired")
+			case databaseTaskFailedStatus:
 				return false, fmt.Errorf("[Error] Database Task failed")
-			case "complete", "":
+			case databaseTaskCompletedStatus, "":
 				return true, nil
-			case "queued", "running":
+			case databaseTaskQueuedStatus, databaseTaskRunningStatus:
 				break
 			}
 		}
@@ -2779,13 +2854,19 @@ func validateMultitenantMemoryCpu(resourceDefaults *Group, group *Group, cpuEnfo
 	}
 }
 
-// This can be removed any time after August once all old multitenant instances are switched over to the new multitenant
-func appendSwitchoverWarning() diag.Diagnostics {
+func upgradeInProgressWarning(task *clouddatabasesv5.Task) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	warning := diag.Diagnostic{
 		Severity: diag.Warning,
-		Summary:  "Note: IBM Cloud Databases released new Hosting Models on May 1. All existing multi-tenant instances will have their resources adjusted to Shared Compute allocations during August 2024. To monitor your current resource needs, and learn about how the transition to Shared Compute will impact your instance, see our documentation https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-hosting-models",
+		Summary:  "A version upgrade task is in progress. Some tasks may be queued and will not proceed until it has completed.",
+		Detail: fmt.Sprintf("  Type: %s\n"+
+			"  Created at: %s\n"+
+			"  Status: %s\n"+
+			"  Progress percent: %d\n"+
+			"  Description: %s\n"+
+			"  ID: %s\n",
+			*task.ResourceType, *task.CreatedAt, *task.Status, *task.ProgressPercent, *task.Description, *task.ID),
 	}
 
 	diags = append(diags, warning)
@@ -2965,14 +3046,22 @@ func getCpuEnforcementRatios(service string, plan string, hostFlavor string, met
 	return nil, 0, 0
 }
 
-func validateVersionDiff(_ context.Context, diff *schema.ResourceDiff, meta interface{}) (err error) {
-	version, configVersion := diff.GetChange("version")
+func getMemberGroup(instanceCRN string, meta interface{}) (*Group, error) {
+	groupsResponse, err := getGroups(instanceCRN, meta)
 
-	if version != configVersion {
-		return fmt.Errorf("[ERROR] The version in your configuration file (%s) does not match the version of your remote instance (%s). Make sure that you have the same version in your configuration as the version on the remote instance. Learn more about the versioning policy here: https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-versioning-policy ", configVersion, version)
+	if err != nil {
+		return nil, err
 	}
 
-	return nil
+	currentGroups := normalizeGroups(groupsResponse)
+
+	for _, cg := range currentGroups {
+		if cg.ID == "member" {
+			return &cg, nil
+		}
+	}
+
+	return nil, nil
 }
 
 func validateUsersDiff(_ context.Context, diff *schema.ResourceDiff, meta interface{}) (err error) {
@@ -3097,19 +3186,28 @@ func expandUserChanges(_oldUsers []interface{}, _newUsers []interface{}) (userCh
 func validateRemoteLeaderIDDiff(_ context.Context, diff *schema.ResourceDiff, meta interface{}) (err error) {
 	_, remoteLeaderIdOk := diff.GetOk("remote_leader_id")
 	service := diff.Get("service").(string)
-	crn := diff.Get("resource_crn").(string)
 
 	if remoteLeaderIdOk && (service != "databases-for-postgresql" && service != "databases-for-mysql" && service != "databases-for-enterprisedb") {
 		return fmt.Errorf("[ERROR] remote_leader_id is only supported for databases-for-postgresql, databases-for-enterprisedb and databases-for-mysql")
 	}
 
-	oldValue, newValue := diff.GetChange("remote_leader_id")
+	return nil
+}
 
-	if crn != "" && oldValue == "" && newValue != "" {
-		return fmt.Errorf("[ERROR] You cannot convert an existing instance to a read replica")
+func validateVersionDiff(_ context.Context, diff *schema.ResourceDiff, meta interface{}) (err error) {
+	instanceID := diff.Id()
+	oldVersion, newVersion := diff.GetChange("version")
+
+	if instanceID == "" || oldVersion == newVersion {
+		return nil
 	}
 
-	return nil
+	skipBackup := diff.Get("version_upgrade_skip_backup") == true
+	oldVersionStr, _ := oldVersion.(string)
+	newVersionStr, _ := newVersion.(string)
+	location := diff.Get("location").(string)
+
+	return validateUpgradeVersion(instanceID, location, oldVersionStr, newVersionStr, skipBackup, meta)
 }
 
 func (c *userChange) isDelete() bool {
@@ -3270,7 +3368,8 @@ func (u *DatabaseUser) ValidatePassword() (err error) {
 
 	var allowedCharacters = regexp.MustCompile(fmt.Sprintf("^(?:[a-zA-Z0-9]|%s)+$", specialCharPattern))
 	var beginWithSpecialChar = regexp.MustCompile(fmt.Sprintf("^(?:%s)", specialCharPattern))
-	var containsLetter = regexp.MustCompile("[a-zA-Z]")
+	var containsLower = regexp.MustCompile("[a-z]")
+	var containsUpper = regexp.MustCompile("[A-Z]")
 	var containsNumber = regexp.MustCompile("[0-9]")
 	var containsSpecialChar = regexp.MustCompile(fmt.Sprintf("(?:%s)", specialCharPattern))
 
@@ -3284,8 +3383,12 @@ func (u *DatabaseUser) ValidatePassword() (err error) {
 			"password must not begin with a special character (%s)", specialChars))
 	}
 
-	if !containsLetter.MatchString(u.Password) {
-		errs = append(errs, errors.New("password must contain at least one letter"))
+	if !containsLower.MatchString(u.Password) {
+		errs = append(errs, errors.New("password must contain at least one lower case letter"))
+	}
+
+	if !containsUpper.MatchString(u.Password) {
+		errs = append(errs, errors.New("password must contain at least one upper case letter"))
 	}
 
 	if !containsNumber.MatchString(u.Password) {

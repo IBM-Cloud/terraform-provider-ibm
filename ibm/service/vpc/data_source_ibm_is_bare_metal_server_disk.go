@@ -6,8 +6,10 @@ package vpc
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -74,23 +76,37 @@ func dataSourceIBMISBareMetalServerDiskRead(context context.Context, d *schema.R
 	bareMetalServerDiskID := d.Get(isBareMetalServerDisk).(string)
 	sess, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_bare_metal_server_disk", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	options := &vpcv1.GetBareMetalServerDiskOptions{
 		BareMetalServerID: &bareMetalServerID,
 		ID:                &bareMetalServerDiskID,
 	}
 
-	disk, response, err := sess.GetBareMetalServerDiskWithContext(context, options)
-	if err != nil || disk == nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error getting Bare Metal Server (%s) disk (%s): %s\n%s", bareMetalServerID, bareMetalServerDiskID, err, response))
+	bareMetalServerDisk, _, err := sess.GetBareMetalServerDiskWithContext(context, options)
+	if err != nil || bareMetalServerDisk == nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetBareMetalServerDiskWithContext failed: %s", err.Error()), "(Data) ibm_is_bare_metal_server_disk", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
-	d.SetId(*disk.ID)
-	d.Set(isBareMetalServerDiskHref, *disk.Href)
-	d.Set(isBareMetalServerDiskInterfaceType, *disk.InterfaceType)
-	d.Set(isBareMetalServerDiskName, *disk.Name)
-	d.Set(isBareMetalServerDiskResourceType, *disk.ResourceType)
-	d.Set(isBareMetalServerDiskSize, *disk.Size)
+	d.SetId(*bareMetalServerDisk.ID)
+	if err = d.Set("href", bareMetalServerDisk.Href); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting href: %s", err), "(Data) ibm_is_bare_metal_server_disk", "read", "set-href").GetDiag()
+	}
+	if err = d.Set("interface_type", bareMetalServerDisk.InterfaceType); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting interface_type: %s", err), "(Data) ibm_is_bare_metal_server_disk", "read", "set-interface_type").GetDiag()
+	}
+	if err = d.Set("name", bareMetalServerDisk.Name); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_is_bare_metal_server_disk", "read", "set-name").GetDiag()
+	}
+	if err = d.Set("resource_type", bareMetalServerDisk.ResourceType); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_type: %s", err), "(Data) ibm_is_bare_metal_server_disk", "read", "set-resource_type").GetDiag()
+	}
+	if err = d.Set("size", flex.IntValue(bareMetalServerDisk.Size)); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting size: %s", err), "(Data) ibm_is_bare_metal_server_disk", "read", "set-size").GetDiag()
+	}
 
 	return nil
 }

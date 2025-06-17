@@ -6,9 +6,11 @@ package vpc
 import (
 	"context"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -94,7 +96,9 @@ func dataSourceIBMISBareMetalServerNetworkInterfaceFloatingIPsRead(context conte
 	nicID := d.Get(isBareMetalServerNetworkInterface).(string)
 	sess, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_bare_metal_server_network_interface_floating_ips", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	allFloatingIPs := []vpcv1.FloatingIP{}
 	options := &vpcv1.ListBareMetalServerNetworkInterfaceFloatingIpsOptions{
@@ -102,9 +106,11 @@ func dataSourceIBMISBareMetalServerNetworkInterfaceFloatingIPsRead(context conte
 		NetworkInterfaceID: &nicID,
 	}
 
-	fips, response, err := sess.ListBareMetalServerNetworkInterfaceFloatingIpsWithContext(context, options)
+	fips, _, err := sess.ListBareMetalServerNetworkInterfaceFloatingIpsWithContext(context, options)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error fetching floating IPs for bare metal server %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListBareMetalServerNetworkInterfaceFloatingIpsWithContext failed: %s", err.Error()), "(Data) ibm_is_bare_metal_server_network_interface_floating_ips", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	allFloatingIPs = append(allFloatingIPs, fips.FloatingIps...)
 	fipInfo := make([]map[string]interface{}, 0)
@@ -128,7 +134,10 @@ func dataSourceIBMISBareMetalServerNetworkInterfaceFloatingIPsRead(context conte
 		fipInfo = append(fipInfo, l)
 	}
 	d.SetId(dataSourceIBMISBareMetalServerNetworkInterfaceFloatingIPsID(d))
-	d.Set(isBareMetalServerNicFloatingIPs, fipInfo)
+
+	if err = d.Set(isBareMetalServerNicFloatingIPs, fipInfo); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting floating_ips: %s", err), "(Data) ibm_is_bare_metal_server_network_interface_floating_ips", "read", "set-floating_ips").GetDiag()
+	}
 	return nil
 }
 

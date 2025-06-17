@@ -10,7 +10,7 @@ description: |-
 
 Retrieves information about a persistent storage volume that is mounted to a Power Systems Virtual Server instance. For more information, about managin a volume, see [moving data to the cloud](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-moving-data-to-the-cloud).
 
-## Example usage
+## Example Usage
 
 The following example retrieves information about the `volume_1` volume that is mounted to the Power Systems Virtual Server instance with the ID.
 
@@ -37,14 +37,14 @@ Example usage:
     }
   ```
   
-## Argument reference
+## Argument Reference
 
 Review the argument references that you can specify for your data source.
 
 - `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
 - `pi_volume_name` - (Required, String) The name of the volume for which you want to retrieve detailed information.
 
-## Attribute reference
+## Attribute Reference
 
 In addition to all argument reference list, you can access the following attribute references after your data source is created.
 
@@ -65,7 +65,7 @@ In addition to all argument reference list, you can access the following attribu
 - `primary_role` - (String) Indicates whether `master`/`auxiliary` volume is playing the primary role.
 - `replication_enabled` - (Boolean) Indicates if the volume should be replication enabled or not.
 - `replication_sites` - (List) List of replication sites for volume replication.
-- `replication_status` - (String) The replication status of the volume. 
+- `replication_status` - (String) The replication status of the volume.
 - `replication_type` - (String) The replication type of the volume, `metro` or `global`.
 - `shareable` - (String) Indicates if the volume is shareable between VMs.
 - `size` - (Integer) The size of the volume in GB.
@@ -73,4 +73,3 @@ In addition to all argument reference list, you can access the following attribu
 - `user_tags` - (List) List of user tags attached to the resource.
 - `volume_pool` - (String) Volume pool, name of storage pool where the volume is located.
 - `wwn` - (String) The world wide name of the volume.
-

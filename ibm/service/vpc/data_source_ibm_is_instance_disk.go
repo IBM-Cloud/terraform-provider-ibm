@@ -9,6 +9,7 @@ import (
 	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
@@ -67,7 +68,9 @@ func DataSourceIbmIsInstanceDisk() *schema.Resource {
 func dataSourceIbmIsInstanceDiskRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instance_disk", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	getInstanceDiskOptions := &vpcv1.GetInstanceDiskOptions{}
@@ -75,31 +78,31 @@ func dataSourceIbmIsInstanceDiskRead(context context.Context, d *schema.Resource
 	getInstanceDiskOptions.SetInstanceID(d.Get("instance").(string))
 	getInstanceDiskOptions.SetID(d.Get("disk").(string))
 
-	instanceDisk, response, err := vpcClient.GetInstanceDiskWithContext(context, getInstanceDiskOptions)
+	instanceDisk, _, err := vpcClient.GetInstanceDiskWithContext(context, getInstanceDiskOptions)
 	if err != nil {
-		log.Printf("[DEBUG] GetInstanceDiskWithContext failed %s\n%s", err, response)
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetInstanceDiskWithContext failed: %s", err.Error()), "(Data) ibm_is_instance_disk", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(*instanceDisk.ID)
-	if err = d.Set("created_at", instanceDisk.CreatedAt.String()); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting created_at: %s", err))
+	if err = d.Set("created_at", flex.DateTimeToString(instanceDisk.CreatedAt)); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting created_at: %s", err), "(Data) ibm_is_instance_disk", "read", "set-created_at").GetDiag()
 	}
 	if err = d.Set("href", instanceDisk.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting href: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting href: %s", err), "(Data) ibm_is_instance_disk", "read", "set-href").GetDiag()
 	}
 	if err = d.Set("interface_type", instanceDisk.InterfaceType); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting interface_type: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting interface_type: %s", err), "(Data) ibm_is_instance_disk", "read", "set-interface_type").GetDiag()
 	}
 	if err = d.Set("name", instanceDisk.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting name: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_is_instance_disk", "read", "set-name").GetDiag()
 	}
 	if err = d.Set("resource_type", instanceDisk.ResourceType); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting resource_type: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_type: %s", err), "(Data) ibm_is_instance_disk", "read", "set-resource_type").GetDiag()
 	}
-	if err = d.Set("size", instanceDisk.Size); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting size: %s", err))
+	if err = d.Set("size", flex.IntValue(instanceDisk.Size)); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting size: %s", err), "(Data) ibm_is_instance_disk", "read", "set-size").GetDiag()
 	}
-
 	return nil
 }

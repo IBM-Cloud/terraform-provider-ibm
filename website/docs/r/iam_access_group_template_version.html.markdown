@@ -14,6 +14,8 @@ Create, update, and delete iam_access_group_template_versions with this resource
 
 ```hcl
 resource "ibm_iam_access_group_template_version" "iam_access_group_template_version_instance" {
+  name = "IAM Admin Group template 2"
+  template_id = ibm_iam_access_group_template.iam_access_group_template_v1.template_id
   description = "This access group template allows admin access to all IAM platform services in the account."
   group {
 		name = "name"
@@ -51,12 +53,10 @@ resource "ibm_iam_access_group_template_version" "iam_access_group_template_vers
 			}
 		}
   }
-  name = "IAM Admin Group template 2"
   policy_template_references {
 		id = "id"
 		version = "version"
   }
-  template_id = "template_id"
 }
 ```
 
@@ -107,9 +107,9 @@ Nested schema for **group**:
 		Nested schema for **action_controls**:
 			* `add` - (Optional, Boolean) Action control for adding child account members to an enterprise-managed access group. If an access group administrator in a child account adds a member, they can always remove them.
 			* `remove` - (Optional, Boolean) Action control for removing enterprise-managed members from an enterprise-managed access group.
-		* `services` - (Optional, List) Array of service IDs to add to the template.
+		* `services` - (Optional, List) Array of service IDs' IAM ID to add to the template.
 		  * Constraints: The list items must match regular expression `/^[a-zA-Z0-9_-]+$/`. The maximum length is `50` items. The minimum length is `0` items.
-		* `users` - (Optional, List) Array of enterprise users to add to the template. All enterprise users that you add to the template must be invited to the child accounts where the template is assigned.
+		* `users` - (Optional, List) Array of enterprise users' IAM ID to add to the template. All enterprise users that you add to the template must be invited to the child accounts where the template is assigned.
 		  * Constraints: The list items must match regular expression `/^[a-zA-Z0-9!@#$%^&*()_+{}:;"'<>,.?\/|\\-\\s]+$/`. The maximum length is `50` items. The minimum length is `0` items.
 	* `name` - (Required, String) Give the access group a unique name that doesn't conflict with other templates access group name in the given account. This is shown in child accounts.
 	  * Constraints: The maximum length is `100` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9!@#$%^&*()_+{}:;"'<>,.?\/|\\-\\s]+$/`.
@@ -180,19 +180,16 @@ Nested schema for **policy_template_references**:
 * `last_modified_at` - (String) The date and time when the access group template was last modified.
 * `last_modified_by_id` - (String) The ID of the user who last modified the access group template.
 
-
 ## Import
 
 You can import the `ibm_iam_access_group_template_version` resource by using `id`.
-The `id` property can be formed from `template_id`, and `version_num` in the following format:
+The `id` property can be formed from `template_id`, and `version` in the following format: `<template_id>/<version>`
 
-```
-<template_id>/<version_num>
-```
 * `template_id`: A string. ID of the template that you want to create a new version of.
-* `version_num`: A string. version number in path.
+* `version`: A string. version number in path.
 
-# Syntax
-```
-$ terraform import ibm_iam_access_group_template_version.iam_access_group_template_version <template_id>/<version_num>
+### Syntax
+
+```bash
+$ terraform import ibm_iam_access_group_template_version.iam_access_group_template_version $template_id/$version
 ```

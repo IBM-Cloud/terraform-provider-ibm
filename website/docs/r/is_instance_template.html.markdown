@@ -264,9 +264,12 @@ Review the argument references that you can specify for your resource.
 - `boot_volume` - (Optional, List) A nested block describes the boot volume configuration for the template.
 
   Nested scheme for `boot_volume`:
+  - `bandwidth` - (Optional, Integer) The maximum bandwidth (in megabits per second) for the volume. For this property to be specified, the volume storage_generation must be 2.
 	- `delete_volume_on_instance_delete` - (Optional, Bool) You can configure to delete the boot volume based on instance deletion.
 	- `encryption` - (Optional, String) The encryption key CRN to encrypt the boot volume attached.
 	- `name` - (Optional, String) The name of the boot volume.
+	- `profile` - (Optional, String) The profile name for this boot volume.
+	- `size` - (Optional, Integer) The size for this boot volume.(in gigabytes)
   - `tags`- (Optional, Array of Strings) A list of user tags that you want to add to your volume. (https://cloud.ibm.com/apidocs/tagging#types-of-tags)
 
 - `catalog_offering` - (Optional, Forces new resource, List) The [catalog](https://cloud.ibm.com/docs/account?topic=account-restrict-by-user&interface=ui) offering or offering version to use when provisioning this virtual server instance. If an offering is specified, the latest version of that offering will be used. The specified offering or offering version may be in a different account in the same [enterprise](https://cloud.ibm.com/docs/account?topic=account-what-is-enterprise), subject to IAM policies.
@@ -279,9 +282,7 @@ Review the argument references that you can specify for your resource.
     - `version_crn` - (Optional, Force new resource, String) The CRN for this version of a catalog offering. Identifies a version of a catalog offering by this unique property. Conflicts with `catalog_offering.0.offering_crn`
     - `plan_crn` - (Optional, String) The CRN for this catalog offering version's billing plan. If unspecified, no billing plan will be used (free). Must be specified for catalog offering versions that require a billing plan to be used.
 
-~>**Select Availability** 
-Cluster Networks for VPC is available for select customers only. Contact IBM Support if you are interested in using this functionality. [About cluster networks](https://cloud.ibm.com/docs/vpc?topic=vpc-about-cluster-network)
-- `cluster_network_attachments` - (Optional, List) The cluster network attachments to create for this virtual server instance. A cluster network attachment represents a device that is connected to a cluster network. The number of network attachments must match one of the values from the instance profile's `cluster_network_attachment_count` before the instance can be started.
+- `cluster_network_attachments` - (Optional, List) The cluster network attachments to create for this virtual server instance. A cluster network attachment represents a device that is connected to a cluster network. The number of network attachments must match one of the values from the instance profile's `cluster_network_attachment_count` before the instance can be started. [About cluster networks](https://cloud.ibm.com/docs/vpc?topic=vpc-about-cluster-network)
 
     Nested schema for **cluster_network_attachments**:
     - `cluster_network_interface` - (Required, List) A cluster network interface for the instance cluster network attachment. This can bespecified using an existing cluster network interface that does not already have a `target`,or a prototype object for a new cluster network interface.This instance must reside in the same VPC as the specified cluster network interface. Thecluster network interface must reside in the same cluster network as the`cluster_network_interface` of any other `cluster_network_attachments` for this instance.
@@ -301,7 +302,7 @@ Cluster Networks for VPC is available for select customers only. Contact IBM Sup
             - `id` - (Optional, String) The unique identifier for this cluster network subnet.
     - `name` - (Optional, String) The name for this cluster network attachment. Names must be unique within the instance the cluster network attachment resides in. If unspecified, the name will be a hyphenated list of randomly-selected words. Names starting with `ibm-` are reserved for provider-owned resources, and are not allowed.
 
-- `confidential_compute_mode` - (Optional, String) The confidential compute mode to use for this virtual server instance.If unspecified, the default confidential compute mode from the profile will be used. **Constraints: Allowable values are: `disabled`, `sgx`**  {Select Availability}
+- `confidential_compute_mode` - (Optional, String) The confidential compute mode to use for this virtual server instance.If unspecified, the default confidential compute mode from the profile will be used. **Constraints: Allowable values are: `disabled`, `sgx`, `tdx`**  {Select Availability}
 
   ~>**Note:** The confidential_compute_mode is `Select Availability` feature. Confidential computing with Intel SGX for VPC is available only in the US-South (Dallas) region.
    
@@ -456,6 +457,7 @@ Cluster Networks for VPC is available for select customers only. Contact IBM Sup
   - `volume_prototype` - (Optional, Forces new resource, List)
 
       Nested scheme for `volume_prototype`:
+      - `bandwidth` - (Optional, Integer) The maximum bandwidth (in megabits per second) for the volume. For this property to be specified, the volume storage_generation must be 2.
       - `capacity` - (Required, Forces new resource, Integer) The capacity of the volume in gigabytes. The specified minimum and maximum capacity values for creating or updating volumes may expand in the future.
       - `encryption_key` - (Optional, Forces new resource, String) The CRN of the [Key Protect Root Key](https://cloud.ibm.com/docs/key-protect?topic=key-protect-getting-started-tutorial) or [Hyper Protect Crypto Service Root Key](https://cloud.ibm.com/docs/hs-crypto?topic=hs-crypto-get-started) for the resource.
       - `iops` - (Optional, Forces new resource, Integer) The maximum input and output operations per second (IOPS) for the volume.

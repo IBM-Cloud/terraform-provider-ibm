@@ -4,12 +4,15 @@
 package vpc
 
 import (
+	"context"
 	"fmt"
+	"log"
 	"strconv"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -25,7 +28,7 @@ const (
 
 func DataSourceIBMISSubnets() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceIBMISSubnetsRead,
+		ReadContext: dataSourceIBMISSubnetsRead,
 
 		Schema: map[string]*schema.Schema{
 			isSubnetResourceVpc: {
@@ -175,18 +178,20 @@ func DataSourceIBMISSubnets() *schema.Resource {
 	}
 }
 
-func dataSourceIBMISSubnetsRead(d *schema.ResourceData, meta interface{}) error {
-	err := subnetList(d, meta)
+func dataSourceIBMISSubnetsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	err := subnetList(context, d, meta)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func subnetList(d *schema.ResourceData, meta interface{}) error {
+func subnetList(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_subnets", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	start := ""
 	allrecs := []vpcv1.Subnet{}
@@ -252,9 +257,11 @@ func subnetList(d *schema.ResourceData, meta interface{}) error {
 		if start != "" {
 			options.Start = &start
 		}
-		subnets, response, err := sess.ListSubnets(options)
+		subnets, _, err := sess.ListSubnetsWithContext(context, options)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Fetching subnets %s\n%s", err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListSubnetsWithContext failed %s", err), "(Data) ibm_is_subnets", "read")
+			log.Printf("[DEBUG] %s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		start = flex.GetNext(subnets.Next)
 		allrecs = append(allrecs, subnets.Subnets...)
@@ -291,7 +298,9 @@ func subnetList(d *schema.ResourceData, meta interface{}) error {
 		subnetsInfo = append(subnetsInfo, l)
 	}
 	d.SetId(dataSourceIBMISSubnetsID(d))
-	d.Set(isSubnets, subnetsInfo)
+	if err = d.Set("subnets", subnetsInfo); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting subnets %s", err), "(Data) ibm_is_subnets", "read", "subnets-set").GetDiag()
+	}
 	return nil
 }
 

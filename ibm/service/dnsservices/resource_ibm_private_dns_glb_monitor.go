@@ -192,7 +192,7 @@ func ResourceIBMPrivateDNSGLBMonitor() *schema.Resource {
 func ResourceIBMPrivateDNSGLBMonitorValidator() *validate.ResourceValidator {
 	monitorCheckTypes := "HTTP, HTTPS, TCP"
 	methods := "GET, HEAD"
-	expectedcode := "200,201,202,203,204,205,206,207,208,226,2xx"
+	expectedcode := "200,201,202,203,204,205,206,207,208,226,2xx,3xx,4xx,5xx"
 
 	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
@@ -226,13 +226,13 @@ func resourceIBMPrivateDNSGLBMonitorCreate(d *schema.ResourceData, meta interfac
 		return err
 	}
 	instanceID := d.Get(pdnsInstanceID).(string)
-	createMonitorOptions := sess.NewCreateMonitorOptions(instanceID)
-
 	monitorname := d.Get(pdnsGlbMonitorName).(string)
+
+	createMonitorOptions := sess.NewCreateMonitorOptions(instanceID, monitorname, "")
+
 	monitorinterval := int64(d.Get(pdnsGlbMonitorInterval).(int))
 	monitorretries := int64(d.Get(pdnsGlbMonitorRetries).(int))
 	monitortimeout := int64(d.Get(pdnsGlbMonitorTimeout).(int))
-	createMonitorOptions.SetName(monitorname)
 	createMonitorOptions.SetInterval(monitorinterval)
 	createMonitorOptions.SetRetries(monitorretries)
 	createMonitorOptions.SetTimeout(monitortimeout)

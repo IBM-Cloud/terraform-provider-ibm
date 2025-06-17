@@ -1,6 +1,12 @@
 provider "ibm" {
   ibmcloud_api_key = var.ibmcloud_api_key
-  region = "us-south"
+  region = "us-east"
+}
+
+provider "ibm" {
+  ibmcloud_api_key = var.ibmcloud_api_key
+  region = "eu-de"
+  alias = "provider-eu-de"
 }
 
 // Provision logs_router_tenant resource instance
@@ -27,6 +33,7 @@ resource "ibm_logs_router_tenant" "logs_router_tenant_instance" {
 }
 
 resource "ibm_logs_router_tenant" "logs_router_tenant_instance_eu_de" {
+  provider = ibm.provider-eu-de
   name = "eu-de-tenant"
   region = "eu-de"
   targets {

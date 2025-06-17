@@ -15,16 +15,6 @@ resource "ibm_atracker_target" "atracker_target_instance" {
   region = var.atracker_target_region
 }
 
-resource "ibm_atracker_target" "atracker_target_logdna_instance" {
-  name = var.atracker_target_name
-  target_type = "logdna"
-  logdna_endpoint {
-    target_crn = "crn:v1:bluemix:public:logdna:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
-    ingestion_key = "xxxxxxxxxxxxxx"
-  }
-  region = var.atracker_target_region
-}
-
 resource "ibm_atracker_target" atracker_target_eventstreams_instance {
   name = var.atracker_target_name
   target_type = "event_streams"
@@ -47,7 +37,6 @@ resource "ibm_atracker_target" atracker_target_cloudlogs_instance {
   region = var.atracker_target_region
 }
 
-
 // Provision atracker_route resource instance
 resource "ibm_atracker_route" "atracker_route_instance" {
   name = var.atracker_route_name
@@ -59,10 +48,11 @@ resource "ibm_atracker_route" "atracker_route_instance" {
 
 // Provision atracker_settings resource instance
 resource "ibm_atracker_settings" "atracker_settings_instance" {
-  metadata_region_primary = var.atracker_settings_metadata_region_primary
-  private_api_endpoint_only = var.atracker_settings_private_api_endpoint_only
   default_targets = var.atracker_settings_default_targets
   permitted_target_regions = var.atracker_settings_permitted_target_regions
+  metadata_region_primary = var.atracker_settings_metadata_region_primary
+  metadata_region_backup = var.atracker_settings_metadata_region_backup
+  private_api_endpoint_only = var.atracker_settings_private_api_endpoint_only
 }
 
 // Create atracker_targets data source

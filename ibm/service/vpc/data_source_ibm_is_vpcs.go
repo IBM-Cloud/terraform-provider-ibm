@@ -84,7 +84,15 @@ func DataSourceIBMISVPCs() *schema.Resource {
 							Computed:    true,
 							Description: "Default security group name",
 						},
-
+						// address prefixes
+						"default_address_prefixes": {
+							Type: schema.TypeMap,
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+							Computed:    true,
+							Description: "Default address prefixes for each zone.",
+						},
 						isVPCDefaultSecurityGroupCRN: {
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -512,7 +520,9 @@ func DataSourceIBMISVPCs() *schema.Resource {
 func dataSourceIBMISVPCListRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_vpcs", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	start := ""
 	allrecs := []vpcv1.VPC{}
@@ -530,10 +540,11 @@ func dataSourceIBMISVPCListRead(context context.Context, d *schema.ResourceData,
 		if start != "" {
 			listOptions.Start = &start
 		}
-		result, detail, err := sess.ListVpcsWithContext(context, listOptions)
+		result, _, err := sess.ListVpcsWithContext(context, listOptions)
 		if err != nil {
-			log.Printf("Error reading list of VPCs:%s\n%s", err, detail)
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListVpcsWithContext failed %s", err), "(Data) ibm_is_vpcs", "read")
+			log.Printf("[DEBUG] %s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		start = flex.GetNext(result.Next)
 		allrecs = append(allrecs, result.Vpcs...)
@@ -608,6 +619,50 @@ func dataSourceIBMISVPCListRead(context context.Context, d *schema.ResourceData,
 			l[cseSourceAddresses] = cseSourceIpsList
 		}
 
+		// address prefixes
+		vpcID := *vpc.ID // Assuming the VPC ID is stored in the resource ID
+
+		// Fetch all address prefixes for the VPC
+		startAdd := ""
+		allRecs := []vpcv1.AddressPrefix{}
+		for {
+			listVpcAddressPrefixesOptions := &vpcv1.ListVPCAddressPrefixesOptions{
+				VPCID: &vpcID,
+			}
+
+			if startAdd != "" {
+				listVpcAddressPrefixesOptions.Start = &startAdd
+			}
+
+			addressPrefixCollection, _, err := sess.ListVPCAddressPrefixes(listVpcAddressPrefixesOptions)
+			if err != nil {
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListVPCAddressPrefixes failed %s", err), "(Data) ibm_is_vpcs", "read")
+				log.Printf("[DEBUG] %s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
+			}
+
+			allRecs = append(allRecs, addressPrefixCollection.AddressPrefixes...)
+			startAdd = flex.GetNext(addressPrefixCollection.Next)
+			if startAdd == "" {
+				break
+			}
+		}
+
+		// Process address prefixes
+		defaultAddressPrefixes := map[string]string{}
+
+		for _, prefix := range allRecs {
+			zoneName := *prefix.Zone.Name
+			cidr := *prefix.CIDR
+			// Populate default_address_prefixes
+			if *prefix.IsDefault {
+				defaultAddressPrefixes[zoneName] = cidr
+			}
+		}
+
+		// Set the default_address_prefixes attribute in the Terraform state
+		l["default_address_prefixes"] = defaultAddressPrefixes
+
 		// adding pagination support for subnets inside vpc
 
 		startSub := ""
@@ -617,9 +672,11 @@ func dataSourceIBMISVPCListRead(context context.Context, d *schema.ResourceData,
 			if startSub != "" {
 				options.Start = &startSub
 			}
-			s, response, err := sess.ListSubnetsWithContext(context, options)
+			s, _, err := sess.ListSubnetsWithContext(context, options)
 			if err != nil {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error fetching subnets %s\n%s", err, response))
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListSubnetsWithContext failed %s", err), "(Data) ibm_is_vpcs", "read")
+				log.Printf("[DEBUG] %s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			startSub = flex.GetNext(s.Next)
 			allrecsSub = append(allrecsSub, s.Subnets...)
@@ -658,9 +715,11 @@ func dataSourceIBMISVPCListRead(context context.Context, d *schema.ResourceData,
 			if startSg != "" {
 				listSgOptions.Start = &start
 			}
-			sgs, response, err := sess.ListSecurityGroupsWithContext(context, listSgOptions)
+			sgs, _, err := sess.ListSecurityGroupsWithContext(context, listSgOptions)
 			if err != nil {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error fetching Security Groups %s\n%s", err, response))
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListSecurityGroupsWithContext failed %s", err), "(Data) ibm_is_vpcs", "read")
+				log.Printf("[DEBUG] %s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			if *sgs.TotalCount == int64(0) {
 				break
@@ -808,7 +867,10 @@ func dataSourceIBMISVPCListRead(context context.Context, d *schema.ResourceData,
 		vpcs = append(vpcs, l)
 	}
 	d.SetId(dataSourceIBMISVPCsID(d))
-	d.Set(isVPCs, vpcs)
+	if err = d.Set(isVPCs, vpcs); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting vpcs %s", err), "(Data) ibm_is_vpcs", "read", "vpcs-set").GetDiag()
+	}
+
 	return nil
 }
 
