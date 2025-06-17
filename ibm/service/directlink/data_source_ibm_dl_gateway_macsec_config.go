@@ -12,10 +12,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-const (
-	dlGatewayMAcsecVersion = "version"
-)
-
 func DataSourceIBMDLGatewayMacsecConfig() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceIBMDLGatewayMacsecConfigRead,
@@ -23,11 +19,6 @@ func DataSourceIBMDLGatewayMacsecConfig() *schema.Resource {
 			dlGatewayId: {
 				Type:        schema.TypeString,
 				Description: "Gateway ID",
-				Required:    true,
-			},
-			dlGatewayMAcsecVersion: {
-				Type:        schema.TypeString,
-				Description: "Requests the version of the API as a date in the format YYYY-MM-DD.",
 				Required:    true,
 			},
 			dlActive: {
@@ -146,6 +137,7 @@ func dataSourceIBMDLGatewayMacsecConfigRead(context context.Context, d *schema.R
 	getGatewayMacsecOptionsModel := new(directlinkv1.GetGatewayMacsecOptions)
 	getGatewayMacsecOptionsModel.ID = &dlGatewayID
 	getGatewayMacsecOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
+	getGatewayMacsecOptionsModel.Version = IBMCLOUD_DL_VERSION_DEFAULT
 
 	result, response, err := directLink.GetGatewayMacsec(getGatewayMacsecOptionsModel)
 	if err != nil {

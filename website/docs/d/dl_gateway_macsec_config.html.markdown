@@ -17,7 +17,6 @@ Retrieve the MACsec configuration of a IBM Cloud Infrastructure Direct Link Gate
 ```terraform
 data "ibm_dl_gateway_macsec_config" "test" {
     gateway = "0a06fb9b-820f-4c44-8a31-77f1f0806d28"
-    version = "2019-12-13"
 }
 ```
 ---
@@ -25,8 +24,6 @@ data "ibm_dl_gateway_macsec_config" "test" {
 Review the argument reference that you can specify for your resource. 
 
 - `gateway` - (Required, String) Direct Link gateway identifier.
-- `version` - (Required, String) Requests the version of the API as a date in the format `YYYY-MM-DD`. Any date from 2019-12-13 up to the current date may be provided. Specify the current date to request the latest version.
-
 
 ## Attribute reference
 In addition to the argument reference list, you can access the following attribute references after your data source is created.

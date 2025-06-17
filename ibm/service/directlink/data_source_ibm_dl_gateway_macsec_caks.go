@@ -21,11 +21,6 @@ func DataSourceIBMDLGatewayMacsecCaks() *schema.Resource {
 				Description: "Gateway ID",
 				Required:    true,
 			},
-			dlGatewayMAcsecVersion: {
-				Type:        schema.TypeString,
-				Description: "Requests the version of the API as a date in the format YYYY-MM-DD.",
-				Required:    true,
-			},
 			dlGatewayMacsecCaksList: {
 				Type:        schema.TypeList,
 				Description: "Determines how SAK rekeying occurs.",
@@ -128,7 +123,7 @@ func dataSourceIBMDLGatewayMacsecCaksRead(context context.Context, d *schema.Res
 	// Construct an instance of the GetGatewayMacsecCakOptions model
 	listGatewayMacsecCaksOptions := new(directlinkv1.ListGatewayMacsecCaksOptions)
 	listGatewayMacsecCaksOptions.ID = &gatewayID
-	// listGatewayMacsecCaksOptions.Version = &dlGatewayMAcsecVersion
+	listGatewayMacsecCaksOptions.Version = IBMCLOUD_DL_VERSION_DEFAULT
 
 	listGatewayMacsecCaksOptions.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 	// Expect response parsing to fail since we are receiving a text/plain response

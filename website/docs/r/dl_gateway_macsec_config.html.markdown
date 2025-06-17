@@ -17,7 +17,6 @@ Set/Unset/Update the MACsec configuration of a IBM Cloud Infrastructure Direct L
 ```terraform
 resource "ibm_dl_gateway_macsec_config" "test" {
     gateway = "0a06fb9b-820f-4c44-8a31-77f1f0806d28"
-    version = "2019-12-13"
 }
 ```
 ---
@@ -25,7 +24,6 @@ resource "ibm_dl_gateway_macsec_config" "test" {
 Review the argument reference that you can specify for your resource. 
 
 - `gateway` - (Required, String) Direct Link gateway identifier.
-- `version` - (Required, String) Requests the version of the API as a date in the format `YYYY-MM-DD`. Any date from 2019-12-13 up to the current date may be provided. Specify the current date to request the latest version.
 - `active` - (Optional, Bool) Indicates if the MACsec feature is currently active (true) or inactive (false) for a gateway.
 - `sak_rekey` - (Optional, List) Determines how SAK rekeying occurs. It is either timer based or based on the amount of used packet numbers.
     Nested scheme for `sak_rekey`:

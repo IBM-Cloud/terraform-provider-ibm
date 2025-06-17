@@ -20,7 +20,6 @@ For more information, about IBM Cloud Direct Link, see [getting started with IBM
 ```terraform
 resource "ibm_dl_gateway_macsec_cak" "test" {
     gateway = "0a06fb9b-820f-4c44-8a31-77f1f0806d28"
-    version = "2019-12-13"
     key {
         crn = "crn:v1:bluemix:public:hs-crypto:us-south:a/4111d05f36894e3cb9b46a43556d9000:abc111b8-37aa-4034-9def-f2607c87aaaa:key:bbb222bc-430a-4de9-9aad-84e5bb022222"
     }
@@ -33,7 +32,6 @@ resource "ibm_dl_gateway_macsec_cak" "test" {
 Review the argument reference that you can specify for your resource. 
 
 - `gateway` - (Required, String) Direct Link gateway identifier.
-- `version` - (Required, String) Requests the version of the API as a date in the format `YYYY-MM-DD`. Any date from 2019-12-13 up to the current date may be provided. Specify the current date to request the latest version.
 - `key` - (Required, List) A reference to a Hyper Protect Crypto Service Standard Key.
     Nested schema for `key`:
     - `crn` - (String) The CRN of the referenced key.

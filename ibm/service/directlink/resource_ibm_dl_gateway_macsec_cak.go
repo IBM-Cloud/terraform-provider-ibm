@@ -35,11 +35,6 @@ func ResourceIBMDLGatewayMacsecCak() *schema.Resource {
 				Description: "CAK ID",
 				Computed:    true,
 			},
-			dlGatewayMAcsecVersion: {
-				Type:        schema.TypeString,
-				Description: "Requests the version of the API as a date in the format YYYY-MM-DD.",
-				Required:    true,
-			},
 			dlGatewayMacsecCakName: {
 				Type:        schema.TypeString,
 				Required:    true,
@@ -205,13 +200,13 @@ func resourceIBMdlGatewayMacsecCakCreate(context context.Context, d *schema.Reso
 
 	gatewayID := d.Get(dlGatewayId).(string)
 	name := d.Get(dlGatewayMacsecCakName).(string)
-	// version := d.Get(dlGatewayMAcsecVersion).(string)
 	session := d.Get(dlGatewayMacsecCakSession).(string)
 	keyMapIntf := d.Get(dlGatewayMacsecHPCSKey).(*schema.Set).List()[0].(map[string]interface{})
 	crn := keyMapIntf[dlCrn].(string)
 	key, _ := directLink.NewHpcsKeyIdentity(crn)
 
 	createGatewayMacsecCakOptions := directLink.NewCreateGatewayMacsecCakOptions(gatewayID, key, name, session)
+	createGatewayMacsecCakOptions.Version = IBMCLOUD_DL_VERSION_DEFAULT
 
 	result, response, err := directLink.CreateGatewayMacsecCak(createGatewayMacsecCakOptions)
 	if err != nil {
@@ -239,6 +234,8 @@ func resourceIBMdlGatewayMacsecCakRead(context context.Context, d *schema.Resour
 	getGatewayMacsecCakOptionsModel.ID = &gatewayID
 	getGatewayMacsecCakOptionsModel.CakID = &getMacsecCakID
 	getGatewayMacsecCakOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
+	getGatewayMacsecCakOptionsModel.Version = IBMCLOUD_DL_VERSION_DEFAULT
+
 	// Expect response parsing to fail since we are receiving a text/plain response
 	instance, response, err := directLink.GetGatewayMacsecCak(getGatewayMacsecCakOptionsModel)
 	if err != nil {
@@ -311,6 +308,8 @@ func resourceIBMdlGatewayMacsecCakUpdate(context context.Context, d *schema.Reso
 	gatewayMacsecCakPatch[dlGatewayMacsecHPCSKey] = &key
 
 	patchGatewayOptions := directLink.NewUpdateGatewayMacsecCakOptions(gatewayID, getMacsecCakID, gatewayMacsecCakPatch)
+	patchGatewayOptions.Version = IBMCLOUD_DL_VERSION_DEFAULT
+
 	_, response, err := directLink.UpdateGatewayMacsecCak(patchGatewayOptions)
 	if err != nil {
 		log.Printf("[DEBUG] Update Direct Link Gateway Macsec CAK err %s\n%s", err, response)
@@ -333,6 +332,7 @@ func resourceIBMdlGatewayMacsecCakDelete(context context.Context, d *schema.Reso
 	delOptions := &directlinkv1.DeleteGatewayMacsecCakOptions{
 		ID:    &gatewayID,
 		CakID: &getMacsecCakID,
+		Version: IBMCLOUD_DL_VERSION_DEFAULT
 	}
 
 	response, err := directLink.DeleteGatewayMacsecCak(delOptions)
@@ -361,6 +361,7 @@ func resourceIBMdlGatewayMacsecCakExists(d *schema.ResourceData, meta interface{
 	getGatewayMacsecCakOptionsModel.ID = &gatewayID
 	getGatewayMacsecCakOptionsModel.CakID = &getMacsecCakID
 	getGatewayMacsecCakOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
+	getGatewayMacsecCakOptionsModel.Version = IBMCLOUD_DL_VERSION_DEFAULT
 	// Expect response parsing to fail since we are receiving a text/plain response
 	instance, response, err := directLink.GetGatewayMacsecCak(getGatewayMacsecCakOptionsModel)
 

@@ -20,7 +20,6 @@ For more information, about IBM Cloud Direct Link, see [getting started with IBM
 data "ibm_dl_gateway_macsec_cak" "test" {
     gateway = "0a06fb9b-820f-4c44-8a31-77f1f0806d28"
     cak_id = "ef4dcb1a-fee4-41c7-9e11-9cd99e65c1f4"
-    version = "2019-12-13"
 }
 ```
 ---
@@ -29,8 +28,6 @@ Review the argument reference that you can specify for your resource.
 
 - `gateway` - (Required, String) Direct Link gateway identifier.
 - `cak_id` - (Required, String) Direct Link gateway MACsec CAK identifier.
-- `version` - (Required, String) Requests the version of the API as a date in the format `YYYY-MM-DD`. Any date from 2019-12-13 up to the current date may be provided. Specify the current date to request the latest version.
-
 
 ## Attribute reference
 In addition to the argument reference list, you can access the following attribute references after your data source is created.

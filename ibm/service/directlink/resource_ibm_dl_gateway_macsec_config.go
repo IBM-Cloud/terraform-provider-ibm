@@ -26,11 +26,6 @@ func ResourceIBMDLGatewayMacsecConfig() *schema.Resource {
 				Description: "Gateway ID",
 				Required:    true,
 			},
-			dlGatewayMAcsecVersion: {
-				Type:        schema.TypeString,
-				Description: "Requests the version of the API as a date in the format YYYY-MM-DD.",
-				Required:    true,
-			},
 			dlActive: {
 				Type:        schema.TypeBool,
 				Required:    true,
@@ -221,7 +216,7 @@ func resourceIBMdlGatewayMacsecConfigCreate(context context.Context, d *schema.R
 		sakRekeyPrototypeModel.Mode = &mode
 		opts.SetSakRekey(sakRekeyPrototypeModel)
 	}
-	// opts.SetIfMatch("W/'448-f9e0936758c298f63724af237c32f326dd0d5d4b54069096b87fcbba'")
+	opts.Version = IBMCLOUD_DL_VERSION_DEFAULT
 	result, response, err := directLink.SetGatewayMacsec(opts)
 
 	if err != nil {
@@ -297,6 +292,7 @@ func resourceIBMdlGatewayMacsecConfigRead(context context.Context, d *schema.Res
 	getGatewayMacsecOptionsModel := new(directlinkv1.GetGatewayMacsecOptions)
 	getGatewayMacsecOptionsModel.ID = &dlGatewayID
 	getGatewayMacsecOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
+	getGatewayMacsecOptionsModel.Version = IBMCLOUD_DL_VERSION_DEFAULT
 
 	result, response, err := directLink.GetGatewayMacsec(getGatewayMacsecOptionsModel)
 	if err != nil {
@@ -391,6 +387,8 @@ func resourceIBMdlGatewayMacsecConfigUpdate(context context.Context, d *schema.R
 	}
 
 	updateGatewayMacsecOptions := directLink.NewUpdateGatewayMacsecOptions(gatewayID, GatewayMacsecConfigPatch)
+	updateGatewayMacsecOptions.Version = IBMCLOUD_DL_VERSION_DEFAULT
+
 	_, response, err := directLink.UpdateGatewayMacsec(updateGatewayMacsecOptions)
 	if err != nil {
 		log.Printf("[DEBUG] Update Direct Link Gateway Macsec Config err %s\n%s", err, response)
@@ -411,6 +409,7 @@ func resourceIBMdlGatewayMacsecConfigDelete(context context.Context, d *schema.R
 
 	delOptions := &directlinkv1.UnsetGatewayMacsecOptions{
 		ID: &gatewayID,
+		Version: IBMCLOUD_DL_VERSION_DEFAULT
 	}
 
 	response, err := directLink.UnsetGatewayMacsec(delOptions)
