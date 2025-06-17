@@ -48,13 +48,18 @@ You can access the following attribute references after your data source is crea
 
   Nested scheme for `access_modes`:
   - `type` - (String) The type of access mode.
-  - `values` - (List of strings) Access modes for this profile.
+  - `values` - (List of strings) Access modes for this profile. 
 - `family` - (String) The product family this load balancer profile belongs to.
 - `href` - (String) The URL for this load balancer profile.
 - `id` - (String) The id(`name`) for this load balancer profile.
 - `name` - (String) The name for this load balancer profile.
 - `route_mode_supported` - (Bool) The route mode support for a load balancer with this profile.
 - `route_mode_type` - (String) The route mode type for this load balancer profile, one of [fixed, dependent]
+- `targetable_load_balancer_profiles` - (List) The load balancer profiles that load balancers with this profile can target.
+    Nested scheme for `targetable_load_balancer_profiles`:
+    - `family` - (String) The product family this load balancer profile belongs to.
+    - `href` - (String) The URL for this load balancer profile.
+    - `name` - (String) The name for this load balancer profile. 
 - `udp_supported` - (Bool) The UDP support for a load balancer with this profile.
 - `udp_supported_type` - (String) The UDP support type for a load balancer with this profile, one of [fixed, dependent]
 

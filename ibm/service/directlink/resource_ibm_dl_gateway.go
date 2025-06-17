@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/IBM/go-sdk-core/v3/core"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/networking-go-sdk/directlinkv1"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"

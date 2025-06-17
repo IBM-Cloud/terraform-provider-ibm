@@ -2,11 +2,12 @@ package appconfiguration_test
 
 import (
 	"fmt"
+	"testing"
+
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"testing"
 
 	"github.com/IBM/appconfiguration-go-admin-sdk/appconfigurationv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -79,11 +80,11 @@ func testAccCheckIbmAppConfigSegmentExists(n string, obj appconfigurationv1.Segm
 		}
 		parts, err := flex.IdParts(rs.Primary.ID)
 		if err != nil {
-			return flex.FmtErrorf(fmt.Sprintf("%s", err))
+			return flex.FmtErrorf("%s", err)
 		}
 		appconfigClient, err := getAppConfigClient(acc.TestAccProvider.Meta(), parts[0])
 		if err != nil {
-			return flex.FmtErrorf(fmt.Sprintf("%s", err))
+			return flex.FmtErrorf("%s", err)
 		}
 
 		options := &appconfigurationv1.GetSegmentOptions{}
@@ -92,7 +93,7 @@ func testAccCheckIbmAppConfigSegmentExists(n string, obj appconfigurationv1.Segm
 
 		result, _, err := appconfigClient.GetSegment(options)
 		if err != nil {
-			return flex.FmtErrorf(fmt.Sprintf("%s", err))
+			return flex.FmtErrorf("%s", err)
 		}
 
 		obj = *result
@@ -108,11 +109,11 @@ func testAccCheckIbmAppConfigSegmentDestroy(s *terraform.State) error {
 		}
 		parts, err := flex.IdParts(rs.Primary.ID)
 		if err != nil {
-			return flex.FmtErrorf(fmt.Sprintf("%s", err))
+			return flex.FmtErrorf("%s", err)
 		}
 		appconfigClient, err := getAppConfigClient(acc.TestAccProvider.Meta(), parts[0])
 		if err != nil {
-			return flex.FmtErrorf(fmt.Sprintf("%s", err))
+			return flex.FmtErrorf("%s", err)
 		}
 		options := &appconfigurationv1.GetSegmentOptions{}
 

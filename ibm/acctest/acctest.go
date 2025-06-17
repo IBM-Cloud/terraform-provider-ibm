@@ -134,6 +134,7 @@ var (
 	imageName                       string
 	functionNamespace               string
 	HpcsInstanceID                  string
+	ToolchainID                     string
 )
 
 // MQ on Cloud
@@ -182,6 +183,10 @@ var (
 	SecretsManagerPrivateCertificateConfigurationCryptoKeyProviderPrivateKeystoreId string
 	SecretsManagerSecretType                                                        string
 	SecretsManagerSecretID                                                          string
+	SecretsManagerCodeEngineProjectId                                               string
+	SecretsManagerCodeEngineRegion                                                  string
+	SecretsManagerCodeEngineJobName                                                 string
+	SecretsManagerServiceIdForCustomCredentials                                     string
 )
 
 var (
@@ -240,6 +245,7 @@ var (
 	Pi_replication_volume_name        string
 	Pi_resource_group_id              string
 	Pi_sap_image                      string
+	Pi_sap_profile_id                 string
 	Pi_shared_processor_pool_id       string
 	Pi_snapshot_id                    string
 	Pi_spp_placement_group_id         string
@@ -254,7 +260,6 @@ var (
 	Pi_volume_onboarding_id           string
 	Pi_volume_onboarding_source_crn   string
 	PiCloudConnectionName             string
-	PiSAPProfileID                    string
 	PiStoragePool                     string
 	PiStorageType                     string
 )
@@ -417,8 +422,9 @@ var (
 
 // For IAM Access Management
 var (
-	TargetAccountId    string
-	TargetEnterpriseId string
+	TargetAccountId      string
+	TargetEnterpriseId   string
+	TargetAccountGroupId string
 )
 
 // For Partner Center Sell
@@ -1270,9 +1276,9 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable PI_CLOUD_CONNECTION_NAME for testing ibm_pi_cloud_connection resource else it is set to default value 'terraform-test-power'")
 	}
 
-	PiSAPProfileID = os.Getenv("PI_SAP_PROFILE_ID")
-	if PiSAPProfileID == "" {
-		PiSAPProfileID = "terraform-test-power"
+	Pi_sap_profile_id = os.Getenv("PI_SAP_PROFILE_ID")
+	if Pi_sap_profile_id == "" {
+		Pi_sap_profile_id = "terraform-test-power"
 		fmt.Println("[INFO] Set the environment variable PI_SAP_PROFILE_ID for testing ibm_pi_sap_profile resource else it is set to default value 'terraform-test-power'")
 	}
 
@@ -1567,6 +1573,26 @@ func init() {
 	SecretsManagerPrivateCertificateConfigurationCryptoKeyProviderPrivateKeystoreId = os.Getenv("SECRETS_MANAGER_PRIVATE_CERTIFICATE_CONFIGURATION_CRYPTO_KEY_PROVIDER_PRIVATE_KEYSTORE_ID")
 	if SecretsManagerPrivateCertificateConfigurationCryptoKeyProviderPrivateKeystoreId == "" {
 		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_PRIVATE_CERTIFICATE_CONFIGURATION_CRYPTO_KEY_PROVIDER_PRIVATE_KEYSTORE_ID for testing private certificate's configuration with crypto key tests, else tests fail if not set correctly")
+	}
+
+	SecretsManagerCodeEngineProjectId = os.Getenv("SECRETS_MANAGER_CODE_ENGINE_PROJECT_ID")
+	if SecretsManagerCodeEngineProjectId == "" {
+		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_CODE_ENGINE_PROJECT_ID for testing custom credential secret, else tests fail if not set correctly")
+	}
+
+	SecretsManagerCodeEngineJobName = os.Getenv("SECRETS_MANAGER_CODE_ENGINE_JOB_NAME")
+	if SecretsManagerCodeEngineJobName == "" {
+		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_CODE_ENGINE_JOB_NAME for testing custom credential secret, else tests fail if not set correctly")
+	}
+
+	SecretsManagerCodeEngineRegion = os.Getenv("SECRETS_MANAGER_CODE_ENGINE_REGION")
+	if SecretsManagerCodeEngineRegion == "" {
+		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_CODE_ENGINE_RGION for testing custom credential secret, else tests fail if not set correctly")
+	}
+
+	SecretsManagerServiceIdForCustomCredentials = os.Getenv("SECRETS_MANAGER_SERVICE_ID_FOR_CUSTOM_CREDENTIALS")
+	if SecretsManagerServiceIdForCustomCredentials == "" {
+		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_SERVICE_ID_FOR_CUSTOM_CREDENTIALS for testing custom credential secret, else tests fail if not set correctly")
 	}
 
 	Tg_cross_network_account_api_key = os.Getenv("IBM_TG_CROSS_ACCOUNT_API_KEY")
@@ -2040,6 +2066,11 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable IBM_POLICY_ASSIGNMENT_TARGET_ENTERPRISE_ID for testing ibm_iam_policy_assignment resource else tests will fail if this is not set correctly")
 	}
 
+	TargetAccountGroupId = os.Getenv("IBM_ASSIGNMENT_TARGET_ACCOUNT_GROUP_ID")
+	if TargetAccountGroupId == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_ASSIGNMENT_TARGET_ACCOUNT_GROUP_ID for testing ibm_iam_action_control_assignment resource else tests will fail if this is not set correctly")
+	}
+
 	PcsRegistrationAccountId = os.Getenv("PCS_REGISTRATION_ACCOUNT_ID")
 	if PcsRegistrationAccountId == "" {
 		fmt.Println("[WARN] Set the environment variable PCS_REGISTRATION_ACCOUNT_ID for testing iam_onboarding resource else tests will fail if this is not set correctly")
@@ -2073,6 +2104,11 @@ func init() {
 	PcsIamServiceRegistrationId = os.Getenv("PCS_IAM_REGISTRATION_ID")
 	if PcsIamServiceRegistrationId == "" {
 		fmt.Println("[WARN] Set the environment variable PCS_IAM_TEGISTRATION_ID for testing iam_onboarding resource else tests will fail if this is not set correctly")
+	}
+
+	ToolchainID = os.Getenv("TOOLCHAIN_ID")
+	if ToolchainID == "" {
+		fmt.Println("[WARN] Set the environment variable TOOLCHAIN_ID for testing the COS toolchain integration tool else tests will fail if this is not set correctly")
 	}
 }
 

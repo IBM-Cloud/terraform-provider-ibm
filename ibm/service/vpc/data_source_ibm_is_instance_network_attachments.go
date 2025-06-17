@@ -212,17 +212,20 @@ func DataSourceIBMIsInstanceNetworkAttachments() *schema.Resource {
 func dataSourceIBMIsInstanceNetworkAttachmentsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := vpcClient(meta)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instance_network_attachments", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	listInstanceNetworkAttachmentsOptions := &vpcv1.ListInstanceNetworkAttachmentsOptions{}
 
 	listInstanceNetworkAttachmentsOptions.SetInstanceID(d.Get("instance").(string))
 
-	instanceNetworkAttachmentCollection, response, err := vpcClient.ListInstanceNetworkAttachmentsWithContext(context, listInstanceNetworkAttachmentsOptions)
+	instanceNetworkAttachmentCollection, _, err := vpcClient.ListInstanceNetworkAttachmentsWithContext(context, listInstanceNetworkAttachmentsOptions)
 	if err != nil {
-		log.Printf("[DEBUG] ListInstanceNetworkAttachmentsWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("ListInstanceNetworkAttachmentsWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListInstanceNetworkAttachmentsWithContext failed: %s", err.Error()), "(Data) ibm_is_instance_network_attachments", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(dataSourceIBMIsInstanceNetworkAttachmentsID(d))
@@ -232,13 +235,13 @@ func dataSourceIBMIsInstanceNetworkAttachmentsRead(context context.Context, d *s
 		for _, modelItem := range instanceNetworkAttachmentCollection.NetworkAttachments {
 			modelMap, err := dataSourceIBMIsInstanceNetworkAttachmentsInstanceNetworkAttachmentToMap(&modelItem)
 			if err != nil {
-				return diag.FromErr(err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instance_network_attachments", "read", "network_attachments-to-map").GetDiag()
 			}
 			networkAttachments = append(networkAttachments, modelMap)
 		}
 	}
 	if err = d.Set("network_attachments", networkAttachments); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting network_attachments %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting network_attachments: %s", err), "(Data) ibm_is_instance_network_attachments", "read", "set-network_attachments").GetDiag()
 	}
 
 	return nil

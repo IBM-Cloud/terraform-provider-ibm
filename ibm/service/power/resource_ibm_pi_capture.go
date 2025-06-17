@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
-	st "github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/power/client/p_cloud_images"
 	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -196,7 +195,7 @@ func resourceIBMPICaptureCreate(ctx context.Context, d *schema.ResourceData, met
 	}
 
 	if _, ok := d.GetOk(Arg_UserTags); ok && capturedestination != CloudStorage {
-		imageClient := st.NewIBMPIImageClient(ctx, sess, cloudInstanceID)
+		imageClient := instance.NewIBMPIImageClient(ctx, sess, cloudInstanceID)
 		imagedata, err := imageClient.Get(capturename)
 		if err != nil {
 			if strings.Contains(err.Error(), NotFound) {

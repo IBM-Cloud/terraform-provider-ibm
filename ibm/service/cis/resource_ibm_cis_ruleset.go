@@ -175,7 +175,19 @@ var CISResourceResponseObject = &schema.Resource{
 								CISRuleset: {
 									Type:        schema.TypeString,
 									Optional:    true,
-									Description: "Ruleset ID of the ruleset to apply action to",
+									Description: "Ruleset of the rule",
+								},
+								CISRulesetsRulePhases: {
+									Type:        schema.TypeList,
+									Optional:    true,
+									Description: "Phases of the rule",
+									Elem:        &schema.Schema{Type: schema.TypeString},
+								},
+								CISRulesetsRuleProducts: {
+									Type:        schema.TypeList,
+									Optional:    true,
+									Description: "Products of the rule",
+									Elem:        &schema.Schema{Type: schema.TypeString},
 								},
 								CISRulesetList: {
 									Type:        schema.TypeList,
@@ -572,6 +584,19 @@ func expandCISRulesetsRulesActionParameters(obj interface{}) rulesetsv1.ActionPa
 	}
 	actionParameterRespObj.Rulesets = ruleList
 
+	ruleset := actionParameterObj[CISRuleset].(string)
+	if ruleset != "" {
+		actionParameterRespObj.Ruleset = &ruleset
+	}
+
+	phases := actionParameterObj[CISRulesetsRulePhases].([]interface{})
+	phasesList := flex.ExpandStringList(phases)
+	actionParameterRespObj.Phases = phasesList
+
+	products := actionParameterObj[CISRulesetsRuleProducts].([]interface{})
+	productsList := flex.ExpandStringList(products)
+	actionParameterRespObj.Products = productsList
+
 	finalResponse := make([]rulesetsv1.ActionParameters, 0)
 
 	overrideObj := rulesetsv1.Overrides{}
@@ -649,15 +674,11 @@ func expandCISRulesetsRulesActionParametersOverridesCategories(obj interface{}) 
 		category := response[CISRulesetOverridesCategoriesCategory].(string)
 		overrideRespObj := rulesetsv1.CategoriesOverride{
 			Category: &category,
+			Enabled:  &enabled,
 		}
-
 		if action != "" {
 			overrideRespObj.Action = &action
 		}
-		if enabled {
-			overrideRespObj.Enabled = &enabled
-		}
-
 		finalResponse = append(finalResponse, overrideRespObj)
 
 	}
@@ -677,13 +698,11 @@ func expandCISRulesetsRulesActionParametersOverridesRules(obj interface{}) []rul
 		score := int64(response[CISRulesetOverridesScoreThreshold].(int))
 
 		overrideRespObj := rulesetsv1.RulesOverride{
-			ID: &id,
+			ID:      &id,
+			Enabled: &enabled,
 		}
 		if action != "" {
 			overrideRespObj.Action = &action
-		}
-		if enabled {
-			overrideRespObj.Enabled = &enabled
 		}
 		if score != 0 {
 			overrideRespObj.ScoreThreshold = &score

@@ -119,7 +119,20 @@ resource "ibm_onboarding_catalog_product" "onboarding_catalog_product_instance" 
 				}
 				value = [ "value" ]
 				layout = "layout"
-				associations = { "key" = "anything as a string" }
+				associations {
+					plan {
+						show_for = [ "show_for" ]
+						options_refresh = true
+					}
+					parameters {
+						name = "name"
+						show_for = [ "show_for" ]
+						options_refresh = true
+					}
+					location {
+						show_for = [ "show_for" ]
+					}
+				}
 				validation_url = "validation_url"
 				options_url = "options_url"
 				invalidmessage = "invalidmessage"
@@ -265,7 +278,7 @@ Nested schema for **metadata**:
 				* `kind` - (Optional, String) The type of the composite child.
 				  * Constraints: Allowable values are: `service`, `platform_service`.
 				* `name` - (Optional, String) The name of the composite child.
-				  * Constraints: The maximum length is `100` characters. The minimum length is `2` characters. The value must match regular expression `/^[a-zA-Z0-9\\-.]+$/`.
+				  * Constraints: The maximum length is `100` characters. The minimum length is `2` characters. The value must match regular expression `/^\\S*$/`.
 			* `composite_kind` - (Optional, String) The type of the composite service.
 			  * Constraints: Allowable values are: `service`, `platform_service`.
 			* `composite_tag` - (Optional, String) The tag used for the composite parent and its children.
@@ -327,7 +340,25 @@ Nested schema for **metadata**:
 		* `parameters` - (Optional, List)
 		  * Constraints: The maximum length is `1000` items. The minimum length is `0` items.
 		Nested schema for **parameters**:
-			* `associations` - (Optional, Map) A JSON structure to describe the interactions with pricing plans and/or other custom parameters.
+			* `associations` - (Optional, List) A JSON to describe other parameters or plan that are associated to this parameter.
+			Nested schema for **associations**:
+				* `location` - (Optional, List)
+				Nested schema for **location**:
+					* `show_for` - (Optional, List) An array of pricing plan IDs, or parameters or locations depending on parent.
+					  * Constraints: The list items must match regular expression `/^[ -~\\s]*$/`. The maximum length is `1000` items. The minimum length is `0` items.
+				* `parameters` - (Optional, List) Indicate this parameter is associated to some other parameters.
+				  * Constraints: The maximum length is `1000` items. The minimum length is `0` items.
+				Nested schema for **parameters**:
+					* `name` - (Optional, String) Indicate this parameter is associated to some other parameters.
+					  * Constraints: The maximum length is `2000` characters. The minimum length is `0` characters. The value must match regular expression `/^[ -~\\s]*$/`.
+					* `options_refresh` - (Optional, Boolean) Indicate if re-fetching the options is needed when the plan changed.
+					* `show_for` - (Optional, List) An array of pricing plan IDs, or parameters or locations depending on parent.
+					  * Constraints: The list items must match regular expression `/^[ -~\\s]*$/`. The maximum length is `1000` items. The minimum length is `0` items.
+				* `plan` - (Optional, List)
+				Nested schema for **plan**:
+					* `options_refresh` - (Optional, Boolean) Indicate if re-fetching the options is needed when the plan changed.
+					* `show_for` - (Optional, List) An array of pricing plan IDs, or parameters or locations depending on parent.
+					  * Constraints: The list items must match regular expression `/^[ -~\\s]*$/`. The maximum length is `1000` items. The minimum length is `0` items.
 			* `description` - (Optional, String) The description of the parameter that is displayed to help users with the value of the parameter.
 			  * Constraints: The maximum length is `2000` characters. The minimum length is `1` character. The value must match regular expression `/^[ -~\\s]*$/`.
 			* `displayname` - (Optional, String) The display name for custom service parameters.
@@ -511,13 +542,13 @@ Nested schema for **metadata**:
 				* `media` - (Optional, List) The list of supporting media for this product.
 				  * Constraints: The maximum length is `100` items. The minimum length is `0` items.
 				Nested schema for **media**:
-					* `caption` - (Required, String) Provide a descriptive caption that indicates what the media illustrates. This caption is displayed in the catalog.
+					* `caption` - (Optional, String) Provide a descriptive caption that indicates what the media illustrates. This caption is displayed in the catalog.
 					  * Constraints: The maximum length is `2000` characters. The minimum length is `0` characters. The value must match regular expression `/^[ -~\\s]*$/`.
 					* `thumbnail` - (Optional, String) The reduced-size version of your images and videos.
 					  * Constraints: The maximum length is `2083` characters. The minimum length is `0` characters.
-					* `type` - (Required, String) The type of the media.
+					* `type` - (Optional, String) The type of the media.
 					  * Constraints: Allowable values are: `image`, `youtube`, `video_mp_4`, `video_webm`.
-					* `url` - (Required, String) The URL that links to the media that shows off the product.
+					* `url` - (Optional, String) The URL that links to the media that shows off the product.
 					  * Constraints: The maximum length is `2083` characters. The minimum length is `0` characters.
 				* `navigation_items` - (Optional, List) List of custom navigation panel.
 				  * Constraints: The maximum length is `100` items. The minimum length is `0` items.
@@ -545,7 +576,7 @@ Nested schema for **metadata**:
 			* `terms_url` - (Optional, String) The URL for your product's end user license agreement.
 			  * Constraints: The maximum length is `2083` characters. The minimum length is `0` characters.
 * `name` - (Required, String) The programmatic name of this product.
-  * Constraints: The value must match regular expression `/^[a-zA-Z0-9\\-.]+$/`.
+  * Constraints: The value must match regular expression `/^\\S*$/`.
 * `object_id` - (Optional, String) The desired ID of the global catalog object.
 * `object_provider` - (Required, List) The provider or owner of the product.
 Nested schema for **object_provider**:
@@ -569,6 +600,7 @@ After your resource is created, you can read values from the listed arguments an
 
 * `id` - The unique identifier of the onboarding_catalog_product.
 * `catalog_product_id` - (String) The ID of a global catalog object.
+  * Constraints: The value must match regular expression `/^\\S*$/`.
 * `geo_tags` - (List) 
   * Constraints: The list items must match regular expression `/./`. The maximum length is `1000` items. The minimum length is `0` items.
 * `group` - (Boolean) Flag for group tile legacy service.

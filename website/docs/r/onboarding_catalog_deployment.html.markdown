@@ -79,7 +79,20 @@ resource "ibm_onboarding_catalog_deployment" "onboarding_catalog_deployment_inst
 				}
 				value = [ "value" ]
 				layout = "layout"
-				associations = { "key" = "anything as a string" }
+				associations {
+					plan {
+						show_for = [ "show_for" ]
+						options_refresh = true
+					}
+					parameters {
+						name = "name"
+						show_for = [ "show_for" ]
+						options_refresh = true
+					}
+					location {
+						show_for = [ "show_for" ]
+					}
+				}
 				validation_url = "validation_url"
 				options_url = "options_url"
 				invalidmessage = "invalidmessage"
@@ -165,9 +178,9 @@ You can specify the following arguments for this resource.
 
 * `active` - (Required, Boolean) Whether the service is active.
 * `catalog_plan_id` - (Required, Forces new resource, String) The unique ID of this global catalog plan.
-  * Constraints: The maximum length is `128` characters. The minimum length is `2` characters. The value must match regular expression `/^\\S*$/`.
+  * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^\\S*$/`.
 * `catalog_product_id` - (Required, Forces new resource, String) The unique ID of this global catalog product.
-  * Constraints: The maximum length is `128` characters. The minimum length is `2` characters. The value must match regular expression `/^\\S*$/`.
+  * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^\\S*$/`.
 * `disabled` - (Required, Boolean) Determines the global visibility for the catalog entry, and its children. If it is not enabled, all plans are disabled.
 * `env` - (Optional, String) The environment to fetch this object from.
   * Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^[a-z_.-]+$/`.
@@ -177,7 +190,7 @@ You can specify the following arguments for this resource.
 Nested schema for **metadata**:
 	* `deployment` - (Optional, List) The global catalog metadata of the deployment.
 	Nested schema for **deployment**:
-		* `broker` - (Optional, List) The global catalog metadata of the deployment.
+		* `broker` - (Optional, List) The broker data connected to the deployment.
 		Nested schema for **broker**:
 			* `guid` - (Optional, String) Crn or guid of the resource broker.
 			  * Constraints: The maximum length is `2000` characters. The minimum length is `2` characters. The value must match regular expression `/^[ -~\\s]*$/`.
@@ -197,7 +210,25 @@ Nested schema for **metadata**:
 		* `parameters` - (Optional, List)
 		  * Constraints: The maximum length is `1000` items. The minimum length is `0` items.
 		Nested schema for **parameters**:
-			* `associations` - (Optional, Map) A JSON structure to describe the interactions with pricing plans and/or other custom parameters.
+			* `associations` - (Optional, List) A JSON to describe other parameters or plan that are associated to this parameter.
+			Nested schema for **associations**:
+				* `location` - (Optional, List)
+				Nested schema for **location**:
+					* `show_for` - (Optional, List) An array of pricing plan IDs, or parameters or locations depending on parent.
+					  * Constraints: The list items must match regular expression `/^[ -~\\s]*$/`. The maximum length is `1000` items. The minimum length is `0` items.
+				* `parameters` - (Optional, List) Indicate this parameter is associated to some other parameters.
+				  * Constraints: The maximum length is `1000` items. The minimum length is `0` items.
+				Nested schema for **parameters**:
+					* `name` - (Optional, String) Indicate this parameter is associated to some other parameters.
+					  * Constraints: The maximum length is `2000` characters. The minimum length is `0` characters. The value must match regular expression `/^[ -~\\s]*$/`.
+					* `options_refresh` - (Optional, Boolean) Indicate if re-fetching the options is needed when the plan changed.
+					* `show_for` - (Optional, List) An array of pricing plan IDs, or parameters or locations depending on parent.
+					  * Constraints: The list items must match regular expression `/^[ -~\\s]*$/`. The maximum length is `1000` items. The minimum length is `0` items.
+				* `plan` - (Optional, List)
+				Nested schema for **plan**:
+					* `options_refresh` - (Optional, Boolean) Indicate if re-fetching the options is needed when the plan changed.
+					* `show_for` - (Optional, List) An array of pricing plan IDs, or parameters or locations depending on parent.
+					  * Constraints: The list items must match regular expression `/^[ -~\\s]*$/`. The maximum length is `1000` items. The minimum length is `0` items.
 			* `description` - (Optional, String) The description of the parameter that is displayed to help users with the value of the parameter.
 			  * Constraints: The maximum length is `2000` characters. The minimum length is `1` character. The value must match regular expression `/^[ -~\\s]*$/`.
 			* `displayname` - (Optional, String) The display name for custom service parameters.
@@ -359,7 +390,7 @@ Nested schema for **metadata**:
 		* `service_key_supported` - (Optional, Boolean) Indicates service credentials support and controls the Service Credential tab on Resource Details page.
 		* `unique_api_key` - (Computed, Boolean) Indicates whether the deployment uses a unique API key or not.
 * `name` - (Required, String) The programmatic name of this deployment.
-  * Constraints: The value must match regular expression `/^[a-zA-Z0-9\\-.]+$/`.
+  * Constraints: The value must match regular expression `/^\\S*$/`.
 * `object_id` - (Optional, String) The desired ID of the global catalog object.
 * `object_provider` - (Required, List) The provider or owner of the product.
 Nested schema for **object_provider**:
@@ -374,7 +405,7 @@ Nested schema for **overview_ui**:
 		* `long_description` - (Optional, String) The detailed description of your product that is displayed at the beginning of your product page in the catalog. Markdown markup language is supported.
 * `product_id` - (Required, Forces new resource, String) The unique ID of the product.
   * Constraints: The maximum length is `71` characters. The minimum length is `71` characters. The value must match regular expression `/^[a-zA-Z0-9]{32}:o:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/`.
-* `tags` - (Required, List) A list of tags that carry information about your product. These tags can be used to find your product in the IBM Cloud catalog.
+* `tags` - (Optional, List) A list of tags that carry information about your product. These tags can be used to find your product in the IBM Cloud catalog.
   * Constraints: The list items must match regular expression `/^[a-z0-9\\-._]+$/`. The maximum length is `100` items. The minimum length is `0` items.
 
 ## Attribute Reference
@@ -383,6 +414,7 @@ After your resource is created, you can read values from the listed arguments an
 
 * `id` - The unique identifier of the onboarding_catalog_deployment.
 * `catalog_deployment_id` - (String) The ID of a global catalog object.
+  * Constraints: The value must match regular expression `/^\\S*$/`.
 * `geo_tags` - (List) 
   * Constraints: The list items must match regular expression `/./`. The maximum length is `1000` items. The minimum length is `0` items.
 * `url` - (String) The global catalog URL of your product.

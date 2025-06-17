@@ -4,15 +4,18 @@
 package vpc
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net"
 	"strings"
 	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -27,12 +30,12 @@ const (
 
 func ResourceIBMISVPCRoutingTableRoute() *schema.Resource {
 	return &schema.Resource{
-		Create:   resourceIBMISVPCRoutingTableRouteCreate,
-		Read:     resourceIBMISVPCRoutingTableRouteRead,
-		Update:   resourceIBMISVPCRoutingTableRouteUpdate,
-		Delete:   resourceIBMISVPCRoutingTableRouteDelete,
-		Exists:   resourceIBMISVPCRoutingTableRouteExists,
-		Importer: &schema.ResourceImporter{},
+		CreateContext: resourceIBMISVPCRoutingTableRouteCreate,
+		ReadContext:   resourceIBMISVPCRoutingTableRouteRead,
+		UpdateContext: resourceIBMISVPCRoutingTableRouteUpdate,
+		DeleteContext: resourceIBMISVPCRoutingTableRouteDelete,
+		Exists:        resourceIBMISVPCRoutingTableRouteExists,
+		Importer:      &schema.ResourceImporter{},
 
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(10 * time.Minute),
@@ -210,10 +213,12 @@ func ResourceIBMISVPCRoutingTableRouteValidator() *validate.ResourceValidator {
 	return &ibmVPCRoutingTableRouteValidator
 }
 
-func resourceIBMISVPCRoutingTableRouteCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMISVPCRoutingTableRouteCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_routing_table_route", "create", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	vpcID := d.Get(rtVpcID).(string)
@@ -264,76 +269,108 @@ func resourceIBMISVPCRoutingTableRouteCreate(d *schema.ResourceData, meta interf
 		createVpcRoutingTableRouteOptions.SetPriority(int64(routePriority))
 	}
 
-	route, response, err := sess.CreateVPCRoutingTableRoute(createVpcRoutingTableRouteOptions)
+	route, _, err := sess.CreateVPCRoutingTableRouteWithContext(context, createVpcRoutingTableRouteOptions)
 	if err != nil {
-		log.Printf("[DEBUG] Create VPC Routing table route err %s\n%s", err, response)
-		return err
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateVPCRoutingTableWithContext failed: %s", err.Error()), "ibm_is_vpc_routing_table_route", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s/%s", vpcID, tableID, *route.ID))
 	d.Set(rID, *route.ID)
-	return resourceIBMISVPCRoutingTableRouteRead(d, meta)
+	return resourceIBMISVPCRoutingTableRouteRead(context, d, meta)
 }
 
-func resourceIBMISVPCRoutingTableRouteRead(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMISVPCRoutingTableRouteRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_routing_table_route", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	idSet := strings.Split(d.Id(), "/")
 	getVpcRoutingTableRouteOptions := sess.NewGetVPCRoutingTableRouteOptions(idSet[0], idSet[1], idSet[2])
-	route, response, err := sess.GetVPCRoutingTableRoute(getVpcRoutingTableRouteOptions)
+	route, response, err := sess.GetVPCRoutingTableRouteWithContext(context, getVpcRoutingTableRouteOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error Getting VPC Routing table route: %s\n%s", err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetVPCRoutingTableRouteWithContext failed: %s", err.Error()), "ibm_is_vpc_routing_table_route", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.Set(rID, *route.ID)
 	if route.Advertise != nil {
 		d.Set("Advertise", route.Advertise)
 	}
-	d.Set(rName, *route.Name)
-	d.Set(rDestination, *route.Destination)
+	if err = d.Set(rName, *route.Name); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "ibm_is_vpc_routing_table_route", "read", "set-name").GetDiag()
+	}
+	if err = d.Set(rDestination, *route.Destination); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting destination: %s", err), "ibm_is_vpc_routing_table_route", "read", "set-destination").GetDiag()
+	}
+
 	if route.NextHop != nil {
 		nexthop := route.NextHop.(*vpcv1.RouteNextHop)
 		if nexthop.Address != nil {
-			d.Set(rNextHop, *nexthop.Address)
+
+			if err = d.Set(rNextHop, *nexthop.Address); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting next_hop: %s", err), "ibm_is_vpc_routing_table_route", "read", "set-next_hop").GetDiag()
+			}
 		}
 		if nexthop.ID != nil {
-			d.Set(rNextHop, *nexthop.ID)
+			if err = d.Set(rNextHop, *nexthop.ID); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting next_hop: %s", err), "ibm_is_vpc_routing_table_route", "read", "set-next_hop").GetDiag()
+			}
 		}
 	}
 	if err = d.Set("origin", route.Origin); err != nil {
-		return fmt.Errorf("[ERROR] Error setting origin %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting origin: %s", err), "ibm_is_vpc_routing_table_route", "read", "set-origin").GetDiag()
 	}
 	if route.Zone != nil {
-		d.Set(rZone, *route.Zone.Name)
+		if err = d.Set(rZone, *route.Zone.Name); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting zone: %s", err), "ibm_is_vpc_routing_table_route", "read", "set-zone").GetDiag()
+		}
 	}
-	d.Set(rtHref, route.Href)
-	d.Set(rtLifecycleState, route.LifecycleState)
-	d.Set(rtCreateAt, route.CreatedAt.String())
+
+	if err = d.Set(rtHref, route.Href); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting href: %s", err), "ibm_is_vpc_routing_table_route", "read", "set-href").GetDiag()
+	}
+	if err = d.Set(rtLifecycleState, route.LifecycleState); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting lifecycle_state: %s", err), "ibm_is_vpc_routing_table_route", "read", "set-lifecycle_state").GetDiag()
+	}
+	if err = d.Set(rtCreateAt, route.CreatedAt.String()); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting created_at: %s", err), "ibm_is_vpc_routing_table_route", "read", "set-created_at").GetDiag()
+	}
+
 	creator := []map[string]interface{}{}
 	if route.Creator != nil {
 		mm, err := dataSourceIBMIsRouteCreatorToMap(route.Creator)
 		if err != nil {
-			log.Printf("Error reading VPC Routing Table Routes' creator:%s", err)
-			return err
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_routing_table", "read", "creator-to-map").GetDiag()
 		}
 		creator = append(creator, mm)
 	}
-	d.Set("creator", creator)
-	d.Set("priority", route.Priority)
+
+	if err = d.Set("creator", creator); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting creator: %s", err), "ibm_is_vpc_routing_table_route", "read", "set-creator").GetDiag()
+	}
+
+	if err = d.Set("priority", route.Priority); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting priority: %s", err), "ibm_is_vpc_routing_table_route", "read", "set-priority").GetDiag()
+	}
 	return nil
 }
 
-func resourceIBMISVPCRoutingTableRouteUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMISVPCRoutingTableRouteUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_routing_table_route", "update", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	idSet := strings.Split(d.Id(), "/")
@@ -380,30 +417,36 @@ func resourceIBMISVPCRoutingTableRouteUpdate(d *schema.ResourceData, meta interf
 	if hasChange {
 		routePatchModelAsPatch, patchErr := routePatchModel.AsPatch()
 		if patchErr != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for VPC Routing Table Route Patch: %s", patchErr)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("routePatchModel.AsPatch() failed: %s", patchErr.Error()), "ibm_is_vpc_routing_table_route", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		updateVpcRoutingTableRouteOptions.RoutePatch = routePatchModelAsPatch
-		_, response, err := sess.UpdateVPCRoutingTableRoute(updateVpcRoutingTableRouteOptions)
+		_, _, err = sess.UpdateVPCRoutingTableRouteWithContext(context, updateVpcRoutingTableRouteOptions)
 		if err != nil {
-			log.Printf("[DEBUG] Update VPC Routing table route err %s\n%s", err, response)
-			return err
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateVPCRoutingTableRouteWithContext failed: %s", err.Error()), "ibm_is_vpc_routing_table_route", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
-	return resourceIBMISVPCRoutingTableRouteRead(d, meta)
+	return resourceIBMISVPCRoutingTableRouteRead(context, d, meta)
 }
 
-func resourceIBMISVPCRoutingTableRouteDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMISVPCRoutingTableRouteDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_routing_table_route", "delete", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	idSet := strings.Split(d.Id(), "/")
 	deleteVpcRoutingTableRouteOptions := sess.NewDeleteVPCRoutingTableRouteOptions(idSet[0], idSet[1], idSet[2])
-	response, err := sess.DeleteVPCRoutingTableRoute(deleteVpcRoutingTableRouteOptions)
+	response, err := sess.DeleteVPCRoutingTableRouteWithContext(context, deleteVpcRoutingTableRouteOptions)
 	if err != nil && response.StatusCode != 404 {
-		log.Printf("Error deleting VPC Routing table route : %s", response)
-		return err
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteVPCRoutingTableRouteWithContext failed: %s", err.Error()), "ibm_is_vpc_routing_table_route", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId("")
@@ -413,7 +456,9 @@ func resourceIBMISVPCRoutingTableRouteDelete(d *schema.ResourceData, meta interf
 func resourceIBMISVPCRoutingTableRouteExists(d *schema.ResourceData, meta interface{}) (bool, error) {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return false, err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_routing_table_route", "update", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return false, tfErr
 	}
 
 	idSet := strings.Split(d.Id(), "/")
@@ -427,7 +472,9 @@ func resourceIBMISVPCRoutingTableRouteExists(d *schema.ResourceData, meta interf
 			d.SetId("")
 			return false, nil
 		}
-		return false, fmt.Errorf("[ERROR] Error Getting VPC Routing table route : %s\n%s", err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetVPCRoutingTableRoute failed: %s", err.Error()), "ibm_is_vpc_routing_table_route", "update")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return false, tfErr
 	}
 	return true, nil
 }

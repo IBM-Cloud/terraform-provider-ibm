@@ -4,10 +4,13 @@
 package vpc
 
 import (
+	"context"
 	"fmt"
+	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -21,7 +24,7 @@ const (
 
 func DataSourceIBMISInstanceProfile() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceIBMISInstanceProfileRead,
+		ReadContext: dataSourceIBMISInstanceProfileRead,
 
 		Schema: map[string]*schema.Schema{
 
@@ -781,182 +784,197 @@ func DataSourceIBMISInstanceProfile() *schema.Resource {
 	}
 }
 
-func dataSourceIBMISInstanceProfileRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceIBMISInstanceProfileRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 	name := d.Get(isInstanceProfileName).(string)
-	err := instanceProfileGet(d, meta, name)
+	err := instanceProfileGet(context, d, meta, name)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func instanceProfileGet(d *schema.ResourceData, meta interface{}, name string) error {
+func instanceProfileGet(context context.Context, d *schema.ResourceData, meta interface{}, name string) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instance_profile", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	getInstanceProfileOptions := &vpcv1.GetInstanceProfileOptions{
 		Name: &name,
 	}
-	profile, _, err := sess.GetInstanceProfile(getInstanceProfileOptions)
+	profile, _, err := sess.GetInstanceProfileWithContext(context, getInstanceProfileOptions)
 	if err != nil {
-		return err
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetInstanceProfileWithContext failed: %s", err.Error()), "(Data) ibm_is_instance_profile", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	// For lack of anything better, compose our id from profile name.
 	d.SetId(*profile.Name)
-	d.Set(isInstanceProfileName, *profile.Name)
-	d.Set(isInstanceProfileFamily, *profile.Family)
+	if err = d.Set(isInstanceProfileName, *profile.Name); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_is_instance_profile", "read", "set-name").GetDiag()
+	}
+	if err = d.Set(isInstanceProfileFamily, *profile.Family); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting family: %s", err), "(Data) ibm_is_instance_profile", "read", "set-family").GetDiag()
+	}
 	if profile.OsArchitecture != nil {
 		if profile.OsArchitecture.Default != nil {
-			d.Set(isInstanceProfileArchitecture, *profile.OsArchitecture.Default)
+			if err = d.Set(isInstanceProfileArchitecture, *profile.OsArchitecture.Default); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting architecture: %s", err), "(Data) ibm_is_instance_profile", "read", "set-architecture").GetDiag()
+			}
 		}
 		if profile.OsArchitecture.Type != nil {
-			d.Set("architecture_type", *profile.OsArchitecture.Type)
+			if err = d.Set("architecture_type", *profile.OsArchitecture.Type); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting architecture_type: %s", err), "(Data) ibm_is_instance_profile", "read", "set-architecture_type").GetDiag()
+			}
 		}
 		if profile.OsArchitecture.Values != nil {
-			d.Set("architecture_values", *&profile.OsArchitecture.Values)
+			if err = d.Set("architecture_values", *&profile.OsArchitecture.Values); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting architecture_values: %s", err), "(Data) ibm_is_instance_profile", "read", "set-architecture_values").GetDiag()
+			}
 		}
-
 	}
 	if profile.Status != nil {
-		d.Set("status", profile.Status)
+		if err = d.Set("status", profile.Status); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting status: %s", err), "(Data) ibm_is_instance_profile", "read", "set-status").GetDiag()
+		}
 	}
 
 	// cluster changes
 	clusterNetworkAttachmentCount := []map[string]interface{}{}
 	clusterNetworkAttachmentCountMap, err := DataSourceIBMIsInstanceProfileInstanceProfileClusterNetworkAttachmentCountToMap(profile.ClusterNetworkAttachmentCount)
 	if err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instance_profile", "read", "cluster_network_attachment_count-to-map")
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instance_profile", "read", "cluster_network_attachment_count-to-map").GetDiag()
 	}
 	clusterNetworkAttachmentCount = append(clusterNetworkAttachmentCount, clusterNetworkAttachmentCountMap)
 	if err = d.Set("cluster_network_attachment_count", clusterNetworkAttachmentCount); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting cluster_network_attachment_count: %s", err), "(Data) ibm_is_instance_profile", "read", "set-cluster_network_attachment_count")
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting cluster_network_attachment_count: %s", err), "(Data) ibm_is_instance_profile", "read", "set-cluster_network_attachment_count").GetDiag()
 	}
 
 	supportedClusterNetworkProfiles := []map[string]interface{}{}
 	for _, supportedClusterNetworkProfilesItem := range profile.SupportedClusterNetworkProfiles {
 		supportedClusterNetworkProfilesItemMap, err := DataSourceIBMIsInstanceProfileClusterNetworkProfileReferenceToMap(&supportedClusterNetworkProfilesItem) // #nosec G601
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instance_profile", "read", "supported_cluster_network_profiles-to-map")
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instance_profile", "read", "supported_cluster_network_profiles-to-map").GetDiag()
 		}
 		supportedClusterNetworkProfiles = append(supportedClusterNetworkProfiles, supportedClusterNetworkProfilesItemMap)
 	}
 	if err = d.Set("supported_cluster_network_profiles", supportedClusterNetworkProfiles); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting supported_cluster_network_profiles: %s", err), "(Data) ibm_is_instance_profile", "read", "set-supported_cluster_network_profiles")
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting supported_cluster_network_profiles: %s", err), "(Data) ibm_is_instance_profile", "read", "set-supported_cluster_network_profiles").GetDiag()
 	}
 
 	confidentialComputeModes := []map[string]interface{}{}
 	if profile.ConfidentialComputeModes != nil {
 		modelMap, err := dataSourceIBMIsInstanceProfileInstanceProfileSupportedConfidentialComputeModesToMap(profile.ConfidentialComputeModes)
 		if err != nil {
-			return (err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instance_profile", "read", "confidential_compute_modes-to-map").GetDiag()
 		}
 		confidentialComputeModes = append(confidentialComputeModes, modelMap)
 	}
 	if err = d.Set("confidential_compute_modes", confidentialComputeModes); err != nil {
-		return fmt.Errorf("Error setting confidential_compute_modes %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting confidential_compute_modes: %s", err), "(Data) ibm_is_instance_profile", "read", "set-confidential_compute_modes").GetDiag()
 	}
 
 	secureBootModes := []map[string]interface{}{}
 	if profile.SecureBootModes != nil {
 		modelMap, err := dataSourceIBMIsInstanceProfileInstanceProfileSupportedSecureBootModesToMap(profile.SecureBootModes)
 		if err != nil {
-			return err
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instance_profile", "read", "secure_boot_modes-to-map").GetDiag()
 		}
 		secureBootModes = append(secureBootModes, modelMap)
 	}
 	if err = d.Set("secure_boot_modes", secureBootModes); err != nil {
-		return fmt.Errorf("Error setting secure_boot_modes %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting secure_boot_modes: %s", err), "(Data) ibm_is_instance_profile", "read", "set-secure_boot_modes").GetDiag()
 	}
 
 	if profile.Bandwidth != nil {
 		err = d.Set("bandwidth", dataSourceInstanceProfileFlattenBandwidth(*profile.Bandwidth.(*vpcv1.InstanceProfileBandwidth)))
 		if err != nil {
-			return err
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting bandwidth: %s", err), "(Data) ibm_is_instance_profile", "read", "set-bandwidth").GetDiag()
 		}
 	}
 	if profile.GpuCount != nil {
 		err = d.Set("gpu_count", dataSourceInstanceProfileFlattenGPUCount(*profile.GpuCount.(*vpcv1.InstanceProfileGpu)))
 		if err != nil {
-			return err
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting gpu_count: %s", err), "(Data) ibm_is_instance_profile", "read", "set-gpu_count").GetDiag()
 		}
 	}
 	if profile.GpuMemory != nil {
 		err = d.Set("gpu_memory", dataSourceInstanceProfileFlattenGPUMemory(*profile.GpuMemory.(*vpcv1.InstanceProfileGpuMemory)))
 		if err != nil {
-			return err
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting gpu_memory: %s", err), "(Data) ibm_is_instance_profile", "read", "set-gpu_memory").GetDiag()
 		}
 	}
 	if profile.GpuManufacturer != nil {
 		err = d.Set("gpu_manufacturer", dataSourceInstanceProfileFlattenGPUManufacturer(*profile.GpuManufacturer))
 		if err != nil {
-			return err
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting gpu_manufacturer: %s", err), "(Data) ibm_is_instance_profile", "read", "set-gpu_manufacturer").GetDiag()
 		}
 	}
 	if profile.GpuModel != nil {
 		err = d.Set("gpu_model", dataSourceInstanceProfileFlattenGPUModel(*profile.GpuModel))
 		if err != nil {
-			return err
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting gpu_model: %s", err), "(Data) ibm_is_instance_profile", "read", "set-gpu_model").GetDiag()
 		}
 	}
 	if profile.ReservationTerms != nil {
 		err = d.Set("reservation_terms", dataSourceInstanceProfileFlattenReservationTerms(*profile.ReservationTerms))
 		if err != nil {
-			return err
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting reservation_terms: %s", err), "(Data) ibm_is_instance_profile", "read", "set-reservation_terms").GetDiag()
 		}
 	}
 	if profile.TotalVolumeBandwidth != nil {
 		err = d.Set("total_volume_bandwidth", dataSourceInstanceProfileFlattenTotalVolumeBandwidth(*profile.TotalVolumeBandwidth.(*vpcv1.InstanceProfileVolumeBandwidth)))
 		if err != nil {
-			return err
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting total_volume_bandwidth: %s", err), "(Data) ibm_is_instance_profile", "read", "set-total_volume_bandwidth").GetDiag()
 		}
 	}
 	if profile.Disks != nil {
 		err = d.Set("disks", dataSourceInstanceProfileFlattenDisks(profile.Disks))
 		if err != nil {
-			return err
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting disks: %s", err), "(Data) ibm_is_instance_profile", "read", "set-disks").GetDiag()
 		}
 	}
 	if err = d.Set("href", profile.Href); err != nil {
-		return err
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting href: %s", err), "(Data) ibm_is_instance_profile", "read", "set-href").GetDiag()
 	}
 
 	if profile.Memory != nil {
 		err = d.Set("memory", dataSourceInstanceProfileFlattenMemory(*profile.Memory.(*vpcv1.InstanceProfileMemory)))
 		if err != nil {
-			return err
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting memory: %s", err), "(Data) ibm_is_instance_profile", "read", "set-memory").GetDiag()
 		}
 	}
 	if profile.NetworkInterfaceCount != nil {
 		err = d.Set("network_interface_count", dataSourceInstanceProfileFlattenNetworkInterfaceCount(*profile.NetworkInterfaceCount.(*vpcv1.InstanceProfileNetworkInterfaceCount)))
 		if err != nil {
-			return err
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting network_interface_count: %s", err), "(Data) ibm_is_instance_profile", "read", "set-network_interface_count").GetDiag()
 		}
 	}
 	if profile.NetworkAttachmentCount != nil {
 		err = d.Set("network_attachment_count", dataSourceInstanceProfileFlattenNetworkAttachmentCount(*profile.NetworkAttachmentCount.(*vpcv1.InstanceProfileNetworkAttachmentCount)))
 		if err != nil {
-			return err
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting network_attachment_count: %s", err), "(Data) ibm_is_instance_profile", "read", "set-network_attachment_count").GetDiag()
 		}
 	}
 	if profile.NumaCount != nil {
 		err = d.Set("numa_count", dataSourceInstanceProfileFlattenNumaCount(*profile.NumaCount.(*vpcv1.InstanceProfileNumaCount)))
 		if err != nil {
-			return err
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting numa_count: %s", err), "(Data) ibm_is_instance_profile", "read", "set-numa_count").GetDiag()
 		}
 	}
 	if profile.PortSpeed != nil {
 		err = d.Set("port_speed", dataSourceInstanceProfileFlattenPortSpeed(*profile.PortSpeed.(*vpcv1.InstanceProfilePortSpeed)))
 		if err != nil {
-			return err
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting port_speed: %s", err), "(Data) ibm_is_instance_profile", "read", "set-port_speed").GetDiag()
 		}
 	}
 
 	if profile.VcpuArchitecture != nil {
 		err = d.Set(isInstanceVCPUArchitecture, dataSourceInstanceProfileFlattenVcpuArchitecture(*profile.VcpuArchitecture))
 		if err != nil {
-			return err
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting vcpu_architecture: %s", err), "(Data) ibm_is_instance_profile", "read", "set-vcpu_architecture").GetDiag()
 		}
 	}
 
@@ -964,14 +982,14 @@ func instanceProfileGet(d *schema.ResourceData, meta interface{}, name string) e
 	if profile.VcpuManufacturer != nil {
 		err = d.Set(isInstanceVCPUManufacturer, dataSourceInstanceProfileFlattenVcpuManufacture(*profile.VcpuManufacturer))
 		if err != nil {
-			return err
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting vcpu_manufacturer: %s", err), "(Data) ibm_is_instance_profile", "read", "set-vcpu_manufacturer").GetDiag()
 		}
 	}
 
 	if profile.VcpuCount != nil {
 		err = d.Set("vcpu_count", dataSourceInstanceProfileFlattenVcpuCount(*profile.VcpuCount.(*vpcv1.InstanceProfileVcpu)))
 		if err != nil {
-			return err
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting vcpu_count: %s", err), "(Data) ibm_is_instance_profile", "read", "set-vcpu_count").GetDiag()
 		}
 	}
 	return nil

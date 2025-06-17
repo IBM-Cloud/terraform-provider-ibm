@@ -361,7 +361,9 @@ func DataSourceIBMIsNetworkAcls() *schema.Resource {
 func dataSourceIBMIsNetworkAclsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_network_acls", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	resource_group_id := d.Get("resource_group").(string)
 	start := ""
@@ -374,10 +376,11 @@ func dataSourceIBMIsNetworkAclsRead(context context.Context, d *schema.ResourceD
 		if start != "" {
 			listNetworkAclsOptions.Start = &start
 		}
-		networkACLCollection, response, err := vpcClient.ListNetworkAclsWithContext(context, listNetworkAclsOptions)
+		networkACLCollection, _, err := vpcClient.ListNetworkAclsWithContext(context, listNetworkAclsOptions)
 		if err != nil || networkACLCollection == nil {
-			log.Printf("[DEBUG] ListNetworkAclsWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("ListNetworkAclsWithContext failed %s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListNetworkAclsWithContext failed %s", err), "(Data) ibm_is_network_acls", "read")
+			log.Printf("[DEBUG] %s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		start = flex.GetNext(networkACLCollection.Next)
 		allrecs = append(allrecs, networkACLCollection.NetworkAcls...)
@@ -390,7 +393,7 @@ func dataSourceIBMIsNetworkAclsRead(context context.Context, d *schema.ResourceD
 
 	err = d.Set("network_acls", dataSourceNetworkACLCollectionFlattenNetworkAcls(allrecs, d, meta))
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting network_acls %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting network_acls %s", err), "(Data) ibm_is_network_acls", "read", "network_acls-set").GetDiag()
 	}
 
 	return nil
