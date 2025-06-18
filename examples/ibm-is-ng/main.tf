@@ -226,7 +226,7 @@ data "ibm_is_vpc" "vpc1" {
 }
 
 # List all VPCs
-data "ibm_is_vpc" "vpcs" {
+data "ibm_is_vpcs" "vpcs" {
 }
 
 # ==========================================================================
@@ -281,8 +281,8 @@ data "ibm_is_vpc_dns_resolution_bindings" "is_vpc_dns_resolution_bindings" {
 
 # Get a specific DNS resolution binding
 data "ibm_is_vpc_dns_resolution_binding" "is_vpc_dns_resolution_binding" {
-  vpc_id = ibm_is_vpc.vpc1.id
-  id     = ibm_is_vpc.vpc2.id
+  vpc_id     = ibm_is_vpc.vpc1.id
+  identifier = ibm_is_vpc_dns_resolution_binding.dnstrue.id
 }
 
 # ==========================================================================
@@ -501,7 +501,8 @@ data "ibm_is_security_group_rule" "example" {
 
 # List all security group rules in a security group
 data "ibm_is_security_group_rules" "example" {
-  depends_on = [ibm_is_security_group_rule.exampletcp]
+  depends_on     = [ibm_is_security_group_rule.exampletcp]
+  security_group = ibm_is_security_group.example.id
 }
 
 # List all security groups
@@ -612,7 +613,7 @@ resource "ibm_is_lb_listener_policy_rule" "lb_listener_policy_rule" {
 
 # Create a load balancer pool with app cookie session persistence
 resource "ibm_is_lb_pool" "app_cookie_pool" {
-  name                                = "test_pool"
+  name                                = "test-pool"
   lb                                  = ibm_is_lb.lb2.id
   algorithm                           = "round_robin" # Load balancing algorithm
   protocol                            = "https"       # Protocol for the pool
@@ -627,7 +628,7 @@ resource "ibm_is_lb_pool" "app_cookie_pool" {
 
 # Create a load balancer pool with HTTP cookie session persistence
 resource "ibm_is_lb_pool" "http_cookie_pool" {
-  name                     = "test_pool"
+  name                     = "test-pool"
   lb                       = ibm_is_lb.lb2.id
   algorithm                = "round_robin"
   protocol                 = "https"
@@ -641,7 +642,7 @@ resource "ibm_is_lb_pool" "http_cookie_pool" {
 
 # Create a load balancer pool with source IP session persistence
 resource "ibm_is_lb_pool" "source_ip_pool" {
-  name                     = "test_pool"
+  name                     = "test-pool"
   lb                       = ibm_is_lb.lb2.id
   algorithm                = "round_robin"
   protocol                 = "https"
@@ -701,13 +702,12 @@ resource "ibm_is_vpn_gateway_connection" "VPNGatewayConnection1_deprecated" {
 resource "ibm_is_vpn_gateway_connection" "VPNGatewayConnection1" {
   name          = "vpnconn1"
   vpn_gateway   = ibm_is_vpn_gateway.VPNGateway1.id
-  peer_address  = ibm_is_vpn_gateway.VPNGateway1.public_ip_address
   preshared_key = "VPNDemoPassword"
 
   # Peer configuration with failover handling between primary and secondary addresses
   peer {
-    address    = ibm_is_vpn_gateway.testacc_VPNGateway1.public_ip_address != "0.0.0.0" ? ibm_is_vpn_gateway.testacc_VPNGateway1.public_ip_address : ibm_is_vpn_gateway.testacc_VPNGateway1.public_ip_address2
-    peer_cidrs = [ibm_is_subnet.subnet2.ipv4_cidr_block]
+    address = ibm_is_vpn_gateway.testacc_VPNGateway1.public_ip_address != "0.0.0.0" ? ibm_is_vpn_gateway.testacc_VPNGateway1.public_ip_address : ibm_is_vpn_gateway.testacc_VPNGateway1.public_ip_address2
+    cidrs   = [ibm_is_subnet.subnet2.ipv4_cidr_block]
   }
 
   # Local network configuration
@@ -771,8 +771,8 @@ resource "ibm_is_vpn_server" "is_vpn_server" {
 
   # Client authentication configuration
   client_authentication {
-    method    = "certificate"    # Authentication method
-    client_ca = var.is_client_ca # Certificate authority for client authentication
+    method        = "certificate"    # Authentication method
+    client_ca_crn = var.is_client_ca # Certificate authority for client authentication
   }
 
   client_ip_pool         = "10.5.0.0/21"              # IP pool for VPN clients (2048 IPs)
@@ -787,10 +787,10 @@ resource "ibm_is_vpn_server" "is_vpn_server" {
 
 # Create a route for the VPN server
 resource "ibm_is_vpn_server_route" "is_vpn_server_route" {
-  vpn_server_id = ibm_is_vpn_server.is_vpn_server.vpn_server
-  destination   = "172.16.0.0/16" # Destination network
-  action        = "translate"     # Action for the route (translate, deliver, drop)
-  name          = "example-vpn-server-route"
+  vpn_server  = ibm_is_vpn_server.is_vpn_server.vpn_server
+  destination = "172.16.0.0/16" # Destination network
+  action      = "translate"     # Action for the route (translate, deliver, drop)
+  name        = "example-vpn-server-route"
 }
 
 # ==========================================================================
@@ -858,7 +858,7 @@ data "ibm_is_vpn_gateway_connection" "example" {
 
 # Get information about a VPN gateway connection by name
 data "ibm_is_vpn_gateway_connection" "example-1" {
-  vpn_gateway                 = ibm_is_vpn_gateway.example-1.id
+  vpn_gateway                 = ibm_is_vpn_gateway.example.id
   vpn_gateway_connection_name = ibm_is_vpn_gateway_connection.example.name
 }
 
@@ -921,24 +921,24 @@ data "ibm_is_vpn_servers" "is_vpn_servers" {
 
 # List all routes for a VPN server
 data "ibm_is_vpn_server_routes" "is_vpn_server_routes" {
-  vpn_server_id = ibm_is_vpn_server.is_vpn_server.vpn_server
+  vpn_server = ibm_is_vpn_server.is_vpn_server.vpn_server
 }
 
 # Get information about a VPN server route
 data "ibm_is_vpn_server_route" "is_vpn_server_route" {
-  vpn_server_id = ibm_is_vpn_server.is_vpn_server.vpn_server
-  identifier    = ibm_is_vpn_server_route.is_vpn_server_route.vpn_route
+  vpn_server = ibm_is_vpn_server.is_vpn_server.vpn_server
+  identifier = ibm_is_vpn_server_route.is_vpn_server_route.vpn_route
 }
 
 # List all clients connected to a VPN server
 data "ibm_is_vpn_server_clients" "is_vpn_server_clients" {
-  vpn_server_id = ibm_is_vpn_server.is_vpn_server.vpn_server
+  vpn_server = ibm_is_vpn_server.is_vpn_server.vpn_server
 }
 
 # Get information about a specific VPN server client
 data "ibm_is_vpn_server_client" "is_vpn_server_client" {
-  vpn_server_id = ibm_is_vpn_server.is_vpn_server.vpn_server
-  identifier    = "0726-61b2f53f-1e95-42a7-94ab-55de8f8cbdd5" # Client ID
+  vpn_server = ibm_is_vpn_server.is_vpn_server.vpn_server
+  identifier = "0726-61b2f53f-1e95-42a7-94ab-55de8f8cbdd5" # Client ID
 }
 
 # ==========================================================================
@@ -1206,6 +1206,9 @@ resource "ibm_is_instance" "instance5" {
 resource "ibm_is_instance" "instance6" {
   name              = "instance4"
   instance_template = ibm_is_instance_template.instancetemplate1.id # Create from template
+  primary_network_interface {
+    subnet = ibm_is_subnet.subnet2.id
+  }
 }
 
 # Create an instance with reserved IP address
@@ -1477,7 +1480,6 @@ data "ibm_is_ssh_keys" "example" {
 
 # List all SSH keys in a resource group
 data "ibm_is_ssh_keys" "example_by_rg" {
-  resource_group = data.ibm_resource_group.default.id # Filter by resource group
 }
 
 # ==========================================================================
@@ -1516,7 +1518,6 @@ data "ibm_is_instances" "is_instances_instance" {
 
 # Filter instances by name
 data "ibm_is_instances" "is_instances_filtered" {
-  name = var.is_instances_name
 }
 
 # ==========================================================================
@@ -1546,7 +1547,8 @@ data "ibm_is_instance_volume_attachment" "ds_vol_att" {
 
 # List all volume attachments for an instance
 data "ibm_is_instance_volume_attachment" "ds_vol_atts" {
-  instance = ibm_is_instance.instance5.id
+  instance = ibm_is_instance.instance5.name
+  name     = ibm_is_instance_volume_attachment.att2.name
 }
 
 # ==========================================================================
@@ -1697,7 +1699,7 @@ resource "ibm_is_bare_metal_server_network_attachment" "na2" {
 resource "ibm_is_bare_metal_server_network_interface_floating_ip" "bms_nic_fip" {
   bare_metal_server = ibm_is_bare_metal_server.bms.id
   network_interface = ibm_is_bare_metal_server_network_interface.bms_nic2.id
-  floating_ip       = ibm_is_floating_ip.testacc_fip.id # Floating IP to associate
+  floating_ip       = ibm_is_floating_ip.floatingipbms.id # Floating IP to associate
 }
 
 # ==========================================================================
@@ -1719,7 +1721,7 @@ data "ibm_is_bare_metal_server_profile" "this" {
 
 # Get information about a bare metal server
 data "ibm_is_bare_metal_server" "this" {
-  identifier = ibm_is_bare_metal_server.this.id
+  identifier = ibm_is_bare_metal_server.bms.id
 }
 
 # List all bare metal servers
@@ -1728,7 +1730,7 @@ data "ibm_is_bare_metal_servers" "this" {
 
 # Get bare metal server initialization data
 data "ibm_is_bare_metal_server_initialization" "this" {
-  bare_metal_server = ibm_is_bare_metal_server.this.id
+  bare_metal_server = ibm_is_bare_metal_server.bms.id
 }
 
 # ==========================================================================
@@ -1737,13 +1739,13 @@ data "ibm_is_bare_metal_server_initialization" "this" {
 
 # Get information about a specific disk
 data "ibm_is_bare_metal_server_disk" "this" {
-  bare_metal_server = ibm_is_bare_metal_server.this.id
-  disk              = ibm_is_bare_metal_server.this.disks.0.id
+  bare_metal_server = ibm_is_bare_metal_server.bms.id
+  disk              = ibm_is_bare_metal_server.bms.disks.0.id
 }
 
 # List all disks for a bare metal server
 data "ibm_is_bare_metal_server_disks" "this" {
-  bare_metal_server = ibm_is_bare_metal_server.this.id
+  bare_metal_server = ibm_is_bare_metal_server.bms.id
 }
 
 # ==========================================================================
@@ -1752,26 +1754,26 @@ data "ibm_is_bare_metal_server_disks" "this" {
 
 # Get information about a network interface
 data "ibm_is_bare_metal_server_network_interface" "this" {
-  bare_metal_server = ibm_is_bare_metal_server.this.id
-  network_interface = ibm_is_bare_metal_server.this.primary_network_interface.id
+  bare_metal_server = ibm_is_bare_metal_server.bms.id
+  network_interface = ibm_is_bare_metal_server.bms.primary_network_interface.0.id
 }
 
 # List all network interfaces for a bare metal server
 data "ibm_is_bare_metal_server_network_interfaces" "this" {
-  bare_metal_server = ibm_is_bare_metal_server.this.id
+  bare_metal_server = ibm_is_bare_metal_server.bms.id
 }
 
 # Get information about a floating IP associated with a network interface
 data "ibm_is_bare_metal_server_network_interface_floating_ip" "this" {
-  bare_metal_server = ibm_is_bare_metal_server.this.id
-  network_interface = ibm_is_bare_metal_server.this.primary_network_interface[0].id
+  bare_metal_server = ibm_is_bare_metal_server.bms.id
+  network_interface = ibm_is_bare_metal_server.bms.primary_network_interface[0].id
   floating_ip       = ibm_is_floating_ip.floatingipbms.id
 }
 
 # List all floating IPs associated with a network interface
 data "ibm_is_bare_metal_server_network_interface_floating_ips" "this" {
-  bare_metal_server = ibm_is_bare_metal_server.this.id
-  network_interface = ibm_is_bare_metal_server.this.primary_network_interface[0].id
+  bare_metal_server = ibm_is_bare_metal_server.bms.id
+  network_interface = ibm_is_bare_metal_server.bms.primary_network_interface[0].id
 }
 
 # ==========================================================================
@@ -1842,13 +1844,13 @@ resource "ibm_is_snapshot_consistency_group" "is_snapshot_consistency_group_inst
   # First snapshot in the group
   snapshots {
     name          = "exmaple-snapshot"
-    source_volume = ibm_is_instance.instance.volume_attachments[0].volume_id
+    source_volume = ibm_is_instance.instance1.volume_attachments[0].volume_id
   }
 
   # Second snapshot in the group
   snapshots {
     name          = "example-snapshot-1"
-    source_volume = ibm_is_instance.instance.volume_attachments[1].volume_id
+    source_volume = ibm_is_instance.instance1.volume_attachments[1].volume_id
   }
 
   name = "example-snapshot-consistency-group"
@@ -1916,7 +1918,7 @@ resource "ibm_is_image" "image1" {
 
 # Create an image from a volume
 resource "ibm_is_image" "image2" {
-  source_volume = data.ibm_is_instance.instance1.volume_attachments.0.volume_id # Source volume
+  source_volume = ibm_is_instance.instance1.volume_attachments.0.volume_id # Source volume
   name          = "my-img-1"
 }
 
@@ -2056,7 +2058,6 @@ data "ibm_is_snapshot_clones" "ds_snapshot_clones" {
 # Get information about a specific snapshot clone
 data "ibm_is_snapshot_clones" "ds_snapshot_clone" {
   snapshot = ibm_is_snapshot.b_snapshot.id
-  zone     = var.zone1
 }
 
 # Get information about a snapshot consistency group by ID
@@ -2082,7 +2083,7 @@ data "ibm_is_snapshot_consistency_groups" "is_snapshot_consistency_group_instanc
 # Get information about a share mount target
 data "ibm_is_share_mount_target" "is_share_mount_target" {
   share        = ibm_is_share.share.id
-  mount_target = ibm_is_share_mount_target.is_share_target.mount_target
+  mount_target = ibm_is_share_mount_target.is_share_mount_target.mount_target
 }
 
 # List all mount targets for a share
@@ -2193,13 +2194,12 @@ data "ibm_is_backup_policy_plan" "is_backup_policy_plan" {
 # Get information about a backup policy job
 data "ibm_is_backup_policy_job" "is_backup_policy_job" {
   backup_policy_id = ibm_is_backup_policy.volume_backup_policy.id
-  identifier       = ""
+  identifier       = data.ibm_is_backup_policy_jobs.is_backup_policy_jobs.jobs.0.id
 }
 
 # List all jobs for a backup policy
 data "ibm_is_backup_policy_jobs" "is_backup_policy_jobs" {
-  backup_policy_plan_id = ibm_is_backup_policy.volume_backup_policy.backup_policy_plan_id
-  backup_policy_id      = ibm_is_backup_policy.volume_backup_policy.id
+  backup_policy_id = ibm_is_backup_policy.volume_backup_policy.id
 }
 
 # ==========================================================================

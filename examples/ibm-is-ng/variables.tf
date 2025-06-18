@@ -32,7 +32,7 @@ variable "ssh_public_key" {
 
 variable "image" {
   description = "The ID of the image to use for instances"
-  default     = "r006-ed3f775f-ad7e-4e37-ae62-7199b4988b00"
+  default     = "r006-c65596a3-eda8-429b-870a-2ef6de8533d1"
 }
 
 variable "profile" {
