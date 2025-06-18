@@ -53,6 +53,7 @@ provider "ibm" {
 |Internet Services|IBMCLOUD_CIS_API_ENDPOINT|
 |Cloud Shell|IBMCLOUD_CLOUD_SHELL_API_ENDPOINT|
 |Compilance (Posture Management)|IBMCLOUD_COMPLIANCE_API_ENDPOINT|
+|Configuration Aggregator|IBMCLOUD_APP_CONFIG_ENDPOINT|
 |Container Registry|IBMCLOUD_CR_API_ENDPOINT|
 |Cloud Logs | IBMCLOUD_LOGS_API_ENDPOINT |
 |Kubernetes Service|IBMCLOUD_CS_API_ENDPOINT|

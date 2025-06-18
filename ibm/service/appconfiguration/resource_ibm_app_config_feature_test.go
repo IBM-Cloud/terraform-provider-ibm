@@ -94,11 +94,11 @@ func testAccCheckIbmAppConfigFeatureExists(n string, obj appconfigurationv1.Feat
 		}
 		parts, err := flex.IdParts(rs.Primary.ID)
 		if err != nil {
-			return flex.FmtErrorf(fmt.Sprintf("%s", err))
+			return flex.FmtErrorf("%s", err)
 		}
 		appconfigClient, err := getAppConfigClient(acc.TestAccProvider.Meta(), parts[0])
 		if err != nil {
-			return flex.FmtErrorf(fmt.Sprintf("%s", err))
+			return flex.FmtErrorf("%s", err)
 		}
 
 		options := &appconfigurationv1.GetFeatureOptions{}
@@ -108,7 +108,7 @@ func testAccCheckIbmAppConfigFeatureExists(n string, obj appconfigurationv1.Feat
 
 		result, _, err := appconfigClient.GetFeature(options)
 		if err != nil {
-			return flex.FmtErrorf(fmt.Sprintf("%s", err))
+			return flex.FmtErrorf("%s", err)
 		}
 
 		obj = *result
@@ -124,11 +124,11 @@ func testAccCheckIbmAppConfigFeatureDestroy(s *terraform.State) error {
 		}
 		parts, err := flex.IdParts(rs.Primary.ID)
 		if err != nil {
-			return flex.FmtErrorf(fmt.Sprintf("%s", err))
+			return flex.FmtErrorf("%s", err)
 		}
 		appconfigClient, err := getAppConfigClient(acc.TestAccProvider.Meta(), parts[0])
 		if err != nil {
-			return flex.FmtErrorf(fmt.Sprintf("%s", err))
+			return flex.FmtErrorf("%s", err)
 		}
 		options := &appconfigurationv1.GetFeatureOptions{}
 

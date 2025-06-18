@@ -14,6 +14,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -47,12 +48,12 @@ const (
 
 func ResourceIBMISLBPool() *schema.Resource {
 	return &schema.Resource{
-		Create:   resourceIBMISLBPoolCreate,
-		Read:     resourceIBMISLBPoolRead,
-		Update:   resourceIBMISLBPoolUpdate,
-		Delete:   resourceIBMISLBPoolDelete,
-		Exists:   resourceIBMISLBPoolExists,
-		Importer: &schema.ResourceImporter{},
+		CreateContext: resourceIBMISLBPoolCreate,
+		ReadContext:   resourceIBMISLBPoolRead,
+		UpdateContext: resourceIBMISLBPoolUpdate,
+		DeleteContext: resourceIBMISLBPoolDelete,
+		Exists:        resourceIBMISLBPoolExists,
+		Importer:      &schema.ResourceImporter{},
 
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(10 * time.Minute),
@@ -312,7 +313,7 @@ func ResourceIBMISLBPoolValidator() *validate.ResourceValidator {
 	return &ibmISLBPoolResourceValidator
 }
 
-func resourceIBMISLBPoolCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMISLBPoolCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 	log.Printf("[DEBUG] LB Pool create")
 	name := d.Get(isLBPoolName).(string)
@@ -345,23 +346,27 @@ func resourceIBMISLBPoolCreate(d *schema.ResourceData, meta interface{}) error {
 		healthMonitorPort = int64(hmp.(int))
 	}
 
-	err := lbPoolCreate(d, meta, name, lbID, algorithm, protocol, healthType, spType, cName, healthMonitorURL, pProtocol, healthDelay, maxRetries, healthTimeOut, healthMonitorPort)
+	err := lbPoolCreate(context, d, meta, name, lbID, algorithm, protocol, healthType, spType, cName, healthMonitorURL, pProtocol, healthDelay, maxRetries, healthTimeOut, healthMonitorPort)
 	if err != nil {
 		return err
 	}
 
-	return resourceIBMISLBPoolRead(d, meta)
+	return resourceIBMISLBPoolRead(context, d, meta)
 }
 
-func lbPoolCreate(d *schema.ResourceData, meta interface{}, name, lbID, algorithm, protocol, healthType, spType, cName, healthMonitorURL, pProtocol string, healthDelay, maxRetries, healthTimeOut, healthMonitorPort int64) error {
+func lbPoolCreate(context context.Context, d *schema.ResourceData, meta interface{}, name, lbID, algorithm, protocol, healthType, spType, cName, healthMonitorURL, pProtocol string, healthDelay, maxRetries, healthTimeOut, healthMonitorPort int64) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_pool", "create", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	_, err = isWaitForLBAvailable(sess, lbID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error checking for load balancer (%s) is active: %s", lbID, err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateLoadBalancerPoolWithContext failed: %s", err.Error()), "ibm_is_lb_pool", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	healthMonitor := &vpcv1.LoadBalancerPoolHealthMonitorPrototype{
 		Delay:      &healthDelay,
@@ -395,14 +400,16 @@ func lbPoolCreate(d *schema.ResourceData, meta interface{}, name, lbID, algorith
 	if _, ok := d.GetOk("failsafe_policy"); ok {
 		failsafePolicyModel, err := resourceIBMIsLbPoolMapToLoadBalancerPoolFailsafePolicyPrototype(d.Get("failsafe_policy.0").(map[string]interface{}))
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_pool", "create", "parse-failsafe_policy")
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_pool", "create", "parse-failsafe_policy").GetDiag()
 		}
 		options.SetFailsafePolicy(failsafePolicyModel)
 	}
 	options.HealthMonitor = healthMonitor
-	lbPool, response, err := sess.CreateLoadBalancerPool(options)
+	lbPool, _, err := sess.CreateLoadBalancerPoolWithContext(context, options)
 	if err != nil {
-		return fmt.Errorf("[DEBUG] lbpool create err: %s\n%s", err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateLoadBalancerPoolWithContext failed: %s", err.Error()), "ibm_is_lb_pool", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", lbID, *lbPool.ID))
@@ -410,136 +417,214 @@ func lbPoolCreate(d *schema.ResourceData, meta interface{}, name, lbID, algorith
 
 	_, err = isWaitForLBPoolActive(sess, lbID, *lbPool.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error checking for load balancer pool (%s) is active: %s", *lbPool.ID, err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForLBPoolActive failed: %s", err.Error()), "ibm_is_lb_pool", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	_, err = isWaitForLBAvailable(sess, lbID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error checking for load balancer (%s) is active: %s", lbID, err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForLBAvailable failed: %s", err.Error()), "ibm_is_lb_pool", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	return nil
 }
 
-func resourceIBMISLBPoolRead(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMISLBPoolRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 	parts, err := flex.IdParts(d.Id())
 	if err != nil {
-		return err
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_pool", "read", "sep-id-parts").GetDiag()
 	}
 
 	lbID := parts[0]
 	lbPoolID := parts[1]
 
-	err = lbPoolGet(d, meta, lbID, lbPoolID)
-	if err != nil {
-		return err
+	diag := lbPoolGet(context, d, meta, lbID, lbPoolID)
+	if diag != nil {
+		return diag
 	}
 
 	return nil
 }
 
-func lbPoolGet(d *schema.ResourceData, meta interface{}, lbID, lbPoolID string) error {
+func lbPoolGet(context context.Context, d *schema.ResourceData, meta interface{}, lbID, lbPoolID string) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_pool", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	getLoadBalancerPoolOptions := &vpcv1.GetLoadBalancerPoolOptions{
 		LoadBalancerID: &lbID,
 		ID:             &lbPoolID,
 	}
 
-	lbPool, response, err := sess.GetLoadBalancerPool(getLoadBalancerPoolOptions)
+	loadBalancerPool, response, err := sess.GetLoadBalancerPoolWithContext(context, getLoadBalancerPoolOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error Getting Load Balancer Pool : %s\n%s", err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetLoadBalancerPoolWithContext failed: %s", err.Error()), "ibm_is_lb_pool", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
-	d.Set(isLBPoolName, *lbPool.Name)
-	d.Set(isLBPool, lbPoolID)
-	d.Set(isLBID, lbID)
-	d.Set(isLBPoolAlgorithm, *lbPool.Algorithm)
-	d.Set(isLBPoolProtocol, *lbPool.Protocol)
-	if lbPool.HealthMonitor != nil {
-		poolHealthMonitor := lbPool.HealthMonitor.(*vpcv1.LoadBalancerPoolHealthMonitor)
-		d.Set(isLBPoolHealthDelay, *poolHealthMonitor.Delay)
-		d.Set(isLBPoolHealthRetries, *poolHealthMonitor.MaxRetries)
-		d.Set(isLBPoolHealthTimeout, *poolHealthMonitor.Timeout)
+	if err = d.Set("name", loadBalancerPool.Name); err != nil {
+		err = fmt.Errorf("Error setting name: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_pool", "read", "set-name").GetDiag()
+	}
+	if err = d.Set(isLBPool, lbPoolID); err != nil {
+		err = fmt.Errorf("Error setting pool_id: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_pool", "read", "set-pool_id").GetDiag()
+	}
+	if err = d.Set(isLBID, lbID); err != nil {
+		err = fmt.Errorf("Error setting lb: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_pool", "read", "set-lb").GetDiag()
+	}
+	if err = d.Set("algorithm", loadBalancerPool.Algorithm); err != nil {
+		err = fmt.Errorf("Error setting algorithm: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_pool", "read", "set-algorithm").GetDiag()
+	}
+	if err = d.Set("protocol", loadBalancerPool.Protocol); err != nil {
+		err = fmt.Errorf("Error setting protocol: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_pool", "read", "set-protocol").GetDiag()
+	}
+	if loadBalancerPool.HealthMonitor != nil {
+		poolHealthMonitor := loadBalancerPool.HealthMonitor.(*vpcv1.LoadBalancerPoolHealthMonitor)
+		if err = d.Set(isLBPoolHealthDelay, *poolHealthMonitor.Delay); err != nil {
+			err = fmt.Errorf("Error setting health_delay: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_pool", "read", "set-health_delay").GetDiag()
+		}
+		if err = d.Set(isLBPoolHealthRetries, *poolHealthMonitor.MaxRetries); err != nil {
+			err = fmt.Errorf("Error setting health_retries: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_pool", "read", "set-health_retries").GetDiag()
+		}
+		if err = d.Set(isLBPoolHealthTimeout, *poolHealthMonitor.Timeout); err != nil {
+			err = fmt.Errorf("Error setting health_timeout: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_pool", "read", "set-health_timeout").GetDiag()
+		}
 		if poolHealthMonitor.Type != nil {
-			d.Set(isLBPoolHealthType, *poolHealthMonitor.Type)
+			if err = d.Set(isLBPoolHealthType, *poolHealthMonitor.Type); err != nil {
+				err = fmt.Errorf("Error setting health_type: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_pool", "read", "set-health_type").GetDiag()
+			}
 		}
 		if poolHealthMonitor.URLPath != nil {
-			d.Set(isLBPoolHealthMonitorURL, *poolHealthMonitor.URLPath)
+			if err = d.Set(isLBPoolHealthMonitorURL, *poolHealthMonitor.URLPath); err != nil {
+				err = fmt.Errorf("Error setting health_monitor_url: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_pool", "read", "set-health_monitor_url").GetDiag()
+			}
 		}
 		if poolHealthMonitor.Port != nil {
-			d.Set(isLBPoolHealthMonitorPort, *poolHealthMonitor.Port)
+			if err = d.Set(isLBPoolHealthMonitorPort, *poolHealthMonitor.Port); err != nil {
+				err = fmt.Errorf("Error setting health_monitor_port: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_pool", "read", "set-health_monitor_port").GetDiag()
+			}
 		}
 	}
-	if !core.IsNil(lbPool.FailsafePolicy) {
-		failsafePolicyMap, err := resourceIBMIsLbPoolLoadBalancerPoolFailsafePolicyToMap(lbPool.FailsafePolicy)
+	if !core.IsNil(loadBalancerPool.FailsafePolicy) {
+		failsafePolicyMap, err := resourceIBMIsLbPoolLoadBalancerPoolFailsafePolicyToMap(loadBalancerPool.FailsafePolicy)
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_pool", "read", "failsafe_policy-to-map")
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_pool", "read", "failsafe_policy-to-map").GetDiag()
 		}
 		if err = d.Set("failsafe_policy", []map[string]interface{}{failsafePolicyMap}); err != nil {
 			err = fmt.Errorf("Error setting failsafe_policy: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_pool", "read", "set-failsafe_policy")
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_pool", "read", "set-failsafe_policy").GetDiag()
 		}
 	}
-	if lbPool.SessionPersistence != nil {
-		d.Set(isLBPoolSessPersistenceType, *lbPool.SessionPersistence.Type)
-		if lbPool.SessionPersistence.CookieName != nil {
-			if *lbPool.SessionPersistence.Type == "app_cookie" {
-				d.Set(isLBPoolSessPersistenceAppCookieName, *lbPool.SessionPersistence.CookieName)
-				d.Set(isLBPoolSessPersistenceHttpCookieName, "")
-			} else if *lbPool.SessionPersistence.Type == "http_cookie" {
-				d.Set(isLBPoolSessPersistenceHttpCookieName, *lbPool.SessionPersistence.CookieName)
-				d.Set(isLBPoolSessPersistenceAppCookieName, "")
+	if loadBalancerPool.SessionPersistence != nil {
+		if err = d.Set(isLBPoolSessPersistenceType, *loadBalancerPool.SessionPersistence.Type); err != nil {
+			err = fmt.Errorf("Error setting session_persistence_type: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_pool", "read", "set-session_persistence_type").GetDiag()
+		}
+		if loadBalancerPool.SessionPersistence.CookieName != nil {
+			if *loadBalancerPool.SessionPersistence.Type == "app_cookie" {
+				if err = d.Set(isLBPoolSessPersistenceAppCookieName, *loadBalancerPool.SessionPersistence.CookieName); err != nil {
+					err = fmt.Errorf("Error setting session_persistence_type: %s", err)
+					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_pool", "read", "set-session_persistence_app_cookie_name").GetDiag()
+				}
+				if err = d.Set(isLBPoolSessPersistenceHttpCookieName, ""); err != nil {
+					err = fmt.Errorf("Error setting session_persistence_http_cookie_name: %s", err)
+					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_pool", "read", "set-session_persistence_http_cookie_name").GetDiag()
+				}
+			} else if *loadBalancerPool.SessionPersistence.Type == "http_cookie" {
+				if err = d.Set(isLBPoolSessPersistenceHttpCookieName, *loadBalancerPool.SessionPersistence.CookieName); err != nil {
+					err = fmt.Errorf("Error setting session_persistence_http_cookie_name: %s", err)
+					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_pool", "read", "set-session_persistence_http_cookie_name").GetDiag()
+				}
+				if err = d.Set(isLBPoolSessPersistenceAppCookieName, ""); err != nil {
+					err = fmt.Errorf("Error setting session_persistence_app_cookie_name: %s", err)
+					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_pool", "read", "set-session_persistence_app_cookie_name").GetDiag()
+				}
 			}
 
 		}
 	} else {
-		d.Set(isLBPoolSessPersistenceType, "")
-		d.Set(isLBPoolSessPersistenceHttpCookieName, "")
-		d.Set(isLBPoolSessPersistenceAppCookieName, "")
+		if err = d.Set(isLBPoolSessPersistenceType, ""); err != nil {
+			err = fmt.Errorf("Error setting session_persistence_type: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_pool", "read", "set-session_persistence_type").GetDiag()
+		}
+		if err = d.Set(isLBPoolSessPersistenceHttpCookieName, ""); err != nil {
+			err = fmt.Errorf("Error setting session_persistence_http_cookie_name: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_pool", "read", "set-session_persistence_http_cookie_name").GetDiag()
+		}
+		if err = d.Set(isLBPoolSessPersistenceAppCookieName, ""); err != nil {
+			err = fmt.Errorf("Error setting session_persistence_app_cookie_name: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_pool", "read", "set-session_persistence_app_cookie_name").GetDiag()
+		}
+	}
+	if err = d.Set("provisioning_status", loadBalancerPool.ProvisioningStatus); err != nil {
+		err = fmt.Errorf("Error setting provisioning_status: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_pool", "read", "set-provisioning_status").GetDiag()
+	}
+	if err = d.Set(isLBPoolProxyProtocol, *loadBalancerPool.ProxyProtocol); err != nil {
+		err = fmt.Errorf("Error setting proxy_protocol: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_pool", "read", "set-proxy_protocol").GetDiag()
 	}
 
-	d.Set(isLBPoolProvisioningStatus, *lbPool.ProvisioningStatus)
-	d.Set(isLBPoolProxyProtocol, *lbPool.ProxyProtocol)
 	getLoadBalancerOptions := &vpcv1.GetLoadBalancerOptions{
 		ID: &lbID,
 	}
-	lb, response, err := sess.GetLoadBalancer(getLoadBalancerOptions)
+	lb, response, err := sess.GetLoadBalancerWithContext(context, getLoadBalancerOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error Getting Load Balancer : %s\n%s", err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetLoadBalancerWithContext failed: %s", err.Error()), "ibm_is_lb_pool", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
-	d.Set(flex.RelatedCRN, *lb.CRN)
+	if err = d.Set(flex.RelatedCRN, *lb.CRN); err != nil {
+		err = fmt.Errorf("Error setting related_crn: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_pool", "read", "set-related_crn").GetDiag()
+	}
 	return nil
 }
 
-func resourceIBMISLBPoolUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMISLBPoolUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 	parts, err := flex.IdParts(d.Id())
 	if err != nil {
-		return err
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_pool", "update", "sep-id-parts").GetDiag()
 	}
 
 	lbID := parts[0]
 	lbPoolID := parts[1]
 
-	err = lbPoolUpdate(d, meta, lbID, lbPoolID)
-	if err != nil {
-		return err
+	diag := lbPoolUpdate(context, d, meta, lbID, lbPoolID)
+	if diag != nil {
+		return diag
 	}
 
-	return resourceIBMISLBPoolRead(d, meta)
+	return resourceIBMISLBPoolRead(context, d, meta)
 }
 
-func lbPoolUpdate(d *schema.ResourceData, meta interface{}, lbID, lbPoolID string) error {
+func lbPoolUpdate(context context.Context, d *schema.ResourceData, meta interface{}, lbID, lbPoolID string) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_pool", "update", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	hasChanged := false
@@ -654,19 +739,23 @@ func lbPoolUpdate(d *schema.ResourceData, meta interface{}, lbID, lbPoolID strin
 		defer conns.IbmMutexKV.Unlock(isLBKey)
 		_, err := isWaitForLBAvailable(sess, lbID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
-			return fmt.Errorf(
-				"Error checking for load balancer (%s) is active: %s", lbID, err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForLBAvailable failed: %s", err.Error()), "ibm_is_lb_pool", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
 		_, err = isWaitForLBPoolActive(sess, lbID, lbPoolID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
-			return fmt.Errorf(
-				"Error checking for load balancer pool (%s) is active: %s", lbPoolID, err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForLBPoolActive failed: %s", err.Error()), "ibm_is_lb_pool", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
 		LoadBalancerPoolPatch, err := loadBalancerPoolPatchModel.AsPatch()
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for LoadBalancerPoolPatch: %s", err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("loadBalancerPoolPatchModel.AsPatch() failed: %s", err.Error()), "ibm_is_lb_pool", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		if sessionPersistenceRemoved {
 			LoadBalancerPoolPatch["session_persistence"] = nil
@@ -680,31 +769,35 @@ func lbPoolUpdate(d *schema.ResourceData, meta interface{}, lbID, lbPoolID strin
 
 		updateLoadBalancerPoolOptions.LoadBalancerPoolPatch = LoadBalancerPoolPatch
 
-		_, response, err := sess.UpdateLoadBalancerPool(updateLoadBalancerPoolOptions)
+		_, _, err = sess.UpdateLoadBalancerPoolWithContext(context, updateLoadBalancerPoolOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Updating Load Balancer Pool : %s\n%s", err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateLoadBalancerPoolWithContext failed: %s", err.Error()), "ibm_is_lb_pool", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
 		_, err = isWaitForLBPoolActive(sess, lbID, lbPoolID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
-			return fmt.Errorf(
-				"Error checking for load balancer pool (%s) is active: %s", lbPoolID, err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForLBPoolActive failed: %s", err.Error()), "ibm_is_lb_pool", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
 		_, err = isWaitForLBAvailable(sess, lbID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
-			return fmt.Errorf(
-				"Error checking for load balancer (%s) is active: %s", lbID, err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForLBAvailable failed: %s", err.Error()), "ibm_is_lb_pool", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 	return nil
 }
 
-func resourceIBMISLBPoolDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMISLBPoolDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 	parts, err := flex.IdParts(d.Id())
 	if err != nil {
-		return err
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_pool", "delete", "sep-id-parts").GetDiag()
 	}
 
 	lbID := parts[0]
@@ -714,57 +807,71 @@ func resourceIBMISLBPoolDelete(d *schema.ResourceData, meta interface{}) error {
 	conns.IbmMutexKV.Lock(isLBKey)
 	defer conns.IbmMutexKV.Unlock(isLBKey)
 
-	err = lbPoolDelete(d, meta, lbID, lbPoolID)
-	if err != nil {
-		return err
+	diag := lbPoolDelete(context, d, meta, lbID, lbPoolID)
+	if diag != nil {
+		return diag
 	}
 
 	return nil
 }
 
-func lbPoolDelete(d *schema.ResourceData, meta interface{}, lbID, lbPoolID string) error {
+func lbPoolDelete(context context.Context, d *schema.ResourceData, meta interface{}, lbID, lbPoolID string) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_pool", "delete", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	getLoadBalancerPoolOptions := &vpcv1.GetLoadBalancerPoolOptions{
 		LoadBalancerID: &lbID,
 		ID:             &lbPoolID,
 	}
-	_, response, err := sess.GetLoadBalancerPool(getLoadBalancerPoolOptions)
+	_, response, err := sess.GetLoadBalancerPoolWithContext(context, getLoadBalancerPoolOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error Getting vpc load balancer pool(%s): %s\n%s", lbPoolID, err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetLoadBalancerPoolWithContext failed: %s", err.Error()), "ibm_is_lb_pool", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	_, err = isWaitForLBAvailable(sess, lbID, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error checking for load balancer (%s) is active: %s", lbID, err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForLBAvailable failed: %s", err.Error()), "ibm_is_lb_pool", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	_, err = isWaitForLBPoolActive(sess, lbID, lbPoolID, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error checking for load balancer pool (%s) is active: %s", lbPoolID, err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForLBPoolActive failed: %s", err.Error()), "ibm_is_lb_pool", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	deleteLoadBalancerPoolOptions := &vpcv1.DeleteLoadBalancerPoolOptions{
 		LoadBalancerID: &lbID,
 		ID:             &lbPoolID,
 	}
-	response, err = sess.DeleteLoadBalancerPool(deleteLoadBalancerPoolOptions)
+	response, err = sess.DeleteLoadBalancerPoolWithContext(context, deleteLoadBalancerPoolOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error Deleting Load Balancer Pool : %s\n%s", err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteLoadBalancerPoolWithContext failed: %s", err.Error()), "ibm_is_lb_pool", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	_, err = isWaitForLBPoolDeleted(sess, lbID, lbPoolID, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error checking for load balancer pool (%s) is deleted: %s", lbPoolID, err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForLBPoolDeleted failed: %s", err.Error()), "ibm_is_lb_pool", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	_, err = isWaitForLBAvailable(sess, lbID, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error checking for load balancer (%s) is active: %s", lbID, err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForLBAvailable failed: %s", err.Error()), "ibm_is_lb_pool", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	d.SetId("")
 	return nil
@@ -774,10 +881,11 @@ func resourceIBMISLBPoolExists(d *schema.ResourceData, meta interface{}) (bool, 
 
 	parts, err := flex.IdParts(d.Id())
 	if err != nil {
-		return false, err
+		return false, flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_pool", "exists", "sep-id-parts")
 	}
 	if len(parts) != 2 {
-		return false, fmt.Errorf("[ERROR] Incorrect ID %s: ID should be a combination of lbID/lbPoolID", d.Id())
+		err = fmt.Errorf("[ERROR] Incorrect ID %s: ID should be a combination of lbID/lbPoolID", d.Id())
+		return false, flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_pool", "exists", "sep-id-parts")
 	}
 
 	lbID := parts[0]
@@ -791,7 +899,9 @@ func resourceIBMISLBPoolExists(d *schema.ResourceData, meta interface{}) (bool, 
 func lbPoolExists(d *schema.ResourceData, meta interface{}, lbID, lbPoolID string) (bool, error) {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return false, err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_pool", "exists", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return false, tfErr
 	}
 
 	getLoadBalancerPoolOptions := &vpcv1.GetLoadBalancerPoolOptions{
@@ -803,7 +913,9 @@ func lbPoolExists(d *schema.ResourceData, meta interface{}, lbID, lbPoolID strin
 		if response != nil && response.StatusCode == 404 {
 			return false, nil
 		}
-		return false, fmt.Errorf("[ERROR] Error getting Load balancer pool: %s\n%s", err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetLoadBalancerPool failed: %s", err.Error()), "ibm_is_lb_pool", "exists")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return false, tfErr
 	}
 	return true, nil
 }

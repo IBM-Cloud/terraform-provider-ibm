@@ -34,6 +34,51 @@ resource "ibm_iam_account_settings_template" "account_settings_template_instance
 }
 ```
 
+Create new account setting template version
+
+```hcl
+resource "ibm_iam_account_settings_template" "account_settings_template_instance" {
+	name = "My template name"
+	description = "My template description"
+	account_settings {
+		restrict_create_service_id = "RESTRICTED"
+		restrict_create_platform_apikey = "RESTRICTED"
+		allowed_ip_addresses = "127.0.0.1"
+		mfa = "LEVEL3"
+		user_mfa {
+			iam_id = "IBMid-123456879"
+			mfa = "TOTP"
+		}
+		session_expiration_in_seconds = "1800"
+		session_invalidation_in_seconds = "900"
+		max_sessions_per_identity = "3"
+		system_access_token_expiration_in_seconds = "NOT_SET"
+		system_refresh_token_expiration_in_seconds = "NOT_SET"
+	}
+}
+
+resource "ibm_iam_account_settings_template" "account_settings_template_v2" {
+	template_id = ibm_iam_account_settings_template.ibm_iam_account_settings_template.id
+	name = "My template name"
+	description = "My template description v2"
+	account_settings {
+		restrict_create_service_id = "RESTRICTED"
+		restrict_create_platform_apikey = "RESTRICTED"
+		allowed_ip_addresses = "127.0.0.1"
+		mfa = "LEVEL3"
+		user_mfa {
+			iam_id = "IBMid-123456879"
+			mfa = "TOTP"
+		}
+		session_expiration_in_seconds = "1800"
+		session_invalidation_in_seconds = "900"
+		max_sessions_per_identity = "3"
+		system_access_token_expiration_in_seconds = "NOT_SET"
+		system_refresh_token_expiration_in_seconds = "NOT_SET"
+	}
+}
+```
+
 ## Argument Reference
 
 You can specify the following arguments for this resource.
@@ -96,13 +141,12 @@ Nested schema for **history**:
 * `last_modified_at` - (String) Template last modified at.
 * `last_modified_by_id` - (String) IAMid of the identity that made the latest modification.
 
-
-
 ## Import
 
 You can import the `ibm_iam_account_settings_template` resource by using `version`. Version of the the template.
 
-# Syntax
-```
-$ terraform import ibm_iam_account_settings_template.account_settings_template <version>
+### Syntax
+
+```bash
+$ terraform import ibm_iam_account_settings_template.account_settings_template $version
 ```

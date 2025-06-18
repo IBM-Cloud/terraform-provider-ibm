@@ -193,22 +193,24 @@ func ResourceIBMIsInstanceNetworkAttachment() *schema.Resource {
 						"primary_ip": &schema.Schema{
 							Type:          schema.TypeList,
 							Optional:      true,
+							MaxItems:      1,
 							ConflictsWith: []string{"virtual_network_interface.0.id"},
 							Computed:      true,
 							Description:   "The primary IP address of the virtual network interface for the instance networkattachment.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"address": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Computed:    true,
-										Description: "The IP address.If the address has not yet been selected, the value will be `0.0.0.0`.This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.",
+										Type:          schema.TypeString,
+										Optional:      true,
+										ConflictsWith: []string{"virtual_network_interface.0.primary_ip.0.reserved_ip"},
+										Computed:      true,
+										Description:   "The IP address.If the address has not yet been selected, the value will be `0.0.0.0`.This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.",
 									},
 									"auto_delete": &schema.Schema{
-										Type:        schema.TypeBool,
-										Optional:    true,
-										Default:     true,
-										Description: "Indicates whether this primary_ip will be automatically deleted when `vni` is deleted.",
+										Type:          schema.TypeBool,
+										Optional:      true,
+										ConflictsWith: []string{"virtual_network_interface.0.primary_ip.0.reserved_ip"},
+										Description:   "Indicates whether this primary_ip will be automatically deleted when `vni` is deleted.",
 									},
 									"deleted": &schema.Schema{
 										Type:        schema.TypeList,
@@ -230,16 +232,18 @@ func ResourceIBMIsInstanceNetworkAttachment() *schema.Resource {
 										Description: "The URL for this reserved IP.",
 									},
 									"reserved_ip": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Computed:    true,
-										Description: "The unique identifier for this reserved IP.",
+										Type:          schema.TypeString,
+										Optional:      true,
+										ConflictsWith: []string{"virtual_network_interface.0.primary_ip.0.address", "virtual_network_interface.0.primary_ip.0.auto_delete", "virtual_network_interface.0.primary_ip.0.name"},
+										Computed:      true,
+										Description:   "The unique identifier for this reserved IP.",
 									},
 									"name": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Computed:    true,
-										Description: "The name for this reserved IP. The name is unique across all reserved IPs in a subnet.",
+										Type:          schema.TypeString,
+										Optional:      true,
+										ConflictsWith: []string{"virtual_network_interface.0.primary_ip.0.reserved_ip"},
+										Computed:      true,
+										Description:   "The name for this reserved IP. The name is unique across all reserved IPs in a subnet.",
 									},
 									"resource_type": &schema.Schema{
 										Type:        schema.TypeString,
@@ -317,7 +321,9 @@ func ResourceIBMIsInstanceNetworkAttachmentValidator() *validate.ResourceValidat
 func resourceIBMIsInstanceNetworkAttachmentCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := vpcClient(meta)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_network_attachment", "create", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	createInstanceNetworkAttachmentOptions := &vpcv1.CreateInstanceNetworkAttachmentOptions{}
@@ -332,16 +338,19 @@ func resourceIBMIsInstanceNetworkAttachmentCreate(context context.Context, d *sc
 		createInstanceNetworkAttachmentOptions.SetName(d.Get("name").(string))
 	}
 
-	instanceNetworkAttachment, response, err := vpcClient.CreateInstanceNetworkAttachmentWithContext(context, createInstanceNetworkAttachmentOptions)
+	instanceNetworkAttachment, _, err := vpcClient.CreateInstanceNetworkAttachmentWithContext(context, createInstanceNetworkAttachmentOptions)
 	if err != nil {
-		log.Printf("[DEBUG] CreateInstanceNetworkAttachmentWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("CreateInstanceNetworkAttachmentWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateInstanceNetworkAttachmentWithContext failed: %s", err.Error()), "ibm_is_instance_network_attachment", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", *createInstanceNetworkAttachmentOptions.InstanceID, *instanceNetworkAttachment.ID))
 	_, err = isWaitForInstanceNetworkAttachmentStable(vpcClient, *createInstanceNetworkAttachmentOptions.InstanceID, *instanceNetworkAttachment.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("isWaitForInstanceNetworkAttachmentStable failed %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForInstanceNetworkAttachmentStable failed: %s", err.Error()), "ibm_is_instance_network_attachment", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	return resourceIBMIsInstanceNetworkAttachmentRead(context, d, meta)
 }
@@ -349,14 +358,16 @@ func resourceIBMIsInstanceNetworkAttachmentCreate(context context.Context, d *sc
 func resourceIBMIsInstanceNetworkAttachmentRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := vpcClient(meta)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_network_attachment", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	getInstanceNetworkAttachmentOptions := &vpcv1.GetInstanceNetworkAttachmentOptions{}
 
 	parts, err := flex.SepIdParts(d.Id(), "/")
 	if err != nil {
-		return diag.FromErr(err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_network_attachment", "read", "sep-id-parts").GetDiag()
 	}
 
 	getInstanceNetworkAttachmentOptions.SetInstanceID(parts[0])
@@ -368,36 +379,37 @@ func resourceIBMIsInstanceNetworkAttachmentRead(context context.Context, d *sche
 			d.SetId("")
 			return nil
 		}
-		log.Printf("[DEBUG] GetInstanceNetworkAttachmentWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetInstanceNetworkAttachmentWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetInstanceNetworkAttachmentWithContext failed: %s", err.Error()), "ibm_is_instance_network_attachment", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	// attachment details
 	if !core.IsNil(instanceNetworkAttachment.Name) {
 		if err = d.Set("name", instanceNetworkAttachment.Name); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting name: %s", err))
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_network_attachment", "read", "set-name").GetDiag()
 		}
 	}
 	if err = d.Set("created_at", flex.DateTimeToString(instanceNetworkAttachment.CreatedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting created_at: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_network_attachment", "read", "set-created_at").GetDiag()
 	}
 
 	if err = d.Set("href", instanceNetworkAttachment.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting href: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_network_attachment", "read", "set-href").GetDiag()
 	}
 	if err = d.Set("lifecycle_state", instanceNetworkAttachment.LifecycleState); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting lifecycle_state: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_network_attachment", "read", "set-lifecycle_state").GetDiag()
 	}
 	if err = d.Set("port_speed", flex.IntValue(instanceNetworkAttachment.PortSpeed)); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting port_speed: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_network_attachment", "read", "set-port_speed").GetDiag()
 	}
 	if err = d.Set("resource_type", instanceNetworkAttachment.ResourceType); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting resource_type: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_network_attachment", "read", "set-resource_type").GetDiag()
 	}
 	if err = d.Set("type", instanceNetworkAttachment.Type); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting type: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_network_attachment", "read", "set-type").GetDiag()
 	}
 	if err = d.Set("network_attachment", instanceNetworkAttachment.ID); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting network_attachment: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_network_attachment", "read", "set-network_attachment").GetDiag()
 	}
 	// vni details
 	vniId := *instanceNetworkAttachment.VirtualNetworkInterface.ID
@@ -406,14 +418,15 @@ func resourceIBMIsInstanceNetworkAttachmentRead(context context.Context, d *sche
 	getVniOptions := &vpcv1.GetVirtualNetworkInterfaceOptions{
 		ID: &vniId,
 	}
-	vniDetails, response, err := vpcClient.GetVirtualNetworkInterface(getVniOptions)
+	vniDetails, response, err := vpcClient.GetVirtualNetworkInterfaceWithContext(context, getVniOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
 			return nil
 		}
-		log.Printf("[DEBUG] GetVirtualNetworkInterface failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetVirtualNetworkInterface failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetVirtualNetworkInterfaceWithContext failed: %s", err.Error()), "ibm_is_instance_network_attachment", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	vniMap["allow_ip_spoofing"] = vniDetails.AllowIPSpoofing
 	vniMap["auto_delete"] = vniDetails.AutoDelete
@@ -427,9 +440,9 @@ func resourceIBMIsInstanceNetworkAttachmentRead(context context.Context, d *sche
 		ips := []map[string]interface{}{}
 		for _, ipsItem := range vniDetails.Ips {
 			if *ipsItem.ID != primaryipId {
-				ipsItemMap, err := resourceIBMIsVirtualNetworkInterfaceReservedIPReferenceToMap(&ipsItem, true)
+				ipsItemMap, err := resourceIBMIsVirtualNetworkInterfaceReservedIPReferenceToMap(&ipsItem, true, false)
 				if err != nil {
-					return diag.FromErr(err)
+					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_network_attachment", "read", "virtual_network_interface_reserved_ip-to-map").GetDiag()
 				}
 				ips = append(ips, ipsItemMap)
 			}
@@ -452,13 +465,14 @@ func resourceIBMIsInstanceNetworkAttachmentRead(context context.Context, d *sche
 	}
 	primaryIPMap, err := resourceIBMIsInstanceNetworkAttachmentReservedIPReferenceToMap(instanceNetworkAttachment.PrimaryIP, autoDelete)
 	if err != nil {
-		return diag.FromErr(err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_network_attachment", "read", "virtual_network_interface_primary_ip-to-map").GetDiag()
 	}
 	vniMap["primary_ip"] = []map[string]interface{}{primaryIPMap}
 
 	vniMap["subnet"] = *instanceNetworkAttachment.Subnet.ID
 	if err = d.Set("virtual_network_interface", []map[string]interface{}{vniMap}); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting virtual_network_interface: %s", err))
+		err = fmt.Errorf("Error setting virtual_network_interface: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_network_attachment", "read", "set-virtual_network_interface").GetDiag()
 	}
 
 	return nil
@@ -467,14 +481,16 @@ func resourceIBMIsInstanceNetworkAttachmentRead(context context.Context, d *sche
 func resourceIBMIsInstanceNetworkAttachmentUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := vpcClient(meta)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_network_attachment", "update", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	updateInstanceNetworkAttachmentOptions := &vpcv1.UpdateInstanceNetworkAttachmentOptions{}
 
 	parts, err := flex.SepIdParts(d.Id(), "/")
 	if err != nil {
-		return diag.FromErr(err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_network_attachment", "update", "sep-id-parts").GetDiag()
 	}
 
 	updateInstanceNetworkAttachmentOptions.SetInstanceID(parts[0])
@@ -484,8 +500,11 @@ func resourceIBMIsInstanceNetworkAttachmentUpdate(context context.Context, d *sc
 
 	patchVals := &vpcv1.InstanceNetworkAttachmentPatch{}
 	if d.HasChange("instance") {
-		return diag.FromErr(fmt.Errorf("[ERROR] Cannot update resource property \"%s\" with the ForceNew annotation."+
-			" The resource must be re-created to update this property.", "instance"))
+		err = fmt.Errorf("[ERROR] Cannot update resource property \"%s\" with the ForceNew annotation."+
+			" The resource must be re-created to update this property.", "instance")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateInstanceNetworkAttachment failed: %s", err.Error()), "ibm_is_instance_network_attachment", "update")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if d.HasChange("virtual_network_interface") && !d.IsNewResource() {
 		vniId := d.Get("virtual_network_interface.0.id").(string)
@@ -515,13 +534,16 @@ func resourceIBMIsInstanceNetworkAttachmentUpdate(context context.Context, d *sc
 		}
 		virtualNetworkInterfacePatchAsPatch, err := virtualNetworkInterfacePatch.AsPatch()
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error encountered while apply as patch for virtualNetworkInterfacePatch of instance(%s) vni (%s) %s", d.Id(), vniId, err))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("virtualNetworkInterfacePatch.AsPatch() failed: %s", err.Error()), "ibm_is_instance_network_attachment", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		updateVirtualNetworkInterfaceOptions.VirtualNetworkInterfacePatch = virtualNetworkInterfacePatchAsPatch
-		_, response, err := vpcClient.UpdateVirtualNetworkInterfaceWithContext(context, updateVirtualNetworkInterfaceOptions)
+		_, _, err = vpcClient.UpdateVirtualNetworkInterfaceWithContext(context, updateVirtualNetworkInterfaceOptions)
 		if err != nil {
-			log.Printf("[DEBUG] UpdateVirtualNetworkInterfaceWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("UpdateVirtualNetworkInterfaceWithContext failed during instance(%s) network attachment patch %s\n%s", d.Id(), err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateVirtualNetworkInterfaceWithContext failed: %s", err.Error()), "ibm_is_instance_network_attachment", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
 		if d.HasChange("virtual_network_interface.0.ips") {
@@ -554,10 +576,11 @@ func resourceIBMIsInstanceNetworkAttachmentUpdate(context context.Context, d *sc
 						addVirtualNetworkInterfaceIPOptions := &vpcv1.AddVirtualNetworkInterfaceIPOptions{}
 						addVirtualNetworkInterfaceIPOptions.SetVirtualNetworkInterfaceID(vniId)
 						addVirtualNetworkInterfaceIPOptions.SetID(ipItem)
-						_, response, err := vpcClient.AddVirtualNetworkInterfaceIPWithContext(context, addVirtualNetworkInterfaceIPOptions)
+						_, _, err := vpcClient.AddVirtualNetworkInterfaceIPWithContext(context, addVirtualNetworkInterfaceIPOptions)
 						if err != nil {
-							log.Printf("[DEBUG] AddVirtualNetworkInterfaceIPWithContext failed in VirtualNetworkInterface patch during instance nac patch %s\n%s", err, response)
-							return diag.FromErr(fmt.Errorf("AddVirtualNetworkInterfaceIPWithContext failed in VirtualNetworkInterface patch during instance nac patch %s\n%s", err, response))
+							tfErr := flex.TerraformErrorf(err, fmt.Sprintf("AddVirtualNetworkInterfaceIPWithContext failed: %s", err.Error()), "ibm_is_instance_network_attachment", "update")
+							log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+							return tfErr.GetDiag()
 						}
 					}
 				}
@@ -569,10 +592,11 @@ func resourceIBMIsInstanceNetworkAttachmentUpdate(context context.Context, d *sc
 						removeVirtualNetworkInterfaceIPOptions := &vpcv1.RemoveVirtualNetworkInterfaceIPOptions{}
 						removeVirtualNetworkInterfaceIPOptions.SetVirtualNetworkInterfaceID(vniId)
 						removeVirtualNetworkInterfaceIPOptions.SetID(ipItem)
-						response, err := vpcClient.RemoveVirtualNetworkInterfaceIPWithContext(context, removeVirtualNetworkInterfaceIPOptions)
+						_, err := vpcClient.RemoveVirtualNetworkInterfaceIPWithContext(context, removeVirtualNetworkInterfaceIPOptions)
 						if err != nil {
-							log.Printf("[DEBUG] RemoveVirtualNetworkInterfaceIPWithContext failed in VirtualNetworkInterface patch during instance nac patch %s\n%s", err, response)
-							return diag.FromErr(fmt.Errorf("RemoveVirtualNetworkInterfaceIPWithContext failed in VirtualNetworkInterface patch during instance nac patch %s\n%s", err, response))
+							tfErr := flex.TerraformErrorf(err, fmt.Sprintf("RemoveVirtualNetworkInterfaceIPWithContext failed: %s", err.Error()), "ibm_is_instance_network_attachment", "update")
+							log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+							return tfErr.GetDiag()
 						}
 					}
 				}
@@ -597,12 +621,16 @@ func resourceIBMIsInstanceNetworkAttachmentUpdate(context context.Context, d *sc
 			}
 			reservedIpPathAsPatch, err := reservedIpPath.AsPatch()
 			if err != nil {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error calling reserved ip as patch on vni patch \n%s", err))
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("reservedIpPath.AsPatch() failed: %s", err.Error()), "ibm_is_instance_network_attachment", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			updateripoptions.ReservedIPPatch = reservedIpPathAsPatch
-			_, response, err := vpcClient.UpdateSubnetReservedIP(updateripoptions)
+			_, _, err = vpcClient.UpdateSubnetReservedIPWithContext(context, updateripoptions)
 			if err != nil {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error updating vni reserved ip(%s): %s\n%s", ripId, err, response))
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateSubnetReservedIPWithContext failed: %s", err.Error()), "ibm_is_instance_network_attachment", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 		}
 		if d.HasChange("virtual_network_interface.0.security_groups") {
@@ -617,13 +645,17 @@ func resourceIBMIsInstanceNetworkAttachmentUpdate(context context.Context, d *sc
 						SecurityGroupID: &add[i],
 						ID:              &vniId,
 					}
-					_, response, err := vpcClient.CreateSecurityGroupTargetBinding(createsgnicoptions)
+					_, _, err := vpcClient.CreateSecurityGroupTargetBindingWithContext(context, createsgnicoptions)
 					if err != nil {
-						return diag.FromErr(fmt.Errorf("[ERROR] Error while creating security group %q for virtual network interface %s\n%s: %q", add[i], d.Id(), err, response))
+						tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateSecurityGroupTargetBindingWithContext failed: %s", err.Error()), "ibm_is_instance_network_attachment", "update")
+						log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+						return tfErr.GetDiag()
 					}
 					_, err = isWaitForVirtualNetworkInterfaceAvailable(vpcClient, vniId, d.Timeout(schema.TimeoutUpdate))
 					if err != nil {
-						return diag.FromErr(err)
+						tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForVirtualNetworkInterfaceAvailable failed: %s", err.Error()), "ibm_is_instance_network_attachment", "update")
+						log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+						return tfErr.GetDiag()
 					}
 				}
 
@@ -634,13 +666,17 @@ func resourceIBMIsInstanceNetworkAttachmentUpdate(context context.Context, d *sc
 						SecurityGroupID: &remove[i],
 						ID:              &vniId,
 					}
-					response, err := vpcClient.DeleteSecurityGroupTargetBinding(deletesgnicoptions)
+					_, err := vpcClient.DeleteSecurityGroupTargetBindingWithContext(context, deletesgnicoptions)
 					if err != nil {
-						return diag.FromErr(fmt.Errorf("[ERROR] Error while removing security group %q for virtual network interface %s\n%s: %q", remove[i], d.Id(), err, response))
+						tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteSecurityGroupTargetBindingWithContext failed: %s", err.Error()), "ibm_is_instance_network_attachment", "update")
+						log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+						return tfErr.GetDiag()
 					}
 					_, err = isWaitForVirtualNetworkInterfaceAvailable(vpcClient, vniId, d.Timeout(schema.TimeoutUpdate))
 					if err != nil {
-						return diag.FromErr(err)
+						tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForVirtualNetworkInterfaceAvailable failed: %s", err.Error()), "ibm_is_instance_network_attachment", "update")
+						log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+						return tfErr.GetDiag()
 					}
 				}
 			}
@@ -656,10 +692,11 @@ func resourceIBMIsInstanceNetworkAttachmentUpdate(context context.Context, d *sc
 
 	if hasChange {
 		updateInstanceNetworkAttachmentOptions.InstanceNetworkAttachmentPatch, _ = patchVals.AsPatch()
-		_, response, err := vpcClient.UpdateInstanceNetworkAttachmentWithContext(context, updateInstanceNetworkAttachmentOptions)
+		_, _, err := vpcClient.UpdateInstanceNetworkAttachmentWithContext(context, updateInstanceNetworkAttachmentOptions)
 		if err != nil {
-			log.Printf("[DEBUG] UpdateInstanceNetworkAttachmentWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("UpdateInstanceNetworkAttachmentWithContext failed %s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateInstanceNetworkAttachmentWithContext failed: %s", err.Error()), "ibm_is_instance_network_attachment", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 
@@ -669,12 +706,14 @@ func resourceIBMIsInstanceNetworkAttachmentUpdate(context context.Context, d *sc
 func resourceIBMIsInstanceNetworkAttachmentDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := vpcClient(meta)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_network_attachment", "delete", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	parts, err := flex.SepIdParts(d.Id(), "/")
 	if err != nil {
-		return diag.FromErr(err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_network_attachment", "delete", "sep-id-parts").GetDiag()
 	}
 	getInstanceNetworkAttachmentOptions := &vpcv1.GetInstanceNetworkAttachmentOptions{}
 	getInstanceNetworkAttachmentOptions.SetInstanceID(parts[0])
@@ -686,8 +725,9 @@ func resourceIBMIsInstanceNetworkAttachmentDelete(context context.Context, d *sc
 			d.SetId("")
 			return nil
 		}
-		log.Printf("[DEBUG] GetInstanceNetworkAttachmentWithContext failed while deleting %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetInstanceNetworkAttachmentWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetInstanceNetworkAttachmentWithContext failed: %s", err.Error()), "ibm_is_instance_network_attachment", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	deleteInstanceNetworkAttachmentOptions := &vpcv1.DeleteInstanceNetworkAttachmentOptions{}
@@ -696,12 +736,15 @@ func resourceIBMIsInstanceNetworkAttachmentDelete(context context.Context, d *sc
 
 	response, err = vpcClient.DeleteInstanceNetworkAttachmentWithContext(context, deleteInstanceNetworkAttachmentOptions)
 	if err != nil {
-		log.Printf("[DEBUG] DeleteInstanceNetworkAttachmentWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("DeleteInstanceNetworkAttachmentWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteInstanceNetworkAttachmentWithContext failed: %s", err.Error()), "ibm_is_instance_network_attachment", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	_, err = isWaitForInstanceNetworkAttachmentDeleted(vpcClient, parts[0], parts[1], ina, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("isWaitForInstanceNetworkAttachmentDeleted failed %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForInstanceNetworkAttachmentDeleted failed: %s", err.Error()), "ibm_is_instance_network_attachment", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId("")
@@ -778,20 +821,20 @@ func resourceIBMIsInstanceNetworkAttachmentMapToInstanceNetworkAttachmentPrototy
 
 func resourceIBMIsInstanceNetworkAttachmentMapToVirtualNetworkInterfaceIPPrototype(modelMap map[string]interface{}) (vpcv1.VirtualNetworkInterfaceIPPrototypeIntf, error) {
 	model := &vpcv1.VirtualNetworkInterfaceIPPrototype{}
-	if modelMap["id"] != nil && modelMap["id"].(string) != "" {
-		model.ID = core.StringPtr(modelMap["id"].(string))
-	}
-	if modelMap["href"] != nil && modelMap["href"].(string) != "" {
+	if modelMap["reserved_ip"] != nil && modelMap["reserved_ip"].(string) != "" {
+		model.ID = core.StringPtr(modelMap["reserved_ip"].(string))
+	} else if modelMap["href"] != nil && modelMap["href"].(string) != "" {
 		model.Href = core.StringPtr(modelMap["href"].(string))
-	}
-	if modelMap["address"] != nil && modelMap["address"].(string) != "" {
-		model.Address = core.StringPtr(modelMap["address"].(string))
-	}
-	if modelMap["auto_delete"] != nil {
-		model.AutoDelete = core.BoolPtr(modelMap["auto_delete"].(bool))
-	}
-	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
-		model.Name = core.StringPtr(modelMap["name"].(string))
+	} else {
+		if modelMap["address"] != nil && modelMap["address"].(string) != "" {
+			model.Address = core.StringPtr(modelMap["address"].(string))
+		}
+		if modelMap["auto_delete"] != nil {
+			model.AutoDelete = core.BoolPtr(modelMap["auto_delete"].(bool))
+		}
+		if modelMap["name"] != nil && modelMap["name"].(string) != "" {
+			model.Name = core.StringPtr(modelMap["name"].(string))
+		}
 	}
 	return model, nil
 }
@@ -835,20 +878,20 @@ func resourceIBMIsInstanceNetworkAttachmentMapToVirtualNetworkInterfaceIPPrototy
 
 func resourceIBMIsInstanceNetworkAttachmentMapToVirtualNetworkInterfacePrimaryIPPrototype(modelMap map[string]interface{}) (vpcv1.VirtualNetworkInterfacePrimaryIPPrototypeIntf, error) {
 	model := &vpcv1.VirtualNetworkInterfacePrimaryIPPrototype{}
-	if modelMap["id"] != nil && modelMap["id"].(string) != "" {
-		model.ID = core.StringPtr(modelMap["id"].(string))
-	}
-	if modelMap["href"] != nil && modelMap["href"].(string) != "" {
+	if modelMap["reserved_ip"] != nil && modelMap["reserved_ip"].(string) != "" {
+		model.ID = core.StringPtr(modelMap["reserved_ip"].(string))
+	} else if modelMap["href"] != nil && modelMap["href"].(string) != "" {
 		model.Href = core.StringPtr(modelMap["href"].(string))
-	}
-	if modelMap["address"] != nil && modelMap["address"].(string) != "" {
-		model.Address = core.StringPtr(modelMap["address"].(string))
-	}
-	if modelMap["auto_delete"] != nil {
-		model.AutoDelete = core.BoolPtr(modelMap["auto_delete"].(bool))
-	}
-	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
-		model.Name = core.StringPtr(modelMap["name"].(string))
+	} else {
+		if modelMap["address"] != nil && modelMap["address"].(string) != "" {
+			model.Address = core.StringPtr(modelMap["address"].(string))
+		}
+		if modelMap["auto_delete"] != nil {
+			model.AutoDelete = core.BoolPtr(modelMap["auto_delete"].(bool))
+		}
+		if modelMap["name"] != nil && modelMap["name"].(string) != "" {
+			model.Name = core.StringPtr(modelMap["name"].(string))
+		}
 	}
 	return model, nil
 }

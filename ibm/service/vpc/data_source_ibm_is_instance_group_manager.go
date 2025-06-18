@@ -4,16 +4,20 @@
 package vpc
 
 import (
+	"context"
 	"fmt"
+	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func DataSourceIBMISInstanceGroupManager() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceIBMISInstanceGroupManagerRead,
+		ReadContext: dataSourceIBMISInstanceGroupManagerRead,
 
 		Schema: map[string]*schema.Schema{
 
@@ -96,10 +100,12 @@ func DataSourceIBMISInstanceGroupManager() *schema.Resource {
 	}
 }
 
-func dataSourceIBMISInstanceGroupManagerRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceIBMISInstanceGroupManagerRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instance_group_manager", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	instanceGroupID := d.Get("instance_group").(string)
@@ -115,9 +121,11 @@ func dataSourceIBMISInstanceGroupManagerRead(d *schema.ResourceData, meta interf
 		if start != "" {
 			listInstanceGroupManagerOptions.Start = &start
 		}
-		instanceGroupManagerCollections, response, err := sess.ListInstanceGroupManagers(&listInstanceGroupManagerOptions)
+		instanceGroupManagerCollections, _, err := sess.ListInstanceGroupManagersWithContext(context, &listInstanceGroupManagerOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Getting InstanceGroup Managers %s\n%s", err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetInstanceGroupManagerWithContext failed: %s", err.Error()), "(Data) ibm_is_instance_group_manager", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		start = flex.GetNext(instanceGroupManagerCollections.Next)
 		allrecs = append(allrecs, instanceGroupManagerCollections.Managers...)
@@ -132,8 +140,16 @@ func dataSourceIBMISInstanceGroupManagerRead(d *schema.ResourceData, meta interf
 		instanceGroupManager := instanceGroupManagerIntf.(*vpcv1.InstanceGroupManager)
 		if instanceGroupManagerName == *instanceGroupManager.Name {
 			d.SetId(fmt.Sprintf("%s/%s", instanceGroupID, *instanceGroupManager.ID))
-			d.Set("manager_type", *instanceGroupManager.ManagerType)
-			d.Set("manager_id", *instanceGroupManager.ID)
+			if !core.IsNil(instanceGroupManager.ManagerType) {
+				if err = d.Set("manager_type", instanceGroupManager.ManagerType); err != nil {
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting manager_type: %s", err), "(Data) ibm_is_instance_group_manager", "read", "set-manager_type").GetDiag()
+				}
+			}
+			if !core.IsNil(instanceGroupManager.ID) {
+				if err = d.Set("manager_id", *instanceGroupManager.ID); err != nil {
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting manager_id: %s", err), "(Data) ibm_is_instance_group_manager", "read", "set-manager_id").GetDiag()
+				}
+			}
 
 			if *instanceGroupManager.ManagerType == "scheduled" {
 
@@ -147,26 +163,48 @@ func dataSourceIBMISInstanceGroupManagerRead(d *schema.ResourceData, meta interf
 						}
 						actions = append(actions, actn)
 					}
-					d.Set("actions", actions)
+
+					if err = d.Set("actions", actions); err != nil {
+						return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting actions: %s", err), "(Data) ibm_is_instance_group_manager", "read", "set-actions").GetDiag()
+					}
 				}
 
 			} else {
-				d.Set("aggregation_window", *instanceGroupManager.AggregationWindow)
-				d.Set("cooldown", *instanceGroupManager.Cooldown)
-				d.Set("max_membership_count", *instanceGroupManager.MaxMembershipCount)
-				d.Set("min_membership_count", *instanceGroupManager.MinMembershipCount)
+				if !core.IsNil(instanceGroupManager.AggregationWindow) {
+					if err = d.Set("aggregation_window", flex.IntValue(instanceGroupManager.AggregationWindow)); err != nil {
+						return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting aggregation_window: %s", err), "(Data) ibm_is_instance_group_manager", "read", "set-aggregation_window").GetDiag()
+					}
+				}
+				if !core.IsNil(instanceGroupManager.Cooldown) {
+					if err = d.Set("cooldown", flex.IntValue(instanceGroupManager.Cooldown)); err != nil {
+						return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting cooldown: %s", err), "(Data) ibm_is_instance_group_manager", "read", "set-cooldown").GetDiag()
+					}
+				}
+				if !core.IsNil(instanceGroupManager.MaxMembershipCount) {
+					if err = d.Set("max_membership_count", flex.IntValue(instanceGroupManager.MaxMembershipCount)); err != nil {
+						return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting max_membership_count: %s", err), "(Data) ibm_is_instance_group_manager", "read", "set-max_membership_count").GetDiag()
+					}
+				}
+				if !core.IsNil(instanceGroupManager.MinMembershipCount) {
+					if err = d.Set("min_membership_count", flex.IntValue(instanceGroupManager.MinMembershipCount)); err != nil {
+						return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting min_membership_count: %s", err), "(Data) ibm_is_instance_group_manager", "read", "set-min_membership_count").GetDiag()
+					}
+				}
 				policies := make([]string, 0)
 				if instanceGroupManager.Policies != nil {
 					for i := 0; i < len(instanceGroupManager.Policies); i++ {
 						policies = append(policies, string(*(instanceGroupManager.Policies[i].ID)))
 					}
 				}
-
-				d.Set("policies", policies)
+				if err = d.Set("policies", policies); err != nil {
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting policies: %s", err), "(Data) ibm_is_instance_group_manager", "read", "set-policies").GetDiag()
+				}
 			}
 
 			return nil
 		}
 	}
-	return fmt.Errorf("Instance group manager %s not found", instanceGroupManagerName)
+	tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Instance group manager %s not found", instanceGroupManagerName), "(Data) ibm_is_instance_group_manager", "read")
+	log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+	return tfErr.GetDiag()
 }

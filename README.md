@@ -1,6 +1,6 @@
 ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/IBM-Cloud/terraform-provider-ibm)
 ![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/IBM-Cloud/terraform-provider-ibm?include_prereleases)
-![GitHub Workflow Status](https://img.shields.io/github/workflow/status/IBM-Cloud/terraform-provider-ibm/release)
+![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/IBM-Cloud/terraform-provider-ibm/release.yml?label=build)
 ![GitHub](https://img.shields.io/github/license/IBM-Cloud/terraform-provider-ibm)<br />
 ![GitHub contributors](https://img.shields.io/github/contributors/IBM-Cloud/terraform-provider-ibm?color=blueviolet)
 ![GitHub commit activity](https://img.shields.io/github/commit-activity/m/IBM-Cloud/terraform-provider-ibm?color=blueviolet)

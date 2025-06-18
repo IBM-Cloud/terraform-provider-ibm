@@ -182,7 +182,7 @@ func dataSourceIBMPIVolumeRead(ctx context.Context, d *schema.ResourceData, meta
 	d.Set(Attr_CreationDate, volumedata.CreationDate.String())
 	if volumedata.Crn != "" {
 		d.Set(Attr_CRN, volumedata.Crn)
-		tags, err := flex.GetTagsUsingCRN(meta, string(volumedata.Crn))
+		tags, err := flex.GetGlobalTagsUsingCRN(meta, string(volumedata.Crn), "", UserTagType)
 		if err != nil {
 			log.Printf("Error on get of pi volume (%s) user_tags: %s", *volumedata.VolumeID, err)
 		}

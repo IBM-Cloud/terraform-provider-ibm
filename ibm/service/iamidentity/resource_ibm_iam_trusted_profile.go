@@ -11,14 +11,15 @@ import (
 	"context"
 	"fmt"
 	"log"
-
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func ResourceIBMIAMTrustedProfile() *schema.Resource {
@@ -185,8 +186,41 @@ func resourceIBMIamTrustedProfileRead(context context.Context, d *schema.Resourc
 	getProfileOptions := &iamidentityv1.GetProfileOptions{}
 
 	getProfileOptions.SetProfileID(d.Id())
+	var trustedProfile *iamidentityv1.TrustedProfile
+	var response *core.DetailedResponse
 
-	trustedProfile, response, err := iamIdentityClient.GetProfileWithContext(context, getProfileOptions)
+	var (
+		initialDelaySec = 2  // seconds
+		maxDelaySec     = 60 // max delay in seconds
+
+	)
+
+	err = retry.RetryContext(context, 5*time.Minute, func() *retry.RetryError {
+		retryCount := 0
+
+		return func() *retry.RetryError {
+			// Calculate exponential delay
+			delaySec := initialDelaySec * (1 << retryCount) // equivalent to initialDelaySec * 2^retryCount
+			if delaySec > maxDelaySec {
+				delaySec = maxDelaySec
+			}
+			time.Sleep(time.Duration(delaySec) * time.Second)
+
+			trustedProfile, response, err = iamIdentityClient.GetProfileWithContext(context, getProfileOptions)
+			if err != nil || trustedProfile == nil {
+				retryCount++
+				if response != nil && response.StatusCode == 404 {
+					return retry.RetryableError(err)
+				}
+				return retry.NonRetryableError(err)
+			}
+			return nil
+		}()
+	})
+
+	if conns.IsResourceTimeoutError(err) {
+		trustedProfile, response, err = iamIdentityClient.GetProfileWithContext(context, getProfileOptions)
+	}
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")

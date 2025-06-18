@@ -4,18 +4,21 @@
 package vpc
 
 import (
+	"context"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func DataSourceIBMISEndpointGatewayIPs() *schema.Resource {
 	return &schema.Resource{
-		Read:     dataSourceIBMISEndpointGatewayIPsRead,
-		Importer: &schema.ResourceImporter{},
+		ReadContext: dataSourceIBMISEndpointGatewayIPsRead,
+		Importer:    &schema.ResourceImporter{},
 		Schema: map[string]*schema.Schema{
 			isVirtualEndpointGatewayID: {
 				Type:     schema.TypeString,
@@ -87,10 +90,12 @@ func DataSourceIBMISEndpointGatewayIPs() *schema.Resource {
 	}
 }
 
-func dataSourceIBMISEndpointGatewayIPsRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceIBMISEndpointGatewayIPsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_virtual_endpoint_gateways_ips", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	gatewayID := d.Get(isVirtualEndpointGatewayID).(string)
 
@@ -103,7 +108,9 @@ func dataSourceIBMISEndpointGatewayIPsRead(d *schema.ResourceData, meta interfac
 		}
 		result, response, err := sess.ListEndpointGatewayIps(options)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error fetching endpoint gateway ips %s\n%s", err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("[ERROR] Error fetching endpoint gateway ips %s\n%s", err, response), "(Data) ibm_is_virtual_endpoint_gateways_ips", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		start = flex.GetNext(result.Next)
 		allrecs = append(allrecs, result.Ips...)

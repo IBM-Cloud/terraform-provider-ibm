@@ -175,7 +175,9 @@ func DataSourceIbmIsDedicatedHostGroups() *schema.Resource {
 func dataSourceIbmIsDedicatedHostGroupsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host_groups", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	listDedicatedHostGroupsOptions := &vpcv1.ListDedicatedHostGroupsOptions{}
 
@@ -198,28 +200,31 @@ func dataSourceIbmIsDedicatedHostGroupsRead(context context.Context, d *schema.R
 		if start != "" {
 			listDedicatedHostGroupsOptions.Start = &start
 		}
-		listDedicatedHostGroupsOptions, response, err := vpcClient.ListDedicatedHostGroupsWithContext(context, listDedicatedHostGroupsOptions)
+		dedicatedHostGroupCollection, response, err := vpcClient.ListDedicatedHostGroupsWithContext(context, listDedicatedHostGroupsOptions)
 		if err != nil {
-			log.Printf("[DEBUG] ListDedicatedHostGroupsWithContext failed %s\n%s", err, response)
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListDedicatedHostGroupsWithContext failed: %s\n%s", err, response), "ibm_is_dedicated_host_groups", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
-		start = flex.GetNext(listDedicatedHostGroupsOptions.Next)
-		allrecs = append(allrecs, listDedicatedHostGroupsOptions.Groups...)
+		start = flex.GetNext(dedicatedHostGroupCollection.Next)
+		allrecs = append(allrecs, dedicatedHostGroupCollection.Groups...)
 		if start == "" {
 			break
 		}
 	}
 
-	if len(allrecs) != 0 {
+	if len(allrecs) > 0 {
 
 		d.SetId(dataSourceIbmIsDedicatedHostGroupsID(d))
 		err = d.Set("host_groups", dataSourceDedicatedHostGroupCollectionFlattenGroups(allrecs))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting groups %s", err))
+			err = fmt.Errorf("[ERROR] Error setting host_groups: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host_groups", "read", "set-host_groups").GetDiag()
 		}
 
 		if err = d.Set("total_count", len(allrecs)); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting total_count: %s", err))
+			err = fmt.Errorf("[ERROR] Error setting total_count: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host_groups", "read", "set-total_count").GetDiag()
 		}
 
 	}

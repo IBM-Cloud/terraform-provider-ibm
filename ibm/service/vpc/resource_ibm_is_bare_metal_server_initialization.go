@@ -10,6 +10,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -76,7 +77,9 @@ func resourceIBMISBareMetalServerInitializationCreate(context context.Context, d
 
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_initialization", "create", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	stopServerIfStartingForInitialization := false
 	options := &vpcv1.GetBareMetalServerInitializationOptions{
@@ -84,11 +87,15 @@ func resourceIBMISBareMetalServerInitializationCreate(context context.Context, d
 	}
 	stopServerIfStartingForInitialization, err = resourceStopServerIfRunning(bareMetalServerId, "hard", d, context, sess, stopServerIfStartingForInitialization)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceStopServerIfRunning failed: %s", err.Error()), "ibm_is_bare_metal_server_initialization", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
-	init, response, err := sess.GetBareMetalServerInitializationWithContext(context, options)
+	init, _, err := sess.GetBareMetalServerInitializationWithContext(context, options)
 	if err != nil || init == nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error get bare metal server initialization (%s) err %s\n%s", bareMetalServerId, err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetBareMetalServerInitializationWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server_initialization", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	d.SetId(bareMetalServerId)
 
@@ -110,40 +117,48 @@ func resourceIBMISBareMetalServerInitializationCreate(context context.Context, d
 		}
 		initializationReplaceOptions.Keys = keyobjs
 	}
-	initInitializationReplace, response, err := sess.ReplaceBareMetalServerInitializationWithContext(context, initializationReplaceOptions)
+	initInitializationReplace, _, err := sess.ReplaceBareMetalServerInitializationWithContext(context, initializationReplaceOptions)
 	if err != nil || initInitializationReplace == nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error initialization replacing bare metal server (%s) err %s\n%s", bareMetalServerId, err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ReplaceBareMetalServerInitializationWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server_initialization", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	_, err = isWaitForBareMetalServerInitializationStopped(sess, bareMetalServerId, d.Timeout(schema.TimeoutUpdate), d)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForBareMetalServerInitializationStopped failed: %s", err.Error()), "ibm_is_bare_metal_server_initialization", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if stopServerIfStartingForInitialization {
 		_, err = resourceStartServerIfStopped(bareMetalServerId, "hard", d, context, sess, stopServerIfStartingForInitialization)
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceStartServerIfStopped failed: %s", err.Error()), "ibm_is_bare_metal_server_initialization", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
-	err = BareMetalServerInitializationGet(d, sess, bareMetalServerId)
-	if err != nil {
-		return diag.FromErr(err)
+	diagErr := BareMetalServerInitializationGet(context, d, sess, bareMetalServerId)
+	if diagErr != nil {
+		return diagErr
 	}
 	return nil
 }
 
-func BareMetalServerInitializationGet(d *schema.ResourceData, sess *vpcv1.VpcV1, bareMetalServerId string) error {
+func BareMetalServerInitializationGet(context context.Context, d *schema.ResourceData, sess *vpcv1.VpcV1, bareMetalServerId string) diag.Diagnostics {
 
 	options := &vpcv1.GetBareMetalServerInitializationOptions{
 		ID: &bareMetalServerId,
 	}
-	init, response, err := sess.GetBareMetalServerInitialization(options)
+	init, response, err := sess.GetBareMetalServerInitializationWithContext(context, options)
 	if err != nil || init == nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error fetching bare metal server (%s)  initialization err %s\n%s", bareMetalServerId, err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetBareMetalServerInitializationWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server_initialization", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.Set(isBareMetalServerID, bareMetalServerId)
@@ -157,11 +172,13 @@ func resourceIBMISBareMetalServerInitializationRead(context context.Context, d *
 	}
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_initialization", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
-	err = BareMetalServerInitializationGet(d, sess, bareMetalServerId)
-	if err != nil {
-		return diag.FromErr(err)
+	diagErr := BareMetalServerInitializationGet(context, d, sess, bareMetalServerId)
+	if diagErr != nil {
+		return diagErr
 	}
 	return nil
 }

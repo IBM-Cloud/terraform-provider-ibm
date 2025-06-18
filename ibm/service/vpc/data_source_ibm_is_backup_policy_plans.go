@@ -161,7 +161,9 @@ func DataSourceIBMIsBackupPolicyPlans() *schema.Resource {
 func dataSourceIBMIsBackupPolicyPlansRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := vpcClient(meta)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("vpcClient creation failed: %s", err.Error()), "(Data) ibm_is_backup_policy_plans", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	listBackupPolicyPlansOptions := &vpcv1.ListBackupPolicyPlansOptions{}
@@ -170,8 +172,9 @@ func dataSourceIBMIsBackupPolicyPlansRead(context context.Context, d *schema.Res
 
 	backupPolicyPlanCollection, response, err := vpcClient.ListBackupPolicyPlansWithContext(context, listBackupPolicyPlansOptions)
 	if err != nil {
-		log.Printf("[DEBUG] ListBackupPolicyPlansWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("[ERROR] ListBackupPolicyPlansWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListBackupPolicyPlansWithContext failed: %s\n%s", err.Error(), response), "(Data) ibm_is_backup_policy_plans", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	// Use the provided filter argument and construct a new list with only the requested resource(s)
@@ -191,7 +194,10 @@ func dataSourceIBMIsBackupPolicyPlansRead(context context.Context, d *schema.Res
 	}
 	if suppliedFilter {
 		if len(backupPolicyPlanCollection.Plans) == 0 {
-			return diag.FromErr(fmt.Errorf("[ERROR] no plans found with name %s", name))
+			err = fmt.Errorf("[ERROR] no plans found with name %s", name)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListBackupPolicyPlansWithContext failed: %s\n%s", err.Error(), response), "(Data) ibm_is_backup_policy_plans", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		d.SetId(name)
 	} else {
@@ -201,7 +207,7 @@ func dataSourceIBMIsBackupPolicyPlansRead(context context.Context, d *schema.Res
 	if backupPolicyPlanCollection.Plans != nil {
 		err = d.Set("plans", dataSourceBackupPolicyPlanCollectionFlattenPlans(backupPolicyPlanCollection.Plans))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting plans %s", err))
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting plans: %s", err), "(Data) ibm_is_backup_policy_plans", "read", "set-plans").GetDiag()
 		}
 	}
 

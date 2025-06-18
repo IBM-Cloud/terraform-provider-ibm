@@ -9,6 +9,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
@@ -199,7 +200,9 @@ func DataSourceIBMISLBListenerPolicies() *schema.Resource {
 func dataSourceIBMIsLbListenerPoliciesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := vpcClient(meta)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_lb_listener_policies", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	listLoadBalancerListenerPoliciesOptions := &vpcv1.ListLoadBalancerListenerPoliciesOptions{}
@@ -207,10 +210,11 @@ func dataSourceIBMIsLbListenerPoliciesRead(context context.Context, d *schema.Re
 	listLoadBalancerListenerPoliciesOptions.SetLoadBalancerID(d.Get(isLBListenerPolicyLBID).(string))
 	listLoadBalancerListenerPoliciesOptions.SetListenerID(d.Get(isLBListenerPolicyListenerID).(string))
 
-	loadBalancerListenerPolicyCollection, response, err := vpcClient.ListLoadBalancerListenerPoliciesWithContext(context, listLoadBalancerListenerPoliciesOptions)
+	loadBalancerListenerPolicyCollection, _, err := vpcClient.ListLoadBalancerListenerPoliciesWithContext(context, listLoadBalancerListenerPoliciesOptions)
 	if err != nil {
-		log.Printf("[DEBUG] ListLoadBalancerListenerPoliciesWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("ListLoadBalancerListenerPoliciesWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListLoadBalancerListenerPoliciesWithContext failed: %s", err.Error()), "(Data) ibm_is_lb_listener_policies", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(dataSourceIBMIsLbListenerPoliciesID(d))
@@ -218,7 +222,7 @@ func dataSourceIBMIsLbListenerPoliciesRead(context context.Context, d *schema.Re
 	if loadBalancerListenerPolicyCollection.Policies != nil {
 		err = d.Set("policies", dataSourceLoadBalancerListenerPolicyCollectionFlattenPolicies(loadBalancerListenerPolicyCollection.Policies))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting policies %s", err))
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting policies: %s", err), "(Data) ibm_is_lb_listener_policies", "read", "set-policies").GetDiag()
 		}
 	}
 

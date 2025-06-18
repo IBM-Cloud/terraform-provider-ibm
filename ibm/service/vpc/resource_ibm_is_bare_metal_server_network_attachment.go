@@ -181,6 +181,7 @@ func ResourceIBMIsBareMetalServerNetworkAttachment() *schema.Resource {
 						},
 						"primary_ip": &schema.Schema{
 							Type:          schema.TypeList,
+							MaxItems:      1,
 							Optional:      true,
 							Computed:      true,
 							ConflictsWith: []string{"virtual_network_interface.0.id"},
@@ -188,10 +189,11 @@ func ResourceIBMIsBareMetalServerNetworkAttachment() *schema.Resource {
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"address": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Computed:    true,
-										Description: "The IP address.If the address has not yet been selected, the value will be `0.0.0.0`.This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.",
+										Type:          schema.TypeString,
+										Optional:      true,
+										ConflictsWith: []string{"virtual_network_interface.0.primary_ip.0.reserved_ip"},
+										Computed:      true,
+										Description:   "The IP address.If the address has not yet been selected, the value will be `0.0.0.0`.This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.",
 									},
 									"deleted": &schema.Schema{
 										Type:        schema.TypeList,
@@ -219,10 +221,11 @@ func ResourceIBMIsBareMetalServerNetworkAttachment() *schema.Resource {
 										Description: "The unique identifier for this reserved IP.",
 									},
 									"name": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Computed:    true,
-										Description: "The name for this reserved IP. The name is unique across all reserved IPs in a subnet.",
+										Type:          schema.TypeString,
+										Optional:      true,
+										ConflictsWith: []string{"virtual_network_interface.0.primary_ip.0.reserved_ip"},
+										Computed:      true,
+										Description:   "The name for this reserved IP. The name is unique across all reserved IPs in a subnet.",
 									},
 									"resource_type": &schema.Schema{
 										Type:        schema.TypeString,
@@ -372,7 +375,9 @@ func ResourceIBMIsBareMetalServerNetworkAttachmentValidator() *validate.Resource
 func resourceIBMIsBareMetalServerNetworkAttachmentCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := vpcClient(meta)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_network_attachment", "create", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	rebootNeeded := true
 	rebooted := false
@@ -403,7 +408,7 @@ func resourceIBMIsBareMetalServerNetworkAttachmentCreate(context context.Context
 	createBareMetalServerNetworkAttachmentOptions.SetBareMetalServerID(bareMetalServerId)
 	convertedModel, err := resourceIBMIsBareMetalServerNetworkAttachmentMapToBareMetalServerNetworkAttachmentPrototype(bodyModelMap)
 	if err != nil {
-		return diag.FromErr(err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_network_attachment", "create", "parse-request-body").GetDiag()
 	}
 	if rebootNeeded {
 		getbmsoptions := &vpcv1.GetBareMetalServerOptions{
@@ -412,11 +417,16 @@ func resourceIBMIsBareMetalServerNetworkAttachmentCreate(context context.Context
 
 		bms, response, err := vpcClient.GetBareMetalServerWithContext(context, getbmsoptions)
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error fetching bare metal server (%s) during network attachment create err %s\n%s", bareMetalServerId, err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetBareMetalServerWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server_network_attachment", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		// failed, pending, restarting, running, starting, stopped, stopping, maintenance
 		if *bms.Status == "failed" {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error cannot attach network attachment to a failed bare metal server"))
+			err = fmt.Errorf("[ERROR] Error cannot attach network attachment to a failed bare metal server")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetBareMetalServerWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server_network_attachment", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		} else if *bms.Status == "running" && rebootNeeded {
 			log.Printf("[DEBUG] Stopping bare metal server (%s) to create a PCI network attachment", bareMetalServerId)
 			stopType := "hard"
@@ -429,15 +439,23 @@ func resourceIBMIsBareMetalServerNetworkAttachmentCreate(context context.Context
 			}
 			res, err := vpcClient.StopBareMetalServerWithContext(context, createstopaction)
 			if err != nil || res.StatusCode != 204 {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error stopping bare metal server (%s) during network attachment create err %s\n%s", bareMetalServerId, err, response))
+				err = fmt.Errorf("[ERROR] Error stopping bare metal server (%s) during network attachment create err %s\n%s", bareMetalServerId, err, response)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("StopBareMetalServerWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server_network_attachment", "create")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			_, err = isWaitForBareMetalServerStoppedForNIC(vpcClient, bareMetalServerId, d.Timeout(schema.TimeoutCreate), d)
 			if err != nil {
-				return diag.FromErr(err)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForBareMetalServerStoppedForNIC failed: %s", err.Error()), "ibm_is_bare_metal_server_network_attachment", "create")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			rebooted = true
 		} else if *bms.Status != "stopped" {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error bare metal server in %s state, please try after some time", *bms.Status))
+			err = fmt.Errorf("[ERROR] Error bare metal server in %s state, please try after some time", *bms.Status)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetBareMetalServerWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server_network_attachment", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 	createBareMetalServerNetworkAttachmentOptions.BareMetalServerNetworkAttachmentPrototype = convertedModel
@@ -455,10 +473,14 @@ func resourceIBMIsBareMetalServerNetworkAttachmentCreate(context context.Context
 			}
 			_, err = isWaitForBareMetalServerAvailableForNIC(vpcClient, bareMetalServerId, d.Timeout(schema.TimeoutCreate), d)
 			if err != nil {
-				return diag.FromErr(err)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForBareMetalServerAvailableForNIC failed: %s", err.Error()), "ibm_is_bare_metal_server_network_attachment", "create")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 		}
-		return diag.FromErr(fmt.Errorf("CreateBareMetalServerNetworkAttachmentWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateBareMetalServerNetworkAttachmentWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server_network_attachment", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	if _, ok := bareMetalServerNetworkAttachmentIntf.(*vpcv1.BareMetalServerNetworkAttachmentByVlan); ok {
@@ -483,7 +505,10 @@ func resourceIBMIsBareMetalServerNetworkAttachmentCreate(context context.Context
 		d.SetId(fmt.Sprintf("%s/%s", *createBareMetalServerNetworkAttachmentOptions.BareMetalServerID, *bareMetalServerNetworkAttachment.ID))
 		d.Set("floating_bare_metal_server", *createBareMetalServerNetworkAttachmentOptions.BareMetalServerID)
 	} else {
-		return diag.FromErr(fmt.Errorf("Unrecognized vpcv1.BareMetalServerNetworkAttachmentIntf subtype encountered"))
+		err = fmt.Errorf("Unrecognized vpcv1.BareMetalServerNetworkAttachmentIntf subtype encountered")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateBareMetalServerNetworkAttachmentWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server_network_attachment", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	if rebooted {
@@ -492,11 +517,15 @@ func resourceIBMIsBareMetalServerNetworkAttachmentCreate(context context.Context
 		}
 		res, err := vpcClient.StartBareMetalServerWithContext(context, createstartaction)
 		if err != nil || res.StatusCode != 204 {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error starting bare metal server (%s) after attachment creation err %s\n%s", bareMetalServerId, err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("StartBareMetalServerWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server_network_attachment", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		_, err = isWaitForBareMetalServerAvailableForNIC(vpcClient, bareMetalServerId, d.Timeout(schema.TimeoutCreate), d)
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForBareMetalServerAvailableForNIC failed: %s", err.Error()), "ibm_is_bare_metal_server_network_attachment", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 
@@ -506,7 +535,9 @@ func resourceIBMIsBareMetalServerNetworkAttachmentCreate(context context.Context
 func resourceIBMIsBareMetalServerNetworkAttachmentRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := vpcClient(meta)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_network_attachment", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	getBareMetalServerNetworkAttachmentOptions := &vpcv1.GetBareMetalServerNetworkAttachmentOptions{}
@@ -515,7 +546,7 @@ func resourceIBMIsBareMetalServerNetworkAttachmentRead(context context.Context, 
 
 	parts, err := flex.SepIdParts(d.Id(), "/")
 	if err != nil {
-		return diag.FromErr(err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_network_attachment", "read", "sep-id-parts").GetDiag()
 	}
 	bmId = parts[0]
 	nacId = parts[1]
@@ -533,13 +564,15 @@ func resourceIBMIsBareMetalServerNetworkAttachmentRead(context context.Context, 
 				getVirtualNetworkInterfaceOptions := &vpcv1.GetVirtualNetworkInterfaceOptions{
 					ID: &vniid,
 				}
-				vniDetails, response, err := vpcClient.GetVirtualNetworkInterface(getVirtualNetworkInterfaceOptions)
+				vniDetails, response, err := vpcClient.GetVirtualNetworkInterfaceWithContext(context, getVirtualNetworkInterfaceOptions)
 				if err != nil {
 					if response != nil && response.StatusCode == 404 {
 						d.SetId("")
 						return nil
 					}
-					return diag.FromErr(fmt.Errorf("[ERROR] Error on GetVirtualNetworkInterface in BareMetalServer : %s\n%s", err, response))
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetVirtualNetworkInterfaceWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server_network_attachment", "read")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
 
 				vniTargetIntf := vniDetails.Target
@@ -607,7 +640,9 @@ func resourceIBMIsBareMetalServerNetworkAttachmentRead(context context.Context, 
 			// return diag.FromErr(fmt.Errorf("GetBareMetalServerNetworkAttachmentWithContext failed %s\n%s", err, response))
 		} else {
 			log.Printf("[DEBUG] GetBareMetalServerNetworkAttachmentWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("GetBareMetalServerNetworkAttachmentWithContext failed %s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetBareMetalServerNetworkAttachmentWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server_network_attachment", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 
@@ -615,56 +650,69 @@ func resourceIBMIsBareMetalServerNetworkAttachmentRead(context context.Context, 
 		bareMetalServerNetworkAttachment := bareMetalServerNetworkAttachmentIntf.(*vpcv1.BareMetalServerNetworkAttachmentByVlan)
 		d.SetId(fmt.Sprintf("%s/%s", bmId, *bareMetalServerNetworkAttachment.ID))
 		if err = d.Set("interface_type", bareMetalServerNetworkAttachment.InterfaceType); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting interface_type: %s", err))
+			err = fmt.Errorf("Error setting interface_type: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_network_attachment", "read", "set-interface_type").GetDiag()
 		}
 		if !core.IsNil(bareMetalServerNetworkAttachment.Name) {
 			if err = d.Set("name", bareMetalServerNetworkAttachment.Name); err != nil {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error setting name: %s", err))
+				err = fmt.Errorf("Error setting name: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_network_attachment", "read", "set-name").GetDiag()
 			}
 		}
 		virtualNetworkInterfaceMap, err := resourceIBMIsBareMetalServerNetworkAttachmentVirtualNetworkInterfaceReferenceAttachmentContextToMap(bareMetalServerNetworkAttachment.VirtualNetworkInterface, vpcClient)
 		if err != nil {
-			return diag.FromErr(err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_network_attachment", "read", "virtual_network_interface-to-map").GetDiag()
 		}
 		if err = d.Set("virtual_network_interface", []map[string]interface{}{virtualNetworkInterfaceMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting virtual_network_interface: %s", err))
+			err = fmt.Errorf("Error setting virtual_network_interface: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_network_attachment", "read", "set-virtual_network_interface").GetDiag()
 		}
 		if !core.IsNil(bareMetalServerNetworkAttachment.AllowToFloat) {
 			if err = d.Set("allow_to_float", bareMetalServerNetworkAttachment.AllowToFloat); err != nil {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error setting allow_to_float: %s", err))
+				err = fmt.Errorf("Error setting allow_to_float: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_network_attachment", "read", "set-allow_to_float").GetDiag()
 			}
 		}
 		if !core.IsNil(bareMetalServerNetworkAttachment.Vlan) {
 			if err = d.Set("vlan", flex.IntValue(bareMetalServerNetworkAttachment.Vlan)); err != nil {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error setting vlan: %s", err))
+				err = fmt.Errorf("Error setting vlan: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_network_attachment", "read", "set-vlan").GetDiag()
 			}
 		}
 		if err = d.Set("created_at", flex.DateTimeToString(bareMetalServerNetworkAttachment.CreatedAt)); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting created_at: %s", err))
+			err = fmt.Errorf("Error setting created_at: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_network_attachment", "read", "set-created_at").GetDiag()
 		}
 		if err = d.Set("href", bareMetalServerNetworkAttachment.Href); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting href: %s", err))
+			err = fmt.Errorf("Error setting href: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_network_attachment", "read", "set-href").GetDiag()
 		}
 		if err = d.Set("lifecycle_state", bareMetalServerNetworkAttachment.LifecycleState); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting lifecycle_state: %s", err))
+			err = fmt.Errorf("Error setting lifecycle_state: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_network_attachment", "read", "set-lifecycle_state").GetDiag()
 		}
 		if err = d.Set("port_speed", flex.IntValue(bareMetalServerNetworkAttachment.PortSpeed)); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting port_speed: %s", err))
+			err = fmt.Errorf("Error setting port_speed: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_network_attachment", "read", "set-port_speed").GetDiag()
 		}
 		if err = d.Set("resource_type", bareMetalServerNetworkAttachment.ResourceType); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting resource_type: %s", err))
+			err = fmt.Errorf("Error setting resource_type: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_network_attachment", "read", "set-resource_type").GetDiag()
 		}
 		if err = d.Set("type", bareMetalServerNetworkAttachment.Type); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting type: %s", err))
+			err = fmt.Errorf("Error setting type: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_network_attachment", "read", "set-type").GetDiag()
 		}
 	} else if _, ok := bareMetalServerNetworkAttachmentIntf.(*vpcv1.BareMetalServerNetworkAttachmentByPci); ok {
 		bareMetalServerNetworkAttachment := bareMetalServerNetworkAttachmentIntf.(*vpcv1.BareMetalServerNetworkAttachmentByPci)
 		if err = d.Set("interface_type", bareMetalServerNetworkAttachment.InterfaceType); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting interface_type: %s", err))
+			err = fmt.Errorf("Error setting interface_type: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_network_attachment", "read", "set-interface_type").GetDiag()
 		}
 		if !core.IsNil(bareMetalServerNetworkAttachment.Name) {
 			if err = d.Set("name", bareMetalServerNetworkAttachment.Name); err != nil {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error setting name: %s", err))
+				err = fmt.Errorf("Error setting name: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_network_attachment", "read", "set-name").GetDiag()
 			}
 		}
 		virtualNetworkInterfaceMap, err := resourceIBMIsBareMetalServerNetworkAttachmentVirtualNetworkInterfaceReferenceAttachmentContextToMap(bareMetalServerNetworkAttachment.VirtualNetworkInterface, vpcClient)
@@ -672,7 +720,8 @@ func resourceIBMIsBareMetalServerNetworkAttachmentRead(context context.Context, 
 			return diag.FromErr(err)
 		}
 		if err = d.Set("virtual_network_interface", []map[string]interface{}{virtualNetworkInterfaceMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting virtual_network_interface: %s", err))
+			err = fmt.Errorf("Error setting virtual_network_interface: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_network_attachment", "read", "set-virtual_network_interface").GetDiag()
 		}
 		if !core.IsNil(bareMetalServerNetworkAttachment.AllowedVlans) {
 			allowedVlans := []interface{}{}
@@ -680,27 +729,34 @@ func resourceIBMIsBareMetalServerNetworkAttachmentRead(context context.Context, 
 				allowedVlans = append(allowedVlans, int64(allowedVlansItem))
 			}
 			if err = d.Set("allowed_vlans", allowedVlans); err != nil {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error setting allowed_vlans: %s", err))
+				err = fmt.Errorf("Error setting allowed_vlans: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_network_attachment", "read", "set-allowed_vlans").GetDiag()
 			}
 		}
 		if err = d.Set("created_at", flex.DateTimeToString(bareMetalServerNetworkAttachment.CreatedAt)); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting created_at: %s", err))
+			err = fmt.Errorf("Error setting created_at: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_network_attachment", "read", "set-created_at").GetDiag()
 		}
 		if err = d.Set("href", bareMetalServerNetworkAttachment.Href); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting href: %s", err))
+			err = fmt.Errorf("Error setting href: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_network_attachment", "read", "set-href").GetDiag()
 		}
 		if err = d.Set("lifecycle_state", bareMetalServerNetworkAttachment.LifecycleState); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting lifecycle_state: %s", err))
+			err = fmt.Errorf("Error setting lifecycle_state: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_network_attachment", "read", "set-lifecycle_state").GetDiag()
 		}
 		if err = d.Set("port_speed", flex.IntValue(bareMetalServerNetworkAttachment.PortSpeed)); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting port_speed: %s", err))
+			err = fmt.Errorf("Error setting port_speed: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_network_attachment", "read", "set-port_speed").GetDiag()
 		}
 		if err = d.Set("resource_type", bareMetalServerNetworkAttachment.ResourceType); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting resource_type: %s", err))
+			err = fmt.Errorf("Error setting resource_type: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_network_attachment", "read", "set-resource_type").GetDiag()
 		}
 
 		if err = d.Set("type", bareMetalServerNetworkAttachment.Type); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting type: %s", err))
+			err = fmt.Errorf("Error setting type: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_network_attachment", "read", "set-type").GetDiag()
 		}
 		d.SetId(fmt.Sprintf("%s/%s", bmId, *bareMetalServerNetworkAttachment.ID))
 	} else if _, ok := bareMetalServerNetworkAttachmentIntf.(*vpcv1.BareMetalServerNetworkAttachment); ok {
@@ -709,7 +765,8 @@ func resourceIBMIsBareMetalServerNetworkAttachmentRead(context context.Context, 
 
 		// parent class argument: bare_metal_server string
 		if err = d.Set("floating_bare_metal_server", getBareMetalServerNetworkAttachmentOptions.BareMetalServerID); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting bare_metal_server: %s", err))
+			err = fmt.Errorf("Error setting floating_bare_metal_server: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_network_attachment", "read", "set-floating_bare_metal_server").GetDiag()
 		}
 		// parent class argument: interface_type string
 		// parent class argument: name string
@@ -718,11 +775,13 @@ func resourceIBMIsBareMetalServerNetworkAttachmentRead(context context.Context, 
 		// parent class argument: allow_to_float bool
 		// parent class argument: vlan int64
 		if err = d.Set("interface_type", bareMetalServerNetworkAttachment.InterfaceType); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting interface_type: %s", err))
+			err = fmt.Errorf("Error setting interface_type: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_network_attachment", "read", "set-interface_type").GetDiag()
 		}
 		if !core.IsNil(bareMetalServerNetworkAttachment.Name) {
 			if err = d.Set("name", bareMetalServerNetworkAttachment.Name); err != nil {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error setting name: %s", err))
+				err = fmt.Errorf("Error setting name: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_network_attachment", "read", "set-name").GetDiag()
 			}
 		}
 		virtualNetworkInterfaceMap, err := resourceIBMIsBareMetalServerNetworkAttachmentVirtualNetworkInterfaceReferenceAttachmentContextToMap(bareMetalServerNetworkAttachment.VirtualNetworkInterface, vpcClient)
@@ -730,7 +789,8 @@ func resourceIBMIsBareMetalServerNetworkAttachmentRead(context context.Context, 
 			return diag.FromErr(err)
 		}
 		if err = d.Set("virtual_network_interface", []map[string]interface{}{virtualNetworkInterfaceMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting virtual_network_interface: %s", err))
+			err = fmt.Errorf("Error setting virtual_network_interface: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_network_attachment", "read", "set-virtual_network_interface").GetDiag()
 		}
 		if !core.IsNil(bareMetalServerNetworkAttachment.AllowedVlans) {
 			allowedVlans := []interface{}{}
@@ -738,42 +798,53 @@ func resourceIBMIsBareMetalServerNetworkAttachmentRead(context context.Context, 
 				allowedVlans = append(allowedVlans, int64(allowedVlansItem))
 			}
 			if err = d.Set("allowed_vlans", allowedVlans); err != nil {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error setting allowed_vlans: %s", err))
+				err = fmt.Errorf("Error setting allowed_vlans: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_network_attachment", "read", "set-allowed_vlans").GetDiag()
 			}
 		}
 		if !core.IsNil(bareMetalServerNetworkAttachment.AllowToFloat) {
 			if err = d.Set("allow_to_float", bareMetalServerNetworkAttachment.AllowToFloat); err != nil {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error setting allow_to_float: %s", err))
+				err = fmt.Errorf("Error setting allow_to_float: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_network_attachment", "read", "set-allow_to_float").GetDiag()
 			}
 		}
 		if !core.IsNil(bareMetalServerNetworkAttachment.Vlan) {
 			if err = d.Set("vlan", flex.IntValue(bareMetalServerNetworkAttachment.Vlan)); err != nil {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error setting vlan: %s", err))
+				err = fmt.Errorf("Error setting vlan: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_network_attachment", "read", "set-vlan").GetDiag()
 			}
 		}
 		if err = d.Set("created_at", flex.DateTimeToString(bareMetalServerNetworkAttachment.CreatedAt)); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting created_at: %s", err))
+			err = fmt.Errorf("Error setting created_at: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_network_attachment", "read", "set-created_at").GetDiag()
 		}
 		if err = d.Set("href", bareMetalServerNetworkAttachment.Href); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting href: %s", err))
+			err = fmt.Errorf("Error setting href: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_network_attachment", "read", "set-href").GetDiag()
 		}
 		if err = d.Set("lifecycle_state", bareMetalServerNetworkAttachment.LifecycleState); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting lifecycle_state: %s", err))
+			err = fmt.Errorf("Error setting lifecycle_state: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_network_attachment", "read", "set-lifecycle_state").GetDiag()
 		}
 		if err = d.Set("port_speed", flex.IntValue(bareMetalServerNetworkAttachment.PortSpeed)); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting port_speed: %s", err))
+			err = fmt.Errorf("Error setting port_speed: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_network_attachment", "read", "set-port_speed").GetDiag()
 		}
 		if err = d.Set("resource_type", bareMetalServerNetworkAttachment.ResourceType); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting resource_type: %s", err))
+			err = fmt.Errorf("Error setting resource_type: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_network_attachment", "read", "set-resource_type").GetDiag()
 		}
 		if err = d.Set("type", bareMetalServerNetworkAttachment.Type); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting type: %s", err))
+			err = fmt.Errorf("Error setting type: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_network_attachment", "read", "set-type").GetDiag()
 		}
 		if err = d.Set("network_attachment", bareMetalServerNetworkAttachment.ID); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting network_attachment: %s", err))
+			err = fmt.Errorf("Error setting network_attachment: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_network_attachment", "read", "set-network_attachment").GetDiag()
 		}
 	} else {
-		return diag.FromErr(fmt.Errorf("Unrecognized vpcv1.BareMetalServerNetworkAttachmentIntf subtype encountered"))
+		err = fmt.Errorf("Unrecognized vpcv1.BareMetalServerNetworkAttachmentIntf subtype encountered")
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_network_attachment", "read", "set-body").GetDiag()
 	}
 
 	return nil
@@ -782,14 +853,16 @@ func resourceIBMIsBareMetalServerNetworkAttachmentRead(context context.Context, 
 func resourceIBMIsBareMetalServerNetworkAttachmentUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := vpcClient(meta)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_network_attachment", "update", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	updateBareMetalServerNetworkAttachmentOptions := &vpcv1.UpdateBareMetalServerNetworkAttachmentOptions{}
 
 	parts, err := flex.SepIdParts(d.Id(), "/")
 	if err != nil {
-		return diag.FromErr(err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_network_attachment", "update", "sep-id-parts").GetDiag()
 	}
 
 	updateBareMetalServerNetworkAttachmentOptions.SetBareMetalServerID(parts[0])
@@ -819,10 +892,11 @@ func resourceIBMIsBareMetalServerNetworkAttachmentUpdate(context context.Context
 
 	if hasChange {
 		updateBareMetalServerNetworkAttachmentOptions.BareMetalServerNetworkAttachmentPatch, _ = patchVals.AsPatch()
-		_, response, err := vpcClient.UpdateBareMetalServerNetworkAttachmentWithContext(context, updateBareMetalServerNetworkAttachmentOptions)
+		_, _, err := vpcClient.UpdateBareMetalServerNetworkAttachmentWithContext(context, updateBareMetalServerNetworkAttachmentOptions)
 		if err != nil {
-			log.Printf("[DEBUG] UpdateBareMetalServerNetworkAttachmentWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("UpdateBareMetalServerNetworkAttachmentWithContext failed %s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateBareMetalServerNetworkAttachmentWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server_network_attachment", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 
@@ -850,13 +924,16 @@ func resourceIBMIsBareMetalServerNetworkAttachmentUpdate(context context.Context
 		}
 		virtualNetworkInterfacePatchAsPatch, err := virtualNetworkInterfacePatch.AsPatch()
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error encountered while apply as patch for virtualNetworkInterfacePatch of BareMetalServer(%s) vni (%s) %s", d.Id(), vniId, err))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("virtualNetworkInterfacePatch.AsPatch() failed: %s", err.Error()), "ibm_is_bare_metal_server_network_attachment", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		updateVirtualNetworkInterfaceOptions.VirtualNetworkInterfacePatch = virtualNetworkInterfacePatchAsPatch
-		_, response, err := vpcClient.UpdateVirtualNetworkInterfaceWithContext(context, updateVirtualNetworkInterfaceOptions)
+		_, _, err = vpcClient.UpdateVirtualNetworkInterfaceWithContext(context, updateVirtualNetworkInterfaceOptions)
 		if err != nil {
-			log.Printf("[DEBUG] UpdateVirtualNetworkInterfaceWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("UpdateVirtualNetworkInterfaceWithContext failed during BareMetalServer(%s) network attachment patch %s\n%s", d.Id(), err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateVirtualNetworkInterfaceWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server_network_attachment", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
 		if d.HasChange("virtual_network_interface.0.ips") {
@@ -889,10 +966,11 @@ func resourceIBMIsBareMetalServerNetworkAttachmentUpdate(context context.Context
 						addVirtualNetworkInterfaceIPOptions := &vpcv1.AddVirtualNetworkInterfaceIPOptions{}
 						addVirtualNetworkInterfaceIPOptions.SetVirtualNetworkInterfaceID(vniId)
 						addVirtualNetworkInterfaceIPOptions.SetID(ipItem)
-						_, response, err := vpcClient.AddVirtualNetworkInterfaceIPWithContext(context, addVirtualNetworkInterfaceIPOptions)
+						_, _, err := vpcClient.AddVirtualNetworkInterfaceIPWithContext(context, addVirtualNetworkInterfaceIPOptions)
 						if err != nil {
-							log.Printf("[DEBUG] AddVirtualNetworkInterfaceIPWithContext failed in VirtualNetworkInterface patch during BareMetalServer nac patch %s\n%s", err, response)
-							return diag.FromErr(fmt.Errorf("AddVirtualNetworkInterfaceIPWithContext failed in VirtualNetworkInterface patch during BareMetalServer nac patch %s\n%s", err, response))
+							tfErr := flex.TerraformErrorf(err, fmt.Sprintf("AddVirtualNetworkInterfaceIPWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server_network_attachment", "update")
+							log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+							return tfErr.GetDiag()
 						}
 					}
 				}
@@ -904,10 +982,11 @@ func resourceIBMIsBareMetalServerNetworkAttachmentUpdate(context context.Context
 						removeVirtualNetworkInterfaceIPOptions := &vpcv1.RemoveVirtualNetworkInterfaceIPOptions{}
 						removeVirtualNetworkInterfaceIPOptions.SetVirtualNetworkInterfaceID(vniId)
 						removeVirtualNetworkInterfaceIPOptions.SetID(ipItem)
-						response, err := vpcClient.RemoveVirtualNetworkInterfaceIPWithContext(context, removeVirtualNetworkInterfaceIPOptions)
+						_, err := vpcClient.RemoveVirtualNetworkInterfaceIPWithContext(context, removeVirtualNetworkInterfaceIPOptions)
 						if err != nil {
-							log.Printf("[DEBUG] RemoveVirtualNetworkInterfaceIPWithContext failed in VirtualNetworkInterface patch during BareMetalServer nac patch %s\n%s", err, response)
-							return diag.FromErr(fmt.Errorf("RemoveVirtualNetworkInterfaceIPWithContext failed in VirtualNetworkInterface patch during BareMetalServer nac patch %s\n%s", err, response))
+							tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateBareMetalServerNetworkAttachmentWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server_network_attachment", "update")
+							log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+							return tfErr.GetDiag()
 						}
 					}
 				}
@@ -935,9 +1014,11 @@ func resourceIBMIsBareMetalServerNetworkAttachmentUpdate(context context.Context
 				return diag.FromErr(fmt.Errorf("[ERROR] Error calling reserved ip as patch on vni patch \n%s", err))
 			}
 			updateripoptions.ReservedIPPatch = reservedIpPathAsPatch
-			_, response, err := vpcClient.UpdateSubnetReservedIP(updateripoptions)
+			_, _, err = vpcClient.UpdateSubnetReservedIPWithContext(context, updateripoptions)
 			if err != nil {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error updating vni reserved ip(%s): %s\n%s", ripId, err, response))
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateSubnetReservedIPWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server_network_attachment", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 		}
 		if d.HasChange("virtual_network_interface.0.protocol_state_filtering_mode") {
@@ -956,13 +1037,17 @@ func resourceIBMIsBareMetalServerNetworkAttachmentUpdate(context context.Context
 						SecurityGroupID: &add[i],
 						ID:              &vniId,
 					}
-					_, response, err := vpcClient.CreateSecurityGroupTargetBinding(createsgnicoptions)
+					_, _, err := vpcClient.CreateSecurityGroupTargetBindingWithContext(context, createsgnicoptions)
 					if err != nil {
-						return diag.FromErr(fmt.Errorf("[ERROR] Error while creating security group %q for virtual network interface %s\n%s: %q", add[i], d.Id(), err, response))
+						tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateSecurityGroupTargetBindingWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server_network_attachment", "update")
+						log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+						return tfErr.GetDiag()
 					}
 					_, err = isWaitForVirtualNetworkInterfaceAvailable(vpcClient, vniId, d.Timeout(schema.TimeoutUpdate))
 					if err != nil {
-						return diag.FromErr(err)
+						tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForVirtualNetworkInterfaceAvailable failed: %s", err.Error()), "ibm_is_bare_metal_server_network_attachment", "update")
+						log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+						return tfErr.GetDiag()
 					}
 				}
 
@@ -973,13 +1058,17 @@ func resourceIBMIsBareMetalServerNetworkAttachmentUpdate(context context.Context
 						SecurityGroupID: &remove[i],
 						ID:              &vniId,
 					}
-					response, err := vpcClient.DeleteSecurityGroupTargetBinding(deletesgnicoptions)
+					_, err := vpcClient.DeleteSecurityGroupTargetBindingWithContext(context, deletesgnicoptions)
 					if err != nil {
-						return diag.FromErr(fmt.Errorf("[ERROR] Error while removing security group %q for virtual network interface %s\n%s: %q", remove[i], d.Id(), err, response))
+						tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteSecurityGroupTargetBindingWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server_network_attachment", "update")
+						log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+						return tfErr.GetDiag()
 					}
 					_, err = isWaitForVirtualNetworkInterfaceAvailable(vpcClient, vniId, d.Timeout(schema.TimeoutUpdate))
 					if err != nil {
-						return diag.FromErr(err)
+						tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForVirtualNetworkInterfaceAvailable failed: %s", err.Error()), "ibm_is_bare_metal_server_network_attachment", "update")
+						log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+						return tfErr.GetDiag()
 					}
 				}
 			}
@@ -993,7 +1082,9 @@ func resourceIBMIsBareMetalServerNetworkAttachmentUpdate(context context.Context
 func resourceIBMIsBareMetalServerNetworkAttachmentDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := vpcClient(meta)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_network_attachment", "delete", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	ifServerStopped := false
 	interfaceType := d.Get("interface_type").(string)
@@ -1003,15 +1094,20 @@ func resourceIBMIsBareMetalServerNetworkAttachmentDelete(context context.Context
 			ID: &bareMetalServerId,
 		}
 
-		bms, response, err := vpcClient.GetBareMetalServerWithContext(context, getbmsoptions)
+		bms, _, err := vpcClient.GetBareMetalServerWithContext(context, getbmsoptions)
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error fetching bare metal server (%s) during network attachment create err %s\n%s", bareMetalServerId, err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetBareMetalServerWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server_network_attachment", "delete")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		// failed, pending, restarting, running, starting, stopped, stopping, maintenance
 		if *bms.Status == "failed" {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error cannot attach network attachment to a failed bare metal server"))
+			err = fmt.Errorf("[ERROR] Error cannot attach network attachment to a failed bare metal server")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetBareMetalServerWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server_network_attachment", "delete")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		} else if *bms.Status == "running" {
-			log.Printf("[DEBUG] Stopping bare metal server (%s) to create a PCI network attachment", bareMetalServerId)
+			log.Printf("[DEBUG] Stopping bare metal server (%s) to delete the PCI network attachment", bareMetalServerId)
 			stopType := "hard"
 			if _, ok := d.GetOk(isBareMetalServerHardStop); ok && !d.Get(isBareMetalServerHardStop).(bool) {
 				stopType = "soft"
@@ -1023,30 +1119,38 @@ func resourceIBMIsBareMetalServerNetworkAttachmentDelete(context context.Context
 			res, err := vpcClient.StopBareMetalServerWithContext(context, createstopaction)
 			ifServerStopped = true
 			if err != nil || res.StatusCode != 204 {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error stopping bare metal server (%s) during network attachment create err %s\n%s", bareMetalServerId, err, response))
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("StopBareMetalServerWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server_network_attachment", "delete")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			_, err = isWaitForBareMetalServerStoppedForNIC(vpcClient, bareMetalServerId, d.Timeout(schema.TimeoutCreate), d)
 			if err != nil {
-				return diag.FromErr(err)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForBareMetalServerStoppedForNIC failed: %s", err.Error()), "ibm_is_bare_metal_server_network_attachment", "delete")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 		} else if *bms.Status != "stopped" {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error bare metal server in %s state, please try after some time", *bms.Status))
+			err = fmt.Errorf("[ERROR] Error bare metal server in %s state, please try after some time", *bms.Status)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteBareMetalServerNetworkAttachmentWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server_network_attachment", "delete")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 	deleteBareMetalServerNetworkAttachmentOptions := &vpcv1.DeleteBareMetalServerNetworkAttachmentOptions{}
 
 	parts, err := flex.SepIdParts(d.Id(), "/")
 	if err != nil {
-		return diag.FromErr(err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_network_attachment", "delete", "sep-id-parts").GetDiag()
 	}
 
 	deleteBareMetalServerNetworkAttachmentOptions.SetBareMetalServerID(parts[0])
 	deleteBareMetalServerNetworkAttachmentOptions.SetID(parts[1])
 
-	response, err := vpcClient.DeleteBareMetalServerNetworkAttachmentWithContext(context, deleteBareMetalServerNetworkAttachmentOptions)
+	_, err = vpcClient.DeleteBareMetalServerNetworkAttachmentWithContext(context, deleteBareMetalServerNetworkAttachmentOptions)
 	if err != nil {
-		log.Printf("[DEBUG] DeleteBareMetalServerNetworkAttachmentWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("DeleteBareMetalServerNetworkAttachmentWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteBareMetalServerNetworkAttachmentWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server_network_attachment", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if ifServerStopped {
 		createstartaction := &vpcv1.StartBareMetalServerOptions{
@@ -1054,11 +1158,15 @@ func resourceIBMIsBareMetalServerNetworkAttachmentDelete(context context.Context
 		}
 		res, err := vpcClient.StartBareMetalServerWithContext(context, createstartaction)
 		if err != nil || res.StatusCode != 204 {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error starting bare metal server (%s) after attachment creation err %s\n%s", bareMetalServerId, err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("StartBareMetalServerWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server_network_attachment", "delete")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		_, err = isWaitForBareMetalServerAvailableForNIC(vpcClient, bareMetalServerId, d.Timeout(schema.TimeoutCreate), d)
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForBareMetalServerAvailableForNIC failed: %s", err.Error()), "ibm_is_bare_metal_server_network_attachment", "delete")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 
@@ -1133,28 +1241,28 @@ func resourceIBMIsBareMetalServerNetworkAttachmentMapToBareMetalServerNetworkAtt
 
 func resourceIBMIsBareMetalServerNetworkAttachmentMapToVirtualNetworkInterfaceIPPrototype(modelMap map[string]interface{}) (vpcv1.VirtualNetworkInterfaceIPPrototypeIntf, error) {
 	model := &vpcv1.VirtualNetworkInterfaceIPPrototype{}
-	if modelMap["id"] != nil && modelMap["id"].(string) != "" {
-		model.ID = core.StringPtr(modelMap["id"].(string))
+	if modelMap["reserved_ip"] != nil && modelMap["reserved_ip"].(string) != "" {
+		model.ID = core.StringPtr(modelMap["reserved_ip"].(string))
 	}
 	return model, nil
 }
 
 func resourceIBMIsBareMetalServerNetworkAttachmentMapToVirtualNetworkInterfacePrimaryIPPrototype(modelMap map[string]interface{}) (vpcv1.VirtualNetworkInterfacePrimaryIPPrototypeIntf, error) {
 	model := &vpcv1.VirtualNetworkInterfacePrimaryIPPrototype{}
-	if modelMap["id"] != nil && modelMap["id"].(string) != "" {
-		model.ID = core.StringPtr(modelMap["id"].(string))
-	}
-	if modelMap["href"] != nil && modelMap["href"].(string) != "" {
+	if modelMap["reserved_ip"] != nil && modelMap["reserved_ip"].(string) != "" {
+		model.ID = core.StringPtr(modelMap["reserved_ip"].(string))
+	} else if modelMap["href"] != nil && modelMap["href"].(string) != "" {
 		model.Href = core.StringPtr(modelMap["href"].(string))
-	}
-	if modelMap["address"] != nil && modelMap["address"].(string) != "" {
-		model.Address = core.StringPtr(modelMap["address"].(string))
-	}
-	if modelMap["auto_delete"] != nil {
-		model.AutoDelete = core.BoolPtr(modelMap["auto_delete"].(bool))
-	}
-	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
-		model.Name = core.StringPtr(modelMap["name"].(string))
+	} else {
+		if modelMap["address"] != nil && modelMap["address"].(string) != "" {
+			model.Address = core.StringPtr(modelMap["address"].(string))
+		}
+		if modelMap["auto_delete"] != nil {
+			model.AutoDelete = core.BoolPtr(modelMap["auto_delete"].(bool))
+		}
+		if modelMap["name"] != nil && modelMap["name"].(string) != "" {
+			model.Name = core.StringPtr(modelMap["name"].(string))
+		}
 	}
 	return model, nil
 }
@@ -1210,7 +1318,7 @@ func resourceIBMIsBareMetalServerNetworkAttachmentVirtualNetworkInterfaceReferen
 		ips := []map[string]interface{}{}
 		for _, ipsItem := range vniDetails.Ips {
 			if *ipsItem.ID != primaryipId {
-				ipsItemMap, err := resourceIBMIsVirtualNetworkInterfaceReservedIPReferenceToMap(&ipsItem, true)
+				ipsItemMap, err := resourceIBMIsVirtualNetworkInterfaceReservedIPReferenceToMap(&ipsItem, true, false)
 				if err != nil {
 					return nil, err
 				}

@@ -4,17 +4,20 @@
 package vpc
 
 import (
+	"context"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func DataSourceIBMISInstanceGroupManagerPolicies() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceIBMISInstanceGroupManagerPoliciesRead,
+		ReadContext: dataSourceIBMISInstanceGroupManagerPoliciesRead,
 
 		Schema: map[string]*schema.Schema{
 
@@ -78,10 +81,12 @@ func DataSourceIBMISInstanceGroupManagerPolicies() *schema.Resource {
 	}
 }
 
-func dataSourceIBMISInstanceGroupManagerPoliciesRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceIBMISInstanceGroupManagerPoliciesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instance_group_manager_policies", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	instanceGroupManagerID := d.Get("instance_group_manager").(string)
@@ -99,9 +104,11 @@ func dataSourceIBMISInstanceGroupManagerPoliciesRead(d *schema.ResourceData, met
 		if start != "" {
 			listInstanceGroupManagerPoliciesOptions.Start = &start
 		}
-		instanceGroupManagerPolicyCollection, response, err := sess.ListInstanceGroupManagerPolicies(&listInstanceGroupManagerPoliciesOptions)
+		instanceGroupManagerPolicyCollection, _, err := sess.ListInstanceGroupManagerPoliciesWithContext(context, &listInstanceGroupManagerPoliciesOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Getting InstanceGroup Manager Policies %s\n%s", err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListInstanceGroupManagerPoliciesWithContext failed %s", err), "(Data) ibm_is_instance_group_manager_policies", "read")
+			log.Printf("[DEBUG] %s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		start = flex.GetNext(instanceGroupManagerPolicyCollection.Next)
 		allrecs = append(allrecs, instanceGroupManagerPolicyCollection.Policies...)
@@ -123,7 +130,9 @@ func dataSourceIBMISInstanceGroupManagerPoliciesRead(d *schema.ResourceData, met
 		}
 		policies = append(policies, policy)
 	}
-	d.Set("instance_group_manager_policies", policies)
+	if err = d.Set("instance_group_manager_policies", policies); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting instance_group_manager_policies %s", err), "(Data) ibm_is_instance_group_manager_policies", "read", "instance_group_manager_policies-set").GetDiag()
+	}
 	d.SetId(dataSourceIBMISInstanceGroupManagerPoliciesID(d))
 	return nil
 }

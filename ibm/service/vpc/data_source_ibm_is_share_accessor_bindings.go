@@ -167,7 +167,7 @@ func DataSourceIBMIsShareAccessorBindings() *schema.Resource {
 func dataSourceIBMIsShareAccessorBindingsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_is_share_accessor_bindings", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("vpcClient creation failed: %s", err.Error()), "(Data) ibm_is_share_accessor_bindings", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -204,8 +204,7 @@ func dataSourceIBMIsShareAccessorBindingsRead(context context.Context, d *schema
 	}
 
 	if err = d.Set("accessor_bindings", mapSlice); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting accessor_bindings %s", err), "(Data) ibm_is_share_accessor_bindings", "read")
-		return tfErr.GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting accessor_bindings: %s", err), "(Data) ibm_is_share_accessor_bindings", "read", "set-accessor_bindings").GetDiag()
 	}
 
 	return nil

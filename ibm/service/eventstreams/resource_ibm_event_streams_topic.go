@@ -16,7 +16,6 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/version"
 	"github.com/IBM/go-sdk-core/v5/core"
-	iamidentity "github.com/IBM/platform-services-go-sdk/iamidentityv1"
 	"github.com/IBM/sarama"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -366,14 +365,19 @@ type accessTokenProvider struct {
 }
 
 func newAccessTokenProvider(sess *session.Session) (*accessTokenProvider, error) {
+	iamEndpoint, err := sess.Config.EndpointLocator.IAMEndpoint()
+	if err != nil {
+		log.Printf("[DEBUG] newAccessTokenProvider.IAMEndpoint() error:%s", err)
+		return nil, err
+	}
 	authenticator, err := core.NewIamAuthenticatorBuilder().
-		SetURL(conns.EnvFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, iamidentity.DefaultServiceURL)).
+		SetURL(iamEndpoint).
 		SetApiKey(sess.Config.BluemixAPIKey).
 		SetRefreshToken(sess.Config.IAMRefreshToken).
 		SetClientIDSecret("bx", "bx").
 		Build()
 	if err != nil {
-		log.Printf("[DEBUG] newAccessTokenProvider() error:%s", err)
+		log.Printf("[DEBUG] newAccessTokenProvider.NewIamAuthenticatorBuilder() error:%s", err)
 		return nil, err
 	}
 	return &accessTokenProvider{authenticator}, nil

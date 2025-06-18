@@ -90,7 +90,7 @@ func resourceEnvironmentCreate(d *schema.ResourceData, meta interface{}) error {
 	guid := d.Get("guid").(string)
 	appconfigClient, err := getAppConfigClient(meta, guid)
 	if err != nil {
-		return flex.FmtErrorf(fmt.Sprintf("%s", err))
+		return flex.FmtErrorf("%s", err)
 	}
 	options := &appconfigurationv1.CreateEnvironmentOptions{}
 
@@ -123,7 +123,7 @@ func resourceEnvironmentUpdate(d *schema.ResourceData, meta interface{}) error {
 		}
 		appconfigClient, err := getAppConfigClient(meta, parts[0])
 		if err != nil {
-			return flex.FmtErrorf(fmt.Sprintf("%s", err))
+			return flex.FmtErrorf("%s", err)
 		}
 
 		options := &appconfigurationv1.UpdateEnvironmentOptions{}
@@ -156,7 +156,7 @@ func resourceEnvironmentRead(d *schema.ResourceData, meta interface{}) error {
 	}
 	appconfigClient, err := getAppConfigClient(meta, parts[0])
 	if err != nil {
-		return flex.FmtErrorf(fmt.Sprintf("%s", err))
+		return flex.FmtErrorf("%s", err)
 	}
 
 	options := &appconfigurationv1.GetEnvironmentOptions{}
@@ -221,7 +221,7 @@ func resourceEnvironmentDelete(d *schema.ResourceData, meta interface{}) error {
 
 	appconfigClient, err := getAppConfigClient(meta, parts[0])
 	if err != nil {
-		return flex.FmtErrorf(fmt.Sprintf("%s", err))
+		return flex.FmtErrorf("%s", err)
 	}
 
 	options := &appconfigurationv1.DeleteEnvironmentOptions{}

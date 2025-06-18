@@ -6,8 +6,10 @@ package vpc
 import (
 	"context"
 	"fmt"
+	"log"
 	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -84,7 +86,9 @@ func resourceIBMISBareMetalServerDiskCreate(context context.Context, d *schema.R
 
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_disk", "create", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	options := &vpcv1.UpdateBareMetalServerDiskOptions{
 		BareMetalServerID: &bareMetalServerId,
@@ -95,22 +99,26 @@ func resourceIBMISBareMetalServerDiskCreate(context context.Context, d *schema.R
 	}
 	diskPatch, err := diskPatchModel.AsPatch()
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error calling asPatch for BareMetalServerDiskPatch %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("diskPatchModel.AsPatch() failed: %s", err.Error()), "ibm_is_bare_metal_server_disk", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	options.BareMetalServerDiskPatch = diskPatch
-	disk, response, err := sess.UpdateBareMetalServerDiskWithContext(context, options)
+	disk, _, err := sess.UpdateBareMetalServerDiskWithContext(context, options)
 	if err != nil || disk == nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error updating bare metal server (%s)  disk (%s) err %s\n%s", bareMetalServerId, diskId, err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateBareMetalServerNetworkInterfaceWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server_disk", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	d.SetId(*disk.ID)
-	err = bareMetalServerDiskGet(context, d, sess, bareMetalServerId, diskId)
-	if err != nil {
-		return diag.FromErr(err)
+	diagErr := bareMetalServerDiskGet(context, d, sess, bareMetalServerId, diskId)
+	if diagErr != nil {
+		return diagErr
 	}
 	return nil
 }
 
-func bareMetalServerDiskGet(context context.Context, d *schema.ResourceData, sess *vpcv1.VpcV1, bareMetalServerId, diskId string) error {
+func bareMetalServerDiskGet(context context.Context, d *schema.ResourceData, sess *vpcv1.VpcV1, bareMetalServerId, diskId string) diag.Diagnostics {
 
 	options := &vpcv1.GetBareMetalServerDiskOptions{
 		BareMetalServerID: &bareMetalServerId,
@@ -122,13 +130,23 @@ func bareMetalServerDiskGet(context context.Context, d *schema.ResourceData, ses
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error fetching bare metal server (%s)  disk (%s) err %s\n%s", bareMetalServerId, diskId, err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetBareMetalServerDiskWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server_disk", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
-	d.Set(isBareMetalServerID, bareMetalServerId)
-	d.Set(isBareMetalServerDisk, *disk.ID)
-	d.Set(isBareMetalServerDiskName, *disk.Name)
-
+	if err = d.Set(isBareMetalServerID, bareMetalServerId); err != nil {
+		err = fmt.Errorf("Error setting bare_metal_server: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_disk", "read", "set-bare_metal_server").GetDiag()
+	}
+	if err = d.Set(isBareMetalServerDisk, *disk.ID); err != nil {
+		err = fmt.Errorf("Error setting disk: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_disk", "read", "set-disk").GetDiag()
+	}
+	if err = d.Set(isBareMetalServerDiskName, *disk.Name); err != nil {
+		err = fmt.Errorf("Error setting name: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_disk", "read", "set-name").GetDiag()
+	}
 	return nil
 }
 
@@ -142,11 +160,13 @@ func resourceIBMISBareMetalServerDiskRead(context context.Context, d *schema.Res
 	}
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_disk", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
-	err = bareMetalServerDiskGet(context, d, sess, bareMetalServerId, diskId)
-	if err != nil {
-		return diag.FromErr(err)
+	diagErr := bareMetalServerDiskGet(context, d, sess, bareMetalServerId, diskId)
+	if diagErr != nil {
+		return diagErr
 	}
 	return nil
 }
@@ -167,7 +187,9 @@ func resourceIBMISBareMetalServerDiskUpdate(context context.Context, d *schema.R
 
 		sess, err := vpcClient(meta)
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_disk", "update", "initialize-client")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		options := &vpcv1.UpdateBareMetalServerDiskOptions{
 			BareMetalServerID: &bareMetalServerId,
@@ -178,16 +200,20 @@ func resourceIBMISBareMetalServerDiskUpdate(context context.Context, d *schema.R
 		}
 		diskPatch, err := diskPatchModel.AsPatch()
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error calling asPatch for BareMetalServerDiskPatch %s", err))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("diskPatchModel.AsPatch() failed: %s", err.Error()), "ibm_is_bare_metal_server_disk", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		options.BareMetalServerDiskPatch = diskPatch
-		disk, response, err := sess.UpdateBareMetalServerDiskWithContext(context, options)
+		disk, _, err := sess.UpdateBareMetalServerDiskWithContext(context, options)
 		if err != nil || disk == nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error updating bare metal server (%s)  disk (%s) err %s\n%s", bareMetalServerId, diskId, err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateBareMetalServerDiskWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server_disk", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
-		err = bareMetalServerDiskGet(context, d, sess, bareMetalServerId, diskId)
-		if err != nil {
-			return diag.FromErr(err)
+		diagErr := bareMetalServerDiskGet(context, d, sess, bareMetalServerId, diskId)
+		if diagErr != nil {
+			return diagErr
 		}
 	}
 	return nil

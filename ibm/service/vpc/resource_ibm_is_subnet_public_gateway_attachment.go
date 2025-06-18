@@ -112,7 +112,9 @@ func ResourceIBMISSubnetPublicGatewayAttachment() *schema.Resource {
 func resourceIBMISSubnetPublicGatewayAttachmentCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_public_gateway_attachment", "create", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	subnet := d.Get(isSubnetID).(string)
@@ -128,16 +130,19 @@ func resourceIBMISSubnetPublicGatewayAttachmentCreate(context context.Context, d
 		PublicGatewayIdentity: publicGatewayIdentity,
 	}
 
-	pg, response, err := sess.SetSubnetPublicGatewayWithContext(context, setSubnetPublicGatewayOptions)
+	pg, _, err := sess.SetSubnetPublicGatewayWithContext(context, setSubnetPublicGatewayOptions)
 
 	if err != nil {
-		log.Printf("[DEBUG] Error while attaching public gateway(%s) to subnet(%s) %s\n%s", publicGateway, subnet, err, response)
-		return diag.FromErr(fmt.Errorf("[ERROR] Error while attaching public gateway(%s) to subnet(%s) %s\n%s", publicGateway, subnet, err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("SetSubnetPublicGatewayWithContext failed: %s", err.Error()), "ibm_is_subnet_public_gateway_attachment", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	d.SetId(subnet)
 	_, err = isWaitForSubnetPublicGatewayAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForSubnetPublicGatewayAvailable failed: %s", err.Error()), "ibm_is_subnet_public_gateway_attachment", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	log.Printf("[INFO] Public Gateway : %s", *pg.ID)
 	log.Printf("[INFO] Subnet ID : %s", subnet)
@@ -149,7 +154,9 @@ func resourceIBMISSubnetPublicGatewayAttachmentRead(context context.Context, d *
 	id := d.Id()
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_public_gateway_attachment", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	getSubnetPublicGatewayOptionsModel := &vpcv1.GetSubnetPublicGatewayOptions{
@@ -162,28 +169,68 @@ func resourceIBMISSubnetPublicGatewayAttachmentRead(context context.Context, d *
 			d.SetId("")
 			return nil
 		}
-		return diag.FromErr(fmt.Errorf("[ERROR] Error getting subnet's (%s) attached public gateway: %s\n%s", id, err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetSubnetPublicGatewayWithContext failed: %s", err.Error()), "ibm_is_subnet_public_gateway_attachment", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
-	d.Set(isPublicGatewayName, pg.Name)
-	d.Set(isSubnetID, id)
-	d.Set(isPublicGatewayID, pg.ID)
+	if err = d.Set(isPublicGatewayName, pg.Name); err != nil {
+		err = fmt.Errorf("Error setting name: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_public_gateway_attachment", "read", "set-name").GetDiag()
+	}
+	if err = d.Set(isSubnetID, id); err != nil {
+		err = fmt.Errorf("Error setting subnet: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_public_gateway_attachment", "read", "set-subnet").GetDiag()
+	}
+
+	if err = d.Set(isPublicGatewayID, pg.ID); err != nil {
+		err = fmt.Errorf("Error setting public_gateway: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_public_gateway_attachment", "read", "set-public_gateway").GetDiag()
+	}
 	if pg.FloatingIP != nil {
 		floatIP := map[string]interface{}{
 			"id":                             *pg.FloatingIP.ID,
 			isPublicGatewayFloatingIPAddress: *pg.FloatingIP.Address,
 		}
-		d.Set(isPublicGatewayFloatingIP, floatIP)
+		if err = d.Set(isPublicGatewayFloatingIP, floatIP); err != nil {
+			err = fmt.Errorf("Error setting floating_ip: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_public_gateway_attachment", "read", "set-floating_ip").GetDiag()
+		}
 	}
-	d.Set(isPublicGatewayStatus, pg.Status)
-	if pg.ResourceGroup != nil {
-		d.Set(isPublicGatewayResourceGroup, *pg.ResourceGroup.ID)
-		d.Set(flex.ResourceGroupName, *pg.ResourceGroup.Name)
-	}
-	d.Set(isPublicGatewayVPC, *pg.VPC.ID)
-	d.Set(isPublicGatewayZone, *pg.Zone.Name)
-	d.Set(IsPublicGatewayResourceType, pg.ResourceType)
-	d.Set(isPublicGatewayCRN, pg.CRN)
 
+	if err = d.Set(isPublicGatewayStatus, pg.Status); err != nil {
+		err = fmt.Errorf("Error setting status: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_public_gateway_attachment", "read", "set-status").GetDiag()
+	}
+	if pg.ResourceGroup != nil {
+		if err = d.Set(isPublicGatewayResourceGroup, *pg.ResourceGroup.ID); err != nil {
+			err = fmt.Errorf("Error setting resource_group: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_public_gateway_attachment", "read", "set-resource_group").GetDiag()
+		}
+		if err = d.Set(flex.ResourceGroupName, *pg.ResourceGroup.Name); err != nil {
+			err = fmt.Errorf("Error setting resource_group_name: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_public_gateway_attachment", "read", "set-resource_group_name").GetDiag()
+		}
+	}
+	if pg.VPC != nil {
+		if err = d.Set(isPublicGatewayVPC, *pg.VPC.ID); err != nil {
+			err = fmt.Errorf("Error setting vpc: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_public_gateway_attachment", "read", "set-vpc").GetDiag()
+		}
+	}
+	if pg.Zone != nil {
+		if err = d.Set(isPublicGatewayZone, *pg.Zone.Name); err != nil {
+			err = fmt.Errorf("Error setting zone: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_public_gateway_attachment", "read", "set-zone").GetDiag()
+		}
+	}
+	if err = d.Set(IsPublicGatewayResourceType, pg.ResourceType); err != nil {
+		err = fmt.Errorf("Error setting resource_type: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_public_gateway_attachment", "read", "set-resource_type").GetDiag()
+	}
+	if err = d.Set(isPublicGatewayCRN, pg.CRN); err != nil {
+		err = fmt.Errorf("Error setting crn: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_public_gateway_attachment", "read", "set-crn").GetDiag()
+	}
 	return nil
 }
 
@@ -191,7 +238,9 @@ func resourceIBMISSubnetPublicGatewayAttachmentUpdate(context context.Context, d
 
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_public_gateway_attachment", "update", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if d.HasChange(isPublicGatewayID) {
 		subnet := d.Get(isSubnetID).(string)
@@ -207,11 +256,12 @@ func resourceIBMISSubnetPublicGatewayAttachmentUpdate(context context.Context, d
 			PublicGatewayIdentity: publicGatewayIdentity,
 		}
 
-		pg, response, err := sess.SetSubnetPublicGatewayWithContext(context, setSubnetPublicGatewayOptions)
+		pg, _, err := sess.SetSubnetPublicGatewayWithContext(context, setSubnetPublicGatewayOptions)
 
 		if err != nil || pg == nil {
-			log.Printf("[DEBUG] Error while attaching public gateway(%s) to subnet(%s) %s\n%s", publicGateway, subnet, err, response)
-			return diag.FromErr(fmt.Errorf("[ERROR] Error while attaching public gateway(%s) to subnet(%s) %s\n%s", publicGateway, subnet, err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("SetSubnetPublicGatewayWithContext failed: %s", err.Error()), "ibm_is_subnet_public_gateway_attachment", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		log.Printf("[INFO] Updated subnet %s with public gateway(%s)", subnet, publicGateway)
 
@@ -226,7 +276,9 @@ func resourceIBMISSubnetPublicGatewayAttachmentDelete(context context.Context, d
 	id := d.Id()
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_public_gateway_attachment", "delete", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	// Get subnet details
 	getSubnetOptions := &vpcv1.GetSubnetOptions{
@@ -238,22 +290,27 @@ func resourceIBMISSubnetPublicGatewayAttachmentDelete(context context.Context, d
 			d.SetId("")
 			return nil
 		}
-		return diag.FromErr(fmt.Errorf("[ERROR] Error Getting Subnet (%s): %s\n%s", id, err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetSubnetWithContext failed: %s", err.Error()), "ibm_is_subnet_public_gateway_attachment", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	// Construct an instance of the UnsetSubnetPublicGatewayOptions model
 	unsetSubnetPublicGatewayOptions := &vpcv1.UnsetSubnetPublicGatewayOptions{
 		ID: &id,
 	}
-	res, err := sess.UnsetSubnetPublicGatewayWithContext(context, unsetSubnetPublicGatewayOptions)
+	_, err = sess.UnsetSubnetPublicGatewayWithContext(context, unsetSubnetPublicGatewayOptions)
 
 	if err != nil {
-		log.Printf("[DEBUG] Error while detaching public gateway to subnet %s\n%s", err, res)
-		return diag.FromErr(fmt.Errorf("[ERROR] Error while detaching public gateway to subnet %s\n%s", err, res))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UnsetSubnetPublicGatewayWithContext failed: %s", err.Error()), "ibm_is_subnet_public_gateway_attachment", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	_, err = isWaitForSubnetPublicGatewayDelete(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForSubnetPublicGatewayDelete failed: %s", err.Error()), "ibm_is_subnet_public_gateway_attachment", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	d.SetId("")
 	return nil

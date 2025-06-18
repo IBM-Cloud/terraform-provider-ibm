@@ -240,7 +240,9 @@ func DataSourceIBMIsBackupPolicies() *schema.Resource {
 func dataSourceIBMIsBackupPoliciesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("vpcClient creation failed: %s", err.Error()), "(Data) ibm_is_backup_policies", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	start := ""
@@ -277,8 +279,10 @@ func dataSourceIBMIsBackupPoliciesRead(context context.Context, d *schema.Resour
 		}
 		backupPolicyCollection, response, err := sess.ListBackupPoliciesWithContext(context, listBackupPoliciesOptions)
 		if err != nil {
-			log.Printf("[DEBUG] ListBackupPoliciesWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("[ERROR] ListBackupPoliciesWithContext failed %s\n%s", err, response))
+			err = fmt.Errorf("[ERROR] ListBackupPoliciesWithContext failed %s\n%s", err, response)
+			tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_is_backup_policies", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		if backupPolicyCollection != nil && *backupPolicyCollection.TotalCount == int64(0) {
 			break
@@ -299,7 +303,9 @@ func dataSourceIBMIsBackupPoliciesRead(context context.Context, d *schema.Resour
 	if matchBackupPolicies != nil {
 		err = d.Set("backup_policies", dataSourceBackupPolicyCollectionFlattenBackupPolicies(matchBackupPolicies))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting backup_policies %s", err))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting backup_policies %s", err), "(Data) ibm_is_backup_policies", "read")
+			log.Printf("[DEBUG] %s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 

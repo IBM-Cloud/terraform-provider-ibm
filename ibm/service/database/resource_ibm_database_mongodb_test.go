@@ -114,6 +114,46 @@ func TestAccIBMDatabaseInstanceMongodbImport(t *testing.T) {
 	})
 }
 
+func TestAccIBMDatabaseInstanceMongodbUpgrade(t *testing.T) {
+	// IMPORTANT NOTE: The version in testAccCheckIBMDatabaseInstanceMongodbVersionUpgrade will have to be updated when versions deprecate etc. Currently mongo standard can only upgrade to version 7.0
+	t.Parallel()
+	databaseResourceGroup := "default"
+	var databaseInstanceOne string
+	rnd := fmt.Sprintf("tf-Mongo-%d", acctest.RandIntRange(10, 100))
+	testName := rnd
+	name := "ibm_database." + testName
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMDatabaseInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMDatabaseInstanceMongodbVersion6(databaseResourceGroup, testName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
+					resource.TestCheckResourceAttr(name, "name", testName),
+					resource.TestCheckResourceAttr(name, "service", "databases-for-mongodb"),
+					resource.TestCheckResourceAttr(name, "plan", "standard"),
+					resource.TestCheckResourceAttr(name, "location", acc.Region()),
+					resource.TestCheckResourceAttr(name, "version", "6.0"),
+				),
+			},
+			{
+				Config: testAccCheckIBMDatabaseInstanceMongodbVersionUpgrade(databaseResourceGroup, testName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
+					resource.TestCheckResourceAttr(name, "name", testName),
+					resource.TestCheckResourceAttr(name, "service", "databases-for-mongodb"),
+					resource.TestCheckResourceAttr(name, "plan", "standard"),
+					resource.TestCheckResourceAttr(name, "location", acc.Region()),
+					resource.TestCheckResourceAttr(name, "version", "7.0"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMDatabaseInstanceMongodbBasic(databaseResourceGroup string, name string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
@@ -148,6 +188,46 @@ func testAccCheckIBMDatabaseInstanceMongodbBasic(databaseResourceGroup string, n
 		  address     = "172.168.1.2/32"
 		  description = "desc1"
 		}
+	}
+				`, databaseResourceGroup, name, acc.Region())
+}
+
+func testAccCheckIBMDatabaseInstanceMongodbVersion6(databaseResourceGroup string, name string) string {
+	// IMPORTANT NOTE: The version will have to be updated when version 6 is no longer available. Currently mongo standard can only upgrade to version 7.0
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "test_acc" {
+		name = "%[1]s"
+	}
+
+	resource "ibm_database" "%[2]s" {
+		resource_group_id            = data.ibm_resource_group.test_acc.id
+		name                         = "%[2]s"
+		service                      = "databases-for-mongodb"
+		plan                         = "standard"
+		location                     = "%[3]s"
+		version                		 = "6.0"
+		service_endpoints            = "private"
+		
+	}
+				`, databaseResourceGroup, name, acc.Region())
+}
+
+func testAccCheckIBMDatabaseInstanceMongodbVersionUpgrade(databaseResourceGroup string, name string) string {
+	// IMPORTANT NOTE: The version will have to be updated when version 6.0 is no longer available. Currently mongo standard can only upgrade to version 7.0
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "test_acc" {
+		name = "%[1]s"
+	}
+
+	resource "ibm_database" "%[2]s" {
+		resource_group_id            = data.ibm_resource_group.test_acc.id
+		name                         = "%[2]s"
+		service                      = "databases-for-mongodb"
+		plan                         = "standard"
+		location                     = "%[3]s"
+		version                		 = "7.0"
+		version_upgrade_skip_backup  = true
+		service_endpoints            = "private"
 	}
 				`, databaseResourceGroup, name, acc.Region())
 }

@@ -272,20 +272,23 @@ func DataSourceIBMISLBPools() *schema.Resource {
 func dataSourceIBMIsLbPoolsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_lb_pools", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	listLoadBalancerPoolsOptions := &vpcv1.ListLoadBalancerPoolsOptions{}
 
 	listLoadBalancerPoolsOptions.SetLoadBalancerID(d.Get("lb").(string))
 
-	loadBalancerPoolCollection, response, err := sess.ListLoadBalancerPoolsWithContext(context, listLoadBalancerPoolsOptions)
+	loadBalancerPoolCollection, _, err := sess.ListLoadBalancerPoolsWithContext(context, listLoadBalancerPoolsOptions)
 	if err != nil {
-		log.Printf("[DEBUG] ListLoadBalancerPoolsWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("ListLoadBalancerPoolsWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListLoadBalancerPoolsWithContext failed: %s", err.Error()), "(Data) ibm_is_lb_pools", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if err = d.Set("lb", d.Get("lb").(string)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting lb: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting lb: %s", err), "(Data) ibm_is_lb_pools", "read", "set-lb").GetDiag()
 	}
 
 	d.SetId(dataSourceIBMIsLbPoolsID(d))
@@ -293,10 +296,9 @@ func dataSourceIBMIsLbPoolsRead(context context.Context, d *schema.ResourceData,
 	if loadBalancerPoolCollection.Pools != nil {
 		err = d.Set("pools", dataSourceLoadBalancerPoolCollectionFlattenPools(loadBalancerPoolCollection.Pools))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting pools %s", err))
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting pools: %s", err), "(Data) ibm_is_lb_pools", "read", "set-pools").GetDiag()
 		}
 	}
-
 	return nil
 }
 

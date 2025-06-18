@@ -183,8 +183,8 @@ func privateCertificateRootCAConfigCryptoKey() string {
 			common_name   = "ibm.com"
 			alt_names = ["ddd.com", "aaa.com"]
 			crypto_key {
-				allow_generate_key = true
-				label = "e2e-tf-test"
+				allow_generate_key = false
+				label = "e2e-tf-ca"
 				provider {
 					type = "%s"
 					instance_crn = "%s"

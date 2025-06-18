@@ -172,7 +172,7 @@ func dataSourceIbmAppConfigFeatureRead(d *schema.ResourceData, meta interface{})
 
 	appconfigClient, err := getAppConfigClient(meta, guid)
 	if err != nil {
-		return flex.FmtErrorf(fmt.Sprintf("%s", err))
+		return flex.FmtErrorf("%s", err)
 	}
 
 	options := &appconfigurationv1.GetFeatureOptions{}

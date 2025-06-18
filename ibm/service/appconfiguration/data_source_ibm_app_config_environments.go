@@ -4,7 +4,6 @@
 package appconfiguration
 
 import (
-	"fmt"
 	"net/url"
 	"reflect"
 	"strconv"
@@ -165,7 +164,7 @@ func dataSourceIbmAppConfigEnvironmentsRead(d *schema.ResourceData, meta interfa
 
 	appconfigClient, err := getAppConfigClient(meta, guid)
 	if err != nil {
-		return flex.FmtErrorf(fmt.Sprintf("%s", err))
+		return flex.FmtErrorf("%s", err)
 	}
 
 	options := &appconfigurationv1.ListEnvironmentsOptions{}

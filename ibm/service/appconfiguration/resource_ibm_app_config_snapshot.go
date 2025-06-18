@@ -136,7 +136,7 @@ func resourceIbmIbmAppConfigSnapshotCreate(d *schema.ResourceData, meta interfac
 	guid := d.Get("guid").(string)
 	appconfigClient, err := getAppConfigClient(meta, guid)
 	if err != nil {
-		return flex.FmtErrorf(fmt.Sprintf("%s", err))
+		return flex.FmtErrorf("%s", err)
 	}
 	options := &appconfigurationv1.CreateGitconfigOptions{}
 
@@ -166,7 +166,7 @@ func resourceIbmIbmAppConfigSnapshotUpdate(d *schema.ResourceData, meta interfac
 	}
 	appconfigClient, err := getAppConfigClient(meta, parts[0])
 	if err != nil {
-		return flex.FmtErrorf(fmt.Sprintf("%s", err))
+		return flex.FmtErrorf("%s", err)
 	}
 
 	if ok := d.HasChanges("action"); ok {
@@ -219,7 +219,7 @@ func resourceIbmIbmAppConfigSnapshotRead(d *schema.ResourceData, meta interface{
 	}
 	appconfigClient, err := getAppConfigClient(meta, parts[0])
 	if err != nil {
-		return flex.FmtErrorf(fmt.Sprintf("%s", err))
+		return flex.FmtErrorf("%s", err)
 	}
 	if len(parts) != 2 {
 		return flex.FmtErrorf("Kindly check the id")
@@ -285,7 +285,7 @@ func resourceIbmIbmAppConfigSnapshotDelete(d *schema.ResourceData, meta interfac
 	}
 	appconfigClient, err := getAppConfigClient(meta, parts[0])
 	if err != nil {
-		return flex.FmtErrorf(fmt.Sprintf("%s", err))
+		return flex.FmtErrorf("%s", err)
 	}
 
 	options := &appconfigurationv1.DeleteGitconfigOptions{}

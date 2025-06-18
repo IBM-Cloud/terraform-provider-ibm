@@ -95,7 +95,9 @@ func ResourceIBMIsPrivatePathServiceGatewayAccountPolicyValidator() *validate.Re
 func resourceIBMIsPrivatePathServiceGatewayAccountPolicyCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_private_path_service_gateway_account_policy", "create", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	createPrivatePathServiceGatewayAccountPolicyOptions := &vpcv1.CreatePrivatePathServiceGatewayAccountPolicyOptions{}
@@ -110,8 +112,9 @@ func resourceIBMIsPrivatePathServiceGatewayAccountPolicyCreate(context context.C
 
 	privatePathServiceGatewayAccountPolicy, response, err := vpcClient.CreatePrivatePathServiceGatewayAccountPolicyWithContext(context, createPrivatePathServiceGatewayAccountPolicyOptions)
 	if err != nil {
-		log.Printf("[DEBUG] CreatePrivatePathServiceGatewayAccountPolicyWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("CreatePrivatePathServiceGatewayAccountPolicyWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error creating PPSG account policy failed: %s\n%s", err.Error(), response), "ibm_is_private_path_service_gateway_account_policy", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", *createPrivatePathServiceGatewayAccountPolicyOptions.PrivatePathServiceGatewayID, *privatePathServiceGatewayAccountPolicy.ID))
@@ -122,7 +125,9 @@ func resourceIBMIsPrivatePathServiceGatewayAccountPolicyCreate(context context.C
 func resourceIBMIsPrivatePathServiceGatewayAccountPolicyRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_private_path_service_gateway_account_policy", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	getPrivatePathServiceGatewayAccountPolicyOptions := &vpcv1.GetPrivatePathServiceGatewayAccountPolicyOptions{}
@@ -141,27 +146,25 @@ func resourceIBMIsPrivatePathServiceGatewayAccountPolicyRead(context context.Con
 			d.SetId("")
 			return nil
 		}
-		log.Printf("[DEBUG] GetPrivatePathServiceGatewayAccountPolicyWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetPrivatePathServiceGatewayAccountPolicyWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error getting PPSG account policy failed: %s", err.Error()), "ibm_is_private_path_service_gateway_account_policy", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	if err = d.Set("access_policy", privatePathServiceGatewayAccountPolicy.AccessPolicy); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting access_policy: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting access_policy: %s", err), "ibm_is_private_path_service_gateway_account_policy", "read", "set-access_policy").GetDiag()
 	}
 	if err = d.Set("created_at", flex.DateTimeToString(privatePathServiceGatewayAccountPolicy.CreatedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting created_at: %s", err), "ibm_is_private_path_service_gateway_account_policy", "read", "set-created_at").GetDiag()
 	}
 	if err = d.Set("href", privatePathServiceGatewayAccountPolicy.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting href: %s", err), "ibm_is_private_path_service_gateway_account_policy", "read", "set-href").GetDiag()
 	}
 	if err = d.Set("resource_type", privatePathServiceGatewayAccountPolicy.ResourceType); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting resource_type: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_type: %s", err), "ibm_is_private_path_service_gateway_account_policy", "read", "set-resource_type").GetDiag()
 	}
-	// if err = d.Set("updated_at", flex.DateTimeToString(privatePathServiceGatewayAccountPolicy.UpdatedAt)); err != nil {
-	// 	return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
-	// }
 	if err = d.Set("account_policy", privatePathServiceGatewayAccountPolicy.ID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting private_path_service_gateway_account_policy_id: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting account_policy: %s", err), "ibm_is_private_path_service_gateway_account_policy", "read", "set-account_policy").GetDiag()
 	}
 
 	return nil
@@ -170,7 +173,9 @@ func resourceIBMIsPrivatePathServiceGatewayAccountPolicyRead(context context.Con
 func resourceIBMIsPrivatePathServiceGatewayAccountPolicyUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_private_path_service_gateway_account_policy", "update", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	updatePrivatePathServiceGatewayAccountPolicyOptions := &vpcv1.UpdatePrivatePathServiceGatewayAccountPolicyOptions{}
@@ -196,13 +201,13 @@ func resourceIBMIsPrivatePathServiceGatewayAccountPolicyUpdate(context context.C
 	if hasChange {
 		updatePrivatePathServiceGatewayAccountPolicyOptions.PrivatePathServiceGatewayAccountPolicyPatch, _ = patchVals.AsPatch()
 		if err != nil {
-			log.Printf("[DEBUG] Error calling AsPatch for PrivatePathServiceGatewayAccountPolicyPatch %s", err)
-			return diag.FromErr(err)
+			return flex.TerraformErrorf(err, fmt.Sprintf("Error calling AsPatch for PrivatePathServiceGatewayAccountPolicyPatch %s", err.Error()), "ibm_is_private_path_service_gateway_account_policy", "update").GetDiag()
 		}
 		_, response, err := vpcClient.UpdatePrivatePathServiceGatewayAccountPolicyWithContext(context, updatePrivatePathServiceGatewayAccountPolicyOptions)
 		if err != nil {
-			log.Printf("[DEBUG] UpdatePrivatePathServiceGatewayAccountPolicyWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("UpdatePrivatePathServiceGatewayAccountPolicyWithContext failed %s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error updating PPSG account policy: %s\n%s", err.Error(), response), "ibm_is_private_path_service_gateway_account_policy", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 
@@ -212,7 +217,9 @@ func resourceIBMIsPrivatePathServiceGatewayAccountPolicyUpdate(context context.C
 func resourceIBMIsPrivatePathServiceGatewayAccountPolicyDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_private_path_service_gateway_account_policy", "delete", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	deletePrivatePathServiceGatewayAccountPolicyOptions := &vpcv1.DeletePrivatePathServiceGatewayAccountPolicyOptions{}
@@ -227,8 +234,9 @@ func resourceIBMIsPrivatePathServiceGatewayAccountPolicyDelete(context context.C
 
 	response, err := vpcClient.DeletePrivatePathServiceGatewayAccountPolicyWithContext(context, deletePrivatePathServiceGatewayAccountPolicyOptions)
 	if err != nil {
-		log.Printf("[DEBUG] DeletePrivatePathServiceGatewayAccountPolicyWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("DeletePrivatePathServiceGatewayAccountPolicyWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error deleting PPSG account policy: %s\n%s", err.Error(), response), "ibm_is_private_path_service_gateway_account_policy", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId("")
