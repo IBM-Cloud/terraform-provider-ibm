@@ -62,7 +62,7 @@ func testAccCheckIBMPIVirtualSerialNumberExists(n string) resource.TestCheckFunc
 		rs, ok := s.RootModule().Resources[n]
 
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return flex.FmtErrorf("Not found: %s", n)
 		}
 
 		if rs.Primary.ID == "" {
@@ -103,7 +103,7 @@ func testAccCheckIBMPIVirtualSerialNumberDestroy(s *terraform.State) error {
 		vsnClient := st.NewIBMPIVSNClient(context.Background(), sess, cloudInstanceId)
 		_, err = vsnClient.Get(parts[1])
 		if err == nil {
-			return fmt.Errorf("PI virtual serial number still exists: %s", rs.Primary.ID)
+			return flex.FmtErrorf("PI virtual serial number still exists: %s", rs.Primary.ID)
 		}
 	}
 

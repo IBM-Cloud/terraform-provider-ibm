@@ -5,6 +5,8 @@ package power
 
 import (
 	"context"
+	"fmt"
+	"log"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/power/models"
@@ -178,7 +180,9 @@ func DataSourceIBMPIDatacenter() *schema.Resource {
 func dataSourceIBMPIDatacenterRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_datacenter", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	datacenterZone := sess.Options.Zone
@@ -194,7 +198,9 @@ func dataSourceIBMPIDatacenterRead(ctx context.Context, d *schema.ResourceData, 
 
 	dcData, err := client.Get(datacenterZone)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Get failed: %s", err.Error()), "ibm_pi_datacenter", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	var genID, _ = uuid.GenerateUUID()
 	d.SetId(genID)
@@ -212,7 +218,9 @@ func dataSourceIBMPIDatacenterRead(ctx context.Context, d *schema.ResourceData, 
 	if dcData.CapabilitiesDetails != nil {
 		capabilityDetailsMap, err := capabilityDetailsToMap(dcData.CapabilitiesDetails)
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("capabilityDetailsToMap failed: %s", err.Error()), "ibm_pi_datacenter", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		capabilityDetails = append(capabilityDetails, capabilityDetailsMap)
 	}

@@ -96,7 +96,7 @@ func testAccCheckIBMPINetworkInterfaceExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return flex.FmtErrorf("Not found: %s", n)
 		}
 		if rs.Primary.ID == "" {
 			return errors.New("No Record ID is set")
@@ -136,7 +136,7 @@ func testAccCheckIBMPINetworkInterfaceDestroy(s *terraform.State) error {
 		networkClient := instance.NewIBMPINetworkClient(context.Background(), sess, parts[0])
 		_, err = networkClient.GetNetworkInterface(parts[1], parts[2])
 		if err == nil {
-			return fmt.Errorf("pi_network_interface still exists: %s", rs.Primary.ID)
+			return flex.FmtErrorf("pi_network_interface still exists: %s", rs.Primary.ID)
 		}
 	}
 	return nil

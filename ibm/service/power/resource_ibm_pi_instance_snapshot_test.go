@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -95,7 +96,7 @@ func testAccCheckIBMPIInstanceSnapshotDestroy(s *terraform.State) error {
 		snapshotC := instance.NewIBMPISnapshotClient(context.Background(), sess, cloudInstanceID)
 		_, err = snapshotC.Get(snapshotID)
 		if err == nil {
-			return fmt.Errorf("PI Instance Snapshot still exists: %s", rs.Primary.ID)
+			return flex.FmtErrorf("PI Instance Snapshot still exists: %s", rs.Primary.ID)
 		}
 	}
 	return nil
@@ -105,7 +106,7 @@ func testAccCheckIBMPIInstanceSnapshotExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return flex.FmtErrorf("Not found: %s", n)
 		}
 
 		if rs.Primary.ID == "" {

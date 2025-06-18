@@ -495,7 +495,9 @@ func resourceIBMPIInstanceCreate(ctx context.Context, d *schema.ResourceData, me
 	log.Printf("Now in the PowerVMCreate")
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_instance", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
 	client := instance.NewIBMPIInstanceClient(ctx, sess, cloudInstanceID)
@@ -509,7 +511,9 @@ func resourceIBMPIInstanceCreate(ctx context.Context, d *schema.ResourceData, me
 		pvmList, err = createPVMInstance(d, client, imageClient)
 	}
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("createSAPInstance/createPVMInstance failed: %s", err.Error()), "ibm_pi_instance", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	var instanceReadyStatus string
@@ -529,12 +533,16 @@ func resourceIBMPIInstanceCreate(ctx context.Context, d *schema.ResourceData, me
 		if dt, ok := d.GetOk(Arg_DeploymentType); ok && dt.(string) == DeploymentTypeVMNoStorage {
 			_, err = isWaitForPIInstanceShutoff(ctx, client, *s.PvmInstanceID, instanceReadyStatus, d.Timeout(schema.TimeoutCreate))
 			if err != nil {
-				return diag.FromErr(err)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForPIInstanceShutoff failed: %s", err.Error()), "ibm_pi_instance", "create")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 		} else {
 			_, err = isWaitForPIInstanceAvailable(ctx, client, *s.PvmInstanceID, instanceReadyStatus, d.Timeout(schema.TimeoutCreate))
 			if err != nil {
-				return diag.FromErr(err)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForPIInstanceAvailables failed: %s", err.Error()), "ibm_pi_instance", "create")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 		}
 	}
@@ -551,7 +559,9 @@ func resourceIBMPIInstanceCreate(ctx context.Context, d *schema.ResourceData, me
 			// This is a synchronous process hence no need to check for health status
 			_, err = client.Update(*s.PvmInstanceID, body)
 			if err != nil {
-				return diag.FromErr(err)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Update failed: %s", err.Error()), "ibm_pi_instance", "create")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 		}
 	}
@@ -579,7 +589,9 @@ func resourceIBMPIInstanceCreate(ctx context.Context, d *schema.ResourceData, me
 			}
 			_, err = client.Update(*s.PvmInstanceID, body)
 			if err != nil {
-				return diag.FromErr(err)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Update failed: %s", err.Error()), "ibm_pi_instance", "create")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 		}
 	}
@@ -590,12 +602,16 @@ func resourceIBMPIInstanceCreate(ctx context.Context, d *schema.ResourceData, me
 func resourceIBMPIInstanceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_instance", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	idArr, err := flex.IdParts(d.Id())
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IdParts failed: %s", err.Error()), "ibm_pi_instance", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID := idArr[0]
@@ -604,7 +620,9 @@ func resourceIBMPIInstanceRead(ctx context.Context, d *schema.ResourceData, meta
 	client := instance.NewIBMPIInstanceClient(ctx, sess, cloudInstanceID)
 	powervmdata, err := client.Get(instanceID)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Get failed: %s", err.Error()), "ibm_pi_instance", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	if powervmdata.Crn != "" {
@@ -715,17 +733,24 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 	assignedVirtualCores := int64(d.Get(Arg_VirtualCoresAssigned).(int))
 
 	if d.Get(Attr_HealthStatus) == Warning {
-		return diag.Errorf("the operation cannot be performed when the lpar health in the WARNING State")
+		err := flex.FmtErrorf("the operation cannot be performed when the lpar health in the WARNING State")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("operation failed: %s", err.Error()), "ibm_pi_instance", "update")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.Errorf("failed to get the session from the IBM Cloud Service")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_instance", "update")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID, instanceID, err := splitID(d.Id())
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("splitID failed: %s", err.Error()), "ibm_pi_instance", "update")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	client := instance.NewIBMPIInstanceClient(ctx, sess, cloudInstanceID)
@@ -734,7 +759,9 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 	cloudInstanceClient := instance.NewIBMPICloudInstanceClient(ctx, sess, cloudInstanceID)
 	cloudInstance, err := cloudInstanceClient.Get(cloudInstanceID)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Get failed: %s", err.Error()), "ibm_pi_instance", "update")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	cores_enabled := checkCloudInstanceCapability(cloudInstance, CUSTOM_VIRTUAL_CORES)
 
@@ -742,7 +769,11 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 		if d.HasChange(Arg_InstanceName) && d.HasChange(Arg_VirtualOpticalDevice) {
 			oldVOD, _ := d.GetChange(Arg_VirtualOpticalDevice)
 			d.Set(Arg_VirtualOpticalDevice, oldVOD)
-			return diag.Errorf("updates to %s and %s are mutually exclusive", Arg_InstanceName, Arg_VirtualOpticalDevice)
+
+			err = flex.FmtErrorf("updates to %s and %s are mutually exclusive", Arg_InstanceName, Arg_VirtualOpticalDevice)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("operation failed: %s", err.Error()), "ibm_pi_instance", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		body := &models.PVMInstanceUpdate{}
 		if d.HasChange(Arg_InstanceName) {
@@ -758,11 +789,15 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 		}
 		_, err = client.Update(instanceID, body)
 		if err != nil {
-			return diag.Errorf("failed to update the lpar: %v", err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Update failed: %s", err.Error()), "ibm_pi_instance", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		_, err = isWaitForPIInstanceAvailableOrShutoffAfterUpdate(ctx, client, instanceID, OK, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForPIInstanceAvailableOrShutoffAfterUpdate failed: %s", err.Error()), "ibm_pi_instance", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 
@@ -770,11 +805,13 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 		// Stop the lpar
 		status := d.Get(Attr_Status).(string)
 		if strings.ToLower(status) == State_Shutoff {
-			log.Printf("the lpar is in the shutoff state. Nothing to do . Moving on ")
+			log.Printf("the lpar is in the shutoff state. Nothing to do. Moving on...")
 		} else {
 			err := stopLparForResourceChange(ctx, client, instanceID, d)
 			if err != nil {
-				return diag.FromErr(err)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("stopLparForResourceChange failed: %s", err.Error()), "ibm_pi_instance", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 		}
 
@@ -789,17 +826,23 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 		}
 		_, err = client.Update(instanceID, updatebody)
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Update failed: %s", err.Error()), "ibm_pi_instance", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		_, err = isWaitForPIInstanceStopped(ctx, client, instanceID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForPIInstanceStopped failed: %s", err.Error()), "ibm_pi_instance", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
 		// Start the lpar
 		err := startLparAfterResourceChange(ctx, client, instanceID, d)
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("startLparAfterResourceChange failed: %s", err.Error()), "ibm_pi_instance", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 
@@ -810,17 +853,20 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 		}
 		_, err = client.Update(instanceID, body)
 		if err != nil {
-			return diag.Errorf("failed to update the lpar with the change for virtual cores: %v", err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Update failed: %s", err.Error()), "ibm_pi_instance", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		_, err = isWaitForPIInstanceAvailable(ctx, client, instanceID, OK, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForPIInstanceAvailable failed: %s", err.Error()), "ibm_pi_instance", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 
 	// Start of the change for Memory and Processors
 	if d.HasChange(Arg_Memory) || d.HasChange(Arg_Processors) {
-
 		maxMemLpar := d.Get(Attr_MaxMemory).(float64)
 		maxCPULpar := d.Get(Attr_MaxProcessors).(float64)
 
@@ -837,7 +883,9 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 		if (mem > maxMemLpar || procs > maxCPULpar) && strings.ToLower(instanceState) != State_Shutoff {
 			err = performChangeAndReboot(ctx, client, d, instanceID, mem, procs)
 			if err != nil {
-				return diag.FromErr(err)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("performChangeAndReboot failed: %s", err.Error()), "ibm_pi_instance", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 
 		} else {
@@ -854,12 +902,16 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 
 			_, err = client.Update(instanceID, body)
 			if err != nil {
-				return diag.Errorf("failed to update the lpar with the change %v", err)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Update failed: %s", err.Error()), "ibm_pi_instance", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			instanceReadyStatus := d.Get(Arg_HealthStatus).(string)
 			_, err = isWaitForPIInstanceAvailableOrShutoffAfterUpdate(ctx, client, instanceID, instanceReadyStatus, d.Timeout(schema.TimeoutUpdate))
 			if err != nil {
-				return diag.FromErr(err)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForPIInstanceAvailableOrShutoffAfterUpdate failed: %s", err.Error()), "ibm_pi_instance", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 		}
 	}
@@ -873,11 +925,15 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 		}
 		_, err = client.Update(instanceID, body)
 		if err != nil {
-			return diag.Errorf("failed to update the lpar with the change for license repository capacity %s", err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Update failed: %s", err.Error()), "ibm_pi_instance", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		_, err = isWaitForPIInstanceAvailable(ctx, client, instanceID, OK, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
-			diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForPIInstanceAvailable failed: %s", err.Error()), "ibm_pi_instance", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 
@@ -885,11 +941,13 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 		// Stop the lpar
 		status := d.Get(Attr_Status).(string)
 		if strings.ToLower(status) == State_Shutoff {
-			log.Printf("the lpar is in the shutoff state. Nothing to do... Moving on ")
+			log.Printf("the lpar is in the shutoff state. Nothing to do. Moving on...")
 		} else {
 			err := stopLparForResourceChange(ctx, client, instanceID, d)
 			if err != nil {
-				return diag.FromErr(err)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("stopLparForResourceChange failed: %s", err.Error()), "ibm_pi_instance", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 		}
 
@@ -900,19 +958,25 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 		}
 		_, err = client.Update(instanceID, body)
 		if err != nil {
-			return diag.Errorf("failed to update the lpar with the change for sap profile: %v", err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Update failed: %s", err.Error()), "ibm_pi_instance", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
 		// Wait for the resize to complete and status to reset
 		_, err = isWaitForPIInstanceStopped(ctx, client, instanceID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForPIInstanceStopped failed: %s", err.Error()), "ibm_pi_instance", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
 		// Start the lpar
 		err := startLparAfterResourceChange(ctx, client, instanceID, d)
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("startLparAfterResourceChange failed: %s", err.Error()), "ibm_pi_instance", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 	if d.HasChange(Arg_StoragePoolAffinity) {
@@ -923,7 +987,9 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 		// This is a synchronous process hence no need to check for health status
 		_, err = client.Update(instanceID, body)
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Update failed: %s", err.Error()), "ibm_pi_instance", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 
@@ -944,12 +1010,16 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 			if err != nil {
 				// ignore delete member error where the server is already not in the PG
 				if !strings.Contains(err.Error(), "is not part of placement-group") {
-					return diag.FromErr(err)
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteMembers failed: %s", err.Error()), "ibm_pi_instance", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
 			} else {
 				_, err = isWaitForPIInstancePlacementGroupDelete(ctx, pgClient, *pgID.ID, instanceID, d.Timeout(schema.TimeoutUpdate))
 				if err != nil {
-					return diag.FromErr(err)
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForPIInstancePlacementGroupDelete failed: %s", err.Error()), "ibm_pi_instance", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
 			}
 		}
@@ -962,11 +1032,15 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 			}
 			pgID, err := pgClient.AddMember(placementGroupID, body)
 			if err != nil {
-				return diag.FromErr(err)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("AddMember failed: %s", err.Error()), "ibm_pi_instance", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			} else {
 				_, err = isWaitForPIInstancePlacementGroupAdd(ctx, pgClient, *pgID.ID, instanceID, d.Timeout(schema.TimeoutUpdate))
 				if err != nil {
-					return diag.FromErr(err)
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForPIInstancePlacementGroupAdd failed: %s", err.Error()), "ibm_pi_instance", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
 			}
 		}
@@ -978,7 +1052,9 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 		} else {
 			_, err = isWaitForPIInstanceAvailable(ctx, client, instanceID, OK, d.Timeout(schema.TimeoutUpdate))
 			if err != nil {
-				return diag.FromErr(err)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForPIInstanceAvailable failed: %s", err.Error()), "ibm_pi_instance", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 		}
 
@@ -987,7 +1063,10 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 		sl.IbmiPHA = flex.PtrToBool(d.Get(Arg_IBMiPHA).(bool))
 		ibmrdsUsers := d.Get(Arg_IBMiRDSUsers).(int)
 		if ibmrdsUsers < 0 {
-			return diag.Errorf("request with  IBM i Rational Dev Studio property requires IBM i Rational Dev Studio number of users")
+			err = flex.FmtErrorf("request with IBMi Rational Dev Studio property requires IBMi Rational Dev Studio number of users")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("operation failed: %s", err.Error()), "ibm_pi_instance", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		sl.IbmiRDS = flex.PtrToBool(ibmrdsUsers > 0)
 		sl.IbmiRDSUsers = int64(ibmrdsUsers)
@@ -995,11 +1074,15 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 		updatebody := &models.PVMInstanceUpdate{SoftwareLicenses: sl}
 		_, err = client.Update(instanceID, updatebody)
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Update failed: %s", err.Error()), "ibm_pi_instance", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		_, err = isWaitForPIInstanceSoftwareLicenses(ctx, client, instanceID, sl, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForPIInstanceSoftwareLicenses failed: %s", err.Error()), "ibm_pi_instance", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 	if d.HasChange(Arg_UserTags) {
@@ -1021,7 +1104,9 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 			if strings.ToLower(status) != State_Shutoff {
 				err := stopLparForResourceChange(ctx, client, instanceID, d)
 				if err != nil {
-					return diag.FromErr(err)
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("stopLparForResourceChange failed: %s", err.Error()), "ibm_pi_instance", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
 				instanceRestart = true
 			}
@@ -1034,12 +1119,16 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 				}
 				err := vsnClient.PVMInstanceDeleteVSN(instanceID, deleteBody)
 				if err != nil {
-					return diag.FromErr(err)
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("PVMInstanceDeleteVSN failed: %s", err.Error()), "ibm_pi_instance", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
 
 				_, err = isWaitForPIInstanceStopped(ctx, client, instanceID, d.Timeout(schema.TimeoutUpdate))
 				if err != nil {
-					return diag.FromErr(err)
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForPIInstanceStopped failed: %s", err.Error()), "ibm_pi_instance", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
 			}
 
@@ -1053,19 +1142,25 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 				}
 				_, err := vsnClient.PVMInstanceAttachVSN(instanceID, addBody)
 				if err != nil {
-					return diag.FromErr(err)
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("PVMInstanceAttachVSN failed: %s", err.Error()), "ibm_pi_instance", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
 
 				_, err = isWaitForPIInstanceStopped(ctx, client, instanceID, d.Timeout(schema.TimeoutUpdate))
 				if err != nil {
-					return diag.FromErr(err)
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForPIInstanceStopped failed: %s", err.Error()), "ibm_pi_instance", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
 			}
 
 			if instanceRestart {
 				err = startLparAfterResourceChange(ctx, client, instanceID, d)
 				if err != nil {
-					return diag.FromErr(err)
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("startLparAfterResourceChange failed: %s", err.Error()), "ibm_pi_instance", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
 			}
 		}
@@ -1077,7 +1172,9 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 			}
 			_, err = vsnClient.PVMInstanceUpdateVSN(instanceID, updateBody)
 			if err != nil {
-				return diag.FromErr(err)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("PVMInstanceUpdateVSN failed: %s", err.Error()), "ibm_pi_instance", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 		}
 	}
@@ -1088,12 +1185,16 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 func resourceIBMPIInstanceDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_instance", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	idArr, err := flex.IdParts(d.Id())
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IdParts failed: %s", err.Error()), "ibm_pi_instance", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID := idArr[0]
@@ -1109,14 +1210,18 @@ func resourceIBMPIInstanceDelete(ctx context.Context, d *schema.ResourceData, me
 			err = client.Delete(instanceID)
 		}
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteWithBody/Delete failed: %s", err.Error()), "ibm_pi_instance", "delete")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 
 	for _, instanceID := range idArr[1:] {
 		_, err = isWaitForPIInstanceDeleted(ctx, client, instanceID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForPIInstanceDeleted failed: %s", err.Error()), "ibm_pi_instance", "delete")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 
@@ -1126,7 +1231,7 @@ func resourceIBMPIInstanceDelete(ctx context.Context, d *schema.ResourceData, me
 
 func isWaitForPIInstanceDeleted(ctx context.Context, client *instance.IBMPIInstanceClient, id string, timeout time.Duration) (interface{}, error) {
 
-	log.Printf("Waiting for  (%s) to be deleted.", id)
+	log.Printf("Waiting for (%s) to be deleted.", id)
 
 	stateConf := &retry.StateChangeConf{
 		Pending:    []string{State_Retry, State_Deleting},
@@ -1184,9 +1289,9 @@ func isPIInstanceRefreshFunc(client *instance.IBMPIInstanceClient, id, instanceR
 		}
 		if strings.ToLower(*pvm.Status) == State_Error {
 			if pvm.Fault != nil {
-				err = fmt.Errorf("failed to create the lpar: %s", pvm.Fault.Message)
+				err = flex.FmtErrorf("failed to create the lpar: %s", pvm.Fault.Message)
 			} else {
-				err = fmt.Errorf("failed to create the lpar")
+				err = flex.FmtErrorf("failed to create the lpar")
 			}
 			return pvm, *pvm.Status, err
 		}
@@ -1377,9 +1482,9 @@ func isPIInstanceShutoffRefreshFunc(client *instance.IBMPIInstanceClient, id, in
 		}
 		if strings.ToLower(*pvm.Status) == State_Error {
 			if pvm.Fault != nil {
-				err = fmt.Errorf("failed to create the lpar: %s", pvm.Fault.Message)
+				err = flex.FmtErrorf("failed to create the lpar: %s", pvm.Fault.Message)
 			} else {
-				err = fmt.Errorf("failed to create the lpar")
+				err = flex.FmtErrorf("failed to create the lpar")
 			}
 			return pvm, *pvm.Status, err
 		}
@@ -1429,12 +1534,11 @@ func isPIInstanceRefreshFuncOff(client *instance.IBMPIInstanceClient, id string)
 
 func stopLparForResourceChange(ctx context.Context, client *instance.IBMPIInstanceClient, id string, d *schema.ResourceData) error {
 	body := &models.PVMInstanceAction{
-		//Action: flex.PtrToString("stop"),
 		Action: flex.PtrToString(Action_ImmediateShutdown),
 	}
 	err := client.Action(id, body)
 	if err != nil {
-		return fmt.Errorf("failed to perform the stop action on the pvm instance %v", err)
+		return flex.FmtErrorf("failed to perform the stop action on the pvm instance %v", err)
 	}
 
 	_, err = isWaitForPIInstanceStopped(ctx, client, id, d.Timeout(schema.TimeoutUpdate))
@@ -1449,7 +1553,7 @@ func startLparAfterResourceChange(ctx context.Context, client *instance.IBMPIIns
 	}
 	err := client.Action(id, body)
 	if err != nil {
-		return fmt.Errorf("failed to perform the start action on the pvm instance %v", err)
+		return flex.FmtErrorf("failed to perform the start action on the pvm instance %v", err)
 	}
 
 	_, err = isWaitForPIInstanceAvailable(ctx, client, id, OK, d.Timeout(schema.TimeoutUpdate))
@@ -1481,12 +1585,12 @@ func performChangeAndReboot(ctx context.Context, client *instance.IBMPIInstanceC
 
 	_, updateErr := client.Update(id, body)
 	if updateErr != nil {
-		return fmt.Errorf("failed to update the lpar with the change, %s", updateErr)
+		return flex.FmtErrorf("failed to update the lpar with the change, %s", updateErr)
 	}
 
 	_, err = isWaitForPIInstanceShutoffAfterUpdate(ctx, client, id, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
-		return fmt.Errorf("failed to get an update from the Service after the resource change, %s", err)
+		return flex.FmtErrorf("failed to get an update from the Service after the resource change, %s", err)
 	}
 
 	// Now we can start the lpar
@@ -1629,7 +1733,7 @@ func createSAPInstance(d *schema.ResourceData, sapClient *instance.IBMPISAPInsta
 	var replicationSites []string
 	if sites, ok := d.GetOk(Arg_ReplicationSites); ok {
 		if !bootVolumeReplicationEnabled {
-			return nil, fmt.Errorf("must set %s to true in order to specify replication sites", Arg_BootVolumeReplicationEnabled)
+			return nil, flex.FmtErrorf("must set %s to true in order to specify replication sites", Arg_BootVolumeReplicationEnabled)
 		} else {
 			replicationSites = flex.FlattenSet(sites.(*schema.Set))
 			body.ReplicationSites = replicationSites
@@ -1678,10 +1782,10 @@ func createSAPInstance(d *schema.ResourceData, sapClient *instance.IBMPISAPInsta
 	}
 	pvmList, err := sapClient.Create(body)
 	if err != nil {
-		return nil, fmt.Errorf("failed to provision: %v", err)
+		return nil, flex.FmtErrorf("failed to provision: %v", err)
 	}
 	if pvmList == nil {
-		return nil, fmt.Errorf("failed to provision")
+		return nil, flex.FmtErrorf("failed to provision")
 	}
 
 	return pvmList, nil
@@ -1697,22 +1801,22 @@ func createPVMInstance(d *schema.ResourceData, client *instance.IBMPIInstanceCli
 	if v, ok := d.GetOk(Arg_Memory); ok {
 		mem = v.(float64)
 	} else {
-		return nil, fmt.Errorf("%s is required for creating pvm instances", Arg_Memory)
+		return nil, flex.FmtErrorf("%s is required for creating pvm instances", Arg_Memory)
 	}
 	if v, ok := d.GetOk(Arg_Processors); ok {
 		procs = v.(float64)
 	} else {
-		return nil, fmt.Errorf("%s is required for creating pvm instances", Arg_Processors)
+		return nil, flex.FmtErrorf("%s is required for creating pvm instances", Arg_Processors)
 	}
 	if v, ok := d.GetOk(Arg_SysType); ok {
 		systype = v.(string)
 	} else {
-		return nil, fmt.Errorf("%s is required for creating pvm instances", Arg_SysType)
+		return nil, flex.FmtErrorf("%s is required for creating pvm instances", Arg_SysType)
 	}
 	if v, ok := d.GetOk(Arg_ProcType); ok {
 		processortype = v.(string)
 	} else {
-		return nil, fmt.Errorf("%s is required for creating pvm instances", Arg_ProcType)
+		return nil, flex.FmtErrorf("%s is required for creating pvm instances", Arg_ProcType)
 	}
 
 	pvmNetworks := expandPVMNetworks(d.Get(Arg_Network).([]interface{}))
@@ -1831,7 +1935,7 @@ func createPVMInstance(d *schema.ResourceData, client *instance.IBMPIInstanceCli
 		// check if vtl image is cloud instance image
 		imageData, err = imageClient.Get(imageid)
 		if err != nil {
-			return nil, fmt.Errorf("image doesn't exist. %e", err)
+			return nil, flex.FmtErrorf("image doesn't exist. %e", err)
 		}
 	}
 	if lrc, ok := d.GetOk(Arg_LicenseRepositoryCapacity); ok {
@@ -1839,7 +1943,7 @@ func createPVMInstance(d *schema.ResourceData, client *instance.IBMPIInstanceCli
 		if imageData.Specifications.ImageType == StockVTL {
 			body.LicenseRepositoryCapacity = int64(lrc.(int))
 		} else {
-			return nil, fmt.Errorf("pi_license_repository_capacity should only be used when creating VTL instances. %e", err)
+			return nil, flex.FmtErrorf("pi_license_repository_capacity should only be used when creating VTL instances. %e", err)
 		}
 	}
 
@@ -1860,7 +1964,7 @@ func createPVMInstance(d *schema.ResourceData, client *instance.IBMPIInstanceCli
 		}
 		if ibmrdsUsers, ok := d.GetOk(Arg_IBMiRDSUsers); ok {
 			if ibmrdsUsers.(int) < 0 {
-				return nil, fmt.Errorf("request with IBM i Rational Dev Studio property requires IBM i Rational Dev Studio number of users")
+				return nil, flex.FmtErrorf("request with IBM i Rational Dev Studio property requires IBM i Rational Dev Studio number of users")
 			}
 			sl.IbmiRDS = flex.PtrToBool(ibmrdsUsers.(int) > 0)
 			sl.IbmiRDSUsers = int64(ibmrdsUsers.(int))
@@ -1878,7 +1982,7 @@ func createPVMInstance(d *schema.ResourceData, client *instance.IBMPIInstanceCli
 	var replicationSites []string
 	if sites, ok := d.GetOk(Arg_ReplicationSites); ok {
 		if !bootVolumeReplicationEnabled {
-			return nil, fmt.Errorf("must set %s to true in order to specify replication sites", Arg_BootVolumeReplicationEnabled)
+			return nil, flex.FmtErrorf("must set %s to true in order to specify replication sites", Arg_BootVolumeReplicationEnabled)
 		} else {
 			replicationSites = flex.FlattenSet(sites.(*schema.Set))
 			body.ReplicationSites = replicationSites
@@ -1897,10 +2001,10 @@ func createPVMInstance(d *schema.ResourceData, client *instance.IBMPIInstanceCli
 	pvmList, err := client.Create(body)
 
 	if err != nil {
-		return nil, fmt.Errorf("failed to provision: %v", err)
+		return nil, flex.FmtErrorf("failed to provision: %v", err)
 	}
 	if pvmList == nil {
-		return nil, fmt.Errorf("failed to provision")
+		return nil, flex.FmtErrorf("failed to provision")
 	}
 
 	return pvmList, nil
