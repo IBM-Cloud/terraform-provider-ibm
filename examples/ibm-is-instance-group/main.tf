@@ -123,8 +123,8 @@ resource "ibm_is_instance_group_manager_action" "instance_group_manager_action" 
   instance_group_manager = ibm_is_instance_group_manager.instance_group_manager_scheduled.manager_id  # Manager
   cron_spec              = var.cron_spec        # Cron schedule
   target_manager         = ibm_is_instance_group_manager.instance_group_manager.manager_id  # Target manager
-  min_membership_count   = var.max_membership_count  # Note: These appear swapped in the original code
-  max_membership_count   = var.min_membership_count  # Note: These appear swapped in the original code
+  min_membership_count   = var.min_membership_count
+  max_membership_count   = var.max_membership_count
 }
 
 # ==========================================================================
@@ -139,7 +139,7 @@ data "ibm_is_instance_group" "instance_group_data" {
 # Get information about a specific membership
 data "ibm_is_instance_group_membership" "is_instance_group_membership" {
   instance_group = ibm_is_instance_group.instance_group.id
-  name = var.instance_group_membership
+  name = ibm_is_instance_group_membership.is_instance_group_membership.name
 }
 
 # ==========================================================================
