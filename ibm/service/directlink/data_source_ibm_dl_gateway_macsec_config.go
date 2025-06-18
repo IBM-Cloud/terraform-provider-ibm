@@ -137,7 +137,6 @@ func dataSourceIBMDLGatewayMacsecConfigRead(context context.Context, d *schema.R
 	getGatewayMacsecOptionsModel := new(directlinkv1.GetGatewayMacsecOptions)
 	getGatewayMacsecOptionsModel.ID = &dlGatewayID
 	getGatewayMacsecOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
-	getGatewayMacsecOptionsModel.Version = IBMCLOUD_DL_VERSION_DEFAULT
 
 	result, response, err := directLink.GetGatewayMacsec(getGatewayMacsecOptionsModel)
 	if err != nil {

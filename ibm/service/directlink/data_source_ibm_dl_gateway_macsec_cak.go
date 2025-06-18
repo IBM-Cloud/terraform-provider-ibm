@@ -12,10 +12,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-const (
-	IBMCLOUD_DL_VERSION_DEFAULT = "2019-12-18"
-)
-
 func DataSourceIBMDLGatewayMacsecCak() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceIBMDLGatewayMacsecCakRead,
@@ -120,7 +116,6 @@ func dataSourceIBMDLGatewayMacsecCakRead(context context.Context, d *schema.Reso
 	getGatewayMacsecCakOptionsModel := new(directlinkv1.GetGatewayMacsecCakOptions)
 	getGatewayMacsecCakOptionsModel.ID = &gatewayID
 	getGatewayMacsecCakOptionsModel.CakID = &getMacsecCakID
-	getGatewayMacsecCakOptionsModel.Version = IBMCLOUD_DL_VERSION_DEFAULT
 
 	getGatewayMacsecCakOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 	// Expect response parsing to fail since we are receiving a text/plain response

@@ -123,7 +123,6 @@ func dataSourceIBMDLGatewayMacsecCaksRead(context context.Context, d *schema.Res
 	// Construct an instance of the GetGatewayMacsecCakOptions model
 	listGatewayMacsecCaksOptions := new(directlinkv1.ListGatewayMacsecCaksOptions)
 	listGatewayMacsecCaksOptions.ID = &gatewayID
-	listGatewayMacsecCaksOptions.Version = IBMCLOUD_DL_VERSION_DEFAULT
 
 	listGatewayMacsecCaksOptions.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 	// Expect response parsing to fail since we are receiving a text/plain response

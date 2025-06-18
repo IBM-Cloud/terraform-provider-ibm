@@ -216,7 +216,6 @@ func resourceIBMdlGatewayMacsecConfigCreate(context context.Context, d *schema.R
 		sakRekeyPrototypeModel.Mode = &mode
 		opts.SetSakRekey(sakRekeyPrototypeModel)
 	}
-	opts.Version = IBMCLOUD_DL_VERSION_DEFAULT
 	result, response, err := directLink.SetGatewayMacsec(opts)
 
 	if err != nil {
@@ -292,7 +291,6 @@ func resourceIBMdlGatewayMacsecConfigRead(context context.Context, d *schema.Res
 	getGatewayMacsecOptionsModel := new(directlinkv1.GetGatewayMacsecOptions)
 	getGatewayMacsecOptionsModel.ID = &dlGatewayID
 	getGatewayMacsecOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
-	getGatewayMacsecOptionsModel.Version = IBMCLOUD_DL_VERSION_DEFAULT
 
 	result, response, err := directLink.GetGatewayMacsec(getGatewayMacsecOptionsModel)
 	if err != nil {
@@ -387,7 +385,6 @@ func resourceIBMdlGatewayMacsecConfigUpdate(context context.Context, d *schema.R
 	}
 
 	updateGatewayMacsecOptions := directLink.NewUpdateGatewayMacsecOptions(gatewayID, GatewayMacsecConfigPatch)
-	updateGatewayMacsecOptions.Version = IBMCLOUD_DL_VERSION_DEFAULT
 
 	_, response, err := directLink.UpdateGatewayMacsec(updateGatewayMacsecOptions)
 	if err != nil {
@@ -409,7 +406,6 @@ func resourceIBMdlGatewayMacsecConfigDelete(context context.Context, d *schema.R
 
 	delOptions := &directlinkv1.UnsetGatewayMacsecOptions{
 		ID: &gatewayID,
-		Version: IBMCLOUD_DL_VERSION_DEFAULT
 	}
 
 	response, err := directLink.UnsetGatewayMacsec(delOptions)
