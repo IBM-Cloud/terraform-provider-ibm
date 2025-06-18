@@ -12,6 +12,7 @@ import (
 	rc "github.com/IBM/ibm-cos-sdk-go-config/v2/resourceconfigurationv1"
 	"github.com/IBM/ibm-cos-sdk-go/aws"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -19,8 +20,14 @@ func ResourceIBMCOSBackupPolicy() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceIBMCOSBackupPolicyCreate,
 		ReadContext:   resourceIBMCOSBackupPolicyRead,
+		UpdateContext: resourceIBMCOSBackupPolicyUpdate,
 		DeleteContext: resourceIBMCOSBackupPolicyDelete,
 		Importer:      &schema.ResourceImporter{},
+		CustomizeDiff: customdiff.Sequence(
+			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
+				return resourceCustomSuppressDeleteAfterDaysDiff(diff)
+			},
+		),
 
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(60 * time.Minute),
@@ -35,9 +42,10 @@ func ResourceIBMCOSBackupPolicy() *schema.Resource {
 				Description: "Bucket Crn of the source bucket.",
 			},
 			"initial_delete_after_days": {
-				Type:         schema.TypeInt,
-				Computed:     true, // Computed means it can be set by Terraform but can't be updated by users
-				Optional:     true,
+				Type: schema.TypeInt,
+				// Computed:     true, // Computed means it can be set by Terraform but can't be updated by users
+				// Optional:     true,
+				Required:     true,
 				ValidateFunc: validate.ValidateAllowedRangeInt(1, 36500),
 				Description:  "Number of days after which the objects inside backup vault should be deleted.",
 			},
@@ -142,6 +150,11 @@ func resourceIBMCOSBackupPolicyRead(ctx context.Context, d *schema.ResourceData,
 	}
 	return nil
 }
+func resourceIBMCOSBackupPolicyUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	// This function with return nil is added to support the custom diff function to prevent the updation of initial_delete_after_days
+	return nil
+
+}
 
 func resourceIBMCOSBackupPolicyDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	bucketName, err := parseBackupPolicyID(d.Id(), "bucketName")
@@ -181,4 +194,13 @@ func parseBackupPolicyID(id string, info string) (backupPolicy string, err error
 		return strings.Split(id, ":target:")[1], nil
 	}
 	return "", errors.New("Backup policy ID is null")
+}
+
+func resourceCustomSuppressDeleteAfterDaysDiff(diff *schema.ResourceDiff) error {
+	// oldDaysValue, newDaysValue := diff.GetChange("initial_delete_after_days")
+	// if newDaysValue != oldDaysValue {
+	if diff.Id() != "" && diff.HasChange("initial_delete_after_days") {
+		return fmt.Errorf("[ERROR] `initial_delete_after_days` does not support update operation")
+	}
+	return nil
 }

@@ -304,7 +304,7 @@ func TestAccIBMCosBackup_Policy_With_Initial_Retention_Invalid(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      testAccCheckIBMCosBackup_Policy_Without_Retention(acc.CosCRN, bucketName, acc.BackupVaultName, region, accountID, policyName, guid, acc.BackupVaultCrn),
-				ExpectError: regexp.MustCompile("The provided JSON was malformed or did not validate against the published schema"),
+				ExpectError: regexp.MustCompile("Missing required argument"),
 			},
 		},
 	})
