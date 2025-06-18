@@ -11,5 +11,5 @@ variable "region" {
 # Resource group for organizing resources
 variable "resource_group" {
   description = "Name of the resource group for Flow Logs related resources"
-  default     = "default"
+  default     = "Default"
 }
