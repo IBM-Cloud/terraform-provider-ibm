@@ -1762,11 +1762,6 @@ func resourceIBMDatabaseInstanceRead(context context.Context, d *schema.Resource
 		}
 	}
 
-	// This can be removed any time after August once all old multitenant instances are switched over to the new multitenant
-	if groupList.Groups[0].HostFlavor == nil && (groupList.Groups[0].CPU != nil && *groupList.Groups[0].CPU.AllocationCount == 0) {
-		return appendSwitchoverWarning()
-	}
-
 	endpoint, _ := instance.Parameters["service-endpoints"]
 	if endpoint == "public" || endpoint == "public-and-private" {
 		return publicServiceEndpointsWarning()
@@ -2857,20 +2852,6 @@ func validateMultitenantMemoryCpu(resourceDefaults *Group, group *Group, cpuEnfo
 	} else {
 		return fmt.Errorf("The current cpu allocation of %d is not valid for your current configuration.", group.CPU.Allocation)
 	}
-}
-
-// This can be removed any time after August once all old multitenant instances are switched over to the new multitenant
-func appendSwitchoverWarning() diag.Diagnostics {
-	var diags diag.Diagnostics
-
-	warning := diag.Diagnostic{
-		Severity: diag.Warning,
-		Summary:  "Note: IBM Cloud Databases released new Hosting Models on May 1. All existing multi-tenant instances will have their resources adjusted to Shared Compute allocations during August 2024. To monitor your current resource needs, and learn about how the transition to Shared Compute will impact your instance, see our documentation https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-hosting-models",
-	}
-
-	diags = append(diags, warning)
-
-	return diags
 }
 
 func upgradeInProgressWarning(task *clouddatabasesv5.Task) diag.Diagnostics {
