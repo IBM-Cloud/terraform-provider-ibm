@@ -924,7 +924,6 @@ type Params struct {
 	Version             string  `json:"version,omitempty"`
 	KeyProtectKey       string  `json:"disk_encryption_key_crn,omitempty"`
 	BackUpEncryptionCRN string  `json:"backup_encryption_key_crn,omitempty"`
-	Members             int     `json:"members_allocation_count,omitempty"`
 	Memory              int     `json:"members_memory_allocation_mb,omitempty"`
 	Disk                int     `json:"members_disk_allocation_mb,omitempty"`
 	CPU                 int     `json:"members_cpu_allocation_count,omitempty"`
@@ -1007,7 +1006,7 @@ func getDefaultScalingGroups(_service string, _plan string, _hostFlavor string, 
 	return getDefaultScalingGroupsResponse.Groups, nil
 }
 
-func getDefaultNodeCount(service string, plan string, meta interface{}) (int, error) {
+func getInitialNodeCount(service string, plan string, meta interface{}) (int, error) {
 	groups, err := getDefaultScalingGroups(service, plan, "", meta)
 
 	if err != nil {
@@ -1020,7 +1019,7 @@ func getDefaultNodeCount(service string, plan string, meta interface{}) (int, er
 		}
 	}
 
-	return 0, fmt.Errorf("getDefaultNodeCount failed for member group")
+	return 0, fmt.Errorf("getInitialNodeCount failed for member group")
 }
 
 func getGroups(instanceID string, meta interface{}) (groups []clouddatabasesv5.Group, err error) {
@@ -1230,6 +1229,35 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 		params.OfflineRestore = offlineRestore.(bool)
 	}
 
+	var initialNodeCount int
+	var sourceCRN string
+
+	if params.PITRDeploymentID != "" {
+		sourceCRN = params.PITRDeploymentID
+	}
+
+	if params.RemoteLeaderID != "" {
+		sourceCRN = params.RemoteLeaderID
+	}
+
+	if sourceCRN != "" {
+		group, err := getMemberGroup(sourceCRN, meta)
+
+		if err != nil {
+			return diag.FromErr(
+				fmt.Errorf("[ERROR] Error fetching source formation group: %s", err)) // raise error
+		}
+
+		if group != nil {
+			initialNodeCount = group.Members.Allocation
+		}
+	} else {
+		initialNodeCount, err = getInitialNodeCount(serviceName, plan, meta)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
 	var memberGroup *Group
 
 	if group, ok := d.GetOk("group"); ok {
@@ -1243,53 +1271,16 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 		}
 	}
 
-	var nodeCount int
-	var sourceCRN string
-
-	if params.PITRDeploymentID != "" {
-		sourceCRN = params.PITRDeploymentID
-	}
-
-	if params.RemoteLeaderID != "" {
-		sourceCRN = params.RemoteLeaderID
-	}
-
-	// If this is a pitr or rr, set the nodeCount to the same as source's node count
-	if sourceCRN != "" {
-		sourceGroup, err := getMemberGroup(sourceCRN, meta)
-
-		if err != nil {
-			return diag.FromErr(
-				fmt.Errorf("[ERROR] Error fetching source formation group: %s", err)) // raise error
-		}
-
-		if sourceGroup != nil {
-			nodeCount = sourceGroup.Members.Allocation
-		}
-	} else {
-		// If not pitr or rr, set the nodeCount to user config or the group default
-		if memberGroup != nil && memberGroup.Members != nil && memberGroup.Members.Allocation != 0 {
-			nodeCount = memberGroup.Members.Allocation
-		} else {
-			nodeCount, err = getDefaultNodeCount(serviceName, plan, meta)
-			if err != nil {
-				return diag.FromErr(err)
-			}
-		}
-	}
-
-	params.Members = nodeCount
-
 	if memberGroup != nil && memberGroup.Memory != nil {
-		params.Memory = memberGroup.Memory.Allocation * nodeCount
+		params.Memory = memberGroup.Memory.Allocation * initialNodeCount
 	}
 
 	if memberGroup != nil && memberGroup.Disk != nil {
-		params.Disk = memberGroup.Disk.Allocation * nodeCount
+		params.Disk = memberGroup.Disk.Allocation * initialNodeCount
 	}
 
 	if memberGroup != nil && memberGroup.CPU != nil {
-		params.CPU = memberGroup.CPU.Allocation * nodeCount
+		params.CPU = memberGroup.CPU.Allocation * initialNodeCount
 	}
 
 	if memberGroup != nil && memberGroup.HostFlavor != nil {
@@ -1322,69 +1313,69 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	// LORNA - looks like this is to hscale as part of provision and deal with bi connector and analytics node as well but now that we can set members at provision time we should need this
-	// if group, ok := d.GetOk("group"); ok {
-	// 	groups := expandGroups(group.(*schema.Set).List())
-	// 	groupsResponse, err := getGroups(*instance.ID, meta)
-	// 	if err != nil {
-	// 		return diag.FromErr(err)
-	// 	}
-	// 	currentGroups := normalizeGroups(groupsResponse)
 
-	// 	for _, g := range groups {
-	// 		groupScaling := &clouddatabasesv5.GroupScaling{}
-	// 		var currentGroup *Group
-	// 		var nodeCount int
+	if group, ok := d.GetOk("group"); ok {
+		groups := expandGroups(group.(*schema.Set).List())
+		groupsResponse, err := getGroups(*instance.ID, meta)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		currentGroups := normalizeGroups(groupsResponse)
 
-	// 		for _, cg := range currentGroups {
-	// 			if cg.ID == g.ID {
-	// 				currentGroup = &cg
-	// 				nodeCount = currentGroup.Members.Allocation
-	// 			}
-	// 		}
+		for _, g := range groups {
+			groupScaling := &clouddatabasesv5.GroupScaling{}
+			var currentGroup *Group
+			var nodeCount int
 
-	// 		if g.ID == "member" && (g.Members == nil || g.Members.Allocation == nodeCount) {
-	// 			// No Horizontal Scaling needed
-	// 			continue
-	// 		}
+			for _, cg := range currentGroups {
+				if cg.ID == g.ID {
+					currentGroup = &cg
+					nodeCount = currentGroup.Members.Allocation
+				}
+			}
 
-	// 		if g.Members != nil && g.Members.Allocation != currentGroup.Members.Allocation {
-	// 			groupScaling.Members = &clouddatabasesv5.GroupScalingMembers{AllocationCount: core.Int64Ptr(int64(g.Members.Allocation))}
-	// 			nodeCount = g.Members.Allocation
-	// 		}
-	// 		if g.Memory != nil && g.Memory.Allocation*nodeCount != currentGroup.Memory.Allocation {
-	// 			groupScaling.Memory = &clouddatabasesv5.GroupScalingMemory{AllocationMb: core.Int64Ptr(int64(g.Memory.Allocation * nodeCount))}
-	// 		}
-	// 		if g.Disk != nil && g.Disk.Allocation*nodeCount != currentGroup.Disk.Allocation {
-	// 			groupScaling.Disk = &clouddatabasesv5.GroupScalingDisk{AllocationMb: core.Int64Ptr(int64(g.Disk.Allocation * nodeCount))}
-	// 		}
-	// 		if g.CPU != nil && g.CPU.Allocation*nodeCount != currentGroup.CPU.Allocation {
-	// 			groupScaling.CPU = &clouddatabasesv5.GroupScalingCPU{AllocationCount: core.Int64Ptr(int64(g.CPU.Allocation * nodeCount))}
-	// 		}
-	// 		if g.HostFlavor != nil {
-	// 			groupScaling.HostFlavor = &clouddatabasesv5.GroupScalingHostFlavor{ID: core.StringPtr(g.HostFlavor.ID)}
-	// 		}
+			if g.ID == "member" && (g.Members == nil || g.Members.Allocation == nodeCount) {
+				// No Horizontal Scaling needed
+				continue
+			}
 
-	// 		if groupScaling.Members != nil || groupScaling.Memory != nil || groupScaling.Disk != nil || groupScaling.CPU != nil || groupScaling.HostFlavor != nil {
-	// 			setDeploymentScalingGroupOptions := &clouddatabasesv5.SetDeploymentScalingGroupOptions{
-	// 				ID:      instance.ID,
-	// 				GroupID: &g.ID,
-	// 				Group:   groupScaling,
-	// 			}
+			if g.Members != nil && g.Members.Allocation != currentGroup.Members.Allocation {
+				groupScaling.Members = &clouddatabasesv5.GroupScalingMembers{AllocationCount: core.Int64Ptr(int64(g.Members.Allocation))}
+				nodeCount = g.Members.Allocation
+			}
+			if g.Memory != nil && g.Memory.Allocation*nodeCount != currentGroup.Memory.Allocation {
+				groupScaling.Memory = &clouddatabasesv5.GroupScalingMemory{AllocationMb: core.Int64Ptr(int64(g.Memory.Allocation * nodeCount))}
+			}
+			if g.Disk != nil && g.Disk.Allocation*nodeCount != currentGroup.Disk.Allocation {
+				groupScaling.Disk = &clouddatabasesv5.GroupScalingDisk{AllocationMb: core.Int64Ptr(int64(g.Disk.Allocation * nodeCount))}
+			}
+			if g.CPU != nil && g.CPU.Allocation*nodeCount != currentGroup.CPU.Allocation {
+				groupScaling.CPU = &clouddatabasesv5.GroupScalingCPU{AllocationCount: core.Int64Ptr(int64(g.CPU.Allocation * nodeCount))}
+			}
+			if g.HostFlavor != nil {
+				groupScaling.HostFlavor = &clouddatabasesv5.GroupScalingHostFlavor{ID: core.StringPtr(g.HostFlavor.ID)}
+			}
 
-	// 			setDeploymentScalingGroupResponse, _, err := cloudDatabasesClient.SetDeploymentScalingGroup(setDeploymentScalingGroupOptions)
+			if groupScaling.Members != nil || groupScaling.Memory != nil || groupScaling.Disk != nil || groupScaling.CPU != nil || groupScaling.HostFlavor != nil {
+				setDeploymentScalingGroupOptions := &clouddatabasesv5.SetDeploymentScalingGroupOptions{
+					ID:      instance.ID,
+					GroupID: &g.ID,
+					Group:   groupScaling,
+				}
 
-	// 			taskIDLink := *setDeploymentScalingGroupResponse.Task.ID
+				setDeploymentScalingGroupResponse, _, err := cloudDatabasesClient.SetDeploymentScalingGroup(setDeploymentScalingGroupOptions)
 
-	// 			_, err = waitForDatabaseTaskComplete(taskIDLink, d, meta, d.Timeout(schema.TimeoutCreate))
+				taskIDLink := *setDeploymentScalingGroupResponse.Task.ID
 
-	// 			if err != nil {
-	// 				return diag.FromErr(err)
-	// 			}
-	// 		}
-	// 	}
-	// }
-	// LORNA - end
+				_, err = waitForDatabaseTaskComplete(taskIDLink, d, meta, d.Timeout(schema.TimeoutCreate))
+
+				if err != nil {
+					return diag.FromErr(err)
+				}
+			}
+		}
+	}
+
 	v := os.Getenv("IC_ENV_TAGS")
 	if _, ok := d.GetOk("tags"); ok || v != "" {
 		oldList, newList := d.GetChange("tags")
@@ -2989,19 +2980,14 @@ func validateGroupsDiff(_ context.Context, diff *schema.ResourceDiff, meta inter
 				}
 			}
 
+			// set current nodeCount
+			nodeCount := groupDefaults.Members.Allocation
+
 			if group.HostFlavor != nil && group.HostFlavor.ID != "" && group.HostFlavor.ID != "multitenant" {
 				err = validateGroupHostFlavor(groupId, "host_flavor", group)
 				if err != nil {
 					return err
 				}
-			}
-
-			// set nodeCount from config or group default
-			var nodeCount int
-			if group.Members != nil && group.Members.Allocation != 0 {
-				nodeCount = group.Members.Allocation
-			} else {
-				nodeCount = groupDefaults.Members.Allocation
 			}
 
 			if group.Members != nil {
