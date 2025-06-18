@@ -78,6 +78,7 @@ Review the argument references that you can specify for your resource.
 - `resource_group` - (Optional, Forces new resource, String) The resource group (id), where the VPN gateway to be created.
 - `security_groups` - (Optional, List) The security groups `ID` to use for this VPN server. If unspecified, the VPC's default security group is used.
 - `subnets` - (Required, List) Comma-separated IDs of the subnets to provision this VPN server in.  Use subnets in different zones for high availability. User can also upgrade or downgrade the VPN server to high availability or standalone by adding/remove the subnets.
+- `tags`- (Optional, Array of Strings) A list of user tags that you want to add to your VPN server. (https://cloud.ibm.com/apidocs/tagging#types-of-tags)
 
 ## Attribute Reference
 
