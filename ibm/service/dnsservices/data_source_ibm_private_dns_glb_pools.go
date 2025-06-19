@@ -4,10 +4,10 @@
 package dnsservices
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -149,7 +149,7 @@ func dataSourceIBMPrivateDNSGLBPoolsRead(d *schema.ResourceData, meta interface{
 	listDNSGLBPooloptions := sess.NewListPoolsOptions(instanceID)
 	availableGLBPools, detail, err := sess.ListPools(listDNSGLBPooloptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error reading list of pdns GLB pools:%s\n%s", err, detail)
+		return flex.FmtErrorf("[ERROR] Error reading list of dns services GLB pools:%s\n%s", err, detail)
 	}
 	d.Set(pdnsInstanceID, instanceID)
 	dnsPools := make([]map[string]interface{}, 0)
