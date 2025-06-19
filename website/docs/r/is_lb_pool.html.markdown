@@ -11,7 +11,8 @@ description: |-
 Create, update, or delete a VPC load balancer pool. For more information about load balancer pools, see [working with pools](https://cloud.ibm.com/docs/vpc?topic=vpc-nlb-pools).
 
 **Note:** 
-VPC infrastructure services are region-specific endpoints. By default, the provider targets `us-south`. Ensure you target the correct region in the provider block as shown in the `provider.tf` file if your VPC service is created in a different region.
+VPC infrastructure services use region-specific endpoints. By default, the Terraform provider targets the `us-south` region.
+If your VPC resources are provisioned in a different region, update the region attribute in the provider block accordingly. You can find an example configuration in the provider.tf file section.
 
 **provider.tf**
 
@@ -74,7 +75,7 @@ resource "ibm_is_lb_pool" "example" {
   health_type    = "https"
   proxy_protocol = "v1"
   session_persistence_type = "app_cookie"
-  session_persistence_app_cookie_name = "JSESSIONID"
+  session_persistence_app_cookie_name = "cookie1"
 }
 
 ```
