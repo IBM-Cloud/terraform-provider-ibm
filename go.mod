@@ -19,8 +19,8 @@ require (
 	github.com/IBM/eventstreams-go-sdk v1.4.0
 	github.com/IBM/go-sdk-core/v5 v5.19.1
 	github.com/IBM/ibm-backup-recovery-sdk-go v1.0.3
-	github.com/IBM/ibm-cos-sdk-go v1.12.0
-	github.com/IBM/ibm-cos-sdk-go-config/v2 v2.2.0
+	github.com/IBM/ibm-cos-sdk-go v1.12.2
+	github.com/IBM/ibm-cos-sdk-go-config/v2 v2.3.0
 	github.com/IBM/ibm-hpcs-tke-sdk v0.0.0-20250305134146-e023c2e84762
 	github.com/IBM/ibm-hpcs-uko-sdk v0.0.20-beta
 	github.com/IBM/keyprotect-go-client v0.15.1
