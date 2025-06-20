@@ -364,3 +364,149 @@ func TestValidateVersion(t *testing.T) {
 		})
 	}
 }
+
+func TestValidateGroupScaling(t *testing.T) {
+	tests := []struct {
+		description   string
+		groupId       string
+		resourceName  string
+		value         int
+		resource      *GroupResource
+		nodeCount     int
+		expectedError string
+	}{
+		{
+			description:  "When group is NOT adjustable, Expect error",
+			groupId:      "member",
+			resourceName: "members",
+			value:        6,
+			resource: &GroupResource{
+				Units:                        "count",
+				Allocation:                   3,
+				Minimum:                      3,
+				Maximum:                      9,
+				StepSize:                     1,
+				IsAdjustable:                 false,
+				IsOptional:                   false,
+				CanScaleDown:                 false,
+				CPUEnforcementRatioCeilingMb: 0,
+				CPUEnforcementRatioMb:        0,
+			},
+			nodeCount:     1,
+			expectedError: "member can not change members value after create",
+		},
+		{
+			description:  "When new value is invalid step size, Expect error specifying increments",
+			groupId:      "member",
+			resourceName: "members",
+			value:        5,
+			resource: &GroupResource{
+				Units:                        "count",
+				Allocation:                   3,
+				Minimum:                      3,
+				Maximum:                      9,
+				StepSize:                     3,
+				IsAdjustable:                 true,
+				IsOptional:                   false,
+				CanScaleDown:                 false,
+				CPUEnforcementRatioCeilingMb: 0,
+				CPUEnforcementRatioMb:        0,
+			},
+			nodeCount:     1,
+			expectedError: "member group members must be >= 3 and <= 9 in increments of 3",
+		},
+		{
+			description:  "When new value is less than the min, Expect error specifying increments",
+			groupId:      "member",
+			resourceName: "members",
+			value:        2,
+			resource: &GroupResource{
+				Units:                        "count",
+				Allocation:                   3,
+				Minimum:                      3,
+				Maximum:                      9,
+				StepSize:                     1,
+				IsAdjustable:                 true,
+				IsOptional:                   false,
+				CanScaleDown:                 false,
+				CPUEnforcementRatioCeilingMb: 0,
+				CPUEnforcementRatioMb:        0,
+			},
+			nodeCount:     1,
+			expectedError: "member group members must be >= 3 and <= 9 in increments of 1",
+		},
+		{
+			description:  "When new value is more than the max, Expect error specifying increments",
+			groupId:      "member",
+			resourceName: "members",
+			value:        10,
+			resource: &GroupResource{
+				Units:                        "count",
+				Allocation:                   4,
+				Minimum:                      2,
+				Maximum:                      8,
+				StepSize:                     2,
+				IsAdjustable:                 true,
+				IsOptional:                   false,
+				CanScaleDown:                 false,
+				CPUEnforcementRatioCeilingMb: 0,
+				CPUEnforcementRatioMb:        0,
+			},
+			nodeCount:     1,
+			expectedError: "member group members must be >= 2 and <= 8 in increments of 2",
+		},
+		{
+			description:  "When new value is less than current value, Expect error cannot scale down increments",
+			groupId:      "member",
+			resourceName: "members",
+			value:        4,
+			resource: &GroupResource{
+				Units:                        "count",
+				Allocation:                   5,
+				Minimum:                      3,
+				Maximum:                      9,
+				StepSize:                     1,
+				IsAdjustable:                 true,
+				IsOptional:                   false,
+				CanScaleDown:                 false,
+				CPUEnforcementRatioCeilingMb: 0,
+				CPUEnforcementRatioMb:        0,
+			},
+			nodeCount:     1,
+			expectedError: "can not scale member group members below 5 to 4",
+		},
+		{
+			description:  "When new value is a valid increment, Expect no error",
+			groupId:      "member",
+			resourceName: "members",
+			value:        6,
+			resource: &GroupResource{
+				Units:                        "count",
+				Allocation:                   3,
+				Minimum:                      3,
+				Maximum:                      9,
+				StepSize:                     3,
+				IsAdjustable:                 true,
+				IsOptional:                   false,
+				CanScaleDown:                 false,
+				CPUEnforcementRatioCeilingMb: 0,
+				CPUEnforcementRatioMb:        0,
+			},
+			nodeCount:     1,
+			expectedError: "",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.description, func(t *testing.T) {
+			err := validateGroupScaling(tc.groupId, tc.resourceName, tc.value, tc.resource, tc.nodeCount)
+
+			if tc.expectedError != "" {
+				require.Error(t, err)
+				require.Contains(t, err.Error(), tc.expectedError)
+			} else {
+				require.NoError(t, err)
+			}
+		})
+	}
+}

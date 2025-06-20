@@ -73,6 +73,46 @@ func TestAccIBMMongoDBShardingDatabaseInstanceBasic(t *testing.T) {
 	})
 }
 
+func TestAccIBMDatabaseInstanceMongoShardingHscale(t *testing.T) {
+	t.Parallel()
+
+	databaseResourceGroup := "default"
+	var databaseInstanceOne string
+	rnd := fmt.Sprintf("tf-mongoSharding-%d", acctest.RandIntRange(10, 100))
+	testName := rnd
+	name := "ibm_database." + testName
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMDatabaseInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMDatabaseInstanceMongoDBShardingMinimal(databaseResourceGroup, testName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
+					resource.TestCheckResourceAttr(name, "name", testName),
+					resource.TestCheckResourceAttr(name, "service", "databases-for-mongodb"),
+					resource.TestCheckResourceAttr(name, "plan", "enterprise-sharding"),
+					resource.TestCheckResourceAttr(name, "location", acc.Region()),
+					resource.TestCheckResourceAttr(name, "groups.0.count", "3"),
+				),
+			},
+			{
+				Config: testAccCheckIBMDatabaseInstanceMongoDBShardingHScale(databaseResourceGroup, testName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
+					resource.TestCheckResourceAttr(name, "name", testName),
+					resource.TestCheckResourceAttr(name, "service", "databases-for-mongodb"),
+					resource.TestCheckResourceAttr(name, "plan", "enterprise-sharding"),
+					resource.TestCheckResourceAttr(name, "location", acc.Region()),
+					resource.TestCheckResourceAttr(name, "groups.0.count", "6"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMDatabaseInstanceMongoDBShardingBasic(databaseResourceGroup string, name string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
@@ -193,5 +233,74 @@ func testAccCheckIBMDatabaseInstanceMongoDBShardingReduced(databaseResourceGroup
 			delete = "15m"
 		}
 	  }
+				`, databaseResourceGroup, name, acc.Region())
+}
+
+func testAccCheckIBMDatabaseInstanceMongoDBShardingMinimal(databaseResourceGroup string, name string) string {
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "test_acc" {
+		name = "%[1]s"
+	}
+
+	resource "ibm_database" "%[2]s" {
+		resource_group_id            = data.ibm_resource_group.test_acc.id
+		name                         = "%[2]s"
+		service                      = "databases-for-mongodb"
+		plan                         = "enterprise-sharding"
+		location                     = "%[3]s"
+		service_endpoints            = "private"
+
+		group {
+			group_id = "member"
+
+			host_flavor {
+				id = "b3c.4x16.encrypted"
+			}
+
+			members {
+				allocation_count = 3
+			}
+		}
+
+		timeouts {
+			create = "480m"
+			update = "480m"
+			delete = "15m"
+		}
+	}
+				`, databaseResourceGroup, name, acc.Region())
+}
+
+func testAccCheckIBMDatabaseInstanceMongoDBShardingHScale(databaseResourceGroup string, name string) string {
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "test_acc" {
+		name = "%[1]s"
+	}
+
+	resource "ibm_database" "%[2]s" {
+		resource_group_id            = data.ibm_resource_group.test_acc.id
+		name                         = "%[2]s"
+		service                      = "databases-for-mongodb"
+		plan                         = "enterprise-sharding"
+		location                     = "%[3]s"
+		service_endpoints            = "private"
+
+		group {
+			group_id = "member"
+
+			host_flavor {
+				id = "b3c.4x16.encrypted"
+			}
+
+			members {
+				allocation_count = 6
+			}
+		}
+		timeouts {
+			create = "480m"
+			update = "480m"
+			delete = "15m"
+		}
+	}
 				`, databaseResourceGroup, name, acc.Region())
 }
