@@ -25,14 +25,12 @@ func DataSourceIBMPINetworkInterfaces() *schema.Resource {
 			// Arguments
 			Arg_CloudInstanceID: {
 				Description:  "The GUID of the service instance associated with an account.",
-				ForceNew:     true,
 				Required:     true,
 				Type:         schema.TypeString,
 				ValidateFunc: validation.NoZeroValues,
 			},
 			Arg_NetworkID: {
 				Description:  "Network ID.",
-				ForceNew:     true,
 				Required:     true,
 				Type:         schema.TypeString,
 				ValidateFunc: validation.NoZeroValues,
@@ -163,7 +161,7 @@ func networkInterfaceToMap(netInterface *models.NetworkInterface, meta interface
 	interfaceMap[Attr_Status] = netInterface.Status
 	if netInterface.Crn != nil {
 		interfaceMap[Attr_CRN] = netInterface.Crn
-		userTags, err := flex.GetTagsUsingCRN(meta, string(*netInterface.Crn))
+		userTags, err := flex.GetGlobalTagsUsingCRN(meta, string(*netInterface.Crn), "", UserTagType)
 		if err != nil {
 			log.Printf("Error on get of network interface (%s) user_tags: %s", *netInterface.ID, err)
 		}

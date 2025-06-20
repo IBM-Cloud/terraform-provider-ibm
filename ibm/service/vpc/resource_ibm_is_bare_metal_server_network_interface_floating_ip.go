@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -100,7 +101,9 @@ func resourceIBMISBareMetalServerNetworkInterfaceFloatingIpCreate(context contex
 
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_network_interface_floating_ip", "create", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	bareMetalServerId := ""
@@ -112,7 +115,7 @@ func resourceIBMISBareMetalServerNetworkInterfaceFloatingIpCreate(context contex
 		if strings.Contains(nicId.(string), "/") {
 			_, bareMetalServerNicId, err = ParseNICTerraformID(nicId.(string))
 			if err != nil {
-				return diag.FromErr(err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_network_interface_floating_ip", "create", "sep-id-parts").GetDiag()
 			}
 		} else {
 			bareMetalServerNicId = nicId.(string)
@@ -130,14 +133,16 @@ func resourceIBMISBareMetalServerNetworkInterfaceFloatingIpCreate(context contex
 		ID:                 &bareMetalServerNicFipId,
 	}
 
-	fip, response, err := sess.AddBareMetalServerNetworkInterfaceFloatingIPWithContext(context, options)
+	fip, _, err := sess.AddBareMetalServerNetworkInterfaceFloatingIPWithContext(context, options)
 	if err != nil || fip == nil {
-		return diag.FromErr(fmt.Errorf("[DEBUG] Create bare metal server (%s) network interface (%s) floating ip (%s) err %s\n%s", bareMetalServerId, bareMetalServerNicId, bareMetalServerNicFipId, err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("AddBareMetalServerNetworkInterfaceFloatingIPWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server_network_interface_floating_ip", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	d.SetId(MakeTerraformNICFipID(bareMetalServerId, bareMetalServerNicId, *fip.ID))
-	err = bareMetalServerNICFipGet(d, fip, bareMetalServerId, bareMetalServerNicId)
-	if err != nil {
-		return diag.FromErr(err)
+	diagErr := bareMetalServerNICFipGet(d, fip, bareMetalServerId, bareMetalServerNicId)
+	if diagErr != nil {
+		return diagErr
 	}
 
 	return nil
@@ -146,12 +151,14 @@ func resourceIBMISBareMetalServerNetworkInterfaceFloatingIpCreate(context contex
 func resourceIBMISBareMetalServerNetworkInterfaceFloatingIpRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	bareMetalServerId, nicID, fipId, err := ParseNICFipTerraformID(d.Id())
 	if err != nil {
-		return diag.FromErr(err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_network_interface_floating_ip", "read", "sep-id-parts").GetDiag()
 	}
 
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_network_interface_floating_ip", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	options := &vpcv1.GetBareMetalServerNetworkInterfaceFloatingIPOptions{
 		BareMetalServerID:  &bareMetalServerId,
@@ -165,28 +172,46 @@ func resourceIBMISBareMetalServerNetworkInterfaceFloatingIpRead(context context.
 			d.SetId("")
 			return nil
 		}
-		return diag.FromErr(fmt.Errorf("[ERROR] Error getting Bare Metal Server (%s) network interface (%s): %s\n%s", bareMetalServerId, nicID, err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetBareMetalServerNetworkInterfaceFloatingIPWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server_network_interface_floating_ip", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
-	err = bareMetalServerNICFipGet(d, fip, bareMetalServerId, nicID)
-	if err != nil {
-		return diag.FromErr(err)
+	diagErr := bareMetalServerNICFipGet(d, fip, bareMetalServerId, nicID)
+	if diagErr != nil {
+		return diagErr
 	}
 	return nil
 }
 
-func bareMetalServerNICFipGet(d *schema.ResourceData, fip *vpcv1.FloatingIP, bareMetalServerId, nicId string) error {
-
+func bareMetalServerNICFipGet(d *schema.ResourceData, fip *vpcv1.FloatingIP, bareMetalServerId, nicId string) diag.Diagnostics {
+	var err error
 	d.SetId(MakeTerraformNICFipID(bareMetalServerId, nicId, *fip.ID))
-	d.Set(floatingIPName, *fip.Name)
-	d.Set(floatingIPAddress, *fip.Address)
-	d.Set(floatingIPStatus, fip.Status)
-	d.Set(floatingIPZone, *fip.Zone.Name)
-
-	d.Set(floatingIPCRN, *fip.CRN)
-
+	if err = d.Set(floatingIPName, *fip.Name); err != nil {
+		err = fmt.Errorf("Error setting name: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_network_interface_floating_ip", "read", "set-name").GetDiag()
+	}
+	if err = d.Set(floatingIPAddress, *fip.Address); err != nil {
+		err = fmt.Errorf("Error setting address: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_network_interface_floating_ip", "read", "set-address").GetDiag()
+	}
+	if err = d.Set(floatingIPStatus, fip.Status); err != nil {
+		err = fmt.Errorf("Error setting status: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_network_interface_floating_ip", "read", "set-status").GetDiag()
+	}
+	if err = d.Set(floatingIPZone, *fip.Zone.Name); err != nil {
+		err = fmt.Errorf("Error setting zone: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_network_interface_floating_ip", "read", "set-zone").GetDiag()
+	}
+	if err = d.Set(floatingIPCRN, *fip.CRN); err != nil {
+		err = fmt.Errorf("Error setting crn: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_network_interface_floating_ip", "read", "set-crn").GetDiag()
+	}
 	target, ok := fip.Target.(*vpcv1.FloatingIPTarget)
 	if ok {
-		d.Set(floatingIPTarget, target.ID)
+		if err = d.Set(floatingIPTarget, target.ID); err != nil {
+			err = fmt.Errorf("Error setting target: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_network_interface_floating_ip", "read", "set-target").GetDiag()
+		}
 	}
 
 	return nil
@@ -197,11 +222,13 @@ func resourceIBMISBareMetalServerNetworkInterfaceFloatingIpUpdate(context contex
 	if d.HasChange(isBareMetalServerNetworkInterfaceFloatingIPID) {
 		bareMetalServerId, nicId, _, err := ParseNICFipTerraformID(d.Id())
 		if err != nil {
-			return diag.FromErr(err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_network_interface_floating_ip", "update", "sep-id-parts").GetDiag()
 		}
 		sess, err := vpcClient(meta)
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_network_interface_floating_ip", "update", "initialize-client")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
 		floatingIpId := ""
@@ -214,12 +241,14 @@ func resourceIBMISBareMetalServerNetworkInterfaceFloatingIpUpdate(context contex
 			ID:                 &floatingIpId,
 		}
 
-		fip, response, err := sess.AddBareMetalServerNetworkInterfaceFloatingIPWithContext(context, options)
+		fip, _, err := sess.AddBareMetalServerNetworkInterfaceFloatingIPWithContext(context, options)
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error updating Bare Metal Server: %s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("AddBareMetalServerNetworkInterfaceFloatingIPWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server_network_interface_floating_ip", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		d.SetId(MakeTerraformNICFipID(bareMetalServerId, nicId, *fip.ID))
-		return diag.FromErr(bareMetalServerNICFipGet(d, fip, bareMetalServerId, nicId))
+		return bareMetalServerNICFipGet(d, fip, bareMetalServerId, nicId)
 	}
 	return nil
 }
@@ -227,21 +256,23 @@ func resourceIBMISBareMetalServerNetworkInterfaceFloatingIpUpdate(context contex
 func resourceIBMISBareMetalServerNetworkInterfaceFloatingIpDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	bareMetalServerId, nicId, fipId, err := ParseNICFipTerraformID(d.Id())
 	if err != nil {
-		return diag.FromErr(err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_network_interface_floating_ip", "delete", "sep-id-parts").GetDiag()
 	}
 
-	err = bareMetalServerNetworkInterfaceFipDelete(context, d, meta, bareMetalServerId, nicId, fipId)
-	if err != nil {
-		return diag.FromErr(err)
+	diagErr := bareMetalServerNetworkInterfaceFipDelete(context, d, meta, bareMetalServerId, nicId, fipId)
+	if diagErr != nil {
+		return diagErr
 	}
 
 	return nil
 }
 
-func bareMetalServerNetworkInterfaceFipDelete(context context.Context, d *schema.ResourceData, meta interface{}, bareMetalServerId, nicId, fipId string) error {
+func bareMetalServerNetworkInterfaceFipDelete(context context.Context, d *schema.ResourceData, meta interface{}, bareMetalServerId, nicId, fipId string) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_network_interface_floating_ip", "delete", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	getBmsNicFipOptions := &vpcv1.GetBareMetalServerNetworkInterfaceFloatingIPOptions{
@@ -254,7 +285,9 @@ func bareMetalServerNetworkInterfaceFipDelete(context context.Context, d *schema
 		if response != nil && response.StatusCode == 404 {
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error getting Bare Metal Server (%s) network interface(%s) Floating Ip(%s) : %s\n%s", bareMetalServerId, nicId, fipId, err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetBareMetalServerNetworkInterfaceFloatingIPWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server_network_interface_floating_ip", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	options := &vpcv1.RemoveBareMetalServerNetworkInterfaceFloatingIPOptions{
@@ -264,11 +297,15 @@ func bareMetalServerNetworkInterfaceFipDelete(context context.Context, d *schema
 	}
 	response, err = sess.RemoveBareMetalServerNetworkInterfaceFloatingIPWithContext(context, options)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error Deleting Bare Metal Server (%s) network interface (%s) Floating Ip(%s) : %s\n%s", bareMetalServerId, nicId, fipId, err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("RemoveBareMetalServerNetworkInterfaceFloatingIPWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server_network_interface_floating_ip", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	_, err = isWaitForBareMetalServerNetworkInterfaceFloatingIpDeleted(sess, bareMetalServerId, nicId, fipId, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
-		return err
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForBareMetalServerNetworkInterfaceFloatingIpDeleted failed: %s", err.Error()), "ibm_is_bare_metal_server_network_interface_floating_ip", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	d.SetId("")
 	return nil

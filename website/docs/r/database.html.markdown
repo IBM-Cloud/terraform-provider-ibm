@@ -594,7 +594,7 @@ The following timeouts are defined for this resource.
 * `Update` The update of an instance is considered failed when no response is received for 20 minutes.
 * `Delete` The deletion of an instance is considered failed when no response is received for 10 minutes.
 
-ICD create instance typically takes between 30 minutes to 45 minutes. Delete and update takes a minute. Provisioning time are unpredictable, if the apply fails due to a timeout, import the database resource once the create is completed.
+ICD create instance typically takes between 30 minutes to 45 minutes. Delete and update takes a minute with the exception of an in place version upgrade. Provisioning time are unpredictable, if the apply fails due to a timeout, import the database resource once the create is completed.
 
 
 ## Argument reference
@@ -686,7 +686,16 @@ Review the argument reference that you can specify for your resource.
 - `service` - (Required, Forces new resource, String) The type of Cloud Databases that you want to create. Only the following services are currently accepted: `databases-for-etcd`, `databases-for-postgresql`, `databases-for-redis`, `databases-for-elasticsearch`, `messages-for-rabbitmq`,`databases-for-mongodb`,`databases-for-mysql`, and `databases-for-enterprisedb`.
 - `service_endpoints` - (Required, String) Specify whether you want to enable the public, private, or both service endpoints. Supported values are `public`, `private`, or `public-and-private`.
 - `tags` (Optional, Array of Strings) A list of tags that you want to add to your instance.
-- `version` - (Optional, Forces new resource, String) The version of the database to be provisioned. If omitted, the database is created with the most recent major and minor version.
+- `version` - (Optional, String) The version of the database to be provisioned or upgraded to. If omitted, the database is created with the latest supported major and minor version. This field can be updated to perform an in-place upgrade without forcing the creation of a new resource. The database will be put into READ-ONLY mode during upgrade. It is highly recommended to test before upgrading. To learn more, refer to the version upgrade documentation.
+
+  > ⚠️ **Warning:** Upgrading may require more time than the default timeout.  
+  > A longer timeout value can be set using the timeouts attribute.
+
+- `version_upgrade_skip_backup` - (Optional, Boolean) Whether to skip taking a backup before upgrading the database version. This is only applicable to databases that do not support point-in-time restore (PITR). To learn more, refer to the version upgrade documentation.
+
+  > ⚠️ **Warning:** Skipping a backup is **not recommended**.  
+  > Skipping a backup before a version upgrade is dangerous and may result in **data loss** if the upgrade fails at any stage — there will be **no immediate backup** to restore from.
+
 - `deletion_protection` - (Optional, Boolean) If the DB instance should have deletion protection within terraform enabled. This is not a property of the resource and does not prevent deletion outside of terraform. The database can't be deleted by terraform when this value is set to `true`. The default is `false`.
 - `users` - (Optional, List of Objects) A list of users that you want to create on the database. Multiple blocks are allowed.
 

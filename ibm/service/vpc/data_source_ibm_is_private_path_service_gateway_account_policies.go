@@ -95,7 +95,9 @@ func DataSourceIBMIsPrivatePathServiceGatewayAccountPolicies() *schema.Resource 
 func dataSourceIBMIsPrivatePathServiceGatewayAccountPoliciesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_private_path_service_gateway_account_policies", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	ppsgId := d.Get("private_path_service_gateway").(string)
@@ -109,13 +111,16 @@ func dataSourceIBMIsPrivatePathServiceGatewayAccountPoliciesRead(context context
 	var pager *vpcv1.PrivatePathServiceGatewayAccountPoliciesPager
 	pager, err = vpcClient.NewPrivatePathServiceGatewayAccountPoliciesPager(listPrivatePathServiceGatewayAccountPoliciesOptions)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error listing PPSGs: %s", err.Error()), "(Data) ibm_is_private_path_service_gateway_account_policies", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	allItems, err := pager.GetAll()
 	if err != nil {
-		log.Printf("[DEBUG] PrivatePathServiceGatewayAccountPoliciesPager.GetAll() failed %s", err)
-		return diag.FromErr(fmt.Errorf("PrivatePathServiceGatewayAccountPoliciesPager.GetAll() failed %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error listing PPSGs PrivatePathServiceGatewayAccountPoliciesPager: %s", err.Error()), "(Data) ibm_is_private_path_service_gateway_account_policies", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(ppsgId)
@@ -130,7 +135,7 @@ func dataSourceIBMIsPrivatePathServiceGatewayAccountPoliciesRead(context context
 	}
 
 	if err = d.Set("account_policies", mapSlice); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting account_policies %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting account_policies: %s", err), "(Data) ibm_is_private_path_service_gateway_account_policies", "read", "set-account_policies").GetDiag()
 	}
 
 	return nil

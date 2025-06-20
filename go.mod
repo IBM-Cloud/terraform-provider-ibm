@@ -8,7 +8,7 @@ require (
 	github.com/IBM-Cloud/power-go-client v1.11.0
 	github.com/IBM/appconfiguration-go-admin-sdk v0.4.4
 	github.com/IBM/appid-management-go-sdk v0.0.0-20210908164609-dd0e0eaf732f
-	github.com/IBM/cloud-databases-go-sdk v0.7.1
+	github.com/IBM/cloud-databases-go-sdk v0.8.0
 	github.com/IBM/cloud-db2-go-sdk v0.2.3
 	github.com/IBM/cloudant-go-sdk v0.8.0
 	github.com/IBM/code-engine-go-sdk v0.0.0-20241217191651-e1821f8c58c3
@@ -19,16 +19,16 @@ require (
 	github.com/IBM/eventstreams-go-sdk v1.4.0
 	github.com/IBM/go-sdk-core/v5 v5.19.1
 	github.com/IBM/ibm-backup-recovery-sdk-go v1.0.3
-	github.com/IBM/ibm-cos-sdk-go v1.12.0
-	github.com/IBM/ibm-cos-sdk-go-config/v2 v2.2.0
+	github.com/IBM/ibm-cos-sdk-go v1.12.2
+	github.com/IBM/ibm-cos-sdk-go-config/v2 v2.3.0
 	github.com/IBM/ibm-hpcs-tke-sdk v0.0.0-20250305134146-e023c2e84762
 	github.com/IBM/ibm-hpcs-uko-sdk v0.0.20-beta
 	github.com/IBM/keyprotect-go-client v0.15.1
 	github.com/IBM/logs-go-sdk v0.4.0
 	github.com/IBM/logs-router-go-sdk v1.0.7
 	github.com/IBM/mqcloud-go-sdk v0.2.0
-	github.com/IBM/networking-go-sdk v0.51.4
-	github.com/IBM/platform-services-go-sdk v0.81.1
+	github.com/IBM/networking-go-sdk v0.51.6
+	github.com/IBM/platform-services-go-sdk v0.81.2
 	github.com/IBM/project-go-sdk v0.3.5
 	github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5
 	github.com/IBM/sarama v1.45.0
@@ -83,7 +83,7 @@ require (
 	github.com/apparentlymart/go-textseg/v15 v15.0.0 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2 // indirect
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
-	github.com/cloudflare/circl v1.3.7 // indirect
+	github.com/cloudflare/circl v1.6.1 // indirect
 	github.com/cloudfoundry/jibber_jabber v0.0.0-20151120183258-bcc4c8345a21 // indirect
 	github.com/containernetworking/cni v1.2.0-rc1 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect

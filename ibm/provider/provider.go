@@ -449,6 +449,8 @@ func Provider() *schema.Provider {
 			"ibm_iam_account_settings_external_interaction": iampolicy.DataSourceIBMIAMAccountSettingsExternalInteraction(),
 			"ibm_iam_action_control_template":               iampolicy.DataSourceIBMIAMActionControlTemplate(),
 			"ibm_iam_action_control_template_version":       iampolicy.DataSourceIBMIAMActionControlTemplateVersion(),
+			"ibm_iam_action_control_assignments":            iampolicy.DataSourceIBMIAMActionControlAssignments(),
+			"ibm_iam_action_control_assignment":             iampolicy.DataSourceIBMIAMActionControlAssignment(),
 
 			// backup as Service
 			"ibm_is_backup_policy":       vpc.DataSourceIBMIsBackupPolicy(),
@@ -1016,6 +1018,7 @@ func Provider() *schema.Provider {
 			"ibm_cd_toolchain_tool_securitycompliance": cdtoolchain.DataSourceIBMCdToolchainToolSecuritycompliance(),
 			"ibm_cd_toolchain_tool_privateworker":      cdtoolchain.DataSourceIBMCdToolchainToolPrivateworker(),
 			"ibm_cd_toolchain_tool_appconfig":          cdtoolchain.DataSourceIBMCdToolchainToolAppconfig(),
+			"ibm_cd_toolchain_tool_cos":                cdtoolchain.DataSourceIBMCdToolchainToolCos(),
 			"ibm_cd_toolchain_tool_jenkins":            cdtoolchain.DataSourceIBMCdToolchainToolJenkins(),
 			"ibm_cd_toolchain_tool_nexus":              cdtoolchain.DataSourceIBMCdToolchainToolNexus(),
 			"ibm_cd_toolchain_tool_pagerduty":          cdtoolchain.DataSourceIBMCdToolchainToolPagerduty(),
@@ -1273,6 +1276,7 @@ func Provider() *schema.Provider {
 			"ibm_iam_account_settings_external_interaction": iampolicy.ResourceIBMIAMAccountSettingsExternalInteraction(),
 			"ibm_iam_action_control_template":               iampolicy.ResourceIBMIAMActionControlTemplate(),
 			"ibm_iam_action_control_template_version":       iampolicy.ResourceIBMIAMActionControlTemplateVersion(),
+			"ibm_iam_action_control_assignment":             iampolicy.ResourceIBMIAMActionControlAssignment(),
 
 			"ibm_is_backup_policy":      vpc.ResourceIBMIsBackupPolicy(),
 			"ibm_is_backup_policy_plan": vpc.ResourceIBMIsBackupPolicyPlan(),
@@ -1682,6 +1686,7 @@ func Provider() *schema.Provider {
 			"ibm_cd_toolchain_tool_securitycompliance": cdtoolchain.ResourceIBMCdToolchainToolSecuritycompliance(),
 			"ibm_cd_toolchain_tool_privateworker":      cdtoolchain.ResourceIBMCdToolchainToolPrivateworker(),
 			"ibm_cd_toolchain_tool_appconfig":          cdtoolchain.ResourceIBMCdToolchainToolAppconfig(),
+			"ibm_cd_toolchain_tool_cos":                cdtoolchain.ResourceIBMCdToolchainToolCos(),
 			"ibm_cd_toolchain_tool_jenkins":            cdtoolchain.ResourceIBMCdToolchainToolJenkins(),
 			"ibm_cd_toolchain_tool_nexus":              cdtoolchain.ResourceIBMCdToolchainToolNexus(),
 			"ibm_cd_toolchain_tool_pagerduty":          cdtoolchain.ResourceIBMCdToolchainToolPagerduty(),
@@ -2063,6 +2068,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_is_ssh_key":                                     vpc.ResourceIBMISSHKeyValidator(),
 				"ibm_is_subnet":                                      vpc.ResourceIBMISSubnetValidator(),
 				"ibm_is_subnet_reserved_ip":                          vpc.ResourceIBMISSubnetReservedIPValidator(),
+				"ibm_is_subnet_reserved_ip_patch":                    vpc.ResourceIBMISSubnetReservedIPPatchValidator(),
 				"ibm_is_volume":                                      vpc.ResourceIBMISVolumeValidator(),
 				"ibm_is_virtual_network_interface":                   vpc.ResourceIBMIsVirtualNetworkInterfaceValidator(),
 				"ibm_is_address_prefix":                              vpc.ResourceIBMISAddressPrefixValidator(),
@@ -2142,6 +2148,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_cd_toolchain_tool_securitycompliance": cdtoolchain.ResourceIBMCdToolchainToolSecuritycomplianceValidator(),
 				"ibm_cd_toolchain_tool_privateworker":      cdtoolchain.ResourceIBMCdToolchainToolPrivateworkerValidator(),
 				"ibm_cd_toolchain_tool_appconfig":          cdtoolchain.ResourceIBMCdToolchainToolAppconfigValidator(),
+				"ibm_cd_toolchain_tool_cos":                cdtoolchain.ResourceIBMCdToolchainToolCosValidator(),
 				"ibm_cd_toolchain_tool_jenkins":            cdtoolchain.ResourceIBMCdToolchainToolJenkinsValidator(),
 				"ibm_cd_toolchain_tool_nexus":              cdtoolchain.ResourceIBMCdToolchainToolNexusValidator(),
 				"ibm_cd_toolchain_tool_pagerduty":          cdtoolchain.ResourceIBMCdToolchainToolPagerdutyValidator(),

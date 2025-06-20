@@ -131,7 +131,6 @@ func resourceIBMIAMActionControlTemplateCreate(context context.Context, d *schem
 	}
 
 	accountID := userDetails.UserAccount
-
 	createActionControlTemplateOptions := &iampolicymanagementv1.CreateActionControlTemplateOptions{}
 
 	createActionControlTemplateOptions.SetAccountID(accountID)

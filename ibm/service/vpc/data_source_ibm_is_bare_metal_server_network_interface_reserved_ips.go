@@ -6,9 +6,11 @@ package vpc
 import (
 	"context"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -115,7 +117,9 @@ func DataSourceIBMISBareMetalServerNICReservedIPs() *schema.Resource {
 func dataSourceIBMISBareMetalServerNICReservedIPsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_bare_metal_server_network_interface_reserved_ips", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	bareMetalServerID := d.Get(isBareMetalServerID).(string)
@@ -130,7 +134,9 @@ func dataSourceIBMISBareMetalServerNICReservedIPsRead(context context.Context, d
 
 	result, response, err := sess.ListBareMetalServerNetworkInterfaceIpsWithContext(context, options)
 	if err != nil || response == nil || result == nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error fetching reserved ips %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListBareMetalServerNetworkInterfaceIpsWithContext failed: %s", err.Error()), "(Data) ibm_is_bare_metal_server_network_interface_reserved_ips", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	allrecs = append(allrecs, result.Ips...)
 
@@ -154,9 +160,17 @@ func dataSourceIBMISBareMetalServerNICReservedIPsRead(context context.Context, d
 	}
 
 	d.SetId(time.Now().UTC().String()) // This is not any reserved ip or BareMetalServer id but state id
-	d.Set(isBareMetalServerNICReservedIPs, reservedIPs)
-	d.Set(isBareMetalServerNICReservedIPsCount, len(reservedIPs))
-	d.Set(isBareMetalServerID, bareMetalServerID)
-	d.Set(isBareMetalServerNicID, nicID)
+	if err = d.Set(isBareMetalServerNICReservedIPs, reservedIPs); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting reserved_ips: %s", err), "(Data) ibm_is_bare_metal_server_network_interface_reserved_ips", "read", "set-reserved_ips").GetDiag()
+	}
+	if err = d.Set(isBareMetalServerNICReservedIPsCount, len(reservedIPs)); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting total_count: %s", err), "(Data) ibm_is_bare_metal_server_network_interface_reserved_ips", "read", "set-total_count").GetDiag()
+	}
+	if err = d.Set(isBareMetalServerID, bareMetalServerID); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting bare_metal_server: %s", err), "(Data) ibm_is_bare_metal_server_network_interface_reserved_ips", "read", "set-bare_metal_server").GetDiag()
+	}
+	if err = d.Set(isBareMetalServerNicID, nicID); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting network_interface: %s", err), "(Data) ibm_is_bare_metal_server_network_interface_reserved_ips", "read", "set-auto_delete").GetDiag()
+	}
 	return nil
 }
