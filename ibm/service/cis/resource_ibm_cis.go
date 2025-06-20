@@ -5,7 +5,6 @@ package cis
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"net/url"
 	"os"
@@ -189,21 +188,21 @@ func ResourceIBMCISInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 
 	serviceOff, err := rsCatRepo.FindByName(serviceName, true)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error retrieving service offering: %s", err)
+		return flex.FmtErrorf("[ERROR] Error retrieving service offering: %s", err)
 	}
 
 	servicePlan, err := rsCatRepo.GetServicePlanID(serviceOff[0], plan)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error retrieving plan: %s", err)
+		return flex.FmtErrorf("[ERROR] Error retrieving plan: %s", err)
 	}
 	rsInst.ResourcePlanID = &servicePlan
 
 	deployments, err := rsCatRepo.ListDeployments(servicePlan)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error retrieving deployment for plan %s : %s", plan, err)
+		return flex.FmtErrorf("[ERROR] Error retrieving deployment for plan %s : %s", plan, err)
 	}
 	if len(deployments) == 0 {
-		return fmt.Errorf("[ERROR] No deployment found for service plan : %s", plan)
+		return flex.FmtErrorf("[ERROR] No deployment found for service plan : %s", plan)
 	}
 	deployments, supportedLocations := filterCISDeployments(deployments, location)
 
@@ -212,7 +211,7 @@ func ResourceIBMCISInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 		for l := range supportedLocations {
 			locationList = append(locationList, l)
 		}
-		return fmt.Errorf("[ERROR] No deployment found for service plan %s at location %s.\nValid location(s) are: %q", plan, location, locationList)
+		return flex.FmtErrorf("[ERROR] No deployment found for service plan %s at location %s.\nValid location(s) are: %q", plan, location, locationList)
 	}
 
 	rsInst.Target = &deployments[0].CatalogCRN
@@ -234,7 +233,7 @@ func ResourceIBMCISInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 
 	instance, response, err := rsConClient.CreateResourceInstance(&rsInst)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error creating resource instance: %s %s", err, response)
+		return flex.FmtErrorf("[ERROR] Error creating resource instance: %s %s", err, response)
 	}
 	v := os.Getenv("IC_ENV_TAGS")
 	if _, ok := d.GetOk("tags"); ok || v != "" {
@@ -251,7 +250,7 @@ func ResourceIBMCISInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 
 	_, err = waitForCISInstanceCreate(d, meta, *instance.ID)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error waiting for create resource instance (%s) to be succeeded: %s", d.Id(), err)
+		return flex.FmtErrorf("[ERROR] Error waiting for create resource instance (%s) to be succeeded: %s", d.Id(), err)
 	}
 
 	d.SetId(*instance.ID)
@@ -278,7 +277,7 @@ func ResourceIBMCISInstanceRead(d *schema.ResourceData, meta interface{}) error 
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error retrieving resource instance: %s %s", err, response)
+		return flex.FmtErrorf("[ERROR] Error retrieving resource instance: %s %s", err, response)
 	}
 	if strings.Contains(*instance.State, "removed") {
 		log.Printf("[WARN] Removing instance from TF state because it's now in removed state")
@@ -313,7 +312,7 @@ func ResourceIBMCISInstanceRead(d *schema.ResourceData, meta interface{}) error 
 
 	servicePlan, err := rsCatRepo.GetServicePlanName(*instance.ResourcePlanID)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error retrieving plan: %s", err)
+		return flex.FmtErrorf("[ERROR] Error retrieving plan: %s", err)
 	}
 	d.Set("plan", servicePlan)
 
@@ -359,12 +358,12 @@ func ResourceIBMCISInstanceUpdate(d *schema.ResourceData, meta interface{}) erro
 
 		serviceOff, err := rsCatRepo.FindByName(service, true)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error retrieving service offering: %s", err)
+			return flex.FmtErrorf("[ERROR] Error retrieving service offering: %s", err)
 		}
 
 		servicePlan, err := rsCatRepo.GetServicePlanID(serviceOff[0], plan)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error retrieving plan: %s", err)
+			return flex.FmtErrorf("[ERROR] Error retrieving plan: %s", err)
 		}
 
 		updateReq.ResourcePlanID = &servicePlan
@@ -382,12 +381,12 @@ func ResourceIBMCISInstanceUpdate(d *schema.ResourceData, meta interface{}) erro
 
 	_, response, err := rsConClient.UpdateResourceInstance(&updateReq)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error updating resource instance: %s %s", err, response)
+		return flex.FmtErrorf("[ERROR] Error updating resource instance: %s %s", err, response)
 	}
 
 	_, err = waitForCISInstanceUpdate(d, meta)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error waiting for update resource instance (%s) to be succeeded: %s", d.Id(), err)
+		return flex.FmtErrorf("[ERROR] Error waiting for update resource instance (%s) to be succeeded: %s", d.Id(), err)
 	}
 
 	return ResourceIBMCISInstanceRead(d, meta)
@@ -414,13 +413,13 @@ func ResourceIBMCISInstanceDelete(d *schema.ResourceData, meta interface{}) erro
 			log.Printf("[WARN] Resource instance already deleted %s\n %s", err, response)
 			err = nil
 		} else {
-			return fmt.Errorf("[ERROR] Error deleting resource instance: %s %s", err, response)
+			return flex.FmtErrorf("[ERROR] Error deleting resource instance: %s %s", err, response)
 		}
 	}
 
 	_, err = waitForCISInstanceDelete(d, meta)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error waiting for resource instance (%s) to be deleted: %s", d.Id(), err)
+		return flex.FmtErrorf("[ERROR] Error waiting for resource instance (%s) to be deleted: %s", d.Id(), err)
 	}
 
 	d.SetId("")
@@ -444,7 +443,7 @@ func ResourceIBMCISInstanceExists(d *schema.ResourceData, meta interface{}) (boo
 				return false, nil
 			}
 		}
-		return false, fmt.Errorf("[ERROR] Error getting cis instance: %s %s", err, response)
+		return false, flex.FmtErrorf("[ERROR] Error getting cis instance: %s %s", err, response)
 	}
 	if instance != nil && (strings.Contains(*instance.State, "removed") || strings.Contains(*instance.State, cisInstanceReclamation)) {
 		log.Printf("[WARN] Removing instance from state because it's in removed or pending_reclamation state")
@@ -473,12 +472,12 @@ func waitForCISInstanceCreate(d *schema.ResourceData, meta interface{}, instance
 			instance, response, err := rsConClient.GetResourceInstance(&rsInst)
 			if err != nil {
 				if apiErr, ok := err.(bmxerror.RequestFailure); ok && apiErr.StatusCode() == 404 {
-					return nil, "", fmt.Errorf("[ERROR] The resource instance %s does not exist anymore: %v %s", d.Id(), err, response)
+					return nil, "", flex.FmtErrorf("[ERROR] The resource instance %s does not exist anymore: %v %s", d.Id(), err, response)
 				}
 				return nil, "", err
 			}
 			if *instance.State == CisInstanceFailStatus {
-				return instance, *instance.State, fmt.Errorf("[ERROR] The resource instance %s failed: %v %s", d.Id(), err, response)
+				return instance, *instance.State, flex.FmtErrorf("[ERROR] The resource instance %s failed: %v %s", d.Id(), err, response)
 			}
 			return instance, *instance.State, nil
 		},
@@ -508,12 +507,12 @@ func waitForCISInstanceUpdate(d *schema.ResourceData, meta interface{}) (interfa
 			instance, response, err := rsConClient.GetResourceInstance(&rsInst)
 			if err != nil {
 				if apiErr, ok := err.(bmxerror.RequestFailure); ok && apiErr.StatusCode() == 404 {
-					return nil, "", fmt.Errorf("[ERROR] The resource instance %s does not exist anymore: %v %s", d.Id(), err, response)
+					return nil, "", flex.FmtErrorf("[ERROR] The resource instance %s does not exist anymore: %v %s", d.Id(), err, response)
 				}
 				return nil, "", err
 			}
 			if *instance.State == CisInstanceFailStatus {
-				return instance, *instance.State, fmt.Errorf("[ERROR] The resource instance %s failed: %v %s", d.Id(), err, response)
+				return instance, *instance.State, flex.FmtErrorf("[ERROR] The resource instance %s failed: %v %s", d.Id(), err, response)
 			}
 			return instance, *instance.State, nil
 		},
@@ -547,7 +546,7 @@ func waitForCISInstanceDelete(d *schema.ResourceData, meta interface{}) (interfa
 				return nil, "", err
 			}
 			if *instance.State == CisInstanceFailStatus {
-				return instance, *instance.State, fmt.Errorf("[ERROR] The resource instance %s failed to delete: %v %s", d.Id(), err, response)
+				return instance, *instance.State, flex.FmtErrorf("[ERROR] The resource instance %s failed to delete: %v %s", d.Id(), err, response)
 			}
 			return instance, *instance.State, nil
 		},

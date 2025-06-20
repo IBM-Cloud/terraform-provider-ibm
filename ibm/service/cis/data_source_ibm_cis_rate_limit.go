@@ -4,7 +4,6 @@
 package cis
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -217,7 +216,7 @@ func dataSourceIBMCISRateLimitRead(d *schema.ResourceData, meta interface{}) err
 	opt := cisClient.NewListAllZoneRateLimitsOptions()
 	rateLimitRecord, resp, err := cisClient.ListAllZoneRateLimits(opt)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Failed to read RateLimit: %v", resp)
+		return flex.FmtErrorf("[ERROR] Failed to read RateLimit: %v", resp)
 	}
 	rules := make([]map[string]interface{}, 0)
 	for _, r := range rateLimitRecord.Result {

@@ -147,7 +147,7 @@ func ResourceIBMCISAlertValidator() *validate.ResourceValidator {
 func ResourceIBMCISAlertPolicyCreate(d *schema.ResourceData, meta interface{}) error {
 	sess, err := meta.(conns.ClientSession).CisAlertsSession()
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while getting the CisAlertsSession %s", err)
+		return flex.FmtErrorf("[ERROR] Error while getting the CisAlertsSession %s", err)
 	}
 	crn := d.Get(cisID).(string)
 	sess.Crn = core.StringPtr(crn)
@@ -206,7 +206,7 @@ func ResourceIBMCISAlertPolicyCreate(d *schema.ResourceData, meta interface{}) e
 	opt.Mechanisms = mechanismsOpt
 	result, resp, err := sess.CreateAlertPolicy(opt)
 	if err != nil || result == nil {
-		return fmt.Errorf("[ERROR] Error creating Alert Policy %s %s", err, resp)
+		return flex.FmtErrorf("[ERROR] Error creating Alert Policy %s %s", err, resp)
 	}
 	d.SetId(flex.ConvertCisToTfTwoVar(*result.Result.ID, crn))
 	d.Set(cisAlertID, *result.Result.ID)
@@ -217,12 +217,12 @@ func ResourceIBMCISAlertPolicyCreate(d *schema.ResourceData, meta interface{}) e
 func ResourceIBMCISAlertPolicyRead(d *schema.ResourceData, meta interface{}) error {
 	sess, err := meta.(conns.ClientSession).CisAlertsSession()
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while getting the CisAlertsSession %s", err)
+		return flex.FmtErrorf("[ERROR] Error while getting the CisAlertsSession %s", err)
 	}
 
 	alertID, crn, err := flex.ConvertTftoCisTwoVar(d.Id())
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while ConvertTftoCisTwoVar %s", err)
+		return flex.FmtErrorf("[ERROR] Error while ConvertTftoCisTwoVar %s", err)
 	}
 	sess.Crn = core.StringPtr(crn)
 	opt := sess.NewGetAlertPolicyOptions(alertID)
@@ -232,7 +232,7 @@ func ResourceIBMCISAlertPolicyRead(d *schema.ResourceData, meta interface{}) err
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error getting alert policy detail %s, %s", err, resp)
+		return flex.FmtErrorf("[ERROR] Error getting alert policy detail %s, %s", err, resp)
 	}
 
 	d.Set(cisID, crn)
@@ -248,17 +248,17 @@ func ResourceIBMCISAlertPolicyRead(d *schema.ResourceData, meta interface{}) err
 
 	filterOpt, err := json.Marshal(result.Result.Filters)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error marshalling the created filters: %s", err)
+		return flex.FmtErrorf("[ERROR] Error marshalling the created filters: %s", err)
 	}
 	if err = d.Set(cisAlertFilters, string(filterOpt)); err != nil {
-		return fmt.Errorf("[ERROR] Error setting the filters: %s", err)
+		return flex.FmtErrorf("[ERROR] Error setting the filters: %s", err)
 	}
 	conditionsOpt, err := json.Marshal(result.Result.Conditions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error marshalling the created Conditions: %s", err)
+		return flex.FmtErrorf("[ERROR] Error marshalling the created Conditions: %s", err)
 	}
 	if err = d.Set(cisAlertConditions, string(conditionsOpt)); err != nil {
-		return fmt.Errorf("[ERROR] Error setting the Conditions: %s", err)
+		return flex.FmtErrorf("[ERROR] Error setting the Conditions: %s", err)
 	}
 	return nil
 }
@@ -266,13 +266,13 @@ func ResourceIBMCISAlertPolicyRead(d *schema.ResourceData, meta interface{}) err
 func ResourceIBMCISAlertPolicyUpdate(d *schema.ResourceData, meta interface{}) error {
 	sess, err := meta.(conns.ClientSession).CisAlertsSession()
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while getting the CisAlertsSession %s", err)
+		return flex.FmtErrorf("[ERROR] Error while getting the CisAlertsSession %s", err)
 	}
 
 	alertID, crn, err := flex.ConvertTftoCisTwoVar(d.Id())
 
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while ConvertTftoCisTwoVar %s", err)
+		return flex.FmtErrorf("[ERROR] Error while ConvertTftoCisTwoVar %s", err)
 	}
 	sess.Crn = core.StringPtr(crn)
 
@@ -346,7 +346,7 @@ func ResourceIBMCISAlertPolicyUpdate(d *schema.ResourceData, meta interface{}) e
 
 		result, resp, err := sess.UpdateAlertPolicy(opt)
 		if err != nil || result == nil {
-			return fmt.Errorf("[ERROR] Error while Update Alert Policy %s %s", err, resp)
+			return flex.FmtErrorf("[ERROR] Error while Update Alert Policy %s %s", err, resp)
 		}
 	}
 
@@ -356,7 +356,7 @@ func ResourceIBMCISAlertPolicyDelete(d *schema.ResourceData, meta interface{}) e
 
 	sess, err := meta.(conns.ClientSession).CisAlertsSession()
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while getting the CisAlertsSession %s", err)
+		return flex.FmtErrorf("[ERROR] Error while getting the CisAlertsSession %s", err)
 	}
 	alertID, crn, err := flex.ConvertTftoCisTwoVar(d.Id())
 	if err != nil {
@@ -369,7 +369,7 @@ func ResourceIBMCISAlertPolicyDelete(d *schema.ResourceData, meta interface{}) e
 		if response != nil && response.StatusCode == 404 {
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error deleting the alert %s:%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error deleting the alert %s:%s", err, response)
 	}
 	return nil
 }

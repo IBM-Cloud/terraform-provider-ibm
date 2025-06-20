@@ -4,7 +4,6 @@
 package cis
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -104,7 +103,7 @@ func dataSourceIBMCISEdgeFunctionsTriggerRead(d *schema.ResourceData, meta inter
 	opt := cisClient.NewListEdgeFunctionsTriggersOptions()
 	result, _, err := cisClient.ListEdgeFunctionsTriggers(opt)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error listing edge functions triggers: %v", err)
+		return flex.FmtErrorf("[ERROR] Error listing edge functions triggers: %v", err)
 	}
 	triggerInfo := make([]map[string]interface{}, 0)
 	for _, trigger := range result.Result {

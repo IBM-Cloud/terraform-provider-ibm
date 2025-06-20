@@ -133,7 +133,10 @@ func DataSourceIBMCISOriginAuthPullValidator() *validate.ResourceValidator {
 func dataIBMCISOriginAuthRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).CisOrigAuthSession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err,
+			fmt.Sprintf("dataIBMCISOriginAuthRead CisOrigAuthSession initialization failed: %s", err.Error()),
+			"ibm_cis_origin_auth", "read")
+		return tfErr.GetDiag()
 	}
 
 	crn := d.Get(cisID).(string)
@@ -150,7 +153,10 @@ func dataIBMCISOriginAuthRead(context context.Context, d *schema.ResourceData, m
 		zoneSettingsResult, zoneSettingsResponse, zoneSettingsErr := sess.GetZoneOriginPullSettings(zoneSettingsOpt)
 
 		if zoneSettingsErr != nil || zoneSettingsResponse == nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error Getting Zone Level Origin Pull Settings: %s, Response: %s", zoneSettingsErr, zoneSettingsResponse))
+			tfErr := flex.TerraformErrorf(zoneSettingsErr,
+				fmt.Sprintf("dataIBMCISOriginAuthRead GetZoneOriginPullSettings failed: %s \nResponse: %s", zoneSettingsErr.Error(), zoneSettingsResponse),
+				"ibm_cis_origin_auth", "read")
+			return tfErr.GetDiag()
 		}
 
 		zoneSettings := zoneSettingsResult.Result.Enabled
@@ -161,7 +167,10 @@ func dataIBMCISOriginAuthRead(context context.Context, d *schema.ResourceData, m
 		zoneCertListResult, zoneCertListResponse, zoneCertListErr := sess.ListZoneOriginPullCertificates(zoneCertListOpt)
 
 		if zoneCertListErr != nil || zoneCertListResponse == nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error Getting Zone Level Origin Pull Settings: %s, Response: %s", zoneCertListErr, zoneCertListResponse))
+			tfErr := flex.TerraformErrorf(zoneCertListErr,
+				fmt.Sprintf("dataIBMCISOriginAuthRead ListZoneOriginPullCertificates failed: %s \nResponse: %s", zoneCertListErr.Error(), zoneCertListResponse),
+				"ibm_cis_origin_auth", "read")
+			return tfErr.GetDiag()
 		}
 
 		zoneCertLists := make([]map[string]interface{}, 0)
@@ -191,7 +200,10 @@ func dataIBMCISOriginAuthRead(context context.Context, d *schema.ResourceData, m
 		hostnameSettingsResult, hostnameSettingsResponse, hostnameSettingsErr := sess.GetHostnameOriginPullSettings(hostnameSettingsOpt)
 
 		if hostnameSettingsErr != nil || hostnameSettingsResponse == nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error Getting Zone Level Origin Pull Settings: %s", hostnameSettingsErr))
+			tfErr := flex.TerraformErrorf(hostnameSettingsErr,
+				fmt.Sprintf("dataIBMCISOriginAuthRead GetHostnameOriginPullSettings failed: %s \nResponse: %s", hostnameSettingsErr.Error(), hostnameSettingsResponse),
+				"ibm_cis_origin_auth", "read")
+			return tfErr.GetDiag()
 		}
 
 		hostnameSettings := hostnameSettingsResult.Result.Enabled
