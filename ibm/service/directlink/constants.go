@@ -109,7 +109,7 @@ const (
 	dlGatewaySakRekeyPacketNumberRolloverMode = "sak_rekey_packet_mode"
 	dlGatewaySakRekeyInterval                 = "interval"
 	dlGatewaySakRekeyMode                     = "mode"
-	dlGatewayMacsecSatusReasons               = "status_reasons"
+	dlGatewayMacsecStatusReasons              = "status_reasons"
 	dlGatewayMacsecSatusReason                = "status_reason"
 
 	dlGatewayMacsecSatusReasonCode     = "code"

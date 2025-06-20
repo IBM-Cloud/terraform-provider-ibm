@@ -86,7 +86,7 @@ func DataSourceIBMDLGatewayMacsecConfig() *schema.Resource {
 					},
 				},
 			},
-			dlGatewayMacsecSatusReasons: {
+			dlGatewayMacsecStatusReasons: {
 				Type:        schema.TypeList,
 				Description: "A reason for the current status.",
 				Computed:    true,
@@ -192,7 +192,7 @@ func dataSourceIBMDLGatewayMacsecConfigRead(context context.Context, d *schema.R
 			statusReasonItem[dlGatewayMacsecSatusReasonMoreInfo] = statusReason.MoreInfo
 			statusReasonsList = append(statusReasonsList, statusReasonItem)
 		}
-		d.Set(dlGatewayMacsecSatusReasons, statusReasonsList)
+		d.Set(dlGatewayMacsecStatusReasons, statusReasonsList)
 	}
 
 	d.SetId(dlGatewayID)

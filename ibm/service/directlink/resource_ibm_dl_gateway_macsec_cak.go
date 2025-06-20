@@ -60,7 +60,7 @@ func ResourceIBMDLGatewayMacsecCak() *schema.Resource {
 				},
 			},
 			dlGatewayMacsecCak: {
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Description: "Determines how SAK rekeying occurs.",
 				Computed:    true,
 				Elem: &schema.Resource{
@@ -252,10 +252,10 @@ func resourceIBMdlGatewayMacsecCakRead(context context.Context, d *schema.Resour
 		cakItem[dlGatewayMacsecCakSession] = *instance.Session
 	}
 	if instance.CreatedAt != nil {
-		cakItem[dlCreatedAt] = *instance.CreatedAt
+		cakItem[dlCreatedAt] = instance.CreatedAt.String()
 	}
 	if instance.UpdatedAt != nil {
-		cakItem[dlUpdatedAt] = *instance.UpdatedAt
+		cakItem[dlUpdatedAt] = instance.UpdatedAt.String()
 	}
 
 	cakItem[dlGatewayMacsecCakID] = *instance.ID
@@ -263,7 +263,7 @@ func resourceIBMdlGatewayMacsecCakRead(context context.Context, d *schema.Resour
 	hpcsKey := map[string]interface{}{}
 	if instance.Key != nil {
 		hpcsKey[dlGatewayMacsecHPCSCrn] = *instance.Key.Crn
-		cakItem[dlGatewayMacsecHPCSKey] = map[string]interface{}(hpcsKey)
+		cakItem[dlGatewayMacsecHPCSKey] = []map[string]interface{}{hpcsKey}
 	}
 
 	activeDelta := map[string]interface{}{}
@@ -271,15 +271,15 @@ func resourceIBMdlGatewayMacsecCakRead(context context.Context, d *schema.Resour
 		hpcsKey := map[string]interface{}{}
 		if instance.ActiveDelta.Key != nil {
 			hpcsKey[dlGatewayMacsecHPCSCrn] = *instance.ActiveDelta.Key.Crn
-			activeDelta[dlGatewayMacsecHPCSKey] = map[string]interface{}(hpcsKey)
+			activeDelta[dlGatewayMacsecHPCSKey] = []map[string]interface{}{hpcsKey}
 		}
 
 		activeDelta[dlGatewayMacsecCakName] = *instance.ActiveDelta.Name
 		// activeDelta[dlGatewayMacsecCakStatus] = *instance.ActiveDelta.Status
-		cakItem[dlGatewayMacsecCakActiveDelta] = map[string]interface{}(activeDelta)
+		cakItem[dlGatewayMacsecCakActiveDelta] = []map[string]interface{}{activeDelta}
 	}
 
-	d.Set(dlGatewayMacsecCak, cakItem)
+	d.Set(dlGatewayMacsecCak, []map[string]interface{}{cakItem})
 	d.Set(dlGatewayMacsecCakID, instance.ID)
 	d.SetId(gatewayID)
 	return nil
