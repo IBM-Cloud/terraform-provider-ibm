@@ -62,7 +62,6 @@ func ResourceIBMCdToolchainToolCos() *schema.Resource {
 						"auth_type": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Computed:    true,
 							Description: "The authentication type. Options are `apikey` IBM Cloud API Key or `hmac` HMAC (Hash Message Authentication Code). The default is `apikey`.",
 						},
 						"cos_api_key": &schema.Schema{
