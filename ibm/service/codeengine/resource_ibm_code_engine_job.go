@@ -74,6 +74,12 @@ func ResourceIbmCodeEngineJob() *schema.Resource {
 				Description: "Set commands for the job that are passed to start job run containers. If not specified an empty string array will be applied and the command specified by the container image, will be used to start the container.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
+			"run_compute_resource_token_enabled": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Enable the use of a compute resource token mounted to the container file system.",
+			},
 			"run_env_variables": {
 				Type:        schema.TypeList,
 				Optional:    true,
@@ -423,6 +429,9 @@ func resourceIbmCodeEngineJobCreate(context context.Context, d *schema.ResourceD
 		}
 		createJobOptions.SetRunCommands(runCommands)
 	}
+	if _, ok := d.GetOk("run_compute_resource_token_enabled"); ok {
+		createJobOptions.SetRunComputeResourceTokenEnabled(d.Get("run_compute_resource_token_enabled").(bool))
+	}
 	if _, ok := d.GetOk("run_env_variables"); ok {
 		var runEnvVariables []codeenginev2.EnvVarPrototype
 		for _, v := range d.Get("run_env_variables").([]interface{}) {
@@ -547,6 +556,12 @@ func resourceIbmCodeEngineJobRead(context context.Context, d *schema.ResourceDat
 		if err = d.Set("run_commands", job.RunCommands); err != nil {
 			err = fmt.Errorf("Error setting run_commands: %s", err)
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_code_engine_job", "read", "set-run_commands").GetDiag()
+		}
+	}
+	if !core.IsNil(job.RunComputeResourceTokenEnabled) {
+		if err = d.Set("run_compute_resource_token_enabled", job.RunComputeResourceTokenEnabled); err != nil {
+			err = fmt.Errorf("Error setting run_compute_resource_token_enabled: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_code_engine_job", "read", "set-run_compute_resource_token_enabled").GetDiag()
 		}
 	}
 	if !core.IsNil(job.RunEnvVariables) {
@@ -751,6 +766,11 @@ func resourceIbmCodeEngineJobUpdate(context context.Context, d *schema.ResourceD
 		patchVals.RunCommands = runCommands
 		hasChange = true
 	}
+	if d.HasChange("run_compute_resource_token_enabled") {
+		newRunComputeResourceTokenEnabled := d.Get("run_compute_resource_token_enabled").(bool)
+		patchVals.RunComputeResourceTokenEnabled = &newRunComputeResourceTokenEnabled
+		hasChange = true
+	}
 	if d.HasChange("run_env_variables") {
 		var runEnvVariables []codeenginev2.EnvVarPrototype
 		for _, v := range d.Get("run_env_variables").([]interface{}) {
@@ -953,6 +973,10 @@ func ResourceIbmCodeEngineJobJobPatchAsPatch(patchVals *codeenginev2.JobPatch, d
 	path = "run_commands"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["run_commands"] = nil
+	}
+	path = "run_compute_resource_token_enabled"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["run_compute_resource_token_enabled"] = nil
 	}
 	path = "run_env_variables"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
