@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_logs_policy"
 description: |-
   Get information about logs_policy
-subcategory: "Cloud Logs API"
+subcategory: "Cloud Logs"
 ---
 
 # ibm_logs_policy
@@ -13,8 +13,10 @@ Provides a read-only data source to retrieve information about a logs_policy. Yo
 ## Example Usage
 
 ```hcl
-data "ibm_logs_policy" "logs_policy" {
-	logs_policy_id = 3dc02998-0b50-4ea8-b68a-4779d716fa1f
+data "ibm_logs_policy" "logs_policy_instance" {
+	instance_id    = ibm_logs_policy.logs_policy_instance.instance_id
+	region         = ibm_logs_policy.logs_policy_instance.region
+	logs_policy_id = ibm_logs_policy.logs_policy_instance.policy_id
 }
 ```
 
@@ -22,6 +24,8 @@ data "ibm_logs_policy" "logs_policy" {
 
 You can specify the following arguments for this data source.
 
+* `instance_id` - (Required, String)  Cloud Logs Instance GUID.
+* `region` - (Optional, String) Cloud Logs Instance Region.
 * `logs_policy_id` - (Required, Forces new resource, String) ID of policy.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/`.
 

@@ -338,16 +338,16 @@ func resourceIbmLogsPolicyRead(context context.Context, d *schema.ResourceData, 
 		}
 	}
 
-	if !core.IsNil(policy.Before) {
-		beforeMap, err := ResourceIbmLogsPolicyPolicyBeforeToMap(policy.Before)
-		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_policy", "read", "before-to-map").GetDiag()
-		}
-		if err = d.Set("before", beforeMap); err != nil {
-			err = fmt.Errorf("Error setting before: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_policy", "read", "set-before").GetDiag()
-		}
+	// if !core.IsNil(policy.Before) { //manual change donot remove
+	beforeMap, err := ResourceIbmLogsPolicyPolicyBeforeToMap(policy.Before)
+	if err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_policy", "read", "before-to-map").GetDiag()
 	}
+	if err = d.Set("before", []map[string]interface{}{beforeMap}); err != nil {
+		err = fmt.Errorf("Error setting before: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_policy", "read", "set-before").GetDiag()
+	}
+	// }
 	if !core.IsNil(policy.ApplicationRule) {
 		applicationRuleMap, err := ResourceIbmLogsPolicyQuotaV1RuleToMap(policy.ApplicationRule)
 		if err != nil {
@@ -647,11 +647,14 @@ func ResourceIbmLogsPolicyMapToPolicyPrototypeQuotaV1CreatePolicyRequestSourceTy
 }
 
 func ResourceIbmLogsPolicyPolicyBeforeToMap(model *logsv0.PolicyBefore) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["id"] = model.ID.String()
-	if model.Name != nil {
-		modelMap["name"] = *model.Name
+	modelMap := make(map[string]interface{}) //Manual change Donot remove
+	if model != nil {
+		modelMap["id"] = model.ID.String()
+		if model.Name != nil {
+			modelMap["name"] = *model.Name
+		}
 	}
+
 	return modelMap, nil
 }
 
