@@ -56,19 +56,16 @@ In addition to all argument references listed, you can access the following attr
 - `vpc` - (String) The VPC this private path service gateway resides in.
 - `zonal_affinity` - (Boolean) Indicates whether this private path service gateway has zonal affinity.- `true`:  Traffic to the service from a zone will favor service endpoints in the same zone.- `false`: Traffic to the service from a zone will be load balanced across all zones           in the region the service resides in.
 
-
 ## Import
 
-You can import the `ibm_is_private_path_service_gateway` resource by using `id`.
-
-
-```
-<private_path_service_gateway_id>
-```
-- `private_path_service_gateway`: A string. The private path service gateway identifier.
-
+You can import the `ibm_is_private_path_service_gateway` resource by using `id`. The unique identifier for this private path service gateway.
 
 # Syntax
 ```
-$ terraform import ibm_is_private_path_service_gateway.example <private_path_service_gateway>
+$ terraform import ibm_is_private_path_service_gateway.example <id>
+```
+
+# Example
+```
+$ terraform import ibm_is_private_path_service_gateway.example 0767-fa41aecb-4f21-423d-8082-630bfba1e1d9
 ```

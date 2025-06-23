@@ -61,11 +61,11 @@ func TestAccIBMPIPlacementGroupBasic(t *testing.T) {
 			{
 				Config: testAccCheckIBMPIPlacementGroupRemoveMemberConfig(name, policy),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMPIPlacementGroupMemberDoesNotExist("ibm_pi_placement_group.power_placement_group", "ibm_pi_instance.power_instance"),
+					testAccCheckIBMPIPlacementGroupMemberDoesNotExist("ibm_pi_placement_group.power_placement_group_another", "ibm_pi_instance.power_instance"),
 				),
 			},
 			{
-				Config: testAccCheckIBMPICreateInstanceInPlacementGroup(name, policy, "tinytest-1x4"),
+				Config: testAccCheckIBMPICreateInstanceInPlacementGroup(name, policy),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(
 						"ibm_pi_instance.power_instance", "pi_placement_group_id"),
@@ -76,12 +76,11 @@ func TestAccIBMPIPlacementGroupBasic(t *testing.T) {
 					testAccCheckIBMPIPlacementGroupMemberExistsFromInstanceCreate("ibm_pi_placement_group.power_placement_group", "ibm_pi_instance.power_instance", "ibm_pi_instance.power_instance_in_pg"),
 					testAccCheckIBMPIPlacementGroupMemberExists("ibm_pi_placement_group.power_placement_group", "ibm_pi_instance.sap_power_instance"),
 				),
-				ExpectNonEmptyPlan: true,
 			},
 			{
-				Config: testAccCheckIBMPIDeletePlacementGroup(name, policy, "tinytest-1x4"),
+				Config: testAccCheckIBMPIDeletePlacementGroup(name, policy),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMPIPlacementGroupDelete("ibm_pi_placement_group.power_placement_group", "ibm_pi_instance.power_instance", "ibm_pi_instance.power_instance_in_pg"),
+					testAccCheckIBMPIPlacementGroupDelete("ibm_pi_instance.power_instance", "ibm_pi_instance.power_instance_in_pg"),
 				),
 			},
 		},
@@ -304,7 +303,7 @@ func testAccCheckIBMPIPlacementGroupMemberExistsFromInstanceCreate(n string, ins
 	}
 }
 
-func testAccCheckIBMPIPlacementGroupDelete(n string, inst string, newInstance string) resource.TestCheckFunc {
+func testAccCheckIBMPIPlacementGroupDelete(inst string, newInstance string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		sess, err := acc.TestAccProvider.Meta().(conns.ClientSession).IBMPISession()
 		if err != nil {
@@ -468,7 +467,6 @@ func testAccCheckIBMPIPlacementGroupRemoveMemberConfig(name string, policy strin
 			pi_network {
 				network_id = "%[5]s"
 			}
-			pi_placement_group_id = ""
 		}
 	
 		resource "ibm_pi_placement_group" "power_placement_group" {
@@ -484,7 +482,7 @@ func testAccCheckIBMPIPlacementGroupRemoveMemberConfig(name string, policy strin
 		}`, acc.Pi_cloud_instance_id, name, policy, acc.Pi_image, acc.Pi_network_name)
 }
 
-func testAccCheckIBMPICreateInstanceInPlacementGroup(name string, policy string, sapProfile string) string {
+func testAccCheckIBMPICreateInstanceInPlacementGroup(name string, policy string) string {
 	return fmt.Sprintf(`
 		resource "ibm_pi_key" "key" {
 			pi_cloud_instance_id = "%[1]s"
@@ -546,10 +544,10 @@ func testAccCheckIBMPICreateInstanceInPlacementGroup(name string, policy string,
 			pi_cloud_instance_id      = "%[1]s"
 			pi_placement_group_name   = "%[2]s-2"
 			pi_placement_group_policy = "%[3]s"
-		}`, acc.Pi_cloud_instance_id, name, policy, acc.Pi_image, sapProfile, acc.Pi_sap_image, acc.Pi_network_name)
+		}`, acc.Pi_cloud_instance_id, name, policy, acc.Pi_image, acc.Pi_sap_profile_id, acc.Pi_sap_image, acc.Pi_network_name)
 }
 
-func testAccCheckIBMPIDeletePlacementGroup(name string, policy string, sapProfile string) string {
+func testAccCheckIBMPIDeletePlacementGroup(name string, policy string) string {
 	return fmt.Sprintf(`
 		resource "ibm_pi_key" "key" {
 			pi_cloud_instance_id = "%[1]s"
@@ -608,5 +606,5 @@ func testAccCheckIBMPIDeletePlacementGroup(name string, policy string, sapProfil
 			pi_cloud_instance_id      = "%[1]s"
 			pi_placement_group_name   = "%[2]s-2"
 			pi_placement_group_policy = "%[3]s"
-		}`, acc.Pi_cloud_instance_id, name, policy, acc.Pi_image, sapProfile, acc.Pi_sap_image, acc.Pi_network_name)
+		}`, acc.Pi_cloud_instance_id, name, policy, acc.Pi_image, acc.Pi_sap_profile_id, acc.Pi_sap_image, acc.Pi_network_name)
 }

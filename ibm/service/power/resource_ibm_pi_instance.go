@@ -106,9 +106,10 @@ func ResourceIBMPIInstance() *schema.Resource {
 						},
 					},
 				},
-				Optional: true,
-				MaxItems: 1,
-				Type:     schema.TypeSet,
+				MaxItems:     1,
+				Optional:     true,
+				RequiredWith: []string{Arg_SysType},
+				Type:         schema.TypeSet,
 			},
 			Arg_DeploymentType: {
 				Description:  "Custom Deployment Type Information",
@@ -158,7 +159,6 @@ func ResourceIBMPIInstance() *schema.Resource {
 			},
 			Arg_LicenseRepositoryCapacity: {
 				Computed:    true,
-				Deprecated:  "This field is deprecated.",
 				Description: "The VTL license repository capacity TB value",
 				Optional:    true,
 				Type:        schema.TypeInt,
@@ -176,29 +176,47 @@ func ResourceIBMPIInstance() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						Attr_IPAddress: {
-							Type:     schema.TypeString,
-							Optional: true,
 							Computed: true,
+							Optional: true,
+							Type:     schema.TypeString,
 						},
 						Attr_MacAddress: {
-							Type:     schema.TypeString,
 							Computed: true,
+							Type:     schema.TypeString,
 						},
 						Attr_NetworkID: {
-							Type:     schema.TypeString,
 							Required: true,
+							Type:     schema.TypeString,
+						},
+						Attr_NetworkInterfaceID: {
+							Computed:    true,
+							Description: "ID of the network interface.",
+							Type:        schema.TypeString,
 						},
 						Attr_NetworkName: {
-							Type:     schema.TypeString,
 							Computed: true,
+							Type:     schema.TypeString,
+						},
+						Attr_NetworkSecurityGroupIDs: {
+							Computed:    true,
+							Description: "Network security groups that the network interface is a member of. There is a limit of 1 network security group in the array. If not specified, default network security group is used.",
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Optional:    true,
+							Type:        schema.TypeSet,
+						},
+						Attr_NetworkSecurityGroupsHref: {
+							Computed:    true,
+							Description: "Links to the network security groups that the network interface is a member of.",
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Type:        schema.TypeList,
 						},
 						Attr_Type: {
-							Type:     schema.TypeString,
 							Computed: true,
+							Type:     schema.TypeString,
 						},
 						Attr_ExternalIP: {
-							Type:     schema.TypeString,
 							Computed: true,
+							Type:     schema.TypeString,
 						},
 					},
 				},
@@ -214,7 +232,6 @@ func ResourceIBMPIInstance() *schema.Resource {
 			},
 			Arg_PlacementGroupID: {
 				Description: "Placement group ID",
-				Computed:    true,
 				Optional:    true,
 				Type:        schema.TypeString,
 			},
@@ -383,6 +400,16 @@ func ResourceIBMPIInstance() *schema.Resource {
 				Description: "The CRN of this resource.",
 				Type:        schema.TypeString,
 			},
+			Attr_DedicatedHostID: {
+				Computed:    true,
+				Description: "The dedicated host ID where the shared processor pool resides.",
+				Type:        schema.TypeString,
+			},
+			Attr_Fault: {
+				Computed:    true,
+				Description: "Fault information.",
+				Type:        schema.TypeMap,
+			},
 			Attr_HealthStatus: {
 				Computed:    true,
 				Description: "PI Instance health status",
@@ -459,11 +486,6 @@ func ResourceIBMPIInstance() *schema.Resource {
 				Computed:    true,
 				Description: "PI instance status",
 				Type:        schema.TypeString,
-			},
-			Attr_Fault: {
-				Computed:    true,
-				Description: "Fault information.",
-				Type:        schema.TypeMap,
 			},
 		},
 	}
@@ -587,7 +609,7 @@ func resourceIBMPIInstanceRead(ctx context.Context, d *schema.ResourceData, meta
 
 	if powervmdata.Crn != "" {
 		d.Set(Attr_CRN, powervmdata.Crn)
-		tags, err := flex.GetTagsUsingCRN(meta, string(powervmdata.Crn))
+		tags, err := flex.GetGlobalTagsUsingCRN(meta, string(powervmdata.Crn), "", UserTagType)
 		if err != nil {
 			log.Printf("Error on get of ibm pi instance (%s) pi_user_tags: %s", *powervmdata.PvmInstanceID, err)
 		}
@@ -598,18 +620,15 @@ func resourceIBMPIInstanceRead(ctx context.Context, d *schema.ResourceData, meta
 	if powervmdata.Status != nil {
 		d.Set(Attr_Status, powervmdata.Status)
 	}
+	d.Set(Arg_CloudInstanceID, cloudInstanceID)
+	d.Set(Arg_ImageID, powervmdata.ImageID)
+	d.Set(Arg_InstanceName, powervmdata.ServerName)
 	d.Set(Arg_ProcType, powervmdata.ProcType)
-	d.Set(Attr_MinProcessors, powervmdata.Minproc)
-	d.Set(Attr_Progress, powervmdata.Progress)
-	if powervmdata.StorageType != nil && *powervmdata.StorageType != "" {
-		d.Set(Arg_StorageType, powervmdata.StorageType)
-	}
 	d.Set(Arg_StoragePool, powervmdata.StoragePool)
 	d.Set(Arg_StoragePoolAffinity, powervmdata.StoragePoolAffinity)
-	d.Set(Arg_CloudInstanceID, cloudInstanceID)
 	d.Set(Attr_InstanceID, powervmdata.PvmInstanceID)
-	d.Set(Arg_InstanceName, powervmdata.ServerName)
-	d.Set(Arg_ImageID, powervmdata.ImageID)
+	d.Set(Attr_MinProcessors, powervmdata.Minproc)
+	d.Set(Attr_Progress, powervmdata.Progress)
 	if *powervmdata.PlacementGroup != None {
 		d.Set(Arg_PlacementGroupID, powervmdata.PlacementGroup)
 	}
@@ -621,12 +640,19 @@ func resourceIBMPIInstanceRead(ctx context.Context, d *schema.ResourceData, meta
 		for _, n := range powervmdata.Networks {
 			if n != nil {
 				v := map[string]interface{}{
-					Attr_IPAddress:   n.IPAddress,
-					Attr_MacAddress:  n.MacAddress,
-					Attr_NetworkID:   n.NetworkID,
-					Attr_NetworkName: n.NetworkName,
-					Attr_Type:        n.Type,
-					Attr_ExternalIP:  n.ExternalIP,
+					Attr_ExternalIP:         n.ExternalIP,
+					Attr_IPAddress:          n.IPAddress,
+					Attr_MacAddress:         n.MacAddress,
+					Attr_NetworkID:          n.NetworkID,
+					Attr_NetworkInterfaceID: n.NetworkInterfaceID,
+					Attr_NetworkName:        n.NetworkName,
+					Attr_Type:               n.Type,
+				}
+				if len(n.NetworkSecurityGroupIDs) > 0 {
+					v[Attr_NetworkSecurityGroupIDs] = n.NetworkSecurityGroupIDs
+				}
+				if len(n.NetworkSecurityGroupsHref) > 0 {
+					v[Attr_NetworkSecurityGroupsHref] = n.NetworkSecurityGroupsHref
 				}
 				networksMap = append(networksMap, v)
 			}
@@ -638,6 +664,7 @@ func resourceIBMPIInstanceRead(ctx context.Context, d *schema.ResourceData, meta
 		d.Set(Arg_SAPProfileID, powervmdata.SapProfile.ProfileID)
 	}
 	d.Set(Arg_SysType, powervmdata.SysType)
+	d.Set(Attr_DedicatedHostID, powervmdata.DedicatedHostID)
 	d.Set(Attr_MinMemory, powervmdata.Minmem)
 	d.Set(Attr_MaxProcessors, powervmdata.Maxproc)
 	d.Set(Attr_MaxMemory, powervmdata.Maxmem)
@@ -653,8 +680,8 @@ func resourceIBMPIInstanceRead(ctx context.Context, d *schema.ResourceData, meta
 		d.Set(Attr_MaxVirtualCores, powervmdata.VirtualCores.Max)
 		d.Set(Attr_MinVirtualCores, powervmdata.VirtualCores.Min)
 	}
-	d.Set(Arg_LicenseRepositoryCapacity, powervmdata.LicenseRepositoryCapacity)
 	d.Set(Arg_DeploymentType, powervmdata.DeploymentType)
+	d.Set(Arg_LicenseRepositoryCapacity, powervmdata.LicenseRepositoryCapacity)
 	if powervmdata.SoftwareLicenses != nil {
 		d.Set(Arg_IBMiCSS, powervmdata.SoftwareLicenses.IbmiCSS)
 		d.Set(Arg_IBMiPHA, powervmdata.SoftwareLicenses.IbmiPHA)
@@ -681,7 +708,6 @@ func resourceIBMPIInstanceRead(ctx context.Context, d *schema.ResourceData, meta
 }
 
 func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-
 	name := d.Get(Arg_InstanceName).(string)
 	mem := d.Get(Arg_Memory).(float64)
 	procs := d.Get(Arg_Processors).(float64)
@@ -1511,8 +1537,9 @@ func expandPVMNetworks(networks []interface{}) []*models.PVMInstanceAddNetwork {
 	for _, v := range networks {
 		network := v.(map[string]interface{})
 		pvmInstanceNetwork := &models.PVMInstanceAddNetwork{
-			IPAddress: network[Attr_IPAddress].(string),
-			NetworkID: flex.PtrToString(network[Attr_NetworkID].(string)),
+			IPAddress:               network[Attr_IPAddress].(string),
+			NetworkID:               flex.PtrToString(network[Attr_NetworkID].(string)),
+			NetworkSecurityGroupIDs: flex.ExpandStringList((network[Attr_NetworkSecurityGroupIDs].(*schema.Set)).List()),
 		}
 		pvmNetworks = append(pvmNetworks, pvmInstanceNetwork)
 	}
@@ -1531,7 +1558,6 @@ func checkCloudInstanceCapability(cloudInstance *models.CloudInstance, custom_ca
 }
 
 func createSAPInstance(d *schema.ResourceData, sapClient *instance.IBMPISAPInstanceClient) (*models.PVMInstanceList, error) {
-
 	name := d.Get(Arg_InstanceName).(string)
 	profileID := d.Get(Arg_SAPProfileID).(string)
 	imageid := d.Get(Arg_ImageID).(string)
@@ -1727,7 +1753,7 @@ func createPVMInstance(d *schema.ResourceData, client *instance.IBMPIInstanceCli
 		SysType:                 systype,
 		ImageID:                 flex.PtrToString(imageid),
 		ProcType:                flex.PtrToString(processortype),
-		Replicants:              replicants,
+		Replicants:              &replicants,
 		UserData:                encodeBase64(userData),
 		ReplicantNamingScheme:   flex.PtrToString(replicationNamingScheme),
 		ReplicantAffinityPolicy: flex.PtrToString(replicationpolicy),
@@ -1864,7 +1890,7 @@ func createPVMInstance(d *schema.ResourceData, client *instance.IBMPIInstanceCli
 	}
 	if vsn, ok := d.GetOk(Arg_VirtualSerialNumber); ok {
 		vsnListType := vsn.([]interface{})
-		vsnCreateModel := vsnSetToCreateModel(vsnListType, d)
+		vsnCreateModel := vsnSetToCreateModel(vsnListType)
 		body.VirtualSerialNumber = vsnCreateModel
 	}
 
@@ -1879,6 +1905,7 @@ func createPVMInstance(d *schema.ResourceData, client *instance.IBMPIInstanceCli
 
 	return pvmList, nil
 }
+
 func expandDeploymentTarget(dt []interface{}) *models.DeploymentTarget {
 	dtexpanded := &models.DeploymentTarget{}
 	for _, v := range dt {
@@ -1888,6 +1915,7 @@ func expandDeploymentTarget(dt []interface{}) *models.DeploymentTarget {
 	}
 	return dtexpanded
 }
+
 func splitID(id string) (id1, id2 string, err error) {
 	parts, err := flex.IdParts(id)
 	if err != nil {
@@ -1897,7 +1925,8 @@ func splitID(id string) (id1, id2 string, err error) {
 	id2 = parts[1]
 	return
 }
-func vsnSetToCreateModel(vsnSetList []interface{}, d *schema.ResourceData) *models.CreateServerVirtualSerialNumber {
+
+func vsnSetToCreateModel(vsnSetList []interface{}) *models.CreateServerVirtualSerialNumber {
 	vsnItemMap := vsnSetList[0].(map[string]interface{})
 	serialString := vsnItemMap[Attr_Serial].(string)
 	model := &models.CreateServerVirtualSerialNumber{
@@ -1910,6 +1939,7 @@ func vsnSetToCreateModel(vsnSetList []interface{}, d *schema.ResourceData) *mode
 
 	return model
 }
+
 func flattenVirtualSerialNumberToList(vsn *models.GetServerVirtualSerialNumber) []map[string]interface{} {
 	v := make([]map[string]interface{}, 1)
 	v[0] = map[string]interface{}{

@@ -1050,7 +1050,7 @@ func dataSourceIbmBackupRecoverySourceRegistrationsID(d *schema.ResourceData) st
 	return time.Now().UTC().String()
 }
 
-func DataSourceIbmBackupRecoverySourceRegistrationsSourceRegistrationReponseParamsToMap(model *backuprecoveryv1.SourceRegistrationReponseParams) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoverySourceRegistrationsSourceRegistrationReponseParamsToMap(model *backuprecoveryv1.SourceRegistrationResponseParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
 		modelMap["id"] = flex.IntValue(model.ID)

@@ -93,7 +93,6 @@ func resourceIBMEnSlackTemplateCreate(context context.Context, d *schema.Resourc
 		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_en_slack_template", "create")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
-		// return diag.FromErr(err)
 	}
 
 	options := &en.CreateTemplateOptions{}
@@ -115,7 +114,6 @@ func resourceIBMEnSlackTemplateCreate(context context.Context, d *schema.Resourc
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateTemplateWithContext failed: %s", err.Error()), "ibm_en_slack_template", "create")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
-		// return diag.FromErr(fmt.Errorf("CreateTemplateWithContext failed %s\n%s", err, response))
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", *options.InstanceID, *result.ID))
@@ -129,7 +127,6 @@ func resourceIBMEnSlackTemplateRead(context context.Context, d *schema.ResourceD
 		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_en_slack_template", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
-		// return diag.FromErr(err)
 	}
 
 	options := &en.GetTemplateOptions{}
@@ -138,7 +135,6 @@ func resourceIBMEnSlackTemplateRead(context context.Context, d *schema.ResourceD
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_en_slack_template", "update")
 		return tfErr.GetDiag()
-		// return diag.FromErr(err)
 	}
 
 	options.SetInstanceID(parts[0])
@@ -153,7 +149,6 @@ func resourceIBMEnSlackTemplateRead(context context.Context, d *schema.ResourceD
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetTemplateWithContext failed: %s", err.Error()), "ibm_en_slack_template", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
-		// return diag.FromErr(fmt.Errorf("GetTemplateWithContext failed %s\n%s", err, response))
 	}
 
 	if err = d.Set("instance_guid", options.InstanceID); err != nil {
@@ -198,7 +193,6 @@ func resourceIBMEnSlackTemplateUpdate(context context.Context, d *schema.Resourc
 		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_en_slack_template", "update")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
-		// return diag.FromErr(err)
 	}
 
 	options := &en.ReplaceTemplateOptions{}
@@ -207,11 +201,12 @@ func resourceIBMEnSlackTemplateUpdate(context context.Context, d *schema.Resourc
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_en_slack_template", "update")
 		return tfErr.GetDiag()
-		// return diag.FromErr(err)
 	}
 
 	options.SetInstanceID(parts[0])
 	options.SetID(parts[1])
+
+	options.SetType(d.Get("type").(string))
 
 	if ok := d.HasChanges("name", "description", "params"); ok {
 		options.SetName(d.Get("name").(string))
@@ -228,7 +223,6 @@ func resourceIBMEnSlackTemplateUpdate(context context.Context, d *schema.Resourc
 			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ReplaceTemplateWithContext failed: %s", err.Error()), "ibm_en_slack_template", "update")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
-			// return diag.FromErr(fmt.Errorf("ReplaceTemplateWithContext failed %s\n%s", err, response))
 		}
 
 		return resourceIBMEnSlackTemplateRead(context, d, meta)
@@ -243,7 +237,6 @@ func resourceIBMEnSlackTemplateDelete(context context.Context, d *schema.Resourc
 		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_en_slack_template", "delete")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
-		// return diag.FromErr(err)
 	}
 
 	options := &en.DeleteTemplateOptions{}
@@ -252,7 +245,6 @@ func resourceIBMEnSlackTemplateDelete(context context.Context, d *schema.Resourc
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_en_slack_template", "delete")
 		return tfErr.GetDiag()
-		// return diag.FromErr(err)
 	}
 
 	options.SetInstanceID(parts[0])
@@ -267,7 +259,6 @@ func resourceIBMEnSlackTemplateDelete(context context.Context, d *schema.Resourc
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteTemplateWithContext: failed: %s", err.Error()), "ibm_en_slack_template", "delete")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
-		// return diag.FromErr(fmt.Errorf("DeleteTemplateWithContext failed %s\n%s", err, response))
 	}
 
 	d.SetId("")

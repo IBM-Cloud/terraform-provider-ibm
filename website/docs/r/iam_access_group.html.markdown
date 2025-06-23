@@ -34,3 +34,4 @@ In addition to all argument reference list, you can access the following attribu
 
 - `id` - (String) The unique identifier of the access group.
 - `version` - (String) The version of the access group.
+- `crn` - (String) CRN of the access group

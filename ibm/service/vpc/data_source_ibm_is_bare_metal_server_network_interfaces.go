@@ -6,6 +6,7 @@ package vpc
 import (
 	"context"
 	"fmt"
+	"log"
 	"reflect"
 	"time"
 
@@ -213,15 +214,19 @@ func dataSourceIBMISBareMetalServerNetworkInterfacesRead(context context.Context
 	bareMetalServerID := d.Get(isBareMetalServerID).(string)
 	sess, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_bare_metal_server_network_interfaces", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	options := &vpcv1.ListBareMetalServerNetworkInterfacesOptions{
 		BareMetalServerID: &bareMetalServerID,
 	}
 	nics := []vpcv1.BareMetalServerNetworkInterfaceIntf{}
-	bmsNics, response, err := sess.ListBareMetalServerNetworkInterfacesWithContext(context, options)
+	bmsNics, _, err := sess.ListBareMetalServerNetworkInterfacesWithContext(context, options)
 	if err != nil || bmsNics == nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error listing Bare Metal Server (%s) network interfaces : %s\n%s", bareMetalServerID, err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListBareMetalServerNetworkInterfacesWithContext failed: %s", err.Error()), "(Data) ibm_is_bare_metal_server_network_interfaces", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	nics = append(nics, bmsNics.NetworkInterfaces...)
 	nicsInfo := make([]map[string]interface{}, 0)
@@ -414,7 +419,10 @@ func dataSourceIBMISBareMetalServerNetworkInterfacesRead(context context.Context
 		nicsInfo = append(nicsInfo, l)
 	}
 	d.SetId(dataSourceIBMISBareMetalServerNetworkInterfacesID(d))
-	d.Set(isBareMetalServerNetworkInterfaces, nicsInfo)
+
+	if err = d.Set(isBareMetalServerNetworkInterfaces, nicsInfo); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting network_interfaces %s", err), "(Data) ibm_is_bare_metal_server_network_interfaces", "read", "network_interfaces-set").GetDiag()
+	}
 	return nil
 }
 

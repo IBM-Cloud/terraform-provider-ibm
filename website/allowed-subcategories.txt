@@ -1,8 +1,8 @@
 Activity Tracker Event Routing
-API Gateway
 App ID Management
 App Configuration
 Catalog Management
+Ceph as a Service
 Classic infrastructure
 Cloud Database
 Cloud Foundry
@@ -40,9 +40,9 @@ Push Notifications
 Resource management
 Satellite
 Schematics
-sdsaas
 Secrets Manager
 Security and Compliance Center
 Transit Gateway
 Usage Reports
+VCF as a Service
 VPC infrastructure

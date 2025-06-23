@@ -42,7 +42,7 @@ You can specify the following arguments for this resource.
 * `broker_url` - (Required, String) The URL associated with the broker application.
 * `catalog_type` - (Optional, String) To enable the provisioning of your broker, set this parameter value to `service`.
 * `env` - (Optional, String) The environment to fetch this object from.
-  * Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^[a-z]+$/`.
+  * Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^[a-z_.-]+$/`.
 * `name` - (Required, String) The name of the broker.
   * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^[ -~\\s]*$/`.
 * `region` - (Optional, String) The region where the pricing plan is available.

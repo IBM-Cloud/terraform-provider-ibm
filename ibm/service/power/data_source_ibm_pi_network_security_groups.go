@@ -41,6 +41,11 @@ func DataSourceIBMPINetworkSecurityGroups() *schema.Resource {
 							Description: "The network security group's crn.",
 							Type:        schema.TypeString,
 						},
+						Attr_Default: {
+							Computed:    true,
+							Description: "Indicates if the network security group is the default network security group in the workspace.",
+							Type:        schema.TypeBool,
+						},
 						Attr_ID: {
 							Computed:    true,
 							Description: "The ID of the network security group.",
@@ -59,6 +64,11 @@ func DataSourceIBMPINetworkSecurityGroups() *schema.Resource {
 									Attr_MacAddress: {
 										Computed:    true,
 										Description: "The mac address of a network interface included if the type is network-interface.",
+										Type:        schema.TypeString,
+									},
+									Attr_NetworkInterfaceID: {
+										Computed:    true,
+										Description: "The network ID of a network interface included if the type is network-interface.",
 										Type:        schema.TypeString,
 									},
 									Attr_Target: {
@@ -237,12 +247,13 @@ func networkSecurityGroupToMap(nsg *models.NetworkSecurityGroup, meta interface{
 	networkSecurityGroup := make(map[string]interface{})
 	if nsg.Crn != nil {
 		networkSecurityGroup[Attr_CRN] = nsg.Crn
-		userTags, err := flex.GetTagsUsingCRN(meta, string(*nsg.Crn))
+		userTags, err := flex.GetGlobalTagsUsingCRN(meta, string(*nsg.Crn), "", UserTagType)
 		if err != nil {
 			log.Printf("Error on get of pi network security group (%s) user_tags: %s", *nsg.ID, err)
 		}
 		networkSecurityGroup[Attr_UserTags] = userTags
 	}
+	networkSecurityGroup[Attr_Default] = nsg.Default
 
 	networkSecurityGroup[Attr_ID] = nsg.ID
 	if len(nsg.Members) > 0 {

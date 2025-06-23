@@ -72,7 +72,7 @@ func ResourceIBMPISharedProcessorPool() *schema.Resource {
 				Type:          schema.TypeString,
 			},
 			Arg_SharedProcessorPoolPlacementGroups: {
-				ConflictsWith: []string{Arg_SharedProcessorPoolPlacementGroupID, Attr_SharedProcessorPoolPlacementGroups},
+				ConflictsWith: []string{Arg_SharedProcessorPoolPlacementGroupID, Attr_SPPPlacementGroups},
 				Description:   "The list of shared processor pool placement groups that the shared processor pool is in.",
 				Elem:          &schema.Schema{Type: schema.TypeString},
 				Optional:      true,
@@ -106,6 +106,11 @@ func ResourceIBMPISharedProcessorPool() *schema.Resource {
 			Attr_CRN: {
 				Computed:    true,
 				Description: "The CRN of this resource.",
+				Type:        schema.TypeString,
+			},
+			Attr_DedicatedHostID: {
+				Computed:    true,
+				Description: "The dedicated host ID where the shared processor pool resides.",
 				Type:        schema.TypeString,
 			},
 			Attr_HostID: {
@@ -167,7 +172,7 @@ func ResourceIBMPISharedProcessorPool() *schema.Resource {
 				Description: "The shared processor pool's unique ID.",
 				Type:        schema.TypeString,
 			},
-			Attr_SharedProcessorPoolPlacementGroups: {
+			Attr_SPPPlacementGroups: {
 				ConflictsWith: []string{Arg_SharedProcessorPoolPlacementGroups},
 				Deprecated:    "This field is deprecated, use pi_shared_processor_pool_placement_groups instead",
 				Description:   "The list of shared processor pool placement groups that the shared processor pool is in.",
@@ -327,12 +332,13 @@ func resourceIBMPISharedProcessorPoolRead(ctx context.Context, d *schema.Resourc
 		for i, pg := range response.SharedProcessorPool.SharedProcessorPoolPlacementGroups {
 			pgIDs[i] = *pg.ID
 		}
-		if _, ok := d.GetOk(Attr_SharedProcessorPoolPlacementGroups); ok {
-			d.Set(Attr_SharedProcessorPoolPlacementGroups, pgIDs)
+		if _, ok := d.GetOk(Attr_SPPPlacementGroups); ok {
+			d.Set(Attr_SPPPlacementGroups, pgIDs)
 		} else {
 			d.Set(Arg_SharedProcessorPoolPlacementGroups, pgIDs)
 		}
 	}
+	d.Set(Attr_DedicatedHostID, response.SharedProcessorPool.DedicatedHostID)
 	d.Set(Attr_HostID, response.SharedProcessorPool.HostID)
 	d.Set(Attr_Status, response.SharedProcessorPool.Status)
 	d.Set(Attr_StatusDetail, response.SharedProcessorPool.StatusDetail)
@@ -407,7 +413,7 @@ func resourceIBMPISharedProcessorPoolUpdate(ctx context.Context, d *schema.Resou
 }
 
 func detectSPPPlacementGroupChange(ctx context.Context, sess *ibmpisession.IBMPISession, cloudInstanceID string, d *schema.ResourceData, sppID string) diag.Diagnostics {
-	if d.HasChanges(Arg_SharedProcessorPoolPlacementGroups, Attr_SharedProcessorPoolPlacementGroups) {
+	if d.HasChanges(Arg_SharedProcessorPoolPlacementGroups, Attr_SPPPlacementGroups) {
 
 		pgClient := instance.NewIBMPISPPPlacementGroupClient(ctx, sess, cloudInstanceID)
 
@@ -415,7 +421,7 @@ func detectSPPPlacementGroupChange(ctx context.Context, sess *ibmpisession.IBMPI
 		if d.HasChange(Arg_SharedProcessorPoolPlacementGroups) {
 			oldRaw, newRaw = d.GetChange(Arg_SharedProcessorPoolPlacementGroups)
 		} else {
-			oldRaw, newRaw = d.GetChange(Attr_SharedProcessorPoolPlacementGroups)
+			oldRaw, newRaw = d.GetChange(Attr_SPPPlacementGroups)
 		}
 		old := oldRaw.([]interface{})
 		new := newRaw.([]interface{})

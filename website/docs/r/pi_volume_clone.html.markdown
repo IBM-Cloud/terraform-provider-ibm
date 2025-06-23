@@ -10,7 +10,7 @@ description: |-
 
 Create a volume clone. For more information, about managing volume clone, see [getting started with IBM Power Systems Virtual Servers](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-getting-started).
 
-## Example usage
+## Example Usage
 
 The following example creates a volume clone.
 
@@ -47,7 +47,7 @@ ibm_pi_volume_clone provides the following [timeouts](https://www.terraform.io/d
 - **create** - (Default 15 minutes) Used for creating volume clone.
 - **delete** - (Default 15 minutes) Used for deleting volume clone.
 
-## Argument reference
+## Argument Reference
 
 Review the argument references that you can specify for your resource.
 
@@ -58,7 +58,7 @@ Review the argument references that you can specify for your resource.
 - `pi_volume_clone_name` - (Required, String) The base name of the newly cloned volume(s).
 - `pi_volume_ids` - (Required, Set of String) List of volumes to be cloned.
 
-## Attribute reference
+## Attribute Reference
 
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 

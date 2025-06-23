@@ -15,6 +15,7 @@ import (
 
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -92,12 +93,12 @@ const (
 
 func ResourceIBMISVPC() *schema.Resource {
 	return &schema.Resource{
-		Create:   resourceIBMISVPCCreate,
-		Read:     resourceIBMISVPCRead,
-		Update:   resourceIBMISVPCUpdate,
-		Delete:   resourceIBMISVPCDelete,
-		Exists:   resourceIBMISVPCExists,
-		Importer: &schema.ResourceImporter{},
+		CreateContext: resourceIBMISVPCCreate,
+		ReadContext:   resourceIBMISVPCRead,
+		UpdateContext: resourceIBMISVPCUpdate,
+		DeleteContext: resourceIBMISVPCDelete,
+		Exists:        resourceIBMISVPCExists,
+		Importer:      &schema.ResourceImporter{},
 
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(10 * time.Minute),
@@ -117,6 +118,15 @@ func ResourceIBMISVPC() *schema.Resource {
 		),
 
 		Schema: map[string]*schema.Schema{
+
+			"default_address_prefixes": {
+				Type: schema.TypeMap,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Computed:    true,
+				Description: "Default address prefixes for each zone.",
+			},
 			isVPCAddressPrefixManagement: {
 				Type:             schema.TypeString,
 				Optional:         true,
@@ -198,10 +208,11 @@ func ResourceIBMISVPC() *schema.Resource {
 										Description: "The VPC dns binding id whose DNS resolver provides the DNS server addresses for this VPC.",
 									},
 									"dns_binding_name": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Computed:    true,
-										Description: "The VPC dns binding name whose DNS resolver provides the DNS server addresses for this VPC.",
+										Type:             schema.TypeString,
+										Optional:         true,
+										DiffSuppressFunc: suppressNullDnsBindingName,
+										Computed:         true,
+										Description:      "The VPC dns binding name whose DNS resolver provides the DNS server addresses for this VPC.",
 									},
 									"vpc_id": &schema.Schema{
 										Type:             schema.TypeString,
@@ -660,7 +671,7 @@ func ResourceIBMISVPCValidator() *validate.ResourceValidator {
 	return &ibmISVPCResourceValidator
 }
 
-func resourceIBMISVPCCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMISVPCCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 	log.Printf("[DEBUG] VPC create")
 	name := d.Get(isVPCName).(string)
@@ -678,17 +689,19 @@ func resourceIBMISVPCCreate(d *schema.ResourceData, meta interface{}) error {
 	if grp, ok := d.GetOk(isVPCResourceGroup); ok {
 		rg = grp.(string)
 	}
-	err := vpcCreate(d, meta, name, apm, rg, isClassic)
+	err := vpcCreate(context, d, meta, name, apm, rg, isClassic)
 	if err != nil {
 		return err
 	}
-	return resourceIBMISVPCRead(d, meta)
+	return resourceIBMISVPCRead(context, d, meta)
 }
 
-func vpcCreate(d *schema.ResourceData, meta interface{}, name, apm, rg string, isClassic bool) error {
+func vpcCreate(context context.Context, d *schema.ResourceData, meta interface{}, name, apm, rg string, isClassic bool) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc", "create", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	options := &vpcv1.CreateVPCOptions{
 		Name: &name,
@@ -696,7 +709,7 @@ func vpcCreate(d *schema.ResourceData, meta interface{}, name, apm, rg string, i
 	if _, ok := d.GetOk(isVPCDns); ok {
 		dnsModel, err := resourceIBMIsVPCMapToVpcdnsPrototype(d.Get("dns.0").(map[string]interface{}))
 		if err != nil {
-			return err
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc", "create", "parse-dns").GetDiag()
 		}
 		options.SetDns(dnsModel)
 	}
@@ -710,9 +723,11 @@ func vpcCreate(d *schema.ResourceData, meta interface{}, name, apm, rg string, i
 	}
 	options.ClassicAccess = &isClassic
 
-	vpc, response, err := sess.CreateVPC(options)
+	vpc, _, err := sess.CreateVPCWithContext(context, options)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while creating VPC %s ", flex.BeautifyError(err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateVPCWithContext failed: %s", err.Error()), "ibm_is_vpc", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	d.SetId(*vpc.ID)
 
@@ -731,50 +746,67 @@ func vpcCreate(d *schema.ResourceData, meta interface{}, name, apm, rg string, i
 	log.Printf("[INFO] VPC : %s", *vpc.ID)
 	_, err = isWaitForVPCAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
 	if err != nil {
-		return err
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForVPCAvailable failed: %s", err.Error()), "ibm_is_vpc", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	if dnsresolvertpeOk, ok := d.GetOk("dns.0.resolver.0.type"); ok {
-		if dnsresolvertpeOk.(string) == "delegated" && d.Get("dns.0.resolver.0.vpc_id").(string) != "" {
+		if dnsresolvertpeOk.(string) == "delegated" && ((d.Get("dns.0.resolver.0.vpc_id").(string) != "") || (d.Get("dns.0.resolver.0.vpc_crn").(string) != "")) {
 			vpcId := d.Get("dns.0.resolver.0.vpc_id").(string)
+			vpcCrn := d.Get("dns.0.resolver.0.vpc_crn").(string)
 			createDnsBindings := &vpcv1.CreateVPCDnsResolutionBindingOptions{
 				VPCID: vpc.ID,
-				VPC: &vpcv1.VPCIdentity{
-					ID: &vpcId,
-				},
 			}
+			vpcidentity := vpcv1.VPCIdentity{}
+			if vpcId != "" {
+				vpcidentity.ID = &vpcId
+			}
+			if vpcCrn != "" {
+				vpcidentity.CRN = &vpcCrn
+			}
+			createDnsBindings.VPC = &vpcidentity
 			if bindingNameOk, ok := d.GetOk("dns.0.resolver.0.dns_binding_name"); ok {
 				bindingName := bindingNameOk.(string)
 				createDnsBindings.Name = &bindingName
 			}
-			_, response, err := sess.CreateVPCDnsResolutionBinding(createDnsBindings)
+			_, _, err := sess.CreateVPCDnsResolutionBindingWithContext(context, createDnsBindings)
 			if err != nil {
-				log.Printf("[DEBUG] CreateVPCDnsResolutionBindingWithContext failed %s\n%s", err, response)
-				return fmt.Errorf("[ERROR] CreateVPCDnsResolutionBinding failed in vpc resource %s\n%s", err, response)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateVPCDnsResolutionBindingWithContext failed: %s", err.Error()), "ibm_is_vpc", "create")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			resolverType := "delegated"
-			dnsPatch := &vpcv1.VpcdnsPatch{
-				Resolver: &vpcv1.VpcdnsResolverPatch{
-					Type: &resolverType,
-					VPC: &vpcv1.VpcdnsResolverVPCPatch{
-						ID: &vpcId,
-					},
-				},
+			dnsPatch := &vpcv1.VpcdnsPatch{}
+			resolver := &vpcv1.VpcdnsResolverPatch{
+				Type: &resolverType,
 			}
+			vpcPatch := &vpcv1.VpcdnsResolverVPCPatch{}
+			if vpcId != "" {
+				vpcPatch.ID = &vpcId
+			}
+			if vpcCrn != "" {
+				vpcPatch.CRN = &vpcCrn
+			}
+			resolver.VPC = vpcPatch
+			dnsPatch.Resolver = resolver
 			vpcPatchModel := &vpcv1.VPCPatch{}
 			vpcPatchModel.Dns = dnsPatch
 			vpcPatchModelAsPatch, err := vpcPatchModel.AsPatch()
 			if err != nil {
-				return fmt.Errorf("[ERROR] CreateVPCDnsResolutionBinding failed in vpcpatch as patch %s", err)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("vpcPatchModel.AsPatch() failed: %s", err.Error()), "ibm_is_vpc", "create")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			updateVpcOptions := &vpcv1.UpdateVPCOptions{
 				ID: vpc.ID,
 			}
 			updateVpcOptions.VPCPatch = vpcPatchModelAsPatch
-			_, response, err = sess.UpdateVPC(updateVpcOptions)
+			_, _, err = sess.UpdateVPCWithContext(context, updateVpcOptions)
 			if err != nil {
-				log.Printf("[DEBUG] Update vpc with delegated failed %s\n%s", err, response)
-				return fmt.Errorf("[ERROR] Update vpc with delegated failed in vpc resource %s\n%s", err, response)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateVPCWithContext failed: %s", err.Error()), "ibm_is_vpc", "create")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 		}
 	}
@@ -911,56 +943,132 @@ func isVPCRefreshFunc(vpc *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
 	}
 }
 
-func resourceIBMISVPCRead(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMISVPCRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	id := d.Id()
-	err := vpcGet(d, meta, id)
+	err := vpcGet(context, d, meta, id)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func vpcGet(d *schema.ResourceData, meta interface{}, id string) error {
+func vpcGet(context context.Context, d *schema.ResourceData, meta interface{}, id string) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	getvpcOptions := &vpcv1.GetVPCOptions{
 		ID: &id,
 	}
-	vpc, response, err := sess.GetVPC(getvpcOptions)
+	vpc, response, err := sess.GetVPCWithContext(context, getvpcOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error getting VPC : %s\n%s", err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetVPCWithContext failed: %s", err.Error()), "ibm_is_vpc", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
-	d.Set(isVPCName, *vpc.Name)
-	d.Set(isVPCClassicAccess, *vpc.ClassicAccess)
-	d.Set(isVPCStatus, *vpc.Status)
+	// address prefixes
+
+	vpcID := id // Assuming the VPC ID is stored in the resource ID
+
+	// Fetch all address prefixes for the VPC
+	startAdd := ""
+	allRecs := []vpcv1.AddressPrefix{}
+	for {
+		listVpcAddressPrefixesOptions := &vpcv1.ListVPCAddressPrefixesOptions{
+			VPCID: &vpcID,
+		}
+
+		if startAdd != "" {
+			listVpcAddressPrefixesOptions.Start = &startAdd
+		}
+
+		addressPrefixCollection, _, err := sess.ListVPCAddressPrefixesWithContext(context, listVpcAddressPrefixesOptions)
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListVPCAddressPrefixesWithContext failed: %s", err.Error()), "ibm_is_vpc", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
+
+		allRecs = append(allRecs, addressPrefixCollection.AddressPrefixes...)
+		startAdd = flex.GetNext(addressPrefixCollection.Next)
+		if startAdd == "" {
+			break
+		}
+	}
+
+	// Process address prefixes
+	defaultAddressPrefixes := map[string]string{}
+
+	for _, prefix := range allRecs {
+		zoneName := *prefix.Zone.Name
+		cidr := *prefix.CIDR
+		// Populate default_address_prefixes
+		if *prefix.IsDefault {
+			defaultAddressPrefixes[zoneName] = cidr
+		}
+	}
+
+	// Set the default_address_prefixes attribute in the Terraform state
+	if err := d.Set("default_address_prefixes", defaultAddressPrefixes); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting default_address_prefixes: %s", err), "ibm_is_vpc", "read", "set-default_address_prefixes").GetDiag()
+	}
+	if err = d.Set(isVPCName, *vpc.Name); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "ibm_is_vpc", "read", "set-name").GetDiag()
+	}
+
+	if err = d.Set(isVPCClassicAccess, *vpc.ClassicAccess); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting classic_access: %s", err), "ibm_is_vpc", "read", "set-classic_access").GetDiag()
+	}
+
+	if err = d.Set(isVPCStatus, *vpc.Status); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting status: %s", err), "ibm_is_vpc", "read", "set-status").GetDiag()
+	}
 	if vpc.DefaultNetworkACL != nil {
 		log.Printf("[DEBUG] vpc default network acl is not null :%s", *vpc.DefaultNetworkACL.ID)
-		d.Set(isVPCDefaultNetworkACL, *vpc.DefaultNetworkACL.ID)
-		d.Set(isVPCDefaultNetworkACLName, *vpc.DefaultNetworkACL.Name)
-		d.Set(isVPCDefaultNetworkACLCRN, vpc.DefaultNetworkACL.CRN)
+		if err = d.Set(isVPCDefaultNetworkACL, *vpc.DefaultNetworkACL.ID); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting default_network_acl: %s", err), "ibm_is_vpc", "read", "set-default_network_acl").GetDiag()
+		}
+		if err = d.Set(isVPCDefaultNetworkACLName, *vpc.DefaultNetworkACL.Name); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting default_network_acl_name: %s", err), "ibm_is_vpc", "read", "set-default_network_acl_name").GetDiag()
+		}
+		if err = d.Set(isVPCDefaultNetworkACLCRN, vpc.DefaultNetworkACL.CRN); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting default_network_acl_crn: %s", err), "ibm_is_vpc", "read", "set-default_network_acl_crn").GetDiag()
+		}
 	} else {
 		log.Printf("[DEBUG] vpc default network acl is  null")
 		d.Set(isVPCDefaultNetworkACL, nil)
 	}
 	if vpc.DefaultSecurityGroup != nil {
-		d.Set(isVPCDefaultSecurityGroup, *vpc.DefaultSecurityGroup.ID)
-		d.Set(isVPCDefaultSecurityGroupName, *vpc.DefaultSecurityGroup.Name)
-		d.Set(isVPCDefaultSecurityGroupCRN, vpc.DefaultSecurityGroup.CRN)
+		if err = d.Set(isVPCDefaultSecurityGroup, *vpc.DefaultSecurityGroup.ID); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting default_security_group: %s", err), "ibm_is_vpc", "read", "set-default_security_group").GetDiag()
+		}
+		if err = d.Set(isVPCDefaultSecurityGroupName, *vpc.DefaultSecurityGroup.Name); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting default_security_group_name: %s", err), "ibm_is_vpc", "read", "set-default_security_group_name").GetDiag()
+		}
+		if err = d.Set(isVPCDefaultSecurityGroupCRN, vpc.DefaultSecurityGroup.CRN); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting default_security_group_crn: %s", err), "ibm_is_vpc", "read", "set-default_security_group_crn").GetDiag()
+		}
 	} else {
 		d.Set(isVPCDefaultSecurityGroup, nil)
 	}
 	if vpc.DefaultRoutingTable != nil {
-		d.Set(isVPCDefaultRoutingTable, *vpc.DefaultRoutingTable.ID)
-		d.Set(isVPCDefaultRoutingTableName, *vpc.DefaultRoutingTable.Name)
+		if err = d.Set(isVPCDefaultRoutingTable, *vpc.DefaultRoutingTable.ID); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting default_routing_table: %s", err), "ibm_is_vpc", "read", "set-default_routing_table").GetDiag()
+		}
+		if err = d.Set(isVPCDefaultRoutingTableName, *vpc.DefaultRoutingTable.Name); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting default_routing_table_name: %s", err), "ibm_is_vpc", "read", "set-default_routing_table_name").GetDiag()
+		}
 		if vpc.DefaultRoutingTable.CRN != nil {
-			d.Set(isVPCDefaultRoutingTableCRN, *vpc.DefaultRoutingTable.CRN)
+			if err = d.Set(isVPCDefaultRoutingTableCRN, *vpc.DefaultRoutingTable.CRN); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting default_routing_table_crn: %s", err), "ibm_is_vpc", "read", "set-default_routing_table_crn").GetDiag()
+			}
 		}
 	}
 	healthReasons := []map[string]interface{}{}
@@ -968,17 +1076,17 @@ func vpcGet(d *schema.ResourceData, meta interface{}, id string) error {
 		for _, modelItem := range vpc.HealthReasons {
 			modelMap, err := dataSourceIBMIsVPCVPCHealthReasonToMap(&modelItem)
 			if err != nil {
-				return err
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc", "read", "health_reasons-to-map").GetDiag()
 			}
 			healthReasons = append(healthReasons, modelMap)
 		}
 	}
 	if err = d.Set("health_reasons", healthReasons); err != nil {
-		return fmt.Errorf("[ERROR] Error setting health_reasons %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting health_reasons: %s", err), "ibm_is_vpc", "read", "set-health_reasons").GetDiag()
 	}
 
 	if err = d.Set("health_state", vpc.HealthState); err != nil {
-		return fmt.Errorf("[ERROR] Error setting health_state: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting health_state: %s", err), "ibm_is_vpc", "read", "set-health_state").GetDiag()
 	}
 	if !core.IsNil(vpc.Dns) {
 		vpcCrn := d.Get("dns.0.resolver.0.vpc_crn").(string)
@@ -986,13 +1094,14 @@ func vpcGet(d *schema.ResourceData, meta interface{}, id string) error {
 
 		dnsMap, err := resourceIBMIsVPCVpcdnsToMap(vpc.Dns, vpcId, vpcCrn)
 		if err != nil {
-			return err
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc", "read", "dns-to-map").GetDiag()
 		}
 		resolverMapArray := dnsMap["resolver"].([]map[string]interface{})
 		resolverMap := resolverMapArray[0]
-		if resolverMap["type"] != nil && resolverMap["vpc_id"] != nil {
+		if resolverMap["type"] != nil && ((resolverMap["vpc_id"] != nil) || (resolverMap["vpc_crn"] != nil)) {
 			resType := resolverMap["type"].(*string)
 			resVpc := resolverMap["vpc_id"].(string)
+			resVpcCrn := resolverMap["vpc_crn"].(string)
 			if *resType == "delegated" {
 				listVPCDnsResolutionBindingOptions := &vpcv1.ListVPCDnsResolutionBindingsOptions{
 					VPCID: vpc.ID,
@@ -1000,18 +1109,22 @@ func vpcGet(d *schema.ResourceData, meta interface{}, id string) error {
 
 				pager, err := sess.NewVPCDnsResolutionBindingsPager(listVPCDnsResolutionBindingOptions)
 				if err != nil {
-					return fmt.Errorf("[ERROR] Error getting VPC dns bindings: %s", err)
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("NewVPCDnsResolutionBindingsPager failed: %s", err.Error()), "ibm_is_vpc", "read")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
 				var allResults []vpcv1.VpcdnsResolutionBinding
 				for pager.HasNext() {
 					nextPage, err := pager.GetNext()
 					if err != nil {
-						return fmt.Errorf("[ERROR] Error getting VPC dns bindings pager next: %s", err)
+						tfErr := flex.TerraformErrorf(err, fmt.Sprintf("pager.GetNext() failed: %s", err.Error()), "ibm_is_vpc", "read")
+						log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+						return tfErr.GetDiag()
 					}
 					allResults = append(allResults, nextPage...)
 				}
 				for _, binding := range allResults {
-					if *binding.VPC.ID == resVpc {
+					if (*binding.VPC.ID == resVpc) || (*binding.VPC.CRN == resVpcCrn) {
 						resolverMap["dns_binding_id"] = binding.ID
 						resolverMap["dns_binding_name"] = binding.Name
 						resolverMapArray[0] = resolverMap
@@ -1021,7 +1134,7 @@ func vpcGet(d *schema.ResourceData, meta interface{}, id string) error {
 			}
 		}
 		if err = d.Set(isVPCDns, []map[string]interface{}{dnsMap}); err != nil {
-			return fmt.Errorf("[ERROR] Error setting dns: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting dns: %s", err), "ibm_is_vpc", "read", "set-dns").GetDiag()
 		}
 	}
 	tags, err := flex.GetGlobalTagsUsingCRN(meta, *vpc.CRN, "", isVPCUserTagType)
@@ -1029,26 +1142,46 @@ func vpcGet(d *schema.ResourceData, meta interface{}, id string) error {
 		log.Printf(
 			"Error on get of resource vpc (%s) tags: %s", d.Id(), err)
 	}
-	d.Set(isVPCTags, tags)
+
+	if err = d.Set(isVPCTags, tags); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting tags: %s", err), "ibm_is_vpc", "read", "set-tags").GetDiag()
+	}
 	accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *vpc.CRN, "", isVPCAccessTagType)
 	if err != nil {
 		log.Printf(
 			"Error on get of resource vpc (%s) access tags: %s", d.Id(), err)
 	}
-	d.Set(isVPCAccessTags, accesstags)
+	if err = d.Set(isVPCAccessTags, accesstags); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting access_tags: %s", err), "ibm_is_vpc", "read", "set-access_tags").GetDiag()
+	}
 	controller, err := flex.GetBaseController(meta)
 	if err != nil {
-		return err
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetBaseController failed: %s", err.Error()), "ibm_is_vpc", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
-
-	d.Set(isVPCCRN, *vpc.CRN)
-	d.Set(flex.ResourceControllerURL, controller+"/vpc-ext/network/vpcs")
-	d.Set(flex.ResourceName, *vpc.Name)
-	d.Set(flex.ResourceCRN, *vpc.CRN)
-	d.Set(flex.ResourceStatus, *vpc.Status)
+	if err = d.Set(isVPCCRN, *vpc.CRN); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting crn: %s", err), "ibm_is_vpc", "read", "set-crn").GetDiag()
+	}
+	if err = d.Set(flex.ResourceControllerURL, controller+"/vpc-ext/network/vpcs"); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_controller_url: %s", err), "ibm_is_vpc", "read", "set-resource_controller_url").GetDiag()
+	}
+	if err = d.Set(flex.ResourceName, *vpc.Name); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_name: %s", err), "ibm_is_vpc", "read", "set-resource_name").GetDiag()
+	}
+	if err = d.Set(flex.ResourceCRN, *vpc.CRN); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_crn: %s", err), "ibm_is_vpc", "read", "set-resource_crn").GetDiag()
+	}
+	if err = d.Set(flex.ResourceStatus, *vpc.Status); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_status: %s", err), "ibm_is_vpc", "read", "set-resource_status").GetDiag()
+	}
 	if vpc.ResourceGroup != nil {
-		d.Set(isVPCResourceGroup, *vpc.ResourceGroup.ID)
-		d.Set(flex.ResourceGroupName, *vpc.ResourceGroup.Name)
+		if err = d.Set(isVPCResourceGroup, *vpc.ResourceGroup.ID); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_group: %s", err), "ibm_is_vpc", "read", "set-resource_group").GetDiag()
+		}
+		if err = d.Set(flex.ResourceGroupName, *vpc.ResourceGroup.Name); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_group_name: %s", err), "ibm_is_vpc", "read", "set-resource_group_name").GetDiag()
+		}
 	}
 	//set the cse ip addresses info
 	if vpc.CseSourceIps != nil {
@@ -1061,7 +1194,10 @@ func vpcGet(d *schema.ResourceData, meta interface{}, id string) error {
 				cseSourceIpsList = append(cseSourceIpsList, currentCseSourceIp)
 			}
 		}
-		d.Set(cseSourceAddresses, cseSourceIpsList)
+
+		if err = d.Set(cseSourceAddresses, cseSourceIpsList); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting cse_source_addresses: %s", err), "ibm_is_vpc", "read", "set-cse_source_addresses").GetDiag()
+		}
 	}
 	// set the subnets list
 	start := ""
@@ -1071,9 +1207,11 @@ func vpcGet(d *schema.ResourceData, meta interface{}, id string) error {
 		if start != "" {
 			options.Start = &start
 		}
-		s, response, err := sess.ListSubnets(options)
+		s, _, err := sess.ListSubnetsWithContext(context, options)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Fetching subnets %s\n%s", err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListSubnetsWithContext failed: %s", err.Error()), "ibm_is_vpc", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		start = flex.GetNext(s.Next)
 		allrecs = append(allrecs, s.Subnets...)
@@ -1095,16 +1233,21 @@ func vpcGet(d *schema.ResourceData, meta interface{}, id string) error {
 			subnetsInfo = append(subnetsInfo, l)
 		}
 	}
-	d.Set(subnetsList, subnetsInfo)
+
+	if err = d.Set(subnetsList, subnetsInfo); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting subnets: %s", err), "ibm_is_vpc", "read", "set-subnets").GetDiag()
+	}
 
 	//Set Security group list
 	vpcid := d.Id()
 	listSgOptions := &vpcv1.ListSecurityGroupsOptions{
 		VPCID: &vpcid,
 	}
-	sgs, _, err := sess.ListSecurityGroups(listSgOptions)
+	sgs, _, err := sess.ListSecurityGroupsWithContext(context, listSgOptions)
 	if err != nil {
-		return err
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListSecurityGroupsWithContext failed: %s", err.Error()), "ibm_is_vpc", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	securityGroupList := make([]map[string]interface{}, 0)
@@ -1215,11 +1358,13 @@ func vpcGet(d *schema.ResourceData, meta interface{}, id string) error {
 		}
 	}
 
-	d.Set(isVPCSecurityGroupList, securityGroupList)
+	if err = d.Set(isVPCSecurityGroupList, securityGroupList); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting security_group: %s", err), "ibm_is_vpc", "read", "set-security_group").GetDiag()
+	}
 	return nil
 }
 
-func resourceIBMISVPCUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMISVPCUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	id := d.Id()
 
 	name := ""
@@ -1229,26 +1374,30 @@ func resourceIBMISVPCUpdate(d *schema.ResourceData, meta interface{}) error {
 		name = d.Get(isVPCName).(string)
 		hasChanged = true
 	}
-	err := vpcUpdate(d, meta, id, name, hasChanged)
+	err := vpcUpdate(context, d, meta, id, name, hasChanged)
 	if err != nil {
 		return err
 	}
-	return resourceIBMISVPCRead(d, meta)
+	return resourceIBMISVPCRead(context, d, meta)
 }
 
-func vpcUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChanged bool) error {
+func vpcUpdate(context context.Context, d *schema.ResourceData, meta interface{}, id, name string, hasChanged bool) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc", "update", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	if d.HasChange(isVPCTags) {
 		getvpcOptions := &vpcv1.GetVPCOptions{
 			ID: &id,
 		}
-		vpc, response, err := sess.GetVPC(getvpcOptions)
+		vpc, _, err := sess.GetVPCWithContext(context, getvpcOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error getting VPC : %s\n%s", err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetVPCWithContext failed: %s", err.Error()), "ibm_is_vpc", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		oldList, newList := d.GetChange(isVPCTags)
 		err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *vpc.CRN, "", isVPCUserTagType)
@@ -1261,9 +1410,11 @@ func vpcUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasCha
 		getvpcOptions := &vpcv1.GetVPCOptions{
 			ID: &id,
 		}
-		vpc, response, err := sess.GetVPC(getvpcOptions)
+		vpc, _, err := sess.GetVPCWithContext(context, getvpcOptions)
 		if err != nil {
-			return fmt.Errorf("Error getting VPC : %s\n%s", err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetVPCWithContext failed: %s", err.Error()), "ibm_is_vpc", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		oldList, newList := d.GetChange(isVPCAccessTags)
 		err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *vpc.CRN, "", isVPCAccessTagType)
@@ -1295,16 +1446,37 @@ func vpcUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasCha
 	isDnsResolverVPCCrnNull := false
 	isDnsResolverManualServerChange := false
 	isDnsResolverManualServerEtag := ""
+	deleteBinding := false
+	deleteDnsBindings := &vpcv1.DeleteVPCDnsResolutionBindingOptions{}
 	var dnsPatch *vpcv1.VpcdnsPatch
 	if d.HasChange(isVPCDns) {
 		dnsPatch = &vpcv1.VpcdnsPatch{}
 		if d.HasChange("dns.0.enable_hub") {
 			_, newEH := d.GetChange("dns.0.enable_hub")
 			dnsPatch.EnableHub = core.BoolPtr(newEH.(bool))
+			hasDnsChanged = true
 		}
 		if d.HasChange("dns.0.resolver") {
 			_, newResolver := d.GetChange("dns.0.resolver")
-
+			if d.HasChange("dns.0.resolver.0.dns_binding_name") && (d.Get("dns.0.resolver.0.dns_binding_name").(string) != "null" || d.Get("dns.0.resolver.0.dns_binding_name").(string) != "") {
+				dnsBindingName := d.Get("dns.0.resolver.0.dns_binding_name").(string)
+				dnsBindingId := d.Get("dns.0.resolver.0.dns_binding_id").(string)
+				vpcdnsResolutionBindingPatch := &vpcv1.VpcdnsResolutionBindingPatch{
+					Name: &dnsBindingName,
+				}
+				vpcdnsResolutionBindingPatchAsPatch, _ := vpcdnsResolutionBindingPatch.AsPatch()
+				updateVPCDnsResolutionBinding := &vpcv1.UpdateVPCDnsResolutionBindingOptions{
+					ID:                           &dnsBindingId,
+					VPCID:                        core.StringPtr(d.Id()),
+					VpcdnsResolutionBindingPatch: vpcdnsResolutionBindingPatchAsPatch,
+				}
+				_, _, err := sess.UpdateVPCDnsResolutionBindingWithContext(context, updateVPCDnsResolutionBinding)
+				if err != nil {
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateVPCDnsResolutionBindingWithContext failed: %s", err.Error()), "ibm_is_vpc", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
+				}
+			}
 			if newResolver != nil && len(newResolver.([]interface{})) > 0 {
 				ResolverModel := &vpcv1.VpcdnsResolverPatch{}
 				if d.HasChange("dns.0.resolver.0.manual_servers") {
@@ -1313,9 +1485,11 @@ func vpcUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasCha
 					getVpcOptions := &vpcv1.GetVPCOptions{
 						ID: &id,
 					}
-					_, response, err := sess.GetVPC(getVpcOptions)
+					_, response, err := sess.GetVPCWithContext(context, getVpcOptions)
 					if err != nil {
-						return fmt.Errorf("[ERROR] Error Getting VPC (%s): %s\n%s", id, err, response)
+						tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetVPCWithContext failed: %s", err.Error()), "ibm_is_vpc", "update")
+						log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+						return tfErr.GetDiag()
 					}
 					isDnsResolverManualServerChange = true
 					isDnsResolverManualServerEtag = response.Headers.Get("ETag") // Getting Etag from the response headers.
@@ -1327,7 +1501,9 @@ func vpcUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasCha
 						for _, manualServersItem := range newResolverManualServers.(*schema.Set).List() {
 							manualServersItemModel, err := resourceIBMIsVPCMapToDnsServerPrototype(manualServersItem.(map[string]interface{}))
 							if err != nil {
-								return err
+								tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceIBMIsVPCMapToDnsServerPrototype failed: %s", err.Error()), "ibm_is_vpc", "update")
+								log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+								return tfErr.GetDiag()
 							}
 							manualServers = append(manualServers, *manualServersItemModel)
 						}
@@ -1336,10 +1512,81 @@ func vpcUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasCha
 
 				}
 				if d.HasChange("dns.0.resolver.0.type") {
-					_, newResolverType := d.GetChange("dns.0.resolver.0.type")
+					oldResolverType, newResolverType := d.GetChange("dns.0.resolver.0.type")
 					if newResolverType != nil && newResolverType.(string) != "" {
 						ResolverModel.Type = core.StringPtr(newResolverType.(string))
 					}
+					if oldResolverType != nil && newResolverType != nil && oldResolverType.(string) != "" && newResolverType.(string) != "" {
+						if oldResolverType.(string) == "system" && newResolverType.(string) == "delegated" {
+							vpcId := d.Get("dns.0.resolver.0.vpc_id").(string)
+							vpcCrn := d.Get("dns.0.resolver.0.vpc_crn").(string)
+							createDnsBindings := &vpcv1.CreateVPCDnsResolutionBindingOptions{
+								VPCID: core.StringPtr(d.Id()),
+							}
+							vpcidentity := &vpcv1.VPCIdentity{}
+							if vpcId != "" {
+								vpcidentity.ID = &vpcId
+							}
+							if vpcCrn != "" {
+								vpcidentity.CRN = &vpcCrn
+							}
+							createDnsBindings.VPC = vpcidentity
+
+							if bindingNameOk, ok := d.GetOk("dns.0.resolver.0.dns_binding_name"); ok {
+								bindingName := bindingNameOk.(string)
+								createDnsBindings.Name = &bindingName
+							}
+							_, response, err := sess.CreateVPCDnsResolutionBindingWithContext(context, createDnsBindings)
+							if err != nil {
+								exitError := false
+								log.Printf("[DEBUG] CreateVPCDnsResolutionBindingWithContext failed %s\n%s", err, response)
+								if response.StatusCode == 400 && strings.Contains(err.Error(), "This VPC already contains DNS Resolution Bindings") {
+									listVPCDnsResolutionBindingOptions := &vpcv1.ListVPCDnsResolutionBindingsOptions{
+										VPCID: createDnsBindings.VPCID,
+									}
+
+									pager, err := sess.NewVPCDnsResolutionBindingsPager(listVPCDnsResolutionBindingOptions)
+									if err != nil {
+										tfErr := flex.TerraformErrorf(err, fmt.Sprintf("NewVPCDnsResolutionBindingsPager(CreateVPCDnsResolutionBindingWithContext) failed: %s", err.Error()), "ibm_is_vpc", "update")
+										log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+										return tfErr.GetDiag()
+									}
+									var allResults []vpcv1.VpcdnsResolutionBinding
+									for pager.HasNext() {
+										nextPage, err := pager.GetNext()
+										if err != nil {
+											tfErr := flex.TerraformErrorf(err, fmt.Sprintf("pager.HasNext()(CreateVPCDnsResolutionBindingWithContext) failed: %s", err.Error()), "ibm_is_vpc", "update")
+											log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+											return tfErr.GetDiag()
+										}
+										allResults = append(allResults, nextPage...)
+									}
+									for _, binding := range allResults {
+										if *binding.VPC.ID == vpcId {
+											log.Printf("[DEBUG] CreateVPCDnsResolutionBindingWithContext failed but binding to same vpc exists %s\n%s", err, response)
+											exitError = true
+										}
+									}
+								}
+								if !exitError {
+									tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateVPCDnsResolutionBindingWithContext failed: %s", err.Error()), "ibm_is_vpc", "update")
+									log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+									return tfErr.GetDiag()
+								}
+							}
+						}
+						if _, ok := d.GetOk("dns.0.resolver.0.dns_binding_name"); ok {
+						}
+						if d.HasChange("dns.0.resolver.0.dns_binding_name") && d.Get("dns.0.resolver.0.dns_binding_name").(string) == "null" {
+							dnsid := d.Get("dns.0.resolver.0.dns_binding_id").(string)
+							deleteBinding = true
+							deleteDnsBindings = &vpcv1.DeleteVPCDnsResolutionBindingOptions{
+								VPCID: core.StringPtr(d.Id()),
+								ID:    &dnsid,
+							}
+						}
+					}
+					hasDnsChanged = true
 				}
 				if d.HasChange("dns.0.resolver.0.vpc_id") {
 					_, newResolverVpc := d.GetChange("dns.0.resolver.0.vpc_id")
@@ -1357,6 +1604,7 @@ func vpcUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasCha
 							}
 						}
 					}
+					hasDnsChanged = true
 				}
 				if d.HasChange("dns.0.resolver.0.vpc_crn") {
 					_, newResolverVpc := d.GetChange("dns.0.resolver.0.vpc_crn")
@@ -1374,11 +1622,11 @@ func vpcUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasCha
 							}
 						}
 					}
+					hasDnsChanged = true
 				}
 				dnsPatch.Resolver = ResolverModel
 			}
 		}
-		hasDnsChanged = true
 	}
 	if hasChanged || hasDnsChanged {
 		updateVpcOptions := &vpcv1.UpdateVPCOptions{
@@ -1396,7 +1644,9 @@ func vpcUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasCha
 		}
 		vpcPatch, err := vpcPatchModel.AsPatch()
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for VPCPatch: %s", err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("vpcPatchModel.AsPatch() failed: %s", err.Error()), "ibm_is_vpc", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		if isDnsResolverVPCCrnNull || isDnsResolverVPCIDNull {
 			dnsMap := vpcPatch["dns"].(map[string]interface{})
@@ -1407,18 +1657,30 @@ func vpcUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasCha
 		}
 
 		updateVpcOptions.VPCPatch = vpcPatch
-		_, response, err := sess.UpdateVPC(updateVpcOptions)
+		_, response, err := sess.UpdateVPCWithContext(context, updateVpcOptions)
 		if err != nil {
 			responsestring := strings.ToLower(response.String())
 			if strings.Contains(strings.ToLower(err.Error()), strings.ToLower("The supplied header is not supported for this request")) && strings.Contains(responsestring, "bad_header") && strings.Contains(responsestring, strings.ToLower("If-Match")) {
 				log.Printf("[DEBUG] retrying update vpc without If-Match")
 				updateVpcOptions.IfMatch = nil
-				_, nestedresponse, nestederr := sess.UpdateVPC(updateVpcOptions)
+				_, _, nestederr := sess.UpdateVPCWithContext(context, updateVpcOptions)
 				if nestederr != nil {
-					return fmt.Errorf("[ERROR] Error Updating VPC on retry : %s\n%s", nestederr, nestedresponse)
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateVPCWithContext(retry) failed: %s", err.Error()), "ibm_is_vpc", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
 			} else {
-				return fmt.Errorf("[ERROR] Error Updating VPC : %s\n%s", err, response)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateVPCWithContext failed: %s", err.Error()), "ibm_is_vpc", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
+			}
+		}
+		if deleteBinding && *deleteDnsBindings.VPCID != "" {
+			_, _, err := sess.DeleteVPCDnsResolutionBindingWithContext(context, deleteDnsBindings)
+			if err != nil {
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteVPCDnsResolutionBindingWithContext failed: %s", err.Error()), "ibm_is_vpc", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 		}
 		if isDnsResolverVPCCrnNull || isDnsResolverVPCIDNull {
@@ -1438,9 +1700,9 @@ func vpcUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasCha
 	return nil
 }
 
-func resourceIBMISVPCDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMISVPCDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	id := d.Id()
-	err := vpcDelete(d, meta, id)
+	err := vpcDelete(context, d, meta, id)
 	if err != nil {
 		return err
 	}
@@ -1448,34 +1710,42 @@ func resourceIBMISVPCDelete(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func vpcDelete(d *schema.ResourceData, meta interface{}, id string) error {
+func vpcDelete(context context.Context, d *schema.ResourceData, meta interface{}, id string) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc", "delete", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	getVpcOptions := &vpcv1.GetVPCOptions{
 		ID: &id,
 	}
-	_, response, err := sess.GetVPC(getVpcOptions)
+	_, response, err := sess.GetVPCWithContext(context, getVpcOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error Getting VPC (%s): %s\n%s", id, err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetVPCWithContext failed: %s", err.Error()), "ibm_is_vpc", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	deletevpcOptions := &vpcv1.DeleteVPCOptions{
 		ID: &id,
 	}
-	response, err = sess.DeleteVPC(deletevpcOptions)
+	response, err = sess.DeleteVPCWithContext(context, deletevpcOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error Deleting VPC : %s\n%s", err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteVPCWithContext failed: %s", err.Error()), "ibm_is_vpc", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	_, err = isWaitForVPCDeleted(sess, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
-		return err
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForVPCDeleted failed: %s", err.Error()), "ibm_is_vpc", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	d.SetId("")
 	return nil
@@ -1523,7 +1793,9 @@ func resourceIBMISVPCExists(d *schema.ResourceData, meta interface{}) (bool, err
 func vpcExists(d *schema.ResourceData, meta interface{}, id string) (bool, error) {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return false, err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc", "exists", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return false, tfErr
 	}
 	getvpcOptions := &vpcv1.GetVPCOptions{
 		ID: &id,
@@ -1533,7 +1805,9 @@ func vpcExists(d *schema.ResourceData, meta interface{}, id string) (bool, error
 		if response != nil && response.StatusCode == 404 {
 			return false, nil
 		}
-		return false, fmt.Errorf("[ERROR] Error getting VPC: %s\n%s", err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetVPC failed: %s", err.Error()), "ibm_is_vpc", "exists")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return false, tfErr
 	}
 	return true, nil
 }
@@ -1610,6 +1884,13 @@ func suppressNullAddPrefix(k, old, new string, d *schema.ResourceData) bool {
 }
 
 func suppressNullVPC(k, old, new string, d *schema.ResourceData) bool {
+	if new != old && new == "null" && old == "" && d.Id() != "" {
+		return true
+	}
+	return false
+}
+
+func suppressNullDnsBindingName(k, old, new string, d *schema.ResourceData) bool {
 	if new != old && new == "null" && old == "" && d.Id() != "" {
 		return true
 	}

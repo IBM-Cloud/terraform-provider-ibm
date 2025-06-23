@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/IBM/go-sdk-core/v3/core"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/networking-go-sdk/directlinkv1"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
@@ -823,36 +823,36 @@ func resourceIBMdlGatewayCreate(d *schema.ResourceData, meta interface{}) error 
 			bgpBaseCidr := d.Get(dlBgpBaseCidr).(string)
 			gatewayDedicatedTemplateModel.BgpBaseCidr = &bgpBaseCidr
 		}
-		if _, ok := d.GetOk(dlMacSecConfig); ok {
-			// Construct an instance of the GatewayMacsecConfigTemplate model
-			gatewayMacsecConfigTemplateModel := new(directlinkv1.GatewayMacsecConfigTemplate)
-			activebool := d.Get("macsec_config.0.active").(bool)
-			gatewayMacsecConfigTemplateModel.Active = &activebool
+		// if _, ok := d.GetOk(dlMacSecConfig); ok {
+		// 	// Construct an instance of the GatewayMacsecConfigTemplate model
+		// 	gatewayMacsecConfigTemplateModel := new(directlinkv1.GatewayMacsecConfigTemplate)
+		// 	activebool := d.Get("macsec_config.0.active").(bool)
+		// 	gatewayMacsecConfigTemplateModel.Active = &activebool
 
-			// Construct an instance of the GatewayMacsecCak model
-			gatewayMacsecCakModel := new(directlinkv1.GatewayMacsecConfigTemplatePrimaryCak)
-			primaryCakstr := d.Get("macsec_config.0.primary_cak").(string)
-			gatewayMacsecCakModel.Crn = &primaryCakstr
-			gatewayMacsecConfigTemplateModel.PrimaryCak = gatewayMacsecCakModel
+		// 	// Construct an instance of the GatewayMacsecCak model
+		// 	gatewayMacsecCakModel := new(directlinkv1.GatewayMacsecConfigTemplatePrimaryCak)
+		// 	primaryCakstr := d.Get("macsec_config.0.primary_cak").(string)
+		// 	gatewayMacsecCakModel.Crn = &primaryCakstr
+		// 	gatewayMacsecConfigTemplateModel.PrimaryCak = gatewayMacsecCakModel
 
-			if fallbackCak, ok := d.GetOk("macsec_config.0.fallback_cak"); ok {
-				// Construct an instance of the GatewayMacsecCak model
-				gatewayMacsecCakModel := new(directlinkv1.GatewayMacsecConfigTemplateFallbackCak)
-				fallbackCakstr := fallbackCak.(string)
-				gatewayMacsecCakModel.Crn = &fallbackCakstr
-				gatewayMacsecConfigTemplateModel.FallbackCak = gatewayMacsecCakModel
-			}
-			if windowSize, ok := d.GetOk("macsec_config.0.window_size"); ok {
-				windowSizeint := int64(windowSize.(int))
-				gatewayMacsecConfigTemplateModel.WindowSize = &windowSizeint
-			}
-			gatewayDedicatedTemplateModel.MacsecConfig = gatewayMacsecConfigTemplateModel
-		}
+		// 	if fallbackCak, ok := d.GetOk("macsec_config.0.fallback_cak"); ok {
+		// 		// Construct an instance of the GatewayMacsecCak model
+		// 		gatewayMacsecCakModel := new(directlinkv1.GatewayMacsecConfigTemplateFallbackCak)
+		// 		fallbackCakstr := fallbackCak.(string)
+		// 		gatewayMacsecCakModel.Crn = &fallbackCakstr
+		// 		gatewayMacsecConfigTemplateModel.FallbackCak = gatewayMacsecCakModel
+		// 	}
+		// 	if windowSize, ok := d.GetOk("macsec_config.0.window_size"); ok {
+		// 		windowSizeint := int64(windowSize.(int))
+		// 		gatewayMacsecConfigTemplateModel.WindowSize = &windowSizeint
+		// 	}
+		// 	gatewayDedicatedTemplateModel.MacsecConfig = gatewayMacsecConfigTemplateModel
+		// }
 
-		if authKeyCrn, ok := d.GetOk(dlAuthenticationKey); ok {
-			authKeyCrnStr := authKeyCrn.(string)
-			gatewayDedicatedTemplateModel.AuthenticationKey = &directlinkv1.GatewayTemplateAuthenticationKey{Crn: &authKeyCrnStr}
-		}
+		// if authKeyCrn, ok := d.GetOk(dlAuthenticationKey); ok {
+		// 	authKeyCrnStr := authKeyCrn.(string)
+		// 	gatewayDedicatedTemplateModel.AuthenticationKey = &directlinkv1.GatewayTemplateAuthenticationKey{Crn: &authKeyCrnStr}
+		// }
 
 		if connectionMode, ok := d.GetOk(dlConnectionMode); ok {
 			connectionModeStr := connectionMode.(string)
@@ -914,10 +914,10 @@ func resourceIBMdlGatewayCreate(d *schema.ResourceData, meta interface{}) error 
 
 			}
 
-			if authKeyCrn, ok := d.GetOk(dlAuthenticationKey); ok {
-				authKeyCrnStr := authKeyCrn.(string)
-				gatewayConnectTemplateModel.AuthenticationKey = &directlinkv1.GatewayTemplateAuthenticationKey{Crn: &authKeyCrnStr}
-			}
+			// if authKeyCrn, ok := d.GetOk(dlAuthenticationKey); ok {
+			// 	authKeyCrnStr := authKeyCrn.(string)
+			// 	gatewayConnectTemplateModel.AuthenticationKey = &directlinkv1.GatewayTemplateAuthenticationKey{Crn: &authKeyCrnStr}
+			// }
 
 			if connectionMode, ok := d.GetOk(dlConnectionMode); ok {
 				connectionModeStr := connectionMode.(string)
@@ -1179,9 +1179,9 @@ func resourceIBMdlGatewayRead(d *schema.ResourceData, meta interface{}) error {
 	if instance.CreatedAt != nil {
 		d.Set(dlCreatedAt, instance.CreatedAt.String())
 	}
-	if instance.AuthenticationKey != nil {
-		d.Set(dlAuthenticationKey, *instance.AuthenticationKey.Crn)
-	}
+	// if instance.AuthenticationKey != nil {
+	// 	d.Set(dlAuthenticationKey, *instance.AuthenticationKey.Crn)
+	// }
 	if instance.ConnectionMode != nil {
 		d.Set(dlConnectionMode, *instance.ConnectionMode)
 	}
@@ -1210,54 +1210,54 @@ func resourceIBMdlGatewayRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set(dlAsPrepends, asPrependList)
 
 	if dtype == "dedicated" {
-		if instance.MacsecConfig != nil {
-			macsecList := make([]map[string]interface{}, 0)
-			currentMacSec := map[string]interface{}{}
-			// Construct an instance of the GatewayMacsecConfigTemplate model
-			gatewayMacsecConfigTemplateModel := instance.MacsecConfig
-			if gatewayMacsecConfigTemplateModel.Active != nil {
-				currentMacSec[dlActive] = *gatewayMacsecConfigTemplateModel.Active
-			}
-			if gatewayMacsecConfigTemplateModel.ActiveCak != nil {
-				if gatewayMacsecConfigTemplateModel.ActiveCak.Crn != nil {
-					currentMacSec[dlActiveCak] = *gatewayMacsecConfigTemplateModel.ActiveCak.Crn
-				}
-			}
-			if gatewayMacsecConfigTemplateModel.PrimaryCak != nil {
-				currentMacSec[dlPrimaryCak] = *gatewayMacsecConfigTemplateModel.PrimaryCak.Crn
-			}
-			if gatewayMacsecConfigTemplateModel.FallbackCak != nil {
-				if gatewayMacsecConfigTemplateModel.FallbackCak.Crn != nil {
-					currentMacSec[dlFallbackCak] = *gatewayMacsecConfigTemplateModel.FallbackCak.Crn
-				}
-			}
-			if gatewayMacsecConfigTemplateModel.SakExpiryTime != nil {
-				currentMacSec[dlSakExpiryTime] = *gatewayMacsecConfigTemplateModel.SakExpiryTime
-			}
-			if gatewayMacsecConfigTemplateModel.SecurityPolicy != nil {
-				currentMacSec[dlSecurityPolicy] = *gatewayMacsecConfigTemplateModel.SecurityPolicy
-			}
-			if gatewayMacsecConfigTemplateModel.WindowSize != nil {
-				currentMacSec[dlWindowSize] = *gatewayMacsecConfigTemplateModel.WindowSize
-			}
-			if gatewayMacsecConfigTemplateModel.CipherSuite != nil {
-				currentMacSec[dlCipherSuite] = *gatewayMacsecConfigTemplateModel.CipherSuite
-			}
-			if gatewayMacsecConfigTemplateModel.ConfidentialityOffset != nil {
-				currentMacSec[dlConfidentialityOffset] = *gatewayMacsecConfigTemplateModel.ConfidentialityOffset
-			}
-			if gatewayMacsecConfigTemplateModel.CryptographicAlgorithm != nil {
-				currentMacSec[dlCryptographicAlgorithm] = *gatewayMacsecConfigTemplateModel.CryptographicAlgorithm
-			}
-			if gatewayMacsecConfigTemplateModel.KeyServerPriority != nil {
-				currentMacSec[dlKeyServerPriority] = *gatewayMacsecConfigTemplateModel.KeyServerPriority
-			}
-			if gatewayMacsecConfigTemplateModel.Status != nil {
-				currentMacSec[dlMacSecConfigStatus] = *gatewayMacsecConfigTemplateModel.Status
-			}
-			macsecList = append(macsecList, currentMacSec)
-			d.Set(dlMacSecConfig, macsecList)
-		}
+		// if instance.MacsecConfig != nil {
+		// 	macsecList := make([]map[string]interface{}, 0)
+		// 	currentMacSec := map[string]interface{}{}
+		// 	// Construct an instance of the GatewayMacsecConfigTemplate model
+		// 	gatewayMacsecConfigTemplateModel := instance.MacsecConfig
+		// 	if gatewayMacsecConfigTemplateModel.Active != nil {
+		// 		currentMacSec[dlActive] = *gatewayMacsecConfigTemplateModel.Active
+		// 	}
+		// 	if gatewayMacsecConfigTemplateModel.ActiveCak != nil {
+		// 		if gatewayMacsecConfigTemplateModel.ActiveCak.Crn != nil {
+		// 			currentMacSec[dlActiveCak] = *gatewayMacsecConfigTemplateModel.ActiveCak.Crn
+		// 		}
+		// 	}
+		// 	if gatewayMacsecConfigTemplateModel.PrimaryCak != nil {
+		// 		currentMacSec[dlPrimaryCak] = *gatewayMacsecConfigTemplateModel.PrimaryCak.Crn
+		// 	}
+		// 	if gatewayMacsecConfigTemplateModel.FallbackCak != nil {
+		// 		if gatewayMacsecConfigTemplateModel.FallbackCak.Crn != nil {
+		// 			currentMacSec[dlFallbackCak] = *gatewayMacsecConfigTemplateModel.FallbackCak.Crn
+		// 		}
+		// 	}
+		// 	if gatewayMacsecConfigTemplateModel.SakExpiryTime != nil {
+		// 		currentMacSec[dlSakExpiryTime] = *gatewayMacsecConfigTemplateModel.SakExpiryTime
+		// 	}
+		// 	if gatewayMacsecConfigTemplateModel.SecurityPolicy != nil {
+		// 		currentMacSec[dlSecurityPolicy] = *gatewayMacsecConfigTemplateModel.SecurityPolicy
+		// 	}
+		// 	if gatewayMacsecConfigTemplateModel.WindowSize != nil {
+		// 		currentMacSec[dlWindowSize] = *gatewayMacsecConfigTemplateModel.WindowSize
+		// 	}
+		// 	if gatewayMacsecConfigTemplateModel.CipherSuite != nil {
+		// 		currentMacSec[dlCipherSuite] = *gatewayMacsecConfigTemplateModel.CipherSuite
+		// 	}
+		// 	if gatewayMacsecConfigTemplateModel.ConfidentialityOffset != nil {
+		// 		currentMacSec[dlConfidentialityOffset] = *gatewayMacsecConfigTemplateModel.ConfidentialityOffset
+		// 	}
+		// 	if gatewayMacsecConfigTemplateModel.CryptographicAlgorithm != nil {
+		// 		currentMacSec[dlCryptographicAlgorithm] = *gatewayMacsecConfigTemplateModel.CryptographicAlgorithm
+		// 	}
+		// 	if gatewayMacsecConfigTemplateModel.KeyServerPriority != nil {
+		// 		currentMacSec[dlKeyServerPriority] = *gatewayMacsecConfigTemplateModel.KeyServerPriority
+		// 	}
+		// 	if gatewayMacsecConfigTemplateModel.Status != nil {
+		// 		currentMacSec[dlMacSecConfigStatus] = *gatewayMacsecConfigTemplateModel.Status
+		// 	}
+		// 	macsecList = append(macsecList, currentMacSec)
+		// 	d.Set(dlMacSecConfig, macsecList)
+		// }
 	}
 	if instance.ChangeRequest != nil {
 		gatewayChangeRequestIntf := instance.ChangeRequest
@@ -1565,12 +1565,12 @@ func resourceIBMdlGatewayUpdate(d *schema.ResourceData, meta interface{}) error 
 		metered := d.Get(dlMetered).(bool)
 		gatewayPatchTemplateModel["metered"] = &metered
 	}
-	if d.HasChange(dlAuthenticationKey) {
-		authenticationKeyCrn := d.Get(dlAuthenticationKey).(string)
-		authenticationKeyPatchTemplate := new(directlinkv1.GatewayPatchTemplateAuthenticationKey)
-		authenticationKeyPatchTemplate.Crn = &authenticationKeyCrn
-		gatewayPatchTemplateModel["authentication_key"] = authenticationKeyPatchTemplate
-	}
+	// if d.HasChange(dlAuthenticationKey) {
+	// 	authenticationKeyCrn := d.Get(dlAuthenticationKey).(string)
+	// 	authenticationKeyPatchTemplate := new(directlinkv1.GatewayPatchTemplateAuthenticationKey)
+	// 	authenticationKeyPatchTemplate.Crn = &authenticationKeyCrn
+	// 	gatewayPatchTemplateModel["authentication_key"] = authenticationKeyPatchTemplate
+	// }
 
 	if mode, ok := d.GetOk(dlConnectionMode); ok && d.HasChange(dlConnectionMode) {
 		updatedConnectionMode := mode.(string)
@@ -1593,43 +1593,43 @@ func resourceIBMdlGatewayUpdate(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	if dtype == "dedicated" {
-		if d.HasChange(dlMacSecConfig) && !d.IsNewResource() {
-			// Construct an instance of the GatewayMacsecConfigTemplate model
-			gatewayMacsecConfigTemplatePatchModel := new(directlinkv1.GatewayMacsecConfigPatchTemplate)
-			if d.HasChange("macsec_config.0.active") {
-				activebool := d.Get("macsec_config.0.active").(bool)
-				gatewayMacsecConfigTemplatePatchModel.Active = &activebool
-			}
-			if d.HasChange("macsec_config.0.primary_cak") {
-				// Construct an instance of the GatewayMacsecCak model
-				gatewayMacsecCakModel := new(directlinkv1.GatewayMacsecConfigPatchTemplatePrimaryCak)
-				primaryCakstr := d.Get("macsec_config.0.primary_cak").(string)
-				gatewayMacsecCakModel.Crn = &primaryCakstr
-				gatewayMacsecConfigTemplatePatchModel.PrimaryCak = gatewayMacsecCakModel
-			}
-			if d.HasChange("macsec_config.0.fallback_cak") {
-				// Construct an instance of the GatewayMacsecCak model
-				gatewayMacsecCakModel := new(directlinkv1.GatewayMacsecConfigPatchTemplateFallbackCak)
-				if _, ok := d.GetOk("macsec_config.0.fallback_cak"); ok {
-					fallbackCakstr := d.Get("macsec_config.0.fallback_cak").(string)
-					gatewayMacsecCakModel.Crn = &fallbackCakstr
-					gatewayMacsecConfigTemplatePatchModel.FallbackCak = gatewayMacsecCakModel
-				} else {
-					fallbackCakstr := ""
-					gatewayMacsecCakModel.Crn = &fallbackCakstr
-				}
-				gatewayMacsecConfigTemplatePatchModel.FallbackCak = gatewayMacsecCakModel
-			}
-			if d.HasChange("macsec_config.0.window_size") {
-				if _, ok := d.GetOk("macsec_config.0.window_size"); ok {
-					windowSizeint := int64(d.Get("macsec_config.0.window_size").(int))
-					gatewayMacsecConfigTemplatePatchModel.WindowSize = &windowSizeint
-				}
-			}
-			gatewayPatchTemplateModel["macsec_config"] = gatewayMacsecConfigTemplatePatchModel
-		} else {
-			gatewayPatchTemplateModel["macsec_config"] = nil
-		}
+		// if d.HasChange(dlMacSecConfig) && !d.IsNewResource() {
+		// 	// Construct an instance of the GatewayMacsecConfigTemplate model
+		// 	gatewayMacsecConfigTemplatePatchModel := new(directlinkv1.GatewayMacsecConfigPatchTemplate)
+		// 	if d.HasChange("macsec_config.0.active") {
+		// 		activebool := d.Get("macsec_config.0.active").(bool)
+		// 		gatewayMacsecConfigTemplatePatchModel.Active = &activebool
+		// 	}
+		// 	if d.HasChange("macsec_config.0.primary_cak") {
+		// 		// Construct an instance of the GatewayMacsecCak model
+		// 		gatewayMacsecCakModel := new(directlinkv1.GatewayMacsecConfigPatchTemplatePrimaryCak)
+		// 		primaryCakstr := d.Get("macsec_config.0.primary_cak").(string)
+		// 		gatewayMacsecCakModel.Crn = &primaryCakstr
+		// 		gatewayMacsecConfigTemplatePatchModel.PrimaryCak = gatewayMacsecCakModel
+		// 	}
+		// 	if d.HasChange("macsec_config.0.fallback_cak") {
+		// 		// Construct an instance of the GatewayMacsecCak model
+		// 		gatewayMacsecCakModel := new(directlinkv1.GatewayMacsecConfigPatchTemplateFallbackCak)
+		// 		if _, ok := d.GetOk("macsec_config.0.fallback_cak"); ok {
+		// 			fallbackCakstr := d.Get("macsec_config.0.fallback_cak").(string)
+		// 			gatewayMacsecCakModel.Crn = &fallbackCakstr
+		// 			gatewayMacsecConfigTemplatePatchModel.FallbackCak = gatewayMacsecCakModel
+		// 		} else {
+		// 			fallbackCakstr := ""
+		// 			gatewayMacsecCakModel.Crn = &fallbackCakstr
+		// 		}
+		// 		gatewayMacsecConfigTemplatePatchModel.FallbackCak = gatewayMacsecCakModel
+		// 	}
+		// 	if d.HasChange("macsec_config.0.window_size") {
+		// 		if _, ok := d.GetOk("macsec_config.0.window_size"); ok {
+		// 			windowSizeint := int64(d.Get("macsec_config.0.window_size").(int))
+		// 			gatewayMacsecConfigTemplatePatchModel.WindowSize = &windowSizeint
+		// 		}
+		// 	}
+		// 	gatewayPatchTemplateModel["macsec_config"] = gatewayMacsecConfigTemplatePatchModel
+		// } else {
+		// 	gatewayPatchTemplateModel["macsec_config"] = nil
+		// }
 		if d.HasChange(dlVlan) {
 			if _, ok := d.GetOk(dlVlan); ok {
 				vlan := int64(d.Get(dlVlan).(int))

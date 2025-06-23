@@ -1,8 +1,8 @@
-// Copyright IBM Corp. 2024 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.95.2-120e65bc-20240924-152329
+ * IBM OpenAPI Terraform Generator Version: 3.103.0-e8b84313-20250402-201816
  */
 
 package cdtektonpipeline
@@ -192,7 +192,6 @@ func ResourceIBMCdTektonPipeline() *schema.Resource {
 						},
 						"href": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
 							Computed:    true,
 							Description: "API URL for interacting with the definition.",
 						},
@@ -225,7 +224,6 @@ func ResourceIBMCdTektonPipeline() *schema.Resource {
 						},
 						"href": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
 							Computed:    true,
 							Description: "API URL for interacting with the property.",
 						},
@@ -287,7 +285,6 @@ func ResourceIBMCdTektonPipeline() *schema.Resource {
 						},
 						"href": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
 							Computed:    true,
 							Description: "API URL for interacting with the trigger. Only included when fetching the list of pipeline triggers.",
 						},
@@ -299,13 +296,11 @@ func ResourceIBMCdTektonPipeline() *schema.Resource {
 						},
 						"id": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
 							Computed:    true,
 							Description: "The Trigger ID.",
 						},
 						"properties": &schema.Schema{
 							Type:        schema.TypeList,
-							Optional:    true,
 							Computed:    true,
 							Description: "Optional trigger properties are used to override or supplement the pipeline properties when triggering a pipeline run.",
 							Elem: &schema.Resource{
@@ -325,7 +320,6 @@ func ResourceIBMCdTektonPipeline() *schema.Resource {
 									},
 									"href": &schema.Schema{
 										Type:        schema.TypeString,
-										Optional:    true,
 										Computed:    true,
 										Description: "API URL for interacting with the trigger property.",
 									},
@@ -548,7 +542,6 @@ func ResourceIBMCdTektonPipeline() *schema.Resource {
 						},
 						"webhook_url": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
 							Computed:    true,
 							Description: "Webhook URL that can be used to trigger pipeline runs.",
 						},
@@ -865,7 +858,9 @@ func resourceIBMCdTektonPipelineDelete(context context.Context, d *schema.Resour
 
 func ResourceIBMCdTektonPipelineMapToWorkerIdentity(modelMap map[string]interface{}) (*cdtektonpipelinev2.WorkerIdentity, error) {
 	model := &cdtektonpipelinev2.WorkerIdentity{}
-	model.ID = core.StringPtr(modelMap["id"].(string))
+	if modelMap["id"] != nil {
+		model.ID = core.StringPtr(modelMap["id"].(string))
+	}
 	return model, nil
 }
 
@@ -877,7 +872,9 @@ func ResourceIBMCdTektonPipelineWorkerToMap(model *cdtektonpipelinev2.Worker) (m
 	if model.Type != nil {
 		modelMap["type"] = *model.Type
 	}
-	modelMap["id"] = *model.ID
+	if model.ID != nil {
+		modelMap["id"] = *model.ID
+	}
 	return modelMap, nil
 }
 
@@ -1340,18 +1337,26 @@ func ResourceIBMCdTektonPipelineTektonPipelinePatchAsPatch(patchVals *cdtektonpi
 	path = "next_build_number"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["next_build_number"] = nil
+	} else if !exists {
+		delete(patch, "next_build_number")
 	}
 	path = "enable_notifications"
 	if _, exists := d.GetOkExists(path); d.HasChange(path) && !exists {
 		patch["enable_notifications"] = nil
+	} else if !exists {
+		delete(patch, "enable_notifications")
 	}
 	path = "enable_partial_cloning"
 	if _, exists := d.GetOkExists(path); d.HasChange(path) && !exists {
 		patch["enable_partial_cloning"] = nil
+	} else if !exists {
+		delete(patch, "enable_partial_cloning")
 	}
 	path = "worker"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["worker"] = nil
+	} else if !exists {
+		delete(patch, "worker")
 	}
 
 	return patch

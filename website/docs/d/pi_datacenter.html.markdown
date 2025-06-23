@@ -10,7 +10,7 @@ description: |-
 
 Retrieve information about a Power Systems Datacenter.
 
-## Example usage
+## Example Usage
 
 ```terraform
 data "ibm_pi_datacenter" "datacenter" {
@@ -34,14 +34,14 @@ Example usage:
     }
   ```
   
-## Argument reference
+## Argument Reference
 
 Review the argument references that you can specify for your data source.
 
 - `pi_cloud_instance_id` - (Optional, String) The GUID of the service instance associated with an account. Required if private datacenter.
 - `pi_datacenter_zone` - (Optional, String) Datacenter zone you want to retrieve. If no value is supplied, the `zone` configured within the IBM provider will be utilized.
 
-## Attribute reference
+## Attribute Reference
 
 In addition to all argument reference list, you can access the following attribute references after your data source is created.
 

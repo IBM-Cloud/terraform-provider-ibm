@@ -12,7 +12,7 @@ Create, update, or delete for a Power Systems Virtual Server cloud connection. F
 
 ~> **NOTE:** `Cloud connection` are not supported in **new** workspaces in `DAL10 data center.`
 
-## Example usage
+## Example Usage
 
 The following example enables you to create a cloud connection:
 
@@ -48,7 +48,7 @@ The `ibm_pi_cloud_connection` provides the following [timeouts](https://www.terr
 - **update** - (Default 30 minutes) Used for updating cloud connection.
 - **delete** - (Default 30 minutes) Used for deleting cloud connection.
 
-## Argument reference
+## Argument Reference
 
 Review the argument references that you can specify for your resource.
 
@@ -65,7 +65,7 @@ Review the argument references that you can specify for your resource.
 - `pi_cloud_connection_vpc_enabled` - (Optional, Bool) Enable VPC for this cloud connection.
 - `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
 
-## Attribute reference
+## Attribute Reference
 
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
