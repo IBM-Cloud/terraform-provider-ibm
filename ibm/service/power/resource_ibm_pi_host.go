@@ -185,7 +185,9 @@ func ResourceIBMPIHost() *schema.Resource {
 func resourceIBMPIHostCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_host", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
 	client := instance.NewIBMPIHostGroupsClient(ctx, sess, cloudInstanceID)
@@ -207,14 +209,18 @@ func resourceIBMPIHostCreate(ctx context.Context, d *schema.ResourceData, meta i
 	body.HostGroupID = &hostGroupID
 	hostResponse, err := client.CreateHost(&body)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateHost failed: %s", err.Error()), "ibm_pi_host", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	hostID := hostResponse[0].ID
 	d.SetId(fmt.Sprintf("%s/%s", cloudInstanceID, hostID))
 	_, err = isWaitForIBMPIHostAvailable(ctx, client, hostID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForIBMPIHostAvailable failed: %s", err.Error()), "ibm_pi_host", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	host := hosts[0].(map[string]interface{})
@@ -233,11 +239,15 @@ func resourceIBMPIHostCreate(ctx context.Context, d *schema.ResourceData, meta i
 func resourceIBMPIHostRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_host", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	cloudInstanceID, hostID, err := splitID(d.Id())
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("splitID failed: %s", err.Error()), "ibm_pi_host", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	client := instance.NewIBMPIHostGroupsClient(ctx, sess, cloudInstanceID)
 	host, err := client.GetHost(hostID)
@@ -246,12 +256,16 @@ func resourceIBMPIHostRead(ctx context.Context, d *schema.ResourceData, meta int
 			d.SetId("")
 			return nil
 		}
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetHost failed: %s", err.Error()), "ibm_pi_host", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	d.Set(Arg_CloudInstanceID, cloudInstanceID)
 	hostGroupID, err := getLastPart(host.HostGroup.Href)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("getLastPart failed: %s", err.Error()), "ibm_pi_host", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	d.Set(Arg_HostGroupID, hostGroupID)
 	d.Set(Attr_HostID, host.ID)
@@ -290,11 +304,15 @@ func resourceIBMPIHostRead(ctx context.Context, d *schema.ResourceData, meta int
 func resourceIBMPIHostUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_host", "update")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	cloudInstanceID, hostID, err := splitID(d.Id())
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("splitID failed: %s", err.Error()), "ibm_pi_host", "update")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	client := instance.NewIBMPIHostGroupsClient(ctx, sess, cloudInstanceID)
 	if d.HasChange(Arg_Host) {
@@ -309,7 +327,9 @@ func resourceIBMPIHostUpdate(ctx context.Context, d *schema.ResourceData, meta i
 			}
 			_, err := client.UpdateHost(&hostBody, hostID)
 			if err != nil {
-				return diag.FromErr(err)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateHost failed: %s", err.Error()), "ibm_pi_host", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 		}
 
@@ -332,20 +352,28 @@ func resourceIBMPIHostUpdate(ctx context.Context, d *schema.ResourceData, meta i
 func resourceIBMPIHostDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_host", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	cloudInstanceID, hostID, err := splitID(d.Id())
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("splitID failed: %s", err.Error()), "ibm_pi_host", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	client := instance.NewIBMPIHostGroupsClient(ctx, sess, cloudInstanceID)
 	err = client.DeleteHost(hostID)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteHost failed: %s", err.Error()), "ibm_pi_host", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	_, err = isWaitForPIHostDeleted(ctx, client, hostID, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForPIHostDeleted failed: %s", err.Error()), "ibm_pi_host", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	d.SetId("")
 
