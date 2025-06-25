@@ -1458,7 +1458,7 @@ func vpcUpdate(context context.Context, d *schema.ResourceData, meta interface{}
 		}
 		if d.HasChange("dns.0.resolver") {
 			_, newResolver := d.GetChange("dns.0.resolver")
-			if d.HasChange("dns.0.resolver.0.dns_binding_name") && (d.Get("dns.0.resolver.0.dns_binding_name").(string) != "null" || d.Get("dns.0.resolver.0.dns_binding_name").(string) != "") {
+			if d.HasChange("dns.0.resolver.0.dns_binding_name") && (d.Get("dns.0.resolver.0.dns_binding_id") != nil && d.Get("dns.0.resolver.0.dns_binding_id").(string) != "") && (d.Get("dns.0.resolver.0.dns_binding_name").(string) != "null" || d.Get("dns.0.resolver.0.dns_binding_name").(string) != "") {
 				dnsBindingName := d.Get("dns.0.resolver.0.dns_binding_name").(string)
 				dnsBindingId := d.Get("dns.0.resolver.0.dns_binding_id").(string)
 				vpcdnsResolutionBindingPatch := &vpcv1.VpcdnsResolutionBindingPatch{
