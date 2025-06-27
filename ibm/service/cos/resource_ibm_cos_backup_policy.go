@@ -42,9 +42,7 @@ func ResourceIBMCOSBackupPolicy() *schema.Resource {
 				Description: "Bucket Crn of the source bucket.",
 			},
 			"initial_delete_after_days": {
-				Type: schema.TypeInt,
-				// Computed:     true, // Computed means it can be set by Terraform but can't be updated by users
-				// Optional:     true,
+				Type:         schema.TypeInt,
 				Required:     true,
 				ValidateFunc: validate.ValidateAllowedRangeInt(1, 36500),
 				Description:  "Number of days after which the objects inside backup vault should be deleted.",
@@ -197,8 +195,6 @@ func parseBackupPolicyID(id string, info string) (backupPolicy string, err error
 }
 
 func resourceCustomSuppressDeleteAfterDaysDiff(diff *schema.ResourceDiff) error {
-	// oldDaysValue, newDaysValue := diff.GetChange("initial_delete_after_days")
-	// if newDaysValue != oldDaysValue {
 	if diff.Id() != "" && diff.HasChange("initial_delete_after_days") {
 		return fmt.Errorf("[ERROR] `initial_delete_after_days` does not support update operation")
 	}
