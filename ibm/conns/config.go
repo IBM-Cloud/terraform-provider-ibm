@@ -248,6 +248,7 @@ type ClientSession interface {
 	BackupRecoveryV1() (*backuprecoveryv1.BackupRecoveryV1, error)
 	BackupRecoveryV1Connector() (*backuprecoveryv1.BackupRecoveryV1Connector, error)
 	BackupRecoveryManagerV1() (*backuprecoveryv1.HeliosReportingServiceApIsV1, error)
+	BackupRecoveryManagerSreV1() (*backuprecoveryv1.HeliosSreApiV2, error)
 	IBMCloudLogsRoutingV0() (*ibmcloudlogsroutingv0.IBMCloudLogsRoutingV0, error)
 	SoftLayerSession() *slsession.Session
 	IBMPISession() (*ibmpisession.IBMPISession, error)
@@ -582,6 +583,9 @@ type clientSession struct {
 
 	backupRecoveryManagerClient    *backuprecoveryv1.HeliosReportingServiceApIsV1
 	backupRecoveryManagerClientErr error
+
+	backupRecoveryManagerSreClient    *backuprecoveryv1.HeliosSreApiV2
+	backupRecoveryManagerSreClientErr error
 
 	secretsManagerClient    *secretsmanagerv2.SecretsManagerV2
 	secretsManagerClientErr error
@@ -1184,6 +1188,10 @@ func (session clientSession) BackupRecoveryManagerV1() (*backuprecoveryv1.Helios
 	return session.backupRecoveryManagerClient, session.backupRecoveryManagerClientErr
 }
 
+func (session clientSession) BackupRecoveryManagerSreV1() (*backuprecoveryv1.HeliosSreApiV2, error) {
+	return session.backupRecoveryManagerSreClient, session.backupRecoveryManagerSreClientErr
+}
+
 // IBM Cloud Secrets Manager V2 Basic API
 func (session clientSession) SecretsManagerV2() (*secretsmanagerv2.SecretsManagerV2, error) {
 	return session.secretsManagerClient, session.secretsManagerClientErr
@@ -1383,6 +1391,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.backupRecoveryClientErr = errEmptyBluemixCredentials
 		session.backupRecoveryConnectorClientErr = errEmptyBluemixCredentials
 		session.backupRecoveryManagerClientErr = errEmptyBluemixCredentials
+		session.backupRecoveryManagerSreClientErr = errEmptyBluemixCredentials
 		session.catalogManagementClientErr = errEmptyBluemixCredentials
 		session.partnerCenterSellClientErr = errEmptyBluemixCredentials
 		session.ibmpiConfigErr = errEmptyBluemixCredentials
@@ -1650,6 +1659,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	var backupRecoveryURL string
 	var backupRecoveryConnectorURL string
 	var backupRecoveryManagerURL string
+	var backupRecoveryManagerSreURL string
 
 	if fileMap != nil && c.Visibility != "public-and-private" {
 		backupRecoveryURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_BACKUP_RECOVERY_ENDPOINT", c.Region, backupRecoveryURL)
@@ -1716,6 +1726,27 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.backupRecoveryManagerClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 		// Add custom header for analytics
 		session.backupRecoveryManagerClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	}
+
+	backupRecoveryManagerSreClientOptions := &backuprecoveryv1.HeliosSreApiV2Options{
+		Authenticator: authenticator,
+		URL:           EnvFallBack([]string{"IBMCLOUD_BACKUP_RECOVERY_MANAGER_SRE_ENDPOINT"}, backupRecoveryManagerSreURL),
+	}
+	if backupRecoveryManagerSreClientOptions.URL == "" {
+		session.backupRecoveryManagerSreClientErr = fmt.Errorf("IBMCLOUD_BACKUP_RECOVERY_MANAGER_SRE_ENDPOINT not set in env or endpoints file")
+	}
+	// Construct the service client.
+	session.backupRecoveryManagerSreClient, err = backuprecoveryv1.NewHeliosSreApiV2(backupRecoveryManagerSreClientOptions)
+	if err != nil {
+		session.backupRecoveryManagerSreClientErr = fmt.Errorf("Error occurred while configuring IBM Backup recovery API service: %q", err)
+	}
+	if session.backupRecoveryManagerSreClient != nil && session.backupRecoveryManagerSreClient.Service != nil {
+		// Enable retries for API calls
+		session.backupRecoveryManagerSreClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.backupRecoveryManagerSreClient.SetDefaultHeaders(gohttp.Header{
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
 	}
