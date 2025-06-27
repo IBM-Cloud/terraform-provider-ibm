@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_policy_assignment"
 description: |-
   Manages policy_assignment.
-subcategory: "IAM Policy Management"
+subcategory: "Identity & Access Management (IAM)"
 ---
 
 # ibm_policy_assignment
