@@ -5,7 +5,6 @@ package directlink
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"os"
 
@@ -265,7 +264,7 @@ func resourceIBMdlProviderGatewayRead(d *schema.ResourceData, meta interface{}) 
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error Getting Direct Link Gateway (%s Template): %s\n%s", dtype, err, response)
+		return flex.FmtErrorf("[ERROR] Error Getting Direct Link Gateway (%s Template): %s\n%s", dtype, err, response)
 	}
 	if instance.Name != nil {
 		d.Set(dlName, *instance.Name)
@@ -345,7 +344,7 @@ func resourceIBMdlProviderGatewayUpdate(d *schema.ResourceData, meta interface{}
 
 	instance, response, err := directLink.GetProviderGateway(getOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error getting provider gateway %s, %s", err, response)
+		return flex.FmtErrorf("[ERROR] Error getting provider gateway %s, %s", err, response)
 	}
 
 	updateGatewayOptionsModel := directLink.NewUpdateProviderGatewayOptions(ID)
@@ -428,7 +427,7 @@ func resourceIBMdlProviderGatewayExists(d *schema.ResourceData, meta interface{}
 			d.SetId("")
 			return false, nil
 		}
-		return false, fmt.Errorf("[ERROR] Error Getting Direct Link Provider Gateway : %s\n%s", err, response)
+		return false, flex.FmtErrorf("[ERROR] Error Getting Direct Link Provider Gateway : %s\n%s", err, response)
 	}
 	return true, nil
 }

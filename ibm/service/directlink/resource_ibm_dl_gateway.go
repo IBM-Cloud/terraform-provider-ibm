@@ -5,7 +5,6 @@ package directlink
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"os"
 	"reflect"
@@ -777,28 +776,28 @@ func resourceIBMdlGatewayCreate(d *schema.ResourceData, meta interface{}) error 
 		if _, ok := d.GetOk(dlCarrierName); ok {
 			carrierName = d.Get(dlCarrierName).(string)
 		} else {
-			err = fmt.Errorf("[ERROR] Error creating gateway, %s is a required field", dlCarrierName)
+			err = flex.FmtErrorf("[ERROR] Error creating gateway, %s is a required field", dlCarrierName)
 			log.Printf("%s is a required field", dlCarrierName)
 			return err
 		}
 		if _, ok := d.GetOk(dlCrossConnectRouter); ok {
 			crossConnectRouter = d.Get(dlCrossConnectRouter).(string)
 		} else {
-			err = fmt.Errorf("[ERROR] Error creating gateway, %s is a required field", dlCrossConnectRouter)
+			err = flex.FmtErrorf("[ERROR] Error creating gateway, %s is a required field", dlCrossConnectRouter)
 			log.Printf("%s is a required field", dlCrossConnectRouter)
 			return err
 		}
 		if _, ok := d.GetOk(dlLocationName); ok {
 			locationName = d.Get(dlLocationName).(string)
 		} else {
-			err = fmt.Errorf("[ERROR] Error creating gateway, %s is a required field", dlLocationName)
+			err = flex.FmtErrorf("[ERROR] Error creating gateway, %s is a required field", dlLocationName)
 			log.Printf("%s is a required field", dlLocationName)
 			return err
 		}
 		if _, ok := d.GetOk(dlCustomerName); ok {
 			customerName = d.Get(dlCustomerName).(string)
 		} else {
-			err = fmt.Errorf("[ERROR] Error creating gateway, %s is a required field", dlCustomerName)
+			err = flex.FmtErrorf("[ERROR] Error creating gateway, %s is a required field", dlCustomerName)
 			log.Printf("%s is a required field", dlCustomerName)
 			return err
 		}
@@ -946,14 +945,14 @@ func resourceIBMdlGatewayCreate(d *schema.ResourceData, meta interface{}) error 
 			createGatewayOptionsModel.GatewayTemplate = gatewayConnectTemplateModel
 
 		} else {
-			err = fmt.Errorf("[ERROR] Error creating direct link connect gateway, %s is a required field", dlPort)
+			err = flex.FmtErrorf("[ERROR] Error creating direct link connect gateway, %s is a required field", dlPort)
 			return err
 		}
 	}
 
 	gateway, response, err := directLink.CreateGateway(createGatewayOptionsModel)
 	if err != nil {
-		return fmt.Errorf("[DEBUG] Create Direct Link Gateway (%s) err %s\n%s", dtype, err, response)
+		return flex.FmtErrorf("[DEBUG] Create Direct Link Gateway (%s) err %s\n%s", dtype, err, response)
 	}
 	d.SetId(*gateway.ID)
 
@@ -962,7 +961,7 @@ func resourceIBMdlGatewayCreate(d *schema.ResourceData, meta interface{}) error 
 		getPortOptions := directLink.NewGetPortOptions(*gateway.Port.ID)
 		port, response, err := directLink.GetPort(getPortOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error getting port %s %s", response, err)
+			return flex.FmtErrorf("[ERROR] Error getting port %s %s", response, err)
 		}
 		if port != nil && port.ProviderName != nil && !strings.Contains(strings.ToLower(*port.ProviderName), "netbond") && !strings.Contains(strings.ToLower(*port.ProviderName), "megaport") {
 			_, err = isWaitForDirectLinkAvailable(directLink, d.Id(), d.Timeout(schema.TimeoutCreate))
@@ -1100,7 +1099,7 @@ func resourceIBMdlGatewayRead(d *schema.ResourceData, meta interface{}) error {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error Getting Direct Link Gateway (%s Template): %s\n%s", dtype, err, response)
+		return flex.FmtErrorf("[ERROR] Error Getting Direct Link Gateway (%s Template): %s\n%s", dtype, err, response)
 	}
 
 	instance := instanceIntf.(*directlinkv1.GetGatewayResponse)
@@ -1325,7 +1324,7 @@ func isDirectLinkRefreshFunc(client *directlinkv1.DirectLinkV1, id string) resou
 		}
 		instanceIntf, response, err := client.GetGateway(getOptions)
 		if (err != nil) || (instanceIntf == nil) {
-			return nil, "", fmt.Errorf("[ERROR] Error Getting Direct Link: %s\n%s", err, response)
+			return nil, "", flex.FmtErrorf("[ERROR] Error Getting Direct Link: %s\n%s", err, response)
 		}
 
 		instance := instanceIntf.(*directlinkv1.GetGatewayResponse)
@@ -1391,7 +1390,7 @@ func resourceIBMdlGatewayUpdate(d *schema.ResourceData, meta interface{}) error 
 		_, response, operationErr := directLink.ListGatewayAsPrepends(listGatewayAsPrependsOptions)
 		if operationErr != nil {
 			log.Printf("[DEBUG] Error listing Direct Link Gateway AS Prepends err %s\n%s", err, response)
-			return fmt.Errorf("[ERROR] Error listing Direct Link Gateway AS Prepends err %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error listing Direct Link Gateway AS Prepends err %s\n%s", err, response)
 		}
 		etag := response.GetHeaders().Get("etag")
 		asPrependsCreateItems := make([]directlinkv1.AsPrependPrefixArrayTemplate, 0)
@@ -1430,7 +1429,7 @@ func resourceIBMdlGatewayUpdate(d *schema.ResourceData, meta interface{}) error 
 		_, responseRep, operationErr := directLink.ReplaceGatewayAsPrepends(replaceGatewayAsPrependsOptionsModel)
 		if operationErr != nil {
 			log.Printf("[DEBUG] Error while replacing AS Prepends to a gateway id %s %s\n%s", ID, operationErr, responseRep)
-			return fmt.Errorf("[ERROR] Error while replacing AS Prepends to a gateway id %s %s\n%s", ID, operationErr, responseRep)
+			return flex.FmtErrorf("[ERROR] Error while replacing AS Prepends to a gateway id %s %s\n%s", ID, operationErr, responseRep)
 		}
 	}
 	if d.HasChange(dlExportRouteFilters) {
@@ -1439,7 +1438,7 @@ func resourceIBMdlGatewayUpdate(d *schema.ResourceData, meta interface{}) error 
 		_, response, operationErr := directLink.ListGatewayExportRouteFilters(listGatewayExportRouteFiltersOptionsModel)
 		if operationErr != nil {
 			log.Printf("[DEBUG] Error listing the Direct Link Export Route Filters  %s\n%s", operationErr, response)
-			return fmt.Errorf("[ERROR] Error listing Direct Link Gateway Export Route Filters %s\n%s", operationErr, response)
+			return flex.FmtErrorf("[ERROR] Error listing Direct Link Gateway Export Route Filters %s\n%s", operationErr, response)
 		}
 		etag := response.GetHeaders().Get("etag")
 		exportRouteFiltersReplaceList := make([]directlinkv1.GatewayTemplateRouteFilter, 0)
@@ -1480,7 +1479,7 @@ func resourceIBMdlGatewayUpdate(d *schema.ResourceData, meta interface{}) error 
 		_, response, err := directLink.ReplaceGatewayExportRouteFilters(replaceGatewayExportRouteFiltersOptionsModel)
 		if err != nil {
 			log.Printf("[DEBUG] Error while replacing Export Route Fileter to a gateway id %s %s\n%s", ID, err, response)
-			return fmt.Errorf("[ERROR] Error while replacing Export Route Fileter to a gateway id %s %s\n%s", ID, err, response)
+			return flex.FmtErrorf("[ERROR] Error while replacing Export Route Fileter to a gateway id %s %s\n%s", ID, err, response)
 		}
 	}
 
@@ -1489,7 +1488,7 @@ func resourceIBMdlGatewayUpdate(d *schema.ResourceData, meta interface{}) error 
 		_, response, operationErr := directLink.ListGatewayImportRouteFilters(listGatewayImportRouteFiltersOptionsModel)
 		if operationErr != nil {
 			log.Printf("[DEBUG] Error listing the Direct Link Import Route Filters  %s\n%s", operationErr, response)
-			return fmt.Errorf("[ERROR] Error listing Direct Link Gateway Import Route Filters %s\n%s", operationErr, response)
+			return flex.FmtErrorf("[ERROR] Error listing Direct Link Gateway Import Route Filters %s\n%s", operationErr, response)
 		}
 		etag := response.GetHeaders().Get("etag")
 		importRouteFiltersReplaceList := make([]directlinkv1.GatewayTemplateRouteFilter, 0)
@@ -1530,7 +1529,7 @@ func resourceIBMdlGatewayUpdate(d *schema.ResourceData, meta interface{}) error 
 		_, response, err := directLink.ReplaceGatewayImportRouteFilters(replaceGatewayImportRouteFiltersOptionsModel)
 		if err != nil {
 			log.Printf("[DEBUG] Error while replacing Import Route Fileter to a gateway id %s %s\n%s", ID, err, response)
-			return fmt.Errorf("[ERROR] Error while replacing Import Route Fileter to a gateway id %s %s\n%s", ID, err, response)
+			return flex.FmtErrorf("[ERROR] Error while replacing Import Route Fileter to a gateway id %s %s\n%s", ID, err, response)
 		}
 
 	}
@@ -1696,7 +1695,7 @@ func resourceIBMdlGatewayExists(d *schema.ResourceData, meta interface{}) (bool,
 			d.SetId("")
 			return false, nil
 		}
-		return false, fmt.Errorf("[ERROR] Error Getting Direct Link Gateway : %s\n%s", err, response)
+		return false, flex.FmtErrorf("[ERROR] Error Getting Direct Link Gateway : %s\n%s", err, response)
 	}
 	_ = instanceIntf.(*directlinkv1.GetGatewayResponse)
 	return true, nil

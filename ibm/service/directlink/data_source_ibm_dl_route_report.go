@@ -4,9 +4,9 @@
 package directlink
 
 import (
-	"fmt"
 	"log"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/networking-go-sdk/directlinkv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -203,11 +203,11 @@ func dataSourceIBMDLRouteReportRead(d *schema.ResourceData, meta interface{}) er
 	report, response, err := directLink.GetGatewayRouteReport(getGatewayRouteReportOptionsModel)
 	if err != nil {
 		log.Println("[DEBUG] Error fetching DL Route Reports for gateway:", gatewayId, "with response code:", response.StatusCode, " and err: ", err)
-		return fmt.Errorf("[ERROR] Error fetching DL Route Reports: %s with response code  %d", err, response.StatusCode)
+		return flex.FmtErrorf("[ERROR] Error fetching DL Route Reports: %s with response code  %d", err, response.StatusCode)
 	}
 
 	if report == nil {
-		return fmt.Errorf("error fetching route report for gateway: %s and route report: %s with response code: %d", gatewayId, routeReportId, response.StatusCode)
+		return flex.FmtErrorf("error fetching route report for gateway: %s and route report: %s with response code: %d", gatewayId, routeReportId, response.StatusCode)
 	} else if report.ID != nil {
 		d.SetId(*report.ID)
 	}
