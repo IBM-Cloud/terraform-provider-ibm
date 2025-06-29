@@ -4,10 +4,10 @@
 package cis
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -80,7 +80,7 @@ func DataSourceIBMCISAlertWebhooksValidator() *validate.ResourceValidator {
 func dataIBMCISWebhookRead(d *schema.ResourceData, meta interface{}) error {
 	sess, err := meta.(conns.ClientSession).CisWebhookSession()
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while getting the cisWebhookession %s", err)
+		return flex.FmtErrorf("[ERROR] Error while getting the cisWebhookession %s", err)
 	}
 	crn := d.Get(cisID).(string)
 	sess.Crn = core.StringPtr(crn)
@@ -88,7 +88,7 @@ func dataIBMCISWebhookRead(d *schema.ResourceData, meta interface{}) error {
 
 	result, resp, err := sess.ListWebhooks(opt)
 	if err != nil || result == nil {
-		return fmt.Errorf("[ERROR] Error Listing all Webhooks %q: %s %s", d.Id(), err, resp)
+		return flex.FmtErrorf("[ERROR] Error Listing all Webhooks %q: %s %s", d.Id(), err, resp)
 	}
 
 	webhooks := make([]map[string]interface{}, 0)

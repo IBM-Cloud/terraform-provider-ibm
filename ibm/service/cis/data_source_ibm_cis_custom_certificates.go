@@ -4,7 +4,6 @@
 package cis
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -133,7 +132,7 @@ func dataSourceIBMCISCustomCertificatesRead(d *schema.ResourceData, meta interfa
 	opt := cisClient.NewListCustomCertificatesOptions()
 	result, resp, err := cisClient.ListCustomCertificates(opt)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Failed to list custom certificates: %v", resp)
+		return flex.FmtErrorf("[ERROR] Failed to list custom certificates: %v", resp)
 	}
 	certsList := make([]map[string]interface{}, 0)
 	for _, r := range result.Result {
