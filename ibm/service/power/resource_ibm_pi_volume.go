@@ -83,6 +83,7 @@ func ResourceIBMPIVolume() *schema.Resource {
 			},
 			Arg_CloudInstanceID: {
 				Description:  "The GUID of the service instance associated with an account.",
+				ForceNew:     true,
 				Required:     true,
 				Type:         schema.TypeString,
 				ValidateFunc: validation.NoZeroValues,
