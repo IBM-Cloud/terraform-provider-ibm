@@ -126,8 +126,9 @@ Review the argument references that you can specify for your resource.
 - `pi_virtual_serial_number` - (Optional, List)  Virtual Serial Number information. If using `ibm_pi_virtual_serial_number` resource to manage a virtual serial number assigned to this instance, it is strongly recommended to ignore changes in this argument using the `ignore_changes` meta-argument in the `lifecycle`.
   
   Nested scheme for `pi_virtual_serial_number`:
-  - `description` - (String, Optional) Description of virtual serial number.
-  - `serial` - (String, Required) Provide an existing reserved Virtual Serial Number or specify 'auto-assign' for auto generated Virtual Serial Number.
+  - `description` - (Optional, String) Description of virtual serial number.
+  - `serial` - (Required, String) Provide an existing reserved Virtual Serial Number or specify 'auto-assign' for auto generated Virtual Serial Number. Updates to this will shutdown then restart power VM instance.
+  - `software_tier` - (Optional, String) Software tier for virtual serial number. Allowed values are: ["P05", "P10", "P20", "P30"]. Updates to this will shutdown then restart power VM instance.
 
       ~> **Note** When set to "auto-assign", changes to `serial` outside of terraform will not be detected. In addition, if a new generated virtual serial number is needed, the old serial must be removed before a new one is generated.
 - `pi_volume_ids` - (Optional, List of String) The list of volume IDs that you want to attach to the instance during creation.

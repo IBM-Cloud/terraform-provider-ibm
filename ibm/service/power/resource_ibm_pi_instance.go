@@ -16,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/power/models"
@@ -378,6 +379,13 @@ func ResourceIBMPIInstance() *schema.Resource {
 							Required:         true,
 							DiffSuppressFunc: supressVSNDiffAutoAssign,
 							Type:             schema.TypeString,
+						},
+						Attr_SoftwareTier: {
+							Computed:     true,
+							Description:  "Software tier. Enum: [\"P05\", \"P10\", \"P20\", \"P30\"].",
+							Optional:     true,
+							Type:         schema.TypeString,
+							ValidateFunc: validation.StringInSlice([]string{"P05", "P10", "P20", "P30"}, false),
 						},
 					},
 				},
@@ -1014,16 +1022,12 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 
 	if d.HasChange(Arg_VirtualSerialNumber) {
 		vsnClient := instance.NewIBMPIVSNClient(ctx, sess, cloudInstanceID)
-
+		restartInstance := false
 		if d.HasChange(Arg_VirtualSerialNumber + ".0." + Attr_Serial) {
-			instanceRestart := false
-			status := d.Get(Attr_Status).(string)
-			if strings.ToLower(status) != State_Shutoff {
-				err := stopLparForResourceChange(ctx, client, instanceID, d)
-				if err != nil {
-					return diag.FromErr(err)
-				}
-				instanceRestart = true
+			// Stop Lpar, serial change requires Lpar to be in shutoff state
+			restartInstance, err = stopLparForVSNChange(ctx, client, instanceID, d.Timeout(schema.TimeoutUpdate))
+			if err != nil {
+				return diag.FromErr(err)
 			}
 
 			oldVSN, newVSN := d.GetChange(Arg_VirtualSerialNumber)
@@ -1034,11 +1038,13 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 				}
 				err := vsnClient.PVMInstanceDeleteVSN(instanceID, deleteBody)
 				if err != nil {
+					err = instanceRestartAfterVSNFailure(ctx, instanceID, restartInstance, client, d, err)
 					return diag.FromErr(err)
 				}
 
-				_, err = isWaitForPIInstanceStopped(ctx, client, instanceID, d.Timeout(schema.TimeoutUpdate))
+				_, err = isWaitForPIInstanceVSNRemoved(ctx, client, instanceID, d.Timeout(schema.TimeoutUpdate))
 				if err != nil {
+					err = instanceRestartAfterVSNFailure(ctx, instanceID, restartInstance, client, d, err)
 					return diag.FromErr(err)
 				}
 			}
@@ -1051,35 +1057,89 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 					Description: description,
 					Serial:      &serial,
 				}
+
 				_, err := vsnClient.PVMInstanceAttachVSN(instanceID, addBody)
 				if err != nil {
+					err = instanceRestartAfterVSNFailure(ctx, instanceID, restartInstance, client, d, err)
 					return diag.FromErr(err)
 				}
 
-				_, err = isWaitForPIInstanceStopped(ctx, client, instanceID, d.Timeout(schema.TimeoutUpdate))
+				pvm, err := isWaitForPIInstanceVSNAssignedOrUpdatedAndStopped(ctx, client, instanceID, nil, d.Timeout(schema.TimeoutUpdate))
 				if err != nil {
+					err = instanceRestartAfterVSNFailure(ctx, instanceID, restartInstance, client, d, err)
+					return diag.FromErr(err)
+				}
+
+				// newly attached VSN may not match software tier defined by user in configuration, need to update to match
+				pvmInstance := pvm.(*models.PVMInstance)
+				softwareTier := models.SoftwareTier(newVSNMap[Attr_SoftwareTier].(string))
+				if softwareTier != "" && pvmInstance.VirtualSerialNumber.SoftwareTier != softwareTier {
+					updateBody := &models.UpdateServerVirtualSerialNumber{
+						SoftwareTier: softwareTier,
+					}
+					_, err = vsnClient.PVMInstanceUpdateVSN(instanceID, updateBody)
+					if err != nil {
+						err = instanceRestartAfterVSNFailure(ctx, instanceID, restartInstance, client, d, err)
+						return diag.FromErr(err)
+					}
+					_, err = isWaitForPIInstanceVSNAssignedOrUpdatedAndStopped(ctx, client, instanceID, updateBody, d.Timeout(schema.TimeoutUpdate))
+					if err != nil {
+						err = instanceRestartAfterVSNFailure(ctx, instanceID, restartInstance, client, d, err)
+						return diag.FromErr(err)
+					}
+				}
+			}
+		} else if d.HasChange(Arg_VirtualSerialNumber+".0."+Attr_SoftwareTier) || d.HasChange(Arg_VirtualSerialNumber+".0."+Attr_Description) {
+			// below updates are split up since both VSN software tier and VSN description cannot be updated at the same time (mutually exclusive)
+			if d.HasChange(Arg_VirtualSerialNumber + ".0." + Attr_Description) {
+				newDescription := d.Get(Arg_VirtualSerialNumber + ".0." + Attr_Description).(string)
+				updateBody := &models.UpdateServerVirtualSerialNumber{
+					Description: &newDescription,
+				}
+				_, err = vsnClient.PVMInstanceUpdateVSN(instanceID, updateBody)
+				if err != nil {
+					err = instanceRestartAfterVSNFailure(ctx, instanceID, restartInstance, client, d, err)
 					return diag.FromErr(err)
 				}
 			}
 
-			if instanceRestart {
-				err = startLparAfterResourceChange(ctx, client, instanceID, d)
+			if d.HasChange(Arg_VirtualSerialNumber + ".0." + Attr_SoftwareTier) {
+				// Stop Lpar if active since software tier update requires shutoff
+				restartInstanceUpdateSoftwareTier, err := stopLparForVSNChange(ctx, client, instanceID, d.Timeout(schema.TimeoutUpdate))
 				if err != nil {
+					return diag.FromErr(err)
+				}
+				restartInstance = restartInstance || restartInstanceUpdateSoftwareTier
+
+				newSoftwareTier := models.SoftwareTier(d.Get(Arg_VirtualSerialNumber + ".0." + Attr_SoftwareTier).(string))
+				updateBody := &models.UpdateServerVirtualSerialNumber{
+					SoftwareTier: newSoftwareTier,
+				}
+
+				updateBody.SoftwareTier = models.SoftwareTier(newSoftwareTier)
+				_, err = vsnClient.PVMInstanceUpdateVSN(instanceID, updateBody)
+				if err != nil {
+					err = instanceRestartAfterVSNFailure(ctx, instanceID, restartInstance, client, d, err)
+					return diag.FromErr(err)
+				}
+
+				// Wait for new software tier to be reflected since it is an asynchronous operation
+				_, err = isWaitForPIInstanceVSNAssignedOrUpdatedAndStopped(ctx, client, instanceID, updateBody, d.Timeout(schema.TimeoutUpdate))
+				if err != nil {
+					err = instanceRestartAfterVSNFailure(ctx, instanceID, restartInstance, client, d, err)
 					return diag.FromErr(err)
 				}
 			}
 		}
 
-		if !d.HasChange(Arg_VirtualSerialNumber+".0."+Attr_Serial) && d.HasChange(Arg_VirtualSerialNumber+".0."+Attr_Description) {
-			newDescriptionString := d.Get(Arg_VirtualSerialNumber + ".0." + Attr_Description).(string)
-			updateBody := &models.UpdateServerVirtualSerialNumber{
-				Description: &newDescriptionString,
-			}
-			_, err = vsnClient.PVMInstanceUpdateVSN(instanceID, updateBody)
+		// set to true or false during vsn assign and software tier updates
+		if restartInstance {
+			err = startLparAfterVSNChange(ctx, client, instanceID, d.Timeout(schema.TimeoutUpdate))
 			if err != nil {
 				return diag.FromErr(err)
 			}
 		}
+
 	}
 
 	return resourceIBMPIInstanceRead(ctx, d, meta)
@@ -1936,6 +1996,10 @@ func vsnSetToCreateModel(vsnSetList []interface{}) *models.CreateServerVirtualSe
 	if description != "" {
 		model.Description = description
 	}
+	softwareTier := vsnItemMap[Attr_SoftwareTier].(string)
+	if softwareTier != "" {
+		model.SoftwareTier = models.SoftwareTier(softwareTier)
+	}
 
 	return model
 }
@@ -1943,13 +2007,90 @@ func vsnSetToCreateModel(vsnSetList []interface{}) *models.CreateServerVirtualSe
 func flattenVirtualSerialNumberToList(vsn *models.GetServerVirtualSerialNumber) []map[string]interface{} {
 	v := make([]map[string]interface{}, 1)
 	v[0] = map[string]interface{}{
-		Attr_Description: vsn.Description,
-		Attr_Serial:      vsn.Serial,
+		Attr_Description:  vsn.Description,
+		Attr_Serial:       vsn.Serial,
+		Attr_SoftwareTier: vsn.SoftwareTier,
 	}
+
 	return v
 }
 
 // Do not show a diff if VSN is changed to existing assigned VSN
 func supressVSNDiffAutoAssign(k, old, new string, d *schema.ResourceData) bool {
 	return new == old || (new == AutoAssign && old != "")
+}
+
+func instanceRestartAfterVSNFailure(ctx context.Context, instanceID string, restartInstance bool, instanceClient *instance.IBMPIInstanceClient, d *schema.ResourceData, err error) error {
+	if restartInstance {
+		startErr := startLparAfterVSNChange(ctx, instanceClient, instanceID, d.Timeout(schema.TimeoutDelete))
+		if startErr != nil {
+			err = fmt.Errorf("%w; %w, the pvm instance may still be shutoff", err, startErr)
+		}
+	}
+	return err
+}
+
+// isWaitForPIInstanceVSNAssignedOrUpdatedAndStopped will wait for VSN assigned, will also wait for correct values in updateBody if specified (specify nil to ignore updateBody checks)
+// Will also wait for VM to be in stopped state, mainly used for async VSN operations
+func isWaitForPIInstanceVSNAssignedOrUpdatedAndStopped(ctx context.Context, client *instance.IBMPIInstanceClient, id string, updateBody *models.UpdateServerVirtualSerialNumber, timeout time.Duration) (interface{}, error) {
+
+	log.Printf("Waiting until VSN assigned to %s or updated.", id)
+
+	stateConf := &retry.StateChangeConf{
+		Pending:    []string{State_Updating},
+		Target:     []string{State_Completed},
+		Refresh:    isPIInstanceVSNAssignedOrUpdatedAndStoppedRefreshFunc(client, id, updateBody),
+		Delay:      Timeout_Delay,
+		MinTimeout: Timeout_Active,
+		Timeout:    timeout,
+	}
+
+	return stateConf.WaitForStateContext(ctx)
+}
+
+func isPIInstanceVSNAssignedOrUpdatedAndStoppedRefreshFunc(client *instance.IBMPIInstanceClient, id string, updateBody *models.UpdateServerVirtualSerialNumber) retry.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		pvm, err := client.Get(id)
+		if err != nil {
+			return nil, "", err
+		}
+		if updateBody != nil && updateBody.SoftwareTier != "" && pvm.VirtualSerialNumber != nil && pvm.VirtualSerialNumber.SoftwareTier != updateBody.SoftwareTier {
+			return pvm, State_Updating, nil
+		}
+		if pvm.VirtualSerialNumber != nil && strings.ToLower(*pvm.Status) == State_Shutoff && pvm.Health.Status == OK {
+			return pvm, State_Completed, nil
+		}
+
+		return pvm, State_Updating, nil
+	}
+}
+
+func isWaitForPIInstanceVSNRemoved(ctx context.Context, client *instance.IBMPIInstanceClient, id string, timeout time.Duration) (interface{}, error) {
+
+	log.Printf("Waiting until VSN removed from %s.", id)
+
+	stateConf := &retry.StateChangeConf{
+		Pending:    []string{State_Removing},
+		Target:     []string{State_Shutoff},
+		Refresh:    isPIInstanceVSNRemovedRefreshFunc(client, id),
+		Delay:      Timeout_Delay,
+		MinTimeout: Timeout_Active,
+		Timeout:    timeout,
+	}
+
+	return stateConf.WaitForStateContext(ctx)
+}
+
+func isPIInstanceVSNRemovedRefreshFunc(client *instance.IBMPIInstanceClient, id string) retry.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		pvm, err := client.Get(id)
+		if err != nil {
+			return nil, "", err
+		}
+		if pvm.VirtualSerialNumber == nil && strings.ToLower(*pvm.Status) == State_Shutoff && pvm.Health.Status == OK {
+			return pvm, State_Shutoff, nil
+		}
+
+		return pvm, State_Removing, nil
+	}
 }
