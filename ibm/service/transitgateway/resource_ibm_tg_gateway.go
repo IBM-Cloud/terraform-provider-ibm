@@ -21,17 +21,18 @@ import (
 )
 
 const (
-	tgGateways      = "transit_gateways"
-	tgResourceGroup = "resource_group"
-	tgID            = "id"
-	tgCrn           = "crn"
-	tgName          = "name"
-	tgLocation      = "location"
-	tgCreatedAt     = "created_at"
-	tgGlobal        = "global"
-	tgStatus        = "status"
-	tgUpdatedAt     = "updated_at"
-	tgGatewayTags   = "tags"
+	tgGateways                    = "transit_gateways"
+	tgResourceGroup               = "resource_group"
+	tgID                          = "id"
+	tgCrn                         = "crn"
+	tgName                        = "name"
+	tgLocation                    = "location"
+	tgCreatedAt                   = "created_at"
+	tgGlobal                      = "global"
+	tgGreEnhancedRoutePropagation = "gre_enhanced_route_propagation"
+	tgStatus                      = "status"
+	tgUpdatedAt                   = "updated_at"
+	tgGatewayTags                 = "tags"
 
 	isTransitGatewayProvisioning     = "provisioning"
 	isTransitGatewayProvisioningDone = "done"
@@ -82,6 +83,14 @@ func ResourceIBMTransitGateway() *schema.Resource {
 				ForceNew:    false,
 				Default:     false,
 				Description: "Allow global routing for a Transit Gateway. If unspecified, the default value is false",
+			},
+
+			tgGreEnhancedRoutePropagation: {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				ForceNew:    false,
+				Default:     false,
+				Description: "Allow route propagation across all GREs connected to the same transit gateway. This affects connections on the gateway of type redundant_gre, unbound_gre_tunnel and gre_tunnel",
 			},
 
 			tgGatewayTags: {
@@ -194,12 +203,14 @@ func resourceIBMTransitGatewayCreate(d *schema.ResourceData, meta interface{}) e
 	location := d.Get(tgLocation).(string)
 	name := d.Get(tgName).(string)
 	global := d.Get(tgGlobal).(bool)
+	greEnhancedRoutePropagation := d.Get(tgGreEnhancedRoutePropagation).(bool)
 
 	createTransitGatewayOptions := &transitgatewayapisv1.CreateTransitGatewayOptions{}
 
 	createTransitGatewayOptions.Name = &name
 	createTransitGatewayOptions.Location = &location
 	createTransitGatewayOptions.Global = &global
+	createTransitGatewayOptions.GreEnhancedRoutePropagation = &greEnhancedRoutePropagation
 
 	if rsg, ok := d.GetOk(tgResourceGroup); ok {
 		resourceGroup := rsg.(string)
@@ -351,6 +362,10 @@ func resourceIBMTransitGatewayUpdate(d *schema.ResourceData, meta interface{}) e
 	if d.HasChange(tgGlobal) {
 		global := d.Get(tgGlobal).(bool)
 		updateTransitGatewayOptions.Global = &global
+	}
+	if d.HasChange(tgGreEnhancedRoutePropagation) {
+		greEnhancedRoutePropagation := d.Get(tgGreEnhancedRoutePropagation).(bool)
+		updateTransitGatewayOptions.GreEnhancedRoutePropagation = &greEnhancedRoutePropagation
 	}
 	if d.HasChange(tgGatewayTags) {
 		oldList, newList := d.GetChange(tgGatewayTags)
