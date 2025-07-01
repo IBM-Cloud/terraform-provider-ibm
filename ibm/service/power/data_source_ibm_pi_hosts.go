@@ -25,7 +25,6 @@ func DataSourceIBMPIHosts() *schema.Resource {
 			// Arguments
 			Arg_CloudInstanceID: {
 				Description:  "The GUID of the service instance associated with an account.",
-				ForceNew:     true,
 				Required:     true,
 				Type:         schema.TypeString,
 				ValidateFunc: validation.NoZeroValues,
@@ -163,7 +162,7 @@ func dataSourceIBMPIHostsRead(ctx context.Context, d *schema.ResourceData, meta 
 			}
 			if host.Crn != "" {
 				hs[Attr_CRN] = host.Crn
-				tags, err := flex.GetTagsUsingCRN(meta, string(host.Crn))
+				tags, err := flex.GetGlobalTagsUsingCRN(meta, string(host.Crn), "", UserTagType)
 				if err != nil {
 					log.Printf("Error on get of pi host (%s) user_tags: %s", host.ID, err)
 				}
