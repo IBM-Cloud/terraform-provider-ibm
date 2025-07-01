@@ -42,13 +42,6 @@ func ResourceIBMPIRoute() *schema.Resource {
 		),
 		Schema: map[string]*schema.Schema{
 			// Arguments
-			Arg_CloudInstanceID: {
-				Description:  "The GUID of the service instance associated with an account.",
-				ForceNew:     true,
-				Required:     true,
-				Type:         schema.TypeString,
-				ValidateFunc: validation.NoZeroValues,
-			},
 			Arg_Action: {
 				Default:      Deliver,
 				Description:  "Action for route. Valid values are \"deliver\".",
@@ -62,6 +55,13 @@ func ResourceIBMPIRoute() *schema.Resource {
 				Optional:     true,
 				Type:         schema.TypeString,
 				ValidateFunc: validation.StringInSlice([]string{Enable, Disable}, false),
+			},
+			Arg_CloudInstanceID: {
+				Description:  "The GUID of the service instance associated with an account.",
+				ForceNew:     true,
+				Required:     true,
+				Type:         schema.TypeString,
+				ValidateFunc: validation.NoZeroValues,
 			},
 			Arg_Destination: {
 				Description: "Destination of route.",
@@ -234,14 +234,7 @@ func resourceIBMPIRouteUpdate(ctx context.Context, d *schema.ResourceData, meta 
 	}
 
 	routeClient := instance.NewIBMPIRouteClient(ctx, sess, cloudInstanceID)
-	destination := d.Get(Arg_Destination).(string)
-	name := d.Get(Arg_Name).(string)
-	nextHop := d.Get(Arg_NextHop).(string)
-	body := &models.RouteUpdate{
-		Destination: destination,
-		Name:        name,
-		NextHop:     nextHop,
-	}
+	body := &models.RouteUpdate{}
 
 	if d.HasChange(Arg_Action) {
 		action := d.Get(Arg_Action).(string)
@@ -253,6 +246,11 @@ func resourceIBMPIRouteUpdate(ctx context.Context, d *schema.ResourceData, meta 
 		body.Advertise = advertise
 	}
 
+	if d.HasChange(Arg_Destination) {
+		destination := d.Get(Arg_Destination).(string)
+		body.Destination = destination
+	}
+
 	if d.HasChange(Arg_DestinationType) {
 		destinationType := d.Get(Arg_DestinationType).(string)
 		body.DestinationType = destinationType
@@ -261,6 +259,16 @@ func resourceIBMPIRouteUpdate(ctx context.Context, d *schema.ResourceData, meta 
 	if d.HasChange(Arg_Enabled) {
 		enabled := d.Get(Arg_Enabled).(bool)
 		body.Enabled = &enabled
+	}
+
+	if d.HasChange(Arg_Name) {
+		name := d.Get(Arg_Name).(string)
+		body.Name = name
+	}
+
+	if d.HasChange(Arg_NextHop) {
+		nextHop := d.Get(Arg_NextHop).(string)
+		body.NextHopType = nextHop
 	}
 
 	if d.HasChange(Arg_NextHopType) {

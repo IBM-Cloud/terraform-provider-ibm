@@ -60,6 +60,51 @@ func testAccCheckIBMPIRouteBasicConfig(name string, nextHop string, destination 
 	`, acc.Pi_cloud_instance_id, name, nextHop, destination)
 }
 
+func TestAccIBMPIRouteUpdate(t *testing.T) {
+	name := fmt.Sprintf("tf-pi-route-%d", acctest.RandIntRange(10, 100))
+	routeRes := "ibm_pi_route.route"
+	nextHop := "192.112.111.1"
+	initialDestination := "192.116.111.1"
+	updatedDestination := "192.115.111.1"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPIRouteDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMPIRouteUpdateConfig(name, nextHop, initialDestination),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIRouteExists(routeRes),
+					resource.TestCheckResourceAttr(routeRes, "pi_name", name),
+					resource.TestCheckResourceAttr(routeRes, "pi_destination", initialDestination),
+				),
+			},
+			{
+				Config: testAccCheckIBMPIRouteUpdateConfig(name, nextHop, updatedDestination),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIRouteExists(routeRes),
+					resource.TestCheckResourceAttr(routeRes, "pi_name", name),
+					resource.TestCheckResourceAttr(routeRes, "pi_destination", updatedDestination),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMPIRouteUpdateConfig(name string, nextHop string, destination string) string {
+	return fmt.Sprintf(`
+		resource "ibm_pi_route" "route" {
+			pi_cloud_instance_id = "%[1]s"
+			pi_name              = "%[2]s"
+			pi_next_hop          = "%[3]s"
+			pi_destination       = "%[4]s"
+			pi_destination_type  = "ipv4-address"
+			pi_next_hop_type     = "ipv4-address"
+		}
+	`, acc.Pi_cloud_instance_id, name, nextHop, destination)
+}
+
 func TestAccIBMPIRouteAllArgs(t *testing.T) {
 	name := fmt.Sprintf("tf-pi-route-%d", acctest.RandIntRange(10, 100))
 	routeRes := "ibm_pi_route.route"
