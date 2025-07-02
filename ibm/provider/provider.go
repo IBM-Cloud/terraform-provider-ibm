@@ -274,7 +274,14 @@ func Provider() *schema.Provider {
 			"ibm_backup_recovery_download_indexed_files":       backuprecovery.DataSourceIbmBackupRecoveryDownloadIndexedFiles(),
 			"ibm_backup_recovery_protection_sources":           backuprecovery.DataSourceIbmBackupRecoveryProtectionSources(),
 			"ibm_backup_recovery_connector_get_users":          backuprecovery.DataSourceIbmBackupRecoveryConnectorGetUsers(),
+			"ibm_backup_recovery_manager_get_component":        backuprecovery.DataSourceIbmBackupRecoveryManagerGetComponent(),
 			"ibm_backup_recovery_manager_get_components":       backuprecovery.DataSourceIbmBackupRecoveryManagerGetComponents(),
+			"ibm_backup_recovery_manager_export_report":        backuprecovery.DataSourceIbmBackupRecoveryManagerExportReport(),
+			"ibm_backup_recovery_manager_get_report":           backuprecovery.DataSourceIbmBackupRecoveryManagerGetReport(),
+			"ibm_backup_recovery_manager_get_report_preview":   backuprecovery.DataSourceIbmBackupRecoveryManagerGetReportPreview(),
+			"ibm_backup_recovery_manager_get_report_type":      backuprecovery.DataSourceIbmBackupRecoveryManagerGetReportType(),
+			"ibm_backup_recovery_manager_get_reports":          backuprecovery.DataSourceIbmBackupRecoveryManagerGetReports(),
+			"ibm_backup_recovery_manager_get_resources":        backuprecovery.DataSourceIbmBackupRecoveryManagerGetResources(),
 			"ibm_backup_recovery_manager_sre_get_cluster_info": backuprecovery.DataSourceIbmBackupRecoveryManagerSreGetClusterInfo(),
 
 			// // AppID
