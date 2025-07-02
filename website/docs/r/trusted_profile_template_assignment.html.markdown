@@ -65,8 +65,8 @@ Nested schema for **history**:
 * `last_modified_by_id` - (String) IAMid of the identity that last modified the assignment.
 * `resources` - (List) Status breakdown per target account of IAM resources created or errors encountered in attempting to create those IAM resources. IAM resources are only included in the response providing the assignment is not in progress. IAM resources are also only included when getting a single assignment, and excluded by list APIs.
 Nested schema for **resources**:
-	* `policy_template_refs` - (List) Policy resource(s) included only for trusted profile assignments with policy references.
-	Nested schema for **policy_template_refs**:
+	* `policy_template_references` - (List) Policy resource(s) included only for trusted profile assignments with policy references.
+	Nested schema for **policy_template_references**:
 		* `error_message` - (List) Body parameters for assignment error.
 		Nested schema for **error_message**:
 			* `error_code` - (String) Internal error code.

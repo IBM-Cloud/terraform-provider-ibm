@@ -5,10 +5,11 @@ package iamidentity_test
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -29,8 +30,7 @@ func TestAccIBMTrustedProfileTemplateAssignmentDataSourceBasic(t *testing.T) {
 		PreventPostDestroyRefresh: true,
 		Steps: []resource.TestStep{
 			{
-				Config:             testAccCheckIBMTrustedProfileTemplateAssignmentDataSourceConfigBasic(name),
-				ExpectNonEmptyPlan: true,
+				Config: testAccCheckIBMTrustedProfileTemplateAssignmentDataSourceConfigBasic(name),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_iam_trusted_profile_template_assignment.trusted_profile_template_assignment_instance", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_iam_trusted_profile_template_assignment.trusted_profile_template_assignment_instance", "account_id"),
