@@ -28,12 +28,12 @@ Run `terraform destroy` when you don't need these resources.
 resource "ibm_vmaas_vdc" "vmaas_vdc_instance" {
   accept_language = var.vmaas_vdc_accept_language
   cpu = var.vmaas_vdc_cpu
-  director_site = var.vmaas_vdc_director_site
   name = var.vmaas_vdc_name
   ram = var.vmaas_vdc_ram
   fast_provisioning_enabled = var.vmaas_vdc_fast_provisioning_enabled
   rhel_byol = var.vmaas_vdc_rhel_byol
   windows_byol = var.vmaas_vdc_windows_byol
+  director_site = var.vmaas_vdc_director_site
 }
 ```
 
@@ -44,12 +44,12 @@ resource "ibm_vmaas_vdc" "vmaas_vdc_instance" {
 | ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
 | accept_language | Language. | `string` | false |
 | cpu | The vCPU usage limit on the virtual data center (VDC). Supported for VDCs deployed on a multitenant Cloud Director site. This property is applicable when the resource pool type is reserved. | `number` | false |
-| director_site | The Cloud Director site in which to deploy the virtual data center (VDC). | `` | true |
 | name | A human readable ID for the virtual data center (VDC). | `string` | true |
 | ram | The RAM usage limit on the virtual data center (VDC) in GB (1024^3 bytes). Supported for VDCs deployed on a multitenant Cloud Director site. This property is applicable when the resource pool type is reserved. | `number` | false |
 | fast_provisioning_enabled | Determines whether this virtual data center has fast provisioning enabled or not. | `bool` | false |
 | rhel_byol | Indicates if the RHEL VMs will be using the license from IBM or the customer will use their own license (BYOL). | `bool` | false |
 | windows_byol | Indicates if the Microsoft Windows VMs will be using the license from IBM or the customer will use their own license (BYOL). | `bool` | false |
+| director_site | The Cloud Director site in which to deploy the virtual data center (VDC). | `` | true |
 
 #### Outputs
 
@@ -59,6 +59,7 @@ resource "ibm_vmaas_vdc" "vmaas_vdc_instance" {
 | provisioned_at | The time that the virtual data center (VDC) is provisioned and available to use. |
 | crn | A unique ID for the virtual data center (VDC) in IBM Cloud. |
 | deleted_at | The time that the virtual data center (VDC) is deleted. |
+| ha | Indicates if the VDC is HA-enabled for compute only, compute and network, or network only. If not present, the VDC is not HA-enabled. |
 | edges | The VMware NSX-T networking edges deployed on the virtual data center (VDC). NSX-T edges are used for bridging virtualization networking to the physical public-internet and IBM private networking. |
 | status_reasons | Information about why the request to create the virtual data center (VDC) cannot be completed. |
 | ordered_at | The time that the virtual data center (VDC) is ordered. |
@@ -74,7 +75,6 @@ resource "ibm_vmaas_vdc" "vmaas_vdc_instance" {
 ```hcl
 data "ibm_vmaas_vdc" "vmaas_vdc_instance" {
   vmaas_vdc_id = var.data_vmaas_vdc_vmaas_vdc_id
-  accept_language = var.data_vmaas_vdc_accept_language
 }
 ```
 
@@ -83,7 +83,6 @@ data "ibm_vmaas_vdc" "vmaas_vdc_instance" {
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
 | vmaas_vdc_id | A unique ID for a specified virtual data center. | `string` | true |
-| accept_language | Language. | `string` | false |
 
 #### Outputs
 
@@ -94,7 +93,7 @@ data "ibm_vmaas_vdc" "vmaas_vdc_instance" {
 | cpu | The vCPU usage limit on the virtual data center (VDC). Supported for VDCs deployed on a multitenant Cloud Director site. This property is applicable when the resource pool type is reserved. |
 | crn | A unique ID for the virtual data center (VDC) in IBM Cloud. |
 | deleted_at | The time that the virtual data center (VDC) is deleted. |
-| director_site | The Cloud Director site in which to deploy the virtual data center (VDC). |
+| ha | Indicates if the VDC is HA-enabled for compute only, compute and network, or network only. If not present, the VDC is not HA-enabled. |
 | edges | The VMware NSX-T networking edges deployed on the virtual data center (VDC). NSX-T edges are used for bridging virtualization networking to the physical public-internet and IBM private networking. |
 | status_reasons | Information about why the request to create the virtual data center (VDC) cannot be completed. |
 | name | A human readable ID for the virtual data center (VDC). |
@@ -107,6 +106,7 @@ data "ibm_vmaas_vdc" "vmaas_vdc_instance" {
 | fast_provisioning_enabled | Determines whether this virtual data center has fast provisioning enabled or not. |
 | rhel_byol | Indicates if the RHEL VMs will be using the license from IBM or the customer will use their own license (BYOL). |
 | windows_byol | Indicates if the Microsoft Windows VMs will be using the license from IBM or the customer will use their own license (BYOL). |
+| director_site | The Cloud Director site in which to deploy the virtual data center (VDC). |
 
 ## Assumptions
 

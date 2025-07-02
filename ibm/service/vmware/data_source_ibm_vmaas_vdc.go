@@ -1,8 +1,8 @@
-// Copyright IBM Corp. 2024 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.98.0-8be2046a-20241205-162752
+ * IBM OpenAPI Terraform Generator Version: 3.97.2-fc613b62-20241203-155509
  */
 
 package vmware
@@ -31,11 +31,6 @@ func DataSourceIbmVmaasVdc() *schema.Resource {
 				Required:    true,
 				Description: "A unique ID for a specified virtual data center.",
 			},
-			"accept_language": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Language.",
-			},
 			"href": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -61,52 +56,10 @@ func DataSourceIbmVmaasVdc() *schema.Resource {
 				Computed:    true,
 				Description: "The time that the virtual data center (VDC) is deleted.",
 			},
-			"director_site": &schema.Schema{
-				Type:        schema.TypeList,
+			"ha": &schema.Schema{
+				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The Cloud Director site in which to deploy the virtual data center (VDC).",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "A unique ID for the Cloud Director site.",
-						},
-						"pvdc": &schema.Schema{
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "The resource pool within the Director Site in which to deploy the virtual data center (VDC).",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"id": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "A unique ID for the resource pool.",
-									},
-									"provider_type": &schema.Schema{
-										Type:        schema.TypeList,
-										Computed:    true,
-										Description: "Determines how resources are made available to the virtual data center (VDC). Required for VDCs deployed on a multitenant Cloud Director site.",
-										Elem: &schema.Resource{
-											Schema: map[string]*schema.Schema{
-												"name": &schema.Schema{
-													Type:        schema.TypeString,
-													Computed:    true,
-													Description: "The name of the resource pool type.",
-												},
-											},
-										},
-									},
-								},
-							},
-						},
-						"url": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The URL of the VMware Cloud Director tenant portal where this virtual data center (VDC) can be managed.",
-						},
-					},
-				},
+				Description: "Indicates if the VDC is HA-enabled for compute only, compute and network, or network only. If not present, the VDC is not HA-enabled.",
 			},
 			"edges": &schema.Schema{
 				Type:        schema.TypeList,
@@ -258,6 +211,26 @@ func DataSourceIbmVmaasVdc() *schema.Resource {
 							Computed:    true,
 							Description: "The edge version.",
 						},
+						"primary_data_center_name": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The name of the primary data center.",
+						},
+						"secondary_data_center_name": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The name of the secondary data center.",
+						},
+						"primary_pvdc_id": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The ID of the primary resource pool.",
+						},
+						"secondary_pvdc_id": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The ID of the secondary resource pool.",
+						},
 					},
 				},
 			},
@@ -335,6 +308,58 @@ func DataSourceIbmVmaasVdc() *schema.Resource {
 				Computed:    true,
 				Description: "Indicates if the Microsoft Windows VMs will be using the license from IBM or the customer will use their own license (BYOL).",
 			},
+			"director_site": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The Cloud Director site in which to deploy the virtual data center (VDC).",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "A unique ID for the Cloud Director site.",
+						},
+						"pvdc": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The resource pool within the Director Site in which to deploy the virtual data center (VDC).",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"compute_ha_enabled": &schema.Schema{
+										Type:        schema.TypeBool,
+										Computed:    true,
+										Description: "Specifies whether compute HA is enabled for this VDC.",
+									},
+									"id": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "A unique ID for the resource pool.",
+									},
+									"provider_type": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "Determines how resources are made available to the virtual data center (VDC). Required for VDCs deployed on a multitenant Cloud Director site.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"name": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The name of the resource pool type.",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+						"url": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The URL of the VMware Cloud Director tenant portal where this virtual data center (VDC) can be managed.",
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -350,9 +375,6 @@ func dataSourceIbmVmaasVdcRead(context context.Context, d *schema.ResourceData, 
 	getVdcOptions := &vmwarev1.GetVdcOptions{}
 
 	getVdcOptions.SetID(d.Get("vmaas_vdc_id").(string))
-	if _, ok := d.GetOk("accept_language"); ok {
-		getVdcOptions.SetAcceptLanguage(d.Get("accept_language").(string))
-	}
 
 	vDC, _, err := vmwareClient.GetVdcWithContext(context, getVdcOptions)
 	if err != nil {
@@ -389,14 +411,10 @@ func dataSourceIbmVmaasVdcRead(context context.Context, d *schema.ResourceData, 
 		}
 	}
 
-	directorSite := []map[string]interface{}{}
-	directorSiteMap, err := DataSourceIbmVmaasVdcVDCDirectorSiteToMap(vDC.DirectorSite)
-	if err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_vmaas_vdc", "read", "director_site-to-map").GetDiag()
-	}
-	directorSite = append(directorSite, directorSiteMap)
-	if err = d.Set("director_site", directorSite); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting director_site: %s", err), "(Data) ibm_vmaas_vdc", "read", "set-director_site").GetDiag()
+	if !core.IsNil(vDC.Ha) {
+		if err = d.Set("ha", vDC.Ha); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting ha: %s", err), "(Data) ibm_vmaas_vdc", "read", "set-ha").GetDiag()
+		}
 	}
 
 	edges := []map[string]interface{}{}
@@ -465,38 +483,17 @@ func dataSourceIbmVmaasVdcRead(context context.Context, d *schema.ResourceData, 
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting windows_byol: %s", err), "(Data) ibm_vmaas_vdc", "read", "set-windows_byol").GetDiag()
 	}
 
-	return nil
-}
-
-func DataSourceIbmVmaasVdcVDCDirectorSiteToMap(model *vmwarev1.VDCDirectorSite) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["id"] = *model.ID
-	pvdcMap, err := DataSourceIbmVmaasVdcDirectorSitePVDCToMap(model.Pvdc)
+	directorSite := []map[string]interface{}{}
+	directorSiteMap, err := DataSourceIbmVmaasVdcVDCDirectorSiteToMap(vDC.DirectorSite)
 	if err != nil {
-		return modelMap, err
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_vmaas_vdc", "read", "director_site-to-map").GetDiag()
 	}
-	modelMap["pvdc"] = []map[string]interface{}{pvdcMap}
-	modelMap["url"] = *model.URL
-	return modelMap, nil
-}
-
-func DataSourceIbmVmaasVdcDirectorSitePVDCToMap(model *vmwarev1.DirectorSitePVDC) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["id"] = *model.ID
-	if model.ProviderType != nil {
-		providerTypeMap, err := DataSourceIbmVmaasVdcVDCProviderTypeToMap(model.ProviderType)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["provider_type"] = []map[string]interface{}{providerTypeMap}
+	directorSite = append(directorSite, directorSiteMap)
+	if err = d.Set("director_site", directorSite); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting director_site: %s", err), "(Data) ibm_vmaas_vdc", "read", "set-director_site").GetDiag()
 	}
-	return modelMap, nil
-}
 
-func DataSourceIbmVmaasVdcVDCProviderTypeToMap(model *vmwarev1.VDCProviderType) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["name"] = *model.Name
-	return modelMap, nil
+	return nil
 }
 
 func DataSourceIbmVmaasVdcEdgeToMap(model *vmwarev1.Edge) (map[string]interface{}, error) {
@@ -520,6 +517,18 @@ func DataSourceIbmVmaasVdcEdgeToMap(model *vmwarev1.Edge) (map[string]interface{
 	modelMap["transit_gateways"] = transitGateways
 	modelMap["type"] = *model.Type
 	modelMap["version"] = *model.Version
+	if model.PrimaryDataCenterName != nil {
+		modelMap["primary_data_center_name"] = *model.PrimaryDataCenterName
+	}
+	if model.SecondaryDataCenterName != nil {
+		modelMap["secondary_data_center_name"] = *model.SecondaryDataCenterName
+	}
+	if model.PrimaryPvdcID != nil {
+		modelMap["primary_pvdc_id"] = *model.PrimaryPvdcID
+	}
+	if model.SecondaryPvdcID != nil {
+		modelMap["secondary_pvdc_id"] = *model.SecondaryPvdcID
+	}
 	return modelMap, nil
 }
 
@@ -579,5 +588,39 @@ func DataSourceIbmVmaasVdcStatusReasonToMap(model *vmwarev1.StatusReason) (map[s
 	if model.MoreInfo != nil {
 		modelMap["more_info"] = *model.MoreInfo
 	}
+	return modelMap, nil
+}
+
+func DataSourceIbmVmaasVdcVDCDirectorSiteToMap(model *vmwarev1.VDCDirectorSite) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["id"] = *model.ID
+	pvdcMap, err := DataSourceIbmVmaasVdcDirectorSitePVDCToMap(model.Pvdc)
+	if err != nil {
+		return modelMap, err
+	}
+	modelMap["pvdc"] = []map[string]interface{}{pvdcMap}
+	modelMap["url"] = *model.URL
+	return modelMap, nil
+}
+
+func DataSourceIbmVmaasVdcDirectorSitePVDCToMap(model *vmwarev1.DirectorSitePVDC) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.ComputeHaEnabled != nil {
+		modelMap["compute_ha_enabled"] = *model.ComputeHaEnabled
+	}
+	modelMap["id"] = *model.ID
+	if model.ProviderType != nil {
+		providerTypeMap, err := DataSourceIbmVmaasVdcVDCProviderTypeToMap(model.ProviderType)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["provider_type"] = []map[string]interface{}{providerTypeMap}
+	}
+	return modelMap, nil
+}
+
+func DataSourceIbmVmaasVdcVDCProviderTypeToMap(model *vmwarev1.VDCProviderType) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["name"] = *model.Name
 	return modelMap, nil
 }

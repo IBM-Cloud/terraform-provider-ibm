@@ -46,8 +46,3 @@ variable "data_vmaas_vdc_vmaas_vdc_id" {
   type        = string
   default     = "vdc_id"
 }
-variable "data_vmaas_vdc_accept_language" {
-  description = "Language."
-  type        = string
-  default     = "en-us"
-}
