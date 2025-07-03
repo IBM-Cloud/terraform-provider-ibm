@@ -49,14 +49,16 @@ ibm_pi_placement_group provides the following [timeouts](https://www.terraform.i
 
 Review the argument references that you can specify for your resource.
 
-- `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
-- `pi_placement_group_name`  - (Required, String) The name of the placement group.
-- `pi_placement_group_policy` - (Required, String) The value of the group's affinity policy. Valid values are `affinity` and `anti-affinity`.
+- `pi_cloud_instance_id` - (Required, String, Forces new resource) The GUID of the service instance associated with an account.
+- `pi_placement_group_name`  - (Required, String, Forces new resource) The name of the placement group.
+- `pi_placement_group_policy` - (Required, String, Forces new resource) The value of the group's affinity policy. Valid values are `affinity` and `anti-affinity`.
+- `pi_user_tags` - (Optional, List of String) List of user tags attached to the resource.
 
 ## Attribute Reference
 
- In addition to all argument reference list, you can access the following attribute reference after your resource is created.
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
+- `crn` - (String) The CRN of this resource.
 - `id` - (String) The unique identifier of the placement group.
 - `members` - (List of strings) The list of server instances IDs that are members of the placement group.
 - `placement_group_id` - (String) The placement group ID.

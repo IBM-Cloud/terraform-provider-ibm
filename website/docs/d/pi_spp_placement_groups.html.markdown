@@ -47,7 +47,9 @@ In addition to all argument reference list, you can access the following attribu
 - `spp_placement_groups` - (List) List of all the shared processor pool placement groups.
 
   Nested scheme for `spp_placement_groups`:
+  - `crn` - (String) The CRN of this resource.
   - `members` - (List) The list of shared processor pool IDs that are members of the shared processor pool placement group.
   - `name` - (String) User defined name for the shared processor pool placement group.
   - `policy` - (String) The value of the group's affinity policy. Valid values are affinity and anti-affinity.
   - `spp_placement_group_id` - (String) The ID of the shared processor pool placement group.
+  - `user_tags` - (List) List of user tags attached to the resource.

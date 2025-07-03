@@ -9,6 +9,7 @@ import (
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/go-uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -33,6 +34,11 @@ func DataSourceIBMPIPlacementGroups() *schema.Resource {
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						Attr_CRN: {
+							Computed:    true,
+							Description: "The CRN of this resource.",
+							Type:        schema.TypeString,
+						},
 						Attr_ID: {
 							Computed:    true,
 							Description: "The ID of the placement group.",
@@ -53,6 +59,13 @@ func DataSourceIBMPIPlacementGroups() *schema.Resource {
 							Computed:    true,
 							Description: "The value of the group's affinity policy. Valid values are affinity and anti-affinity.",
 							Type:        schema.TypeString,
+						},
+						Attr_UserTags: {
+							Computed:    true,
+							Description: "List of user tags attached to the resource.",
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Set:         schema.HashString,
+							Type:        schema.TypeSet,
 						},
 					},
 				},
@@ -83,6 +96,14 @@ func dataSourceIBMPIPlacementGroupsRead(ctx context.Context, d *schema.ResourceD
 			Attr_Members: placementGroup.Members,
 			Attr_Name:    placementGroup.Name,
 			Attr_Policy:  placementGroup.Policy,
+		}
+		if placementGroup.Crn != "" {
+			key[Attr_CRN] = placementGroup.Crn
+			tags, err := flex.GetGlobalTagsUsingCRN(meta, string(placementGroup.Crn), "", UserTagType)
+			if err != nil {
+				log.Printf("Error on get of placement group (%s) user_tags: %s", *placementGroup.ID, err)
+			}
+			key[Attr_UserTags] = tags
 		}
 		result = append(result, key)
 	}
