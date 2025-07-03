@@ -69,6 +69,7 @@ In addition to all argument reference list, you can access the following attribu
 - `last_update_date` - (String) The last updated date of the snapshot.
 - `snapshot_id` - (String) ID of the PVM instance snapshot.
 - `status` - (String) Status of the PVM instance snapshot.
+- `status_detail` - (String) Detailed information for the last PVM instance snapshot action.
 - `volume_snapshots` - (Map) A map of volume snapshots included in the PVM instance snapshot.
 
 ## Import

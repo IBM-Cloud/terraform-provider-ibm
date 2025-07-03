@@ -80,6 +80,11 @@ func DataSourceIBMPIInstanceSnapshots() *schema.Resource {
 							Description: "The status of the Power Virtual Machine instance snapshot.",
 							Type:        schema.TypeString,
 						},
+						Attr_StatusDetail: {
+							Computed:    true,
+							Description: "Detailed information for the last PVM instance snapshot action.",
+							Type:        schema.TypeString,
+						},
 						Attr_UserTags: {
 							Computed:    true,
 							Description: "List of user tags attached to the resource.",
@@ -133,6 +138,7 @@ func flattenSnapshotsInstances(list []*models.Snapshot, meta interface{}) []map[
 			Attr_Name:            *i.Name,
 			Attr_PercentComplete: i.PercentComplete,
 			Attr_Status:          i.Status,
+			Attr_StatusDetail:    i.StatusDetail,
 			Attr_VolumeSnapshots: i.VolumeSnapshots,
 		}
 		if i.Crn != "" {
