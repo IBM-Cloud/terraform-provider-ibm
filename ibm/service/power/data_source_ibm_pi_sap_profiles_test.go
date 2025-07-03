@@ -33,3 +33,27 @@ func testAccCheckIBMPISAPProfilesDataSourceConfig() string {
 			pi_cloud_instance_id = "%s"
 		}`, acc.Pi_cloud_instance_id)
 }
+
+func TestAccIBMPISAPProfilesDataSourceFilters(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMPISAPProfilesDataSourceFiltersConfig(),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("data.ibm_pi_sap_profiles.test", "id"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMPISAPProfilesDataSourceFiltersConfig() string {
+	return fmt.Sprintf(`
+		data "ibm_pi_sap_profiles" "test" {
+			pi_cloud_instance_id = "%s"
+			pi_family_filter     = "balanced"
+			pi_prefix_filter     = "bh1"
+		}`, acc.Pi_cloud_instance_id)
+}
