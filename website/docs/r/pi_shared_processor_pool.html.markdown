@@ -53,7 +53,7 @@ Review the argument references that you can specify for your resource.
 
 - `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
 - `pi_host_id` - (Optional, String) The host id of a host in a host group (only available for dedicated hosts).
-- `pi_shared_processor_pool_host_group` - (Required, String) Host group of the shared processor pool. Valid values are 's922', 'e980' and 's1022'.
+- `pi_shared_processor_pool_host_group` - (Required, String) Host group of the shared processor pool. Valid values are 'e980', 'e1080', 'e1180', 's922', 's1022' and 's1122'.
 - `pi_shared_processor_pool_name` - (Required, String) The name of the shared processor pool.
 - `pi_shared_processor_pool_placement_group_id` - (Deprecated, Optional, String) The ID of the placement group the shared processor pool is created in. Please use pi_shared_processor_pool_placement_groups instead.
 - `pi_shared_processor_pool_placement_groups` - (Optional, List) The list of shared processor pool placement groups that the shared processor pool is in.
