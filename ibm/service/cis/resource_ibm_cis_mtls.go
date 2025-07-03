@@ -106,7 +106,10 @@ func ResourceIBMCISMtlsValidator() *validate.ResourceValidator {
 func resourceIBMCISMtlsCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).CisMtlsSession()
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error while getting the CisMtlsSession() %s %v", err, sess))
+		tfErr := flex.TerraformErrorf(err,
+			fmt.Sprintf("resourceIBMCISMtlsCreate CisMtlsSession initialization failed: %s", err.Error()),
+			"ibm_cis_mtls", "create")
+		return tfErr.GetDiag()
 	}
 	crn := d.Get(cisID).(string)
 	zoneID := d.Get(cisDomainID).(string)
@@ -128,7 +131,10 @@ func resourceIBMCISMtlsCreate(context context.Context, d *schema.ResourceData, m
 
 	result, resp, err := sess.CreateAccessCertificate(options)
 	if err != nil || result == nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error creating MTLS access certificate %v", resp))
+		tfErr := flex.TerraformErrorf(err,
+			fmt.Sprintf("resourceIBMCISMtlsCreate CreateAccessCertificate failed: %s \nResponse: %v", err.Error(), resp),
+			"ibm_cis_mtls", "create")
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(flex.ConvertCisToTfThreeVar(*result.Result.ID, zoneID, crn))
@@ -139,7 +145,10 @@ func resourceIBMCISMtlsCreate(context context.Context, d *schema.ResourceData, m
 func resourceIBMCISMtlsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).CisMtlsSession()
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error while getting the CisMtlsSession() %s %v", err, sess))
+		tfErr := flex.TerraformErrorf(err,
+			fmt.Sprintf("resourceIBMCISMtlsRead CisMtlsSession initialization failed: %s", err.Error()),
+			"ibm_cis_mtls", "read")
+		return tfErr.GetDiag()
 	}
 	//crn := d.Get(cisID).(string)
 	//sess.Crn = core.StringPtr(crn)
@@ -154,7 +163,10 @@ func resourceIBMCISMtlsRead(context context.Context, d *schema.ResourceData, met
 			d.SetId("")
 			return nil
 		}
-		return diag.FromErr(fmt.Errorf("[ERROR] Error While reading MTLS access certificate %v:%v:%v", err, response, result))
+		tfErr := flex.TerraformErrorf(err,
+			fmt.Sprintf("resourceIBMCISMtlsRead GetAccessCertificate failed: %s \nResponse: %v \nResult: %v", err.Error(), response, result),
+			"ibm_cis_mtls", "read")
+		return tfErr.GetDiag()
 	}
 
 	d.Set(cisID, crn)
@@ -171,7 +183,10 @@ func resourceIBMCISMtlsRead(context context.Context, d *schema.ResourceData, met
 func resourceIBMCISMtlsUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).CisMtlsSession()
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error while getting the CisMtlsSession() %s %v", err, sess))
+		tfErr := flex.TerraformErrorf(err,
+			fmt.Sprintf("resourceIBMCISMtlsUpdate CisMtlsSession initialization failed: %s", err.Error()),
+			"ibm_cis_mtls", "update")
+		return tfErr.GetDiag()
 	}
 
 	crn := d.Get(cisID).(string)
@@ -194,7 +209,10 @@ func resourceIBMCISMtlsUpdate(context context.Context, d *schema.ResourceData, m
 
 		_, updateResp, updateErr := sess.UpdateAccessCertificate(updateOption)
 		if updateErr != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error while updating the MTLS cert options %v", updateResp))
+			tfErr := flex.TerraformErrorf(err,
+				fmt.Sprintf("resourceIBMCISMtlsUpdate UpdateAccessCertificate failed: %s \nResponse: %v", updateErr.Error(), updateResp),
+				"ibm_cis_mtls", "update")
+			return tfErr.GetDiag()
 		}
 	}
 
@@ -204,7 +222,10 @@ func resourceIBMCISMtlsUpdate(context context.Context, d *schema.ResourceData, m
 func resourceIBMCISMtlsDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).CisMtlsSession()
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error while getting the CisMtlsSession() %s %v", err, sess))
+		tfErr := flex.TerraformErrorf(err,
+			fmt.Sprintf("resourceIBMCISMtlsDelete CisMtlsSession initialization failed: %s", err.Error()),
+			"ibm_cis_mtls", "delete")
+		return tfErr.GetDiag()
 	}
 
 	certID, zoneID, crn, _ := flex.ConvertTfToCisThreeVar(d.Id())
@@ -215,8 +236,10 @@ func resourceIBMCISMtlsDelete(context context.Context, d *schema.ResourceData, m
 	delOpt := sess.NewDeleteAccessCertificateOptions(zoneID, certID)
 	_, delResp, delErr := sess.DeleteAccessCertificate(delOpt)
 	if delErr != nil {
-
-		return diag.FromErr(fmt.Errorf("[ERROR] Error While deleting the MTLS cert : %v", delResp))
+		tfErr := flex.TerraformErrorf(delErr,
+			fmt.Sprintf("resourceIBMCISMtlsDelete CisMtlsSession initialization failed: %s \nResponse: %v", delErr.Error(), delResp),
+			"ibm_cis_mtls", "delete")
+		return tfErr.GetDiag()
 	}
 
 	return nil
