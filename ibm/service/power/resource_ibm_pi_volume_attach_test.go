@@ -77,7 +77,7 @@ func testAccCheckIBMPIVolumeAttachDestroy(s *terraform.State) error {
 		volumeAttach, err := client.CheckVolumeAttach(pvmInstanceID, volumeID)
 		if err == nil {
 			log.Println("volume attach*****", volumeAttach.State)
-			return fmt.Errorf("PI Volume Attach still exists: %s", rs.Primary.ID)
+			return flex.FmtErrorf("PI Volume Attach still exists: %s", rs.Primary.ID)
 		}
 	}
 
@@ -89,7 +89,7 @@ func testAccCheckIBMPIVolumeAttachExists(n string) resource.TestCheckFunc {
 		rs, ok := s.RootModule().Resources[n]
 
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return flex.FmtErrorf("Not found: %s", n)
 		}
 
 		if rs.Primary.ID == "" {

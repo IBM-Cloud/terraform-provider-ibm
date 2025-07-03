@@ -11,17 +11,15 @@ import (
 	"strings"
 	"time"
 
+	"github.com/IBM-Cloud/power-go-client/clients/instance"
+	"github.com/IBM-Cloud/power-go-client/power/models"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
-
-	"github.com/IBM-Cloud/power-go-client/clients/instance"
-	"github.com/IBM-Cloud/power-go-client/power/models"
 )
 
 func ResourceIBMPINetworkSecurityGroupMember() *schema.Resource {
@@ -252,7 +250,9 @@ func ResourceIBMPINetworkSecurityGroupMember() *schema.Resource {
 func resourceIBMPINetworkSecurityGroupMemberCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_network_security_group_member", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
@@ -261,11 +261,15 @@ func resourceIBMPINetworkSecurityGroupMemberCreate(ctx context.Context, d *schem
 	if mbrID, ok := d.GetOk(Arg_NetworkSecurityGroupMemberID); ok {
 		err = nsgClient.DeleteMember(nsgID, mbrID.(string))
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteMember failed: %s", err.Error()), "ibm_pi_network_security_group_member", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		_, err = isWaitForIBMPINetworkSecurityGroupMemberDeleted(ctx, nsgClient, nsgID, mbrID.(string), d.Timeout(schema.TimeoutDelete))
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForIBMPINetworkSecurityGroupMemberDeleted failed: %s", err.Error()), "ibm_pi_network_security_group_member", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		d.SetId(fmt.Sprintf("%s/%s", cloudInstanceID, nsgID))
 	} else {
@@ -277,7 +281,9 @@ func resourceIBMPINetworkSecurityGroupMemberCreate(ctx context.Context, d *schem
 		}
 		member, err := nsgClient.AddMember(nsgID, body)
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("AddMember failed: %s", err.Error()), "ibm_pi_network_security_group_member", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
 		d.SetId(fmt.Sprintf("%s/%s/%s", cloudInstanceID, nsgID, *member.ID))
@@ -289,11 +295,15 @@ func resourceIBMPINetworkSecurityGroupMemberCreate(ctx context.Context, d *schem
 func resourceIBMPINetworkSecurityGroupMemberRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_network_security_group_member", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	parts, err := flex.IdParts(d.Id())
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IdParts failed: %s", err.Error()), "ibm_pi_network_security_group_member", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	nsgClient := instance.NewIBMIPINetworkSecurityGroupClient(ctx, sess, parts[0])
 	networkSecurityGroup, err := nsgClient.Get(parts[1])
@@ -302,7 +312,9 @@ func resourceIBMPINetworkSecurityGroupMemberRead(ctx context.Context, d *schema.
 			d.SetId("")
 			return nil
 		}
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Get failed: %s", err.Error()), "ibm_pi_network_security_group_member", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	if networkSecurityGroup.Crn != nil {
@@ -344,21 +356,29 @@ func resourceIBMPINetworkSecurityGroupMemberRead(ctx context.Context, d *schema.
 func resourceIBMPINetworkSecurityGroupMemberDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_network_security_group_member", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	parts, err := flex.IdParts(d.Id())
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IdParts failed: %s", err.Error()), "ibm_pi_network_security_group_member", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if len(parts) > 2 {
 		nsgClient := instance.NewIBMIPINetworkSecurityGroupClient(ctx, sess, parts[0])
 		err = nsgClient.DeleteMember(parts[1], parts[2])
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteMember failed: %s", err.Error()), "ibm_pi_network_security_group_member", "delete")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		_, err = isWaitForIBMPINetworkSecurityGroupMemberDeleted(ctx, nsgClient, parts[1], parts[2], d.Timeout(schema.TimeoutDelete))
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForIBMPINetworkSecurityGroupMemberDeleted failed: %s", err.Error()), "ibm_pi_network_security_group_member", "delete")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 
@@ -366,6 +386,7 @@ func resourceIBMPINetworkSecurityGroupMemberDelete(ctx context.Context, d *schem
 
 	return nil
 }
+
 func isWaitForIBMPINetworkSecurityGroupMemberDeleted(ctx context.Context, client *instance.IBMPINetworkSecurityGroupClient, nsgID, nsgMemberID string, timeout time.Duration) (interface{}, error) {
 	stateConf := &retry.StateChangeConf{
 		Pending:    []string{State_Deleting},
@@ -375,7 +396,6 @@ func isWaitForIBMPINetworkSecurityGroupMemberDeleted(ctx context.Context, client
 		MinTimeout: Timeout_Active,
 		Timeout:    timeout,
 	}
-
 	return stateConf.WaitForStateContext(ctx)
 }
 
