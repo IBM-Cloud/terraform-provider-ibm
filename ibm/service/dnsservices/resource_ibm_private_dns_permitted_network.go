@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -120,7 +121,7 @@ func resourceIBMPrivateDNSPermittedNetworkCreate(d *schema.ResourceData, meta in
 
 	response, detail, err := sess.CreatePermittedNetwork(createPermittedNetworkOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error creating pdns permitted network:%s\n%s", err, detail)
+		return flex.FmtErrorf("[ERROR] Error creating dns services permitted network:%s\n%s", err, detail)
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s/%s", instanceID, zoneID, *response.ID))
@@ -139,7 +140,7 @@ func resourceIBMPrivateDNSPermittedNetworkRead(d *schema.ResourceData, meta inte
 	response, detail, err := sess.GetPermittedNetwork(getPermittedNetworkOptions)
 
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error reading pdns permitted network:%s\n%s", err, detail)
+		return flex.FmtErrorf("[ERROR] Error reading dns services permitted network:%s\n%s", err, detail)
 	}
 
 	d.Set(pdnsInstanceID, idSet[0])
@@ -168,7 +169,7 @@ func resourceIBMPrivateDNSPermittedNetworkDelete(d *schema.ResourceData, meta in
 	_, response, err := sess.DeletePermittedNetwork(deletePermittedNetworkOptions)
 
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error deleting pdns permitted network:%s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error deleting dns services permitted network:%s\n%s", err, response)
 	}
 
 	d.SetId("")
@@ -183,7 +184,7 @@ func resourceIBMPrivateDNSPermittedNetworkExists(d *schema.ResourceData, meta in
 
 	idSet := strings.Split(d.Id(), "/")
 	if len(idSet) < 3 {
-		return false, fmt.Errorf("[ERROR] Incorrect ID %s: Id should be a combination of InstanceID/zoneID/permittedNetworkID", d.Id())
+		return false, flex.FmtErrorf("[ERROR] Incorrect ID %s: Id should be a combination of InstanceID/zoneID/permittedNetworkID", d.Id())
 	}
 
 	mk := "private_dns_permitted_network_" + idSet[0] + idSet[1]
