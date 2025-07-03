@@ -111,6 +111,7 @@ func ResourceIBMPIVPNConnection() *schema.Resource {
 				Description: "Dead Peer Detection",
 			},
 		},
+		DeprecationMessage: "Resource ibm_pi_vpn_connection is deprecated. VPN has reached end of life.",
 	}
 }
 
