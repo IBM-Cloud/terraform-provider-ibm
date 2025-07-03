@@ -48,6 +48,8 @@ In addition to all argument reference list, you can access the following attribu
 
   Nested scheme for `networks`:
   - `access_config` - (Deprecated, String) The network communication configuration option of the network (for on-prem locations only). Use `peer_id` instead.
+  - `advertise` - (String) Indicates if the network is advertised.
+  - `arp_broadcast` - (String) Indicates if ARP Broadcast is enabled.
   - `crn` - (String) The CRN of this resource.
   - `dhcp_managed` - (Boolean) Indicates if the network DHCP Managed.
   - `href` - (String) The hyper link of a network.
