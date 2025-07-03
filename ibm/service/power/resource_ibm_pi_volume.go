@@ -189,6 +189,11 @@ func ResourceIBMPIVolume() *schema.Resource {
 				Description: "Mirroring state for replication enabled volume",
 				Type:        schema.TypeString,
 			},
+			Attr_OutOfBandDeleted: {
+				Computed:    true,
+				Description: "Indicates if the volume does not exist on storage controller.",
+				Type:        schema.TypeBool,
+			},
 			Attr_PrimaryRole: {
 				Computed:    true,
 				Description: "Indicates whether 'master'/'auxiliary' volume is playing the primary role.",
@@ -378,12 +383,13 @@ func resourceIBMPIVolumeRead(ctx context.Context, d *schema.ResourceData, meta i
 	if vol.DeleteOnTermination != nil {
 		d.Set(Attr_DeleteOnTermination, vol.DeleteOnTermination)
 	}
+	d.Set(Arg_ReplicationEnabled, vol.ReplicationEnabled)
 	d.Set(Attr_GroupID, vol.GroupID)
 	d.Set(Attr_IOThrottleRate, vol.IoThrottleRate)
 	d.Set(Attr_MasterVolumeName, vol.MasterVolumeName)
 	d.Set(Attr_MirroringState, vol.MirroringState)
+	d.Set(Attr_OutOfBandDeleted, vol.OutOfBandDeleted)
 	d.Set(Attr_PrimaryRole, vol.PrimaryRole)
-	d.Set(Arg_ReplicationEnabled, vol.ReplicationEnabled)
 	d.Set(Attr_ReplicationSites, vol.ReplicationSites)
 	d.Set(Attr_ReplicationStatus, vol.ReplicationStatus)
 	d.Set(Attr_ReplicationType, vol.ReplicationType)

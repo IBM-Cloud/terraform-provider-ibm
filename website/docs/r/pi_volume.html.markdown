@@ -84,6 +84,7 @@ In addition to all argument reference list, you can access the following attribu
 - `io_throttle_rate` - (String) Amount of iops assigned to the volume.
 - `master_volume_name` - (String) The master volume name.
 - `mirroring_state` - (String) Mirroring state for replication enabled volume.
+- `out_of_band_deleted` - (Bool) Indicates if the volume does not exist on storage controller.
 - `primary_role` - (String) Indicates whether `master`/`auxiliary` volume is playing the primary role.
 - `replication_status` - (String) The replication status of the volume.
 - `replication_sites` - (List) List of replication sites for volume replication.

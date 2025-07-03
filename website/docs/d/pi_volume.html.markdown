@@ -62,6 +62,7 @@ In addition to all argument reference list, you can access the following attribu
 - `last_update_date` - (String) The date when the volume last updated.
 - `master_volume_name` - (String) The master volume name.
 - `mirroring_state` - (String) Mirroring state for replication enabled volume.
+- `out_of_band_deleted` - (Bool) Indicates if the volume does not exist on storage controller.
 - `primary_role` - (String) Indicates whether `master`/`auxiliary` volume is playing the primary role.
 - `replication_enabled` - (Boolean) Indicates if the volume should be replication enabled or not.
 - `replication_sites` - (List) List of replication sites for volume replication.

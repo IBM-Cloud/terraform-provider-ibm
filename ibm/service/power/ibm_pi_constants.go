@@ -361,6 +361,7 @@ const (
 	Attr_Onboardings                     = "onboardings"
 	Attr_OperatingSystem                 = "operating_system"
 	Attr_OSType                          = "os_type"
+	Attr_OutOfBandDeleted                = "out_of_band_deleted"
 	Attr_PeerID                          = "peer_id"
 	Attr_PercentComplete                 = "percent_complete"
 	Attr_PIInstanceSharedProcessorPool   = "shared_processor_pool"
