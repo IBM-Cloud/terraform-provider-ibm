@@ -359,7 +359,6 @@ func TestResourceIBMLogsRouterTenantMapToTargetTypePrototype(t *testing.T) {
 		targetParametersTypeLogDnaPrototypeModel := new(ibmcloudlogsroutingv0.TargetParametersTypeLogDnaPrototype)
 		targetParametersTypeLogDnaPrototypeModel.Host = core.StringPtr("www.example.com")
 		targetParametersTypeLogDnaPrototypeModel.Port = core.Int64Ptr(int64(1))
-		targetParametersTypeLogDnaPrototypeModel.AccessCredential = core.StringPtr("ingestion-secret")
 
 		model := new(ibmcloudlogsroutingv0.TargetTypePrototype)
 		model.LogSinkCRN = core.StringPtr("crn:v1:bluemix:public:logdna:eu-de:a/3516b8fa0a174a71899f5affa4f18d78:3517d2ed-9429-af34-ad52-34278391cbc8::")
@@ -389,7 +388,6 @@ func TestResourceIBMLogsRouterTenantMapToTargetParametersTypeLogDnaPrototype(t *
 		model := new(ibmcloudlogsroutingv0.TargetParametersTypeLogDnaPrototype)
 		model.Host = core.StringPtr("www.example.com")
 		model.Port = core.Int64Ptr(int64(1))
-		model.AccessCredential = core.StringPtr("ingestion-secret")
 
 		assert.Equal(t, result, model)
 	}
@@ -409,7 +407,6 @@ func TestResourceIBMLogsRouterTenantMapToTargetTypePrototypeTargetTypeLogDnaProt
 		targetParametersTypeLogDnaPrototypeModel := new(ibmcloudlogsroutingv0.TargetParametersTypeLogDnaPrototype)
 		targetParametersTypeLogDnaPrototypeModel.Host = core.StringPtr("www.example.com")
 		targetParametersTypeLogDnaPrototypeModel.Port = core.Int64Ptr(int64(8080))
-		targetParametersTypeLogDnaPrototypeModel.AccessCredential = core.StringPtr("an-ingestion-secret")
 
 		model := new(ibmcloudlogsroutingv0.TargetTypePrototypeTargetTypeLogDnaPrototype)
 		model.LogSinkCRN = core.StringPtr("crn:v1:bluemix:public:logdna:eu-de:a/3516b8fa0a174a71899f5affa4f18d78:3517d2ed-9429-af34-ad52-34278391cbc8::")
