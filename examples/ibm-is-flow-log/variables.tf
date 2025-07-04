@@ -1,7 +1,15 @@
+# ==========================================================================
+# Flow Logs Variables
+# ==========================================================================
+
+# Region where resources will be created
 variable "region" {
-  default = "us-south"
+  description = "IBM Cloud region where resources will be created"
+  default     = "us-south"
 }
 
+# Resource group for organizing resources
 variable "resource_group" {
-  default = "default"
+  description = "Name of the resource group for Flow Logs related resources"
+  default     = "Default"
 }
