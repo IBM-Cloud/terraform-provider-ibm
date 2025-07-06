@@ -8,7 +8,8 @@ description: |-
 
 # ibm_cis_custom_list
 
-Provides an IBM Cloud Internet Services custom list resource to create, update, and delete the custom list of an instance. For more information about the IBM Cloud Internet Services custom list, see [custom list](https://cloud.ibm.com/docs/cis).
+Provides an IBM Cloud Internet Services custom list resource to create, update, and delete the custom list of an instance. For more information, see [Using custom lists](https:/cloud.ibm.com/docs/cis?group=custom-lists).
+
 
 ## Example usage
 
