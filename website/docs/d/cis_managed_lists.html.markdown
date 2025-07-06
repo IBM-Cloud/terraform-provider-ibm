@@ -3,12 +3,12 @@ subcategory: "Internet services"
 layout: "ibm"
 page_title: "IBM: ibm_cis_managed_lists"
 description: |-
-  Get information on an IBM Cloud Internet Services managed lists.
+  Get information about IBM Cloud Internet Services managed lists.
 ---
 
 # ibm_cis_managed_lists
 
-Retrieve information about IBM Cloud Internet Services managed lists data sources. For more information, see [IBM Cloud Internet Services].
+Retrieve information about IBM Cloud Internet Services managed list data sources. For more information, see [Using managed lists](https://cloud.ibm.com/docs/cis?topic=cis-using-managed-lists).
 
 ## Example usage
 
