@@ -8,7 +8,7 @@ description: |-
 
 # ibm_cis_custom_list
 
-Provides an IBM Cloud Internet Services custom list items resource to create, update, and delete the custom list items of an instance. For more information about the IBM Cloud Internet Services custom list, see [custom list items](https://cloud.ibm.com/docs/cis).
+Provides an IBM Cloud Internet Services custom list items resource to create, update, and delete the custom list items of an instance. For more information, see [Using custom lists](https:/cloud.ibm.com/docs/cis?group=custom-lists).
 
 ## Example usage
 
@@ -46,7 +46,7 @@ Review the argument references that you can specify for your resource.
 - `cis_id` - (Required, String) The ID of the CIS service instance.
 - `list_id` - (Required, String) ID of the custom list.
 - `items` - (Required, List) Items list
-  - `asn` - (Optional, int) Defines a non-negative 32 bit integer. It is used with the list where kind is `asn`.
+  - `asn` - (Optional, int) Defines a non-negative 32-bit integer. It is used with the list where kind is `asn`.
   - `ip` - (Optional, string) An IPv4 address, an IPv4 CIDR, or an IPv6 CIDR. IPv6 CIDRs are limited to a maximum of /64. It is used with the list where kind is `ip`.
   - `hostname` - (optional, string) Defines the hostname. It is used with the list where kind is `hostname`.
   - `comment` - (optional, string) Defines an informative summary of the list item.
