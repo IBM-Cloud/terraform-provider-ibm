@@ -3,7 +3,7 @@ subcategory: "Internet services"
 layout: "ibm"
 page_title: "IBM: ibm_cis_custom_list_items"
 description: |-
-  Get information on an IBM Cloud Internet Services custom list items.
+  Get information about IBM Cloud Internet Services custom list items.
 ---
 
 # ibm_cis_custom_list_items
