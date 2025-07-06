@@ -8,7 +8,7 @@ description: |-
 
 # ibm_cis_custom_list_items
 
-Retrieve information about IBM Cloud Internet Services custom list items data sources. For more information, see [Using custom lists](https:/cloud.ibm.com/docs/cis?group=custom-lists).
+Retrieve information about IBM Cloud Internet Services custom list item data sources. For more information, see [Using custom lists](https:/cloud.ibm.com/docs/cis?group=custom-lists).
 
 ## Example usage
 
