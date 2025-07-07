@@ -230,6 +230,11 @@ func DataSourceIBMCdTektonPipelineTrigger() *schema.Resource {
 				Computed:    true,
 				Description: "Either 'events' or 'filter' can be used. Stores the CEL (Common Expression Language) expression value which is used for event filtering against the Git webhook payloads.",
 			},
+			"limit_waiting_runs": &schema.Schema{
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Flag that will limit the trigger to a maximum of one waiting run. A newly triggered run will cause waiting run(s) to be automatically cancelled.",
+			},
 			"cron": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -415,6 +420,12 @@ func dataSourceIBMCdTektonPipelineTriggerRead(context context.Context, d *schema
 	if !core.IsNil(trigger.Filter) {
 		if err = d.Set("filter", trigger.Filter); err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting filter: %s", err), "(Data) ibm_cd_tekton_pipeline_trigger", "read", "set-filter").GetDiag()
+		}
+	}
+
+	if !core.IsNil(trigger.LimitWaitingRuns) {
+		if err = d.Set("limit_waiting_runs", trigger.LimitWaitingRuns); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting limit_waiting_runs: %s", err), "(Data) ibm_cd_tekton_pipeline_trigger", "read", "set-limit_waiting_runs").GetDiag()
 		}
 	}
 
