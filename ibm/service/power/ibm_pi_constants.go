@@ -446,7 +446,7 @@ const (
 	Attr_StoragePoolsCapacity            = "storage_pools_capacity"
 	Attr_StorageType                     = "storage_type"
 	Attr_StorageTypesCapacity            = "storage_types_capacity"
-	Attr_SupportedSoftwareTiers          = "pi_supported_software_tiers"
+	Attr_SupportedSoftwareTiers          = "supported_software_tiers"
 	Attr_SupportedSystems                = "supported_systems"
 	Attr_Synchronized                    = "synchronized"
 	Attr_SynchronousReplication          = "synchronous_replication"
