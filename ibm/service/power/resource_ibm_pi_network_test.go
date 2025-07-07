@@ -208,6 +208,7 @@ func TestAccIBMPINetworkPeerOnPrem(t *testing.T) {
 		},
 	})
 }
+
 func testAccCheckIBMPINetworkDestroy(s *terraform.State) error {
 	sess, err := acc.TestAccProvider.Meta().(conns.ClientSession).IBMPISession()
 	if err != nil {
@@ -303,7 +304,6 @@ func testAccCheckIBMPINetworkGatewayConfigSatellite(name string) string {
 			pi_network_type      		= "vlan"
 			pi_cidr              		= "192.168.17.0/24"
 			pi_network_mtu		 		= 6500
-			pi_network_access_config	= "outbound-only"
 		}
 	`, acc.Pi_cloud_instance_id, name)
 }

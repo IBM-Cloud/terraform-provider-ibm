@@ -96,28 +96,11 @@ func ResourceIBMPINetwork() *schema.Resource {
 				Optional: true,
 				Type:     schema.TypeList,
 			},
-			Arg_NetworkAccessConfig: {
-				Computed:     true,
-				Deprecated:   "This field is deprecated please use pi_network_peer instead",
-				Description:  "The network communication configuration option of the network (for satellite locations only).",
-				Optional:     true,
-				Type:         schema.TypeString,
-				ValidateFunc: validate.ValidateAllowedStringValues([]string{Internal_Only, Outbound_Only, Bidirectional_Static_Route, Bidirectional_BGP, Bidirectional_L2Out}),
-			},
-			Arg_NetworkJumbo: {
-				Computed:      true,
-				ConflictsWith: []string{Arg_NetworkMTU},
-				Deprecated:    "This field is deprecated, use pi_network_mtu instead.",
-				Description:   "MTU Jumbo option of the network (for multi-zone locations only).",
-				Optional:      true,
-				Type:          schema.TypeBool,
-			},
 			Arg_NetworkMTU: {
-				Computed:      true,
-				ConflictsWith: []string{Arg_NetworkJumbo},
-				Description:   "Maximum Transmission Unit option of the network. Minimum is 1450 and maximum is 9000.",
-				Optional:      true,
-				Type:          schema.TypeInt,
+				Computed:    true,
+				Description: "Maximum Transmission Unit option of the network. Minimum is 1450 and maximum is 9000.",
+				Optional:    true,
+				Type:        schema.TypeInt,
 			},
 			Arg_NetworkName: {
 				Description:  "The name of the network.",
@@ -126,19 +109,23 @@ func ResourceIBMPINetwork() *schema.Resource {
 				ValidateFunc: validation.NoZeroValues,
 			},
 			Arg_NetworkPeer: {
+				Deprecated:  "This field is deprecated",
 				Description: "Network peer information.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						Attr_ID: {
+							Deprecated:  "This field is deprecated",
 							Description: "ID of the network peer.",
 							Required:    true,
 							Type:        schema.TypeString,
 						},
 						Attr_NetworkAddressTranslation: {
+							Deprecated:  "This field is deprecated",
 							Description: "Contains the network address translation Details.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									Attr_SourceIP: {
+										Deprecated:  "This field is deprecated",
 										Description: "source IP address, required if network peer type is L3BGP or L3STATIC and if NAT is enabled.",
 										Required:    true,
 										Type:        schema.TypeString,
@@ -150,6 +137,7 @@ func ResourceIBMPINetwork() *schema.Resource {
 							Type:     schema.TypeList,
 						},
 						Attr_Type: {
+							Deprecated:   "This field is deprecated",
 							Description:  "Type of the network peer.",
 							Optional:     true,
 							Type:         schema.TypeString,
@@ -177,7 +165,7 @@ func ResourceIBMPINetwork() *schema.Resource {
 				Type:        schema.TypeSet,
 			},
 
-			//Computed Attributes
+			// Computed Attributes
 			Attr_CRN: {
 				Computed:    true,
 				Description: "The CRN of this resource.",
@@ -185,11 +173,13 @@ func ResourceIBMPINetwork() *schema.Resource {
 			},
 			Attr_NetworkAddressTranslation: {
 				Computed:    true,
+				Deprecated:  "This field is deprecated",
 				Description: "Contains the Network Address Translation Details (for on-prem locations only).",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						Attr_SourceIP: {
 							Computed:    true,
+							Deprecated:  "This field is deprecated",
 							Description: "source IP address, required if network peer type is L3BGP or L3STATIC and if NAT is enabled.",
 							Type:        schema.TypeString,
 						},
@@ -204,6 +194,7 @@ func ResourceIBMPINetwork() *schema.Resource {
 			},
 			Attr_PeerID: {
 				Computed:    true,
+				Deprecated:  "This field is deprecated",
 				Description: "Network Peer ID (for on-prem locations only).",
 				Type:        schema.TypeString,
 			},
@@ -239,15 +230,9 @@ func resourceIBMPINetworkCreate(ctx context.Context, d *schema.ResourceData, met
 	if tags, ok := d.GetOk(Arg_UserTags); ok {
 		body.UserTags = flex.FlattenSet(tags.(*schema.Set))
 	}
-	if v, ok := d.GetOk(Arg_NetworkJumbo); ok {
-		body.Jumbo = v.(bool)
-	}
 	if v, ok := d.GetOk(Arg_NetworkMTU); ok {
 		var mtu int64 = int64(v.(int))
 		body.Mtu = &mtu
-	}
-	if v, ok := d.GetOk(Arg_NetworkAccessConfig); ok {
-		body.AccessConfig = models.AccessConfig(v.(string))
 	}
 	if _, ok := d.GetOk(Arg_NetworkPeer); ok {
 		peerModel := networkMapToNetworkCreatePeer(d.Get(Arg_NetworkPeer + ".0").(map[string]interface{}))
@@ -355,8 +340,6 @@ func resourceIBMPINetworkRead(ctx context.Context, d *schema.ResourceData, meta 
 	d.Set(Arg_Cidr, networkdata.Cidr)
 	d.Set(Arg_DNS, networkdata.DNSServers)
 	d.Set(Arg_Gateway, networkdata.Gateway)
-	d.Set(Arg_NetworkAccessConfig, networkdata.AccessConfig)
-	d.Set(Arg_NetworkJumbo, networkdata.Jumbo)
 	d.Set(Arg_NetworkMTU, networkdata.Mtu)
 	d.Set(Arg_NetworkName, networkdata.Name)
 	d.Set(Arg_NetworkType, networkdata.Type)
