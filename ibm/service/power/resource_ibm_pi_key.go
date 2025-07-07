@@ -78,13 +78,13 @@ func ResourceIBMPIKey() *schema.Resource {
 			},
 			Attr_Name: {
 				Computed:    true,
-				Deprecated:  "This field is deprecated and will be removed in a future release. Use pi_name instead.",
+				Deprecated:  "This field is deprecated and will be removed in a future release. Use pi_key_name instead.",
 				Description: "User defined name for the SSH key.",
 				Type:        schema.TypeString,
 			},
 			Attr_Key: {
 				Computed:    true,
-				Deprecated:  "This field is deprecated and will be removed in a future release. Use pi_key instead.",
+				Deprecated:  "This field is deprecated and will be removed in a future release. Use pi_ssh_key instead.",
 				Description: "SSH RSA key.",
 				Type:        schema.TypeString,
 			},
