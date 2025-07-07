@@ -412,6 +412,11 @@ func DataSourceIBMCdTektonPipeline() *schema.Resource {
 							Computed:    true,
 							Description: "Either 'events' or 'filter' can be used. Stores the CEL (Common Expression Language) expression value which is used for event filtering against the Git webhook payloads.",
 						},
+						"limit_waiting_runs": &schema.Schema{
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Flag that will limit the trigger to a maximum of one waiting run. A newly triggered run will cause waiting run(s) to be automatically cancelled.",
+						},
 						"cron": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -828,6 +833,9 @@ func DataSourceIBMCdTektonPipelineTriggerToMap(model cdtektonpipelinev2.TriggerI
 		if model.Filter != nil {
 			modelMap["filter"] = *model.Filter
 		}
+		if model.LimitWaitingRuns != nil {
+			modelMap["limit_waiting_runs"] = *model.LimitWaitingRuns
+		}
 		if model.Cron != nil {
 			modelMap["cron"] = *model.Cron
 		}
@@ -1030,6 +1038,9 @@ func DataSourceIBMCdTektonPipelineTriggerScmTriggerToMap(model *cdtektonpipeline
 	}
 	if model.Filter != nil {
 		modelMap["filter"] = *model.Filter
+	}
+	if model.LimitWaitingRuns != nil {
+		modelMap["limit_waiting_runs"] = *model.LimitWaitingRuns
 	}
 	return modelMap, nil
 }
