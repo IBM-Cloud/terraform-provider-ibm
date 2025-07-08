@@ -35,6 +35,16 @@ func DataSourceIBMPINetwork() *schema.Resource {
 			},
 
 			// Attributes
+			Attr_Advertise: {
+				Computed:    true,
+				Description: "Indicates if the network is advertised.",
+				Type:        schema.TypeString,
+			},
+			Attr_ARPBroadcast: {
+				Computed:    true,
+				Description: "Indicates if ARP Broadcast is enabled.",
+				Type:        schema.TypeString,
+			},
 			Attr_AvailableIPCount: {
 				Computed:    true,
 				Description: "The total number of IP addresses that you have in your network.",
@@ -138,6 +148,8 @@ func dataSourceIBMPINetworkRead(ctx context.Context, d *schema.ResourceData, met
 	}
 
 	d.SetId(*networkdata.NetworkID)
+	d.Set(Attr_Advertise, networkdata.Advertise)
+	d.Set(Attr_ARPBroadcast, networkdata.ArpBroadcast)
 	if networkdata.IPAddressMetrics.Available != nil {
 		d.Set(Attr_AvailableIPCount, networkdata.IPAddressMetrics.Available)
 	}

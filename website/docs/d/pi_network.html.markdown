@@ -46,6 +46,8 @@ Review the argument references that you can specify for your data source.
 
 In addition to all argument reference list, you can access the following attribute references after your data source is created.
 
+- `advertise` - (String) Indicates if the network is advertised.
+- `arp_broadcast` - (String) Indicates if ARP Broadcast is enabled.
 - `available_ip_count` - (Float) The total number of IP addresses that you have in your network.
 - `cidr` - (String) The CIDR of the network.
 - `crn` - (String) The CRN of this resource.

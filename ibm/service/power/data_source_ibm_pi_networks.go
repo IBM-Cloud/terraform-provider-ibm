@@ -35,6 +35,16 @@ func DataSourceIBMPINetworks() *schema.Resource {
 				Description: "List of all networks.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						Attr_Advertise: {
+							Computed:    true,
+							Description: "Indicates if the network is advertised.",
+							Type:        schema.TypeString,
+						},
+						Attr_ARPBroadcast: {
+							Computed:    true,
+							Description: "Indicates if ARP Broadcast is enabled.",
+							Type:        schema.TypeString,
+						},
 						Attr_CRN: {
 							Computed:    true,
 							Description: "The CRN of this resource.",
@@ -121,14 +131,16 @@ func flattenNetworks(list []*models.NetworkReference, meta interface{}) []map[st
 	result := make([]map[string]interface{}, 0, len(list))
 	for _, i := range list {
 		l := map[string]interface{}{
-			Attr_DhcpManaged: i.DhcpManaged,
-			Attr_Href:        *i.Href,
-			Attr_MTU:         i.Mtu,
-			Attr_Name:        *i.Name,
-			Attr_NetworkID:   *i.NetworkID,
-			Attr_PeerID:      i.PeerID,
-			Attr_Type:        *i.Type,
-			Attr_VLanID:      *i.VlanID,
+			Attr_Advertise:    i.Advertise,
+			Attr_ARPBroadcast: i.ArpBroadcast,
+			Attr_DhcpManaged:  i.DhcpManaged,
+			Attr_Href:         *i.Href,
+			Attr_MTU:          i.Mtu,
+			Attr_Name:         *i.Name,
+			Attr_NetworkID:    *i.NetworkID,
+			Attr_PeerID:       i.PeerID,
+			Attr_Type:         *i.Type,
+			Attr_VLanID:       *i.VlanID,
 		}
 
 		if i.Crn != "" {
