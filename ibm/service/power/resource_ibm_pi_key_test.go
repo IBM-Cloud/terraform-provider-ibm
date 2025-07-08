@@ -39,7 +39,7 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 					resource.TestCheckResourceAttrSet(keyRes, "creation_date"),
 					resource.TestCheckResourceAttr(keyRes, "key", publicKey),
 					resource.TestCheckResourceAttr(keyRes, "name", name),
-					resource.TestCheckResourceAttr(keyRes, "pi_visibility", "account"),
+					resource.TestCheckResourceAttr(keyRes, "pi_visibility", "workspace"),
 				),
 			},
 		},
@@ -55,7 +55,7 @@ func testAccCheckIBMPIKeyConfig(publicKey, name string) string {
 		}`, acc.Pi_cloud_instance_id, name, publicKey)
 }
 
-func TestAccIBMPIKeyWorkspace(t *testing.T) {
+func TestAccIBMPIKeyAccount(t *testing.T) {
 	keyRes := "ibm_pi_key.key"
 	publicKey := strings.TrimSpace(`
 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
@@ -67,7 +67,7 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 		CheckDestroy: testAccCheckIBMPIKeyDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMPIKeyWorkspaceConfig(publicKey, name),
+				Config: testAccCheckIBMPIKeyAccountConfig(publicKey, name),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMPIKeyExists(keyRes),
 					resource.TestCheckResourceAttr(keyRes, "pi_key_name", name),
@@ -75,20 +75,20 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 					resource.TestCheckResourceAttrSet(keyRes, "creation_date"),
 					resource.TestCheckResourceAttr(keyRes, "key", publicKey),
 					resource.TestCheckResourceAttr(keyRes, "name", name),
-					resource.TestCheckResourceAttr(keyRes, "pi_visibility", "workspace"),
+					resource.TestCheckResourceAttr(keyRes, "pi_visibility", "account"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckIBMPIKeyWorkspaceConfig(publicKey, name string) string {
+func testAccCheckIBMPIKeyAccountConfig(publicKey, name string) string {
 	return fmt.Sprintf(`
 		resource "ibm_pi_key" "key" {
 			pi_cloud_instance_id = "%[1]s"
 			pi_key_name          = "%[2]s"
 			pi_ssh_key           = "%[3]s"
-			pi_visibility        = "workspace"
+			pi_visibility        = "account"
 		}`, acc.Pi_cloud_instance_id, name, publicKey)
 }
 

@@ -88,15 +88,15 @@ func ResourceIBMPIKey() *schema.Resource {
 				Description: "SSH RSA key.",
 				Type:        schema.TypeString,
 			},
-			Attr_SSHKeyID: {
-				Computed:    true,
-				Description: "Unique ID of SSH key.",
-				Type:        schema.TypeString,
-			},
 			Attr_PrimaryWorkspace: {
 				Computed:    true,
 				Description: "Indicates if the current workspace owns the ssh key or not.",
 				Type:        schema.TypeBool,
+			},
+			Attr_SSHKeyID: {
+				Computed:    true,
+				Description: "Unique ID of SSH key.",
+				Type:        schema.TypeString,
 			},
 		},
 	}
@@ -169,9 +169,9 @@ func resourceIBMPIKeyRead(ctx context.Context, d *schema.ResourceData, meta inte
 	// Attributes
 	d.Set(Attr_CreationDate, sshkeydata.CreationDate.String())
 	d.Set(Attr_Key, sshkeydata.SSHKey)
-	d.Set(Attr_SSHKeyID, sshkeydata.ID)
 	d.Set(Attr_Name, sshkeydata.Name)
 	d.Set(Attr_PrimaryWorkspace, sshkeydata.PrimaryWorkspace)
+	d.Set(Attr_SSHKeyID, sshkeydata.ID)
 
 	return nil
 }
