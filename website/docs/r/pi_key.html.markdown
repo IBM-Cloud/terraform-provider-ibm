@@ -62,9 +62,9 @@ Review the argument references that you can specify for your resource.
 - `creation_date` - (String) Date of SSH Key creation.
 - `id` - (String) The unique identifier of the key. The ID is composed of `<pi_cloud_instance_id>/<pi_key_name>`.
 - `name` - (String, Deprecated) User defined name for the SSH key.
+- `primary_workspace` - (Boolean) Indicates if the current workspace owns the ssh key or not.
 - `ssh_key` - (String, Deprecated) SSH RSA key.
 - `ssh_key_id` - (String) Unique ID of SSH key.
-- `primary_workspace` - (Boolean) Indicates if the current workspace owns the ssh key or not.
 
 ## Import
 

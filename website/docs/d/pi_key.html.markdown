@@ -50,7 +50,7 @@ In addition to all argument reference list, you can access the following attribu
 - `creation_date` - (String) Date of SSH Key creation.
 - `description` - (String) Description of the SSH key.
 - `name` - (String) Name of SSH key.
+- `primary_workspace` - (Boolean) Indicates if the current workspace owns the ssh key or not.
 - `ssh_key` - (String) SSH RSA key.
 - `ssh_key_id` - (String) Unique ID of SSH key.
-- `primary_workspace` - (Boolean) Indicates if the current workspace owns the ssh key or not.
 - `visibility` - (String) Visibility of the SSH key.
