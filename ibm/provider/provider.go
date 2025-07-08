@@ -2184,9 +2184,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_iam_service_api_key":                  iamidentity.ResourceIBMIAMServiceAPIKeyValidator(),
 				"ibm_iam_trusted_profile_identity":         iamidentity.ResourceIBMIamTrustedProfileIdentityValidator(),
 
-				"ibm_iam_trusted_profile_policy":  iampolicy.ResourceIBMIAMTrustedProfilePolicyValidator(),
 				"ibm_iam_access_group_policy":     iampolicy.ResourceIBMIAMAccessGroupPolicyValidator(),
-				"ibm_iam_service_policy":          iampolicy.ResourceIBMIAMServicePolicyValidator(),
 				"ibm_iam_authorization_policy":    iampolicy.ResourceIBMIAMAuthorizationPolicyValidator(),
 				"ibm_iam_policy_template":         iampolicy.ResourceIBMIAMPolicyTemplateValidator(),
 				"ibm_iam_policy_template_version": iampolicy.ResourceIBMIAMPolicyTemplateVersionValidator(),
@@ -2330,9 +2328,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_iam_trusted_profile":             iamidentity.DataSourceIBMIamTrustedProfileValidator(),
 				"ibm_iam_trusted_profile_claim_rules": iamidentity.DataSourceIBMIamTrustedProfileClaimRulesValidator(),
 
-				"ibm_iam_access_group_policy":    iampolicy.DataSourceIBMIAMAccessGroupPolicyValidator(),
-				"ibm_iam_service_policy":         iampolicy.DataSourceIBMIAMServicePolicyValidator(),
-				"ibm_iam_trusted_profile_policy": iampolicy.DataSourceIBMIAMTrustedProfilePolicyValidator(),
+				"ibm_iam_access_group_policy": iampolicy.DataSourceIBMIAMAccessGroupPolicyValidator(),
 			},
 		}
 	})

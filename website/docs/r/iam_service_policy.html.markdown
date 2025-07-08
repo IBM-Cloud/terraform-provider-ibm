@@ -21,7 +21,7 @@ resource "ibm_iam_service_id" "service_id" {
 }
 
 resource "ibm_iam_service_policy" "policy" {
-  iam_service_id = ibm_iam_service_id.service_id.id
+  iam_id = ibm_iam_service_id.service_id.iam_id
   roles          = ["Viewer"]
   description    = "IAM Service Policy"
   
@@ -43,7 +43,7 @@ resource "ibm_iam_service_id" "service_id" {
 }
 
 resource "ibm_iam_service_policy" "policy" {
-  iam_service_id = ibm_iam_service_id.service_id.id
+  iam_id = ibm_iam_service_id.service_id.iam_id
   roles          = ["Viewer", "Manager"]
 
   resources {
@@ -68,7 +68,7 @@ resource "ibm_resource_instance" "instance" {
 }
 
 resource "ibm_iam_service_policy" "policy" {
-  iam_service_id = ibm_iam_service_id.service_id.id
+  iam_id = ibm_iam_service_id.service_id.iam_id
   roles          = ["Manager", "Viewer", "Administrator"]
 
   resources {
@@ -91,7 +91,7 @@ data "ibm_resource_group" "group" {
 }
 
 resource "ibm_iam_service_policy" "policy" {
-  iam_service_id = ibm_iam_service_id.service_id.id
+  iam_id = ibm_iam_service_id.service_id.iam_id
   roles          = ["Viewer"]
 
   resources {
@@ -114,7 +114,7 @@ data "ibm_resource_group" "group" {
 }
 
 resource "ibm_iam_service_policy" "policy" {
-  iam_service_id = ibm_iam_service_id.service_id.id
+  iam_id = ibm_iam_service_id.service_id.iam_id
   roles          = ["Administrator"]
 
   resources {
@@ -137,7 +137,7 @@ data "ibm_resource_group" "group" {
 }
 
 resource "ibm_iam_service_policy" "policy" {
-  iam_service_id = ibm_iam_service_id.service_id.id
+  iam_id = ibm_iam_service_id.service_id.iam_id
   roles          = ["Administrator"]
 
   resources {
@@ -184,7 +184,7 @@ resource "ibm_iam_service_id" "service_id" {
   name = "test"
 }
 resource "ibm_iam_service_policy" "policy" {
-  iam_service_id = ibm_iam_service_id.service_id.id
+  iam_id = ibm_iam_service_id.service_id.iam_id
   roles           = ["Viewer"]
   resource_attributes {
     name  = "resource"
@@ -206,7 +206,7 @@ resource "ibm_iam_service_id" "service_id" {
 }
 
 resource "ibm_iam_service_policy" "policy" {
-  iam_service_id = ibm_iam_service_id.service_id.id
+  iam_id = ibm_iam_service_id.service_id.iam_id
   roles          = ["Viewer"]
 
   resources {
@@ -226,7 +226,7 @@ resource "ibm_iam_service_id" "service_id" {
 }
 
 resource "ibm_iam_service_policy" "policy" {
-  iam_service_id = ibm_iam_service_id.service_id.id
+  iam_id = ibm_iam_service_id.service_id.iam_id
   roles      = ["Viewer"]
   resources {
     service = "kms"
@@ -276,7 +276,7 @@ resource "ibm_iam_service_id" "service_id" {
   name = "test"
 }
 resource "ibm_iam_service_policy" "policy" {
-  iam_service_id = ibm_iam_service_id.service_id.id
+  iam_id = ibm_iam_service_id.service_id.iam_id
   roles  = ["Writer"]
   resource_attributes {
     value = "cloud-object-storage"
@@ -340,8 +340,7 @@ Review the argument references that you can specify for your resource.
 
 - `account_management` - (Optional, Bool) Gives access to all account management services if set to **true**. Default value is **false**. If you set this option, do not set `resources` at the same time.**Note** Conflicts with `resources` and `resource_attributes`.
 - `description`  (Optional, String) The description of the IAM Service Policy.
-- `iam_service_id` - (Required, Forces new resource, String) The UUID of the service ID.
-- `iam_id` - (Optional,  Forces new resource, String) IAM ID of the service ID. Used to assign cross account service ID policy. Either `iam_service_id` or `iam_id` is required.
+- `iam_id` - (Optional,  Forces new resource, String) IAM ID of the service ID.
 - `resources` - (List of Objects) Optional- A nested block describes the resource of this policy.**Note** Conflicts with `account_management` and `resource_attributes`.
 
   Nested scheme for `resources`:
@@ -391,23 +390,23 @@ Review the argument references that you can specify for your resource.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-- `id`  - (String) The unique identifier of the service policy. The ID is composed of `<iam_service_id>/<service_policy_id>`. If policy is created by using `<iam_service_id>`. The ID is composed of `<iam_id>/<service_policy_id>` if policy is created by using `<iam_id>`.
+- `id`  - (String) The unique identifier of the service policy.
 - `version`  - (String) The version of the service policy.
 
 ## Import
 
-The  `ibm_iam_service_policy` resource can be imported by using service ID and service policy ID or IAM ID and service policy ID.
+The  `ibm_iam_service_policy` resource can be imported by using IAM ID and service policy ID.
 
 **Syntax**
 
 ```
-$ terraform import ibm_iam_service_policy.example <service_ID>/<service_policy_ID>
+$ terraform import ibm_iam_service_policy.example <iam-service_ID>/<service_policy_ID>
 ```
 
 **Example**
 
 ```
-$ terraform import ibm_iam_service_policy.example ServiceId-d7bec597-4726-451f-8a63-e62e6f19c32c/cea6651a-bc0a-4438-9f8a-a0770bbf3ebb
+$ terraform import ibm_iam_service_policy.example iam-ServiceId-d7bec597-4726-451f-8a63-e62e6f19c32c/cea6651a-bc0a-4438-9f8a-a0770bbf3ebb
 
 ```
 
