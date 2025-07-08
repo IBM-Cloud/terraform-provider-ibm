@@ -28,14 +28,14 @@ data "ibm_kms_keys" "test" {
 		instance_id = "${ibm_kms_key.test.instance_id}" 
 }
 
-# resource "ibm_cos_bucket" "flex-us-south" {
-#   depends_on           = [ibm_iam_authorization_policy.policy]
-#   bucket_name          = var.bucket_name
-#   resource_instance_id = ibm_resource_instance.cos_instance.id
-#   region_location      = "us-south"
-#   storage_class        = "flex"
-#   kms_key_crn          = ibm_kms_key.test.id
-# }
+resource "ibm_cos_bucket" "smart-us-south" {
+  depends_on           = [ibm_iam_authorization_policy.policy]
+  bucket_name          = var.bucket_name
+  resource_instance_id = ibm_resource_instance.cos_instance.id
+  region_location      = "us-south"
+  storage_class        = "smart"
+  kms_key_crn          = ibm_kms_key.test.id
+}
 
 resource "ibm_kms_kmip_adapter" "myadapter" {
     instance_id = "${ibm_kms_key.test.instance_id}" 
