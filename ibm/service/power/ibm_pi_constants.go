@@ -532,7 +532,6 @@ const (
 	StockVTL = "stock-vtl"
 
 	// Allowed Values
-	// Allowed Values
 	Account                   = "account"
 	Affinity                  = "affinity"
 	All                       = "all"

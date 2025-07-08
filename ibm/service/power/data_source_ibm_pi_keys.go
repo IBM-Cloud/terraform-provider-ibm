@@ -48,6 +48,11 @@ func DataSourceIBMPIKeys() *schema.Resource {
 							Description: "User defined name for the SSH key.",
 							Type:        schema.TypeString,
 						},
+						Attr_PrimaryWorkspace: {
+							Computed:    true,
+							Description: "Indicates if the current workspace owns the ssh key or not.",
+							Type:        schema.TypeBool,
+						},
 						Attr_SSHKey: {
 							Computed:    true,
 							Description: "SSH RSA key.",
@@ -57,11 +62,6 @@ func DataSourceIBMPIKeys() *schema.Resource {
 							Computed:    true,
 							Description: "Unique ID of SSH key.",
 							Type:        schema.TypeString,
-						},
-						Attr_PrimaryWorkspace: {
-							Computed:    true,
-							Description: "Indicates if the current workspace owns the ssh key or not.",
-							Type:        schema.TypeBool,
 						},
 						Attr_Visibility: {
 							Computed:    true,
@@ -97,9 +97,9 @@ func dataSourceIBMPIKeysRead(ctx context.Context, d *schema.ResourceData, meta i
 			Attr_CreationDate:     sshKey.CreationDate.String(),
 			Attr_Description:      sshKey.Description,
 			Attr_Name:             sshKey.Name,
+			Attr_PrimaryWorkspace: sshKey.PrimaryWorkspace,
 			Attr_SSHKey:           sshKey.SSHKey,
 			Attr_SSHKeyID:         sshKey.ID,
-			Attr_PrimaryWorkspace: sshKey.PrimaryWorkspace,
 			Attr_Visibility:       sshKey.Visibility,
 		}
 		result = append(result, key)
