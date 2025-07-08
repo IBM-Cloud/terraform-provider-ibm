@@ -5,8 +5,11 @@ package database
 
 import (
 	"testing"
+	"time"
 
+	"github.com/IBM/cloud-databases-go-sdk/clouddatabasesv5"
 	"github.com/IBM/go-sdk-core/v5/core"
+	"github.com/go-openapi/strfmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"gotest.tools/assert"
 )
@@ -197,23 +200,6 @@ func TestValidateRBACRole(t *testing.T) {
 	}
 }
 
-func TestAppendSwitchoverWarning(t *testing.T) {
-	diags := appendSwitchoverWarning()
-	warningNote := "Note: IBM Cloud Databases released new Hosting Models on May 1. All existing multi-tenant instances will have their resources adjusted to Shared Compute allocations during August 2024. To monitor your current resource needs, and learn about how the transition to Shared Compute will impact your instance, see our documentation https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-hosting-models"
-
-	if len(diags) != 1 {
-		t.Fatalf("expected 1 diagnostic, got %d", len(diags))
-	}
-
-	if diags[0].Severity != diag.Warning {
-		t.Errorf("expected severity %v, got %v", diag.Warning, diags[0].Severity)
-	}
-
-	if diags[0].Summary != warningNote {
-		t.Errorf("expected summary %v, got %v", warningNote, diags[0].Summary)
-	}
-}
-
 func TestPublicServiceEndpointsWarning(t *testing.T) {
 	diags := publicServiceEndpointsWarning()
 	warningNote := "IBM recommends using private endpoints only to improve security by restricting access to your database to the IBM Cloud private network. For more information, please refer to our security best practices, https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-manage-security-compliance."
@@ -228,5 +214,45 @@ func TestPublicServiceEndpointsWarning(t *testing.T) {
 
 	if diags[0].Summary != warningNote {
 		t.Errorf("expected summary %v, got %v", warningNote, diags[0].Summary)
+	}
+}
+
+func TestUpgradeInProgressWarning(t *testing.T) {
+	str := "2025-05-12T10:00:00Z"
+	parsedTime, _ := time.Parse(time.RFC3339, str)
+	mockCreatedAt := strfmt.DateTime(parsedTime)
+
+	mockTask := clouddatabasesv5.Task{
+		ID:              core.StringPtr("101"),
+		Status:          core.StringPtr(databaseTaskRunningStatus),
+		ResourceType:    core.StringPtr(taskUpgrade),
+		CreatedAt:       &mockCreatedAt,
+		ProgressPercent: core.Int64Ptr(74),
+		Description:     core.StringPtr("Upgrade running"),
+	}
+
+	diags := upgradeInProgressWarning(&mockTask)
+	warningNote := "A version upgrade task is in progress. Some tasks may be queued and will not proceed until it has completed."
+	detail := "  Type: upgrade\n" +
+		"  Created at: 2025-05-12T10:00:00.000Z\n" +
+		"  Status: running\n" +
+		"  Progress percent: 74\n" +
+		"  Description: Upgrade running\n" +
+		"  ID: 101\n"
+
+	if len(diags) != 1 {
+		t.Fatalf("expected 1 diagnostic, got %d", len(diags))
+	}
+
+	if diags[0].Severity != diag.Warning {
+		t.Errorf("expected severity %v, got %v", diag.Warning, diags[0].Severity)
+	}
+
+	if diags[0].Summary != warningNote {
+		t.Errorf("expected summary %v, got %v", warningNote, diags[0].Summary)
+	}
+
+	if diags[0].Detail != detail {
+		t.Errorf("expected detail %v, got %v", detail, diags[0].Detail)
 	}
 }

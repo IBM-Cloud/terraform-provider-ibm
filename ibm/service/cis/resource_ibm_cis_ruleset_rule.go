@@ -135,7 +135,19 @@ var CISRulesetsRulesObject = &schema.Resource{
 					CISRuleset: {
 						Type:        schema.TypeString,
 						Optional:    true,
-						Description: "Ruleset ID of the ruleset to apply action to",
+						Description: "Ruleset of the rule",
+					},
+					CISRulesetsRulePhases: {
+						Type:        schema.TypeList,
+						Optional:    true,
+						Description: "Phases of the rule",
+						Elem:        &schema.Schema{Type: schema.TypeString},
+					},
+					CISRulesetsRuleProducts: {
+						Type:        schema.TypeList,
+						Optional:    true,
+						Description: "Products of the rule",
+						Elem:        &schema.Schema{Type: schema.TypeString},
 					},
 					CISRulesetList: {
 						Type:        schema.TypeList,
@@ -433,11 +445,10 @@ func ResourceIBMCISRulesetRuleUpdate(d *schema.ResourceData, meta interface{}) e
 		rulesetsRuleObject := d.Get(CISRulesetsRule).([]interface{})[0].(map[string]interface{})
 		opt.SetDescription(rulesetsRuleObject[CISRulesetsDescription].(string))
 		opt.SetAction(rulesetsRuleObject[CISRulesetsRuleAction].(string))
-		if d.HasChange(CISRulesetsRuleActionParameters) {
+		if rulesetsRuleObject[CISRulesetsRuleActionParameters] != nil {
 			actionParameters := expandCISRulesetsRulesActionParameters(rulesetsRuleObject[CISRulesetsRuleActionParameters])
 			opt.SetActionParameters(&actionParameters)
 		}
-
 		opt.SetEnabled(rulesetsRuleObject[CISRulesetsRuleActionEnabled].(bool))
 		opt.SetExpression(rulesetsRuleObject[CISRulesetsRuleExpression].(string))
 		opt.SetRef(rulesetsRuleObject[CISRulesetsRuleRef].(string))
@@ -472,7 +483,7 @@ func ResourceIBMCISRulesetRuleUpdate(d *schema.ResourceData, meta interface{}) e
 		opt.SetRef(rulesetsRuleObject[CISRulesetsRuleAction].(string))
 		position, err := expandCISRulesetsRulesPositions(rulesetsRuleObject[CISRulesetsRulePosition])
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error while updating the zone Ruleset %s", err)
+			return fmt.Errorf("[ERROR] Error while updating the instance Ruleset %s", err)
 		}
 		opt.SetPosition(&position)
 
@@ -483,7 +494,7 @@ func ResourceIBMCISRulesetRuleUpdate(d *schema.ResourceData, meta interface{}) e
 		_, _, err = sess.UpdateInstanceRulesetRule(opt)
 
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error while updating the zone Ruleset %s", err)
+			return fmt.Errorf("[ERROR] Error while updating the instance Ruleset %s", err)
 		}
 
 		d.SetId(dataSourceCISRulesetsRuleCheckID(d, ruleId))

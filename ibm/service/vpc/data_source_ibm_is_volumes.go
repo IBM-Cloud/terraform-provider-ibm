@@ -651,7 +651,9 @@ func DataSourceIBMIsVolumes() *schema.Resource {
 func dataSourceIBMIsVolumesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_volumes", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	// filters - volume-name and zone-name
@@ -692,10 +694,11 @@ func dataSourceIBMIsVolumesRead(context context.Context, d *schema.ResourceData,
 		if start != "" {
 			listVolumesOptions.Start = &start
 		}
-		volumeCollection, response, err := vpcClient.ListVolumesWithContext(context, listVolumesOptions)
+		volumeCollection, _, err := vpcClient.ListVolumesWithContext(context, listVolumesOptions)
 		if err != nil {
-			log.Printf("[DEBUG] ListVolumesWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("ListVolumesWithContext failed %s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListVolumesWithContext failed %s", err), "(Data) ibm_is_volumes", "read")
+			log.Printf("[DEBUG] %s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
 		start = flex.GetNext(volumeCollection.Next)
@@ -711,7 +714,7 @@ func dataSourceIBMIsVolumesRead(context context.Context, d *schema.ResourceData,
 
 	err = d.Set(isVolumes, dataSourceVolumeCollectionFlattenVolumes(allrecs, meta))
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting volumes %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting volumes %s", err), "(Data) ibm_is_volumes", "read", "volumes-set").GetDiag()
 	}
 
 	return nil

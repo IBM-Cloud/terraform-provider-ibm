@@ -35,12 +35,6 @@ func DataSourceIBMPINetwork() *schema.Resource {
 			},
 
 			// Attributes
-			Attr_AccessConfig: {
-				Computed:    true,
-				Deprecated:  "This field is deprecated please use peer_id instead.",
-				Description: "The network communication configuration option of the network (for on prem locations only). Use `peer_id` instead.",
-				Type:        schema.TypeString,
-			},
 			Attr_AvailableIPCount: {
 				Computed:    true,
 				Description: "The total number of IP addresses that you have in your network.",
@@ -66,12 +60,6 @@ func DataSourceIBMPINetwork() *schema.Resource {
 				Computed:    true,
 				Description: "The network gateway that is attached to your network.",
 				Type:        schema.TypeString,
-			},
-			Attr_Jumbo: {
-				Computed:    true,
-				Deprecated:  "This field is deprecated, use mtu instead.",
-				Description: "MTU Jumbo option of the network (for multi-zone locations only).",
-				Type:        schema.TypeBool,
 			},
 			Attr_MTU: {
 				Computed:    true,
@@ -100,6 +88,7 @@ func DataSourceIBMPINetwork() *schema.Resource {
 			},
 			Attr_PeerID: {
 				Computed:    true,
+				Deprecated:  "This field is deprecated",
 				Description: "Network peer ID (for on prem locations only).",
 				Type:        schema.TypeString,
 			},
@@ -149,7 +138,6 @@ func dataSourceIBMPINetworkRead(ctx context.Context, d *schema.ResourceData, met
 	}
 
 	d.SetId(*networkdata.NetworkID)
-	d.Set(Attr_AccessConfig, networkdata.AccessConfig)
 	if networkdata.IPAddressMetrics.Available != nil {
 		d.Set(Attr_AvailableIPCount, networkdata.IPAddressMetrics.Available)
 	}
@@ -168,7 +156,6 @@ func dataSourceIBMPINetworkRead(ctx context.Context, d *schema.ResourceData, met
 		d.Set(Attr_DNS, networkdata.DNSServers)
 	}
 	d.Set(Attr_Gateway, networkdata.Gateway)
-	d.Set(Attr_Jumbo, networkdata.Jumbo)
 	d.Set(Attr_MTU, networkdata.Mtu)
 	if networkdata.Name != nil {
 		d.Set(Attr_Name, networkdata.Name)
