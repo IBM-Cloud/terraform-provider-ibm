@@ -1,3 +1,48 @@
+# 1.80.0 (July 4, 2025)
+
+## Bug Fixes
+
+### Cloud Databases
+* Remove outdated notification ([6294](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6294))
+
+### Cloud Object Storage
+* remove computed field ([6288](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6288))
+
+### VPC Infrastructure
+* added an empty check for dns binding id ([6307](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6307))
+
+
+## Enhancements
+
+### Backup/Recovery
+* Removing the unnecessary comments ([6308](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6308))
+
+### Cloud Object Storage
+* Adding the changes for bucket backup retention ([6283](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6283))
+
+### General
+* bump github.com/cloudflare/circl from 1.3.7 to 1.6.1 ([6284](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6284))
+* Package update ([6304](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6304))
+* Add code owners ([6301](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6301))
+
+### Power Systems
+* Replace GetTagsUsingCRN with GetGlobalTagsUsingCRN ([6248](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6248))
+* Remove redundant constants ([6260](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6260))
+* Standardize Arg_CloudInstanceID argument across all data source and resource ([6249](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6249))
+
+### Secrets Manager
+* Bump version to 1.80.0-beta0 ([6305](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6305))
+
+### Transit Gateway
+* Macsec changes ([6220](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6220))
+
+
+## Documentation
+
+### VPC Infrastructure
+* enhance is_lb_pool documentation with session persistence details ([6299](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6299))
+
+
 # 1.80.0-beta0 (June 23, 2025)
 
 ## Bug Fixes
