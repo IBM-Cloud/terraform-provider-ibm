@@ -208,7 +208,7 @@ func DataSourceIBMTrustedProfileTemplateAssignment() *schema.Resource {
 								},
 							},
 						},
-						"policy_template_refs": {
+						"policy_template_references": {
 							Type:        schema.TypeList,
 							Computed:    true,
 							Description: "Policy resource(s) included only for trusted profile assignments with policy references.",
@@ -534,7 +534,7 @@ func dataSourceIBMTrustedProfileTemplateAssignmentTemplateAssignmentResponseReso
 			}
 			policyTemplateRefs = append(policyTemplateRefs, policyTemplateRefsItemMap)
 		}
-		modelMap["policy_template_refs"] = policyTemplateRefs
+		modelMap["policy_template_references"] = policyTemplateRefs
 	}
 	return modelMap, nil
 }

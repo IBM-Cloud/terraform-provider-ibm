@@ -24,7 +24,6 @@ func ResourceIBMEnPagerDutyDestination() *schema.Resource {
 		UpdateContext: resourceIBMEnPagerDutyDestinationUpdate,
 		DeleteContext: resourceIBMEnPagerDutyDestinationDelete,
 		Importer:      &schema.ResourceImporter{},
-
 		Schema: map[string]*schema.Schema{
 			"instance_guid": {
 				Type:        schema.TypeString,
@@ -40,7 +39,7 @@ func ResourceIBMEnPagerDutyDestination() *schema.Resource {
 			"type": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The type of Destination type push_chrome.",
+				Description: "The type of Destination type pagerduty.",
 			},
 			"description": {
 				Type:        schema.TypeString,
@@ -55,7 +54,7 @@ func ResourceIBMEnPagerDutyDestination() *schema.Resource {
 			"config": {
 				Type:        schema.TypeList,
 				MaxItems:    1,
-				Optional:    true,
+				Required:    true,
 				Description: "Payload describing a destination configuration.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -69,12 +68,14 @@ func ResourceIBMEnPagerDutyDestination() *schema.Resource {
 										Type:        schema.TypeString,
 										Sensitive:   true,
 										Optional:    true,
-										Description: "The api key for chrome app authorization",
+										Default:     "",
+										Description: "API Key for the PagerDuty account.",
+										Deprecated:  "The api_key parameter under config has  been deprecated and will be removed in future",
 									},
 									"routing_key": {
 										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "The website url",
+										Required:    true,
+										Description: "Routing Key (Integration Key) for the team in PagerDuty account.",
 									},
 								},
 							},

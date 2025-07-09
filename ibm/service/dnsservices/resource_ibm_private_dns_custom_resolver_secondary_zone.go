@@ -22,6 +22,7 @@ const (
 	pdnsSecondaryZoneDescription  = "description"
 	pdnsSecondaryZoneCreatedOn    = "created_on"
 	pdnsSecondaryZoneModifiedOn   = "modified_on"
+	pdnsResolverID                = "resolver_id"
 )
 
 func ResourceIBMPrivateDNSSecondaryZone() *schema.Resource {

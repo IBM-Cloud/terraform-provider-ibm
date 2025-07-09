@@ -350,7 +350,9 @@ func DataSourceIbmIsDedicatedHostProfiles() *schema.Resource {
 func dataSourceIbmIsDedicatedHostProfilesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host_profiles", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	listDedicatedHostProfilesOptions := &vpcv1.ListDedicatedHostProfilesOptions{}
@@ -363,8 +365,9 @@ func dataSourceIbmIsDedicatedHostProfilesRead(context context.Context, d *schema
 		}
 		dedicatedHostProfileCollection, response, err := vpcClient.ListDedicatedHostProfilesWithContext(context, listDedicatedHostProfilesOptions)
 		if err != nil {
-			log.Printf("[DEBUG] ListDedicatedHostProfilesWithContext failed %s\n%s", err, response)
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListDedicatedHostProfilesWithContext failed: %s\n%s", err, response), "ibm_is_dedicated_host_profiles", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		start = flex.GetNext(dedicatedHostProfileCollection.Next)
 		allrecs = append(allrecs, dedicatedHostProfileCollection.Profiles...)
@@ -379,11 +382,13 @@ func dataSourceIbmIsDedicatedHostProfilesRead(context context.Context, d *schema
 
 		err = d.Set("profiles", dataSourceDedicatedHostProfileCollectionFlattenProfiles(allrecs))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting profiles %s", err))
+			err = fmt.Errorf("[ERROR] Error setting profiles: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host_profiles", "read", "set-profiles").GetDiag()
 		}
 
 		if err = d.Set("total_count", len(allrecs)); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting total_count: %s", err))
+			err = fmt.Errorf("[ERROR] Error setting total_count: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host_profiles", "read", "set-total_count").GetDiag()
 		}
 	}
 	return nil

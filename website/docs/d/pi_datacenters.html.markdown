@@ -7,22 +7,26 @@ description: |-
 ---
 
 # ibm_pi_datacenters
+
 Retrieve information about Power Systems Datacenters.
 
-## Example usage
+## Example Usage
+
 The following example retrieves information about Power Systems Datacenters.
 
 ```terraform
 data "ibm_pi_datacenters" "datacenters" {}
 ```
 
-**Notes**
+### Notes
+
 - Please find [supported Regions](https://cloud.ibm.com/apidocs/power-cloud#endpoint) for endpoints.
 - If a Power cloud instance is provisioned at `lon04`, The provider level attributes should be as follows:
   - `region` - `lon`
   - `zone` - `lon04`
 
 Example usage:
+
   ```terraform
     provider "ibm" {
       region    =   "lon"
@@ -30,13 +34,14 @@ Example usage:
     }
   ```
 
-## Argument reference
+## Argument Reference
 
 Review the argument references that you can specify for your data source.
 
 - `pi_cloud_instance_id` - (Optional, String) The GUID of the service instance associated with an account. Required if private datacenter.
 
-## Attribute reference
+## Attribute Reference
+
 In addition to all argument reference list, you can access the following attribute references after your data source is created.
 
 - `datacenters` - (List) List of Datacenters

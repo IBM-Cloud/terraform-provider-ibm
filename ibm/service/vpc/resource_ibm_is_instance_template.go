@@ -16,6 +16,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -73,12 +74,12 @@ const (
 
 func ResourceIBMISInstanceTemplate() *schema.Resource {
 	return &schema.Resource{
-		Create:   resourceIBMisInstanceTemplateCreate,
-		Read:     resourceIBMisInstanceTemplateRead,
-		Update:   resourceIBMisInstanceTemplateUpdate,
-		Delete:   resourceIBMisInstanceTemplateDelete,
-		Exists:   resourceIBMisInstanceTemplateExists,
-		Importer: &schema.ResourceImporter{},
+		CreateContext: resourceIBMisInstanceTemplateCreate,
+		ReadContext:   resourceIBMisInstanceTemplateRead,
+		UpdateContext: resourceIBMisInstanceTemplateUpdate,
+		DeleteContext: resourceIBMisInstanceTemplateDelete,
+		Exists:        resourceIBMisInstanceTemplateExists,
+		Importer:      &schema.ResourceImporter{},
 
 		CustomizeDiff: customdiff.All(
 			customdiff.Sequence(
@@ -404,6 +405,12 @@ func ResourceIBMISInstanceTemplate() *schema.Resource {
 										Required:    true,
 										ForceNew:    true,
 										Description: "The capacity of the volume in gigabytes. The specified minimum and maximum capacity values for creating or updating volumes may expand in the future.",
+									},
+									"bandwidth": {
+										Type:        schema.TypeInt,
+										Optional:    true,
+										ForceNew:    true,
+										Description: "The maximum bandwidth (in megabits per second) for the volume. For this property to be specified, the volume storage_generation must be 2.",
 									},
 									isInstanceTemplateVolAttVolEncryptionKey: {
 										Type:        schema.TypeString,
@@ -1172,13 +1179,23 @@ func ResourceIBMISInstanceTemplate() *schema.Resource {
 							Optional: true,
 							Computed: true,
 						},
+						"bandwidth": {
+							Type:        schema.TypeInt,
+							Optional:    true,
+							ForceNew:    true,
+							Description: "The maximum bandwidth (in megabits per second) for the volume. For this property to be specified, the volume storage_generation must be 2.",
+						},
 						isInstanceTemplateBootSize: {
 							Type:     schema.TypeInt,
+							Optional: true,
 							Computed: true,
+							ForceNew: true,
 						},
 						isInstanceTemplateBootProfile: {
 							Type:     schema.TypeString,
+							Optional: true,
 							Computed: true,
+							ForceNew: true,
 						},
 						isInstanceTemplateVolumeDeleteOnInstanceDelete: {
 							Type:     schema.TypeBool,
@@ -1306,7 +1323,7 @@ func ResourceIBMISInstanceTemplateValidator() *validate.ResourceValidator {
 	return &ibmISInstanceTemplateValidator
 }
 
-func resourceIBMisInstanceTemplateCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMisInstanceTemplateCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	profile := d.Get(isInstanceTemplateProfile).(string)
 	name := d.Get(isInstanceTemplateName).(string)
 	vpcID := d.Get(isInstanceTemplateVPC).(string)
@@ -1318,47 +1335,47 @@ func resourceIBMisInstanceTemplateCreate(d *schema.ResourceData, meta interface{
 		offeringCrn, _ := catalogOffering[isInstanceTemplateCatalogOfferingOfferingCrn].(string)
 		versionCrn, _ := catalogOffering[isInstanceTemplateCatalogOfferingVersionCrn].(string)
 		planCrn, _ := catalogOffering[isInstanceTemplateCatalogOfferingPlanCrn].(string)
-		err := instanceTemplateCreateByCatalogOffering(d, meta, profile, name, vpcID, zone, offeringCrn, versionCrn, planCrn)
+		err := instanceTemplateCreateByCatalogOffering(context, d, meta, profile, name, vpcID, zone, offeringCrn, versionCrn, planCrn)
 		if err != nil {
 			return err
 		}
 	} else {
-		err := instanceTemplateCreate(d, meta, profile, name, vpcID, zone, image)
+		err := instanceTemplateCreate(context, d, meta, profile, name, vpcID, zone, image)
 		if err != nil {
 			return err
 		}
 	}
 
-	return resourceIBMisInstanceTemplateRead(d, meta)
+	return resourceIBMisInstanceTemplateRead(context, d, meta)
 }
 
-func resourceIBMisInstanceTemplateRead(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMisInstanceTemplateRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	ID := d.Id()
-	err := instanceTemplateGet(d, meta, ID)
+	err := instanceTemplateGet(context, d, meta, ID)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func resourceIBMisInstanceTemplateDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMisInstanceTemplateDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 	ID := d.Id()
 
-	err := instanceTemplateDelete(d, meta, ID)
+	err := instanceTemplateDelete(context, d, meta, ID)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func resourceIBMisInstanceTemplateUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMisInstanceTemplateUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
-	err := instanceTemplateUpdate(d, meta)
+	err := instanceTemplateUpdate(context, d, meta)
 	if err != nil {
 		return err
 	}
-	return resourceIBMisInstanceTemplateRead(d, meta)
+	return resourceIBMisInstanceTemplateRead(context, d, meta)
 }
 
 func resourceIBMisInstanceTemplateExists(d *schema.ResourceData, meta interface{}) (bool, error) {
@@ -1370,10 +1387,12 @@ func resourceIBMisInstanceTemplateExists(d *schema.ResourceData, meta interface{
 	return ok, err
 }
 
-func instanceTemplateCreateByCatalogOffering(d *schema.ResourceData, meta interface{}, profile, name, vpcID, zone, offeringCrn, versionCrn, planCrn string) error {
+func instanceTemplateCreateByCatalogOffering(context context.Context, d *schema.ResourceData, meta interface{}, profile, name, vpcID, zone, offeringCrn, versionCrn, planCrn string) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "create", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	instanceproto := &vpcv1.InstanceTemplatePrototypeInstanceTemplateByCatalogOffering{
@@ -1394,7 +1413,7 @@ func instanceTemplateCreateByCatalogOffering(d *schema.ResourceData, meta interf
 		for _, clusterNetworkAttachmentsItem := range clusterNetworkAttachmentList {
 			clusterNetworkAttachmentsItemModel, err := ResourceIBMIsInstanceTemplateMapToInstanceClusterNetworkAttachmentPrototypeInstanceContext(clusterNetworkAttachmentsItem.(map[string]interface{}))
 			if err != nil {
-				return err
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "create", "parse-cluster_network_attachments").GetDiag()
 			}
 			clusterNetworkAttachments = append(clusterNetworkAttachments, *clusterNetworkAttachmentsItemModel)
 		}
@@ -1449,7 +1468,7 @@ func instanceTemplateCreateByCatalogOffering(d *schema.ResourceData, meta interf
 			enablenat := fmt.Sprintf("network_attachments.%d.enable_infrastructure_nat", i)
 			networkAttachmentsItemModel, err := resourceIBMIsInstanceTemplateMapToInstanceNetworkAttachmentPrototype(allowipspoofing, autodelete, enablenat, d, networkAttachmentsItem.(map[string]interface{}))
 			if err != nil {
-				return err
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "create", "parse-network_attachments").GetDiag()
 			}
 			networkAttachments = append(networkAttachments, *networkAttachmentsItemModel)
 		}
@@ -1462,7 +1481,7 @@ func instanceTemplateCreateByCatalogOffering(d *schema.ResourceData, meta interf
 		enablenat := fmt.Sprintf("primary_network_attachment.%d.virtual_network_interface.0.enable_infrastructure_nat", i)
 		primaryNetworkAttachmentModel, err := resourceIBMIsInstanceTemplateMapToInstanceNetworkAttachmentPrototype(allowipspoofing, autodelete, enablenat, d, primnetworkattachmentintf.([]interface{})[0].(map[string]interface{}))
 		if err != nil {
-			return err
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "create", "parse-primary_network_attachment").GetDiag()
 		}
 		instanceproto.PrimaryNetworkAttachment = primaryNetworkAttachmentModel
 	}
@@ -1554,9 +1573,22 @@ func instanceTemplateCreateByCatalogOffering(d *schema.ResourceData, meta interf
 			}
 		}
 
-		volcap := 100
+		// bandwidth changes
+		volBandwith := bootvol["bandwidth"].(int)
+		if volBandwith != 0 {
+			volBandwith64 := int64(volBandwith)
+			volTemplate.Bandwidth = &volBandwith64
+		}
+		volcap := bootvol["size"].(int)
 		volcapint64 := int64(volcap)
-		volprof := "general-purpose"
+		if volcap == 0 {
+			volcap := 100
+			volcapint64 = int64(volcap)
+		}
+		volprof := bootvol["profile"].(string)
+		if volprof == "" {
+			volprof = "general-purpose"
+		}
 		volTemplate.Capacity = &volcapint64
 		volTemplate.Profile = &vpcv1.VolumeProfileIdentity{
 			Name: &volprof,
@@ -1611,7 +1643,14 @@ func instanceTemplateCreateByCatalogOffering(d *schema.ResourceData, meta interf
 					},
 					Capacity: &capacity,
 				}
+				// bandwidth changes
+				bandwidth := int64(newvol["bandwidth"].(int))
+				if bandwidth != int64(0) {
+					volPrototype.Bandwidth = &bandwidth
+				}
+
 				iops := int64(newvol[isInstanceTemplateVolAttVolIops].(int))
+
 				encryptionKey := newvol[isInstanceTemplateVolAttVolEncryptionKey].(string)
 
 				if iops != 0 {
@@ -1701,7 +1740,8 @@ func instanceTemplateCreateByCatalogOffering(d *schema.ResourceData, meta interf
 			}
 		}
 		if PrimaryIpv4Address != "" && reservedIpAddress != "" && PrimaryIpv4Address != reservedIpAddress {
-			return fmt.Errorf("[ERROR] Error creating instance template, primary_network_interface error, use either primary_ipv4_address(%s) or primary_ip.0.address(%s)", PrimaryIpv4Address, reservedIpAddress)
+			err = fmt.Errorf("[ERROR] Error creating instance template, primary_network_interface error, use either primary_ipv4_address(%s) or primary_ip.0.address(%s)", PrimaryIpv4Address, reservedIpAddress)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "create", "parse-request-body").GetDiag()
 		}
 		if reservedIp != "" {
 			primnicobj.PrimaryIP = &vpcv1.NetworkInterfaceIPPrototypeReservedIPIdentity{
@@ -1794,10 +1834,12 @@ func instanceTemplateCreateByCatalogOffering(d *schema.ResourceData, meta interf
 				// }
 			}
 			if PrimaryIpv4Address != "" && reservedIpAddress != "" && PrimaryIpv4Address != reservedIpAddress {
-				return fmt.Errorf("[ERROR] Error creating instance template, network_interfaces error, use either primary_ipv4_address(%s) or primary_ip.0.address(%s)", PrimaryIpv4Address, reservedIpAddress)
+				err = fmt.Errorf("Error creating instance template, network_interfaces error, use either primary_ipv4_address(%s) or primary_ip.0.address(%s)", PrimaryIpv4Address, reservedIpAddress)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "create", "parse-request-body").GetDiag()
 			}
 			if reservedIp != "" && (PrimaryIpv4Address != "" || reservedIpAddress != "" || reservedIpName != "" || okAuto) {
-				return fmt.Errorf("[ERROR] Error creating instance template, network_interfaces error, reserved_ip(%s) is mutually exclusive with other primary_ip attributes", reservedIp)
+				err = fmt.Errorf("Error creating instance template, network_interfaces error, reserved_ip(%s) is mutually exclusive with other primary_ip attributes", reservedIp)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "create", "parse-request-body").GetDiag()
 			}
 			if reservedIp != "" {
 				nwInterface.PrimaryIP = &vpcv1.NetworkInterfaceIPPrototypeReservedIPIdentity{
@@ -1858,19 +1900,23 @@ func instanceTemplateCreateByCatalogOffering(d *schema.ResourceData, meta interf
 		InstanceTemplatePrototype: instanceproto,
 	}
 
-	instanceIntf, response, err := sess.CreateInstanceTemplate(options)
+	instanceIntf, _, err := sess.CreateInstanceTemplateWithContext(context, options)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error creating InstanceTemplate: %s\n%s", err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateInstanceTemplateWithContext failed: %s", err.Error()), "ibm_is_instance_template", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	instance := instanceIntf.(*vpcv1.InstanceTemplate)
 	d.SetId(*instance.ID)
 	return nil
 }
 
-func instanceTemplateCreate(d *schema.ResourceData, meta interface{}, profile, name, vpcID, zone, image string) error {
+func instanceTemplateCreate(context context.Context, d *schema.ResourceData, meta interface{}, profile, name, vpcID, zone, image string) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "create", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	instanceproto := &vpcv1.InstanceTemplatePrototype{
 		Image: &vpcv1.ImageIdentity{
@@ -1896,7 +1942,7 @@ func instanceTemplateCreate(d *schema.ResourceData, meta interface{}, profile, n
 		for _, clusterNetworkAttachmentsItem := range clusterNetworkAttachmentList {
 			clusterNetworkAttachmentsItemModel, err := ResourceIBMIsInstanceTemplateMapToInstanceClusterNetworkAttachmentPrototypeInstanceContext(clusterNetworkAttachmentsItem.(map[string]interface{}))
 			if err != nil {
-				return err
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "create", "parse-cluster_network_attachments").GetDiag()
 			}
 			clusterNetworkAttachments = append(clusterNetworkAttachments, *clusterNetworkAttachmentsItemModel)
 		}
@@ -1929,7 +1975,7 @@ func instanceTemplateCreate(d *schema.ResourceData, meta interface{}, profile, n
 			enablenat := fmt.Sprintf("network_attachments.%d.virtual_network_interface.0.enable_infrastructure_nat", i)
 			networkAttachmentsItemModel, err := resourceIBMIsInstanceTemplateMapToInstanceNetworkAttachmentPrototype(allowipspoofing, autodelete, enablenat, d, networkAttachmentsItem.(map[string]interface{}))
 			if err != nil {
-				return err
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "create", "parse-network_attachments").GetDiag()
 			}
 			networkAttachments = append(networkAttachments, *networkAttachmentsItemModel)
 		}
@@ -1942,7 +1988,7 @@ func instanceTemplateCreate(d *schema.ResourceData, meta interface{}, profile, n
 		enablenat := fmt.Sprintf("primary_network_attachment.%d.virtual_network_interface.0.enable_infrastructure_nat", i)
 		primaryNetworkAttachmentModel, err := resourceIBMIsInstanceTemplateMapToInstanceNetworkAttachmentPrototype(allowipspoofing, autodelete, enablenat, d, primnetworkattachmentintf.([]interface{})[0].(map[string]interface{}))
 		if err != nil {
-			return err
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "create", "parse-primary_network_attachment").GetDiag()
 		}
 		instanceproto.PrimaryNetworkAttachment = primaryNetworkAttachmentModel
 	}
@@ -2048,9 +2094,22 @@ func instanceTemplateCreate(d *schema.ResourceData, meta interface{}, profile, n
 			}
 		}
 
-		volcap := 100
+		// bandwidth changes
+		volBandwith := bootvol["bandwidth"].(int)
+		if volBandwith != 0 {
+			volBandwith64 := int64(volBandwith)
+			volTemplate.Bandwidth = &volBandwith64
+		}
+		volcap := bootvol["size"].(int)
 		volcapint64 := int64(volcap)
-		volprof := "general-purpose"
+		if volcap == 0 {
+			volcap := 100
+			volcapint64 = int64(volcap)
+		}
+		volprof := bootvol["profile"].(string)
+		if volprof == "" {
+			volprof = "general-purpose"
+		}
 		volTemplate.Capacity = &volcapint64
 		volTemplate.Profile = &vpcv1.VolumeProfileIdentity{
 			Name: &volprof,
@@ -2105,6 +2164,13 @@ func instanceTemplateCreate(d *schema.ResourceData, meta interface{}, profile, n
 					},
 					Capacity: &capacity,
 				}
+
+				//bandwidth changes
+				bandwidth := int64(newvol["bandwidth"].(int))
+				if bandwidth != int64(0) {
+					volPrototype.Bandwidth = &bandwidth
+				}
+
 				iops := int64(newvol[isInstanceTemplateVolAttVolIops].(int))
 				encryptionKey := newvol[isInstanceTemplateVolAttVolEncryptionKey].(string)
 
@@ -2195,7 +2261,8 @@ func instanceTemplateCreate(d *schema.ResourceData, meta interface{}, profile, n
 			}
 		}
 		if PrimaryIpv4Address != "" && reservedIpAddress != "" && PrimaryIpv4Address != reservedIpAddress {
-			return fmt.Errorf("[ERROR] Error creating instance template, primary_network_interface error, use either primary_ipv4_address(%s) or primary_ip.0.address(%s)", PrimaryIpv4Address, reservedIpAddress)
+			err = fmt.Errorf("[ERROR] Error creating instance template, primary_network_interface error, use either primary_ipv4_address(%s) or primary_ip.0.address(%s)", PrimaryIpv4Address, reservedIpAddress)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "create", "parse-request-body").GetDiag()
 		}
 		if reservedIp != "" {
 			primnicobj.PrimaryIP = &vpcv1.NetworkInterfaceIPPrototypeReservedIPIdentity{
@@ -2288,10 +2355,12 @@ func instanceTemplateCreate(d *schema.ResourceData, meta interface{}, profile, n
 				// }
 			}
 			if PrimaryIpv4Address != "" && reservedIpAddress != "" && PrimaryIpv4Address != reservedIpAddress {
-				return fmt.Errorf("[ERROR] Error creating instance template, network_interfaces error, use either primary_ipv4_address(%s) or primary_ip.0.address(%s)", PrimaryIpv4Address, reservedIpAddress)
+				err = fmt.Errorf("Error creating instance template, network_interfaces error, use either primary_ipv4_address(%s) or primary_ip.0.address(%s)", PrimaryIpv4Address, reservedIpAddress)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "create", "parse-request-body").GetDiag()
 			}
 			if reservedIp != "" && (PrimaryIpv4Address != "" || reservedIpAddress != "" || reservedIpName != "" || okAuto) {
-				return fmt.Errorf("[ERROR] Error creating instance template, network_interfaces error, reserved_ip(%s) is mutually exclusive with other primary_ip attributes", reservedIp)
+				err = fmt.Errorf("Error creating instance template, network_interfaces error, reserved_ip(%s) is mutually exclusive with other primary_ip attributes", reservedIp)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "create", "parse-request-body").GetDiag()
 			}
 			if reservedIp != "" {
 				nwInterface.PrimaryIP = &vpcv1.NetworkInterfaceIPPrototypeReservedIPIdentity{
@@ -2352,87 +2421,112 @@ func instanceTemplateCreate(d *schema.ResourceData, meta interface{}, profile, n
 		InstanceTemplatePrototype: instanceproto,
 	}
 
-	instanceIntf, response, err := sess.CreateInstanceTemplate(options)
+	instanceIntf, _, err := sess.CreateInstanceTemplateWithContext(context, options)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error creating InstanceTemplate: %s\n%s", err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateInstanceTemplateWithContext failed: %s", err.Error()), "ibm_is_instance_template", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	instance := instanceIntf.(*vpcv1.InstanceTemplate)
 	d.SetId(*instance.ID)
 	return nil
 }
 
-func instanceTemplateGet(d *schema.ResourceData, meta interface{}, ID string) error {
+func instanceTemplateGet(context context.Context, d *schema.ResourceData, meta interface{}, ID string) diag.Diagnostics {
 	instanceC, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	getinsOptions := &vpcv1.GetInstanceTemplateOptions{
 		ID: &ID,
 	}
-	instanceIntf, response, err := instanceC.GetInstanceTemplate(getinsOptions)
+	instanceIntf, response, err := instanceC.GetInstanceTemplateWithContext(context, getinsOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error Getting Instance template: %s\n%s", err, response)
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetInstanceTemplateWithContext failed: %s", err.Error()), "ibm_is_instance_template", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
-	instance := instanceIntf.(*vpcv1.InstanceTemplate)
-	d.Set(isInstanceTemplateName, *instance.Name)
-	d.Set(isInstanceTemplateCRN, *instance.CRN)
-	if instance.AvailabilityPolicy != nil && instance.AvailabilityPolicy.HostFailure != nil {
-		d.Set(isInstanceTemplateAvailablePolicyHostFailure, instance.AvailabilityPolicy.HostFailure)
+	instanceTemplate := instanceIntf.(*vpcv1.InstanceTemplate)
+	if !core.IsNil(instanceTemplate.Name) {
+		if err = d.Set("name", instanceTemplate.Name); err != nil {
+			err = fmt.Errorf("Error setting name: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "read", "set-name").GetDiag()
+		}
+	}
+	if err = d.Set("crn", instanceTemplate.CRN); err != nil {
+		err = fmt.Errorf("Error setting crn: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "read", "set-crn").GetDiag()
+	}
+	if instanceTemplate.AvailabilityPolicy != nil && instanceTemplate.AvailabilityPolicy.HostFailure != nil {
+		if err = d.Set("availability_policy_host_failure", instanceTemplate.AvailabilityPolicy.HostFailure); err != nil {
+			err = fmt.Errorf("Error setting availability_policy_host_failure: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "read", "set-availability_policy_host_failure").GetDiag()
+		}
 	}
 	// cluster changes
 	clusterNetworkAttachments := []map[string]interface{}{}
-	for _, clusterNetworkAttachmentsItem := range instance.ClusterNetworkAttachments {
+	for _, clusterNetworkAttachmentsItem := range instanceTemplate.ClusterNetworkAttachments {
 		clusterNetworkAttachmentsItemMap, err := ResourceIBMIsInstanceTemplateInstanceClusterNetworkAttachmentPrototypeInstanceContextToMap(&clusterNetworkAttachmentsItem) // #nosec G601
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "read", "cluster_network_attachments-to-map")
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "read", "cluster_network_attachments-to-map").GetDiag()
 		}
 		clusterNetworkAttachments = append(clusterNetworkAttachments, clusterNetworkAttachmentsItemMap)
 	}
 	if err = d.Set("cluster_network_attachments", clusterNetworkAttachments); err != nil {
 		err = fmt.Errorf("Error setting cluster_network_attachments: %s", err)
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "read", "set-cluster_network_attachments")
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "read", "set-cluster_network_attachments").GetDiag()
 	}
-	if !core.IsNil(instance.ConfidentialComputeMode) {
-		if err = d.Set("confidential_compute_mode", instance.ConfidentialComputeMode); err != nil {
-			return fmt.Errorf("Error setting confidential_compute_mode: %s", err)
+	if !core.IsNil(instanceTemplate.ConfidentialComputeMode) {
+		if err = d.Set("confidential_compute_mode", instanceTemplate.ConfidentialComputeMode); err != nil {
+			err = fmt.Errorf("Error setting confidential_compute_mode: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "read", "set-confidential_compute_mode").GetDiag()
 		}
 	}
-	if !core.IsNil(instance.EnableSecureBoot) {
-		if err = d.Set("enable_secure_boot", instance.EnableSecureBoot); err != nil {
-			return fmt.Errorf("Error setting enable_secure_boot: %s", err)
+	if !core.IsNil(instanceTemplate.EnableSecureBoot) {
+		if err = d.Set("enable_secure_boot", instanceTemplate.EnableSecureBoot); err != nil {
+			err = fmt.Errorf("Error setting enable_secure_boot: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "read", "set-enable_secure_boot").GetDiag()
 		}
 	}
 
 	// vni if any
-	if !core.IsNil(instance.NetworkAttachments) {
+	if !core.IsNil(instanceTemplate.NetworkAttachments) {
 		networkAttachments := []map[string]interface{}{}
-		for _, networkAttachmentsItem := range instance.NetworkAttachments {
+		for _, networkAttachmentsItem := range instanceTemplate.NetworkAttachments {
 			networkAttachmentsItemMap, err := resourceIBMIsInstanceTemplateNetworkAttachmentReferenceToMap(&networkAttachmentsItem, instanceC)
 			if err != nil {
-				return err
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "read", "network_attachments-to-map").GetDiag()
 			}
 			networkAttachments = append(networkAttachments, networkAttachmentsItemMap)
 		}
 		if err = d.Set("network_attachments", networkAttachments); err != nil {
-			return fmt.Errorf("[ERROR] Error  setting network_attachments: %s", err)
+			err = fmt.Errorf("Error setting network_attachments: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "read", "set-network_attachments").GetDiag()
 		}
 	}
 
-	if !core.IsNil(instance.PrimaryNetworkAttachment) {
-		primaryNetworkAttachmentMap, err := resourceIBMIsInstanceTemplateNetworkAttachmentReferenceToMap(instance.PrimaryNetworkAttachment, instanceC)
+	if !core.IsNil(instanceTemplate.PrimaryNetworkAttachment) {
+		primaryNetworkAttachmentMap, err := resourceIBMIsInstanceTemplateNetworkAttachmentReferenceToMap(instanceTemplate.PrimaryNetworkAttachment, instanceC)
 		if err != nil {
-			return err
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "read", "primary_network_attachment-to-map").GetDiag()
 		}
 		if err = d.Set("primary_network_attachment", []map[string]interface{}{primaryNetworkAttachmentMap}); err != nil {
-			return fmt.Errorf("[ERROR] Error  setting primary_network_attachment: %s", err)
+			err = fmt.Errorf("Error setting primary_network_attachment: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "read", "set-primary_network_attachment").GetDiag()
 		}
 	}
 
 	// catalog offering if any
 
-	if instance.CatalogOffering != nil {
+	if instanceTemplate.CatalogOffering != nil {
 		catOfferingList := make([]map[string]interface{}, 0)
-		insTempCatalogOffering := instance.CatalogOffering.(*vpcv1.InstanceCatalogOfferingPrototype)
+		insTempCatalogOffering := instanceTemplate.CatalogOffering.(*vpcv1.InstanceCatalogOfferingPrototype)
 
 		currentOffering := map[string]interface{}{}
 		if insTempCatalogOffering.Offering != nil {
@@ -2450,17 +2544,19 @@ func instanceTemplateGet(d *schema.ResourceData, meta interface{}, ID string) er
 			}
 		}
 		catOfferingList = append(catOfferingList, currentOffering)
-		d.Set(isInstanceTemplateCatalogOffering, catOfferingList)
-
+		if err = d.Set(isInstanceTemplateCatalogOffering, catOfferingList); err != nil {
+			err = fmt.Errorf("Error setting catalog_offering: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "read", "set-catalog_offering").GetDiag()
+		}
 	}
 
-	if instance.ReservationAffinity != nil {
+	if instanceTemplate.ReservationAffinity != nil {
 		reservationAffinity := []map[string]interface{}{}
 		reservationAffinityMap := map[string]interface{}{}
 
-		reservationAffinityMap[isReservationAffinityPolicyResp] = instance.ReservationAffinity.Policy
-		if instance.ReservationAffinity.Pool != nil && len(instance.ReservationAffinity.Pool) > 0 {
-			pool := instance.ReservationAffinity.Pool[0]
+		reservationAffinityMap[isReservationAffinityPolicyResp] = instanceTemplate.ReservationAffinity.Policy
+		if instanceTemplate.ReservationAffinity.Pool != nil && len(instanceTemplate.ReservationAffinity.Pool) > 0 {
+			pool := instanceTemplate.ReservationAffinity.Pool[0]
 			res := ""
 			if idPool, ok := pool.(*vpcv1.ReservationIdentityByID); ok {
 				res = *idPool.ID
@@ -2472,69 +2568,93 @@ func instanceTemplateGet(d *schema.ResourceData, meta interface{}, ID string) er
 			reservationAffinityMap[isReservationAffinityPool] = res
 		}
 		reservationAffinity = append(reservationAffinity, reservationAffinityMap)
-		d.Set(isReservationAffinity, reservationAffinity)
-	}
-
-	if instance.Profile != nil {
-		instanceProfileIntf := instance.Profile
-		identity := instanceProfileIntf.(*vpcv1.InstanceProfileIdentity)
-		d.Set(isInstanceTemplateProfile, *identity.Name)
-	}
-
-	if instance.DefaultTrustedProfile != nil {
-		if instance.DefaultTrustedProfile.AutoLink != nil {
-			d.Set(isInstanceDefaultTrustedProfileAutoLink, instance.DefaultTrustedProfile.AutoLink)
+		if err = d.Set(isReservationAffinity, reservationAffinity); err != nil {
+			err = fmt.Errorf("Error setting reservation_affinity: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "read", "set-reservation_affinity").GetDiag()
 		}
-		if instance.DefaultTrustedProfile.Target != nil {
-			switch reflect.TypeOf(instance.DefaultTrustedProfile.Target).String() {
+	}
+
+	if instanceTemplate.Profile != nil {
+		instanceProfileIntf := instanceTemplate.Profile
+		identity := instanceProfileIntf.(*vpcv1.InstanceProfileIdentity)
+		if err = d.Set(isInstanceTemplateProfile, *identity.Name); err != nil {
+			err = fmt.Errorf("Error setting profile: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "read", "set-profile").GetDiag()
+		}
+	}
+
+	if instanceTemplate.DefaultTrustedProfile != nil {
+		if instanceTemplate.DefaultTrustedProfile.AutoLink != nil {
+			if err = d.Set(isInstanceDefaultTrustedProfileAutoLink, instanceTemplate.DefaultTrustedProfile.AutoLink); err != nil {
+				err = fmt.Errorf("Error setting default_trusted_profile_auto_link: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "read", "set-default_trusted_profile_auto_link").GetDiag()
+			}
+		}
+		if instanceTemplate.DefaultTrustedProfile.Target != nil {
+			switch reflect.TypeOf(instanceTemplate.DefaultTrustedProfile.Target).String() {
 			case "*vpcv1.TrustedProfileIdentityTrustedProfileByID":
 				{
-					target := instance.DefaultTrustedProfile.Target.(*vpcv1.TrustedProfileIdentityByID)
-					d.Set(isInstanceDefaultTrustedProfileTarget, target.ID)
+					target := instanceTemplate.DefaultTrustedProfile.Target.(*vpcv1.TrustedProfileIdentityByID)
+					if err = d.Set(isInstanceDefaultTrustedProfileTarget, target.ID); err != nil {
+						err = fmt.Errorf("Error setting default_trusted_profile_target: %s", err)
+						return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "read", "set-default_trusted_profile_target").GetDiag()
+					}
 				}
 			case "*vpcv1.TrustedProfileIdentityTrustedProfileByCRN":
 				{
-					target := instance.DefaultTrustedProfile.Target.(*vpcv1.TrustedProfileIdentityByCRN)
-					d.Set(isInstanceDefaultTrustedProfileTarget, target.CRN)
+					target := instanceTemplate.DefaultTrustedProfile.Target.(*vpcv1.TrustedProfileIdentityByCRN)
+					if err = d.Set(isInstanceDefaultTrustedProfileTarget, target.CRN); err != nil {
+						err = fmt.Errorf("Error setting default_trusted_profile_target: %s", err)
+						return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "read", "set-default_trusted_profile_target").GetDiag()
+					}
 				}
 			}
 		}
 	}
 
-	if instance.TotalVolumeBandwidth != nil {
-		d.Set(isInstanceTotalVolumeBandwidth, int(*instance.TotalVolumeBandwidth))
+	if instanceTemplate.TotalVolumeBandwidth != nil {
+		if err = d.Set(isInstanceTotalVolumeBandwidth, int(*instanceTemplate.TotalVolumeBandwidth)); err != nil {
+			err = fmt.Errorf("Error setting total_volume_bandwidth: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "read", "set-total_volume_bandwidth").GetDiag()
+		}
 	}
-	if instance.MetadataService != nil {
-		d.Set(isInstanceTemplateMetadataServiceEnabled, instance.MetadataService.Enabled)
+	if instanceTemplate.MetadataService != nil {
+		if err = d.Set(isInstanceTemplateMetadataServiceEnabled, instanceTemplate.MetadataService.Enabled); err != nil {
+			err = fmt.Errorf("Error setting metadata_service_enabled: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "read", "set-metadata_service_enabled").GetDiag()
+		}
 		metadataService := []map[string]interface{}{}
 		metadataServiceMap := map[string]interface{}{}
 
-		metadataServiceMap[isInstanceMetadataServiceEnabled1] = instance.MetadataService.Enabled
-		if instance.MetadataService.Protocol != nil {
-			metadataServiceMap[isInstanceMetadataServiceProtocol] = instance.MetadataService.Protocol
+		metadataServiceMap[isInstanceMetadataServiceEnabled1] = instanceTemplate.MetadataService.Enabled
+		if instanceTemplate.MetadataService.Protocol != nil {
+			metadataServiceMap[isInstanceMetadataServiceProtocol] = instanceTemplate.MetadataService.Protocol
 		}
-		if instance.MetadataService.ResponseHopLimit != nil {
-			metadataServiceMap[isInstanceMetadataServiceRespHopLimit] = instance.MetadataService.ResponseHopLimit
+		if instanceTemplate.MetadataService.ResponseHopLimit != nil {
+			metadataServiceMap[isInstanceMetadataServiceRespHopLimit] = instanceTemplate.MetadataService.ResponseHopLimit
 		}
 		metadataService = append(metadataService, metadataServiceMap)
-		d.Set(isInstanceMetadataService, metadataService)
-
+		if err = d.Set(isInstanceMetadataService, metadataService); err != nil {
+			err = fmt.Errorf("Error setting metadata_service: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "read", "set-metadata_service").GetDiag()
+		}
 	}
 
 	var placementTargetMap map[string]interface{}
-	if instance.PlacementTarget != nil {
-		placementTargetMap = resourceIbmIsInstanceTemplateInstancePlacementTargetPrototypeToMap(*instance.PlacementTarget.(*vpcv1.InstancePlacementTargetPrototype))
+	if instanceTemplate.PlacementTarget != nil {
+		placementTargetMap = resourceIbmIsInstanceTemplateInstancePlacementTargetPrototypeToMap(*instanceTemplate.PlacementTarget.(*vpcv1.InstancePlacementTargetPrototype))
 	}
 	if err = d.Set(isInstanceTemplatePlacementTarget, []map[string]interface{}{placementTargetMap}); err != nil {
-		return fmt.Errorf("[ERROR] Error setting placement_target: %s", err)
+		err = fmt.Errorf("Error setting placement_target: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "read", "set-placement_target").GetDiag()
 	}
 
-	if instance.PrimaryNetworkInterface != nil {
+	if instanceTemplate.PrimaryNetworkInterface != nil {
 		primaryNicList := make([]map[string]interface{}, 0)
 		currentPrimNic := map[string]interface{}{}
-		currentPrimNic[isInstanceTemplateNicName] = *instance.PrimaryNetworkInterface.Name
-		if instance.PrimaryNetworkInterface.PrimaryIP != nil {
-			pipIntf := instance.PrimaryNetworkInterface.PrimaryIP
+		currentPrimNic[isInstanceTemplateNicName] = *instanceTemplate.PrimaryNetworkInterface.Name
+		if instanceTemplate.PrimaryNetworkInterface.PrimaryIP != nil {
+			pipIntf := instanceTemplate.PrimaryNetworkInterface.PrimaryIP
 			// reserved ip changes
 			primaryIpList := make([]map[string]interface{}, 0)
 			currentPrimIp := map[string]interface{}{}
@@ -2565,28 +2685,31 @@ func instanceTemplateGet(d *schema.ResourceData, meta interface{}, ID string) er
 			primaryIpList = append(primaryIpList, currentPrimIp)
 			currentPrimNic[isInstanceTemplateNicPrimaryIP] = primaryIpList
 		}
-		subInf := instance.PrimaryNetworkInterface.Subnet
+		subInf := instanceTemplate.PrimaryNetworkInterface.Subnet
 		subnetIdentity := subInf.(*vpcv1.SubnetIdentity)
 		currentPrimNic[isInstanceTemplateNicSubnet] = *subnetIdentity.ID
-		if instance.PrimaryNetworkInterface.AllowIPSpoofing != nil {
-			currentPrimNic[isInstanceTemplateNicAllowIPSpoofing] = *instance.PrimaryNetworkInterface.AllowIPSpoofing
+		if instanceTemplate.PrimaryNetworkInterface.AllowIPSpoofing != nil {
+			currentPrimNic[isInstanceTemplateNicAllowIPSpoofing] = *instanceTemplate.PrimaryNetworkInterface.AllowIPSpoofing
 		}
-		if len(instance.PrimaryNetworkInterface.SecurityGroups) != 0 {
+		if len(instanceTemplate.PrimaryNetworkInterface.SecurityGroups) != 0 {
 			secgrpList := []string{}
-			for i := 0; i < len(instance.PrimaryNetworkInterface.SecurityGroups); i++ {
-				secGrpInf := instance.PrimaryNetworkInterface.SecurityGroups[i]
+			for i := 0; i < len(instanceTemplate.PrimaryNetworkInterface.SecurityGroups); i++ {
+				secGrpInf := instanceTemplate.PrimaryNetworkInterface.SecurityGroups[i]
 				subnetIdentity := secGrpInf.(*vpcv1.SecurityGroupIdentity)
 				secgrpList = append(secgrpList, string(*subnetIdentity.ID))
 			}
 			currentPrimNic[isInstanceTemplateNicSecurityGroups] = flex.NewStringSet(schema.HashString, secgrpList)
 		}
 		primaryNicList = append(primaryNicList, currentPrimNic)
-		d.Set(isInstanceTemplatePrimaryNetworkInterface, primaryNicList)
+		if err = d.Set(isInstanceTemplatePrimaryNetworkInterface, primaryNicList); err != nil {
+			err = fmt.Errorf("Error setting primary_network_interface: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "read", "set-primary_network_interface").GetDiag()
+		}
 	}
 
-	if instance.NetworkInterfaces != nil {
+	if instanceTemplate.NetworkInterfaces != nil {
 		interfacesList := make([]map[string]interface{}, 0)
-		for _, intfc := range instance.NetworkInterfaces {
+		for _, intfc := range instanceTemplate.NetworkInterfaces {
 			currentNic := map[string]interface{}{}
 			currentNic[isInstanceTemplateNicName] = *intfc.Name
 			if intfc.PrimaryIP != nil {
@@ -2638,24 +2761,35 @@ func instanceTemplateGet(d *schema.ResourceData, meta interface{}, ID string) er
 			}
 			interfacesList = append(interfacesList, currentNic)
 		}
-		d.Set(isInstanceTemplateNetworkInterfaces, interfacesList)
+		if err = d.Set(isInstanceTemplateNetworkInterfaces, interfacesList); err != nil {
+			err = fmt.Errorf("Error setting network_interfaces: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "read", "set-network_interfaces").GetDiag()
+		}
 	}
 
-	if instance.Image != nil {
-		imageInf := instance.Image
+	if instanceTemplate.Image != nil {
+		imageInf := instanceTemplate.Image
 		imageIdentity := imageInf.(*vpcv1.ImageIdentity)
-		d.Set(isInstanceTemplateImage, *imageIdentity.ID)
+		if err = d.Set(isInstanceTemplateImage, *imageIdentity.ID); err != nil {
+			err = fmt.Errorf("Error setting image: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "read", "set-image").GetDiag()
+		}
 	}
-	vpcInf := instance.VPC
+	vpcInf := instanceTemplate.VPC
 	vpcRef := vpcInf.(*vpcv1.VPCIdentity)
-	d.Set(isInstanceTemplateVPC, vpcRef.ID)
-	zoneInf := instance.Zone
+	if err = d.Set(isInstanceTemplateVPC, vpcRef.ID); err != nil {
+		err = fmt.Errorf("Error setting vpc: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "read", "set-vpc").GetDiag()
+	}
+	zoneInf := instanceTemplate.Zone
 	zone := zoneInf.(*vpcv1.ZoneIdentity)
-	d.Set(isInstanceTemplateZone, *zone.Name)
-
+	if err = d.Set(isInstanceTemplateZone, *zone.Name); err != nil {
+		err = fmt.Errorf("Error setting zone: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "read", "set-zone").GetDiag()
+	}
 	interfacesList := make([]map[string]interface{}, 0)
-	if instance.VolumeAttachments != nil {
-		for _, volume := range instance.VolumeAttachments {
+	if instanceTemplate.VolumeAttachments != nil {
+		for _, volume := range instanceTemplate.VolumeAttachments {
 			volumeAttach := map[string]interface{}{}
 			volumeAttach[isInstanceTemplateVolAttName] = *volume.Name
 			volumeAttach[isInstanceTemplateDeleteVolume] = *volume.DeleteVolumeOnInstanceDelete
@@ -2685,20 +2819,27 @@ func instanceTemplateGet(d *schema.ResourceData, meta interface{}, ID string) er
 			if volumeInst.UserTags != nil {
 				newVolume[isInstanceTemplateVolAttTags] = volumeInst.UserTags
 			}
+			// bandwidth changes
+			if volumeInst.Bandwidth != nil {
+				newVolume["bandwidth"] = volumeInst.Bandwidth
+			}
 			if len(newVolume) > 0 {
 				newVolumeArr = append(newVolumeArr, newVolume)
 			}
 			volumeAttach[isInstanceTemplateVolAttVolPrototype] = newVolumeArr
 			interfacesList = append(interfacesList, volumeAttach)
 		}
-		d.Set(isInstanceTemplateVolumeAttachments, interfacesList)
+		if err = d.Set(isInstanceTemplateVolumeAttachments, interfacesList); err != nil {
+			err = fmt.Errorf("Error setting volume_attachments: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "read", "set-volume_attachments").GetDiag()
+		}
 	}
-	if instance.BootVolumeAttachment != nil {
+	if instanceTemplate.BootVolumeAttachment != nil {
 		bootVolList := make([]map[string]interface{}, 0)
 		bootVol := map[string]interface{}{}
-		bootVol[isInstanceTemplateDeleteVolume] = *instance.BootVolumeAttachment.DeleteVolumeOnInstanceDelete
-		if instance.BootVolumeAttachment.Volume != nil {
-			volumeIntf := instance.BootVolumeAttachment.Volume
+		bootVol[isInstanceTemplateDeleteVolume] = *instanceTemplate.BootVolumeAttachment.DeleteVolumeOnInstanceDelete
+		if instanceTemplate.BootVolumeAttachment.Volume != nil {
+			volumeIntf := instanceTemplate.BootVolumeAttachment.Volume
 			bootVol[isInstanceTemplateBootName] = volumeIntf.Name
 			bootVol[isInstanceTemplateBootSize] = volumeIntf.Capacity
 			if volumeIntf.Profile != nil {
@@ -2714,14 +2855,24 @@ func instanceTemplateGet(d *schema.ResourceData, meta interface{}, ID string) er
 			if volumeIntf.UserTags != nil {
 				bootVol[isVolumeTags] = volumeIntf.UserTags
 			}
+			if volumeIntf.Bandwidth != nil {
+				bootVol["bandwidth"] = volumeIntf.Bandwidth
+			}
 		}
 
 		bootVolList = append(bootVolList, bootVol)
-		d.Set(isInstanceTemplateBootVolume, bootVolList)
+
+		if err = d.Set(isInstanceTemplateBootVolume, bootVolList); err != nil {
+			err = fmt.Errorf("Error setting boot_volume: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "read", "set-boot_volume").GetDiag()
+		}
 	}
 
-	if instance.ResourceGroup != nil {
-		d.Set(isInstanceTemplateResourceGroup, instance.ResourceGroup.ID)
+	if instanceTemplate.ResourceGroup != nil {
+		if err = d.Set(isInstanceTemplateResourceGroup, instanceTemplate.ResourceGroup.ID); err != nil {
+			err = fmt.Errorf("Error setting resource_group: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "read", "set-resource_group").GetDiag()
+		}
 	}
 	return nil
 }
@@ -2736,10 +2887,12 @@ func resourceIbmIsInstanceTemplateInstancePlacementTargetPrototypeToMap(instance
 	return instancePlacementTargetPrototypeMap
 }
 
-func instanceTemplateUpdate(d *schema.ResourceData, meta interface{}) error {
+func instanceTemplateUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	instanceC, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "update", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	ID := d.Id()
 
@@ -2754,30 +2907,38 @@ func instanceTemplateUpdate(d *schema.ResourceData, meta interface{}) error {
 		}
 		instanceTemplatePatch, err := instanceTemplatePatchModel.AsPatch()
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for InstanceTemplatePatch: %s", err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("instanceTemplatePatchModel.AsPatch() failed: %s", err.Error()), "ibm_is_instance_template", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		updnetoptions.InstanceTemplatePatch = instanceTemplatePatch
 
-		_, _, err = instanceC.UpdateInstanceTemplate(updnetoptions)
+		_, _, err = instanceC.UpdateInstanceTemplateWithContext(context, updnetoptions)
 		if err != nil {
-			return err
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateInstanceTemplateWithContext failed: %s", err.Error()), "ibm_is_instance_template", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 	return nil
 }
 
-func instanceTemplateDelete(d *schema.ResourceData, meta interface{}, ID string) error {
+func instanceTemplateDelete(context context.Context, d *schema.ResourceData, meta interface{}, ID string) diag.Diagnostics {
 	instanceC, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "delete", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	deleteinstanceTemplateOptions := &vpcv1.DeleteInstanceTemplateOptions{
 		ID: &ID,
 	}
-	_, err = instanceC.DeleteInstanceTemplate(deleteinstanceTemplateOptions)
+	_, err = instanceC.DeleteInstanceTemplateWithContext(context, deleteinstanceTemplateOptions)
 	if err != nil {
-		return err
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteInstanceTemplateWithContext failed: %s", err.Error()), "ibm_is_instance_template", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	return nil
 }
@@ -2785,7 +2946,9 @@ func instanceTemplateDelete(d *schema.ResourceData, meta interface{}, ID string)
 func instanceTemplateExists(d *schema.ResourceData, meta interface{}, ID string) (bool, error) {
 	instanceC, err := vpcClient(meta)
 	if err != nil {
-		return false, err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "exists", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return false, tfErr
 	}
 	getinsOptions := &vpcv1.GetInstanceTemplateOptions{
 		ID: &ID,
@@ -2795,7 +2958,9 @@ func instanceTemplateExists(d *schema.ResourceData, meta interface{}, ID string)
 		if response != nil && response.StatusCode == 404 {
 			return false, nil
 		}
-		return false, fmt.Errorf("[ERROR] Error Getting InstanceTemplate: %s\n%s", err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetInstanceTemplate failed: %s", err.Error()), "ibm_is_instance_template", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return false, tfErr
 	}
 	return true, nil
 }
@@ -3000,18 +3165,18 @@ func resourceIBMIsInstanceTemplateMapToVirtualNetworkInterfaceIPsReservedIPProto
 	model := &vpcv1.VirtualNetworkInterfaceIPPrototype{}
 	if modelMap["reserved_ip"] != nil && modelMap["reserved_ip"].(string) != "" {
 		model.ID = core.StringPtr(modelMap["reserved_ip"].(string))
-	}
-	if modelMap["href"] != nil && modelMap["href"].(string) != "" {
+	} else if modelMap["href"] != nil && modelMap["href"].(string) != "" {
 		model.Href = core.StringPtr(modelMap["href"].(string))
-	}
-	if modelMap["address"] != nil && modelMap["address"].(string) != "" {
-		model.Address = core.StringPtr(modelMap["address"].(string))
-	}
-	if modelMap["auto_delete"] != nil {
-		model.AutoDelete = core.BoolPtr(modelMap["auto_delete"].(bool))
-	}
-	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
-		model.Name = core.StringPtr(modelMap["name"].(string))
+	} else {
+		if modelMap["address"] != nil && modelMap["address"].(string) != "" {
+			model.Address = core.StringPtr(modelMap["address"].(string))
+		}
+		if modelMap["auto_delete"] != nil {
+			model.AutoDelete = core.BoolPtr(modelMap["auto_delete"].(bool))
+		}
+		if modelMap["name"] != nil && modelMap["name"].(string) != "" {
+			model.Name = core.StringPtr(modelMap["name"].(string))
+		}
 	}
 	return model, nil
 }
@@ -3020,18 +3185,18 @@ func resourceIBMIsInstanceTemplateMapToVirtualNetworkInterfacePrimaryIPReservedI
 	model := &vpcv1.VirtualNetworkInterfacePrimaryIPPrototype{}
 	if modelMap["reserved_ip"] != nil && modelMap["reserved_ip"].(string) != "" {
 		model.ID = core.StringPtr(modelMap["reserved_ip"].(string))
-	}
-	if modelMap["href"] != nil && modelMap["href"].(string) != "" {
+	} else if modelMap["href"] != nil && modelMap["href"].(string) != "" {
 		model.Href = core.StringPtr(modelMap["href"].(string))
-	}
-	if modelMap["address"] != nil && modelMap["address"].(string) != "" {
-		model.Address = core.StringPtr(modelMap["address"].(string))
-	}
-	if modelMap["auto_delete"] != nil {
-		model.AutoDelete = core.BoolPtr(modelMap["auto_delete"].(bool))
-	}
-	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
-		model.Name = core.StringPtr(modelMap["name"].(string))
+	} else {
+		if modelMap["address"] != nil && modelMap["address"].(string) != "" {
+			model.Address = core.StringPtr(modelMap["address"].(string))
+		}
+		if modelMap["auto_delete"] != nil {
+			model.AutoDelete = core.BoolPtr(modelMap["auto_delete"].(bool))
+		}
+		if modelMap["name"] != nil && modelMap["name"].(string) != "" {
+			model.Name = core.StringPtr(modelMap["name"].(string))
+		}
 	}
 	return model, nil
 }

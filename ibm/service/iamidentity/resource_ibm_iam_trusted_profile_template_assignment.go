@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -22,9 +23,8 @@ import (
 )
 
 const (
-	InProgress = "in_progress"
-	complete   = "complete"
-	failed     = "failed"
+	WAITING = "waiting"
+	READY   = "ready"
 )
 
 func ResourceIBMTrustedProfileTemplateAssignment() *schema.Resource {
@@ -214,7 +214,7 @@ func ResourceIBMTrustedProfileTemplateAssignment() *schema.Resource {
 								},
 							},
 						},
-						"policy_template_refs": {
+						"policy_template_references": {
 							Type:        schema.TypeList,
 							Computed:    true,
 							Description: "Policy resource(s) included only for trusted profile assignments with policy references.",
@@ -561,16 +561,16 @@ func resourceIBMTrustedProfileTemplateAssignmentDelete(context context.Context, 
 }
 
 func waitForAssignment(timeout time.Duration, meta interface{}, d *schema.ResourceData, refreshFn func(string, interface{}) resource.StateRefreshFunc) (interface{}, error) {
-	stateConf := &resource.StateChangeConf{
-		Pending:      []string{InProgress},
-		Target:       []string{complete},
+	stateConf := &retry.StateChangeConf{
+		Pending:      []string{WAITING},
+		Target:       []string{READY},
 		Refresh:      refreshFn(d.Id(), meta),
 		Delay:        30 * time.Second,
-		PollInterval: time.Minute,
+		PollInterval: 10 * time.Second,
 		Timeout:      timeout,
 	}
 
-	return stateConf.WaitForState()
+	return stateConf.WaitForStateContext(context.Background())
 }
 
 func isTrustedProfileAssignmentRemoved(id string, meta interface{}) resource.StateRefreshFunc {
@@ -583,18 +583,18 @@ func isTrustedProfileAssignmentRemoved(id string, meta interface{}) resource.Sta
 		assignment, response, err := iamIdentityClient.GetTrustedProfileAssignment(getOptions)
 		if err != nil {
 			if response != nil && response.StatusCode == 404 {
-				return assignment, complete, nil
+				return assignment, READY, nil
 			}
 
-			return nil, failed, fmt.Errorf("[ERROR] The assignment %s failed to delete or deletion was not completed within specific timeout period: %s\n%s", id, err, response)
+			return nil, READY, fmt.Errorf("[ERROR] The assignment %s failed to delete or deletion was not completed within specific timeout period: %s\n%s", id, err, response)
 		} else {
 			log.Printf("Assignment removal still in progress\n")
 		}
-		return assignment, InProgress, nil
+		return assignment, WAITING, nil
 	}
 }
 
-func isTrustedProfileTemplateAssigned(id string, meta interface{}) resource.StateRefreshFunc {
+func isTrustedProfileTemplateAssigned(id string, meta interface{}) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 
 		iamIdentityClient, err := meta.(conns.ClientSession).IAMIdentityV1API()
@@ -604,25 +604,23 @@ func isTrustedProfileTemplateAssigned(id string, meta interface{}) resource.Stat
 		}
 		assignment, response, err := iamIdentityClient.GetTrustedProfileAssignment(getOptions)
 		if err != nil {
-			return nil, failed, fmt.Errorf("[ERROR] The assignment %s failed or did not complete within specific timeout period: %s\n%s", id, err, response)
+			return nil, READY, fmt.Errorf("[ERROR] The assignment %s failed or did not complete within specific timeout period: %s\n%s", id, err, response)
 		}
 
 		if assignment != nil {
 			if *assignment.Status == "accepted" || *assignment.Status == "in_progress" {
 				log.Printf("Assignment still in progress\n")
-				return assignment, InProgress, nil
-			}
-
-			if *assignment.Status == "succeeded" {
-				return assignment, complete, nil
+				return assignment, WAITING, nil
 			}
 
 			if *assignment.Status == "failed" {
-				return assignment, failed, fmt.Errorf("[ERROR] The assignment %s did complete but with a 'failed' status. Please check assignment resource for detailed errors: %s\n", id, response)
+				return assignment, READY, fmt.Errorf("[ERROR] The assignment %s did complete but with a 'failed' status. Please check assignment resource for detailed errors: %s\n", id, response)
 			}
+
+			return assignment, READY, nil
 		}
 
-		return assignment, failed, fmt.Errorf("[ERROR] Unexpected status reached for assignment %s.: %s\n", id, response)
+		return assignment, READY, fmt.Errorf("[ERROR] Unexpected status reached for assignment %s.: %s\n", id, response)
 	}
 }
 
@@ -683,7 +681,7 @@ func resourceIBMTrustedProfileTemplateAssignmentTemplateAssignmentResponseResour
 			}
 			policyTemplateRefs = append(policyTemplateRefs, policyTemplateRefsItemMap)
 		}
-		modelMap["policy_template_refs"] = policyTemplateRefs
+		modelMap["policy_template_references"] = policyTemplateRefs
 	}
 	return modelMap, nil
 }

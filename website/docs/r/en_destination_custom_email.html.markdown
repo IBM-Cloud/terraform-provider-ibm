@@ -25,7 +25,10 @@ resource "ibm_en_destination_custom_email" "custom_domain_en_destination" {
     }
   }
 }
-```
+
+**NOTE:**
+- To perform the verification for spf and dkim please follow the instructions here: https://cloud.ibm.com/docs/event-notifications?topic=event-notifications-en-destinations-custom-email
+- `verification_type` is Custom Email Destination update parameter which can be used to verify the status of verfication depending on the type of verification.
 
 Process To do the Custom Domain Configuration and Verification.
 
@@ -66,6 +69,23 @@ Review the argument reference that you can specify for your resource.
   Nested scheme for **params**:
 
   - `domain` - (Required, String) The Custom Domain.
+  - `spf` - (Optional, List) The SPF attributes.
+		Nested schema for **spf**:
+			* `txt_name` - (Optional, String) spf text name.
+			  * Constraints: The maximum length is `255` characters. The minimum length is `1` character. The value must match regular expression `/.*/`.
+			* `txt_value` - (Optional, String) spf text value.
+			  * Constraints: The maximum length is `500` characters. The minimum length is `1` character. The value must match regular expression `/.*/`.
+			* `verification` - (Optional, String) spf verification.
+			  * Constraints: The maximum length is `255` characters. The minimum length is `1` character. The value must match regular expression `/.*/`.
+  - `dkim` - (Optional, List) The DKIM attributes.
+		Nested schema for **dkim**:
+			* `public_key` - (Optional, String) dkim public key.
+			  * Constraints: The maximum length is `500` characters. The minimum length is `1` character. The value must match regular expression `/.*/`.
+			* `selector` - (Optional, String) dkim selector.
+			  * Constraints: The maximum length is `500` characters. The minimum length is `1` character. The value must match regular expression `/.*/`.
+			* `verification` - (Optional, String) dkim verification.
+			  * Constraints: The maximum length is `255` characters. The minimum length is `1` character. The value must match regular expression `/.*/`.      
+
 ## Attribute reference
 
 In addition to all argument references listed, you can access the following attribute references after your resource is created.

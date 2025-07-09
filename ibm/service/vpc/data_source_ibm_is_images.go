@@ -4,6 +4,7 @@
 package vpc
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"time"
@@ -11,6 +12,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -22,7 +24,7 @@ const (
 
 func DataSourceIBMISImages() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceIBMISImagesRead,
+		ReadContext: dataSourceIBMISImagesRead,
 
 		Schema: map[string]*schema.Schema{
 			isImagesResourceGroupID: {
@@ -302,19 +304,21 @@ func DataSourceIBMISImagesValidator() *validate.ResourceValidator {
 	return &ibmISImageResourceValidator
 }
 
-func dataSourceIBMISImagesRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceIBMISImagesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
-	err := imageList(d, meta)
+	err := imageList(context, d, meta)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func imageList(d *schema.ResourceData, meta interface{}) error {
+func imageList(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_images", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	start := ""
 	allrecs := []vpcv1.Image{}
@@ -369,9 +373,11 @@ func imageList(d *schema.ResourceData, meta interface{}) error {
 		if start != "" {
 			listImagesOptions.Start = &start
 		}
-		availableImages, response, err := sess.ListImages(listImagesOptions)
+		availableImages, _, err := sess.ListImagesWithContext(context, listImagesOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Fetching Images %s\n%s", err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListImagesWithContext failed %s", err), "(Data) ibm_is_images", "read")
+			log.Printf("[DEBUG] %s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		start = flex.GetNext(availableImages.Next)
 		allrecs = append(allrecs, availableImages.Images...)
@@ -457,7 +463,9 @@ func imageList(d *schema.ResourceData, meta interface{}) error {
 		imagesInfo = append(imagesInfo, l)
 	}
 	d.SetId(dataSourceIBMISImagesID(d))
-	d.Set(isImages, imagesInfo)
+	if err = d.Set("images", imagesInfo); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting images %s", err), "(Data) ibm_is_images", "read", "images-set").GetDiag()
+	}
 	return nil
 }
 

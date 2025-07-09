@@ -80,6 +80,7 @@ Extra attributes when `version` is provide.
           - `enabled` (Boolean) Enables/Disables the rule.
           - `action` (String) Action of the rule.
           - `sensitivity_level` (String) Defines the sensitivity level of the rule.
+          - `score_threshold` (Int) Defines the score threshold of the rule.
         - `categories` (List)
           
           Nested scheme of `categories`
@@ -87,7 +88,9 @@ Extra attributes when `version` is provide.
           - `enabled` (Boolean) Enables/Disables the rule.
           - `action` (String) Action of the rule.
       - `version` (String) Latest version.
-      - `ruleset` (String) ID of the ruleset.
+      - `ruleset` (String) Ruleset of the rule.
+      - `phases` (List) Phases of the rule.
+      - `products` (List) Products of the rule.
       - `rulesets` (List) IDs of the rulesets.
       - `response` (Map) Custom response from the API.
         - `content` (String) Content of the response.

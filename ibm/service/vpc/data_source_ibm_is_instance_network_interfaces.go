@@ -266,7 +266,9 @@ func DataSourceIBMIsInstanceNetworkInterfaces() *schema.Resource {
 func dataSourceIBMIsInstanceNetworkInterfacesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instance_network_interfaces", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	instance_name := d.Get("instance_name").(string)
@@ -280,9 +282,11 @@ func dataSourceIBMIsInstanceNetworkInterfacesRead(context context.Context, d *sc
 			listInstancesOptions.Start = &start
 		}
 
-		instances, response, err := vpcClient.ListInstances(listInstancesOptions)
+		instances, _, err := vpcClient.ListInstancesWithContext(context, listInstancesOptions)
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error Fetching Instances %s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListInstancesWithContext failed: %s", err.Error()), "(Data) ibm_is_instance_network_interfaces", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		start = flex.GetNext(instances.Next)
 		allrecs = append(allrecs, instances.Instances...)
@@ -298,11 +302,12 @@ func dataSourceIBMIsInstanceNetworkInterfacesRead(context context.Context, d *sc
 			listInstanceNetworkInterfacesOptions := &vpcv1.ListInstanceNetworkInterfacesOptions{
 				InstanceID: &ins_id,
 			}
-			networkInterfaceCollection, response, err := vpcClient.ListInstanceNetworkInterfacesWithContext(context, listInstanceNetworkInterfacesOptions)
+			networkInterfaceCollection, _, err := vpcClient.ListInstanceNetworkInterfacesWithContext(context, listInstanceNetworkInterfacesOptions)
 
 			if err != nil {
-				log.Printf("[DEBUG] ListSecurityGroupNetworkInterfacesWithContext failed %s\n%s", err, response)
-				return diag.FromErr(fmt.Errorf("ListSecurityGroupNetworkInterfacesWithContext failed %s\n%s", err, response))
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListInstanceNetworkInterfacesWithContext failed: %s", err.Error()), "(Data) ibm_is_instance_network_interfaces", "read")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 
 			d.SetId(ins_id)
@@ -310,14 +315,16 @@ func dataSourceIBMIsInstanceNetworkInterfacesRead(context context.Context, d *sc
 			if networkInterfaceCollection.NetworkInterfaces != nil {
 				err = d.Set("network_interfaces", dataSourceNetworkInterfaceCollectionFlattenNetworkInterfaces(networkInterfaceCollection.NetworkInterfaces))
 				if err != nil {
-					return diag.FromErr(fmt.Errorf("[ERROR] Error setting network_interfaces %s", err))
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting network_interfaces: %s", err), "(Data) ibm_is_instance_network_interfaces", "read", "set-network_interfaces").GetDiag()
 				}
 			}
 			return nil
 		}
 	}
-
-	return diag.FromErr(fmt.Errorf("Instance %s not found. %s", instance_name, err))
+	err = fmt.Errorf("Instance %s not found. %s", instance_name, err)
+	tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListInstancesWithContext failed: %s", err.Error()), "(Data) ibm_is_instance_network_interfaces", "read")
+	log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+	return tfErr.GetDiag()
 }
 
 // dataSourceIBMIsInstanceNetworkInterfacesID returns a reasonable ID for the list.

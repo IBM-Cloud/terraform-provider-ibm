@@ -164,7 +164,7 @@ func testAccCheckIBMDatabaseInstanceRedisBasic(databaseResourceGroup string, nam
 		service                      = "databases-for-redis"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "password12345678"
+		adminpassword                = "secure-Password12345"
 		service_endpoints            = "public"
 		group {
 			group_id = "member"
@@ -208,7 +208,7 @@ func testAccCheckIBMDatabaseInstanceRedisFullyspecified(databaseResourceGroup st
 		service                      = "databases-for-redis"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "password12345678"
+		adminpassword                = "secure-Password12345"
 		service_endpoints            = "public"
 		group {
 			group_id = "member"
@@ -247,7 +247,7 @@ func testAccCheckIBMDatabaseInstanceRedisReduced(databaseResourceGroup string, n
 		service                      = "databases-for-redis"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "password12345678"
+		adminpassword                = "secure-Password12345"
 		service_endpoints            = "public"
 		group {
 			group_id = "member"
@@ -277,7 +277,7 @@ func testAccCheckIBMDatabaseInstanceRedisUserRole(databaseResourceGroup string, 
 		service                      = "databases-for-redis"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "password12345678"
+		adminpassword                = "secure-Password12345"
 		service_endpoints            = "public"
 
 		group {
@@ -296,7 +296,7 @@ func testAccCheckIBMDatabaseInstanceRedisUserRole(databaseResourceGroup string, 
 
 		users {
 			name = "coolguy"
-    		password = "securepassword123"
+    		password = "securePassword123"
       		role     = "-@all +@read"
 	 	}
   	}

@@ -46,11 +46,10 @@ func ResourceIBMSchematicsAction() *schema.Resource {
 				Description: "Action description.",
 			},
 			"location": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Computed:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_schematics_action", "location"),
-				Description:  "List of locations supported by IBM Cloud Schematics service.  While creating your workspace or action, choose the right region, since it cannot be changed.  Note, this does not limit the location of the IBM Cloud resources, provisioned using Schematics.",
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "List of locations supported by IBM Cloud Schematics service.  While creating your workspace or action, choose the right region, since it cannot be changed.  Note, this does not limit the location of the IBM Cloud resources, provisioned using Schematics.",
 			},
 			"resource_group": {
 				Type:        schema.TypeString,
@@ -948,13 +947,6 @@ func ResourceIBMSchematicsAction() *schema.Resource {
 func ResourceIBMSchematicsActionValidator() *validate.ResourceValidator {
 	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
-		validate.ValidateSchema{
-			Identifier:                 "location",
-			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
-			Type:                       validate.TypeString,
-			Optional:                   true,
-			AllowedValues:              "eu-de, eu-gb, us-east, us-south",
-		},
 		validate.ValidateSchema{
 			Identifier:                 "source_type",
 			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,

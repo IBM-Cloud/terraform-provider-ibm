@@ -10,12 +10,12 @@ description: |-
 
 Create or delete for Capture Power System Virtual Server Instance
 
-**Note:-**
+**Note:**
 If `pi_capture_destination` is `Cloud-Storage` then delete bucket object functionality not supported by this resource , hence user need to delete bucket object manually from `Cloud Storage bucket`.
 
 For more information, about IBM power virtual server cloud, see [getting started with IBM Power Systems Virtual Servers](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-getting-started).
 
-## Example usage
+## Example Usage
 
 The following example creates a Capture Power System Virtual Server Instance.
 
@@ -65,7 +65,7 @@ ibm_pi_capture provides the following [timeouts](https://www.terraform.io/docs/l
 - **update** - (Default 10 minutes) Used for updating capture instance.
 - **delete** - (Default 10 minutes) Used for deleting capture instance.
 
-## Argument reference
+## Argument Reference
 
 Review the argument references that you can specify for your resource.
 
@@ -80,7 +80,7 @@ Review the argument references that you can specify for your resource.
 - `pi_instance_name` - (Required, String) The name of the instance.
 - `pi_user_tags` - (Optional, List of String) List of user tags attached to the resource.
 
-## Attribute reference
+## Attribute Reference
 
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 

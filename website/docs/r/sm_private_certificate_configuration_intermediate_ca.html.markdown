@@ -8,18 +8,42 @@ subcategory: "Secrets Manager"
 
 # ibm_sm_private_certificate_configuration_intermediate_ca
 
-Provides a resource for PrivateCertificateConfigurationIntermediateCA. This allows PrivateCertificateConfigurationIntermediateCA to be created, updated and deleted.
+Provides a resource for an intermediate certificate authority. This allows an intermediate CA to be created, updated and deleted. Note that an intermediate CA cannot be deleted if it contains one or more certificate templates. Therefore, arguments that are marked as `Forces new resource` should not be modified if certificate template configurations exist for the CA.
 
 ## Example Usage
 
 ```hcl
 resource "ibm_sm_private_certificate_configuration_intermediate_ca" "intermediate_CA" {
+  depends_on     = [ ibm_sm_private_certificate_configuration_root_ca.private_certificate_root_CA ]
   instance_id    = ibm_resource_instance.sm_instance.guid
   name           = "my_intermediate_ca"
-  common_name    = "ibm.com"
   signing_method = "internal"
-  issuer         = "my_root_ca"
-  max_ttl        = "8760h"
+  issuer         = ibm_sm_private_certificate_configuration_root_ca.private_certificate_root_CA.name
+  common_name    = "ibm.com"
+  alt_names     = ["alt-name-1", "alt-name-2"]
+  permitted_dns_domains = ["exampleString"]
+  ou            = ["example_ou"]
+  organization  = ["example_organization"]
+  country       = ["US"]
+  locality      = ["example_locality"]
+  province      = ["example_province"]
+  street_address  = ["example street address"]
+  postal_code   = ["example_postal_code"]
+  ip_sans       = "127.0.0.1"
+  uri_sans      = "https://www.example.com/test"
+  other_sans    = ["1.2.3.5.4.3.201.10.4.3;utf8:test@example.com"]
+  exclude_cn_from_sans = false
+  ttl           = "2100h"
+  max_ttl       = "8760h"
+  max_path_length = -1
+  issuing_certificates_urls_encoded = true
+  key_type      = "rsa"
+  key_bits      = 4096
+  format        = "pem"
+  private_key_format = "der"
+  crl_expiry    = "72h"
+  crl_disable   = false
+  crl_distribution_points_encoded   = true
 }
 ```
 
@@ -39,6 +63,7 @@ Review the argument reference that you can specify for your resource.
     * Constraints: The list items must match regular expression `/(.*?)/`. The maximum length is `10` items. The minimum length is `0` items.
 * `crl_disable` - (Optional, Boolean) Disables or enables certificate revocation list (CRL) building.If CRL building is disabled, a signed but zero-length CRL is returned when downloading the CRL. If CRL building is enabled, it will rebuild the CRL.
 * `crl_distribution_points_encoded` - (Optional, Boolean) Determines whether to encode the certificate revocation list (CRL) distribution points in the certificates that are issued by this certificate authority.
+* `crl_expiry` - (Optional, Boolean) The time until the certificate revocation list (CRL) expires.The value can be supplied as a string representation of a duration in hours, such as `48h`. The default is 72 hours.
 * `exclude_cn_from_sans` - (Optional, Forces new resource, Boolean) Controls whether the common name is excluded from Subject Alternative Names (SANs).If the common name set to `true`, it is not included in DNS or Email SANs if they apply. This field can be useful if the common name is a human-readable identifier, instead of a hostname or an email address.
 * `expiration_date` - (Optional, Forces new resource, String) The date a secret is expired. The date format follows RFC 3339.
 * `format` - (Optional, Forces new resource, String) The format of the returned data.

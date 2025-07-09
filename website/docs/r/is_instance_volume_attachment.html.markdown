@@ -152,8 +152,9 @@ The `ibm_is_instance_volume_attachment` resource provides the following [Timeout
 - **delete**: The deletion of the instance volume attachment is considered failed when no response is received for 10 minutes.
 
 ## Argument reference
-Review the argument references that you can specify for your resource. 
+Review the argument references that you can specify for your resource.
 
+- `bandwidth` - (Optional, Integer) The maximum bandwidth (in megabits per second) for the volume. For this property to be specified, the volume storage_generation must be 2.
 - `capacity` - (Optional, Integer) The capacity of the volume in gigabytes.
 
   ~> **NOTE**

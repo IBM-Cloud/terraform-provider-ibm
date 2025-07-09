@@ -4,17 +4,20 @@
 package vpc
 
 import (
+	"context"
 	"fmt"
+	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func DataSourceIBMISSecurityGroupTargets() *schema.Resource {
 	return &schema.Resource{
 
-		Read: dataSourceIBMISSecurityGroupTargetsRead,
+		ReadContext: dataSourceIBMISSecurityGroupTargetsRead,
 
 		Schema: map[string]*schema.Schema{
 
@@ -67,11 +70,13 @@ func DataSourceIBMISSecurityGroupTargets() *schema.Resource {
 	}
 }
 
-func dataSourceIBMISSecurityGroupTargetsRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceIBMISSecurityGroupTargetsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_security_group_targets", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	securityGroupID := d.Get("security_group").(string)
@@ -85,9 +90,11 @@ func dataSourceIBMISSecurityGroupTargetsRead(d *schema.ResourceData, meta interf
 		if start != "" {
 			listSecurityGroupTargetsOptions.Start = &start
 		}
-		groups, response, err := sess.ListSecurityGroupTargets(listSecurityGroupTargetsOptions)
+		groups, _, err := sess.ListSecurityGroupTargetsWithContext(context, listSecurityGroupTargetsOptions)
 		if err != nil || groups == nil {
-			return fmt.Errorf("[ERROR] Error Getting InstanceGroup Managers %s\n%s", err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("SecurityGroupTargetsPager.GetAll() failed %s", err), "(Data) ibm_is_security_group_targets", "read")
+			log.Printf("[DEBUG] %s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		if *groups.TotalCount == int64(0) {
 			break
@@ -119,7 +126,9 @@ func dataSourceIBMISSecurityGroupTargetsRead(d *schema.ResourceData, meta interf
 		}
 		targets = append(targets, tr)
 	}
-	d.Set("targets", targets)
+	if err = d.Set("targets", targets); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting targets %s", err), "(Data) ibm_is_security_group_targets", "read", "targets-set").GetDiag()
+	}
 	d.SetId(securityGroupID)
 	return nil
 }

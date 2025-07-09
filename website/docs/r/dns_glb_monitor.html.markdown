@@ -41,7 +41,7 @@ Review the argument reference that you can specify for your resource.
 - `allow_insecure` - (Optional, String) Do not validate the certificate when monitor use HTTPS. This parameter is currently only valid for HTTPS monitors.
 - `description` - (Optional, String)  Descriptive text of the Load Balancer monitor.
 - `expected_body` - (Optional, String) A case-insensitive sub-string to look in the response body. If the string is not found, the origin will be marked as unhealthy. This parameter is only valid for HTTP and HTTPS monitors.
-- `expected_codes` - (Optional, String) The expected HTTP response code or code range of the health check. This parameter is only valid for HTTP and HTTPS monitors. Allowable values are `200, 201, 202, 203, 204,205, 206, 207, 208, 226, xx`.
+- `expected_codes` - (Optional, String) The expected HTTP response code or code range of the health check. This parameter is only valid for HTTP and HTTPS monitors. Allowable values are `200, 201, 202, 203, 204, 205, 206, 207, 208, 226, 2xx, 3xx, 4xx, 5xx`.
 - `headers` - (Optional, Set) The HTTP request headers to send in the health check. It is recommended you set a host header by default. The `User-Agent` header cannot be overridden. This parameter is only valid for HTTP and HTTPS monitors.
 
   Nested scheme for `headers`:

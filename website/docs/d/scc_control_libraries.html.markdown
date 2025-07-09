@@ -6,7 +6,7 @@ description: |-
 subcategory: "Security and Compliance Center"
 ---
 
-# ibm_scc_control_library
+# ibm_scc_control_libraries
 
 Retrieve information about a list of scc_control_libraries from a read-only data source. Then, you can reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
 

@@ -175,8 +175,10 @@ func resourceIbmLogsViewCreate(context context.Context, d *schema.ResourceData, 
 
 	region := getLogsInstanceRegion(logsClient, d)
 	instanceId := d.Get("instance_id").(string)
-	logsClient = getClientWithLogsInstanceEndpoint(logsClient, instanceId, region, getLogsInstanceEndpointType(logsClient, d))
-
+	logsClient, err = getClientWithLogsInstanceEndpoint(logsClient, meta, instanceId, region, getLogsInstanceEndpointType(logsClient, d))
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("Unable to get updated logs instance client"))
+	}
 	createViewOptions := &logsv0.CreateViewOptions{}
 
 	createViewOptions.SetName(d.Get("name").(string))
@@ -225,7 +227,7 @@ func resourceIbmLogsViewRead(context context.Context, d *schema.ResourceData, me
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
-	logsClient, region, instanceId, viewId, err := updateClientURLWithInstanceEndpoint(d.Id(), logsClient, d)
+	logsClient, region, instanceId, viewId, err := updateClientURLWithInstanceEndpoint(d.Id(), meta, logsClient, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -299,7 +301,7 @@ func resourceIbmLogsViewUpdate(context context.Context, d *schema.ResourceData, 
 		return tfErr.GetDiag()
 	}
 
-	logsClient, _, _, viewId, err := updateClientURLWithInstanceEndpoint(d.Id(), logsClient, d)
+	logsClient, _, _, viewId, err := updateClientURLWithInstanceEndpoint(d.Id(), meta, logsClient, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -365,7 +367,7 @@ func resourceIbmLogsViewDelete(context context.Context, d *schema.ResourceData, 
 		return tfErr.GetDiag()
 	}
 
-	logsClient, _, _, viewId, err := updateClientURLWithInstanceEndpoint(d.Id(), logsClient, d)
+	logsClient, _, _, viewId, err := updateClientURLWithInstanceEndpoint(d.Id(), meta, logsClient, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}

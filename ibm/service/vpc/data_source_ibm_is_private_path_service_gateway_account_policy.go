@@ -81,7 +81,9 @@ func DataSourceIBMIsPrivatePathServiceGatewayAccountPolicy() *schema.Resource {
 func dataSourceIBMIsPrivatePathServiceGatewayAccountPolicyRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_private_path_service_gateway_account_policy", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	getPrivatePathServiceGatewayAccountPolicyOptions := &vpcv1.GetPrivatePathServiceGatewayAccountPolicyOptions{}
@@ -91,14 +93,15 @@ func dataSourceIBMIsPrivatePathServiceGatewayAccountPolicyRead(context context.C
 
 	privatePathServiceGatewayAccountPolicy, response, err := vpcClient.GetPrivatePathServiceGatewayAccountPolicyWithContext(context, getPrivatePathServiceGatewayAccountPolicyOptions)
 	if err != nil {
-		log.Printf("[DEBUG] GetPrivatePathServiceGatewayAccountPolicyWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetPrivatePathServiceGatewayAccountPolicyWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetPrivatePathServiceGatewayAccountPolicyWithContext failed: %s\n%s", err.Error(), response), "(Data) ibm_is_private_path_service_gateway_account_policy", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", *getPrivatePathServiceGatewayAccountPolicyOptions.PrivatePathServiceGatewayID, *getPrivatePathServiceGatewayAccountPolicyOptions.ID))
 
 	if err = d.Set("access_policy", privatePathServiceGatewayAccountPolicy.AccessPolicy); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting access_policy: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting access_policy: %s", err), "(Data) ibm_is_private_path_service_gateway_account_policy", "read", "set-access_policy").GetDiag()
 	}
 
 	account := []map[string]interface{}{}
@@ -110,19 +113,19 @@ func dataSourceIBMIsPrivatePathServiceGatewayAccountPolicyRead(context context.C
 		account = append(account, modelMap)
 	}
 	if err = d.Set("account", account); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting account %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting account: %s", err), "(Data) ibm_is_private_path_service_gateway_account_policy", "read", "set-account").GetDiag()
 	}
 
 	if err = d.Set("created_at", flex.DateTimeToString(privatePathServiceGatewayAccountPolicy.CreatedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting created_at: %s", err), "(Data) ibm_is_private_path_service_gateway_account_policy", "read", "set-created_at").GetDiag()
 	}
 
 	if err = d.Set("href", privatePathServiceGatewayAccountPolicy.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting href: %s", err), "(Data) ibm_is_private_path_service_gateway_account_policy", "read", "set-href").GetDiag()
 	}
 
 	if err = d.Set("resource_type", privatePathServiceGatewayAccountPolicy.ResourceType); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting resource_type: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_type: %s", err), "(Data) ibm_is_private_path_service_gateway_account_policy", "read", "set-resource_type").GetDiag()
 	}
 
 	// if err = d.Set("updated_at", flex.DateTimeToString(privatePathServiceGatewayAccountPolicy.UpdatedAt)); err != nil {

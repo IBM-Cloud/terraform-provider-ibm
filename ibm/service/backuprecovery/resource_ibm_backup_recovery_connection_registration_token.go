@@ -44,8 +44,9 @@ func ResourceIbmBackupRecoveryConnectionRegistrationToken() *schema.Resource {
 				Description: "Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified.",
 			},
 			"registration_token": &schema.Schema{
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:      schema.TypeString,
+				Sensitive: true,
+				Computed:  true,
 			},
 		},
 	}

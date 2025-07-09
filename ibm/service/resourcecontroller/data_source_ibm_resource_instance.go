@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"reflect"
 
+	"github.com/IBM/platform-services-go-sdk/globalcatalogv1"
 	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	rg "github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -183,11 +184,10 @@ func DataSourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{})
 	if err != nil {
 		return err
 	}
-	rsCatClient, err := meta.(conns.ClientSession).ResourceCatalogAPI()
+	globalClient, err := meta.(conns.ClientSession).GlobalCatalogV1API()
 	if err != nil {
 		return err
 	}
-	rsCatRepo := rsCatClient.ResourceCatalog()
 	if _, ok := d.GetOk("name"); ok {
 		name := d.Get("name").(string)
 		resourceInstanceListOptions := rc.ListResourceInstancesOptions{
@@ -201,12 +201,42 @@ func DataSourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{})
 
 		if service, ok := d.GetOk("service"); ok {
 
-			serviceOff, err := rsCatRepo.FindByName(service.(string), true)
+			name := service.(string)
+			options := globalcatalogv1.ListCatalogEntriesOptions{
+				Q: &name,
+			}
+			service, _, err := globalClient.ListCatalogEntries(&options)
 			if err != nil {
 				return fmt.Errorf("[ERROR] Error retrieving service offering: %s", err)
 			}
-			resourceId := serviceOff[0].ID
-			resourceInstanceListOptions.ResourceID = &resourceId
+			if len(service.Resources) > 0 {
+				var kind = "*"
+				childOptions := globalcatalogv1.GetChildObjectsOptions{
+					ID:   service.Resources[0].ID,
+					Kind: &kind,
+					Q:    &name,
+				}
+				childService, _, err := globalClient.GetChildObjects(&childOptions)
+				if err != nil {
+					return fmt.Errorf("[ERROR] Error retrieving service offering: %s", err)
+				}
+				if *childService.ResourceCount > 0 {
+					for i, s := range childService.Resources {
+						if *s.Name == name && isService(*s.Kind) {
+							resourceInstanceListOptions.ResourceID = childService.Resources[i].ID
+						}
+
+					}
+
+				} else {
+					for i, s := range service.Resources {
+						if *s.Name == name && isService(*s.Kind) {
+							resourceInstanceListOptions.ResourceID = service.Resources[i].ID
+						}
+
+					}
+				}
+			}
 		}
 
 		next_url := ""
@@ -267,12 +297,17 @@ func DataSourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{})
 	d.Set("status", instance.State)
 	d.Set("resource_group_id", instance.ResourceGroupID)
 	d.Set("location", instance.RegionID)
-	serviceOff, err := rsCatRepo.GetServiceName(*instance.ResourceID)
+
+	options := globalcatalogv1.GetCatalogEntryOptions{
+
+		ID: instance.ResourceID,
+	}
+	service, _, err := globalClient.GetCatalogEntry(&options)
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error retrieving service offering: %s", err)
 	}
 
-	d.Set("service", serviceOff)
+	d.Set("service", service.Name)
 
 	d.Set(flex.ResourceName, instance.Name)
 	d.Set(flex.ResourceCRN, instance.CRN)
@@ -315,11 +350,15 @@ func DataSourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{})
 	}
 	d.Set(flex.ResourceControllerURL, rcontroller+"/services/")
 
-	servicePlan, err := rsCatRepo.GetServicePlanName(*instance.ResourcePlanID)
+	planOptions := globalcatalogv1.GetCatalogEntryOptions{
+
+		ID: instance.ResourcePlanID,
+	}
+	plan, _, err := globalClient.GetCatalogEntry(&planOptions)
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error retrieving plan: %s", err)
 	}
-	d.Set("plan", servicePlan)
+	d.Set("plan", plan.Name)
 	d.Set("crn", instance.CRN)
 	tags, err := flex.GetTagsUsingCRN(meta, *instance.CRN)
 	if err != nil {
@@ -329,4 +368,12 @@ func DataSourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{})
 	d.Set("tags", tags)
 
 	return nil
+}
+
+func isService(kind string) bool {
+	// TODO: COS is 'iaas' kind, but considered to be a service
+	if kind == "service" || kind == "iaas" || kind == "composite" {
+		return true
+	}
+	return false
 }

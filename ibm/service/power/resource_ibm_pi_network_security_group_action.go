@@ -95,7 +95,12 @@ func resourceIBMPINetworkSecurityGroupActionRead(ctx context.Context, d *schema.
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	d.Set(Attr_State, ws.Details.NetworkSecurityGroups.State)
+
+	if ws.Details.NetworkSecurityGroups != nil {
+		d.Set(Attr_State, ws.Details.NetworkSecurityGroups.State)
+	} else {
+		d.Set(Attr_State, nil)
+	}
 
 	return nil
 }
@@ -150,19 +155,17 @@ func isWorkspaceRefreshFunc(client *instance.IBMPIWorkspacesClient, id string) r
 		if *(ws.Status) == State_Active {
 			return ws, State_Active, nil
 		}
-		if *(ws.Details.NetworkSecurityGroups.State) == State_Provisioning {
-			return ws, State_Provisioning, nil
-		}
-		if *(ws.Details.NetworkSecurityGroups.State) == State_Failed {
-			return ws, *ws.Details.NetworkSecurityGroups.State, fmt.Errorf("[ERROR] workspace network security group configuration state is:%s", *ws.Status)
+
+		if *(ws.Status) == State_Failed {
+			return ws, State_Failed, fmt.Errorf("[ERROR] The resource instance %s is in failed state", id)
 		}
 
-		return ws, State_Configuring, nil
+		return ws, State_Provisioning, nil
 	}
 }
 func isWaitForNSGStatus(ctx context.Context, client *instance.IBMPIWorkspacesClient, id, action string, timeout time.Duration) (interface{}, error) {
 	stateConf := &retry.StateChangeConf{
-		Pending:    []string{State_Configuring, State_Removing},
+		Pending:    []string{State_Configuring},
 		Target:     []string{State_Active, State_Inactive},
 		Refresh:    isPERWorkspaceNSGRefreshFunc(client, id, action),
 		Timeout:    timeout,
@@ -180,17 +183,19 @@ func isPERWorkspaceNSGRefreshFunc(client *instance.IBMPIWorkspacesClient, id, ac
 			return nil, "", err
 		}
 
+		if ws.Details.NetworkSecurityGroups == nil {
+			if action != Disable {
+				return ws, State_Configuring, nil
+			} else {
+				return ws, State_Inactive, nil
+			}
+		}
+
+		if *(ws.Details.NetworkSecurityGroups.State) == State_Error {
+			return ws, State_Error, fmt.Errorf("[ERROR] The workspace network security group state %s is %s", id, State_Error)
+		}
 		if *(ws.Details.NetworkSecurityGroups.State) == State_Active && action == Enable {
 			return ws, State_Active, nil
-		}
-		if *(ws.Details.NetworkSecurityGroups.State) == State_Inactive && action == Disable {
-			return ws, State_Inactive, nil
-		}
-		if *(ws.Details.NetworkSecurityGroups.State) == State_Removing {
-			return ws, State_Removing, nil
-		}
-		if *(ws.Details.NetworkSecurityGroups.State) == State_Error {
-			return ws, *ws.Details.NetworkSecurityGroups.State, fmt.Errorf("[ERROR] workspace network security group configuration failed to %s", action)
 		}
 
 		return ws, State_Configuring, nil

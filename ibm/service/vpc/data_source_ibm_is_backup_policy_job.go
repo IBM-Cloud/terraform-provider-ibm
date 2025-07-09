@@ -412,7 +412,9 @@ func DataSourceIBMIsBackupPolicyJob() *schema.Resource {
 func dataSourceIBMIsBackupPolicyJobRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := vpcClient(meta)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("vpcClient creation failed: %s", err.Error()), "(Data) ibm_is_backup_policy_job", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	getBackupPolicyJobOptions := &vpcv1.GetBackupPolicyJobOptions{}

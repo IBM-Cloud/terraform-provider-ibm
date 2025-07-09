@@ -160,16 +160,16 @@ func resourceIbmIbmAppConfigPropertyCreate(d *schema.ResourceData, meta interfac
 	options.SetPropertyID(d.Get("property_id").(string))
 	options.SetValue(d.Get("value").(string))
 
-	if _, ok := d.GetOk("description"); ok {
+	if _, ok := GetFieldExists(d, "description"); ok {
 		options.SetDescription(d.Get("description").(string))
 	}
-	if _, ok := d.GetOk("tags"); ok {
+	if _, ok := GetFieldExists(d, "tags"); ok {
 		options.SetTags(d.Get("tags").(string))
 	}
-	if _, ok := d.GetOk("format"); ok {
+	if _, ok := GetFieldExists(d, "format"); ok {
 		options.SetFormat(d.Get("format").(string))
 	}
-	if _, ok := d.GetOk("collections"); ok {
+	if _, ok := GetFieldExists(d, "collections"); ok {
 		var collections []appconfigurationv1.CollectionRef
 		for _, e := range d.Get("collections").([]interface{}) {
 			value := e.(map[string]interface{})
@@ -178,13 +178,13 @@ func resourceIbmIbmAppConfigPropertyCreate(d *schema.ResourceData, meta interfac
 		}
 		options.SetCollections(collections)
 	}
-	if _, ok := d.GetOk("segment_rules"); ok {
+	if _, ok := GetFieldExists(d, "segment_rules"); ok {
 		var segmentRules []appconfigurationv1.SegmentRule
 		for _, e := range d.Get("segment_rules").([]interface{}) {
 			value := e.(map[string]interface{})
 			segmentRulesItem, err := resourceIbmAppConfigPropertyMapToSegmentRule(d, value)
 			if err != nil {
-				return flex.FmtErrorf(fmt.Sprintf("%s", err))
+				return flex.FmtErrorf("%s", err)
 			}
 			segmentRules = append(segmentRules, segmentRulesItem)
 		}
@@ -329,13 +329,13 @@ func resourceIbmIbmAppConfigPropertyUpdate(d *schema.ResourceData, meta interfac
 		options.SetName(d.Get("name").(string))
 		options.SetValue(d.Get("value").(string))
 
-		if _, ok := d.GetOk("description"); ok {
+		if _, ok := GetFieldExists(d, "description"); ok {
 			options.SetDescription(d.Get("description").(string))
 		}
-		if _, ok := d.GetOk("tags"); ok {
+		if _, ok := GetFieldExists(d, "tags"); ok {
 			options.SetTags(d.Get("tags").(string))
 		}
-		if _, ok := d.GetOk("collections"); ok {
+		if _, ok := GetFieldExists(d, "collections"); ok {
 			var collections []appconfigurationv1.CollectionRef
 			for _, e := range d.Get("collections").([]interface{}) {
 				value := e.(map[string]interface{})
@@ -344,13 +344,13 @@ func resourceIbmIbmAppConfigPropertyUpdate(d *schema.ResourceData, meta interfac
 			}
 			options.SetCollections(collections)
 		}
-		if _, ok := d.GetOk("segment_rules"); ok {
+		if _, ok := GetFieldExists(d, "segment_rules"); ok {
 			var segmentRules []appconfigurationv1.SegmentRule
 			for _, e := range d.Get("segment_rules").([]interface{}) {
 				value := e.(map[string]interface{})
 				segmentRulesItem, err := resourceIbmAppConfigPropertyMapToSegmentRule(d, value)
 				if err != nil {
-					return flex.FmtErrorf(fmt.Sprintf("%s", err))
+					return flex.FmtErrorf("%s", err)
 				}
 				segmentRules = append(segmentRules, segmentRulesItem)
 			}

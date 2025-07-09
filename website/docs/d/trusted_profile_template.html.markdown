@@ -1,19 +1,19 @@
 ---
 layout: "ibm"
-page_title: "IBM : ibm_trusted_profile_template"
+page_title: "IBM : ibm_iam_trusted_profile_template"
 description: |-
   Get information about an IAM trusted profile template
 subcategory: "Identity & Access Management (IAM)"
 ---
 
-# ibm_trusted_profile_template
+# ibm_iam_trusted_profile_template
 
 Provides a read-only data source to retrieve information about a trusted_profile_template. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
 
 ## Example Usage
 
 ```hcl
-data "ibm_trusted_profile_template" "trusted_profile_template" {
+data "ibm_iam_trusted_profile_template" "trusted_profile_template" {
 	template_id = "${var.template_id}"
 	version = "${var.version}"
 }

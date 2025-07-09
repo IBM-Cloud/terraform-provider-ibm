@@ -1,5 +1,4 @@
 ---
-
 subcategory: "Power Systems"
 layout: "ibm"
 page_title: "IBM: pi_dhcp"
@@ -11,7 +10,7 @@ description: |-
 
 Create, update, or delete DHCP Server for your Power Systems Virtual Server instance. For more information, see [getting started with IBM Power Systems Virtual Servers](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-getting-started).
 
-## Example usage
+## Example Usage
 
 The following example enables you to create a DHCP Server:
 
@@ -21,7 +20,7 @@ resource "ibm_pi_dhcp" "example" {
 }
 ```
 
-## Argument reference
+## Argument Reference
 
 Review the argument references that you can specify for your resource.
 
@@ -32,7 +31,7 @@ Review the argument references that you can specify for your resource.
 - `pi_dhcp_snat_enabled` - (Optional, Bool) Indicates if SNAT will be enabled for the DHCP service. The default value is **true**.
 - `pi_dns_server` - (Optional, String) The DNS Server for the DHCP service.
 
-## Attribute reference
+## Attribute Reference
 
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
@@ -60,7 +59,7 @@ The `ibm_pi_dhcp` provides the following [timeouts](https://www.terraform.io/doc
   - `region` - `lon`
   - `zone` - `lon04`
   
-  Example usage:
+Example usage:
 
   ```terraform
     provider "ibm" {

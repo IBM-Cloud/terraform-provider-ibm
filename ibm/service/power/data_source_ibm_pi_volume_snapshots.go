@@ -41,6 +41,7 @@ func DataSourceIBMPIVolumeSnapshots() *schema.Resource {
 						},
 						Attr_CRN: {
 							Computed:    true,
+							Deprecated:  "This field is deprecated.",
 							Description: "The CRN of the volume snapshot.",
 							Type:        schema.TypeString,
 						},

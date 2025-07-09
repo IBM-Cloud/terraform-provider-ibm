@@ -10,7 +10,7 @@ description: |-
 
 Attaches and Detaches a volume to a Power Systems Virtual Server instance. For more information, about managing volume, see [getting started with IBM Power Systems Virtual Servers](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-getting-started).
 
-## Example usage
+## Example Usage
 
 The following example attaches volume to a power systems virtual server instance.
 
@@ -45,7 +45,7 @@ ibm_pi_volume_attach provides the following [timeouts](https://www.terraform.io/
 - **create** - (Default 15 minutes) Used for attaching volume.
 - **delete** - (Default 15 minutes) Used for detaching volume.
 
-## Argument reference
+## Argument Reference
 
 Review the argument references that you can specify for your resource.
 
@@ -53,7 +53,7 @@ Review the argument references that you can specify for your resource.
 - `pi_instance_id` - (Required, Forces new resource, String) The ID of the pvm instance to attach the volume to.
 - `pi_volume_id` - (Required, Forces new resource, String) The ID of the volume to attach.
 
-## Attribute reference
+## Attribute Reference
 
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 

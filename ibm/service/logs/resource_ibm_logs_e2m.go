@@ -263,7 +263,10 @@ func resourceIbmLogsE2mCreate(context context.Context, d *schema.ResourceData, m
 
 	region := getLogsInstanceRegion(logsClient, d)
 	instanceId := d.Get("instance_id").(string)
-	logsClient = getClientWithLogsInstanceEndpoint(logsClient, instanceId, region, getLogsInstanceEndpointType(logsClient, d))
+	logsClient, err = getClientWithLogsInstanceEndpoint(logsClient, meta, instanceId, region, getLogsInstanceEndpointType(logsClient, d))
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("Unable to get updated logs instance client"))
+	}
 
 	bodyModelMap := map[string]interface{}{}
 	createE2mOptions := &logsv0.CreateE2mOptions{}
@@ -317,7 +320,7 @@ func resourceIbmLogsE2mRead(context context.Context, d *schema.ResourceData, met
 		return tfErr.GetDiag()
 	}
 
-	logsClient, region, instanceId, e2mId, err := updateClientURLWithInstanceEndpoint(d.Id(), logsClient, d)
+	logsClient, region, instanceId, e2mId, err := updateClientURLWithInstanceEndpoint(d.Id(), meta, logsClient, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -432,7 +435,7 @@ func resourceIbmLogsE2mUpdate(context context.Context, d *schema.ResourceData, m
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
-	logsClient, _, _, e2mId, err := updateClientURLWithInstanceEndpoint(d.Id(), logsClient, d)
+	logsClient, _, _, e2mId, err := updateClientURLWithInstanceEndpoint(d.Id(), meta, logsClient, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -501,7 +504,7 @@ func resourceIbmLogsE2mDelete(context context.Context, d *schema.ResourceData, m
 		return tfErr.GetDiag()
 	}
 
-	logsClient, _, _, e2mId, err := updateClientURLWithInstanceEndpoint(d.Id(), logsClient, d)
+	logsClient, _, _, e2mId, err := updateClientURLWithInstanceEndpoint(d.Id(), meta, logsClient, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}

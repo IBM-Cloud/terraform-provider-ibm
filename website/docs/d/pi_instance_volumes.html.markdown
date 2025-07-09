@@ -10,7 +10,7 @@ description: |-
 
 Retrieves information about the persistent storage volumes that are mounted to a Power Systems Virtual Server instance. For more information, about power instance volume, see [snapshotting, cloning, and restoring](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-volume-snapshot-clone).
 
-## Example usage
+## Example Usage
 
 The following example retrieves information about the volumes attached to the `terraform-test-instance` instance.
 
@@ -37,14 +37,14 @@ Example usage:
     }
   ```
 
-## Argument reference
+## Argument Reference
 
 Review the argument references that you can specify for your data source.
 
 - `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
 - `pi_instance_name` - (Required, String) The unique identifier or name of the instance.
 
-## Attribute reference
+## Attribute Reference
 
 In addition to all argument reference list, you can access the following attribute references after your data source is created.
 

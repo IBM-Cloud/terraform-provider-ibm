@@ -39,10 +39,10 @@ func TestAccIbmDb2WhitelistDataSourceBasic(t *testing.T) {
 
 func testAccCheckIbmDb2WhitelistDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
-		data "ibm_db2_whitelist_ip" "db2_whitelistips" {
-    x_deployment_id = "crn:v1:staging:public:dashdb-for-transactions:us-east:a/e7e3e87b512f474381c0684a5ecbba03:f9455c22-07af-4a86-b9df-f02fd4774471::"
-}
-	`)
+		 data "ibm_db2_whitelist_ip" "db2_whitelistips" {
+	 x_deployment_id = "crn:v1:staging:public:dashdb-for-transactions:us-east:a/e7e3e87b512f474381c0684a5ecbba03:f9455c22-07af-4a86-b9df-f02fd4774471::"
+ }
+	 `)
 }
 
 func TestDataSourceIbmDb2WhitelistIpAddressToMap(t *testing.T) {

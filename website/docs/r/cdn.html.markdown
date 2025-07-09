@@ -10,6 +10,9 @@ description: |-
 # ibm_cdn
 Create, update, or delete a Content Delivery Networks (CDN) mapping. For more information, about IBM Cloud CDN, see [about Content Delivery Networks](https://cloud.ibm.com/docs/CDN?topic=CDN-about-content-delivery-networks-cdn-).
 
+# DEPRECATED
+CDN has now deprecated, backend services will no longer available after 28th March 2025. This docs will be removed in coming release.
+
 ## Example usage
 
 ```terraform

@@ -4,12 +4,15 @@
 package resourcemanager
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM/go-sdk-core/v5/core"
 	rg "github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -17,12 +20,12 @@ import (
 
 func ResourceIBMResourceGroup() *schema.Resource {
 	return &schema.Resource{
-		Create:   resourceIBMResourceGroupCreate,
-		Read:     resourceIBMResourceGroupRead,
-		Update:   resourceIBMResourceGroupUpdate,
-		Delete:   resourceIBMResourceGroupDelete,
-		Exists:   resourceIBMResourceGroupExists,
-		Importer: &schema.ResourceImporter{},
+		CreateContext: resourceIBMResourceGroupCreate,
+		ReadContext:   resourceIBMResourceGroupRead,
+		UpdateContext: resourceIBMResourceGroupUpdate,
+		DeleteContext: resourceIBMResourceGroupDelete,
+		Exists:        resourceIBMResourceGroupExists,
+		Importer:      &schema.ResourceImporter{},
 
 		Timeouts: &schema.ResourceTimeout{
 			Delete: schema.DefaultTimeout(20 * time.Minute),
@@ -97,16 +100,16 @@ func ResourceIBMResourceGroup() *schema.Resource {
 	}
 }
 
-func resourceIBMResourceGroupCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMResourceGroupCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	rMgtClient, err := meta.(conns.ClientSession).ResourceManagerV2API()
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	name := d.Get("name").(string)
 
 	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	accountID := userDetails.UserAccount
 
@@ -117,34 +120,65 @@ func resourceIBMResourceGroupCreate(d *schema.ResourceData, meta interface{}) er
 
 	resourceGroup, resp, err := rMgtClient.CreateResourceGroup(&resourceGroupCreate)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error creating resource group: %s with response code  %s", err, resp)
+		return diag.FromErr(fmt.Errorf("[ERROR] Error creating resource group: %s with response code  %s", err, resp))
 	}
 
 	d.SetId(*resourceGroup.ID)
 
-	return resourceIBMResourceGroupRead(d, meta)
+	return resourceIBMResourceGroupRead(context, d, meta)
 }
 
-func resourceIBMResourceGroupRead(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMResourceGroupRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	rMgtClient, err := meta.(conns.ClientSession).ResourceManagerV2API()
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	resourceGroupID := d.Id()
 	resourceGroupGet := rg.GetResourceGroupOptions{
 		ID: &resourceGroupID,
 	}
 
-	resourceGroup, resp, err := rMgtClient.GetResourceGroup(&resourceGroupGet)
-	if err != nil {
+	var resp *core.DetailedResponse
+	var resourceGroup *rg.ResourceGroup
+	var (
+		initialDelaySec = 2  // seconds
+		maxDelaySec     = 60 // max delay in seconds
+
+	)
+
+	err = retry.RetryContext(context, 5*time.Minute, func() *retry.RetryError {
+		retryCount := 0
+
+		return func() *retry.RetryError {
+			// Calculate exponential delay
+			delaySec := initialDelaySec * (1 << retryCount) // equivalent to initialDelaySec * 2^retryCount
+			if delaySec > maxDelaySec {
+				delaySec = maxDelaySec
+			}
+			time.Sleep(time.Duration(delaySec) * time.Second)
+
+			resourceGroup, resp, err = rMgtClient.GetResourceGroup(&resourceGroupGet)
+			if err != nil || resourceGroup == nil {
+				retryCount++
+				if resp != nil && resp.StatusCode == 404 {
+					return retry.RetryableError(err)
+				}
+				return retry.NonRetryableError(err)
+			}
+			return nil
+		}()
+	})
+
+	if conns.IsResourceTimeoutError(err) {
+		resourceGroup, resp, err = rMgtClient.GetResourceGroup(&resourceGroupGet)
+	}
+	if err != nil || resourceGroup == nil {
 		if resp != nil && resp.StatusCode == 404 {
-			log.Printf("[WARN] Resource Group is not found")
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error retrieving resource group: %s with response code  %s", err, resp)
+		return diag.FromErr(fmt.Errorf("[ERROR] Error retrieving resource group: %s. API Response: %s", err, resp))
 	}
-
 	d.Set("name", *resourceGroup.Name)
 	if resourceGroup.State != nil {
 		d.Set("state", *resourceGroup.State)
@@ -185,10 +219,10 @@ func resourceIBMResourceGroupRead(d *schema.ResourceData, meta interface{}) erro
 	return nil
 }
 
-func resourceIBMResourceGroupUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMResourceGroupUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	rMgtClient, err := meta.(conns.ClientSession).ResourceManagerV2API()
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	resourceGroupID := d.Id()
@@ -205,17 +239,17 @@ func resourceIBMResourceGroupUpdate(d *schema.ResourceData, meta interface{}) er
 	if hasChange {
 		_, resp, err := rMgtClient.UpdateResourceGroup(&resourceGroupUpdate)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error updating resource group: %s with response code  %s", err, resp)
+			return diag.FromErr(fmt.Errorf("[ERROR] Error updating resource group: %s with response code  %s", err, resp))
 		}
 
 	}
-	return resourceIBMResourceGroupRead(d, meta)
+	return resourceIBMResourceGroupRead(context, d, meta)
 }
 
-func resourceIBMResourceGroupDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMResourceGroupDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	rMgtClient, err := meta.(conns.ClientSession).ResourceManagerV2API()
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	resourceGroupID := d.Id()
@@ -252,11 +286,11 @@ func resourceIBMResourceGroupDelete(d *schema.ResourceData, meta interface{}) er
 					log.Printf("[WARN] Resource Group is not found")
 					return nil
 				}
-				return fmt.Errorf("[ERROR] Error Deleting resource group: %s with response code  %s", err, resp)
+				return diag.FromErr(fmt.Errorf("[ERROR] Error Deleting resource group: %s with response code  %s", err, resp))
 			}
 		} else {
 
-			return fmt.Errorf("[ERROR] Error Deleting resource group: %s with response code  %s", err, resp)
+			return diag.FromErr(fmt.Errorf("[ERROR] Error Deleting resource group: %s with response code  %s", err, resp))
 		}
 	}
 

@@ -85,6 +85,7 @@ func ResourceIBMPIIPSecPolicy() *schema.Resource {
 				Description: "IPSec policy ID",
 			},
 		},
+		DeprecationMessage: "Resource ibm_pi_ipsec_policy is deprecated. VPN has reached end of life.",
 	}
 }
 

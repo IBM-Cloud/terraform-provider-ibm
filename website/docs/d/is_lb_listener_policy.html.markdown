@@ -52,7 +52,7 @@ Nested scheme for `rules`:
 	- `href` - (String) The rule's canonical URL.
 	- `id` - (String) The rule's unique identifier.
 
-- `target` - (List) - If `action` is `forward`, the response is a `LoadBalancerPoolReference`- If `action` is `redirect`, the response is a `LoadBalancerListenerPolicyRedirectURL`- If `action` is `https_redirect`, the response is a `LoadBalancerListenerHTTPSRedirect`.
+- `target` - (List) -If `action` is `forward_to_pool`, the response is a `LoadBalancerPoolReference`-If `action` is `forward_to_listener`, specify a `LoadBalancerListenerIdentity` in this load balancer to forward to.`- If `action` is `redirect`, the response is a `LoadBalancerListenerPolicyRedirectURL`- If `action` is `https_redirect`, the response is a `LoadBalancerListenerHTTPSRedirect`.
 Nested scheme for `target`:
 	- `deleted` - (List) If present, this property indicates the referenced resource has been deleted and provides some supplementary information.
 	Nested scheme for `deleted`:

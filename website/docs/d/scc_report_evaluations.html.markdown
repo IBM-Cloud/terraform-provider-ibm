@@ -63,7 +63,7 @@ Nested schema for **evaluations**:
 			* `parameter_type` - (String) The parameter type.
 			* `parameter_value` - (String) The property value.
 	* `component_id` - (String) The component ID.
-	* `control_id` - (String) The control ID.
+	* `control_id` - (String) The control ID. **Deprecated**
 	* `details` - (List) The evaluation details.
 	Nested schema for **details**:
 		* `properties` - (List) The evaluation properties.

@@ -37,6 +37,7 @@ func ResourceIBMPIInstanceSnapshot() *schema.Resource {
 			// Arguments
 			Arg_CloudInstanceID: {
 				Description:  "The GUID of the service instance associated with an account.",
+				ForceNew:     true,
 				Required:     true,
 				Type:         schema.TypeString,
 				ValidateFunc: validation.NoZeroValues,
@@ -98,6 +99,11 @@ func ResourceIBMPIInstanceSnapshot() *schema.Resource {
 			Attr_Status: {
 				Computed:    true,
 				Description: "Status of the PVM instance snapshot.",
+				Type:        schema.TypeString,
+			},
+			Attr_StatusDetail: {
+				Computed:    true,
+				Description: "Detailed information for the last PVM instance snapshot action.",
 				Type:        schema.TypeString,
 			},
 			Attr_VolumeSnapshots: {
@@ -196,6 +202,7 @@ func resourceIBMPIInstanceSnapshotRead(ctx context.Context, d *schema.ResourceDa
 	d.Set(Attr_LastUpdateDate, snapshotdata.LastUpdateDate.String())
 	d.Set(Attr_SnapshotID, *snapshotdata.SnapshotID)
 	d.Set(Attr_Status, snapshotdata.Status)
+	d.Set(Attr_StatusDetail, snapshotdata.StatusDetail)
 	d.Set(Attr_VolumeSnapshots, snapshotdata.VolumeSnapshots)
 
 	return nil
@@ -255,15 +262,6 @@ func resourceIBMPIInstanceSnapshotDelete(ctx context.Context, d *schema.Resource
 	}
 
 	client := instance.NewIBMPISnapshotClient(ctx, sess, cloudInstanceID)
-	snapshot, err := client.Get(snapshotID)
-	if err != nil {
-		// snapshot does not exist
-		d.SetId("")
-		return nil
-	}
-
-	log.Printf("The snapshot  to be deleted is in the following state .. %s", snapshot.Status)
-
 	err = client.Delete(snapshotID)
 	if err != nil {
 		return diag.FromErr(err)

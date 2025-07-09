@@ -107,27 +107,34 @@ func testAccCheckIbmLogsAlertConfigBasic(name string, isActive string, severity 
 		is_active   = %s
 		severity    = "%s"
 		condition {
-		  new_value {
+			new_value {
 			parameters {
-			  threshold          = 1.0
-			  timeframe          = "timeframe_12_h"
-			  group_by           = ["ibm.logId"]
-			  relative_timeframe = "hour_or_unspecified"
-			  cardinality_fields = []
+				threshold          = 1.0
+				timeframe          = "timeframe_12_h"
+				group_by           = ["ibm.logId"]
+				relative_timeframe = "hour_or_unspecified"
+				cardinality_fields = []
 			}
-		  }
+			}
 		}
 		notification_groups {
-		  group_by_fields = ["ibm.logId"]
+			group_by_fields = ["ibm.logId"]
 		}
 		filters {
-		  text        = "text"
-		  filter_type = "text_or_unspecified"
+			text        = "text"
+			filter_type = "text_or_unspecified"
 		}
-		meta_labels_strings = []
+		meta_labels {
+			key   = "label1"
+			value = "value"
+		}
+		meta_labels {
+			key   = "label2"
+			value = "true"
+		}
 		incident_settings {
-		  retriggering_period_seconds = 43200
-		  notify_on                   = "triggered_only"
+			retriggering_period_seconds = 43200
+			notify_on                   = "triggered_only"
 		}
 	}
 `, acc.LogsInstanceId, acc.LogsInstanceRegion, name, isActive, severity)
@@ -144,24 +151,35 @@ func testAccCheckIbmLogsAlertConfig(name string, description string, isActive st
 		severity    = "%s"
 		condition {
 			new_value {
-			  parameters {
+			parameters {
 				threshold          = 1.0
 				timeframe          = "timeframe_12_h"
 				group_by           = ["ibm.logId"]
 				relative_timeframe = "hour_or_unspecified"
 				cardinality_fields = []
-			  }
 			}
-		  }
-		  notification_groups {
+			}
+		}
+		notification_groups {
 			group_by_fields = ["ibm.logId"]
-		  }
-		  filters {
+		}
+		filters {
 			text        = "text"
 			filter_type = "text_or_unspecified"
-		  }
-		  meta_labels_strings = []
-		  incident_settings {
+		}
+		meta_labels {
+			key   = "label1"
+			value = "value"
+		}
+		meta_labels {
+			key   = "label2"
+			value = "value"
+		}
+		meta_labels {
+			key   = "label3"
+			value = "value"
+		}
+		incident_settings {
 			retriggering_period_seconds = 43200
 			notify_on                   = "triggered_only"
 		}

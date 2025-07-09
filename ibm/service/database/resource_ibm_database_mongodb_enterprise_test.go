@@ -112,8 +112,6 @@ func TestAccIBMMongoDBEnterpriseDatabaseInstanceGroupBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "49152"),
 					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "61440"),
 					resource.TestCheckResourceAttr(name, "groups.0.count", "3"),
-					resource.TestCheckResourceAttr(name, "groups.1.count", "1"),
-					resource.TestCheckResourceAttr(name, "groups.2.count", "1"),
 					resource.TestCheckResourceAttr(name, "tags.#", "1"),
 				),
 			},
@@ -189,7 +187,7 @@ func testAccCheckIBMDatabaseInstanceMongoDBEnterpriseBasic(databaseResourceGroup
 		service                      = "databases-for-mongodb"
 		plan                         = "enterprise"
 		location                     = "%[3]s"
-		adminpassword                = "password12345678"
+		adminpassword                = "secure-Password12345"
 		tags                         = ["one:two"]
 		service_endpoints            = "public"
 		group {
@@ -203,7 +201,7 @@ func testAccCheckIBMDatabaseInstanceMongoDBEnterpriseBasic(databaseResourceGroup
 		}
 		users {
 		  name     = "user123"
-		  password = "password12345678"
+		  password = "secure-Password12345"
 		  type     = "database"
 		}
 		allowlist {
@@ -231,7 +229,7 @@ func testAccCheckIBMDatabaseInstanceMongoDBEnterpriseFullyspecified(databaseReso
 		service                      = "databases-for-mongodb"
 		plan                         = "enterprise"
 		location                     = "%[3]s"
-		adminpassword                = "password12345678"
+		adminpassword                = "secure-Password12345"
 		tags                         = ["one:two"]
 		service_endpoints            = "public"
 		group {
@@ -245,12 +243,12 @@ func testAccCheckIBMDatabaseInstanceMongoDBEnterpriseFullyspecified(databaseReso
 		}
 		users {
 		  name     = "user123"
-		  password = "password12345678"
+		  password = "secure-Password12345"
 		  type     = "database"
 		}
 		users {
 		  name     = "user124"
-		  password = "password12345678$password"
+		  password = "secure-Password12345$password"
 		  type     = "ops_manager"
 		}
 		allowlist {
@@ -282,7 +280,7 @@ func testAccCheckIBMDatabaseInstanceMongoDBEnterpriseReduced(databaseResourceGro
 		service                      = "databases-for-mongodb"
 		plan                         = "enterprise"
 		location                     = "%[3]s"
-		adminpassword                = "password12345678"
+		adminpassword                = "secure-Password12345"
 		service_endpoints            = "public"
 		tags                         = ["one:two"]
 		group {
@@ -315,7 +313,7 @@ func testAccCheckIBMDatabaseInstanceMongoDBEnterpriseGroupBasic(databaseResource
 		service                      = "databases-for-mongodb"
 		plan                         = "enterprise"
 		location                     = "%[3]s"
-		adminpassword                = "password12345678"
+		adminpassword                = "secure-Password12345"
 		tags                         = ["one:two"]
 		service_endpoints            = "public"
 
@@ -327,22 +325,6 @@ func testAccCheckIBMDatabaseInstanceMongoDBEnterpriseGroupBasic(databaseResource
 			}
 			disk {
 				allocation_mb = 20480
-			}
-		}
-
-		group {
-			group_id = "bi_connector"
-
-			members {
-				allocation_count = 1
-			}
-		}
-
-		group {
-			group_id = "analytics"
-
-			members {
-				allocation_count = 1
 			}
 		}
 

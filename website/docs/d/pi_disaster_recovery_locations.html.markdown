@@ -7,22 +7,26 @@ description: |-
 ---
 
 # ibm_pi_disaster_recovery_locations
+
 Retrieves information about disaster recovery locations. For more information, about managing a volume group, see [moving data to the cloud](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-moving-data-to-the-cloud).
 
 ## Example usage
+
 The following example retrieves information about the disaster recovery locations present in Power Systems Virtual Server.
 
 ```terraform
 data "ibm_pi_disaster_recovery_locations" "ds_disaster_recovery_locations" {}
 ```
 
-**Notes**
+### Notes
+
 - Please find [supported Regions](https://cloud.ibm.com/apidocs/power-cloud#endpoint) for endpoints.
 - If a Power cloud instance is provisioned at `lon04`, The provider level attributes should be as follows:
   - `region` - `lon`
   - `zone` - `lon04`
   
 Example usage:
+
   ```terraform
     provider "ibm" {
       region    =   "lon"
@@ -30,8 +34,9 @@ Example usage:
     }
   ```
 
-## Attribute reference
-In addition to all argument reference list, you can access the following attribute references after your data source is created. 
+## Attribute Reference
+
+In addition to all argument reference list, you can access the following attribute references after your data source is created.
 
 - `disaster_recovery_locations` - List of Disaster Recovery Locations.
 

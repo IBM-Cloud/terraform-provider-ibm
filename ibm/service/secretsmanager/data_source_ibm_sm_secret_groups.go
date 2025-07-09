@@ -66,7 +66,7 @@ func DataSourceIbmSmSecretGroups() *schema.Resource {
 }
 
 func dataSourceIbmSmSecretGroupsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
+	secretsManagerClient, endpointsFile, err := getSecretsManagerSession(meta.(conns.ClientSession))
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, "", fmt.Sprintf("(Data) %s", SecretGroupsResourceName), "read")
 		return tfErr.GetDiag()
@@ -74,7 +74,7 @@ func dataSourceIbmSmSecretGroupsRead(context context.Context, d *schema.Resource
 
 	region := getRegion(secretsManagerClient, d)
 	instanceId := d.Get("instance_id").(string)
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d), endpointsFile)
 
 	listSecretGroupsOptions := &secretsmanagerv2.ListSecretGroupsOptions{}
 

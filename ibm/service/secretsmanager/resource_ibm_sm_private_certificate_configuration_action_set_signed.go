@@ -46,7 +46,7 @@ func ResourceIbmSmPrivateCertificateConfigurationActionSetSigned() *schema.Resou
 }
 
 func resourceIbmSmPrivateCertificateConfigurationActionSetSignedCreateOrUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
+	secretsManagerClient, endpointsFile, err := getSecretsManagerSession(meta.(conns.ClientSession))
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, "", PrivateCertConfigActionSetSigned, "create/update")
 		return tfErr.GetDiag()
@@ -54,7 +54,7 @@ func resourceIbmSmPrivateCertificateConfigurationActionSetSignedCreateOrUpdate(c
 
 	region := getRegion(secretsManagerClient, d)
 	instanceId := d.Get("instance_id").(string)
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d), endpointsFile)
 
 	createConfigurationActionOptions := &secretsmanagerv2.CreateConfigurationActionOptions{}
 

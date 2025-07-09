@@ -158,16 +158,16 @@ func dataSourceIbmAppConfigSnapshotsRead(d *schema.ResourceData, meta interface{
 
 	options := &appconfigurationv1.ListSnapshotsOptions{}
 
-	if _, ok := d.GetOk("collection_id"); ok {
+	if _, ok := GetFieldExists(d, "collection_id"); ok {
 		options.SetCollectionID(d.Get("collection_id").(string))
 	}
-	if _, ok := d.GetOk("environment_id"); ok {
+	if _, ok := GetFieldExists(d, "environment_id"); ok {
 		options.SetEnvironmentID(d.Get("environment_id").(string))
 	}
-	if _, ok := d.GetOk("search"); ok {
+	if _, ok := GetFieldExists(d, "search"); ok {
 		options.SetSearch(d.Get("search").(string))
 	}
-	if _, ok := d.GetOk("sort"); ok {
+	if _, ok := GetFieldExists(d, "sort"); ok {
 		options.SetSort(d.Get("sort").(string))
 	}
 
@@ -178,12 +178,12 @@ func dataSourceIbmAppConfigSnapshotsRead(d *schema.ResourceData, meta interface{
 
 	finalList := []appconfigurationv1.GitConfig{}
 
-	if _, ok := d.GetOk("limit"); ok {
+	if _, ok := GetFieldExists(d, "limit"); ok {
 		isLimit = true
 		limit = int64(d.Get("limit").(int))
 	}
 	options.SetLimit(limit)
-	if _, ok := d.GetOk("offset"); ok {
+	if _, ok := GetFieldExists(d, "offset"); ok {
 		offset = int64(d.Get("offset").(int))
 	}
 

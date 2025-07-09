@@ -172,7 +172,7 @@ func dataSourceIbmAppConfigFeatureRead(d *schema.ResourceData, meta interface{})
 
 	appconfigClient, err := getAppConfigClient(meta, guid)
 	if err != nil {
-		return flex.FmtErrorf(fmt.Sprintf("%s", err))
+		return flex.FmtErrorf("%s", err)
 	}
 
 	options := &appconfigurationv1.GetFeatureOptions{}
@@ -180,7 +180,7 @@ func dataSourceIbmAppConfigFeatureRead(d *schema.ResourceData, meta interface{})
 	options.SetEnvironmentID(d.Get("environment_id").(string))
 	options.SetFeatureID(d.Get("feature_id").(string))
 
-	if _, ok := d.GetOk("includes"); ok {
+	if _, ok := GetFieldExists(d, "includes"); ok {
 		options.SetInclude(d.Get("includes").([]string))
 	}
 

@@ -50,6 +50,7 @@ You can access the following attribute references after your data source is crea
 - `boot_volume` - (List) A nested block describes the boot volume configuration for the template.
 
 	Nested scheme for `boot_volume`:
+	- `bandwidth` - (Optional, Integer) The maximum bandwidth (in megabits per second) for the volume. For this property to be specified, the volume storage_generation must be 2.
 	- `delete_volume_on_instance_delete` - (String) You can configure to delete the boot volume based on instance deletion.
 	- `encryption` - (String) The encryption key CRN such as HPCS, Key Protect, etc., is provided to encrypt the boot volume attached.
 	- `iops` - (String) The IOPS for the boot volume.
@@ -230,6 +231,7 @@ You can access the following attribute references after your data source is crea
 	- `volume_prototype` - (List) A nested block describing prototype for the volume.
 
 		Nested scheme for `volume_prototype`:
+		- `bandwidth` - (Optional, Integer) The maximum bandwidth (in megabits per second) for the volume. For this property to be specified, the volume storage_generation must be 2.
 		- `capacity` - (String) The capacity of the volume in gigabytes. The specified minimum and maximum capacity values for creating or updating volumes can expand in the future.
 		- `encryption_key` - (String) The CRN of the [Key Protect Root Key](https://cloud.ibm.com/docs/key-protect?topic=key-protect-getting-started-tutorial) or [Hyper Protect Crypto Service Root Key](https://cloud.ibm.com/docs/hs-crypto?topic=hs-crypto-get-started) for this resource.
 		- `iops` - (String) The maximum input/output operations per second (IOPS) for the volume.

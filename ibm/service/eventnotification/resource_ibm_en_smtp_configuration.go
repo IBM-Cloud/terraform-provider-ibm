@@ -55,7 +55,7 @@ func ResourceIBMEnSMTPConfiguration() *schema.Resource {
 			"verification_type": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "Domain Name.",
+				Description: "SPF/DKIM.",
 			},
 			"config": &schema.Schema{
 				Type:        schema.TypeList,
@@ -193,7 +193,6 @@ func resourceIBMEnSMTPConfigurationCreate(context context.Context, d *schema.Res
 		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_en_smtp_configuration", "create")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
-		// return diag.FromErr(err)
 	}
 
 	createSMTPConfigurationOptions := &en.CreateSMTPConfigurationOptions{}
@@ -210,7 +209,6 @@ func resourceIBMEnSMTPConfigurationCreate(context context.Context, d *schema.Res
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateSMTPConfigurationWithContext failed: %s", err.Error()), "ibm_en_smtp_configuration", "create")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
-		// return diag.FromErr(err)
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", *createSMTPConfigurationOptions.InstanceID, *smtpCreateResponse.ID))
@@ -224,7 +222,6 @@ func resourceIBMEnSMTPConfigurationRead(context context.Context, d *schema.Resou
 		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_en_smtp_configuration", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
-		// return diag.FromErr(err)
 	}
 
 	getSMTPConfigurationOptions := &en.GetSMTPConfigurationOptions{}
@@ -233,7 +230,6 @@ func resourceIBMEnSMTPConfigurationRead(context context.Context, d *schema.Resou
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_en_smtp_configuration", "update")
 		return tfErr.GetDiag()
-		// return diag.FromErr(err)
 	}
 
 	getSMTPConfigurationOptions.SetInstanceID(parts[0])
@@ -248,7 +244,6 @@ func resourceIBMEnSMTPConfigurationRead(context context.Context, d *schema.Resou
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetSMTPConfigurationWithContext failed: %s", err.Error()), "ibm_en_smtp_configuration", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
-		// return diag.FromErr(err)
 	}
 
 	if err = d.Set("name", smtpConfiguration.Name); err != nil {
@@ -285,7 +280,6 @@ func resourceIBMEnSMTPConfigurationUpdate(context context.Context, d *schema.Res
 		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_en_smtp_configuration", "update")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
-		// return diag.FromErr(err)
 	}
 
 	updateSMTPConfigurationOptions := &en.UpdateSMTPConfigurationOptions{}
@@ -295,7 +289,6 @@ func resourceIBMEnSMTPConfigurationUpdate(context context.Context, d *schema.Res
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_en_smtp_configuration", "update")
 		return tfErr.GetDiag()
-		// return diag.FromErr(err)
 	}
 
 	updateSMTPConfigurationOptions.SetInstanceID(parts[0])
@@ -329,7 +322,6 @@ func resourceIBMEnSMTPConfigurationUpdate(context context.Context, d *schema.Res
 			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateSMTPConfigurationWithContext failed: %s", err.Error()), "ibm_en_smtp_configuration", "update")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
-			// return diag.FromErr(err)
 		}
 	}
 
@@ -349,7 +341,6 @@ func resourceIBMEnSMTPConfigurationDelete(context context.Context, d *schema.Res
 		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_en_smtp_configuration", "delete")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
-		// return diag.FromErr(err)
 	}
 
 	deleteSMTPConfigurationOptions := &en.DeleteSMTPConfigurationOptions{}
@@ -358,7 +349,6 @@ func resourceIBMEnSMTPConfigurationDelete(context context.Context, d *schema.Res
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_en_smtp_configuration", "delete")
 		return tfErr.GetDiag()
-		// return diag.FromErr(err)
 	}
 
 	deleteSMTPConfigurationOptions.SetInstanceID(parts[0])
@@ -369,7 +359,6 @@ func resourceIBMEnSMTPConfigurationDelete(context context.Context, d *schema.Res
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteSMTPConfigurationWithContext: failed: %s", err.Error()), "ibm_en_smtp_configuration", "delete")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
-		// return diag.FromErr(err)
 	}
 
 	d.SetId("")

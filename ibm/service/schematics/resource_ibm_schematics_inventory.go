@@ -39,11 +39,10 @@ func ResourceIBMSchematicsInventory() *schema.Resource {
 				Description: "The description of your Inventory definition. The description can be up to 2048 characters long in size.",
 			},
 			"location": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Computed:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_schematics_inventory", "location"),
-				Description:  "List of locations supported by IBM Cloud Schematics service.  While creating your workspace or action, choose the right region, since it cannot be changed.  Note, this does not limit the location of the IBM Cloud resources, provisioned using Schematics.",
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "List of locations supported by IBM Cloud Schematics service.  While creating your workspace or action, choose the right region, since it cannot be changed.  Note, this does not limit the location of the IBM Cloud resources, provisioned using Schematics.",
 			},
 			"resource_group": {
 				Type:        schema.TypeString,
@@ -95,13 +94,6 @@ func ResourceIBMSchematicsInventoryValidator() *validate.ResourceValidator {
 			Optional:                   true,
 			MinValueLength:             3,
 			MaxValueLength:             64,
-		},
-		validate.ValidateSchema{
-			Identifier:                 "location",
-			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
-			Type:                       validate.TypeString,
-			Optional:                   true,
-			AllowedValues:              "eu-de, eu-gb, us-east, us-south",
 		},
 	)
 

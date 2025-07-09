@@ -277,6 +277,15 @@ func ResourceIbmKeyTemplateRead(context context.Context, d *schema.ResourceData,
 	instance_id := id[1]
 	vault_id := id[2]
 	template_id := id[3]
+
+	if err = d.Set("instance_id", instance_id); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting instance ID: %s", err))
+	}
+
+	if err = d.Set("region", region); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting region: %s", err))
+	}
+
 	getKeyTemplateOptions.SetID(template_id)
 	getKeyTemplateOptions.SetUKOVault(vault_id)
 

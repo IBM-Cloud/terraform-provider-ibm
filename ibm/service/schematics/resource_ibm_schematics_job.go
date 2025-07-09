@@ -296,11 +296,10 @@ func ResourceIBMSchematicsJob() *schema.Resource {
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 			"location": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Computed:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_schematics_job", "location"),
-				Description:  "List of locations supported by IBM Cloud Schematics service.  While creating your workspace or action, choose the right region, since it cannot be changed.  Note, this does not limit the location of the IBM Cloud resources, provisioned using Schematics.",
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "List of locations supported by IBM Cloud Schematics service.  While creating your workspace or action, choose the right region, since it cannot be changed.  Note, this does not limit the location of the IBM Cloud resources, provisioned using Schematics.",
 			},
 			"status": {
 				Type:        schema.TypeList,
@@ -2832,13 +2831,6 @@ func ResourceIBMSchematicsJobValidator() *validate.ResourceValidator {
 			Type:                       validate.TypeString,
 			Optional:                   true,
 			AllowedValues:              "ansible_playbook_check, ansible_playbook_run, create_action, create_cart, create_environment, create_workspace, delete_action, delete_environment, delete_workspace, environment_init, environment_install, environment_uninstall, patch_action, patch_workspace, put_action, put_environment, put_workspace, repository_process, system_key_delete, system_key_disable, system_key_enable, system_key_restore, system_key_rotate, workspace_apply, workspace_destroy, workspace_plan, workspace_refresh",
-		},
-		validate.ValidateSchema{
-			Identifier:                 "location",
-			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
-			Type:                       validate.TypeString,
-			Optional:                   true,
-			AllowedValues:              "eu-de, eu-gb, us-east, us-south",
 		})
 
 	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_schematics_job", Schema: validateSchema}

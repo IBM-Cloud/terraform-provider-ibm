@@ -4,6 +4,7 @@
 package resourcecontroller
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -11,7 +12,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/IBM/go-sdk-core/v5/core"
 	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -22,12 +26,12 @@ import (
 
 func ResourceIBMResourceKey() *schema.Resource {
 	return &schema.Resource{
-		Create:   resourceIBMResourceKeyCreate,
-		Read:     resourceIBMResourceKeyRead,
-		Update:   resourceIBMResourceKeyUpdate,
-		Delete:   resourceIBMResourceKeyDelete,
-		Exists:   resourceIBMResourceKeyExists,
-		Importer: &schema.ResourceImporter{},
+		CreateContext: resourceIBMResourceKeyCreate,
+		ReadContext:   resourceIBMResourceKeyRead,
+		UpdateContext: resourceIBMResourceKeyUpdate,
+		DeleteContext: resourceIBMResourceKeyDelete,
+		Exists:        resourceIBMResourceKeyExists,
+		Importer:      &schema.ResourceImporter{},
 
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(10 * time.Minute),
@@ -215,10 +219,10 @@ func ResourceIBMResourceKeyValidator() *validate.ResourceValidator {
 	return &ibmResourceKeyResourceValidator
 }
 
-func resourceIBMResourceKeyCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMResourceKeyCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	rsContClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	name := d.Get("name").(string)
 
@@ -232,7 +236,7 @@ func resourceIBMResourceKeyCreate(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	if instanceID == "" && aliasID == "" {
-		return fmt.Errorf("[ERROR] Provide either `resource_instance_id` or `resource_alias_id`")
+		return diag.FromErr(fmt.Errorf("[ERROR] Provide either `resource_instance_id` or `resource_alias_id`"))
 	}
 
 	keyParameters := rc.ResourceKeyPostParameters{}
@@ -251,19 +255,19 @@ func resourceIBMResourceKeyCreate(d *schema.ResourceData, meta interface{}) erro
 
 	resourceInstance, sourceCRN, err := getResourceInstanceAndCRN(d, meta)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error creating resource key when get instance and CRN: %s", err)
+		return diag.FromErr(fmt.Errorf("[ERROR] Error creating resource key when get instance and CRN: %s", err))
 	}
 
 	serviceID := resourceInstance.ResourceID
 
 	rsCatClient, err := meta.(conns.ClientSession).ResourceCatalogAPI()
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error creating resource key when get ResourceCatalogAPI: %s", err)
+		return diag.FromErr(fmt.Errorf("[ERROR] Error creating resource key when get ResourceCatalogAPI: %s", err))
 	}
 
 	service, err := rsCatClient.ResourceCatalog().Get(*serviceID, true)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error creating resource key when get service: %s", err)
+		return diag.FromErr(fmt.Errorf("[ERROR] Error creating resource key when get service: %s", err))
 	}
 
 	resourceKeyCreate := rc.CreateResourceKeyOptions{
@@ -275,7 +279,7 @@ func resourceIBMResourceKeyCreate(d *schema.ResourceData, meta interface{}) erro
 		role := r.(string)
 		serviceRole, err := getRoleFromName(role, service.Name, meta)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error creating resource key when get role: %s", err)
+			return diag.FromErr(fmt.Errorf("[ERROR] Error creating resource key when get role: %s", err))
 		}
 		if role != "NONE" {
 			keyParameters.SetProperty("role_crn", serviceRole.RoleID)
@@ -285,32 +289,69 @@ func resourceIBMResourceKeyCreate(d *schema.ResourceData, meta interface{}) erro
 
 	resourceKey, resp, err := rsContClient.CreateResourceKey(&resourceKeyCreate)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error creating resource key: %s with resp code: %s", err, resp)
+		return diag.FromErr(fmt.Errorf("[ERROR] Error creating resource key: %s with resp code: %s", err, resp))
 	}
 
 	d.SetId(*resourceKey.ID)
 
-	return resourceIBMResourceKeyRead(d, meta)
+	return resourceIBMResourceKeyRead(context, d, meta)
 }
 
-func resourceIBMResourceKeyUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMResourceKeyUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	return nil
 }
 
-func resourceIBMResourceKeyRead(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMResourceKeyRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	rsContClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	resourceKeyID := d.Id()
 	resourceKeyGet := rc.GetResourceKeyOptions{
 		ID: &resourceKeyID,
 	}
 
-	resourceKey, resp, err := rsContClient.GetResourceKey(&resourceKeyGet)
-	if err != nil || resourceKey == nil {
-		return fmt.Errorf("[ERROR] Error retrieving resource key: %s with resp : %s", err, resp)
+	var resp *core.DetailedResponse
+	var resourceKey *rc.ResourceKey
+	var (
+		initialDelaySec = 2  // seconds
+		maxDelaySec     = 60 // max delay in seconds
+
+	)
+
+	err = retry.RetryContext(context, 5*time.Minute, func() *retry.RetryError {
+		retryCount := 0
+
+		return func() *retry.RetryError {
+			// Calculate exponential delay
+			delaySec := initialDelaySec * (1 << retryCount) // equivalent to initialDelaySec * 2^retryCount
+			if delaySec > maxDelaySec {
+				delaySec = maxDelaySec
+			}
+			time.Sleep(time.Duration(delaySec) * time.Second)
+
+			resourceKey, resp, err = rsContClient.GetResourceKey(&resourceKeyGet)
+			if err != nil || resourceKey == nil {
+				retryCount++
+				if resp != nil && resp.StatusCode == 404 {
+					return retry.RetryableError(err)
+				}
+				return retry.NonRetryableError(err)
+			}
+			return nil
+		}()
+	})
+	if conns.IsResourceTimeoutError(err) {
+		resourceKey, resp, err = rsContClient.GetResourceKey(&resourceKeyGet)
 	}
+	if err != nil || resourceKey == nil {
+		if resp != nil && resp.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
+		return diag.FromErr(fmt.Errorf("[ERROR] Error retrieving resource key: %s with resp : %s", err, resp))
+	}
+
 	var credInterface map[string]interface{}
 	cred, _ := json.Marshal(resourceKey.Credentials)
 	json.Unmarshal(cred, &credInterface)
@@ -318,10 +359,10 @@ func resourceIBMResourceKeyRead(d *schema.ResourceData, meta interface{}) error 
 
 	creds, err := json.Marshal(resourceKey.Credentials)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error marshalling resource key credentials: %s", err)
+		return diag.FromErr(fmt.Errorf("[ERROR] Error marshalling resource key credentials: %s", err))
 	}
 	if err = d.Set("credentials_json", string(creds)); err != nil {
-		return fmt.Errorf("[ERROR] Error setting the credentials json: %s", err)
+		return diag.FromErr(fmt.Errorf("[ERROR] Error setting the credentials json: %s", err))
 	}
 	d.Set("name", *resourceKey.Name)
 	d.Set("status", *resourceKey.State)
@@ -398,10 +439,10 @@ func resourceIBMResourceKeyRead(d *schema.ResourceData, meta interface{}) error 
 	return nil
 }
 
-func resourceIBMResourceKeyDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMResourceKeyDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	rsContClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	resourceKeyID := d.Id()
@@ -411,7 +452,7 @@ func resourceIBMResourceKeyDelete(d *schema.ResourceData, meta interface{}) erro
 
 	resp, err := rsContClient.DeleteResourceKey(&resourceKeyDelete)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error deleting resource key: %s with resp code: %s", err, resp)
+		return diag.FromErr(fmt.Errorf("[ERROR] Error deleting resource key: %s with resp code: %s", err, resp))
 	}
 
 	d.SetId("")

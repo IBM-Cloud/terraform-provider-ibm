@@ -4,9 +4,13 @@
 package vpc
 
 import (
+	"context"
 	"fmt"
+	"log"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -25,7 +29,7 @@ const (
 
 func DataSourceIBMISInstanceVolumeAttachment() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceIBMISInstanceVolumeAttachmentRead,
+		ReadContext: dataSourceIBMISInstanceVolumeAttachmentRead,
 
 		Schema: map[string]*schema.Schema{
 
@@ -75,6 +79,11 @@ func DataSourceIBMISInstanceVolumeAttachment() *schema.Resource {
 				Computed:    true,
 				Description: "The type of volume attachment one of [ boot, data ]",
 			},
+			"bandwidth": {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The maximum bandwidth (in megabits per second) for the volume when attached to this instance. This may be lower than the volume bandwidth depending on the configuration of the instance.",
+			},
 
 			isInstanceVolumeAttVolumeReference: {
 				Type:        schema.TypeList,
@@ -114,55 +123,83 @@ func DataSourceIBMISInstanceVolumeAttachment() *schema.Resource {
 	}
 }
 
-func dataSourceIBMISInstanceVolumeAttachmentRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceIBMISInstanceVolumeAttachmentRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	instanceId := d.Get(isInstanceId).(string)
 	name := d.Get(isInstanceName).(string)
-	err := instanceVolumeAttachmentGetByName(d, meta, instanceId, name)
+	err := instanceVolumeAttachmentGetByName(context, d, meta, instanceId, name)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func instanceVolumeAttachmentGetByName(d *schema.ResourceData, meta interface{}, instanceId, name string) error {
+func instanceVolumeAttachmentGetByName(context context.Context, d *schema.ResourceData, meta interface{}, instanceId, name string) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instance_volume_attachment", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	allrecs := []vpcv1.VolumeAttachment{}
 	listInstanceVolumeAttOptions := &vpcv1.ListInstanceVolumeAttachmentsOptions{
 		InstanceID: &instanceId,
 	}
-	volumeAtts, response, err := sess.ListInstanceVolumeAttachments(listInstanceVolumeAttOptions)
+	volumeAtts, _, err := sess.ListInstanceVolumeAttachmentsWithContext(context, listInstanceVolumeAttOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error fetching Instance volume attachments %s\n%s", err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListInstanceVolumeAttachmentsWithContext failed: %s", err.Error()), "(Data) ibm_is_instance_volume_attachment", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	allrecs = append(allrecs, volumeAtts.VolumeAttachments...)
-	for _, volumeAtt := range allrecs {
-		if *volumeAtt.Name == name {
-			d.SetId(makeTerraformVolAttID(instanceId, *volumeAtt.ID))
-			d.Set(isInstanceVolAttName, *volumeAtt.Name)
-			d.Set(isInstanceVolumeDeleteOnInstanceDelete, *volumeAtt.DeleteVolumeOnInstanceDelete)
-			d.Set(isInstanceVolumeAttDevice, *volumeAtt.Device.ID)
-			d.Set(isInstanceVolumeAttHref, *volumeAtt.Href)
-			d.Set(isInstanceVolAttId, *volumeAtt.ID)
-			d.Set(isInstanceVolumeAttStatus, *volumeAtt.Status)
-			d.Set(isInstanceVolumeAttType, *volumeAtt.Type)
+	for _, volumeAttachment := range allrecs {
+		if *volumeAttachment.Name == name {
+			d.SetId(makeTerraformVolAttID(instanceId, *volumeAttachment.ID))
+			if err = d.Set("name", volumeAttachment.Name); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_is_instance_volume_attachment", "read", "set-name").GetDiag()
+			}
+			// bandwidth changes
+			d.Set("bandwidth", *volumeAttachment.Bandwidth)
+			if err = d.Set("bandwidth", flex.IntValue(volumeAttachment.Bandwidth)); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting bandwidth: %s", err), "(Data) ibm_is_instance_volume_attachment", "read", "set-bandwidth").GetDiag()
+			}
+			if err = d.Set("delete_volume_on_instance_delete", volumeAttachment.DeleteVolumeOnInstanceDelete); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting delete_volume_on_instance_delete: %s", err), "(Data) ibm_is_instance_volume_attachment", "read", "set-delete_volume_on_instance_delete").GetDiag()
+			}
+			if err = d.Set("device", *volumeAttachment.Device.ID); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting device: %s", err), "(Data) ibm_is_instance_volume_attachment", "read", "set-device").GetDiag()
+			}
+			if err = d.Set("href", volumeAttachment.Href); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting href: %s", err), "(Data) ibm_is_instance_volume_attachment", "read", "set-href").GetDiag()
+			}
+			if err = d.Set("volume_attachment_id", *volumeAttachment.ID); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting volume_attachment_id: %s", err), "(Data) ibm_is_instance_volume_attachment", "read", "set-volume_attachment_id").GetDiag()
+			}
+			if err = d.Set("status", volumeAttachment.Status); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting status: %s", err), "(Data) ibm_is_instance_volume_attachment", "read", "set-status").GetDiag()
+			}
+			if err = d.Set("type", volumeAttachment.Type); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting type: %s", err), "(Data) ibm_is_instance_volume_attachment", "read", "set-type").GetDiag()
+			}
 			volList := make([]map[string]interface{}, 0)
-			if volumeAtt.Volume != nil {
+			if volumeAttachment.Volume != nil {
 				currentVol := map[string]interface{}{}
-				currentVol[isInstanceVolumeAttVolumeReferenceId] = *volumeAtt.Volume.ID
-				currentVol[isInstanceVolumeAttVolumeReferenceName] = *volumeAtt.Volume.Name
-				currentVol[isInstanceVolumeAttVolumeReferenceCrn] = *volumeAtt.Volume.CRN
-				if volumeAtt.Volume.Deleted != nil {
-					currentVol[isInstanceVolumeAttVolumeReferenceDeleted] = *volumeAtt.Volume.Deleted.MoreInfo
+				currentVol[isInstanceVolumeAttVolumeReferenceId] = *volumeAttachment.Volume.ID
+				currentVol[isInstanceVolumeAttVolumeReferenceName] = *volumeAttachment.Volume.Name
+				currentVol[isInstanceVolumeAttVolumeReferenceCrn] = *volumeAttachment.Volume.CRN
+				if volumeAttachment.Volume.Deleted != nil {
+					currentVol[isInstanceVolumeAttVolumeReferenceDeleted] = *volumeAttachment.Volume.Deleted.MoreInfo
 				}
-				currentVol[isInstanceVolumeAttVolumeReferenceHref] = *volumeAtt.Volume.Href
+				currentVol[isInstanceVolumeAttVolumeReferenceHref] = *volumeAttachment.Volume.Href
 				volList = append(volList, currentVol)
 			}
-			d.Set(isInstanceVolumeAttVolumeReference, volList)
+			if err = d.Set(isInstanceVolumeAttVolumeReference, volList); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting volume_reference: %s", err), "(Data) ibm_is_instance_volume_attachment", "read", "set-volume_reference").GetDiag()
+			}
 			return nil
 		}
 	}
-	return fmt.Errorf("[ERROR] No Instance volume attachment found with name %s on instance %s", name, instanceId)
+	err = fmt.Errorf("No Instance volume attachment found with name %s on instance %s", name, instanceId)
+	tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListInstanceVolumeAttachmentsWithContext failed: %s", err.Error()), "(Data) ibm_is_instance_volume_attachment", "read")
+	log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+	return tfErr.GetDiag()
 }

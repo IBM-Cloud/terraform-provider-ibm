@@ -77,13 +77,13 @@ func dataSourceIbmAppConfigEnvironmentRead(d *schema.ResourceData, meta interfac
 
 	appconfigClient, err := getAppConfigClient(meta, guid)
 	if err != nil {
-		return flex.FmtErrorf(fmt.Sprintf("%s", err))
+		return flex.FmtErrorf("%s", err)
 	}
 
 	options := &appconfigurationv1.GetEnvironmentOptions{}
 	options.SetEnvironmentID(d.Get("environment_id").(string))
 
-	if _, ok := d.GetOk("expand"); ok {
+	if _, ok := GetFieldExists(d, "expand"); ok {
 		options.SetExpand(d.Get("expand").(bool))
 	}
 	result, response, err := appconfigClient.GetEnvironment(options)

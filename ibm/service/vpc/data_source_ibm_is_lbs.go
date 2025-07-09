@@ -4,12 +4,14 @@
 package vpc
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -24,7 +26,7 @@ const (
 
 func DataSourceIBMISLBS() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceIBMISLBSRead,
+		ReadContext: dataSourceIBMISLBSRead,
 		Schema: map[string]*schema.Schema{
 			loadBalancers: {
 				Type:        schema.TypeList,
@@ -36,6 +38,39 @@ func DataSourceIBMISLBS() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The access mode of this load balancer",
+						},
+						isAttachedLoadBalancerPoolMembers: {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The load balancer pool members attached to this load balancer.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"deleted": {
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "If present, this property indicates the referenced resource has been deleted and providessome supplementary information.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"more_info": {
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Link to documentation about deleted resources.",
+												},
+											},
+										},
+									},
+									"href": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The URL for this load balancer pool member.",
+									},
+									"id": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The unique identifier for this load balancer pool member.",
+									},
+								},
+							},
 						},
 						ID: {
 							Type:     schema.TypeString,
@@ -50,6 +85,12 @@ func DataSourceIBMISLBS() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The date and time that this pool was created.",
+						},
+						"failsafe_policy_actions": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The supported `failsafe_policy.action` values for this load balancer's pools.",
+							Elem:        &schema.Schema{Type: schema.TypeString},
 						},
 						"dns": {
 							Type:        schema.TypeList,
@@ -303,19 +344,21 @@ func DataSourceIBMISLBS() *schema.Resource {
 	}
 }
 
-func dataSourceIBMISLBSRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceIBMISLBSRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
-	err := getLbs(d, meta)
+	err := getLbs(context, d, meta)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func getLbs(d *schema.ResourceData, meta interface{}) error {
+func getLbs(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_lbs", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	start := ""
 	allrecs := []vpcv1.LoadBalancer{}
@@ -324,9 +367,11 @@ func getLbs(d *schema.ResourceData, meta interface{}) error {
 		if start != "" {
 			listLoadBalancersOptions.Start = &start
 		}
-		lbs, response, err := sess.ListLoadBalancers(listLoadBalancersOptions)
+		lbs, _, err := sess.ListLoadBalancersWithContext(context, listLoadBalancersOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Fetching Load Balancers %s\n%s", err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListLoadBalancersWithContext failed %s", err), "(Data) ibm_is_lbs", "read")
+			log.Printf("[DEBUG] %s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		start = flex.GetNext(lbs.Next)
 		allrecs = append(allrecs, lbs.LoadBalancers...)
@@ -346,6 +391,9 @@ func getLbs(d *schema.ResourceData, meta interface{}) error {
 		}
 		if lb.AccessMode != nil {
 			lbInfo[isLBAccessMode] = *lb.AccessMode
+		}
+		if lb.AttachedLoadBalancerPoolMembers != nil {
+			lbInfo[isAttachedLoadBalancerPoolMembers] = dataSourceAttachedLoadBalancerPoolFlattenMembers(lb.AttachedLoadBalancerPoolMembers)
 		}
 		if lb.InstanceGroupsSupported != nil {
 			lbInfo[isLBInstanceGroupsSupported] = *lb.InstanceGroupsSupported
@@ -467,6 +515,7 @@ func getLbs(d *schema.ResourceData, meta interface{}) error {
 			}
 			lbInfo[isLBPools] = poolList
 		}
+		lbInfo["failsafe_policy_actions"] = lb.FailsafePolicyActions
 		if lb.Profile != nil {
 			lbProfile := make(map[string]interface{})
 			lbProfile[name] = *lb.Profile.Name
@@ -492,7 +541,9 @@ func getLbs(d *schema.ResourceData, meta interface{}) error {
 
 		controller, err := flex.GetBaseController(meta)
 		if err != nil {
-			return err
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetBaseController failed %s", err), "(Data) ibm_is_lbs", "read")
+			log.Printf("[DEBUG] %s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		lbInfo[flex.ResourceControllerURL] = controller + "/vpc-ext/network/loadBalancers"
 		lbInfo[flex.ResourceName] = *lb.Name
@@ -507,7 +558,10 @@ func getLbs(d *schema.ResourceData, meta interface{}) error {
 	}
 	//log.Printf("*******lbList %+v", lbList)
 	d.SetId(dataSourceIBMISLBsID(d))
-	d.Set(loadBalancers, lbList)
+	if err = d.Set("load_balancers", lbList); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting load_balancers %s", err), "(Data) ibm_is_lbs", "read", "load_balancers-set").GetDiag()
+	}
+
 	return nil
 }
 

@@ -173,6 +173,15 @@ func ResourceIbmVaultRead(context context.Context, d *schema.ResourceData, meta 
 	region := id[0]
 	instance_id := id[1]
 	vault_id := id[2]
+
+	if err = d.Set("instance_id", instance_id); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting instance ID: %s", err))
+	}
+
+	if err = d.Set("region", region); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting region: %s", err))
+	}
+
 	getVaultOptions.SetID(vault_id)
 
 	url, err := getUkoUrl(context, region, instance_id, ukoClient)
@@ -359,7 +368,7 @@ func getUkoUrl(context context.Context, region string, instance_id string, ukoCl
 			return "", err
 		}
 		url := (*uko)["public"]
-		log.Printf(url)
+		log.Println(url)
 		return "https://" + url, nil
 	}
 

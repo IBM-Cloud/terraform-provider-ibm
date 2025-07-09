@@ -94,7 +94,10 @@ func dataSourceIbmLogsStreamRead(context context.Context, d *schema.ResourceData
 	}
 	region := getLogsInstanceRegion(logsClient, d)
 	instanceId := d.Get("instance_id").(string)
-	logsClient = getClientWithLogsInstanceEndpoint(logsClient, instanceId, region, getLogsInstanceEndpointType(logsClient, d))
+	logsClient, err = getClientWithLogsInstanceEndpoint(logsClient, meta, instanceId, region, getLogsInstanceEndpointType(logsClient, d))
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("Unable to get updated logs instance client"))
+	}
 
 	streamsID, _ := strconv.ParseInt(d.Get("logs_streams_id").(string), 10, 64)
 

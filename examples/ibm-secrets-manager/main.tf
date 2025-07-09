@@ -161,6 +161,50 @@ resource "ibm_sm_private_certificate" "sm_private_certificate_instance" {
   certificate_template = var.sm_private_certificate_certificate_template
 }
 
+// Provision sm_custom_credentials_secret resource instance
+resource "ibm_sm_custom_credentials_secret" "sm_custom_credentials_secret" {
+  instance_id   = ibm_resource_instance.sm_instance.guid
+  region        = var.region
+  name 			= var.sm_custom_credentials_name
+  secret_group_id = var.sm_custom_credentials_secret_group_id
+  custom_metadata = {"key":"value"}
+  description = "Extended description for this secret."
+  labels = var.sm_custom_credentials_labels
+  configuration = "my_custom_credentials_configuration"
+  parameters {
+    integer_values = {
+        example_param_1 = 17
+    }
+    string_values = {
+        example_param_2 = "str2"
+        example_param_3 = "str3"
+    }
+    boolean_values = {
+        example_param_4 = false
+    }
+  }
+  rotation {
+      auto_rotate = true
+      interval = 3
+      unit = "day"
+  }
+  ttl = "864000"
+}
+
+// Provision sm_custom_credentials_configuration resource instance
+resource "ibm_sm_custom_credentials_configuration" "sm_custom_credentials_configuration_instance" {
+	instance_id = var.secrets_manager_instance_id
+	region = var.region
+	name = "example-custom-credentials-config"
+	api_key_ref = var.custom_credentials_api_key_ref
+	code_engine {
+	    project_id = var.custom_credentials_project_id
+	    job_name = var.custom_credentials_job_name
+	    region = var.region
+	}
+	task_timeout = "10m"
+}
+
 // Provision sm_private_certificate_configuration_root_ca resource instance
 resource "ibm_sm_private_certificate_configuration_root_ca" "sm_private_certificate_configuration_root_ca_instance" {
   instance_id   = var.secrets_manager_instance_id
@@ -347,6 +391,14 @@ data "ibm_sm_arbitrary_secret_metadata" "sm_arbitrary_secret_metadata_instance" 
   secret_id = var.sm_arbitrary_secret_metadata_id
 }
 
+// Create sm_custom_credentials_secret_metadata data source
+data "ibm_sm_custom_credentials_secret_metadata" "sm_custom_credentials_secret_metadata_instance" {
+  instance_id   = var.secrets_manager_instance_id
+  region        = var.region
+  endpoint_type    = var.endpoint_type
+  secret_id = var.custom_credentials_secret_metadata_id
+}
+
 // Create sm_username_password_secret_metadata data source
 data "ibm_sm_username_password_secret_metadata" "sm_username_password_secret_metadata_instance" {
   instance_id   = var.secrets_manager_instance_id
@@ -377,6 +429,14 @@ data "ibm_sm_kv_secret" "sm_kv_secret_instance" {
   region        = var.region
   endpoint_type    = var.endpoint_type
   secret_id = var.sm_kv_secret_id
+}
+
+// Create sm_custom_credentials_secret data source
+data "ibm_sm_custom_credentials_secret" "sm_custom_credentials_secret_instance" {
+  instance_id   = var.secrets_manager_instance_id
+  region        = var.region
+  endpoint_type    = var.endpoint_type
+  secret_id = var.sm_custom_credentials_secret_id
 }
 
 // Create sm_iam_credentials_secret data source

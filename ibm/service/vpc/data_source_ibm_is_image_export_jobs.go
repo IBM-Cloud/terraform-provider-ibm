@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 )
 
@@ -154,17 +155,20 @@ func DataSourceIBMIsImageExports() *schema.Resource {
 func DataSourceIBMIsImageExportsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_image_export_jobs", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	listImageExportJobsOptions := &vpcv1.ListImageExportJobsOptions{}
 
 	listImageExportJobsOptions.SetImageID(d.Get("image").(string))
 
-	imageExportJobUnpaginatedCollection, response, err := vpcClient.ListImageExportJobsWithContext(context, listImageExportJobsOptions)
+	imageExportJobUnpaginatedCollection, _, err := vpcClient.ListImageExportJobsWithContext(context, listImageExportJobsOptions)
 	if err != nil {
-		log.Printf("[DEBUG] ListImageExportJobsWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("ListImageExportJobsWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListImageExportJobsWithContext failed: %s", err.Error()), "(Data) ibm_is_image_export_jobs", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(DataSourceIBMIsImageExportsID(d))
@@ -180,7 +184,7 @@ func DataSourceIBMIsImageExportsRead(context context.Context, d *schema.Resource
 		}
 	}
 	if err = d.Set("export_jobs", exportJobs); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting export_jobs %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting export_jobs: %s", err), "(Data) ibm_is_image_export_jobs", "read", "set-export_jobs").GetDiag()
 	}
 
 	return nil

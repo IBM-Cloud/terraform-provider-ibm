@@ -130,14 +130,14 @@ func dataSourceIbmAppConfigCollectionRead(d *schema.ResourceData, meta interface
 
 	options.SetCollectionID(d.Get("collection_id").(string))
 
-	if _, ok := d.GetOk("include"); ok {
+	if _, ok := GetFieldExists(d, "include"); ok {
 		includes := []string{}
 		for _, includeItem := range d.Get("include").([]interface{}) {
 			includes = append(includes, includeItem.(string))
 		}
 		options.SetInclude(includes)
 	}
-	if _, ok := d.GetOk("expand"); ok {
+	if _, ok := GetFieldExists(d, "expand"); ok {
 		options.SetExpand(d.Get("expand").(bool))
 	}
 

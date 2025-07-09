@@ -35,10 +35,32 @@ func TestAccIBMPINetworkSecurityGroupActionBasic(t *testing.T) {
 	})
 }
 
+func TestAccIBMPINetworkSecurityGroupActionBasicReverse(t *testing.T) {
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMPINetworkSecurityGroupActionConfigBasic(power.Disable),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_pi_network_security_group_action.network_security_group_action", "pi_action", power.Disable),
+				),
+			},
+			{
+				Config: testAccCheckIBMPINetworkSecurityGroupActionConfigBasic(power.Enable),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_pi_network_security_group_action.network_security_group_action", "pi_action", power.Enable),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMPINetworkSecurityGroupActionConfigBasic(action string) string {
 	return fmt.Sprintf(`
 		resource "ibm_pi_network_security_group_action" "network_security_group_action" {
-			pi_action = "%[1]s"
-			pi_cloud_id	= "%[2]s"
+			pi_cloud_instance_id = "%[2]s"
+			pi_action            = "%[1]s"
 		}`, action, acc.Pi_cloud_instance_id)
 }

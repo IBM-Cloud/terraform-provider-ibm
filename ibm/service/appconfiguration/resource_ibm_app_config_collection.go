@@ -83,10 +83,10 @@ func resourceIbmIbmAppConfigCollectiontCreate(d *schema.ResourceData, meta inter
 	options.SetName(d.Get("name").(string))
 	options.SetCollectionID(d.Get("collection_id").(string))
 
-	if _, ok := d.GetOk("description"); ok {
+	if _, ok := GetFieldExists(d, "description"); ok {
 		options.SetDescription(d.Get("description").(string))
 	}
-	if _, ok := d.GetOk("tags"); ok {
+	if _, ok := GetFieldExists(d, "tags"); ok {
 		options.SetTags(d.Get("tags").(string))
 	}
 
@@ -246,13 +246,13 @@ func resourceIbmIbmAppConfigCollectionUpdate(d *schema.ResourceData, meta interf
 
 	if ok := d.HasChanges("name", "description", "tags"); ok {
 
-		if _, ok := d.GetOk("name"); ok {
+		if _, ok := GetFieldExists(d, "name"); ok {
 			options.SetName(d.Get("name").(string))
 		}
-		if _, ok := d.GetOk("description"); ok {
+		if _, ok := GetFieldExists(d, "description"); ok {
 			options.SetDescription(d.Get("description").(string))
 		}
-		if _, ok := d.GetOk("tags"); ok {
+		if _, ok := GetFieldExists(d, "tags"); ok {
 			options.SetTags(d.Get("tags").(string))
 		}
 

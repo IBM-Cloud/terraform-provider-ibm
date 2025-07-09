@@ -19,7 +19,6 @@ import (
 func DataSourceIBMEnPagerDutyDestination() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceIBMEnPagerDutyeDestinationRead,
-
 		Schema: map[string]*schema.Schema{
 			"instance_guid": {
 				Type:        schema.TypeString,
@@ -44,7 +43,7 @@ func DataSourceIBMEnPagerDutyDestination() *schema.Resource {
 			"type": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Destination type push_chrome.",
+				Description: "Destination type pagerduty.",
 			},
 			"collect_failed_events": {
 				Type:        schema.TypeBool,
@@ -65,12 +64,13 @@ func DataSourceIBMEnPagerDutyDestination() *schema.Resource {
 									"api_key": {
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "The api key for chrome app authorization",
+										Description: "API Key for the PagerDuty account.",
+										Deprecated:  "The api_key parameter under config has  been deprecated and will be removed in future",
 									},
 									"routing_key": {
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "The website url",
+										Description: "Routing Key (Integration Key) for the team in PagerDuty account.",
 									},
 								},
 							},

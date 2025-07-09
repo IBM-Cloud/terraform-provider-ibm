@@ -87,7 +87,6 @@ func testAccCheckIbmCodeEngineDomainMappingConfigBasic(projectID string, app1Nam
 
 			lifecycle {
 				ignore_changes = [
-					run_env_variables,
 					probe_liveness,
 					probe_readiness
 				]
@@ -101,7 +100,6 @@ func testAccCheckIbmCodeEngineDomainMappingConfigBasic(projectID string, app1Nam
 
 			lifecycle {
 				ignore_changes = [
-					run_env_variables,
 					probe_liveness,
 					probe_readiness
 				]

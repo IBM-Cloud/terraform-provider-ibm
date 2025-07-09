@@ -222,7 +222,57 @@ resource "ibm_event_streams_quota" "user00001111_quota" {
 }
 ```
 
-#### Scenario 7: Connect to an existing Event Streams instance and its topics.
+#### Scenario 7: Create a target Event Streams service instance with mirroring enabled and its mirroring config
+data "ibm_resource_instance" "es_instance_source" {
+  name              = "terraform-integration-source"
+  resource_group_id = data.ibm_resource_group.group.id
+}
+# setup s2s at service level for mirroring to work
+resource "ibm_iam_authorization_policy" "service-policy" {
+  source_service_name         = "messagehub"
+  target_service_name         = "messagehub"
+  roles                       = ["Reader"]
+  description                 = "test mirroring setup via terraform"
+}
+
+resource "ibm_resource_instance" "es_instance_target" {
+  name              = "terraform-integration-target"
+  service           = "messagehub"
+  plan              = "enterprise-3nodes-2tb"
+  location          = "us-south"
+  resource_group_id = data.ibm_resource_group.group.id
+  parameters_json = jsonencode(
+    {
+      mirroring = {
+        source_crn   = data.ibm_resource_instance.es_instance_source.id
+        source_alias = "source-alias"
+        target_alias = "target-alias"
+      }
+    }
+  )
+  timeouts {
+    create = "3h"
+    update = "1h"
+    delete = "15m"
+  }
+}
+# Configure a service-to-service binding between both instances to allow both instances to communicate.
+resource "ibm_iam_authorization_policy" "instance_policy" {
+  source_service_name         = "messagehub"
+  source_resource_instance_id = ibm_resource_instance.es_instance_target.guid
+  target_service_name         = "messagehub"
+  target_resource_instance_id = data.ibm_resource_instance.es_instance_source.guid
+  roles                       = ["Reader"]
+  description                 = "test mirroring setup via terraform"
+}
+
+# Select some topics from the source cluster to mirror.
+resource "ibm_event_streams_mirroring_config" "es_mirroring_config" {
+  resource_instance_id     = ibm_resource_instance.es_instance_target.id
+  mirroring_topic_patterns = ["topicA", "topicB"]
+}
+
+#### Scenario 8: Connect to an existing Event Streams instance and its topics.
 
 This scenario uses a fictitious `"kafka_consumer_app"` resource to demonstrate how a consumer application could be configured.
 The resource uses three configuration properties:

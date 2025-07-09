@@ -612,6 +612,7 @@ Review the argument references that you can specify for your resource.
 
   Nested scheme for `boot_volume`:
   - `auto_delete_volume` - (Optional, String) If set to **true**, when deleting the instance the volume will also be deleted
+  - `bandwidth` - (Optional, Integer) The maximum bandwidth (in megabits per second) for the volume. For this property to be specified, the volume storage_generation must be 2.
   - `encryption` - (Optional, String) The type of encryption to use for the boot volume.
   - `name` - (Optional, String) The name of the boot volume.
   - `size` - (Optional, Integer) The size of the boot volume.(The capacity of the volume in gigabytes. This defaults to minimum capacity of the image and maximum to `250`.)
@@ -669,7 +670,7 @@ Review the argument references that you can specify for your resource.
   **&#x2022;** `cluster_network_attachments` updation requires the instance to be in stopped state. Use `action` attribute or `ibm_is_instance_action` resource accordingly to stop/start the instance.</br>
   **&#x2022;** Using cluster_network_attachments in `ibm_is_instance` and `ibm_is_instance_cluster_network_attachment` resource together would result in changes shown in both resources alternatively, use either of them or use meta lifecycle argument `ignore_changes` on `cluster_network_attachments`</br>
 
-- `confidential_compute_mode` - (Optional, String) The confidential compute mode to use for this virtual server instance.If unspecified, the default confidential compute mode from the profile will be used. **Constraints: Allowable values are: `disabled`, `sgx`** {Select Availability}
+- `confidential_compute_mode` - (Optional, String) The confidential compute mode to use for this virtual server instance.If unspecified, the default confidential compute mode from the profile will be used. **Constraints: Allowable values are: `disabled`, `sgx`, `tdx`** {Select Availability}
 
   ~>**Note:** The confidential_compute_mode is `Select Availability` feature. Confidential computing with Intel SGX for VPC is available only in the US-South (Dallas) region.
 
@@ -719,42 +720,66 @@ Review the argument references that you can specify for your resource.
   - `response_hop_limit` - (Optional, Integer) The hop limit (IP time to live) for IP response packets from the metadata service. Default is **1**
 - `name` - (Optional, String) The instance name.
 - `network_attachments` - (Optional, List) The network attachments for this virtual server instance, including the primary network attachment. Adding and removing of network attachments must be done from the rear end to avoid unwanted differences and changes in terraform.
-  Nested schema for **network_attachments**:
-	- `deleted` - (Optional, List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
-	Nested schema for **deleted**:
-		- `more_info` - (Required, String) Link to documentation about deleted resources.
-	- `href` - (String) The URL for this network attachment.
-	- `id` - (String) The unique identifier for this network attachment.
-	- `name` - (Optional, String) Name of the attachment.
-	- `virtual_network_interface` - (Required, List(1)) The details of the virtual network interface for this network attachment. It can either accept an `id` or properties of `virtual_network_interface`
-      Nested schema for **virtual_network_interface**:
-      - `id` - (Optional, String) The `id` of the virtual network interface, id conflicts with other properties of virtual network interface
-      - `allow_ip_spoofing` - (Optional, Boolean) Indicates whether source IP spoofing is allowed on this interface. If false, source IP spoofing is prevented on this interface. If true, source IP spoofing is allowed on this interface.
-      - `auto_delete` - (Optional, Boolean) Indicates whether this virtual network interface will be automatically deleted when target is deleted
-      - `enable_infrastructure_nat` - (Optional, Boolean) If true: The VPC infrastructure performs any needed NAT operations and floating_ips must not have more than one floating IP. If false: Packets are passed unchanged to/from the virtual network interface, allowing the workload to perform any needed NAT operations, allow_ip_spoofing must be false, can only be attached to a target with a resource_type of bare_metal_server_network_attachment.
-      - `name` - (Optional, String) The virtual network interface name. The name must not be used by another virtual network interface in the VPC. 
-      - `ips` - (Optional, Array of String) Additional IP addresses to bind to the virtual network interface. Each item may be either a reserved IP identity, or a reserved IP prototype object which will be used to create a new reserved IP. All IP addresses must be in the primary IP's subnet.
-        ~> **NOTE** to add `ips` only existing `reserved_ip` is supported, new reserved_ip creation is not supported as it leads to unmanaged(dangling) reserved ips. Use `ibm_is_subnet_reserved_ip` to create a reserved_ip
-      - `resource_group` - (Optional, String) The resource type.
-      - `security_groups` - (Optional, Array of String) The resource type.
-      - `primary_ip` - (Required, List) The primary IP address of the virtual network interface for the network attachment.
-          Nested schema for **primary_ip**:
-          - `address` - (Required, String) The IP address.If the address has not yet been selected, the value will be `0.0.0.0`.This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
-          - `deleted` - (Optional, List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
-            Nested schema for **deleted**:
-            - `more_info` - (Required, String) Link to documentation about deleted resources.
-          - `href` - (Required, String) The URL for this reserved IP.
-          - `id` - (Required, String) The unique identifier for this reserved IP.
-          - `name` - (Required, String) The name for this reserved IP. The name is unique across all reserved IPs in a subnet.
-          - `resource_type` - (String) The resource type.
-      - `protocol_state_filtering_mode` - (Optional, String) The protocol state filtering mode to use for this virtual network interface. 
 
-            ~> **If auto, protocol state packet filtering is enabled or disabled based on the virtual network interface's target resource type:** 
-            **&#x2022;** bare_metal_server_network_attachment: disabled </br>
-            **&#x2022;** instance_network_attachment: enabled </br>
-            **&#x2022;** share_mount_target: enabled </br>
-      - `resource_type` - (String) The resource type.
-      - `subnet` - (Required, String) The subnet id of the virtual network interface for the network attachment.
+	Nested schema for **network_attachments**:
+	- `deleted` - (Computed, List) If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.
+		Nested schema for **deleted**:
+		- `more_info` - (String) Link to documentation about deleted resources.
+	- `href` - (Computed, String) The URL for this network attachment.
+	- `id` - (Computed, String) The unique identifier for this network attachment.
+	- `name` - (Optional, String) Name of the attachment. The name is unique across all network attachments for the instance.
+	- `primary_ip` - (Computed, List) The primary IP address of the virtual network interface for the network attachment.
+		Nested schema for **primary_ip**:
+		- `address` - (String) The IP address. If the address has not yet been selected, the value will be `0.0.0.0`. This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
+		- `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.
+			Nested schema for **deleted**:
+			- `more_info` - (String) Link to documentation about deleted resources.
+		- `href` - (String) The URL for this reserved IP.
+		- `id` - (String) The unique identifier for this reserved IP.
+		- `name` - (String) The name for this reserved IP. The name is unique across all reserved IPs in a subnet.
+		- `resource_type` - (String) The resource type.
+	- `resource_type` - (Computed, String) The resource type.
+	- `virtual_network_interface` - (Required, List) The details of the virtual network interface for this network attachment. It can either accept an `id` or properties of `virtual_network_interface`.
+		Nested schema for **virtual_network_interface**:
+		- `id` - (Optional, String) The `id` of the virtual network interface. When specified, conflicts with other properties of virtual network interface.
+		- `allow_ip_spoofing` - (Optional, Boolean) Indicates whether source IP spoofing is allowed on this interface. If `false`, source IP spoofing is prevented on this interface. If `true`, source IP spoofing is allowed on this interface.
+		- `auto_delete` - (Optional, Boolean) Indicates whether this virtual network interface will be automatically deleted when target is deleted.
+		- `enable_infrastructure_nat` - (Optional, Boolean) If `true`: The VPC infrastructure performs any needed NAT operations and floating_ips must not have more than one floating IP. If `false`: Packets are passed unchanged to/from the virtual network interface, allowing the workload to perform any needed NAT operations, allow_ip_spoofing must be false, can only be attached to a target with a resource_type of bare_metal_server_network_attachment.
+		- `ips` - (Optional, Set) Additional IP addresses to bind to the virtual network interface. Each item may be either a reserved IP identity, or a reserved IP prototype object which will be used to create a new reserved IP. All IP addresses must be in the primary IP's subnet.
+			~> **NOTE** to add `ips` only existing `reserved_ip` is supported, new reserved_ip creation is not supported as it leads to unmanaged(dangling) reserved ips. Use `ibm_is_subnet_reserved_ip` to create a reserved_ip
+
+			Nested schema for **ips**:
+			- `reserved_ip` - (Required, String) The unique identifier for this reserved IP.
+			- `address` - (Computed, String) The IP address. If the address has not yet been selected, the value will be `0.0.0.0`. This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
+			- `auto_delete` - (Computed, Boolean) Indicates whether this reserved IP member will be automatically deleted when either target is deleted, or the reserved IP is unbound.
+			- `deleted` - (Computed, List) If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.
+				Nested schema for **deleted**:
+				- `more_info` - (String) Link to documentation about deleted resources.
+			- `href` - (Computed, String) The URL for this reserved IP.
+			- `name` - (Computed, String) The name for this reserved IP. The name is unique across all reserved IPs in a subnet.
+			- `resource_type` - (Computed, String) The resource type.
+		- `name` - (Optional, String) The virtual network interface name. The name must not be used by another virtual network interface in the VPC.
+		- `primary_ip` - (Optional, List) The primary IP address of the virtual network interface for the network attachment.
+			Nested schema for **primary_ip**:
+			- `address` - (Optional, String) The IP address. If the address has not yet been selected, the value will be `0.0.0.0`. This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
+			- `auto_delete` - (Optional, Boolean) Indicates whether this reserved IP member will be automatically deleted when either target is deleted, or the reserved IP is unbound. Default value: `true`.
+			- `deleted` - (Computed, List) If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.
+				Nested schema for **deleted**:
+				- `more_info` - (String) Link to documentation about deleted resources.
+			- `href` - (Computed, String) The URL for this reserved IP.
+			- `name` - (Optional, String) The name for this reserved IP. The name is unique across all reserved IPs in a subnet.
+			- `reserved_ip` - (Optional, String) The unique identifier for this reserved IP.
+			- `resource_type` - (Computed, String) The resource type.
+		- `protocol_state_filtering_mode` - (Optional, String) The protocol state filtering mode to use for this virtual network interface.
+			~> **If auto, protocol state packet filtering is enabled or disabled based on the virtual network interface's target resource type:** 
+			**&#x2022;** bare_metal_server_network_attachment: disabled </br>
+			**&#x2022;** instance_network_attachment: enabled </br>
+			**&#x2022;** share_mount_target: enabled </br>
+		- `resource_group` - (Optional, String) The resource group id for this virtual network interface.
+		- `resource_type` - (Computed, String) The resource type.
+		- `security_groups` - (Optional, Set of Strings) The security groups for this virtual network interface.
+		- `subnet` - (Optional, String) The subnet id of the virtual network interface for the network attachment.
+    
 - `network_interfaces`  (Optional,  Forces new resource, List) A list of more network interfaces that are set up for the instance.
 
     -> **Allowed vNIC per profile.** Follow the vNIC count as per the instance profile's `network_interface_count`. For details see  [`is_instance_profile`](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/data-sources/is_instance_profile) or [`is_instance_profiles`](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/data-sources/is_instance_profiles).
@@ -778,43 +803,66 @@ Review the argument references that you can specify for your resource.
   - `security_groups`- (Optional, List of strings)A comma separated list of security groups to add to the primary network interface.
 - `placement_group` - (Optional, string) Unique Identifier of the Placement Group for restricting the placement of the instance
 - `primary_network_attachment` - (Optional, List) The primary network attachment for this virtual server instance.
-  Nested schema for **primary_network_attachment**:
-	- `deleted` - (Optional, List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
-	Nested schema for **deleted**:
-		- `more_info` - (Required, String) Link to documentation about deleted resources.
-	- `href` - (String) The URL for this network attachment.
-	- `id` - (String) The unique identifier for this network attachment.
-	- `name` - (Required, String) The name of this network attachment
-  - `resource_type` - (String) The resource type.
-	- `virtual_network_interface` - (Required, List(1)) The details of the virtual network interface for this network attachment. It can either accept an `id` or properties of `virtual_network_interface`
-      Nested schema for **virtual_network_interface**: 
-      - `id` - (Optional, List) The `id` of the virtual network interface, id conflicts with other properties of virtual network interface
-      - `allow_ip_spoofing` - (Optional, Boolean) Indicates whether source IP spoofing is allowed on this interface. If false, source IP spoofing is prevented on this interface. If true, source IP spoofing is allowed on this interface.
-      - `auto_delete` - (Optional, Boolean) Indicates whether this virtual network interface will be automatically deleted when target is deleted
-      - `enable_infrastructure_nat` - (Optional, Boolean) If true: The VPC infrastructure performs any needed NAT operations and floating_ips must not have more than one floating IP. If false: Packets are passed unchanged to/from the virtual network interface, allowing the workload to perform any needed NAT operations, allow_ip_spoofing must be false, can only be attached to a target with a resource_type of bare_metal_server_network_attachment.
-      - `name` - (Optional, String) The virtual network interface name. The name must not be used by another virtual network interface in the VPC.
-      - `ips` - (Optional, Array of String) Additional IP addresses to bind to the virtual network interface. Each item may be either a reserved IP identity, or a reserved IP prototype object which will be used to create a new reserved IP. All IP addresses must be in the primary IP's subnet.
-      - `resource_group` - (Optional, String) The resource type.
-      - `security_groups` - (Optional, Array of String) The resource type.
-      - `primary_ip` - (Required, List) The primary IP address of the virtual network interface for the network attachment.
-          Nested schema for **primary_ip**:
-          - `address` - (Required, String) The IP address.If the address has not yet been selected, the value will be `0.0.0.0`.This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
-          - `deleted` - (Optional, List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
-            Nested schema for **deleted**:
-            - `more_info` - (Required, String) Link to documentation about deleted resources.
-          - `href` - (Required, String) The URL for this reserved IP.
-          - `id` - (Required, String) The unique identifier for this reserved IP.
-          - `name` - (Required, String) The name for this reserved IP. The name is unique across all reserved IPs in a subnet.
-          - `resource_type` - (String) The resource type.
-      - `protocol_state_filtering_mode` - (Optional, String) The protocol state filtering mode to use for this virtual network interface. 
 
-          ~> **If auto, protocol state packet filtering is enabled or disabled based on the virtual network interface's target resource type:** 
-          **&#x2022;** bare_metal_server_network_attachment: disabled </br>
-          **&#x2022;** instance_network_attachment: enabled </br>
-          **&#x2022;** share_mount_target: enabled </br>
-      - `resource_type` - (String) The resource type.
-      - `subnet` - (Required, String) The subnet id of the virtual network interface for the network attachment.
-	 
+	Nested schema for **primary_network_attachment**:
+	- `deleted` - (Computed, List) If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.
+		Nested schema for **deleted**:
+		- `more_info` - (String) Link to documentation about deleted resources.
+	- `href` - (Computed, String) The URL for this network attachment.
+	- `id` - (Computed, String) The unique identifier for this network attachment.
+	- `name` - (Optional, String) The name of this network attachment. The name is unique across all network attachments for the instance.
+	- `primary_ip` - (Computed, List) The primary IP address of the virtual network interface for the network attachment.
+		Nested schema for **primary_ip**:
+		- `address` - (String) The IP address. If the address has not yet been selected, the value will be `0.0.0.0`. This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
+		- `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.
+			Nested schema for **deleted**:
+			- `more_info` - (String) Link to documentation about deleted resources.
+		- `href` - (String) The URL for this reserved IP.
+		- `id` - (String) The unique identifier for this reserved IP.
+		- `name` - (String) The name for this reserved IP. The name is unique across all reserved IPs in a subnet.
+		- `resource_type` - (String) The resource type.
+	- `resource_type` - (Computed, String) The resource type.
+	- `virtual_network_interface` - (Required, List) The details of the virtual network interface for this network attachment. It can either accept an `id` or properties of `virtual_network_interface`.
+		Nested schema for **virtual_network_interface**:
+		- `id` - (Optional, String) The `id` of the virtual network interface. When specified, conflicts with other properties of virtual network interface.
+		- `allow_ip_spoofing` - (Optional, Boolean) Indicates whether source IP spoofing is allowed on this interface. If `false`, source IP spoofing is prevented on this interface. If `true`, source IP spoofing is allowed on this interface. Conflicts with `id`.
+		- `auto_delete` - (Optional, Boolean) Indicates whether this virtual network interface will be automatically deleted when target is deleted. Conflicts with `id`.
+		- `enable_infrastructure_nat` - (Optional, Boolean) If `true`: The VPC infrastructure performs any needed NAT operations and floating_ips must not have more than one floating IP. If `false`: Packets are passed unchanged to/from the virtual network interface, allowing the workload to perform any needed NAT operations, allow_ip_spoofing must be false, can only be attached to a target with a resource_type of bare_metal_server_network_attachment. Conflicts with `id`.
+		- `ips` - (Optional, Set) Additional IP addresses to bind to the virtual network interface. Each item may be either a reserved IP identity, or a reserved IP prototype object which will be used to create a new reserved IP. All IP addresses must be in the primary IP's subnet. Conflicts with `id`.
+			~> **NOTE** to add `ips` only existing `reserved_ip` is supported, new reserved_ip creation is not supported as it leads to unmanaged(dangling) reserved ips. Use `ibm_is_subnet_reserved_ip` to create a reserved_ip
+
+			Nested schema for **ips**:
+			- `reserved_ip` - (Required, String) The unique identifier for this reserved IP.
+			- `address` - (Computed, String) The IP address. If the address has not yet been selected, the value will be `0.0.0.0`. This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
+			- `auto_delete` - (Computed, Boolean) Indicates whether this reserved IP member will be automatically deleted when either target is deleted, or the reserved IP is unbound.
+			- `deleted` - (Computed, List) If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.
+				Nested schema for **deleted**:
+				- `more_info` - (String) Link to documentation about deleted resources.
+			- `href` - (Computed, String) The URL for this reserved IP.
+			- `name` - (Computed, String) The name for this reserved IP. The name is unique across all reserved IPs in a subnet.
+			- `resource_type` - (Computed, String) The resource type.
+		- `name` - (Optional, String) The virtual network interface name. The name must not be used by another virtual network interface in the VPC. Conflicts with `id`.
+		- `primary_ip` - (Optional, List) The primary IP address of the virtual network interface for the network attachment. Conflicts with `id`.
+			Nested schema for **primary_ip**:
+			- `address` - (Optional, String) The IP address. If the address has not yet been selected, the value will be `0.0.0.0`. This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered. Conflicts with `reserved_ip`.
+			- `auto_delete` - (Optional, Boolean) Indicates whether this reserved ip will be automatically deleted when `target` is deleted. Conflicts with `reserved_ip`.
+			- `deleted` - (Computed, List) If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.
+				Nested schema for **deleted**:
+				- `more_info` - (String) Link to documentation about deleted resources.
+			- `href` - (Computed, String) The URL for this reserved IP.
+			- `name` - (Optional, String) The name for this reserved IP. The name is unique across all reserved IPs in a subnet. Conflicts with `reserved_ip`.
+			- `reserved_ip` - (Optional, String) The unique identifier for this reserved IP. Conflicts with `address`, `auto_delete`, and `name`.
+			- `resource_type` - (Computed, String) The resource type.
+		- `protocol_state_filtering_mode` - (Optional, String) The protocol state filtering mode to use for this virtual network interface.
+			~> **If auto, protocol state packet filtering is enabled or disabled based on the virtual network interface's target resource type:** 
+			**&#x2022;** bare_metal_server_network_attachment: disabled </br>
+			**&#x2022;** instance_network_attachment: enabled </br>
+			**&#x2022;** share_mount_target: enabled </br>
+		- `resource_group` - (Optional, String) The resource group id for this virtual network interface. Conflicts with `id`.
+		- `resource_type` - (Computed, String) The resource type.
+		- `security_groups` - (Optional, Forces new resource, Set of Strings) The security groups for this virtual network interface. Conflicts with `id`.
+		- `subnet` - (Optional, Forces new resource, String) The subnet id of the virtual network interface for the network attachment. Conflicts with `id`.
+
 - `primary_network_interface` - (Required, List) A nested block describes the primary network interface of this instance. Only one primary network interface can be specified for an instance. When using `instance_template`, `primary_network_interface` is not required.
 
   Nested scheme for `primary_network_interface`:
@@ -864,6 +912,7 @@ Review the argument references that you can specify for your resource.
 - `volume_prototypes`- (List of Strings) A list of data volumes to attach to the instance. Mutually exclusive with `volumes`.
 
   Nested scheme for `volume_prototypes`:
+  - `bandwidth` - (Optional, Integer) The maximum bandwidth (in megabits per second) for the volume. For this property to be specified, the volume storage_generation must be 2.
   - `delete_volume_on_instance_delete` - (Bool) If set to **true**, automatically deletes the volumes that are attached to an instance. **Note** Setting this argument can bring some inconsistency in the volume resource, as the volumes is destroyed along with instances.
   - `encryption` - (String) The type of encryption that is used for the volume prototype.
   - `iops`- (Integer) The number of input and output operations per second of the volume prototype.

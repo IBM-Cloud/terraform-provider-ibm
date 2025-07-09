@@ -39,6 +39,11 @@ func DataSourceIBMPIInstance() *schema.Resource {
 				Description: "The CRN of this resource.",
 				Type:        schema.TypeString,
 			},
+			Attr_DedicatedHostID: {
+				Computed:    true,
+				Description: "The dedicated host ID where the shared processor pool resides.",
+				Type:        schema.TypeString,
+			},
 			Attr_DeploymentType: {
 				Computed:    true,
 				Description: "The custom deployment type.",
@@ -76,7 +81,6 @@ func DataSourceIBMPIInstance() *schema.Resource {
 			},
 			Attr_LicenseRepositoryCapacity: {
 				Computed:    true,
-				Deprecated:  "This field is deprecated.",
 				Description: "The VTL license repository capacity TB value.",
 				Type:        schema.TypeInt,
 			},
@@ -135,21 +139,32 @@ func DataSourceIBMPIInstance() *schema.Resource {
 							Description: "The MAC address of the instance.",
 							Type:        schema.TypeString,
 						},
-						Attr_Macaddress: {
-							Computed:    true,
-							Deprecated:  "Deprecated, use mac_address instead",
-							Description: "The MAC address of the instance.",
-							Type:        schema.TypeString,
-						},
 						Attr_NetworkID: {
 							Computed:    true,
 							Description: "The network ID of the instance.",
+							Type:        schema.TypeString,
+						},
+						Attr_NetworkInterfaceID: {
+							Computed:    true,
+							Description: "ID of the network interface.",
 							Type:        schema.TypeString,
 						},
 						Attr_NetworkName: {
 							Computed:    true,
 							Description: "The network name of the instance.",
 							Type:        schema.TypeString,
+						},
+						Attr_NetworkSecurityGroupIDs: {
+							Computed:    true,
+							Description: "IDs of the network necurity groups that the network interface is a member of.",
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Type:        schema.TypeSet,
+						},
+						Attr_NetworkSecurityGroupsHref: {
+							Computed:    true,
+							Description: "Links to the network security groups that the network interface is a member of.",
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Type:        schema.TypeList,
 						},
 						Attr_Type: {
 							Computed:    true,
@@ -285,6 +300,7 @@ func dataSourceIBMPIInstancesRead(ctx context.Context, d *schema.ResourceData, m
 		}
 		d.Set(Attr_UserTags, tags)
 	}
+	d.Set(Attr_DedicatedHostID, powervmdata.DedicatedHostID)
 	d.Set(Attr_DeploymentType, powervmdata.DeploymentType)
 	d.Set(Attr_LicenseRepositoryCapacity, powervmdata.LicenseRepositoryCapacity)
 	d.Set(Attr_MaxMem, powervmdata.Maxmem)
