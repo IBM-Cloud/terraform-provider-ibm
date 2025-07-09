@@ -9,7 +9,7 @@ description: |-
 
 # ibm_is_public_address_range
 
-Create, update, and delete a public address range.For more information, see [use a Public address range]().
+Create, update, and delete a public address range. For more information, see [creating public address range](https://cloud.ibm.com/docs/vpc?topic=vpc-par-creating&interface=ui).
 
 **Note:** 
 The Public Address Range feature is currently available only with the `Select Availability`.
@@ -33,7 +33,7 @@ resource "ibm_is_public_address_range" "public_address_range_instance" {
   ipv4_address_count = "16"
   name               = "example-public-address-range"
   resource_group {
-    id = "11caaa983d9c4beb82690daab08717e9"
+    id = "11caaa983d9c4beb82690daab18717e9"
   }
   target {
     vpc {

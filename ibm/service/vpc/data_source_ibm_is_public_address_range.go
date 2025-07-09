@@ -221,7 +221,7 @@ func dataSourceIBMIsPublicAddressRangeRead(context context.Context, d *schema.Re
 			if start != "" {
 				listPublicAddressRanges.Start = &start
 			}
-			publicAddressRangeCollection, response, err := vpcClient.ListPublicAddressRangesWithContext(context, listPublicAddressRanges)
+			publicAddressRangeCollection, _, err := vpcClient.ListPublicAddressRangesWithContext(context, listPublicAddressRanges)
 			if err != nil {
 				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListPublicAddressRangesWithContext failed: %s", err.Error()), "(Data) ibm_public_address_range", "read")
 				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())

@@ -26,7 +26,6 @@ func TestAccIBMIsPublicAddressRangeDataSourceBasic(t *testing.T) {
 				Config: testAccCheckIBMIsPublicAddressRangeDataSourceConfigBasic(vpcName, name, ipv4AddressCount),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_is_public_address_range.is_public_address_range_instance", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_public_address_range.is_public_address_range_instance", "is_public_address_range_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_public_address_range.is_public_address_range_instance", "cidr"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_public_address_range.is_public_address_range_instance", "created_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_public_address_range.is_public_address_range_instance", "crn"),

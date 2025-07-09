@@ -8,7 +8,7 @@ description: |-
 
 # ibm_is_public_address_ranges
 
-Retrieve information of an existing public address ranges as a read only data source. For more information, about an public address range, see [about networking]().
+Retrieve information of an existing public address ranges as a read only data source. For more information, about an public address range, see , see [creating public address range](https://cloud.ibm.com/docs/vpc?topic=vpc-par-creating&interface=ui).
 
 **Note:** 
 The Public Address Range feature is currently available only with the `Select Availability`.
