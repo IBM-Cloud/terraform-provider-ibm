@@ -367,12 +367,22 @@ func resourceIBMIsShareMountTargetCreate(context context.Context, d *schema.Reso
 		}
 		shareMountTargetPrototype.TransitEncryption = &transitEncryption
 	} else {
-		if _, ok := d.GetOk("vpc"); ok {
-			shareMountTargetPrototype.TransitEncryption = &[]string{"none"}[0]
-		} else {
-			shareMountTargetPrototype.TransitEncryption = &[]string{"ipsec"}[0]
+		getShareOptions := &vpcv1.GetShareOptions{
+			ID: &shareId,
 		}
-
+		share, _, err := vpcClient.GetShareWithContext(context, getShareOptions)
+		if err != nil || share == nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetShareWithContext failed: %s", err.Error()), "ibm_is_share_mount_target", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
+		if share != nil && share.Profile != nil && share.Profile.Name != nil {
+			if *share.Profile.Name == "dp2" {
+				shareMountTargetPrototype.TransitEncryption = &[]string{"ipsec"}[0]
+			} else if *share.Profile.Name == "rfs" {
+				shareMountTargetPrototype.TransitEncryption = &[]string{"stunnel"}[0]
+			}
+		}
 	}
 	createShareMountTargetOptions.ShareMountTargetPrototype = shareMountTargetPrototype
 	shareTarget, response, err := vpcClient.CreateShareMountTargetWithContext(context, createShareMountTargetOptions)
