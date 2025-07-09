@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 )
 
@@ -82,7 +83,9 @@ func DataSourceIBMISLBListenerPolicyRule() *schema.Resource {
 func dataSourceIBMIsLbListenerPolicyRuleRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := vpcClient(meta)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_lb_listener_policy_rule", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	getLoadBalancerListenerPolicyRuleOptions := &vpcv1.GetLoadBalancerListenerPolicyRuleOptions{}
@@ -92,33 +95,37 @@ func dataSourceIBMIsLbListenerPolicyRuleRead(context context.Context, d *schema.
 	getLoadBalancerListenerPolicyRuleOptions.SetPolicyID(d.Get(isLBListenerPolicyRulePolicyID).(string))
 	getLoadBalancerListenerPolicyRuleOptions.SetID(d.Get(isLBListenerPolicyRuleid).(string))
 
-	loadBalancerListenerPolicyRule, response, err := vpcClient.GetLoadBalancerListenerPolicyRuleWithContext(context, getLoadBalancerListenerPolicyRuleOptions)
+	loadBalancerListenerPolicyRule, _, err := vpcClient.GetLoadBalancerListenerPolicyRuleWithContext(context, getLoadBalancerListenerPolicyRuleOptions)
 	if err != nil {
-		log.Printf("[DEBUG] GetLoadBalancerListenerPolicyRuleWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetLoadBalancerListenerPolicyRuleWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetLoadBalancerListenerPolicyRuleWithContext failed: %s", err.Error()), "(Data) ibm_is_lb_listener_policy_rule", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(*loadBalancerListenerPolicyRule.ID)
 	if err = d.Set("condition", loadBalancerListenerPolicyRule.Condition); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting condition: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting condition: %s", err), "(Data) ibm_is_lb_listener_policy_rule", "read", "set-condition").GetDiag()
 	}
+
 	if err = d.Set("created_at", flex.DateTimeToString(loadBalancerListenerPolicyRule.CreatedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting created_at: %s", err), "(Data) ibm_is_lb_listener_policy_rule", "read", "set-created_at").GetDiag()
 	}
-	if err = d.Set("field", loadBalancerListenerPolicyRule.Field); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting field: %s", err))
+	if !core.IsNil(loadBalancerListenerPolicyRule.Field) {
+		if err = d.Set("field", loadBalancerListenerPolicyRule.Field); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting field: %s", err), "(Data) ibm_is_lb_listener_policy_rule", "read", "set-field").GetDiag()
+		}
 	}
 	if err = d.Set("href", loadBalancerListenerPolicyRule.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting href: %s", err), "(Data) ibm_is_lb_listener_policy_rule", "read", "set-href").GetDiag()
 	}
 	if err = d.Set("provisioning_status", loadBalancerListenerPolicyRule.ProvisioningStatus); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting provisioning_status: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting provisioning_status: %s", err), "(Data) ibm_is_lb_listener_policy_rule", "read", "set-provisioning_status").GetDiag()
 	}
 	if err = d.Set("type", loadBalancerListenerPolicyRule.Type); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting type: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting type: %s", err), "(Data) ibm_is_lb_listener_policy_rule", "read", "set-type").GetDiag()
 	}
 	if err = d.Set("value", loadBalancerListenerPolicyRule.Value); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting value: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting value: %s", err), "(Data) ibm_is_lb_listener_policy_rule", "read", "set-value").GetDiag()
 	}
 
 	return nil

@@ -230,12 +230,12 @@ func resourceIBMdlGatewayVCUpdate(d *schema.ResourceData, meta interface{}) erro
 	updateGatewayVCOptions := &directlinkv1.UpdateGatewayVirtualConnectionOptions{}
 	updateGatewayVCOptions.ID = &ID
 	updateGatewayVCOptions.SetGatewayID(gatewayId)
-	if d.HasChange(dlName) {
-		if d.Get(dlName) != nil {
-			name := d.Get(dlName).(string)
-			updateGatewayVCOptions.Name = &name
-		}
-	}
+	// if d.HasChange(dlName) {
+	// 	if d.Get(dlName) != nil {
+	// 		name := d.Get(dlName).(string)
+	// 		updateGatewayVCOptions.Name = &name
+	// 	}
+	// }
 
 	_, response, err := directLink.UpdateGatewayVirtualConnection(updateGatewayVCOptions)
 	if err != nil {
