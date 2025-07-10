@@ -237,19 +237,19 @@ func DataSourceIBMISVolumeProfiles() *schema.Resource {
 
 func dataSourceIBMISVolumeProfilesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
-	err := volumeProfilesList(d, meta)
+	err := volumeProfilesList(context, d, meta)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_is_volume_profiles", "read")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		return tfErr.GetDiag()
+		return err
 	}
 	return nil
 }
 
-func volumeProfilesList(d *schema.ResourceData, meta interface{}) error {
+func volumeProfilesList(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_volume_profiles", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	start := ""
@@ -259,9 +259,11 @@ func volumeProfilesList(d *schema.ResourceData, meta interface{}) error {
 		if start != "" {
 			listVolumeProfilesOptions.Start = &start
 		}
-		availableProfiles, response, err := sess.ListVolumeProfiles(listVolumeProfilesOptions)
+		availableProfiles, _, err := sess.ListVolumeProfilesWithContext(context, listVolumeProfilesOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Fetching Volume Profiles %s\n%s", err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListVolumeProfilesWithContext failed %s", err), "(Data) ibm_is_volume_profiles", "read")
+			log.Printf("[DEBUG] %s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		start = flex.GetNext(availableProfiles.Next)
 		allrecs = append(allrecs, availableProfiles.Profiles...)
@@ -279,13 +281,14 @@ func volumeProfilesList(d *schema.ResourceData, meta interface{}) error {
 	for _, profile := range allrecs {
 		modelMap, err := DataSourceIBMIsVolumeProfilesVolumeProfileToMap(&profile)
 		if err != nil {
-			tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_is_volume_profiles", "read")
-			return tfErr
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_volume_profiles", "read", "Volumes-to-map").GetDiag()
 		}
 		profilesInfo = append(profilesInfo, modelMap)
 	}
+	if err = d.Set("profiles", profilesInfo); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting profiles %s", err), "(Data) ibm_is_volume_profiles", "read", "profiles-set").GetDiag()
+	}
 	d.SetId(dataSourceIBMISVolumeProfilesID(d))
-	d.Set(isVolumeProfiles, profilesInfo)
 	return nil
 }
 

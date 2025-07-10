@@ -587,7 +587,9 @@ func DataSourceIbmIsShares() *schema.Resource {
 func dataSourceIbmIsSharesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("vpcClient creation failed: %s", err.Error()), "(Data) ibm_is_shares", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	shareName := ""
 	if shareNameIntf, ok := d.GetOk("name"); ok {
@@ -614,8 +616,9 @@ func dataSourceIbmIsSharesRead(context context.Context, d *schema.ResourceData, 
 		}
 		shareCollection, response, err := vpcClient.ListSharesWithContext(context, listSharesOptions)
 		if err != nil {
-			log.Printf("[DEBUG] ListSharesWithContext failed %s\n%s", err, response)
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListSharesWithContext failed: %s\n%s", err.Error(), response), "(Data) ibm_is_shares", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		if totalCount == 0 {
 			totalCount = int(*shareCollection.TotalCount)
@@ -636,7 +639,8 @@ func dataSourceIbmIsSharesRead(context context.Context, d *schema.ResourceData, 
 		}
 		errSettingShares := d.Set("shares", shares)
 		if errSettingShares != nil {
-			return diag.FromErr(fmt.Errorf("Error setting shares %s", errSettingShares))
+			errSettingShares = fmt.Errorf("Error setting shares: %s", errSettingShares)
+			return flex.DiscriminatedTerraformErrorf(errSettingShares, errSettingShares.Error(), "(Data) ibm_is_shares", "read", "set-shares").GetDiag()
 		}
 	}
 	if err = d.Set("total_count", totalCount); err != nil {

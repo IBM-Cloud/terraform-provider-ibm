@@ -9,6 +9,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -160,7 +161,9 @@ func ResourceIBMISSubnetRoutingTableAttachment() *schema.Resource {
 func resourceIBMISSubnetRoutingTableAttachmentCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_routing_table_attachment", "create", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	subnet := d.Get(isSubnetID).(string)
@@ -187,11 +190,12 @@ func resourceIBMISSubnetRoutingTableAttachmentCreate(context context.Context, d 
 		replaceSubnetRoutingTableOptionsModel.RoutingTableIdentity = routingTableIdentityModel
 	}
 
-	resultRT, response, err := sess.ReplaceSubnetRoutingTableWithContext(context, replaceSubnetRoutingTableOptionsModel)
+	resultRT, _, err := sess.ReplaceSubnetRoutingTableWithContext(context, replaceSubnetRoutingTableOptionsModel)
 
 	if err != nil {
-		log.Printf("[DEBUG] Error while attaching a routing table to a subnet %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("[ERROR] Error while attaching a routing table to a subnet %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateSubnetReservedIPWithContext failed: %s", err.Error()), "ibm_is_subnet_routing_table_attachment", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	d.SetId(subnet)
 	log.Printf("[INFO] Routing Table : %s", *resultRT.ID)
@@ -204,7 +208,9 @@ func resourceIBMISSubnetRoutingTableAttachmentRead(context context.Context, d *s
 	id := d.Id()
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_routing_table_attachment", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	getSubnetRoutingTableOptionsModel := &vpcv1.GetSubnetRoutingTableOptions{
@@ -217,19 +223,54 @@ func resourceIBMISSubnetRoutingTableAttachmentRead(context context.Context, d *s
 			d.SetId("")
 			return nil
 		}
-		return diag.FromErr(fmt.Errorf("[ERROR] Error getting subnet's (%s) attached routing table: %s\n%s", id, err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetSubnetRoutingTableWithContext failed: %s", err.Error()), "ibm_is_subnet_routing_table_attachment", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
-	d.Set(isRoutingTableName, *subRT.Name)
-	d.Set(isSubnetID, id)
-	d.Set(isRoutingTableID, *subRT.ID)
-	d.Set(isRoutingTableCrn, *subRT.CRN)
-	d.Set(isRoutingTableResourceType, *subRT.ResourceType)
-	d.Set(rtRouteDirectLinkIngress, *subRT.RouteDirectLinkIngress)
-	d.Set(rtIsDefault, *subRT.IsDefault)
-	d.Set(rtLifecycleState, *subRT.LifecycleState)
-	d.Set(isRoutingTableResourceType, *subRT.ResourceType)
-	d.Set(rtRouteTransitGatewayIngress, *subRT.RouteTransitGatewayIngress)
-	d.Set(rtRouteVPCZoneIngress, *subRT.RouteVPCZoneIngress)
+	if err = d.Set(isRoutingTableName, *subRT.Name); err != nil {
+		err = fmt.Errorf("Error setting name: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_routing_table_attachment", "read", "set-name").GetDiag()
+	}
+	if err = d.Set(isSubnetID, id); err != nil {
+		err = fmt.Errorf("Error setting subnet: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_routing_table_attachment", "read", "set-subnet").GetDiag()
+	}
+	if err = d.Set(isRoutingTableID, *subRT.ID); err != nil {
+		err = fmt.Errorf("Error setting routing_table: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_routing_table_attachment", "read", "set-routing_table").GetDiag()
+	}
+	if err = d.Set(isRoutingTableCrn, *subRT.CRN); err != nil {
+		err = fmt.Errorf("Error setting routing_table_crn: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_routing_table_attachment", "read", "set-routing_table_crn").GetDiag()
+	}
+	if err = d.Set(isRoutingTableResourceType, *subRT.ResourceType); err != nil {
+		err = fmt.Errorf("Error setting resource_type: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_routing_table_attachment", "read", "set-resource_type").GetDiag()
+	}
+	if err = d.Set(rtRouteDirectLinkIngress, *subRT.RouteDirectLinkIngress); err != nil {
+		err = fmt.Errorf("Error setting route_direct_link_ingress: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_routing_table_attachment", "read", "set-route_direct_link_ingress").GetDiag()
+	}
+	if err = d.Set(rtIsDefault, *subRT.IsDefault); err != nil {
+		err = fmt.Errorf("Error setting is_default: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_routing_table_attachment", "read", "set-is_default").GetDiag()
+	}
+	if err = d.Set(rtLifecycleState, *subRT.LifecycleState); err != nil {
+		err = fmt.Errorf("Error setting lifecycle_state: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_routing_table_attachment", "read", "set-lifecycle_state").GetDiag()
+	}
+	if err = d.Set(isRoutingTableResourceType, *subRT.ResourceType); err != nil {
+		err = fmt.Errorf("Error setting resource_type: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_routing_table_attachment", "read", "set-resource_type").GetDiag()
+	}
+	if err = d.Set(rtRouteTransitGatewayIngress, *subRT.RouteTransitGatewayIngress); err != nil {
+		err = fmt.Errorf("Error setting route_transit_gateway_ingress: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_routing_table_attachment", "read", "set-route_transit_gateway_ingress").GetDiag()
+	}
+	if err = d.Set(rtRouteVPCZoneIngress, *subRT.RouteVPCZoneIngress); err != nil {
+		err = fmt.Errorf("Error setting route_vpc_zone_ingress: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_routing_table_attachment", "read", "set-route_vpc_zone_ingress").GetDiag()
+	}
 	subnets := make([]map[string]interface{}, 0)
 
 	for _, s := range subRT.Subnets {
@@ -238,8 +279,10 @@ func resourceIBMISSubnetRoutingTableAttachmentRead(context context.Context, d *s
 		subnet["name"] = *s.Name
 		subnets = append(subnets, subnet)
 	}
-	d.Set(rtSubnets, subnets)
-
+	if err = d.Set(rtSubnets, subnets); err != nil {
+		err = fmt.Errorf("Error setting subnets: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_routing_table_attachment", "read", "set-subnets").GetDiag()
+	}
 	routes := make([]map[string]interface{}, 0)
 	for _, s := range subRT.Routes {
 		route := make(map[string]interface{})
@@ -247,15 +290,19 @@ func resourceIBMISSubnetRoutingTableAttachmentRead(context context.Context, d *s
 		route["name"] = *s.Name
 		routes = append(routes, route)
 	}
-	d.Set(rtRoutes, routes)
-
+	if err = d.Set(rtRoutes, routes); err != nil {
+		err = fmt.Errorf("Error setting routes: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_routing_table_attachment", "read", "set-routes").GetDiag()
+	}
 	resourceGroupList := []map[string]interface{}{}
 	if subRT.ResourceGroup != nil {
 		resourceGroupMap := routingTableResourceGroupToMap(*subRT.ResourceGroup)
 		resourceGroupList = append(resourceGroupList, resourceGroupMap)
 	}
-	d.Set(rtResourceGroup, resourceGroupList)
-
+	if err = d.Set(rtResourceGroup, resourceGroupList); err != nil {
+		err = fmt.Errorf("Error setting resource_group: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_routing_table_attachment", "read", "set-resource_group").GetDiag()
+	}
 	return nil
 }
 
@@ -263,7 +310,9 @@ func resourceIBMISSubnetRoutingTableAttachmentUpdate(context context.Context, d 
 
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_routing_table_attachment", "update", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if d.HasChange(isRoutingTableID) {
 		subnet := d.Get(isSubnetID).(string)
@@ -277,11 +326,12 @@ func resourceIBMISSubnetRoutingTableAttachmentUpdate(context context.Context, d 
 		replaceSubnetRoutingTableOptionsModel := new(vpcv1.ReplaceSubnetRoutingTableOptions)
 		replaceSubnetRoutingTableOptionsModel.ID = &subnet
 		replaceSubnetRoutingTableOptionsModel.RoutingTableIdentity = routingTableIdentityModel
-		resultRT, response, err := sess.ReplaceSubnetRoutingTableWithContext(context, replaceSubnetRoutingTableOptionsModel)
+		resultRT, _, err := sess.ReplaceSubnetRoutingTableWithContext(context, replaceSubnetRoutingTableOptionsModel)
 
 		if err != nil {
-			log.Printf("[DEBUG] Error while attaching a routing table to a subnet %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("[ERROR] Error while attaching a routing table to a subnet %s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ReplaceSubnetRoutingTableWithContext failed: %s", err.Error()), "ibm_is_subnet_routing_table_attachment", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		log.Printf("[INFO] Updated subnet %s with Routing Table : %s", subnet, *resultRT.ID)
 
@@ -301,11 +351,12 @@ func resourceIBMISSubnetRoutingTableAttachmentUpdate(context context.Context, d 
 		replaceSubnetRoutingTableOptionsModel := new(vpcv1.ReplaceSubnetRoutingTableOptions)
 		replaceSubnetRoutingTableOptionsModel.ID = &subnet
 		replaceSubnetRoutingTableOptionsModel.RoutingTableIdentity = routingTableIdentityModel
-		resultRT, response, err := sess.ReplaceSubnetRoutingTableWithContext(context, replaceSubnetRoutingTableOptionsModel)
+		resultRT, _, err := sess.ReplaceSubnetRoutingTableWithContext(context, replaceSubnetRoutingTableOptionsModel)
 
 		if err != nil {
-			log.Printf("[DEBUG] Error while attaching a routing table to a subnet %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("[ERROR] Error while attaching a routing table to a subnet %s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ReplaceSubnetRoutingTableWithContext failed: %s", err.Error()), "ibm_is_subnet_routing_table_attachment", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		log.Printf("[INFO] Updated subnet %s with Routing Table Crn : %s", subnet, *resultRT.CRN)
 
@@ -320,7 +371,9 @@ func resourceIBMISSubnetRoutingTableAttachmentDelete(context context.Context, d 
 	id := d.Id()
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_routing_table_attachment", "delete", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	// Set the subnet with VPC default routing table
 	getSubnetOptions := &vpcv1.GetSubnetOptions{
@@ -332,7 +385,9 @@ func resourceIBMISSubnetRoutingTableAttachmentDelete(context context.Context, d 
 			d.SetId("")
 			return nil
 		}
-		return diag.FromErr(fmt.Errorf("[ERROR] Error Getting Subnet (%s): %s\n%s", id, err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetSubnetWithContext failed: %s", err.Error()), "ibm_is_subnet_routing_table_attachment", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	// Fetch VPC
 	vpcID := *subnet.VPC.ID
@@ -346,7 +401,9 @@ func resourceIBMISSubnetRoutingTableAttachmentDelete(context context.Context, d 
 			d.SetId("")
 			return nil
 		}
-		return diag.FromErr(fmt.Errorf("[ERROR] Error getting VPC : %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetVPCWithContext failed: %s", err.Error()), "ibm_is_subnet_routing_table_attachment", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	// Fetch default routing table
@@ -360,11 +417,12 @@ func resourceIBMISSubnetRoutingTableAttachmentDelete(context context.Context, d 
 		replaceSubnetRoutingTableOptionsModel := new(vpcv1.ReplaceSubnetRoutingTableOptions)
 		replaceSubnetRoutingTableOptionsModel.ID = &id
 		replaceSubnetRoutingTableOptionsModel.RoutingTableIdentity = routingTableIdentityModel
-		resultRT, response, err := sess.ReplaceSubnetRoutingTableWithContext(context, replaceSubnetRoutingTableOptionsModel)
+		resultRT, _, err := sess.ReplaceSubnetRoutingTableWithContext(context, replaceSubnetRoutingTableOptionsModel)
 
 		if err != nil {
-			log.Printf("[DEBUG] Error while attaching a routing table to a subnet %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("[ERROR] Error while attaching a routing table to a subnet %s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ReplaceSubnetRoutingTableWithContext failed: %s", err.Error()), "ibm_is_subnet_routing_table_attachment", "delete")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		log.Printf("[INFO] Updated subnet %s with VPC default Routing Table : %s", id, *resultRT.ID)
 	} else {

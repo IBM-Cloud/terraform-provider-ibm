@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 )
 
@@ -53,7 +54,9 @@ func ResourceIBMIsPrivatePathServiceGatewayEndpointGatewayBindingOperations() *s
 func resourceIBMIsPrivatePathServiceGatewayEndpointGatewayBindingOperationsCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_private_path_service_gateway_binding_operations", "create", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	ppsgId := d.Get("private_path_service_gateway").(string)
 	egwbindingId := d.Get("endpoint_gateway_binding").(string)
@@ -66,8 +69,9 @@ func resourceIBMIsPrivatePathServiceGatewayEndpointGatewayBindingOperationsCreat
 
 		response, err := vpcClient.PermitPrivatePathServiceGatewayEndpointGatewayBindingWithContext(context, permitPrivatePathServiceGatewayEndpointGatewayBindingOptions)
 		if err != nil {
-			log.Printf("[DEBUG] PermitPrivatePathServiceGatewayEndpointGatewayBindingWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("PermitPrivatePathServiceGatewayEndpointGatewayBindingWithContext failed %s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("PermitPrivatePathServiceGatewayEndpointGatewayBindingWithContext failed: %s\n%s", err.Error(), response), "ibm_is_private_path_service_gateway_operations", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	} else {
 		denyPrivatePathServiceGatewayEndpointGatewayBindingOptions := &vpcv1.DenyPrivatePathServiceGatewayEndpointGatewayBindingOptions{}
@@ -77,8 +81,9 @@ func resourceIBMIsPrivatePathServiceGatewayEndpointGatewayBindingOperationsCreat
 
 		response, err := vpcClient.DenyPrivatePathServiceGatewayEndpointGatewayBindingWithContext(context, denyPrivatePathServiceGatewayEndpointGatewayBindingOptions)
 		if err != nil {
-			log.Printf("[DEBUG] DenyPrivatePathServiceGatewayEndpointGatewayBindingWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("DenyPrivatePathServiceGatewayEndpointGatewayBindingWithContext failed %s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DenyPrivatePathServiceGatewayEndpointGatewayBindingWithContext failed: %s\n%s", err.Error(), response), "ibm_is_private_path_service_gateway_operations", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 
@@ -95,7 +100,9 @@ func resourceIBMIsPrivatePathServiceGatewayEndpointGatewayBindingOperationsRead(
 func resourceIBMIsPrivatePathServiceGatewayEndpointGatewayBindingOperationsUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_private_path_service_gateway_binding_operations", "update", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	ppsgId := d.Get("private_path_service_gateway").(string)
 	egwbindingId := d.Get("endpoint_gateway_binding").(string)
@@ -110,8 +117,9 @@ func resourceIBMIsPrivatePathServiceGatewayEndpointGatewayBindingOperationsUpdat
 
 			response, err := vpcClient.PermitPrivatePathServiceGatewayEndpointGatewayBindingWithContext(context, permitPrivatePathServiceGatewayEndpointGatewayBindingOptions)
 			if err != nil {
-				log.Printf("[DEBUG] PermitPrivatePathServiceGatewayEndpointGatewayBindingWithContext failed %s\n%s", err, response)
-				return diag.FromErr(fmt.Errorf("PermitPrivatePathServiceGatewayEndpointGatewayBindingWithContext failed %s\n%s", err, response))
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("PermitPrivatePathServiceGatewayEndpointGatewayBindingWithContext failed: %s\n%s", err.Error(), response), "ibm_is_private_path_service_gateway_operations", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 		} else {
 			denyPrivatePathServiceGatewayEndpointGatewayBindingOptions := &vpcv1.DenyPrivatePathServiceGatewayEndpointGatewayBindingOptions{}
@@ -121,8 +129,9 @@ func resourceIBMIsPrivatePathServiceGatewayEndpointGatewayBindingOperationsUpdat
 
 			response, err := vpcClient.DenyPrivatePathServiceGatewayEndpointGatewayBindingWithContext(context, denyPrivatePathServiceGatewayEndpointGatewayBindingOptions)
 			if err != nil {
-				log.Printf("[DEBUG] DenyPrivatePathServiceGatewayEndpointGatewayBindingWithContext failed %s\n%s", err, response)
-				return diag.FromErr(fmt.Errorf("DenyPrivatePathServiceGatewayEndpointGatewayBindingWithContext failed %s\n%s", err, response))
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DenyPrivatePathServiceGatewayEndpointGatewayBindingWithContext failed: %s\n%s", err.Error(), response), "ibm_is_private_path_service_gateway_operations", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 		}
 

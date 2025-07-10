@@ -4,17 +4,20 @@
 package vpc
 
 import (
+	"context"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func DataSourceIBMISInstanceGroupManagerActions() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceIBMISInstanceGroupManagerActionsRead,
+		ReadContext: dataSourceIBMISInstanceGroupManagerActionsRead,
 
 		Schema: map[string]*schema.Schema{
 
@@ -148,10 +151,12 @@ func DataSourceIBMISInstanceGroupManagerActions() *schema.Resource {
 	}
 }
 
-func dataSourceIBMISInstanceGroupManagerActionsRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceIBMISInstanceGroupManagerActionsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instance_group_manager_actions", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	instanceGroupManagerID := d.Get("instance_group_manager").(string)
@@ -169,9 +174,11 @@ func dataSourceIBMISInstanceGroupManagerActionsRead(d *schema.ResourceData, meta
 		if start != "" {
 			listInstanceGroupManagerActionsOptions.Start = &start
 		}
-		instanceGroupManagerActionsCollection, response, err := sess.ListInstanceGroupManagerActions(&listInstanceGroupManagerActionsOptions)
+		instanceGroupManagerActionsCollection, _, err := sess.ListInstanceGroupManagerActionsWithContext(context, &listInstanceGroupManagerActionsOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Getting InstanceGroup Manager Actions %s\n%s", err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListInstanceGroupManagerActionsWithContext failed %s", err), "(Data) ibm_is_instance_group_manager_actions", "read")
+			log.Printf("[DEBUG] %s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		if instanceGroupManagerActionsCollection != nil && *instanceGroupManagerActionsCollection.TotalCount == int64(0) {
 			break
@@ -226,7 +233,10 @@ func dataSourceIBMISInstanceGroupManagerActionsRead(d *schema.ResourceData, meta
 		}
 		actions = append(actions, action)
 	}
-	d.Set("instance_group_manager_actions", actions)
+	if err = d.Set("instance_group_manager_actions", actions); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting actions %s", err), "(Data) ibm_is_instance_group_manager_actions", "read", "actions-set").GetDiag()
+	}
+
 	d.SetId(dataSourceIBMISInstanceGroupManagerActionsID(d))
 	return nil
 }

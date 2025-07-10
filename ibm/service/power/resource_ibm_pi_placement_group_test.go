@@ -61,7 +61,7 @@ func TestAccIBMPIPlacementGroupBasic(t *testing.T) {
 			{
 				Config: testAccCheckIBMPIPlacementGroupRemoveMemberConfig(name, policy),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMPIPlacementGroupMemberDoesNotExist("ibm_pi_placement_group.power_placement_group", "ibm_pi_instance.power_instance"),
+					testAccCheckIBMPIPlacementGroupMemberDoesNotExist("ibm_pi_placement_group.power_placement_group_another", "ibm_pi_instance.power_instance"),
 				),
 			},
 			{
@@ -76,12 +76,51 @@ func TestAccIBMPIPlacementGroupBasic(t *testing.T) {
 					testAccCheckIBMPIPlacementGroupMemberExistsFromInstanceCreate("ibm_pi_placement_group.power_placement_group", "ibm_pi_instance.power_instance", "ibm_pi_instance.power_instance_in_pg"),
 					testAccCheckIBMPIPlacementGroupMemberExists("ibm_pi_placement_group.power_placement_group", "ibm_pi_instance.sap_power_instance"),
 				),
-				ExpectNonEmptyPlan: true,
 			},
 			{
 				Config: testAccCheckIBMPIDeletePlacementGroup(name, policy),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMPIPlacementGroupDelete("ibm_pi_instance.power_instance", "ibm_pi_instance.power_instance_in_pg"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMPIPlacementGroupUserTags(t *testing.T) {
+	pgRes := "ibm_pi_placement_group.power_placement_group"
+	name := fmt.Sprintf("tf-pi-placement-group-%d", acctest.RandIntRange(10, 100))
+	policy := "affinity"
+	userTagsString := `["test_tag","env:dev"]`
+	userTagsStringUpdated := `["test_tag","env:dev","ibm"]`
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPIPlacementGroupDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMPIPlacementGroupUserTagsConfig(name, policy, userTagsString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIPlacementGroupExists(pgRes),
+					resource.TestCheckResourceAttr(pgRes, "pi_placement_group_name", name),
+					resource.TestCheckResourceAttrSet(pgRes, "placement_group_id"),
+					resource.TestCheckResourceAttr(pgRes, "crn", name),
+					resource.TestCheckResourceAttr(pgRes, "pi_user_tags.#", "2"),
+					resource.TestCheckTypeSetElemAttr(pgRes, "pi_user_tags.*", "env:dev"),
+					resource.TestCheckTypeSetElemAttr(pgRes, "pi_user_tags.*", "test_tag"),
+				),
+			},
+			{
+				Config: testAccCheckIBMPIPlacementGroupUserTagsConfig(name, policy, userTagsStringUpdated),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIPlacementGroupExists(pgRes),
+					resource.TestCheckResourceAttr(pgRes, "pi_placement_group_name", name),
+					resource.TestCheckResourceAttrSet(pgRes, "placement_group_id"),
+					resource.TestCheckResourceAttr(pgRes, "crn", name),
+					resource.TestCheckResourceAttr(pgRes, "pi_user_tags.#", "3"),
+					resource.TestCheckTypeSetElemAttr(pgRes, "pi_user_tags.*", "env:dev"),
+					resource.TestCheckTypeSetElemAttr(pgRes, "pi_user_tags.*", "test_tag"),
+					resource.TestCheckTypeSetElemAttr(pgRes, "pi_user_tags.*", "ibm"),
 				),
 			},
 		},
@@ -468,7 +507,6 @@ func testAccCheckIBMPIPlacementGroupRemoveMemberConfig(name string, policy strin
 			pi_network {
 				network_id = "%[5]s"
 			}
-			pi_placement_group_id = ""
 		}
 	
 		resource "ibm_pi_placement_group" "power_placement_group" {
@@ -609,4 +647,14 @@ func testAccCheckIBMPIDeletePlacementGroup(name string, policy string) string {
 			pi_placement_group_name   = "%[2]s-2"
 			pi_placement_group_policy = "%[3]s"
 		}`, acc.Pi_cloud_instance_id, name, policy, acc.Pi_image, acc.Pi_sap_profile_id, acc.Pi_sap_image, acc.Pi_network_name)
+}
+
+func testAccCheckIBMPIPlacementGroupUserTagsConfig(name string, policy string, userTagsString string) string {
+	return fmt.Sprintf(`
+		resource "ibm_pi_placement_group" "power_placement_group" {
+			pi_cloud_instance_id      = "%[1]s"
+			pi_placement_group_name   = "%[2]s"
+			pi_placement_group_policy = "%[3]s"
+			pi_user_tags              = %[4]s
+		}`, acc.Pi_cloud_instance_id, name, policy, userTagsString)
 }

@@ -289,7 +289,9 @@ func DataSourceIBMIsShareTargets() *schema.Resource {
 func dataSourceIBMIsShareTargetsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("vpcClient creation failed: %s", err.Error()), "(Data) ibm_is_share_mount_targets", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	start := ""
@@ -306,8 +308,9 @@ func dataSourceIBMIsShareTargetsRead(context context.Context, d *schema.Resource
 		}
 		shareTargetCollection, response, err := vpcClient.ListShareMountTargetsWithContext(context, listShareTargetsOptions)
 		if err != nil {
-			log.Printf("[DEBUG] ListShareTargetsWithContext failed %s\n%s", err, response)
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListShareTargetsWithContext failed: %s\n%s", err.Error(), response), "(Data) ibm_is_share_mount_targets", "read")
+			log.Printf("[DEBUG] %s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		start = flex.GetNext(shareTargetCollection.Next)
 		allrecs = append(allrecs, shareTargetCollection.MountTargets...)
@@ -321,7 +324,8 @@ func dataSourceIBMIsShareTargetsRead(context context.Context, d *schema.Resource
 	if len(allrecs) > 0 {
 		err = d.Set("mount_targets", dataSourceShareMountTargetCollectionFlattenTargets(allrecs))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting targets %s", err))
+			err = fmt.Errorf("Error setting mount_targets: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_share_mount_targets", "read", "set-mount_targets").GetDiag()
 		}
 	}
 

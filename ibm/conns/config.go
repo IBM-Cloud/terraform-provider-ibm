@@ -2479,12 +2479,16 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 
 	// Construct an instance of the 'Configuration Aggregator' service.
-	var configBaseURL string
-	configBaseURL = ContructEndpoint(fmt.Sprintf("%s.apprapp", c.Region), cloudEndpoint)
-
+	configBaseURL := ContructEndpoint(fmt.Sprintf("%s", c.Region), fmt.Sprintf("%s.apprapp.", cloudEndpoint))
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		configBaseURL = ContructEndpoint(fmt.Sprintf("%s.private", c.Region), fmt.Sprintf("%s.apprapp", cloudEndpoint))
+	}
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		configBaseURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_APP_CONFIG_ENDPOINT", c.Region, configBaseURL)
+	}
 	configurationAggregatorClientOptions := &configurationaggregatorv1.ConfigurationAggregatorV1Options{
 		Authenticator: authenticator,
-		URL:           configBaseURL,
+		URL:           EnvFallBack([]string{"IBMCLOUD_APP_CONFIG_ENDPOINT"}, configBaseURL),
 	}
 
 	// Construct the service client.
@@ -3650,7 +3654,11 @@ func (c *Config) ClientSession() (interface{}, error) {
 	// CATALOG MANAGEMENT Service
 	globalcatalogURL := globalcatalogv1.DefaultServiceURL
 	if c.Visibility == "private" || c.Visibility == "public-and-private" {
-		globalcatalogURL = ContructEndpoint("private.globalcatalog", cloudEndpoint)
+		if c.Region == "us-south" || c.Region == "us-east" {
+			globalcatalogURL = ContructEndpoint(fmt.Sprintf("private.%s.globalcatalog", c.Region), fmt.Sprintf("%s", cloudEndpoint))
+		} else {
+			globalcatalogURL = ContructEndpoint("private.us-south.globalcatalog", fmt.Sprintf("%s", cloudEndpoint))
+		}
 	}
 	if fileMap != nil && c.Visibility != "public-and-private" {
 		globalcatalogURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_RESOURCE_CATALOG_API_ENDPOINT", c.Region, globalcatalogURL)

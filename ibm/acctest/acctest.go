@@ -39,6 +39,9 @@ var (
 	CosBackupPolicyID               string
 	BucketCRN                       string
 	BackupVaultName                 string
+	BackupVaultName2                string
+	BackupVaultCrn                  string
+	BackupVaultCrn2                 string
 	ActivityTrackerInstanceCRN      string
 	MetricsMonitoringCRN            string
 	KmsKeyCrn                       string
@@ -134,6 +137,7 @@ var (
 	imageName                       string
 	functionNamespace               string
 	HpcsInstanceID                  string
+	ToolchainID                     string
 )
 
 // MQ on Cloud
@@ -243,6 +247,7 @@ var (
 	Pi_remote_type                    string
 	Pi_replication_volume_name        string
 	Pi_resource_group_id              string
+	Pi_route_id                       string
 	Pi_sap_image                      string
 	Pi_sap_profile_id                 string
 	Pi_shared_processor_pool_id       string
@@ -421,8 +426,9 @@ var (
 
 // For IAM Access Management
 var (
-	TargetAccountId    string
-	TargetEnterpriseId string
+	TargetAccountId      string
+	TargetEnterpriseId   string
+	TargetAccountGroupId string
 )
 
 // For Partner Center Sell
@@ -593,6 +599,21 @@ func init() {
 	if BackupVaultName == "" {
 		BackupVaultName = ""
 		fmt.Println("[WARN] Set the environment variable IBM_COS_Backup_Vault with a VALID BACKUP VAULT NAME  for testing ibm_cos_backup_vault* resources")
+	}
+	BackupVaultName2 = os.Getenv("IBM_COS_Backup_Vault2")
+	if BackupVaultName2 == "" {
+		BackupVaultName2 = ""
+		fmt.Println("[WARN] Set the environment variable IBM_COS_Backup_Vault2 with a VALID BACKUP VAULT NAME  for testing ibm_cos_backup_vault* resources")
+	}
+	BackupVaultCrn = os.Getenv("IBM_COS_Backup_Vault_Crn")
+	if BackupVaultCrn == "" {
+		BackupVaultCrn = ""
+		fmt.Println("[WARN] Set the environment variable IBM_COS_Backup_Crn with a VALID BACKUP VAULT CRN  for testing ibm_cos_backup_vault* resources")
+	}
+	BackupVaultCrn2 = os.Getenv("IBM_COS_Backup_Vault_Crn2")
+	if BackupVaultCrn2 == "" {
+		BackupVaultCrn2 = ""
+		fmt.Println("[WARN] Set the environment variable IBM_COS_Backup_Crn2 with a VALID BACKUP VAULT CRN  for testing ibm_cos_backup_vault* resources")
 	}
 	KmsKeyCrn = os.Getenv("IBM_KMS_KEY_CRN")
 	if KmsKeyCrn == "" {
@@ -1373,6 +1394,13 @@ func init() {
 		Pi_resource_group_id = ""
 		fmt.Println("[WARN] Set the environment variable PI_RESOURCE_GROUP_ID for testing ibm_pi_workspace resource else it is set to default value ''")
 	}
+
+	Pi_route_id = os.Getenv("PI_ROUTE_ID")
+	if Pi_route_id == "" {
+		Pi_route_id = ""
+		fmt.Println("[WARN] Set the environment variable PI_ROUTE_ID for testing ibm_pi_route data source else it is set to default value ''")
+	}
+
 	Pi_host_group_id = os.Getenv("PI_HOST_GROUP_ID")
 	if Pi_host_group_id == "" {
 		Pi_host_group_id = ""
@@ -2064,6 +2092,11 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable IBM_POLICY_ASSIGNMENT_TARGET_ENTERPRISE_ID for testing ibm_iam_policy_assignment resource else tests will fail if this is not set correctly")
 	}
 
+	TargetAccountGroupId = os.Getenv("IBM_ASSIGNMENT_TARGET_ACCOUNT_GROUP_ID")
+	if TargetAccountGroupId == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_ASSIGNMENT_TARGET_ACCOUNT_GROUP_ID for testing ibm_iam_action_control_assignment resource else tests will fail if this is not set correctly")
+	}
+
 	PcsRegistrationAccountId = os.Getenv("PCS_REGISTRATION_ACCOUNT_ID")
 	if PcsRegistrationAccountId == "" {
 		fmt.Println("[WARN] Set the environment variable PCS_REGISTRATION_ACCOUNT_ID for testing iam_onboarding resource else tests will fail if this is not set correctly")
@@ -2097,6 +2130,11 @@ func init() {
 	PcsIamServiceRegistrationId = os.Getenv("PCS_IAM_REGISTRATION_ID")
 	if PcsIamServiceRegistrationId == "" {
 		fmt.Println("[WARN] Set the environment variable PCS_IAM_TEGISTRATION_ID for testing iam_onboarding resource else tests will fail if this is not set correctly")
+	}
+
+	ToolchainID = os.Getenv("TOOLCHAIN_ID")
+	if ToolchainID == "" {
+		fmt.Println("[WARN] Set the environment variable TOOLCHAIN_ID for testing the COS toolchain integration tool else tests will fail if this is not set correctly")
 	}
 }
 

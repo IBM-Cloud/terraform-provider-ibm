@@ -45,6 +45,7 @@ func DataSourceIBMIsVPNServerClientConfiguration() *schema.Resource {
 func dataSourceIBMIsVPNServerClientConfigurationRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
+		// this
 		return diag.FromErr(err)
 	}
 

@@ -9,6 +9,7 @@ import (
 	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -284,7 +285,9 @@ func DataSourceIBMIsShareTarget() *schema.Resource {
 func dataSourceIBMIsShareTargetRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("vpcClient creation failed: %s", err.Error()), "(Data) ibm_is_share_mount_target", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	share_id := d.Get("share").(string)
@@ -297,8 +300,9 @@ func dataSourceIBMIsShareTargetRead(context context.Context, d *schema.ResourceD
 		listSharesOptions.Name = &share_name
 		shareCollection, response, err := vpcClient.ListSharesWithContext(context, listSharesOptions)
 		if err != nil {
-			log.Printf("[DEBUG] ListSharesWithContext failed %s\n%s", err, response)
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListSharesWithContext failed: %s\n%s", err.Error(), response), "(Data) ibm_is_share_mount_target", "read")
+			log.Printf("[DEBUG] %s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		for _, sharesItem := range shareCollection.Shares {
 			if *sharesItem.Name == share_name {
@@ -315,8 +319,9 @@ func dataSourceIBMIsShareTargetRead(context context.Context, d *schema.ResourceD
 
 		shareTargetCollection, response, err := vpcClient.ListShareMountTargetsWithContext(context, listShareTargetsOptions)
 		if err != nil {
-			log.Printf("[DEBUG] ListShareTargetsWithContext failed %s\n%s", err, response)
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListShareTargetsWithContext failed: %s\n%s", err.Error(), response), "(Data) ibm_is_share_mount_target", "read")
+			log.Printf("[DEBUG] %s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		for _, targetsItem := range shareTargetCollection.MountTargets {
 			if *targetsItem.Name == share_target_name {
@@ -330,33 +335,43 @@ func dataSourceIBMIsShareTargetRead(context context.Context, d *schema.ResourceD
 		getShareTargetOptions.SetID(share_target)
 		shareTarget1, response, err := vpcClient.GetShareMountTargetWithContext(context, getShareTargetOptions)
 		if err != nil {
-			log.Printf("[DEBUG] GetShareTargetWithContext failed %s\n%s", err, response)
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetShareTargetWithContext failed: %s\n%s", err.Error(), response), "(Data) ibm_is_share_mount_target", "read")
+			log.Printf("[DEBUG] %s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		shareTarget = shareTarget1
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", share_id, *shareTarget.ID))
 	if shareTarget.AccessControlMode != nil {
-		d.Set("access_control_mode", *shareTarget.AccessControlMode)
+		if err = d.Set("access_control_mode", *shareTarget.AccessControlMode); err != nil {
+			err = fmt.Errorf("Error setting access_control_mode: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_share_mount_target", "read", "set-access_control_mode").GetDiag()
+		}
 	}
 	if err = d.Set("created_at", shareTarget.CreatedAt.String()); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
+		err = fmt.Errorf("Error setting created_at: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_share_mount_target", "read", "set-created_at").GetDiag()
 	}
 	if err = d.Set("href", shareTarget.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+		err = fmt.Errorf("Error setting href: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_share_mount_target", "read", "set-href").GetDiag()
 	}
 	if err = d.Set("lifecycle_state", shareTarget.LifecycleState); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting lifecycle_state: %s", err))
+		err = fmt.Errorf("Error setting lifecycle_state: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_share_mount_target", "read", "set-lifecycle_state").GetDiag()
 	}
 	if err = d.Set("mount_path", shareTarget.MountPath); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting mount_path: %s", err))
+		err = fmt.Errorf("Error setting mount_path: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_share_mount_target", "read", "set-mount_path").GetDiag()
 	}
 	if err = d.Set("name", shareTarget.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
+		err = fmt.Errorf("Error setting name: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_share_mount_target", "read", "set-name").GetDiag()
 	}
 	if err = d.Set("resource_type", shareTarget.ResourceType); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting resource_type: %s", err))
+		err = fmt.Errorf("Error setting resource_type: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_share_mount_target", "read", "set-resource_type").GetDiag()
 	}
 	if shareTarget.AccessProtocol != nil {
 		if err = d.Set("access_protocol", *shareTarget.AccessProtocol); err != nil {
@@ -365,35 +380,40 @@ func dataSourceIBMIsShareTargetRead(context context.Context, d *schema.ResourceD
 	}
 	if shareTarget.TransitEncryption != nil {
 		if err = d.Set("transit_encryption", *shareTarget.TransitEncryption); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting transit_encryption: %s", err))
+			err = fmt.Errorf("Error setting transit_encryption: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_share_mount_target", "read", "set-transit_encryption").GetDiag()
 		}
 	}
 
 	if shareTarget.PrimaryIP != nil {
 		err = d.Set("primary_ip", dataSourceShareMountTargetFlattenPrimaryIP(*shareTarget.PrimaryIP))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting vpc %s", err))
+			err = fmt.Errorf("Error setting primary_ip: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_share_mount_target", "read", "set-primary_ip").GetDiag()
 		}
 	}
 
 	if shareTarget.VPC != nil {
 		err = d.Set("vpc", dataSourceShareMountTargetFlattenVpc(*shareTarget.VPC))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting vpc %s", err))
+			err = fmt.Errorf("Error setting vpc: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_share_mount_target", "read", "set-vpc").GetDiag()
 		}
 	}
 
 	if shareTarget.VirtualNetworkInterface != nil {
 		err = d.Set("virtual_network_interface", dataSourceShareMountTargetFlattenVNI(*shareTarget.VirtualNetworkInterface))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting vpc %s", err))
+			err = fmt.Errorf("Error setting virtual_network_interface: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_share_mount_target", "read", "set-virtual_network_interface").GetDiag()
 		}
 	}
 
 	if shareTarget.Subnet != nil {
 		err = d.Set("subnet", dataSourceShareMountTargetFlattenSubnet(*shareTarget.Subnet))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting subnet %s", err))
+			err = fmt.Errorf("Error setting subnet: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_share_mount_target", "read", "set-subnet").GetDiag()
 		}
 	}
 
