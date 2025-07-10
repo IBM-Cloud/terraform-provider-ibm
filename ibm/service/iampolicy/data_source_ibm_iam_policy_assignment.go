@@ -126,11 +126,6 @@ func DataSourceIBMIAMPolicyAssignment() *schema.Resource {
 										Description: "The error response from API.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
-												"trace": {
-													Type:        schema.TypeString,
-													Computed:    true,
-													Description: "The unique transaction id for the request.",
-												},
 												"errors": {
 													Type:        schema.TypeList,
 													Computed:    true,
@@ -188,10 +183,25 @@ func DataSourceIBMIAMPolicyAssignment() *schema.Resource {
 														},
 													},
 												},
-												"status_code": {
-													Type:        schema.TypeInt,
+												"name": {
+													Type:        schema.TypeString,
 													Computed:    true,
-													Description: "The http error code of the response.",
+													Description: "Name of the error.",
+												},
+												"error_code": {
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Internal error code.",
+												},
+												"message": {
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Error message detailing the nature of the error.",
+												},
+												"code": {
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Internal status code for the error.",
 												},
 											},
 										},
@@ -355,10 +365,22 @@ func ResourceIBMPolicyAssignmentErrorObjectToMap(model *iampolicymanagementv1.Er
 
 func ResourceIBMPolicyAssignmentErrorResponseToMap(model *iampolicymanagementv1.AssignmentResourceError) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
+	}
+	if model.ErrorCode != nil {
+		modelMap["error_code"] = *model.ErrorCode
+	}
+	if model.Message != nil {
+		modelMap["message"] = *model.Message
+	}
+	if model.Code != nil {
+		modelMap["code"] = *model.Code
+	}
 	if model.Errors != nil {
 		errors := []map[string]interface{}{}
 		for _, errorsItem := range model.Errors {
-			errorsItemMap, err := ResourceIBMPolicyAssignmentErrorObjectToMap(&errorsItem)
+			errorsItemMap, err := ResourceIBMActionControlAssignmentErrorObjectToMap(&errorsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}

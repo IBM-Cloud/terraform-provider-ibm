@@ -12,6 +12,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -21,9 +22,8 @@ import (
 )
 
 const (
-	InProgress = "in_progress"
-	complete   = "complete"
-	failed     = "failed"
+	WAITING = "waiting"
+	READY   = "ready"
 )
 
 func ResourceIBMIAMPolicyAssignment() *schema.Resource {
@@ -154,11 +154,6 @@ func ResourceIBMIAMPolicyAssignment() *schema.Resource {
 										Description: "The error response from API.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
-												"trace": {
-													Type:        schema.TypeString,
-													Computed:    true,
-													Description: "The unique transaction id for the request.",
-												},
 												"errors": {
 													Type:        schema.TypeList,
 													Computed:    true,
@@ -216,10 +211,25 @@ func ResourceIBMIAMPolicyAssignment() *schema.Resource {
 														},
 													},
 												},
-												"status_code": {
-													Type:        schema.TypeInt,
+												"name": {
+													Type:        schema.TypeString,
 													Computed:    true,
-													Description: "The http error code of the response.",
+													Description: "Name of the error.",
+												},
+												"error_code": {
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Internal error code.",
+												},
+												"message": {
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Error message detailing the nature of the error.",
+												},
+												"code": {
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Internal status code for the error.",
 												},
 											},
 										},
@@ -549,63 +559,55 @@ func GetTargetModel(d *schema.ResourceData) (*iampolicymanagementv1.AssignmentTa
 
 func waitForAssignment(timeout time.Duration, meta interface{}, d *schema.ResourceData, refreshFn func(string, interface{}) resource.StateRefreshFunc) (interface{}, error) {
 
-	stateConf := &resource.StateChangeConf{
-		Pending:      []string{InProgress},
-		Target:       []string{complete},
+	stateConf := &retry.StateChangeConf{
+		Pending:      []string{WAITING},
+		Target:       []string{READY},
 		Refresh:      refreshFn(d.Id(), meta),
 		Delay:        30 * time.Second,
-		PollInterval: time.Minute,
+		PollInterval: 10 * time.Second,
 		Timeout:      timeout,
 	}
 
-	return stateConf.WaitForState()
+	return stateConf.WaitForStateContext(context.Background())
 }
 
-func isAccessPolicyAssigned(id string, meta interface{}) resource.StateRefreshFunc {
+func isAccessPolicyAssigned(id string, meta interface{}) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		iamPolicyManagementClient, err := meta.(conns.ClientSession).IAMPolicyManagementV1API()
-		if err != nil {
-			return nil, failed, err
-		}
 
 		getAssignmentPolicyOptions := &iampolicymanagementv1.GetPolicyAssignmentOptions{
 			AssignmentID: core.StringPtr(id),
 			Version:      core.StringPtr("1.0"),
 		}
-
 		getAssignmentPolicyOptions.SetAssignmentID(id)
 
 		assignmentDetails, response, err := iamPolicyManagementClient.GetPolicyAssignment(getAssignmentPolicyOptions)
 
 		if err != nil {
-			if response != nil && response.StatusCode == 404 {
-				return nil, failed, err
-			}
-			return nil, failed, err
+			return nil, READY, fmt.Errorf("[ERROR] The assignment %s failed or did not complete within specific timeout period: %s\n%s", id, err, response)
 		}
 
 		assignment, ok := assignmentDetails.(*iampolicymanagementv1.PolicyTemplateAssignmentItems)
 
 		if !ok {
-			return nil, failed, fmt.Errorf("[ERROR] Type assertion failed for assignment details : %s", id)
+			return nil, READY, fmt.Errorf("[ERROR] Type assertion failed for assignment details : %s", id)
 		}
 
 		if assignment != nil {
 			if *assignment.Status == "accepted" || *assignment.Status == "in_progress" {
 				log.Printf("Assignment still in progress\n")
-				return assignment, InProgress, nil
+				return assignment, WAITING, nil
 			}
 
 			if *assignment.Status == "succeeded" {
-				return assignment, complete, nil
+				return assignment, READY, nil
 			}
 
 			if *assignment.Status == "failed" {
-				return assignment, failed, fmt.Errorf("[ERROR] The assignment %s did not complete successfully and has a 'failed' status. Please check assignment resource for detailed errors: %s\n", id, response)
+				return assignment, READY, fmt.Errorf("[ERROR] The assignment %s did not complete successfully and has a 'failed' status. Please check assignment resource for detailed errors: %s\n", id, response)
 			}
 		}
-
-		return assignment, failed, fmt.Errorf("[ERROR] Unexpected status reached for assignment %s.: %s\n", id, response)
+		return assignment, READY, fmt.Errorf("[ERROR] Unexpected status reached for assignment %s.: %s\n", id, response)
 	}
 }
 
@@ -613,7 +615,7 @@ func isAccessPolicyAssignedDeleted(id string, meta interface{}) resource.StateRe
 	return func() (interface{}, string, error) {
 		iamPolicyManagementClient, err := meta.(conns.ClientSession).IAMPolicyManagementV1API()
 		if err != nil {
-			return nil, failed, err
+			return nil, READY, err
 		}
 
 		getAssignmentPolicyOptions := &iampolicymanagementv1.GetPolicyAssignmentOptions{
@@ -627,28 +629,28 @@ func isAccessPolicyAssignedDeleted(id string, meta interface{}) resource.StateRe
 
 		if err != nil {
 			if response != nil && response.StatusCode == 404 {
-				return nil, failed, err
+				return nil, READY, err
 			}
-			return nil, failed, err
+			return nil, READY, err
 		}
 
 		assignment, ok := assignmentDetails.(*iampolicymanagementv1.PolicyTemplateAssignmentItems)
 
 		if !ok {
-			return nil, failed, fmt.Errorf("[ERROR] Type assertion failed for assignment details : %s", id)
+			return nil, READY, fmt.Errorf("[ERROR] Type assertion failed for assignment details : %s", id)
 		}
 
 		if assignment != nil {
 			if *assignment.Status == "accepted" || *assignment.Status == "in_progress" {
 				log.Printf("Assignment still in progress\n")
-				return assignment, InProgress, nil
+				return assignment, WAITING, nil
 			}
 
 			if *assignment.Status == "failed" {
-				return assignment, failed, fmt.Errorf("[ERROR] The assignment %s did not complete successfully and has a 'failed' status. Please check assignment resource for detailed errors: %s\n", id, response)
+				return assignment, READY, fmt.Errorf("[ERROR] The assignment %s did not complete successfully and has a 'failed' status. Please check assignment resource for detailed errors: %s\n", id, response)
 			}
 		}
 
-		return assignment, failed, fmt.Errorf("[ERROR] Unexpected status reached for assignment %s.: %s\n", id, response)
+		return assignment, READY, fmt.Errorf("[ERROR] Unexpected status reached for assignment %s.: %s\n", id, response)
 	}
 }

@@ -133,11 +133,6 @@ func DataSourceIBMIAMActionControlAssignments() *schema.Resource {
 													Description: "The error response from API.",
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
-															"trace": &schema.Schema{
-																Type:        schema.TypeString,
-																Computed:    true,
-																Description: "The unique transaction ID for the request.",
-															},
 															"errors": &schema.Schema{
 																Type:        schema.TypeList,
 																Computed:    true,
@@ -195,10 +190,25 @@ func DataSourceIBMIAMActionControlAssignments() *schema.Resource {
 																	},
 																},
 															},
-															"status_code": &schema.Schema{
-																Type:        schema.TypeInt,
+															"name": {
+																Type:        schema.TypeString,
 																Computed:    true,
-																Description: "The HTTP error code of the response.",
+																Description: "Name of the error.",
+															},
+															"error_code": {
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Internal error code.",
+															},
+															"message": {
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Error message detailing the nature of the error.",
+															},
+															"code": {
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Internal status code for the error.",
 															},
 														},
 													},
@@ -427,15 +437,29 @@ func DataSourceIBMListActionControlAssignmentsActionControlAssignmentResourceCre
 
 func DataSourceIBMListActionControlAssignmentsErrorResponseToMap(model *iampolicymanagementv1.AssignmentResourceError) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	errors := []map[string]interface{}{}
-	for _, errorsItem := range model.Errors {
-		errorsItemMap, err := DataSourceIBMListActionControlAssignmentsErrorObjectToMap(&errorsItem) // #nosec G601
-		if err != nil {
-			return modelMap, err
-		}
-		errors = append(errors, errorsItemMap)
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
 	}
-	modelMap["errors"] = errors
+	if model.ErrorCode != nil {
+		modelMap["error_code"] = *model.ErrorCode
+	}
+	if model.Message != nil {
+		modelMap["message"] = *model.Message
+	}
+	if model.Code != nil {
+		modelMap["code"] = *model.Code
+	}
+	if model.Errors != nil {
+		errors := []map[string]interface{}{}
+		for _, errorsItem := range model.Errors {
+			errorsItemMap, err := ResourceIBMActionControlAssignmentErrorObjectToMap(&errorsItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			errors = append(errors, errorsItemMap)
+		}
+		modelMap["errors"] = errors
+	}
 	return modelMap, nil
 }
 
