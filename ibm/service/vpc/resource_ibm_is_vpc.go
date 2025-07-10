@@ -1237,12 +1237,12 @@ func vpcGet(context context.Context, d *schema.ResourceData, meta interface{}, i
 	for _, publicAddressRangesItem := range vpc.PublicAddressRanges {
 		publicAddressRangesItemMap, err := ResourceIBMIsVPCPublicAddressRangeReferenceToMap(&publicAddressRangesItem)
 		if err != nil {
-			return err
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting public_address_ranges: %s", err), "ibm_is_vpc", "read", "set-public_address_ranges").GetDiag()
 		}
 		publicAddressRanges = append(publicAddressRanges, publicAddressRangesItemMap)
 	}
 	if err = d.Set("public_address_ranges", publicAddressRanges); err != nil {
-		return fmt.Errorf("Error setting public_address_ranges: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting public_address_ranges: %s", err), "ibm_is_vpc", "read", "set-public_address_ranges").GetDiag()
 	}
 
 	//set the cse ip addresses info
