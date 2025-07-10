@@ -340,7 +340,7 @@ Review the argument references that you can specify for your resource.
 
 - `account_management` - (Optional, Bool) Gives access to all account management services if set to **true**. Default value is **false**. If you set this option, do not set `resources` at the same time.**Note** Conflicts with `resources` and `resource_attributes`.
 - `description`  (Optional, String) The description of the IAM Service Policy.
-- `iam_service_id` - (Required, Forces new resource, String) The UUID of the service ID.
+- `iam_service_id` - (Optional, Forces new resource, String) The UUID of the service ID. This field is deprecated and will be removed in future releases. Please use iam_id as a replacement.
 - `iam_id` - (Optional,  Forces new resource, String) IAM ID of the service ID. Used to assign cross account service ID policy. Either `iam_service_id` or `iam_id` is required.
 - `resources` - (List of Objects) Optional- A nested block describes the resource of this policy.**Note** Conflicts with `account_management` and `resource_attributes`.
 
