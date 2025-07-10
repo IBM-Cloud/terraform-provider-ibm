@@ -232,7 +232,6 @@ func ResourceIBMPIInstance() *schema.Resource {
 			},
 			Arg_PlacementGroupID: {
 				Description: "Placement group ID",
-				Computed:    true,
 				Optional:    true,
 				Type:        schema.TypeString,
 			},
@@ -610,7 +609,7 @@ func resourceIBMPIInstanceRead(ctx context.Context, d *schema.ResourceData, meta
 
 	if powervmdata.Crn != "" {
 		d.Set(Attr_CRN, powervmdata.Crn)
-		tags, err := flex.GetTagsUsingCRN(meta, string(powervmdata.Crn))
+		tags, err := flex.GetGlobalTagsUsingCRN(meta, string(powervmdata.Crn), "", UserTagType)
 		if err != nil {
 			log.Printf("Error on get of ibm pi instance (%s) pi_user_tags: %s", *powervmdata.PvmInstanceID, err)
 		}

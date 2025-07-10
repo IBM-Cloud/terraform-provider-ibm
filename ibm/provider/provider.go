@@ -17,7 +17,6 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/apigateway"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/appconfiguration"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/appid"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/atracker"
@@ -241,7 +240,6 @@ func Provider() *schema.Provider {
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
-			"ibm_api_gateway":                      apigateway.DataSourceIBMApiGateway(),
 			"ibm_account":                          cloudfoundry.DataSourceIBMAccount(),
 			"ibm_app":                              cloudfoundry.DataSourceIBMApp(),
 			"ibm_app_domain_private":               cloudfoundry.DataSourceIBMAppDomainPrivate(),
@@ -446,6 +444,10 @@ func Provider() *schema.Provider {
 			"ibm_iam_policy_assignments":                    iampolicy.DataSourceIBMIAMPolicyAssignments(),
 			"ibm_iam_policy_assignment":                     iampolicy.DataSourceIBMIAMPolicyAssignment(),
 			"ibm_iam_account_settings_external_interaction": iampolicy.DataSourceIBMIAMAccountSettingsExternalInteraction(),
+			"ibm_iam_action_control_template":               iampolicy.DataSourceIBMIAMActionControlTemplate(),
+			"ibm_iam_action_control_template_version":       iampolicy.DataSourceIBMIAMActionControlTemplateVersion(),
+			"ibm_iam_action_control_assignments":            iampolicy.DataSourceIBMIAMActionControlAssignments(),
+			"ibm_iam_action_control_assignment":             iampolicy.DataSourceIBMIAMActionControlAssignment(),
 
 			// backup as Service
 			"ibm_is_backup_policy":       vpc.DataSourceIBMIsBackupPolicy(),
@@ -787,21 +789,24 @@ func Provider() *schema.Provider {
 
 			// Added for Direct Link
 
-			"ibm_dl_gateways":             directlink.DataSourceIBMDLGateways(),
-			"ibm_dl_offering_speeds":      directlink.DataSourceIBMDLOfferingSpeeds(),
-			"ibm_dl_port":                 directlink.DataSourceIBMDirectLinkPort(),
-			"ibm_dl_ports":                directlink.DataSourceIBMDirectLinkPorts(),
-			"ibm_dl_gateway":              directlink.DataSourceIBMDLGateway(),
-			"ibm_dl_locations":            directlink.DataSourceIBMDLLocations(),
-			"ibm_dl_routers":              directlink.DataSourceIBMDLRouters(),
-			"ibm_dl_provider_ports":       directlink.DataSourceIBMDirectLinkProviderPorts(),
-			"ibm_dl_provider_gateways":    directlink.DataSourceIBMDirectLinkProviderGateways(),
-			"ibm_dl_route_reports":        directlink.DataSourceIBMDLRouteReports(),
-			"ibm_dl_route_report":         directlink.DataSourceIBMDLRouteReport(),
-			"ibm_dl_export_route_filters": directlink.DataSourceIBMDLExportRouteFilters(),
-			"ibm_dl_export_route_filter":  directlink.DataSourceIBMDLExportRouteFilter(),
-			"ibm_dl_import_route_filters": directlink.DataSourceIBMDLImportRouteFilters(),
-			"ibm_dl_import_route_filter":  directlink.DataSourceIBMDLImportRouteFilter(),
+			"ibm_dl_gateways":              directlink.DataSourceIBMDLGateways(),
+			"ibm_dl_offering_speeds":       directlink.DataSourceIBMDLOfferingSpeeds(),
+			"ibm_dl_port":                  directlink.DataSourceIBMDirectLinkPort(),
+			"ibm_dl_ports":                 directlink.DataSourceIBMDirectLinkPorts(),
+			"ibm_dl_gateway":               directlink.DataSourceIBMDLGateway(),
+			"ibm_dl_locations":             directlink.DataSourceIBMDLLocations(),
+			"ibm_dl_routers":               directlink.DataSourceIBMDLRouters(),
+			"ibm_dl_provider_ports":        directlink.DataSourceIBMDirectLinkProviderPorts(),
+			"ibm_dl_provider_gateways":     directlink.DataSourceIBMDirectLinkProviderGateways(),
+			"ibm_dl_route_reports":         directlink.DataSourceIBMDLRouteReports(),
+			"ibm_dl_route_report":          directlink.DataSourceIBMDLRouteReport(),
+			"ibm_dl_export_route_filters":  directlink.DataSourceIBMDLExportRouteFilters(),
+			"ibm_dl_export_route_filter":   directlink.DataSourceIBMDLExportRouteFilter(),
+			"ibm_dl_import_route_filters":  directlink.DataSourceIBMDLImportRouteFilters(),
+			"ibm_dl_import_route_filter":   directlink.DataSourceIBMDLImportRouteFilter(),
+			"ibm_dl_gateway_macsec_config": directlink.DataSourceIBMDLGatewayMacsecConfig(),
+			"ibm_dl_gateway_macsec_cak":    directlink.DataSourceIBMDLGatewayMacsecCak(),
+			"ibm_dl_gateway_macsec_caks":   directlink.DataSourceIBMDLGatewayMacsecCaks(),
 
 			// Added for Transit Gateway
 			"ibm_tg_gateway":                   transitgateway.DataSourceIBMTransitGateway(),
@@ -831,6 +836,7 @@ func Provider() *schema.Provider {
 			"ibm_sm_public_certificate_configuration_dns_cis":                    secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmConfigurationPublicCertificateDNSCis()),
 			"ibm_sm_public_certificate_configuration_dns_classic_infrastructure": secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmPublicCertificateConfigurationDNSClassicInfrastructure()),
 			"ibm_sm_iam_credentials_configuration":                               secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmIamCredentialsConfiguration()),
+			"ibm_sm_custom_credentials_configuration":                            secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmCustomCredentialsConfiguration()),
 			"ibm_sm_configurations":                                              secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmConfigurations()),
 			"ibm_sm_secrets":                                                     secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmSecrets()),
 			"ibm_sm_arbitrary_secret_metadata":                                   secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmArbitrarySecretMetadata()),
@@ -839,6 +845,7 @@ func Provider() *schema.Provider {
 			"ibm_sm_private_certificate_metadata":                                secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmPrivateCertificateMetadata()),
 			"ibm_sm_iam_credentials_secret_metadata":                             secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmIamCredentialsSecretMetadata()),
 			"ibm_sm_service_credentials_secret_metadata":                         secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmServiceCredentialsSecretMetadata()),
+			"ibm_sm_custom_credentials_secret_metadata":                          secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmCustomCredentialsSecretMetadata()),
 			"ibm_sm_kv_secret_metadata":                                          secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmKvSecretMetadata()),
 			"ibm_sm_username_password_secret_metadata":                           secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmUsernamePasswordSecretMetadata()),
 			"ibm_sm_arbitrary_secret":                                            secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmArbitrarySecret()),
@@ -849,6 +856,7 @@ func Provider() *schema.Provider {
 			"ibm_sm_kv_secret":                                                   secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmKvSecret()),
 			"ibm_sm_username_password_secret":                                    secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmUsernamePasswordSecret()),
 			"ibm_sm_service_credentials_secret":                                  secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmServiceCredentialsSecret()),
+			"ibm_sm_custom_credentials_secret":                                   secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmCustomCredentialsSecret()),
 			"ibm_sm_en_registration":                                             secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmEnRegistration()),
 
 			// Added for Satellite
@@ -1010,6 +1018,7 @@ func Provider() *schema.Provider {
 			"ibm_cd_toolchain_tool_securitycompliance": cdtoolchain.DataSourceIBMCdToolchainToolSecuritycompliance(),
 			"ibm_cd_toolchain_tool_privateworker":      cdtoolchain.DataSourceIBMCdToolchainToolPrivateworker(),
 			"ibm_cd_toolchain_tool_appconfig":          cdtoolchain.DataSourceIBMCdToolchainToolAppconfig(),
+			"ibm_cd_toolchain_tool_cos":                cdtoolchain.DataSourceIBMCdToolchainToolCos(),
 			"ibm_cd_toolchain_tool_jenkins":            cdtoolchain.DataSourceIBMCdToolchainToolJenkins(),
 			"ibm_cd_toolchain_tool_nexus":              cdtoolchain.DataSourceIBMCdToolchainToolNexus(),
 			"ibm_cd_toolchain_tool_pagerduty":          cdtoolchain.DataSourceIBMCdToolchainToolPagerduty(),
@@ -1089,13 +1098,11 @@ func Provider() *schema.Provider {
 			"ibm_backup_recovery_connector_access_token":                         backuprecovery.ResourceIbmBackupRecoveryConnectorAccessToken(),
 			"ibm_backup_recovery_connector_update_user":                          backuprecovery.ResourceIbmBackupRecoveryConnectorUpdateUser(),
 
-			"ibm_api_gateway_endpoint":              apigateway.ResourceIBMApiGatewayEndPoint(),
-			"ibm_api_gateway_endpoint_subscription": apigateway.ResourceIBMApiGatewayEndpointSubscription(),
-			"ibm_app":                               cloudfoundry.ResourceIBMApp(),
-			"ibm_app_domain_private":                cloudfoundry.ResourceIBMAppDomainPrivate(),
-			"ibm_app_domain_shared":                 cloudfoundry.ResourceIBMAppDomainShared(),
-			"ibm_app_route":                         cloudfoundry.ResourceIBMAppRoute(),
-			"ibm_config_aggregator_settings":        configurationaggregator.AddConfigurationAggregatorInstanceFields(configurationaggregator.ResourceIbmConfigAggregatorSettings()),
+			"ibm_app":                        cloudfoundry.ResourceIBMApp(),
+			"ibm_app_domain_private":         cloudfoundry.ResourceIBMAppDomainPrivate(),
+			"ibm_app_domain_shared":          cloudfoundry.ResourceIBMAppDomainShared(),
+			"ibm_app_route":                  cloudfoundry.ResourceIBMAppRoute(),
+			"ibm_config_aggregator_settings": configurationaggregator.AddConfigurationAggregatorInstanceFields(configurationaggregator.ResourceIbmConfigAggregatorSettings()),
 
 			// AppID
 			"ibm_appid_action_url":               appid.ResourceIBMAppIDActionURL(),
@@ -1265,6 +1272,9 @@ func Provider() *schema.Provider {
 			"ibm_iam_policy_template_version":               iampolicy.ResourceIBMIAMPolicyTemplateVersion(),
 			"ibm_iam_policy_assignment":                     iampolicy.ResourceIBMIAMPolicyAssignment(),
 			"ibm_iam_account_settings_external_interaction": iampolicy.ResourceIBMIAMAccountSettingsExternalInteraction(),
+			"ibm_iam_action_control_template":               iampolicy.ResourceIBMIAMActionControlTemplate(),
+			"ibm_iam_action_control_template_version":       iampolicy.ResourceIBMIAMActionControlTemplateVersion(),
+			"ibm_iam_action_control_assignment":             iampolicy.ResourceIBMIAMActionControlAssignment(),
 
 			"ibm_is_backup_policy":      vpc.ResourceIBMIsBackupPolicy(),
 			"ibm_is_backup_policy_plan": vpc.ResourceIBMIsBackupPolicyPlan(),
@@ -1480,11 +1490,13 @@ func Provider() *schema.Provider {
 			"ibm_dns_linked_zone":                     dnsservices.ResourceIBMDNSLinkedZone(),
 
 			// Direct Link related resources
-			"ibm_dl_gateway":            directlink.ResourceIBMDLGateway(),
-			"ibm_dl_virtual_connection": directlink.ResourceIBMDLGatewayVC(),
-			"ibm_dl_provider_gateway":   directlink.ResourceIBMDLProviderGateway(),
-			"ibm_dl_route_report":       directlink.ResourceIBMDLGatewayRouteReport(),
-			"ibm_dl_gateway_action":     directlink.ResourceIBMDLGatewayAction(),
+			"ibm_dl_gateway":               directlink.ResourceIBMDLGateway(),
+			"ibm_dl_virtual_connection":    directlink.ResourceIBMDLGatewayVC(),
+			"ibm_dl_provider_gateway":      directlink.ResourceIBMDLProviderGateway(),
+			"ibm_dl_route_report":          directlink.ResourceIBMDLGatewayRouteReport(),
+			"ibm_dl_gateway_action":        directlink.ResourceIBMDLGatewayAction(),
+			"ibm_dl_gateway_macsec_config": directlink.ResourceIBMDLGatewayMacsecConfig(),
+			"ibm_dl_gateway_macsec_cak":    directlink.ResourceIBMDLGatewayMacsecCak(),
 
 			// Added for Transit Gateway
 			"ibm_tg_gateway":                  transitgateway.ResourceIBMTransitGateway(),
@@ -1532,6 +1544,7 @@ func Provider() *schema.Provider {
 			"ibm_sm_iam_credentials_secret":                                      secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmIamCredentialsSecret()),
 			"ibm_sm_service_credentials_secret":                                  secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmServiceCredentialsSecret()),
 			"ibm_sm_username_password_secret":                                    secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmUsernamePasswordSecret()),
+			"ibm_sm_custom_credentials_secret":                                   secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmCustomCredentialsSecret()),
 			"ibm_sm_kv_secret":                                                   secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmKvSecret()),
 			"ibm_sm_public_certificate_configuration_ca_lets_encrypt":            secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmPublicCertificateConfigurationCALetsEncrypt()),
 			"ibm_sm_public_certificate_configuration_dns_cis":                    secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmConfigurationPublicCertificateDNSCis()),
@@ -1540,6 +1553,7 @@ func Provider() *schema.Provider {
 			"ibm_sm_private_certificate_configuration_intermediate_ca":           secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmPrivateCertificateConfigurationIntermediateCA()),
 			"ibm_sm_private_certificate_configuration_template":                  secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmPrivateCertificateConfigurationTemplate()),
 			"ibm_sm_iam_credentials_configuration":                               secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmIamCredentialsConfiguration()),
+			"ibm_sm_custom_credentials_configuration":                            secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmCustomCredentialsConfiguration()),
 			"ibm_sm_public_certificate_action_validate_manual_dns":               secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmPublicCertificateActionValidateManualDns()),
 			"ibm_sm_en_registration":                                             secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmEnRegistration()),
 			"ibm_sm_private_certificate_configuration_action_sign_csr":           secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmPrivateCertificateConfigurationActionSignCsr()),
@@ -1672,6 +1686,7 @@ func Provider() *schema.Provider {
 			"ibm_cd_toolchain_tool_securitycompliance": cdtoolchain.ResourceIBMCdToolchainToolSecuritycompliance(),
 			"ibm_cd_toolchain_tool_privateworker":      cdtoolchain.ResourceIBMCdToolchainToolPrivateworker(),
 			"ibm_cd_toolchain_tool_appconfig":          cdtoolchain.ResourceIBMCdToolchainToolAppconfig(),
+			"ibm_cd_toolchain_tool_cos":                cdtoolchain.ResourceIBMCdToolchainToolCos(),
 			"ibm_cd_toolchain_tool_jenkins":            cdtoolchain.ResourceIBMCdToolchainToolJenkins(),
 			"ibm_cd_toolchain_tool_nexus":              cdtoolchain.ResourceIBMCdToolchainToolNexus(),
 			"ibm_cd_toolchain_tool_pagerduty":          cdtoolchain.ResourceIBMCdToolchainToolPagerduty(),
@@ -1965,6 +1980,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_dl_gateway":                               directlink.ResourceIBMDLGatewayValidator(),
 				"ibm_dl_provider_gateway":                      directlink.ResourceIBMDLProviderGatewayValidator(),
 				"ibm_dl_gateway_action":                        directlink.ResourceIBMDLGatewayActionValidator(),
+				"ibm_dl_gateway_macsec_cak":                    directlink.ResourceIBMdlGatewayMacsecCakValidator(),
 				"ibm_database":                                 database.ResourceIBMICDValidator(),
 				"ibm_function_package":                         functions.ResourceIBMFuncPackageValidator(),
 				"ibm_function_action":                          functions.ResourceIBMFuncActionValidator(),
@@ -2051,6 +2067,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_is_ssh_key":                                     vpc.ResourceIBMISSHKeyValidator(),
 				"ibm_is_subnet":                                      vpc.ResourceIBMISSubnetValidator(),
 				"ibm_is_subnet_reserved_ip":                          vpc.ResourceIBMISSubnetReservedIPValidator(),
+				"ibm_is_subnet_reserved_ip_patch":                    vpc.ResourceIBMISSubnetReservedIPPatchValidator(),
 				"ibm_is_volume":                                      vpc.ResourceIBMISVolumeValidator(),
 				"ibm_is_virtual_network_interface":                   vpc.ResourceIBMIsVirtualNetworkInterfaceValidator(),
 				"ibm_is_address_prefix":                              vpc.ResourceIBMISAddressPrefixValidator(),
@@ -2130,6 +2147,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_cd_toolchain_tool_securitycompliance": cdtoolchain.ResourceIBMCdToolchainToolSecuritycomplianceValidator(),
 				"ibm_cd_toolchain_tool_privateworker":      cdtoolchain.ResourceIBMCdToolchainToolPrivateworkerValidator(),
 				"ibm_cd_toolchain_tool_appconfig":          cdtoolchain.ResourceIBMCdToolchainToolAppconfigValidator(),
+				"ibm_cd_toolchain_tool_cos":                cdtoolchain.ResourceIBMCdToolchainToolCosValidator(),
 				"ibm_cd_toolchain_tool_jenkins":            cdtoolchain.ResourceIBMCdToolchainToolJenkinsValidator(),
 				"ibm_cd_toolchain_tool_nexus":              cdtoolchain.ResourceIBMCdToolchainToolNexusValidator(),
 				"ibm_cd_toolchain_tool_pagerduty":          cdtoolchain.ResourceIBMCdToolchainToolPagerdutyValidator(),

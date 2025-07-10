@@ -545,7 +545,7 @@ func resourceIBMLbVpxVipUpdate105(d *schema.ResourceData, meta interface{}) erro
 	// Update the virtual server
 	err = nClient.Update(&lbvserverReq)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error updating Virtual Ip Address: " + err.Error())
+		return fmt.Errorf("[ERROR] Error updating Virtual Ip Address: %s", err.Error())
 	}
 
 	return resourceIBMLbVpxVipRead(d, meta)
