@@ -90,6 +90,19 @@ You can access the following attribute references after your data source is crea
 
     - `id` - (String) The ID of the VPC.
     - `name` - (String) The name of the VPC.
+    - `public_address_ranges` - (List) The public address ranges attached to this VPC.
+      
+      Nested schema for `public_address_ranges`:
+	    - `crn` - (String) The CRN for this public address range.
+	    - `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
+      
+          Nested schema for `deleted`:
+          - `more_info` - (String) Link to documentation about deleted resources.
+
+      - `href` - (String) The URL for this public address range.
+	    - `id` - (String) The unique identifier for this public address range.
+	    - `name` - (String) The name for this public address range. The name is unique across all public address ranges in the region.
+	    - `resource_type` - (String) The resource type.
     - `resource_group` - (String) The resource group ID where the VPC created.
     - `security_group` - (String) A list of security groups attached to VPC. The nested security group block has the following structure:
 

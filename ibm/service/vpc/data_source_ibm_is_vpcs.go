@@ -510,6 +510,54 @@ func DataSourceIBMISVPCs() *schema.Resource {
 								},
 							},
 						},
+						"public_address_ranges": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The public address ranges attached to this VPC.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"crn": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The CRN for this public address range.",
+									},
+									"deleted": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"more_info": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Link to documentation about deleted resources.",
+												},
+											},
+										},
+									},
+									"href": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The URL for this public address range.",
+									},
+									"id": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The unique identifier for this public address range.",
+									},
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The name for this public address range. The name is unique across all public address ranges in the region.",
+									},
+									"resource_type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The resource type.",
+									},
+								},
+							},
+						},
 					},
 				},
 			},
@@ -582,6 +630,15 @@ func dataSourceIBMISVPCListRead(context context.Context, d *schema.ResourceData,
 			l[isVPCDefaultSecurityGroupName] = *vpc.DefaultSecurityGroup.Name
 			l[isVPCDefaultSecurityGroupCRN] = vpc.DefaultSecurityGroup.CRN
 		}
+		publicAddressRanges := []map[string]interface{}{}
+		for _, publicAddressRangesItem := range vpc.PublicAddressRanges {
+			publicAddressRangesItemMap, err := DataSourceIBMIsVPCPublicAddressRangeReferenceToMap(&publicAddressRangesItem)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			publicAddressRanges = append(publicAddressRanges, publicAddressRangesItemMap)
+		}
+		l["public_address_ranges"] = publicAddressRanges
 		tags, err := flex.GetGlobalTagsUsingCRN(meta, *vpc.CRN, "", isVPCUserTagType)
 		if err != nil {
 			log.Printf(

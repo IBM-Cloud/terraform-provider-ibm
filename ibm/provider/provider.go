@@ -598,7 +598,8 @@ func Provider() *schema.Provider {
 			"ibm_is_share_snapshots":             vpc.DataSourceIBMIsShareSnapshots(),
 			"ibm_is_virtual_network_interface":   vpc.DataSourceIBMIsVirtualNetworkInterface(),
 			"ibm_is_virtual_network_interfaces":  vpc.DataSourceIBMIsVirtualNetworkInterfaces(),
-
+			"ibm_is_public_address_range":        vpc.DataSourceIBMIsPublicAddressRange(),
+			"ibm_is_public_address_ranges":       vpc.DataSourceIBMIsPublicAddressRanges(),
 			// vni
 
 			"ibm_is_virtual_network_interface_floating_ip":  vpc.DataSourceIBMIsVirtualNetworkInterfaceFloatingIP(),
@@ -1330,6 +1331,7 @@ func Provider() *schema.Provider {
 			"ibm_is_lb_pool_member":                              vpc.ResourceIBMISLBPoolMember(),
 			"ibm_is_network_acl":                                 vpc.ResourceIBMISNetworkACL(),
 			"ibm_is_network_acl_rule":                            vpc.ResourceIBMISNetworkACLRule(),
+			"ibm_is_public_address_range":                        vpc.ResourceIBMPublicAddressRange(),
 			"ibm_is_public_gateway":                              vpc.ResourceIBMISPublicGateway(),
 			"ibm_is_private_path_service_gateway_account_policy": vpc.ResourceIBMIsPrivatePathServiceGatewayAccountPolicy(),
 			"ibm_is_private_path_service_gateway":                vpc.ResourceIBMIsPrivatePathServiceGateway(),
@@ -2055,6 +2057,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_is_lb":                                          vpc.ResourceIBMISLBValidator(),
 				"ibm_is_network_acl":                                 vpc.ResourceIBMISNetworkACLValidator(),
 				"ibm_is_network_acl_rule":                            vpc.ResourceIBMISNetworkACLRuleValidator(),
+				"ibm_is_public_address_range":                        vpc.ResourceIBMPublicAddressRangeValidator(),
 				"ibm_is_public_gateway":                              vpc.ResourceIBMISPublicGatewayValidator(),
 				"ibm_is_private_path_service_gateway":                vpc.ResourceIBMIsPrivatePathServiceGatewayValidator(),
 				"ibm_is_private_path_service_gateway_account_policy": vpc.ResourceIBMIsPrivatePathServiceGatewayAccountPolicyValidator(),
