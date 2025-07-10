@@ -161,8 +161,11 @@ The following arguments are supported:
   ~> **Note**
   `virtual_network_interface` and `vpc` are mutually exclusive and one of them must be provided.
 - `name` - (Required, String) The user-defined name for this share target. Names must be unique within the share the share target resides in. If unspecified, the name will be a hyphenated list of randomly-selected words.
-- `transit_encryption` - (Required, String) The transit encryption mode for this share target. Supported values are **none**, **ipsec** and **stunnel**
+- `transit_encryption` - (Optional, String) The transit encryption mode for this share target. Supported values are **none**, **ipsec** and **stunnel**
 
+  ~> **Note**
+  If `transit_encryption` is not provided, the default transit encryption for the corresponding share profile will be used
+  
 ## Attribute Reference
 
 The following attributes are exported:
