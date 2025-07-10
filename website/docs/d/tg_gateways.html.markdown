@@ -34,5 +34,6 @@ You can access the following attribute references after your data source is crea
    - `location` - (String) The gateway location.
    - `name` - (String) The user defined name for the transit gateway connection.
    - `resource_group` - (String) The resource group identifier.
+   - `gre_enhanced_route_propagation` - (Bool) The gateways with GRE enhanced route propagation true to share routes across all GRE connections on the same gateway.
    - `status` - (String) The gateway status.
    - `updated_at` - (String) The date and time resource is last updated.

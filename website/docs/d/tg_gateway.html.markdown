@@ -31,6 +31,7 @@ data "ibm_tg_gateway" "ds_tggateway" {
 Review the argument references that you can specify for your data source. 
 
 - `name` - (Required, String) The name of the gateway.
+- `gre_enhanced_route_propagation` - (Optional, Bool) Allows route propagation across all GRE connections on the same Transit Gateway (redundant_gre, unbound_gre_tunnel, and gre_tunnel).
 
 ## Attribute reference
 In addition to the argument reference list, you can access the following attribute references after your data source is created. 
