@@ -333,7 +333,7 @@ func ResourceIBMPIInstance() *schema.Resource {
 			},
 			Arg_SysType: {
 				Computed:    true,
-				Description: "PI Instance system type",
+				Description: "The type of system on which to create the VM (e880/e980/e1080/e1150/e1180/s922/s1022/s1122).",
 				ForceNew:    true,
 				Optional:    true,
 				Type:        schema.TypeString,

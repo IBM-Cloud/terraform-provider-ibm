@@ -292,7 +292,6 @@ func ipsecpGet(context context.Context, d *schema.ResourceData, meta interface{}
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_ipsec_policy", "read", "set-encryption_algorithm").GetDiag()
 	}
 	if iPsecPolicy.ResourceGroup != nil {
-		d.Set(isIPSecResourceGroup, *iPsecPolicy.ResourceGroup.ID)
 		if err = d.Set(isIPSecResourceGroup, *iPsecPolicy.ResourceGroup.ID); err != nil {
 			err = fmt.Errorf("Error setting resource_group: %s", err)
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_ipsec_policy", "read", "set-resource_group").GetDiag()
