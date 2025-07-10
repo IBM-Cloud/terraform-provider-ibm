@@ -1,3 +1,9 @@
+# 1.80.2 (July 10, 2025)
+## Bug Fixes
+
+### Global Catalog
+* updated platform services to use local sdk ([6343](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6343))
+
 # 1.80.1 (July 9, 2025)
 
 ## Bug Fixes
