@@ -555,7 +555,7 @@ func TestResourceIbmVmaasVdcMapToVDCProviderType(t *testing.T) {
 
 func TestResourceIbmVmaasVdcMapToVDCEdgePrototype(t *testing.T) {
 	checkResult := func(result *vmwarev1.VDCEdgePrototype) {
-		vdcEdgePrototypeNetworkHaModel := new(vmwarev1.VDCEdgePrototypeNetworkHaNetworkHaOnStretched)
+		vdcEdgePrototypeNetworkHaModel := new(vmwarev1.VDCEdgePrototypeNetworkHa)
 		vdcEdgePrototypeNetworkHaModel.PrimaryDataCenterName = core.StringPtr("testString")
 		vdcEdgePrototypeNetworkHaModel.SecondaryDataCenterName = core.StringPtr("testString")
 
