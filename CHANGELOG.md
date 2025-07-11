@@ -3,6 +3,9 @@
 
 ### VPC Infrastructure
 * fix(is-bm): fixed bm error on delete ([6346](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6346))
+### CIS
+* fix(CIS): update domain setting proxy read timeout([6347](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6347))
+
 
 # 1.80.2 (July 10, 2025)
 ## Bug Fixes
