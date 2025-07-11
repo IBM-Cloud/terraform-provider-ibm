@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_vmaas_vdc"
 description: |-
   Manages vmaas_vdc.
-subcategory: "VCF as a Service API"
+subcategory: "VMware Cloud Foundation as a Service API"
 ---
 
 # ibm_vmaas_vdc
@@ -16,9 +16,10 @@ Create, update, and delete vmaas_vdcs with this resource.
 resource "ibm_vmaas_vdc" "vmaas_vdc_instance" {
   accept_language = "en-us"
   director_site {
-		id = "id"
+		id = "inject_value_id"
 		pvdc {
-			id = "pvdc_id"
+			compute_ha_enabled = false
+			id = "inject_value_pvdc_id"
 			provider_type {
 				name = "paygo"
 			}
@@ -29,19 +30,29 @@ resource "ibm_vmaas_vdc" "vmaas_vdc_instance" {
 }
 ```
 
+## Timeouts
+
+vmaas_vdc provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
+
+* `create` - (Default 60 minutes) Used for creating a vmaas_vdc.
+* `update` - (Default 60 minutes) Used for updating a vmaas_vdc.
+* `delete` - (Default 60 minutes) Used for deleting a vmaas_vdc.
+
 ## Argument Reference
 
 You can specify the following arguments for this resource.
 
-* `accept_language` - (Optional, String) Language.
+* `accept_language` - (Computed, String) Language.
   * Constraints: The maximum length is `256` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9-,;=\\.\\*\\s]{1,256}$/`.
 * `cpu` - (Optional, Integer) The vCPU usage limit on the virtual data center (VDC). Supported for VDCs deployed on a multitenant Cloud Director site. This property is applicable when the resource pool type is reserved.
-  * Constraints: The maximum value is `2000`. The minimum value is `0`.
+  * Constraints: The maximum value is `10000`. The minimum value is `0`.
 * `director_site` - (Required, List) The Cloud Director site in which to deploy the virtual data center (VDC).
 Nested schema for **director_site**:
 	* `id` - (Required, String) A unique ID for the Cloud Director site.
 	* `pvdc` - (Required, List) The resource pool within the Director Site in which to deploy the virtual data center (VDC).
 	Nested schema for **pvdc**:
+		* `compute_ha_enabled` - (Optional, Boolean) Specifies whether compute HA is enabled for this VDC.
+		  * Constraints: The default value is `false`.
 		* `id` - (Required, String) A unique ID for the resource pool.
 		  * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9_-]{1,128}$/`.
 		* `provider_type` - (Optional, List) Determines how resources are made available to the virtual data center (VDC). Required for VDCs deployed on a multitenant Cloud Director site.
@@ -67,11 +78,19 @@ After your resource is created, you can read values from the listed arguments an
   * Constraints: The maximum length is `128` items. The minimum length is `0` items.
 Nested schema for **edges**:
 	* `id` - (String) A unique ID for the edge.
+	* `primary_data_center_name` - (String) The name of the primary data center.
+	  * Constraints: The minimum length is `5` characters.
+	* `primary_pvdc_id` - (String) The ID of the primary resource pool.
+	  * Constraints: The minimum length is `1` character.
 	* `private_ips` - (List) The private IP addresses assigned to the edge.
 	  * Constraints: The maximum length is `128` items. The minimum length is `0` items.
 	* `private_only` - (Boolean) Indicates whether the edge is private only. The default value is True for a private Cloud Director site and False for a public Cloud Director site.
 	* `public_ips` - (List) The public IP addresses assigned to the edge.
 	  * Constraints: The maximum length is `256` items. The minimum length is `0` items.
+	* `secondary_data_center_name` - (String) The name of the secondary data center.
+	  * Constraints: The minimum length is `5` characters.
+	* `secondary_pvdc_id` - (String) The ID of the secondary resource pool.
+	  * Constraints: The minimum length is `1` character.
 	* `size` - (String) The size of the edge.The size can be specified only for performance edges. Larger sizes require more capacity from the Cloud Director site in which the virtual data center (VDC) was created to be deployed.
 	  * Constraints: Allowable values are: `medium`, `large`, `extra_large`.
 	* `status` - (String) Determines the state of the edge.
@@ -105,6 +124,7 @@ Nested schema for **edges**:
 	* `type` - (String) The type of edge to be deployed.Efficiency edges allow for multiple VDCs to share some edge resources. Performance edges do not share resources between VDCs.
 	  * Constraints: Allowable values are: `performance`, `efficiency`.
 	* `version` - (String) The edge version.
+* `ha` - (String) Indicates if the VDC is HA-enabled for compute only, compute and network, or network only. If not present, the VDC is not HA-enabled.
 * `href` - (String) The URL of this virtual data center (VDC).
 * `ordered_at` - (String) The time that the virtual data center (VDC) is ordered.
 * `org_href` - (String) The URL of the organization that owns the VDC.
