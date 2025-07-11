@@ -10,9 +10,7 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
 	"github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -38,21 +36,11 @@ func ResourceIBMIAMTrustedProfilePolicy() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			"profile_id": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ExactlyOneOf: []string{"profile_id", "iam_id"},
-				Description:  "UUID of Trusted Profile",
-				ForceNew:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_iam_trusted_profile_policy",
-					"profile_id"),
-			},
 			"iam_id": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ExactlyOneOf: []string{"profile_id", "iam_id"},
-				Description:  "IAM ID of Trusted Profile",
-				ForceNew:     true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "IAM ID of Trusted Profile",
+				ForceNew:    true,
 			},
 			"roles": {
 				Type:        schema.TypeList,
@@ -272,40 +260,9 @@ func ResourceIBMIAMTrustedProfilePolicy() *schema.Resource {
 	}
 }
 
-func ResourceIBMIAMTrustedProfilePolicyValidator() *validate.ResourceValidator {
-	validateSchema := make([]validate.ValidateSchema, 0)
-	validateSchema = append(validateSchema,
-		validate.ValidateSchema{
-			Identifier:                 "profile_id",
-			ValidateFunctionIdentifier: validate.ValidateCloudData,
-			Type:                       validate.TypeString,
-			CloudDataType:              "iam",
-			CloudDataRange:             []string{"service:trusted_profile", "resolved_to:id"},
-			Required:                   true})
-
-	iBMIAMTrustedProfilePolicyValidator := validate.ResourceValidator{ResourceName: "ibm_iam_trusted_profile_policy", Schema: validateSchema}
-	return &iBMIAMTrustedProfilePolicyValidator
-}
-
 func resourceIBMIAMTrustedProfilePolicyCreate(d *schema.ResourceData, meta interface{}) error {
 
 	var iamID string
-	if v, ok := d.GetOk("profile_id"); ok && v != nil {
-		profileIDUUID := v.(string)
-
-		iamClient, err := meta.(conns.ClientSession).IAMIdentityV1API()
-		if err != nil {
-			return err
-		}
-		getProfileOptions := &iamidentityv1.GetProfileOptions{
-			ProfileID: &profileIDUUID,
-		}
-		profileID, resp, err := iamClient.GetProfile(getProfileOptions)
-		if err != nil {
-			return fmt.Errorf("[ERROR] Error] Error getting trusted profile ID %s %s", err, resp)
-		}
-		iamID = *profileID.IamID
-	}
 	if v, ok := d.GetOk("iam_id"); ok && v != nil {
 		iamID = v.(string)
 	}
@@ -452,19 +409,13 @@ func resourceIBMIAMTrustedProfilePolicyCreate(d *schema.ResourceData, meta inter
 		_, _, err = iamPolicyManagementClient.GetV2Policy(getPolicyOptions)
 	}
 	if err != nil {
-		if v, ok := d.GetOk("profile_id"); ok && v != nil {
-			profileIDUUID := v.(string)
-			d.SetId(fmt.Sprintf("%s/%s", profileIDUUID, policyID))
-		} else if v, ok := d.GetOk("iam_id"); ok && v != nil {
+		if v, ok := d.GetOk("iam_id"); ok && v != nil {
 			iamID := v.(string)
 			d.SetId(fmt.Sprintf("%s/%s", iamID, policyID))
 		}
 		return fmt.Errorf("[ERROR] Error fetching trusted profile policy: %s", err)
 	}
-	if v, ok := d.GetOk("profile_id"); ok && v != nil {
-		profileIDUUID := v.(string)
-		d.SetId(fmt.Sprintf("%s/%s", profileIDUUID, policyID))
-	} else if v, ok := d.GetOk("iam_id"); ok && v != nil {
+	if v, ok := d.GetOk("iam_id"); ok && v != nil {
 		iamID := v.(string)
 		d.SetId(fmt.Sprintf("%s/%s", iamID, policyID))
 	}
@@ -513,11 +464,7 @@ func resourceIBMIAMTrustedProfilePolicyRead(d *schema.ResourceData, meta interfa
 	if err != nil || trustedProfilePolicy == nil || res == nil {
 		return fmt.Errorf("[ERROR] Error retrieving trusted profile policy: %s %s", err, res)
 	}
-	if strings.HasPrefix(profileIDUUID, "iam-") {
-		d.Set("iam_id", profileIDUUID)
-	} else {
-		d.Set("profile_id", profileIDUUID)
-	}
+	d.Set("iam_id", profileIDUUID)
 
 	roles, err := flex.GetRoleNamesFromPolicyResponse(*trustedProfilePolicy, d, meta)
 	d.Set("roles", roles)
@@ -570,22 +517,6 @@ func resourceIBMIAMTrustedProfilePolicyUpdate(d *schema.ResourceData, meta inter
 		trustedProfilePolicyID := parts[1]
 
 		var iamID string
-		if v, ok := d.GetOk("profile_id"); ok && v != nil {
-			profileIDUUID := v.(string)
-
-			iamClient, err := meta.(conns.ClientSession).IAMIdentityV1API()
-			if err != nil {
-				return err
-			}
-			getProfileIDOptions := iamidentityv1.GetProfileOptions{
-				ProfileID: &profileIDUUID,
-			}
-			profileID, resp, err := iamClient.GetProfile(&getProfileIDOptions)
-			if err != nil {
-				return fmt.Errorf("[ERROR] Error] Error getting trusted profile ID %s %s", err, resp)
-			}
-			iamID = *profileID.IamID
-		}
 		if v, ok := d.GetOk("iam_id"); ok && v != nil {
 			iamID = v.(string)
 		}

@@ -602,7 +602,7 @@ func testAccCheckIBMIAMServicePolicyBasic(name string) string {
 	  	}
 	  
 	  	resource "ibm_iam_service_policy" "policy" {
-			iam_service_id = ibm_iam_service_id.serviceID.id
+			iam_id = ibm_iam_service_id.serviceID.iam_id
 			roles          = ["Viewer"]
 			tags           = ["tag1"]
 			description    = "IAM Service Policy Creation for test scenario"
@@ -619,7 +619,7 @@ func testAccCheckIBMIAMServicePolicyUpdateRole(name string) string {
 	  	}
 	  
 	  	resource "ibm_iam_service_policy" "policy" {
-			iam_service_id = ibm_iam_service_id.serviceID.id
+			iam_id = ibm_iam_service_id.serviceID.iam_id
 			roles          = ["Viewer", "Manager"]
 			tags           = ["tag1", "tag2"]
 			description    = "IAM Service Policy Update for test scenario"
@@ -635,7 +635,7 @@ func testAccCheckIBMIAMServicePolicyService(name string) string {
 	  	}
 	  
 	  	resource "ibm_iam_service_policy" "policy" {
-			iam_service_id = ibm_iam_service_id.serviceID.id
+			iam_id = ibm_iam_service_id.serviceID.iam_id
 			roles          = ["Viewer"]
 	  
 			resources {
@@ -653,7 +653,7 @@ func testAccCheckIBMIAMServicePolicyServiceType(name string) string {
 	  	}
 	  
 	  	resource "ibm_iam_service_policy" "policy" {
-			iam_service_id = ibm_iam_service_id.serviceID.id
+			iam_id = ibm_iam_service_id.serviceID.iam_id
 			roles          = ["Viewer"]
 	  
 			resources {
@@ -672,7 +672,7 @@ func testAccCheckIBMIAMServicePolicyUpdateServiceAndRegion(name string) string {
 	  	}
 	  
 	  	resource "ibm_iam_service_policy" "policy" {
-			iam_service_id = ibm_iam_service_id.serviceID.id
+			iam_id = ibm_iam_service_id.serviceID.iam_id
 			roles          = ["Viewer", "Manager"]
 	  
 			resources {
@@ -698,7 +698,7 @@ func testAccCheckIBMIAMServicePolicyResourceInstance(name string) string {
 	  	}
 	  
 	  	resource "ibm_iam_service_policy" "policy" {
-			iam_service_id = ibm_iam_service_id.serviceID.id
+			iam_id = ibm_iam_service_id.serviceID.iam_id
 			roles          = ["Manager", "Viewer", "Administrator"]
 	  
 			resources {
@@ -723,7 +723,7 @@ func testAccCheckIBMIAMServicePolicyResourceGroup(name string) string {
 	  	}
 	  
 	  	resource "ibm_iam_service_policy" "policy" {
-			iam_service_id = ibm_iam_service_id.serviceID.id
+			iam_id = ibm_iam_service_id.serviceID.iam_id
 			roles          = ["Viewer"]
 	  
 			resources {
@@ -748,7 +748,7 @@ func testAccCheckIBMIAMServicePolicyResourceType(name string) string {
 	  	}
 	  
 	  	resource "ibm_iam_service_policy" "policy" {
-			iam_service_id = ibm_iam_service_id.serviceID.id
+			iam_id = ibm_iam_service_id.serviceID.iam_id
 			roles          = ["Administrator"]
 	  
 			resources {
@@ -767,7 +767,7 @@ func testAccCheckIBMIAMServicePolicyImport(name string) string {
 	  	}
 	  
 	  	resource "ibm_iam_service_policy" "policy" {
-			iam_service_id = ibm_iam_service_id.serviceID.id
+			iam_id = ibm_iam_service_id.serviceID.iam_id
 			roles          = ["Viewer"]
 	  	}
 
@@ -782,7 +782,7 @@ func testAccCheckIBMIAMServicePolicyAccountManagement(name string) string {
 	  	}
 	  
 	  	resource "ibm_iam_service_policy" "policy" {
-			iam_service_id     = ibm_iam_service_id.serviceID.id
+			iam_id     = ibm_iam_service_id.serviceID.iam_id
 			roles              = ["Viewer"]
 			account_management = true
 	  	}
@@ -805,7 +805,7 @@ func testAccCheckIBMIAMServicePolicyWithCustomRole(name, crName, displayName str
 		}
 	  
 	  	resource "ibm_iam_service_policy" "policy" {
-			iam_service_id = ibm_iam_service_id.serviceID.id
+			iam_id = ibm_iam_service_id.serviceID.iam_id
 			roles          = [ibm_iam_custom_role.customrole.display_name,"Viewer"]
 			tags           = ["tag1"]
 			resources {
@@ -823,7 +823,7 @@ func testAccCheckIBMIAMServicePolicyResourceAttributes(name string) string {
 	  }
   
 	  resource "ibm_iam_service_policy" "policy" {
-		iam_service_id     = ibm_iam_service_id.serviceID.id
+		iam_id = ibm_iam_service_id.serviceID.iam_id
 		roles              = ["Viewer"]
 		resource_attributes {
 			name     = "resource"
@@ -844,7 +844,7 @@ func testAccCheckIBMIAMServicePolicyResourceAttributesUpdate(name string) string
 	  }
   
 	  resource "ibm_iam_service_policy" "policy" {
-		iam_service_id     = ibm_iam_service_id.serviceID.id
+		iam_id = ibm_iam_service_id.serviceID.iam_id
 		roles              = ["Viewer"]
 		resource_attributes {
 			name     = "resource"
@@ -865,7 +865,7 @@ func testAccCheckIBMIAMServicePolicyResourceTags(name string) string {
 	  	}
 	  
 	  	resource "ibm_iam_service_policy" "policy" {
-			iam_service_id = ibm_iam_service_id.serviceID.id
+			iam_id = ibm_iam_service_id.serviceID.iam_id
 			roles          = ["Viewer"]
 			
 			resource_tags {
@@ -884,7 +884,7 @@ func testAccCheckIBMIAMServicePolicyUpdateResourceTags(name string) string {
 	  	}
 	  
 	  	resource "ibm_iam_service_policy" "policy" {
-			iam_service_id = ibm_iam_service_id.serviceID.id
+			iam_id = ibm_iam_service_id.serviceID.iam_id
 			roles          = ["Viewer"]
 			
 			resource_tags {
@@ -907,7 +907,7 @@ func testAccCheckIBMIAMServicePolicyResourceTransactionId(name string) string {
 	  }
   
 	  resource "ibm_iam_service_policy" "policy" {
-		iam_service_id     = ibm_iam_service_id.serviceID.id
+		iam_id = ibm_iam_service_id.serviceID.iam_id
 		roles              = ["Viewer"]
 		transaction_id = "terrformServicePolicy"
 		resource_attributes {
@@ -930,7 +930,7 @@ func testAccCheckIBMIAMServicePolicyResourceTransactionIdUpdate(name string) str
 	  }
   
 	  resource "ibm_iam_service_policy" "policy" {
-		iam_service_id     = ibm_iam_service_id.serviceID.id
+		iam_id = ibm_iam_service_id.serviceID.iam_id
 		roles              = ["Viewer"]
 		transaction_id = "terrformServicePolicyUpdate"
 		resource_attributes {
@@ -952,7 +952,7 @@ func testAccCheckIBMIAMServicePolicyWeeklyCustomHours(name string) string {
 		  }
 
 		  resource "ibm_iam_service_policy" "policy" {
-			iam_service_id     = ibm_iam_service_id.serviceID.id
+			iam_id = ibm_iam_service_id.serviceID.iam_id
 			roles  = ["Viewer"]
 			resources {
 				 service = "kms"
@@ -986,7 +986,7 @@ func testAccCheckIBMIAMServicePolicyUpdateConditions(name string) string {
 			}
 
 			resource "ibm_iam_service_policy" "policy" {
-			iam_service_id     = ibm_iam_service_id.serviceID.id
+			iam_id = ibm_iam_service_id.serviceID.iam_id
 			roles  = ["Viewer", "Manager"]
 			resources {
 				 service = "kms"
@@ -1020,7 +1020,7 @@ func testAccCheckIBMIAMServicePolicyWeeklyAllDay(name string) string {
 			}
 
 			resource "ibm_iam_service_policy" "policy" {
-			iam_service_id     = ibm_iam_service_id.serviceID.id
+			iam_id = ibm_iam_service_id.serviceID.iam_id
 			roles  = ["Viewer"]
 			resources {
 				 service = "kms"
@@ -1044,7 +1044,7 @@ func testAccCheckIBMIAMServicePolicyTimeBasedOnce(name string) string {
 			}
 
 			resource "ibm_iam_service_policy" "policy" {
-			iam_service_id     = ibm_iam_service_id.serviceID.id
+			iam_id = ibm_iam_service_id.serviceID.iam_id
 			roles  = ["Viewer"]
 			resources {
 				 service = "kms"
@@ -1072,7 +1072,7 @@ func testAccCheckIBMIAMServicePolicyWithServiceGroupId(name string) string {
 				name = "%s"
 			}
 			resource "ibm_iam_service_policy" "policy" {
-				iam_service_id     = ibm_iam_service_id.serviceID.id
+				iam_id = ibm_iam_service_id.serviceID.iam_id
 				roles           = ["Service ID creator"]
     		resource_attributes {
          		name     = "service_group_id"
@@ -1102,7 +1102,7 @@ func testAccCheckIBMIAMServiceUpdatePolicyWithServiceGroupId(name string) string
 				name = "%s"
 			}
 			resource "ibm_iam_service_policy" "policy" {
-				iam_service_id     = ibm_iam_service_id.serviceID.id
+				iam_id = ibm_iam_service_id.serviceID.iam_id
 				roles           = ["Service ID creator", "User API key creator"]
     		resource_attributes {
          		name     = "service_group_id"
@@ -1133,7 +1133,7 @@ func testAccCheckIBMIAMServicePolicyAttributeBasedCondition(name string) string 
 		}
 
 		resource "ibm_iam_service_policy" "policy" {
-			iam_service_id     = ibm_iam_service_id.serviceID.id
+			iam_id = ibm_iam_service_id.serviceID.iam_id
 			roles  = ["Writer"]
 			resource_attributes {
 				value = "cloud-object-storage"
@@ -1200,7 +1200,7 @@ func testAccCheckIBMIAMServicePolicyUpdateAttributeBasedCondition(name string) s
 		}
 
 		resource "ibm_iam_service_policy" "policy" {
-			iam_service_id     = ibm_iam_service_id.serviceID.id
+			iam_id = ibm_iam_service_id.serviceID.iam_id
 			roles  = ["Reader", "Writer"]
 			resource_attributes {
 				value = "cloud-object-storage"
@@ -1267,7 +1267,7 @@ func testAccCheckIBMIAMServicePolicyResourceAttributesWithoutWildcard(name strin
 	  }
   
 	  resource "ibm_iam_service_policy" "policy" {
-		iam_service_id     = ibm_iam_service_id.serviceID.id
+		iam_id = ibm_iam_service_id.serviceID.iam_id
 		roles              = ["Viewer"]
 		resource_attributes {
 			name     = "resource"
