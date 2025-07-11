@@ -164,6 +164,247 @@ func ResourceIbmBackupRecoverySourceRegistration() *schema.Resource {
 					},
 				},
 			},
+			"kubernetes_params": &schema.Schema{
+				Type:        schema.TypeList,
+				MaxItems:    1,
+				Optional:    true,
+				Description: "Specifies the parameters to register a Kubernetes source.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"auto_protect_config": &schema.Schema{
+							Type:        schema.TypeList,
+							MaxItems:    1,
+							Optional:    true,
+							Description: "Specifies the parameters to auto protect the source after registration.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"error_message": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "Specifies the error message in case source registration is successful but protection job creation fails.",
+									},
+									"is_default_auto_protected": &schema.Schema{
+										Type:        schema.TypeBool,
+										Required:    true,
+										Description: "Specifies if entire source should be auto protected after registration. Default: False.",
+									},
+									"policy_id": &schema.Schema{
+										Type:        schema.TypeString,
+										Required:    true,
+										Description: "Specifies the protection policy to auto protect the source with.",
+									},
+									"protection_group_id": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "Specifies the protection group Id after it is successfully created.",
+									},
+									"storage_domain_id": &schema.Schema{
+										Type:        schema.TypeInt,
+										Optional:    true,
+										Description: "Specifies the storage domain id for the protection job.",
+									},
+								},
+							},
+						},
+						"client_private_key": &schema.Schema{
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Specifies the bearer token or private key of Kubernetes source.",
+						},
+						"data_mover_image_location": &schema.Schema{
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Specifies the datamover image location of Kubernetes source.",
+						},
+						"datamover_service_type": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Specifies the data mover service type of Kubernetes source.",
+						},
+						"default_vlan_params": &schema.Schema{
+							Type:        schema.TypeList,
+							MaxItems:    1,
+							Optional:    true,
+							Description: "Specifies VLAN params associated with the backup/restore operation.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"disable_vlan": &schema.Schema{
+										Type:        schema.TypeBool,
+										Optional:    true,
+										Description: "If this is set to true, then even if VLANs are configured on the system, the partition VIPs will be used for the restore.",
+									},
+									"interface_name": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "Interface group to use for backup/restore. If this is not specified, primary interface group for the cluster will be used.",
+									},
+									"vlan_id": &schema.Schema{
+										Type:        schema.TypeInt,
+										Optional:    true,
+										Description: "If this is set, then the Cohesity host name or the IP address associated with this VLAN is used for mounting Cohesity's view on the remote host.",
+									},
+								},
+							},
+						},
+						"endpoint": &schema.Schema{
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Specifies the endpoint of Kubernetes source.",
+						},
+						"init_container_image_location": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Specifies the initial container image location of Kubernetes source.",
+						},
+						"kubernetes_distribution": &schema.Schema{
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Specifies the distribution type of Kubernetes source.",
+						},
+						"kubernetes_type": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Specifies the type of kubernetes source.",
+						},
+						"priority_class_name": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Specifies the priority class name for cohesity resources.",
+						},
+						"resource_annotations": &schema.Schema{
+							Type:        schema.TypeList,
+							Optional:    true,
+							Description: "Specifies resource annotations to be applied on cohesity resources.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"key": &schema.Schema{
+										Type:        schema.TypeString,
+										Required:    true,
+										Description: "Specifies the label key.",
+									},
+									"value": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "Specifies the label value.",
+									},
+								},
+							},
+						},
+						"resource_labels": &schema.Schema{
+							Type:        schema.TypeList,
+							Optional:    true,
+							Description: "Specifies resource label to be applied on cohesity resources.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"key": &schema.Schema{
+										Type:        schema.TypeString,
+										Required:    true,
+										Description: "Specifies the label key.",
+									},
+									"value": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "Specifies the label value.",
+									},
+								},
+							},
+						},
+						"san_fields": &schema.Schema{
+							Type:        schema.TypeList,
+							Optional:    true,
+							Description: "Specifies the SAN field for agent certificate.",
+							Elem:        &schema.Schema{Type: schema.TypeString},
+						},
+						"service_annotations": &schema.Schema{
+							Type:        schema.TypeList,
+							Optional:    true,
+							Description: "Specifies the service annotation object of Kubernetes source.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"key": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "Specifies the service annotation key value.",
+									},
+									"value": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "Specifies the service annotation value.",
+									},
+								},
+							},
+						},
+						"velero_aws_plugin_image_location": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Specifies the velero AWS plugin image location of the Kubernetes source.",
+						},
+						"velero_image_location": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Specifies the velero image location of the Kubernetes source.",
+						},
+						"velero_openshift_plugin_image_location": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Specifies the velero open shift plugin image for the Kubernetes source.",
+						},
+						"vlan_info_vec": &schema.Schema{
+							Type:        schema.TypeList,
+							Optional:    true,
+							Description: "Specifies VLAN information provided during registration.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"service_annotations": &schema.Schema{
+										Type:        schema.TypeList,
+										Optional:    true,
+										Description: "Specifies annotations to be put on services for IP allocation. Applicable only when service is of type LoadBalancer.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"key": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Description: "Specifies the service annotation key value.",
+												},
+												"value": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Description: "Specifies the service annotation value.",
+												},
+											},
+										},
+									},
+									"vlan_params": &schema.Schema{
+										Type:        schema.TypeList,
+										MaxItems:    1,
+										Optional:    true,
+										Description: "Specifies VLAN params associated with the backup/restore operation.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"disable_vlan": &schema.Schema{
+													Type:        schema.TypeBool,
+													Optional:    true,
+													Description: "If this is set to true, then even if VLANs are configured on the system, the partition VIPs will be used for the restore.",
+												},
+												"interface_name": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Description: "Interface group to use for backup/restore. If this is not specified, primary interface group for the cluster will be used.",
+												},
+												"vlan_id": &schema.Schema{
+													Type:        schema.TypeInt,
+													Optional:    true,
+													Description: "If this is set, then the Cohesity host name or the IP address associated with this VLAN is used for mounting Cohesity's view on the remote host.",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
 			"source_id": &schema.Schema{
 				Type:        schema.TypeInt,
 				Computed:    true,
@@ -1141,6 +1382,13 @@ func resourceIbmBackupRecoverySourceRegistrationCreate(context context.Context, 
 	if _, ok := d.GetOk("data_source_connection_id"); ok {
 		registerProtectionSourceOptions.SetDataSourceConnectionID(d.Get("data_source_connection_id").(string))
 	}
+	if _, ok := d.GetOk("kubernetes_params"); ok {
+		kubernetesParamsModel, err := ResourceIbmBackupRecoverySourceRegistrationMapToKubernetesSourceRegistrationParams(d.Get("kubernetes_params.0").(map[string]interface{}))
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_source_registration", "create", "parse-kubernetes_params").GetDiag()
+		}
+		registerProtectionSourceOptions.SetKubernetesParams(kubernetesParamsModel)
+	}
 	if _, ok := d.GetOk("physical_params"); ok {
 		physicalParamsModel, err := ResourceIbmBackupRecoverySourceRegistrationMapToPhysicalSourceRegistrationParams(d.Get("physical_params.0").(map[string]interface{}))
 		if err != nil {
@@ -1273,6 +1521,16 @@ func resourceIbmBackupRecoverySourceRegistrationRead(context context.Context, d 
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_source_registration", "read", "set-physical_params").GetDiag()
 		}
 	}
+	if !core.IsNil(sourceRegistrationReponseParams.KubernetesParams) {
+		kubernetesParamsMap, err := ResourceIbmBackupRecoverySourceRegistrationKubernetesSourceRegistrationParamsToMap(sourceRegistrationReponseParams.KubernetesParams)
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_source_registration", "read", "kubernetes_params-to-map").GetDiag()
+		}
+		if err = d.Set("kubernetes_params", []map[string]interface{}{kubernetesParamsMap}); err != nil {
+			err = fmt.Errorf("Error setting kubernetes_params: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_source_registration", "read", "set-kubernetes_params").GetDiag()
+		}
+	}
 	if !core.IsNil(sourceRegistrationReponseParams.SourceID) {
 		if err = d.Set("source_id", flex.IntValue(sourceRegistrationReponseParams.SourceID)); err != nil {
 			err = fmt.Errorf("Error setting source_id: %s", err)
@@ -1361,6 +1619,7 @@ func resourceIbmBackupRecoverySourceRegistrationUpdate(context context.Context, 
 		d.HasChange("connector_group_id") ||
 		d.HasChange("advanced_configs") ||
 		d.HasChange("data_source_connection_id") ||
+		d.HasChange("kubernetes_params") ||
 		d.HasChange("physical_params") {
 		putData = true
 	}
@@ -1452,6 +1711,13 @@ func resourceIbmBackupRecoverySourceRegistrationUpdate(context context.Context, 
 			}
 			updateProtectionSourceRegistrationOptions.SetPhysicalParams(physicalParams)
 		}
+		if _, ok := d.GetOk("kubernetes_params"); ok {
+			kubernetesParams, err := ResourceIbmBackupRecoverySourceRegistrationMapToKubernetesSourceRegistrationParams(d.Get("kubernetes_params.0").(map[string]interface{}))
+			if err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_source_registration", "update", "parse-kubernetes_params").GetDiag()
+			}
+			updateProtectionSourceRegistrationOptions.SetKubernetesParams(kubernetesParams)
+		}
 		updateProtectionSourceRegistrationOptions.SetID(int64(id))
 		_, _, err = backupRecoveryClient.UpdateProtectionSourceRegistrationWithContext(context, updateProtectionSourceRegistrationOptions)
 		if err != nil {
@@ -1540,6 +1806,174 @@ func ResourceIbmBackupRecoverySourceRegistrationMapToKeyValuePair(modelMap map[s
 	return model, nil
 }
 
+func ResourceIbmBackupRecoverySourceRegistrationMapToKubernetesSourceRegistrationParams(modelMap map[string]interface{}) (*backuprecoveryv1.KubernetesSourceRegistrationParams, error) {
+	model := &backuprecoveryv1.KubernetesSourceRegistrationParams{}
+	if modelMap["auto_protect_config"] != nil && len(modelMap["auto_protect_config"].([]interface{})) > 0 {
+		AutoProtectConfigModel, err := ResourceIbmBackupRecoverySourceRegistrationMapToKubernetesAutoProtectConfig(modelMap["auto_protect_config"].([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.AutoProtectConfig = AutoProtectConfigModel
+	}
+	model.ClientPrivateKey = core.StringPtr(modelMap["client_private_key"].(string))
+	model.DataMoverImageLocation = core.StringPtr(modelMap["data_mover_image_location"].(string))
+	if modelMap["datamover_service_type"] != nil && modelMap["datamover_service_type"].(string) != "" {
+		model.DatamoverServiceType = core.StringPtr(modelMap["datamover_service_type"].(string))
+	}
+	if modelMap["default_vlan_params"] != nil && len(modelMap["default_vlan_params"].([]interface{})) > 0 {
+		DefaultVlanParamsModel, err := ResourceIbmBackupRecoverySourceRegistrationMapToVlanParams(modelMap["default_vlan_params"].([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.DefaultVlanParams = DefaultVlanParamsModel
+	}
+	model.Endpoint = core.StringPtr(modelMap["endpoint"].(string))
+	if modelMap["init_container_image_location"] != nil && modelMap["init_container_image_location"].(string) != "" {
+		model.InitContainerImageLocation = core.StringPtr(modelMap["init_container_image_location"].(string))
+	}
+	model.KubernetesDistribution = core.StringPtr(modelMap["kubernetes_distribution"].(string))
+	if modelMap["kubernetes_type"] != nil && modelMap["kubernetes_type"].(string) != "" {
+		model.KubernetesType = core.StringPtr(modelMap["kubernetes_type"].(string))
+	}
+	if modelMap["priority_class_name"] != nil && modelMap["priority_class_name"].(string) != "" {
+		model.PriorityClassName = core.StringPtr(modelMap["priority_class_name"].(string))
+	}
+	if modelMap["resource_annotations"] != nil {
+		resourceAnnotations := []backuprecoveryv1.KubernetesLabelObject{}
+		for _, resourceAnnotationsItem := range modelMap["resource_annotations"].([]interface{}) {
+			resourceAnnotationsItemModel, err := ResourceIbmBackupRecoverySourceRegistrationMapToKubernetesLabelObject(resourceAnnotationsItem.(map[string]interface{}))
+			if err != nil {
+				return model, err
+			}
+			resourceAnnotations = append(resourceAnnotations, *resourceAnnotationsItemModel)
+		}
+		model.ResourceAnnotations = resourceAnnotations
+	}
+	if modelMap["resource_labels"] != nil {
+		resourceLabels := []backuprecoveryv1.KubernetesLabelObject{}
+		for _, resourceLabelsItem := range modelMap["resource_labels"].([]interface{}) {
+			resourceLabelsItemModel, err := ResourceIbmBackupRecoverySourceRegistrationMapToKubernetesLabelObject(resourceLabelsItem.(map[string]interface{}))
+			if err != nil {
+				return model, err
+			}
+			resourceLabels = append(resourceLabels, *resourceLabelsItemModel)
+		}
+		model.ResourceLabels = resourceLabels
+	}
+	if modelMap["san_fields"] != nil {
+		sanFields := []string{}
+		for _, sanFieldsItem := range modelMap["san_fields"].([]interface{}) {
+			sanFields = append(sanFields, sanFieldsItem.(string))
+		}
+		model.SanFields = sanFields
+	}
+	if modelMap["service_annotations"] != nil {
+		serviceAnnotations := []backuprecoveryv1.KubernetesServiceAnnotationObject{}
+		for _, serviceAnnotationsItem := range modelMap["service_annotations"].([]interface{}) {
+			serviceAnnotationsItemModel, err := ResourceIbmBackupRecoverySourceRegistrationMapToKubernetesServiceAnnotationObject(serviceAnnotationsItem.(map[string]interface{}))
+			if err != nil {
+				return model, err
+			}
+			serviceAnnotations = append(serviceAnnotations, *serviceAnnotationsItemModel)
+		}
+		model.ServiceAnnotations = serviceAnnotations
+	}
+	if modelMap["velero_aws_plugin_image_location"] != nil && modelMap["velero_aws_plugin_image_location"].(string) != "" {
+		model.VeleroAwsPluginImageLocation = core.StringPtr(modelMap["velero_aws_plugin_image_location"].(string))
+	}
+	if modelMap["velero_image_location"] != nil && modelMap["velero_image_location"].(string) != "" {
+		model.VeleroImageLocation = core.StringPtr(modelMap["velero_image_location"].(string))
+	}
+	if modelMap["velero_openshift_plugin_image_location"] != nil && modelMap["velero_openshift_plugin_image_location"].(string) != "" {
+		model.VeleroOpenshiftPluginImageLocation = core.StringPtr(modelMap["velero_openshift_plugin_image_location"].(string))
+	}
+	if modelMap["vlan_info_vec"] != nil {
+		vlanInfoVec := []backuprecoveryv1.KubernetesVlanInfo{}
+		for _, vlanInfoVecItem := range modelMap["vlan_info_vec"].([]interface{}) {
+			vlanInfoVecItemModel, err := ResourceIbmBackupRecoverySourceRegistrationMapToKubernetesVlanInfo(vlanInfoVecItem.(map[string]interface{}))
+			if err != nil {
+				return model, err
+			}
+			vlanInfoVec = append(vlanInfoVec, *vlanInfoVecItemModel)
+		}
+		model.VlanInfoVec = vlanInfoVec
+	}
+	return model, nil
+}
+
+func ResourceIbmBackupRecoverySourceRegistrationMapToKubernetesAutoProtectConfig(modelMap map[string]interface{}) (*backuprecoveryv1.KubernetesAutoProtectConfig, error) {
+	model := &backuprecoveryv1.KubernetesAutoProtectConfig{}
+	if modelMap["error_message"] != nil && modelMap["error_message"].(string) != "" {
+		model.ErrorMessage = core.StringPtr(modelMap["error_message"].(string))
+	}
+	model.IsDefaultAutoProtected = core.BoolPtr(modelMap["is_default_auto_protected"].(bool))
+	model.PolicyID = core.StringPtr(modelMap["policy_id"].(string))
+	if modelMap["protection_group_id"] != nil && modelMap["protection_group_id"].(string) != "" {
+		model.ProtectionGroupID = core.StringPtr(modelMap["protection_group_id"].(string))
+	}
+	if modelMap["storage_domain_id"] != nil {
+		model.StorageDomainID = core.Int64Ptr(int64(modelMap["storage_domain_id"].(int)))
+	}
+	return model, nil
+}
+
+func ResourceIbmBackupRecoverySourceRegistrationMapToVlanParams(modelMap map[string]interface{}) (*backuprecoveryv1.VlanParams, error) {
+	model := &backuprecoveryv1.VlanParams{}
+	if modelMap["disable_vlan"] != nil {
+		model.DisableVlan = core.BoolPtr(modelMap["disable_vlan"].(bool))
+	}
+	if modelMap["interface_name"] != nil && modelMap["interface_name"].(string) != "" {
+		model.InterfaceName = core.StringPtr(modelMap["interface_name"].(string))
+	}
+	if modelMap["vlan_id"] != nil {
+		model.VlanID = core.Int64Ptr(int64(modelMap["vlan_id"].(int)))
+	}
+	return model, nil
+}
+
+func ResourceIbmBackupRecoverySourceRegistrationMapToKubernetesLabelObject(modelMap map[string]interface{}) (*backuprecoveryv1.KubernetesLabelObject, error) {
+	model := &backuprecoveryv1.KubernetesLabelObject{}
+	model.Key = core.StringPtr(modelMap["key"].(string))
+	if modelMap["value"] != nil && modelMap["value"].(string) != "" {
+		model.Value = core.StringPtr(modelMap["value"].(string))
+	}
+	return model, nil
+}
+
+func ResourceIbmBackupRecoverySourceRegistrationMapToKubernetesServiceAnnotationObject(modelMap map[string]interface{}) (*backuprecoveryv1.KubernetesServiceAnnotationObject, error) {
+	model := &backuprecoveryv1.KubernetesServiceAnnotationObject{}
+	if modelMap["key"] != nil && modelMap["key"].(string) != "" {
+		model.Key = core.StringPtr(modelMap["key"].(string))
+	}
+	if modelMap["value"] != nil && modelMap["value"].(string) != "" {
+		model.Value = core.StringPtr(modelMap["value"].(string))
+	}
+	return model, nil
+}
+
+func ResourceIbmBackupRecoverySourceRegistrationMapToKubernetesVlanInfo(modelMap map[string]interface{}) (*backuprecoveryv1.KubernetesVlanInfo, error) {
+	model := &backuprecoveryv1.KubernetesVlanInfo{}
+	if modelMap["service_annotations"] != nil {
+		serviceAnnotations := []backuprecoveryv1.KubernetesServiceAnnotationObject{}
+		for _, serviceAnnotationsItem := range modelMap["service_annotations"].([]interface{}) {
+			serviceAnnotationsItemModel, err := ResourceIbmBackupRecoverySourceRegistrationMapToKubernetesServiceAnnotationObject(serviceAnnotationsItem.(map[string]interface{}))
+			if err != nil {
+				return model, err
+			}
+			serviceAnnotations = append(serviceAnnotations, *serviceAnnotationsItemModel)
+		}
+		model.ServiceAnnotations = serviceAnnotations
+	}
+	if modelMap["vlan_params"] != nil && len(modelMap["vlan_params"].([]interface{})) > 0 {
+		VlanParamsModel, err := ResourceIbmBackupRecoverySourceRegistrationMapToVlanParams(modelMap["vlan_params"].([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.VlanParams = VlanParamsModel
+	}
+	return model, nil
+}
+
 func ResourceIbmBackupRecoverySourceRegistrationMapToPhysicalSourceRegistrationParams(modelMap map[string]interface{}) (*backuprecoveryv1.PhysicalSourceRegistrationParams, error) {
 	model := &backuprecoveryv1.PhysicalSourceRegistrationParams{}
 	model.Endpoint = core.StringPtr(modelMap["endpoint"].(string))
@@ -1601,6 +2035,170 @@ func ResourceIbmBackupRecoverySourceRegistrationPhysicalSourceRegistrationParams
 	}
 	if model.Applications != nil {
 		modelMap["applications"] = model.Applications
+	}
+	return modelMap, nil
+}
+
+func ResourceIbmBackupRecoverySourceRegistrationKubernetesSourceRegistrationParamsToMap(model *backuprecoveryv1.KubernetesSourceRegistrationParams) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.AutoProtectConfig != nil {
+		autoProtectConfigMap, err := ResourceIbmBackupRecoverySourceRegistrationKubernetesAutoProtectConfigToMap(model.AutoProtectConfig)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["auto_protect_config"] = []map[string]interface{}{autoProtectConfigMap}
+	}
+	modelMap["client_private_key"] = *model.ClientPrivateKey
+	modelMap["data_mover_image_location"] = *model.DataMoverImageLocation
+	if model.DatamoverServiceType != nil {
+		modelMap["datamover_service_type"] = *model.DatamoverServiceType
+	}
+	if model.DefaultVlanParams != nil {
+		defaultVlanParamsMap, err := ResourceIbmBackupRecoverySourceRegistrationVlanParamsToMap(model.DefaultVlanParams)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["default_vlan_params"] = []map[string]interface{}{defaultVlanParamsMap}
+	}
+	modelMap["endpoint"] = *model.Endpoint
+	if model.InitContainerImageLocation != nil {
+		modelMap["init_container_image_location"] = *model.InitContainerImageLocation
+	}
+	modelMap["kubernetes_distribution"] = *model.KubernetesDistribution
+	if model.KubernetesType != nil {
+		modelMap["kubernetes_type"] = *model.KubernetesType
+	}
+	if model.PriorityClassName != nil {
+		modelMap["priority_class_name"] = *model.PriorityClassName
+	}
+	if model.ResourceAnnotations != nil {
+		resourceAnnotations := []map[string]interface{}{}
+		for _, resourceAnnotationsItem := range model.ResourceAnnotations {
+			resourceAnnotationsItemMap, err := ResourceIbmBackupRecoverySourceRegistrationKubernetesLabelObjectToMap(&resourceAnnotationsItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			resourceAnnotations = append(resourceAnnotations, resourceAnnotationsItemMap)
+		}
+		modelMap["resource_annotations"] = resourceAnnotations
+	}
+	if model.ResourceLabels != nil {
+		resourceLabels := []map[string]interface{}{}
+		for _, resourceLabelsItem := range model.ResourceLabels {
+			resourceLabelsItemMap, err := ResourceIbmBackupRecoverySourceRegistrationKubernetesLabelObjectToMap(&resourceLabelsItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			resourceLabels = append(resourceLabels, resourceLabelsItemMap)
+		}
+		modelMap["resource_labels"] = resourceLabels
+	}
+	if model.SanFields != nil {
+		modelMap["san_fields"] = model.SanFields
+	}
+	if model.ServiceAnnotations != nil {
+		serviceAnnotations := []map[string]interface{}{}
+		for _, serviceAnnotationsItem := range model.ServiceAnnotations {
+			serviceAnnotationsItemMap, err := ResourceIbmBackupRecoverySourceRegistrationKubernetesServiceAnnotationObjectToMap(&serviceAnnotationsItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			serviceAnnotations = append(serviceAnnotations, serviceAnnotationsItemMap)
+		}
+		modelMap["service_annotations"] = serviceAnnotations
+	}
+	if model.VeleroAwsPluginImageLocation != nil {
+		modelMap["velero_aws_plugin_image_location"] = *model.VeleroAwsPluginImageLocation
+	}
+	if model.VeleroImageLocation != nil {
+		modelMap["velero_image_location"] = *model.VeleroImageLocation
+	}
+	if model.VeleroOpenshiftPluginImageLocation != nil {
+		modelMap["velero_openshift_plugin_image_location"] = *model.VeleroOpenshiftPluginImageLocation
+	}
+	if model.VlanInfoVec != nil {
+		vlanInfoVec := []map[string]interface{}{}
+		for _, vlanInfoVecItem := range model.VlanInfoVec {
+			vlanInfoVecItemMap, err := ResourceIbmBackupRecoverySourceRegistrationKubernetesVlanInfoToMap(&vlanInfoVecItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			vlanInfoVec = append(vlanInfoVec, vlanInfoVecItemMap)
+		}
+		modelMap["vlan_info_vec"] = vlanInfoVec
+	}
+	return modelMap, nil
+}
+
+func ResourceIbmBackupRecoverySourceRegistrationKubernetesAutoProtectConfigToMap(model *backuprecoveryv1.KubernetesAutoProtectConfig) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.ErrorMessage != nil {
+		modelMap["error_message"] = *model.ErrorMessage
+	}
+	modelMap["is_default_auto_protected"] = *model.IsDefaultAutoProtected
+	modelMap["policy_id"] = *model.PolicyID
+	if model.ProtectionGroupID != nil {
+		modelMap["protection_group_id"] = *model.ProtectionGroupID
+	}
+	if model.StorageDomainID != nil {
+		modelMap["storage_domain_id"] = flex.IntValue(model.StorageDomainID)
+	}
+	return modelMap, nil
+}
+
+func ResourceIbmBackupRecoverySourceRegistrationVlanParamsToMap(model *backuprecoveryv1.VlanParams) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.DisableVlan != nil {
+		modelMap["disable_vlan"] = *model.DisableVlan
+	}
+	if model.InterfaceName != nil {
+		modelMap["interface_name"] = *model.InterfaceName
+	}
+	if model.VlanID != nil {
+		modelMap["vlan_id"] = flex.IntValue(model.VlanID)
+	}
+	return modelMap, nil
+}
+
+func ResourceIbmBackupRecoverySourceRegistrationKubernetesLabelObjectToMap(model *backuprecoveryv1.KubernetesLabelObject) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["key"] = *model.Key
+	if model.Value != nil {
+		modelMap["value"] = *model.Value
+	}
+	return modelMap, nil
+}
+
+func ResourceIbmBackupRecoverySourceRegistrationKubernetesServiceAnnotationObjectToMap(model *backuprecoveryv1.KubernetesServiceAnnotationObject) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Key != nil {
+		modelMap["key"] = *model.Key
+	}
+	if model.Value != nil {
+		modelMap["value"] = *model.Value
+	}
+	return modelMap, nil
+}
+
+func ResourceIbmBackupRecoverySourceRegistrationKubernetesVlanInfoToMap(model *backuprecoveryv1.KubernetesVlanInfo) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.ServiceAnnotations != nil {
+		serviceAnnotations := []map[string]interface{}{}
+		for _, serviceAnnotationsItem := range model.ServiceAnnotations {
+			serviceAnnotationsItemMap, err := ResourceIbmBackupRecoverySourceRegistrationKubernetesServiceAnnotationObjectToMap(&serviceAnnotationsItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			serviceAnnotations = append(serviceAnnotations, serviceAnnotationsItemMap)
+		}
+		modelMap["service_annotations"] = serviceAnnotations
+	}
+	if model.VlanParams != nil {
+		vlanParamsMap, err := ResourceIbmBackupRecoverySourceRegistrationVlanParamsToMap(model.VlanParams)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["vlan_params"] = []map[string]interface{}{vlanParamsMap}
 	}
 	return modelMap, nil
 }
