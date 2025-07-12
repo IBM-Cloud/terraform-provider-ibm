@@ -122,12 +122,6 @@ func ResourceIBMLogsRouterTenant() *schema.Resource {
 										Required:    true,
 										Description: "Network port of the log-sink.",
 									},
-									"access_credential": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Sensitive:   true,
-										Description: "Secret to connect to the log-sink",
-									},
 								},
 							},
 						},
@@ -274,8 +268,6 @@ func resourceIBMLogsRouterTenantRead(context context.Context, d *schema.Resource
 		targets = append(targets, targetsItemMap)
 	}
 
-	saveCredsTarget0 := d.Get("targets.0.parameters.0.access_credential").(string)
-	saveCredsTarget1 := d.Get("targets.1.parameters.0.access_credential").(string)
 	if len(targets) == 2 {
 		if d.Get("targets.1.type").(string) == "logdna" {
 			targets[0], targets[1] = targets[1], targets[0]
@@ -313,7 +305,6 @@ func resourceIBMLogsRouterTenantRead(context context.Context, d *schema.Resource
 				portTarget0 := int64(d.Get("targets.0.parameters.0.port").(int))
 				model.Host = &hostTarget0
 				model.Port = &portTarget0
-				model.AccessCredential = &saveCredsTarget0
 				parameters0Map, err := ResourceIBMLogsRouterTenantTargetParametersTypeLogDnaToMapAccessCredential(model)
 				if err != nil {
 					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_router_tenant", "read", "set-access_credential").GetDiag()
@@ -333,7 +324,6 @@ func resourceIBMLogsRouterTenantRead(context context.Context, d *schema.Resource
 				portTarget1 := int64(d.Get("targets.1.parameters.0.port").(int))
 				model.Host = &hostTarget1
 				model.Port = &portTarget1
-				model.AccessCredential = &saveCredsTarget1
 				parameters1Map, err := ResourceIBMLogsRouterTenantTargetParametersTypeLogDnaToMapAccessCredential(model)
 				if err != nil {
 					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_router_tenant", "read", "set-access_credential").GetDiag()
@@ -674,7 +664,6 @@ func ResourceIBMLogsRouterTenantMapToTargetParametersTypeLogDnaPrototype(modelMa
 	model := &ibmcloudlogsroutingv0.TargetParametersTypeLogDnaPrototype{}
 	model.Host = core.StringPtr(modelMap["host"].(string))
 	model.Port = core.Int64Ptr(int64(modelMap["port"].(int)))
-	model.AccessCredential = core.StringPtr(modelMap["access_credential"].(string))
 	return model, nil
 }
 
@@ -766,7 +755,6 @@ func ResourceIBMLogsRouterTenantTargetParametersTypeLogDnaToMapAccessCredential(
 	modelMap := make(map[string]interface{})
 	modelMap["host"] = *model.Host
 	modelMap["port"] = flex.IntValue(model.Port)
-	modelMap["access_credential"] = *model.AccessCredential // pragma: whitelist secret
 	return modelMap, nil
 }
 
@@ -819,7 +807,6 @@ func ResourceIBMLogsRouterTargetMapToTargetParametersTypeLogDNAPrototype(modelMa
 	model := &ibmcloudlogsroutingv0.TargetParametersTypeLogDnaPrototype{}
 	model.Host = core.StringPtr(modelMap["host"].(string))
 	model.Port = core.Int64Ptr(int64(modelMap["port"].(int)))
-	model.AccessCredential = core.StringPtr(modelMap["access_credential"].(string))
 	return model, nil
 }
 

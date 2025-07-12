@@ -48,5 +48,9 @@ In addition to all argument reference list, you can access the following attribu
 
   Nested scheme for `keys`:
   - `creation_date` - (String) Date of SSH Key creation.
+  - `description` - (String) Description of the ssh key.
   - `name` - (String) User defined name for the SSH key.
+  - `primary_workspace` - (Boolean) Indicates if the current workspace owns the ssh key or not.
   - `ssh_key` - (String) SSH RSA key.
+  - `ssh_key_id` - (String) Unique ID of SSH key.
+  - `visibility` - (String) Visibility of the ssh key.

@@ -4265,11 +4265,13 @@ func bareMetalServerDelete(context context.Context, d *schema.ResourceData, meta
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
-		_, err = isWaitForBareMetalServerActionStop(sess, d.Timeout(schema.TimeoutDelete), id, d)
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForBareMetalServerActionStop failed: %s", err.Error()), "ibm_is_bare_metal_server", "delete")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		return tfErr.GetDiag()
 
+		_, err = isWaitForBareMetalServerActionStop(sess, d.Timeout(schema.TimeoutDelete), id, d)
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForBareMetalServerActionStop failed: %s", err.Error()), "ibm_is_bare_metal_server", "delete")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
 	}
 	options := &vpcv1.DeleteBareMetalServerOptions{
 		ID: &id,
