@@ -170,7 +170,10 @@ func dataIBMCISMtlsAppRead(context context.Context, d *schema.ResourceData, meta
 	sess, err := meta.(conns.ClientSession).CisMtlsSession()
 
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error while getting the CisMtlsSession() %s %v", err, sess))
+		tfErr := flex.TerraformErrorf(err,
+			fmt.Sprintf("dataIBMCISMtlsAppRead CisMtlsSession initialization failed: %s", err.Error()),
+			"ibm_cis_mtls_app", "read")
+		return tfErr.GetDiag()
 	}
 
 	zoneID, crn, _ := flex.ConvertTftoCisTwoVar(d.Id())
@@ -179,8 +182,11 @@ func dataIBMCISMtlsAppRead(context context.Context, d *schema.ResourceData, meta
 	opt := sess.NewListAccessApplicationsOptions(zoneID)
 	result, resp, err := sess.ListAccessApplications(opt)
 	if err != nil {
-		log.Printf("[WARN] List all Applications failed: %v\n", resp)
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err,
+			fmt.Sprintf("dataIBMCISMtlsAppRead ListAccessApplications failed: %s", err.Error()),
+			"ibm_cis_mtls_app", "read")
+		log.Printf("[WARN] List all Applications failed: %v\n%s\n", resp, tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	mtlsAppLists := make([]map[string]interface{}, 0)
@@ -201,8 +207,11 @@ func dataIBMCISMtlsAppRead(context context.Context, d *schema.ResourceData, meta
 		PolicyOpt := sess.NewListAccessPoliciesOptions(zoneID, *appObj.ID)
 		PolicyResult, PolicyResp, PolicyErr := sess.ListAccessPolicies(PolicyOpt)
 		if PolicyErr != nil {
-			log.Printf("[WARN] List all Policies failed: %v\n", PolicyResp)
-			return diag.FromErr(PolicyErr)
+			tfErr := flex.TerraformErrorf(PolicyErr,
+				fmt.Sprintf("dataIBMCISMtlsAppRead ListAccessPolicies failed: %s", PolicyErr.Error()),
+				"ibm_cis_mtls_app", "read")
+			log.Printf("[WARN] List all Policies failed: %v\n%s\n", PolicyResp, tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
 		for _, PolicyObj := range PolicyResult.Result {

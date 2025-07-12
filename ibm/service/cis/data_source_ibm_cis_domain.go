@@ -4,7 +4,6 @@
 package cis
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -131,7 +130,7 @@ func dataSourceIBMCISDomainRead(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	if !zoneFound {
-		return fmt.Errorf("[ERROR] Given zone does not exist. Please specify correct domain")
+		return flex.FmtErrorf("[ERROR] Given zone does not exist. Please specify correct domain")
 	}
 
 	return nil

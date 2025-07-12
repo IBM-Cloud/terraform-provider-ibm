@@ -4,9 +4,8 @@
 package cis
 
 import (
-	"fmt"
-
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -70,14 +69,14 @@ func ResourceIBMCISBotManagementCreate(d *schema.ResourceData, meta interface{})
 func ResourceIBMCISBotManagementUpdate(d *schema.ResourceData, meta interface{}) error {
 	sess, err := meta.(conns.ClientSession).CisBotManagementSession()
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while Getting IAM Access Token using BluemixSession %s", err)
+		return flex.FmtErrorf("[ERROR] Error while Getting IAM Access Token using BluemixSession %s", err)
 	}
 	crn := d.Get(cisID).(string)
 	sess.Crn = core.StringPtr(crn)
 
 	cisClient, err := meta.(conns.ClientSession).CisBotManagementSession()
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while getting the CisBotManagementSession %s", err)
+		return flex.FmtErrorf("[ERROR] Error while getting the CisBotManagementSession %s", err)
 	}
 
 	if d.HasChange(cisBotManagementFightMode) ||
@@ -111,7 +110,7 @@ func ResourceIBMCISBotManagementUpdate(d *schema.ResourceData, meta interface{})
 
 		_, resp, err := cisClient.UpdateBotManagement(opt)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error updating BotManagement with error: %s %s", err, resp)
+			return flex.FmtErrorf("[ERROR] Error updating BotManagement with error: %s %s", err, resp)
 		}
 	}
 	return dataSourceIBMCISBotManagementRead(d, meta)
