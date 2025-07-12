@@ -4,9 +4,8 @@
 package cis
 
 import (
-	"log"
-
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -118,7 +117,7 @@ func DataSourceIBMCISCustomListsRead(d *schema.ResourceData, meta interface{}) e
 		result, resp, err := sess.GetCustomList(opt)
 
 		if err != nil {
-			log.Printf("[WARN] List Custom List failed: %v\n", resp)
+			flex.FmtErrorf("[WARN] List Custom List failed: %v\n", resp)
 			return err
 		}
 
@@ -137,7 +136,7 @@ func DataSourceIBMCISCustomListsRead(d *schema.ResourceData, meta interface{}) e
 		result, resp, err := sess.GetCustomLists(opt)
 
 		if err != nil {
-			log.Printf("[WARN] List Custom Lists failed: %v\n", resp)
+			flex.FmtErrorf("[WARN] List Custom Lists failed: %v\n", resp)
 			return err
 		}
 

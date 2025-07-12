@@ -4,9 +4,6 @@
 package cis
 
 import (
-	"fmt"
-	"log"
-
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
@@ -107,7 +104,7 @@ func ResourceIBMCISCustomListItemsValidator() *validate.ResourceValidator {
 func ResourceIBMCISCustomListItemsCreate(d *schema.ResourceData, meta interface{}) error {
 	sess, err := meta.(conns.ClientSession).CisListsSession()
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while creating the CisListsSession %s", err)
+		return flex.FmtErrorf("[ERROR] Error while creating the CisListsSession %s", err)
 	}
 
 	crn := d.Get(cisID).(string)
@@ -152,7 +149,7 @@ func ResourceIBMCISCustomListItemsCreate(d *schema.ResourceData, meta interface{
 	result, resp, err := sess.CreateListItems(opt)
 
 	if err != nil || result == nil {
-		return fmt.Errorf("[ERROR] Error creating  custom List items : %s %s", err, resp)
+		return flex.FmtErrorf("[ERROR] Error creating  custom List items : %s %s", err, resp)
 	}
 	d.SetId(flex.ConvertCisToTfTwoVar(listId, crn))
 
@@ -162,7 +159,7 @@ func ResourceIBMCISCustomListItemsCreate(d *schema.ResourceData, meta interface{
 func ResourceIBMCISCustomListItemsUpdate(d *schema.ResourceData, meta interface{}) error {
 	sess, err := meta.(conns.ClientSession).CisListsSession()
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while creating the CisListsSession %s", err)
+		return flex.FmtErrorf("[ERROR] Error while creating the CisListsSession %s", err)
 	}
 
 	if d.HasChange(CISCustomListItemsOutput) {
@@ -206,7 +203,7 @@ func ResourceIBMCISCustomListItemsUpdate(d *schema.ResourceData, meta interface{
 		result, resp, err := sess.UpdateListItems(opt)
 
 		if err != nil || result == nil {
-			return fmt.Errorf("[ERROR] Error creating  custom List items : %s %s", err, resp)
+			return flex.FmtErrorf("[ERROR] Error creating  custom List items : %s %s", err, resp)
 		}
 		d.SetId(flex.ConvertCisToTfTwoVar(listId, crn))
 	}
@@ -230,7 +227,7 @@ func ResourceIBMCISCustomListItemsRead(d *schema.ResourceData, meta interface{})
 	result, resp, err := sess.GetListItems(opt)
 
 	if err != nil {
-		log.Printf("[WARN] List Custom Lists failed: %v\n", resp)
+		flex.FmtErrorf("[WARN] List Custom Lists failed: %v\n", resp)
 		return err
 	}
 

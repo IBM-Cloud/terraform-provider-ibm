@@ -4,9 +4,6 @@
 package cis
 
 import (
-	"fmt"
-	"log"
-
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
@@ -100,7 +97,7 @@ func ResourceIBMCISCustomListValidator() *validate.ResourceValidator {
 func ResourceIBMCISCustomListCreate(d *schema.ResourceData, meta interface{}) error {
 	sess, err := meta.(conns.ClientSession).CisListsSession()
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while creating the CisListsSession %s", err)
+		return flex.FmtErrorf("[ERROR] Error while creating the CisListsSession %s", err)
 	}
 
 	crn := d.Get(cisID).(string)
@@ -123,7 +120,7 @@ func ResourceIBMCISCustomListCreate(d *schema.ResourceData, meta interface{}) er
 	result, resp, err := sess.CreateCustomLists(opt)
 
 	if err != nil || result == nil {
-		return fmt.Errorf("[ERROR] Error creating  custom List : %s %s", err, resp)
+		return flex.FmtErrorf("[ERROR] Error creating  custom List : %s %s", err, resp)
 	}
 	d.SetId(flex.ConvertCisToTfTwoVar(*result.Result.ID, crn))
 
@@ -133,7 +130,7 @@ func ResourceIBMCISCustomListCreate(d *schema.ResourceData, meta interface{}) er
 func ResourceIBMCISCustomListUpdate(d *schema.ResourceData, meta interface{}) error {
 	sess, err := meta.(conns.ClientSession).CisListsSession()
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while creating the CisListsSession %s", err)
+		return flex.FmtErrorf("[ERROR] Error while creating the CisListsSession %s", err)
 	}
 
 	listId, crn, _ := flex.ConvertTftoCisTwoVar(d.Id())
@@ -141,10 +138,10 @@ func ResourceIBMCISCustomListUpdate(d *schema.ResourceData, meta interface{}) er
 	sess.Crn = &crn
 	sess.ListID = core.StringPtr(listId)
 	if d.HasChange(CISCustomListName) {
-		return fmt.Errorf("List's name can not be changed")
+		return flex.FmtErrorf("List's name can not be changed")
 	}
 	if d.HasChange(CISCustomListKind) {
-		return fmt.Errorf("List's kind can not be changed")
+		return flex.FmtErrorf("List's kind can not be changed")
 	}
 	if d.HasChange(CISCustomListDescription) {
 		opt := sess.NewUpdateCustomListOptions()
@@ -154,7 +151,7 @@ func ResourceIBMCISCustomListUpdate(d *schema.ResourceData, meta interface{}) er
 		}
 		result, resp, err := sess.UpdateCustomList(opt)
 		if err != nil || result == nil {
-			return fmt.Errorf("[ERROR] Error updating  custom List : %s %s", err, resp)
+			return flex.FmtErrorf("[ERROR] Error updating  custom List : %s %s", err, resp)
 		}
 	}
 
@@ -176,7 +173,7 @@ func ResourceIBMCISCustomListRead(d *schema.ResourceData, meta interface{}) erro
 	result, _, err := sess.GetCustomList(opt)
 
 	if err != nil {
-		log.Printf("[ERROR] Get Custom List failed: %v\n", err)
+		flex.FmtErrorf("[ERROR] Get Custom List failed: %v\n", err)
 		return err
 	}
 
@@ -203,7 +200,7 @@ func ResourceIBMCustomListDelete(d *schema.ResourceData, meta interface{}) error
 	opt := sess.NewDeleteCustomListOptions()
 	_, response, err := sess.DeleteCustomList(opt)
 	if err != nil {
-		log.Printf("Delete list failed: %v", response)
+		flex.FmtErrorf("Delete list failed: %v", response)
 		return err
 	}
 	return nil

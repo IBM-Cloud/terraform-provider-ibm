@@ -4,9 +4,8 @@
 package cis
 
 import (
-	"log"
-
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -91,7 +90,7 @@ func dataIBMCISManagedListsRead(d *schema.ResourceData, meta interface{}) error 
 	result, resp, err := sess.GetManagedLists(opt)
 
 	if err != nil {
-		log.Printf("[WARN] List Managed List failed: %v\n", resp)
+		flex.FmtErrorf("[WARN] List Managed List failed: %v\n", resp)
 		return err
 	}
 
