@@ -140,16 +140,33 @@ func resourceIBMResourceGroupRead(context context.Context, d *schema.ResourceDat
 
 	var resp *core.DetailedResponse
 	var resourceGroup *rg.ResourceGroup
+	var (
+		initialDelaySec = 2  // seconds
+		maxDelaySec     = 60 // max delay in seconds
+
+	)
 
 	err = retry.RetryContext(context, 5*time.Minute, func() *retry.RetryError {
-		resourceGroup, resp, err = rMgtClient.GetResourceGroup(&resourceGroupGet)
-		if err != nil || resourceGroup == nil {
-			if resp != nil && resp.StatusCode == 404 {
-				return retry.RetryableError(err)
+		retryCount := 0
+
+		return func() *retry.RetryError {
+			// Calculate exponential delay
+			delaySec := initialDelaySec * (1 << retryCount) // equivalent to initialDelaySec * 2^retryCount
+			if delaySec > maxDelaySec {
+				delaySec = maxDelaySec
 			}
-			return retry.NonRetryableError(err)
-		}
-		return nil
+			time.Sleep(time.Duration(delaySec) * time.Second)
+
+			resourceGroup, resp, err = rMgtClient.GetResourceGroup(&resourceGroupGet)
+			if err != nil || resourceGroup == nil {
+				retryCount++
+				if resp != nil && resp.StatusCode == 404 {
+					return retry.RetryableError(err)
+				}
+				return retry.NonRetryableError(err)
+			}
+			return nil
+		}()
 	})
 
 	if conns.IsResourceTimeoutError(err) {

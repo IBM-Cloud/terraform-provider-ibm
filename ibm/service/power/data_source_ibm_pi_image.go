@@ -113,7 +113,7 @@ func dataSourceIBMPIImagesRead(ctx context.Context, d *schema.ResourceData, meta
 	d.Set(Attr_Architecture, imagedata.Specifications.Architecture)
 	if imagedata.Crn != "" {
 		d.Set(Attr_CRN, imagedata.Crn)
-		tags, err := flex.GetTagsUsingCRN(meta, string(imagedata.Crn))
+		tags, err := flex.GetGlobalTagsUsingCRN(meta, string(imagedata.Crn), "", UserTagType)
 		if err != nil {
 			log.Printf("Error on get of pi image (%s) user_tags: %s", *imagedata.ImageID, err)
 		}

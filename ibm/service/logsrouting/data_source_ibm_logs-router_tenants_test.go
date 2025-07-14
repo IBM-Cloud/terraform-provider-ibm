@@ -84,7 +84,6 @@ func TestDataSourceIBMLogsRouterTenantsTenantToMap(t *testing.T) {
 		model["updated_at"] = "2024-06-20T18:30:00.143156Z"
 		model["crn"] = "crn:v1:bluemix:public:logs:eu-de:a/3516b8fa0a174a71899f5affa4f18d78:3517d2ed-9429-af34-ad52-34278391cbc8::"
 		model["name"] = "my-logging-tenant"
-		model["type"] = "logs"
 		model["etag"] = "822b4b5423e225206c1d75666595714a11925cd0f82b229839864443d6c3c049"
 		model["targets"] = []map[string]interface{}{targetTypeModel}
 
@@ -109,7 +108,7 @@ func TestDataSourceIBMLogsRouterTenantsTenantToMap(t *testing.T) {
 	model.ID = CreateMockUUID("8717db99-2cfb-4ba6-a033-89c994c2e9f0")
 	model.CreatedAt = core.StringPtr("2024-06-20T18:30:00.143156Z")
 	model.UpdatedAt = core.StringPtr("2024-06-20T18:30:00.143156Z")
-	model.CRN = core.StringPtr("crn:v1:bluemix:public:logs-router:eu-de:a/3516b8fa0a174a71899f5affa4f18d78:3517d2ed-9429-af34-ad52-34278391cbc8::")
+	model.CRN = core.StringPtr("crn:v1:bluemix:public:logs:eu-de:a/3516b8fa0a174a71899f5affa4f18d78:3517d2ed-9429-af34-ad52-34278391cbc8::")
 	model.Name = core.StringPtr("my-logging-tenant")
 	model.Etag = core.StringPtr("822b4b5423e225206c1d75666595714a11925cd0f82b229839864443d6c3c049")
 	model.Targets = []ibmcloudlogsroutingv0.TargetTypeIntf{targetTypeModel}

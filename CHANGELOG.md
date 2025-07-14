@@ -1,3 +1,113 @@
+# 1.80.0 (July 4, 2025)
+
+## Bug Fixes
+
+### Cloud Databases
+* Remove outdated notification ([6294](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6294))
+
+### Cloud Object Storage
+* remove computed field ([6288](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6288))
+
+### VPC Infrastructure
+* added an empty check for dns binding id ([6307](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6307))
+
+
+## Enhancements
+
+### Backup/Recovery
+* Removing the unnecessary comments ([6308](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6308))
+
+### Cloud Object Storage
+* Adding the changes for bucket backup retention ([6283](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6283))
+
+### General
+* bump github.com/cloudflare/circl from 1.3.7 to 1.6.1 ([6284](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6284))
+* Package update ([6304](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6304))
+* Add code owners ([6301](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6301))
+
+### Power Systems
+* Replace GetTagsUsingCRN with GetGlobalTagsUsingCRN ([6248](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6248))
+* Remove redundant constants ([6260](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6260))
+* Standardize Arg_CloudInstanceID argument across all data source and resource ([6249](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6249))
+
+### Secrets Manager
+* Bump version to 1.80.0-beta0 ([6305](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6305))
+
+### Transit Gateway
+* Macsec changes ([6220](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6220))
+
+
+## Documentation
+
+### VPC Infrastructure
+* enhance is_lb_pool documentation with session persistence details ([6299](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6299))
+
+
+# 1.80.0-beta0 (June 23, 2025)
+
+## Bug Fixes
+
+### Cloud Databases
+* Remove outdated notification ([6294](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6294))
+
+
+## Enhancements
+
+### Cloud Object Storage
+* Adding the changes for bucket backup retention ([6283](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6283))
+
+### General
+* bump github.com/cloudflare/circl from 1.3.7 to 1.6.1 ([6284](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6284))
+
+### Power Systems
+* Replace GetTagsUsingCRN with GetGlobalTagsUsingCRN ([6248](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6248))
+* Remove redundant constants ([6260](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6260))
+* Standardize Arg_CloudInstanceID argument across all data source and resource ([6249](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6249))
+
+### Transit Gateway
+* Macsec changes ([6220](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6220))
+
+
+## Documentation
+
+### VPC Infrastructure
+* enhance is_lb_pool documentation with session persistence details ([6299](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6299))
+
+
+# 1.79.2 (June 13, 2025)
+
+## Bug Fixes
+
+### VPC Infrastructure
+* fixed the access_tags set on is_image ([6280](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6280))
+* ensure user-tags on volume_prototype are correctly set ([6279](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6279))
+* fix setting accesscontrolmode on mount target ([6285](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6285))
+
+
+## Enhancements
+
+### Cloud Databases
+* In place upgrade ([6275](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6275))
+
+### General
+* Update go version to 1.24 ([6264](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6264))
+
+### IAM
+* Add retry for GET operations with exponential retry ([6292](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6292))
+
+
+## Documentation
+
+### General
+* update workflow badge to use GitHub Actions URL format ([6282](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6282))
+
+# 1.79.1 (June 09, 2025)
+
+## Bug Fixes
+
+### VPC Infrastructure
+* fix(is-image): fixed the access_tags set on is_image ([6280](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6280))
+
 # 1.79.0 (June 09, 2025)
 
 ## Bug Fixes
