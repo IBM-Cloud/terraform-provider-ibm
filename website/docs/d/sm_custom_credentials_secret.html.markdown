@@ -67,6 +67,7 @@ In addition to all argument references listed, you can access the following attr
 * `crn` - (String) A CRN that uniquely identifies an IBM Cloud resource.
 
 * `custom_metadata` - (Map) The secret metadata that a user can customize.
+  * Constraints: Nested JSONs are supported in Terraform only as string-encoded JSONs.
 
 * `description` - (String) An extended description of your secret.
 
