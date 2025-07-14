@@ -45,6 +45,7 @@ In addition to all argument references listed, you can access the following attr
   * Constraints: The maximum length is `512` characters. The minimum length is `9` characters. The value must match regular expression `/^crn:v[0-9](:([A-Za-z0-9-._~!$&'()*+,;=@\/]|%[0-9A-Z]{2})*){8}$/`.
 
 * `custom_metadata` - (Map) The secret metadata that a user can customize.
+    * Constraints: Nested JSONs are supported in Terraform only as string-encoded JSONs.
 
 * `description` - (String) An extended description of your secret.To protect your privacy, do not use personal data, such as your name or location, as a description for your secret group.
   * Constraints: The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/(.*?)/`.
