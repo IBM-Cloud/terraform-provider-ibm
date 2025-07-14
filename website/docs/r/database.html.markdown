@@ -285,6 +285,9 @@ resource "ibm_database" "mongodb" {
 
 ### Sample MongoDB Enterprise database instance with BI Connector and Analytics
 * To enable Analytics and/or BI Connector for MongoDB Enterprise, a `group` attribute must be defined for the `analytics` and `bi_connector` group types with `members` scaled to at exactly `1`. Read more about Analytics and BI Connector [here](https://cloud.ibm.com/docs/databases-for-mongodb?topic=databases-for-mongodb-mongodbee-analytics)
+
+    > 🛑 **Deprectaed:** Analytics Add-On for Databases for MongoDB Enterprise Edition is deprecated after March 31,2025.
+
 * MongoDB Enterprise provisioning may require more time than the default timeout. A longer timeout value can be set with using the `timeouts` attribute.
 
 ```terraform
@@ -688,13 +691,13 @@ Review the argument reference that you can specify for your resource.
 - `tags` (Optional, Array of Strings) A list of tags that you want to add to your instance.
 - `version` - (Optional, String) The version of the database to be provisioned or upgraded to. If omitted, the database is created with the latest supported major and minor version. This field can be updated to perform an in-place upgrade without forcing the creation of a new resource. The database will be put into READ-ONLY mode during upgrade. It is highly recommended to test before upgrading. To learn more, refer to the version upgrade documentation.
 
-  > ⚠️ **Warning:** Upgrading may require more time than the default timeout.  
-  > A longer timeout value can be set using the timeouts attribute.
+    > ⚠️ **Warning:** Upgrading may require more time than the default timeout.  
+    > A longer timeout value can be set using the timeouts attribute.
 
 - `version_upgrade_skip_backup` - (Optional, Boolean) Whether to skip taking a backup before upgrading the database version. This is only applicable to databases that do not support point-in-time restore (PITR). To learn more, refer to the version upgrade documentation.
 
-  > ⚠️ **Warning:** Skipping a backup is **not recommended**.  
-  > Skipping a backup before a version upgrade is dangerous and may result in **data loss** if the upgrade fails at any stage — there will be **no immediate backup** to restore from.
+    > ⚠️ **Warning:** Skipping a backup is **not recommended**.  
+    > Skipping a backup before a version upgrade is dangerous and may result in **data loss** if the upgrade fails at any stage — there will be **no immediate backup** to restore from.
 
 - `deletion_protection` - (Optional, Boolean) If the DB instance should have deletion protection within terraform enabled. This is not a property of the resource and does not prevent deletion outside of terraform. The database can't be deleted by terraform when this value is set to `true`. The default is `false`.
 - `users` - (Optional, List of Objects) A list of users that you want to create on the database. Multiple blocks are allowed.

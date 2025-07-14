@@ -465,54 +465,54 @@ func dataSourceIBMDLGatewaysRead(d *schema.ResourceData, meta interface{}) error
 
 		dtype := *instance.Type
 		if dtype == "dedicated" {
-			if instance.MacsecConfig != nil {
-				macsecList := make([]map[string]interface{}, 0)
-				currentMacSec := map[string]interface{}{}
-				// Construct an instance of the GatewayMacsecConfigTemplate model
-				gatewayMacsecConfigTemplateModel := instance.MacsecConfig
-				if gatewayMacsecConfigTemplateModel.Active != nil {
-					currentMacSec[dlActive] = *gatewayMacsecConfigTemplateModel.Active
-				}
-				if gatewayMacsecConfigTemplateModel.ActiveCak != nil {
-					if gatewayMacsecConfigTemplateModel.ActiveCak.Crn != nil {
-						currentMacSec[dlActiveCak] = *gatewayMacsecConfigTemplateModel.ActiveCak.Crn
-					}
-				}
-				if gatewayMacsecConfigTemplateModel.PrimaryCak != nil {
-					currentMacSec[dlPrimaryCak] = *gatewayMacsecConfigTemplateModel.PrimaryCak.Crn
-				}
-				if gatewayMacsecConfigTemplateModel.FallbackCak != nil {
-					if gatewayMacsecConfigTemplateModel.FallbackCak.Crn != nil {
-						currentMacSec[dlFallbackCak] = *gatewayMacsecConfigTemplateModel.FallbackCak.Crn
-					}
-				}
-				if gatewayMacsecConfigTemplateModel.SakExpiryTime != nil {
-					currentMacSec[dlSakExpiryTime] = *gatewayMacsecConfigTemplateModel.SakExpiryTime
-				}
-				if gatewayMacsecConfigTemplateModel.SecurityPolicy != nil {
-					currentMacSec[dlSecurityPolicy] = *gatewayMacsecConfigTemplateModel.SecurityPolicy
-				}
-				if gatewayMacsecConfigTemplateModel.WindowSize != nil {
-					currentMacSec[dlWindowSize] = *gatewayMacsecConfigTemplateModel.WindowSize
-				}
-				if gatewayMacsecConfigTemplateModel.CipherSuite != nil {
-					currentMacSec[dlCipherSuite] = *gatewayMacsecConfigTemplateModel.CipherSuite
-				}
-				if gatewayMacsecConfigTemplateModel.ConfidentialityOffset != nil {
-					currentMacSec[dlConfidentialityOffset] = *gatewayMacsecConfigTemplateModel.ConfidentialityOffset
-				}
-				if gatewayMacsecConfigTemplateModel.CryptographicAlgorithm != nil {
-					currentMacSec[dlCryptographicAlgorithm] = *gatewayMacsecConfigTemplateModel.CryptographicAlgorithm
-				}
-				if gatewayMacsecConfigTemplateModel.KeyServerPriority != nil {
-					currentMacSec[dlKeyServerPriority] = *gatewayMacsecConfigTemplateModel.KeyServerPriority
-				}
-				if gatewayMacsecConfigTemplateModel.Status != nil {
-					currentMacSec[dlMacSecConfigStatus] = *gatewayMacsecConfigTemplateModel.Status
-				}
-				macsecList = append(macsecList, currentMacSec)
-				gateway[dlMacSecConfig] = macsecList
-			}
+			// if instance.MacsecConfig != nil {
+			// 	macsecList := make([]map[string]interface{}, 0)
+			// 	currentMacSec := map[string]interface{}{}
+			// 	// Construct an instance of the GatewayMacsecConfigTemplate model
+			// 	gatewayMacsecConfigTemplateModel := instance.MacsecConfig
+			// 	if gatewayMacsecConfigTemplateModel.Active != nil {
+			// 		currentMacSec[dlActive] = *gatewayMacsecConfigTemplateModel.Active
+			// 	}
+			// 	if gatewayMacsecConfigTemplateModel.ActiveCak != nil {
+			// 		if gatewayMacsecConfigTemplateModel.ActiveCak.Crn != nil {
+			// 			currentMacSec[dlActiveCak] = *gatewayMacsecConfigTemplateModel.ActiveCak.Crn
+			// 		}
+			// 	}
+			// 	if gatewayMacsecConfigTemplateModel.PrimaryCak != nil {
+			// 		currentMacSec[dlPrimaryCak] = *gatewayMacsecConfigTemplateModel.PrimaryCak.Crn
+			// 	}
+			// 	if gatewayMacsecConfigTemplateModel.FallbackCak != nil {
+			// 		if gatewayMacsecConfigTemplateModel.FallbackCak.Crn != nil {
+			// 			currentMacSec[dlFallbackCak] = *gatewayMacsecConfigTemplateModel.FallbackCak.Crn
+			// 		}
+			// 	}
+			// 	if gatewayMacsecConfigTemplateModel.SakExpiryTime != nil {
+			// 		currentMacSec[dlSakExpiryTime] = *gatewayMacsecConfigTemplateModel.SakExpiryTime
+			// 	}
+			// 	if gatewayMacsecConfigTemplateModel.SecurityPolicy != nil {
+			// 		currentMacSec[dlSecurityPolicy] = *gatewayMacsecConfigTemplateModel.SecurityPolicy
+			// 	}
+			// 	if gatewayMacsecConfigTemplateModel.WindowSize != nil {
+			// 		currentMacSec[dlWindowSize] = *gatewayMacsecConfigTemplateModel.WindowSize
+			// 	}
+			// 	if gatewayMacsecConfigTemplateModel.CipherSuite != nil {
+			// 		currentMacSec[dlCipherSuite] = *gatewayMacsecConfigTemplateModel.CipherSuite
+			// 	}
+			// 	if gatewayMacsecConfigTemplateModel.ConfidentialityOffset != nil {
+			// 		currentMacSec[dlConfidentialityOffset] = *gatewayMacsecConfigTemplateModel.ConfidentialityOffset
+			// 	}
+			// 	if gatewayMacsecConfigTemplateModel.CryptographicAlgorithm != nil {
+			// 		currentMacSec[dlCryptographicAlgorithm] = *gatewayMacsecConfigTemplateModel.CryptographicAlgorithm
+			// 	}
+			// 	if gatewayMacsecConfigTemplateModel.KeyServerPriority != nil {
+			// 		currentMacSec[dlKeyServerPriority] = *gatewayMacsecConfigTemplateModel.KeyServerPriority
+			// 	}
+			// 	if gatewayMacsecConfigTemplateModel.Status != nil {
+			// 		currentMacSec[dlMacSecConfigStatus] = *gatewayMacsecConfigTemplateModel.Status
+			// 	}
+			// 	macsecList = append(macsecList, currentMacSec)
+			// 	gateway[dlMacSecConfig] = macsecList
+			// }
 		}
 		if instance.ChangeRequest != nil {
 			gatewayChangeRequestIntf := instance.ChangeRequest
@@ -520,9 +520,9 @@ func dataSourceIBMDLGatewaysRead(d *schema.ResourceData, meta interface{}) error
 			gateway[dlChangeRequest] = *gatewayChangeRequest.Type
 		}
 
-		if instance.AuthenticationKey != nil {
-			gateway[dlAuthenticationKey] = *instance.AuthenticationKey.Crn
-		}
+		// if instance.AuthenticationKey != nil {
+		// 	gateway[dlAuthenticationKey] = *instance.AuthenticationKey.Crn
+		// }
 
 		if instance.ConnectionMode != nil {
 			gateway[dlConnectionMode] = *instance.ConnectionMode

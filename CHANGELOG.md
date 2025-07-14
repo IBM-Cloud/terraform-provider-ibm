@@ -1,3 +1,140 @@
+# 1.80.3 (July 11, 2025)
+## Bug Fixes
+
+### VPC Infrastructure
+* fix(is-bm): fixed bm error on delete ([6346](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6346))
+### CIS
+* fix(CIS): update domain setting proxy read timeout([6347](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6347))
+
+
+# 1.80.2 (July 10, 2025)
+## Bug Fixes
+
+### Global Catalog
+* updated platform services to use local sdk ([6343](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6343))
+
+# 1.80.1 (July 9, 2025)
+
+## Bug Fixes
+
+### Cloud Logs
+* fix alerts metadata_labels ([6306](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6306))
+
+### General
+* Update SDK for MR for Error Format ([6338](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6338))
+
+### Power Systems
+* [Resource] [DataSource] Add Route data sources and resources ([6326](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6326))
+* [Resource] [Datasource] Replace SSH Key API with new API ([6327](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6327))
+
+
+## Enhancements
+
+### Power Systems
+* Deprecate vpn resources ([6317](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6317))
+* [Resource] [Data source] Remove access config and jumbo fields, deprecate network-peer fields ([6319](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6319))
+* Add out_of_band_deleted attribute to terraformvolume data source and resource ([6320](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6320))
+* Add status_detail attribute to ibm_pi_instance_snapshot data source and resource ([6323](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6323))
+* [Datasource] Sap profile filtering ([6324](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6324))
+* [Resource] [Datasource] Granular CRN for pi_placement_group and pi_spp_placement_group resources and datasources ([6325](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6325))
+* [Resource] [Datasource] Add Advertise and ArpBroadcast support ([6322](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6322))
+
+### VPC Infrastructure
+* reorganised VPC examples folder ([6206](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6206))
+* removed redundant code from is_ipsec_policy resource ([6286](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6286))
+
+
+## Documentation
+
+### Cloud Logs
+* Remove access_credential from logs-routing resources ([6332](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6332))
+
+### IAM
+* Improvide wait logic for IAM identity template assignments and correct policy refs field mapping ([6314](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6314))
+
+### Power Systems
+* Update terraform docs with new systems ([6318](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6318))
+
+### VPC Infrastructure
+* added example and related documents ([6296](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6296))
+
+
+# 1.80.0 (July 4, 2025)
+
+## Bug Fixes
+
+### Cloud Databases
+* Remove outdated notification ([6294](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6294))
+
+### Cloud Object Storage
+* remove computed field ([6288](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6288))
+
+### VPC Infrastructure
+* added an empty check for dns binding id ([6307](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6307))
+
+
+## Enhancements
+
+### Backup/Recovery
+* Removing the unnecessary comments ([6308](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6308))
+
+### Cloud Object Storage
+* Adding the changes for bucket backup retention ([6283](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6283))
+
+### General
+* bump github.com/cloudflare/circl from 1.3.7 to 1.6.1 ([6284](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6284))
+* Package update ([6304](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6304))
+* Add code owners ([6301](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6301))
+
+### Power Systems
+* Replace GetTagsUsingCRN with GetGlobalTagsUsingCRN ([6248](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6248))
+* Remove redundant constants ([6260](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6260))
+* Standardize Arg_CloudInstanceID argument across all data source and resource ([6249](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6249))
+
+### Secrets Manager
+* Bump version to 1.80.0-beta0 ([6305](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6305))
+
+### Transit Gateway
+* Macsec changes ([6220](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6220))
+
+
+## Documentation
+
+### VPC Infrastructure
+* enhance is_lb_pool documentation with session persistence details ([6299](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6299))
+
+
+# 1.80.0-beta0 (June 23, 2025)
+
+## Bug Fixes
+
+### Cloud Databases
+* Remove outdated notification ([6294](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6294))
+
+
+## Enhancements
+
+### Cloud Object Storage
+* Adding the changes for bucket backup retention ([6283](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6283))
+
+### General
+* bump github.com/cloudflare/circl from 1.3.7 to 1.6.1 ([6284](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6284))
+
+### Power Systems
+* Replace GetTagsUsingCRN with GetGlobalTagsUsingCRN ([6248](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6248))
+* Remove redundant constants ([6260](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6260))
+* Standardize Arg_CloudInstanceID argument across all data source and resource ([6249](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6249))
+
+### Transit Gateway
+* Macsec changes ([6220](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6220))
+
+
+## Documentation
+
+### VPC Infrastructure
+* enhance is_lb_pool documentation with session persistence details ([6299](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6299))
+
+
 # 1.79.2 (June 13, 2025)
 
 ## Bug Fixes

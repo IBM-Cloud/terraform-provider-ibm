@@ -724,14 +724,14 @@ resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle" {
       days = 1
     }
     filter {
-      and{
-        prefix = "%s"
-        tags{
-          key = "%s"
-          value = "%s"
-          }
-        object_size_greater_than = "%d"
-        object_size_less_than = "%d"
+      and {
+        prefix = "foo"
+        tags {
+          key   = "key"
+          value = "value"
+        }
+        object_size_greater_than = 20
+        object_size_less_than    = 40
       }
     }
     rule_id = "id"
@@ -757,19 +757,102 @@ resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle" {
       days = 1
     }
     filter {
-      and{
-        tags{
-          key = "%s"
-          value = "%s"
-          }
-	tags{
-          key = "%s"
-          value = "%s"
-	}
+      and {
+        tags {
+          key   = "key1"
+          value = "value1"
+        }
+        tags {
+          key   = "key2"
+          value = "value2"
+        }
       }
     }  
     rule_id = "id"
     status = "enable"
   }
 }
+
+
+resource "ibm_cos_bucket" "backup-source-bucket" {
+  bucket_name           = "bucket-name"
+  resource_instance_id  = "cos_instance_id"
+  cross_region_location = "us"
+  storage_class         = "standard"
+  object_versioning {
+    enable = true
+  }
+
+}
+
+
+resource "ibm_cos_backup_vault" "backup-vault" {
+  backup_vault_name                   = "backup_vault_name"
+  service_instance_id                 = "cos_instance_id to create backup vault"
+  region                              = "us"
+  activity_tracking_management_events = true
+  metrics_monitoring_usage_metrics    = true
+  kms_key_crn                         = "crn:v1:staging:public:kms:us-south:a/997xxxxxxxxxxxxxxxxxxxxxx54:5xxxxxxxa-fxxb-4xx8-9xx4-f1xxxxxxxxx5:key:af5667d5-dxx5-4xxf-8xxf-exxxxxxxf1d"
+}
+
+
+resource "ibm_iam_authorization_policy" "policy" {
+  roles = [
+    "Backup Manager", "Writer"
+  ]
+  subject_attributes {
+    name  = "accountId"
+    value = "account_id of the cos account"
+  }
+  subject_attributes {
+    name  = "serviceName"
+    value = "cloud-object-storage"
+  }
+  subject_attributes {
+    name  = "serviceInstance"
+    value = "exxxxx34-xxxx-xxxx-xxxx-d6xxxxxxxx9"
+  }
+  subject_attributes {
+    name  = "resource"
+    value = "source-bucket-name"
+  }
+  subject_attributes {
+    name  = "resourceType"
+    value = "bucket"
+  }
+  resource_attributes {
+    name     = "accountId"
+    operator = "stringEquals"
+    value    = "account id of the cos account of backup vault"
+  }
+  resource_attributes {
+    name     = "serviceName"
+    operator = "stringEquals"
+    value    = "cloud-object-storage"
+  }
+  resource_attributes {
+    name     = "serviceInstance"
+    operator = "stringEquals"
+    value    = "exxxxx34-xxxx-xxxx-xxxx-d6xxxxxxxx9"
+  }
+  resource_attributes {
+    name     = "resource"
+    operator = "stringEquals"
+    value    = "backup-vault-name"
+  }
+  resource_attributes {
+    name     = "resourceType"
+    operator = "stringEquals"
+    value    = "backup-vault"
+  }
+}
+
+resource "ibm_cos_backup_policy" "policy" {
+  bucket_crn              = ibm_cos_bucket.bucket.crn
+  initial_delete_after_days       = 2
+  policy_name             = "policy_name"
+  target_backup_vault_crn = ibm_cos_backup_vault.backup-vault.backup_vault_crn
+  backup_type             = "continuous"
+}
+
 
