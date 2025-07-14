@@ -43,7 +43,10 @@ resource "ibm_logs_alert" "logs_alert_instance" {
     text        = "text"
     filter_type = "text_or_unspecified"
   }
-  meta_labels_strings = []
+  meta_labels {
+	key   = "key"
+	value = "value"
+  }
   incident_settings {
     retriggering_period_seconds = 43200
     notify_on                   = "triggered_only"
@@ -475,14 +478,15 @@ Nested schema for **incident_settings**:
 	  * Constraints: The maximum value is `4294967295`. 
 	* `use_as_notification_settings` - (Optional, Boolean) Use these settings for all notificaion webhook.
 * `is_active` - (Required, Boolean) Alert is active.
-* `meta_labels` - (Optional, List) The Meta labels to add to the alert.
+* `meta_labels` - (Optional, Set) The Meta labels to add to the alert.
   * Constraints: The maximum length is `200` items. The minimum length is `0` items.
 Nested schema for **meta_labels**:
 	* `key` - (Optional, String) The key of the label.
 	  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$/`.
 	* `value` - (Optional, String) The value of the label.
 	  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$/`.
-* `meta_labels_strings` - (Optional, List) The Meta labels to add to the alert as string with ':' separator.
+* `meta_labels_strings` - (Optional, List) The Meta labels to add to the alert as string with ':' separator. 
+	~> **NOTE** `meta_labels_strings` argument is deprecated. Kindly use `meta_labels` instead.
   * Constraints: The list items must match regular expression `/^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$/`. The maximum length is `4096` items. The minimum length is `0` items.
 * `name` - (Required, String) Alert name.
   * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$/`.

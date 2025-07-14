@@ -16,6 +16,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -34,29 +35,50 @@ func ResourceIBMPIPlacementGroup() *schema.Resource {
 			Update: schema.DefaultTimeout(60 * time.Minute),
 			Delete: schema.DefaultTimeout(60 * time.Minute),
 		},
+		CustomizeDiff: customdiff.Sequence(
+			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
+				return flex.ResourcePowerUserTagsCustomizeDiff(diff)
+			},
+		),
 
 		Schema: map[string]*schema.Schema{
 			// Arguments
 			Arg_CloudInstanceID: {
 				Description:  "The GUID of the service instance associated with an account.",
+				ForceNew:     true,
 				Required:     true,
 				Type:         schema.TypeString,
 				ValidateFunc: validation.NoZeroValues,
 			},
 			Arg_PlacementGroupName: {
 				Description:  "The name of the placement group.",
+				ForceNew:     true,
 				Required:     true,
 				Type:         schema.TypeString,
 				ValidateFunc: validation.NoZeroValues,
 			},
 			Arg_PlacementGroupPolicy: {
 				Description:  "The value of the group's affinity policy. Valid values are 'affinity' and 'anti-affinity'.",
+				ForceNew:     true,
 				Required:     true,
 				Type:         schema.TypeString,
 				ValidateFunc: validate.ValidateAllowedStringValues([]string{Affinity, AntiAffinity}),
 			},
+			Arg_UserTags: {
+				Computed:    true,
+				Description: "List of user tags attached to the resource.",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Optional:    true,
+				Set:         schema.HashString,
+				Type:        schema.TypeSet,
+			},
 
 			// Attributes
+			Attr_CRN: {
+				Computed:    true,
+				Description: "The CRN of the resource.",
+				Type:        schema.TypeString,
+			},
 			Attr_Members: {
 				Computed:    true,
 				Description: "The list of server instances IDs that are members of the placement group.",
@@ -87,12 +109,23 @@ func resourceIBMPIPlacementGroupCreate(ctx context.Context, d *schema.ResourceDa
 		Policy: &policy,
 	}
 
+	if tags, ok := d.GetOk(Arg_UserTags); ok {
+		body.UserTags = flex.FlattenSet(tags.(*schema.Set))
+	}
+
 	response, err := client.Create(body)
 	if err != nil || response == nil {
 		return diag.FromErr(fmt.Errorf("error creating the shared processor pool: %s", err))
 	}
 
 	log.Printf("Printing the placement group %+v", &response)
+	if response.Crn != "" {
+		oldList, newList := d.GetChange(Arg_UserTags)
+		err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, string(response.Crn), "", UserTagType)
+		if err != nil {
+			log.Printf("Error on update of pi spp placement group (%s) pi_user_tags during creation: %s", *response.ID, err)
+		}
+	}
 
 	d.SetId(fmt.Sprintf("%s/%s", cloudInstanceID, *response.ID))
 	return resourceIBMPIPlacementGroupRead(ctx, d, meta)
@@ -121,11 +154,33 @@ func resourceIBMPIPlacementGroupRead(ctx context.Context, d *schema.ResourceData
 	d.Set(Arg_PlacementGroupPolicy, response.Policy)
 	d.Set(Attr_Members, response.Members)
 	d.Set(Attr_PlacementGroupID, response.ID)
+	if response.Crn != "" {
+		d.Set(Attr_CRN, response.Crn)
+		tags, err := flex.GetGlobalTagsUsingCRN(meta, string(response.Crn), "", UserTagType)
+		if err != nil {
+			log.Printf("Error on get of ibm pi placement group (%s) pi_user_tags: %s", *response.ID, err)
+		}
+		d.Set(Arg_UserTags, tags)
+	}
 
 	return nil
 }
 
 func resourceIBMPIPlacementGroupUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	_, pgID, err := splitID(d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	if d.HasChange(Arg_UserTags) {
+		if crn, ok := d.GetOk(Attr_CRN); ok {
+			oldList, newList := d.GetChange(Arg_UserTags)
+			err := flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, crn.(string), "", UserTagType)
+			if err != nil {
+				log.Printf("Error on update of pi placement group (%s) pi_user_tags: %s", pgID, err)
+			}
+		}
+	}
+
 	return resourceIBMPIPlacementGroupRead(ctx, d, meta)
 }
 
