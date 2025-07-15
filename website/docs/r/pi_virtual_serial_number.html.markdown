@@ -53,12 +53,14 @@ ibm_pi_virtual_serial_number provides the following [timeouts](https://www.terra
 Review the argument references that you can specify for your resource.
 
 - `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
-- `pi_description` - (Optional, String) Desired description for virtual serial number.
+- `pi_description` - (Optional, String) Desired description for virtual serial number. Updates to this will shutdown then restart power VM instances.
 - `pi_instance_id` - (Optional, String) Power instance ID to assign created or existing virtual serial number to. Must unassign from previous power instance if different than current assignment. Cannot use the instance name, only ID. Please see note on `pi_virtual_serial_number` in the `ibm_pi_instance` resource documentation.
 - `pi_retain_virtual_serial_number` - (Optional, Boolean) Indicates whether to reserve or delete virtual serial number when detached from power instance during deletion. Required with `pi_instance_id`. Default behavior does not retain virtual serial number after deletion.
-- `pi_serial` - (Required, String) Virtual serial number of existing serial. Cannot use 'auto-assign' unless `pi_instance_id` is specified.
+- `pi_serial` - (Required, String) Virtual serial number of existing serial. Cannot use 'auto-assign' unless `pi_instance_id` is specified. Updates to this will shutdown then restart power VM instances.
 
     ~> **Note** When set to "auto-assign" in the configuration, changes to `pi_serial` outside of terraform will not be detected.
+
+- `pi_software_tier` - (Optional, String) Specifies software tier of virtual serial number. Can only be used with `pi_instance_id`. Allowed values are: ["P05", "P10", "P20", "P30"].
 
 ## Attribute Reference
 
