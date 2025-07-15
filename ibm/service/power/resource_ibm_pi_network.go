@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -48,6 +49,18 @@ func ResourceIBMPINetwork() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			// Arguments
+			Arg_Advertise: {
+				Description:  "Enable the network to be advertised.",
+				Optional:     true,
+				Type:         schema.TypeString,
+				ValidateFunc: validation.StringInSlice([]string{Enable, Disable}, false),
+			},
+			Arg_ARPBroadcast: {
+				Description:  "Enable ARP Broadcast.",
+				Optional:     true,
+				Type:         schema.TypeString,
+				ValidateFunc: validation.StringInSlice([]string{Enable, Disable}, false),
+			},
 			Arg_Cidr: {
 				Computed:    true,
 				Description: "The network CIDR. Required for `vlan` network type.",
@@ -96,28 +109,11 @@ func ResourceIBMPINetwork() *schema.Resource {
 				Optional: true,
 				Type:     schema.TypeList,
 			},
-			Arg_NetworkAccessConfig: {
-				Computed:     true,
-				Deprecated:   "This field is deprecated please use pi_network_peer instead",
-				Description:  "The network communication configuration option of the network (for satellite locations only).",
-				Optional:     true,
-				Type:         schema.TypeString,
-				ValidateFunc: validate.ValidateAllowedStringValues([]string{Internal_Only, Outbound_Only, Bidirectional_Static_Route, Bidirectional_BGP, Bidirectional_L2Out}),
-			},
-			Arg_NetworkJumbo: {
-				Computed:      true,
-				ConflictsWith: []string{Arg_NetworkMTU},
-				Deprecated:    "This field is deprecated, use pi_network_mtu instead.",
-				Description:   "MTU Jumbo option of the network (for multi-zone locations only).",
-				Optional:      true,
-				Type:          schema.TypeBool,
-			},
 			Arg_NetworkMTU: {
-				Computed:      true,
-				ConflictsWith: []string{Arg_NetworkJumbo},
-				Description:   "Maximum Transmission Unit option of the network. Minimum is 1450 and maximum is 9000.",
-				Optional:      true,
-				Type:          schema.TypeInt,
+				Computed:    true,
+				Description: "Maximum Transmission Unit option of the network. Minimum is 1450 and maximum is 9000.",
+				Optional:    true,
+				Type:        schema.TypeInt,
 			},
 			Arg_NetworkName: {
 				Description:  "The name of the network.",
@@ -126,19 +122,23 @@ func ResourceIBMPINetwork() *schema.Resource {
 				ValidateFunc: validation.NoZeroValues,
 			},
 			Arg_NetworkPeer: {
+				Deprecated:  "This field is deprecated",
 				Description: "Network peer information.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						Attr_ID: {
+							Deprecated:  "This field is deprecated",
 							Description: "ID of the network peer.",
 							Required:    true,
 							Type:        schema.TypeString,
 						},
 						Attr_NetworkAddressTranslation: {
+							Deprecated:  "This field is deprecated",
 							Description: "Contains the network address translation Details.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									Attr_SourceIP: {
+										Deprecated:  "This field is deprecated",
 										Description: "source IP address, required if network peer type is L3BGP or L3STATIC and if NAT is enabled.",
 										Required:    true,
 										Type:        schema.TypeString,
@@ -150,6 +150,7 @@ func ResourceIBMPINetwork() *schema.Resource {
 							Type:     schema.TypeList,
 						},
 						Attr_Type: {
+							Deprecated:   "This field is deprecated",
 							Description:  "Type of the network peer.",
 							Optional:     true,
 							Type:         schema.TypeString,
@@ -177,7 +178,7 @@ func ResourceIBMPINetwork() *schema.Resource {
 				Type:        schema.TypeSet,
 			},
 
-			//Computed Attributes
+			// Attributes
 			Attr_CRN: {
 				Computed:    true,
 				Description: "The CRN of this resource.",
@@ -185,11 +186,13 @@ func ResourceIBMPINetwork() *schema.Resource {
 			},
 			Attr_NetworkAddressTranslation: {
 				Computed:    true,
+				Deprecated:  "This field is deprecated",
 				Description: "Contains the Network Address Translation Details (for on-prem locations only).",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						Attr_SourceIP: {
 							Computed:    true,
+							Deprecated:  "This field is deprecated",
 							Description: "source IP address, required if network peer type is L3BGP or L3STATIC and if NAT is enabled.",
 							Type:        schema.TypeString,
 						},
@@ -204,6 +207,7 @@ func ResourceIBMPINetwork() *schema.Resource {
 			},
 			Attr_PeerID: {
 				Computed:    true,
+				Deprecated:  "This field is deprecated",
 				Description: "Network Peer ID (for on-prem locations only).",
 				Type:        schema.TypeString,
 			},
@@ -239,15 +243,9 @@ func resourceIBMPINetworkCreate(ctx context.Context, d *schema.ResourceData, met
 	if tags, ok := d.GetOk(Arg_UserTags); ok {
 		body.UserTags = flex.FlattenSet(tags.(*schema.Set))
 	}
-	if v, ok := d.GetOk(Arg_NetworkJumbo); ok {
-		body.Jumbo = v.(bool)
-	}
 	if v, ok := d.GetOk(Arg_NetworkMTU); ok {
 		var mtu int64 = int64(v.(int))
 		body.Mtu = &mtu
-	}
-	if v, ok := d.GetOk(Arg_NetworkAccessConfig); ok {
-		body.AccessConfig = models.AccessConfig(v.(string))
 	}
 	if _, ok := d.GetOk(Arg_NetworkPeer); ok {
 		peerModel := networkMapToNetworkCreatePeer(d.Get(Arg_NetworkPeer + ".0").(map[string]interface{}))
@@ -281,10 +279,24 @@ func resourceIBMPINetworkCreate(ctx context.Context, d *schema.ResourceData, met
 		body.IPAddressRanges = ipBodyRanges
 		body.Gateway = gateway
 		body.Cidr = networkcidr
+
+		if networktype == Vlan {
+			if v, ok := d.GetOk(Arg_Advertise); ok {
+				body.Advertise = flex.PtrToString(v.(string))
+			}
+			if v, ok := d.GetOk(Arg_ARPBroadcast); ok {
+				body.ArpBroadcast = flex.PtrToString(v.(string))
+			}
+		}
 	}
 
-	if _, ok := d.GetOk(Arg_Cidr); ok && networktype == PubVlan {
-		return diag.Errorf("%s cannot be set when %s is dhcp-vlan or vlan", Arg_Cidr, Arg_NetworkType)
+	if networktype == PubVlan {
+		_, ok1 := d.GetOk(Arg_Advertise)
+		_, ok2 := d.GetOk(Arg_ARPBroadcast)
+		_, ok3 := d.GetOk(Arg_Cidr)
+		if ok1 || ok2 || ok3 {
+			return diag.Errorf("%s, %s, and %s cannot be set when %s is pub-vlan", Arg_Advertise, Arg_ARPBroadcast, Arg_Cidr, Arg_NetworkType)
+		}
 	}
 
 	if !sess.IsOnPrem() {
@@ -352,11 +364,11 @@ func resourceIBMPINetworkRead(ctx context.Context, d *schema.ResourceData, meta 
 		}
 		d.Set(Arg_UserTags, tags)
 	}
+	d.Set(Arg_Advertise, networkdata.Advertise)
+	d.Set(Arg_ARPBroadcast, networkdata.ArpBroadcast)
 	d.Set(Arg_Cidr, networkdata.Cidr)
 	d.Set(Arg_DNS, networkdata.DNSServers)
 	d.Set(Arg_Gateway, networkdata.Gateway)
-	d.Set(Arg_NetworkAccessConfig, networkdata.AccessConfig)
-	d.Set(Arg_NetworkJumbo, networkdata.Jumbo)
 	d.Set(Arg_NetworkMTU, networkdata.Mtu)
 	d.Set(Arg_NetworkName, networkdata.Name)
 	d.Set(Arg_NetworkType, networkdata.Type)
@@ -397,11 +409,22 @@ func resourceIBMPINetworkUpdate(ctx context.Context, d *schema.ResourceData, met
 		return diag.FromErr(err)
 	}
 
-	if d.HasChanges(Arg_NetworkName, Arg_DNS, Arg_Gateway, Arg_IPAddressRange) {
-		networkC := instance.NewIBMPINetworkClient(ctx, sess, cloudInstanceID)
-		body := &models.NetworkUpdate{
-			DNSServers: flex.ExpandStringList((d.Get(Arg_DNS).(*schema.Set)).List()),
+	if d.HasChanges(Arg_Advertise, Arg_ARPBroadcast, Arg_DNS, Arg_Gateway, Arg_IPAddressRange, Arg_NetworkName) {
+		client := instance.NewIBMPINetworkClient(ctx, sess, cloudInstanceID)
+		body := &models.NetworkUpdate{}
+
+		if d.HasChange(Arg_Advertise) {
+			body.Advertise = d.Get(Arg_Advertise).(string)
 		}
+
+		if d.HasChange(Arg_ARPBroadcast) {
+			body.ArpBroadcast = d.Get(Arg_ARPBroadcast).(string)
+		}
+
+		if d.HasChange(Arg_DNS) {
+			body.DNSServers = flex.ExpandStringList((d.Get(Arg_DNS).(*schema.Set)).List())
+		}
+
 		networkType := d.Get(Arg_NetworkType).(string)
 		if d.HasChange(Arg_IPAddressRange) || d.HasChange(Arg_Gateway) {
 			if networkType == Vlan {
@@ -420,7 +443,12 @@ func resourceIBMPINetworkUpdate(ctx context.Context, d *schema.ResourceData, met
 			body.Name = flex.PtrToString(d.Get(Arg_NetworkName).(string))
 		}
 
-		_, err = networkC.Update(networkID, body)
+		_, err = client.Update(networkID, body)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		_, err = isWaitForIBMPINetworkUpdated(ctx, client, *body, networkID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -514,6 +542,98 @@ func isIBMPINetworkRefreshDeleteFunc(client *instance.IBMPINetworkClient, id str
 			return network, State_NotFound, nil
 		}
 		return network, State_Found, nil
+	}
+}
+
+func isWaitForIBMPINetworkUpdated(ctx context.Context, client *instance.IBMPINetworkClient, updateBody models.NetworkUpdate, id string, timeout time.Duration) (interface{}, error) {
+	stateConf := &retry.StateChangeConf{
+		Pending:    []string{State_Retry},
+		Target:     []string{State_Available},
+		Refresh:    isIBMPINetworkRefreshUpdateFunc(client, updateBody, id),
+		Timeout:    timeout,
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+	return stateConf.WaitForStateContext(ctx)
+}
+
+func isIBMPINetworkRefreshUpdateFunc(client *instance.IBMPINetworkClient, updateBody models.NetworkUpdate, id string) retry.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		network, err := client.Get(id)
+		if err != nil {
+			return nil, "", err
+		}
+
+		if updateBody.Advertise != "" {
+			if updateBody.Advertise != network.Advertise {
+				return network, State_Retry, nil
+			}
+		}
+
+		if updateBody.ArpBroadcast != "" {
+			if updateBody.ArpBroadcast != network.ArpBroadcast {
+				return network, State_Retry, nil
+			}
+		}
+
+		if len(updateBody.DNSServers) > 0 {
+			sort.Strings(updateBody.DNSServers)
+			sort.Strings(network.DNSServers)
+
+			if len(updateBody.DNSServers) != len(network.DNSServers) {
+				return network, State_Retry, nil
+			}
+
+			for index, dnsServer := range network.DNSServers {
+				if dnsServer != network.DNSServers[index] {
+					return network, State_Retry, nil
+				}
+			}
+		}
+
+		if updateBody.Gateway != nil {
+			if *updateBody.Gateway != network.Gateway {
+				return network, State_Retry, nil
+			}
+		}
+
+		/*
+		 * This comparison is a little tricky. The elements in the IPAddressRanges array may not come back
+		 * the same way they were set in the update body. In order to circumvent this, I'm going to grab
+		 * each IPAddressRange and combine it into one string put it in a list and sort it. This should
+		 * ensure a 1 to 1 comparison even if it is a little more work on the terraform side.
+		 */
+		if len(updateBody.IPAddressRanges) > 0 {
+			if len(updateBody.IPAddressRanges) != len(network.IPAddressRanges) {
+				return network, State_Retry, nil
+			}
+
+			updateBodyIPAddressRanges := make([]string, 0, len(updateBody.IPAddressRanges))
+			networkIPAddressRanges := make([]string, 0, len(updateBody.IPAddressRanges))
+
+			for index := range len(updateBody.IPAddressRanges) {
+				updateBodyIPAddressRanges = append(updateBodyIPAddressRanges,
+					*updateBody.IPAddressRanges[index].StartingIPAddress+"-"+*updateBody.IPAddressRanges[index].EndingIPAddress)
+				networkIPAddressRanges = append(networkIPAddressRanges,
+					*network.IPAddressRanges[index].StartingIPAddress+"-"+*network.IPAddressRanges[index].EndingIPAddress)
+			}
+
+			sort.Strings(updateBodyIPAddressRanges)
+			sort.Strings(networkIPAddressRanges)
+			for index := range len(updateBody.IPAddressRanges) {
+				if updateBodyIPAddressRanges[index] != networkIPAddressRanges[index] {
+					return network, State_Retry, nil
+				}
+			}
+		}
+
+		if updateBody.Name != nil {
+			if *updateBody.Name != *network.Name {
+				return network, State_Retry, nil
+			}
+		}
+
+		return network, State_Available, nil
 	}
 }
 
