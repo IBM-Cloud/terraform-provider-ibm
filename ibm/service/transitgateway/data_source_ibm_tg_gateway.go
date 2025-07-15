@@ -413,6 +413,11 @@ func dataSourceIBMTransitGatewayConnectionsRead(d *schema.ResourceData, meta int
 					tgConn[tgrGREtunnels] = rGREtunnels
 				}
 			}
+
+			if instance.Cidr != nil {
+				tgConn[tgCidr] = *instance.Cidr
+			}
+
 			connections = append(connections, tgConn)
 		}
 		startSub = flex.GetNext(listTGConnections.Next)
