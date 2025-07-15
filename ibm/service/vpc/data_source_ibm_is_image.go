@@ -199,21 +199,18 @@ func DataSourceIBMISImage() *schema.Resource {
 			},
 			"remote": {
 				Type:        schema.TypeList,
-				Optional:    true,
 				Computed:    true,
 				Description: "If present, this property indicates that the resource associated with this reference is remote and therefore may not be directly retrievable.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"account": {
 							Type:        schema.TypeList,
-							Optional:    true,
 							Computed:    true,
 							Description: "If present, this property indicates that the referenced resource is remote to this account, and identifies the owning account.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"id": {
 										Type:        schema.TypeString,
-										Optional:    true,
 										Computed:    true,
 										Description: "The unique identifier for this resource group.",
 									},
@@ -401,7 +398,11 @@ func imageGetByName(context context.Context, d *schema.ResourceData, meta interf
 		imageRemoteList := []map[string]interface{}{}
 		imageRemoteMap, err := dataSourceImageRemote(image)
 		if err != nil {
-			return err
+			if err != nil {
+				tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_image", "read", "initialize-client")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
+			}
 		}
 		imageRemoteList = append(imageRemoteList, imageRemoteMap)
 		if err = d.Set(isImageRemote, imageRemoteList); err != nil {
@@ -491,10 +492,14 @@ func imageGetById(context context.Context, d *schema.ResourceData, meta interfac
 		imageRemoteList := []map[string]interface{}{}
 		imageRemoteMap, err := dataSourceImageRemote(*image)
 		if err != nil {
-			return err
+			tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_legacy_vendor_images", "read", "initialize-client")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		imageRemoteList = append(imageRemoteList, imageRemoteMap)
-		d.Set(isImageRemote, imageRemoteList)
+		if err = d.Set(isImageRemote, imageRemoteList); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting remote: %s", err), "(Data) ibm_is_image", "read", "set-remote").GetDiag()
+		}
 	}
 
 	if len(image.StatusReasons) > 0 {

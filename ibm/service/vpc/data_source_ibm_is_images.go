@@ -509,7 +509,11 @@ func imageList(context context.Context, d *schema.ResourceData, meta interface{}
 		if image.Remote != nil {
 			imageRemoteMap, err := dataSourceImageRemote(image)
 			if err != nil {
-				return err
+				if err != nil {
+					tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_image", "read", "initialize-client")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
+				}
 			}
 			if len(imageRemoteMap) > 0 {
 				l["remote"] = []interface{}{imageRemoteMap}
