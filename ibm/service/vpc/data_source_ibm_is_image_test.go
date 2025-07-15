@@ -174,6 +174,23 @@ func TestAccIBMISImageDataSource_With_VisibiltyPrivate(t *testing.T) {
 	})
 }
 
+func TestAccIBMISImageDataSourceRemoteAccountId(t *testing.T) {
+	resName := "data.ibm_is_image.test1"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISCatalogImageDataSourceRemoteAccountId(),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(resName, "remote"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMISImageDataSourceConfig(imageName string) string {
 	return fmt.Sprintf(`
 	resource "ibm_is_image" "isExampleImage" {
@@ -247,4 +264,11 @@ func testAccCheckIBMISImageDataSourceWithVisibilityPrivate(imageName, visibility
 		name = ibm_is_image.isExampleImage.name
 		visibility = "%s"
 	}`, acc.Image_cos_url, imageName, acc.Image_operating_system, visibility)
+}
+
+func testAccCheckIBMISCatalogImageDataSourceRemoteAccountId() string {
+	return fmt.Sprintf(`
+	data "ibm_is_images" "test1" {
+		catalog_managed = true
+	}`)
 }
