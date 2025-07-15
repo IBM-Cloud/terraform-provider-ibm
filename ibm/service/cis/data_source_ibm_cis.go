@@ -5,14 +5,20 @@ package cis
 
 import (
 	"fmt"
+	"log"
 	"net/url"
+	"reflect"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev2/controllerv2"
-	"github.com/IBM-Cloud/bluemix-go/models"
+	// "github.com/IBM-Cloud/bluemix-go/api/resource/resourcev2/controllerv2"
+	// "github.com/IBM-Cloud/bluemix-go/models"
+
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM/platform-services-go-sdk/globalcatalogv1"
+	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
+	rg "github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
 )
 
 func DataSourceIBMCISInstance() *schema.Resource {
@@ -94,56 +100,75 @@ func DataSourceIBMCISInstance() *schema.Resource {
 }
 
 func dataSourceIBMCISInstanceRead(d *schema.ResourceData, meta interface{}) error {
-	rsConClient, err := meta.(conns.ClientSession).ResourceControllerAPIV2()
+	// rsConClient, err := meta.(conns.ClientSession).ResourceControllerAPIV2()
+	var instance rc.ResourceInstance
+	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return err
 	}
-	rsAPI := rsConClient.ResourceServiceInstanceV2()
+	// rsAPI := rsConClient.ResourceServiceInstanceV2()
 	name := d.Get("name").(string)
 
-	rsInstQuery := controllerv2.ServiceInstanceQuery{
-		Name: name,
+	// rsInstQuery := controllerv2.ServiceInstanceQuery{
+	// 	Name: name,
+	// }
+	resourceInstanceListOptions := rc.ListResourceInstancesOptions{
+		Name: &name,
 	}
 
 	if rsGrpID, ok := d.GetOk("resource_group_id"); ok {
-		rsInstQuery.ResourceGroupID = rsGrpID.(string)
+		// rsInstQuery.ResourceGroupID = rsGrpID.(string)
+		rg := rsGrpID.(string)
+		resourceInstanceListOptions.ResourceGroupID = &rg
 	} else {
 		defaultRg, err := flex.DefaultResourceGroup(meta)
 		if err != nil {
 			return err
 		}
-		rsInstQuery.ResourceGroupID = defaultRg
+		// rsInstQuery.ResourceGroupID = defaultRg
+		resourceInstanceListOptions.ResourceGroupID = &defaultRg
 	}
 
-	rsCatClient, err := meta.(conns.ClientSession).ResourceCatalogAPI()
-	if err != nil {
-		return err
-	}
-	rsCatRepo := rsCatClient.ResourceCatalog()
+	// rsCatClient, err := meta.(conns.ClientSession).ResourceCatalogAPI()
+	// if err != nil {
+	// 	return err
+	// }
+	// rsCatRepo := rsCatClient.ResourceCatalog()
 
 	if service, ok := d.GetOk("service"); ok {
 
-		serviceOff, err := rsCatRepo.FindByName(service.(string), true)
-		if err != nil {
-			return fmt.Errorf("[ERROR] Error retrieving service offering: %s", err)
+		// serviceOff, err := rsCatRepo.FindByName(service.(string), true)
+		name := service.(string)
+		resourceInstanceListOptions.ResourceID = &name
+
+	}
+	next_url := ""
+	var instances []rc.ResourceInstance
+	for {
+		if next_url != "" {
+			resourceInstanceListOptions.Start = &next_url
 		}
-
-		rsInstQuery.ServiceID = serviceOff[0].ID
+		listInstanceResponse, resp, err := rsConClient.ListResourceInstances(&resourceInstanceListOptions)
+		if err != nil {
+			return fmt.Errorf("[ERROR] Error retrieving resource instance: %s with resp code: %s", err, resp)
+		}
+		next_url, err = getInstancesNext(listInstanceResponse.NextURL)
+		if err != nil {
+			return fmt.Errorf("[DEBUG] ListResourceInstances failed. Error occurred while parsing NextURL: %s", err)
+		}
+		instances = append(instances, listInstanceResponse.Resources...)
+		if next_url == "" {
+			break
+		}
 	}
 
-	var instances []models.ServiceInstanceV2
-
-	instances, err = rsAPI.ListInstances(rsInstQuery)
-	if err != nil {
-		return err
-	}
-	var filteredInstances []models.ServiceInstanceV2
+	var filteredInstances []rc.ResourceInstance
 	var location string
 
 	if loc, ok := d.GetOk("location"); ok {
 		location = loc.(string)
 		for _, instance := range instances {
-			if flex.GetLocation(instance) == location {
+			if flex.GetLocationV2(instance) == location {
 				filteredInstances = append(filteredInstances, instance)
 			}
 		}
@@ -155,41 +180,75 @@ func dataSourceIBMCISInstanceRead(d *schema.ResourceData, meta interface{}) erro
 		return fmt.Errorf("[ERROR] No resource instance found with name [%s]\nIf not specified please specify more filters like resource_group_id if instance doesn't exists in default group, location or service", name)
 	}
 
-	var instance models.ServiceInstanceV2
-
 	if len(filteredInstances) > 1 {
 		return fmt.Errorf("[ERROR] More than one resource instance found with name matching [%s]\nIf not specified please specify more filters like resource_group_id if instance doesn't exists in default group, location or service", name)
 	}
 	instance = filteredInstances[0]
 
-	d.SetId(instance.ID)
+	d.SetId(*instance.ID)
 	d.Set("status", instance.State)
 	d.Set("resource_group_id", instance.ResourceGroupID)
 	d.Set("location", instance.RegionID)
-	d.Set("guid", instance.Guid)
-	serviceOff, err := rsCatRepo.GetServiceName(instance.ServiceID)
+	d.Set("guid", instance.GUID)
+	globalClient, err := meta.(conns.ClientSession).GlobalCatalogV1API()
+	if err != nil {
+		return err
+	}
+	options := globalcatalogv1.GetCatalogEntryOptions{
+
+		ID: instance.ResourceID,
+	}
+	service, _, err := globalClient.GetCatalogEntry(&options)
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error retrieving service offering: %s", err)
 	}
+	d.Set("service", service.Name)
+	planOptions := globalcatalogv1.GetCatalogEntryOptions{
 
-	d.Set("service", serviceOff)
-
-	servicePlan, err := rsCatRepo.GetServicePlanName(instance.ResourcePlanID)
+		ID: instance.ResourcePlanID,
+	}
+	plan, _, err := globalClient.GetCatalogEntry(&planOptions)
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error retrieving plan: %s", err)
 	}
-	d.Set("plan", servicePlan)
+	d.Set("plan", plan.Name)
 
 	d.Set(flex.ResourceName, instance.Name)
-	d.Set(flex.ResourceCRN, instance.Crn.String())
+	d.Set(flex.ResourceCRN, instance.CRN)
 	d.Set(flex.ResourceStatus, instance.State)
-	d.Set(flex.ResourceGroupName, instance.ResourceGroupName)
+
+	rMgtClient, err := meta.(conns.ClientSession).ResourceManagerV2API()
+	if err != nil {
+		return err
+	}
+	GetResourceGroup := rg.GetResourceGroupOptions{
+		ID: instance.ResourceGroupID,
+	}
+	resourceGroup, resp, err := rMgtClient.GetResourceGroup(&GetResourceGroup)
+	if err != nil || resourceGroup == nil {
+		log.Printf("[ERROR] Error retrieving resource group: %s %s", err, resp)
+	}
+	if resourceGroup != nil && resourceGroup.Name != nil {
+		d.Set(flex.ResourceGroupName, resourceGroup.Name)
+	}
 
 	rcontroller, err := flex.GetBaseController(meta)
 	if err != nil {
 		return err
 	}
-	d.Set(flex.ResourceControllerURL, rcontroller+"/internet-svcs/"+url.QueryEscape(instance.Crn.String()))
+	d.Set(flex.ResourceControllerURL, rcontroller+"/internet-svcs/"+url.QueryEscape(*instance.CRN))
 
 	return nil
+}
+
+func getInstancesNext(next *string) (string, error) {
+	if reflect.ValueOf(next).IsNil() {
+		return "", nil
+	}
+	u, err := url.Parse(*next)
+	if err != nil {
+		return "", err
+	}
+	q := u.Query()
+	return q.Get("next_url"), nil
 }
