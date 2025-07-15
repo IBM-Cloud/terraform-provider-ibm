@@ -980,7 +980,7 @@ func instanceProfileGet(context context.Context, d *schema.ResourceData, meta in
 
 	// Manufacturer details added.
 	if profile.VcpuManufacturer != nil {
-		err = d.Set(isInstanceVCPUManufacturer, dataSourceInstanceProfileFlattenVcpuManufacture(*&profile.VcpuManufacturer))
+		err = d.Set(isInstanceVCPUManufacturer, dataSourceInstanceProfileFlattenVcpuManufacture(*profile.VcpuManufacturer.(*vpcv1.InstanceProfileVcpuManufacturer)))
 		if err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting vcpu_manufacturer: %s", err), "(Data) ibm_is_instance_profile", "read", "set-vcpu_manufacturer").GetDiag()
 		}
@@ -1290,7 +1290,7 @@ func dataSourceInstanceProfileVcpuArchitectureToMap(vcpuArchitectureItem vpcv1.I
 }
 
 /* Changes for the AMD Support VCPU Manufacturer */
-func dataSourceInstanceProfileFlattenVcpuManufacture(result vpcv1.InstanceProfileVcpuManufacturerIntf) (fl []map[string]interface{}) {
+func dataSourceInstanceProfileFlattenVcpuManufacture(result vpcv1.InstanceProfileVcpuManufacturer) (fl []map[string]interface{}) {
 	fl = []map[string]interface{}{}
 	finalMap := dataSourceInstanceProfileVcpuManufacturerToMap(result)
 	fl = append(fl, finalMap)
@@ -1298,14 +1298,14 @@ func dataSourceInstanceProfileFlattenVcpuManufacture(result vpcv1.InstanceProfil
 	return fl
 }
 
-func dataSourceInstanceProfileVcpuManufacturerToMap(vcpuManufacutererItem vpcv1.InstanceProfileVcpuManufacturerIntf) (vcpuManufacturerMap map[string]interface{}) {
+func dataSourceInstanceProfileVcpuManufacturerToMap(vcpuManufacutererItem vpcv1.InstanceProfileVcpuManufacturer) (vcpuManufacturerMap map[string]interface{}) {
 	vcpuManufacturerMap = map[string]interface{}{}
 
-	if vcpuManufacutererItem != nil {
-		if vcpuManufacturer, ok := vcpuManufacutererItem.(*vpcv1.InstanceProfileVcpuManufacturer); ok {
-			vcpuManufacturerMap["type"] = vcpuManufacturer.Type
-			vcpuManufacturerMap["value"] = vcpuManufacturer.Value
-		}
+	if vcpuManufacutererItem.Type != nil {
+		vcpuManufacturerMap["type"] = vcpuManufacutererItem.Type
+	}
+	if vcpuManufacutererItem.Value != nil {
+		vcpuManufacturerMap["value"] = vcpuManufacutererItem.Value
 	}
 
 	return vcpuManufacturerMap

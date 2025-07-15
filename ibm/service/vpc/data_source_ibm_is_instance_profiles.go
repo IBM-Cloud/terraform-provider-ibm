@@ -952,7 +952,7 @@ func instanceProfilesList(context context.Context, d *schema.ResourceData, meta 
 		// reduce the line of code here. - sumit's suggestions
 		if profile.VcpuManufacturer != nil {
 			vcpuManufacturerList := []map[string]interface{}{}
-			vcpuManufacturerMap := dataSourceInstanceProfileVcpuManufacturerToMap(profile.VcpuManufacturer)
+			vcpuManufacturerMap := dataSourceInstanceProfileVcpuManufacturerToMap(*profile.VcpuManufacturer.(*vpcv1.InstanceProfileVcpuManufacturer))
 			vcpuManufacturerList = append(vcpuManufacturerList, vcpuManufacturerMap)
 			l["vcpu_manufacturer"] = vcpuManufacturerList
 		}
