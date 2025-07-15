@@ -52,7 +52,7 @@ func dataSourceIBMIsVPNGatewayConnectionLocalCidrsRead(context context.Context, 
 		return tfErr.GetDiag()
 	}
 
-	listVPNGatewayConnectionsLocalCidrsOptions := &vpcv1.ListVPNGatewayConnectionsPeerCIDRsOptions{}
+	listVPNGatewayConnectionsLocalCidrsOptions := &vpcv1.ListVPNGatewayConnectionsLocalCIDRsOptions{}
 
 	listVPNGatewayConnectionsLocalCidrsOptions.SetVPNGatewayID(d.Get("vpn_gateway").(string))
 	listVPNGatewayConnectionsLocalCidrsOptions.SetID(d.Get("vpn_gateway_connection").(string))
