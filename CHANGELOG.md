@@ -1,3 +1,10 @@
+# 1.80.4 (July 15, 2025)
+## Bug Fixes
+
+### Power Systems
+* Revert "[Resource] [Datasource] Replace SSH Key API with new API ([6355](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6355))
+
+
 # 1.80.3 (July 11, 2025)
 ## Bug Fixes
 
