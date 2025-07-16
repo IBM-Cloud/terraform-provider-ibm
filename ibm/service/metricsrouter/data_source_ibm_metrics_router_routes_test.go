@@ -37,11 +37,11 @@ func TestAccIBMMetricsRouterRoutesDataSourceBasic(t *testing.T) {
 
 func testAccCheckIBMMetricsRouterRoutesDataSourceConfigBasic(routeName string) string {
 	return fmt.Sprintf(`
-        resource "ibm_metrics_router_settings" "mr_settings_instance" {
-            permitted_target_regions = ["us-east", "us-south"]
-            primary_metadata_region = "us-south"
-            backup_metadata_region = "us-east"
-        }
+		resource "ibm_metrics_router_settings" "mr_settings_instance" {
+			permitted_target_regions = ["us-east", "us-south"]
+			primary_metadata_region = "us-south"
+			backup_metadata_region = "us-east"
+		}
 
 		resource "ibm_metrics_router_target" "metrics_router_target_instance" {
 			name = "my-mr-target"
