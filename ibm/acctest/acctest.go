@@ -104,6 +104,8 @@ var (
 	InstanceName                    string
 	InstanceProfileName             string
 	InstanceProfileNameUpdate       string
+	ISCatalogImageName              string
+	ISBootSnapshotID                string
 	IsBareMetalServerProfileName    string
 	IsBareMetalServerImage          string
 	IsBareMetalServerImage2         string
@@ -970,6 +972,18 @@ func init() {
 	if InstanceProfileNameUpdate == "" {
 		InstanceProfileNameUpdate = "cx2-4x8"
 		fmt.Println("[INFO] Set the environment variable SL_INSTANCE_PROFILE_UPDATE for testing ibm_is_instance resource else it is set to default value 'cx2-4x8'")
+	}
+
+	ISCatalogImageName = os.Getenv("IS_CATALOG_IMAGE_NAME")
+	if ISCatalogImageName == "" {
+		ISCatalogImageName = "test-catalog"
+		fmt.Println("[INFO] Set the environment variable IS_CATALOG_IMAGE_NAME for testing ibm_is_instance_template resource else it is set to default value 'test-catalog'")
+	}
+
+	ISBootSnapshotID = os.Getenv("IS_BOOT_SNAPSHOT_ID")
+	if ISBootSnapshotID == "" {
+		ISBootSnapshotID = "r006-d7fejbe-2dhj-442df-b2iha-ccjbecbjbcejce"
+		fmt.Println("[INFO] Set the environment variable IS_BOOT_SNAPSHOT_ID for testing ibm_is_instance_template resource else it is set to default value 'r006-d7fejbe-2dhj-442df-b2iha-ccjbecbjbcejce'")
 	}
 
 	IsBareMetalServerProfileName = os.Getenv("IS_BARE_METAL_SERVER_PROFILE")

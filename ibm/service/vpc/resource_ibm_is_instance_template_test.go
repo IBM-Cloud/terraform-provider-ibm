@@ -1175,3 +1175,173 @@ func testAccCheckIBMISInstanceTemplateWithBootBandwidth(vpcName, subnetName, ssh
 	`, vpcName, subnetName, acc.ISZoneName, sshKeyName, publicKey, templateName, acc.IsImage, userTag, bandwidth, acc.ISZoneName)
 
 }
+
+func testAccCheckIBMISInstanceTemplateComprehensiveConfig(vpcName, subnetName, sshKeyName, publicKey, templateNameImg, templateNameSnapshot, templateNameCatalog string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "vpc" {
+		name = "%s"
+	}
+
+	resource "ibm_is_subnet" "subnet" {
+		name            			= "%s"
+		vpc             			= ibm_is_vpc.vpc.id
+		zone            			= "%s"
+		total_ipv4_address_count 	= 64
+	}
+
+	resource "ibm_is_ssh_key" "sshkey" {
+		name       = "%s"
+		public_key = "%s"
+	}
+
+	data "ibm_is_image" "catalog_image" {
+		name = "%s"
+	}
+
+	# Template 1: From Image
+	resource "ibm_is_instance_template" "template_from_image" {
+		name    = "%s"
+		image   = "%s"
+		profile = "cx2-2x4"
+
+		primary_network_interface {
+			subnet = ibm_is_subnet.subnet.id
+		}
+
+		vpc  = ibm_is_vpc.vpc.id
+		zone = "%s"
+		keys = [ibm_is_ssh_key.sshkey.id]
+
+		user_data = base64encode(<<-EOF
+			#!/bin/bash
+			apt-get update
+			apt-get install -y nginx
+			systemctl start nginx
+			systemctl enable nginx
+			echo "Template from Image" > /var/www/html/index.html
+		EOF
+		)
+	}
+
+	# Template 2: From Snapshot
+	resource "ibm_is_instance_template" "template_from_snapshot" {
+		name    = "%s"
+		profile = "cx2-2x4"
+
+		boot_volume {
+			source_snapshot = "%s"
+		}
+
+		primary_network_interface {
+			subnet = ibm_is_subnet.subnet.id
+		}
+
+		vpc  = ibm_is_vpc.vpc.id
+		zone = "%s"
+		keys = [ibm_is_ssh_key.sshkey.id]
+
+		user_data = base64encode(<<-EOF
+			#!/bin/bash
+			apt-get update
+			apt-get install -y nginx
+			systemctl start nginx
+			systemctl enable nginx
+			echo "Template from Snapshot" > /var/www/html/index.html
+		EOF
+		)
+	}
+
+	# Template 3: From Catalog Offering
+	resource "ibm_is_instance_template" "template_from_catalog" {
+		name    = "%s"
+		profile = "cx2-2x4"
+
+		catalog_offering {
+			version_crn = data.ibm_is_image.catalog_image.catalog_offering.0.version.0.crn
+		}
+
+		primary_network_interface {
+			subnet = ibm_is_subnet.subnet.id
+		}
+
+		vpc  = ibm_is_vpc.vpc.id
+		zone = "%s"
+		keys = [ibm_is_ssh_key.sshkey.id]
+
+		user_data = base64encode(<<-EOF
+			#!/bin/bash
+			apt-get update
+			apt-get install -y nginx
+			systemctl start nginx
+			systemctl enable nginx
+			echo "Template from Catalog" > /var/www/html/index.html
+		EOF
+		)
+	}
+	`, vpcName, subnetName, acc.ISZoneName, sshKeyName, publicKey, acc.ISCatalogImageName, templateNameImg, acc.IsImage, acc.ISZoneName, templateNameSnapshot, acc.ISBootSnapshotID, acc.ISZoneName, templateNameCatalog, acc.ISZoneName)
+}
+
+func TestAccIBMISInstanceTemplate_comprehensive(t *testing.T) {
+	randInt := acctest.RandIntRange(10, 100)
+
+	publicKey := strings.TrimSpace(`
+	ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDVtuCfWKVGKaRmaRG6JQZY8YdxnDgGzVOK93IrV9R5Hl0JP1oiLLWlZQS2reAKb8lBqyDVEREpaoRUDjqDqXG8J/kR42FKN51su914pjSBc86wJ02VtT1Wm1zRbSg67kT+g8/T1jCgB5XBODqbcICHVP8Z1lXkgbiHLwlUrbz6OZkGJHo/M/kD1Eme8lctceIYNz/Ilm7ewMXZA4fsidpto9AjyarrJLufrOBl4MRVcZTDSJ7rLP982aHpu9pi5eJAjOZc7Og7n4ns3NFppiCwgVMCVUQbN5GBlWhZ1OsT84ZiTf+Zy8ew+Yg5T7Il8HuC7loWnz+esQPf0s3xhC/kTsGgZreIDoh/rxJfD67wKXetNSh5RH/n5BqjaOuXPFeNXmMhKlhj9nJ8scayx/wsvOGuocEIkbyJSLj3sLUU403OafgatEdnJOwbqg6rUNNF5RIjpJpL7eEWlKIi1j9LyhmPJ+fEO7TmOES82VpCMHpLbe4gf/MhhJ/Xy8DKh9s= root@ffd8363b1226
+	`)
+
+	vpcName := fmt.Sprintf("tf-testvpc%d", randInt)
+	subnetName := fmt.Sprintf("tf-testsubnet%d", randInt)
+	templateNameImg := fmt.Sprintf("tf-testtemplate-img%d", randInt)
+	templateNameSnapshot := fmt.Sprintf("tf-testtemplate-snapshot%d", randInt)
+	templateNameCatalog := fmt.Sprintf("tf-testtemplate-catalog%d", randInt)
+	sshKeyName := fmt.Sprintf("tf-testsshkey%d", randInt)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISInstanceTemplateDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISInstanceTemplateComprehensiveConfig(vpcName, subnetName, sshKeyName, publicKey, templateNameImg, templateNameSnapshot, templateNameCatalog),
+				Check: resource.ComposeTestCheckFunc(
+					// Check Template from Image
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance_template.template_from_image", "name", templateNameImg),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance_template.template_from_image", "image"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance_template.template_from_image", "profile", "cx2-2x4"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance_template.template_from_image", "zone", acc.ISZoneName),
+
+					// Check Template from Snapshot
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance_template.template_from_snapshot", "name", templateNameSnapshot),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance_template.template_from_snapshot", "boot_volume.0.source_snapshot"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance_template.template_from_snapshot", "profile", "cx2-2x4"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance_template.template_from_snapshot", "zone", acc.ISZoneName),
+
+					// Check Template from Catalog
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance_template.template_from_catalog", "name", templateNameCatalog),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance_template.template_from_catalog", "catalog_offering.0.version_crn"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance_template.template_from_catalog", "profile", "cx2-2x4"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance_template.template_from_catalog", "zone", acc.ISZoneName),
+
+					// Check common attributes for all templates
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance_template.template_from_image", "vpc"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance_template.template_from_snapshot", "vpc"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance_template.template_from_catalog", "vpc"),
+				),
+			},
+		},
+	})
+}
