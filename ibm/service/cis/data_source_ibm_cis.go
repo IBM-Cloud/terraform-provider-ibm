@@ -9,16 +9,12 @@ import (
 	"net/url"
 	"reflect"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-
-	// "github.com/IBM-Cloud/bluemix-go/api/resource/resourcev2/controllerv2"
-	// "github.com/IBM-Cloud/bluemix-go/models"
-
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/platform-services-go-sdk/globalcatalogv1"
 	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	rg "github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func DataSourceIBMCISInstance() *schema.Resource {
@@ -100,24 +96,18 @@ func DataSourceIBMCISInstance() *schema.Resource {
 }
 
 func dataSourceIBMCISInstanceRead(d *schema.ResourceData, meta interface{}) error {
-	// rsConClient, err := meta.(conns.ClientSession).ResourceControllerAPIV2()
 	var instance rc.ResourceInstance
 	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return err
 	}
-	// rsAPI := rsConClient.ResourceServiceInstanceV2()
 	name := d.Get("name").(string)
 
-	// rsInstQuery := controllerv2.ServiceInstanceQuery{
-	// 	Name: name,
-	// }
 	resourceInstanceListOptions := rc.ListResourceInstancesOptions{
 		Name: &name,
 	}
 
 	if rsGrpID, ok := d.GetOk("resource_group_id"); ok {
-		// rsInstQuery.ResourceGroupID = rsGrpID.(string)
 		rg := rsGrpID.(string)
 		resourceInstanceListOptions.ResourceGroupID = &rg
 	} else {
@@ -125,22 +115,12 @@ func dataSourceIBMCISInstanceRead(d *schema.ResourceData, meta interface{}) erro
 		if err != nil {
 			return err
 		}
-		// rsInstQuery.ResourceGroupID = defaultRg
 		resourceInstanceListOptions.ResourceGroupID = &defaultRg
 	}
 
-	// rsCatClient, err := meta.(conns.ClientSession).ResourceCatalogAPI()
-	// if err != nil {
-	// 	return err
-	// }
-	// rsCatRepo := rsCatClient.ResourceCatalog()
-
 	if service, ok := d.GetOk("service"); ok {
-
-		// serviceOff, err := rsCatRepo.FindByName(service.(string), true)
 		name := service.(string)
 		resourceInstanceListOptions.ResourceID = &name
-
 	}
 	next_url := ""
 	var instances []rc.ResourceInstance
