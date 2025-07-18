@@ -474,11 +474,8 @@ func DataSourceIBMPolicyAssignmentAssignmentResourceCreatedToMap(model *iampolic
 	return modelMap, nil
 }
 
-func DataSourceIBMPolicyAssignmentErrorResponseToMap(model *iampolicymanagementv1.ErrorResponse) (map[string]interface{}, error) {
+func DataSourceIBMPolicyAssignmentErrorResponseToMap(model *iampolicymanagementv1.AssignmentResourceError) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	if model.Trace != nil {
-		modelMap["trace"] = *model.Trace
-	}
 	if model.Errors != nil {
 		errors := []map[string]interface{}{}
 		for _, errorsItem := range model.Errors {
@@ -489,9 +486,6 @@ func DataSourceIBMPolicyAssignmentErrorResponseToMap(model *iampolicymanagementv
 			errors = append(errors, errorsItemMap)
 		}
 		modelMap["errors"] = errors
-	}
-	if model.StatusCode != nil {
-		modelMap["status_code"] = flex.IntValue(model.StatusCode)
 	}
 	return modelMap, nil
 }
