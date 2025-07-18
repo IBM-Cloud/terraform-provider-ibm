@@ -510,6 +510,11 @@ func ResourceIBMIsBareMetalServer() *schema.Resource {
 										Computed:    true,
 										Description: "The virtual network interface id for this bare metal server network attachment.",
 									},
+									"crn": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The crn of the virtual network interface.",
+									},
 									"allow_ip_spoofing": &schema.Schema{
 										Type:          schema.TypeBool,
 										Optional:      true,
@@ -911,6 +916,11 @@ func ResourceIBMIsBareMetalServer() *schema.Resource {
 										Optional:    true,
 										Computed:    true,
 										Description: "The virtual network interface id for this bare metal server network attachment.",
+									},
+									"crn": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The crn of the virtual network interface.",
 									},
 									"allow_ip_spoofing": &schema.Schema{
 										Type:        schema.TypeBool,
@@ -4718,6 +4728,7 @@ func resourceIBMIsBareMetalServerBareMetalServerNetworkAttachmentReferenceToMap(
 				vniid = *vna.VirtualNetworkInterface.ID
 				vniMap["id"] = vniid
 				vniMap["name"] = vna.VirtualNetworkInterface.Name
+				vniMap["crn"] = vna.VirtualNetworkInterface.CRN
 				vniMap["resource_type"] = vna.VirtualNetworkInterface.ResourceType
 			}
 		}
@@ -4734,6 +4745,7 @@ func resourceIBMIsBareMetalServerBareMetalServerNetworkAttachmentReferenceToMap(
 				vniid = *vna.VirtualNetworkInterface.ID
 				vniMap["id"] = vniid
 				vniMap["name"] = vna.VirtualNetworkInterface.Name
+				vniMap["crn"] = vna.VirtualNetworkInterface.CRN
 				vniMap["resource_type"] = vna.VirtualNetworkInterface.ResourceType
 			}
 		}
@@ -4744,6 +4756,7 @@ func resourceIBMIsBareMetalServerBareMetalServerNetworkAttachmentReferenceToMap(
 				vniid = *vna.VirtualNetworkInterface.ID
 				vniMap["id"] = vniid
 				vniMap["name"] = vna.VirtualNetworkInterface.Name
+				vniMap["crn"] = vna.VirtualNetworkInterface.CRN
 				vniMap["resource_type"] = vna.VirtualNetworkInterface.ResourceType
 			}
 			if vna.AllowedVlans != nil {

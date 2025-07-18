@@ -108,6 +108,7 @@ You can specify the following arguments for this resource.
 - `virtual_network_interface` - (Required, List) The virtual network interface for this instance network attachment. This can be specified using an existing virtual network interface ID, or a prototype object for a new virtual network interface.
 
 	Nested schema for **virtual_network_interface**:
+  - `crn` - (String) The CRN for this virtual network interface.
 	- `id` - (Optional, String) The unique identifier for an existing virtual network interface. When specified, all other nested arguments are ignored and will conflict if provided.
 	- `allow_ip_spoofing` - (Optional, Boolean) Indicates whether source IP spoofing is allowed on this interface. If `false`, source IP spoofing is prevented on this interface. If `true`, source IP spoofing is allowed on this interface. Conflicts with `id`.
 	- `auto_delete` - (Optional, Boolean) Indicates whether this virtual network interface will be automatically deleted when `target` is deleted. Conflicts with `id`.

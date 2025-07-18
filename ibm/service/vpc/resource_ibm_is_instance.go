@@ -1131,6 +1131,11 @@ func ResourceIBMISInstance() *schema.Resource {
 										Computed:    true,
 										Description: "The resource type.",
 									},
+									"crn": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The crn of the virtual network interface.",
+									},
 									"security_groups": {
 										Type:          schema.TypeSet,
 										Optional:      true,
@@ -1517,6 +1522,11 @@ func ResourceIBMISInstance() *schema.Resource {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The resource type.",
+									},
+									"crn": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The crn of the virtual network interface.",
 									},
 									"security_groups": {
 										Type:        schema.TypeSet,
@@ -8104,6 +8114,7 @@ func resourceIBMIsInstanceInstanceNetworkAttachmentReferenceToMap(model *vpcv1.I
 	vniMap := make(map[string]interface{})
 	if pna.VirtualNetworkInterface != nil {
 		vniMap["id"] = *pna.VirtualNetworkInterface.ID
+		vniMap["crn"] = *pna.VirtualNetworkInterface.CRN
 		vniMap["name"] = pna.VirtualNetworkInterface.Name
 		vniMap["resource_type"] = pna.VirtualNetworkInterface.ResourceType
 	}
