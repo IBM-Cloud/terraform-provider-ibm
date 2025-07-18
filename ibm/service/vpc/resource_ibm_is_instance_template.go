@@ -2465,8 +2465,18 @@ func instanceTemplateCreateByCatalogOffering(context context.Context, d *schema.
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
-	instance := instanceIntf.(*vpcv1.InstanceTemplate)
-	d.SetId(*instance.ID)
+	var instanceID string
+	switch instance := instanceIntf.(type) {
+	case *vpcv1.InstanceTemplate:
+		instanceID = *instance.ID
+	case *vpcv1.InstanceTemplateInstanceBySourceSnapshotInstanceTemplateContext:
+		instanceID = *instance.ID
+	default:
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("unexpected instance template type: %T", instanceIntf), "ibm_is_instance_template", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+	}
+	d.SetId(instanceID)
 	return nil
 }
 
