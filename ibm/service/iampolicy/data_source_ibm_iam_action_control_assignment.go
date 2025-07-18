@@ -117,6 +117,11 @@ func DataSourceIBMIAMActionControlAssignment() *schema.Resource {
 										Description: "Body parameters for assignment error.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
+												"trace": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The unique transaction ID for the request.",
+												},
 												"errors": &schema.Schema{
 													Type:        schema.TypeList,
 													Computed:    true,
@@ -152,13 +157,11 @@ func DataSourceIBMIAMActionControlAssignment() *schema.Resource {
 																					},
 																					"role": &schema.Schema{
 																						Type:        schema.TypeString,
-																						Optional:    true,
 																						Computed:    true,
 																						Description: "The conflicting role of ID.",
 																					},
 																					"policy": &schema.Schema{
 																						Type:        schema.TypeString,
-																						Optional:    true,
 																						Computed:    true,
 																						Description: "The conflicting policy ID.",
 																					},
@@ -170,12 +173,16 @@ func DataSourceIBMIAMActionControlAssignment() *schema.Resource {
 															},
 															"more_info": &schema.Schema{
 																Type:        schema.TypeString,
-																Optional:    true,
 																Computed:    true,
 																Description: "Additional info for error.",
 															},
 														},
 													},
+												},
+												"status_code": &schema.Schema{
+													Type:        schema.TypeInt,
+													Computed:    true,
+													Description: "The HTTP error code of the response.",
 												},
 												"name": {
 													Type:        schema.TypeString,

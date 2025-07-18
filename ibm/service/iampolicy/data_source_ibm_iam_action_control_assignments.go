@@ -133,6 +133,11 @@ func DataSourceIBMIAMActionControlAssignments() *schema.Resource {
 													Description: "The error response from API.",
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
+															"trace": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "The unique transaction ID for the request.",
+															},
 															"errors": &schema.Schema{
 																Type:        schema.TypeList,
 																Computed:    true,
@@ -189,6 +194,11 @@ func DataSourceIBMIAMActionControlAssignments() *schema.Resource {
 																		},
 																	},
 																},
+															},
+															"status_code": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "The HTTP error code of the response.",
 															},
 															"name": {
 																Type:        schema.TypeString,
