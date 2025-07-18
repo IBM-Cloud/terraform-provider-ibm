@@ -1,9 +1,0 @@
-{
-    "excludes": [
-      ".cra/**",
-      ".git/**",
-      ".github/**",
-      "**/*_examples_test.go"
-    ]
-  }
-  
