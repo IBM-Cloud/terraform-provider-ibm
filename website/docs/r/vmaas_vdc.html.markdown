@@ -42,7 +42,7 @@ vmaas_vdc provides the following [Timeouts](https://www.terraform.io/docs/config
 
 You can specify the following arguments for this resource.
 
-* `accept_language` - (Computed, String) Language.
+* `accept_language` - (Optional, String) Language.
   * Constraints: The maximum length is `256` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9-,;=\\.\\*\\s]{1,256}$/`.
 * `cpu` - (Optional, Integer) The vCPU usage limit on the virtual data center (VDC). Supported for VDCs deployed on a multitenant Cloud Director site. This property is applicable when the resource pool type is reserved.
   * Constraints: The maximum value is `10000`. The minimum value is `0`.

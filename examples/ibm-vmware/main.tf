@@ -29,5 +29,6 @@ resource "ibm_vmaas_vdc" "vmaas_vdc_instance" {
 // Create vmaas_vdc data source
 data "ibm_vmaas_vdc" "vmaas_vdc_instance" {
   vmaas_vdc_id = var.data_vmaas_vdc_vmaas_vdc_id
+  accept_language = var.data_vmaas_vdc_accept_language
 }
 */

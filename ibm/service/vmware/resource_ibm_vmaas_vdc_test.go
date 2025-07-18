@@ -11,10 +11,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/vmware"
-
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/vmware"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/vmware-go-sdk/vmwarev1"
 	"github.com/stretchr/testify/assert"
@@ -46,14 +45,12 @@ func TestAccIbmVmaasVdcAllArgs(t *testing.T) {
 	pvdc_id := acc.Vmaas_Directorsite_pvdc_id
 	id := acc.Vmaas_Directorsite_id
 	var conf vmwarev1.VDC
-	acceptLanguage := "en-us"
 	cpu := fmt.Sprintf("%d", acctest.RandIntRange(0, 2000))
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	ram := fmt.Sprintf("%d", acctest.RandIntRange(0, 40960))
 	fastProvisioningEnabled := "false"
 	rhelByol := "false"
 	windowsByol := "true"
-	acceptLanguageUpdate := acceptLanguage
 	cpuUpdate := cpu
 	nameUpdate := name
 	ramUpdate := ram
@@ -67,10 +64,9 @@ func TestAccIbmVmaasVdcAllArgs(t *testing.T) {
 		CheckDestroy: testAccCheckIbmVmaasVdcDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmVmaasVdcConfig(acceptLanguage, cpu, name, ram, fastProvisioningEnabled, rhelByol, windowsByol, id, pvdc_id),
+				Config: testAccCheckIbmVmaasVdcConfig(cpu, name, ram, fastProvisioningEnabled, rhelByol, windowsByol, id, pvdc_id),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmVmaasVdcExists("ibm_vmaas_vdc.vmaas_vdc_instance", conf),
-					resource.TestCheckResourceAttr("ibm_vmaas_vdc.vmaas_vdc_instance", "accept_language", acceptLanguage),
 					resource.TestCheckResourceAttr("ibm_vmaas_vdc.vmaas_vdc_instance", "cpu", cpu),
 					resource.TestCheckResourceAttr("ibm_vmaas_vdc.vmaas_vdc_instance", "name", name),
 					resource.TestCheckResourceAttr("ibm_vmaas_vdc.vmaas_vdc_instance", "ram", ram),
@@ -80,9 +76,8 @@ func TestAccIbmVmaasVdcAllArgs(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmVmaasVdcConfig(acceptLanguageUpdate, cpuUpdate, nameUpdate, ramUpdate, fastProvisioningEnabledUpdate, rhelByolUpdate, windowsByolUpdate, id, pvdc_id),
+				Config: testAccCheckIbmVmaasVdcConfig(cpuUpdate, nameUpdate, ramUpdate, fastProvisioningEnabledUpdate, rhelByolUpdate, windowsByolUpdate, id, pvdc_id),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_vmaas_vdc.vmaas_vdc_instance", "accept_language", acceptLanguageUpdate),
 					resource.TestCheckResourceAttr("ibm_vmaas_vdc.vmaas_vdc_instance", "cpu", cpuUpdate),
 					resource.TestCheckResourceAttr("ibm_vmaas_vdc.vmaas_vdc_instance", "name", nameUpdate),
 					resource.TestCheckResourceAttr("ibm_vmaas_vdc.vmaas_vdc_instance", "ram", ramUpdate),
@@ -92,10 +87,9 @@ func TestAccIbmVmaasVdcAllArgs(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				ResourceName:            "ibm_vmaas_vdc.vmaas_vdc_instance",
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"accept_language"},
+				ResourceName:      "ibm_vmaas_vdc.vmaas_vdc_instance",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -119,11 +113,10 @@ func testAccCheckIbmVmaasVdcConfigBasic(name string, id string, pvdc_id string) 
 	`, name, id, pvdc_id)
 }
 
-func testAccCheckIbmVmaasVdcConfig(acceptLanguage string, cpu string, name string, ram string, fastProvisioningEnabled string, rhelByol string, windowsByol string, id string, pvdc_id string) string {
+func testAccCheckIbmVmaasVdcConfig(cpu string, name string, ram string, fastProvisioningEnabled string, rhelByol string, windowsByol string, id string, pvdc_id string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_vmaas_vdc" "vmaas_vdc_instance" {
-			accept_language = "%s"
 			cpu = %s
 			name = "%s"
 			ram = %s
@@ -141,7 +134,7 @@ func testAccCheckIbmVmaasVdcConfig(acceptLanguage string, cpu string, name strin
 				}
 			}
 		}
-	`, acceptLanguage, cpu, name, ram, fastProvisioningEnabled, rhelByol, windowsByol, id, pvdc_id)
+	`, cpu, name, ram, fastProvisioningEnabled, rhelByol, windowsByol, id, pvdc_id)
 }
 
 func testAccCheckIbmVmaasVdcExists(n string, obj vmwarev1.VDC) resource.TestCheckFunc {
@@ -601,7 +594,6 @@ func TestResourceIbmVmaasVdcMapToVDCEdgePrototypeNetworkHaNetworkHaOnStretched(t
 		model := new(vmwarev1.VDCEdgePrototypeNetworkHaNetworkHaOnStretched)
 		model.PrimaryDataCenterName = core.StringPtr("testString")
 		model.SecondaryDataCenterName = core.StringPtr("testString")
-
 		assert.Equal(t, result, model)
 	}
 

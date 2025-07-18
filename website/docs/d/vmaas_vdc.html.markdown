@@ -14,6 +14,7 @@ Provides a read-only data source to retrieve information about a vmaas_vdc. You 
 
 ```hcl
 data "ibm_vmaas_vdc" "vmaas_vdc" {
+	accept_language = ibm_vmaas_vdc.vmaas_vdc_instance.accept_language
 	vmaas_vdc_id = "vdc_id"
 }
 ```
@@ -22,6 +23,8 @@ data "ibm_vmaas_vdc" "vmaas_vdc" {
 
 You can specify the following arguments for this data source.
 
+* `accept_language` - (Optional, String) Language.
+  * Constraints: The maximum length is `256` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9-,;=\\.\\*\\s]{1,256}$/`.
 * `vmaas_vdc_id` - (Required, Forces new resource, String) A unique ID for a specified virtual data center.
   * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9_-]{1,128}$/`.
 

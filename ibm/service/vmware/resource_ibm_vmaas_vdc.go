@@ -41,7 +41,6 @@ func ResourceIbmVmaasVdc() *schema.Resource {
 			"accept_language": &schema.Schema{
 				Type:         schema.TypeString,
 				Optional:     true,
-				Computed:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_vmaas_vdc", "accept_language"),
 				Description:  "Language.",
 			},

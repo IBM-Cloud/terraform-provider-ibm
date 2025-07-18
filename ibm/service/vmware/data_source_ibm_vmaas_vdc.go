@@ -31,6 +31,11 @@ func DataSourceIbmVmaasVdc() *schema.Resource {
 				Required:    true,
 				Description: "A unique ID for a specified virtual data center.",
 			},
+			"accept_language": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Language.",
+			},
 			"href": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -375,6 +380,9 @@ func dataSourceIbmVmaasVdcRead(context context.Context, d *schema.ResourceData, 
 	getVdcOptions := &vmwarev1.GetVdcOptions{}
 
 	getVdcOptions.SetID(d.Get("vmaas_vdc_id").(string))
+	if _, ok := d.GetOk("accept_language"); ok {
+		getVdcOptions.SetAcceptLanguage(d.Get("accept_language").(string))
+	}
 
 	vDC, _, err := vmwareClient.GetVdcWithContext(context, getVdcOptions)
 	if err != nil {

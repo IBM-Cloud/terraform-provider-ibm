@@ -14,9 +14,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/vmware"
-
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/vmware"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/vmware-go-sdk/vmwarev1"
 	"github.com/stretchr/testify/assert"
@@ -59,7 +58,6 @@ func TestAccIbmVmaasVdcDataSourceBasic(t *testing.T) {
 func TestAccIbmVmaasVdcDataSourceAllArgs(t *testing.T) {
 	pvdc_id := acc.Vmaas_Directorsite_pvdc_id
 	id := acc.Vmaas_Directorsite_id
-	vDCAcceptLanguage := "en-us"
 	vDCCpu := fmt.Sprintf("%d", acctest.RandIntRange(0, 2000))
 	vDCName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	vDCRam := fmt.Sprintf("%d", acctest.RandIntRange(0, 40960))
@@ -72,7 +70,7 @@ func TestAccIbmVmaasVdcDataSourceAllArgs(t *testing.T) {
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmVmaasVdcDataSourceConfig(vDCAcceptLanguage, vDCCpu, vDCName, vDCRam, vDCFastProvisioningEnabled, vDCRhelByol, vDCWindowsByol, id, pvdc_id),
+				Config: testAccCheckIbmVmaasVdcDataSourceConfig(vDCCpu, vDCName, vDCRam, vDCFastProvisioningEnabled, vDCRhelByol, vDCWindowsByol, id, pvdc_id),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_vmaas_vdc.vmaas_vdc_instance", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_vmaas_vdc.vmaas_vdc_instance", "vmaas_vdc_id"),
@@ -136,10 +134,9 @@ func testAccCheckIbmVmaasVdcDataSourceConfigBasic(vDCName string, id string, pvd
 	`, vDCName, id, pvdc_id)
 }
 
-func testAccCheckIbmVmaasVdcDataSourceConfig(vDCAcceptLanguage string, vDCCpu string, vDCName string, vDCRam string, vDCFastProvisioningEnabled string, vDCRhelByol string, vDCWindowsByol string, id string, pvdc_id string) string {
+func testAccCheckIbmVmaasVdcDataSourceConfig(vDCCpu string, vDCName string, vDCRam string, vDCFastProvisioningEnabled string, vDCRhelByol string, vDCWindowsByol string, id string, pvdc_id string) string {
 	return fmt.Sprintf(`
 		resource "ibm_vmaas_vdc" "vmaas_vdc_instance" {
-			accept_language = "%s"
 			cpu = %s
 			name = "%s"
 			ram = %s
@@ -154,14 +151,14 @@ func testAccCheckIbmVmaasVdcDataSourceConfig(vDCAcceptLanguage string, vDCCpu st
 					provider_type {
 						name = "reserved"
 					}
-                }
+				}
 			}
 		}
 
 		data "ibm_vmaas_vdc" "vmaas_vdc_instance" {
 			vmaas_vdc_id = ibm_vmaas_vdc.vmaas_vdc_instance.id
 		}
-	`, vDCAcceptLanguage, vDCCpu, vDCName, vDCRam, vDCFastProvisioningEnabled, vDCRhelByol, vDCWindowsByol, id, pvdc_id)
+	`, vDCCpu, vDCName, vDCRam, vDCFastProvisioningEnabled, vDCRhelByol, vDCWindowsByol, id, pvdc_id)
 }
 
 func TestDataSourceIbmVmaasVdcEdgeToMap(t *testing.T) {
