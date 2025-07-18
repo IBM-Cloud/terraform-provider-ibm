@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2024 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package vmware_test
@@ -11,20 +11,18 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/vmware"
-
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/vmware"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/vmware-go-sdk/vmwarev1"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestAccIbmVmaasVdcBasic(t *testing.T) {
+	pvdc_id := acc.Vmaas_Directorsite_pvdc_id
+	id := acc.Vmaas_Directorsite_id
 	var conf vmwarev1.VDC
-
-	ds_id := acc.Vmaas_Directorsite_id
-	ds_pvdc_id := acc.Vmaas_Directorsite_pvdc_id
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -33,7 +31,7 @@ func TestAccIbmVmaasVdcBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIbmVmaasVdcDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmVmaasVdcConfigBasic(ds_id, ds_pvdc_id, name),
+				Config: testAccCheckIbmVmaasVdcConfigBasic(name, id, pvdc_id),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmVmaasVdcExists("ibm_vmaas_vdc.vmaas_vdc_instance", conf),
 					resource.TestCheckResourceAttr("ibm_vmaas_vdc.vmaas_vdc_instance", "name", name),
@@ -44,21 +42,18 @@ func TestAccIbmVmaasVdcBasic(t *testing.T) {
 }
 
 func TestAccIbmVmaasVdcAllArgs(t *testing.T) {
+	pvdc_id := acc.Vmaas_Directorsite_pvdc_id
+	id := acc.Vmaas_Directorsite_id
 	var conf vmwarev1.VDC
-
-	ds_id := acc.Vmaas_Directorsite_id
-	ds_pvdc_id := acc.Vmaas_Directorsite_pvdc_id
-
 	cpu := fmt.Sprintf("%d", acctest.RandIntRange(0, 2000))
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	ram := fmt.Sprintf("%d", acctest.RandIntRange(0, 40960))
 	fastProvisioningEnabled := "false"
 	rhelByol := "false"
-	windowsByol := "false"
-
-	cpuUpdate := fmt.Sprintf("%d", acctest.RandIntRange(0, 2000))
+	windowsByol := "true"
+	cpuUpdate := cpu
 	nameUpdate := name
-	ramUpdate := fmt.Sprintf("%d", acctest.RandIntRange(0, 40960))
+	ramUpdate := ram
 	fastProvisioningEnabledUpdate := fastProvisioningEnabled
 	rhelByolUpdate := rhelByol
 	windowsByolUpdate := windowsByol
@@ -69,7 +64,7 @@ func TestAccIbmVmaasVdcAllArgs(t *testing.T) {
 		CheckDestroy: testAccCheckIbmVmaasVdcDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmVmaasVdcConfig(cpu, ds_id, ds_pvdc_id, name, ram, fastProvisioningEnabled, rhelByol, windowsByol),
+				Config: testAccCheckIbmVmaasVdcConfig(cpu, name, ram, fastProvisioningEnabled, rhelByol, windowsByol, id, pvdc_id),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmVmaasVdcExists("ibm_vmaas_vdc.vmaas_vdc_instance", conf),
 					resource.TestCheckResourceAttr("ibm_vmaas_vdc.vmaas_vdc_instance", "cpu", cpu),
@@ -81,7 +76,7 @@ func TestAccIbmVmaasVdcAllArgs(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmVmaasVdcConfig(cpuUpdate, ds_id, ds_pvdc_id, nameUpdate, ramUpdate, fastProvisioningEnabledUpdate, rhelByolUpdate, windowsByolUpdate),
+				Config: testAccCheckIbmVmaasVdcConfig(cpuUpdate, nameUpdate, ramUpdate, fastProvisioningEnabledUpdate, rhelByolUpdate, windowsByolUpdate, id, pvdc_id),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_vmaas_vdc.vmaas_vdc_instance", "cpu", cpuUpdate),
 					resource.TestCheckResourceAttr("ibm_vmaas_vdc.vmaas_vdc_instance", "name", nameUpdate),
@@ -100,44 +95,46 @@ func TestAccIbmVmaasVdcAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmVmaasVdcConfigBasic(ds_id string, ds_pvdc_id string, name string) string {
+func testAccCheckIbmVmaasVdcConfigBasic(name string, id string, pvdc_id string) string {
 	return fmt.Sprintf(`
 		resource "ibm_vmaas_vdc" "vmaas_vdc_instance" {
+			name = "%s"
 			director_site {
 				id = "%s"
 				pvdc {
+					compute_ha_enabled = false
 					id = "%s"
 					provider_type {
-						name = "on_demand"
+						name = "paygo"
 					}
 				}
 			}
-			name = "%s"
 		}
-	`, ds_id, ds_pvdc_id, name)
+	`, name, id, pvdc_id)
 }
 
-func testAccCheckIbmVmaasVdcConfig(cpu string, ds_id string, ds_pvdc_id string, name string, ram string, fastProvisioningEnabled string, rhelByol string, windowsByol string) string {
+func testAccCheckIbmVmaasVdcConfig(cpu string, name string, ram string, fastProvisioningEnabled string, rhelByol string, windowsByol string, id string, pvdc_id string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_vmaas_vdc" "vmaas_vdc_instance" {
 			cpu = %s
-			director_site {
-				id = "%s"
-				pvdc {
-					id = "%s"
-					provider_type {
-						name = "on_demand"
-					}
-				}
-			}
 			name = "%s"
 			ram = %s
 			fast_provisioning_enabled = %s
 			rhel_byol = %s
 			windows_byol = %s
+			director_site {
+				id = "%s"
+				pvdc {
+					compute_ha_enabled = false
+					id = "%s"
+					provider_type {
+						name = "reserved"
+					}
+				}
+			}
 		}
-	`, cpu, ds_id, ds_pvdc_id, name, ram, fastProvisioningEnabled, rhelByol, windowsByol)
+	`, cpu, name, ram, fastProvisioningEnabled, rhelByol, windowsByol, id, pvdc_id)
 }
 
 func testAccCheckIbmVmaasVdcExists(n string, obj vmwarev1.VDC) resource.TestCheckFunc {
@@ -200,11 +197,12 @@ func TestResourceIbmVmaasVdcVDCDirectorSiteToMap(t *testing.T) {
 		vdcProviderTypeModel["name"] = "paygo"
 
 		directorSitePvdcModel := make(map[string]interface{})
-		directorSitePvdcModel["id"] = "pvdc_id"
+		directorSitePvdcModel["compute_ha_enabled"] = false
+		directorSitePvdcModel["id"] = "inject_value_pvdc_id"
 		directorSitePvdcModel["provider_type"] = []map[string]interface{}{vdcProviderTypeModel}
 
 		model := make(map[string]interface{})
-		model["id"] = "testString"
+		model["id"] = "inject_value_id"
 		model["pvdc"] = []map[string]interface{}{directorSitePvdcModel}
 		model["url"] = "testString"
 
@@ -215,11 +213,12 @@ func TestResourceIbmVmaasVdcVDCDirectorSiteToMap(t *testing.T) {
 	vdcProviderTypeModel.Name = core.StringPtr("paygo")
 
 	directorSitePvdcModel := new(vmwarev1.DirectorSitePVDC)
-	directorSitePvdcModel.ID = core.StringPtr("pvdc_id")
+	directorSitePvdcModel.ComputeHaEnabled = core.BoolPtr(false)
+	directorSitePvdcModel.ID = core.StringPtr("inject_value_pvdc_id")
 	directorSitePvdcModel.ProviderType = vdcProviderTypeModel
 
 	model := new(vmwarev1.VDCDirectorSite)
-	model.ID = core.StringPtr("testString")
+	model.ID = core.StringPtr("inject_value_id")
 	model.Pvdc = directorSitePvdcModel
 	model.URL = core.StringPtr("testString")
 
@@ -234,7 +233,8 @@ func TestResourceIbmVmaasVdcDirectorSitePVDCToMap(t *testing.T) {
 		vdcProviderTypeModel["name"] = "paygo"
 
 		model := make(map[string]interface{})
-		model["id"] = "pvdc_id"
+		model["compute_ha_enabled"] = false
+		model["id"] = "inject_value_pvdc_id"
 		model["provider_type"] = []map[string]interface{}{vdcProviderTypeModel}
 
 		assert.Equal(t, result, model)
@@ -244,7 +244,8 @@ func TestResourceIbmVmaasVdcDirectorSitePVDCToMap(t *testing.T) {
 	vdcProviderTypeModel.Name = core.StringPtr("paygo")
 
 	model := new(vmwarev1.DirectorSitePVDC)
-	model.ID = core.StringPtr("pvdc_id")
+	model.ComputeHaEnabled = core.BoolPtr(false)
+	model.ID = core.StringPtr("inject_value_pvdc_id")
 	model.ProviderType = vdcProviderTypeModel
 
 	result, err := vmware.ResourceIbmVmaasVdcDirectorSitePVDCToMap(model)
@@ -301,6 +302,10 @@ func TestResourceIbmVmaasVdcEdgeToMap(t *testing.T) {
 		model["transit_gateways"] = []map[string]interface{}{transitGatewayModel}
 		model["type"] = "performance"
 		model["version"] = "testString"
+		model["primary_data_center_name"] = "testString"
+		model["secondary_data_center_name"] = "testString"
+		model["primary_pvdc_id"] = "testString"
+		model["secondary_pvdc_id"] = "testString"
 
 		assert.Equal(t, result, model)
 	}
@@ -336,6 +341,10 @@ func TestResourceIbmVmaasVdcEdgeToMap(t *testing.T) {
 	model.TransitGateways = []vmwarev1.TransitGateway{*transitGatewayModel}
 	model.Type = core.StringPtr("performance")
 	model.Version = core.StringPtr("testString")
+	model.PrimaryDataCenterName = core.StringPtr("testString")
+	model.SecondaryDataCenterName = core.StringPtr("testString")
+	model.PrimaryPvdcID = core.StringPtr("testString")
+	model.SecondaryPvdcID = core.StringPtr("testString")
 
 	result, err := vmware.ResourceIbmVmaasVdcEdgeToMap(model)
 	assert.Nil(t, err)
@@ -460,11 +469,12 @@ func TestResourceIbmVmaasVdcMapToVDCDirectorSitePrototype(t *testing.T) {
 		vdcProviderTypeModel.Name = core.StringPtr("paygo")
 
 		directorSitePvdcModel := new(vmwarev1.DirectorSitePVDC)
-		directorSitePvdcModel.ID = core.StringPtr("pvdc_id")
+		directorSitePvdcModel.ComputeHaEnabled = core.BoolPtr(false)
+		directorSitePvdcModel.ID = core.StringPtr("inject_value_pvdc_id")
 		directorSitePvdcModel.ProviderType = vdcProviderTypeModel
 
 		model := new(vmwarev1.VDCDirectorSitePrototype)
-		model.ID = core.StringPtr("site_id")
+		model.ID = core.StringPtr("testString")
 		model.Pvdc = directorSitePvdcModel
 
 		assert.Equal(t, result, model)
@@ -474,11 +484,12 @@ func TestResourceIbmVmaasVdcMapToVDCDirectorSitePrototype(t *testing.T) {
 	vdcProviderTypeModel["name"] = "paygo"
 
 	directorSitePvdcModel := make(map[string]interface{})
-	directorSitePvdcModel["id"] = "pvdc_id"
+	directorSitePvdcModel["compute_ha_enabled"] = false
+	directorSitePvdcModel["id"] = "inject_value_pvdc_id"
 	directorSitePvdcModel["provider_type"] = []interface{}{vdcProviderTypeModel}
 
 	model := make(map[string]interface{})
-	model["id"] = "site_id"
+	model["id"] = "testString"
 	model["pvdc"] = []interface{}{directorSitePvdcModel}
 
 	result, err := vmware.ResourceIbmVmaasVdcMapToVDCDirectorSitePrototype(model)
@@ -492,7 +503,8 @@ func TestResourceIbmVmaasVdcMapToDirectorSitePVDC(t *testing.T) {
 		vdcProviderTypeModel.Name = core.StringPtr("paygo")
 
 		model := new(vmwarev1.DirectorSitePVDC)
-		model.ID = core.StringPtr("pvdc_id")
+		model.ComputeHaEnabled = core.BoolPtr(false)
+		model.ID = core.StringPtr("inject_value_pvdc_id")
 		model.ProviderType = vdcProviderTypeModel
 
 		assert.Equal(t, result, model)
@@ -502,7 +514,8 @@ func TestResourceIbmVmaasVdcMapToDirectorSitePVDC(t *testing.T) {
 	vdcProviderTypeModel["name"] = "paygo"
 
 	model := make(map[string]interface{})
-	model["id"] = "pvdc_id"
+	model["compute_ha_enabled"] = false
+	model["id"] = "inject_value_pvdc_id"
 	model["provider_type"] = []interface{}{vdcProviderTypeModel}
 
 	result, err := vmware.ResourceIbmVmaasVdcMapToDirectorSitePVDC(model)
@@ -528,20 +541,83 @@ func TestResourceIbmVmaasVdcMapToVDCProviderType(t *testing.T) {
 
 func TestResourceIbmVmaasVdcMapToVDCEdgePrototype(t *testing.T) {
 	checkResult := func(result *vmwarev1.VDCEdgePrototype) {
+		vdcEdgePrototypeNetworkHaModel := new(vmwarev1.VDCEdgePrototypeNetworkHa)
+		vdcEdgePrototypeNetworkHaModel.PrimaryDataCenterName = core.StringPtr("testString")
+		vdcEdgePrototypeNetworkHaModel.SecondaryDataCenterName = core.StringPtr("testString")
+
 		model := new(vmwarev1.VDCEdgePrototype)
 		model.Size = core.StringPtr("medium")
 		model.Type = core.StringPtr("performance")
 		model.PrivateOnly = core.BoolPtr(true)
+		model.NetworkHa = vdcEdgePrototypeNetworkHaModel
 
 		assert.Equal(t, result, model)
 	}
+
+	vdcEdgePrototypeNetworkHaModel := make(map[string]interface{})
+	vdcEdgePrototypeNetworkHaModel["primary_data_center_name"] = "testString"
+	vdcEdgePrototypeNetworkHaModel["secondary_data_center_name"] = "testString"
 
 	model := make(map[string]interface{})
 	model["size"] = "medium"
 	model["type"] = "performance"
 	model["private_only"] = true
+	model["network_ha"] = []interface{}{vdcEdgePrototypeNetworkHaModel}
 
 	result, err := vmware.ResourceIbmVmaasVdcMapToVDCEdgePrototype(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestResourceIbmVmaasVdcMapToVDCEdgePrototypeNetworkHa(t *testing.T) {
+	checkResult := func(result vmwarev1.VDCEdgePrototypeNetworkHaIntf) {
+		model := new(vmwarev1.VDCEdgePrototypeNetworkHa)
+		model.PrimaryDataCenterName = core.StringPtr("testString")
+		model.SecondaryDataCenterName = core.StringPtr("testString")
+		model.SecondaryPvdcID = core.StringPtr("testString")
+
+		assert.Equal(t, result, model)
+	}
+
+	model := make(map[string]interface{})
+	model["primary_data_center_name"] = "testString"
+	model["secondary_data_center_name"] = "testString"
+	model["secondary_pvdc_id"] = "testString"
+
+	result, err := vmware.ResourceIbmVmaasVdcMapToVDCEdgePrototypeNetworkHa(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestResourceIbmVmaasVdcMapToVDCEdgePrototypeNetworkHaNetworkHaOnStretched(t *testing.T) {
+	checkResult := func(result *vmwarev1.VDCEdgePrototypeNetworkHaNetworkHaOnStretched) {
+		model := new(vmwarev1.VDCEdgePrototypeNetworkHaNetworkHaOnStretched)
+		model.PrimaryDataCenterName = core.StringPtr("testString")
+		model.SecondaryDataCenterName = core.StringPtr("testString")
+		assert.Equal(t, result, model)
+	}
+
+	model := make(map[string]interface{})
+	model["primary_data_center_name"] = "testString"
+	model["secondary_data_center_name"] = "testString"
+
+	result, err := vmware.ResourceIbmVmaasVdcMapToVDCEdgePrototypeNetworkHaNetworkHaOnStretched(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestResourceIbmVmaasVdcMapToVDCEdgePrototypeNetworkHaNetworkHaOnNonStretched(t *testing.T) {
+	checkResult := func(result *vmwarev1.VDCEdgePrototypeNetworkHaNetworkHaOnNonStretched) {
+		model := new(vmwarev1.VDCEdgePrototypeNetworkHaNetworkHaOnNonStretched)
+		model.SecondaryPvdcID = core.StringPtr("testString")
+
+		assert.Equal(t, result, model)
+	}
+
+	model := make(map[string]interface{})
+	model["secondary_pvdc_id"] = "testString"
+
+	result, err := vmware.ResourceIbmVmaasVdcMapToVDCEdgePrototypeNetworkHaNetworkHaOnNonStretched(model)
 	assert.Nil(t, err)
 	checkResult(result)
 }
