@@ -334,8 +334,8 @@ Review the argument references that you can specify for your resource.
 
 - `account_management` - (Optional, Bool) Gives access to all account management services if set to **true**. Default value is **false**. If you set this option, do not set `resources` at the same time.**Note** Conflicts with `resources` and `resource_attributes`.
 - `description`  (Optional, String) The description of the IAM Trusted Profile Policy.
-- `profile_id` - (Optional, Forces new resource, String) The UUID of the trusted profile. Either `profile_id` or `iam_id` is required.
-- `iam_id` - (Optional,  Forces new resource, String) IAM ID of the truestedprofile. Either `profile_id` or `iam_id` is required.
+- `profile_id` - (Optional, Forces new resource, String) The UUID of the trusted profile. This field is deprecated and will be removed in future releases. Please use iam_id as a replacement.
+- `iam_id` - (Optional,  Forces new resource, String) IAM ID of the truestedprofile.
 - `resources` - (List of Objects) Optional- A nested block describes the resource of this policy.**Note** Conflicts with `account_management` and `resource_attributes`.
 
   Nested scheme for `resources`:

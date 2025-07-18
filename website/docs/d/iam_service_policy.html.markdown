@@ -35,8 +35,8 @@ data "ibm_iam_service_policy" "testacc_ds_service_policy" {
 
 Review the argument references that you can specify for your data source.
 
-- `iam_service_id` - (Required, String) The UUID of the service ID.
-- `iam_id` - (Optional, String) IAM ID of the service ID. One of the `iam_service_id` or `iam_id` is required argument. You can use to get cross account service ID policy.
+- `iam_service_id` - (Optional, String) The UUID of the service ID. This field is deprecated and will be removed in future releases. Please use iam_id as a replacement.
+- `iam_id` - (Optional, String) IAM ID of the service ID.
 - `sort`- Optional -  (String) The single field sort query for policies.
 - `transaction_id`- (Optional, String) The TransactionID can be passed to your request for the tracking calls.
 
