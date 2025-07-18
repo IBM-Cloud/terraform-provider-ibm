@@ -397,9 +397,8 @@ func DataSourceIBMGetActionControlAssignmentActionControlAssignmentResourceCreat
 	return modelMap, nil
 }
 
-func DataSourceIBMGetActionControlAssignmentErrorResponseToMap(model *iampolicymanagementv1.ErrorResponse) (map[string]interface{}, error) {
+func DataSourceIBMGetActionControlAssignmentErrorResponseToMap(model *iampolicymanagementv1.AssignmentResourceError) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["trace"] = *model.Trace
 	errors := []map[string]interface{}{}
 	for _, errorsItem := range model.Errors {
 		errorsItemMap, err := DataSourceIBMGetActionControlAssignmentErrorObjectToMap(&errorsItem)
@@ -409,7 +408,6 @@ func DataSourceIBMGetActionControlAssignmentErrorResponseToMap(model *iampolicym
 		errors = append(errors, errorsItemMap)
 	}
 	modelMap["errors"] = errors
-	modelMap["status_code"] = flex.IntValue(model.StatusCode)
 	return modelMap, nil
 }
 

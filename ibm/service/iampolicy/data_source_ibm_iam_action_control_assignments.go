@@ -425,9 +425,8 @@ func DataSourceIBMListActionControlAssignmentsActionControlAssignmentResourceCre
 	return modelMap, nil
 }
 
-func DataSourceIBMListActionControlAssignmentsErrorResponseToMap(model *iampolicymanagementv1.ErrorResponse) (map[string]interface{}, error) {
+func DataSourceIBMListActionControlAssignmentsErrorResponseToMap(model *iampolicymanagementv1.AssignmentResourceError) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["trace"] = *model.Trace
 	errors := []map[string]interface{}{}
 	for _, errorsItem := range model.Errors {
 		errorsItemMap, err := DataSourceIBMListActionControlAssignmentsErrorObjectToMap(&errorsItem) // #nosec G601
@@ -437,7 +436,6 @@ func DataSourceIBMListActionControlAssignmentsErrorResponseToMap(model *iampolic
 		errors = append(errors, errorsItemMap)
 	}
 	modelMap["errors"] = errors
-	modelMap["status_code"] = flex.IntValue(model.StatusCode)
 	return modelMap, nil
 }
 
