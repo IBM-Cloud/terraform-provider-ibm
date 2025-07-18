@@ -62,8 +62,10 @@ Nested schema for **assignments**:
 							* `role` - (String) The conflicting role id.
 					* `message` - (String) The error message returned by the API.
 					* `more_info` - (String) Additional info for error.
-				* `status_code` - (Integer) The http error code of the response.
-				* `trace` - (String) The unique transaction id for the request.
+				* `name` - (String) Name of the error.
+				* `errorCode` - (String) error code.
+				* `message` - (String) Error message detailing the nature of the error.
+				* `code` - (String) error code.
 			* `resource_created` - (List) On success, includes the  policy assigned.
 			Nested schema for **resource_created**:
 				* `id` - (String) policy id.
