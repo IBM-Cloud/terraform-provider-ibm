@@ -105,6 +105,12 @@ func ResourceIBMCdTektonPipelineTrigger() *schema.Resource {
 				Default:     false,
 				Description: "Mark the trigger as a favorite.",
 			},
+			"limit_waiting_runs": &schema.Schema{
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Flag that will limit the trigger to a maximum of one waiting run. A newly triggered run will cause any other waiting run(s) to be automatically cancelled.",
+			},
 			"enable_events_from_forks": &schema.Schema{
 				Type:        schema.TypeBool,
 				Optional:    true,
@@ -189,12 +195,6 @@ func ResourceIBMCdTektonPipelineTrigger() *schema.Resource {
 				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_cd_tekton_pipeline_trigger", "filter"),
 				Description:  "Either 'events' or 'filter' can be used. Stores the CEL (Common Expression Language) expression value which is used for event filtering against the Git webhook payloads.",
-			},
-			"limit_waiting_runs": &schema.Schema{
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
-				Description: "Flag that will limit the trigger to a maximum of one waiting run. A newly triggered run will cause waiting run(s) to be automatically cancelled.",
 			},
 			"cron": &schema.Schema{
 				Type:         schema.TypeString,
@@ -555,6 +555,12 @@ func resourceIBMCdTektonPipelineTriggerRead(context context.Context, d *schema.R
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cd_tekton_pipeline_trigger", "read", "set-favorite").GetDiag()
 		}
 	}
+	if !core.IsNil(trigger.LimitWaitingRuns) {
+		if err = d.Set("limit_waiting_runs", trigger.LimitWaitingRuns); err != nil {
+			err = fmt.Errorf("Error setting limit_waiting_runs: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cd_tekton_pipeline_trigger", "read", "set-limit_waiting_runs").GetDiag()
+		}
+	}
 	if !core.IsNil(trigger.EnableEventsFromForks) {
 		if err = d.Set("enable_events_from_forks", trigger.EnableEventsFromForks); err != nil {
 			err = fmt.Errorf("Error setting enable_events_from_forks: %s", err)
@@ -581,12 +587,6 @@ func resourceIBMCdTektonPipelineTriggerRead(context context.Context, d *schema.R
 		if err = d.Set("filter", trigger.Filter); err != nil {
 			err = fmt.Errorf("Error setting filter: %s", err)
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cd_tekton_pipeline_trigger", "read", "set-filter").GetDiag()
-		}
-	}
-	if !core.IsNil(trigger.LimitWaitingRuns) {
-		if err = d.Set("limit_waiting_runs", trigger.LimitWaitingRuns); err != nil {
-			err = fmt.Errorf("Error setting limit_waiting_runs: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cd_tekton_pipeline_trigger", "read", "set-limit_waiting_runs").GetDiag()
 		}
 	}
 	if !core.IsNil(trigger.Cron) {

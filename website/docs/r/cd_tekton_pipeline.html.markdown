@@ -130,7 +130,7 @@ Nested schema for **triggers**:
 	  * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
 	* `id` - (String) The Trigger ID.
 	  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
-	* `limit_waiting_runs` - (Boolean) Flag that will limit the trigger to a maximum of one waiting run. A newly triggered run will cause waiting run(s) to be automatically cancelled.
+	* `limit_waiting_runs` - (Boolean) Flag that will limit the trigger to a maximum of one waiting run. A newly triggered run will cause any other waiting run(s) to be automatically cancelled.
 	  * Constraints: The default value is `false`.
 	* `max_concurrent_runs` - (Integer) Defines the maximum number of concurrent runs for this trigger. If omitted then the concurrency limit is disabled for this trigger.
 	* `name` - (String) Trigger name.
