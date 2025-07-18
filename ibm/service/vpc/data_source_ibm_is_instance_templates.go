@@ -925,6 +925,30 @@ func DataSourceIBMISInstanceTemplates() *schema.Resource {
 										Type:     schema.TypeInt,
 										Computed: true,
 									},
+									"source_snapshot": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "The snapshot from which to clone the volume.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"id": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The unique identifier for this snapshot.",
+												},
+												"crn": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The CRN of this snapshot.",
+												},
+												"href": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The URL for this snapshot.",
+												},
+											},
+										},
+									},
 									isInstanceTemplateBootVolumeTags: {
 										Type:        schema.TypeSet,
 										Computed:    true,
@@ -1636,6 +1660,10 @@ func dataSourceIBMISInstanceTemplatesRead(context context.Context, d *schema.Res
 						}
 						if instance.BootVolumeAttachment.Volume.UserTags != nil {
 							bootVol[isInstanceTemplateBootVolumeTags] = instance.BootVolumeAttachment.Volume.UserTags
+						}
+						if instance.BootVolumeAttachment.Volume.SourceSnapshot != nil {
+							sourceSnapshotMap, _ := DataSourceIBMIsInstanceTemplateSnapshotIdentityToMap(instance.BootVolumeAttachment.Volume.SourceSnapshot)
+							bootVol["source_snapshot"] = []map[string]interface{}{sourceSnapshotMap}
 						}
 					}
 					bootVolList = append(bootVolList, bootVol)

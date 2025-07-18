@@ -868,6 +868,30 @@ func DataSourceIBMISInstanceTemplate() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
+						"source_snapshot": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The snapshot from which to clone the volume.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"id": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The unique identifier for this snapshot.",
+									},
+									"crn": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The CRN of this snapshot.",
+									},
+									"href": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The URL for this snapshot.",
+									},
+								},
+							},
+						},
 						isInstanceTemplateBootVolumeTags: {
 							Type:        schema.TypeSet,
 							Computed:    true,
@@ -1742,6 +1766,10 @@ func dataSourceIBMISInstanceTemplateRead(context context.Context, d *schema.Reso
 					if instanceTemplate.BootVolumeAttachment.Volume.UserTags != nil {
 						bootVol[isInstanceTemplateBootVolumeTags] = instanceTemplate.BootVolumeAttachment.Volume.UserTags
 					}
+					if instanceTemplate.BootVolumeAttachment.Volume.SourceSnapshot != nil {
+						sourceSnapshotMap, _ := DataSourceIBMIsInstanceTemplateSnapshotIdentityToMap(instanceTemplate.BootVolumeAttachment.Volume.SourceSnapshot)
+						bootVol["source_snapshot"] = []map[string]interface{}{sourceSnapshotMap}
+					}
 				}
 				bootVolList = append(bootVolList, bootVol)
 				if err = d.Set("boot_volume_attachment", bootVolList); err != nil {
@@ -2484,6 +2512,10 @@ func dataSourceIBMISInstanceTemplateRead(context context.Context, d *schema.Reso
 							}
 							if instanceTemplate.BootVolumeAttachment.Volume.UserTags != nil {
 								bootVol[isInstanceTemplateBootVolumeTags] = instanceTemplate.BootVolumeAttachment.Volume.UserTags
+							}
+							if instanceTemplate.BootVolumeAttachment.Volume.SourceSnapshot != nil {
+								sourceSnapshotMap, _ := DataSourceIBMIsInstanceTemplateSnapshotIdentityToMap(instanceTemplate.BootVolumeAttachment.Volume.SourceSnapshot)
+								bootVol["source_snapshot"] = []map[string]interface{}{sourceSnapshotMap}
 							}
 						}
 						bootVolList = append(bootVolList, bootVol)
@@ -3388,6 +3420,49 @@ func DataSourceIBMIsInstanceTemplateInstanceClusterNetworkAttachmentPrototypeClu
 }
 
 func DataSourceIBMIsInstanceTemplateInstanceClusterNetworkAttachmentPrototypeClusterNetworkInterfaceClusterNetworkInterfaceIdentityClusterNetworkInterfaceIdentityByHrefToMap(model *vpcv1.InstanceClusterNetworkAttachmentPrototypeClusterNetworkInterfaceClusterNetworkInterfaceIdentityClusterNetworkInterfaceIdentityByHref) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["href"] = *model.Href
+	return modelMap, nil
+}
+
+func DataSourceIBMIsInstanceTemplateSnapshotIdentityToMap(model vpcv1.SnapshotIdentityIntf) (map[string]interface{}, error) {
+	if _, ok := model.(*vpcv1.SnapshotIdentityByID); ok {
+		return DataSourceIBMIsInstanceTemplateSnapshotIdentityByIDToMap(model.(*vpcv1.SnapshotIdentityByID))
+	} else if _, ok := model.(*vpcv1.SnapshotIdentityByCRN); ok {
+		return DataSourceIBMIsInstanceTemplateSnapshotIdentityByCRNToMap(model.(*vpcv1.SnapshotIdentityByCRN))
+	} else if _, ok := model.(*vpcv1.SnapshotIdentityByHref); ok {
+		return DataSourceIBMIsInstanceTemplateSnapshotIdentityByHrefToMap(model.(*vpcv1.SnapshotIdentityByHref))
+	} else if _, ok := model.(*vpcv1.SnapshotIdentity); ok {
+		modelMap := make(map[string]interface{})
+		model := model.(*vpcv1.SnapshotIdentity)
+		if model.ID != nil {
+			modelMap["id"] = *model.ID
+		}
+		if model.CRN != nil {
+			modelMap["crn"] = *model.CRN
+		}
+		if model.Href != nil {
+			modelMap["href"] = *model.Href
+		}
+		return modelMap, nil
+	} else {
+		return nil, fmt.Errorf("Unrecognized vpcv1.SnapshotIdentityIntf subtype encountered")
+	}
+}
+
+func DataSourceIBMIsInstanceTemplateSnapshotIdentityByIDToMap(model *vpcv1.SnapshotIdentityByID) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["id"] = *model.ID
+	return modelMap, nil
+}
+
+func DataSourceIBMIsInstanceTemplateSnapshotIdentityByCRNToMap(model *vpcv1.SnapshotIdentityByCRN) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["crn"] = *model.CRN
+	return modelMap, nil
+}
+
+func DataSourceIBMIsInstanceTemplateSnapshotIdentityByHrefToMap(model *vpcv1.SnapshotIdentityByHref) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["href"] = *model.Href
 	return modelMap, nil
