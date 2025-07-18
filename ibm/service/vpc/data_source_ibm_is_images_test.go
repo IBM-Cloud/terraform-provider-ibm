@@ -96,6 +96,25 @@ func TestAccIBMISImageDataSource_With_FilterVisibilty(t *testing.T) {
 	})
 }
 
+func TestAccIBMISImageDataSource_With_FilterRemoteAccountId(t *testing.T) {
+	resName := "data.ibm_is_images.example"
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISImagesDataSourceWithRemoteAccountId("provider"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(resName, "images.0.remote.#"),
+					resource.TestCheckResourceAttrSet(resName, "images.0.remote.0.account.#"),
+					resource.TestCheckResourceAttrSet(resName, "images.0.remote.0.account.0.id"),
+					resource.TestCheckResourceAttrSet(resName, "images.0.remote.0.account.0.resource_type"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccIBMISImageDataSource_With_FilterStatus(t *testing.T) {
 	resName := "data.ibm_is_images.test1"
 	resource.Test(t, resource.TestCase{
@@ -148,4 +167,13 @@ func testAccCheckIBMISImagesDataSourceWithStatusPublic(status string) string {
 		status = "%s"
 	}
 	`, status)
+}
+
+func testAccCheckIBMISImagesDataSourceWithRemoteAccountId(remoteAccountId string) string {
+	return fmt.Sprintf(`
+	data "ibm_is_images" "example" {
+		remote_account_id = "%s"
+		status = "available"
+	}
+	`, remoteAccountId)
 }

@@ -31,6 +31,12 @@ data "ibm_is_images" "ds_images" {
   visibility = "public"
 }
 
+```terraform
+data "ibm_is_image" "example" {
+  remote_account_id = "provider"
+}
+```
+
 ```
 ## Argument reference
 
@@ -41,7 +47,9 @@ Review the argument references that you can specify for your data source.
 - `name` - (Optional, string) The name of the image.
 - `visibility` - (Optional, string) Visibility of the image. Accepted values : **private**, **public**
 - `status` - (Optional, string) Status of the image. Accepted value : **available**, **deleting**, **deprecated**, **failed**, **obsolete**, **pending**, **unusable**
-- `user_data_format` - (String) The user data format for this image.  
+- `user_data_format` - (String) The user data format for this image.   
+- `remote-account-id` - (Optional, String) Accepted values are `provider` or `user` or valid account_id.
+
    
     ~> **Note:** </br> Allowed values are : </br>
     **&#x2022;** `cloud_init`: user_data will be interpreted according to the cloud-init standard.</br>
@@ -103,4 +111,15 @@ You can access the following attribute references after your data source is crea
       - `more_info` - (String) Link to documentation about this status reason
   - `visibility` - (String) The visibility of the image public or private.
   - `source_volume` - The source volume id of the image.
+  - `remote` - (Optional, List) If present, this property indicates that the resource associated with this reference is remote and therefore may not be directly retrievable.
+
+      **Nested schema for `remote`:**
+       - `account` - (Optional, List)  Indicates that the referenced resource is remote to this account, and identifies the owning account.
+
+          **Nested schema for `account`:**
+           - `id` – (Computed, String) The unique identifier for this account.  
+           - `resource_type` – (Computed, String) The resource type.
+
+
+
 

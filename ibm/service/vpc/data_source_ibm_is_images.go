@@ -20,6 +20,7 @@ const (
 	isImages                = "images"
 	isImagesResourceGroupID = "resource_group"
 	isImageCatalogManaged   = "catalog_managed"
+	isImageRemoteAccountId  = "remote_account_id"
 )
 
 func DataSourceIBMISImages() *schema.Resource {
@@ -53,6 +54,11 @@ func DataSourceIBMISImages() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "Whether the image is publicly visible or private to the account",
+			},
+			isImageRemoteAccountId: {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Filters the collection to images with a remote.account.id property matching the specified account identifier.",
 			},
 			isImageUserDataFormat: {
 				Type:        schema.TypeSet,
@@ -179,6 +185,34 @@ func DataSourceIBMISImages() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The operating system architecture",
+						},
+						"remote": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "If present, this property indicates that the resource associated with this reference is remote and therefore may not be directly retrievable.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"account": {
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "If present, this property indicates that the referenced resource is remote to this account, and identifies the owning account.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"id": {
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The unique identifier for this resource group.",
+												},
+												"resource_type": {
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The resource type.",
+												},
+											},
+										},
+									},
+								},
+							},
 						},
 						"resource_group": {
 							Type:        schema.TypeList,
@@ -338,6 +372,10 @@ func imageList(context context.Context, d *schema.ResourceData, meta interface{}
 		visibility = v.(string)
 	}
 
+	var remoteAccountId string
+	if v, ok := d.GetOk(isImageRemoteAccountId); ok {
+		remoteAccountId = v.(string)
+	}
 	var status string
 	if v, ok := d.GetOk(isImageStatus); ok {
 		status = v.(string)
@@ -354,6 +392,19 @@ func imageList(context context.Context, d *schema.ResourceData, meta interface{}
 	if imageName != "" {
 		listImagesOptions.SetName(imageName)
 	}
+
+	if remoteAccountId != "" {
+		if remoteAccountId == "user" {
+			remoteAccountId = "null"
+			listImagesOptions.SetRemoteAccountID(remoteAccountId)
+		} else if remoteAccountId == "provider" {
+			remoteAccountId = "not:null"
+			listImagesOptions.SetRemoteAccountID(remoteAccountId)
+		} else {
+			listImagesOptions.SetRemoteAccountID(remoteAccountId)
+		}
+	}
+
 	if visibility != "" {
 		listImagesOptions.SetVisibility(visibility)
 	}
@@ -454,6 +505,21 @@ func imageList(context context.Context, d *schema.ResourceData, meta interface{}
 			catalogOfferingList = append(catalogOfferingList, catalogOfferingMap)
 			l[isImageCatalogOffering] = catalogOfferingList
 		}
+
+		if image.Remote != nil {
+			imageRemoteMap, err := dataSourceImageRemote(image)
+			if err != nil {
+				if err != nil {
+					tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_image", "read", "initialize-client")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
+				}
+			}
+			if len(imageRemoteMap) > 0 {
+				l["remote"] = []interface{}{imageRemoteMap}
+			}
+		}
+
 		accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *image.CRN, "", isImageAccessTagType)
 		if err != nil {
 			log.Printf(

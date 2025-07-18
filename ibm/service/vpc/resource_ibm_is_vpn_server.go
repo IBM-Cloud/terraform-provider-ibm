@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -373,6 +374,14 @@ func ResourceIBMIsVPNServer() *schema.Resource {
 				Set:         flex.ResourceIBMVPCHash,
 				Description: "List of access management tags",
 			},
+			"tags": {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: validate.InvokeValidator("ibm_is_vpn_server", "tags")},
+				Set:         flex.ResourceIBMVPCHash,
+				Description: "VPN server user tags list",
+			},
 		},
 	}
 }
@@ -425,6 +434,15 @@ func ResourceIBMIsVPNServerValidator() *validate.ResourceValidator {
 			Type:                       validate.TypeString,
 			Required:                   true,
 			AllowedValues:              "certificate , username",
+		},
+		validate.ValidateSchema{
+			Identifier:                 "tags",
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			Regexp:                     `^[A-Za-z0-9:_ .-]+$`,
+			MinValueLength:             1,
+			MaxValueLength:             128,
 		},
 		validate.ValidateSchema{
 			Identifier:                 "accesstag",
@@ -568,12 +586,22 @@ func resourceIBMIsVPNServerCreate(context context.Context, d *schema.ResourceDat
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "isWaitForVPNServerStable", "create", "wait-for-stable-vpnserver").GetDiag()
 	}
 
+	v := os.Getenv("IC_ENV_TAGS")
+	if _, ok := d.GetOk("tags"); ok || v != "" {
+		oldList, newList := d.GetChange("tags")
+		err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *vpnServer.CRN, "", "user")
+		if err != nil {
+			log.Printf(
+				"Error on create of resource vpc VPN server (%s) tags: %s", d.Id(), err)
+		}
+	}
+
 	if _, ok := d.GetOk(isVPNServerAccessTags); ok {
 		oldList, newList := d.GetChange(isVPNServerAccessTags)
 		err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *vpnServer.CRN, "", isVPNServerAccessTagType)
 		if err != nil {
 			log.Printf(
-				"Error on create of resource vpc (%s) access tags: %s", d.Id(), err)
+				"Error on create of resource vpc VPN server (%s) access tags: %s", d.Id(), err)
 		}
 	}
 
@@ -773,6 +801,16 @@ func resourceIBMIsVPNServerRead(context context.Context, d *schema.ResourceData,
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_server", "read", "set-resource_type").GetDiag()
 	}
 
+	tags, err := flex.GetGlobalTagsUsingCRN(meta, *vpnServer.CRN, "", isUserTagType)
+	if err != nil {
+		log.Printf(
+			"Error on get of resource vpc VPN server (%s) tags: %s", d.Id(), err)
+	}
+	if err = d.Set("tags", tags); err != nil {
+		err = fmt.Errorf("Error setting tags: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_server", "read", "set-tags").GetDiag()
+	}
+
 	accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *vpnServer.CRN, "", isVPNServerAccessTagType)
 	if err != nil {
 		log.Printf(
@@ -946,6 +984,15 @@ func resourceIBMIsVPNServerUpdate(context context.Context, d *schema.ResourceDat
 		return tfErr.GetDiag()
 	}
 	eTag := response.Headers.Get("ETag") // Getting Etag from the response headers.
+
+	if d.HasChange("tags") {
+		oldList, newList := d.GetChange("tags")
+		err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *vpnServer.CRN, "", isUserTagType)
+		if err != nil {
+			log.Printf(
+				"Error on update of resource vpc Vpn Server (%s) tags: %s", d.Id(), err)
+		}
+	}
 
 	if d.HasChange(isVPNServerAccessTags) {
 		oldList, newList := d.GetChange(isVPNServerAccessTags)
