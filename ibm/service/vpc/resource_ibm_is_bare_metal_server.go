@@ -259,6 +259,25 @@ func ResourceIBMIsBareMetalServer() *schema.Resource {
 							Computed:    true,
 							Description: "The size of the disk in GB (gigabytes)",
 						},
+						"allowed_use": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The usage constraints to match against the requested instance or bare metal server properties to determine compatibility.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"bare_metal_server": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "An image can only be used for bare metal instantiation if this expression resolves to true.",
+									},
+									"api_version": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The API version with which to evaluate the expressions.",
+									},
+								},
+							},
+						},
 					},
 				},
 			},
@@ -2191,6 +2210,16 @@ func bareMetalServerGet(context context.Context, d *schema.ResourceData, meta in
 				isBareMetalServerDiskName:          disk.Name,
 				isBareMetalServerDiskResourceType:  disk.ResourceType,
 				isBareMetalServerDiskSize:          disk.Size,
+			}
+			if disk.AllowedUse != nil {
+				usageConstraintList := []map[string]interface{}{}
+				modelMap, err := ResourceceIBMIsBareMetalServerDiskAllowedUseToMap(disk.AllowedUse)
+				if err != nil {
+					tfErr := flex.TerraformErrorf(err, err.Error(), "(Resource) ibm_is_bare_metal_server", "read")
+					log.Println(tfErr.GetDiag())
+				}
+				usageConstraintList = append(usageConstraintList, modelMap)
+				currentDisk["allowed_use"] = usageConstraintList
 			}
 			diskList = append(diskList, currentDisk)
 		}

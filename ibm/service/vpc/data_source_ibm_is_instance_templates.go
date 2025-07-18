@@ -336,6 +336,35 @@ func DataSourceIBMISInstanceTemplates() *schema.Resource {
 													Computed:    true,
 													Description: "The CRN of the [Key Protect Root Key](https://cloud.ibm.com/docs/key-protect?topic=key-protect-getting-started-tutorial) or [Hyper Protect Crypto Service Root Key](https://cloud.ibm.com/docs/hs-crypto?topic=hs-crypto-get-started) for this resource.",
 												},
+												"source_snapshot": {
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The snapshot to use as a source for the volume's data.",
+												},
+												"allowed_use": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "The usage constraints to be matched against the requested instance or bare metal server properties to determine compatibility.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"bare_metal_server": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "The expression that must be satisfied by the properties of a bare metal server provisioned using the image data in this volume.",
+															},
+															"instance": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "The expression that must be satisfied by the properties of a virtual server instance provisioned using this volume.",
+															},
+															"api_version": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "The API version with which to evaluate the expressions.",
+															},
+														},
+													},
+												},
 												isInstanceTemplateVolAttTags: {
 													Type:        schema.TypeSet,
 													Computed:    true,
@@ -949,6 +978,30 @@ func DataSourceIBMISInstanceTemplates() *schema.Resource {
 											},
 										},
 									},
+									"allowed_use": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "The usage constraints to be matched against the requested instance or bare metal server properties to determine compatibility.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"bare_metal_server": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The expression that must be satisfied by the properties of a bare metal server provisioned using the image data in this volume.",
+												},
+												"instance": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The expression that must be satisfied by the properties of a virtual server instance provisioned using this volume.",
+												},
+												"api_version": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The API version with which to evaluate the expressions.",
+												},
+											},
+										},
+									},
 									isInstanceTemplateBootVolumeTags: {
 										Type:        schema.TypeSet,
 										Computed:    true,
@@ -1299,6 +1352,15 @@ func dataSourceIBMISInstanceTemplatesRead(context context.Context, d *schema.Res
 							encryptionKey := volumeInst.EncryptionKey.(*vpcv1.EncryptionKeyIdentity)
 							newVolume[isInstanceTemplateVolAttVolEncryptionKey] = *encryptionKey.CRN
 						}
+						allowedUses := []interface{}{}
+						if volumeInst.AllowedUse != nil {
+							modelMap, err := DataSourceIBMIsVolumeAllowedUseToMap(volumeInst.AllowedUse)
+							if err != nil {
+								return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting allowed_use: %s", err), "(Data) ibm_is_instance_template", "read", "set-allowed_use").GetDiag()
+							}
+							allowedUses = append(allowedUses, modelMap)
+							newVolume["allowed_use"] = allowedUses
+						}
 						if volumeInst.UserTags != nil {
 							newVolume[isInstanceTemplateVolAttTags] = instance.BootVolumeAttachment.Volume.UserTags
 						}
@@ -1328,6 +1390,12 @@ func dataSourceIBMISInstanceTemplatesRead(context context.Context, d *schema.Res
 						// bandwidth changes
 						if volumeIntf.Bandwidth != nil {
 							bootVol["bandwidth"] = volumeIntf.Bandwidth
+						}
+						allowedUses := []interface{}{}
+						if instance.BootVolumeAttachment.Volume.AllowedUse != nil {
+							modelMap, _ := DataSourceIBMIsVolumeAllowedUseToMap(instance.BootVolumeAttachment.Volume.AllowedUse)
+							allowedUses = append(allowedUses, modelMap)
+							bootVol["allowed_use"] = allowedUses
 						}
 						if instance.BootVolumeAttachment.Volume.UserTags != nil {
 							bootVol[isInstanceTemplateBootVolumeTags] = instance.BootVolumeAttachment.Volume.UserTags
@@ -1628,6 +1696,15 @@ func dataSourceIBMISInstanceTemplatesRead(context context.Context, d *schema.Res
 							encryptionKey := volumeInst.EncryptionKey.(*vpcv1.EncryptionKeyIdentity)
 							newVolume[isInstanceTemplateVolAttVolEncryptionKey] = *encryptionKey.CRN
 						}
+						allowedUses := []interface{}{}
+						if volumeInst.AllowedUse != nil {
+							modelMap, err := DataSourceIBMIsVolumeAllowedUseToMap(volumeInst.AllowedUse)
+							if err != nil {
+								return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting allowed_use: %s", err), "(Data) ibm_is_instance_template", "read", "set-allowed_use").GetDiag()
+							}
+							allowedUses = append(allowedUses, modelMap)
+							newVolume["allowed_use"] = allowedUses
+						}
 						if volumeInst.UserTags != nil {
 							newVolume[isInstanceTemplateVolAttTags] = instance.BootVolumeAttachment.Volume.UserTags
 						}
@@ -1660,6 +1737,12 @@ func dataSourceIBMISInstanceTemplatesRead(context context.Context, d *schema.Res
 						}
 						if instance.BootVolumeAttachment.Volume.UserTags != nil {
 							bootVol[isInstanceTemplateBootVolumeTags] = instance.BootVolumeAttachment.Volume.UserTags
+						}
+						allowedUses := []interface{}{}
+						if instance.BootVolumeAttachment.Volume.AllowedUse != nil {
+							modelMap, _ := DataSourceIBMIsVolumeAllowedUseToMap(instance.BootVolumeAttachment.Volume.AllowedUse)
+							allowedUses = append(allowedUses, modelMap)
+							bootVol["allowed_use"] = allowedUses
 						}
 						if instance.BootVolumeAttachment.Volume.SourceSnapshot != nil {
 							sourceSnapshotMap, _ := DataSourceIBMIsInstanceTemplateSnapshotIdentityToMap(instance.BootVolumeAttachment.Volume.SourceSnapshot)
