@@ -51,6 +51,8 @@ const (
 	isImageDeprecate      = "deprecate"
 	isImageObsolete       = "obsolete"
 	isImageUserDataFormat = "user_data_format"
+
+	isImageRemote = "remote"
 )
 
 func ResourceIBMISImage() *schema.Resource {

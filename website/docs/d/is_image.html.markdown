@@ -47,6 +47,7 @@ Review the argument references that you can specify for your data source.
 
 - `visibility` - (Optional, String) The visibility of the image. Accepted values are `public` or `private`.
 
+
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created.
 
@@ -103,6 +104,15 @@ In addition to all argument reference list, you can access the following attribu
 
 - `source_volume` - The source volume id of the image.
 - `user_data_format` - (String) The user data format for this image.
+- `remote` - (Optional, List) If present, this property indicates that the resource associated with this reference is remote and therefore may not be directly retrievable.
+
+      **Nested schema for `remote`:**
+       - `account` - (Optional, List)  Indicates that the referenced resource is remote to this account, and identifies the owning account.
+
+          **Nested schema for `account`:**
+           - `id` – (Computed, String) The unique identifier for this account.  
+           - `resource_type` – (Computed, String) The resource type.
+    
   
   ~> **Note:** </br> Supported values are : </br>
   **&#x2022;** `cloud_init`: user_data will be interpreted according to the cloud-init standard.</br>

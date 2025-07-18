@@ -197,6 +197,34 @@ func DataSourceIBMISImage() *schema.Resource {
 				Computed:    true,
 				Description: "The type of encryption used on the image",
 			},
+			"remote": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "If present, this property indicates that the resource associated with this reference is remote and therefore may not be directly retrievable.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"account": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "If present, this property indicates that the referenced resource is remote to this account, and identifies the owning account.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"id": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The unique identifier for this resource group.",
+									},
+									"resource_type": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The resource type.",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
 			"source_volume": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -366,6 +394,22 @@ func imageGetByName(context context.Context, d *schema.ResourceData, meta interf
 			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_group: %s", err), "(Data) ibm_is_image", "read", "set-resource_group").GetDiag()
 		}
 	}
+	if image.Remote != nil {
+		imageRemoteList := []map[string]interface{}{}
+		imageRemoteMap, err := dataSourceImageRemote(image)
+		if err != nil {
+			if err != nil {
+				tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_image", "read", "initialize-client")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
+			}
+		}
+		imageRemoteList = append(imageRemoteList, imageRemoteMap)
+		if err = d.Set(isImageRemote, imageRemoteList); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting remote: %s", err), "(Data) ibm_is_image", "read", "set-remote").GetDiag()
+		}
+	}
+
 	if err = d.Set("os", image.OperatingSystem.Name); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting os: %s", err), "(Data) ibm_is_image", "read", "set-os").GetDiag()
 	}
@@ -443,6 +487,21 @@ func imageGetById(context context.Context, d *schema.ResourceData, meta interfac
 	if *image.Status == "deprecated" {
 		fmt.Printf("[WARN] Given image %s is deprecated and soon will be obsolete.", name)
 	}
+
+	if image.Remote != nil {
+		imageRemoteList := []map[string]interface{}{}
+		imageRemoteMap, err := dataSourceImageRemote(*image)
+		if err != nil {
+			tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_legacy_vendor_images", "read", "initialize-client")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
+		imageRemoteList = append(imageRemoteList, imageRemoteMap)
+		if err = d.Set(isImageRemote, imageRemoteList); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting remote: %s", err), "(Data) ibm_is_image", "read", "set-remote").GetDiag()
+		}
+	}
+
 	if len(image.StatusReasons) > 0 {
 		if err = d.Set("status_reasons", dataSourceIBMIsImageFlattenStatusReasons(image.StatusReasons)); err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting status_reasons: %s", err), "(Data) ibm_is_image", "read", "set-status_reasons").GetDiag()
@@ -569,6 +628,27 @@ func dataSourceImageCollectionCatalogOfferingToMap(imageCatalogOfferingItem vpcv
 	}
 
 	return imageCatalogOfferingMap
+}
+
+func dataSourceImageRemote(imageRemote vpcv1.Image) (map[string]interface{}, error) {
+	if imageRemote.Remote == nil || imageRemote.Remote.Account == nil {
+		return nil, nil
+	}
+
+	accountMap := map[string]interface{}{}
+
+	if imageRemote.Remote.Account.ID != nil {
+		accountMap["id"] = *imageRemote.Remote.Account.ID
+	}
+	if imageRemote.Remote.Account.ResourceType != nil {
+		accountMap["resource_type"] = *imageRemote.Remote.Account.ResourceType
+	}
+
+	remoteMap := map[string]interface{}{
+		"account": []interface{}{accountMap},
+	}
+
+	return remoteMap, nil
 }
 
 func dataSourceIBMIsImageFlattenStatusReasons(result []vpcv1.ImageStatusReason) (statusReasons []map[string]interface{}) {
