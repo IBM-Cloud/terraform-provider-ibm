@@ -353,11 +353,8 @@ func ResourceIBMPolicyAssignmentErrorObjectToMap(model *iampolicymanagementv1.Er
 	return modelMap, nil
 }
 
-func ResourceIBMPolicyAssignmentErrorResponseToMap(model *iampolicymanagementv1.ErrorResponse) (map[string]interface{}, error) {
+func ResourceIBMPolicyAssignmentErrorResponseToMap(model *iampolicymanagementv1.AssignmentResourceError) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	if model.Trace != nil {
-		modelMap["trace"] = *model.Trace
-	}
 	if model.Errors != nil {
 		errors := []map[string]interface{}{}
 		for _, errorsItem := range model.Errors {
@@ -368,9 +365,6 @@ func ResourceIBMPolicyAssignmentErrorResponseToMap(model *iampolicymanagementv1.
 			errors = append(errors, errorsItemMap)
 		}
 		modelMap["errors"] = errors
-	}
-	if model.StatusCode != nil {
-		modelMap["status_code"] = flex.IntValue(model.StatusCode)
 	}
 	return modelMap, nil
 }

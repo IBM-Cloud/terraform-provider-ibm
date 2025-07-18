@@ -4,9 +4,9 @@
 package directlink
 
 import (
-	"fmt"
 	"log"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/networking-go-sdk/directlinkv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -80,7 +80,7 @@ func dataSourceIBMDLImportRouteFilterRead(d *schema.ResourceData, meta interface
 		return err
 	}
 	if importRouteFilter == nil {
-		return fmt.Errorf("error fetching  the Import route Filter for gateway: %s and Import Route FilterId: %s with response code: %d", gatewayId, importRouteFilterId, response.StatusCode)
+		return flex.FmtErrorf("error fetching  the Import route Filter for gateway: %s and Import Route FilterId: %s with response code: %d", gatewayId, importRouteFilterId, response.StatusCode)
 	} else if importRouteFilter.ID != nil {
 		d.SetId(*importRouteFilter.ID)
 	}

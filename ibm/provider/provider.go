@@ -343,6 +343,9 @@ func Provider() *schema.Provider {
 			"ibm_cis_filters":                               cis.DataSourceIBMCISFilters(),
 			"ibm_cis_firewall_rules":                        cis.DataSourceIBMCISFirewallRules(),
 			"ibm_cis_origin_certificates":                   cis.DataSourceIBMCISOriginCertificateOrder(),
+			"ibm_cis_managed_lists":                         cis.DataSourceIBMCISManagedLists(),
+			"ibm_cis_custom_lists":                          cis.DataSourceIBMCISCustomLists(),
+			"ibm_cis_custom_list_items":                     cis.DataSourceIBMCISCustomListItems(),
 			"ibm_cloudant":                                  cloudant.DataSourceIBMCloudant(),
 			"ibm_cloudant_database":                         cloudant.DataSourceIBMCloudantDatabase(),
 			"ibm_database":                                  database.DataSourceIBMDatabaseInstance(),
@@ -601,7 +604,8 @@ func Provider() *schema.Provider {
 			"ibm_is_share_snapshots":             vpc.DataSourceIBMIsShareSnapshots(),
 			"ibm_is_virtual_network_interface":   vpc.DataSourceIBMIsVirtualNetworkInterface(),
 			"ibm_is_virtual_network_interfaces":  vpc.DataSourceIBMIsVirtualNetworkInterfaces(),
-
+			"ibm_is_public_address_range":        vpc.DataSourceIBMIsPublicAddressRange(),
+			"ibm_is_public_address_ranges":       vpc.DataSourceIBMIsPublicAddressRanges(),
 			// vni
 
 			"ibm_is_virtual_network_interface_floating_ip":  vpc.DataSourceIBMIsVirtualNetworkInterfaceFloatingIP(),
@@ -1182,6 +1186,8 @@ func Provider() *schema.Provider {
 			"ibm_cis_ruleset_entrypoint_version":      cis.ResourceIBMCISRulesetEntryPointVersion(),
 			"ibm_cis_advanced_certificate_pack_order": cis.ResourceIBMCISAdvancedCertificatePackOrder(),
 			"ibm_cis_origin_certificate_order":        cis.ResourceIBMCISOriginCertificateOrder(),
+			"ibm_cis_custom_list":                     cis.ResourceIBMCISCustomList(),
+			"ibm_cis_custom_list_items":               cis.ResourceIBMCISCustomListItems(),
 
 			"ibm_cloudant":                                  cloudant.ResourceIBMCloudant(),
 			"ibm_cloudant_database":                         cloudant.ResourceIBMCloudantDatabase(),
@@ -1334,6 +1340,7 @@ func Provider() *schema.Provider {
 			"ibm_is_lb_pool_member":                              vpc.ResourceIBMISLBPoolMember(),
 			"ibm_is_network_acl":                                 vpc.ResourceIBMISNetworkACL(),
 			"ibm_is_network_acl_rule":                            vpc.ResourceIBMISNetworkACLRule(),
+			"ibm_is_public_address_range":                        vpc.ResourceIBMPublicAddressRange(),
 			"ibm_is_public_gateway":                              vpc.ResourceIBMISPublicGateway(),
 			"ibm_is_private_path_service_gateway_account_policy": vpc.ResourceIBMIsPrivatePathServiceGatewayAccountPolicy(),
 			"ibm_is_private_path_service_gateway":                vpc.ResourceIBMIsPrivatePathServiceGateway(),
@@ -1971,6 +1978,8 @@ func Validator() validate.ValidatorDict {
 				"ibm_cis_ruleset_version_detach":               cis.ResourceIBMCISRulesetVersionDetachValidator(),
 				"ibm_cis_advanced_certificate_pack_order":      cis.ResourceIBMCISAdvancedCertificatePackOrderValidator(),
 				"ibm_cis_origin_certificate_order":             cis.ResourceIBMCISOriginCertificateOrderValidator(),
+				"ibm_cis_custom_list":                          cis.ResourceIBMCISCustomListValidator(),
+				"ibm_cis_custom_list_items":                    cis.ResourceIBMCISCustomListItemsValidator(),
 				"ibm_container_cluster":                        kubernetes.ResourceIBMContainerClusterValidator(),
 				"ibm_container_worker_pool":                    kubernetes.ResourceIBMContainerWorkerPoolValidator(),
 				"ibm_container_vpc_worker_pool":                kubernetes.ResourceIBMContainerVPCWorkerPoolValidator(),
@@ -2059,6 +2068,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_is_lb":                                          vpc.ResourceIBMISLBValidator(),
 				"ibm_is_network_acl":                                 vpc.ResourceIBMISNetworkACLValidator(),
 				"ibm_is_network_acl_rule":                            vpc.ResourceIBMISNetworkACLRuleValidator(),
+				"ibm_is_public_address_range":                        vpc.ResourceIBMPublicAddressRangeValidator(),
 				"ibm_is_public_gateway":                              vpc.ResourceIBMISPublicGatewayValidator(),
 				"ibm_is_private_path_service_gateway":                vpc.ResourceIBMIsPrivatePathServiceGatewayValidator(),
 				"ibm_is_private_path_service_gateway_account_policy": vpc.ResourceIBMIsPrivatePathServiceGatewayAccountPolicyValidator(),
@@ -2303,6 +2313,9 @@ func Validator() validate.ValidatorDict {
 				"ibm_cis_waf_rules":                   cis.DataSourceIBMCISWAFRulesValidator(),
 				"ibm_cis_logpush_jobs":                cis.DataSourceIBMCISLogPushJobsValidator(),
 				"ibm_cis_origin_certificates":         cis.DataIBMCISOriginCertificateOrderValidator(),
+				"ibm_cis_managed_lists":               cis.DataSourceIBMCISManagedListsValidator(),
+				"ibm_cis_custom_lists":                cis.DataSourceIBMCISCustomListsValidator(),
+				"ibm_cis_custom_list_items":           cis.DataSourceIBMCISCustomListItemsValidator(),
 
 				"ibm_config_aggregator_configurations": configurationaggregator.DataSourceIbmConfigAggregatorValidator(),
 				"ibm_cos_bucket":                       cos.DataSourceIBMCosBucketValidator(),
