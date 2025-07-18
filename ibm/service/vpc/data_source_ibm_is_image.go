@@ -286,6 +286,30 @@ func DataSourceIBMISImage() *schema.Resource {
 					},
 				},
 			},
+			"allowed_use": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The usage constraints to match against the requested instance or bare metal server properties to determine compatibility.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"api_version": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The API version with which to evaluate the expressions.",
+						},
+						"bare_metal_server": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The expression that must be satisfied by the properties of a bare metal server provisioned using this image.",
+						},
+						"instance": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The expression that must be satisfied by the properties of a virtual server instance provisioned using this image.",
+						},
+					},
+				},
+			},
 			isImageAccessTags: {
 				Type:        schema.TypeSet,
 				Computed:    true,
@@ -458,6 +482,19 @@ func imageGetByName(context context.Context, d *schema.ResourceData, meta interf
 			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting catalog_offering: %s", err), "(Data) ibm_is_image", "read", "set-catalog_offering").GetDiag()
 		}
 	}
+	allowedUse := []map[string]interface{}{}
+	if image.AllowedUse != nil {
+		modelMap, err := DataSourceIBMIsImageAllowedUseToMap(image.AllowedUse)
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_is_image", "read")
+			log.Println(tfErr.GetDiag())
+		}
+		allowedUse = append(allowedUse, modelMap)
+	}
+	if err = d.Set("allowed_use", allowedUse); err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting allowed_use: %s", err), "(Data) ibm_is_image", "read")
+		log.Println(tfErr.GetDiag())
+	}
 	return nil
 
 }
@@ -567,6 +604,19 @@ func imageGetById(context context.Context, d *schema.ResourceData, meta interfac
 		if err = d.Set("catalog_offering", catalogOfferingList); err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting catalog_offering: %s", err), "(Data) ibm_is_image", "read", "set-catalog_offering").GetDiag()
 		}
+	}
+	allowedUse := []map[string]interface{}{}
+	if image.AllowedUse != nil {
+		modelMap, err := DataSourceIBMIsImageAllowedUseToMap(image.AllowedUse)
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_is_image", "read")
+			log.Println(tfErr.GetDiag())
+		}
+		allowedUse = append(allowedUse, modelMap)
+	}
+	if err = d.Set("allowed_use", allowedUse); err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting allowed_use: %s", err), "(Data) ibm_is_image", "read")
+		log.Println(tfErr.GetDiag())
 	}
 	return nil
 }
@@ -686,4 +736,18 @@ func dataSourceImageResourceGroupToMap(resourceGroupItem vpcv1.ResourceGroupRefe
 	}
 
 	return resourceGroupMap
+}
+
+func DataSourceIBMIsImageAllowedUseToMap(model *vpcv1.ImageAllowedUse) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.BareMetalServer != nil {
+		modelMap["bare_metal_server"] = *model.BareMetalServer
+	}
+	if model.Instance != nil {
+		modelMap["instance"] = *model.Instance
+	}
+	if model.ApiVersion != nil {
+		modelMap["api_version"] = *model.ApiVersion
+	}
+	return modelMap, nil
 }

@@ -474,6 +474,39 @@ func ResourceIBMSnapshot() *schema.Resource {
 					},
 				},
 			},
+
+			"allowed_use": &schema.Schema{
+				Type:        schema.TypeList,
+				MaxItems:    1,
+				Optional:    true,
+				Computed:    true,
+				Description: "The usage constraints to match against the requested instance or bare metal server properties to determine compatibility. Can only be specified for bootable snapshots.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"api_version": &schema.Schema{
+							Type:         schema.TypeString,
+							Optional:     true,
+							Computed:     true,
+							ValidateFunc: validate.InvokeValidator("ibm_is_snapshot", "allowed_use.api_version"),
+							Description:  "The expression that must be satisfied by the properties of a virtual server instance provisioned using this snapshot.",
+						},
+						"bare_metal_server": &schema.Schema{
+							Type:         schema.TypeString,
+							Optional:     true,
+							Computed:     true,
+							ValidateFunc: validate.InvokeValidator("ibm_is_snapshot", "allowed_use.bare_metal_server"),
+							Description:  "The expression that must be satisfied by the properties of a bare metal server provisioned using the image data in this snapshot.",
+						},
+						"instance": &schema.Schema{
+							Type:         schema.TypeString,
+							Optional:     true,
+							Computed:     true,
+							ValidateFunc: validate.InvokeValidator("ibm_is_snapshot", "allowed_use.instance"),
+							Description:  "The expression that must be satisfied by a virtual server instance provisioned using this image.",
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -508,6 +541,27 @@ func ResourceIBMISSnapshotValidator() *validate.ResourceValidator {
 			Regexp:                     `^([A-Za-z0-9_.-]|[A-Za-z0-9_.-][A-Za-z0-9_ .-]*[A-Za-z0-9_.-]):([A-Za-z0-9_.-]|[A-Za-z0-9_.-][A-Za-z0-9_ .-]*[A-Za-z0-9_.-])$`,
 			MinValueLength:             1,
 			MaxValueLength:             128})
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "allowed_use.api_version",
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			Regexp:                     `^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$`})
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "allowed_use.bare_metal_server",
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			Regexp:                     `^([a-zA-Z_][a-zA-Z0-9_]*|[-+*/%]|&&|\|\||!|==|!=|<|<=|>|>=|~|\bin\b|\(|\)|\[|\]|,|\.|"|'|"|'|\s+|\d+)+$`})
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "allowed_use.instance",
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			Regexp:                     `^([a-zA-Z_][a-zA-Z0-9_]*|[-+*/%]|&&|\|\||!|==|!=|<|<=|>|>=|~|\bin\b|\(|\)|\[|\]|,|\.|"|'|"|'|\s+|\d+)+$`})
 	ibmISSnapshotResourceValidator := validate.ResourceValidator{ResourceName: "ibm_is_snapshot", Schema: validateSchema}
 	return &ibmISSnapshotResourceValidator
 }
@@ -538,6 +592,11 @@ func resourceIBMISSnapshotCreate(context context.Context, d *schema.ResourceData
 			snapshotprototypeoptions.Name = &name
 		}
 
+		if allowedUse, ok := d.GetOk("allowed_use"); ok {
+			allowedUseModel, _ := ResourceIBMIsSnapshotMapToSnapshotAllowedUse(allowedUse.([]interface{})[0].(map[string]interface{}))
+			snapshotprototypeoptions.AllowedUse = allowedUseModel
+		}
+
 		if grp, ok := d.GetOk(isVPCResourceGroup); ok {
 			rg := grp.(string)
 			snapshotprototypeoptions.ResourceGroup = &vpcv1.ResourceGroupIdentity{
@@ -560,6 +619,11 @@ func resourceIBMISSnapshotCreate(context context.Context, d *schema.ResourceData
 			snapshotprototypeoptionsbysourcesnapshot.EncryptionKey = &vpcv1.EncryptionKeyIdentity{
 				CRN: &encryptionKeyString,
 			}
+		}
+
+		if allowedUse, ok := d.GetOk("allowed_use"); ok {
+			allowedUseModel, _ := ResourceIBMIsSnapshotMapToSnapshotAllowedUse(allowedUse.([]interface{})[0].(map[string]interface{}))
+			snapshotprototypeoptionsbysourcesnapshot.AllowedUse = allowedUseModel
 		}
 
 		if grp, ok := d.GetOk(isVPCResourceGroup); ok {
@@ -612,7 +676,6 @@ func resourceIBMISSnapshotCreate(context context.Context, d *schema.ResourceData
 			}
 		}
 	}
-
 	if snapbyVolFlag {
 		options.SnapshotPrototype = snapshotprototypeoptions
 	} else {
@@ -914,6 +977,19 @@ func snapshotGet(context context.Context, d *schema.ResourceData, meta interface
 		err = fmt.Errorf("Error setting backup_policy_plan: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_snapshot", "read", "set-backup_policy_plan").GetDiag()
 	}
+	allowedUses := []map[string]interface{}{}
+	if snapshot.AllowedUse != nil {
+		modelMap, err := DataSourceIBMIsSnapshotAllowedUseToMap(snapshot.AllowedUse)
+		if err != nil {
+			err = fmt.Errorf("Error setting allowed_use: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_snapshot", "read", "set-allowed_use").GetDiag()
+		}
+		allowedUses = append(allowedUses, modelMap)
+	}
+	if err = d.Set("allowed_use", allowedUses); err != nil {
+		err = fmt.Errorf("Error setting allowed_use: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_snapshot", "read", "set-allowed_use").GetDiag()
+	}
 	accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *snapshot.CRN, "", isAccessTagType)
 	if err != nil {
 		log.Printf(
@@ -1042,6 +1118,57 @@ func snapshotUpdate(context context.Context, d *schema.ResourceData, meta interf
 		}
 
 	}
+
+	if d.HasChange("allowed_use") {
+		getSnapshotOptions := &vpcv1.GetSnapshotOptions{
+			ID: &id,
+		}
+		_, response, err := sess.GetSnapshot(getSnapshotOptions)
+		if err != nil {
+			if response != nil && response.StatusCode == 404 {
+				d.SetId("")
+				return nil
+			}
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetSnapshotWithContext failed: %s", err.Error()), "ibm_is_snapshot", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
+		eTag := response.Headers.Get("ETag")
+
+		updateSnapshotOptions := &vpcv1.UpdateSnapshotOptions{
+			ID: &id,
+		}
+		updateSnapshotOptions.IfMatch = &eTag
+		allowedUseModel, err := ResourceIBMIsSnapshotMapToSnapshotAllowedUsePatch(d.Get("allowed_use").([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error in settting allowed_use: %s", err.Error()), "ibm_is_snapshot", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
+		snapshotPatchModel := &vpcv1.SnapshotPatch{
+			AllowedUse: allowedUseModel,
+		}
+		snapshotPatch, err := snapshotPatchModel.AsPatch()
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("snapshotPatchModel.AsPatch failed: %s", err.Error()), "ibm_is_snapshot", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
+		updateSnapshotOptions.SnapshotPatch = snapshotPatch
+		_, response, err = sess.UpdateSnapshot(updateSnapshotOptions)
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateSnapshotWithContext failed: %s", err.Error()), "ibm_is_snapshot", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
+		_, err = isWaitForSnapshotUpdate(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Wait for Snapshot update failed: %s", err.Error()), "ibm_is_snapshot", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
+	}
+
 	if d.HasChange(isSnapshotClones) {
 		ovs, nvs := d.GetChange(isSnapshotClones)
 		ov := ovs.(*schema.Set)
@@ -1312,4 +1439,31 @@ func snapshotExists(d *schema.ResourceData, meta interface{}, id string) (bool, 
 		return false, fmt.Errorf("[ERROR] GetSnapshot failed: %s\n%s", err, response)
 	}
 	return true, nil
+}
+func ResourceIBMIsSnapshotMapToSnapshotAllowedUsePatch(modelMap map[string]interface{}) (*vpcv1.SnapshotAllowedUsePatch, error) {
+	model := &vpcv1.SnapshotAllowedUsePatch{}
+	if modelMap["api_version"] != nil && modelMap["api_version"].(string) != "" {
+		model.ApiVersion = core.StringPtr(modelMap["api_version"].(string))
+	}
+	if modelMap["bare_metal_server"] != nil && modelMap["bare_metal_server"].(string) != "" {
+		model.BareMetalServer = core.StringPtr(modelMap["bare_metal_server"].(string))
+	}
+	if modelMap["instance"] != nil && modelMap["instance"].(string) != "" {
+		model.Instance = core.StringPtr(modelMap["instance"].(string))
+	}
+	return model, nil
+}
+
+func ResourceIBMIsSnapshotMapToSnapshotAllowedUse(modelMap map[string]interface{}) (*vpcv1.SnapshotAllowedUsePrototype, error) {
+	model := &vpcv1.SnapshotAllowedUsePrototype{}
+	if modelMap["api_version"] != nil && modelMap["api_version"].(string) != "" {
+		model.ApiVersion = core.StringPtr(modelMap["api_version"].(string))
+	}
+	if modelMap["bare_metal_server"] != nil && modelMap["bare_metal_server"].(string) != "" {
+		model.BareMetalServer = core.StringPtr(modelMap["bare_metal_server"].(string))
+	}
+	if modelMap["instance"] != nil && modelMap["instance"].(string) != "" {
+		model.Instance = core.StringPtr(modelMap["instance"].(string))
+	}
+	return model, nil
 }
