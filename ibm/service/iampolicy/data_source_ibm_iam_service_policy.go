@@ -8,11 +8,9 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
 	"github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
 )
 
@@ -22,19 +20,10 @@ func DataSourceIBMIAMServicePolicy() *schema.Resource {
 		Read: dataSourceIBMIAMServicePolicyRead,
 
 		Schema: map[string]*schema.Schema{
-			"iam_service_id": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ExactlyOneOf: []string{"iam_service_id", "iam_id"},
-				Description:  "UUID of ServiceID",
-				ValidateFunc: validate.InvokeDataSourceValidator("ibm_iam_service_policy",
-					"iam_service_id"),
-			},
 			"iam_id": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ExactlyOneOf: []string{"iam_service_id", "iam_id"},
-				Description:  "IAM ID of ServiceID",
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "IAM ID of ServiceID",
 			},
 			"sort": {
 				Description: "Sort query for policies",
@@ -212,40 +201,10 @@ func DataSourceIBMIAMServicePolicy() *schema.Resource {
 		},
 	}
 }
-func DataSourceIBMIAMServicePolicyValidator() *validate.ResourceValidator {
-	validateSchema := make([]validate.ValidateSchema, 0)
-	validateSchema = append(validateSchema,
-		validate.ValidateSchema{
-			Identifier:                 "iam_service_id",
-			ValidateFunctionIdentifier: validate.ValidateCloudData,
-			Type:                       validate.TypeString,
-			CloudDataType:              "iam",
-			CloudDataRange:             []string{"service:service_id", "resolved_to:id"},
-			Optional:                   true})
-
-	iBMIAMServicePolicyValidator := validate.ResourceValidator{ResourceName: "ibm_iam_service_policy", Schema: validateSchema}
-	return &iBMIAMServicePolicyValidator
-}
 
 func dataSourceIBMIAMServicePolicyRead(d *schema.ResourceData, meta interface{}) error {
 
 	var iamID string
-	if v, ok := d.GetOk("iam_service_id"); ok && v != nil {
-
-		serviceIDUUID := v.(string)
-		iamClient, err := meta.(conns.ClientSession).IAMIdentityV1API()
-		if err != nil {
-			return err
-		}
-		getServiceIDOptions := iamidentityv1.GetServiceIDOptions{
-			ID: &serviceIDUUID,
-		}
-		serviceID, resp, err := iamClient.GetServiceID(&getServiceIDOptions)
-		if err != nil || resp == nil {
-			return fmt.Errorf("[ERROR] Error] Error Getting Service Id %s %s", err, resp)
-		}
-		iamID = *serviceID.IamID
-	}
 	if v, ok := d.GetOk("iam_id"); ok && v != nil {
 		iamID = v.(string)
 	}
@@ -293,10 +252,7 @@ func dataSourceIBMIAMServicePolicyRead(d *schema.ResourceData, meta interface{})
 			"resources":     resources,
 			"resource_tags": flex.FlattenV2PolicyResourceTags(*policy.Resource),
 		}
-		if v, ok := d.GetOk("iam_service_id"); ok && v != nil {
-			serviceIDUUID := v.(string)
-			p["id"] = fmt.Sprintf("%s/%s", serviceIDUUID, *policy.ID)
-		} else if v, ok := d.GetOk("iam_id"); ok && v != nil {
+		if v, ok := d.GetOk("iam_id"); ok && v != nil {
 			iamID := v.(string)
 			p["id"] = fmt.Sprintf("%s/%s", iamID, *policy.ID)
 		}
@@ -315,10 +271,7 @@ func dataSourceIBMIAMServicePolicyRead(d *schema.ResourceData, meta interface{})
 		servicePolicies = append(servicePolicies, p)
 	}
 
-	if v, ok := d.GetOk("iam_service_id"); ok && v != nil {
-		serviceIDUUID := v.(string)
-		d.SetId(serviceIDUUID)
-	} else if v, ok := d.GetOk("iam_id"); ok && v != nil {
+	if v, ok := d.GetOk("iam_id"); ok && v != nil {
 		iamID := v.(string)
 		d.SetId(iamID)
 	}

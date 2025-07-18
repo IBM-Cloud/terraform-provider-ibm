@@ -14,7 +14,7 @@ Retrieve information about an IAM trusted profile policy. For more information, 
 
 ```terraform
 resource "ibm_iam_trusted_profile_policy" "policy" {
-  profile_id = ibm_iam_trusted_profile_link.iam_trusted_profile_link.profile_id
+  profile_id = ibm_iam_trusted_profile_link.iam_trusted_profile_link.iam_id
   roles      = ["Manager", "Viewer", "Administrator"]
 
   resources {
@@ -25,7 +25,7 @@ resource "ibm_iam_trusted_profile_policy" "policy" {
 }
 
 data "ibm_iam_trusted_profile_policy" "policy" {
-  profile_id = ibm_iam_trusted_profile_policy.policy.profile_id
+  iam_id = ibm_iam_trusted_profile_policy.policy.iam_id
   transaction_id = "terrformTrustedPolicy"
 }
 
@@ -35,8 +35,7 @@ data "ibm_iam_trusted_profile_policy" "policy" {
 
 Review the argument references that you can specify for your data source.
 
-- `profile_id` - (Required, String) The UUID of the trusted profile. Either `profile_id` or `iam_id` is required.
-- `iam_id` - (Optional, String) IAM ID of the trusted profile. Either `profile_id` or `iam_id` is required.
+- `iam_id` - (Required, String) IAM ID of the trusted profile.
 - `sort`- Optional -  (String) The single field sort query for policies.
 - `transaction_id`- (Optional, String) The TransactionID can be passed to your request for the tracking calls.
 
@@ -48,7 +47,7 @@ In addition to all argument reference list, you can access the following attribu
 
   Nested scheme for `policies`:
   - `description`  (String) The description of the IAM trusted profile policy.
-  - `id` - (String) The unique identifier of the IAM trusted profile policy. The ID is composed of `<profile_id>/<profile_policy_id>`. If policy is created by using <profile_id>. The ID is composed of `<iam_id>/<profile_policy_id>` if policy is created by using <iam_id>.
+  - `id` - (String) The unique identifier of the IAM trusted profile policy.
   - `roles`-  (String) The roles that are assigned to the policy.
   - `resources`- (List of objects) A nested block describes the resources in the policy.
   

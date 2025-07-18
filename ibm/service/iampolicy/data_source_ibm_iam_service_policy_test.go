@@ -131,7 +131,7 @@ resource "ibm_resource_instance" "instance" {
 }
 
 resource "ibm_iam_service_policy" "policy" {
-  iam_service_id = ibm_iam_service_id.serviceID.id
+  iam_id = ibm_iam_service_id.serviceID.iam_id
   roles          = ["Manager", "Viewer", "Administrator"]
 
   resources {
@@ -141,7 +141,7 @@ resource "ibm_iam_service_policy" "policy" {
 }
 
 data "ibm_iam_service_policy" "testacc_ds_service_policy" {
-  iam_service_id = ibm_iam_service_policy.policy.iam_service_id
+  iam_id = ibm_iam_service_policy.policy.iam_id
 }`, name, name)
 
 }
@@ -162,7 +162,7 @@ resource "ibm_resource_instance" "instance" {
 }
 
 resource "ibm_iam_service_policy" "policy" {
-  iam_service_id = ibm_iam_service_id.serviceID.id
+  iam_id = ibm_iam_service_id.serviceID.iam_id
   roles          = ["Manager", "Viewer", "Administrator"]
 
   resources {
@@ -176,7 +176,7 @@ data "ibm_resource_group" "group" {
 }
 
 resource "ibm_iam_service_policy" "policy1" {
-  iam_service_id = ibm_iam_service_id.serviceID.id
+  iam_id = ibm_iam_service_id.serviceID.iam_id
   roles          = ["Viewer"]
 
   resources {
@@ -187,8 +187,8 @@ resource "ibm_iam_service_policy" "policy1" {
 
 
 data "ibm_iam_service_policy" "testacc_ds_service_policy" {
-  iam_service_id = ibm_iam_service_policy.policy.iam_service_id
-  sort = "id"
+  iam_id = ibm_iam_service_policy.policy.iam_id
+  sort = "created_at"
 }`, name, name)
 
 }
@@ -202,7 +202,7 @@ resource "ibm_iam_service_id" "serviceID" {
 }
 
 resource "ibm_iam_service_policy" "policy" {
-  iam_service_id = ibm_iam_service_id.serviceID.id
+  iam_id = ibm_iam_service_id.serviceID.iam_id
   roles          = ["Manager", "Viewer", "Administrator"]
 
   resource_attributes {
@@ -217,7 +217,7 @@ resource "ibm_iam_service_policy" "policy" {
 }
 
 data "ibm_iam_service_policy" "testacc_ds_service_policy" {
-  iam_service_id = ibm_iam_service_policy.policy.iam_service_id
+  iam_id = ibm_iam_service_policy.policy.iam_id
 }`, name)
 
 }
@@ -232,7 +232,7 @@ func testAccCheckIBMIAMServicePolicyDataSourceTimeBasedWeekly(name string) strin
 	}
 
 	resource "ibm_iam_service_policy" "policy" {
-		iam_service_id = ibm_iam_service_id.serviceID.id
+		iam_id = ibm_iam_service_id.serviceID.iam_id
 		roles  = ["Viewer"]
 		resources {
 			service = "kms"
@@ -246,7 +246,7 @@ func testAccCheckIBMIAMServicePolicyDataSourceTimeBasedWeekly(name string) strin
 		}
 
 	data "ibm_iam_service_policy" "testacc_ds_service_policy" {
-		iam_service_id = ibm_iam_service_policy.policy.iam_service_id
+		iam_id = ibm_iam_service_policy.policy.iam_id
 	}
 	`, name)
 }
@@ -261,7 +261,7 @@ func testAccCheckIBMIAMServicePolicyDataSourceTimeBasedCustom(name string) strin
 	}
 
 	resource "ibm_iam_service_policy" "policy" {
-		iam_service_id = ibm_iam_service_id.serviceID.id
+		iam_id = ibm_iam_service_id.serviceID.iam_id
 		roles  = ["Viewer"]
 		resources {
 			service = "kms"
@@ -286,7 +286,7 @@ func testAccCheckIBMIAMServicePolicyDataSourceTimeBasedCustom(name string) strin
 		}
 
 	data "ibm_iam_service_policy" "testacc_ds_service_policy" {
-		iam_service_id = ibm_iam_service_policy.policy.iam_service_id
+		iam_id = ibm_iam_service_policy.policy.iam_id
 	}
 	`, name)
 }
@@ -301,7 +301,7 @@ func testAccCheckIBMIAMServicePolicyDataSourceServiceGroupID(name string) string
 	}
 
 	resource "ibm_iam_service_policy" "policy" {
-		iam_service_id = ibm_iam_service_id.serviceID.id
+		iam_id = ibm_iam_service_id.serviceID.iam_id
 		roles  = ["Viewer"]
 		resources {
 			service_group_id = "IAM"
@@ -326,7 +326,7 @@ func testAccCheckIBMIAMServicePolicyDataSourceServiceGroupID(name string) string
 		}
 
 	data "ibm_iam_service_policy" "testacc_ds_service_policy" {
-		iam_service_id = ibm_iam_service_policy.policy.iam_service_id
+		iam_id = ibm_iam_service_policy.policy.iam_id
 	}
 	`, name)
 }

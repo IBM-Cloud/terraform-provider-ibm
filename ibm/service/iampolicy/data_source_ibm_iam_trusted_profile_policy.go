@@ -8,11 +8,9 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
 	"github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
 )
 
@@ -22,19 +20,10 @@ func DataSourceIBMIAMTrustedProfilePolicy() *schema.Resource {
 		Read: dataSourceIBMIAMTrustedProfilePolicyRead,
 
 		Schema: map[string]*schema.Schema{
-			"profile_id": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ExactlyOneOf: []string{"profile_id", "iam_id"},
-				Description:  "UUID of trusted profile",
-				ValidateFunc: validate.InvokeDataSourceValidator("ibm_iam_trusted_profile_policy",
-					"profile_id"),
-			},
 			"iam_id": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ExactlyOneOf: []string{"profile_id", "iam_id"},
-				Description:  "IAM ID of trusted profile",
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "IAM ID of trusted profile",
 			},
 			"sort": {
 				Description: "Sort query for policies",
@@ -251,40 +240,9 @@ func DataSourceIBMIAMTrustedProfilePolicy() *schema.Resource {
 	}
 }
 
-func DataSourceIBMIAMTrustedProfilePolicyValidator() *validate.ResourceValidator {
-	validateSchema := make([]validate.ValidateSchema, 0)
-	validateSchema = append(validateSchema,
-		validate.ValidateSchema{
-			Identifier:                 "profile_id",
-			ValidateFunctionIdentifier: validate.ValidateCloudData,
-			Type:                       validate.TypeString,
-			CloudDataType:              "iam",
-			CloudDataRange:             []string{"service:trusted_profile", "resolved_to:id"},
-			Required:                   true})
-
-	iBMIAMTrustedProfilePolicyValidator := validate.ResourceValidator{ResourceName: "ibm_iam_trusted_profile_policy", Schema: validateSchema}
-	return &iBMIAMTrustedProfilePolicyValidator
-}
-
 func dataSourceIBMIAMTrustedProfilePolicyRead(d *schema.ResourceData, meta interface{}) error {
 
 	var iamID string
-	if v, ok := d.GetOk("profile_id"); ok && v != nil {
-
-		profileUUID := v.(string)
-		iamClient, err := meta.(conns.ClientSession).IAMIdentityV1API()
-		if err != nil {
-			return err
-		}
-		getprofileOptions := iamidentityv1.GetProfileOptions{
-			ProfileID: &profileUUID,
-		}
-		profile, resp, err := iamClient.GetProfile(&getprofileOptions)
-		if err != nil {
-			return fmt.Errorf("[ERROR] Error getting profile ID %s %s", err, resp)
-		}
-		iamID = *profile.IamID
-	}
 	if v, ok := d.GetOk("iam_id"); ok && v != nil {
 		iamID = v.(string)
 	}
@@ -332,10 +290,7 @@ func dataSourceIBMIAMTrustedProfilePolicyRead(d *schema.ResourceData, meta inter
 			"resources":     resources,
 			"resource_tags": flex.FlattenV2PolicyResourceTags(*policy.Resource),
 		}
-		if v, ok := d.GetOk("profile_id"); ok && v != nil {
-			profileUUID := v.(string)
-			p["id"] = fmt.Sprintf("%s/%s", profileUUID, *policy.ID)
-		} else if v, ok := d.GetOk("iam_id"); ok && v != nil {
+		if v, ok := d.GetOk("iam_id"); ok && v != nil {
 			iamID := v.(string)
 			p["id"] = fmt.Sprintf("%s/%s", iamID, *policy.ID)
 		}
@@ -358,10 +313,7 @@ func dataSourceIBMIAMTrustedProfilePolicyRead(d *schema.ResourceData, meta inter
 		profilePolicies = append(profilePolicies, p)
 	}
 
-	if v, ok := d.GetOk("profile_id"); ok && v != nil {
-		profileUUID := v.(string)
-		d.SetId(profileUUID)
-	} else if v, ok := d.GetOk("iam_id"); ok && v != nil {
+	if v, ok := d.GetOk("iam_id"); ok && v != nil {
 		iamID := v.(string)
 		d.SetId(iamID)
 	}
