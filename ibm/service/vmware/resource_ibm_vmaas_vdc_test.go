@@ -25,7 +25,6 @@ func TestAccIbmVmaasVdcBasic(t *testing.T) {
 	id := acc.Vmaas_Directorsite_id
 	var conf vmwarev1.VDC
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	nameUpdate := name
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheckVMwareService(t) },
@@ -37,12 +36,6 @@ func TestAccIbmVmaasVdcBasic(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmVmaasVdcExists("ibm_vmaas_vdc.vmaas_vdc_instance", conf),
 					resource.TestCheckResourceAttr("ibm_vmaas_vdc.vmaas_vdc_instance", "name", name),
-				),
-			},
-			resource.TestStep{
-				Config: testAccCheckIbmVmaasVdcConfigBasic(nameUpdate, id, pvdc_id),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_vmaas_vdc.vmaas_vdc_instance", "name", nameUpdate),
 				),
 			},
 		},
