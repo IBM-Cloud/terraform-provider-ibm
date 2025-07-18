@@ -52,6 +52,7 @@ import (
 	cisglbhealthcheckv1 "github.com/IBM/networking-go-sdk/globalloadbalancermonitorv1"
 	cisglbpoolv0 "github.com/IBM/networking-go-sdk/globalloadbalancerpoolsv0"
 	cisglbv1 "github.com/IBM/networking-go-sdk/globalloadbalancerv1"
+	cislistsapiv1 "github.com/IBM/networking-go-sdk/listsapiv1"
 	cislogpushjobsapiv1 "github.com/IBM/networking-go-sdk/logpushjobsapiv1"
 	cismtlsv1 "github.com/IBM/networking-go-sdk/mtlsv1"
 	cispagerulev1 "github.com/IBM/networking-go-sdk/pageruleapiv1"
@@ -296,6 +297,7 @@ type ClientSession interface {
 	CisLockdownClientSession() (*cislockdownv1.ZoneLockdownV1, error)
 	CisRangeAppClientSession() (*cisrangeappv1.RangeApplicationsV1, error)
 	CisWAFRuleClientSession() (*ciswafrulev1.WafRulesApiV1, error)
+	CisListsSession() (*cislistsapiv1.ListsApiV1, error)
 	IAMIdentityV1API() (*iamidentity.IamIdentityV1, error)
 	IBMCloudShellV1() (*ibmcloudshellv1.IBMCloudShellV1, error)
 	ResourceManagerV2API() (*resourcemanager.ResourceManagerV2, error)
@@ -550,6 +552,11 @@ type clientSession struct {
 	// CIS WAF rule service options
 	cisWAFRuleErr    error
 	cisWAFRuleClient *ciswafrulev1.WafRulesApiV1
+
+	// CIS LISTS
+	cisListsClient *cislistsapiv1.ListsApiV1
+	cisListsErr    error
+
 	// IAM Identity Option
 	iamIdentityErr error
 	iamIdentityAPI *iamidentity.IamIdentityV1
@@ -1147,6 +1154,14 @@ func (sess clientSession) CisOrigAuthSession() (*cisoriginpull.AuthenticatedOrig
 		return sess.cisOriginAuthClient, sess.cisOriginAuthPullErr
 	}
 	return sess.cisOriginAuthClient.Clone(), nil
+}
+
+// CIS Lists
+func (sess clientSession) CisListsSession() (*cislistsapiv1.ListsApiV1, error) {
+	if sess.cisListsErr != nil {
+		return sess.cisListsClient, sess.cisListsErr
+	}
+	return sess.cisListsClient.Clone(), nil
 }
 
 // IAM Identity Session
@@ -3161,6 +3176,27 @@ func (c *Config) ClientSession() (interface{}, error) {
 	if session.cisOriginAuthClient != nil && session.cisOriginAuthClient.Service != nil {
 		session.cisOriginAuthClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 		session.cisOriginAuthClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	}
+
+	// IBM Network CIS Lists
+	cisListsOpt := &cislistsapiv1.ListsApiV1Options{
+		URL:           cisEndPoint,
+		Crn:           core.StringPtr(""),
+		Authenticator: authenticator,
+		ItemID:        core.StringPtr(""),
+		ListID:        core.StringPtr(""),
+		OperationID:   core.StringPtr(""),
+	}
+	session.cisListsClient, session.cisListsErr = cislistsapiv1.NewListsApiV1(cisListsOpt)
+	if session.cisListsErr != nil {
+		session.cisListsErr = fmt.Errorf("[ERROR] Error occured while configuring CIS Lists : %s",
+			session.cisListsErr)
+	}
+	if session.cisListsClient != nil && session.cisListsClient.Service != nil {
+		session.cisListsClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.cisListsClient.SetDefaultHeaders(gohttp.Header{
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
 	}
