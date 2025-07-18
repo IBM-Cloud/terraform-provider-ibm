@@ -4,7 +4,6 @@
 package cis
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -385,13 +384,13 @@ func ResourceIBMCISRateLimitCreate(d *schema.ResourceData, meta interface{}) err
 
 	action, err := expandRateLimitAction(d)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error in getting action from expandRateLimitAction %s", err)
+		return flex.FmtErrorf("[ERROR] Error in getting action from expandRateLimitAction %s", err)
 	}
 	opt.SetAction(action)
 
 	match, err := expandRateLimitMatch(d)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error in getting match from expandRateLimitMatch %s", err)
+		return flex.FmtErrorf("[ERROR] Error in getting match from expandRateLimitMatch %s", err)
 	}
 	opt.SetMatch(match)
 
@@ -402,14 +401,14 @@ func ResourceIBMCISRateLimitCreate(d *schema.ResourceData, meta interface{}) err
 
 	byPass, err := expandRateLimitBypass(d)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error in getting bypass from expandRateLimitBypass %s", err)
+		return flex.FmtErrorf("[ERROR] Error in getting bypass from expandRateLimitBypass %s", err)
 	}
 	opt.SetBypass(byPass)
 
 	//creating rate limit rule
 	result, resp, err := cisClient.CreateZoneRateLimits(opt)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Failed to create RateLimit: %v", resp)
+		return flex.FmtErrorf("[ERROR] Failed to create RateLimit: %v", resp)
 	}
 	record := result.Result
 	d.SetId(flex.ConvertCisToTfThreeVar(*record.ID, zoneID, cisID))
@@ -430,7 +429,7 @@ func ResourceIBMCISRateLimitRead(d *schema.ResourceData, meta interface{}) error
 	opt := cisClient.NewGetRateLimitOptions(recordID)
 	result, resp, err := cisClient.GetRateLimit(opt)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Failed to read RateLimit: %v", resp)
+		return flex.FmtErrorf("[ERROR] Failed to read RateLimit: %v", resp)
 	}
 
 	rule := result.Result
@@ -482,13 +481,13 @@ func ResourceIBMCISRateLimitUpdate(d *schema.ResourceData, meta interface{}) err
 
 		action, err := expandRateLimitAction(d)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error in getting action from expandRateLimitAction %s", err)
+			return flex.FmtErrorf("[ERROR] Error in getting action from expandRateLimitAction %s", err)
 		}
 		opt.SetAction(action)
 
 		match, err := expandRateLimitMatch(d)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error in getting match from expandRateLimitMatch %s", err)
+			return flex.FmtErrorf("[ERROR] Error in getting match from expandRateLimitMatch %s", err)
 		}
 		opt.SetMatch(match)
 
@@ -499,12 +498,12 @@ func ResourceIBMCISRateLimitUpdate(d *schema.ResourceData, meta interface{}) err
 
 		byPass, err := expandRateLimitBypass(d)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error in getting bypass from expandRateLimitBypass %s", err)
+			return flex.FmtErrorf("[ERROR] Error in getting bypass from expandRateLimitBypass %s", err)
 		}
 		opt.SetBypass(byPass)
 		_, resp, err := cisClient.UpdateRateLimit(opt)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Failed to update RateLimit: %v", resp)
+			return flex.FmtErrorf("[ERROR] Failed to update RateLimit: %v", resp)
 		}
 	}
 	d.SetId(flex.ConvertCisToTfThreeVar(recordID, zoneID, cisID))
@@ -523,7 +522,7 @@ func ResourceIBMCISRateLimitDelete(d *schema.ResourceData, meta interface{}) err
 	opt := cisClient.NewDeleteZoneRateLimitOptions(recordID)
 	_, resp, err := cisClient.DeleteZoneRateLimit(opt)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Failed to delete RateLimit: %v", resp)
+		return flex.FmtErrorf("[ERROR] Failed to delete RateLimit: %v", resp)
 	}
 	return nil
 }
@@ -543,7 +542,7 @@ func ResourceIBMCISRateLimitExists(d *schema.ResourceData, meta interface{}) (bo
 			log.Println("ratelimit is not found")
 			return false, nil
 		}
-		return false, fmt.Errorf("[ERROR] Failed to getting existing RateLimit: %v", err)
+		return false, flex.FmtErrorf("[ERROR] Failed to getting existing RateLimit: %v", err)
 	}
 	return true, nil
 }
@@ -556,12 +555,12 @@ func expandRateLimitAction(d *schema.ResourceData) (
 	timeout := actionRecord["timeout"].(int)
 	if timeout == 0 {
 		if mode == "simulate" || mode == "ban" {
-			return action, fmt.Errorf("[ERROR] For the mode 'simulate' and 'ban' timeout must be %s %s",
+			return action, flex.FmtErrorf("[ERROR] For the mode 'simulate' and 'ban' timeout must be %s %s",
 				"set.. valid range for timeout is 10 - 86400", err)
 		}
 	} else {
 		if mode == "challenge" || mode == "js_challenge" {
-			return action, fmt.Errorf("[ERROR] Timeout field is only valid for 'simulate' and 'ban' modes. %s", err)
+			return action, flex.FmtErrorf("[ERROR] Timeout field is only valid for 'simulate' and 'ban' modes. %s", err)
 		}
 	}
 	action.Mode = core.StringPtr(mode)
@@ -661,7 +660,7 @@ func expandRateLimitCorrelate(d *schema.ResourceData) (
 	correlate = &zoneratelimitsv1.RatelimitInputCorrelate{}
 	c, ok := d.GetOk("correlate")
 	if !ok {
-		err = fmt.Errorf("correlate field is empty")
+		err = flex.FmtErrorf("correlate field is empty")
 		return &zoneratelimitsv1.RatelimitInputCorrelate{}, err
 	}
 	correlateRecord := c.([]interface{})[0].(map[string]interface{})

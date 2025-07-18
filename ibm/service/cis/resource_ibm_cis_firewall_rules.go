@@ -84,13 +84,19 @@ func ResourceIBMCISFirewallrulesCreate(context context.Context, d *schema.Resour
 
 	sess, err := meta.(conns.ClientSession).BluemixSession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err,
+			fmt.Sprintf("ResourceIBMCISFirewallrulesCreate BluemixSession initialization failed: %s", err.Error()),
+			"ibm_cis_firewall_rules", "create")
+		return tfErr.GetDiag()
 	}
 	xAuthtoken := sess.Config.IAMAccessToken
 
 	cisClient, err := meta.(conns.ClientSession).CisFirewallRulesSession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err,
+			fmt.Sprintf("ResourceIBMCISFirewallrulesCreate CisFirewallRulesSession initialization failed: %s", err.Error()),
+			"ibm_cis_firewall_rules", "create")
+		return tfErr.GetDiag()
 	}
 
 	crn := d.Get(cisID).(string)
@@ -126,7 +132,10 @@ func ResourceIBMCISFirewallrulesCreate(context context.Context, d *schema.Resour
 
 	result, _, err := cisClient.CreateFirewallRulesWithContext(context, opt)
 	if err != nil || result == nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error reading the  %s", err))
+		tfErr := flex.TerraformErrorf(err,
+			fmt.Sprintf("ResourceIBMCISFirewallrulesCreate CreateFirewallRulesWithContext failed: %s", err.Error()),
+			"ibm_cis_firewall_rules", "create")
+		return tfErr.GetDiag()
 	}
 	d.SetId(flex.ConvertCisToTfThreeVar(*result.Result[0].ID, zoneID, crn))
 
@@ -136,17 +145,26 @@ func ResourceIBMCISFirewallrulesCreate(context context.Context, d *schema.Resour
 func ResourceIBMCISFirewallrulesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).BluemixSession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err,
+			fmt.Sprintf("ResourceIBMCISFirewallrulesRead BluemixSession initialization failed: %s", err.Error()),
+			"ibm_cis_firewall_rules", "read")
+		return tfErr.GetDiag()
 	}
 	xAuthtoken := sess.Config.IAMAccessToken
 
 	cisClient, err := meta.(conns.ClientSession).CisFirewallRulesSession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err,
+			fmt.Sprintf("ResourceIBMCISFirewallrulesRead CisFirewallRulesSession initialization failed: %s", err.Error()),
+			"ibm_cis_firewall_rules", "create")
+		return tfErr.GetDiag()
 	}
 	firwallruleID, zoneID, crn, _ := flex.ConvertTfToCisThreeVar(d.Id())
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err,
+			fmt.Sprintf("ResourceIBMCISFirewallrulesRead ConvertTfToCisThreeVar failed: %s", err.Error()),
+			"ibm_cis_firewall_rules", "create")
+		return tfErr.GetDiag()
 	}
 
 	opt := cisClient.NewGetFirewallRuleOptions(xAuthtoken, crn, zoneID, firwallruleID)
@@ -157,7 +175,10 @@ func ResourceIBMCISFirewallrulesRead(context context.Context, d *schema.Resource
 			d.SetId("")
 			return nil
 		}
-		return diag.FromErr(fmt.Errorf("[ERROR] Error reading the firewall rules %s:%s", err, response))
+		tfErr := flex.TerraformErrorf(err,
+			fmt.Sprintf("ResourceIBMCISFirewallrulesRead GetFirewallRuleWithContext failed: %s \n Response: %s", err.Error(), response),
+			"ibm_cis_firewall_rules", "create")
+		return tfErr.GetDiag()
 	}
 	d.Set(cisID, crn)
 	d.Set(cisDomainID, zoneID)
@@ -171,18 +192,27 @@ func ResourceIBMCISFirewallrulesRead(context context.Context, d *schema.Resource
 func ResourceIBMCISFirewallrulesUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).BluemixSession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err,
+			fmt.Sprintf("ResourceIBMCISFirewallrulesUpdate BluemixSession initialization failed: %s", err.Error()),
+			"ibm_cis_firewall_rules", "update")
+		return tfErr.GetDiag()
 	}
 	xAuthtoken := sess.Config.IAMAccessToken
 
 	cisClient, err := meta.(conns.ClientSession).CisFirewallRulesSession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err,
+			fmt.Sprintf("ResourceIBMCISFirewallrulesUpdate CisFirewallRulesSession initialization failed: %s", err.Error()),
+			"ibm_cis_firewall_rules", "update")
+		return tfErr.GetDiag()
 	}
 
 	firewallruleID, zoneID, crn, _ := flex.ConvertTfToCisThreeVar(d.Id())
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err,
+			fmt.Sprintf("ResourceIBMCISFirewallrulesUpdate ConvertTfToCisThreeVar failed: %s", err.Error()),
+			"ibm_cis_firewall_rules", "update")
+		return tfErr.GetDiag()
 	}
 
 	if d.HasChange(cisFilterID) ||
@@ -221,7 +251,10 @@ func ResourceIBMCISFirewallrulesUpdate(context context.Context, d *schema.Resour
 
 		result, _, err := cisClient.UpdateFirewllRulesWithContext(context, opt)
 		if err != nil || result == nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error updating the firewall rules %s", err))
+			tfErr := flex.TerraformErrorf(err,
+				fmt.Sprintf("ResourceIBMCISFirewallrulesUpdate UpdateFirewllRulesWithContext failed: %s", err.Error()),
+				"ibm_cis_firewall_rules", "update")
+			return tfErr.GetDiag()
 		}
 	}
 	return ResourceIBMCISFirewallrulesRead(context, d, meta)
@@ -229,18 +262,27 @@ func ResourceIBMCISFirewallrulesUpdate(context context.Context, d *schema.Resour
 func ResourceIBMCISFirewallrulesDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).BluemixSession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err,
+			fmt.Sprintf("ResourceIBMCISFirewallrulesDelete BluemixSession initialization failed: %s", err.Error()),
+			"ibm_cis_firewall_rules", "delete")
+		return tfErr.GetDiag()
 	}
 	xAuthtoken := sess.Config.IAMAccessToken
 
 	cisClient, err := meta.(conns.ClientSession).CisFirewallRulesSession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err,
+			fmt.Sprintf("ResourceIBMCISFirewallrulesDelete CisFirewallRulesSession initialization failed: %s", err.Error()),
+			"ibm_cis_firewall_rules", "delete")
+		return tfErr.GetDiag()
 	}
 
 	firewallruleid, zoneID, crn, _ := flex.ConvertTfToCisThreeVar(d.Id())
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err,
+			fmt.Sprintf("ResourceIBMCISFirewallrulesDelete ConvertTfToCisThreeVar failed: %s", err.Error()),
+			"ibm_cis_firewall_rules", "delete")
+		return tfErr.GetDiag()
 	}
 	opt := cisClient.NewDeleteFirewallRulesOptions(xAuthtoken, crn, zoneID, firewallruleid)
 	_, response, err := cisClient.DeleteFirewallRulesWithContext(context, opt)
@@ -248,7 +290,10 @@ func ResourceIBMCISFirewallrulesDelete(context context.Context, d *schema.Resour
 		if response != nil && response.StatusCode == 404 {
 			return nil
 		}
-		return diag.FromErr(fmt.Errorf("[ERROR] Error deleting the  custom resolver %s:%s", err, response))
+		tfErr := flex.TerraformErrorf(err,
+			fmt.Sprintf("ResourceIBMCISFirewallrulesDelete DeleteFirewallRulesWithContext failed: %s Response: %s", err.Error(), response),
+			"ibm_cis_firewall_rules", "delete")
+		return tfErr.GetDiag()
 	}
 
 	if id, ok := d.GetOk(cisFilterID); ok {
@@ -262,7 +307,10 @@ func ResourceIBMCISFirewallrulesDelete(context context.Context, d *schema.Resour
 		filterOpt := cisFilterClient.NewDeleteFiltersOptions(xAuthtoken, crn, zoneID, filter_id)
 		_, _, err = cisFilterClient.DeleteFilters(filterOpt)
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error deleting Filter: %s", err))
+			tfErr := flex.TerraformErrorf(err,
+				fmt.Sprintf("ResourceIBMCISFirewallrulesDelete DeleteFilters failed: %s", err.Error()),
+				"ibm_cis_firewall_rules", "delete")
+			return tfErr.GetDiag()
 		}
 	}
 

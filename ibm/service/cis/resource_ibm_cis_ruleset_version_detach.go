@@ -4,10 +4,10 @@
 package cis
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -68,7 +68,7 @@ func ResourceIBMCISRulesetVersionDetachCreate(d *schema.ResourceData, meta inter
 
 	sess, err := meta.(conns.ClientSession).CisRulesetsSession()
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while getting the CisRulesetsSession %s", err)
+		return flex.FmtErrorf("[ERROR] Error while getting the CisRulesetsSession %s", err)
 	}
 
 	crn := d.Get(cisID).(string)
@@ -83,13 +83,13 @@ func ResourceIBMCISRulesetVersionDetachCreate(d *schema.ResourceData, meta inter
 		opt := sess.NewDeleteZoneRulesetVersionOptions(rulesetId, ruleset_version)
 		res, err := sess.DeleteZoneRulesetVersion(opt)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error detaching the zone ruleset version %s:%s", err, res)
+			return flex.FmtErrorf("[ERROR] Error detaching the zone ruleset version %s:%s", err, res)
 		}
 	} else {
 		opt := sess.NewDeleteInstanceRulesetVersionOptions(rulesetId, ruleset_version)
 		res, err := sess.DeleteInstanceRulesetVersion(opt)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error detaching the Instance ruleset version %s:%s", err, res)
+			return flex.FmtErrorf("[ERROR] Error detaching the Instance ruleset version %s:%s", err, res)
 		}
 	}
 

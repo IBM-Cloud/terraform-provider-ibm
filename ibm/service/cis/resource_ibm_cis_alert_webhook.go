@@ -4,8 +4,6 @@
 package cis
 
 import (
-	"fmt"
-
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
@@ -84,7 +82,7 @@ func ResourceIBMCISWebhooksValidator() *validate.ResourceValidator {
 func ResourceIBMCISWebhookCreate(d *schema.ResourceData, meta interface{}) error {
 	sess, err := meta.(conns.ClientSession).CisWebhookSession()
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while getting the cisWebhookSession %s", err)
+		return flex.FmtErrorf("[ERROR] Error while getting the cisWebhookSession %s", err)
 	}
 
 	crn := d.Get(cisID).(string)
@@ -103,7 +101,7 @@ func ResourceIBMCISWebhookCreate(d *schema.ResourceData, meta interface{}) error
 	}
 	result, resp, err := sess.CreateAlertWebhook(opt)
 	if err != nil || result == nil {
-		return fmt.Errorf("[ERROR] Error creating Webhooks  %s %s", err, resp)
+		return flex.FmtErrorf("[ERROR] Error creating Webhooks  %s %s", err, resp)
 	}
 	d.SetId(flex.ConvertCisToTfTwoVar(*result.Result.ID, crn))
 	return ResourceIBMCISWebhookRead(d, meta)
@@ -112,7 +110,7 @@ func ResourceIBMCISWebhookCreate(d *schema.ResourceData, meta interface{}) error
 func ResourceIBMCISWebhookRead(d *schema.ResourceData, meta interface{}) error {
 	sess, err := meta.(conns.ClientSession).CisWebhookSession()
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while getting the cisWebhookSession %s", err)
+		return flex.FmtErrorf("[ERROR] Error while getting the cisWebhookSession %s", err)
 	}
 	webhooksID, crn, err := flex.ConvertTftoCisTwoVar(d.Id())
 	if err != nil {
@@ -127,7 +125,7 @@ func ResourceIBMCISWebhookRead(d *schema.ResourceData, meta interface{}) error {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error getting webhook detail %s, %s", err, response)
+		return flex.FmtErrorf("[ERROR] Error getting webhook detail %s, %s", err, response)
 	}
 	d.Set(cisID, crn)
 	d.Set(cisWebhookID, result.Result.ID)
@@ -139,7 +137,7 @@ func ResourceIBMCISWebhookRead(d *schema.ResourceData, meta interface{}) error {
 func ResourceIBMCISWebhookUpdate(d *schema.ResourceData, meta interface{}) error {
 	sess, err := meta.(conns.ClientSession).CisWebhookSession()
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while updating the webhook %s", err)
+		return flex.FmtErrorf("[ERROR] Error while updating the webhook %s", err)
 	}
 	webhooksID, crn, err := flex.ConvertTftoCisTwoVar(d.Id())
 	if err != nil {
@@ -163,7 +161,7 @@ func ResourceIBMCISWebhookUpdate(d *schema.ResourceData, meta interface{}) error
 
 		result, _, err := sess.UpdateAlertWebhook(opt)
 		if err != nil || result == nil {
-			return fmt.Errorf("[ERROR] Error updating the Webhook %s", err)
+			return flex.FmtErrorf("[ERROR] Error updating the Webhook %s", err)
 		}
 	}
 	return ResourceIBMCISWebhookRead(d, meta)
@@ -171,11 +169,11 @@ func ResourceIBMCISWebhookUpdate(d *schema.ResourceData, meta interface{}) error
 func ResourceIBMCISWebhookDelete(d *schema.ResourceData, meta interface{}) error {
 	sess, err := meta.(conns.ClientSession).CisWebhookSession()
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while Deleting the webhook %s", err)
+		return flex.FmtErrorf("[ERROR] Error while Deleting the webhook %s", err)
 	}
 	webhooksID, crn, err := flex.ConvertTftoCisTwoVar(d.Id())
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while getting the webhook ID %s", err)
+		return flex.FmtErrorf("[ERROR] Error while getting the webhook ID %s", err)
 	}
 	sess.Crn = core.StringPtr(crn)
 
@@ -186,7 +184,7 @@ func ResourceIBMCISWebhookDelete(d *schema.ResourceData, meta interface{}) error
 		if response != nil && response.StatusCode == 404 {
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error deleting the Webhook %s:%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error deleting the Webhook %s:%s", err, response)
 	}
 	return nil
 

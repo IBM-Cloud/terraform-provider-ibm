@@ -4,7 +4,6 @@
 package cis
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -69,13 +68,13 @@ func ResourceIBMCISFilter() *schema.Resource {
 func ResourceIBMCISFilterCreate(d *schema.ResourceData, meta interface{}) error {
 	sess, err := meta.(conns.ClientSession).BluemixSession()
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while Getting IAM Access Token using BluemixSession %s", err)
+		return flex.FmtErrorf("[ERROR] Error while Getting IAM Access Token using BluemixSession %s", err)
 	}
 	xAuthtoken := sess.Config.IAMAccessToken
 
 	cisClient, err := meta.(conns.ClientSession).CisFiltersSession()
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while getting the CisFiltersSession %s", err)
+		return flex.FmtErrorf("[ERROR] Error while getting the CisFiltersSession %s", err)
 	}
 
 	crn := d.Get(cisID).(string)
@@ -102,7 +101,7 @@ func ResourceIBMCISFilterCreate(d *schema.ResourceData, meta interface{}) error 
 
 	result, resp, err := cisClient.CreateFilter(opt)
 	if err != nil || result == nil {
-		return fmt.Errorf("[ERROR] Error creating Filter for zone %q: %s %s", zoneID, err, resp)
+		return flex.FmtErrorf("[ERROR] Error creating Filter for zone %q: %s %s", zoneID, err, resp)
 	}
 	d.SetId(flex.ConvertCisToTfThreeVar(*result.Result[0].ID, zoneID, crn))
 	return ResourceIBMCISFilterRead(d, meta)
@@ -111,13 +110,13 @@ func ResourceIBMCISFilterCreate(d *schema.ResourceData, meta interface{}) error 
 func ResourceIBMCISFilterRead(d *schema.ResourceData, meta interface{}) error {
 	sess, err := meta.(conns.ClientSession).BluemixSession()
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while Getting IAM Access Token using BluemixSession %s", err)
+		return flex.FmtErrorf("[ERROR] Error while Getting IAM Access Token using BluemixSession %s", err)
 	}
 	xAuthtoken := sess.Config.IAMAccessToken
 
 	cisClient, err := meta.(conns.ClientSession).CisFiltersSession()
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while getting the CisFiltersSession %s", err)
+		return flex.FmtErrorf("[ERROR] Error while getting the CisFiltersSession %s", err)
 	}
 	filterid, zoneID, crn, _ := flex.ConvertTfToCisThreeVar(d.Id())
 	if err != nil {
@@ -132,7 +131,7 @@ func ResourceIBMCISFilterRead(d *schema.ResourceData, meta interface{}) error {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error finding GetFilter %q: %s %s", d.Id(), err, response)
+		return flex.FmtErrorf("[ERROR] Error finding GetFilter %q: %s %s", d.Id(), err, response)
 	}
 	if result.Result != nil {
 		d.Set(cisID, crn)
@@ -147,13 +146,13 @@ func ResourceIBMCISFilterRead(d *schema.ResourceData, meta interface{}) error {
 func ResourceIBMCISFilterUpdate(d *schema.ResourceData, meta interface{}) error {
 	sess, err := meta.(conns.ClientSession).BluemixSession()
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while Getting IAM Access Token using BluemixSession %s", err)
+		return flex.FmtErrorf("[ERROR] Error while Getting IAM Access Token using BluemixSession %s", err)
 	}
 	xAuthtoken := sess.Config.IAMAccessToken
 
 	cisClient, err := meta.(conns.ClientSession).CisFiltersSession()
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while getting the CisFiltersSession %s", err)
+		return flex.FmtErrorf("[ERROR] Error while getting the CisFiltersSession %s", err)
 	}
 
 	filterid, zoneID, crn, _ := flex.ConvertTfToCisThreeVar(d.Id())
@@ -187,11 +186,11 @@ func ResourceIBMCISFilterUpdate(d *schema.ResourceData, meta interface{}) error 
 
 		result, resp, err := cisClient.UpdateFilters(opt)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error updating Filter for zone %q: %s %s", zoneID, err, resp)
+			return flex.FmtErrorf("[ERROR] Error updating Filter for zone %q: %s %s", zoneID, err, resp)
 		}
 
 		if *result.Result[0].ID == "" {
-			return fmt.Errorf("[ERROR] Error failed to find id in Update response; resource was empty")
+			return flex.FmtErrorf("[ERROR] Error failed to find id in Update response; resource was empty")
 		}
 	}
 	return ResourceIBMCISFilterRead(d, meta)
@@ -213,7 +212,7 @@ func ResourceIBMCISFilterDelete(d *schema.ResourceData, meta interface{}) error 
 	opt := cisClient.NewDeleteFiltersOptions(xAuthtoken, crn, zoneID, filterid)
 	_, _, err = cisClient.DeleteFilters(opt)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error deleting Filter: %s", err)
+		return flex.FmtErrorf("[ERROR] Error deleting Filter: %s", err)
 	}
 
 	return nil

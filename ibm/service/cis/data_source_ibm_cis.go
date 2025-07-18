@@ -4,7 +4,6 @@
 package cis
 
 import (
-	"fmt"
 	"net/url"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -125,7 +124,7 @@ func dataSourceIBMCISInstanceRead(d *schema.ResourceData, meta interface{}) erro
 
 		serviceOff, err := rsCatRepo.FindByName(service.(string), true)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error retrieving service offering: %s", err)
+			return flex.FmtErrorf("[ERROR] Error retrieving service offering: %s", err)
 		}
 
 		rsInstQuery.ServiceID = serviceOff[0].ID
@@ -152,13 +151,13 @@ func dataSourceIBMCISInstanceRead(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	if len(filteredInstances) == 0 {
-		return fmt.Errorf("[ERROR] No resource instance found with name [%s]\nIf not specified please specify more filters like resource_group_id if instance doesn't exists in default group, location or service", name)
+		return flex.FmtErrorf("[ERROR] No resource instance found with name [%s]\nIf not specified please specify more filters like resource_group_id if instance doesn't exists in default group, location or service", name)
 	}
 
 	var instance models.ServiceInstanceV2
 
 	if len(filteredInstances) > 1 {
-		return fmt.Errorf("[ERROR] More than one resource instance found with name matching [%s]\nIf not specified please specify more filters like resource_group_id if instance doesn't exists in default group, location or service", name)
+		return flex.FmtErrorf("[ERROR] More than one resource instance found with name matching [%s]\nIf not specified please specify more filters like resource_group_id if instance doesn't exists in default group, location or service", name)
 	}
 	instance = filteredInstances[0]
 
@@ -169,14 +168,14 @@ func dataSourceIBMCISInstanceRead(d *schema.ResourceData, meta interface{}) erro
 	d.Set("guid", instance.Guid)
 	serviceOff, err := rsCatRepo.GetServiceName(instance.ServiceID)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error retrieving service offering: %s", err)
+		return flex.FmtErrorf("[ERROR] Error retrieving service offering: %s", err)
 	}
 
 	d.Set("service", serviceOff)
 
 	servicePlan, err := rsCatRepo.GetServicePlanName(instance.ResourcePlanID)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error retrieving plan: %s", err)
+		return flex.FmtErrorf("[ERROR] Error retrieving plan: %s", err)
 	}
 	d.Set("plan", servicePlan)
 
