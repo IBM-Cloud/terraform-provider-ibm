@@ -200,6 +200,26 @@ func DataSourceIBMIAMActionControlAssignments() *schema.Resource {
 																Computed:    true,
 																Description: "The HTTP error code of the response.",
 															},
+															"name": {
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Name of the error.",
+															},
+															"error_code": {
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Internal error code.",
+															},
+															"message": {
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Error message detailing the nature of the error.",
+															},
+															"code": {
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Internal status code for the error.",
+															},
 														},
 													},
 												},
@@ -427,15 +447,29 @@ func DataSourceIBMListActionControlAssignmentsActionControlAssignmentResourceCre
 
 func DataSourceIBMListActionControlAssignmentsErrorResponseToMap(model *iampolicymanagementv1.AssignmentResourceError) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	errors := []map[string]interface{}{}
-	for _, errorsItem := range model.Errors {
-		errorsItemMap, err := DataSourceIBMListActionControlAssignmentsErrorObjectToMap(&errorsItem) // #nosec G601
-		if err != nil {
-			return modelMap, err
-		}
-		errors = append(errors, errorsItemMap)
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
 	}
-	modelMap["errors"] = errors
+	if model.ErrorCode != nil {
+		modelMap["error_code"] = *model.ErrorCode
+	}
+	if model.Message != nil {
+		modelMap["message"] = *model.Message
+	}
+	if model.Code != nil {
+		modelMap["code"] = *model.Code
+	}
+	if model.Errors != nil {
+		errors := []map[string]interface{}{}
+		for _, errorsItem := range model.Errors {
+			errorsItemMap, err := DataSourceIBMListActionControlAssignmentsErrorObjectToMap(&errorsItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			errors = append(errors, errorsItemMap)
+		}
+		modelMap["errors"] = errors
+	}
 	return modelMap, nil
 }
 
