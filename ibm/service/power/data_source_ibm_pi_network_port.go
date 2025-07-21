@@ -67,7 +67,7 @@ func DataSourceIBMPINetworkPort() *schema.Resource {
 							Description: "The MAC address of the port.",
 							Type:        schema.TypeString,
 						},
-						Attr_PortID: {
+						Attr_Portid: {
 							Computed:    true,
 							Description: "The ID of the port.",
 							Type:        schema.TypeString,
@@ -121,7 +121,7 @@ func flattenNetworkPorts(networkPorts []*models.NetworkPort) interface{} {
 			Attr_IPaddress:   *i.IPAddress,
 			Attr_Macaddress:  *i.MacAddress,
 			Attr_MacAddress:  *i.MacAddress,
-			Attr_PortID:      *i.PortID,
+			Attr_Portid:      *i.PortID,
 			Attr_PublicIP:    i.ExternalIP,
 			Attr_Status:      *i.Status,
 		}
