@@ -1029,14 +1029,20 @@ func ResourceIbmVmaasVdcVDCPatchAsPatch(patchVals *vmwarev1.VDCPatch, d *schema.
 	path = "cpu"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["cpu"] = nil
+	} else if !exists {
+		delete(patch, "cpu")
 	}
 	path = "fast_provisioning_enabled"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["fast_provisioning_enabled"] = nil
+	} else if !exists {
+		delete(patch, "fast_provisioning_enabled")
 	}
 	path = "ram"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["ram"] = nil
+	} else if !exists {
+		delete(patch, "ram")
 	}
 
 	return patch
