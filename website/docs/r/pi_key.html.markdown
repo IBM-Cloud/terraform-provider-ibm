@@ -42,8 +42,9 @@ Example usage:
 
 ibm_pi_key provides the following [timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
-- **create** - (Default 60 minutes) Used for creating a SSH key.
-- **delete** - (Default 60 minutes) Used for deleting a SSH key.
+- **create** - (Default 10 minutes) Used for creating a SSH key.
+- **delete** - (Default 10 minutes) Used for deleting a SSH key.
+- **update** - (Default 10 minutes) Used for updating a SSH key.
 
 ## Argument Reference
 
