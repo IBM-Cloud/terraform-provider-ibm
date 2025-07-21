@@ -199,7 +199,11 @@ func dataSourceIbmSmUsernamePasswordSecretRead(context context.Context, d *schem
 		return diagError
 	}
 
-	usernamePasswordSecret := secret.(*secretsmanagerv2.UsernamePasswordSecret)
+	usernamePasswordSecret, ok := secret.(*secretsmanagerv2.UsernamePasswordSecret)
+	if !ok {
+		tfErr := flex.TerraformErrorf(nil, fmt.Sprintf("Wrong secret type: The provided secret is not a User Credentials secret."), fmt.Sprintf("(Data) %s", UsernamePasswordSecretResourceName), "read")
+		return tfErr.GetDiag()
+	}
 
 	d.SetId(fmt.Sprintf("%s/%s/%s", region, instanceId, *usernamePasswordSecret.ID))
 

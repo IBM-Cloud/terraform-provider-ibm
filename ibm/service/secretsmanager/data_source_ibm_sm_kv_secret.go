@@ -135,7 +135,11 @@ func dataSourceIbmSmKvSecretRead(context context.Context, d *schema.ResourceData
 		return diagError
 	}
 
-	kVSecret := secret.(*secretsmanagerv2.KVSecret)
+	kVSecret, ok := secret.(*secretsmanagerv2.KVSecret)
+	if !ok {
+		tfErr := flex.TerraformErrorf(nil, fmt.Sprintf("Wrong secret type: The provided secret is not a KV secret."), fmt.Sprintf("(Data) %s", KvSecretResourceName), "read")
+		return tfErr.GetDiag()
+	}
 
 	d.SetId(fmt.Sprintf("%s/%s/%s", region, instanceId, *kVSecret.ID))
 	var err error

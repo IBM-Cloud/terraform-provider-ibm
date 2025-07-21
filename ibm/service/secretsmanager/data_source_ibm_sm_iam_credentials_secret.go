@@ -202,7 +202,12 @@ func dataSourceIbmSmIamCredentialsSecretRead(context context.Context, d *schema.
 		return diagError
 	}
 
-	iAMCredentialsSecret := iAMCredentialsSecretIntf.(*secretsmanagerv2.IAMCredentialsSecret)
+	iAMCredentialsSecret, ok := iAMCredentialsSecretIntf.(*secretsmanagerv2.IAMCredentialsSecret)
+	if !ok {
+		tfErr := flex.TerraformErrorf(nil, fmt.Sprintf("Wrong secret type: The provided secret is not an IAM Credentials secret."), fmt.Sprintf("(Data) %s", IAMCredentialsSecretResourceName), "read")
+		return tfErr.GetDiag()
+	}
+
 	d.SetId(fmt.Sprintf("%s/%s/%s", region, instanceId, *iAMCredentialsSecret.ID))
 
 	var err error
