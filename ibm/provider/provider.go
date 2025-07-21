@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2024 All Rights Reserved.
+// Copyright IBM Corp. 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package provider
@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"sync"
 	"time"
 
@@ -17,6 +18,7 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/accountmanagement"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/appconfiguration"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/appid"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/atracker"
@@ -50,11 +52,13 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/kms"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/kubernetes"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/logs"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/logsrouter"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/logsrouting"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/metricsrouter"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/mqcloud"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/pag"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/partnercentersell"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/platformnotifications"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/power"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/project"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/pushnotification"
@@ -81,116 +85,98 @@ func Provider() *schema.Provider {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The Bluemix API Key",
-				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"BM_API_KEY", "BLUEMIX_API_KEY"}, nil),
 				Deprecated:  "This field is deprecated please use ibmcloud_api_key",
 			},
 			"bluemix_timeout": {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Description: "The timeout (in seconds) to set for any Bluemix API calls made.",
-				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"BM_TIMEOUT", "BLUEMIX_TIMEOUT"}, nil),
 				Deprecated:  "This field is deprecated please use ibmcloud_timeout",
 			},
 			"ibmcloud_api_key": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The IBM Cloud API Key",
-				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"IC_API_KEY", "IBMCLOUD_API_KEY"}, nil),
 			},
 			"ibmcloud_timeout": {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Description: "The timeout (in seconds) to set for any IBM Cloud API calls made.",
-				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"IC_TIMEOUT", "IBMCLOUD_TIMEOUT"}, 60),
 			},
 			"region": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The IBM cloud Region (for example 'us-south').",
-				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"IC_REGION", "IBMCLOUD_REGION", "BM_REGION", "BLUEMIX_REGION"}, "us-south"),
 			},
 			"zone": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The IBM cloud Region zone (for example 'us-south-1') for power resources.",
-				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"IC_ZONE", "IBMCLOUD_ZONE"}, ""),
 			},
 			"resource_group": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The Resource group id.",
-				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"IC_RESOURCE_GROUP", "IBMCLOUD_RESOURCE_GROUP", "BM_RESOURCE_GROUP", "BLUEMIX_RESOURCE_GROUP"}, ""),
 			},
 			"softlayer_api_key": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The SoftLayer API Key",
-				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"SL_API_KEY", "SOFTLAYER_API_KEY"}, nil),
 				Deprecated:  "This field is deprecated please use iaas_classic_api_key",
 			},
 			"softlayer_username": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The SoftLayer user name",
-				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"SL_USERNAME", "SOFTLAYER_USERNAME"}, nil),
 				Deprecated:  "This field is deprecated please use iaas_classic_username",
 			},
 			"softlayer_endpoint_url": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The Softlayer Endpoint",
-				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"SL_ENDPOINT_URL", "SOFTLAYER_ENDPOINT_URL"}, nil),
 				Deprecated:  "This field is deprecated please use iaas_classic_endpoint_url",
 			},
 			"softlayer_timeout": {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Description: "The timeout (in seconds) to set for any SoftLayer API calls made.",
-				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"SL_TIMEOUT", "SOFTLAYER_TIMEOUT"}, nil),
 				Deprecated:  "This field is deprecated please use iaas_classic_timeout",
 			},
 			"iaas_classic_api_key": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The Classic Infrastructure API Key",
-				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"IAAS_CLASSIC_API_KEY"}, nil),
 			},
 			"iaas_classic_username": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The Classic Infrastructure API user name",
-				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"IAAS_CLASSIC_USERNAME"}, nil),
 			},
 			"iaas_classic_endpoint_url": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The Classic Infrastructure Endpoint",
-				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"IAAS_CLASSIC_ENDPOINT_URL"}, "https://api.softlayer.com/rest/v3"),
 			},
 			"iaas_classic_timeout": {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Description: "The timeout (in seconds) to set for any Classic Infrastructure API calls made.",
-				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"IAAS_CLASSIC_TIMEOUT"}, 60),
 			},
 			"max_retries": {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Description: "The retry count to set for API calls.",
-				DefaultFunc: schema.EnvDefaultFunc("MAX_RETRIES", 10),
 			},
 			"function_namespace": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The IBM Cloud Function namespace",
-				DefaultFunc: schema.EnvDefaultFunc("FUNCTION_NAMESPACE", nil),
 				Deprecated:  "This field will be deprecated soon",
 			},
 			"riaas_endpoint": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The next generation infrastructure service endpoint url.",
-				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"RIAAS_ENDPOINT"}, nil),
 				Deprecated:  "This field is deprecated use generation",
 			},
 			"generation": {
@@ -205,7 +191,6 @@ func Provider() *schema.Provider {
 				Optional:      true,
 				Description:   "IAM Trusted Profile ID",
 				ConflictsWith: []string{"iam_profile_name"},
-				DefaultFunc:   schema.MultiEnvDefaultFunc([]string{"IC_IAM_PROFILE_ID", "IBMCLOUD_IAM_PROFILE_ID"}, nil),
 			},
 			"iam_profile_name": {
 				Type:          schema.TypeString,
@@ -213,50 +198,44 @@ func Provider() *schema.Provider {
 				ConflictsWith: []string{"iam_profile_id"},
 				RequiredWith:  []string{"ibmcloud_account_id"},
 				Description:   "IAM Trusted Profile Name",
-				DefaultFunc:   schema.MultiEnvDefaultFunc([]string{"IC_IAM_PROFILE_NAME", "IBMCLOUD_IAM_PROFILE_NAME"}, nil),
 			},
 			"iam_token": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "IAM Authentication token",
-				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"IC_IAM_TOKEN", "IBMCLOUD_IAM_TOKEN"}, nil),
 			},
 			"iam_refresh_token": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "IAM Authentication refresh token",
-				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"IC_IAM_REFRESH_TOKEN", "IBMCLOUD_IAM_REFRESH_TOKEN"}, nil),
 			},
 			"visibility": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validate.ValidateAllowedStringValues([]string{"public", "private", "public-and-private"}),
 				Description:  "Visibility of the provider if it is private or public.",
-				DefaultFunc:  schema.MultiEnvDefaultFunc([]string{"IC_VISIBILITY", "IBMCLOUD_VISIBILITY"}, "public"),
 			},
 			"private_endpoint_type": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validate.ValidateAllowedStringValues([]string{"vpe"}),
 				Description:  "Private Endpoint type used by the service endpoints. Example: vpe.",
-				DefaultFunc:  schema.MultiEnvDefaultFunc([]string{"IC_PRIVATE_ENDPOINT_TYPE", "IBMCLOUD_PRIVATE_ENDPOINT_TYPE"}, nil),
 			},
 			"endpoints_file_path": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "Path of the file that contains private and public regional endpoints mapping",
-				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"IC_ENDPOINTS_FILE_PATH", "IBMCLOUD_ENDPOINTS_FILE_PATH"}, nil),
 			},
 			"ibmcloud_account_id": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Description:  "The IBM Cloud account ID",
 				RequiredWith: []string{"iam_profile_name"},
-				DefaultFunc:  schema.MultiEnvDefaultFunc([]string{"IC_ACCOUNT_ID", "IBMCLOUD_ACCOUNT_ID"}, nil),
 			},
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
+			"ibm_account_info":                     accountmanagement.DataSourceIbmAccount(),
 			"ibm_account":                          cloudfoundry.DataSourceIBMAccount(),
 			"ibm_app":                              cloudfoundry.DataSourceIBMApp(),
 			"ibm_app_domain_private":               cloudfoundry.DataSourceIBMAppDomainPrivate(),
@@ -1070,6 +1049,7 @@ func Provider() *schema.Provider {
 			"ibm_en_destination_app_configuration":  eventnotification.DataSourceIBMEnAppConfigurationDestination(),
 			"ibm_en_subscription_app_configuration": eventnotification.DataSourceIBMEnAppConfigurationSubscription(),
 			"ibm_en_app_configuration_template":     eventnotification.DataSourceIBMEnAppConfigurationTemplate(),
+			"ibm_en_bounce_metrics":                 eventnotification.DataSourceIBMEnBounceMetrics(),
 
 			// Added for Toolchain
 			"ibm_cd_toolchain":                         cdtoolchain.DataSourceIBMCdToolchain(),
@@ -1114,6 +1094,7 @@ func Provider() *schema.Provider {
 			"ibm_code_engine_domain_mapping":               codeengine.DataSourceIbmCodeEngineDomainMapping(),
 			"ibm_code_engine_function":                     codeengine.DataSourceIbmCodeEngineFunction(),
 			"ibm_code_engine_job":                          codeengine.DataSourceIbmCodeEngineJob(),
+			"ibm_code_engine_persistent_data_store":        codeengine.DataSourceIbmCodeEnginePersistentDataStore(),
 			"ibm_code_engine_project":                      codeengine.DataSourceIbmCodeEngineProject(),
 			"ibm_code_engine_secret":                       codeengine.DataSourceIbmCodeEngineSecret(),
 
@@ -1127,33 +1108,40 @@ func Provider() *schema.Provider {
 			"ibm_vmaas_transit_gateway_connection": vmware.DataSourceIbmVmaasTransitGatewayConnection(),
 
 			// Logs Service
-			"ibm_logs_alert":              logs.AddLogsInstanceFields(logs.DataSourceIbmLogsAlert()),
-			"ibm_logs_alerts":             logs.AddLogsInstanceFields(logs.DataSourceIbmLogsAlerts()),
-			"ibm_logs_rule_group":         logs.AddLogsInstanceFields(logs.DataSourceIbmLogsRuleGroup()),
-			"ibm_logs_rule_groups":        logs.AddLogsInstanceFields(logs.DataSourceIbmLogsRuleGroups()),
-			"ibm_logs_policy":             logs.AddLogsInstanceFields(logs.DataSourceIbmLogsPolicy()),
-			"ibm_logs_policies":           logs.AddLogsInstanceFields(logs.DataSourceIbmLogsPolicies()),
-			"ibm_logs_dashboard":          logs.AddLogsInstanceFields(logs.DataSourceIbmLogsDashboard()),
-			"ibm_logs_e2m":                logs.AddLogsInstanceFields(logs.DataSourceIbmLogsE2m()),
-			"ibm_logs_e2ms":               logs.AddLogsInstanceFields(logs.DataSourceIbmLogsE2ms()),
-			"ibm_logs_outgoing_webhook":   logs.AddLogsInstanceFields(logs.DataSourceIbmLogsOutgoingWebhook()),
-			"ibm_logs_outgoing_webhooks":  logs.AddLogsInstanceFields(logs.DataSourceIbmLogsOutgoingWebhooks()),
-			"ibm_logs_view_folder":        logs.AddLogsInstanceFields(logs.DataSourceIbmLogsViewFolder()),
-			"ibm_logs_view_folders":       logs.AddLogsInstanceFields(logs.DataSourceIbmLogsViewFolders()),
-			"ibm_logs_view":               logs.AddLogsInstanceFields(logs.DataSourceIbmLogsView()),
-			"ibm_logs_views":              logs.AddLogsInstanceFields(logs.DataSourceIbmLogsViews()),
-			"ibm_logs_dashboard_folders":  logs.AddLogsInstanceFields(logs.DataSourceIbmLogsDashboardFolders()),
-			"ibm_logs_data_usage_metrics": logs.AddLogsInstanceFields(logs.DataSourceIbmLogsDataUsageMetrics()),
-			"ibm_logs_enrichments":        logs.AddLogsInstanceFields(logs.DataSourceIbmLogsEnrichments()),
-			"ibm_logs_data_access_rules":  logs.AddLogsInstanceFields(logs.DataSourceIbmLogsDataAccessRules()),
-			"ibm_logs_stream":             logs.AddLogsInstanceFields(logs.DataSourceIbmLogsStream()),
-			"ibm_logs_streams":            logs.AddLogsInstanceFields(logs.DataSourceIbmLogsStreams()),
-			"ibm_logs_alert_definition":   logs.AddLogsInstanceFields(logs.DataSourceIbmLogsAlertDefinition()),
-			"ibm_logs_alert_definitions":  logs.AddLogsInstanceFields(logs.DataSourceIbmLogsAlertDefinitions()),
+			"ibm_logs_alert":                logs.AddLogsInstanceFields(logs.DataSourceIbmLogsAlert()),
+			"ibm_logs_alerts":               logs.AddLogsInstanceFields(logs.DataSourceIbmLogsAlerts()),
+			"ibm_logs_rule_group":           logs.AddLogsInstanceFields(logs.DataSourceIbmLogsRuleGroup()),
+			"ibm_logs_rule_groups":          logs.AddLogsInstanceFields(logs.DataSourceIbmLogsRuleGroups()),
+			"ibm_logs_policy":               logs.AddLogsInstanceFields(logs.DataSourceIbmLogsPolicy()),
+			"ibm_logs_policies":             logs.AddLogsInstanceFields(logs.DataSourceIbmLogsPolicies()),
+			"ibm_logs_dashboard":            logs.AddLogsInstanceFields(logs.DataSourceIbmLogsDashboard()),
+			"ibm_logs_e2m":                  logs.AddLogsInstanceFields(logs.DataSourceIbmLogsE2m()),
+			"ibm_logs_e2ms":                 logs.AddLogsInstanceFields(logs.DataSourceIbmLogsE2ms()),
+			"ibm_logs_outgoing_webhook":     logs.AddLogsInstanceFields(logs.DataSourceIbmLogsOutgoingWebhook()),
+			"ibm_logs_outgoing_webhooks":    logs.AddLogsInstanceFields(logs.DataSourceIbmLogsOutgoingWebhooks()),
+			"ibm_logs_view_folder":          logs.AddLogsInstanceFields(logs.DataSourceIbmLogsViewFolder()),
+			"ibm_logs_view_folders":         logs.AddLogsInstanceFields(logs.DataSourceIbmLogsViewFolders()),
+			"ibm_logs_view":                 logs.AddLogsInstanceFields(logs.DataSourceIbmLogsView()),
+			"ibm_logs_views":                logs.AddLogsInstanceFields(logs.DataSourceIbmLogsViews()),
+			"ibm_logs_dashboard_folders":    logs.AddLogsInstanceFields(logs.DataSourceIbmLogsDashboardFolders()),
+			"ibm_logs_data_usage_metrics":   logs.AddLogsInstanceFields(logs.DataSourceIbmLogsDataUsageMetrics()),
+			"ibm_logs_enrichments":          logs.AddLogsInstanceFields(logs.DataSourceIbmLogsEnrichments()),
+			"ibm_logs_data_access_rules":    logs.AddLogsInstanceFields(logs.DataSourceIbmLogsDataAccessRules()),
+			"ibm_logs_stream":               logs.AddLogsInstanceFields(logs.DataSourceIbmLogsStream()),
+			"ibm_logs_streams":              logs.AddLogsInstanceFields(logs.DataSourceIbmLogsStreams()),
+			"ibm_logs_alert_definition":     logs.AddLogsInstanceFields(logs.DataSourceIbmLogsAlertDefinition()),
+			"ibm_logs_alert_definitions":    logs.AddLogsInstanceFields(logs.DataSourceIbmLogsAlertDefinitions()),
+			"ibm_logs_extension":            logs.AddLogsInstanceFields(logs.DataSourceIbmLogsExtension()),
+			"ibm_logs_extensions":           logs.AddLogsInstanceFields(logs.DataSourceIbmLogsExtensions()),
+			"ibm_logs_extension_deployment": logs.AddLogsInstanceFields(logs.DataSourceIbmLogsExtensionDeployment()),
 
-			// Logs Router Service
+			// Logs Router Service v1
 			"ibm_logs_router_tenants": logsrouting.DataSourceIBMLogsRouterTenants(),
-			"ibm_logs_router_targets": logsrouting.DataSourceIBMLogsRouterTargets(),
+
+			// Logs Router Service v3
+			// "ibm_logs_router_targets" has the same data source name for both v1 and v3, so get v1&v3 combined schema
+			"ibm_logs_router_targets": logsrouter.CombinedDataSourceIBMLogsRouterTargets(),
+			"ibm_logs_router_routes":  logsrouter.DataSourceIBMLogsRouterRoutes(),
 
 			// DR Automation Service
 			"ibm_pdr_get_dr_summary_response": drautomationservice.DataSourceIBMPdrGetDrSummaryResponse(),
@@ -1823,6 +1811,7 @@ func Provider() *schema.Provider {
 			"ibm_code_engine_domain_mapping":               codeengine.ResourceIbmCodeEngineDomainMapping(),
 			"ibm_code_engine_function":                     codeengine.ResourceIbmCodeEngineFunction(),
 			"ibm_code_engine_job":                          codeengine.ResourceIbmCodeEngineJob(),
+			"ibm_code_engine_persistent_data_store":        codeengine.ResourceIbmCodeEnginePersistentDataStore(),
 			"ibm_code_engine_project":                      codeengine.ResourceIbmCodeEngineProject(),
 			"ibm_code_engine_secret":                       codeengine.ResourceIbmCodeEngineSecret(),
 
@@ -1836,27 +1825,36 @@ func Provider() *schema.Provider {
 			"ibm_vmaas_transit_gateway_connection": vmware.ResourceIbmVmaasTransitGatewayConnection(),
 
 			// Logs Service
-			"ibm_logs_alert":              logs.AddLogsInstanceFields(logs.ResourceIbmLogsAlert()),
-			"ibm_logs_rule_group":         logs.AddLogsInstanceFields(logs.ResourceIbmLogsRuleGroup()),
-			"ibm_logs_policy":             logs.AddLogsInstanceFields(logs.ResourceIbmLogsPolicy()),
-			"ibm_logs_dashboard":          logs.AddLogsInstanceFields(logs.ResourceIbmLogsDashboard()),
-			"ibm_logs_e2m":                logs.AddLogsInstanceFields(logs.ResourceIbmLogsE2m()),
-			"ibm_logs_outgoing_webhook":   logs.AddLogsInstanceFields(logs.ResourceIbmLogsOutgoingWebhook()),
-			"ibm_logs_view_folder":        logs.AddLogsInstanceFields(logs.ResourceIbmLogsViewFolder()),
-			"ibm_logs_view":               logs.AddLogsInstanceFields(logs.ResourceIbmLogsView()),
-			"ibm_logs_dashboard_folder":   logs.AddLogsInstanceFields(logs.ResourceIbmLogsDashboardFolder()),
-			"ibm_logs_data_usage_metrics": logs.AddLogsInstanceFields(logs.ResourceIbmLogsDataUsageMetrics()),
-			"ibm_logs_enrichment":         logs.AddLogsInstanceFields(logs.ResourceIbmLogsEnrichment()),
-			"ibm_logs_data_access_rule":   logs.AddLogsInstanceFields(logs.ResourceIbmLogsDataAccessRule()),
-			"ibm_logs_stream":             logs.AddLogsInstanceFields(logs.ResourceIbmLogsStream()),
-			"ibm_logs_alert_definition":   logs.AddLogsInstanceFields(logs.ResourceIbmLogsAlertDefinition()),
+			"ibm_logs_alert":                logs.AddLogsInstanceFields(logs.ResourceIbmLogsAlert()),
+			"ibm_logs_rule_group":           logs.AddLogsInstanceFields(logs.ResourceIbmLogsRuleGroup()),
+			"ibm_logs_policy":               logs.AddLogsInstanceFields(logs.ResourceIbmLogsPolicy()),
+			"ibm_logs_dashboard":            logs.AddLogsInstanceFields(logs.ResourceIbmLogsDashboard()),
+			"ibm_logs_e2m":                  logs.AddLogsInstanceFields(logs.ResourceIbmLogsE2m()),
+			"ibm_logs_outgoing_webhook":     logs.AddLogsInstanceFields(logs.ResourceIbmLogsOutgoingWebhook()),
+			"ibm_logs_view_folder":          logs.AddLogsInstanceFields(logs.ResourceIbmLogsViewFolder()),
+			"ibm_logs_view":                 logs.AddLogsInstanceFields(logs.ResourceIbmLogsView()),
+			"ibm_logs_dashboard_folder":     logs.AddLogsInstanceFields(logs.ResourceIbmLogsDashboardFolder()),
+			"ibm_logs_data_usage_metrics":   logs.AddLogsInstanceFields(logs.ResourceIbmLogsDataUsageMetrics()),
+			"ibm_logs_enrichment":           logs.AddLogsInstanceFields(logs.ResourceIbmLogsEnrichment()),
+			"ibm_logs_data_access_rule":     logs.AddLogsInstanceFields(logs.ResourceIbmLogsDataAccessRule()),
+			"ibm_logs_stream":               logs.AddLogsInstanceFields(logs.ResourceIbmLogsStream()),
+			"ibm_logs_alert_definition":     logs.AddLogsInstanceFields(logs.ResourceIbmLogsAlertDefinition()),
+			"ibm_logs_extension_deployment": logs.AddLogsInstanceFields(logs.ResourceIbmLogsExtensionDeployment()),
 
-			// Logs Router Service
+			// Logs Router Service v1
 			"ibm_logs_router_tenant": logsrouting.ResourceIBMLogsRouterTenant(),
+
+			// Logs Router Service v3
+			"ibm_logs_router_target":   logsrouter.ResourceIBMLogsRouterTarget(),
+			"ibm_logs_router_route":    logsrouter.ResourceIBMLogsRouterRoute(),
+			"ibm_logs_router_settings": logsrouter.ResourceIBMLogsRouterSettings(),
 
 			// DR Automation Service
 			"ibm_pdr_managedr":        drautomationservice.ResourceIbmPdrManagedr(),
 			"ibm_pdr_validate_apikey": drautomationservice.ResourceIBMPdrValidateApikey(),
+
+			// Platform Notifications
+			"ibm_notification_distribution_list_destination": platformnotifications.ResourceIbmNotificationDistributionListDestination(),
 		},
 
 		ConfigureFunc: providerConfigure,
@@ -2041,80 +2039,81 @@ func Validator() validate.ValidatorDict {
 	initOnce.Do(func() {
 		globalValidatorDict = validate.ValidatorDict{
 			ResourceValidatorDictionary: map[string]*validate.ResourceValidator{
-				"ibm_iam_trusted_profile_template_assignment":  iamidentity.ResourceIBMTrustedProfileTemplateAssignmentValidator(),
-				"ibm_iam_account_settings_template_assignment": iamidentity.ResourceIBMAccountSettingsTemplateAssignmentValidator(),
-				"ibm_iam_account_settings":                     iamidentity.ResourceIBMIAMAccountSettingsValidator(),
-				"ibm_iam_custom_role":                          iampolicy.ResourceIBMIAMCustomRoleValidator(),
-				"ibm_cis_healthcheck":                          cis.ResourceIBMCISHealthCheckValidator(),
-				"ibm_cis_rate_limit":                           cis.ResourceIBMCISRateLimitValidator(),
-				"ibm_cis":                                      cis.ResourceIBMCISValidator(),
-				"ibm_cis_domain_settings":                      cis.ResourceIBMCISDomainSettingValidator(),
-				"ibm_cis_domain":                               cis.ResourceIBMCISDomainValidator(),
-				"ibm_cis_tls_settings":                         cis.ResourceIBMCISTLSSettingsValidator(),
-				"ibm_cis_routing":                              cis.ResourceIBMCISRoutingValidator(),
-				"ibm_cis_page_rule":                            cis.ResourceIBMCISPageRuleValidator(),
-				"ibm_cis_waf_package":                          cis.ResourceIBMCISWAFPackageValidator(),
-				"ibm_cis_waf_group":                            cis.ResourceIBMCISWAFGroupValidator(),
-				"ibm_cis_certificate_upload":                   cis.ResourceIBMCISCertificateUploadValidator(),
-				"ibm_cis_cache_settings":                       cis.ResourceIBMCISCacheSettingsValidator(),
-				"ibm_cis_custom_page":                          cis.ResourceIBMCISCustomPageValidator(),
-				"ibm_cis_firewall":                             cis.ResourceIBMCISFirewallValidator(),
-				"ibm_cis_range_app":                            cis.ResourceIBMCISRangeAppValidator(),
-				"ibm_cis_waf_rule":                             cis.ResourceIBMCISWAFRuleValidator(),
-				"ibm_cis_certificate_order":                    cis.ResourceIBMCISCertificateOrderValidator(),
-				"ibm_cis_filter":                               cis.ResourceIBMCISFilterValidator(),
-				"ibm_cis_firewall_rules":                       cis.ResourceIBMCISFirewallrulesValidator(),
-				"ibm_cis_webhook":                              cis.ResourceIBMCISWebhooksValidator(),
-				"ibm_cis_alert":                                cis.ResourceIBMCISAlertValidator(),
-				"ibm_cis_dns_record":                           cis.ResourceIBMCISDnsRecordValidator(),
-				"ibm_cis_dns_records_import":                   cis.ResourceIBMCISDnsRecordsImportValidator(),
-				"ibm_cis_edge_functions_action":                cis.ResourceIBMCISEdgeFunctionsActionValidator(),
-				"ibm_cis_edge_functions_trigger":               cis.ResourceIBMCISEdgeFunctionsTriggerValidator(),
-				"ibm_cis_global_load_balancer":                 cis.ResourceIBMCISGlbValidator(),
-				"ibm_cis_logpush_job":                          cis.ResourceIBMCISLogPushJobValidator(),
-				"ibm_cis_mtls_app":                             cis.ResourceIBMCISMtlsAppValidator(),
-				"ibm_cis_mtls":                                 cis.ResourceIBMCISMtlsValidator(),
-				"ibm_cis_bot_management":                       cis.ResourceIBMCISBotManagementValidator(),
-				"ibm_cis_origin_auth":                          cis.ResourceIBMCISOriginAuthPullValidator(),
-				"ibm_cis_origin_pool":                          cis.ResourceIBMCISPoolValidator(),
-				"ibm_cis_ruleset":                              cis.ResourceIBMCISRulesetValidator(),
-				"ibm_cis_ruleset_entrypoint_version":           cis.ResourceIBMCISRulesetEntryPointVersionValidator(),
-				"ibm_cis_ruleset_rule":                         cis.ResourceIBMCISRulesetRuleValidator(),
-				"ibm_cis_ruleset_version_detach":               cis.ResourceIBMCISRulesetVersionDetachValidator(),
-				"ibm_cis_advanced_certificate_pack_order":      cis.ResourceIBMCISAdvancedCertificatePackOrderValidator(),
-				"ibm_cis_origin_certificate_order":             cis.ResourceIBMCISOriginCertificateOrderValidator(),
-				"ibm_cis_custom_list":                          cis.ResourceIBMCISCustomListValidator(),
-				"ibm_cis_custom_list_items":                    cis.ResourceIBMCISCustomListItemsValidator(),
-				"ibm_container_cluster":                        kubernetes.ResourceIBMContainerClusterValidator(),
-				"ibm_container_worker_pool":                    kubernetes.ResourceIBMContainerWorkerPoolValidator(),
-				"ibm_container_vpc_worker_pool":                kubernetes.ResourceIBMContainerVPCWorkerPoolValidator(),
-				"ibm_container_vpc_worker":                     kubernetes.ResourceIBMContainerVPCWorkerValidator(),
-				"ibm_container_vpc_cluster":                    kubernetes.ResourceIBMContainerVpcClusterValidator(),
-				"ibm_cos_bucket":                               cos.ResourceIBMCOSBucketValidator(),
-				"ibm_cr_namespace":                             registry.ResourceIBMCrNamespaceValidator(),
-				"ibm_tg_gateway":                               transitgateway.ResourceIBMTGValidator(),
-				"ibm_app_config_feature":                       appconfiguration.ResourceIBMAppConfigFeatureValidator(),
-				"ibm_tg_connection":                            transitgateway.ResourceIBMTransitGatewayConnectionValidator(),
-				"ibm_tg_connection_action":                     transitgateway.ResourceIBMTransitGatewayConnectionActionValidator(),
-				"ibm_tg_connection_prefix_filter":              transitgateway.ResourceIBMTransitGatewayConnectionPrefixFilterValidator(),
-				"ibm_tg_connection_rgre_tunnel":                transitgateway.ResourceIBMTransitGatewayConnectionRgreTunnelValidator(),
-				"ibm_dl_virtual_connection":                    directlink.ResourceIBMDLGatewayVCValidator(),
-				"ibm_dl_gateway":                               directlink.ResourceIBMDLGatewayValidator(),
-				"ibm_dl_provider_gateway":                      directlink.ResourceIBMDLProviderGatewayValidator(),
-				"ibm_dl_gateway_action":                        directlink.ResourceIBMDLGatewayActionValidator(),
-				"ibm_dl_gateway_macsec_cak":                    directlink.ResourceIBMdlGatewayMacsecCakValidator(),
-				"ibm_database":                                 database.ResourceIBMICDValidator(),
-				"ibm_function_package":                         functions.ResourceIBMFuncPackageValidator(),
-				"ibm_function_action":                          functions.ResourceIBMFuncActionValidator(),
-				"ibm_function_rule":                            functions.ResourceIBMFuncRuleValidator(),
-				"ibm_function_trigger":                         functions.ResourceIBMFuncTriggerValidator(),
-				"ibm_function_namespace":                       functions.ResourceIBMFuncNamespaceValidator(),
-				"ibm_hpcs":                                     hpcs.ResourceIBMHPCSValidator(),
-				"ibm_hpcs_managed_key":                         hpcs.ResourceIbmManagedKeyValidator(),
-				"ibm_hpcs_keystore":                            hpcs.ResourceIbmKeystoreValidator(),
-				"ibm_hpcs_key_template":                        hpcs.ResourceIbmKeyTemplateValidator(),
-				"ibm_hpcs_vault":                               hpcs.ResourceIbmVaultValidator(),
-				"ibm_config_aggregator_settings":               configurationaggregator.ResourceIbmConfigAggregatorSettingsValidator(),
+				"ibm_iam_trusted_profile_template_assignment":    iamidentity.ResourceIBMTrustedProfileTemplateAssignmentValidator(),
+				"ibm_iam_account_settings_template_assignment":   iamidentity.ResourceIBMAccountSettingsTemplateAssignmentValidator(),
+				"ibm_iam_account_settings":                       iamidentity.ResourceIBMIAMAccountSettingsValidator(),
+				"ibm_iam_custom_role":                            iampolicy.ResourceIBMIAMCustomRoleValidator(),
+				"ibm_cis_healthcheck":                            cis.ResourceIBMCISHealthCheckValidator(),
+				"ibm_cis_rate_limit":                             cis.ResourceIBMCISRateLimitValidator(),
+				"ibm_cis":                                        cis.ResourceIBMCISValidator(),
+				"ibm_cis_domain_settings":                        cis.ResourceIBMCISDomainSettingValidator(),
+				"ibm_cis_domain":                                 cis.ResourceIBMCISDomainValidator(),
+				"ibm_cis_tls_settings":                           cis.ResourceIBMCISTLSSettingsValidator(),
+				"ibm_cis_routing":                                cis.ResourceIBMCISRoutingValidator(),
+				"ibm_cis_page_rule":                              cis.ResourceIBMCISPageRuleValidator(),
+				"ibm_cis_waf_package":                            cis.ResourceIBMCISWAFPackageValidator(),
+				"ibm_cis_waf_group":                              cis.ResourceIBMCISWAFGroupValidator(),
+				"ibm_cis_certificate_upload":                     cis.ResourceIBMCISCertificateUploadValidator(),
+				"ibm_cis_cache_settings":                         cis.ResourceIBMCISCacheSettingsValidator(),
+				"ibm_cis_custom_page":                            cis.ResourceIBMCISCustomPageValidator(),
+				"ibm_cis_firewall":                               cis.ResourceIBMCISFirewallValidator(),
+				"ibm_cis_range_app":                              cis.ResourceIBMCISRangeAppValidator(),
+				"ibm_cis_waf_rule":                               cis.ResourceIBMCISWAFRuleValidator(),
+				"ibm_cis_certificate_order":                      cis.ResourceIBMCISCertificateOrderValidator(),
+				"ibm_cis_filter":                                 cis.ResourceIBMCISFilterValidator(),
+				"ibm_cis_firewall_rules":                         cis.ResourceIBMCISFirewallrulesValidator(),
+				"ibm_cis_webhook":                                cis.ResourceIBMCISWebhooksValidator(),
+				"ibm_cis_alert":                                  cis.ResourceIBMCISAlertValidator(),
+				"ibm_cis_dns_record":                             cis.ResourceIBMCISDnsRecordValidator(),
+				"ibm_cis_dns_records_import":                     cis.ResourceIBMCISDnsRecordsImportValidator(),
+				"ibm_cis_edge_functions_action":                  cis.ResourceIBMCISEdgeFunctionsActionValidator(),
+				"ibm_cis_edge_functions_trigger":                 cis.ResourceIBMCISEdgeFunctionsTriggerValidator(),
+				"ibm_cis_global_load_balancer":                   cis.ResourceIBMCISGlbValidator(),
+				"ibm_cis_logpush_job":                            cis.ResourceIBMCISLogPushJobValidator(),
+				"ibm_cis_mtls_app":                               cis.ResourceIBMCISMtlsAppValidator(),
+				"ibm_cis_mtls":                                   cis.ResourceIBMCISMtlsValidator(),
+				"ibm_cis_bot_management":                         cis.ResourceIBMCISBotManagementValidator(),
+				"ibm_cis_origin_auth":                            cis.ResourceIBMCISOriginAuthPullValidator(),
+				"ibm_cis_origin_pool":                            cis.ResourceIBMCISPoolValidator(),
+				"ibm_cis_ruleset":                                cis.ResourceIBMCISRulesetValidator(),
+				"ibm_cis_ruleset_entrypoint_version":             cis.ResourceIBMCISRulesetEntryPointVersionValidator(),
+				"ibm_cis_ruleset_rule":                           cis.ResourceIBMCISRulesetRuleValidator(),
+				"ibm_cis_ruleset_version_detach":                 cis.ResourceIBMCISRulesetVersionDetachValidator(),
+				"ibm_cis_advanced_certificate_pack_order":        cis.ResourceIBMCISAdvancedCertificatePackOrderValidator(),
+				"ibm_cis_origin_certificate_order":               cis.ResourceIBMCISOriginCertificateOrderValidator(),
+				"ibm_cis_custom_list":                            cis.ResourceIBMCISCustomListValidator(),
+				"ibm_cis_custom_list_items":                      cis.ResourceIBMCISCustomListItemsValidator(),
+				"ibm_container_cluster":                          kubernetes.ResourceIBMContainerClusterValidator(),
+				"ibm_container_worker_pool":                      kubernetes.ResourceIBMContainerWorkerPoolValidator(),
+				"ibm_container_vpc_worker_pool":                  kubernetes.ResourceIBMContainerVPCWorkerPoolValidator(),
+				"ibm_container_vpc_worker":                       kubernetes.ResourceIBMContainerVPCWorkerValidator(),
+				"ibm_container_vpc_cluster":                      kubernetes.ResourceIBMContainerVpcClusterValidator(),
+				"ibm_cos_bucket":                                 cos.ResourceIBMCOSBucketValidator(),
+				"ibm_cr_namespace":                               registry.ResourceIBMCrNamespaceValidator(),
+				"ibm_tg_gateway":                                 transitgateway.ResourceIBMTGValidator(),
+				"ibm_app_config_feature":                         appconfiguration.ResourceIBMAppConfigFeatureValidator(),
+				"ibm_tg_connection":                              transitgateway.ResourceIBMTransitGatewayConnectionValidator(),
+				"ibm_tg_connection_action":                       transitgateway.ResourceIBMTransitGatewayConnectionActionValidator(),
+				"ibm_tg_connection_prefix_filter":                transitgateway.ResourceIBMTransitGatewayConnectionPrefixFilterValidator(),
+				"ibm_tg_connection_rgre_tunnel":                  transitgateway.ResourceIBMTransitGatewayConnectionRgreTunnelValidator(),
+				"ibm_dl_virtual_connection":                      directlink.ResourceIBMDLGatewayVCValidator(),
+				"ibm_dl_gateway":                                 directlink.ResourceIBMDLGatewayValidator(),
+				"ibm_dl_provider_gateway":                        directlink.ResourceIBMDLProviderGatewayValidator(),
+				"ibm_dl_gateway_action":                          directlink.ResourceIBMDLGatewayActionValidator(),
+				"ibm_dl_gateway_macsec_cak":                      directlink.ResourceIBMdlGatewayMacsecCakValidator(),
+				"ibm_database":                                   database.ResourceIBMICDValidator(),
+				"ibm_function_package":                           functions.ResourceIBMFuncPackageValidator(),
+				"ibm_function_action":                            functions.ResourceIBMFuncActionValidator(),
+				"ibm_function_rule":                              functions.ResourceIBMFuncRuleValidator(),
+				"ibm_function_trigger":                           functions.ResourceIBMFuncTriggerValidator(),
+				"ibm_function_namespace":                         functions.ResourceIBMFuncNamespaceValidator(),
+				"ibm_hpcs":                                       hpcs.ResourceIBMHPCSValidator(),
+				"ibm_hpcs_managed_key":                           hpcs.ResourceIbmManagedKeyValidator(),
+				"ibm_hpcs_keystore":                              hpcs.ResourceIbmKeystoreValidator(),
+				"ibm_hpcs_key_template":                          hpcs.ResourceIbmKeyTemplateValidator(),
+				"ibm_hpcs_vault":                                 hpcs.ResourceIbmVaultValidator(),
+				"ibm_config_aggregator_settings":                 configurationaggregator.ResourceIbmConfigAggregatorSettingsValidator(),
+				"ibm_notification_distribution_list_destination": platformnotifications.ResourceIbmNotificationDistributionListDestinationValidator(),
 
 				// Cloudshell
 				"ibm_cloud_shell_account_settings": cloudshell.ResourceIBMCloudShellAccountSettingsValidator(),
@@ -2333,6 +2332,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_code_engine_domain_mapping":               codeengine.ResourceIbmCodeEngineDomainMappingValidator(),
 				"ibm_code_engine_function":                     codeengine.ResourceIbmCodeEngineFunctionValidator(),
 				"ibm_code_engine_job":                          codeengine.ResourceIbmCodeEngineJobValidator(),
+				"ibm_code_engine_persistent_data_store":        codeengine.ResourceIbmCodeEnginePersistentDataStoreValidator(),
 				"ibm_code_engine_project":                      codeengine.ResourceIbmCodeEngineProjectValidator(),
 				"ibm_code_engine_secret":                       codeengine.ResourceIbmCodeEngineSecretValidator(),
 
@@ -2351,22 +2351,28 @@ func Validator() validate.ValidatorDict {
 				"ibm_vmaas_vdc":                        vmware.ResourceIbmVmaasVdcValidator(),
 				"ibm_vmaas_transit_gateway_connection": vmware.ResourceIbmVmaasTransitGatewayConnectionValidator(),
 
-				"ibm_logs_alert":            logs.ResourceIbmLogsAlertValidator(),
-				"ibm_logs_rule_group":       logs.ResourceIbmLogsRuleGroupValidator(),
-				"ibm_logs_outgoing_webhook": logs.ResourceIbmLogsOutgoingWebhookValidator(),
-				"ibm_logs_policy":           logs.ResourceIbmLogsPolicyValidator(),
-				"ibm_logs_dashboard":        logs.ResourceIbmLogsDashboardValidator(),
-				"ibm_logs_e2m":              logs.ResourceIbmLogsE2mValidator(),
-				"ibm_logs_view":             logs.ResourceIbmLogsViewValidator(),
-				"ibm_logs_view_folder":      logs.ResourceIbmLogsViewFolderValidator(),
-				"ibm_logs_dashboard_folder": logs.ResourceIbmLogsDashboardFolderValidator(),
-				"ibm_logs_enrichment":       logs.ResourceIbmLogsEnrichmentValidator(),
-				"ibm_logs_data_access_rule": logs.ResourceIbmLogsDataAccessRuleValidator(),
-				"ibm_logs_stream":           logs.ResourceIbmLogsStreamValidator(),
-				"ibm_logs_alert_definition": logs.ResourceIbmLogsAlertDefinitionValidator(),
+				"ibm_logs_alert":                logs.ResourceIbmLogsAlertValidator(),
+				"ibm_logs_rule_group":           logs.ResourceIbmLogsRuleGroupValidator(),
+				"ibm_logs_outgoing_webhook":     logs.ResourceIbmLogsOutgoingWebhookValidator(),
+				"ibm_logs_policy":               logs.ResourceIbmLogsPolicyValidator(),
+				"ibm_logs_dashboard":            logs.ResourceIbmLogsDashboardValidator(),
+				"ibm_logs_e2m":                  logs.ResourceIbmLogsE2mValidator(),
+				"ibm_logs_view":                 logs.ResourceIbmLogsViewValidator(),
+				"ibm_logs_view_folder":          logs.ResourceIbmLogsViewFolderValidator(),
+				"ibm_logs_dashboard_folder":     logs.ResourceIbmLogsDashboardFolderValidator(),
+				"ibm_logs_enrichment":           logs.ResourceIbmLogsEnrichmentValidator(),
+				"ibm_logs_data_access_rule":     logs.ResourceIbmLogsDataAccessRuleValidator(),
+				"ibm_logs_stream":               logs.ResourceIbmLogsStreamValidator(),
+				"ibm_logs_alert_definition":     logs.ResourceIbmLogsAlertDefinitionValidator(),
+				"ibm_logs_extension_deployment": logs.ResourceIbmLogsExtensionDeploymentValidator(),
 
-				// Added for Logs Router Service
+				// Added for Logs Router Service v1
 				"ibm_logs_router_tenant": logsrouting.ResourceIBMLogsRouterTenantValidator(),
+
+				// Added for Logs Router Service v3
+				"ibm_logs_router_target":   logsrouter.ResourceIBMLogsRouterTargetValidator(),
+				"ibm_logs_router_route":    logsrouter.ResourceIBMLogsRouterRouteValidator(),
+				"ibm_logs_router_settings": logsrouter.ResourceIBMLogsRouterSettingsValidator(),
 
 				// Added for Software Defined Storage as a Service
 				"ibm_sds_volume":         sdsaas.ResourceIBMSdsVolumeValidator(),
@@ -2541,12 +2547,227 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		file = f.(string)
 	}
 
+	// Apply default values for fields that had DefaultFunc removed for mux compatibility
+	// These defaults match the framework provider's Configure() behavior
+
+	// bluemix_api_key / ibmcloud_api_key - check environment variables
+	if bluemixAPIKey == "" {
+		if envKey := os.Getenv("IC_API_KEY"); envKey != "" {
+			bluemixAPIKey = envKey
+		} else if envKey := os.Getenv("IBMCLOUD_API_KEY"); envKey != "" {
+			bluemixAPIKey = envKey
+		}
+	}
+
+	// bluemix_timeout / ibmcloud_timeout - default: 60
+	if bluemixTimeout == 0 {
+		if timeout := os.Getenv("IC_TIMEOUT"); timeout != "" {
+			// Try to parse, default to 60 if parsing fails
+			if parsed, err := strconv.Atoi(timeout); err == nil {
+				bluemixTimeout = parsed
+			} else {
+				bluemixTimeout = 60
+			}
+		} else if timeout := os.Getenv("IBMCLOUD_TIMEOUT"); timeout != "" {
+			if parsed, err := strconv.Atoi(timeout); err == nil {
+				bluemixTimeout = parsed
+			} else {
+				bluemixTimeout = 60
+			}
+		} else {
+			bluemixTimeout = 60
+		}
+	}
+
+	// softlayer_username / iaas_classic_username - check environment variables
+	if softlayerUsername == "" {
+		if envUser := os.Getenv("SL_USERNAME"); envUser != "" {
+			softlayerUsername = envUser
+		} else if envUser := os.Getenv("SOFTLAYER_USERNAME"); envUser != "" {
+			softlayerUsername = envUser
+		} else if envUser := os.Getenv("IAAS_CLASSIC_USERNAME"); envUser != "" {
+			softlayerUsername = envUser
+		}
+	}
+
+	// softlayer_api_key / iaas_classic_api_key - check environment variables
+	if softlayerAPIKey == "" {
+		if envKey := os.Getenv("SL_API_KEY"); envKey != "" {
+			softlayerAPIKey = envKey
+		} else if envKey := os.Getenv("SOFTLAYER_API_KEY"); envKey != "" {
+			softlayerAPIKey = envKey
+		} else if envKey := os.Getenv("IAAS_CLASSIC_API_KEY"); envKey != "" {
+			softlayerAPIKey = envKey
+		}
+	}
+
+	// softlayer_endpoint_url / iaas_classic_endpoint_url - default: "https://api.softlayer.com/rest/v3"
+	if softlayerEndpointUrl == "" {
+		if endpoint := os.Getenv("SL_ENDPOINT_URL"); endpoint != "" {
+			softlayerEndpointUrl = endpoint
+		} else if endpoint := os.Getenv("SOFTLAYER_ENDPOINT_URL"); endpoint != "" {
+			softlayerEndpointUrl = endpoint
+		} else if endpoint := os.Getenv("IAAS_CLASSIC_ENDPOINT_URL"); endpoint != "" {
+			softlayerEndpointUrl = endpoint
+		} else {
+			softlayerEndpointUrl = "https://api.softlayer.com/rest/v3"
+		}
+	}
+
+	// softlayer_timeout / iaas_classic_timeout - default: 60
+	if softlayerTimeout == 0 {
+		if timeout := os.Getenv("SL_TIMEOUT"); timeout != "" {
+			if parsed, err := strconv.Atoi(timeout); err == nil {
+				softlayerTimeout = parsed
+			} else {
+				softlayerTimeout = 60
+			}
+		} else if timeout := os.Getenv("SOFTLAYER_TIMEOUT"); timeout != "" {
+			if parsed, err := strconv.Atoi(timeout); err == nil {
+				softlayerTimeout = parsed
+			} else {
+				softlayerTimeout = 60
+			}
+		} else if timeout := os.Getenv("IAAS_CLASSIC_TIMEOUT"); timeout != "" {
+			if parsed, err := strconv.Atoi(timeout); err == nil {
+				softlayerTimeout = parsed
+			} else {
+				softlayerTimeout = 60
+			}
+		} else {
+			softlayerTimeout = 60
+		}
+	}
+
+	// visibility - default: "public"
+	if visibility == "" {
+		if vis := os.Getenv("IC_VISIBILITY"); vis != "" {
+			visibility = vis
+		} else if vis := os.Getenv("IBMCLOUD_VISIBILITY"); vis != "" {
+			visibility = vis
+		} else {
+			visibility = "public"
+		}
+	}
+
+	// private_endpoint_type - check environment variable
+	if privateEndpointType == "" {
+		if pet := os.Getenv("IC_PRIVATE_ENDPOINT_TYPE"); pet != "" {
+			privateEndpointType = pet
+		} else if pet := os.Getenv("IBMCLOUD_PRIVATE_ENDPOINT_TYPE"); pet != "" {
+			privateEndpointType = pet
+		}
+	}
+
+	// endpoints_file_path - check environment variable
+	if file == "" {
+		if path := os.Getenv("IC_ENDPOINTS_FILE_PATH"); path != "" {
+			file = path
+		} else if path := os.Getenv("IBMCLOUD_ENDPOINTS_FILE_PATH"); path != "" {
+			file = path
+		}
+	}
+
+	// iam_profile_id - check environment variable
+	if iamTrustedProfileId == "" {
+		if profileId := os.Getenv("IC_IAM_PROFILE_ID"); profileId != "" {
+			iamTrustedProfileId = profileId
+		} else if profileId := os.Getenv("IBMCLOUD_IAM_PROFILE_ID"); profileId != "" {
+			iamTrustedProfileId = profileId
+		}
+	}
+
+	// iam_profile_name - check environment variable
+	if iamTrustedProfileName == "" {
+		if profileName := os.Getenv("IC_IAM_PROFILE_NAME"); profileName != "" {
+			iamTrustedProfileName = profileName
+		} else if profileName := os.Getenv("IBMCLOUD_IAM_PROFILE_NAME"); profileName != "" {
+			iamTrustedProfileName = profileName
+		}
+	}
+
+	// iam_token - check environment variable
+	if iamToken == "" {
+		if token := os.Getenv("IC_IAM_TOKEN"); token != "" {
+			iamToken = token
+		} else if token := os.Getenv("IBMCLOUD_IAM_TOKEN"); token != "" {
+			iamToken = token
+		}
+	}
+
+	// iam_refresh_token - check environment variable
+	if iamRefreshToken == "" {
+		if refreshToken := os.Getenv("IC_IAM_REFRESH_TOKEN"); refreshToken != "" {
+			iamRefreshToken = refreshToken
+		} else if refreshToken := os.Getenv("IBMCLOUD_IAM_REFRESH_TOKEN"); refreshToken != "" {
+			iamRefreshToken = refreshToken
+		}
+	}
+
+	// ibmcloud_account_id - check environment variable
+	if account == "" {
+		if accountId := os.Getenv("IC_ACCOUNT_ID"); accountId != "" {
+			account = accountId
+		} else if accountId := os.Getenv("IBMCLOUD_ACCOUNT_ID"); accountId != "" {
+			account = accountId
+		}
+	}
+
 	resourceGrp := d.Get("resource_group").(string)
 	region := d.Get("region").(string)
 	zone := d.Get("zone").(string)
 	retryCount := d.Get("max_retries").(int)
 	wskNameSpace := d.Get("function_namespace").(string)
 	riaasEndPoint := d.Get("riaas_endpoint").(string)
+
+	// region - default: "us-south"
+	if region == "" {
+		if reg := os.Getenv("IC_REGION"); reg != "" {
+			region = reg
+		} else if reg := os.Getenv("IBMCLOUD_REGION"); reg != "" {
+			region = reg
+		} else if reg := os.Getenv("BM_REGION"); reg != "" {
+			region = reg
+		} else if reg := os.Getenv("BLUEMIX_REGION"); reg != "" {
+			region = reg
+		} else {
+			region = "us-south"
+		}
+	}
+	// zone - check environment variables
+	if zone == "" {
+		if z := os.Getenv("IC_ZONE"); z != "" {
+			zone = z
+		} else if z := os.Getenv("IBMCLOUD_ZONE"); z != "" {
+			zone = z
+		}
+	}
+
+	// resource_group - check environment variables
+	if resourceGrp == "" {
+		if rg := os.Getenv("IC_RESOURCE_GROUP"); rg != "" {
+			resourceGrp = rg
+		} else if rg := os.Getenv("IBMCLOUD_RESOURCE_GROUP"); rg != "" {
+			resourceGrp = rg
+		} else if rg := os.Getenv("BM_RESOURCE_GROUP"); rg != "" {
+			resourceGrp = rg
+		} else if rg := os.Getenv("BLUEMIX_RESOURCE_GROUP"); rg != "" {
+			resourceGrp = rg
+		}
+	}
+
+	// max_retries - default: 10
+	if retryCount == 0 {
+		if retries := os.Getenv("MAX_RETRIES"); retries != "" {
+			if parsed, err := strconv.Atoi(retries); err == nil {
+				retryCount = parsed
+			} else {
+				retryCount = 10
+			}
+		} else {
+			retryCount = 10
+		}
+	}
 
 	wskEnvVal, err := schema.EnvDefaultFunc("FUNCTION_NAMESPACE", "")()
 	if err != nil {
