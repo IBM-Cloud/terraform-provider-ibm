@@ -75,6 +75,7 @@ resource "ibm_vmaas_vdc" "vmaas_vdc_instance" {
 ```hcl
 data "ibm_vmaas_vdc" "vmaas_vdc_instance" {
   vmaas_vdc_id = var.data_vmaas_vdc_vmaas_vdc_id
+  accept_language = var.data_vmaas_vdc_accept_language
 }
 ```
 
@@ -83,6 +84,7 @@ data "ibm_vmaas_vdc" "vmaas_vdc_instance" {
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
 | vmaas_vdc_id | A unique ID for a specified virtual data center. | `string` | true |
+| accept_language | Language. | `string` | false |
 
 #### Outputs
 
