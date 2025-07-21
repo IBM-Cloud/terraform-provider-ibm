@@ -295,6 +295,7 @@ func TestAccIBMIAMTrustedProfilePolicy_With_Resource_Attributes_Without_Wildcard
 func TestAccIBMIAMTrustedProfilePolicy_With_Resource_Tags(t *testing.T) {
 	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	updatedName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -311,9 +312,9 @@ func TestAccIBMIAMTrustedProfilePolicy_With_Resource_Tags(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckIBMIAMTrustedProfilePolicyUpdateResourceTags(name),
+				Config: testAccCheckIBMIAMTrustedProfilePolicyUpdateResourceTags(updatedName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_iam_trusted_profile.profileID", "name", name),
+					resource.TestCheckResourceAttr("ibm_iam_trusted_profile.profileID", "name", updatedName),
 					resource.TestCheckResourceAttr("ibm_iam_trusted_profile_policy.policy", "resource_tags.#", "2"),
 					resource.TestCheckResourceAttr("ibm_iam_trusted_profile_policy.policy", "roles.#", "1"),
 				),
@@ -435,6 +436,7 @@ func TestAccIBMIAMTrustedProfilePolicy_With_Time_Based_Conditions_Once(t *testin
 func TestAccIBMIAMTrustedProfilePolicy_With_Update_To_Time_Based_Conditions(t *testing.T) {
 	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	updatedName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -450,7 +452,7 @@ func TestAccIBMIAMTrustedProfilePolicy_With_Update_To_Time_Based_Conditions(t *t
 				),
 			},
 			{
-				Config:      testAccCheckIBMIAMTrustedProfilePolicyUpdateConditions(name),
+				Config:      testAccCheckIBMIAMTrustedProfilePolicyUpdateConditions(updatedName),
 				ExpectError: regexp.MustCompile("Error: Cannot use rule_conditions, rule_operator, or pattern when updating v1/policy. Delete existing v1/policy and create using rule_conditions and pattern."),
 			},
 		},
@@ -593,7 +595,7 @@ func testAccCheckIBMIAMTrustedProfilePolicyBasic(name string) string {
 	  	}
 	  
 	  	resource "ibm_iam_trusted_profile_policy" "policy" {
-			profile_id = ibm_iam_trusted_profile.profileID.id
+			iam_id = ibm_iam_trusted_profile.profileID.iam_id
 			roles          = ["Viewer"]
 			tags           = ["tag1"]
 			description    = "IAM Trusted Profile Policy Creation for test scenario"
@@ -610,7 +612,7 @@ func testAccCheckIBMIAMTrustedProfilePolicyUpdateRole(name string) string {
 	  	}
 	  
 	  	resource "ibm_iam_trusted_profile_policy" "policy" {
-			profile_id = ibm_iam_trusted_profile.profileID.id
+			iam_id = ibm_iam_trusted_profile.profileID.iam_id
 			roles          = ["Viewer", "Manager"]
 			tags           = ["tag1", "tag2"]
 			description    = "IAM Trusted Profile Policy Update for test scenario"
@@ -626,7 +628,7 @@ func testAccCheckIBMIAMTrustedProfilePolicyService(name string) string {
 	  	}
 	  
 	  	resource "ibm_iam_trusted_profile_policy" "policy" {
-			profile_id = ibm_iam_trusted_profile.profileID.id
+			iam_id = ibm_iam_trusted_profile.profileID.iam_id
 			roles          = ["Viewer"]
 	  
 			resources {
@@ -644,7 +646,7 @@ func testAccCheckIBMIAMTrustedProfilePolicyServiceType(name string) string {
 	  	}
 	  
 	  	resource "ibm_iam_trusted_profile_policy" "policy" {
-			profile_id = ibm_iam_trusted_profile.profileID.id
+			iam_id = ibm_iam_trusted_profile.profileID.iam_id
 			roles          = ["Viewer"]
 	  
 			resources {
@@ -663,7 +665,7 @@ func testAccCheckIBMIAMTrustedProfilePolicyUpdateServiceAndRegion(name string) s
 	  	}
 	  
 	  	resource "ibm_iam_trusted_profile_policy" "policy" {
-			profile_id = ibm_iam_trusted_profile.profileID.id
+			iam_id = ibm_iam_trusted_profile.profileID.iam_id
 			roles          = ["Viewer", "Manager"]
 	  
 			resources {
@@ -689,7 +691,7 @@ func testAccCheckIBMIAMTrustedProfilePolicyResourceInstance(name string) string 
 	  	}
 	  
 	  	resource "ibm_iam_trusted_profile_policy" "policy" {
-			profile_id = ibm_iam_trusted_profile.profileID.id
+			iam_id = ibm_iam_trusted_profile.profileID.iam_id
 			roles          = ["Manager", "Viewer", "Administrator"]
 	  
 			resources {
@@ -714,7 +716,7 @@ func testAccCheckIBMIAMTrustedProfilePolicyResourceGroup(name string) string {
 	  	}
 	  
 	  	resource "ibm_iam_trusted_profile_policy" "policy" {
-			profile_id = ibm_iam_trusted_profile.profileID.id
+			iam_id = ibm_iam_trusted_profile.profileID.iam_id
 			roles          = ["Viewer"]
 	  
 			resources {
@@ -739,7 +741,7 @@ func testAccCheckIBMIAMTrustedProfilePolicyResourceType(name string) string {
 	  	}
 	  
 	  	resource "ibm_iam_trusted_profile_policy" "policy" {
-			profile_id = ibm_iam_trusted_profile.profileID.id
+			iam_id = ibm_iam_trusted_profile.profileID.iam_id
 			roles          = ["Administrator"]
 	  
 			resources {
@@ -758,7 +760,7 @@ func testAccCheckIBMIAMTrustedProfilePolicyImport(name string) string {
 	  	}
 	  
 	  	resource "ibm_iam_trusted_profile_policy" "policy" {
-			profile_id = ibm_iam_trusted_profile.profileID.id
+			iam_id = ibm_iam_trusted_profile.profileID.iam_id
 			roles          = ["Viewer"]
 	  	}
 
@@ -773,7 +775,7 @@ func testAccCheckIBMIAMTrustedProfilePolicyAccountManagement(name string) string
 	  	}
 	  
 	  	resource "ibm_iam_trusted_profile_policy" "policy" {
-			profile_id     = ibm_iam_trusted_profile.profileID.id
+			iam_id     = ibm_iam_trusted_profile.profileID.iam_id
 			roles              = ["Viewer"]
 			account_management = true
 	  	}
@@ -796,7 +798,7 @@ func testAccCheckIBMIAMTrustedProfilePolicyWithCustomRole(name, crName, displayN
 		}
 	  
 	  	resource "ibm_iam_trusted_profile_policy" "policy" {
-			profile_id = ibm_iam_trusted_profile.profileID.id
+			iam_id = ibm_iam_trusted_profile.profileID.iam_id
 			roles          = [ibm_iam_custom_role.customrole.display_name,"Viewer"]
 			tags           = ["tag1"]
 			resources {
@@ -814,7 +816,7 @@ func testAccCheckIBMIAMTrustedProfilePolicyResourceAttributes(name string) strin
 	  }
   
 	  resource "ibm_iam_trusted_profile_policy" "policy" {
-		profile_id     = ibm_iam_trusted_profile.profileID.id
+		iam_id     = ibm_iam_trusted_profile.profileID.iam_id
 		roles              = ["Viewer"]
 		resource_attributes {
 			name     = "resource"
@@ -836,7 +838,7 @@ func testAccCheckIBMIAMTrustedProfilePolicyResourceAttributesWithoutWildcard(nam
 	  }
   
 	  resource "ibm_iam_trusted_profile_policy" "policy" {
-		profile_id     = ibm_iam_trusted_profile.profileID.id
+		iam_id     = ibm_iam_trusted_profile.profileID.iam_id
 		roles              = ["Viewer"]
 		resource_attributes {
 			name     = "resource"
@@ -858,7 +860,7 @@ func testAccCheckIBMIAMTrustedProfilePolicyResourceAttributesUpdate(name string)
 	  }
   
 	  resource "ibm_iam_trusted_profile_policy" "policy" {
-		profile_id     = ibm_iam_trusted_profile.profileID.id
+		iam_id     = ibm_iam_trusted_profile.profileID.iam_id
 		roles              = ["Viewer"]
 		resource_attributes {
 			name     = "resource"
@@ -879,7 +881,7 @@ func testAccCheckIBMIAMTrustedProfilePolicyResourceTags(name string) string {
 	  	}
 	  
 	  	resource "ibm_iam_trusted_profile_policy" "policy" {
-			profile_id = ibm_iam_trusted_profile.profileID.id
+			iam_id = ibm_iam_trusted_profile.profileID.iam_id
 			roles          = ["Viewer"]
 			resource_tags {
 				name = "one"
@@ -896,7 +898,7 @@ func testAccCheckIBMIAMTrustedProfilePolicyTransactionId(name string) string {
 	  	}
 	  
 	  	resource "ibm_iam_trusted_profile_policy" "policy" {
-			profile_id = ibm_iam_trusted_profile.profileID.id
+			iam_id = ibm_iam_trusted_profile.profileID.iam_id
 			roles          = ["Viewer"]
 			transaction_id = "terrformTrustedPolicy"
 	  
@@ -914,7 +916,7 @@ func testAccCheckIBMIAMTrustedProfilePolicyUpdateResourceTags(name string) strin
 	  	}
 	  
 	  	resource "ibm_iam_trusted_profile_policy" "policy" {
-			profile_id = ibm_iam_trusted_profile.profileID.id
+			iam_id = ibm_iam_trusted_profile.profileID.iam_id
 			roles          = ["Viewer"]
 			resource_tags {
 				name = "one"
@@ -935,7 +937,7 @@ func testAccCheckIBMIAMTrustedProfilePolicyWeeklyCustomHours(name string) string
 		  }
 
 		  resource "ibm_iam_trusted_profile_policy" "policy" {
-			profile_id = ibm_iam_trusted_profile.profileID.id
+			iam_id = ibm_iam_trusted_profile.profileID.iam_id
 			roles  = ["Viewer"]
 			resources {
 				 service = "kms"
@@ -969,7 +971,7 @@ func testAccCheckIBMIAMTrustedProfilePolicyUpdateConditions(name string) string 
 			}
 
 			resource "ibm_iam_trusted_profile_policy" "policy" {
-			profile_id = ibm_iam_trusted_profile.profileID.id
+			iam_id = ibm_iam_trusted_profile.profileID.iam_id
 			roles  = ["Viewer", "Manager"]
 			resources {
 				 service = "kms"
@@ -1003,7 +1005,7 @@ func testAccCheckIBMIAMTrustedProfilePolicyWeeklyAllDay(name string) string {
 			}
 
 			resource "ibm_iam_trusted_profile_policy" "policy" {
-			profile_id = ibm_iam_trusted_profile.profileID.id
+			iam_id = ibm_iam_trusted_profile.profileID.iam_id
 			roles  = ["Viewer"]
 			resources {
 				 service = "kms"
@@ -1027,7 +1029,7 @@ func testAccCheckIBMIAMTrustedProfilePolicyTimeBasedOnce(name string) string {
 			}
 
 			resource "ibm_iam_trusted_profile_policy" "policy" {
-			profile_id = ibm_iam_trusted_profile.profileID.id
+			iam_id = ibm_iam_trusted_profile.profileID.iam_id
 			roles  = ["Viewer"]
 			resources {
 				 service = "kms"
@@ -1055,7 +1057,7 @@ func testAccCheckIBMIAMTrustedProfilePolicyWithServiceGroupId(name string) strin
 				name = "%s"
 			}
 			resource "ibm_iam_trusted_profile_policy" "policy" {
-				profile_id = ibm_iam_trusted_profile.profileID.id
+				iam_id = ibm_iam_trusted_profile.profileID.iam_id
 				roles           = ["Service ID creator"]
     		resource_attributes {
          		name     = "service_group_id"
@@ -1085,7 +1087,7 @@ func testAccCheckIBMIAMTrustedProfilePolicyUpdateWithServiceGroupId(name string)
 				name = "%s"
 			}
 			resource "ibm_iam_trusted_profile_policy" "policy" {
-				profile_id = ibm_iam_trusted_profile.profileID.id
+				iam_id = ibm_iam_trusted_profile.profileID.iam_id
 				roles           = ["Service ID creator", "User API key creator"]
     		resource_attributes {
          		name     = "service_group_id"
@@ -1116,7 +1118,7 @@ func testAccCheckIBMIAMTrustedProfilePolicyAttributeBasedCondition(name string) 
 		}
 
 		resource "ibm_iam_trusted_profile_policy" "policy" {
-			profile_id = ibm_iam_trusted_profile.profileID.id
+			iam_id = ibm_iam_trusted_profile.profileID.iam_id
 			roles  = ["Writer"]
 			resource_attributes {
 				value = "cloud-object-storage"
@@ -1183,7 +1185,7 @@ func testAccCheckIBMIAMTrustedProfilePolicyUpdateAttributeBasedCondition(name st
 		}
 
 		resource "ibm_iam_trusted_profile_policy" "policy" {
-			profile_id = ibm_iam_trusted_profile.profileID.id
+			iam_id = ibm_iam_trusted_profile.profileID.iam_id
 			roles  = ["Reader", "Writer"]
 			resource_attributes {
 				value = "cloud-object-storage"

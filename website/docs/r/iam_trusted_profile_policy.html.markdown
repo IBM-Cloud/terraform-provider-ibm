@@ -21,7 +21,7 @@ resource "ibm_iam_trusted_profile" "profile_id" {
 }
 
 resource "ibm_iam_trusted_profile_policy" "policy" {
-  profile_id  = ibm_iam_trusted_profile.profile_id.id
+  iam_id  = ibm_iam_trusted_profile.profile_id.iam_id
   roles       = ["Viewer"]
   description = "IAM Trusted Profile Policy"
   
@@ -42,7 +42,7 @@ resource "ibm_iam_trusted_profile" "profile_id" {
 }
 
 resource "ibm_iam_trusted_profile_policy" "policy" {
-  profile_id = ibm_iam_trusted_profile.profile_id.id
+  iam_id = ibm_iam_trusted_profile.profile_id.iam_id
   roles      = ["Viewer", "Manager"]
 
   resources {
@@ -67,7 +67,7 @@ resource "ibm_resource_instance" "instance" {
 }
 
 resource "ibm_iam_trusted_profile_policy" "policy" {
-  profile_id = ibm_iam_trusted_profile.profile_id.id
+  iam_id = ibm_iam_trusted_profile.profile_id.iam_id
   roles      = ["Manager", "Viewer", "Administrator"]
 
   resources {
@@ -90,7 +90,7 @@ data "ibm_resource_group" "group" {
 }
 
 resource "ibm_iam_trusted_profile_policy" "policy" {
-  profile_id = ibm_iam_trusted_profile.profile_id.id
+  iam_id = ibm_iam_trusted_profile.profile_id.iam_id
   roles      = ["Viewer"]
 
   resources {
@@ -113,7 +113,7 @@ data "ibm_resource_group" "group" {
 }
 
 resource "ibm_iam_trusted_profile_policy" "policy" {
-  profile_id = ibm_iam_trusted_profile.profile_id.id
+  iam_id = ibm_iam_trusted_profile.profile_id.iam_id
   roles      = ["Administrator"]
 
   resources {
@@ -136,7 +136,7 @@ data "ibm_resource_group" "group" {
 }
 
 resource "ibm_iam_trusted_profile_policy" "policy" {
-  profile_id = ibm_iam_trusted_profile.profile_id.id
+  iam_id = ibm_iam_trusted_profile.profile_id.iam_id
   roles      = ["Administrator"]
 
   resources {
@@ -157,7 +157,7 @@ resource "ibm_iam_trusted_profile" "profile_id" {
   name = "test"
 }
 resource "ibm_iam_trusted_profile_policy" "policy" {
-  profile_id = ibm_iam_trusted_profile.profile_id.id
+  iam_id = ibm_iam_trusted_profile.profile_id.iam_id
   roles      = ["Viewer"]
   resource_attributes {
     name     = "resource"
@@ -176,7 +176,7 @@ resource "ibm_iam_trusted_profile" "profile_id" {
   name = "test"
 }
 resource "ibm_iam_trusted_profile_policy" "policy" {
-  profile_id = ibm_iam_trusted_profile.profile_id.id
+  iam_id = ibm_iam_trusted_profile.profile_id.iam_id
   roles      = ["Viewer"]
 
   resource_attributes {
@@ -198,7 +198,7 @@ resource "ibm_iam_trusted_profile" "profile_id" {
 }
 
 resource "ibm_iam_trusted_profile_policy" "policy" {
-  profile_id = ibm_iam_trusted_profile.profile_id.id
+  iam_id = ibm_iam_trusted_profile.profile_id.iam_id
   roles      = ["Viewer"]
 
   resources {
@@ -218,7 +218,7 @@ resource "ibm_iam_trusted_profile" "profile_id" {
 }
 
 resource "ibm_iam_trusted_profile_policy" "policy" {
-  profile_id = ibm_iam_trusted_profile.profile_id.id
+  iam_id = ibm_iam_trusted_profile.profile_id.iam_id
   roles      = ["Viewer"]
   resources {
     service = "kms"
@@ -269,7 +269,7 @@ resource "ibm_iam_trusted_profile" "profile_id" {
   name = "test"
 }
 resource "ibm_iam_trusted_profile_policy" "policy" {
-  profile_id = ibm_iam_trusted_profile.profile_id.id
+  iam_id = ibm_iam_trusted_profile.profile_id.iam_id
   roles  = ["Writer"]
   resource_attributes {
     value = "cloud-object-storage"
@@ -334,8 +334,7 @@ Review the argument references that you can specify for your resource.
 
 - `account_management` - (Optional, Bool) Gives access to all account management services if set to **true**. Default value is **false**. If you set this option, do not set `resources` at the same time.**Note** Conflicts with `resources` and `resource_attributes`.
 - `description`  (Optional, String) The description of the IAM Trusted Profile Policy.
-- `profile_id` - (Optional, Forces new resource, String) The UUID of the trusted profile. Either `profile_id` or `iam_id` is required.
-- `iam_id` - (Optional,  Forces new resource, String) IAM ID of the truestedprofile. Either `profile_id` or `iam_id` is required.
+- `iam_id` - (Required,  Forces new resource, String) IAM ID of the truestedprofile.
 - `resources` - (List of Objects) Optional- A nested block describes the resource of this policy.**Note** Conflicts with `account_management` and `resource_attributes`.
 
   Nested scheme for `resources`:
@@ -385,17 +384,17 @@ Review the argument references that you can specify for your resource.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-- `id`  - (String) The unique identifier of the trusted profile policy. The ID is composed of `<profile_id>/<profile_policy_id>`. If policy is created by using `<profile_id>`. The ID is composed of `<iam_id>/<profile_policy_id>` if policy is created by using `<iam_id>`.
+- `id`  - (String) The unique identifier of the trusted profile policy.
 - `version`  - (String) The version of the trusted profile policy.
 
 ## Import
 
-The  `ibm_iam_trusted_profile_policy` resource can be imported by using profile ID and trusted profile policy ID or IAM ID and trusted profile policy ID.
+The  `ibm_iam_trusted_profile_policy` resource can be imported by using IAM ID and trusted profile policy ID.
 
 **Syntax**
 
 ```
-$ terraform import ibm_iam_trusted_profile_policy.example <profile_id>/<profile_policy_id>
+$ terraform import ibm_iam_trusted_profile_policy.example <iam_id>/<profile_policy_id>
 ```
 
 **Example**
@@ -405,8 +404,3 @@ $ terraform import ibm_iam_trusted_profile_policy.example "iam-Profile-b75c9be6-
 
 ```
 
-or 
-
-```
-$ terraform import ibm_iam_trusted_profile_policy.example "Profile-b75c9be6-17f1-4089-aba8-62065b1c8cfe/4e7936c9-b555-4d01-b607-6ae69ccf85c0"
-```
