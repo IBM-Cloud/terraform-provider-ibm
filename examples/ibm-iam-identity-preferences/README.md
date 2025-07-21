@@ -25,12 +25,9 @@ Run `terraform destroy` when you don't need these resources.
 ### Resource: ibm_iam_identity_preference
 
 ```hcl
-import {
-  to = ibm_iam_identity_preference.iam_identity_preference_instance
-  id = "var.iam_identity_preference_account_id/var.iam_identity_preference_iam_id/var.iam_identity_preference_service/var.iam_identity_preference_preference_id"
-}
 resource "ibm_iam_identity_preference" "iam_identity_preference_instance" {
   account_id = var.iam_identity_preference_account_id
+  iam_id = var.iam_identity_preference_iam_id
   service = var.iam_identity_preference_service
   preference_id = var.iam_identity_preference_preference_id
   value_string = var.iam_identity_preference_value_string
@@ -44,9 +41,10 @@ resource "ibm_iam_identity_preference" "iam_identity_preference_instance" {
 |------|-------------|------|---------|
 | ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
 | account_id | Account id to update preference for. | `string` | true |
+| iam_id | IAM id to update the preference for. | `string` | true |
 | service | Service of the preference to be updated. | `string` | true |
 | preference_id | Identifier of preference to be updated. | `string` | true |
-| value_string | String value of the preference, only one value property is set, either 'value_string' or 'value_list_of_strings' is present. | `string` | false |
+| value_string | String value of the preference, only one value property is set, either 'value_string' or 'value_list_of_strings' is present. | `string` | true |
 | value_list_of_strings | List of value of the preference, only one value property is set, either 'value_string' or 'value_list_of_strings' is present. | `list(string)` | false |
 
 #### Outputs
