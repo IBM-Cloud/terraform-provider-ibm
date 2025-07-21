@@ -187,7 +187,6 @@ func ResourceIbmVmaasVdc() *schema.Resource {
 						},
 						"private_only": &schema.Schema{
 							Type:        schema.TypeBool,
-							Optional:    true,
 							Computed:    true,
 							Description: "Indicates whether the edge is private only. The default value is True for a private Cloud Director site and False for a public Cloud Director site.",
 						},
@@ -225,7 +224,6 @@ func ResourceIbmVmaasVdc() *schema.Resource {
 												},
 												"transit_gateway_connection_name": &schema.Schema{
 													Type:        schema.TypeString,
-													Optional:    true,
 													Computed:    true,
 													Description: "The user-defined name of the connection created on the IBM Transit Gateway.",
 												},
@@ -236,37 +234,31 @@ func ResourceIbmVmaasVdc() *schema.Resource {
 												},
 												"local_gateway_ip": &schema.Schema{
 													Type:        schema.TypeString,
-													Optional:    true,
 													Computed:    true,
 													Description: "Local gateway IP address for the connection.",
 												},
 												"remote_gateway_ip": &schema.Schema{
 													Type:        schema.TypeString,
-													Optional:    true,
 													Computed:    true,
 													Description: "Remote gateway IP address for the connection.",
 												},
 												"local_tunnel_ip": &schema.Schema{
 													Type:        schema.TypeString,
-													Optional:    true,
 													Computed:    true,
 													Description: "Local tunnel IP address for the connection.",
 												},
 												"remote_tunnel_ip": &schema.Schema{
 													Type:        schema.TypeString,
-													Optional:    true,
 													Computed:    true,
 													Description: "Remote tunnel IP address for the connection.",
 												},
 												"local_bgp_asn": &schema.Schema{
 													Type:        schema.TypeInt,
-													Optional:    true,
 													Computed:    true,
 													Description: "Local network BGP ASN for the connection.",
 												},
 												"remote_bgp_asn": &schema.Schema{
 													Type:        schema.TypeInt,
-													Optional:    true,
 													Computed:    true,
 													Description: "Remote network BGP ASN for the connection.",
 												},
@@ -318,25 +310,21 @@ func ResourceIbmVmaasVdc() *schema.Resource {
 						},
 						"primary_data_center_name": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
 							Computed:    true,
 							Description: "The name of the primary data center.",
 						},
 						"secondary_data_center_name": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
 							Computed:    true,
 							Description: "The name of the secondary data center.",
 						},
 						"primary_pvdc_id": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
 							Computed:    true,
 							Description: "The ID of the primary resource pool.",
 						},
 						"secondary_pvdc_id": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
 							Computed:    true,
 							Description: "The ID of the secondary resource pool.",
 						},
@@ -361,7 +349,6 @@ func ResourceIbmVmaasVdc() *schema.Resource {
 						},
 						"more_info": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
 							Computed:    true,
 							Description: "A URL that links to a page with more information about this error.",
 						},
