@@ -415,8 +415,8 @@ func resourceIBMIsVPNServerRouteDelete(context context.Context, d *schema.Resour
 }
 
 func isWaitForVPNServerRouteDeleted(context context.Context, sess *vpcv1.VpcV1, d *schema.ResourceData) (interface{}, error) {
+	log.Printf("Waiting for VPN Server Route(%s) to be deleted.", d.Id())
 
-	log.Printf("Waiting for VPN Server  Route(%s) to be deleted.", d.Id())
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{"retry", isVPNServerRouteStatusDeleting},
 		Target:  []string{isVPNServerStatusDeleted, isVPNServerRouteStatusFailed},
@@ -436,7 +436,7 @@ func isWaitForVPNServerRouteDeleted(context context.Context, sess *vpcv1.VpcV1, 
 				if response != nil && response.StatusCode == 404 {
 					return vpnServerRoute, isVPNServerRouteStatusDeleted, nil
 				}
-				return vpnServerRoute, *vpnServerRoute.LifecycleState, flex.TerraformErrorf(err, fmt.Sprintf("DeleteVPNServerRouteWithContext failed: %s", err.Error()), "ibm_is_vpn_server_route", "delete-wait")
+				return vpnServerRoute, isVPNServerRouteStatusFailed, flex.TerraformErrorf(err, fmt.Sprintf("GetVPNServerRouteWithContext failed: %s", err.Error()), "ibm_is_vpn_server_route", "delete-wait")
 			}
 			return vpnServerRoute, *vpnServerRoute.LifecycleState, nil
 
