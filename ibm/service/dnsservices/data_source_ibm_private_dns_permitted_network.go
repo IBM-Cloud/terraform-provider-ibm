@@ -4,10 +4,10 @@
 package dnsservices
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -107,7 +107,7 @@ func dataSourceIBMPrivateDNSPermittedNetworksRead(d *schema.ResourceData, meta i
 	listPermittedNetworkOptions := sess.NewListPermittedNetworksOptions(instanceID, dnsZoneID)
 	availablePermittedNetworks, detail, err := sess.ListPermittedNetworks(listPermittedNetworkOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error reading list of pdns permitted networks:%s\n%s", err, detail)
+		return flex.FmtErrorf("[ERROR] Error reading list of dns services permitted networks:%s\n%s", err, detail)
 	}
 
 	permittedNetworks := make([]map[string]interface{}, 0)
