@@ -35,8 +35,8 @@ data "ibm_iam_trusted_profile_policy" "policy" {
 
 Review the argument references that you can specify for your data source.
 
-- `profile_id` - (Required, String) The UUID of the trusted profile. Either `profile_id` or `iam_id` is required.
-- `iam_id` - (Optional, String) IAM ID of the trusted profile. Either `profile_id` or `iam_id` is required.
+- `profile_id` - (Optional, String) The UUID of the trusted profile. This field is deprecated and will be removed in future releases. Please use iam_id as a replacement.
+- `iam_id` - (Optional, String) IAM ID of the trusted profile.
 - `sort`- Optional -  (String) The single field sort query for policies.
 - `transaction_id`- (Optional, String) The TransactionID can be passed to your request for the tracking calls.
 
