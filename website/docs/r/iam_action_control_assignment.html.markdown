@@ -117,6 +117,10 @@ Nested schema for **resources**:
 				* `message` - (String) The error message returned by the API.
 				* `more_info` - (String) Additional info for error.
 			* `status_code` - (Integer) The http error code of the response.
+			* `name` - (String) Name of the error.
+			* `errorCode` - (String) error code.
+			* `message` - (String) Error message detailing the nature of the error.
+			* `code` - (String) error code.
 		* `resource_created` - (List) On success, includes the  action_control assigned.
 		Nested schema for **resource_created**:
 			* `id` - (String) action_control id.
