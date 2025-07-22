@@ -4,7 +4,6 @@
 package cis
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -101,7 +100,7 @@ func ResourceIBMCISEdgeFunctionsTriggerCreate(d *schema.ResourceData, meta inter
 
 	result, _, err := cisClient.CreateEdgeFunctionsTrigger(opt)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error creating edge function trigger route : %v", err)
+		return flex.FmtErrorf("[ERROR] Error creating edge function trigger route : %v", err)
 	}
 	d.SetId(flex.ConvertCisToTfThreeVar(*result.Result.ID, zoneID, crn))
 	return ResourceIBMCISEdgeFunctionsTriggerRead(d, meta)
@@ -129,7 +128,7 @@ func ResourceIBMCISEdgeFunctionsTriggerUpdate(d *schema.ResourceData, meta inter
 
 		_, _, err := cisClient.UpdateEdgeFunctionsTrigger(opt)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error updating edge function trigger route : %v", err)
+			return flex.FmtErrorf("[ERROR] Error updating edge function trigger route : %v", err)
 		}
 	}
 	return ResourceIBMCISEdgeFunctionsTriggerRead(d, meta)
@@ -148,7 +147,7 @@ func ResourceIBMCISEdgeFunctionsTriggerRead(d *schema.ResourceData, meta interfa
 	opt := cisClient.NewGetEdgeFunctionsTriggerOptions(routeID)
 	result, resp, err := cisClient.GetEdgeFunctionsTrigger(opt)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error: %v", resp)
+		return flex.FmtErrorf("[ERROR] Error: %v", resp)
 	}
 	d.Set(cisID, crn)
 	d.Set(cisDomainID, zoneID)
@@ -176,7 +175,7 @@ func ResourceIBMCISEdgeFunctionsTriggerExists(d *schema.ResourceData, meta inter
 			log.Printf("Edge functions trigger route is not found")
 			return false, nil
 		}
-		return false, fmt.Errorf("[ERROR] Error: %v", response)
+		return false, flex.FmtErrorf("[ERROR] Error: %v", response)
 	}
 	return true, nil
 }
@@ -184,7 +183,7 @@ func ResourceIBMCISEdgeFunctionsTriggerExists(d *schema.ResourceData, meta inter
 func ResourceIBMCISEdgeFunctionsTriggerDelete(d *schema.ResourceData, meta interface{}) error {
 	cisClient, err := meta.(conns.ClientSession).CisEdgeFunctionClientSession()
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error in creating CIS object")
+		return flex.FmtErrorf("[ERROR] Error in creating CIS object")
 	}
 
 	routeID, zoneID, crn, _ := flex.ConvertTfToCisThreeVar(d.Id())
@@ -194,7 +193,7 @@ func ResourceIBMCISEdgeFunctionsTriggerDelete(d *schema.ResourceData, meta inter
 	opt := cisClient.NewDeleteEdgeFunctionsTriggerOptions(routeID)
 	_, response, err := cisClient.DeleteEdgeFunctionsTrigger(opt)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error in edge function trigger route deletion: %v", response)
+		return flex.FmtErrorf("[ERROR] Error in edge function trigger route deletion: %v", response)
 	}
 	return nil
 }

@@ -235,14 +235,14 @@ func ResourceIBMCISDnsRecordCreate(d *schema.ResourceData, meta interface{}) err
 		// altitude
 		v, ok = strconv.ParseFloat(dataMap["altitude"].(string), 64)
 		if ok != nil {
-			return fmt.Errorf("data input error")
+			return flex.FmtErrorf("data input error")
 		}
 		recordData["altitude"] = v
 
 		// lat_degrees
 		v, ok = strconv.Atoi(dataMap["lat_degrees"].(string))
 		if ok != nil {
-			return fmt.Errorf("data input error")
+			return flex.FmtErrorf("data input error")
 		}
 		recordData["lat_degrees"] = v
 
@@ -255,14 +255,14 @@ func ResourceIBMCISDnsRecordCreate(d *schema.ResourceData, meta interface{}) err
 		// lat_minutes
 		v, ok = strconv.Atoi(dataMap["lat_minutes"].(string))
 		if ok != nil {
-			return fmt.Errorf("data input error")
+			return flex.FmtErrorf("data input error")
 		}
 		recordData["lat_minutes"] = v
 
 		// lat_seconds
 		v, ok = strconv.ParseFloat(dataMap["lat_seconds"].(string), 64)
 		if ok != nil {
-			return fmt.Errorf("data input error")
+			return flex.FmtErrorf("data input error")
 
 		}
 		recordData["lat_seconds"] = v
@@ -413,7 +413,7 @@ func ResourceIBMCISDnsRecordCreate(d *schema.ResourceData, meta interface{}) err
 		}
 
 		if contentOk == dataOk {
-			return fmt.Errorf(
+			return flex.FmtErrorf(
 				"either 'content' (present: %t) or 'data' (present: %t) must be provided",
 				contentOk, dataOk)
 		}
@@ -769,7 +769,7 @@ func ResourceIBMCISDnsRecordUpdate(d *schema.ResourceData, meta interface{}) err
 					opt.SetTTL(int64(ttl.(int)))
 				}
 				if ttl != 1 && proxied == true {
-					return fmt.Errorf("[ERROR] To enable proxy TTL should be Automatic %s",
+					return flex.FmtErrorf("[ERROR] To enable proxy TTL should be Automatic %s",
 						"i.e it should be set to 1. For the the values other than Automatic, proxy should be disabled")
 				}
 				priority, priorityOk := d.GetOk(cisDNSRecordPriority)
@@ -793,7 +793,7 @@ func ResourceIBMCISDnsRecordUpdate(d *schema.ResourceData, meta interface{}) err
 					opt.SetData(newDataMap)
 				}
 				if contentOk == dataOk {
-					return fmt.Errorf(
+					return flex.FmtErrorf(
 						"either 'content' (present: %t) or 'data' (present: %t) must be provided",
 						contentOk, dataOk)
 				}
