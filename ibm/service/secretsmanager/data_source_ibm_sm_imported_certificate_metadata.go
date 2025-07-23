@@ -357,7 +357,12 @@ func dataSourceIbmSmImportedCertificateMetadataRead(context context.Context, d *
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetSecretMetadataWithContext failed %s\n%s", err, response), fmt.Sprintf("(Data) %s_metadata", ImportedCertSecretResourceName), "read")
 		return tfErr.GetDiag()
 	}
-	importedCertificateMetadata := importedCertificateMetadataIntf.(*secretsmanagerv2.ImportedCertificateMetadata)
+
+	importedCertificateMetadata, ok := importedCertificateMetadataIntf.(*secretsmanagerv2.ImportedCertificateMetadata)
+	if !ok {
+		tfErr := flex.TerraformErrorf(nil, fmt.Sprintf("Wrong secret type: The provided secret is not an Imported Certificate secret."), fmt.Sprintf("(Data) %s_metadata", ImportedCertSecretResourceName), "read")
+		return tfErr.GetDiag()
+	}
 
 	d.SetId(fmt.Sprintf("%s/%s/%s", region, instanceId, secretId))
 
