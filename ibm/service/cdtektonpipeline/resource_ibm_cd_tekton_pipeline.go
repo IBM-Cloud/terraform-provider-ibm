@@ -403,7 +403,6 @@ func ResourceIBMCdTektonPipeline() *schema.Resource {
 						},
 						"limit_waiting_runs": &schema.Schema{
 							Type:        schema.TypeBool,
-							Optional:    true,
 							Computed:    true,
 							Description: "Flag that will limit the trigger to a maximum of one waiting run. A newly triggered run will cause any other waiting run(s) to be automatically cancelled.",
 						},
