@@ -144,5 +144,8 @@ func dataSourceIBMPIInstancesIPRead(ctx context.Context, d *schema.ResourceData,
 		}
 	}
 
-	return diag.Errorf("failed to find instance ip that belongs to the given network")
+	err = flex.FmtErrorf("failed to find instance ip that belongs to the given network")
+	tfErr := flex.TerraformErrorf(err, fmt.Sprintf("operation failed: %s", err.Error()), "ibm_pi_instance_ip", "read")
+	log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+	return tfErr.GetDiag()
 }

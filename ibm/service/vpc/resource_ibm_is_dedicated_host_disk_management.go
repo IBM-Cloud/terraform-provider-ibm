@@ -4,10 +4,15 @@
 package vpc
 
 import (
+	"context"
 	"fmt"
+	"log"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -15,11 +20,11 @@ const ()
 
 func ResourceIBMISDedicatedHostDiskManagement() *schema.Resource {
 	return &schema.Resource{
-		Create:   resourceIBMisDedicatedHostDiskManagementCreate,
-		Read:     resourceIBMisDedicatedHostDiskManagementRead,
-		Update:   resourceIBMisDedicatedHostDiskManagementUpdate,
-		Delete:   resourceIBMisDedicatedHostDiskManagementDelete,
-		Importer: &schema.ResourceImporter{},
+		CreateContext: resourceIBMisDedicatedHostDiskManagementCreate,
+		ReadContext:   resourceIBMisDedicatedHostDiskManagementRead,
+		UpdateContext: resourceIBMisDedicatedHostDiskManagementUpdate,
+		DeleteContext: resourceIBMisDedicatedHostDiskManagementDelete,
+		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
 			"dedicated_host": {
@@ -69,10 +74,12 @@ func ResourceIBMISDedicatedHostDiskManagementValidator() *validate.ResourceValid
 	return &ibmISDedicatedHostDiskManagementValidator
 }
 
-func resourceIBMisDedicatedHostDiskManagementCreate(d *schema.ResourceData, meta interface{}) error {
-	sess, err := vpcClient(meta)
+func resourceIBMisDedicatedHostDiskManagementCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host_disk_management", "create", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	dedicatedhost := d.Get("dedicated_host").(string)
 	disks := d.Get("disks")
@@ -92,24 +99,30 @@ func resourceIBMisDedicatedHostDiskManagementCreate(d *schema.ResourceData, meta
 
 		dedicatedHostDiskPatch, err := dedicatedHostDiskPatchModel.AsPatch()
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for DedicatedHostDiskPatch: %s", err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("[ERROR] Error calling asPatch for DedicatedHostDiskPatch: %s", err), "ibm_is_dedicated_host_disk_management", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		updateDedicatedHostDiskOptions.SetDedicatedHostDiskPatch(dedicatedHostDiskPatch)
 
-		_, _, err = sess.UpdateDedicatedHostDisk(updateDedicatedHostDiskOptions)
+		_, _, err = vpcClient.UpdateDedicatedHostDiskWithContext(ctx, updateDedicatedHostDiskOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling UpdateDedicatedHostDisk: %s", err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("[ERROR] Error calling UpdateDedicatedHostDisk: %s", err), "ibm_is_dedicated_host_disk_management", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
 	}
 	d.SetId(dedicatedhost)
-	return resourceIBMisDedicatedHostDiskManagementRead(d, meta)
+	return resourceIBMisDedicatedHostDiskManagementRead(ctx, d, meta)
 }
 
-func resourceIBMisDedicatedHostDiskManagementUpdate(d *schema.ResourceData, meta interface{}) error {
-	sess, err := vpcClient(meta)
+func resourceIBMisDedicatedHostDiskManagementUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host_disk_management", "update", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if d.HasChange("disks") && !d.IsNewResource() {
 
@@ -129,28 +142,32 @@ func resourceIBMisDedicatedHostDiskManagementUpdate(d *schema.ResourceData, meta
 
 			dedicatedHostDiskPatch, err := dedicatedHostDiskPatchModel.AsPatch()
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error calling asPatch for DedicatedHostDiskPatch: %s", err)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("[ERROR] Error calling asPatch for DedicatedHostDiskPatch: %s", err), "ibm_is_dedicated_host_disk_management", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			updateDedicatedHostDiskOptions.SetDedicatedHostDiskPatch(dedicatedHostDiskPatch)
 
-			_, response, err := sess.UpdateDedicatedHostDisk(updateDedicatedHostDiskOptions)
+			_, response, err := vpcClient.UpdateDedicatedHostDiskWithContext(ctx, updateDedicatedHostDiskOptions)
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error updating dedicated host disk: %s %s", err, response)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("[ERROR] Error updating dedicated host disk: %s %s", err, response), "ibm_is_dedicated_host_disk_management", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 
 		}
 
 	}
-	return resourceIBMisDedicatedHostDiskManagementRead(d, meta)
+	return resourceIBMisDedicatedHostDiskManagementRead(ctx, d, meta)
 }
 
-func resourceIBMisDedicatedHostDiskManagementDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMisDedicatedHostDiskManagementDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 	d.SetId("")
 	return nil
 }
 
-func resourceIBMisDedicatedHostDiskManagementRead(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMisDedicatedHostDiskManagementRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 	d.Set("dedicated_host", d.Id())
 

@@ -44,7 +44,7 @@ You do not have to change anything in the `ibm-odf-addon` and `ocscluster` folde
 To run this example on your Terminal, first download this directory i.e `examples/openshift-data-foundation/`
 
 ```bash
-$ cd addon/4.16.0
+$ cd addon/4.17.0
 ```
 
 ```bash
@@ -75,7 +75,7 @@ cluster = "" # Enter the Cluster ID
 region = "us-south" # Enter the region
 
 # For add-on deployment
-odfVersion = "4.16.0"
+odfVersion = "4.17.0"
 
 # For CRD Creation and Management
 autoDiscoverDevices = "false"
@@ -161,7 +161,7 @@ ocsUpgrade = "false" -> "true"
 | ibmcloud_api_key | IBM Cloud API Key | `string` | yes | -
 | cluster | Name of the cluster. | `string` | yes | -
 | region | Region of the cluster | `string` | yes | -
-| odfVersion | Version of the ODF add-on | `string` | yes | 4.12.0
+| odfVersion | Version of the ODF add-on | `string` | yes | 4.16.0
 | osdSize | Enter the size for the storage devices that you want to provision for the Object Storage Daemon (OSD) pods | `string` | yes | 512Gi
 | numOfOsd | The Number of OSD | `string` | yes | 1
 | osdStorageClassName | Enter the storage class to be used to provision block volumes for Object Storage Daemon (OSD) pods | `string` | yes | ibmc-vpc-block-metro-10iops-tier

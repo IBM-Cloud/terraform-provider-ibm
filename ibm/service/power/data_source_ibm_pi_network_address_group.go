@@ -96,7 +96,7 @@ func dataSourceIBMPINetworkAddressGroupRead(ctx context.Context, d *schema.Resou
 	d.SetId(*networkAddressGroup.ID)
 	if networkAddressGroup.Crn != nil {
 		d.Set(Attr_CRN, networkAddressGroup.Crn)
-		userTags, err := flex.GetTagsUsingCRN(meta, string(*networkAddressGroup.Crn))
+		userTags, err := flex.GetGlobalTagsUsingCRN(meta, string(*networkAddressGroup.Crn), "", UserTagType)
 		if err != nil {
 			log.Printf("Error on get of pi network address group (%s) user_tags: %s", nagID, err)
 		}

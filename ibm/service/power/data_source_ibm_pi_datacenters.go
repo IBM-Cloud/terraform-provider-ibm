@@ -14,6 +14,7 @@ import (
 	"github.com/hashicorp/go-uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 func DataSourceIBMPIDatacenters() *schema.Resource {
@@ -22,9 +23,10 @@ func DataSourceIBMPIDatacenters() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			// Arguments
 			Arg_CloudInstanceID: {
-				Description: "The GUID of the service instance associated with an account.",
-				Optional:    true,
-				Type:        schema.TypeString,
+				Description:  "The GUID of the service instance associated with an account.",
+				Optional:     true,
+				Type:         schema.TypeString,
+				ValidateFunc: validation.NoZeroValues,
 			},
 
 			// Attributes

@@ -25,21 +25,18 @@ func DataSourceIBMPINetworkInterface() *schema.Resource {
 			// Arguments
 			Arg_CloudInstanceID: {
 				Description:  "The GUID of the service instance associated with an account.",
-				ForceNew:     true,
 				Required:     true,
 				Type:         schema.TypeString,
 				ValidateFunc: validation.NoZeroValues,
 			},
 			Arg_NetworkID: {
 				Description:  "Network ID.",
-				ForceNew:     true,
 				Required:     true,
 				Type:         schema.TypeString,
 				ValidateFunc: validation.NoZeroValues,
 			},
 			Arg_NetworkInterfaceID: {
 				Description:  "Network interface ID.",
-				ForceNew:     true,
 				Required:     true,
 				Type:         schema.TypeString,
 				ValidateFunc: validation.NoZeroValues,
@@ -152,7 +149,7 @@ func dataSourceIBMPINetworkInterfaceRead(ctx context.Context, d *schema.Resource
 	d.Set(Attr_Status, networkInterface.Status)
 	if networkInterface.Crn != nil {
 		d.Set(Attr_CRN, networkInterface.Crn)
-		userTags, err := flex.GetTagsUsingCRN(meta, string(*networkInterface.Crn))
+		userTags, err := flex.GetGlobalTagsUsingCRN(meta, string(*networkInterface.Crn), "", UserTagType)
 		if err != nil {
 			log.Printf("Error on get of network interface (%s) user_tags: %s", *networkInterface.ID, err)
 		}

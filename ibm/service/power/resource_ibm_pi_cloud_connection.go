@@ -486,7 +486,7 @@ func resourceIBMPICloudConnectionRead(ctx context.Context, d *schema.ResourceDat
 	}
 	if cloudConnection.Vpc != nil {
 		d.Set(Arg_CloudConnectionVPCEnabled, cloudConnection.Vpc.Enabled)
-		if cloudConnection.Vpc.Vpcs != nil && len(cloudConnection.Vpc.Vpcs) > 0 {
+		if len(cloudConnection.Vpc.Vpcs) > 0 {
 			vpcCRNs := make([]string, len(cloudConnection.Vpc.Vpcs))
 			for i, vpc := range cloudConnection.Vpc.Vpcs {
 				vpcCRNs[i] = *vpc.VpcID

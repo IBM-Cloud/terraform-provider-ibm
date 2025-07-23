@@ -856,3 +856,41 @@ data ibm_cis_origin_certificates "test" {
   domain_id = ibm_cis_domain.example.id
   certificate_id = "25392180178235735583993116186144990011711092749"
 }
+
+# Get Managed lists
+data ibm_cis_managed_lists managed_lists {
+    cis_id    = ibm_cis.instance.id
+}
+
+# Get custom lists
+data ibm_cis_custom_lists custom_lists {
+    cis_id    = ibm_cis.instance.id
+    list_id   = ibm_cis.lists.list_id 
+}
+
+# create custom list
+resource ibm_cis_custom_list custom_list {
+    cis_id    = ibm_cis.instance.id
+    kind = var.list.kind
+    name = var.list.name
+    description = var.list.description
+}
+
+# Get custom list items
+data ibm_cis_custom_list_items custom_list_items {
+    cis_id    = ibm_cis.instance.id
+    list_id   = ibm_cis.lists.list_id 
+    item_id   = ibm_cis.lists.item.item_id
+}
+
+# Create custom list items
+resource ibm_cis_custom_list_items items {
+    cis_id    = ibm_cis.instance.id
+    list_id   = ibm_cis.lists.list_id 
+    items {
+        ip = var.ip1
+    }
+    items {
+        ip = var.ip2
+    }
+}

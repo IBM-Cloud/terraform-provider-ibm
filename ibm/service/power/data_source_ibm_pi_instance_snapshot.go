@@ -75,6 +75,11 @@ func DataSourceIBMPIInstanceSnapshot() *schema.Resource {
 				Description: "The status of the Power Virtual Machine instance snapshot.",
 				Type:        schema.TypeString,
 			},
+			Attr_StatusDetail: {
+				Computed:    true,
+				Description: "Detailed information for the last PVM instance snapshot action.",
+				Type:        schema.TypeString,
+			},
 			Attr_UserTags: {
 				Computed:    true,
 				Description: "List of user tags attached to the resource.",
@@ -124,6 +129,7 @@ func dataSourceIBMPIInstanceSnapshotRead(ctx context.Context, d *schema.Resource
 	d.Set(Attr_Name, snapshotData.Name)
 	d.Set(Attr_PercentComplete, snapshotData.PercentComplete)
 	d.Set(Attr_Status, snapshotData.Status)
+	d.Set(Attr_StatusDetail, snapshotData.StatusDetail)
 	d.Set(Attr_VolumeSnapshots, snapshotData.VolumeSnapshots)
 	return nil
 }

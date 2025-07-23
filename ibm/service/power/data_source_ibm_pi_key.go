@@ -41,10 +41,35 @@ func DataSourceIBMPIKey() *schema.Resource {
 				Description: "Date of SSH Key creation.",
 				Type:        schema.TypeString,
 			},
+			Attr_Description: {
+				Computed:    true,
+				Description: "Description of the ssh key.",
+				Type:        schema.TypeString,
+			},
+			Attr_KeyName: {
+				Computed:    true,
+				Description: "Name of SSH key.",
+				Type:        schema.TypeString,
+			},
+			Attr_PrimaryWorkspace: {
+				Computed:    true,
+				Description: "Indicates if the current workspace owns the ssh key or not.",
+				Type:        schema.TypeBool,
+			},
 			Attr_SSHKey: {
 				Computed:    true,
 				Description: "SSH RSA key.",
 				Sensitive:   true,
+				Type:        schema.TypeString,
+			},
+			Attr_SSHKeyID: {
+				Computed:    true,
+				Description: "Unique ID of SSH key.",
+				Type:        schema.TypeString,
+			},
+			Attr_Visibility: {
+				Computed:    true,
+				Description: "Visibility of the ssh key.",
 				Type:        schema.TypeString,
 			},
 		},
@@ -61,7 +86,7 @@ func dataSourceIBMPIKeyRead(ctx context.Context, d *schema.ResourceData, meta in
 
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
 
-	sshkeyC := instance.NewIBMPIKeyClient(ctx, sess, cloudInstanceID)
+	sshkeyC := instance.NewIBMPISSHKeyClient(ctx, sess, cloudInstanceID)
 	sshkeydata, err := sshkeyC.Get(d.Get(helpers.PIKeyName).(string))
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Get failed: %s", err.Error()), "ibm_pi_key", "read")
@@ -71,7 +96,12 @@ func dataSourceIBMPIKeyRead(ctx context.Context, d *schema.ResourceData, meta in
 
 	d.SetId(*sshkeydata.Name)
 	d.Set(Attr_CreationDate, sshkeydata.CreationDate.String())
+	d.Set(Attr_Description, sshkeydata.Description)
+	d.Set(Attr_KeyName, sshkeydata.Name)
+	d.Set(Attr_PrimaryWorkspace, sshkeydata.PrimaryWorkspace)
 	d.Set(Attr_SSHKey, sshkeydata.SSHKey)
+	d.Set(Attr_SSHKeyID, sshkeydata.ID)
+	d.Set(Attr_Visibility, sshkeydata.Visibility)
 
 	return nil
 }

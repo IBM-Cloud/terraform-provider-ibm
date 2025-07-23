@@ -28,6 +28,18 @@ func DataSourceIBMPISAPProfiles() *schema.Resource {
 				Type:         schema.TypeString,
 				ValidateFunc: validation.NoZeroValues,
 			},
+			Arg_FamilyFilter: {
+				Description:  "SAP profile family filter.",
+				Optional:     true,
+				Type:         schema.TypeString,
+				ValidateFunc: validation.StringInSlice([]string{"balanced", "compute", "memory", "sap-rise", "sap-rise-app", "small", "ultra-memory"}, false),
+			},
+			Arg_PrefixFilter: {
+				Description:  "SAP profile prefix filter.",
+				Optional:     true,
+				Type:         schema.TypeString,
+				ValidateFunc: validation.StringInSlice([]string{"bh1", "bh2", "ch1", "ch2", "mh1", "mh2", "umh", "ush1", "sh2", "sr2"}, false),
+			},
 
 			// Attributes
 			Attr_Profiles: {
@@ -110,7 +122,15 @@ func dataSourceIBMPISAPProfilesRead(ctx context.Context, d *schema.ResourceData,
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
 
 	client := instance.NewIBMPISAPInstanceClient(ctx, sess, cloudInstanceID)
-	sapProfiles, err := client.GetAllSAPProfiles(cloudInstanceID)
+	filters := map[string]string{}
+	if v, ok := d.GetOk(Arg_FamilyFilter); ok {
+		filters[Arg_FamilyFilter] = v.(string)
+	}
+	if v, ok := d.GetOk(Arg_PrefixFilter); ok {
+		filters[Arg_PrefixFilter] = v.(string)
+	}
+
+	sapProfiles, err := client.GetAllSAPProfilesWithFilters(cloudInstanceID, filters)
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetAllSAPProfiles failed: %s", err.Error()), "ibm_pi_sap_profiles", "read")
 		log.Printf("[DEBUG] get all sap profiles failed \n%s", tfErr.GetDebugMessage())

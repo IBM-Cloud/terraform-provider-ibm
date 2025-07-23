@@ -122,7 +122,7 @@ func networkAddressGroupsNetworkAddressGroupToMap(networkAddressGroup *models.Ne
 	nag := make(map[string]interface{})
 	if networkAddressGroup.Crn != nil {
 		nag[Attr_CRN] = networkAddressGroup.Crn
-		userTags, err := flex.GetTagsUsingCRN(meta, string(*networkAddressGroup.Crn))
+		userTags, err := flex.GetGlobalTagsUsingCRN(meta, string(*networkAddressGroup.Crn), "", UserTagType)
 		if err != nil {
 			log.Printf("Error on get of pi network address group (%s) user_tags: %s", *networkAddressGroup.ID, err)
 		}

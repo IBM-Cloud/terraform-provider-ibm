@@ -21,6 +21,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 )
 
+// This test uses the deprecated fields present before the SPP refactor
 func TestAccIBMPISPPPlacementGroupBasic(t *testing.T) {
 	name := fmt.Sprintf("tfspp%d", acctest.RandIntRange(10, 100))
 	policy := "affinity"
@@ -72,15 +73,15 @@ func TestAccIBMPISPPPlacementGroupBasic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckNoResourceAttr(
 						"ibm_pi_shared_processor_pool.spp_pool", "spp_placement_groups.0"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_pi_shared_processor_pool.spp_pool_2", "pi_shared_processor_pool_placement_group_id"),
+					resource.TestCheckResourceAttr(
+						"ibm_pi_shared_processor_pool.spp_pool_2", "spp_placement_groups.#", "1"),
 					testAccCheckIBMPISPPPlacementGroupMemberExistsFromSPPCreate("ibm_pi_spp_placement_group.spp_placement_group", "ibm_pi_shared_processor_pool.spp_pool_2"),
 				),
 			},
 			{
 				Config: testAccCheckIBMPIDeleteSPPPlacementGroup(name, policy),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMPISPPPlacementGroupDelete("ibm_pi_spp_placement_group.spp_placement_group_another", "ibm_pi_shared_processor_pool.spp_pool", "ibm_pi_shared_processor_pool.spp_pool_2"),
+					testAccCheckIBMPISPPPlacementGroupDelete("ibm_pi_shared_processor_pool.spp_pool", "ibm_pi_shared_processor_pool.spp_pool_2"),
 				),
 			},
 			{
@@ -93,8 +94,47 @@ func TestAccIBMPISPPPlacementGroupBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMPISPPPlacementGroupDestroy(s *terraform.State) error {
+func TestAccIBMPISPPPlacementGroupUserTags(t *testing.T) {
+	sppPlacementGroupRes := "ibm_pi_spp_placement_group.spp_placement_group"
+	name := fmt.Sprintf("tfspp%dpg", acctest.RandIntRange(10, 100))
+	policy := "affinity"
+	userTagsString := `["test_tag","env:dev"]`
+	userTagsStringUpdated := `["test_tag","env:dev","ibm"]`
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPISPPPlacementGroupDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMPISPPPlacementGroupUserTagsConfig(name, policy, userTagsString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPISPPPlacementGroupExists(sppPlacementGroupRes),
+					resource.TestCheckResourceAttr(sppPlacementGroupRes, "pi_spp_placement_group_name", name),
+					resource.TestCheckResourceAttrSet(sppPlacementGroupRes, "spp_placement_group_id"),
+					resource.TestCheckResourceAttrSet(sppPlacementGroupRes, "crn"),
+					resource.TestCheckResourceAttr(sppPlacementGroupRes, "pi_user_tags.#", "2"),
+					resource.TestCheckTypeSetElemAttr(sppPlacementGroupRes, "pi_user_tags.*", "env:dev"),
+					resource.TestCheckTypeSetElemAttr(sppPlacementGroupRes, "pi_user_tags.*", "test_tag"),
+				),
+			},
+			{
+				Config: testAccCheckIBMPISPPPlacementGroupUserTagsConfig(name, policy, userTagsStringUpdated),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPISPPPlacementGroupExists(sppPlacementGroupRes),
+					resource.TestCheckResourceAttr(sppPlacementGroupRes, "pi_spp_placement_group_name", name),
+					resource.TestCheckResourceAttrSet(sppPlacementGroupRes, "spp_placement_group_id"),
+					resource.TestCheckResourceAttrSet(sppPlacementGroupRes, "crn"),
+					resource.TestCheckResourceAttr(sppPlacementGroupRes, "pi_user_tags.#", "3"),
+					resource.TestCheckTypeSetElemAttr(sppPlacementGroupRes, "pi_user_tags.*", "env:dev"),
+					resource.TestCheckTypeSetElemAttr(sppPlacementGroupRes, "pi_user_tags.*", "test_tag"),
+					resource.TestCheckTypeSetElemAttr(sppPlacementGroupRes, "pi_user_tags.*", "ibm"),
+				),
+			},
+		},
+	})
+}
 
+func testAccCheckIBMPISPPPlacementGroupDestroy(s *terraform.State) error {
 	sess, err := acc.TestAccProvider.Meta().(conns.ClientSession).IBMPISession()
 	if err != nil {
 		return err
@@ -114,6 +154,7 @@ func testAccCheckIBMPISPPPlacementGroupDestroy(s *terraform.State) error {
 
 	return nil
 }
+
 func testAccCheckIBMPISPPPlacementGroupExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 
@@ -296,7 +337,7 @@ func testAccCheckIBMPISPPPlacementGroupMemberExistsFromSPPCreate(n string, pool 
 	}
 }
 
-func testAccCheckIBMPISPPPlacementGroupDelete(n string, pool string, newPool string) resource.TestCheckFunc {
+func testAccCheckIBMPISPPPlacementGroupDelete(pool string, newPool string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		sess, err := acc.TestAccProvider.Meta().(conns.ClientSession).IBMPISession()
 		if err != nil {
@@ -480,7 +521,6 @@ func testAccCheckIBMPICreateSPPInPlacementGroup(name string, policy string) stri
 			pi_shared_processor_pool_name = "%[2]s2"
 			pi_shared_processor_pool_host_group       = "e980"
 			pi_shared_processor_pool_reserved_cores = "1"
-			pi_shared_processor_pool_placement_group_id = ibm_pi_spp_placement_group.spp_placement_group.spp_placement_group_id
 			spp_placement_groups = [ibm_pi_spp_placement_group.spp_placement_group.spp_placement_group_id]
 		}
 		resource "ibm_pi_spp_placement_group" "spp_placement_group" {
@@ -654,5 +694,15 @@ func testAccCheckIBMPICreateSAPInstanceWithSPP(name string, policy string) strin
 			}
 			pi_health_status		= "OK"
 			pi_shared_processor_pool = ibm_pi_shared_processor_pool.spp_pool_2.pi_shared_processor_pool_name
-		}`, acc.Pi_cloud_instance_id, name, policy, acc.Pi_image, acc.Pi_network_name, acc.Pi_sap_image, acc.PiSAPProfileID)
+		}`, acc.Pi_cloud_instance_id, name, policy, acc.Pi_image, acc.Pi_network_name, acc.Pi_sap_image, acc.Pi_sap_profile_id)
+}
+
+func testAccCheckIBMPISPPPlacementGroupUserTagsConfig(name string, policy string, userTagsString string) string {
+	return fmt.Sprintf(`
+		resource "ibm_pi_spp_placement_group" "spp_placement_group" {
+			pi_cloud_instance_id          = "%[1]s"
+			pi_spp_placement_group_name   = "%[2]s"
+			pi_spp_placement_group_policy = "%[3]s"
+			pi_user_tags                  = %[4]s
+		}`, acc.Pi_cloud_instance_id, name, policy, userTagsString)
 }

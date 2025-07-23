@@ -214,7 +214,9 @@ func DataSourceIBMIBMIsVPCRoutingTableRoute() *schema.Resource {
 func dataSourceIBMIBMIsVPCRoutingTableRouteRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_vpc_routing_table_route", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	vpcID := d.Get(isVpcID).(string)
@@ -229,10 +231,11 @@ func dataSourceIBMIBMIsVPCRoutingTableRouteRead(context context.Context, d *sche
 		getVPCRoutingTableRouteOptions.SetRoutingTableID(routingTableId)
 		getVPCRoutingTableRouteOptions.SetID(routeId)
 
-		r, response, err := vpcClient.GetVPCRoutingTableRouteWithContext(context, getVPCRoutingTableRouteOptions)
+		r, _, err := vpcClient.GetVPCRoutingTableRouteWithContext(context, getVPCRoutingTableRouteOptions)
 		if err != nil {
-			log.Printf("[DEBUG] GetVPCRoutingTableRouteWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("[ERROR] GetVPCRoutingTableRouteWithContext failed %s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetVPCRoutingTableRouteWithContext failed: %s", err.Error()), "(Data) ibm_is_vpc_routing_table_route", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		route = r
 	} else {
@@ -247,10 +250,11 @@ func dataSourceIBMIBMIsVPCRoutingTableRouteRead(context context.Context, d *sche
 			if start != "" {
 				listVpcRoutingTablesRoutesOptions.Start = &start
 			}
-			result, detail, err := vpcClient.ListVPCRoutingTableRoutes(listVpcRoutingTablesRoutesOptions)
+			result, _, err := vpcClient.ListVPCRoutingTableRoutesWithContext(context, listVpcRoutingTablesRoutesOptions)
 			if err != nil {
-				log.Printf("Error reading list of VPC Routing Table Routes:%s\n%s", err, detail)
-				return diag.FromErr(fmt.Errorf("[ERROR] GetVPCRoutingTableRouteWithContext failed %s\n%s", err, detail))
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListVPCRoutingTableRoutesWithContext failed: %s", err.Error()), "(Data) ibm_is_vpc_routing_table_route", "read")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			start = flex.GetNext(result.Next)
 			allrecs = append(allrecs, result.Routes...)
@@ -266,22 +270,25 @@ func dataSourceIBMIBMIsVPCRoutingTableRouteRead(context context.Context, d *sche
 			}
 		}
 		if route == nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Route not found with name: %s", routeName))
+			err = fmt.Errorf("[ERROR] Route not found with name: %s", routeName)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListVPCRoutingTableRoutesWithContext failed: %s", err.Error()), "(Data) ibm_is_vpc_routing_table_route", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 
 	d.SetId(*route.ID)
 
 	if err = d.Set(rAction, route.Action); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting action: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting action: %s", err), "(Data) ibm_is_vpc_routing_table_route", "read", "set-action").GetDiag()
 	}
 
 	if err = d.Set("advertise", route.Advertise); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting advertise: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting advertise: %s", err), "(Data) ibm_is_vpc_routing_table_route", "read", "set-advertise").GetDiag()
 	}
 
 	if err = d.Set(rtCreateAt, flex.DateTimeToString(route.CreatedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting created_at: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting created_at: %s", err), "(Data) ibm_is_vpc_routing_table_route", "read", "set-created_at").GetDiag()
 	}
 
 	// creator changes
@@ -289,66 +296,65 @@ func dataSourceIBMIBMIsVPCRoutingTableRouteRead(context context.Context, d *sche
 	if route.Creator != nil {
 		mm, err := dataSourceIBMIsRouteCreatorToMap(route.Creator)
 		if err != nil {
-			log.Printf("Error reading list of VPC Routing Table Routes' creator:%s", err)
-			return diag.FromErr(fmt.Errorf("[ERROR] Error fetching creator: %s", err))
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_vpc_routing_table_route", "read", "creator-to-map").GetDiag()
 		}
 		creator = append(creator, mm)
 
 	}
 	if err = d.Set("creator", creator); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting creator: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting creator: %s", err), "(Data) ibm_is_vpc_routing_table_route", "read", "set-creator").GetDiag()
 	}
 
 	if err = d.Set(isRoutingTableRouteID, route.ID); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting route_id: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting route_id: %s", err), "(Data) ibm_is_vpc_routing_table_route", "read", "set-route_id").GetDiag()
 	}
 
 	if err = d.Set(rDestination, route.Destination); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting destination: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting destination: %s", err), "(Data) ibm_is_vpc_routing_table_route", "read", "set-destination").GetDiag()
 	}
 
 	if err = d.Set(rtHref, route.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting href: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting href: %s", err), "(Data) ibm_is_vpc_routing_table_route", "read", "set-href").GetDiag()
 	}
 
 	if err = d.Set(rtLifecycleState, route.LifecycleState); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting lifecycle_state: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting lifecycle_state: %s", err), "(Data) ibm_is_vpc_routing_table_route", "read", "set-lifecycle_state").GetDiag()
 	}
 
 	if err = d.Set(rName, route.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting name: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_is_vpc_routing_table_route", "read", "set-name").GetDiag()
 	}
 
 	nextHop := []map[string]interface{}{}
 	if route.NextHop != nil {
 		modelMap, err := dataSourceIBMIBMIsVPCRoutingTableRouteRouteNextHopToMap(route.NextHop)
 		if err != nil {
-			return diag.FromErr(err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_vpc_routing_table_route", "read", "next_hop-to-map").GetDiag()
 		}
 		nextHop = append(nextHop, modelMap)
 	}
 	if err = d.Set(rNextHop, nextHop); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting next_hop %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting next_hop: %s", err), "(Data) ibm_is_vpc_routing_table_route", "read", "set-next_hop").GetDiag()
 	}
 
 	//orgin
 	if err = d.Set("origin", route.Origin); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting origin %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting origin: %s", err), "(Data) ibm_is_vpc_routing_table_route", "read", "set-origin").GetDiag()
 	}
 	// priority
 	if err = d.Set("priority", route.Priority); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting priority, :%s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting priority: %s", err), "(Data) ibm_is_vpc_routing_table_route", "read", "set-priority").GetDiag()
 	}
 	zone := []map[string]interface{}{}
 	if route.Zone != nil {
 		modelMap, err := dataSourceIBMIBMIsVPCRoutingTableRouteZoneReferenceToMap(route.Zone)
 		if err != nil {
-			return diag.FromErr(err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_vpc_routing_table_route", "read", "zone-to-map").GetDiag()
 		}
 		zone = append(zone, modelMap)
 	}
 	if err = d.Set(rZone, zone); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting zone %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting zone: %s", err), "(Data) ibm_is_vpc_routing_table_route", "read", "set-zone").GetDiag()
 	}
 
 	return nil

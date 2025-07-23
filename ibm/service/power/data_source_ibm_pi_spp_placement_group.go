@@ -35,6 +35,11 @@ func DataSourceIBMPISPPPlacementGroup() *schema.Resource {
 			},
 
 			// Attributes
+			Attr_CRN: {
+				Computed:    true,
+				Description: "The CRN of this resource.",
+				Type:        schema.TypeString,
+			},
 			Attr_Members: {
 				Computed:    true,
 				Description: "List of shared processor pool IDs that are members of the placement group.",
@@ -50,6 +55,13 @@ func DataSourceIBMPISPPPlacementGroup() *schema.Resource {
 				Computed:    true,
 				Description: "The value of the group's affinity policy. Valid values are affinity and anti-affinity.",
 				Type:        schema.TypeString,
+			},
+			Attr_UserTags: {
+				Computed:    true,
+				Description: "List of user tags attached to the resource.",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         schema.HashString,
+				Type:        schema.TypeSet,
 			},
 		},
 	}
@@ -81,6 +93,14 @@ func dataSourceIBMPISPPPlacementGroupRead(ctx context.Context, d *schema.Resourc
 	}
 
 	d.SetId(*response.ID)
+	if response.Crn != "" {
+		d.Set(Attr_CRN, response.Crn)
+		userTags, err := flex.GetGlobalTagsUsingCRN(meta, string(response.Crn), "", UserTagType)
+		if err != nil {
+			log.Printf("Error on get of spp placement group (%s) user_tags: %s", *response.ID, err)
+		}
+		d.Set(Attr_UserTags, userTags)
+	}
 	d.Set(Attr_Members, response.MemberSharedProcessorPools)
 	d.Set(Attr_Name, response.Name)
 	d.Set(Attr_Policy, response.Policy)

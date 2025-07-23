@@ -165,14 +165,14 @@ func dataSourceIBMPICloudConnectionRead(ctx context.Context, d *schema.ResourceD
 	d.Set(Arg_CloudInstanceID, cloudInstanceID)
 	d.Set(Arg_CloudConnectionName, cloudConnection.Name)
 
+	d.Set(Attr_ConnectionMode, cloudConnection.ConnectionMode)
 	d.Set(Attr_GlobalRouting, cloudConnection.GlobalRouting)
-	d.Set(Attr_Metered, cloudConnection.Metered)
 	d.Set(Attr_IBMIPAddress, cloudConnection.IbmIPAddress)
-	d.Set(Attr_UserIPAddress, cloudConnection.UserIPAddress)
-	d.Set(Attr_Status, cloudConnection.LinkStatus)
+	d.Set(Attr_Metered, cloudConnection.Metered)
 	d.Set(Attr_Port, cloudConnection.Port)
 	d.Set(Attr_Speed, cloudConnection.Speed)
-	d.Set(Attr_ConnectionMode, cloudConnection.ConnectionMode)
+	d.Set(Attr_Status, cloudConnection.LinkStatus)
+	d.Set(Attr_UserIPAddress, cloudConnection.UserIPAddress)
 	if cloudConnection.Networks != nil {
 		networks := make([]string, len(cloudConnection.Networks))
 		for i, ccNetwork := range cloudConnection.Networks {
@@ -191,7 +191,7 @@ func dataSourceIBMPICloudConnectionRead(ctx context.Context, d *schema.ResourceD
 	}
 	if cloudConnection.Vpc != nil {
 		d.Set(Attr_VPCEnabled, cloudConnection.Vpc.Enabled)
-		if cloudConnection.Vpc.Vpcs != nil && len(cloudConnection.Vpc.Vpcs) > 0 {
+		if len(cloudConnection.Vpc.Vpcs) > 0 {
 			vpcCRNs := make([]string, len(cloudConnection.Vpc.Vpcs))
 			for i, vpc := range cloudConnection.Vpc.Vpcs {
 				vpcCRNs[i] = *vpc.VpcID

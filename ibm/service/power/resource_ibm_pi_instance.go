@@ -16,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/power/models"
@@ -232,7 +233,6 @@ func ResourceIBMPIInstance() *schema.Resource {
 			},
 			Arg_PlacementGroupID: {
 				Description: "Placement group ID",
-				Computed:    true,
 				Optional:    true,
 				Type:        schema.TypeString,
 			},
@@ -333,7 +333,7 @@ func ResourceIBMPIInstance() *schema.Resource {
 			},
 			Arg_SysType: {
 				Computed:    true,
-				Description: "PI Instance system type",
+				Description: "The type of system on which to create the VM (e880/e980/e1080/e1150/e1180/s922/s1022/s1122).",
 				ForceNew:    true,
 				Optional:    true,
 				Type:        schema.TypeString,
@@ -379,6 +379,13 @@ func ResourceIBMPIInstance() *schema.Resource {
 							Required:         true,
 							DiffSuppressFunc: supressVSNDiffAutoAssign,
 							Type:             schema.TypeString,
+						},
+						Attr_SoftwareTier: {
+							Computed:     true,
+							Description:  "Software tier. Enum: [\"P05\", \"P10\", \"P20\", \"P30\"].",
+							Optional:     true,
+							Type:         schema.TypeString,
+							ValidateFunc: validation.StringInSlice([]string{"P05", "P10", "P20", "P30"}, false),
 						},
 					},
 				},
@@ -541,7 +548,7 @@ func resourceIBMPIInstanceCreate(ctx context.Context, d *schema.ResourceData, me
 		} else {
 			_, err = isWaitForPIInstanceAvailable(ctx, client, *s.PvmInstanceID, instanceReadyStatus, d.Timeout(schema.TimeoutCreate))
 			if err != nil {
-				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForPIInstanceAvailables failed: %s", err.Error()), "ibm_pi_instance", "create")
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForPIInstanceAvailable failed: %s", err.Error()), "ibm_pi_instance", "create")
 				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 				return tfErr.GetDiag()
 			}
@@ -628,7 +635,7 @@ func resourceIBMPIInstanceRead(ctx context.Context, d *schema.ResourceData, meta
 
 	if powervmdata.Crn != "" {
 		d.Set(Attr_CRN, powervmdata.Crn)
-		tags, err := flex.GetTagsUsingCRN(meta, string(powervmdata.Crn))
+		tags, err := flex.GetGlobalTagsUsingCRN(meta, string(powervmdata.Crn), "", UserTagType)
 		if err != nil {
 			log.Printf("Error on get of ibm pi instance (%s) pi_user_tags: %s", *powervmdata.PvmInstanceID, err)
 		}
@@ -770,7 +777,6 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 		if d.HasChange(Arg_InstanceName) && d.HasChange(Arg_VirtualOpticalDevice) {
 			oldVOD, _ := d.GetChange(Arg_VirtualOpticalDevice)
 			d.Set(Arg_VirtualOpticalDevice, oldVOD)
-
 			err = flex.FmtErrorf("updates to %s and %s are mutually exclusive", Arg_InstanceName, Arg_VirtualOpticalDevice)
 			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("operation failed: %s", err.Error()), "ibm_pi_instance", "update")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
@@ -1098,18 +1104,14 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 
 	if d.HasChange(Arg_VirtualSerialNumber) {
 		vsnClient := instance.NewIBMPIVSNClient(ctx, sess, cloudInstanceID)
-
+		restartInstance := false
 		if d.HasChange(Arg_VirtualSerialNumber + ".0." + Attr_Serial) {
-			instanceRestart := false
-			status := d.Get(Attr_Status).(string)
-			if strings.ToLower(status) != State_Shutoff {
-				err := stopLparForResourceChange(ctx, client, instanceID, d)
-				if err != nil {
-					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("stopLparForResourceChange failed: %s", err.Error()), "ibm_pi_instance", "update")
-					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-					return tfErr.GetDiag()
-				}
-				instanceRestart = true
+			// Stop Lpar, serial change requires Lpar to be in shutoff state
+			restartInstance, err = stopLparForVSNChange(ctx, client, instanceID, d.Timeout(schema.TimeoutUpdate))
+			if err != nil {
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("stopLparForVSNChange failed: %s", err.Error()), "ibm_pi_instance", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 
 			oldVSN, newVSN := d.GetChange(Arg_VirtualSerialNumber)
@@ -1122,13 +1124,27 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 				if err != nil {
 					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("PVMInstanceDeleteVSN failed: %s", err.Error()), "ibm_pi_instance", "update")
 					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+
+					err = instanceRestartAfterVSNFailure(ctx, instanceID, restartInstance, client, d, err)
+					if err != nil {
+						tfErr2 := flex.TerraformErrorf(err, fmt.Sprintf("instanceRestartAfterVSNFailure failed: %s", err.Error()), "ibm_pi_instance", "update")
+						log.Printf("[DEBUG]\n%s", tfErr2.GetDebugMessage())
+					}
+
 					return tfErr.GetDiag()
 				}
 
-				_, err = isWaitForPIInstanceStopped(ctx, client, instanceID, d.Timeout(schema.TimeoutUpdate))
+				_, err = isWaitForPIInstanceVSNRemoved(ctx, client, instanceID, d.Timeout(schema.TimeoutUpdate))
 				if err != nil {
 					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForPIInstanceStopped failed: %s", err.Error()), "ibm_pi_instance", "update")
 					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+
+					err = instanceRestartAfterVSNFailure(ctx, instanceID, restartInstance, client, d, err)
+					if err != nil {
+						tfErr2 := flex.TerraformErrorf(err, fmt.Sprintf("instanceRestartAfterVSNFailure failed: %s", err.Error()), "ibm_pi_instance", "update")
+						log.Printf("[DEBUG]\n%s", tfErr2.GetDebugMessage())
+					}
+
 					return tfErr.GetDiag()
 				}
 			}
@@ -1141,43 +1157,149 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 					Description: description,
 					Serial:      &serial,
 				}
+
 				_, err := vsnClient.PVMInstanceAttachVSN(instanceID, addBody)
 				if err != nil {
 					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("PVMInstanceAttachVSN failed: %s", err.Error()), "ibm_pi_instance", "update")
 					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+
+					err = instanceRestartAfterVSNFailure(ctx, instanceID, restartInstance, client, d, err)
+					if err != nil {
+						tfErr2 := flex.TerraformErrorf(err, fmt.Sprintf("instanceRestartAfterVSNFailure failed: %s", err.Error()), "ibm_pi_instance", "update")
+						log.Printf("[DEBUG]\n%s", tfErr2.GetDebugMessage())
+					}
+
 					return tfErr.GetDiag()
 				}
 
-				_, err = isWaitForPIInstanceStopped(ctx, client, instanceID, d.Timeout(schema.TimeoutUpdate))
+				pvm, err := isWaitForPIInstanceVSNAssignedOrUpdatedAndStopped(ctx, client, instanceID, nil, d.Timeout(schema.TimeoutUpdate))
 				if err != nil {
-					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForPIInstanceStopped failed: %s", err.Error()), "ibm_pi_instance", "update")
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForPIInstanceVSNAssignedOrUpdatedAndStopped failed: %s", err.Error()), "ibm_pi_instance", "update")
 					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+
+					err = instanceRestartAfterVSNFailure(ctx, instanceID, restartInstance, client, d, err)
+					if err != nil {
+						tfErr2 := flex.TerraformErrorf(err, fmt.Sprintf("instanceRestartAfterVSNFailure failed: %s", err.Error()), "ibm_pi_instance", "update")
+						log.Printf("[DEBUG]\n%s", tfErr2.GetDebugMessage())
+					}
+
+					return tfErr.GetDiag()
+				}
+
+				// newly attached VSN may not match software tier defined by user in configuration, need to update to match
+				pvmInstance := pvm.(*models.PVMInstance)
+				softwareTier := models.SoftwareTier(newVSNMap[Attr_SoftwareTier].(string))
+				if softwareTier != "" && pvmInstance.VirtualSerialNumber.SoftwareTier != softwareTier {
+					updateBody := &models.UpdateServerVirtualSerialNumber{
+						SoftwareTier: softwareTier,
+					}
+					_, err = vsnClient.PVMInstanceUpdateVSN(instanceID, updateBody)
+					if err != nil {
+						tfErr := flex.TerraformErrorf(err, fmt.Sprintf("PVMInstanceUpdateVSN failed: %s", err.Error()), "ibm_pi_instance", "update")
+						log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+
+						err = instanceRestartAfterVSNFailure(ctx, instanceID, restartInstance, client, d, err)
+						if err != nil {
+							tfErr2 := flex.TerraformErrorf(err, fmt.Sprintf("instanceRestartAfterVSNFailure failed: %s", err.Error()), "ibm_pi_instance", "update")
+							log.Printf("[DEBUG]\n%s", tfErr2.GetDebugMessage())
+						}
+
+						return tfErr.GetDiag()
+					}
+					_, err = isWaitForPIInstanceVSNAssignedOrUpdatedAndStopped(ctx, client, instanceID, updateBody, d.Timeout(schema.TimeoutUpdate))
+					if err != nil {
+						tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForPIInstanceVSNAssignedOrUpdatedAndStopped failed: %s", err.Error()), "ibm_pi_instance", "update")
+						log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+
+						err = instanceRestartAfterVSNFailure(ctx, instanceID, restartInstance, client, d, err)
+						if err != nil {
+							tfErr2 := flex.TerraformErrorf(err, fmt.Sprintf("instanceRestartAfterVSNFailure failed: %s", err.Error()), "ibm_pi_instance", "update")
+							log.Printf("[DEBUG]\n%s", tfErr2.GetDebugMessage())
+						}
+
+						return tfErr.GetDiag()
+					}
+				}
+			}
+		} else if d.HasChange(Arg_VirtualSerialNumber+".0."+Attr_SoftwareTier) || d.HasChange(Arg_VirtualSerialNumber+".0."+Attr_Description) {
+			// below updates are split up since both VSN software tier and VSN description cannot be updated at the same time (mutually exclusive)
+			if d.HasChange(Arg_VirtualSerialNumber + ".0." + Attr_Description) {
+				newDescription := d.Get(Arg_VirtualSerialNumber + ".0." + Attr_Description).(string)
+				updateBody := &models.UpdateServerVirtualSerialNumber{
+					Description: &newDescription,
+				}
+				_, err = vsnClient.PVMInstanceUpdateVSN(instanceID, updateBody)
+				if err != nil {
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("PVMInstanceUpdateVSN failed: %s", err.Error()), "ibm_pi_instance", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+
+					err = instanceRestartAfterVSNFailure(ctx, instanceID, restartInstance, client, d, err)
+					if err != nil {
+						tfErr2 := flex.TerraformErrorf(err, fmt.Sprintf("instanceRestartAfterVSNFailure failed: %s", err.Error()), "ibm_pi_instance", "update")
+						log.Printf("[DEBUG]\n%s", tfErr2.GetDebugMessage())
+					}
+
 					return tfErr.GetDiag()
 				}
 			}
 
-			if instanceRestart {
-				err = startLparAfterResourceChange(ctx, client, instanceID, d)
+			if d.HasChange(Arg_VirtualSerialNumber + ".0." + Attr_SoftwareTier) {
+				// Stop Lpar if active since software tier update requires shutoff
+				restartInstanceUpdateSoftwareTier, err := stopLparForVSNChange(ctx, client, instanceID, d.Timeout(schema.TimeoutUpdate))
 				if err != nil {
-					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("startLparAfterResourceChange failed: %s", err.Error()), "ibm_pi_instance", "update")
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("stopLparForVSNChange failed: %s", err.Error()), "ibm_pi_instance", "update")
 					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
+				}
+				restartInstance = restartInstance || restartInstanceUpdateSoftwareTier
+
+				newSoftwareTier := models.SoftwareTier(d.Get(Arg_VirtualSerialNumber + ".0." + Attr_SoftwareTier).(string))
+				updateBody := &models.UpdateServerVirtualSerialNumber{
+					SoftwareTier: newSoftwareTier,
+				}
+
+				updateBody.SoftwareTier = models.SoftwareTier(newSoftwareTier)
+				_, err = vsnClient.PVMInstanceUpdateVSN(instanceID, updateBody)
+				if err != nil {
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("PVMInstanceUpdateVSN failed: %s", err.Error()), "ibm_pi_instance", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+
+					err = instanceRestartAfterVSNFailure(ctx, instanceID, restartInstance, client, d, err)
+					if err != nil {
+						tfErr2 := flex.TerraformErrorf(err, fmt.Sprintf("instanceRestartAfterVSNFailure failed: %s", err.Error()), "ibm_pi_instance", "update")
+						log.Printf("[DEBUG]\n%s", tfErr2.GetDebugMessage())
+					}
+
+					return tfErr.GetDiag()
+				}
+
+				// Wait for new software tier to be reflected since it is an asynchronous operation
+				_, err = isWaitForPIInstanceVSNAssignedOrUpdatedAndStopped(ctx, client, instanceID, updateBody, d.Timeout(schema.TimeoutUpdate))
+				if err != nil {
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForPIInstanceVSNAssignedOrUpdatedAndStopped failed: %s", err.Error()), "ibm_pi_instance", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+
+					err = instanceRestartAfterVSNFailure(ctx, instanceID, restartInstance, client, d, err)
+					if err != nil {
+						tfErr2 := flex.TerraformErrorf(err, fmt.Sprintf("instanceRestartAfterVSNFailure failed: %s", err.Error()), "ibm_pi_instance", "update")
+						log.Printf("[DEBUG]\n%s", tfErr2.GetDebugMessage())
+					}
+
 					return tfErr.GetDiag()
 				}
 			}
 		}
 
-		if !d.HasChange(Arg_VirtualSerialNumber+".0."+Attr_Serial) && d.HasChange(Arg_VirtualSerialNumber+".0."+Attr_Description) {
-			newDescriptionString := d.Get(Arg_VirtualSerialNumber + ".0." + Attr_Description).(string)
-			updateBody := &models.UpdateServerVirtualSerialNumber{
-				Description: &newDescriptionString,
-			}
-			_, err = vsnClient.PVMInstanceUpdateVSN(instanceID, updateBody)
+		// set to true or false during vsn assign and software tier updates
+		if restartInstance {
+			err = startLparAfterVSNChange(ctx, client, instanceID, d.Timeout(schema.TimeoutUpdate))
 			if err != nil {
-				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("PVMInstanceUpdateVSN failed: %s", err.Error()), "ibm_pi_instance", "update")
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("startLparAfterVSNChange failed: %s", err.Error()), "ibm_pi_instance", "update")
 				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 				return tfErr.GetDiag()
 			}
 		}
+
 	}
 
 	return resourceIBMPIInstanceRead(ctx, d, meta)
@@ -2041,6 +2163,10 @@ func vsnSetToCreateModel(vsnSetList []interface{}) *models.CreateServerVirtualSe
 	if description != "" {
 		model.Description = description
 	}
+	softwareTier := vsnItemMap[Attr_SoftwareTier].(string)
+	if softwareTier != "" {
+		model.SoftwareTier = models.SoftwareTier(softwareTier)
+	}
 
 	return model
 }
@@ -2048,13 +2174,90 @@ func vsnSetToCreateModel(vsnSetList []interface{}) *models.CreateServerVirtualSe
 func flattenVirtualSerialNumberToList(vsn *models.GetServerVirtualSerialNumber) []map[string]interface{} {
 	v := make([]map[string]interface{}, 1)
 	v[0] = map[string]interface{}{
-		Attr_Description: vsn.Description,
-		Attr_Serial:      vsn.Serial,
+		Attr_Description:  vsn.Description,
+		Attr_Serial:       vsn.Serial,
+		Attr_SoftwareTier: vsn.SoftwareTier,
 	}
+
 	return v
 }
 
 // Do not show a diff if VSN is changed to existing assigned VSN
 func supressVSNDiffAutoAssign(k, old, new string, d *schema.ResourceData) bool {
 	return new == old || (new == AutoAssign && old != "")
+}
+
+func instanceRestartAfterVSNFailure(ctx context.Context, instanceID string, restartInstance bool, instanceClient *instance.IBMPIInstanceClient, d *schema.ResourceData, err error) error {
+	if restartInstance {
+		startErr := startLparAfterVSNChange(ctx, instanceClient, instanceID, d.Timeout(schema.TimeoutDelete))
+		if startErr != nil {
+			err = flex.FmtErrorf("%w; %w, the pvm instance may still be shutoff", err, startErr)
+		}
+	}
+	return err
+}
+
+// isWaitForPIInstanceVSNAssignedOrUpdatedAndStopped will wait for VSN assigned, will also wait for correct values in updateBody if specified (specify nil to ignore updateBody checks)
+// Will also wait for VM to be in stopped state, mainly used for async VSN operations
+func isWaitForPIInstanceVSNAssignedOrUpdatedAndStopped(ctx context.Context, client *instance.IBMPIInstanceClient, id string, updateBody *models.UpdateServerVirtualSerialNumber, timeout time.Duration) (interface{}, error) {
+
+	log.Printf("Waiting until VSN assigned to %s or updated.", id)
+
+	stateConf := &retry.StateChangeConf{
+		Pending:    []string{State_Updating},
+		Target:     []string{State_Completed},
+		Refresh:    isPIInstanceVSNAssignedOrUpdatedAndStoppedRefreshFunc(client, id, updateBody),
+		Delay:      Timeout_Delay,
+		MinTimeout: Timeout_Active,
+		Timeout:    timeout,
+	}
+
+	return stateConf.WaitForStateContext(ctx)
+}
+
+func isPIInstanceVSNAssignedOrUpdatedAndStoppedRefreshFunc(client *instance.IBMPIInstanceClient, id string, updateBody *models.UpdateServerVirtualSerialNumber) retry.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		pvm, err := client.Get(id)
+		if err != nil {
+			return nil, "", err
+		}
+		if updateBody != nil && updateBody.SoftwareTier != "" && pvm.VirtualSerialNumber != nil && pvm.VirtualSerialNumber.SoftwareTier != updateBody.SoftwareTier {
+			return pvm, State_Updating, nil
+		}
+		if pvm.VirtualSerialNumber != nil && strings.ToLower(*pvm.Status) == State_Shutoff && pvm.Health.Status == OK {
+			return pvm, State_Completed, nil
+		}
+
+		return pvm, State_Updating, nil
+	}
+}
+
+func isWaitForPIInstanceVSNRemoved(ctx context.Context, client *instance.IBMPIInstanceClient, id string, timeout time.Duration) (interface{}, error) {
+
+	log.Printf("Waiting until VSN removed from %s.", id)
+
+	stateConf := &retry.StateChangeConf{
+		Pending:    []string{State_Removing},
+		Target:     []string{State_Shutoff},
+		Refresh:    isPIInstanceVSNRemovedRefreshFunc(client, id),
+		Delay:      Timeout_Delay,
+		MinTimeout: Timeout_Active,
+		Timeout:    timeout,
+	}
+
+	return stateConf.WaitForStateContext(ctx)
+}
+
+func isPIInstanceVSNRemovedRefreshFunc(client *instance.IBMPIInstanceClient, id string) retry.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		pvm, err := client.Get(id)
+		if err != nil {
+			return nil, "", err
+		}
+		if pvm.VirtualSerialNumber == nil && strings.ToLower(*pvm.Status) == State_Shutoff && pvm.Health.Status == OK {
+			return pvm, State_Shutoff, nil
+		}
+
+		return pvm, State_Removing, nil
+	}
 }

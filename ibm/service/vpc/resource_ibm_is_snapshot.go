@@ -13,7 +13,9 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -57,12 +59,12 @@ const (
 
 func ResourceIBMSnapshot() *schema.Resource {
 	return &schema.Resource{
-		Create:   resourceIBMISSnapshotCreate,
-		Read:     resourceIBMISSnapshotRead,
-		Update:   resourceIBMISSnapshotUpdate,
-		Delete:   resourceIBMISSnapshotDelete,
-		Exists:   resourceIBMISSnapshotExists,
-		Importer: &schema.ResourceImporter{},
+		CreateContext: resourceIBMISSnapshotCreate,
+		ReadContext:   resourceIBMISSnapshotRead,
+		UpdateContext: resourceIBMISSnapshotUpdate,
+		DeleteContext: resourceIBMISSnapshotDelete,
+		Exists:        resourceIBMISSnapshotExists,
+		Importer:      &schema.ResourceImporter{},
 
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(10 * time.Minute),
@@ -472,6 +474,39 @@ func ResourceIBMSnapshot() *schema.Resource {
 					},
 				},
 			},
+
+			"allowed_use": &schema.Schema{
+				Type:        schema.TypeList,
+				MaxItems:    1,
+				Optional:    true,
+				Computed:    true,
+				Description: "The usage constraints to match against the requested instance or bare metal server properties to determine compatibility. Can only be specified for bootable snapshots.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"api_version": &schema.Schema{
+							Type:         schema.TypeString,
+							Optional:     true,
+							Computed:     true,
+							ValidateFunc: validate.InvokeValidator("ibm_is_snapshot", "allowed_use.api_version"),
+							Description:  "The expression that must be satisfied by the properties of a virtual server instance provisioned using this snapshot.",
+						},
+						"bare_metal_server": &schema.Schema{
+							Type:         schema.TypeString,
+							Optional:     true,
+							Computed:     true,
+							ValidateFunc: validate.InvokeValidator("ibm_is_snapshot", "allowed_use.bare_metal_server"),
+							Description:  "The expression that must be satisfied by the properties of a bare metal server provisioned using the image data in this snapshot.",
+						},
+						"instance": &schema.Schema{
+							Type:         schema.TypeString,
+							Optional:     true,
+							Computed:     true,
+							ValidateFunc: validate.InvokeValidator("ibm_is_snapshot", "allowed_use.instance"),
+							Description:  "The expression that must be satisfied by a virtual server instance provisioned using this image.",
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -506,14 +541,37 @@ func ResourceIBMISSnapshotValidator() *validate.ResourceValidator {
 			Regexp:                     `^([A-Za-z0-9_.-]|[A-Za-z0-9_.-][A-Za-z0-9_ .-]*[A-Za-z0-9_.-]):([A-Za-z0-9_.-]|[A-Za-z0-9_.-][A-Za-z0-9_ .-]*[A-Za-z0-9_.-])$`,
 			MinValueLength:             1,
 			MaxValueLength:             128})
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "allowed_use.api_version",
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			Regexp:                     `^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$`})
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "allowed_use.bare_metal_server",
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			Regexp:                     `^([a-zA-Z_][a-zA-Z0-9_]*|[-+*/%]|&&|\|\||!|==|!=|<|<=|>|>=|~|\bin\b|\(|\)|\[|\]|,|\.|"|'|"|'|\s+|\d+)+$`})
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "allowed_use.instance",
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			Regexp:                     `^([a-zA-Z_][a-zA-Z0-9_]*|[-+*/%]|&&|\|\||!|==|!=|<|<=|>|>=|~|\bin\b|\(|\)|\[|\]|,|\.|"|'|"|'|\s+|\d+)+$`})
 	ibmISSnapshotResourceValidator := validate.ResourceValidator{ResourceName: "ibm_is_snapshot", Schema: validateSchema}
 	return &ibmISSnapshotResourceValidator
 }
 
-func resourceIBMISSnapshotCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMISSnapshotCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_snapshot", "create", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	snapbyVolFlag := false
 	options := &vpcv1.CreateSnapshotOptions{}
@@ -532,6 +590,11 @@ func resourceIBMISSnapshotCreate(d *schema.ResourceData, meta interface{}) error
 		if snapshotName, ok := d.GetOk(isSnapshotName); ok {
 			name := snapshotName.(string)
 			snapshotprototypeoptions.Name = &name
+		}
+
+		if allowedUse, ok := d.GetOk("allowed_use"); ok {
+			allowedUseModel, _ := ResourceIBMIsSnapshotMapToSnapshotAllowedUse(allowedUse.([]interface{})[0].(map[string]interface{}))
+			snapshotprototypeoptions.AllowedUse = allowedUseModel
 		}
 
 		if grp, ok := d.GetOk(isVPCResourceGroup); ok {
@@ -556,6 +619,11 @@ func resourceIBMISSnapshotCreate(d *schema.ResourceData, meta interface{}) error
 			snapshotprototypeoptionsbysourcesnapshot.EncryptionKey = &vpcv1.EncryptionKeyIdentity{
 				CRN: &encryptionKeyString,
 			}
+		}
+
+		if allowedUse, ok := d.GetOk("allowed_use"); ok {
+			allowedUseModel, _ := ResourceIBMIsSnapshotMapToSnapshotAllowedUse(allowedUse.([]interface{})[0].(map[string]interface{}))
+			snapshotprototypeoptionsbysourcesnapshot.AllowedUse = allowedUseModel
 		}
 
 		if grp, ok := d.GetOk(isVPCResourceGroup); ok {
@@ -608,7 +676,6 @@ func resourceIBMISSnapshotCreate(d *schema.ResourceData, meta interface{}) error
 			}
 		}
 	}
-
 	if snapbyVolFlag {
 		options.SnapshotPrototype = snapshotprototypeoptions
 	} else {
@@ -616,9 +683,11 @@ func resourceIBMISSnapshotCreate(d *schema.ResourceData, meta interface{}) error
 	}
 	log.Printf("[DEBUG] Snapshot create")
 
-	snapshot, response, err := sess.CreateSnapshot(options)
+	snapshot, _, err := sess.CreateSnapshotWithContext(context, options)
 	if err != nil || snapshot == nil {
-		return fmt.Errorf("[ERROR] Error creating Snapshot %s\n%s", err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateSnapshotWithContext failed: %s", err.Error()), "ibm_is_snapshot", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(*snapshot.ID)
@@ -627,7 +696,9 @@ func resourceIBMISSnapshotCreate(d *schema.ResourceData, meta interface{}) error
 	_, err = isWaitForSnapshotAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
 
 	if err != nil {
-		return err
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Wait for Snapshot available failed: %s", err.Error()), "ibm_is_snapshot", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	if _, ok := d.GetOk(isSnapshotAccessTags); ok {
@@ -638,7 +709,7 @@ func resourceIBMISSnapshotCreate(d *schema.ResourceData, meta interface{}) error
 				"[ERROR] Error on create of resource snapshot (%s) access tags: %s", d.Id(), err)
 		}
 	}
-	return resourceIBMISSnapshotRead(d, meta)
+	return resourceIBMISSnapshotRead(context, d, meta)
 }
 
 func isWaitForSnapshotAvailable(sess *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {
@@ -676,51 +747,89 @@ func isSnapshotRefreshFunc(sess *vpcv1.VpcV1, id string) resource.StateRefreshFu
 	}
 }
 
-func resourceIBMISSnapshotRead(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMISSnapshotRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	id := d.Id()
-	err := snapshotGet(d, meta, id)
+	err := snapshotGet(context, d, meta, id)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func snapshotGet(d *schema.ResourceData, meta interface{}, id string) error {
+func snapshotGet(context context.Context, d *schema.ResourceData, meta interface{}, id string) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_snapshot", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	getSnapshotOptions := &vpcv1.GetSnapshotOptions{
 		ID: &id,
 	}
-	snapshot, response, err := sess.GetSnapshot(getSnapshotOptions)
+	snapshot, response, err := sess.GetSnapshotWithContext(context, getSnapshotOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error getting Snapshot : %s\n%s", err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetSnapshotWithContext failed: %s", err.Error()), "ibm_is_snapshot", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(*snapshot.ID)
-	d.Set(isSnapshotName, *snapshot.Name)
-	d.Set(isSnapshotHref, *snapshot.Href)
-	d.Set(isSnapshotCRN, *snapshot.CRN)
-	d.Set(isSnapshotMinCapacity, *snapshot.MinimumCapacity)
-	d.Set(isSnapshotSize, *snapshot.Size)
-	d.Set(isSnapshotEncryption, *snapshot.Encryption)
+	if !core.IsNil(snapshot.Name) {
+		if err = d.Set("name", snapshot.Name); err != nil {
+			err = fmt.Errorf("Error setting name: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_snapshot", "read", "set-name").GetDiag()
+		}
+	}
+	if err = d.Set("href", snapshot.Href); err != nil {
+		err = fmt.Errorf("Error setting href: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_snapshot", "read", "set-href").GetDiag()
+	}
+	if err = d.Set("crn", snapshot.CRN); err != nil {
+		err = fmt.Errorf("Error setting crn: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_snapshot", "read", "set-crn").GetDiag()
+	}
+	if err = d.Set("minimum_capacity", flex.IntValue(snapshot.MinimumCapacity)); err != nil {
+		err = fmt.Errorf("Error setting minimum_capacity: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_snapshot", "read", "set-minimum_capacity").GetDiag()
+	}
+	if err = d.Set("size", flex.IntValue(snapshot.Size)); err != nil {
+		err = fmt.Errorf("Error setting size: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_snapshot", "read", "set-size").GetDiag()
+	}
+	if err = d.Set("encryption", snapshot.Encryption); err != nil {
+		err = fmt.Errorf("Error setting encryption: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_snapshot", "read", "set-encryption").GetDiag()
+	}
 	if snapshot.EncryptionKey != nil && snapshot.EncryptionKey.CRN != nil {
-		d.Set(isSnapshotEncryptionKey, *snapshot.EncryptionKey.CRN)
+		if err = d.Set(isSnapshotEncryptionKey, *snapshot.EncryptionKey.CRN); err != nil {
+			err = fmt.Errorf("Error setting encryption_key: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_snapshot", "read", "set-encryption_key").GetDiag()
+		}
 	}
 	if err = d.Set("service_tags", snapshot.ServiceTags); err != nil {
-		return fmt.Errorf("[ERROR]Error setting service_tags: %s", err)
+		err = fmt.Errorf("Error setting service_tags: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_snapshot", "read", "set-service_tags").GetDiag()
 	}
-	d.Set(isSnapshotLCState, *snapshot.LifecycleState)
-	d.Set(isSnapshotResourceType, *snapshot.ResourceType)
-	d.Set(isSnapshotBootable, *snapshot.Bootable)
-	if snapshot.UserTags != nil {
-		if err = d.Set(isSnapshotUserTags, snapshot.UserTags); err != nil {
-			return fmt.Errorf("[ERROR] Error setting user tags: %s", err)
+	if err = d.Set("lifecycle_state", snapshot.LifecycleState); err != nil {
+		err = fmt.Errorf("Error setting lifecycle_state: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_snapshot", "read", "set-lifecycle_state").GetDiag()
+	}
+	if err = d.Set("resource_type", snapshot.ResourceType); err != nil {
+		err = fmt.Errorf("Error setting resource_type: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_snapshot", "read", "set-resource_type").GetDiag()
+	}
+	if err = d.Set("bootable", snapshot.Bootable); err != nil {
+		err = fmt.Errorf("Error setting bootable: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_snapshot", "read", "set-bootable").GetDiag()
+	}
+	if !core.IsNil(snapshot.UserTags) {
+		if err = d.Set("tags", snapshot.UserTags); err != nil {
+			err = fmt.Errorf("Error setting tags: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_snapshot", "read", "set-tags").GetDiag()
 		}
 	}
 	sourceSnapshotList := []map[string]interface{}{}
@@ -738,7 +847,10 @@ func snapshotGet(d *schema.ResourceData, meta interface{}, id string) error {
 		sourceSnapshot["resource_type"] = *snapshot.SourceSnapshot.ResourceType
 		sourceSnapshotList = append(sourceSnapshotList, sourceSnapshot)
 	}
-	d.Set(isSnapshotSourceSnapshot, sourceSnapshotList)
+	if err = d.Set("source_snapshot", sourceSnapshotList); err != nil {
+		err = fmt.Errorf("Error setting source_snapshot: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_snapshot", "read", "set-source_snapshot").GetDiag()
+	}
 
 	// snapshot consistency group
 	snapshotConsistencyGroupList := []map[string]interface{}{}
@@ -756,33 +868,51 @@ func snapshotGet(d *schema.ResourceData, meta interface{}, id string) error {
 		snapshotConsistencyGroup["resource_type"] = snapshot.SnapshotConsistencyGroup.ResourceType
 		snapshotConsistencyGroupList = append(snapshotConsistencyGroupList, snapshotConsistencyGroup)
 	}
-	d.Set(isSnapshotConsistencyGroup, snapshotConsistencyGroupList)
-
+	if err = d.Set("snapshot_consistency_group", snapshotConsistencyGroupList); err != nil {
+		err = fmt.Errorf("Error setting snapshot_consistency_group: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_snapshot", "read", "set-snapshot_consistency_group").GetDiag()
+	}
 	snapshotCopies := []map[string]interface{}{}
 	if snapshot.Copies != nil {
 		for _, copiesItem := range snapshot.Copies {
 			copiesMap, err := dataSourceIBMIsSnapshotsSnapshotCopiesItemToMap(&copiesItem)
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error fetching snapshot copies: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_snapshot", "read", "copies-to-map").GetDiag()
 			}
 			snapshotCopies = append(snapshotCopies, copiesMap)
 		}
-		d.Set(isSnapshotCopies, snapshotCopies)
+	}
+	if err = d.Set("copies", snapshotCopies); err != nil {
+		err = fmt.Errorf("Error setting copies: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_snapshot", "read", "set-copies").GetDiag()
 	}
 
 	if snapshot.ResourceGroup != nil && snapshot.ResourceGroup.ID != nil {
-		d.Set(isSnapshotResourceGroup, *snapshot.ResourceGroup.ID)
+		if err = d.Set("resource_group", *snapshot.ResourceGroup.ID); err != nil {
+			err = fmt.Errorf("Error setting resource_group: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_snapshot", "read", "set-resource_group").GetDiag()
+		}
 	}
 	if snapshot.SourceVolume != nil && snapshot.SourceVolume.ID != nil {
-		d.Set(isSnapshotSourceVolume, *snapshot.SourceVolume.ID)
+		if err = d.Set("source_volume", *snapshot.SourceVolume.ID); err != nil {
+			err = fmt.Errorf("Error setting source_volume: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_snapshot", "read", "set-source_volume").GetDiag()
+		}
 	}
 
 	if snapshot.SourceImage != nil && snapshot.SourceImage.ID != nil {
-		d.Set(isSnapshotSourceImage, *snapshot.SourceImage.ID)
+		if err = d.Set(isSnapshotSourceImage, *snapshot.SourceImage.ID); err != nil {
+			if err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_snapshot", "read", "set-source_volume").GetDiag()
+			}
+		}
 	}
 
 	if snapshot.OperatingSystem != nil && snapshot.OperatingSystem.Name != nil {
-		d.Set(isSnapshotOperatingSystem, *snapshot.OperatingSystem.Name)
+		if err = d.Set("operating_system", *snapshot.OperatingSystem.Name); err != nil {
+			err = fmt.Errorf("Error setting operating_system: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_snapshot", "read", "set-operating_system").GetDiag()
+		}
 	}
 	var clones []string
 	clones = make([]string, 0)
@@ -793,7 +923,10 @@ func snapshotGet(d *schema.ResourceData, meta interface{}, id string) error {
 			}
 		}
 	}
-	d.Set(isSnapshotClones, flex.NewStringSet(schema.HashString, clones))
+	if err = d.Set("clones", flex.NewStringSet(schema.HashString, clones)); err != nil {
+		err = fmt.Errorf("Error setting clones: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_snapshot", "read", "set-clones").GetDiag()
+	}
 
 	// catalog
 	catalogList := make([]map[string]interface{}, 0)
@@ -821,7 +954,10 @@ func snapshotGet(d *schema.ResourceData, meta interface{}, id string) error {
 		}
 		catalogList = append(catalogList, catalogMap)
 	}
-	d.Set(isSnapshotCatalogOffering, catalogList)
+	if err = d.Set("catalog_offering", catalogList); err != nil {
+		err = fmt.Errorf("Error setting catalog_offering: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_snapshot", "read", "set-catalog_offering").GetDiag()
+	}
 
 	backupPolicyPlanList := []map[string]interface{}{}
 	if snapshot.BackupPolicyPlan != nil {
@@ -837,17 +973,36 @@ func snapshotGet(d *schema.ResourceData, meta interface{}, id string) error {
 		backupPolicyPlan["resource_type"] = snapshot.BackupPolicyPlan.ResourceType
 		backupPolicyPlanList = append(backupPolicyPlanList, backupPolicyPlan)
 	}
-	d.Set(isSnapshotBackupPolicyPlan, backupPolicyPlanList)
+	if err = d.Set("backup_policy_plan", backupPolicyPlanList); err != nil {
+		err = fmt.Errorf("Error setting backup_policy_plan: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_snapshot", "read", "set-backup_policy_plan").GetDiag()
+	}
+	allowedUses := []map[string]interface{}{}
+	if snapshot.AllowedUse != nil {
+		modelMap, err := DataSourceIBMIsSnapshotAllowedUseToMap(snapshot.AllowedUse)
+		if err != nil {
+			err = fmt.Errorf("Error setting allowed_use: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_snapshot", "read", "set-allowed_use").GetDiag()
+		}
+		allowedUses = append(allowedUses, modelMap)
+	}
+	if err = d.Set("allowed_use", allowedUses); err != nil {
+		err = fmt.Errorf("Error setting allowed_use: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_snapshot", "read", "set-allowed_use").GetDiag()
+	}
 	accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *snapshot.CRN, "", isAccessTagType)
 	if err != nil {
 		log.Printf(
 			"[ERROR] Error on get of resource snapshot (%s) access tags: %s", d.Id(), err)
 	}
-	d.Set(isSnapshotAccessTags, accesstags)
+	if err = d.Set("access_tags", accesstags); err != nil {
+		err = fmt.Errorf("Error setting access_tags: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_snapshot", "read", "set-access_tags").GetDiag()
+	}
 	return nil
 }
 
-func resourceIBMISSnapshotUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMISSnapshotUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	id := d.Id()
 
 	name := ""
@@ -857,29 +1012,33 @@ func resourceIBMISSnapshotUpdate(d *schema.ResourceData, meta interface{}) error
 		name = d.Get(isSnapshotName).(string)
 		hasChanged = true
 	}
-	err := snapshotUpdate(d, meta, id, name, hasChanged)
+	err := snapshotUpdate(context, d, meta, id, name, hasChanged)
 	if err != nil {
 		return err
 	}
-	return resourceIBMISSnapshotRead(d, meta)
+	return resourceIBMISSnapshotRead(context, d, meta)
 }
 
-func snapshotUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChanged bool) error {
+func snapshotUpdate(context context.Context, d *schema.ResourceData, meta interface{}, id, name string, hasChanged bool) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_snapshot", "update", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	getSnapshotOptions := &vpcv1.GetSnapshotOptions{
 		ID: &id,
 	}
-	_, response, err := sess.GetSnapshot(getSnapshotOptions)
+	_, response, err := sess.GetSnapshotWithContext(context, getSnapshotOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error getting Snapshot : %s\n%s", err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetSnapshotWithContext failed: %s", err.Error()), "ibm_is_snapshot", "update")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	eTag := response.Headers.Get("ETag")
 
@@ -910,16 +1069,22 @@ func snapshotUpdate(d *schema.ResourceData, meta interface{}, id, name string, h
 				snapshotPatchModel.UserTags = userTagsArray
 				snapshotPatch, err := snapshotPatchModel.AsPatch()
 				if err != nil {
-					return fmt.Errorf("[ERROR] Error calling asPatch for SnapshotPatch: %s", err)
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("snapshotPatchModel.AsPatch failed: %s", err.Error()), "ibm_is_snapshot", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
 				updateSnapshotOptions.SnapshotPatch = snapshotPatch
-				_, response, err := sess.UpdateSnapshot(updateSnapshotOptions)
+				_, _, err = sess.UpdateSnapshot(updateSnapshotOptions)
 				if err != nil {
-					return fmt.Errorf("[ERROR] Error updating Snapshot : %s\n%s", err, response)
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateSnapshotWithContext failed: %s", err.Error()), "ibm_is_snapshot", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
 				_, err = isWaitForSnapshotUpdate(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
 				if err != nil {
-					return err
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Wait for Snapshot update failed: %s", err.Error()), "ibm_is_snapshot", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
 			}
 		}
@@ -934,19 +1099,76 @@ func snapshotUpdate(d *schema.ResourceData, meta interface{}, id, name string, h
 		}
 		snapshotPatch, err := snapshotPatchModel.AsPatch()
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for SnapshotPatch: %s", err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("snapshotPatchModel.AsPatch failed: %s", err.Error()), "ibm_is_snapshot", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		updateSnapshotOptions.SnapshotPatch = snapshotPatch
-		_, response, err := sess.UpdateSnapshot(updateSnapshotOptions)
+		_, _, err = sess.UpdateSnapshot(updateSnapshotOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error updating Snapshot : %s\n%s", err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateSnapshotWithContext failed: %s", err.Error()), "ibm_is_snapshot", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		_, err = isWaitForSnapshotUpdate(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
 		if err != nil {
-			return err
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Wait for Snapshot update failed: %s", err.Error()), "ibm_is_snapshot", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
 	}
+
+	if d.HasChange("allowed_use") {
+		getSnapshotOptions := &vpcv1.GetSnapshotOptions{
+			ID: &id,
+		}
+		_, response, err := sess.GetSnapshot(getSnapshotOptions)
+		if err != nil {
+			if response != nil && response.StatusCode == 404 {
+				d.SetId("")
+				return nil
+			}
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetSnapshotWithContext failed: %s", err.Error()), "ibm_is_snapshot", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
+		eTag := response.Headers.Get("ETag")
+
+		updateSnapshotOptions := &vpcv1.UpdateSnapshotOptions{
+			ID: &id,
+		}
+		updateSnapshotOptions.IfMatch = &eTag
+		allowedUseModel, err := ResourceIBMIsSnapshotMapToSnapshotAllowedUsePatch(d.Get("allowed_use").([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error in settting allowed_use: %s", err.Error()), "ibm_is_snapshot", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
+		snapshotPatchModel := &vpcv1.SnapshotPatch{
+			AllowedUse: allowedUseModel,
+		}
+		snapshotPatch, err := snapshotPatchModel.AsPatch()
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("snapshotPatchModel.AsPatch failed: %s", err.Error()), "ibm_is_snapshot", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
+		updateSnapshotOptions.SnapshotPatch = snapshotPatch
+		_, response, err = sess.UpdateSnapshot(updateSnapshotOptions)
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateSnapshotWithContext failed: %s", err.Error()), "ibm_is_snapshot", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
+		_, err = isWaitForSnapshotUpdate(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Wait for Snapshot update failed: %s", err.Error()), "ibm_is_snapshot", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
+	}
+
 	if d.HasChange(isSnapshotClones) {
 		ovs, nvs := d.GetChange(isSnapshotClones)
 		ov := ovs.(*schema.Set)
@@ -961,13 +1183,17 @@ func snapshotUpdate(d *schema.ResourceData, meta interface{}, id, name string, h
 					ID:       &id,
 					ZoneName: &add[i],
 				}
-				_, _, err := sess.CreateSnapshotClone(createCloneOptions)
+				_, _, err := sess.CreateSnapshotCloneWithContext(context, createCloneOptions)
 				if err != nil {
-					return fmt.Errorf("[ERROR] Error while creating snapshot (%s) clone(%s) : %q", d.Id(), add[i], err)
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateSnapshotCloneWithContext failed: %s", err.Error()), "ibm_is_snapshot", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
 				_, err = isWaitForCloneAvailable(sess, d, id, add[i])
 				if err != nil {
-					return err
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Wait for Snapshot clone available failed: %s", err.Error()), "ibm_is_snapshot", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
 			}
 
@@ -978,13 +1204,17 @@ func snapshotUpdate(d *schema.ResourceData, meta interface{}, id, name string, h
 					ID:       &id,
 					ZoneName: &remove[i],
 				}
-				_, err := sess.DeleteSnapshotClone(delCloneOptions)
+				_, err := sess.DeleteSnapshotCloneWithContext(context, delCloneOptions)
 				if err != nil {
-					return fmt.Errorf("[ERROR] Error while removing Snapshot (%s) clone (%s) : %q", d.Id(), remove[i], err)
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteSnapshotCloneWithContext failed: %s", err.Error()), "ibm_is_snapshot", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
 				_, err = isWaitForCloneDeleted(sess, d, d.Id(), remove[i])
 				if err != nil {
-					return err
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Wait for Snapshot clone deleted failed: %s", err.Error()), "ibm_is_snapshot", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
 			}
 		}
@@ -1102,9 +1332,9 @@ func isWaitForCloneDeleted(sess *vpcv1.VpcV1, d *schema.ResourceData, id, zoneNa
 	return stateConf.WaitForState()
 }
 
-func resourceIBMISSnapshotDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMISSnapshotDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	id := d.Id()
-	err := snapshotDelete(d, meta, id)
+	err := snapshotDelete(context, d, meta, id)
 	if err != nil {
 		return err
 	}
@@ -1112,34 +1342,42 @@ func resourceIBMISSnapshotDelete(d *schema.ResourceData, meta interface{}) error
 	return nil
 }
 
-func snapshotDelete(d *schema.ResourceData, meta interface{}, id string) error {
+func snapshotDelete(context context.Context, d *schema.ResourceData, meta interface{}, id string) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_snapshot", "delete", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	getSnapshotOptions := &vpcv1.GetSnapshotOptions{
 		ID: &id,
 	}
-	_, response, err := sess.GetSnapshot(getSnapshotOptions)
+	_, response, err := sess.GetSnapshotWithContext(context, getSnapshotOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error getting Snapshot (%s): %s\n%s", id, err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetSnapshotWithContext failed: %s", err.Error()), "ibm_is_snapshot", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	deleteSnapshotOptions := &vpcv1.DeleteSnapshotOptions{
 		ID: &id,
 	}
-	response, err = sess.DeleteSnapshot(deleteSnapshotOptions)
+	response, err = sess.DeleteSnapshotWithContext(context, deleteSnapshotOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error deleting Snapshot : %s\n%s", err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteSnapshotWithContext failed: %s", err.Error()), "ibm_is_snapshot", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	_, err = isWaitForSnapshotDeleted(sess, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
-		return err
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Wait for Snapshot deleted failed: %s", err.Error()), "ibm_is_snapshot", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	d.SetId("")
 	return nil
@@ -1186,7 +1424,9 @@ func resourceIBMISSnapshotExists(d *schema.ResourceData, meta interface{}) (bool
 func snapshotExists(d *schema.ResourceData, meta interface{}, id string) (bool, error) {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return false, err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_snapshot", "exists", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return false, tfErr
 	}
 	getSnapshotOptions := &vpcv1.GetSnapshotOptions{
 		ID: &id,
@@ -1196,7 +1436,34 @@ func snapshotExists(d *schema.ResourceData, meta interface{}, id string) (bool, 
 		if response != nil && response.StatusCode == 404 {
 			return false, nil
 		}
-		return false, fmt.Errorf("[ERROR] Error getting Snapshot: %s\n%s", err, response)
+		return false, fmt.Errorf("[ERROR] GetSnapshot failed: %s\n%s", err, response)
 	}
 	return true, nil
+}
+func ResourceIBMIsSnapshotMapToSnapshotAllowedUsePatch(modelMap map[string]interface{}) (*vpcv1.SnapshotAllowedUsePatch, error) {
+	model := &vpcv1.SnapshotAllowedUsePatch{}
+	if modelMap["api_version"] != nil && modelMap["api_version"].(string) != "" {
+		model.ApiVersion = core.StringPtr(modelMap["api_version"].(string))
+	}
+	if modelMap["bare_metal_server"] != nil && modelMap["bare_metal_server"].(string) != "" {
+		model.BareMetalServer = core.StringPtr(modelMap["bare_metal_server"].(string))
+	}
+	if modelMap["instance"] != nil && modelMap["instance"].(string) != "" {
+		model.Instance = core.StringPtr(modelMap["instance"].(string))
+	}
+	return model, nil
+}
+
+func ResourceIBMIsSnapshotMapToSnapshotAllowedUse(modelMap map[string]interface{}) (*vpcv1.SnapshotAllowedUsePrototype, error) {
+	model := &vpcv1.SnapshotAllowedUsePrototype{}
+	if modelMap["api_version"] != nil && modelMap["api_version"].(string) != "" {
+		model.ApiVersion = core.StringPtr(modelMap["api_version"].(string))
+	}
+	if modelMap["bare_metal_server"] != nil && modelMap["bare_metal_server"].(string) != "" {
+		model.BareMetalServer = core.StringPtr(modelMap["bare_metal_server"].(string))
+	}
+	if modelMap["instance"] != nil && modelMap["instance"].(string) != "" {
+		model.Instance = core.StringPtr(modelMap["instance"].(string))
+	}
+	return model, nil
 }

@@ -36,10 +36,14 @@ func DataSourceIBMPINetwork() *schema.Resource {
 			},
 
 			// Attributes
-			Attr_AccessConfig: {
+			Attr_Advertise: {
 				Computed:    true,
-				Deprecated:  "This field is deprecated please use peer_id instead.",
-				Description: "The network communication configuration option of the network (for on prem locations only). Use `peer_id` instead.",
+				Description: "Indicates if the network is advertised.",
+				Type:        schema.TypeString,
+			},
+			Attr_ARPBroadcast: {
+				Computed:    true,
+				Description: "Indicates if ARP Broadcast is enabled.",
 				Type:        schema.TypeString,
 			},
 			Attr_AvailableIPCount: {
@@ -68,12 +72,6 @@ func DataSourceIBMPINetwork() *schema.Resource {
 				Description: "The network gateway that is attached to your network.",
 				Type:        schema.TypeString,
 			},
-			Attr_Jumbo: {
-				Computed:    true,
-				Deprecated:  "This field is deprecated, use mtu instead.",
-				Description: "MTU Jumbo option of the network (for multi-zone locations only).",
-				Type:        schema.TypeBool,
-			},
 			Attr_MTU: {
 				Computed:    true,
 				Description: "Maximum Transmission Unit option of the network.",
@@ -101,6 +99,7 @@ func DataSourceIBMPINetwork() *schema.Resource {
 			},
 			Attr_PeerID: {
 				Computed:    true,
+				Deprecated:  "This field is deprecated",
 				Description: "Network peer ID (for on prem locations only).",
 				Type:        schema.TypeString,
 			},
@@ -161,7 +160,8 @@ func dataSourceIBMPINetworkRead(ctx context.Context, d *schema.ResourceData, met
 	}
 
 	d.SetId(*networkdata.NetworkID)
-	d.Set(Attr_AccessConfig, networkdata.AccessConfig)
+	d.Set(Attr_Advertise, networkdata.Advertise)
+	d.Set(Attr_ARPBroadcast, networkdata.ArpBroadcast)
 	if networkdata.IPAddressMetrics.Available != nil {
 		d.Set(Attr_AvailableIPCount, networkdata.IPAddressMetrics.Available)
 	}
@@ -180,7 +180,6 @@ func dataSourceIBMPINetworkRead(ctx context.Context, d *schema.ResourceData, met
 		d.Set(Attr_DNS, networkdata.DNSServers)
 	}
 	d.Set(Attr_Gateway, networkdata.Gateway)
-	d.Set(Attr_Jumbo, networkdata.Jumbo)
 	d.Set(Attr_MTU, networkdata.Mtu)
 	if networkdata.Name != nil {
 		d.Set(Attr_Name, networkdata.Name)

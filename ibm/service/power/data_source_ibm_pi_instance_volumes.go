@@ -158,7 +158,10 @@ func dataSourceIBMPIInstanceVolumesRead(ctx context.Context, d *schema.ResourceD
 
 	var clientgenU, _ = uuid.GenerateUUID()
 	d.SetId(clientgenU)
-	d.Set(Attr_BootVolumeID, *volumedata.Volumes[0].VolumeID)
+	if len(volumedata.Volumes) > 0 {
+		d.Set(Attr_BootVolumeID, *volumedata.Volumes[0].VolumeID)
+	}
+
 	d.Set(Attr_InstanceVolumes, flattenVolumesInstances(volumedata.Volumes, meta))
 
 	return nil
@@ -167,7 +170,6 @@ func dataSourceIBMPIInstanceVolumesRead(ctx context.Context, d *schema.ResourceD
 func flattenVolumesInstances(list []*models.VolumeReference, meta interface{}) []map[string]interface{} {
 	result := make([]map[string]interface{}, 0, len(list))
 	for _, i := range list {
-
 		l := map[string]interface{}{
 			Attr_Bootable:           *i.Bootable,
 			Attr_CreationDate:       i.CreationDate.String(),
@@ -196,7 +198,6 @@ func flattenVolumesInstances(list []*models.VolumeReference, meta interface{}) [
 		if len(i.ReplicationSites) > 0 {
 			l[Attr_ReplicationSites] = i.ReplicationSites
 		}
-
 		result = append(result, l)
 	}
 	return result

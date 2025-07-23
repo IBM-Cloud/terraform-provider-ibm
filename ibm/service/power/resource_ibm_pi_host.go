@@ -296,7 +296,7 @@ func resourceIBMPIHostRead(ctx context.Context, d *schema.ResourceData, meta int
 	if host.SysType != "" {
 		d.Set(Attr_SysType, host.SysType)
 	}
-	d.Set(Arg_Host, flattenHostArgumentToList(d, meta))
+	d.Set(Arg_Host, flattenHostArgumentToList(d))
 
 	return nil
 }
@@ -475,7 +475,7 @@ func isIBMPIHostRefreshFunc(client *instance.IBMPIHostGroupsClient, id string) r
 	}
 }
 
-func flattenHostArgumentToList(d *schema.ResourceData, meta interface{}) []map[string]interface{} {
+func flattenHostArgumentToList(d *schema.ResourceData) []map[string]interface{} {
 	hostListType := make([]map[string]interface{}, 0)
 	h := map[string]interface{}{}
 	if v, ok := d.GetOk(Attr_DisplayName); ok {

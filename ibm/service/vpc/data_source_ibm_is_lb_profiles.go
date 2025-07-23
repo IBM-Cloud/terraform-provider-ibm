@@ -4,12 +4,15 @@
 package vpc
 
 import (
+	"context"
 	"fmt"
+	"log"
 	"reflect"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -20,7 +23,7 @@ const (
 
 func DataSourceIBMISLbProfiles() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceIBMISLbProfilesRead,
+		ReadContext: dataSourceIBMISLbProfilesRead,
 
 		Schema: map[string]*schema.Schema{
 			isLbsProfileName: &schema.Schema{
@@ -57,6 +60,30 @@ func DataSourceIBMISLbProfiles() *schema.Resource {
 										Elem: &schema.Schema{
 											Type: schema.TypeString,
 										},
+									},
+								},
+							},
+						},
+						"targetable_load_balancer_profiles": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The load balancer profiles that load balancers with this profile can target",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"family": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The product family this load balancer profile belongs to",
+									},
+									"href": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The URL for this load balancer profile",
+									},
+									"name": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The globally unique name for this load balancer profile",
 									},
 								},
 							},
@@ -186,10 +213,12 @@ func DataSourceIBMISLbProfiles() *schema.Resource {
 	}
 }
 
-func dataSourceIBMISLbProfilesRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceIBMISLbProfilesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_lb_profiles", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	start := ""
@@ -199,9 +228,11 @@ func dataSourceIBMISLbProfilesRead(d *schema.ResourceData, meta interface{}) err
 		getLoadBalancerProfileOptions := &vpcv1.GetLoadBalancerProfileOptions{
 			Name: &lbprofilename,
 		}
-		lbProfile, response, err := sess.GetLoadBalancerProfile(getLoadBalancerProfileOptions)
+		lbProfile, _, err := sess.GetLoadBalancerProfileWithContext(context, getLoadBalancerProfileOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Fetching Load Balancer Profile(%s) for VPC %s\n%s", lbprofilename, err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetLoadBalancerProfileWithContext failed %s", err), "(Data) ibm_is_lb_profiles", "read")
+			log.Printf("[DEBUG] %s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		allrecs = append(allrecs, *lbProfile)
 	} else {
@@ -210,9 +241,11 @@ func dataSourceIBMISLbProfilesRead(d *schema.ResourceData, meta interface{}) err
 			if start != "" {
 				listOptions.Start = &start
 			}
-			profileCollectors, response, err := sess.ListLoadBalancerProfiles(listOptions)
+			profileCollectors, _, err := sess.ListLoadBalancerProfilesWithContext(context, listOptions)
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error Fetching Load Balancer Profiles for VPC %s\n%s", err, response)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListLoadBalancerProfilesWithContext failed %s", err), "(Data) ibm_is_lb_profiles", "read")
+				log.Printf("[DEBUG] %s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			start = flex.GetNext(profileCollectors.Next)
 			allrecs = append(allrecs, profileCollectors.Profiles...)
@@ -231,7 +264,7 @@ func dataSourceIBMISLbProfilesRead(d *schema.ResourceData, meta interface{}) err
 		}
 		failsafePolicyActionsMap, err := dataSourceIBMIsLbProfilesLoadBalancerProfileFailsafePolicyActionsToMap(profileCollector.FailsafePolicyActions)
 		if err != nil {
-			return err
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_lb_profiles", "read", "failsafe_policy_actions-to-map").GetDiag()
 		}
 		l["failsafe_policy_actions"] = []map[string]interface{}{failsafePolicyActionsMap}
 		if profileCollector.UDPSupported != nil {
@@ -304,6 +337,11 @@ func dataSourceIBMISLbProfilesRead(d *schema.ResourceData, meta interface{}) err
 			AccessModesList = append(AccessModesList, AccessModesMap)
 			l[isLBAccessModes] = AccessModesList
 		}
+
+		if profileCollector.TargetableLoadBalancerProfiles != nil {
+			l["targetable_load_balancer_profiles"] = dataSourceLbProfileFlattenTargetableLoadBalancerProfiles(profileCollector.TargetableLoadBalancerProfiles)
+		}
+
 		if profileCollector.Availability != nil {
 			availabilitySupport := profileCollector.Availability.(*vpcv1.LoadBalancerProfileAvailability)
 			availabilitySupportMap := map[string]interface{}{}
@@ -346,7 +384,9 @@ func dataSourceIBMISLbProfilesRead(d *schema.ResourceData, meta interface{}) err
 		lbprofilesInfo = append(lbprofilesInfo, l)
 	}
 	d.SetId(dataSourceIBMISLbProfilesID(d))
-	d.Set(isLbsProfiles, lbprofilesInfo)
+	if err = d.Set("lb_profiles", lbprofilesInfo); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting lb_profiles %s", err), "(Data) ibm_is_lb_profiles", "read", "lb_profiles-set").GetDiag()
+	}
 	return nil
 }
 

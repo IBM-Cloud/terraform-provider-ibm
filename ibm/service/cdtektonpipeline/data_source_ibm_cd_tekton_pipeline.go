@@ -1,8 +1,8 @@
-// Copyright IBM Corp. 2024 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.95.2-120e65bc-20240924-152329
+ * IBM OpenAPI Terraform Generator Version: 3.103.0-e8b84313-20250402-201816
  */
 
 package cdtektonpipeline
@@ -331,6 +331,11 @@ func DataSourceIBMCdTektonPipeline() *schema.Resource {
 							Type:        schema.TypeBool,
 							Computed:    true,
 							Description: "Mark the trigger as a favorite.",
+						},
+						"limit_waiting_runs": &schema.Schema{
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Flag that will limit the trigger to a maximum of one waiting run. A newly triggered run will cause any other waiting run(s) to be automatically cancelled.",
 						},
 						"enable_events_from_forks": &schema.Schema{
 							Type:        schema.TypeBool,
@@ -812,6 +817,9 @@ func DataSourceIBMCdTektonPipelineTriggerToMap(model cdtektonpipelinev2.TriggerI
 		if model.Favorite != nil {
 			modelMap["favorite"] = *model.Favorite
 		}
+		if model.LimitWaitingRuns != nil {
+			modelMap["limit_waiting_runs"] = *model.LimitWaitingRuns
+		}
 		if model.EnableEventsFromForks != nil {
 			modelMap["enable_events_from_forks"] = *model.EnableEventsFromForks
 		}
@@ -975,6 +983,9 @@ func DataSourceIBMCdTektonPipelineTriggerManualTriggerToMap(model *cdtektonpipel
 	if model.Favorite != nil {
 		modelMap["favorite"] = *model.Favorite
 	}
+	if model.LimitWaitingRuns != nil {
+		modelMap["limit_waiting_runs"] = *model.LimitWaitingRuns
+	}
 	return modelMap, nil
 }
 
@@ -1014,6 +1025,9 @@ func DataSourceIBMCdTektonPipelineTriggerScmTriggerToMap(model *cdtektonpipeline
 	modelMap["enabled"] = *model.Enabled
 	if model.Favorite != nil {
 		modelMap["favorite"] = *model.Favorite
+	}
+	if model.LimitWaitingRuns != nil {
+		modelMap["limit_waiting_runs"] = *model.LimitWaitingRuns
 	}
 	if model.EnableEventsFromForks != nil {
 		modelMap["enable_events_from_forks"] = *model.EnableEventsFromForks
@@ -1071,6 +1085,9 @@ func DataSourceIBMCdTektonPipelineTriggerTimerTriggerToMap(model *cdtektonpipeli
 	if model.Favorite != nil {
 		modelMap["favorite"] = *model.Favorite
 	}
+	if model.LimitWaitingRuns != nil {
+		modelMap["limit_waiting_runs"] = *model.LimitWaitingRuns
+	}
 	if model.Cron != nil {
 		modelMap["cron"] = *model.Cron
 	}
@@ -1116,6 +1133,9 @@ func DataSourceIBMCdTektonPipelineTriggerGenericTriggerToMap(model *cdtektonpipe
 	modelMap["enabled"] = *model.Enabled
 	if model.Favorite != nil {
 		modelMap["favorite"] = *model.Favorite
+	}
+	if model.LimitWaitingRuns != nil {
+		modelMap["limit_waiting_runs"] = *model.LimitWaitingRuns
 	}
 	if model.Secret != nil {
 		secretMap, err := DataSourceIBMCdTektonPipelineGenericSecretToMap(model.Secret)

@@ -156,7 +156,7 @@ func ResourceIBMISIPSECValidator() *validate.ResourceValidator {
 
 	validateSchema := make([]validate.ValidateSchema, 0)
 	authentication_algorithm := "md5, sha1, sha256, sha512, sha384, disabled"
-	encryption_algorithm := "triple_des, aes128, aes256, aes128gcm16, aes192gcm16, aes256gcm16"
+	encryption_algorithm := "triple_des, aes128, aes256, aes128gcm16, aes192gcm16, aes256gcm16, aes192"
 	pfs := "disabled, group_2, group_5, group_14, group_19, group_15, group_16, group_17, group_18, group_20, group_21, group_22, group_23, group_24, group_31"
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
@@ -292,7 +292,6 @@ func ipsecpGet(context context.Context, d *schema.ResourceData, meta interface{}
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_ipsec_policy", "read", "set-encryption_algorithm").GetDiag()
 	}
 	if iPsecPolicy.ResourceGroup != nil {
-		d.Set(isIPSecResourceGroup, *iPsecPolicy.ResourceGroup.ID)
 		if err = d.Set(isIPSecResourceGroup, *iPsecPolicy.ResourceGroup.ID); err != nil {
 			err = fmt.Errorf("Error setting resource_group: %s", err)
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_ipsec_policy", "read", "set-resource_group").GetDiag()

@@ -137,7 +137,7 @@ func flattenStockImages(list []*models.ImageReference, meta interface{}) []map[s
 		}
 		if i.Crn != "" {
 			l[Attr_CRN] = i.Crn
-			tags, err := flex.GetTagsUsingCRN(meta, string(i.Crn))
+			tags, err := flex.GetGlobalTagsUsingCRN(meta, string(i.Crn), "", UserTagType)
 			if err != nil {
 				log.Printf(
 					"Error on get of image (%s) user_tags: %s", *i.ImageID, err)

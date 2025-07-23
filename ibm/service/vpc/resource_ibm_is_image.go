@@ -12,8 +12,10 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/go-openapi/strfmt"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -49,16 +51,18 @@ const (
 	isImageDeprecate      = "deprecate"
 	isImageObsolete       = "obsolete"
 	isImageUserDataFormat = "user_data_format"
+
+	isImageRemote = "remote"
 )
 
 func ResourceIBMISImage() *schema.Resource {
 	return &schema.Resource{
-		Create:   resourceIBMISImageCreate,
-		Read:     resourceIBMISImageRead,
-		Update:   resourceIBMISImageUpdate,
-		Delete:   resourceIBMISImageDelete,
-		Exists:   resourceIBMISImageExists,
-		Importer: &schema.ResourceImporter{},
+		CreateContext: resourceIBMISImageCreate,
+		ReadContext:   resourceIBMISImageRead,
+		UpdateContext: resourceIBMISImageUpdate,
+		DeleteContext: resourceIBMISImageDelete,
+		Exists:        resourceIBMISImageExists,
+		Importer:      &schema.ResourceImporter{},
 
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(10 * time.Minute),
@@ -255,6 +259,38 @@ func ResourceIBMISImage() *schema.Resource {
 				Computed:    true,
 				Description: "The user data format for this image",
 			},
+			"allowed_use": &schema.Schema{
+				Type:        schema.TypeList,
+				MaxItems:    1,
+				Optional:    true,
+				Computed:    true,
+				Description: "The usage constraints to match against the requested instance or bare metal server properties to determine compatibility.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"api_version": &schema.Schema{
+							Type:         schema.TypeString,
+							Optional:     true,
+							Computed:     true,
+							ValidateFunc: validate.InvokeValidator("ibm_is_image", "allowed_use.api_version"),
+							Description:  "The API version with which to evaluate the expressions.",
+						},
+						"bare_metal_server": &schema.Schema{
+							Type:         schema.TypeString,
+							Optional:     true,
+							Computed:     true,
+							ValidateFunc: validate.InvokeValidator("ibm_is_image", "allowed_use.bare_metal_server"),
+							Description:  "The expression that must be satisfied by the properties of a bare metal server provisioned using this image.",
+						},
+						"instance": &schema.Schema{
+							Type:         schema.TypeString,
+							Optional:     true,
+							Computed:     true,
+							ValidateFunc: validate.InvokeValidator("ibm_is_image", "allowed_use.instance"),
+							Description:  "The expression that must be satisfied by the properties of a virtual server instance provisioned using this image.",
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -289,11 +325,32 @@ func ResourceIBMISImageValidator() *validate.ResourceValidator {
 			Regexp:                     `^([A-Za-z0-9_.-]|[A-Za-z0-9_.-][A-Za-z0-9_ .-]*[A-Za-z0-9_.-]):([A-Za-z0-9_.-]|[A-Za-z0-9_.-][A-Za-z0-9_ .-]*[A-Za-z0-9_.-])$`,
 			MinValueLength:             1,
 			MaxValueLength:             128})
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "allowed_use.api_version",
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			Regexp:                     `^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$`})
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "allowed_use.bare_metal_server",
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			Regexp:                     `^([a-zA-Z_][a-zA-Z0-9_]*|[-+*/%]|&&|\|\||!|==|!=|<|<=|>|>=|~|\bin\b|\(|\)|\[|\]|,|\.|"|'|"|'|\s+|\d+)+$`})
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "allowed_use.instance",
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			Regexp:                     `^([a-zA-Z_][a-zA-Z0-9_]*|[-+*/%]|&&|\|\||!|==|!=|<|<=|>|>=|~|\bin\b|\(|\)|\[|\]|,|\.|"|'|"|'|\s+|\d+)+$`})
 	ibmISImageResourceValidator := validate.ResourceValidator{ResourceName: "ibm_is_image", Schema: validateSchema}
 	return &ibmISImageResourceValidator
 }
 
-func resourceIBMISImageCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMISImageCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 	log.Printf("[DEBUG] Image create")
 	href := d.Get(isImageHref).(string)
@@ -302,24 +359,26 @@ func resourceIBMISImageCreate(d *schema.ResourceData, meta interface{}) error {
 	volume := d.Get(isImageVolume).(string)
 
 	if volume != "" {
-		err := imgCreateByVolume(d, meta, name, volume)
+		err := imgCreateByVolume(context, d, meta, name, volume)
 		if err != nil {
 			return err
 		}
 	} else {
-		err := imgCreateByFile(d, meta, href, name, operatingSystem)
+		err := imgCreateByFile(context, d, meta, href, name, operatingSystem)
 		if err != nil {
 			return err
 		}
 	}
 
-	return resourceIBMISImageRead(d, meta)
+	return resourceIBMISImageRead(context, d, meta)
 }
 
-func imgCreateByFile(d *schema.ResourceData, meta interface{}, href, name, operatingSystem string) error {
+func imgCreateByFile(context context.Context, d *schema.ResourceData, meta interface{}, href, name, operatingSystem string) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_image", "create", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	imagePrototype := &vpcv1.ImagePrototypeImageByFile{
 		Name: &name,
@@ -330,17 +389,24 @@ func imgCreateByFile(d *schema.ResourceData, meta interface{}, href, name, opera
 			Name: &operatingSystem,
 		},
 	}
+	if allowedUse, ok := d.GetOk("allowed_use"); ok {
+		allowedUseModel, err := ResourceIBMUsageConstraintsMapToImageAllowUsePrototype(allowedUse.([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_image", "create", "parse-allowed_use").GetDiag()
+		}
+		imagePrototype.AllowedUse = allowedUseModel
+	}
 	if obsoleteAtOk, ok := d.GetOk(isImageObsolescenceAt); ok {
 		obsoleteAt, err := strfmt.ParseDateTime(obsoleteAtOk.(string))
 		if err != nil {
-			return err
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_image", "create", "parse-obsolescence_at").GetDiag()
 		}
 		imagePrototype.ObsolescenceAt = &obsoleteAt
 	}
 	if deprecateAtOk, ok := d.GetOk(isImageDeprecationAt); ok {
 		deprecateAt, err := strfmt.ParseDateTime(deprecateAtOk.(string))
 		if err != nil {
-			return err
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_image", "create", "parse-deprecation_at").GetDiag()
 		}
 		imagePrototype.DeprecationAt = &deprecateAt
 	}
@@ -364,15 +430,19 @@ func imgCreateByFile(d *schema.ResourceData, meta interface{}, href, name, opera
 	options := &vpcv1.CreateImageOptions{
 		ImagePrototype: imagePrototype,
 	}
-	image, response, err := sess.CreateImage(options)
+	image, _, err := sess.CreateImageWithContext(context, options)
 	if err != nil {
-		return fmt.Errorf("[DEBUG] Image creation err %s\n%s", err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateImageWithContext failed: %s", err.Error()), "ibm_is_image", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	d.SetId(*image.ID)
 	log.Printf("[INFO] Image ID : %s", *image.ID)
 	_, err = isWaitForImageAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
 	if err != nil {
-		return err
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForImageAvailable failed: %s", err.Error()), "ibm_is_image", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	v := os.Getenv("IC_ENV_TAGS")
 	if _, ok := d.GetOk(isImageTags); ok || v != "" {
@@ -393,10 +463,12 @@ func imgCreateByFile(d *schema.ResourceData, meta interface{}, href, name, opera
 	}
 	return nil
 }
-func imgCreateByVolume(d *schema.ResourceData, meta interface{}, name, volume string) error {
+func imgCreateByVolume(context context.Context, d *schema.ResourceData, meta interface{}, name, volume string) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_image", "create", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	imagePrototype := &vpcv1.ImagePrototypeImageBySourceVolume{
 		Name: &name,
@@ -405,27 +477,42 @@ func imgCreateByVolume(d *schema.ResourceData, meta interface{}, name, volume st
 	imagePrototype.SourceVolume = &vpcv1.VolumeIdentity{
 		ID: &volume,
 	}
+	if allowedUse, ok := d.GetOk("allowed_use"); ok {
+		allowedUseModel, err := ResourceIBMUsageConstraintsMapToImageAllowUsePrototype(allowedUse.([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_image", "create", "parse-allowed_use").GetDiag()
+		}
+		imagePrototype.AllowedUse = allowedUseModel
+	}
 	options := &vpcv1.GetVolumeOptions{
 		ID: &volume,
 	}
-	vol, response, err := sess.GetVolume(options)
+	vol, response, err := sess.GetVolumeWithContext(context, options)
 	if err != nil || vol == nil {
-		return fmt.Errorf("[ERROR] Error retrieving Volume (%s) details: %s\n%s", volume, err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetVolumeWithContext failed: %s", err.Error()), "ibm_is_image", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if vol.VolumeAttachments == nil || len(vol.VolumeAttachments) == 0 {
-		return fmt.Errorf("[ERROR] Error creating Image because the specified source_volume %s is not attached to a virtual server instance", volume)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error creating Image because the specified source_volume %s is not attached to a virtual server instance", volume), "ibm_is_image", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	volAtt := &vol.VolumeAttachments[0]
 	if *volAtt.Type != "boot" {
-		return fmt.Errorf("[ERROR] Error creating Image because the specified source_volume %s is not boot volume", volume)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error creating Image because the specified source_volume %s is not boot volume", volume), "ibm_is_image", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	insId = *volAtt.Instance.ID
 	getinsOptions := &vpcv1.GetInstanceOptions{
 		ID: &insId,
 	}
-	instance, response, err := sess.GetInstance(getinsOptions)
+	instance, response, err := sess.GetInstanceWithContext(context, getinsOptions)
 	if err != nil || instance == nil {
-		return fmt.Errorf("[ERROR] Error retrieving Instance (%s) to which the source_volume (%s) is attached : %s\n%s", insId, volume, err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error retrieving Instance (%s) to which the source_volume (%s) is attached : %s\n%s", insId, volume, err, response), "ibm_is_image", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if instance != nil && *instance.Status == "running" {
 		actiontype := "stop"
@@ -433,32 +520,38 @@ func imgCreateByVolume(d *schema.ResourceData, meta interface{}, name, volume st
 			InstanceID: &insId,
 			Type:       &actiontype,
 		}
-		_, response, err = sess.CreateInstanceAction(createinsactoptions)
+		_, response, err = sess.CreateInstanceActionWithContext(context, createinsactoptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error stopping Instance (%s) to which the source_volume (%s) is attached  : %s\n%s", insId, volume, err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error stopping Instance (%s) to which the source_volume (%s) is attached  : %s\n%s", insId, volume, err, response), "ibm_is_image", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		_, err = isWaitForInstanceActionStop(sess, d.Timeout(schema.TimeoutCreate), insId, d)
 		if err != nil {
-			return err
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForInstanceActionStop failed: %s", err.Error()), "ibm_is_image", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	} else if *instance.Status != "stopped" {
 		_, err = isWaitForInstanceActionStop(sess, d.Timeout(schema.TimeoutCreate), insId, d)
 		if err != nil {
-			return err
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForInstanceActionStop failed: %s", err.Error()), "ibm_is_image", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 
 	if obsoleteAtOk, ok := d.GetOk(isImageObsolescenceAt); ok {
 		obsoleteAt, err := strfmt.ParseDateTime(obsoleteAtOk.(string))
 		if err != nil {
-			return err
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_image", "create", "parse-obsolescence_at").GetDiag()
 		}
 		imagePrototype.ObsolescenceAt = &obsoleteAt
 	}
 	if deprecateAtOk, ok := d.GetOk(isImageDeprecationAt); ok {
 		deprecateAt, err := strfmt.ParseDateTime(deprecateAtOk.(string))
 		if err != nil {
-			return err
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_image", "create", "parse-deprecation_at").GetDiag()
 		}
 		imagePrototype.DeprecationAt = &deprecateAt
 	}
@@ -479,15 +572,19 @@ func imgCreateByVolume(d *schema.ResourceData, meta interface{}, name, volume st
 	imagOptions := &vpcv1.CreateImageOptions{
 		ImagePrototype: imagePrototype,
 	}
-	image, response, err := sess.CreateImage(imagOptions)
+	image, response, err := sess.CreateImageWithContext(context, imagOptions)
 	if err != nil {
-		return fmt.Errorf("[DEBUG] Image creation err %s\n%s", err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateImageWithContext failed: %s", err.Error()), "ibm_is_image", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	d.SetId(*image.ID)
 	log.Printf("[INFO] Image ID : %s", *image.ID)
 	_, err = isWaitForImageAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
 	if err != nil {
-		return err
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForImageAvailable failed: %s", err.Error()), "ibm_is_image", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	v := os.Getenv("IC_ENV_TAGS")
 	if _, ok := d.GetOk(isImageTags); ok || v != "" {
@@ -541,7 +638,7 @@ func isImageRefreshFunc(imageC *vpcv1.VpcV1, id string) resource.StateRefreshFun
 	}
 }
 
-func resourceIBMISImageUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMISImageUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 	id := d.Id()
 	name := ""
@@ -551,18 +648,20 @@ func resourceIBMISImageUpdate(d *schema.ResourceData, meta interface{}) error {
 		name = d.Get(isImageName).(string)
 		hasChanged = true
 	}
-	err := imgUpdate(d, meta, id, name, hasChanged)
+	err := imgUpdate(context, d, meta, id, name, hasChanged)
 	if err != nil {
 		return err
 	}
 
-	return resourceIBMISImageRead(d, meta)
+	return resourceIBMISImageRead(context, d, meta)
 }
 
-func imgUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasNameChanged bool) error {
+func imgUpdate(context context.Context, d *schema.ResourceData, meta interface{}, id, name string, hasNameChanged bool) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_image", "update", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if d.HasChange(isImageDeprecate) && !d.IsNewResource() {
 		deprecateTrue := d.Get(isImageDeprecate).(bool)
@@ -570,13 +669,17 @@ func imgUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasNam
 			deprecateImageOptions := &vpcv1.DeprecateImageOptions{
 				ID: &id,
 			}
-			response, err := sess.DeprecateImage(deprecateImageOptions)
+			_, err := sess.DeprecateImageWithContext(context, deprecateImageOptions)
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error during deprecate Image : %s\n%s", err, response)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeprecateImageWithContext failed: %s", err.Error()), "ibm_is_image", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			_, err = isWaitForImageDeprecate(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
 			if err != nil {
-				return err
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForImageDeprecate failed: %s", err.Error()), "ibm_is_image", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 		}
 	}
@@ -586,13 +689,17 @@ func imgUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasNam
 			obsoleteImageOptions := &vpcv1.ObsoleteImageOptions{
 				ID: &id,
 			}
-			response, err := sess.ObsoleteImage(obsoleteImageOptions)
+			_, err := sess.ObsoleteImageWithContext(context, obsoleteImageOptions)
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error during obsolete Image : %s\n%s", err, response)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ObsoleteImageWithContext failed: %s", err.Error()), "ibm_is_image", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			_, err = isWaitForImageObsolete(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
 			if err != nil {
-				return err
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForImageObsolete failed: %s", err.Error()), "ibm_is_image", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 		}
 	}
@@ -600,9 +707,11 @@ func imgUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasNam
 		options := &vpcv1.GetImageOptions{
 			ID: &id,
 		}
-		image, response, err := sess.GetImage(options)
+		image, _, err := sess.GetImageWithContext(context, options)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error getting Image IP: %s\n%s", err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetImageWithContext failed: %s", err.Error()), "ibm_is_image", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		oldList, newList := d.GetChange(isImageTags)
 		err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *image.CRN, "", isImageUserTagType)
@@ -615,9 +724,11 @@ func imgUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasNam
 		options := &vpcv1.GetImageOptions{
 			ID: &id,
 		}
-		image, response, err := sess.GetImage(options)
+		image, _, err := sess.GetImageWithContext(context, options)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error getting Image crn: %s\n%s", err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetImageWithContext failed: %s", err.Error()), "ibm_is_image", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		oldList, newList := d.GetChange(isImageAccessTags)
 		err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *image.CRN, "", isImageAccessTagType)
@@ -643,7 +754,7 @@ func imgUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasNam
 		} else {
 			obsoleteAt, err := strfmt.ParseDateTime(obsolescenceAt)
 			if err != nil {
-				return err
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_image", "update", "parse-obsolescence_at").GetDiag()
 			}
 			imagePatchModel.ObsolescenceAt = &obsoleteAt
 		}
@@ -656,14 +767,23 @@ func imgUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasNam
 		} else {
 			deprecateAt, err := strfmt.ParseDateTime(deprecationAt)
 			if err != nil {
-				return err
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_image", "update", "parse-deprecation_at").GetDiag()
 			}
 			imagePatchModel.DeprecationAt = &deprecateAt
 		}
 	}
+	if d.HasChange("allowed_use") {
+		allowedUseModel, err := ResourceIBMIsImageMapToImageAllowedUsePatch(d.Get("allowed_use").([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_image", "update", "parse-allowed_use").GetDiag()
+		}
+		imagePatchModel.AllowedUse = allowedUseModel
+	}
 	imagePatch, err := imagePatchModel.AsPatch()
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error calling asPatch for ImagePatch: %s", err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("imagePatchModel.AsPatch failed: %s", err.Error()), "ibm_is_image", "update")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if nullDeprecate {
 		imagePatch["deprecation_at"] = nil
@@ -672,84 +792,163 @@ func imgUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasNam
 		imagePatch["obsolescence_at"] = nil
 	}
 	options.ImagePatch = imagePatch
-	_, response, err := sess.UpdateImage(options)
+	_, _, err = sess.UpdateImage(options)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error on update of resource vpc Image: %s\n%s", err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateImageWithContext failed: %s", err.Error()), "ibm_is_image", "update")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	return nil
 }
 
-func resourceIBMISImageRead(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMISImageRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 	id := d.Id()
-	err := imgGet(d, meta, id)
+	err := imgGet(context, d, meta, id)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func imgGet(d *schema.ResourceData, meta interface{}, id string) error {
+func ResourceIBMIsImageMapToImageAllowedUsePatch(modelMap map[string]interface{}) (*vpcv1.ImageAllowedUsePatch, error) {
+	model := &vpcv1.ImageAllowedUsePatch{}
+	if modelMap["api_version"] != nil && modelMap["api_version"].(string) != "" {
+		model.ApiVersion = core.StringPtr(modelMap["api_version"].(string))
+	}
+	if modelMap["bare_metal_server"] != nil && modelMap["bare_metal_server"].(string) != "" {
+		model.BareMetalServer = core.StringPtr(modelMap["bare_metal_server"].(string))
+	}
+	if modelMap["instance"] != nil && modelMap["instance"].(string) != "" {
+		model.Instance = core.StringPtr(modelMap["instance"].(string))
+	}
+	return model, nil
+}
+
+func imgGet(context context.Context, d *schema.ResourceData, meta interface{}, id string) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_image", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	options := &vpcv1.GetImageOptions{
 		ID: &id,
 	}
-	image, response, err := sess.GetImage(options)
+	image, response, err := sess.GetImageWithContext(context, options)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error Getting Image (%s): %s\n%s", id, err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetImageWithContext failed: %s", err.Error()), "ibm_is_image", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	// d.Set(isImageArchitecure, image.Architecture)
-	if image.MinimumProvisionedSize != nil {
-		d.Set(isImageMinimumProvisionedSize, *image.MinimumProvisionedSize)
+	if !core.IsNil(image.MinimumProvisionedSize) {
+		if err = d.Set("size", flex.IntValue(image.MinimumProvisionedSize)); err != nil {
+			err = fmt.Errorf("Error setting size: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_image", "read", "set-size").GetDiag()
+		}
 	}
-
-	if image.CreatedAt != nil {
-		d.Set(isImageCreatedAt, image.CreatedAt.String())
+	if err = d.Set("created_at", flex.DateTimeToString(image.CreatedAt)); err != nil {
+		err = fmt.Errorf("Error setting created_at: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_image", "read", "set-created_at").GetDiag()
 	}
-	if image.DeprecationAt != nil {
-		d.Set(isImageDeprecationAt, image.DeprecationAt.String())
+	if !core.IsNil(image.DeprecationAt) {
+		if err = d.Set("deprecation_at", flex.DateTimeToString(image.DeprecationAt)); err != nil {
+			err = fmt.Errorf("Error setting deprecation_at: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_image", "read", "set-deprecation_at").GetDiag()
+		}
 	}
-	if image.ObsolescenceAt != nil {
-		d.Set(isImageObsolescenceAt, image.ObsolescenceAt.String())
+	if !core.IsNil(image.ObsolescenceAt) {
+		if err = d.Set("obsolescence_at", flex.DateTimeToString(image.ObsolescenceAt)); err != nil {
+			err = fmt.Errorf("Error setting obsolescence_at: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_image", "read", "set-obsolescence_at").GetDiag()
+		}
 	}
-	d.Set(isImageName, *image.Name)
-	d.Set(isImageOperatingSystem, *image.OperatingSystem.Name)
+	if !core.IsNil(image.Name) {
+		if err = d.Set("name", image.Name); err != nil {
+			err = fmt.Errorf("Error setting name: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_image", "read", "set-name").GetDiag()
+		}
+	}
+	if !core.IsNil(image.OperatingSystem) {
+		if err = d.Set("operating_system", image.OperatingSystem.Name); err != nil {
+			err = fmt.Errorf("Error setting operating_system: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_image", "read", "set-operating_system").GetDiag()
+		}
+	}
 	// d.Set(isImageFormat, image.Format)
-	if image.Encryption != nil {
-		d.Set("encryption", *image.Encryption)
+	if err = d.Set("encryption", image.Encryption); err != nil {
+		err = fmt.Errorf("Error setting encryption: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_image", "read", "set-encryption").GetDiag()
 	}
 	if image.EncryptionKey != nil {
-		d.Set("encryption_key", *image.EncryptionKey.CRN)
+		if err = d.Set("encryption_key", *image.EncryptionKey.CRN); err != nil {
+			err = fmt.Errorf("Error setting encryption_key: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_image", "read", "set-encryption_key").GetDiag()
+		}
 	}
 	if image.File != nil && image.File.Size != nil {
-		d.Set(isImageFile, *image.File.Size)
+		if err = d.Set("file", *image.File.Size); err != nil {
+			err = fmt.Errorf("Error setting file: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_image", "read", "set-file").GetDiag()
+		}
 	}
 	if image.SourceVolume != nil {
-		d.Set(isImageVolume, *image.SourceVolume.ID)
+		if err = d.Set("source_volume", *image.SourceVolume.ID); err != nil {
+			err = fmt.Errorf("Error setting source_volume: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_image", "read", "set-source_volume").GetDiag()
+		}
 	}
 
-	d.Set(isImageHref, *image.Href)
-	d.Set(isImageStatus, *image.Status)
-	d.Set(isImageVisibility, *image.Visibility)
-	if image.UserDataFormat != nil {
-		d.Set(isImageUserDataFormat, *image.UserDataFormat)
+	if err = d.Set("href", image.Href); err != nil {
+		err = fmt.Errorf("Error setting href: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_image", "read", "set-href").GetDiag()
 	}
-	if image.Encryption != nil {
-		d.Set(isImageEncryption, *image.Encryption)
+	if err = d.Set("status", image.Status); err != nil {
+		err = fmt.Errorf("Error setting status: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_image", "read", "set-status").GetDiag()
+	}
+	if err = d.Set("visibility", image.Visibility); err != nil {
+		err = fmt.Errorf("Error setting visibility: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_image", "read", "set-visibility").GetDiag()
+	}
+	if image.UserDataFormat != nil {
+		if err = d.Set("user_data_format", image.UserDataFormat); err != nil {
+			err = fmt.Errorf("Error setting user_data_format: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_image", "read", "set-user_data_format").GetDiag()
+		}
+	}
+	if err = d.Set("encryption", image.Encryption); err != nil {
+		err = fmt.Errorf("Error setting encryption: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_image", "read", "set-encryption").GetDiag()
 	}
 	if image.EncryptionKey != nil {
-		d.Set(isImageEncryptionKey, *image.EncryptionKey.CRN)
+		if err = d.Set("encryption_key", *image.EncryptionKey.CRN); err != nil {
+			err = fmt.Errorf("Error setting encryption_key: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_image", "read", "set-encryption_key").GetDiag()
+		}
 	}
 	if image.File != nil && image.File.Checksums != nil {
-		d.Set(isImageCheckSum, *image.File.Checksums.Sha256)
+		if err = d.Set(isImageCheckSum, *image.File.Checksums.Sha256); err != nil {
+			err = fmt.Errorf("Error setting checksum: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_image", "read", "set-checksum").GetDiag()
+		}
+	}
+	if !core.IsNil(image.AllowedUse) {
+		allowedUseMap, err := ResourceIBMIsImageImageAllowUseToMap(image.AllowedUse)
+		if err != nil {
+			err = fmt.Errorf("Error setting allowed_use: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_image", "read", "set-allowed_use").GetDiag()
+		}
+		if err = d.Set("allowed_use", []map[string]interface{}{allowedUseMap}); err != nil {
+			err = fmt.Errorf("Error setting allowed_use: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_image", "read", "set-allowed_use").GetDiag()
+		}
 	}
 	tags, err := flex.GetGlobalTagsUsingCRN(meta, *image.CRN, "", isImageUserTagType)
 	if err != nil {
@@ -762,58 +961,91 @@ func imgGet(d *schema.ResourceData, meta interface{}, id string) error {
 		log.Printf(
 			"Error on get of resource vpc Image (%s) access tags: %s", d.Id(), err)
 	}
-	d.Set(isImageAccessTags, accesstags)
+	if err = d.Set("access_tags", accesstags); err != nil {
+		err = fmt.Errorf("Error setting access_tags: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_image", "read", "set-access_tags").GetDiag()
+	}
 	controller, err := flex.GetBaseController(meta)
 	if err != nil {
-		return err
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetBaseController failed: %s", err.Error()), "ibm_is_image", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	d.Set(flex.ResourceControllerURL, controller+"/vpc-ext/compute/image")
+	if err = d.Set(flex.ResourceControllerURL, controller+"/vpc-ext/compute/image"); err != nil {
+		err = fmt.Errorf("Error setting resource_controller_url: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_image", "read", "set-resource_controller_url").GetDiag()
+	}
 	d.Set(flex.ResourceName, *image.Name)
-	d.Set(flex.ResourceStatus, *image.Status)
-	d.Set(flex.ResourceCRN, *image.CRN)
-	d.Set(IsImageCRN, *image.CRN)
+	if err = d.Set(flex.ResourceControllerURL, controller+"/vpc-ext/compute/image"); err != nil {
+		err = fmt.Errorf("Error setting resource_controller_url: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_image", "read", "set-resource_controller_url").GetDiag()
+	}
+	if err = d.Set(flex.ResourceStatus, *image.Status); err != nil {
+		err = fmt.Errorf("Error setting resource_status: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_image", "read", "set-resource_status").GetDiag()
+	}
+	if err = d.Set(flex.ResourceCRN, *image.CRN); err != nil {
+		err = fmt.Errorf("Error setting resource_crn: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_image", "read", "set-resource_crn").GetDiag()
+	}
+	if err = d.Set(IsImageCRN, *image.CRN); err != nil {
+		err = fmt.Errorf("Error setting crn: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_image", "read", "set-crn").GetDiag()
+	}
 	if image.ResourceGroup != nil {
-		d.Set(isImageResourceGroup, *image.ResourceGroup.ID)
+		if err = d.Set(isImageResourceGroup, *image.ResourceGroup.ID); err != nil {
+			err = fmt.Errorf("Error setting resource_group: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_image", "read", "set-resource_group").GetDiag()
+		}
 	}
 	return nil
 }
 
-func resourceIBMISImageDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMISImageDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 	id := d.Id()
-	err := imgDelete(d, meta, id)
+	err := imgDelete(context, d, meta, id)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func imgDelete(d *schema.ResourceData, meta interface{}, id string) error {
+func imgDelete(context context.Context, d *schema.ResourceData, meta interface{}, id string) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_image", "delete", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	getImageOptions := &vpcv1.GetImageOptions{
 		ID: &id,
 	}
-	_, response, err := sess.GetImage(getImageOptions)
+	_, response, err := sess.GetImageWithContext(context, getImageOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error Getting Image (%s): %s\n%s", id, err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetImageWithContext failed: %s", err.Error()), "ibm_is_image", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	options := &vpcv1.DeleteImageOptions{
 		ID: &id,
 	}
-	response, err = sess.DeleteImage(options)
+	response, err = sess.DeleteImageWithContext(context, options)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error Deleting Image : %s\n%s", err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteImageWithContext failed: %s", err.Error()), "ibm_is_image", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	_, err = isWaitForImageDeleted(sess, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
-		return err
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForImageDeleted failed: %s", err.Error()), "ibm_is_image", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	d.SetId("")
 	return nil
@@ -859,7 +1091,9 @@ func resourceIBMISImageExists(d *schema.ResourceData, meta interface{}) (bool, e
 func imgExists(d *schema.ResourceData, meta interface{}, id string) (bool, error) {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return false, err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_image", "exists", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return false, tfErr
 	}
 	options := &vpcv1.GetImageOptions{
 		ID: &id,
@@ -872,4 +1106,32 @@ func imgExists(d *schema.ResourceData, meta interface{}, id string) (bool, error
 		return false, fmt.Errorf("[ERROR] Error getting Image: %s\n%s", err, response)
 	}
 	return true, nil
+}
+
+func ResourceIBMUsageConstraintsMapToImageAllowUsePrototype(modelMap map[string]interface{}) (*vpcv1.ImageAllowedUsePrototype, error) {
+	model := &vpcv1.ImageAllowedUsePrototype{}
+	if modelMap["api_version"] != nil && modelMap["api_version"].(string) != "" {
+		model.ApiVersion = core.StringPtr(modelMap["api_version"].(string))
+	}
+	if modelMap["bare_metal_server"] != nil && modelMap["bare_metal_server"].(string) != "" {
+		model.BareMetalServer = core.StringPtr(modelMap["bare_metal_server"].(string))
+	}
+	if modelMap["instance"] != nil && modelMap["instance"].(string) != "" {
+		model.Instance = core.StringPtr(modelMap["instance"].(string))
+	}
+	return model, nil
+}
+
+func ResourceIBMIsImageImageAllowUseToMap(model *vpcv1.ImageAllowedUse) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.BareMetalServer != nil {
+		modelMap["bare_metal_server"] = *model.BareMetalServer
+	}
+	if model.Instance != nil {
+		modelMap["instance"] = *model.Instance
+	}
+	if model.Instance != nil {
+		modelMap["api_version"] = *model.ApiVersion
+	}
+	return modelMap, nil
 }

@@ -4232,3 +4232,333 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 		},
 	})
 }
+
+func TestAccIBMISInstance_ProfileAndBandwidthUpdate(t *testing.T) {
+	var instance string
+	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tf-instance-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tf-subnet-%d", acctest.RandIntRange(10, 100))
+	publicKey := strings.TrimSpace(`
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
+`)
+	sshname := fmt.Sprintf("tf-ssh-%d", acctest.RandIntRange(10, 100))
+	initialProfile := "cx2-4x8"   // Initial profile
+	updatedProfile := "cx2-48x96" // Updated profile
+	initialBandwidth := 2000      // Initial bandwidth
+	updatedBandwidth := 20000     // Updated bandwidth
+	prefix := fmt.Sprintf("tf-prefix-%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISInstanceDestroy,
+		Steps: []resource.TestStep{
+			// Step 1: Create instance with initial profile and bandwidth
+			{
+				Config: testAccCheckIBMISInstanceConfigWithProfileAndBandwidth(
+					vpcname, subnetname, sshname, publicKey, name, prefix, initialProfile, initialBandwidth),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISInstanceExists("ibm_is_instance.testacc_instance", instance),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "profile", initialProfile),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "total_volume_bandwidth", fmt.Sprintf("%d", initialBandwidth)),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "zone", acc.ISZoneName),
+				),
+			},
+			// Step 2: Update both profile and bandwidth in a single operation
+			{
+				Config: testAccCheckIBMISInstanceConfigWithProfileAndBandwidth(
+					vpcname, subnetname, sshname, publicKey, name, prefix, updatedProfile, updatedBandwidth),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISInstanceExists("ibm_is_instance.testacc_instance", instance),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "profile", updatedProfile),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "total_volume_bandwidth", fmt.Sprintf("%d", updatedBandwidth)),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "zone", acc.ISZoneName),
+				),
+			},
+		},
+	})
+}
+
+// Configuration function that allows specifying both profile and bandwidth with primary network attachment
+func testAccCheckIBMISInstanceConfigWithProfileAndBandwidth(vpcname, subnetname, sshname, publicKey, name, prefix, profile string, bandwidth int) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	}
+	  
+	resource "ibm_is_subnet" "testacc_subnet" {
+		name            = "%s"
+		vpc             = ibm_is_vpc.testacc_vpc.id
+		zone            = "%s"
+		ipv4_cidr_block = "%s"
+	}
+	  
+	resource "ibm_is_ssh_key" "testacc_sshkey" {
+		name       = "%s"
+		public_key = "%s"
+	}
+	  
+	resource "ibm_is_instance" "testacc_instance" {
+		name    = "%s"
+		image   = "%s"
+		profile = "%s"
+		total_volume_bandwidth = %d
+		primary_network_attachment {
+			name = "%s-pna"
+			virtual_network_interface {
+				subnet = ibm_is_subnet.testacc_subnet.id
+			}
+		}
+		vpc  = ibm_is_vpc.testacc_vpc.id
+		zone = "%s"
+		keys = [ibm_is_ssh_key.testacc_sshkey.id]
+		wait_before_delete = false
+	}`, vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, sshname, publicKey, name, acc.IsImage, profile, bandwidth, prefix, acc.ISZoneName)
+}
+
+// volume tags
+
+func TestAccIBMISInstance_volumeTags(t *testing.T) {
+	var instance string
+	prefix := fmt.Sprintf("tf-inst-%d", acctest.RandIntRange(10, 100))
+	vpcname := fmt.Sprintf("%s-vpc", prefix)
+	name := fmt.Sprintf("%s-instance", prefix)
+	subnetname := fmt.Sprintf("%s-subnet", prefix)
+	sshname := fmt.Sprintf("%s-ssh", prefix)
+	dataVolumeName := fmt.Sprintf("%s-data-volume", prefix)
+
+	publicKey := strings.TrimSpace(`
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBEGGaXOYllPYQE+Qj8MiRo7DOJK9j7K8OQE9VWL5VjZ terraform-test-key
+`)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISInstanceVolumeTagsConfig(prefix, vpcname, subnetname, sshname, publicKey, name, dataVolumeName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISInstanceExists("ibm_is_instance.testacc_instance", instance),
+					// Instance checks
+					resource.TestCheckResourceAttr("ibm_is_instance.testacc_instance", "name", name),
+					resource.TestCheckResourceAttr("ibm_is_instance.testacc_instance", "profile", "bx2-2x8"),
+					resource.TestCheckResourceAttr("ibm_is_instance.testacc_instance", "zone", acc.ISZoneName),
+					resource.TestCheckResourceAttr("ibm_is_instance.testacc_instance", "tags.#", "1"),
+					resource.TestCheckResourceAttr("ibm_is_instance.testacc_instance", "tags.0", "tagged:byuser"),
+
+					// Volume prototype checks
+					resource.TestCheckResourceAttr("ibm_is_instance.testacc_instance", "volume_prototypes.#", "1"),
+					resource.TestCheckResourceAttr("ibm_is_instance.testacc_instance", "volume_prototypes.0.volume_name", dataVolumeName),
+					resource.TestCheckResourceAttr("ibm_is_instance.testacc_instance", "volume_prototypes.0.volume_capacity", "141"),
+					resource.TestCheckResourceAttr("ibm_is_instance.testacc_instance", "volume_prototypes.0.volume_profile", "general-purpose"),
+					resource.TestCheckResourceAttr("ibm_is_instance.testacc_instance", "volume_prototypes.0.delete_volume_on_instance_delete", "true"),
+					resource.TestCheckResourceAttr("ibm_is_instance.testacc_instance", "volume_prototypes.0.volume_tags.#", "1"),
+					resource.TestCheckResourceAttr("ibm_is_instance.testacc_instance", "volume_prototypes.0.volume_tags.0", "tagged:byuser"),
+
+					// Boot volume checks
+					resource.TestCheckResourceAttr("ibm_is_instance.testacc_instance", "boot_volume.#", "1"),
+					resource.TestCheckResourceAttr("ibm_is_instance.testacc_instance", "boot_volume.0.tags.#", "1"),
+					resource.TestCheckResourceAttr("ibm_is_instance.testacc_instance", "boot_volume.0.tags.0", "tagged:byuser"),
+					resource.TestCheckResourceAttrSet("ibm_is_instance.testacc_instance", "boot_volume.0.volume_id"),
+
+					// Primary network attachment checks
+					resource.TestCheckResourceAttr("ibm_is_instance.testacc_instance", "primary_network_attachment.#", "1"),
+					resource.TestCheckResourceAttr("ibm_is_instance.testacc_instance", "primary_network_attachment.0.name", fmt.Sprintf("%s-pna", prefix)),
+					resource.TestCheckResourceAttrSet("ibm_is_instance.testacc_instance", "primary_network_attachment.0.virtual_network_interface.0.subnet"),
+
+					// Data source checks for boot volume tags
+					resource.TestCheckResourceAttr("data.ibm_is_volume.boot", "tags.0", "tagged:byuser"),
+					// Data source checks for data volume tags
+					resource.TestCheckResourceAttr("data.ibm_is_volume.data", "tags.0", "tagged:byuser"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMISInstanceVolumeTagsConfig(prefix, vpcname, subnetname, sshname, publicKey, name, dataVolumeName string) string {
+	return fmt.Sprintf(`
+	# VPC Infrastructure
+	resource "ibm_is_vpc" "is_vpc" {
+		name = "%s"
+	}
+
+	resource "ibm_is_subnet" "is_subnet" {
+		name                     = "%s"
+		vpc                      = ibm_is_vpc.is_vpc.id
+		total_ipv4_address_count = 64
+		zone                     = "%s"
+	}
+
+	# Data sources
+	data "ibm_is_image" "is_image" {
+		name = "ibm-ubuntu-20-04-6-minimal-amd64-6"
+	}
+
+	# SSH Key
+	resource "ibm_is_ssh_key" "is_key" {
+		name       = "%s"
+		public_key = "%s"
+		type       = "ed25519"
+	}
+
+	# Instance with tagged volumes
+	resource "ibm_is_instance" "testacc_instance" {
+		name    = "%s"
+		image   = data.ibm_is_image.is_image.id
+		profile = "bx2-2x8"
+		
+		primary_network_attachment {
+			name = "%s-pna"
+			virtual_network_interface {
+				subnet = ibm_is_subnet.is_subnet.id
+			}
+		}
+		
+		# Boot volume with tags
+		boot_volume {
+			tags = ["tagged:byuser"]
+		}
+
+		# Data volume with tags
+		volume_prototypes {
+			name                             = "%s"
+			delete_volume_on_instance_delete = true
+			volume_name                      = "%s"
+			volume_capacity                  = 141
+			volume_profile                   = "general-purpose"
+			volume_tags                      = ["tagged:byuser"]
+		}
+		
+		vpc                = ibm_is_vpc.is_vpc.id
+		zone               = ibm_is_subnet.is_subnet.zone
+		keys               = [ibm_is_ssh_key.is_key.id]
+		wait_before_delete = false
+		
+		tags = ["tagged:byuser"]
+	}
+
+	# Data sources to verify volume tags
+	data "ibm_is_volume" "boot" {
+		identifier = ibm_is_instance.testacc_instance.boot_volume.0.volume_id
+	}
+
+	data "ibm_is_volume" "data" {
+		name = ibm_is_instance.testacc_instance.volume_prototypes.0.volume_name
+	}
+	`, vpcname, subnetname, acc.ISZoneName, sshname, publicKey, name, prefix, dataVolumeName, dataVolumeName)
+}
+
+func TestAccIBMISInstance_AllowedUse(t *testing.T) {
+	var instance string
+	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tf-instnace-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tf-subnet-%d", acctest.RandIntRange(10, 100))
+	instanceName := fmt.Sprintf("tf-instance-%d", acctest.RandIntRange(10, 100))
+	publicKey := strings.TrimSpace(`
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
+`)
+	sshname := fmt.Sprintf("tf-ssh-%d", acctest.RandIntRange(10, 100))
+	volname := fmt.Sprintf("tf-vol-%d", acctest.RandIntRange(10, 100))
+	name1 := fmt.Sprintf("tfsnapshotuat-%d", acctest.RandIntRange(10, 100))
+	apiVersion := "2025-07-02"
+	bareMetalServer := "true"
+	instanceval := "true"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISInstanceConfig_AllowedUse(vpcname, subnetname, sshname, publicKey, volname, name, name1, apiVersion, bareMetalServer, instanceval, instanceName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISInstanceExists("ibm_is_instance.testacc_instance_allowed_use", instance),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance_allowed_use", "name", instanceName),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance_allowed_use", "zone", acc.ISZoneName),
+
+					// Volume prototype checks
+					resource.TestCheckResourceAttr("ibm_is_instance.testacc_instance_allowed_use", "volume_prototypes.#", "1"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance.testacc_instance_allowed_use", "volume_prototypes.0.allowed_use.#"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance.testacc_instance_allowed_use", "volume_prototypes.0.allowed_use.0.bare_metal_server"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance.testacc_instance_allowed_use", "volume_prototypes.0.allowed_use.0.instance"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance.testacc_instance_allowed_use", "volume_prototypes.0.allowed_use.0.api_version"),
+					resource.TestCheckResourceAttr("ibm_is_instance.testacc_instance_allowed_use", "volume_prototypes.0.allowed_use.0.bare_metal_server", bareMetalServer),
+					resource.TestCheckResourceAttr("ibm_is_instance.testacc_instance_allowed_use", "volume_prototypes.0.allowed_use.0.instance", instanceval),
+					resource.TestCheckResourceAttr("ibm_is_instance.testacc_instance_allowed_use", "volume_prototypes.0.allowed_use.0.api_version", apiVersion),
+
+					// Boot volume checks
+					resource.TestCheckResourceAttr("ibm_is_instance.testacc_instance_allowed_use", "boot_volume.#", "1"),
+					resource.TestCheckResourceAttrSet("ibm_is_instance.testacc_instance_allowed_use", "boot_volume.0.volume_id"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance.testacc_instance_allowed_use", "boot_volume.0.allowed_use.#"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance.testacc_instance_allowed_use", "boot_volume.0.allowed_use.0.bare_metal_server"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance.testacc_instance_allowed_use", "boot_volume.0.allowed_use.0.instance"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance.testacc_instance_allowed_use", "boot_volume.0.allowed_use.0.api_version"),
+					resource.TestCheckResourceAttr("ibm_is_instance.testacc_instance_allowed_use", "boot_volume.0.allowed_use.0.bare_metal_server", bareMetalServer),
+					resource.TestCheckResourceAttr("ibm_is_instance.testacc_instance_allowed_use", "boot_volume.0.allowed_use.0.instance", instanceval),
+					resource.TestCheckResourceAttr("ibm_is_instance.testacc_instance_allowed_use", "boot_volume.0.allowed_use.0.api_version", apiVersion),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMISInstanceConfig_AllowedUse(vpcname, subnetname, sshname, publicKey, volname, name, name1, apiVersion, bareMetalServer, instanceval, insName string) string {
+
+	return testAccCheckIBMISSnapshotConfig(vpcname, subnetname, sshname, publicKey, volname, name, name1) + fmt.Sprintf(`
+	resource "ibm_is_instance" "testacc_instance_allowed_use" {
+	name    = "%s"
+	profile = "%s"
+	primary_network_interface {
+		subnet = ibm_is_subnet.testacc_subnet.id
+	}
+	vpc  = ibm_is_vpc.testacc_vpc.id
+	zone = "%s"
+	keys = [ibm_is_ssh_key.testacc_sshkey.id]
+	boot_volume {
+		name     = "example-boot-volume"
+		snapshot = ibm_is_snapshot.testacc_snapshot.id
+		size = 100
+		allowed_use {
+			api_version       = "%s"
+			instance          = "%s"
+			bare_metal_server = "%s"
+		}
+	}
+	volume_prototypes {
+		name                             = "example-prototype"
+		delete_volume_on_instance_delete = true
+		volume_name                      = "example-volume"
+		volume_capacity                  = 100
+		volume_profile                   = "custom"
+		volume_source_snapshot           = ibm_is_snapshot.testacc_snapshot.id
+		allowed_use {
+			api_version       = "%s"
+			bare_metal_server = "%s"
+			instance          = "%s"
+		}
+	}
+	}
+	`, insName, acc.InstanceProfileName, acc.ISZoneName, apiVersion, bareMetalServer, instanceval, apiVersion, bareMetalServer, instanceval)
+}

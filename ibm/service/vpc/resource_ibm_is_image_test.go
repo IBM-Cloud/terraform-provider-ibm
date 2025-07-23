@@ -40,6 +40,103 @@ func TestAccIBMISImage_basic(t *testing.T) {
 		},
 	})
 }
+
+func TestAccIBMISImage_accessTags(t *testing.T) {
+	var image string
+	name := fmt.Sprintf("tfimg-access-tags-%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheckImage(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: checkImageDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISImageAccessTagsConfig(name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISImageExists("ibm_is_image.isExampleImage", image),
+					resource.TestCheckResourceAttr("ibm_is_image.isExampleImage", "name", name),
+					resource.TestCheckResourceAttr("ibm_is_image.isExampleImage", "operating_system", acc.Image_operating_system),
+					resource.TestCheckResourceAttrSet("ibm_is_image.isExampleImage", "user_data_format"),
+					resource.TestCheckResourceAttrSet("ibm_is_image.isExampleImage", "status"),
+					resource.TestCheckResourceAttrSet("ibm_is_image.isExampleImage", "visibility"),
+
+					// Access tags validation
+					resource.TestCheckResourceAttr("ibm_is_image.isExampleImage", "access_tags.#", "1"),
+					resource.TestCheckResourceAttr("ibm_is_image.isExampleImage", "access_tags.0", "test:access"),
+				),
+			},
+		},
+	})
+}
+func TestAccIBMISImage_allowedUse(t *testing.T) {
+	var image string
+	name := fmt.Sprintf("tfimg-name-%d", acctest.RandIntRange(10, 100))
+	apiVersion := "2025-07-02"
+	bareMetalServer := "enable_secure_boot==true"
+	instance := "enable_secure_boot==true"
+	apiVersionUpdate := "2025-07-02"
+	bareMetalServerUpdate := "true"
+	instanceUpdate := "true"
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheckImage(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: checkImageDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISImageConfigAllowedUse(name, apiVersion, bareMetalServer, instance),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISImageExists("ibm_is_image.isExampleImage", image),
+					resource.TestCheckResourceAttr(
+						"ibm_is_image.isExampleImage", "name", name),
+					resource.TestCheckResourceAttrSet("ibm_is_image.isExampleImage", "user_data_format"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_image.isExampleImage", "allowed_use.#"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_image.isExampleImage", "allowed_use.0.bare_metal_server"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_image.isExampleImage", "allowed_use.0.instance"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_image.isExampleImage", "allowed_use.0.api_version"),
+					resource.TestCheckResourceAttr("ibm_is_image.isExampleImage", "allowed_use.0.bare_metal_server", bareMetalServer),
+					resource.TestCheckResourceAttr("ibm_is_image.isExampleImage", "allowed_use.0.instance", instance),
+					resource.TestCheckResourceAttr("ibm_is_image.isExampleImage", "allowed_use.0.api_version", apiVersion),
+				),
+			},
+			{
+				Config: testAccCheckIBMISImageConfigAllowedUse(name, apiVersionUpdate, bareMetalServerUpdate, instanceUpdate),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISImageExists("ibm_is_image.isExampleImage", image),
+					resource.TestCheckResourceAttr(
+						"ibm_is_image.isExampleImage", "name", name),
+					resource.TestCheckResourceAttrSet("ibm_is_image.isExampleImage", "user_data_format"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_image.isExampleImage", "allowed_use.#"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_image.isExampleImage", "allowed_use.0.bare_metal_server"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_image.isExampleImage", "allowed_use.0.instance"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_image.isExampleImage", "allowed_use.0.api_version"),
+					resource.TestCheckResourceAttr("ibm_is_image.isExampleImage", "allowed_use.0.bare_metal_server", bareMetalServerUpdate),
+					resource.TestCheckResourceAttr("ibm_is_image.isExampleImage", "allowed_use.0.instance", instanceUpdate),
+					resource.TestCheckResourceAttr("ibm_is_image.isExampleImage", "allowed_use.0.api_version", apiVersionUpdate),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMISImageAccessTagsConfig(name string) string {
+	return fmt.Sprintf(`
+		resource "ibm_is_image" "isExampleImage" {
+			href             = "%s"
+			name             = "%s"
+			operating_system = "%s"
+			access_tags      = ["test:access"]
+		}
+	`, acc.Image_cos_url, name, acc.Image_operating_system)
+}
+
 func TestAccIBMISImage_lifecycle(t *testing.T) {
 	var image string
 	name := fmt.Sprintf("tfimg-name-%d", acctest.RandIntRange(10, 100))
@@ -289,6 +386,22 @@ func testAccCheckIBMISImageConfig(name string) string {
 		}
 	`, acc.Image_cos_url, name, acc.Image_operating_system)
 }
+
+func testAccCheckIBMISImageConfigAllowedUse(name, apiVersion, bareMetalServer, instance string) string {
+	return fmt.Sprintf(`
+		resource "ibm_is_image" "isExampleImage" {
+			href = "%s"
+			name = "%s"
+			operating_system = "%s"
+			allowed_use {
+   				api_version       = "%s"
+    			bare_metal_server = "%s"
+    			instance          = "%s"
+  			}
+		}
+	`, acc.Image_cos_url, name, acc.Image_operating_system, apiVersion, bareMetalServer, instance)
+}
+
 func testAccCheckIBMISImageLifecycleConfig(name, deprecationAt, obsolescenceAt string) string {
 	return fmt.Sprintf(`
 		resource "ibm_is_image" "isExampleImage" {

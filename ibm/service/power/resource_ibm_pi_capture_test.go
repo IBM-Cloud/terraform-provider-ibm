@@ -38,6 +38,7 @@ func TestAccIBMPICaptureBasic(t *testing.T) {
 		},
 	})
 }
+
 func TestAccIBMPICaptureWithVolume(t *testing.T) {
 	captureRes := "ibm_pi_capture.capture_instance"
 	name := fmt.Sprintf("tf-pi-capture-%d", acctest.RandIntRange(10, 100))

@@ -24,9 +24,10 @@ func DataSourceIBMPIDatacenter() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			// Arguments
 			Arg_CloudInstanceID: {
-				Description: "The GUID of the service instance associated with an account.",
-				Optional:    true,
-				Type:        schema.TypeString,
+				Description:  "The GUID of the service instance associated with an account.",
+				Optional:     true,
+				Type:         schema.TypeString,
+				ValidateFunc: validation.NoZeroValues,
 			},
 			Arg_DatacenterZone: {
 				Description:  "Datacenter zone you want to retrieve.",

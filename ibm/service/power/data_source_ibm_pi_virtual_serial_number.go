@@ -46,6 +46,11 @@ func DataSourceIBMPIVirtualSerialNumber() *schema.Resource {
 				Description: "ID of PVM instance virtual serial number is attached to.",
 				Type:        schema.TypeString,
 			},
+			Attr_SoftwareTier: {
+				Computed:    true,
+				Description: "Software tier for virtual serial number.",
+				Type:        schema.TypeString,
+			},
 		},
 	}
 }
@@ -74,6 +79,9 @@ func dataSourceIBMPIVirtualSerialNumberRead(ctx context.Context, d *schema.Resou
 	d.Set(Attr_Description, virtualSerialNumberData.Description)
 	if virtualSerialNumberData.PvmInstanceID != nil {
 		d.Set(Attr_InstanceID, virtualSerialNumberData.PvmInstanceID)
+	}
+	if virtualSerialNumberData.SoftwareTier != "" {
+		d.Set(Attr_SoftwareTier, virtualSerialNumberData.SoftwareTier)
 	}
 
 	return nil

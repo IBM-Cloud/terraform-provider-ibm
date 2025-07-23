@@ -265,7 +265,9 @@ func DataSourceIBMISLBPool() *schema.Resource {
 func dataSourceIBMIsLbPoolRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_lb_pool", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	var loadBalancerPool *vpcv1.LoadBalancerPool
@@ -276,10 +278,11 @@ func dataSourceIBMIsLbPoolRead(context context.Context, d *schema.ResourceData, 
 		getLoadBalancerPoolOptions.SetLoadBalancerID(d.Get("lb").(string))
 		getLoadBalancerPoolOptions.SetID(v.(string))
 
-		loadBalancerPoolInfo, response, err := sess.GetLoadBalancerPoolWithContext(context, getLoadBalancerPoolOptions)
+		loadBalancerPoolInfo, _, err := sess.GetLoadBalancerPoolWithContext(context, getLoadBalancerPoolOptions)
 		if err != nil {
-			log.Printf("[DEBUG] GetLoadBalancerPoolWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("GetLoadBalancerPoolWithContext failed %s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetLoadBalancerPoolWithContext failed: %s", err.Error()), "(Data) ibm_is_lb_pool", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		loadBalancerPool = loadBalancerPoolInfo
 
@@ -288,10 +291,11 @@ func dataSourceIBMIsLbPoolRead(context context.Context, d *schema.ResourceData, 
 
 		listLoadBalancerPoolsOptions.SetLoadBalancerID(d.Get("lb").(string))
 
-		loadBalancerPoolCollection, response, err := sess.ListLoadBalancerPoolsWithContext(context, listLoadBalancerPoolsOptions)
+		loadBalancerPoolCollection, _, err := sess.ListLoadBalancerPoolsWithContext(context, listLoadBalancerPoolsOptions)
 		if err != nil {
-			log.Printf("[DEBUG] ListLoadBalancerPoolsWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("ListLoadBalancerPoolsWithContext failed %s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListLoadBalancerPoolsWithContext failed: %s", err.Error()), "(Data) ibm_is_lb_pool", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
 		name := v.(string)
@@ -303,14 +307,16 @@ func dataSourceIBMIsLbPoolRead(context context.Context, d *schema.ResourceData, 
 		}
 		if loadBalancerPool == nil {
 			log.Printf("[DEBUG] No LoadBalancerPool found with name (%s)", name)
-			return diag.FromErr(fmt.Errorf("No LoadBalancerPool found with name (%s)", name))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("No LoadBalancerPool found with name: %s", name), "(Data) ibm_is_lb_pool", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
 	}
 
 	d.SetId(*loadBalancerPool.ID)
 	if err = d.Set("algorithm", loadBalancerPool.Algorithm); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting algorithm: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting algorithm: %s", err), "(Data) ibm_is_lb_pool", "read", "set-algorithm").GetDiag()
 	}
 	failsafePolicy := []map[string]interface{}{}
 	if loadBalancerPool.FailsafePolicy != nil {
@@ -324,55 +330,56 @@ func dataSourceIBMIsLbPoolRead(context context.Context, d *schema.ResourceData, 
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting failsafe_policy: %s", err), "(Data) ibm_is_lb_pool", "read", "set-failsafe_policy").GetDiag()
 	}
 	if err = d.Set("created_at", flex.DateTimeToString(loadBalancerPool.CreatedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting created_at: %s", err), "(Data) ibm_is_lb_pool", "read", "set-created_at").GetDiag()
 	}
 
 	if loadBalancerPool.HealthMonitor != nil {
 		poolHealthMonitor := loadBalancerPool.HealthMonitor.(*vpcv1.LoadBalancerPoolHealthMonitor)
 		err = d.Set("health_monitor", dataSourceLoadBalancerPoolFlattenHealthMonitor(*poolHealthMonitor))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting health_monitor %s", err))
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting health_monitor: %s", err), "(Data) ibm_is_lb_pool", "read", "set-health_monitor").GetDiag()
 		}
 	}
 	if err = d.Set("href", loadBalancerPool.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting href: %s", err), "(Data) ibm_is_lb_pool", "read", "set-href").GetDiag()
 	}
 
 	if loadBalancerPool.InstanceGroup != nil {
 		err = d.Set("instance_group", dataSourceLoadBalancerPoolFlattenInstanceGroup(*loadBalancerPool.InstanceGroup))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting instance_group %s", err))
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting instance_group: %s", err), "(Data) ibm_is_lb_pool", "read", "set-instance_group").GetDiag()
 		}
 	}
 
 	if loadBalancerPool.Members != nil {
 		err = d.Set("members", dataSourceLoadBalancerPoolFlattenMembers(loadBalancerPool.Members))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting members %s", err))
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting members: %s", err), "(Data) ibm_is_lb_pool", "read", "set-members").GetDiag()
 		}
 	}
 
 	if err = d.Set("identifier", loadBalancerPool.ID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting identifier: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting identifier: %s", err), "(Data) ibm_is_lb_pool", "read", "set-identifier").GetDiag()
 	}
 
 	if err = d.Set("name", loadBalancerPool.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_is_lb_pool", "read", "set-name").GetDiag()
 	}
 	if err = d.Set("protocol", loadBalancerPool.Protocol); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting protocol: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting protocol: %s", err), "(Data) ibm_is_lb_pool", "read", "set-protocol").GetDiag()
 	}
 	if err = d.Set("provisioning_status", loadBalancerPool.ProvisioningStatus); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting provisioning_status: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting provisioning_status: %s", err), "(Data) ibm_is_lb_pool", "read", "set-provisioning_status").GetDiag()
 	}
+
 	if err = d.Set("proxy_protocol", loadBalancerPool.ProxyProtocol); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting proxy_protocol: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting proxy_protocol: %s", err), "(Data) ibm_is_lb_pool", "read", "set-proxy_protocol").GetDiag()
 	}
 
 	if loadBalancerPool.SessionPersistence != nil {
 		err = d.Set("session_persistence", dataSourceLoadBalancerPoolFlattenSessionPersistence(*loadBalancerPool.SessionPersistence))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting session_persistence %s", err))
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting session_persistence: %s", err), "(Data) ibm_is_lb_pool", "read", "set-session_persistence").GetDiag()
 		}
 	}
 

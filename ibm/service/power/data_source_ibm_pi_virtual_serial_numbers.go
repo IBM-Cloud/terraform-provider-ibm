@@ -55,6 +55,11 @@ func DataSourceIBMPIVirtualSerialNumbers() *schema.Resource {
 							Description: "Virtual Serial Number.",
 							Type:        schema.TypeString,
 						},
+						Attr_SoftwareTier: {
+							Computed:    true,
+							Description: "Software tier for virtual serial number.",
+							Type:        schema.TypeString,
+						},
 					},
 				},
 				Type: schema.TypeList,
@@ -93,6 +98,7 @@ func dataSourceIBMPIVirtualSerialNumbersRead(ctx context.Context, d *schema.Reso
 		v[Attr_Description] = vsn.Description
 		v[Attr_InstanceID] = vsn.PvmInstanceID
 		v[Attr_Serial] = vsn.Serial
+		v[Attr_SoftwareTier] = vsn.SoftwareTier
 		vsnMapList = append(vsnMapList, v)
 	}
 

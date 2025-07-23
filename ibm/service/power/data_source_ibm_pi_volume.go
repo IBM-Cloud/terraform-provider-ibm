@@ -100,6 +100,11 @@ func DataSourceIBMPIVolume() *schema.Resource {
 				Description: "Mirroring state for replication enabled volume.",
 				Type:        schema.TypeString,
 			},
+			Attr_OutOfBandDeleted: {
+				Computed:    true,
+				Description: "Indicates if the volume does not exist on storage controller.",
+				Type:        schema.TypeBool,
+			},
 			Attr_PrimaryRole: {
 				Computed:    true,
 				Description: "Indicates whether master/auxiliary volume is playing the primary role.",
@@ -187,7 +192,7 @@ func dataSourceIBMPIVolumeRead(ctx context.Context, d *schema.ResourceData, meta
 	d.Set(Attr_CreationDate, volumedata.CreationDate.String())
 	if volumedata.Crn != "" {
 		d.Set(Attr_CRN, volumedata.Crn)
-		tags, err := flex.GetTagsUsingCRN(meta, string(volumedata.Crn))
+		tags, err := flex.GetGlobalTagsUsingCRN(meta, string(volumedata.Crn), "", UserTagType)
 		if err != nil {
 			log.Printf("Error on get of pi volume (%s) user_tags: %s", *volumedata.VolumeID, err)
 		}
@@ -202,6 +207,7 @@ func dataSourceIBMPIVolumeRead(ctx context.Context, d *schema.ResourceData, meta
 	d.Set(Attr_LastUpdateDate, volumedata.LastUpdateDate.String())
 	d.Set(Attr_MasterVolumeName, volumedata.MasterVolumeName)
 	d.Set(Attr_MirroringState, volumedata.MirroringState)
+	d.Set(Attr_OutOfBandDeleted, volumedata.OutOfBandDeleted)
 	d.Set(Attr_PrimaryRole, volumedata.PrimaryRole)
 	d.Set(Attr_ReplicationEnabled, volumedata.ReplicationEnabled)
 	d.Set(Attr_ReplicationType, volumedata.ReplicationType)

@@ -35,6 +35,11 @@ func DataSourceIBMPISPPPlacementGroups() *schema.Resource {
 				Description: "List of all the shared processor pool placement groups.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						Attr_CRN: {
+							Computed:    true,
+							Description: "The CRN of this resource.",
+							Type:        schema.TypeString,
+						},
 						Attr_Members: {
 							Computed:    true,
 							Elem:        &schema.Schema{Type: schema.TypeString},
@@ -55,6 +60,13 @@ func DataSourceIBMPISPPPlacementGroups() *schema.Resource {
 							Computed:    true,
 							Description: "The ID of the shared processor pool placement group.",
 							Type:        schema.TypeString,
+						},
+						Attr_UserTags: {
+							Computed:    true,
+							Description: "List of user tags attached to the resource.",
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Set:         schema.HashString,
+							Type:        schema.TypeSet,
 						},
 					},
 				},
@@ -95,6 +107,14 @@ func dataSourceIBMPISPPPlacementGroupsRead(ctx context.Context, d *schema.Resour
 			Attr_Name:                placementGroup.Name,
 			Attr_Policy:              placementGroup.Policy,
 			Attr_SPPPlacementGroupID: placementGroup.ID,
+		}
+		if placementGroup.Crn != "" {
+			key[Attr_CRN] = placementGroup.Crn
+			tags, err := flex.GetGlobalTagsUsingCRN(meta, string(placementGroup.Crn), "", UserTagType)
+			if err != nil {
+				log.Printf("Error on get of spp placement group (%s) user_tags: %s", *placementGroup.ID, err)
+			}
+			key[Attr_UserTags] = tags
 		}
 		result = append(result, key)
 	}
