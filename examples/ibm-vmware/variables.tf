@@ -40,6 +40,29 @@ variable "vmaas_vdc_windows_byol" {
   default     = true
 }
 
+// Resource arguments for vmaas_transit_gateway_connection
+variable "vmaas_transit_gateway_connection_vdc_id" {
+  description = "A unique ID for a virtual data center."
+  type        = string
+  default     = "vdc_id"
+}
+variable "vmaas_transit_gateway_connection_edge_id" {
+  description = "A unique ID for an edge."
+  type        = string
+  default     = "edge_id"
+}
+variable "vmaas_transit_gateway_connection_accept_language" {
+  description = "Language."
+  type        = string
+  default     = "en-us"
+}
+variable "vmaas_transit_gateway_connection_region" {
+  description = "The region where the IBM Transit Gateway is deployed."
+  type        = string
+  default     = "jp-tok"
+}
+
+
 // Data source arguments for vmaas_vdc
 variable "data_vmaas_vdc_vmaas_vdc_id" {
   description = "A unique ID for a specified virtual data center."
@@ -50,4 +73,11 @@ variable "data_vmaas_vdc_accept_language" {
   description = "Language."
   type        = string
   default     = "en-us"
+}
+
+// Data source arguments for vmaas_transit_gateway_connection
+variable "data_vmaas_transit_gateway_connection_vmaas_transit_gateway_connection_id" {
+  description = "A unique ID for a specified virtual data center."
+  type        = string
+  default     = "vdc_id"
 }
