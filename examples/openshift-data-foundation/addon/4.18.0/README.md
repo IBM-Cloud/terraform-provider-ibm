@@ -44,7 +44,7 @@ You do not have to change anything in the `ibm-odf-addon` and `ocscluster` folde
 To run this example on your Terminal, first download this directory i.e `examples/openshift-data-foundation/`
 
 ```bash
-$ cd addon/4.17.0
+$ cd addon/4.18.0
 ```
 
 ```bash
@@ -75,7 +75,7 @@ cluster = "" # Enter the Cluster ID
 region = "us-south" # Enter the region
 
 # For add-on deployment
-odfVersion = "4.17.0"
+odfVersion = "4.18.0"
 
 # For CRD Creation and Management
 autoDiscoverDevices = "false"
@@ -98,7 +98,6 @@ workerNodes = null
 encryptionInTransit = false
 taintNodes = false
 addSingleReplicaPool = false
-prepareForDisasterRecovery = false
 ignoreNoobaa = false
 disableNoobaaLB = false
 enableNFS = false
@@ -129,7 +128,7 @@ The following variables in the `schematics.tfvars` file should be changed in ord
 
 ```hcl
 # For ODF add-on upgrade
-odfVersion = "4.16.0" -> "4.17.0"
+odfVersion = "4.17.0" -> "4.18.0"
 
 # For Ocscluster upgrade
 ocsUpgrade = "false" -> "true"
@@ -182,7 +181,6 @@ ocsUpgrade = "false" -> "true"
 | encryptionInTransit |To enable in-transit encryption. Enabling in-transit encryption does not affect the existing mapped or mounted volumes. After a volume is mapped/mounted, it retains the encryption settings that were used when it was initially mounted. To change the encryption settings for existing volumes, they must be remounted again one-by-one. | `bool` | no | false
 | taintNodes | Specify true to taint the selected worker nodes so that only OpenShift Data Foundation pods can run on those nodes. Use this option only if you limit ODF to a subset of nodes in your cluster. | `bool` | no | false
 | addSingleReplicaPool | Specify true to create a single replica pool without data replication, increasing the risk of data loss, data corruption, and potential system instability. | `bool` | no | false
-| prepareForDisasterRecovery | Specify true to set up the storage system for disaster recovery service with the essential configurations in place. This allows seamless implementation of disaster recovery strategies for your workloads | `bool` | no | false
 | disableNoobaaLB | Specify true to disable to NooBaa public load balancer. | `bool` | no | false
 | enableNFS | Enabling this allows you to create exports using Network File System (NFS) that can then be accessed internally or externally from the OpenShift cluster. | `bool` | no | false
 | useCephRBDAsDefaultStorageClass | Enable to set the Ceph RADOS block device (RBD) storage class as the default storage class during the deployment of OpenShift Data Foundation | `bool` | no | false
