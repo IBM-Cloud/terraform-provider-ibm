@@ -367,9 +367,9 @@ func ResourceIBMCISRulesetRuleCreate(d *schema.ResourceData, meta interface{}) e
 
 		ratelimit := rulesetsv1.Ratelimit{}
 		if !reflect.ValueOf(rulesObject[CISRulesetsRuleRatelimit]).IsNil() {
-			ratelimit, ratelimitErr := expandCISRulesetsRulesRatelimits(rulesObject[CISRulesetsRuleRatelimit])
-			if ratelimitErr != nil {
-				return fmt.Errorf("[ERROR] Error while creating the zone Rule %s", ratelimitErr)
+			ratelimit, err = expandCISRulesetsRulesRatelimits(rulesObject[CISRulesetsRuleRatelimit])
+			if err != nil {
+				return fmt.Errorf("[ERROR] Error while creating the zone Rule %s", err)
 			}
 		}
 		opt.SetRatelimit(&ratelimit)

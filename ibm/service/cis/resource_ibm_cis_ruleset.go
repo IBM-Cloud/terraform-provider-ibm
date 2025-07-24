@@ -716,9 +716,9 @@ func expandCISRulesetsRulesActionParametersOverridesRules(obj interface{}) []rul
 func expandCISRulesetsRulesRatelimits(obj interface{}) (rulesetsv1.Ratelimit, error) {
 	ratelimitRespObj := rulesetsv1.Ratelimit{}
 
-	// return empty object if action parameter is not provided.
+	// return empty object if ratelimit is not provided.
 	if len(obj.(*schema.Set).List()) == 0 {
-		return ratelimitRespObj
+		return ratelimitRespObj, nil
 	}
 
 	ratelimitObj := obj.(*schema.Set).List()[0].(map[string]interface{})
@@ -729,7 +729,7 @@ func expandCISRulesetsRulesRatelimits(obj interface{}) (rulesetsv1.Ratelimit, er
 
 	countingExpression := ratelimitObj[CISRulesetsRuleRatelimitCountingExpression].(string)
 	if countingExpression != "" {
-		ratelimitRespObj.CountingExpress = &countingExpression
+		ratelimitRespObj.CountingExpression = &countingExpression
 	}
 
 	mitigationTimeout := int64(ratelimitObj[CISRulesetsRuleRatelimitMitigationTimeout].(int))
