@@ -69,7 +69,7 @@ Review the argument references that you can specify for your resource.
   - `pi_starting_ip_address` - (Required, String) The staring ip address. **Note** if the `pi_gateway` or `pi_ipaddress_range` is not provided, it will calculate the value based on CIDR respectively.
 - `pi_network_mtu` - (Optional, Integer) Maximum Transmission Unit option of the network. Minimum is 1450 and maximum is 9000.
 - `pi_network_name` - (Required, String) The name of the network.
-- `pi_network_type` - (Required, String) The type of network that you want to create. Valid values are `pub-vlan`, `vlan` and `dhcp-vlan`.
+- `pi_network_type` - (Required, String) The type of network that you want to create. Valid values are `pub-vlan`, and `vlan`.
 - `pi_network_peer` - (Optional, List) Network peer information (for on-prem locations only). Max items: 1.
 
   Nested schema for `pi_network_peer`:
