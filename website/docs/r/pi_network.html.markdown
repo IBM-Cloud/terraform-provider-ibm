@@ -58,8 +58,8 @@ The `ibm_pi_network` provides the following [Timeouts](https://www.terraform.io/
 
 Review the argument references that you can specify for your resource.
 
-- `pi_advertise` - (Optional, String) Enable the network to be advertised. Only supported for `vlan` network type.
-- `pi_arp_broadcast` - (Optional, String) Enable ARP Broadcast. Only supported for `vlan` network type.
+- `pi_advertise` - (Optional, String) Enable the network to be advertised. Only supported for `vlan` network type on PER enabled workspaces. Default is `enable` and is only passed in supported workspaces.
+- `pi_arp_broadcast` - (Optional, String) Enable ARP Broadcast. Only supported for `vlan` network type on PER enabled workspaces. Default is `disable` and is only passed in supported workspaces.
 - `pi_cidr` - (Optional, String) The network CIDR. Required for `vlan` network type.
 - `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
 - `pi_dns` - (Optional, Set of String) The DNS Servers for the network. If not specified, default is 127.0.0.1 for 'vlan' (private network) and 9.9.9.9 for 'pub-vlan' (public network). A maximum of one DNS server can be specified for private networks in Power Edge Router workspaces.
