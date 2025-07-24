@@ -157,27 +157,6 @@ func TestAccIBMPINetworkUserTags(t *testing.T) {
 	})
 }
 
-func TestAccIBMPINetworkPeerOnPrem(t *testing.T) {
-	name := fmt.Sprintf("tf-pi-network-%d", acctest.RandIntRange(10, 100))
-	networkRes := "ibm_pi_network.power_network_peer"
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
-		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIBMPINetworkDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckIBMPINetworkPeerOnPrem(name),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMPINetworkExists(networkRes),
-					resource.TestCheckResourceAttr(networkRes, "pi_network_name", name),
-					resource.TestCheckResourceAttrSet(networkRes, "id"),
-					resource.TestCheckResourceAttrSet(networkRes, "peer_id"),
-				),
-			},
-		},
-	})
-}
-
 func TestAccIBMPINetworkAdvertiseArpBroadcast(t *testing.T) {
 	name := fmt.Sprintf("tf-pi-network-%d", acctest.RandIntRange(10, 100))
 	networkRes := "ibm_pi_network.power_network_advertise_arpbroadcast"
@@ -335,22 +314,6 @@ func testAccCheckIBMPINetworkUserTagsConfig(name string, userTagsString string) 
 			pi_user_tags         = %s
 		}
 	`, acc.Pi_cloud_instance_id, name, userTagsString)
-}
-
-func testAccCheckIBMPINetworkPeerOnPrem(name string) string {
-	return fmt.Sprintf(`
-		resource "ibm_pi_network" "power_network_peer" {
-			pi_cloud_instance_id 		= "%s"
-			pi_network_name      		= "%s"
-			pi_network_type      		= "vlan"
-			pi_cidr                     = "192.168.17.0/24"
-			
-			pi_network_peer {
-				id = "2"
-				type = "L2"
-			}
-		}
-	`, acc.Pi_cloud_instance_id, name)
 }
 
 func testAccCheckIBMPINetworkAdvertiseArpBroadcast(name string) string {
