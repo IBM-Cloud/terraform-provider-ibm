@@ -238,6 +238,41 @@ var CISRulesetsRulesObject = &schema.Resource{
 				},
 			},
 		},
+		CISRulesetsRuleRatelimit: {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "Ratelimit of the Rulesets Rule",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					CISRulesetsRuleRatelimitCharacteristics: {
+						Type:        schema.TypeList,
+						Optional:    true,
+						Description: "List of Characteristics of the ratelimit on rulesets rule.",
+						Elem:        &schema.Schema{Type: schema.TypeString},
+					},
+					CISRulesetsRuleRatelimitCountingExpression: {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Description: "Counting expression of the ratelimit on rulesets rule.",
+					},
+					CISRulesetsRuleRatelimitMitigationTimeout: {
+						Type:        schema.TypeInt,
+						Optional:    true,
+						Description: "Mitigation timeout of the ratelimit on rulesets rule.",
+					},
+					CISRulesetsRuleRatelimitPeriod: {
+						Type:        schema.TypeInt,
+						Optional:    true,
+						Description: "Period of the ratelimit on rulesets rule.",
+					},
+					CISRulesetsRuleRatelimitRequestsPerPeriod: {
+						Type:        schema.TypeInt,
+						Optional:    true,
+						Description: "Requests per period of the ratelimit on rulesets rule.",
+					},
+				},
+			},
+		},
 		CISRulesetsRuleLastUpdatedAt: {
 			Type:        schema.TypeString,
 			Optional:    true,
@@ -330,6 +365,15 @@ func ResourceIBMCISRulesetRuleCreate(d *schema.ResourceData, meta interface{}) e
 		}
 		opt.SetPosition(&position)
 
+		ratelimit := rulesetsv1.Ratelimit{}
+		if !reflect.ValueOf(rulesObject[CISRulesetsRuleRatelimit]).IsNil() {
+			ratelimit, ratelimitErr := expandCISRulesetsRulesRatelimits(rulesObject[CISRulesetsRuleRatelimit])
+			if ratelimitErr != nil {
+				return fmt.Errorf("[ERROR] Error while creating the zone Rule %s", ratelimitErr)
+			}
+		}
+		opt.SetRatelimit(&ratelimit)
+
 		actionParameterObj := rulesetsv1.ActionParameters{}
 		if len(rulesObject[CISRulesetsRuleActionParameters].(*schema.Set).List()) != 0 {
 			actionParameterObj = expandCISRulesetsRulesActionParameters(rulesObject[CISRulesetsRuleActionParameters])
@@ -339,7 +383,7 @@ func ResourceIBMCISRulesetRuleCreate(d *schema.ResourceData, meta interface{}) e
 		result, resp, err := sess.CreateZoneRulesetRule(opt)
 
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error while creating the zone Rule %s", resp)
+			return fmt.Errorf("[ERROR] Error while creating the zone Ruleset %s", resp)
 		}
 		len_rules := len(result.Result.Rules)
 
@@ -457,6 +501,12 @@ func ResourceIBMCISRulesetRuleUpdate(d *schema.ResourceData, meta interface{}) e
 			return fmt.Errorf("[ERROR] Error while updating the zone Ruleset %s", err)
 		}
 		opt.SetPosition(&position)
+
+		ratelimit, ratelimitErr := expandCISRulesetsRulesRatelimits(rulesetsRuleObject[CISRulesetsRuleRatelimit])
+		if ratelimitErr != nil {
+			return fmt.Errorf("[ERROR] Error while updating the zone Ruleset %s", ratelimitErr)
+		}
+		opt.SetRatelimit(&ratelimit)
 
 		opt.SetRulesetID(rulesetId)
 		opt.SetRuleID(ruleId)

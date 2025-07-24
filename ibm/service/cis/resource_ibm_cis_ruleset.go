@@ -712,3 +712,40 @@ func expandCISRulesetsRulesActionParametersOverridesRules(obj interface{}) []rul
 
 	return finalResponse
 }
+
+func expandCISRulesetsRulesRatelimits(obj interface{}) (rulesetsv1.Ratelimit, error) {
+	ratelimitRespObj := rulesetsv1.Ratelimit{}
+
+	// return empty object if action parameter is not provided.
+	if len(obj.(*schema.Set).List()) == 0 {
+		return ratelimitRespObj
+	}
+
+	ratelimitObj := obj.(*schema.Set).List()[0].(map[string]interface{})
+
+	characteristics := ratelimitObj[CISRulesetsRuleRatelimitCharacteristics].([]interface{})
+	characteristicsList := flex.ExpandStringList(characteristics)
+	ratelimitRespObj.Characteristics = characteristicsList
+
+	countingExpression := ratelimitObj[CISRulesetsRuleRatelimitCountingExpression].(string)
+	if countingExpression != "" {
+		ratelimitRespObj.CountingExpress = &countingExpression
+	}
+
+	mitigationTimeout := int64(ratelimitObj[CISRulesetsRuleRatelimitMitigationTimeout].(int))
+	if mitigationTimeout != 0 {
+		ratelimitRespObj.MitigationTimeout = &mitigationTimeout
+	}
+
+	period := int64(ratelimitObj[CISRulesetsRuleRatelimitPeriod].(int))
+	if period != 0 {
+		ratelimitRespObj.Period = &period
+	}
+
+	requestsPerPeriod := int64(ratelimitObj[CISRulesetsRuleRatelimitRequestsPerPeriod].(int))
+	if requestsPerPeriod != 0 {
+		ratelimitRespObj.RequestsPerPeriod = &requestsPerPeriod
+	}
+
+	return ratelimitRespObj, nil
+}
