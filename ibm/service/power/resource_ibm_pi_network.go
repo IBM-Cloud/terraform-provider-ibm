@@ -164,10 +164,10 @@ func ResourceIBMPINetwork() *schema.Resource {
 				Type:     schema.TypeList,
 			},
 			Arg_NetworkType: {
-				Description:  "The type of network that you want to create. Valid values are `pub-vlan`, `vlan` and `dhcp-vlan`.",
+				Description:  "The type of network that you want to create. Valid values are `pub-vlan`, and `vlan`.",
 				Required:     true,
 				Type:         schema.TypeString,
-				ValidateFunc: validate.ValidateAllowedStringValues([]string{DHCPVlan, PubVlan, Vlan}),
+				ValidateFunc: validate.ValidateAllowedStringValues([]string{PubVlan, Vlan}),
 			},
 			Arg_UserTags: {
 				Computed:    true,
@@ -252,7 +252,7 @@ func resourceIBMPINetworkCreate(ctx context.Context, d *schema.ResourceData, met
 		body.Peer = peerModel
 	}
 
-	if networktype == DHCPVlan || networktype == Vlan {
+	if networktype == Vlan {
 		var networkcidr string
 		var ipBodyRanges []*models.IPAddressRange
 		if v, ok := d.GetOk(Arg_Cidr); ok {

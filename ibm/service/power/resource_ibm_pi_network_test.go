@@ -120,38 +120,6 @@ func TestAccIBMPINetworkGatewaybasicSatellite(t *testing.T) {
 	})
 }
 
-func TestAccIBMPINetworkDHCPbasic(t *testing.T) {
-	name := fmt.Sprintf("tf-pi-network-%d", acctest.RandIntRange(10, 100))
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
-		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIBMPINetworkDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckIBMPINetworDHCPConfig(name),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMPINetworkExists("ibm_pi_network.power_networks"),
-					resource.TestCheckResourceAttr(
-						"ibm_pi_network.power_networks", "pi_network_name", name),
-					resource.TestCheckResourceAttrSet("ibm_pi_network.power_networks", "pi_gateway"),
-					resource.TestCheckResourceAttrSet("ibm_pi_network.power_networks", "id"),
-					resource.TestCheckResourceAttrSet("ibm_pi_network.power_networks", "pi_ipaddress_range.#"),
-				),
-			},
-			{
-				Config: testAccCheckIBMPINetworkConfigGatewayDHCPUpdateDNS(name),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMPINetworkExists("ibm_pi_network.power_networks"),
-					resource.TestCheckResourceAttr(
-						"ibm_pi_network.power_networks", "pi_network_name", name),
-					resource.TestCheckResourceAttr(
-						"ibm_pi_network.power_networks", "pi_dns.#", "1"),
-				),
-			},
-		},
-	})
-}
-
 func TestAccIBMPINetworkUserTags(t *testing.T) {
 	name := fmt.Sprintf("tf-pi-network-%d", acctest.RandIntRange(10, 100))
 	networkRes := "ibm_pi_network.power_networks"
@@ -354,30 +322,6 @@ func testAccCheckIBMPINetworkConfigGatewayUpdateDNS(name string) string {
 				pi_ending_ip_address = "192.168.17.254"
 				pi_starting_ip_address = "192.168.17.3"
 			}
-		}
-	`, acc.Pi_cloud_instance_id, name)
-}
-
-func testAccCheckIBMPINetworDHCPConfig(name string) string {
-	return fmt.Sprintf(`
-		resource "ibm_pi_network" "power_networks" {
-			pi_cloud_instance_id 		= "%s"
-			pi_network_name      		= "%s"
-			pi_network_type      		= "dhcp-vlan"
-			pi_cidr              		= "10.1.2.0/26"
-			pi_dns               		= ["10.1.0.68"]
-		}
-	`, acc.Pi_cloud_instance_id, name)
-}
-
-func testAccCheckIBMPINetworkConfigGatewayDHCPUpdateDNS(name string) string {
-	return fmt.Sprintf(`
-		resource "ibm_pi_network" "power_networks" {
-			pi_cloud_instance_id = "%s"
-			pi_network_name      = "%s"
-			pi_network_type      = "dhcp-vlan"
-			pi_cidr              = "10.1.2.0/26"
-			pi_dns               = ["10.1.0.69"]
 		}
 	`, acc.Pi_cloud_instance_id, name)
 }
