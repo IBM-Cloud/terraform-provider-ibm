@@ -105,6 +105,12 @@ func ResourceIBMCdTektonPipelineTrigger() *schema.Resource {
 				Default:     false,
 				Description: "Mark the trigger as a favorite.",
 			},
+			"limit_waiting_runs": &schema.Schema{
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Flag that will limit the trigger to a maximum of one waiting run. A newly triggered run will cause any other waiting run(s) to be automatically cancelled.",
+			},
 			"enable_events_from_forks": &schema.Schema{
 				Type:        schema.TypeBool,
 				Optional:    true,
@@ -411,6 +417,9 @@ func resourceIBMCdTektonPipelineTriggerCreate(context context.Context, d *schema
 	if _, ok := d.GetOk("max_concurrent_runs"); ok {
 		createTektonPipelineTriggerOptions.SetMaxConcurrentRuns(int64(d.Get("max_concurrent_runs").(int)))
 	}
+	if _, ok := d.GetOk("limit_waiting_runs"); ok {
+		createTektonPipelineTriggerOptions.SetLimitWaitingRuns(d.Get("limit_waiting_runs").(bool))
+	}
 	if _, ok := d.GetOkExists("enabled"); ok {
 		createTektonPipelineTriggerOptions.SetEnabled(d.Get("enabled").(bool))
 	}
@@ -496,7 +505,7 @@ func resourceIBMCdTektonPipelineTriggerRead(context context.Context, d *schema.R
 	}
 
 	trigger := triggerIntf.(*cdtektonpipelinev2.Trigger)
-	if err = d.Set("pipeline_id", parts[0]); err != nil {
+	if err = d.Set("pipeline_id", d.Get("pipeline_id").(string)); err != nil {
 		err = fmt.Errorf("Error setting pipeline_id: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cd_tekton_pipeline_trigger", "read", "set-pipeline_id").GetDiag()
 	}
@@ -544,6 +553,12 @@ func resourceIBMCdTektonPipelineTriggerRead(context context.Context, d *schema.R
 		if err = d.Set("favorite", trigger.Favorite); err != nil {
 			err = fmt.Errorf("Error setting favorite: %s", err)
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cd_tekton_pipeline_trigger", "read", "set-favorite").GetDiag()
+		}
+	}
+	if !core.IsNil(trigger.LimitWaitingRuns) {
+		if err = d.Set("limit_waiting_runs", trigger.LimitWaitingRuns); err != nil {
+			err = fmt.Errorf("Error setting limit_waiting_runs: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cd_tekton_pipeline_trigger", "read", "set-limit_waiting_runs").GetDiag()
 		}
 	}
 	if !core.IsNil(trigger.EnableEventsFromForks) {
@@ -693,6 +708,11 @@ func resourceIBMCdTektonPipelineTriggerUpdate(context context.Context, d *schema
 	if d.HasChange("max_concurrent_runs") {
 		newMaxConcurrentRuns := int64(d.Get("max_concurrent_runs").(int))
 		patchVals.MaxConcurrentRuns = &newMaxConcurrentRuns
+		hasChange = true
+	}
+	if d.HasChange("limit_waiting_runs") {
+		newLimitWaitingRuns := d.Get("limit_waiting_runs").(bool)
+		patchVals.LimitWaitingRuns = &newLimitWaitingRuns
 		hasChange = true
 	}
 	if d.HasChange("enabled") {
@@ -982,6 +1002,12 @@ func ResourceIBMCdTektonPipelineTriggerTriggerPatchAsPatch(patchVals *cdtektonpi
 		patch["max_concurrent_runs"] = nil
 	} else if !exists {
 		delete(patch, "max_concurrent_runs")
+	}
+	path = "limit_waiting_runs"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["limit_waiting_runs"] = nil
+	} else if !exists {
+		delete(patch, "limit_waiting_runs")
 	}
 	path = "enabled"
 	if _, exists := d.GetOkExists(path); d.HasChange(path) && !exists {
