@@ -592,7 +592,7 @@ func resourceIBMISSnapshotCreate(context context.Context, d *schema.ResourceData
 			snapshotprototypeoptions.Name = &name
 		}
 
-		if allowedUse, ok := d.GetOk("allowed_use"); ok {
+		if allowedUse, ok := d.GetOk("allowed_use"); ok && len(allowedUse.([]interface{})) > 0 {
 			allowedUseModel, _ := ResourceIBMIsSnapshotMapToSnapshotAllowedUse(allowedUse.([]interface{})[0].(map[string]interface{}))
 			snapshotprototypeoptions.AllowedUse = allowedUseModel
 		}
@@ -621,7 +621,7 @@ func resourceIBMISSnapshotCreate(context context.Context, d *schema.ResourceData
 			}
 		}
 
-		if allowedUse, ok := d.GetOk("allowed_use"); ok {
+		if allowedUse, ok := d.GetOk("allowed_use"); ok && len(allowedUse.([]interface{})) > 0 {
 			allowedUseModel, _ := ResourceIBMIsSnapshotMapToSnapshotAllowedUse(allowedUse.([]interface{})[0].(map[string]interface{}))
 			snapshotprototypeoptionsbysourcesnapshot.AllowedUse = allowedUseModel
 		}
@@ -1119,7 +1119,7 @@ func snapshotUpdate(context context.Context, d *schema.ResourceData, meta interf
 
 	}
 
-	if d.HasChange("allowed_use") {
+	if d.HasChange("allowed_use") && len(d.Get("allowed_use").([]interface{})) > 0 {
 		getSnapshotOptions := &vpcv1.GetSnapshotOptions{
 			ID: &id,
 		}
