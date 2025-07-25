@@ -1,3 +1,11 @@
+# 1.81.0-beta1 (July 25, 2025)
+
+## Bug Fixes
+
+### VPC Infrastructure
+* Added an empty check on allowed_use for is_instance ([6381](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6381))
+
+
 # 1.81.0-beta0 (July 24, 2025)
 
 ## Bug Fixes
