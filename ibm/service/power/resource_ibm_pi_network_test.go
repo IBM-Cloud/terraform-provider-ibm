@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -258,7 +259,7 @@ func testAccCheckIBMPINetworkDestroy(s *terraform.State) error {
 		networkC := instance.NewIBMPINetworkClient(context.Background(), sess, cloudInstanceID)
 		_, err = networkC.Get(networkID)
 		if err == nil {
-			return fmt.Errorf("PI Network still exists: %s", rs.Primary.ID)
+			return flex.FmtErrorf("PI Network still exists: %s", rs.Primary.ID)
 		}
 	}
 
@@ -271,7 +272,7 @@ func testAccCheckIBMPINetworkExists(n string) resource.TestCheckFunc {
 		rs, ok := s.RootModule().Resources[n]
 
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return flex.FmtErrorf("Not found: %s", n)
 		}
 
 		if rs.Primary.ID == "" {

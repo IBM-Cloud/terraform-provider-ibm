@@ -5,6 +5,7 @@ package power
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
@@ -78,15 +79,25 @@ func DataSourceIBMPISPPPlacementGroups() *schema.Resource {
 func dataSourceIBMPISPPPlacementGroupsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_spp_placement_groups", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
 
 	client := instance.NewIBMPISPPPlacementGroupClient(ctx, sess, cloudInstanceID)
 	groups, err := client.GetAll()
-	if err != nil || groups == nil {
-		return diag.Errorf("error fetching spp placement groups: %v", err)
+	if err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetAll failed: %s", err.Error()), "ibm_pi_spp_placement_groups", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+	}
+	if groups == nil {
+		err = flex.FmtErrorf("response returned empty")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("operation failed: %s", err.Error()), "ibm_pi_spp_placement_groups", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	result := make([]map[string]interface{}, 0, len(groups.SppPlacementGroups))

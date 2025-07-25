@@ -5,6 +5,7 @@ package power
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
@@ -77,7 +78,9 @@ func DataSourceIBMPIPlacementGroups() *schema.Resource {
 func dataSourceIBMPIPlacementGroupsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_placement_groups", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
@@ -85,8 +88,9 @@ func dataSourceIBMPIPlacementGroupsRead(ctx context.Context, d *schema.ResourceD
 	client := instance.NewIBMPIPlacementGroupClient(ctx, sess, cloudInstanceID)
 	groups, err := client.GetAll()
 	if err != nil {
-		log.Printf("[ERROR] get all placement groups failed %v", err)
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetAll failed: %s", err.Error()), "ibm_pi_placement_groups", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	result := make([]map[string]interface{}, 0, len(groups.PlacementGroups))

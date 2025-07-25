@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -89,7 +90,7 @@ func testAccCheckIBMPISPPDestroy(s *terraform.State) error {
 		sppC := instance.NewIBMPISharedProcessorPoolClient(context.Background(), sess, cloudInstanceID)
 		spp, err := sppC.Get(sppID)
 		if err == nil {
-			return fmt.Errorf("PI SPP still exists: %s", *spp.SharedProcessorPool.ID)
+			return flex.FmtErrorf("PI SPP still exists: %s", *spp.SharedProcessorPool.ID)
 		}
 	}
 
@@ -101,7 +102,7 @@ func testAccCheckIBMPISPPExists(n string) resource.TestCheckFunc {
 		rs, ok := s.RootModule().Resources[n]
 
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return flex.FmtErrorf("Not found: %s", n)
 		}
 
 		if rs.Primary.ID == "" {

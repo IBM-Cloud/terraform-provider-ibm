@@ -5,6 +5,7 @@ package power
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
@@ -140,7 +141,9 @@ func DataSourceIBMPIInstanceVolumes() *schema.Resource {
 func dataSourceIBMPIInstanceVolumesRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_instance_volumes", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
@@ -148,7 +151,9 @@ func dataSourceIBMPIInstanceVolumesRead(ctx context.Context, d *schema.ResourceD
 	volumeC := instance.NewIBMPIVolumeClient(ctx, sess, cloudInstanceID)
 	volumedata, err := volumeC.GetAllInstanceVolumes(d.Get(Arg_InstanceName).(string))
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf(" failed: %s", err.Error()), "ibm_pi_instance_volumes", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	var clientgenU, _ = uuid.GenerateUUID()

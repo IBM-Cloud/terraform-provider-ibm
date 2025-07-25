@@ -123,7 +123,9 @@ func ResourceIBMPIVolumeClone() *schema.Resource {
 func resourceIBMPIVolumeCloneCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_volume_clone", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
@@ -150,14 +152,18 @@ func resourceIBMPIVolumeCloneCreate(ctx context.Context, d *schema.ResourceData,
 	client := instance.NewIBMPICloneVolumeClient(ctx, sess, cloudInstanceID)
 	volClone, err := client.Create(body)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Create failed: %s", err.Error()), "ibm_pi_volume_clone", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", cloudInstanceID, *volClone.CloneTaskID))
 
 	_, err = isWaitForIBMPIVolumeCloneCompletion(ctx, client, *volClone.CloneTaskID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForIBMPIVolumeCloneCompletion failed: %s", err.Error()), "ibm_pi_volume_clone", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	return resourceIBMPIVolumeCloneRead(ctx, d, meta)
@@ -166,18 +172,24 @@ func resourceIBMPIVolumeCloneCreate(ctx context.Context, d *schema.ResourceData,
 func resourceIBMPIVolumeCloneRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_volume_clone", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID, vcTaskID, err := splitID(d.Id())
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("splitID failed: %s", err.Error()), "ibm_pi_volume_clone", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	client := instance.NewIBMPICloneVolumeClient(ctx, sess, cloudInstanceID)
 	volCloneTask, err := client.Get(vcTaskID)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Get failed: %s", err.Error()), "ibm_pi_volume_clone", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.Set(Attr_FailureReason, volCloneTask.FailedReason)
@@ -216,7 +228,6 @@ func flattenClonedVolumes(list []*models.ClonedVolume) (cloneVolumes []map[strin
 
 func isWaitForIBMPIVolumeCloneCompletion(ctx context.Context, client *instance.IBMPICloneVolumeClient, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for Volume clone (%s) to be completed.", id)
-
 	stateConf := &retry.StateChangeConf{
 		Pending:    []string{State_Creating},
 		Target:     []string{State_Completed},
@@ -225,7 +236,6 @@ func isWaitForIBMPIVolumeCloneCompletion(ctx context.Context, client *instance.I
 		MinTimeout: 2 * time.Minute,
 		Timeout:    timeout,
 	}
-
 	return stateConf.WaitForStateContext(ctx)
 }
 
@@ -235,11 +245,9 @@ func isIBMPIVolumeCloneRefreshFunc(client *instance.IBMPICloneVolumeClient, id s
 		if err != nil {
 			return nil, "", err
 		}
-
 		if *volClone.Status == State_Completed {
 			return volClone, State_Completed, nil
 		}
-
 		return volClone, State_Creating, nil
 	}
 }

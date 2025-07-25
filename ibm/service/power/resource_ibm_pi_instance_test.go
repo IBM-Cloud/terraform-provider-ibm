@@ -1007,7 +1007,7 @@ func testAccCheckIBMPIInstanceDestroy(s *terraform.State) error {
 			client := st.NewIBMPIInstanceClient(context.Background(), sess, cloudInstanceID)
 			_, err = client.Get(instanceID)
 			if err == nil {
-				return fmt.Errorf("PI Instance still exists: %s", rs.Primary.ID)
+				return flex.FmtErrorf("PI Instance still exists: %s", rs.Primary.ID)
 			}
 		}
 	}
@@ -1019,7 +1019,7 @@ func testAccCheckIBMPIInstanceExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return flex.FmtErrorf("Not found: %s", n)
 		}
 		if rs.Primary.ID == "" {
 			return errors.New("No Record ID is set")
@@ -1052,7 +1052,7 @@ func testAccCheckIBMPIInstanceStatus(n, status string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return flex.FmtErrorf("Not found: %s", n)
 		}
 		if rs.Primary.ID == "" {
 			return errors.New("No Record ID is set")

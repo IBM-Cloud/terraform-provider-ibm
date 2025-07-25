@@ -133,7 +133,9 @@ func ResourceIBMPICapture() *schema.Resource {
 func resourceIBMPICaptureCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_capture", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	name := d.Get(Arg_InstanceName).(string)
@@ -151,22 +153,34 @@ func resourceIBMPICaptureCreate(ctx context.Context, d *schema.ResourceData, met
 		if v, ok := d.GetOk(Arg_CaptureCloudStorageRegion); ok {
 			captureBody.CloudStorageRegion = v.(string)
 		} else {
-			return diag.Errorf("%s is required when capture destination is %s", Arg_CaptureCloudStorageRegion, capturedestination)
+			err = flex.FmtErrorf("%s is required when capture destination is %s", Arg_CaptureCloudStorageRegion, capturedestination)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("operation failed: %s", err.Error()), "ibm_pi_capture", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		if v, ok := d.GetOk(Arg_CaptureCloudStorageAccessKey); ok {
 			captureBody.CloudStorageAccessKey = v.(string)
 		} else {
-			return diag.Errorf("%s is required when capture destination is %s ", Arg_CaptureCloudStorageAccessKey, capturedestination)
+			err = flex.FmtErrorf("%s is required when capture destination is %s", Arg_CaptureCloudStorageAccessKey, capturedestination)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("operation failed: %s", err.Error()), "ibm_pi_capture", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		if v, ok := d.GetOk(Arg_CaptureStorageImagePath); ok {
 			captureBody.CloudStorageImagePath = v.(string)
 		} else {
-			return diag.Errorf("%s is required when capture destination is %s ", Arg_CaptureStorageImagePath, capturedestination)
+			err = flex.FmtErrorf("%s is required when capture destination is %s", Arg_CaptureStorageImagePath, capturedestination)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("operation failed: %s", err.Error()), "ibm_pi_capture", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		if v, ok := d.GetOk(Arg_CaptureCloudStorageSecretKey); ok {
 			captureBody.CloudStorageSecretKey = v.(string)
 		} else {
-			return diag.Errorf("%s is required when capture destination is %s ", Arg_CaptureCloudStorageSecretKey, capturedestination)
+			err = flex.FmtErrorf("%s is required when capture destination is %s", Arg_CaptureCloudStorageSecretKey, capturedestination)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("operation failed: %s", err.Error()), "ibm_pi_capture", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 
@@ -184,14 +198,18 @@ func resourceIBMPICaptureCreate(ctx context.Context, d *schema.ResourceData, met
 	captureResponse, err := client.CaptureInstanceToImageCatalogV2(name, captureBody)
 
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_capture", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s/%s", cloudInstanceID, capturename, capturedestination))
 	jobClient := instance.NewIBMPIJobClient(ctx, sess, cloudInstanceID)
 	_, err = waitForIBMPIJobCompleted(ctx, jobClient, *captureResponse.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_capture", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	if _, ok := d.GetOk(Arg_UserTags); ok && capturedestination != CloudStorage {
@@ -201,7 +219,9 @@ func resourceIBMPICaptureCreate(ctx context.Context, d *schema.ResourceData, met
 			if strings.Contains(err.Error(), NotFound) {
 				d.SetId("")
 			}
-			return diag.Errorf("Error on get of ibm pi capture (%s) while applying pi_user_tags: %s", capturename, err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error on get of ibm pi capture (%s) while applying pi_user_tags: : %s", capturename, err), "ibm_pi_capture", "")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		if imagedata.Crn != "" {
 			oldList, newList := d.GetChange(Arg_UserTags)
@@ -218,11 +238,15 @@ func resourceIBMPICaptureCreate(ctx context.Context, d *schema.ResourceData, met
 func resourceIBMPICaptureRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_capture", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	parts, err := flex.IdParts(d.Id())
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_capture", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	cloudInstanceID := parts[0]
 	captureID := parts[1]
@@ -234,12 +258,14 @@ func resourceIBMPICaptureRead(ctx context.Context, d *schema.ResourceData, meta 
 			uErr := errors.Unwrap(err)
 			switch uErr.(type) {
 			case *p_cloud_images.PcloudCloudinstancesImagesGetNotFound:
-				log.Printf("[DEBUG] image does not exist %v", err)
 				d.SetId("")
-				return diag.Errorf("image does not exist %v", err)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Get failed: %s", err.Error()), "ibm_pi_capture", "read")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
-			log.Printf("[DEBUG] get image failed %v", err)
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Get failed: %s", err.Error()), "ibm_pi_capture", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		imageid := *imagedata.ImageID
 		d.Set(Attr_ImageID, imageid)
@@ -259,11 +285,15 @@ func resourceIBMPICaptureRead(ctx context.Context, d *schema.ResourceData, meta 
 func resourceIBMPICaptureDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_capture", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	parts, err := flex.IdParts(d.Id())
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IdParts failed: %s", err.Error()), "ibm_pi_capture", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	cloudInstanceID := parts[0]
 	captureID := parts[1]
@@ -279,8 +309,9 @@ func resourceIBMPICaptureDelete(ctx context.Context, d *schema.ResourceData, met
 				d.SetId("")
 				return nil
 			}
-			log.Printf("[DEBUG] delete image failed %v", err)
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Delete failed: %s", err.Error()), "ibm_pi_capture", "delete")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 	d.SetId("")
@@ -290,7 +321,9 @@ func resourceIBMPICaptureDelete(ctx context.Context, d *schema.ResourceData, met
 func resourceIBMPICaptureUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	parts, err := flex.IdParts(d.Id())
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_capture", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	captureID := parts[1]
 	capturedestination := parts[2]

@@ -43,7 +43,7 @@ func testAccCheckIBMPIVolumeOnboardingExists(n string) resource.TestCheckFunc {
 		rs, ok := s.RootModule().Resources[n]
 
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return flex.FmtErrorf("Not found: %s", n)
 		}
 
 		if rs.Primary.ID == "" {

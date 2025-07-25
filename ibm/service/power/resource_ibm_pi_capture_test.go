@@ -137,7 +137,7 @@ func testAccCheckIBMPICaptureExists(n string) resource.TestCheckFunc {
 		rs, ok := s.RootModule().Resources[n]
 
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return flex.FmtErrorf("Not found: %s", n)
 		}
 
 		if rs.Primary.ID == "" {
@@ -183,7 +183,7 @@ func testAccCheckIBMPICaptureDestroy(s *terraform.State) error {
 		imageClient := instance.NewIBMPIImageClient(context.Background(), sess, cloudInstanceID)
 		_, err = imageClient.Get(captureID)
 		if err == nil {
-			return fmt.Errorf("PI Image still exists: %s", rs.Primary.ID)
+			return flex.FmtErrorf("PI Image still exists: %s", rs.Primary.ID)
 		}
 	}
 

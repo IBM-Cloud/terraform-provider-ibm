@@ -67,7 +67,9 @@ func ResourceIBMPIVolumeAttach() *schema.Resource {
 func resourceIBMPIVolumeAttachCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_volume_attach", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
@@ -77,7 +79,9 @@ func resourceIBMPIVolumeAttachCreate(ctx context.Context, d *schema.ResourceData
 	volClient := instance.NewIBMPIVolumeClient(ctx, sess, cloudInstanceID)
 	volinfo, err := volClient.Get(volumeID)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_volume_attach", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	if volinfo.State == State_Available || *volinfo.Shareable {
@@ -90,20 +94,26 @@ func resourceIBMPIVolumeAttachCreate(ctx context.Context, d *schema.ResourceData
 	}
 
 	if volinfo.State == State_InUse && !*volinfo.Shareable {
-		return diag.Errorf("the volume cannot be attached in the current state. The volume must be in the *available* state. No other states are permissible")
+		err := flex.FmtErrorf("the volume cannot be attached in the current state. The volume must be in the *available* state. No other states are permissible")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("operation failed: %s", err.Error()), "ibm_pi_virtual_serial_number", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	err = volClient.Attach(pvmInstanceID, volumeID)
 	if err != nil {
-		log.Printf("[DEBUG]  err %s", err)
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf(" failed: %s", err.Error()), "ibm_pi_volume_attach", "create")
+		log.Printf("[DEBUG]  err \n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s/%s", cloudInstanceID, pvmInstanceID, *volinfo.VolumeID))
 
 	_, err = isWaitForIBMPIVolumeAttachAvailable(ctx, volClient, *volinfo.VolumeID, pvmInstanceID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_volume_attach", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	return resourceIBMPIVolumeAttachRead(ctx, d, meta)
@@ -112,12 +122,16 @@ func resourceIBMPIVolumeAttachCreate(ctx context.Context, d *schema.ResourceData
 func resourceIBMPIVolumeAttachRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_volume_attach", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	ids, err := flex.IdParts(d.Id())
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_volume_attach", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	cloudInstanceID, pvmInstanceID, volumeID := ids[0], ids[1], ids[2]
 
@@ -125,7 +139,9 @@ func resourceIBMPIVolumeAttachRead(ctx context.Context, d *schema.ResourceData, 
 
 	vol, err := client.CheckVolumeAttach(pvmInstanceID, volumeID)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_volume_attach", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.Set(Attr_Status, vol.State)
@@ -136,11 +152,15 @@ func resourceIBMPIVolumeAttachDelete(ctx context.Context, d *schema.ResourceData
 
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_volume_attach", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	ids, err := flex.IdParts(d.Id())
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IdParts failed: %s", err.Error()), "ibm_pi_volume_attach", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	cloudInstanceID, pvmInstanceID, volumeID := ids[0], ids[1], ids[2]
 	client := instance.NewIBMPIVolumeClient(ctx, sess, cloudInstanceID)
@@ -156,13 +176,16 @@ func resourceIBMPIVolumeAttachDelete(ctx context.Context, d *schema.ResourceData
 			d.SetId("")
 			return nil
 		}
-		log.Printf("[DEBUG] volume detach failed %v", err)
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Detach failed: %s", err.Error()), "ibm_pi_volume_attach", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	_, err = isWaitForIBMPIVolumeDetach(ctx, client, volumeID, pvmInstanceID, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_volume_attach", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	// wait for power volume states to be back as available. if it's attached it will be in-use
@@ -172,7 +195,6 @@ func resourceIBMPIVolumeAttachDelete(ctx context.Context, d *schema.ResourceData
 
 func isWaitForIBMPIVolumeAttachAvailable(ctx context.Context, client *instance.IBMPIVolumeClient, id, pvmInstanceID string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for Volume (%s) to be available for attachment", id)
-
 	stateConf := &retry.StateChangeConf{
 		Pending:    []string{State_Retry, State_Creating},
 		Target:     []string{State_InUse},
@@ -181,7 +203,6 @@ func isWaitForIBMPIVolumeAttachAvailable(ctx context.Context, client *instance.I
 		MinTimeout: 30 * time.Second,
 		Timeout:    timeout,
 	}
-
 	return stateConf.WaitForStateContext(ctx)
 }
 
@@ -191,18 +212,15 @@ func isIBMPIVolumeAttachRefreshFunc(client *instance.IBMPIVolumeClient, id, pvmI
 		if err != nil {
 			return nil, "", err
 		}
-
 		if vol.State == State_InUse && flex.StringContains(vol.PvmInstanceIDs, pvmInstanceID) {
 			return vol, State_InUse, nil
 		}
-
 		return vol, State_Creating, nil
 	}
 }
 
 func isWaitForIBMPIVolumeDetach(ctx context.Context, client *instance.IBMPIVolumeClient, id, pvmInstanceID string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for Volume (%s) to be available after detachment", id)
-
 	stateConf := &retry.StateChangeConf{
 		Pending:    []string{State_Detaching, State_Deleting},
 		Target:     []string{State_Available},
@@ -211,7 +229,6 @@ func isWaitForIBMPIVolumeDetach(ctx context.Context, client *instance.IBMPIVolum
 		MinTimeout: 30 * time.Second,
 		Timeout:    timeout,
 	}
-
 	return stateConf.WaitForStateContext(ctx)
 }
 

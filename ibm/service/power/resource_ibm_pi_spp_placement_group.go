@@ -9,15 +9,14 @@ import (
 	"log"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
-	models "github.com/IBM-Cloud/power-go-client/power/models"
+	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func ResourceIBMPISPPPlacementGroup() *schema.Resource {
@@ -46,14 +45,12 @@ func ResourceIBMPISPPPlacementGroup() *schema.Resource {
 				Required:    true,
 				Type:        schema.TypeString,
 			},
-
 			Arg_SPPPlacementGroupName: {
 				Description: "Name of the SPP placement group",
 				ForceNew:    true,
 				Required:    true,
 				Type:        schema.TypeString,
 			},
-
 			Arg_SPPPlacementGroupPolicy: {
 				Description:  "Policy of the SPP placement group",
 				ForceNew:     true,
@@ -83,7 +80,6 @@ func ResourceIBMPISPPPlacementGroup() *schema.Resource {
 				Description: "SPP placement group ID",
 				Type:        schema.TypeString,
 			},
-
 			Attr_SPPPlacementGroupMembers: {
 				Computed:    true,
 				Description: "Member SPP IDs that are the SPP placement group members",
@@ -97,7 +93,9 @@ func ResourceIBMPISPPPlacementGroup() *schema.Resource {
 func resourceIBMPISPPPlacementGroupCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_spp_placement_group", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
@@ -114,8 +112,16 @@ func resourceIBMPISPPPlacementGroupCreate(ctx context.Context, d *schema.Resourc
 	}
 
 	response, err := client.Create(body)
-	if err != nil || response == nil {
-		return diag.Errorf("error creating the spp placement group: %v", err)
+	if err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Create failed: %s", err.Error()), "ibm_pi_spp_placement_group", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+	}
+	if response == nil {
+		err = flex.FmtErrorf("response returned empty")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("operation failed: %s", err.Error()), "ibm_pi_spp_placement_group", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if _, ok := d.GetOk(Arg_UserTags); ok {
 		if response.Crn != "" {
@@ -131,27 +137,38 @@ func resourceIBMPISPPPlacementGroupCreate(ctx context.Context, d *schema.Resourc
 }
 
 func resourceIBMPISPPPlacementGroupRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_spp_placement_group", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	parts, err := flex.IdParts(d.Id())
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IdParts failed: %s", err.Error()), "ibm_pi_spp_placement_group", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID := parts[0]
 	client := instance.NewIBMPISPPPlacementGroupClient(ctx, sess, cloudInstanceID)
 
 	response, err := client.Get(parts[1])
-	if err != nil || response == nil {
-		return diag.Errorf("error reading the spp placement group: %v", err)
+	if err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Get failed: %s", err.Error()), "ibm_pi_spp_placement_group", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+	}
+	if response == nil {
+		err = flex.FmtErrorf("response returned empty")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("operation failed: %s", err.Error()), "ibm_pi_spp_placement_group", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.Set(Arg_CloudInstanceID, cloudInstanceID)
-	d.Set(Attr_SPPPlacementGroupID, response.ID)
-	d.Set(Attr_SPPPlacementGroupMembers, response.MemberSharedProcessorPools)
+	d.Set(Arg_SPPPlacementGroupName, response.Name)
+	d.Set(Arg_SPPPlacementGroupPolicy, response.Policy)
 	d.Set(Arg_SPPPlacementGroupName, response.Name)
 	d.Set(Arg_SPPPlacementGroupPolicy, response.Policy)
 	if response.Crn != "" {
@@ -164,13 +181,14 @@ func resourceIBMPISPPPlacementGroupRead(ctx context.Context, d *schema.ResourceD
 	}
 
 	return nil
-
 }
 
 func resourceIBMPISPPPlacementGroupUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	_, spppgID, err := splitID(d.Id())
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("splitID failed: %s", err.Error()), "ibm_pi_spp_placement_group", "update")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if d.HasChange(Arg_UserTags) {
 		if crn, ok := d.GetOk(Attr_CRN); ok {
@@ -188,18 +206,23 @@ func resourceIBMPISPPPlacementGroupUpdate(ctx context.Context, d *schema.Resourc
 func resourceIBMPISPPPlacementGroupDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_spp_placement_group", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	parts, err := flex.IdParts(d.Id())
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IdParts failed: %s", err.Error()), "ibm_pi_spp_placement_group", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	cloudInstanceID := parts[0]
 	client := instance.NewIBMPISPPPlacementGroupClient(ctx, sess, cloudInstanceID)
 	err = client.Delete(parts[1])
-
 	if err != nil {
-		return diag.Errorf("error deleting the spp placement group: %v", err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Delete failed: %s", err.Error()), "ibm_pi_spp_placement_group", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	d.SetId("")
 	return nil

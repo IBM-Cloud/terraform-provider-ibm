@@ -148,7 +148,7 @@ func testAccCheckIBMPISPPPlacementGroupDestroy(s *terraform.State) error {
 		placementGroupC := st.NewIBMPISPPPlacementGroupClient(context.Background(), sess, cloudpoolid)
 		_, err = placementGroupC.Get(parts[1])
 		if err == nil {
-			return fmt.Errorf("PI SPP placement group still exists: %s", rs.Primary.ID)
+			return flex.FmtErrorf("PI SPP placement group still exists: %s", rs.Primary.ID)
 		}
 	}
 
@@ -161,7 +161,7 @@ func testAccCheckIBMPISPPPlacementGroupExists(n string) resource.TestCheckFunc {
 		rs, ok := s.RootModule().Resources[n]
 
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return flex.FmtErrorf("Not found: %s", n)
 		}
 
 		if rs.Primary.ID == "" {
@@ -194,7 +194,7 @@ func testAccCheckIBMPISPPPlacementGroupMemberExists(sppPG string, pool string) r
 		pgResource, ok := s.RootModule().Resources[sppPG]
 
 		if !ok {
-			return fmt.Errorf("Not found: %s", sppPG)
+			return flex.FmtErrorf("Not found: %s", sppPG)
 		}
 
 		if pgResource.Primary.ID == "" {
@@ -220,7 +220,7 @@ func testAccCheckIBMPISPPPlacementGroupMemberExists(sppPG string, pool string) r
 
 		poolResource, ok := s.RootModule().Resources[pool]
 		if !ok {
-			return fmt.Errorf("Not found: %s", pool)
+			return flex.FmtErrorf("Not found: %s", pool)
 		}
 		poolName := poolResource.Primary.Attributes["pi_shared_processor_pool_name"]
 
@@ -232,7 +232,7 @@ func testAccCheckIBMPISPPPlacementGroupMemberExists(sppPG string, pool string) r
 			}
 		}
 		if !isPoolFound {
-			return fmt.Errorf("Expected pool ID %s in the PG members field but found %s", poolName, strings.Join(pg.MemberSharedProcessorPools[:], ","))
+			return flex.FmtErrorf("Expected pool ID %s in the PG members field but found %s", poolName, strings.Join(pg.MemberSharedProcessorPools[:], ","))
 		}
 		return nil
 	}
@@ -244,7 +244,7 @@ func testAccCheckIBMPISPPPlacementGroupMemberDoesNotExist(n string, pool string)
 		rs, ok := s.RootModule().Resources[n]
 
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return flex.FmtErrorf("Not found: %s", n)
 		}
 
 		if rs.Primary.ID == "" {
@@ -270,14 +270,14 @@ func testAccCheckIBMPISPPPlacementGroupMemberDoesNotExist(n string, pool string)
 
 		poolrs, ok := s.RootModule().Resources[pool]
 		if !ok {
-			return fmt.Errorf("Not found: %s", pool)
+			return flex.FmtErrorf("Not found: %s", pool)
 		}
 		instanccParts, err := flex.IdParts(poolrs.Primary.ID)
 		if err != nil {
 			return err
 		}
 		if len(pg.MemberSharedProcessorPools) > 0 {
-			return fmt.Errorf("Expected pool ID %s to be removed so that the PG members field is empty but foumd %s", instanccParts[1], pg.MemberSharedProcessorPools[0])
+			return flex.FmtErrorf("Expected pool ID %s to be removed so that the PG members field is empty but foumd %s", instanccParts[1], pg.MemberSharedProcessorPools[0])
 		}
 
 		return nil
@@ -300,7 +300,7 @@ func testAccCheckIBMPISPPPlacementGroupMemberExistsFromSPPCreate(n string, pool 
 		rs, ok := s.RootModule().Resources[n]
 
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return flex.FmtErrorf("Not found: %s", n)
 		}
 
 		if rs.Primary.ID == "" {
@@ -326,12 +326,12 @@ func testAccCheckIBMPISPPPlacementGroupMemberExistsFromSPPCreate(n string, pool 
 
 		poolrs, ok := s.RootModule().Resources[pool]
 		if !ok {
-			return fmt.Errorf("Not found: %s", pool)
+			return flex.FmtErrorf("Not found: %s", pool)
 		}
 		poolName := poolrs.Primary.Attributes["pi_shared_processor_pool_name"]
 
 		if !containsMemberPool(pg.MemberSharedProcessorPools, poolName) {
-			return fmt.Errorf("Expected pool %s in the PG members field", poolName)
+			return flex.FmtErrorf("Expected pool %s in the PG members field", poolName)
 		}
 		return nil
 	}
@@ -346,7 +346,7 @@ func testAccCheckIBMPISPPPlacementGroupDelete(pool string, newPool string) resou
 
 		poolrs, ok := s.RootModule().Resources[pool]
 		if !ok {
-			return fmt.Errorf("Not found: %s", pool)
+			return flex.FmtErrorf("Not found: %s", pool)
 		}
 		poolParts, err := flex.IdParts(poolrs.Primary.ID)
 		if err != nil {
@@ -355,7 +355,7 @@ func testAccCheckIBMPISPPPlacementGroupDelete(pool string, newPool string) resou
 
 		newpoolrs, ok := s.RootModule().Resources[newPool]
 		if !ok {
-			return fmt.Errorf("Not found: %s", newPool)
+			return flex.FmtErrorf("Not found: %s", newPool)
 		}
 		newpoolParts, err := flex.IdParts(newpoolrs.Primary.ID)
 		if err != nil {
@@ -370,14 +370,14 @@ func testAccCheckIBMPISPPPlacementGroupDelete(pool string, newPool string) resou
 		}
 
 		if len(pool.SharedProcessorPool.SharedProcessorPoolPlacementGroups) > 0 {
-			return fmt.Errorf("Expected no spp placement group ID in the spp placement groups array but found %s", *pool.SharedProcessorPool.SharedProcessorPoolPlacementGroups[0].ID)
+			return flex.FmtErrorf("Expected no spp placement group ID in the spp placement groups array but found %s", *pool.SharedProcessorPool.SharedProcessorPoolPlacementGroups[0].ID)
 		}
 		newpool, err := spp_client.Get(newpoolParts[1])
 		if err != nil {
 			return err
 		}
 		if len(newpool.SharedProcessorPool.SharedProcessorPoolPlacementGroups) > 0 {
-			return fmt.Errorf("Expected no spp placement group ID in the spp placement groups array but found %s", *newpool.SharedProcessorPool.SharedProcessorPoolPlacementGroups[0].ID)
+			return flex.FmtErrorf("Expected no spp placement group ID in the spp placement groups array but found %s", *newpool.SharedProcessorPool.SharedProcessorPoolPlacementGroups[0].ID)
 		}
 		return nil
 	}
@@ -389,7 +389,7 @@ func testAccCheckIBMPIInstanceInSPP(spp string, instance string) resource.TestCh
 		sppResource, ok := s.RootModule().Resources[spp]
 
 		if !ok {
-			return fmt.Errorf("Not found: %s", spp)
+			return flex.FmtErrorf("Not found: %s", spp)
 		}
 
 		if sppResource.Primary.ID == "" {
@@ -415,7 +415,7 @@ func testAccCheckIBMPIInstanceInSPP(spp string, instance string) resource.TestCh
 
 		instanceResource, ok := s.RootModule().Resources[instance]
 		if !ok {
-			return fmt.Errorf("Instance not found: %s", instance)
+			return flex.FmtErrorf("Instance not found: %s", instance)
 		}
 		instanceName := instanceResource.Primary.Attributes["pi_instance_name"]
 
@@ -427,7 +427,7 @@ func testAccCheckIBMPIInstanceInSPP(spp string, instance string) resource.TestCh
 			}
 		}
 		if !isInstanceFoundInSPPServersList {
-			return fmt.Errorf("Expected instance name %s in the SPP servers object but found %v", instanceName, sppFromSB.Servers)
+			return flex.FmtErrorf("Expected instance name %s in the SPP servers object but found %v", instanceName, sppFromSB.Servers)
 		}
 		return nil
 	}

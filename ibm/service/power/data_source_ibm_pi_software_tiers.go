@@ -5,10 +5,13 @@ package power
 
 import (
 	"context"
+	"fmt"
+	"log"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/go-uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -55,7 +58,9 @@ func DataSourceIBMPISoftwareTiers() *schema.Resource {
 func dataSourceIBMPISoftwareTiersRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_software_tiers", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
@@ -63,7 +68,9 @@ func dataSourceIBMPISoftwareTiersRead(ctx context.Context, d *schema.ResourceDat
 	client := instance.NewIBMPIVSNClient(ctx, sess, cloudInstanceID)
 	tiers, err := client.GetAllSoftwareTiers()
 	if err != nil {
-		return diag.Errorf("error on GET of virtual serial number software tiers: %v", err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetAllSoftwareTiers failed: %s", err.Error()), "ibm_pi_software_tiers", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	var genID, _ = uuid.GenerateUUID()

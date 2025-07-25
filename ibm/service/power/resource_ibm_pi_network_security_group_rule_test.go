@@ -15,6 +15,7 @@ import (
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/power"
 )
 
@@ -172,7 +173,7 @@ func testAccCheckIBMPINetworkSecurityGroupRuleExists(n string) resource.TestChec
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return flex.FmtErrorf("Not found: %s", n)
 		}
 
 		if rs.Primary.ID == "" {
@@ -199,7 +200,7 @@ func testAccCheckIBMPINetworkSecurityGroupRuleRemoved(n string, ruleID string) r
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return flex.FmtErrorf("Not found: %s", n)
 		}
 
 		if rs.Primary.ID == "" {
@@ -228,7 +229,7 @@ func testAccCheckIBMPINetworkSecurityGroupRuleRemoved(n string, ruleID string) r
 			}
 		}
 		if foundRule {
-			return fmt.Errorf("NSG rule still exists")
+			return flex.FmtErrorf("NSG rule still exists")
 		}
 		return nil
 	}

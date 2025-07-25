@@ -5,6 +5,7 @@ package power
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
@@ -150,7 +151,9 @@ func DataSourceIBMPISharedProcessorPool() *schema.Resource {
 func dataSourceIBMPISharedProcessorPoolRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_shared_processor_pool", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
@@ -158,8 +161,16 @@ func dataSourceIBMPISharedProcessorPoolRead(ctx context.Context, d *schema.Resou
 	client := instance.NewIBMPISharedProcessorPoolClient(ctx, sess, cloudInstanceID)
 
 	response, err := client.Get(poolID)
-	if err != nil || response == nil {
-		return diag.Errorf("error fetching the shared processor pool: %v", err)
+	if err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Get failed: %s", err.Error()), "ibm_pi_shared_processor_pool", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+	}
+	if response == nil {
+		err = flex.FmtErrorf("response returned empty")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("operation failed: %s", err.Error()), "ibm_pi_shared_processor_pool", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(*response.SharedProcessorPool.ID)

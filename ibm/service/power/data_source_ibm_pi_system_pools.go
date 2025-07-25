@@ -5,6 +5,7 @@ package power
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
@@ -111,7 +112,9 @@ func DataSourceIBMPISystemPools() *schema.Resource {
 func dataSourceIBMPISystemPoolsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_system_pools", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
@@ -119,8 +122,9 @@ func dataSourceIBMPISystemPoolsRead(ctx context.Context, d *schema.ResourceData,
 	client := instance.NewIBMPISystemPoolClient(ctx, sess, cloudInstanceID)
 	sps, err := client.GetSystemPools()
 	if err != nil {
-		log.Printf("[ERROR] get system pools capacity failed %v", err)
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetSystemPools failed: %s", err.Error()), "ibm_pi_system_pools", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	var genID, _ = uuid.GenerateUUID()

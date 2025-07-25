@@ -12,6 +12,7 @@ import (
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -118,7 +119,7 @@ func testAccCheckIBMPIHostDestroy(s *terraform.State) error {
 		client := instance.NewIBMPIHostGroupsClient(context.Background(), sess, cloudInstanceID)
 		_, err = client.GetHost(hostID)
 		if err == nil {
-			return fmt.Errorf("PI dedicated host still exists: %s", rs.Primary.ID)
+			return flex.FmtErrorf("PI dedicated host still exists: %s", rs.Primary.ID)
 		}
 	}
 	return nil
@@ -128,7 +129,7 @@ func testAccCheckIBMPIHostExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return flex.FmtErrorf("Not found: %s", n)
 		}
 		if rs.Primary.ID == "" {
 			return errors.New("No Record ID is set")

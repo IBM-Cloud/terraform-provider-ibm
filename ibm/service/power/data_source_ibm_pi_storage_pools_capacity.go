@@ -5,6 +5,7 @@ package power
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
@@ -75,7 +76,9 @@ func DataSourceIBMPIStoragePoolsCapacity() *schema.Resource {
 func dataSourceIBMPIStoragePoolsCapacityRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_storage_pools_capacity", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
@@ -83,8 +86,9 @@ func dataSourceIBMPIStoragePoolsCapacityRead(ctx context.Context, d *schema.Reso
 	client := instance.NewIBMPIStorageCapacityClient(ctx, sess, cloudInstanceID)
 	spc, err := client.GetAllStoragePoolsCapacity()
 	if err != nil {
-		log.Printf("[ERROR] get all storage pools capacity failed %v", err)
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetAllStoragePoolsCapacity failed: %s", err.Error()), "ibm_pi_storage_pools_capacity", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	var genID, _ = uuid.GenerateUUID()

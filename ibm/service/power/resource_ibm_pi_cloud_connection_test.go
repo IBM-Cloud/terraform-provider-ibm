@@ -58,7 +58,7 @@ func testAccCheckIBMPICloudConnectionDestroy(s *terraform.State) error {
 		client := instance.NewIBMPICloudConnectionClient(context.Background(), sess, cloudInstanceID)
 		_, err = client.Get(cloudConnectionID)
 		if err == nil {
-			return fmt.Errorf("Cloud Connection still exists: %s", rs.Primary.ID)
+			return flex.FmtErrorf("Cloud Connection still exists: %s", rs.Primary.ID)
 		}
 	}
 	return nil
@@ -78,7 +78,7 @@ func testAccCheckIBMPICloudConnectionExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return flex.FmtErrorf("Not found: %s", n)
 		}
 		if rs.Primary.ID == "" {
 			return errors.New("No Record ID is set")

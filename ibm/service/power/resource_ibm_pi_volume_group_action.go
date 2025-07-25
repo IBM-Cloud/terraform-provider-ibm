@@ -6,11 +6,13 @@ package power
 import (
 	"context"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -131,13 +133,17 @@ func ResourceIBMPIVolumeGroupAction() *schema.Resource {
 func resourceIBMPIVolumeGroupActionCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_volume_group_action", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	vgID := d.Get(Arg_VolumeGroupID).(string)
 	vgAction, err := expandVolumeGroupAction(d.Get(Arg_VolumeGroupAction).([]interface{}))
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_volume_group_action", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
@@ -146,14 +152,18 @@ func resourceIBMPIVolumeGroupActionCreate(ctx context.Context, d *schema.Resourc
 	client := instance.NewIBMPIVolumeGroupClient(ctx, sess, cloudInstanceID)
 	_, err = client.VolumeGroupAction(vgID, body)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("VolumeGroupAction failed: %s", err.Error()), "ibm_pi_volume_group_action", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", cloudInstanceID, vgID))
 
 	_, err = isWaitForIBMPIVolumeGroupAvailable(ctx, client, vgID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForIBMPIVolumeGroupAvailable failed: %s", err.Error()), "ibm_pi_volume_group_action", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	return resourceIBMPIVolumeGroupActionRead(ctx, d, meta)
@@ -162,24 +172,30 @@ func resourceIBMPIVolumeGroupActionCreate(ctx context.Context, d *schema.Resourc
 func resourceIBMPIVolumeGroupActionRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_volume_group_action", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID, vgID, err := splitID(d.Id())
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("splitID failed: %s", err.Error()), "ibm_pi_volume_group_action", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	client := instance.NewIBMPIVolumeGroupClient(ctx, sess, cloudInstanceID)
 
 	vg, err := client.GetDetails(vgID)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetDetails failed: %s", err.Error()), "ibm_pi_volume_group_action", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
+	d.Set(Attr_ReplicationStatus, vg.ReplicationStatus)
 	d.Set(Attr_VolumeGroupName, vg.Name)
 	d.Set(Attr_VolumeGroupStatus, vg.Status)
-	d.Set(Attr_ReplicationStatus, vg.ReplicationStatus)
 
 	return nil
 }
@@ -193,7 +209,7 @@ func resourceIBMPIVolumeGroupActionDelete(ctx context.Context, d *schema.Resourc
 // expandVolumeGroupAction retrieve volume group action resource
 func expandVolumeGroupAction(data []interface{}) (*models.VolumeGroupAction, error) {
 	if len(data) == 0 {
-		return nil, fmt.Errorf("[ERROR] no pi_volume_group_action received")
+		return nil, flex.FmtErrorf("[ERROR] no pi_volume_group_action received")
 	}
 
 	vgAction := models.VolumeGroupAction{}
@@ -213,16 +229,14 @@ func expandVolumeGroupAction(data []interface{}) (*models.VolumeGroupAction, err
 		vgAction.Reset = expandVolumeGroupResetAction(action[Attr_Reset].([]interface{}))
 		return &vgAction, nil
 	}
-	return nil, fmt.Errorf("[ERROR] no pi_volume_group_action received")
+	return nil, flex.FmtErrorf("[ERROR] no pi_volume_group_action received")
 }
 
 func expandVolumeGroupStartAction(start []interface{}) *models.VolumeGroupActionStart {
 	if len(start) == 0 {
 		return nil
 	}
-
 	s := start[0].(map[string]interface{})
-
 	return &models.VolumeGroupActionStart{
 		Source: sl.String(s[Attr_Source].(string)),
 	}
@@ -232,9 +246,7 @@ func expandVolumeGroupStopAction(stop []interface{}) *models.VolumeGroupActionSt
 	if len(stop) == 0 {
 		return nil
 	}
-
 	s := stop[0].(map[string]interface{})
-
 	return &models.VolumeGroupActionStop{
 		Access: sl.Bool(s[Attr_Access].(bool)),
 	}
@@ -244,9 +256,7 @@ func expandVolumeGroupResetAction(reset []interface{}) *models.VolumeGroupAction
 	if len(reset) == 0 {
 		return nil
 	}
-
 	s := reset[0].(map[string]interface{})
-
 	return &models.VolumeGroupActionReset{
 		Status: sl.String(s[Attr_Status].(string)),
 	}

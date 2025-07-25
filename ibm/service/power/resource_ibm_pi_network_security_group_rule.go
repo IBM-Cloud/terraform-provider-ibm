@@ -400,7 +400,9 @@ func ResourceIBMPINetworkSecurityGroupRule() *schema.Resource {
 func resourceIBMPINetworkSecurityGroupRuleCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_network_security_group_rule", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
@@ -415,11 +417,15 @@ func resourceIBMPINetworkSecurityGroupRuleCreate(ctx context.Context, d *schema.
 				d.SetId("")
 				return nil
 			}
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteRule failed: %s", err.Error()), "ibm_pi_network_security_group_rule", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		_, err = isWaitForIBMPINetworkSecurityGroupRuleRemove(ctx, nsgClient, nsgID, ruleID, d.Timeout(schema.TimeoutDelete))
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForIBMPINetworkSecurityGroupRuleRemove failed: %s", err.Error()), "ibm_pi_network_security_group_rule", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		d.SetId(fmt.Sprintf("%s/%s", cloudInstanceID, nsgID))
 	} else {
@@ -445,7 +451,10 @@ func resourceIBMPINetworkSecurityGroupRuleCreate(ctx context.Context, d *schema.
 			_, okSourcePort := d.GetOk(Arg_SourcePort)
 
 			if okDestPorts || okDestPort || okSourcePorts || okSourcePort {
-				return diag.Errorf("pi_destination_ports, pi_destination_port, pi_source_ports, and pi_source_port are not allowed with protocol value of %s or %s", All, ICMP)
+				err = flex.FmtErrorf("pi_destination_ports, pi_destination_port, pi_source_ports, and pi_source_port are not allowed with protocol value of %s or %s", All, ICMP)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("operation failed: %s", err.Error()), "ibm_pi_network_security_group_rule", "create")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 		}
 
@@ -468,13 +477,17 @@ func resourceIBMPINetworkSecurityGroupRuleCreate(ctx context.Context, d *schema.
 
 		networkSecurityGroup, err := nsgClient.AddRule(nsgID, &networkSecurityGroupAddRule)
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("AddRule failed: %s", err.Error()), "ibm_pi_network_security_group_rule", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		ruleID := *networkSecurityGroup.ID
 
 		_, err = isWaitForIBMPINetworkSecurityGroupRuleAdd(ctx, nsgClient, nsgID, ruleID, d.Timeout(schema.TimeoutCreate))
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForIBMPINetworkSecurityGroupRuleAdd failed: %s", err.Error()), "ibm_pi_network_security_group_rule", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		d.SetId(fmt.Sprintf("%s/%s/%s", cloudInstanceID, nsgID, ruleID))
 	}
@@ -485,16 +498,22 @@ func resourceIBMPINetworkSecurityGroupRuleCreate(ctx context.Context, d *schema.
 func resourceIBMPINetworkSecurityGroupRuleRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_network_security_group_rule", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	cloudInstanceID, nsgID, err := splitID(d.Id())
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("splitID failed: %s", err.Error()), "ibm_pi_network_security_group_rule", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	nsgClient := instance.NewIBMIPINetworkSecurityGroupClient(ctx, sess, cloudInstanceID)
 	networkSecurityGroup, err := nsgClient.Get(nsgID)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Get failed: %s", err.Error()), "ibm_pi_network_security_group_rule", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	d.Set(Attr_Name, networkSecurityGroup.Name)
 
@@ -536,7 +555,9 @@ func resourceIBMPINetworkSecurityGroupRuleRead(ctx context.Context, d *schema.Re
 func resourceIBMPINetworkSecurityGroupRuleDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	ids, err := flex.IdParts(d.Id())
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IdParts failed: %s", err.Error()), "ibm_pi_network_security_group_rule", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	if len(ids) == 3 {
@@ -546,18 +567,24 @@ func resourceIBMPINetworkSecurityGroupRuleDelete(ctx context.Context, d *schema.
 
 		sess, err := meta.(conns.ClientSession).IBMPISession()
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_network_security_group_rule", "delete")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		nsgClient := instance.NewIBMIPINetworkSecurityGroupClient(ctx, sess, cloudInstanceID)
 
 		err = nsgClient.DeleteRule(nsgID, ruleID)
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteRule failed: %s", err.Error()), "ibm_pi_network_security_group_rule", "delete")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
 		_, err = isWaitForIBMPINetworkSecurityGroupRuleRemove(ctx, nsgClient, nsgID, ruleID, d.Timeout(schema.TimeoutDelete))
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForIBMPINetworkSecurityGroupRuleRemove failed: %s", err.Error()), "ibm_pi_network_security_group_rule", "delete")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 	d.SetId("")
@@ -565,7 +592,6 @@ func resourceIBMPINetworkSecurityGroupRuleDelete(ctx context.Context, d *schema.
 }
 
 func isWaitForIBMPINetworkSecurityGroupRuleAdd(ctx context.Context, client *instance.IBMPINetworkSecurityGroupClient, id, ruleID string, timeout time.Duration) (interface{}, error) {
-
 	stateConf := &retry.StateChangeConf{
 		Pending:    []string{State_Pending},
 		Target:     []string{State_Available},
@@ -574,24 +600,20 @@ func isWaitForIBMPINetworkSecurityGroupRuleAdd(ctx context.Context, client *inst
 		Delay:      10 * time.Second,
 		MinTimeout: time.Minute,
 	}
-
 	return stateConf.WaitForStateContext(ctx)
 }
 
 func isIBMPINetworkSecurityGroupRuleAddRefreshFunc(client *instance.IBMPINetworkSecurityGroupClient, id, ruleID string) retry.StateRefreshFunc {
-
 	return func() (interface{}, string, error) {
 		networkSecurityGroup, err := client.Get(id)
 		if err != nil {
 			return nil, "", err
 		}
-
 		if networkSecurityGroup.Rules != nil {
 			for _, rule := range networkSecurityGroup.Rules {
 				if *rule.ID == ruleID {
 					return networkSecurityGroup, State_Available, nil
 				}
-
 			}
 		}
 		return networkSecurityGroup, State_Pending, nil
@@ -599,7 +621,6 @@ func isIBMPINetworkSecurityGroupRuleAddRefreshFunc(client *instance.IBMPINetwork
 }
 
 func isWaitForIBMPINetworkSecurityGroupRuleRemove(ctx context.Context, client *instance.IBMPINetworkSecurityGroupClient, id, ruleID string, timeout time.Duration) (interface{}, error) {
-
 	stateConf := &retry.StateChangeConf{
 		Pending:    []string{State_Pending},
 		Target:     []string{State_Removed},
@@ -608,18 +629,15 @@ func isWaitForIBMPINetworkSecurityGroupRuleRemove(ctx context.Context, client *i
 		Delay:      10 * time.Second,
 		MinTimeout: time.Minute,
 	}
-
 	return stateConf.WaitForStateContext(ctx)
 }
 
 func isIBMPINetworkSecurityGroupRuleRemoveRefreshFunc(client *instance.IBMPINetworkSecurityGroupClient, id, ruleID string) retry.StateRefreshFunc {
-
 	return func() (interface{}, string, error) {
 		networkSecurityGroup, err := client.Get(id)
 		if err != nil {
 			return nil, "", err
 		}
-
 		if networkSecurityGroup.Rules != nil {
 			foundRule := false
 			for _, rule := range networkSecurityGroup.Rules {

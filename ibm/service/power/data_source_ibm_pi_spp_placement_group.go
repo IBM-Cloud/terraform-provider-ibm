@@ -5,6 +5,7 @@ package power
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
@@ -69,7 +70,9 @@ func DataSourceIBMPISPPPlacementGroup() *schema.Resource {
 func dataSourceIBMPISPPPlacementGroupRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_spp_placement_group", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
@@ -77,8 +80,16 @@ func dataSourceIBMPISPPPlacementGroupRead(ctx context.Context, d *schema.Resourc
 	client := instance.NewIBMPISPPPlacementGroupClient(ctx, sess, cloudInstanceID)
 
 	response, err := client.Get(placementGroupID)
-	if err != nil || response == nil {
-		return diag.Errorf("error fetching the spp placement group: %v", err)
+	if err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Get failed: %s", err.Error()), "ibm_pi_spp_placement_group", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+	}
+	if response == nil {
+		err = flex.FmtErrorf("response returned empty")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("operation failed: %s", err.Error()), "ibm_pi_spp_placement_group", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(*response.ID)

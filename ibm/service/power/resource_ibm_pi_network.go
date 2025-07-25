@@ -223,7 +223,9 @@ func ResourceIBMPINetwork() *schema.Resource {
 func resourceIBMPINetworkCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_network", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
 	networkname := d.Get(Arg_NetworkName).(string)
@@ -258,12 +260,17 @@ func resourceIBMPINetworkCreate(ctx context.Context, d *schema.ResourceData, met
 		if v, ok := d.GetOk(Arg_Cidr); ok {
 			networkcidr = v.(string)
 		} else {
-			return diag.Errorf("%s is required when %s is vlan", Arg_Cidr, Arg_NetworkType)
+			err = flex.FmtErrorf("%s is required when %s is vlan", Arg_Cidr, Arg_NetworkType)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("operation failed: %s", err.Error()), "ibm_pi_network", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
 		gateway, firstip, lastip, err := generateIPData(networkcidr)
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("generateIPData failed: %s", err.Error()), "ibm_pi_network", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
 		ipBodyRanges = []*models.IPAddressRange{{EndingIPAddress: &lastip, StartingIPAddress: &firstip}}
@@ -295,7 +302,10 @@ func resourceIBMPINetworkCreate(ctx context.Context, d *schema.ResourceData, met
 		_, ok2 := d.GetOk(Arg_ARPBroadcast)
 		_, ok3 := d.GetOk(Arg_Cidr)
 		if ok1 || ok2 || ok3 {
-			return diag.Errorf("%s, %s, and %s cannot be set when %s is pub-vlan", Arg_Advertise, Arg_ARPBroadcast, Arg_Cidr, Arg_NetworkType)
+			err = flex.FmtErrorf("%s, %s, and %s cannot be set when %s is pub-vlan", Arg_Advertise, Arg_ARPBroadcast, Arg_Cidr, Arg_NetworkType)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("operation failed: %s", err.Error()), "ibm_pi_network", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 
@@ -303,19 +313,25 @@ func resourceIBMPINetworkCreate(ctx context.Context, d *schema.ResourceData, met
 		wsclient := instance.NewIBMPIWorkspacesClient(ctx, sess, cloudInstanceID)
 		wsData, err := wsclient.Get(cloudInstanceID)
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Get failed: %s", err.Error()), "ibm_pi_network", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		if wsData.Capabilities[PER] {
 			_, err = waitForPERWorkspaceActive(ctx, wsclient, cloudInstanceID, d.Timeout(schema.TimeoutRead))
 			if err != nil {
-				return diag.FromErr(err)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("waitForPERWorkspaceActive failed: %s", err.Error()), "ibm_pi_network", "create")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 		}
 	}
 
 	networkResponse, err := createNetworkWithRetry(ctx, client, body)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Create failed: %s", err.Error()), "ibm_pi_network", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	networkID := *networkResponse.NetworkID
@@ -324,7 +340,9 @@ func resourceIBMPINetworkCreate(ctx context.Context, d *schema.ResourceData, met
 
 	_, err = isWaitForIBMPINetworkAvailable(ctx, client, networkID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForIBMPINetworkAvailable failed: %s", err.Error()), "ibm_pi_network", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	if _, ok := d.GetOk(Arg_UserTags); ok {
@@ -343,18 +361,24 @@ func resourceIBMPINetworkCreate(ctx context.Context, d *schema.ResourceData, met
 func resourceIBMPINetworkRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_network", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID, networkID, err := splitID(d.Id())
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_network", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	networkC := instance.NewIBMPINetworkClient(ctx, sess, cloudInstanceID)
 	networkdata, err := networkC.Get(networkID)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_network", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if networkdata.Crn != "" {
 		d.Set(Attr_CRN, networkdata.Crn)
@@ -401,12 +425,16 @@ func resourceIBMPINetworkRead(ctx context.Context, d *schema.ResourceData, meta 
 func resourceIBMPINetworkUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_network", "update")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID, networkID, err := splitID(d.Id())
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("splitID failed: %s", err.Error()), "ibm_pi_network", "update")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	if d.HasChanges(Arg_Advertise, Arg_ARPBroadcast, Arg_DNS, Arg_Gateway, Arg_IPAddressRange, Arg_NetworkName) {
@@ -435,7 +463,10 @@ func resourceIBMPINetworkUpdate(ctx context.Context, d *schema.ResourceData, met
 					body.Gateway = flex.PtrToString(d.Get(Arg_Gateway).(string))
 				}
 			} else {
-				return diag.Errorf("%v type does not allow ip-address range or gateway update", networkType)
+				err = flex.FmtErrorf("%v type does not allow ip-address range or gateway update", networkType)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("operation failed: %s", err.Error()), "ibm_pi_network", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 		}
 
@@ -445,12 +476,16 @@ func resourceIBMPINetworkUpdate(ctx context.Context, d *schema.ResourceData, met
 
 		_, err = client.Update(networkID, body)
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Update failed: %s", err.Error()), "ibm_pi_network", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
 		_, err = isWaitForIBMPINetworkUpdated(ctx, client, *body, networkID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForIBMPINetworkUpdated failed: %s", err.Error()), "ibm_pi_network", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 
@@ -471,23 +506,31 @@ func resourceIBMPINetworkDelete(ctx context.Context, d *schema.ResourceData, met
 	log.Printf("Calling the network delete functions. ")
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_network", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID, networkID, err := splitID(d.Id())
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("splitID failed: %s", err.Error()), "ibm_pi_network", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	client := instance.NewIBMPINetworkClient(ctx, sess, cloudInstanceID)
 	err = deleteNetworkWithRetry(ctx, client, networkID)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Delete failed: %s", err.Error()), "ibm_pi_network", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	_, err = isWaitForIBMPINetworkDeleted(ctx, client, networkID, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForIBMPINetworkDeleted failed: %s", err.Error()), "ibm_pi_network", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId("")
@@ -503,7 +546,6 @@ func isWaitForIBMPINetworkAvailable(ctx context.Context, client *instance.IBMPIN
 		Delay:      10 * time.Second,
 		MinTimeout: 10 * time.Second,
 	}
-
 	return stateConf.WaitForStateContext(ctx)
 }
 
@@ -531,7 +573,6 @@ func isWaitForIBMPINetworkDeleted(ctx context.Context, client *instance.IBMPINet
 		Delay:      10 * time.Second,
 		MinTimeout: 10 * time.Second,
 	}
-
 	return stateConf.WaitForStateContext(ctx)
 }
 
@@ -678,7 +719,6 @@ func generateIPData(cdir string) (gway, firstip, lastip string, err error) {
 		return "", "", "", err
 	}
 	return gateway.String(), firstusable.String(), lastusable.String(), nil
-
 }
 
 func getIPAddressRanges(ipAddressRanges []interface{}) []*models.IPAddressRange {
@@ -705,7 +745,6 @@ func waitForPERWorkspaceActive(ctx context.Context, client *instance.IBMPIWorksp
 		Delay:      10 * time.Second,
 		MinTimeout: 10 * time.Second,
 	}
-
 	return stateConf.WaitForStateContext(ctx)
 }
 
@@ -726,7 +765,7 @@ func isPERWorkspaceRefreshFunc(client *instance.IBMPIWorkspacesClient, id string
 			return ws, State_Inactive, nil
 		}
 		if *(ws.Details.PowerEdgeRouter.State) == State_Error {
-			return ws, *ws.Details.PowerEdgeRouter.State, fmt.Errorf("[ERROR] workspace PER configuration failed to initialize. Please try again later")
+			return ws, *ws.Details.PowerEdgeRouter.State, flex.FmtErrorf("[ERROR] workspace PER configuration failed to initialize. Please try again later")
 		}
 
 		return ws, State_Configuring, nil

@@ -5,10 +5,13 @@ package power
 
 import (
 	"context"
+	"fmt"
+	"log"
 	"time"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -139,7 +142,9 @@ func DataSourceIBMPICatalogImages() *schema.Resource {
 func dataSourceIBMPICatalogImagesRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_catalog_images", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
@@ -148,7 +153,9 @@ func dataSourceIBMPICatalogImagesRead(ctx context.Context, d *schema.ResourceDat
 	imageC := instance.NewIBMPIImageClient(ctx, sess, cloudInstanceID)
 	stockImages, err := imageC.GetAllStockImages(includeSAP, includeVTL)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetAllStockImages failed: %s", err.Error()), "ibm_pi_catalog_images", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	images := make([]map[string]interface{}, 0)

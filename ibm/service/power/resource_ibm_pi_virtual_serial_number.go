@@ -6,6 +6,7 @@ package power
 import (
 	"context"
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
@@ -78,7 +79,9 @@ func ResourceIBMPIVirtualSerialNumber() *schema.Resource {
 func resourceIBMPIVirtualSerialNumberCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_virtual_serial_number", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
@@ -87,10 +90,16 @@ func resourceIBMPIVirtualSerialNumberCreate(ctx context.Context, d *schema.Resou
 	vsnArg := d.Get(Arg_Serial).(string)
 	if _, ok := d.GetOk(Arg_InstanceID); !ok {
 		if vsnArg == AutoAssign {
-			return diag.Errorf("cannot use '%s' unless '%s' is specified", AutoAssign, Arg_InstanceID)
+			err := flex.FmtErrorf("cannot use '%s' unless '%s' is specified", AutoAssign, Arg_InstanceID)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("operation failed: %s", err.Error()), "ibm_pi_virtual_serial_number", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		if _, ok := d.GetOk(Arg_SoftwareTier); ok {
-			return diag.Errorf("cannot use '%s' unless '%s' is specified", Arg_SoftwareTier, Arg_InstanceID)
+			err := flex.FmtErrorf("cannot use '%s' unless '%s' is specified", Arg_SoftwareTier, Arg_InstanceID)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("operation failed: %s", err.Error()), "ibm_pi_virtual_serial_number", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 
@@ -99,7 +108,9 @@ func resourceIBMPIVirtualSerialNumberCreate(ctx context.Context, d *schema.Resou
 	if vsnArg != AutoAssign {
 		vsn, err := client.Get(vsnArg)
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Get failed: %s", err.Error()), "ibm_pi_virtual_serial_number", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		description := ""
 		if v, ok := d.GetOk(Arg_Description); ok {
@@ -113,10 +124,15 @@ func resourceIBMPIVirtualSerialNumberCreate(ctx context.Context, d *schema.Resou
 				}
 				_, err := client.PVMInstanceUpdateVSN(oldPvmInstanceId, updateBody)
 				if err != nil {
-					return diag.FromErr(err)
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("PVMInstanceUpdateVSN failed: %s", err.Error()), "ibm_pi_virtual_serial_number", "create")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
 			} else if v, ok := d.GetOk(Arg_InstanceID); !ok || (ok && v.(string) != oldPvmInstanceId) {
-				return diag.Errorf("please unassign virtual serial number %s from current pvm instance %s or specify \"%s\" for %s", *vsn.Serial, oldPvmInstanceId, oldPvmInstanceId, Arg_InstanceID)
+				err := flex.FmtErrorf("please unassign virtual serial number %s from current pvm instance %s or specify \"%s\" for %s", *vsn.Serial, oldPvmInstanceId, oldPvmInstanceId, Arg_InstanceID)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("operation failed: %s", err.Error()), "ibm_pi_virtual_serial_number", "create")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 		} else {
 			// Update description if not attaching to a new VM
@@ -126,7 +142,9 @@ func resourceIBMPIVirtualSerialNumberCreate(ctx context.Context, d *schema.Resou
 				}
 				_, err := client.Update(vsnArg, updateBody)
 				if err != nil {
-					return diag.FromErr(err)
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Update failed: %s", err.Error()), "ibm_pi_virtual_serial_number", "create")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
 			}
 		}
@@ -142,7 +160,9 @@ func resourceIBMPIVirtualSerialNumberCreate(ctx context.Context, d *schema.Resou
 		if oldPvmInstanceId == "" {
 			restartInstance, err = stopLparForVSNChange(ctx, instanceClient, pvmInstanceIdArg, d.Timeout(schema.TimeoutCreate))
 			if err != nil {
-				return diag.FromErr(err)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("stopLparForVSNChange failed: %s", err.Error()), "ibm_pi_virtual_serial_number", "create")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			serialNumber := d.Get(Arg_Serial).(string)
 			addBody := &models.AddServerVirtualSerialNumber{
@@ -153,22 +173,46 @@ func resourceIBMPIVirtualSerialNumberCreate(ctx context.Context, d *schema.Resou
 			}
 			_, err = client.PVMInstanceAttachVSN(pvmInstanceIdArg, addBody)
 			if err != nil {
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("PVMInstanceAttachVSN failed: %s", err.Error()), "ibm_pi_virtual_serial_number", "create")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+
 				err = instanceRestartAfterVSNFailure(ctx, pvmInstanceIdArg, restartInstance, instanceClient, d, err)
-				return diag.FromErr(err)
+				if err != nil {
+					tfErr2 := flex.TerraformErrorf(err, fmt.Sprintf("instanceRestartAfterVSNFailure failed: %s", err.Error()), "ibm_pi_virtual_serial_number", "create")
+					log.Printf("[DEBUG]\n%s", tfErr2.GetDebugMessage())
+				}
+
+				return tfErr.GetDiag()
 			}
 
 			_, err = isWaitForPIInstanceVSNAssignedOrUpdatedAndStopped(ctx, instanceClient, pvmInstanceIdArg, nil, d.Timeout(schema.TimeoutUpdate))
 			if err != nil {
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForPIInstanceVSNAssignedOrUpdatedAndStopped failed: %s", err.Error()), "ibm_pi_virtual_serial_number", "create")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+
 				err = instanceRestartAfterVSNFailure(ctx, pvmInstanceIdArg, restartInstance, instanceClient, d, err)
-				return diag.FromErr(err)
+				if err != nil {
+					tfErr2 := flex.TerraformErrorf(err, fmt.Sprintf("instanceRestartAfterVSNFailure failed: %s", err.Error()), "ibm_pi_virtual_serial_number", "create")
+					log.Printf("[DEBUG]\n%s", tfErr2.GetDebugMessage())
+				}
+
+				return tfErr.GetDiag()
 			}
 		}
 
 		if vsnArg == AutoAssign {
 			vsns, err := client.GetAll(&pvmInstanceIdArg)
 			if err != nil {
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetAll failed: %s", err.Error()), "ibm_pi_virtual_serial_number", "create")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+
 				err = instanceRestartAfterVSNFailure(ctx, pvmInstanceIdArg, restartInstance, instanceClient, d, err)
-				return diag.FromErr(err)
+				if err != nil {
+					tfErr2 := flex.TerraformErrorf(err, fmt.Sprintf("instanceRestartAfterVSNFailure failed: %s", err.Error()), "ibm_pi_virtual_serial_number", "create")
+					log.Printf("[DEBUG]\n%s", tfErr2.GetDebugMessage())
+				}
+
+				return tfErr.GetDiag()
 			}
 			serialString = *vsns[0].Serial
 		} else {
@@ -182,14 +226,18 @@ func resourceIBMPIVirtualSerialNumberCreate(ctx context.Context, d *schema.Resou
 			// Need to get current vsn for software tier
 			vsnObj, err := client.Get(serialString)
 			if err != nil {
-				return diag.FromErr(err)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Get failed: %s", err.Error()), "ibm_pi_virtual_serial_number", "create")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			softwareTierCurrent := vsnObj.SoftwareTier
 			softwareTier := models.SoftwareTier(v.(string))
 			if softwareTierCurrent != softwareTier {
 				restartInstanceSoftwareTierUpdate, err := stopLparForVSNChange(ctx, instanceClient, pvmInstanceIdArg, d.Timeout(schema.TimeoutCreate))
 				if err != nil {
-					return diag.FromErr(err)
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("stopLparForVSNChange failed: %s", err.Error()), "ibm_pi_virtual_serial_number", "create")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
 				restartInstance = restartInstance || restartInstanceSoftwareTierUpdate
 				// Update software tier to match configuration
@@ -198,13 +246,29 @@ func resourceIBMPIVirtualSerialNumberCreate(ctx context.Context, d *schema.Resou
 				}
 				_, err = client.PVMInstanceUpdateVSN(pvmInstanceIdArg, updateBody)
 				if err != nil {
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("PVMInstanceUpdateVSN failed: %s", err.Error()), "ibm_pi_virtual_serial_number", "create")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+
 					err = instanceRestartAfterVSNFailure(ctx, pvmInstanceIdArg, restartInstance, instanceClient, d, err)
-					return diag.FromErr(err)
+					if err != nil {
+						tfErr2 := flex.TerraformErrorf(err, fmt.Sprintf("instanceRestartAfterVSNFailure failed: %s", err.Error()), "ibm_pi_virtual_serial_number", "create")
+						log.Printf("[DEBUG]\n%s", tfErr2.GetDebugMessage())
+					}
+
+					return tfErr.GetDiag()
 				}
 				_, err = isWaitForPIInstanceVSNAssignedOrUpdatedAndStopped(ctx, instanceClient, pvmInstanceIdArg, updateBody, d.Timeout(schema.TimeoutCreate))
 				if err != nil {
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForPIInstanceVSNAssignedOrUpdatedAndStopped failed: %s", err.Error()), "ibm_pi_virtual_serial_number", "create")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+
 					err = instanceRestartAfterVSNFailure(ctx, pvmInstanceIdArg, restartInstance, instanceClient, d, err)
-					return diag.FromErr(err)
+					if err != nil {
+						tfErr2 := flex.TerraformErrorf(err, fmt.Sprintf("instanceRestartAfterVSNFailure failed: %s", err.Error()), "ibm_pi_virtual_serial_number", "create")
+						log.Printf("[DEBUG]\n%s", tfErr2.GetDebugMessage())
+					}
+
+					return tfErr.GetDiag()
 				}
 			}
 		}
@@ -212,7 +276,9 @@ func resourceIBMPIVirtualSerialNumberCreate(ctx context.Context, d *schema.Resou
 		if restartInstance {
 			err = startLparAfterVSNChange(ctx, instanceClient, pvmInstanceIdArg, d.Timeout(schema.TimeoutCreate))
 			if err != nil {
-				return diag.FromErr(err)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("startLparAfterVSNChange failed: %s", err.Error()), "ibm_pi_virtual_serial_number", "create")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 		}
 	} else {
@@ -227,12 +293,16 @@ func resourceIBMPIVirtualSerialNumberCreate(ctx context.Context, d *schema.Resou
 func resourceIBMPIVirtualSerialNumberRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_virtual_serial_number", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	idArr, err := flex.IdParts(d.Id())
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IdParts failed: %s", err.Error()), "ibm_pi_virtual_serial_number", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID := idArr[0]
@@ -245,7 +315,9 @@ func resourceIBMPIVirtualSerialNumberRead(ctx context.Context, d *schema.Resourc
 			d.SetId("")
 			return nil
 		}
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Get failed: %s", err.Error()), "ibm_pi_virtual_serial_number", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	d.Set(Arg_Description, vsn.Description)
 	d.Set(Arg_InstanceID, vsn.PvmInstanceID)
@@ -258,12 +330,16 @@ func resourceIBMPIVirtualSerialNumberRead(ctx context.Context, d *schema.Resourc
 func resourceIBMPIVirtualSerialNumberDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_virtual_serial_number", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	idArr, err := flex.IdParts(d.Id())
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IdParts failed: %s", err.Error()), "ibm_pi_virtual_serial_number", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	cloudInstanceID := idArr[0]
 	client := instance.NewIBMPIVSNClient(ctx, sess, cloudInstanceID)
@@ -273,7 +349,9 @@ func resourceIBMPIVirtualSerialNumberDelete(ctx context.Context, d *schema.Resou
 		instanceClient := instance.NewIBMPIInstanceClient(ctx, sess, cloudInstanceID)
 		restartInstance, err := stopLparForVSNChange(ctx, instanceClient, pvmInstanceId, d.Timeout(schema.TimeoutDelete))
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("stopLparForVSNChange failed: %s", err.Error()), "ibm_pi_virtual_serial_number", "delete")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
 		retainVSN := false
@@ -285,20 +363,38 @@ func resourceIBMPIVirtualSerialNumberDelete(ctx context.Context, d *schema.Resou
 		}
 		err = client.PVMInstanceDeleteVSN(pvmInstanceId, deleteBody)
 		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("PVMInstanceDeleteVSN failed: %s", err.Error()), "ibm_pi_virtual_serial_number", "delete")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+
 			err = instanceRestartAfterVSNFailure(ctx, pvmInstanceId, restartInstance, instanceClient, d, err)
-			return diag.FromErr(err)
+			if err != nil {
+				tfErr2 := flex.TerraformErrorf(err, fmt.Sprintf("instanceRestartAfterVSNFailure failed: %s", err.Error()), "ibm_pi_virtual_serial_number", "delete")
+				log.Printf("[DEBUG]\n%s", tfErr2.GetDebugMessage())
+			}
+
+			return tfErr.GetDiag()
 		}
 
 		_, err = isWaitForPIInstanceVSNRemoved(ctx, instanceClient, pvmInstanceId, d.Timeout(schema.TimeoutDelete))
 		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForPIInstanceVSNRemoved failed: %s", err.Error()), "ibm_pi_virtual_serial_number", "delete")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+
 			err = instanceRestartAfterVSNFailure(ctx, pvmInstanceId, restartInstance, instanceClient, d, err)
-			return diag.FromErr(err)
+			if err != nil {
+				tfErr2 := flex.TerraformErrorf(err, fmt.Sprintf("instanceRestartAfterVSNFailure failed: %s", err.Error()), "ibm_pi_virtual_serial_number", "delete")
+				log.Printf("[DEBUG]\n%s", tfErr2.GetDebugMessage())
+			}
+
+			return tfErr.GetDiag()
 		}
 
 		if restartInstance {
 			err = startLparAfterVSNChange(ctx, instanceClient, pvmInstanceId, d.Timeout(schema.TimeoutDelete))
 			if err != nil {
-				return diag.FromErr(err)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("startLparAfterVSNChange failed: %s", err.Error()), "ibm_pi_virtual_serial_number", "delete")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 		}
 
@@ -307,7 +403,9 @@ func resourceIBMPIVirtualSerialNumberDelete(ctx context.Context, d *schema.Resou
 		serialNumber := d.Get(Arg_Serial).(string)
 		err = client.Delete(serialNumber)
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Delete failed: %s", err.Error()), "ibm_pi_virtual_serial_number", "delete")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 
@@ -319,7 +417,9 @@ func resourceIBMPIVirtualSerialNumberDelete(ctx context.Context, d *schema.Resou
 func resourceIBMPIVirtualSerialNumberUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_virtual_serial_number", "update")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
 	client := instance.NewIBMPIVSNClient(ctx, sess, cloudInstanceID)
@@ -331,7 +431,11 @@ func resourceIBMPIVirtualSerialNumberUpdate(ctx context.Context, d *schema.Resou
 				// Set old software tier back into state incase it is not re-read on next apply
 				oldSoftwareTier, _ := d.GetChange(Arg_SoftwareTier)
 				d.Set(Arg_SoftwareTier, oldSoftwareTier)
-				return diag.Errorf("cannot set '%s' unless '%s' is specified", Arg_SoftwareTier, Arg_InstanceID)
+
+				err = flex.FmtErrorf("cannot set '%s' unless '%s' is specified", Arg_SoftwareTier, Arg_InstanceID)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("operation failed: %s", err.Error()), "ibm_pi_virtual_serial_number", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 		}
 
@@ -347,15 +451,25 @@ func resourceIBMPIVirtualSerialNumberUpdate(ctx context.Context, d *schema.Resou
 				}
 				_, err = client.PVMInstanceUpdateVSN(pvmInstanceId, updateBody)
 				if err != nil {
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("PVMInstanceUpdateVSN failed: %s", err.Error()), "ibm_pi_virtual_serial_number", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+
 					err = instanceRestartAfterVSNFailure(ctx, pvmInstanceId, restartInstance, instanceClient, d, err)
-					return diag.FromErr(err)
+					if err != nil {
+						tfErr2 := flex.TerraformErrorf(err, fmt.Sprintf("instanceRestartAfterVSNFailure failed: %s", err.Error()), "ibm_pi_virtual_serial_number", "update")
+						log.Printf("[DEBUG]\n%s", tfErr2.GetDebugMessage())
+					}
+
+					return tfErr.GetDiag()
 				}
 			}
 
 			if d.HasChange(Arg_SoftwareTier) {
 				restartInstanceSoftwareTier, err := stopLparForVSNChange(ctx, instanceClient, pvmInstanceId, d.Timeout(schema.TimeoutUpdate))
 				if err != nil {
-					return diag.FromErr(err)
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("stopLparForVSNChange failed: %s", err.Error()), "ibm_pi_virtual_serial_number", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
 				restartInstance = restartInstance || restartInstanceSoftwareTier
 
@@ -366,21 +480,39 @@ func resourceIBMPIVirtualSerialNumberUpdate(ctx context.Context, d *schema.Resou
 
 				_, err = client.PVMInstanceUpdateVSN(pvmInstanceId, updateBody)
 				if err != nil {
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("PVMInstanceUpdateVSN failed: %s", err.Error()), "ibm_pi_virtual_serial_number", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+
 					err = instanceRestartAfterVSNFailure(ctx, pvmInstanceId, restartInstance, instanceClient, d, err)
-					return diag.FromErr(err)
+					if err != nil {
+						tfErr2 := flex.TerraformErrorf(err, fmt.Sprintf("instanceRestartAfterVSNFailure failed: %s", err.Error()), "ibm_pi_virtual_serial_number", "update")
+						log.Printf("[DEBUG]\n%s", tfErr2.GetDebugMessage())
+					}
+
+					return tfErr.GetDiag()
 				}
 
 				_, err = isWaitForPIInstanceVSNAssignedOrUpdatedAndStopped(ctx, instanceClient, pvmInstanceId, updateBody, d.Timeout(schema.TimeoutUpdate))
 				if err != nil {
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForPIInstanceVSNAssignedOrUpdatedAndStopped failed: %s", err.Error()), "ibm_pi_virtual_serial_number", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+
 					err = instanceRestartAfterVSNFailure(ctx, pvmInstanceId, restartInstance, instanceClient, d, err)
-					return diag.FromErr(err)
+					if err != nil {
+						tfErr2 := flex.TerraformErrorf(err, fmt.Sprintf("instanceRestartAfterVSNFailure failed: %s", err.Error()), "ibm_pi_virtual_serial_number", "update")
+						log.Printf("[DEBUG]\n%s", tfErr2.GetDebugMessage())
+					}
+
+					return tfErr.GetDiag()
 				}
 			}
 
 			if restartInstance {
 				err = startLparAfterVSNChange(ctx, instanceClient, pvmInstanceId, d.Timeout(schema.TimeoutUpdate))
 				if err != nil {
-					return diag.FromErr(err)
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("startLparAfterVSNChange failed: %s", err.Error()), "ibm_pi_virtual_serial_number", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
 			}
 			// else, use endpoints for unassigned vsns
@@ -394,7 +526,9 @@ func resourceIBMPIVirtualSerialNumberUpdate(ctx context.Context, d *schema.Resou
 
 			_, err = client.Update(vsnArg, updateBody)
 			if err != nil {
-				return diag.FromErr(err)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Update failed: %s", err.Error()), "ibm_pi_virtual_serial_number", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 		}
 	}
@@ -405,13 +539,18 @@ func resourceIBMPIVirtualSerialNumberUpdate(ctx context.Context, d *schema.Resou
 		oldIdString, newIdString := oldId.(string), newId.(string)
 
 		if _, ok := d.GetOk(Arg_SoftwareTier); ok && newIdString == "" {
-			return diag.Errorf("cannot set '%s' unless '%s' is specified", Arg_SoftwareTier, Arg_InstanceID)
+			err = flex.FmtErrorf("cannot set '%s' unless '%s' is specified", Arg_SoftwareTier, Arg_InstanceID)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("operation failed: %s", err.Error()), "ibm_pi_virtual_serial_number", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
 		if oldIdString != "" {
 			restartInstance, err := stopLparForVSNChange(ctx, instanceClient, oldIdString, d.Timeout(schema.TimeoutUpdate))
 			if err != nil {
-				return diag.FromErr(err)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("stopLparForVSNChange failed: %s", err.Error()), "ibm_pi_virtual_serial_number", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 
 			detachBody := &models.DeleteServerVirtualSerialNumber{
@@ -419,20 +558,38 @@ func resourceIBMPIVirtualSerialNumberUpdate(ctx context.Context, d *schema.Resou
 			}
 			err = client.PVMInstanceDeleteVSN(oldIdString, detachBody)
 			if err != nil {
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("PVMInstanceDeleteVSN failed: %s", err.Error()), "ibm_pi_virtual_serial_number", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+
 				err = instanceRestartAfterVSNFailure(ctx, oldIdString, restartInstance, instanceClient, d, err)
-				return diag.FromErr(err)
+				if err != nil {
+					tfErr2 := flex.TerraformErrorf(err, fmt.Sprintf("instanceRestartAfterVSNFailure failed: %s", err.Error()), "ibm_pi_virtual_serial_number", "update")
+					log.Printf("[DEBUG]\n%s", tfErr2.GetDebugMessage())
+				}
+
+				return tfErr.GetDiag()
 			}
 
 			_, err = isWaitForPIInstanceVSNRemoved(ctx, instanceClient, oldIdString, d.Timeout(schema.TimeoutUpdate))
 			if err != nil {
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForPIInstanceVSNRemoved failed: %s", err.Error()), "ibm_pi_virtual_serial_number", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+
 				err = instanceRestartAfterVSNFailure(ctx, oldIdString, restartInstance, instanceClient, d, err)
-				return diag.FromErr(err)
+				if err != nil {
+					tfErr2 := flex.TerraformErrorf(err, fmt.Sprintf("instanceRestartAfterVSNFailure failed: %s", err.Error()), "ibm_pi_virtual_serial_number", "update")
+					log.Printf("[DEBUG]\n%s", tfErr2.GetDebugMessage())
+				}
+
+				return tfErr.GetDiag()
 			}
 
 			if restartInstance {
 				err = startLparAfterVSNChange(ctx, instanceClient, oldIdString, d.Timeout(schema.TimeoutUpdate))
 				if err != nil {
-					return diag.FromErr(err)
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("startLparAfterVSNChange failed: %s", err.Error()), "ibm_pi_virtual_serial_number", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
 			}
 		}
@@ -440,7 +597,9 @@ func resourceIBMPIVirtualSerialNumberUpdate(ctx context.Context, d *schema.Resou
 		if newIdString != "" {
 			restartInstance, err := stopLparForVSNChange(ctx, instanceClient, newIdString, d.Timeout(schema.TimeoutUpdate))
 			if err != nil {
-				return diag.FromErr(err)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("stopLparForVSNChange failed: %s", err.Error()), "ibm_pi_virtual_serial_number", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 
 			serial := d.Get(Arg_Serial).(string)
@@ -453,14 +612,30 @@ func resourceIBMPIVirtualSerialNumberUpdate(ctx context.Context, d *schema.Resou
 			}
 			_, err = client.PVMInstanceAttachVSN(newIdString, addBody)
 			if err != nil {
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("PVMInstanceAttachVSN failed: %s", err.Error()), "ibm_pi_virtual_serial_number", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+
 				err = instanceRestartAfterVSNFailure(ctx, newIdString, restartInstance, instanceClient, d, err)
-				return diag.FromErr(err)
+				if err != nil {
+					tfErr2 := flex.TerraformErrorf(err, fmt.Sprintf("instanceRestartAfterVSNFailure failed: %s", err.Error()), "ibm_pi_virtual_serial_number", "update")
+					log.Printf("[DEBUG]\n%s", tfErr2.GetDebugMessage())
+				}
+
+				return tfErr.GetDiag()
 			}
 
 			pvm, err := isWaitForPIInstanceVSNAssignedOrUpdatedAndStopped(ctx, instanceClient, newIdString, nil, d.Timeout(schema.TimeoutUpdate))
 			if err != nil {
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForPIInstanceVSNAssignedOrUpdatedAndStopped failed: %s", err.Error()), "ibm_pi_virtual_serial_number", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+
 				err = instanceRestartAfterVSNFailure(ctx, newIdString, restartInstance, instanceClient, d, err)
-				return diag.FromErr(err)
+				if err != nil {
+					tfErr2 := flex.TerraformErrorf(err, fmt.Sprintf("instanceRestartAfterVSNFailure failed: %s", err.Error()), "ibm_pi_virtual_serial_number", "update")
+					log.Printf("[DEBUG]\n%s", tfErr2.GetDebugMessage())
+				}
+
+				return tfErr.GetDiag()
 			}
 
 			// cannot specify software tier when attaching new VSN, update to match software tier in configuration
@@ -473,13 +648,29 @@ func resourceIBMPIVirtualSerialNumberUpdate(ctx context.Context, d *schema.Resou
 					}
 					_, err = client.PVMInstanceUpdateVSN(newIdString, updateBody)
 					if err != nil {
+						tfErr := flex.TerraformErrorf(err, fmt.Sprintf("PVMInstanceUpdateVSN failed: %s", err.Error()), "ibm_pi_virtual_serial_number", "update")
+						log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+
 						err = instanceRestartAfterVSNFailure(ctx, newIdString, restartInstance, instanceClient, d, err)
-						return diag.FromErr(err)
+						if err != nil {
+							tfErr2 := flex.TerraformErrorf(err, fmt.Sprintf("instanceRestartAfterVSNFailure failed: %s", err.Error()), "ibm_pi_virtual_serial_number", "update")
+							log.Printf("[DEBUG]\n%s", tfErr2.GetDebugMessage())
+						}
+
+						return tfErr.GetDiag()
 					}
 					_, err = isWaitForPIInstanceVSNAssignedOrUpdatedAndStopped(ctx, instanceClient, newIdString, updateBody, d.Timeout(schema.TimeoutUpdate))
 					if err != nil {
+						tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForPIInstanceVSNAssignedOrUpdatedAndStopped failed: %s", err.Error()), "ibm_pi_virtual_serial_number", "update")
+						log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+
 						err = instanceRestartAfterVSNFailure(ctx, newIdString, restartInstance, instanceClient, d, err)
-						return diag.FromErr(err)
+						if err != nil {
+							tfErr2 := flex.TerraformErrorf(err, fmt.Sprintf("instanceRestartAfterVSNFailure failed: %s", err.Error()), "ibm_pi_virtual_serial_number", "update")
+							log.Printf("[DEBUG]\n%s", tfErr2.GetDebugMessage())
+						}
+
+						return tfErr.GetDiag()
 					}
 				}
 			}
@@ -487,7 +678,9 @@ func resourceIBMPIVirtualSerialNumberUpdate(ctx context.Context, d *schema.Resou
 			if restartInstance {
 				err = startLparAfterVSNChange(ctx, instanceClient, newIdString, d.Timeout(schema.TimeoutUpdate))
 				if err != nil {
-					return diag.FromErr(err)
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("startLparAfterVSNChange failed: %s", err.Error()), "ibm_pi_virtual_serial_number", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
 			}
 		}
@@ -502,7 +695,7 @@ func startLparAfterVSNChange(ctx context.Context, client *instance.IBMPIInstance
 	}
 	err := client.Action(id, body)
 	if err != nil {
-		return fmt.Errorf("failed to perform the start action on the pvm instance %v", err)
+		return flex.FmtErrorf("failed to perform the start action on the pvm instance %v", err)
 	}
 
 	_, err = isWaitForPIInstanceAvailable(ctx, client, id, OK, timeout)
@@ -514,7 +707,7 @@ func stopLparForVSNChange(ctx context.Context, client *instance.IBMPIInstanceCli
 	instanceRestart := false
 	ins, err := client.Get(id)
 	if err != nil {
-		return false, fmt.Errorf("failed to get pvm instance (%s): %v", id, err)
+		return false, flex.FmtErrorf("failed to get pvm instance (%s): %v", id, err)
 	}
 	status := *ins.Status
 	if strings.ToLower(status) != State_Shutoff {
@@ -523,7 +716,7 @@ func stopLparForVSNChange(ctx context.Context, client *instance.IBMPIInstanceCli
 		}
 		err := client.Action(id, body)
 		if err != nil {
-			return false, fmt.Errorf("failed to perform the stop action on the pvm instance %v", err)
+			return false, flex.FmtErrorf("failed to perform the stop action on the pvm instance %v", err)
 		}
 		instanceRestart = true
 	}
