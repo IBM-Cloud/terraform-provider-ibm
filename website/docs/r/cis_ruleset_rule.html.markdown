@@ -17,6 +17,7 @@ Provides an IBM Cloud Internet Services rulesets rule resource to create, update
 # Get the ruleset it for the entrypoint ruleset in which the rule will be added
 # use http_request_firewall_custom for custom entrypoint ruleset
 # use http_request_firewall_managed for managed entrypoint ruleset
+# use http_ratelimit phase value for ratelimit entrypoint ruleset
 
   data "ibm_cis_ruleset_entrypoint_versions" "test"{
     cis_id    = ibm_cis.instance.id
@@ -85,6 +86,20 @@ Provides an IBM Cloud Internet Services rulesets rule resource to create, update
         after = <id of any existing rule>
         before = <id of any existing rule>
       }
+    }
+  }
+
+# Add/Update a ratelimit rule. make sure phase is http_ratelimit
+
+  resource ibm_cis_ruleset_rule "config" {
+    cis_id    = ibm_cis.instance.id
+    domain_id = data.ibm_cis_domain.cis_domain.domain_id
+    ruleset_id = "data.ibm_cis_ruleset_entrypoint_versions.ruleset_id"
+    rule {
+      action =  "block"
+      description = "var.description"
+      expression = "true"
+      enabled = "false"
       ratelimit {
         characteristics = ['cf.colo.id', ...var.ratelimit.characteristics]
         mitigation_timeout = var.ratelimit.mitigation_timeout
