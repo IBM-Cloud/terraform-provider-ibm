@@ -2481,7 +2481,7 @@ func instanceCreateByImage(context context.Context, d *schema.ResourceData, meta
 			Name: &bootProfile,
 		}
 		//boot volume allowed use
-		if _, ok := bootvol["allowed_use"]; ok {
+		if _, ok := bootvol["allowed_use"]; ok && len(bootvol["allowed_use"].([]interface{})) > 0 {
 			allowedUseModel, _ := ResourceIBMIsVolumeAllowedUseMapToVolumeAllowedUsePrototype(bootvol["allowed_use"].([]interface{})[0].(map[string]interface{}))
 			if allowedUseModel != nil {
 				volTemplate.AllowedUse = allowedUseModel
