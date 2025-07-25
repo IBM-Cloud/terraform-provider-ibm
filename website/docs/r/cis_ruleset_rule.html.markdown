@@ -17,7 +17,7 @@ Provides an IBM Cloud Internet Services rulesets rule resource to create, update
 # Get the ruleset it for the entrypoint ruleset in which the rule will be added
 # use http_request_firewall_custom for custom entrypoint ruleset
 # use http_request_firewall_managed for managed entrypoint ruleset
-# use http_ratelimit phase value for ratelimit entrypoint ruleset
+# use http_ratelimit for ratelimit entrypoint ruleset
 
   data "ibm_cis_ruleset_entrypoint_versions" "test"{
     cis_id    = ibm_cis.instance.id

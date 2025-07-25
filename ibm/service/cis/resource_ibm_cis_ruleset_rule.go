@@ -387,7 +387,7 @@ func ResourceIBMCISRulesetRuleCreate(d *schema.ResourceData, meta interface{}) e
 		result, resp, err := sess.CreateZoneRulesetRule(opt)
 
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error while creating the zone Ruleset %s", resp)
+			return fmt.Errorf("[ERROR] Error while creating the zone Rule %s", resp)
 		}
 		len_rules := len(result.Result.Rules)
 
