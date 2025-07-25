@@ -389,7 +389,7 @@ func imgCreateByFile(context context.Context, d *schema.ResourceData, meta inter
 			Name: &operatingSystem,
 		},
 	}
-	if allowedUse, ok := d.GetOk("allowed_use"); ok {
+	if allowedUse, ok := d.GetOk("allowed_use"); ok && len(allowedUse.([]interface{})) > 0 {
 		allowedUseModel, err := ResourceIBMUsageConstraintsMapToImageAllowUsePrototype(allowedUse.([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_image", "create", "parse-allowed_use").GetDiag()
@@ -477,7 +477,7 @@ func imgCreateByVolume(context context.Context, d *schema.ResourceData, meta int
 	imagePrototype.SourceVolume = &vpcv1.VolumeIdentity{
 		ID: &volume,
 	}
-	if allowedUse, ok := d.GetOk("allowed_use"); ok {
+	if allowedUse, ok := d.GetOk("allowed_use"); ok && len(allowedUse.([]interface{})) > 0 {
 		allowedUseModel, err := ResourceIBMUsageConstraintsMapToImageAllowUsePrototype(allowedUse.([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_image", "create", "parse-allowed_use").GetDiag()
@@ -772,7 +772,7 @@ func imgUpdate(context context.Context, d *schema.ResourceData, meta interface{}
 			imagePatchModel.DeprecationAt = &deprecateAt
 		}
 	}
-	if d.HasChange("allowed_use") {
+	if d.HasChange("allowed_use") && len(d.Get("allowed_use").([]interface{})) > 0 {
 		allowedUseModel, err := ResourceIBMIsImageMapToImageAllowedUsePatch(d.Get("allowed_use").([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_image", "update", "parse-allowed_use").GetDiag()
