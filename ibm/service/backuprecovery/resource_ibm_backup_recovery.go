@@ -1156,10 +1156,11 @@ func ResourceIbmBackupRecovery() *schema.Resource {
 				},
 			},
 			"kubernetes_params": &schema.Schema{
-				Type:        schema.TypeList,
-				MaxItems:    1,
-				Optional:    true,
-				ForceNew:    true,
+				Type:     schema.TypeList,
+				MaxItems: 1,
+				Optional: true,
+				Computed: true,
+				// ForceNew:    true,
 				Description: "Specifies the recovery options specific to Kubernetes environment.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -1226,6 +1227,7 @@ func ResourceIbmBackupRecovery() *schema.Resource {
 						"objects": &schema.Schema{
 							Type:        schema.TypeList,
 							Optional:    true,
+							Computed:    true,
 							Description: "Specifies the list of objects which need to be recovered.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
@@ -1237,16 +1239,19 @@ func ResourceIbmBackupRecovery() *schema.Resource {
 									"point_in_time_usecs": &schema.Schema{
 										Type:        schema.TypeInt,
 										Optional:    true,
+										Computed:    true,
 										Description: "Specifies the timestamp (in microseconds. from epoch) for recovering to a point-in-time in the past.",
 									},
 									"protection_group_id": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
+										Computed:    true,
 										Description: "Specifies the protection group id of the object snapshot.",
 									},
 									"protection_group_name": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
+										Computed:    true,
 										Description: "Specifies the protection group name of the object snapshot.",
 									},
 									"snapshot_creation_time_usecs": &schema.Schema{
@@ -1778,6 +1783,7 @@ func ResourceIbmBackupRecovery() *schema.Resource {
 							Type:        schema.TypeList,
 							MaxItems:    1,
 							Optional:    true,
+							Computed:    true,
 							Description: "Specifies the parameters to perform a file and folder recovery.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
@@ -1978,6 +1984,7 @@ func ResourceIbmBackupRecovery() *schema.Resource {
 													Type:        schema.TypeList,
 													MaxItems:    1,
 													Optional:    true,
+													Computed:    true,
 													Description: "Specifies VLAN Params associated with the recovered files and folders. If this is not specified, then the VLAN settings will be automatically selected from one of the below options: a. If VLANs are configured on Cohesity, then the VLAN host/VIP will be automatically based on the client's (e.g. ESXI host) IP address. b. If VLANs are not configured on Cohesity, then the partition hostname or VIPs will be used for Recovery.",
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
@@ -2014,6 +2021,7 @@ func ResourceIbmBackupRecovery() *schema.Resource {
 							Type:        schema.TypeList,
 							MaxItems:    1,
 							Optional:    true,
+							Computed:    true,
 							Description: "Specifies the parameters to recover Kubernetes Namespaces.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
@@ -2137,16 +2145,19 @@ func ResourceIbmBackupRecovery() *schema.Resource {
 															"point_in_time_usecs": &schema.Schema{
 																Type:        schema.TypeInt,
 																Optional:    true,
+																Computed:    true,
 																Description: "Specifies the timestamp (in microseconds. from epoch) for recovering to a point-in-time in the past.",
 															},
 															"protection_group_id": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
+																Computed:    true,
 																Description: "Specifies the protection group id of the object snapshot.",
 															},
 															"protection_group_name": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
+																Computed:    true,
 																Description: "Specifies the protection group name of the object snapshot.",
 															},
 															"snapshot_creation_time_usecs": &schema.Schema{
@@ -2642,6 +2653,7 @@ func ResourceIbmBackupRecovery() *schema.Resource {
 															},
 															"recover_from_standby": &schema.Schema{
 																Type:        schema.TypeBool,
+																Computed:    true,
 																Optional:    true,
 																Description: "Specifies that user wants to perform standby restore if it is enabled for this object.",
 															},
@@ -2720,6 +2732,7 @@ func ResourceIbmBackupRecovery() *schema.Resource {
 																Type:        schema.TypeList,
 																MaxItems:    1,
 																Optional:    true,
+																Computed:    true,
 																Description: "Specifies the new source configuration if a Kubernetes Namespace is being restored to a different source than the one from which it was protected.",
 																Elem: &schema.Resource{
 																	Schema: map[string]*schema.Schema{
@@ -2765,11 +2778,13 @@ func ResourceIbmBackupRecovery() *schema.Resource {
 															"prefix": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
+																Computed:    true,
 																Description: "Specifies the prefix string to be added to recovered or cloned object names.",
 															},
 															"suffix": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
+																Computed:    true,
 																Description: "Specifies the suffix string to be added to recovered or cloned object names.",
 															},
 														},

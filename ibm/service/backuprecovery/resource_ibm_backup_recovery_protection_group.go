@@ -6750,7 +6750,7 @@ func ResourceIbmBackupRecoveryProtectionGroupMapToKubernetesProtectionGroupParam
 	if modelMap["enable_indexing"] != nil {
 		model.EnableIndexing = core.BoolPtr(modelMap["enable_indexing"].(bool))
 	}
-	if modelMap["exclude_label_ids"] != nil {
+	if modelMap["exclude_label_ids"] != nil && len(modelMap["exclude_label_ids"].([]interface{})) > 0 && len(modelMap["exclude_label_ids"].([][]interface{})) > 0 {
 		excludeLabelIds := [][]int64{}
 		for _, excludeLabelIdsItemArray := range modelMap["exclude_label_ids"].([][]interface{}) {
 			excludeLabelIdsItemArrayInt64 := make([]int64, len(excludeLabelIdsItemArray))
@@ -6782,7 +6782,7 @@ func ResourceIbmBackupRecoveryProtectionGroupMapToKubernetesProtectionGroupParam
 		}
 		model.IncludeParams = IncludeParamsModel
 	}
-	if modelMap["label_ids"] != nil {
+	if modelMap["label_ids"] != nil && len(modelMap["label_ids"].([]interface{})) > 0 && len(modelMap["label_ids"].([][]interface{})) > 0 {
 		labelIds := [][]int64{}
 		for _, labelIdsItem := range modelMap["label_ids"].([][]interface{}) {
 

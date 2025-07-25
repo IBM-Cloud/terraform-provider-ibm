@@ -274,6 +274,7 @@ func Provider() *schema.Provider {
 			"ibm_backup_recovery_download_indexed_files":   backuprecovery.DataSourceIbmBackupRecoveryDownloadIndexedFiles(),
 			"ibm_backup_recovery_protection_sources":       backuprecovery.DataSourceIbmBackupRecoveryProtectionSources(),
 			"ibm_backup_recovery_connector_get_users":      backuprecovery.DataSourceIbmBackupRecoveryConnectorGetUsers(),
+			"ibm_backup_recovery_registration_info":        backuprecovery.DataSourceIbmBackupRecoveryRegistrationInfo(),
 
 			// // AppID
 			"ibm_appid_action_url":               appid.DataSourceIBMAppIDActionURL(),
