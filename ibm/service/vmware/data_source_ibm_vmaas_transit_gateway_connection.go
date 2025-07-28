@@ -125,39 +125,75 @@ func dataSourceIbmVmaasTransitGatewayConnectionRead(context context.Context, d *
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
+	vdcID := d.Get("vdc_id").(string)
+	edgeID := d.Get("edge_id").(string)
+	tgwID := d.Get("vmaas_transit_gateway_connection_id").(string)
 
 	getVdcOptions := &vmwarev1.GetVdcOptions{}
 
-	getVdcOptions.SetID(d.Get("vmaas_transit_gateway_connection_id").(string))
+	getVdcOptions.SetID(vdcID)
 
-	transitGateway, _, err := vmwareClient.GetVdcWithContext(context, getVdcOptions)
+	vdc, _, err := vmwareClient.GetVdcWithContext(context, getVdcOptions)
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetVdcWithContext failed: %s", err.Error()), "(Data) ibm_vmaas_transit_gateway_connection", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 
-	d.SetId(*getVdcOptions.ID)
+	var foundEdge *vmwarev1.Edge
+	for _, edge := range vdc.Edges {
+		if edge.ID != nil && *edge.ID == edgeID {
+			foundEdge = &edge
+			break
+		}
+	}
+	if foundEdge == nil {
+		return diag.Errorf("edge %q not found in VDC %q", edgeID, vdcID)
+	}
 
-	connections := []map[string]interface{}{}
-	// for _, connectionsItem := range transitGateway.Connections {
-	// 	connectionsItemMap, err := DataSourceIbmVmaasTransitGatewayConnectionTransitGatewayConnectionToMap(&connectionsItem) // #nosec G601
-	// 	if err != nil {
-	// 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_vmaas_transit_gateway_connection", "read", "connections-to-map").GetDiag()
-	// 	}
-	// 	connections = append(connections, connectionsItemMap)
-	// }
+	var foundTGW *vmwarev1.TransitGateway
+	for _, tgw := range foundEdge.TransitGateways {
+		if tgw.ID != nil && *tgw.ID == tgwID {
+			foundTGW = &tgw
+			break
+		}
+	}
+	if foundTGW == nil {
+		return diag.Errorf("transit gateway %q not found in edge %q", tgwID, edgeID)
+	}
+
+	d.SetId(tgwID)
+
+	var connections []map[string]interface{}
+	for _, conn := range foundTGW.Connections {
+		connections = append(connections, map[string]interface{}{
+			"name":                            conn.Name,
+			"transit_gateway_connection_name": conn.TransitGatewayConnectionName,
+			"status":                          conn.Status,
+			"local_gateway_ip":                conn.LocalGatewayIp,
+			"remote_gateway_ip":               conn.RemoteGatewayIp,
+			"local_tunnel_ip":                 conn.LocalTunnelIp,
+			"remote_tunnel_ip":                conn.RemoteTunnelIp,
+			"local_bgp_asn":                   conn.LocalBgpAsn,
+			"remote_bgp_asn":                  conn.RemoteBgpAsn,
+			"network_account_id":              conn.NetworkAccountID,
+			"network_type":                    conn.NetworkType,
+			"base_network_type":               conn.BaseNetworkType,
+			"zone":                            conn.Zone,
+		})
+	}
+
 	if err = d.Set("connections", connections); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting connections: %s", err), "(Data) ibm_vmaas_transit_gateway_connection", "read", "set-connections").GetDiag()
 	}
 
-	if err = d.Set("status", transitGateway.Status); err != nil {
+	if err = d.Set("status", foundTGW.Status); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting status: %s", err), "(Data) ibm_vmaas_transit_gateway_connection", "read", "set-status").GetDiag()
 	}
 
-	// if err = d.Set("region", transitGateway.Region); err != nil {
-	// 	return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting region: %s", err), "(Data) ibm_vmaas_transit_gateway_connection", "read", "set-region").GetDiag()
-	// }
+	if err = d.Set("region", foundTGW.Region); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting region: %s", err), "(Data) ibm_vmaas_transit_gateway_connection", "read", "set-region").GetDiag()
+	}
 
 	return nil
 }

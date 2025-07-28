@@ -11,11 +11,10 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
-	"github.com/IBM-Cloud/terraform-provider-ibm/terraform-provider-ibm/ibm/service/vmware"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/vmware"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/vmware-go-sdk/vmwarev1"
 	"github.com/stretchr/testify/assert"
@@ -45,10 +44,10 @@ func TestAccIbmVmaasTransitGatewayConnectionDataSourceBasic(t *testing.T) {
 }
 
 func TestAccIbmVmaasTransitGatewayConnectionDataSourceAllArgs(t *testing.T) {
-	transitGatewayVdcID := fmt.Sprintf("tf_vdc_id_%d", acctest.RandIntRange(10, 100))
-	transitGatewayEdgeID := fmt.Sprintf("tf_edge_id_%d", acctest.RandIntRange(10, 100))
-	transitGatewayAcceptLanguage := fmt.Sprintf("tf_accept_language_%d", acctest.RandIntRange(10, 100))
-	transitGatewayRegion := fmt.Sprintf("tf_region_%d", acctest.RandIntRange(10, 100))
+	transitGatewayVdcID := acc.Vmaas_vdc_id
+	transitGatewayEdgeID := acc.Vmaas_edge_id
+	transitGatewayAcceptLanguage := "en-us"
+	transitGatewayRegion := "jp-tok"
 	transitGatewayID := acc.Vmaas_transit_gateway_id
 
 	resource.Test(t, resource.TestCase{
@@ -88,7 +87,6 @@ func testAccCheckIbmVmaasTransitGatewayConnectionDataSourceConfigBasic(transitGa
 			vdc_id = "%s"
 			edge_id = "%s"
 			vmaas_transit_gateway_connection_id ="%s"
-
 		}
 
 		data "ibm_vmaas_transit_gateway_connection" "vmaas_transit_gateway_connection_instance" {

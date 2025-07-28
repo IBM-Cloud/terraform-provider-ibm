@@ -14,7 +14,7 @@ import (
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.com/IBM-Cloud/terraform-provider-ibm/terraform-provider-ibm/ibm/service/vmware"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/vmware"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/vmware-go-sdk/vmwarev1"
 	"github.com/stretchr/testify/assert"
@@ -142,7 +142,6 @@ func testAccCheckIbmVmaasTransitGatewayConnectionExists(n string, obj vmwarev1.T
 			return fmt.Errorf("error fetching VDC: %s", err)
 		}
 
-		// Locate the edge
 		var foundEdge *vmwarev1.Edge
 		for _, edge := range vdc.Edges {
 			if edge.ID != nil && *edge.ID == edgeID {
@@ -154,11 +153,10 @@ func testAccCheckIbmVmaasTransitGatewayConnectionExists(n string, obj vmwarev1.T
 			return fmt.Errorf("edge %q not found in VDC %q", edgeID, vdcID)
 		}
 
-		// Locate the transit gateway
 		for _, tg := range foundEdge.TransitGateways {
 			if tg.ID != nil && *tg.ID == tgwID {
 				obj = tg
-				return nil // Found the TGW, success
+				return nil
 			}
 		}
 		return fmt.Errorf("transit gateway %q not found in edge %q", tgwID, edgeID)
@@ -192,12 +190,11 @@ func testAccCheckIbmVmaasTransitGatewayConnectionDestroy(s *terraform.State) err
 		vdc, response, err := vmwareClient.GetVdc(getVdcOptions)
 		if err != nil {
 			if response != nil && response.StatusCode == 404 {
-				continue // VDC is gone, assume TGW is too
+				continue
 			}
 			return fmt.Errorf("error retrieving VDC: %v", err)
 		}
 
-		// Look for the edge
 		var foundEdge *vmwarev1.Edge
 		for _, edge := range vdc.Edges {
 			if edge.ID != nil && *edge.ID == edgeID {
@@ -206,10 +203,9 @@ func testAccCheckIbmVmaasTransitGatewayConnectionDestroy(s *terraform.State) err
 			}
 		}
 		if foundEdge == nil {
-			continue // Edge gone, assume TGW is also removed
+			continue
 		}
 
-		// Check if the Transit Gateway still exists
 		for _, tg := range foundEdge.TransitGateways {
 			if tg.ID != nil && *tg.ID == tgwID {
 				return fmt.Errorf("transit gateway %q still exists in edge %q", tgwID, edgeID)
