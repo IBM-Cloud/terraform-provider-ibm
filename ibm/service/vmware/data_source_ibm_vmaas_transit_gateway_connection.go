@@ -30,6 +30,16 @@ func DataSourceIbmVmaasTransitGatewayConnection() *schema.Resource {
 				Required:    true,
 				Description: "A unique ID for a specified virtual data center.",
 			},
+			"vdc_id": &schema.Schema{
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The ID of the Virtual Data Center.",
+			},
+			"edge_id": &schema.Schema{
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The ID of the Edge Gateway.",
+			},
 			"connections": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -125,10 +135,18 @@ func dataSourceIbmVmaasTransitGatewayConnectionRead(context context.Context, d *
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
-	vdcID := d.Get("vdc_id").(string)
-	edgeID := d.Get("edge_id").(string)
-	tgwID := d.Get("vmaas_transit_gateway_connection_id").(string)
+	vdcIDRaw, ok := d.GetOk("vdc_id")
+	if !ok || vdcIDRaw == nil {
+		return diag.Errorf("missing required attribute 'vdc_id'")
+	}
+	vdcID := vdcIDRaw.(string)
 
+	edgeIDRaw, ok := d.GetOk("edge_id")
+	if !ok || edgeIDRaw == nil {
+		return diag.Errorf("missing required attribute 'edge_id'")
+	}
+	edgeID := edgeIDRaw.(string)
+	tgwID := d.Get("vmaas_transit_gateway_connection_id").(string)
 	getVdcOptions := &vmwarev1.GetVdcOptions{}
 
 	getVdcOptions.SetID(vdcID)
@@ -164,23 +182,52 @@ func dataSourceIbmVmaasTransitGatewayConnectionRead(context context.Context, d *
 
 	d.SetId(tgwID)
 
-	var connections []map[string]interface{}
+	connections := []map[string]interface{}{}
+
 	for _, conn := range foundTGW.Connections {
-		connections = append(connections, map[string]interface{}{
-			"name":                            conn.Name,
-			"transit_gateway_connection_name": conn.TransitGatewayConnectionName,
-			"status":                          conn.Status,
-			"local_gateway_ip":                conn.LocalGatewayIp,
-			"remote_gateway_ip":               conn.RemoteGatewayIp,
-			"local_tunnel_ip":                 conn.LocalTunnelIp,
-			"remote_tunnel_ip":                conn.RemoteTunnelIp,
-			"local_bgp_asn":                   conn.LocalBgpAsn,
-			"remote_bgp_asn":                  conn.RemoteBgpAsn,
-			"network_account_id":              conn.NetworkAccountID,
-			"network_type":                    conn.NetworkType,
-			"base_network_type":               conn.BaseNetworkType,
-			"zone":                            conn.Zone,
-		})
+		connection := make(map[string]interface{})
+
+		if conn.Name != nil {
+			connection["name"] = *conn.Name
+		}
+		if conn.TransitGatewayConnectionName != nil {
+			connection["transit_gateway_connection_name"] = *conn.TransitGatewayConnectionName
+		}
+		if conn.Status != nil {
+			connection["status"] = *conn.Status
+		}
+		if conn.LocalGatewayIp != nil {
+			connection["local_gateway_ip"] = *conn.LocalGatewayIp
+		}
+		if conn.RemoteGatewayIp != nil {
+			connection["remote_gateway_ip"] = *conn.RemoteGatewayIp
+		}
+		if conn.LocalTunnelIp != nil {
+			connection["local_tunnel_ip"] = *conn.LocalTunnelIp
+		}
+		if conn.RemoteTunnelIp != nil {
+			connection["remote_tunnel_ip"] = *conn.RemoteTunnelIp
+		}
+		if conn.LocalBgpAsn != nil {
+			connection["local_bgp_asn"] = int(*conn.LocalBgpAsn)
+		}
+		if conn.RemoteBgpAsn != nil {
+			connection["remote_bgp_asn"] = int(*conn.RemoteBgpAsn)
+		}
+		if conn.NetworkAccountID != nil {
+			connection["network_account_id"] = *conn.NetworkAccountID
+		}
+		if conn.NetworkType != nil {
+			connection["network_type"] = *conn.NetworkType
+		}
+		if conn.BaseNetworkType != nil {
+			connection["base_network_type"] = *conn.BaseNetworkType
+		}
+		if conn.Zone != nil {
+			connection["zone"] = *conn.Zone
+		}
+
+		connections = append(connections, connection)
 	}
 
 	if err = d.Set("connections", connections); err != nil {

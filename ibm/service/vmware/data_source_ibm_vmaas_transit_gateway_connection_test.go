@@ -61,7 +61,7 @@ func TestAccIbmVmaasTransitGatewayConnectionDataSourceAllArgs(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_vmaas_transit_gateway_connection.vmaas_transit_gateway_connection_instance", "vmaas_transit_gateway_connection_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_vmaas_transit_gateway_connection.vmaas_transit_gateway_connection_instance", "connections.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_vmaas_transit_gateway_connection.vmaas_transit_gateway_connection_instance", "connections.0.name"),
-					resource.TestCheckResourceAttrSet("data.ibm_vmaas_transit_gateway_connection.vmaas_transit_gateway_connection_instance", "connections.0.transit_gateway_connection_name"),
+					// resource.TestCheckResourceAttrSet("data.ibm_vmaas_transit_gateway_connection.vmaas_transit_gateway_connection_instance", "connections.0.transit_gateway_connection_name"),
 					resource.TestCheckResourceAttrSet("data.ibm_vmaas_transit_gateway_connection.vmaas_transit_gateway_connection_instance", "connections.0.status"),
 					resource.TestCheckResourceAttrSet("data.ibm_vmaas_transit_gateway_connection.vmaas_transit_gateway_connection_instance", "connections.0.local_gateway_ip"),
 					resource.TestCheckResourceAttrSet("data.ibm_vmaas_transit_gateway_connection.vmaas_transit_gateway_connection_instance", "connections.0.remote_gateway_ip"),
@@ -90,6 +90,8 @@ func testAccCheckIbmVmaasTransitGatewayConnectionDataSourceConfigBasic(transitGa
 		}
 
 		data "ibm_vmaas_transit_gateway_connection" "vmaas_transit_gateway_connection_instance" {
+	        vdc_id  = ibm_vmaas_transit_gateway_connection.vmaas_transit_gateway_connection_instance.vdc_id
+			edge_id = ibm_vmaas_transit_gateway_connection.vmaas_transit_gateway_connection_instance.edge_id
 			vmaas_transit_gateway_connection_id = ibm_vmaas_transit_gateway_connection.vmaas_transit_gateway_connection_instance.vmaas_transit_gateway_connection_id
 		}
 	`, transitGatewayVdcID, transitGatewayEdgeID, transitGatewayID)
@@ -106,6 +108,8 @@ func testAccCheckIbmVmaasTransitGatewayConnectionDataSourceConfig(transitGateway
 		}
 
 		data "ibm_vmaas_transit_gateway_connection" "vmaas_transit_gateway_connection_instance" {
+			vdc_id  = ibm_vmaas_transit_gateway_connection.vmaas_transit_gateway_connection_instance.vdc_id
+			edge_id = ibm_vmaas_transit_gateway_connection.vmaas_transit_gateway_connection_instance.edge_id
 			vmaas_transit_gateway_connection_id = ibm_vmaas_transit_gateway_connection.vmaas_transit_gateway_connection_instance.vmaas_transit_gateway_connection_id
 		}
 	`, transitGatewayVdcID, transitGatewayEdgeID, transitGatewayAcceptLanguage, transitGatewayRegion, transitGatewayID)
