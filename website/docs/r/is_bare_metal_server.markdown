@@ -223,6 +223,7 @@ Review the argument references that you can specify for your resource.
     Nested schema for **virtual_network_interface**:
     - `allow_ip_spoofing` - (Optional, Boolean) Indicates whether source IP spoofing is allowed on this interface. If `false`, source IP spoofing is prevented on this interface. If `true`, source IP spoofing is allowed on this interface.
     - `auto_delete` - (Optional, Boolean) Indicates whether this virtual network interface will be automatically deleted when`target` is deleted.
+    - `crn` - (String) The CRN for this virtual network interface.
     - `enable_infrastructure_nat` - (Optional, Boolean) If `true`:- The VPC infrastructure performs any needed NAT operations.- `floating_ips` must not have more than one floating IP.If `false`:- Packets are passed unchanged to/from the network interface,  allowing the workload to perform any needed NAT operations.- `allow_ip_spoofing` must be `false`.- If the virtual network interface is attached:  - The target `resource_type` must be `bare_metal_server_network_attachment`.  - The target `interface_type` must not be `hipersocket`.
     - `ips` - (Optional, List) The reserved IPs bound to this virtual network interface.May be empty when `lifecycle_state` is `pending`.
       Nested schema for **ips**:
@@ -285,6 +286,7 @@ Review the argument references that you can specify for your resource.
     Nested schema for **virtual_network_interface**:
     - `allow_ip_spoofing` - (Optional, Boolean) Indicates whether source IP spoofing is allowed on this interface. If `false`, source IP spoofing is prevented on this interface. If `true`, source IP spoofing is allowed on this interface.
     - `auto_delete` - (Optional, Boolean) Indicates whether this virtual network interface will be automatically deleted when`target` is deleted.
+    - `crn` - (String) The CRN for this virtual network interface.
     - `enable_infrastructure_nat` - (Optional, Boolean) If `true`:- The VPC infrastructure performs any needed NAT operations.- `floating_ips` must not have more than one floating IP.If `false`:- Packets are passed unchanged to/from the network interface,  allowing the workload to perform any needed NAT operations.- `allow_ip_spoofing` must be `false`.- If the virtual network interface is attached:  - The target `resource_type` must be `bare_metal_server_network_attachment`.  - The target `interface_type` must not be `hipersocket`.
     - `ips` - (Optional, List) The reserved IPs bound to this virtual network interface.May be empty when `lifecycle_state` is `pending`.
       Nested schema for **ips**:
@@ -397,6 +399,23 @@ In addition to all argument reference list, you can access the following attribu
     - `core_count` - (Integer) The total number of cores
     - `socket_count` - (Integer) The total number of CPU sockets
     - `threads_per_core` - (Integer) The total number of hardware threads per core
+- `disks` - (List) The disks for this bare metal server, including any disks that are associated with the boot_target.
+  Nested scheme for `disks`:
+    - `allowed_use` - (List) The usage constraints to be matched against the requested bare metal server properties to determine compatibility. Only present for disks which are referenced in a bare metal server's boot_target property. The value of this property will be inherited from the source image at creation.
+    
+      Nested schema for `allowed_use`:
+      - `api_version` - (String) The API version with which to evaluate the expressions.
+
+      - `bare_metal_server` - (String) The expression that must be satisfied by the properties of a bare metal server provisioned using the image data in this disk. The expression follows [Common Expression Language](https://github.com/google/cel-spec/blob/master/doc/langdef.md), but does not support built-in functions and macros. 
+      
+      ~> **NOTE** </br> In addition, the following property is supported: </br>
+      **&#x2022;** `enable_secure_boot` - (boolean) Indicates whether secure boot is enabled for this bare metal server.   
+    - `href` - (String) The URL for this bare metal server disk.
+    - `id` - (String) The unique identifier for this bare metal server disk.
+    - `interface_type` - (String) The disk interface used for attaching the disk. The enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the unexpected property value was encountered. [ **nvme**, **sata** ]
+    - `name` - (String) The user-defined name for this disk
+    - `resource_type` - (String) The resource type
+    - `size` - (Integer) The size of the disk in GB (gigabytes)
 - `href` - (String) The URL for this bare metal server
 - `id` - (String) The unique identifier for this bare metal server
 - `memory` - (Integer) The amount of memory, truncated to whole gibibytes

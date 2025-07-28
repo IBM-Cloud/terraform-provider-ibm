@@ -104,6 +104,8 @@ var (
 	InstanceName                    string
 	InstanceProfileName             string
 	InstanceProfileNameUpdate       string
+	ISCatalogImageName              string
+	ISBootSnapshotID                string
 	IsBareMetalServerProfileName    string
 	IsBareMetalServerImage          string
 	IsBareMetalServerImage2         string
@@ -247,6 +249,7 @@ var (
 	Pi_remote_type                    string
 	Pi_replication_volume_name        string
 	Pi_resource_group_id              string
+	Pi_route_id                       string
 	Pi_sap_image                      string
 	Pi_sap_profile_id                 string
 	Pi_shared_processor_pool_id       string
@@ -974,6 +977,18 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable SL_INSTANCE_PROFILE_UPDATE for testing ibm_is_instance resource else it is set to default value 'cx2-4x8'")
 	}
 
+	ISCatalogImageName = os.Getenv("IS_CATALOG_IMAGE_NAME")
+	if ISCatalogImageName == "" {
+		ISCatalogImageName = "test-catalog"
+		fmt.Println("[INFO] Set the environment variable IS_CATALOG_IMAGE_NAME for testing ibm_is_instance_template resource else it is set to default value 'test-catalog'")
+	}
+
+	ISBootSnapshotID = os.Getenv("IS_BOOT_SNAPSHOT_ID")
+	if ISBootSnapshotID == "" {
+		ISBootSnapshotID = "r006-d7fejbe-2dhj-442df-b2iha-ccjbecbjbcejce"
+		fmt.Println("[INFO] Set the environment variable IS_BOOT_SNAPSHOT_ID for testing ibm_is_instance_template resource else it is set to default value 'r006-d7fejbe-2dhj-442df-b2iha-ccjbecbjbcejce'")
+	}
+
 	IsBareMetalServerProfileName = os.Getenv("IS_BARE_METAL_SERVER_PROFILE")
 	if IsBareMetalServerProfileName == "" {
 		IsBareMetalServerProfileName = "bx2-metal-96x384" // for next gen infrastructure
@@ -1396,6 +1411,13 @@ func init() {
 		Pi_resource_group_id = ""
 		fmt.Println("[WARN] Set the environment variable PI_RESOURCE_GROUP_ID for testing ibm_pi_workspace resource else it is set to default value ''")
 	}
+
+	Pi_route_id = os.Getenv("PI_ROUTE_ID")
+	if Pi_route_id == "" {
+		Pi_route_id = ""
+		fmt.Println("[WARN] Set the environment variable PI_ROUTE_ID for testing ibm_pi_route data source else it is set to default value ''")
+	}
+
 	Pi_host_group_id = os.Getenv("PI_HOST_GROUP_ID")
 	if Pi_host_group_id == "" {
 		Pi_host_group_id = ""

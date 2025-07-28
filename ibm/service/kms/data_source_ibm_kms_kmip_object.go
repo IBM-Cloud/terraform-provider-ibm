@@ -139,7 +139,7 @@ func dataSourceIBMKmsKMIPObjectRead(d *schema.ResourceData, meta interface{}) er
 	ctx := context.Background()
 	adapter, err := kpAPI.GetKMIPAdapter(ctx, adapterNameOrID)
 	if err != nil {
-		return flex.FmtErrorf("[ERROR] Error while retriving KMIP adapter to get KMIP object: %s", err)
+		return flex.FmtErrorf("[ERROR] Error while retrieving KMIP adapter to get KMIP object: %s", err)
 	}
 	if err = d.Set("adapter_id", adapter.ID); err != nil {
 		return flex.FmtErrorf("[ERROR] Error setting adapter_id: %s", err)
