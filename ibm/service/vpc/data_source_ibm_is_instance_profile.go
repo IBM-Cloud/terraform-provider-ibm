@@ -980,7 +980,7 @@ func instanceProfileGet(context context.Context, d *schema.ResourceData, meta in
 
 	// Manufacturer details added.
 	if profile.VcpuManufacturer != nil {
-		err = d.Set(isInstanceVCPUManufacturer, dataSourceInstanceProfileFlattenVcpuManufacture(*profile.VcpuManufacturer))
+		err = d.Set(isInstanceVCPUManufacturer, dataSourceInstanceProfileFlattenVcpuManufacture(*profile.VcpuManufacturer.(*vpcv1.InstanceProfileVcpuManufacturer)))
 		if err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting vcpu_manufacturer: %s", err), "(Data) ibm_is_instance_profile", "read", "set-vcpu_manufacturer").GetDiag()
 		}

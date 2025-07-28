@@ -698,7 +698,7 @@ func resourceIBMdlGatewayCreateAction(d *schema.ResourceData, meta interface{}) 
 	}
 	gateway, response, err := directLink.CreateGatewayAction(createGatewayActionOptionsModel)
 	if err != nil {
-		return fmt.Errorf("[DEBUG] Direct Link Gateway Action err %s\n%s", err, response)
+		return flex.FmtErrorf("[DEBUG] Direct Link Gateway Action err %s\n%s", err, response)
 	}
 
 	d.SetId(*gateway.ID)
@@ -825,7 +825,7 @@ func resourceIBMdlGatewayActionRead(d *schema.ResourceData, meta interface{}) er
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error Getting Direct Link Gateway: %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error Getting Direct Link Gateway: %s\n%s", err, response)
 	}
 	instance := instanceIntf.(*directlinkv1.GetGatewayResponse)
 	if instance.Name != nil {
@@ -998,7 +998,7 @@ func isDirectLinkRefreshFuncforAction(client *directlinkv1.DirectLinkV1, id stri
 
 		instanceIntf, response, err := client.GetGateway(getOptions)
 		if (err != nil) || (instanceIntf == nil) {
-			return nil, "", fmt.Errorf("[ERROR] Error Getting Direct Link: %s\n%s", err, response)
+			return nil, "", flex.FmtErrorf("[ERROR] Error Getting Direct Link: %s\n%s", err, response)
 		}
 		instance := instanceIntf.(*directlinkv1.GetGatewayResponse)
 		if *instance.OperationalStatus == "provisioned" || *instance.OperationalStatus == "failed" || *instance.OperationalStatus == "create_rejected" {
@@ -1028,7 +1028,7 @@ func isDirectLinkRefreshActionFunc(client *directlinkv1.DirectLinkV1, id string)
 		instanceIntf, response, err := client.GetGateway(getOptions)
 
 		if (err != nil) || (instanceIntf == nil) {
-			return nil, "", fmt.Errorf("[ERROR] Error Getting Direct Link: %s\n%s", err, response)
+			return nil, "", flex.FmtErrorf("[ERROR] Error Getting Direct Link: %s\n%s", err, response)
 		}
 		instance := instanceIntf.(*directlinkv1.GetGatewayResponse)
 		if instance.ChangeRequest != nil {
@@ -1062,7 +1062,7 @@ func isDirectLinkRefreshDeleteActionFunc(client *directlinkv1.DirectLinkV1, id s
 		instanceIntf, response, err := client.GetGateway(getOptions)
 
 		if (err != nil) || (instanceIntf == nil) {
-			return nil, "", fmt.Errorf("[ERROR] Error Getting Direct Link: %s\n%s", err, response)
+			return nil, "", flex.FmtErrorf("[ERROR] Error Getting Direct Link: %s\n%s", err, response)
 		}
 		instance := instanceIntf.(*directlinkv1.GetGatewayResponse)
 		if instance.ChangeRequest != nil {
@@ -1105,7 +1105,7 @@ func resourceIBMdlGatewayActionUpdate(d *schema.ResourceData, meta interface{}) 
 				d.SetId("")
 				return nil
 			}
-			return fmt.Errorf("[ERROR] Error Getting Direct Link Gateway : %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error Getting Direct Link Gateway : %s\n%s", err, response)
 		}
 		instance := instanceIntf.(*directlinkv1.GetGatewayResponse)
 		if instance.ChangeRequest != nil {
@@ -1148,7 +1148,7 @@ func resourceIBMdlGatewayActionUpdate(d *schema.ResourceData, meta interface{}) 
 		createGatewayActionOptionsModel.Updates = updateList
 		gateway, response, err := directLink.CreateGatewayAction(createGatewayActionOptionsModel)
 		if err != nil {
-			return fmt.Errorf("[DEBUG] Direct Link Gateway update_attributes_approve err %s\n%s", err, response)
+			return flex.FmtErrorf("[DEBUG] Direct Link Gateway update_attributes_approve err %s\n%s", err, response)
 		}
 		d.SetId(*gateway.ID)
 		_, err = isWaitForDirectLinkAvailableforAction(directLink, d.Id(), d.Timeout(schema.TimeoutCreate))
@@ -1164,7 +1164,7 @@ func resourceIBMdlGatewayActionUpdate(d *schema.ResourceData, meta interface{}) 
 		}
 		_, response, err := directLink.CreateGatewayAction(createGatewayActionOptionsModel)
 		if err != nil {
-			return fmt.Errorf("[DEBUG] delete_gateway_approve failed with error  %s\n%s", err, response)
+			return flex.FmtErrorf("[DEBUG] delete_gateway_approve failed with error  %s\n%s", err, response)
 		}
 	}
 	return nil

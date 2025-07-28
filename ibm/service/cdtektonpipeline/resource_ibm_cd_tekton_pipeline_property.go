@@ -210,7 +210,7 @@ func resourceIBMCdTektonPipelinePropertyRead(context context.Context, d *schema.
 		return tfErr.GetDiag()
 	}
 
-	if err = d.Set("pipeline_id", parts[0]); err != nil {
+	if err = d.Set("pipeline_id", d.Get("pipeline_id").(string)); err != nil {
 		err = fmt.Errorf("Error setting pipeline_id: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cd_tekton_pipeline_property", "read", "set-pipeline_id").GetDiag()
 	}
