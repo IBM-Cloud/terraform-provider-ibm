@@ -30,7 +30,7 @@ Provides an IBM Cloud Internet Services rulesets rule resource to create, update
   resource "ibm_cis_ruleset_rule" "config" {
     cis_id    = ibm_cis.instance.id
     domain_id = data.ibm_cis_domain.cis_domain.domain_id
-    ruleset_id = "data.ibm_cis_ruleset_entrypoint_versions.ruleset_id"
+    ruleset_id = data.ibm_cis_ruleset_entrypoint_versions.config.rulesets[0].ruleset_id
       rule {
         action =  "execute"
         description = var.rule.description
@@ -68,7 +68,7 @@ Provides an IBM Cloud Internet Services rulesets rule resource to create, update
   resource ibm_cis_ruleset_rule "config" {
     cis_id    = ibm_cis.instance.id
     domain_id = data.ibm_cis_domain.cis_domain.domain_id
-    ruleset_id = "data.ibm_cis_ruleset_entrypoint_versions.ruleset_id"
+    ruleset_id = data.ibm_cis_ruleset_entrypoint_versions.config.rulesets[0].ruleset_id
     rule {
       action =  "block"
       description = "var.description"
@@ -94,7 +94,7 @@ Provides an IBM Cloud Internet Services rulesets rule resource to create, update
   resource ibm_cis_ruleset_rule "config" {
     cis_id    = ibm_cis.instance.id
     domain_id = data.ibm_cis_domain.cis_domain.domain_id
-    ruleset_id = "data.ibm_cis_ruleset_entrypoint_versions.ruleset_id"
+    ruleset_id = data.ibm_cis_ruleset_entrypoint_versions.config.rulesets[0].ruleset_id
     rule {
       action =  "block"
       description = "var.description"
