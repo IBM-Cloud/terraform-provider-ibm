@@ -14,15 +14,11 @@ Provides a read-only data source to retrieve information about policy_templates 
 
 ```hcl
 data "ibm_iam_policy_template" "policy_template" {
-	account_id = "enterpriseAccount"
+
 }
 ```
 
 ## Argument Reference
-
-You can specify the following arguments for this data source.
-
-* `account_id` - (Required) Enterprise account ID.
 
 ## Attribute Reference
 

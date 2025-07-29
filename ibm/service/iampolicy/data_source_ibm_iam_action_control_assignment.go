@@ -111,10 +111,10 @@ func DataSourceIBMIAMActionControlAssignment() *schema.Resource {
 											},
 										},
 									},
-									"error_message": &schema.Schema{
+									"error_message": {
 										Type:        schema.TypeList,
 										Computed:    true,
-										Description: "The error response from API.",
+										Description: "Body parameters for assignment error.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"trace": &schema.Schema{
@@ -183,6 +183,26 @@ func DataSourceIBMIAMActionControlAssignment() *schema.Resource {
 													Type:        schema.TypeInt,
 													Computed:    true,
 													Description: "The HTTP error code of the response.",
+												},
+												"name": {
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Name of the error.",
+												},
+												"error_code": {
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Internal error code.",
+												},
+												"message": {
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Error message detailing the nature of the error.",
+												},
+												"code": {
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Internal status code for the error.",
 												},
 											},
 										},
@@ -380,7 +400,7 @@ func DataSourceIBMGetActionControlAssignmentActionControlAssignmentResourceActio
 		modelMap["resource_created"] = []map[string]interface{}{resourceCreatedMap}
 	}
 	if model.ErrorMessage != nil {
-		errorMessageMap, err := DataSourceIBMGetActionControlAssignmentErrorResponseToMap(model.ErrorMessage)
+		errorMessageMap, err := dataSourceIBMGetActionControlAssignmentErrorResponseToMap(model.ErrorMessage)
 		if err != nil {
 			return modelMap, err
 		}
@@ -397,61 +417,30 @@ func DataSourceIBMGetActionControlAssignmentActionControlAssignmentResourceCreat
 	return modelMap, nil
 }
 
-func DataSourceIBMGetActionControlAssignmentErrorResponseToMap(model *iampolicymanagementv1.ErrorResponse) (map[string]interface{}, error) {
+func dataSourceIBMGetActionControlAssignmentErrorResponseToMap(model *iampolicymanagementv1.AssignmentResourceError) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["trace"] = *model.Trace
-	errors := []map[string]interface{}{}
-	for _, errorsItem := range model.Errors {
-		errorsItemMap, err := DataSourceIBMGetActionControlAssignmentErrorObjectToMap(&errorsItem)
-		if err != nil {
-			return modelMap, err
+	if model.Name != nil {
+		modelMap["name"] = model.Name
+	}
+	if model.ErrorCode != nil {
+		modelMap["error_code"] = model.ErrorCode
+	}
+	if model.Message != nil {
+		modelMap["message"] = model.Message
+	}
+	if model.Code != nil {
+		modelMap["code"] = model.Code
+	}
+	if model.Errors != nil {
+		errors := []map[string]interface{}{}
+		for _, errorsItem := range model.Errors {
+			errorsItemMap, err := ResourceIBMActionControlAssignmentErrorObjectToMap(&errorsItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			errors = append(errors, errorsItemMap)
 		}
-		errors = append(errors, errorsItemMap)
-	}
-	modelMap["errors"] = errors
-	modelMap["status_code"] = flex.IntValue(model.StatusCode)
-	return modelMap, nil
-}
-
-func DataSourceIBMGetActionControlAssignmentErrorObjectToMap(model *iampolicymanagementv1.ErrorObject) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["code"] = *model.Code
-	modelMap["message"] = *model.Message
-	if model.Details != nil {
-		detailsMap, err := DataSourceIBMGetActionControlAssignmentErrorDetailsToMap(model.Details)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["details"] = []map[string]interface{}{detailsMap}
-	}
-	if model.MoreInfo != nil {
-		modelMap["more_info"] = *model.MoreInfo
-	}
-	return modelMap, nil
-}
-
-func DataSourceIBMGetActionControlAssignmentErrorDetailsToMap(model *iampolicymanagementv1.ErrorDetails) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.ConflictsWith != nil {
-		conflictsWithMap, err := DataSourceIBMGetActionControlAssignmentConflictsWithToMap(model.ConflictsWith)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["conflicts_with"] = []map[string]interface{}{conflictsWithMap}
-	}
-	return modelMap, nil
-}
-
-func DataSourceIBMGetActionControlAssignmentConflictsWithToMap(model *iampolicymanagementv1.ConflictsWith) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.Etag != nil {
-		modelMap["etag"] = *model.Etag
-	}
-	if model.Role != nil {
-		modelMap["role"] = *model.Role
-	}
-	if model.Policy != nil {
-		modelMap["policy"] = *model.Policy
+		modelMap["errors"] = errors
 	}
 	return modelMap, nil
 }

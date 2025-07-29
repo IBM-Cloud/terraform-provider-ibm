@@ -641,6 +641,30 @@ func DataSourceIBMIsVolumes() *schema.Resource {
 							Computed:    true,
 							Description: "The health of this resource.",
 						},
+						"allowed_use": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The usage constraints to be matched against the requested instance or bare metal server properties to determine compatibility.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"bare_metal_server": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The expression that must be satisfied by the properties of a bare metal server provisioned using the image data in this volume.",
+									},
+									"instance": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The expression that must be satisfied by the properties of a virtual server instance provisioned using this volume.",
+									},
+									"api_version": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The API version with which to evaluate the expressions.",
+									},
+								},
+							},
+						},
 					},
 				},
 			},
@@ -871,6 +895,16 @@ func dataSourceVolumeCollectionVolumesToMap(volumesItem vpcv1.Volume, meta inter
 	}
 	if volumesItem.UserTags != nil {
 		volumesMap[isVolumeTags] = volumesItem.UserTags
+	}
+	if volumesItem.AllowedUse != nil {
+		usageConstraintList := []map[string]interface{}{}
+		modelMap, err := ResourceceIBMIsVolumeAllowedUseToMap(volumesItem.AllowedUse)
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_is_volumes", "read")
+			log.Println(tfErr.GetDiag())
+		}
+		usageConstraintList = append(usageConstraintList, modelMap)
+		volumesMap["allowed_use"] = usageConstraintList
 	}
 	accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *volumesItem.CRN, "", isVolumeAccessTagType)
 	if err != nil {

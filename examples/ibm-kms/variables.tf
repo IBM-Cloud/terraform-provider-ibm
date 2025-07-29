@@ -41,7 +41,7 @@ variable "standard_key" {
 variable "bucket_name" {
    description = "The cos bucket name"
   type        = string
-  default = "test_buck"
+  default = "kptestbucket"
 }
 variable "kmip_adapter_name" {
    description = "The KMIP adapter name"

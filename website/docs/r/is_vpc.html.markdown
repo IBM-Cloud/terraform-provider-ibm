@@ -225,6 +225,16 @@ In addition to all argument reference list, you can access the following attribu
 
 - `health_state` - (String) The health of this resource.- `ok`: No abnormal behavior detected- `degraded`: Experiencing compromised performance, capacity, or connectivity- `faulted`: Completely unreachable, inoperative, or otherwise entirely incapacitated- `inapplicable`: The health state does not apply because of the current lifecycle state. A resource with a lifecycle state of `failed` or `deleting` will have a health state of `inapplicable`. A `pending` resource may also have this state.[`degraded`, `faulted`, `inapplicable`, `ok`]
 - `id` - (String) The unique identifier of the VPC that you created.
+- `public_address_ranges` - (List) The public address ranges attached to this VPC.
+  Nested schema for `public_address_ranges`:
+	- `crn` - (String) The CRN for this public address range.
+	- `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
+	  Nested schema for `deleted`:
+		- `more_info` - (String) Link to documentation about deleted resources.
+	- `href` - (String) The URL for this public address range.
+	- `id` - (String) The unique identifier for this public address range.
+	- `name` - (String) The name for this public address range. The name is unique across all public address ranges in the region.
+	- `resource_type` - (String) The resource type.
 - `subnets`- (List of Strings) A list of subnets that are attached to a VPC.
 
   Nested scheme for `subnets`:

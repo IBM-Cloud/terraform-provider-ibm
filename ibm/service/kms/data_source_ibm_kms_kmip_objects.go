@@ -131,7 +131,7 @@ func dataSourceIBMKmsKMIPObjectList(d *schema.ResourceData, meta interface{}) er
 	ctx := context.Background()
 	adapter, err := kpAPI.GetKMIPAdapter(ctx, adapterNameOrID)
 	if err != nil {
-		return flex.FmtErrorf("[ERROR] Error while retriving KMIP adapter to list KMIP objects: %s", err)
+		return flex.FmtErrorf("[ERROR] Error while retrieving KMIP adapter to list KMIP objects: %s", err)
 	}
 	if err = d.Set("adapter_id", adapter.ID); err != nil {
 		return flex.FmtErrorf("[ERROR] Error setting adapter_id: %s", err)
@@ -141,7 +141,7 @@ func dataSourceIBMKmsKMIPObjectList(d *schema.ResourceData, meta interface{}) er
 	}
 	objs, err := kpAPI.GetKMIPObjects(ctx, adapterNameOrID, opts)
 	if err != nil {
-		return flex.FmtErrorf("[ERROR] Error while retriving KMIP objects associated with adapter ID '%s': %v", adapter.ID, err)
+		return flex.FmtErrorf("[ERROR] Error while retrieving KMIP objects associated with adapter ID '%s': %v", adapter.ID, err)
 	}
 	objsList := objs.Objects
 	// set computed values
