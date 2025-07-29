@@ -2481,7 +2481,7 @@ func instanceCreateByImage(context context.Context, d *schema.ResourceData, meta
 			Name: &bootProfile,
 		}
 		//boot volume allowed use
-		if _, ok := bootvol["allowed_use"]; ok {
+		if _, ok := bootvol["allowed_use"]; ok && len(bootvol["allowed_use"].([]interface{})) > 0 {
 			allowedUseModel, _ := ResourceIBMIsVolumeAllowedUseMapToVolumeAllowedUsePrototype(bootvol["allowed_use"].([]interface{})[0].(map[string]interface{}))
 			if allowedUseModel != nil {
 				volTemplate.AllowedUse = allowedUseModel
@@ -3086,7 +3086,7 @@ func instanceCreateByCatalogOffering(context context.Context, d *schema.Resource
 			Name: &volprof,
 		}
 		//boot volume allowed use
-		if _, ok := bootvol["allowed_use"]; ok {
+		if _, ok := bootvol["allowed_use"]; ok && len(bootvol["allowed_use"].([]interface{})) > 0 {
 			allowedUseModel, _ := ResourceIBMIsVolumeAllowedUseMapToVolumeAllowedUsePrototype(bootvol["allowed_use"].([]interface{})[0].(map[string]interface{}))
 			if allowedUseModel != nil {
 				volTemplate.AllowedUse = allowedUseModel
@@ -3650,7 +3650,7 @@ func instanceCreateByTemplate(context context.Context, d *schema.ResourceData, m
 			Name: &volprof,
 		}
 		//boot volume allowed use
-		if _, ok := bootvol["allowed_use"]; ok {
+		if _, ok := bootvol["allowed_use"]; ok && len(bootvol["allowed_use"].([]interface{})) > 0 {
 			allowedUseModel, _ := ResourceIBMIsVolumeAllowedUseMapToVolumeAllowedUsePrototype(bootvol["allowed_use"].([]interface{})[0].(map[string]interface{}))
 			if allowedUseModel != nil {
 				volTemplate.AllowedUse = allowedUseModel
@@ -4235,7 +4235,7 @@ func instanceCreateBySnapshot(context context.Context, d *schema.ResourceData, m
 				CRN: &snapshotCrnStr,
 			}
 		}
-		if _, ok := bootvol["allowed_use"]; ok {
+		if _, ok := bootvol["allowed_use"]; ok && len(bootvol["allowed_use"].([]interface{})) > 0 {
 			allowedUseModel, _ := ResourceIBMIsVolumeAllowedUseMapToVolumeAllowedUsePrototype(bootvol["allowed_use"].([]interface{})[0].(map[string]interface{}))
 			if allowedUseModel != nil {
 				volTemplate.AllowedUse = allowedUseModel

@@ -438,7 +438,7 @@ func instanceVolAttachmentCreate(context context.Context, d *schema.ResourceData
 				volProtoVol.Bandwidth = &volBandwidthInt
 			}
 		}
-		if allowedUse, ok := d.GetOk("allowed_use"); ok {
+		if allowedUse, ok := d.GetOk("allowed_use"); ok && len(allowedUse.([]interface{})) > 0 {
 			allowedUseModel, _ := ResourceIBMIsVolumeAllowedUseMapToVolumeAllowedUsePrototype(allowedUse.([]interface{})[0].(map[string]interface{}))
 			volProtoVol.AllowedUse = allowedUseModel
 		}

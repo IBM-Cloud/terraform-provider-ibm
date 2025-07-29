@@ -5,10 +5,10 @@ package dnsservices
 
 import (
 	"encoding/json"
-	"fmt"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -79,7 +79,7 @@ func dataSourceIBMPrivateDNSResourceRecordsRead(d *schema.ResourceData, meta int
 	listDNSResRecOptions := sess.NewListResourceRecordsOptions(instanceID, DnszoneID)
 	availableDNSResRecs, detail, err := sess.ListResourceRecords(listDNSResRecOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error reading list of pdns resource records:%s\n%s", err, detail)
+		return flex.FmtErrorf("[ERROR] Error reading list of dns services resource records:%s\n%s", err, detail)
 	}
 	dnsResRecs := make([]map[string]interface{}, 0)
 	for _, instance := range availableDNSResRecs.ResourceRecords {
@@ -90,7 +90,7 @@ func dataSourceIBMPrivateDNSResourceRecordsRead(d *schema.ResourceData, meta int
 		// Marshal the rdata map into a JSON string
 		rData, err := json.Marshal(instance.Rdata)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error reading rdata map of dns resource records:%s", err)
+			return flex.FmtErrorf("[ERROR] Error reading rdata map of dns resource records:%s", err)
 		}
 		jsonStr := string(rData)
 		dnsRecord[pdnsRdata] = jsonStr
