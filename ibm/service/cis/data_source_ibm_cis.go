@@ -132,7 +132,7 @@ func dataSourceIBMCISInstanceRead(d *schema.ResourceData, meta interface{}) erro
 		}
 		next_url, err = getInstancesNext(listInstanceResponse.NextURL)
 		if err != nil {
-			return flex.FmtErrorf("[ERROR] Error retrieving service offering: %s", err)
+			return flex.FmtErrorf("[DEBUG] ListResourceInstances failed. Error occurred while parsing NextURL: %s", err)
 		}
 		instances = append(instances, listInstanceResponse.Resources...)
 		if next_url == "" {
