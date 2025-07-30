@@ -4,8 +4,6 @@
 package cis
 
 import (
-	"fmt"
-	"log"
 	"net/url"
 	"reflect"
 
@@ -130,7 +128,7 @@ func dataSourceIBMCISInstanceRead(d *schema.ResourceData, meta interface{}) erro
 		}
 		listInstanceResponse, resp, err := rsConClient.ListResourceInstances(&resourceInstanceListOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error retrieving resource instance: %s with resp code: %s", err, resp)
+			return flex.FmtErrorf("[ERROR] Error retrieving resource instance: %s with resp code: %s", err, resp)
 		}
 		next_url, err = getInstancesNext(listInstanceResponse.NextURL)
 		if err != nil {
@@ -206,7 +204,7 @@ func dataSourceIBMCISInstanceRead(d *schema.ResourceData, meta interface{}) erro
 	}
 	resourceGroup, resp, err := rMgtClient.GetResourceGroup(&GetResourceGroup)
 	if err != nil || resourceGroup == nil {
-		log.Printf("[ERROR] Error retrieving resource group: %s %s", err, resp)
+		flex.FmtErrorf("[ERROR] Error retrieving resource group: %s %s", err, resp)
 	}
 	if resourceGroup != nil && resourceGroup.Name != nil {
 		d.Set(flex.ResourceGroupName, resourceGroup.Name)
