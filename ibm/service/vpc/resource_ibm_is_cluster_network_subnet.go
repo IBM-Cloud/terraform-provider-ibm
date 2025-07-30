@@ -76,6 +76,11 @@ func ResourceIBMIsClusterNetworkSubnet() *schema.Resource {
 				Computed:    true,
 				Description: "The date and time that the cluster network subnet was created.",
 			},
+			"isolation_group": &schema.Schema{
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The isolation group for the cluster network subnet.The value will not be greater than the cluster network profile's isolation_group_count.",
+			},
 			"href": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -189,6 +194,9 @@ func resourceIBMIsClusterNetworkSubnetCreate(context context.Context, d *schema.
 	if _, ok := d.GetOk("ip_version"); ok {
 		bodyModelMap["ip_version"] = d.Get("ip_version")
 	}
+	if _, ok := d.GetOk("isolation_group"); ok {
+		bodyModelMap["isolation_group"] = d.Get("isolation_group")
+	}
 	if _, ok := d.GetOk("name"); ok {
 		bodyModelMap["name"] = d.Get("name")
 	}
@@ -273,6 +281,10 @@ func resourceIBMIsClusterNetworkSubnetRead(context context.Context, d *schema.Re
 	if err = d.Set("available_ipv4_address_count", flex.IntValue(clusterNetworkSubnet.AvailableIpv4AddressCount)); err != nil {
 		err = fmt.Errorf("Error setting available_ipv4_address_count: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_cluster_network_subnet", "read", "set-available_ipv4_address_count").GetDiag()
+	}
+	if err = d.Set("isolation_group", flex.IntValue(clusterNetworkSubnet.IsolationGroup)); err != nil {
+		err = fmt.Errorf("Error setting isolation_group: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_cluster_network_subnet", "read", "set-available_isolation_group").GetDiag()
 	}
 	if err = d.Set("created_at", flex.DateTimeToString(clusterNetworkSubnet.CreatedAt)); err != nil {
 		err = fmt.Errorf("Error setting created_at: %s", err)
@@ -400,6 +412,9 @@ func ResourceIBMIsClusterNetworkSubnetMapToClusterNetworkSubnetPrototype(modelMa
 	}
 	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
 		model.Name = core.StringPtr(modelMap["name"].(string))
+	}
+	if modelMap["isolation_group"] != nil && modelMap["isolation_group"].(string) != "" {
+		model.Name = core.StringPtr(modelMap["isolation_group"].(string))
 	}
 	if modelMap["total_ipv4_address_count"] != nil {
 		model.TotalIpv4AddressCount = core.Int64Ptr(int64(modelMap["total_ipv4_address_count"].(int)))

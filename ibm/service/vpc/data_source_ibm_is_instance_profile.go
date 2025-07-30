@@ -125,6 +125,24 @@ func DataSourceIBMISInstanceProfile() *schema.Resource {
 					},
 				},
 			},
+			"cluster_network_attachment_isolation_policy": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"type": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The type for this profile field.",
+						},
+						"value": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The policy the system will use to assign the isolation groups to cluster network attachments for an instance with this profile.",
+						},
+					},
+				},
+			},
 
 			"secure_boot_modes": &schema.Schema{
 				Type:     schema.TypeList,
@@ -986,6 +1004,13 @@ func instanceProfileGet(context context.Context, d *schema.ResourceData, meta in
 		}
 	}
 
+	if profile.ClusterNetworkAttachmentIsolationPolicy != nil {
+		err = d.Set(isInstanceVCPUManufacturer, dataSourceInstanceProfileFlattenClusterNetworkAttachmentIsolationPolicy(*profile.ClusterNetworkAttachmentIsolationPolicy.(*vpcv1.InstanceProfileClusterNetworkAttachmentIsolationPolicy)))
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting cluster_network_attachment_isolation_policy: %s", err), "(Data) ibm_is_instance_profile", "read", "set-cluster_network_attachment_isolation_policy").GetDiag()
+		}
+	}
+
 	if profile.VcpuCount != nil {
 		err = d.Set("vcpu_count", dataSourceInstanceProfileFlattenVcpuCount(*profile.VcpuCount.(*vpcv1.InstanceProfileVcpu)))
 		if err != nil {
@@ -1272,11 +1297,30 @@ func dataSourceInstanceProfileFlattenVcpuArchitecture(result vpcv1.InstanceProfi
 	finalList = []map[string]interface{}{}
 	finalMap := dataSourceInstanceProfileVcpuArchitectureToMap(result)
 	finalList = append(finalList, finalMap)
-
 	return finalList
 }
 
 func dataSourceInstanceProfileVcpuArchitectureToMap(vcpuArchitectureItem vpcv1.InstanceProfileVcpuArchitecture) (vcpuArchitectureMap map[string]interface{}) {
+	vcpuArchitectureMap = map[string]interface{}{}
+
+	if vcpuArchitectureItem.Type != nil {
+		vcpuArchitectureMap["type"] = vcpuArchitectureItem.Type
+	}
+	if vcpuArchitectureItem.Value != nil {
+		vcpuArchitectureMap["value"] = vcpuArchitectureItem.Value
+	}
+
+	return vcpuArchitectureMap
+}
+
+func dataSourceInstanceProfileFlattenClusterNetworkAttachmentIsolationPolicy(result vpcv1.InstanceProfileClusterNetworkAttachmentIsolationPolicy) (finalList []map[string]interface{}) {
+	finalList = []map[string]interface{}{}
+	finalMap := dataSourceInstanceProfileClusterNetworkAttachmentIsolationPolicyToMap(result)
+	finalList = append(finalList, finalMap)
+	return finalList
+}
+
+func dataSourceInstanceProfileClusterNetworkAttachmentIsolationPolicyToMap(vcpuArchitectureItem vpcv1.InstanceProfileClusterNetworkAttachmentIsolationPolicy) (vcpuArchitectureMap map[string]interface{}) {
 	vcpuArchitectureMap = map[string]interface{}{}
 
 	if vcpuArchitectureItem.Type != nil {

@@ -74,6 +74,11 @@ func DataSourceIBMIsClusterNetworkSubnets() *schema.Resource {
 							Computed:    true,
 							Description: "The IPv4 range of this cluster network subnet, expressed in CIDR format.",
 						},
+						"isolation_group": &schema.Schema{
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The value will not be greater than the cluster network profile's isolation_group_count.",
+						},
 						"lifecycle_reasons": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
@@ -189,6 +194,7 @@ func DataSourceIBMIsClusterNetworkSubnetsClusterNetworkSubnetToMap(model *vpcv1.
 	modelMap["id"] = *model.ID
 	modelMap["ip_version"] = *model.IPVersion
 	modelMap["ipv4_cidr_block"] = *model.Ipv4CIDRBlock
+	modelMap["isolation_group"] = flex.IntValue(model.IsolationGroup)
 	lifecycleReasons := []map[string]interface{}{}
 	for _, lifecycleReasonsItem := range model.LifecycleReasons {
 		lifecycleReasonsItemMap, err := DataSourceIBMIsClusterNetworkSubnetsClusterNetworkSubnetLifecycleReasonToMap(&lifecycleReasonsItem) // #nosec G601

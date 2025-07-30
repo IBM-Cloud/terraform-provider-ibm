@@ -81,6 +81,24 @@ func DataSourceIBMISInstanceProfiles() *schema.Resource {
 								},
 							},
 						},
+						"cluster_network_attachment_isolation_policy": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"type": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The type for this profile field.",
+									},
+									"value": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The policy the system will use to assign the isolation groups to cluster network attachments for an instance with this profile.",
+									},
+								},
+							},
+						},
 						"supported_cluster_network_profiles": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
@@ -851,6 +869,14 @@ func instanceProfilesList(context context.Context, d *schema.ResourceData, meta 
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instance_profiles", "read", "cluster_network_attachment_count-to-map").GetDiag()
 		}
 		l["cluster_network_attachment_count"] = []map[string]interface{}{clusterNetworkAttachmentCountMap}
+
+		if profile.ClusterNetworkAttachmentIsolationPolicy != nil {
+			clusterNetworkAttachmentIsolationPolicyList := []map[string]interface{}{}
+			clusterNetworkAttachmentIsolationPolicy := profile.ClusterNetworkAttachmentIsolationPolicy.(*vpcv1.InstanceProfileClusterNetworkAttachmentIsolationPolicy)
+			clusterNetworkAttachmentIsolationPolicyMap := dataSourceInstanceProfileClusterNetworkAttachmentIsolationPolicyToMap(*clusterNetworkAttachmentIsolationPolicy)
+			clusterNetworkAttachmentIsolationPolicyList = append(clusterNetworkAttachmentIsolationPolicyList, clusterNetworkAttachmentIsolationPolicyMap)
+			l["vcpu_architecture"] = clusterNetworkAttachmentIsolationPolicyList
+		}
 
 		if profile.GpuCount != nil {
 			l["gpu_count"] = dataSourceInstanceProfileFlattenGPUCount(*profile.GpuCount.(*vpcv1.InstanceProfileGpu))

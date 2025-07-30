@@ -36,6 +36,11 @@ func DataSourceIBMIsClusterNetworkSubnet() *schema.Resource {
 				Computed:    true,
 				Description: "The number of IPv4 addresses in this cluster network subnet that are not in use, and have not been reserved by the user or the provider.",
 			},
+			"isolation_group": &schema.Schema{
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The value will not be greater than the cluster network profile's isolation_group_count.",
+			},
 			"created_at": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -156,6 +161,10 @@ func dataSourceIBMIsClusterNetworkSubnetRead(context context.Context, d *schema.
 	}
 	if err = d.Set("lifecycle_reasons", lifecycleReasons); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting lifecycle_reasons: %s", err), "(Data) ibm_is_cluster_network_subnet", "read", "set-lifecycle_reasons").GetDiag()
+	}
+
+	if err = d.Set("isolation_group", flex.IntValue(clusterNetworkSubnet.IsolationGroup)); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting isolation_group: %s", err), "(Data) ibm_is_cluster_network_subnet", "read", "set-isolation_group").GetDiag()
 	}
 
 	if err = d.Set("lifecycle_state", clusterNetworkSubnet.LifecycleState); err != nil {

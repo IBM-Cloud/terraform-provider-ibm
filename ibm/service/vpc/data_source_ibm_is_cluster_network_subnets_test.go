@@ -35,6 +35,7 @@ func TestAccIBMIsClusterNetworkSubnetsDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_is_cluster_network_subnets.is_cluster_network_subnets_instance", "subnets.0.available_ipv4_address_count"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_cluster_network_subnets.is_cluster_network_subnets_instance", "subnets.0.created_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_cluster_network_subnets.is_cluster_network_subnets_instance", "subnets.0.href"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance", "subnets.0.isolation_group"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_cluster_network_subnets.is_cluster_network_subnets_instance", "subnets.0.ip_version"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_cluster_network_subnets.is_cluster_network_subnets_instance", "subnets.0.ipv4_cidr_block"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_cluster_network_subnets.is_cluster_network_subnets_instance", "subnets.0.lifecycle_reasons.#"),

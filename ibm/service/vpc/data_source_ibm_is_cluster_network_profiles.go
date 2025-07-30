@@ -72,6 +72,63 @@ func DataSourceIBMIsClusterNetworkProfiles() *schema.Resource {
 								},
 							},
 						},
+						"address_configuration_services": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The services providing address configuration for the cluster network profile. Possible values: dhcp, is, is_metadata.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"values": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "The permitted values for this profile field",
+									},
+									"type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The type for this profile field",
+									},
+								},
+							},
+						},
+						"subnet_routing_supported": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The instance profiles that support this cluster network profile.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"value": &schema.Schema{
+										Type:        schema.TypeBool,
+										Computed:    true,
+										Description: "The value for this profile field",
+									},
+									"type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The type for this profile field",
+									},
+								},
+							},
+						},
+						"isolation_group_count": &schema.Schema{
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The number of isolation groups supported by this cluster network profile.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"value": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "The value for this profile field",
+									},
+									"type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The type for this profile field",
+									},
+								},
+							},
+						},
 						"zones": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
@@ -161,6 +218,34 @@ func DataSourceIBMIsClusterNetworkProfilesClusterNetworkProfileToMap(model *vpcv
 		supportedInstanceProfiles = append(supportedInstanceProfiles, supportedInstanceProfilesItemMap)
 	}
 	modelMap["supported_instance_profiles"] = supportedInstanceProfiles
+
+	if model.SubnetRoutingSupported != nil {
+		subnetRoutingSupported := model.SubnetRoutingSupported.(*vpcv1.ClusterNetworkProfileSubnetRoutingSupported)
+		subnetrsMap, err := DataSourceIBMIsClusterNetworkProfilesSubnetRoutingSupportToMap(subnetRoutingSupported)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["subnet_routing_supported"] = []map[string]interface{}{subnetrsMap}
+	}
+
+	if model.AddressConfigurationServices != nil {
+		addressConfigurationServices := model.AddressConfigurationServices.(*vpcv1.ClusterNetworkProfileAddressConfigurationServices)
+		addressCS, err := DataSourceIBMIsClusterNetworkProfilesAddressConfigurationServicesToMap(addressConfigurationServices)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["address_configuration_services"] = []map[string]interface{}{addressCS}
+	}
+
+	if model.IsolationGroupCount != nil {
+		isolationGroupCount := model.IsolationGroupCount.(*vpcv1.ClusterNetworkProfileIsolationGroupCount)
+		isolationGC, err := DataSourceIBMIsClusterNetworkProfilesIsolationGroupCountToMap(isolationGroupCount)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["subnet_routing_supported"] = []map[string]interface{}{isolationGC}
+	}
+
 	zones := []map[string]interface{}{}
 	for _, zonesItem := range model.Zones {
 		zonesItemMap, err := DataSourceIBMIsClusterNetworkProfilesZoneReferenceToMap(&zonesItem) // #nosec G601
@@ -185,5 +270,32 @@ func DataSourceIBMIsClusterNetworkProfilesZoneReferenceToMap(model *vpcv1.ZoneRe
 	modelMap := make(map[string]interface{})
 	modelMap["href"] = *model.Href
 	modelMap["name"] = *model.Name
+	return modelMap, nil
+}
+
+func DataSourceIBMIsClusterNetworkProfilesSubnetRoutingSupportToMap(model *vpcv1.ClusterNetworkProfileSubnetRoutingSupported) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["type"] = *model.Type
+	modelMap["value"] = *model.Value
+	return modelMap, nil
+}
+
+func DataSourceIBMIsClusterNetworkProfilesAddressConfigurationServicesToMap(model *vpcv1.ClusterNetworkProfileAddressConfigurationServices) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["type"] = *model.Type
+
+	values := []interface{}{}
+	for _, v := range model.Values {
+		values = append(values, v)
+	}
+	modelMap["values"] = values
+
+	return modelMap, nil
+}
+
+func DataSourceIBMIsClusterNetworkProfilesIsolationGroupCountToMap(model *vpcv1.ClusterNetworkProfileIsolationGroupCount) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["type"] = *model.Type
+	modelMap["value"] = *model.Value
 	return modelMap, nil
 }
