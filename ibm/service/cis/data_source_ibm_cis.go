@@ -134,7 +134,7 @@ func dataSourceIBMCISInstanceRead(d *schema.ResourceData, meta interface{}) erro
 		}
 		next_url, err = getInstancesNext(listInstanceResponse.NextURL)
 		if err != nil {
-			return fmt.Errorf("[DEBUG] ListResourceInstances failed. Error occurred while parsing NextURL: %s", err)
+			return flex.FmtErrorf("[ERROR] Error retrieving service offering: %s", err)
 		}
 		instances = append(instances, listInstanceResponse.Resources...)
 		if next_url == "" {
@@ -157,11 +157,11 @@ func dataSourceIBMCISInstanceRead(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	if len(filteredInstances) == 0 {
-		return fmt.Errorf("[ERROR] No resource instance found with name [%s]\nIf not specified please specify more filters like resource_group_id if instance doesn't exists in default group, location or service", name)
+		return flex.FmtErrorf("[ERROR] No resource instance found with name [%s]\nIf not specified please specify more filters like resource_group_id if instance doesn't exists in default group, location or service", name)
 	}
 
 	if len(filteredInstances) > 1 {
-		return fmt.Errorf("[ERROR] More than one resource instance found with name matching [%s]\nIf not specified please specify more filters like resource_group_id if instance doesn't exists in default group, location or service", name)
+		return flex.FmtErrorf("[ERROR] More than one resource instance found with name matching [%s]\nIf not specified please specify more filters like resource_group_id if instance doesn't exists in default group, location or service", name)
 	}
 	instance = filteredInstances[0]
 
@@ -180,7 +180,7 @@ func dataSourceIBMCISInstanceRead(d *schema.ResourceData, meta interface{}) erro
 	}
 	service, _, err := globalClient.GetCatalogEntry(&options)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error retrieving service offering: %s", err)
+		return flex.FmtErrorf("[ERROR] Error retrieving service offering: %s", err)
 	}
 	d.Set("service", service.Name)
 	planOptions := globalcatalogv1.GetCatalogEntryOptions{
@@ -189,7 +189,7 @@ func dataSourceIBMCISInstanceRead(d *schema.ResourceData, meta interface{}) erro
 	}
 	plan, _, err := globalClient.GetCatalogEntry(&planOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error retrieving plan: %s", err)
+		return flex.FmtErrorf("[ERROR] Error retrieving plan: %s", err)
 	}
 	d.Set("plan", plan.Name)
 

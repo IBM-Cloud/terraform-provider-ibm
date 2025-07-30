@@ -228,11 +228,11 @@ func resourceIBMCdTektonPipelineTriggerPropertyRead(context context.Context, d *
 		return tfErr.GetDiag()
 	}
 
-	if err = d.Set("pipeline_id", parts[0]); err != nil {
+	if err = d.Set("pipeline_id", d.Get("pipeline_id").(string)); err != nil {
 		err = fmt.Errorf("Error setting pipeline_id: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cd_tekton_pipeline_trigger_property", "read", "set-pipeline_id").GetDiag()
 	}
-	if err = d.Set("trigger_id", parts[1]); err != nil {
+	if err = d.Set("trigger_id", d.Get("trigger_id").(string)); err != nil {
 		err = fmt.Errorf("Error setting trigger_id: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cd_tekton_pipeline_trigger_property", "read", "set-trigger_id").GetDiag()
 	}

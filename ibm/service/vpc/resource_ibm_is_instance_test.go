@@ -4459,3 +4459,106 @@ func testAccCheckIBMISInstanceVolumeTagsConfig(prefix, vpcname, subnetname, sshn
 	}
 	`, vpcname, subnetname, acc.ISZoneName, sshname, publicKey, name, prefix, dataVolumeName, dataVolumeName)
 }
+
+func TestAccIBMISInstance_AllowedUse(t *testing.T) {
+	var instance string
+	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tf-instnace-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tf-subnet-%d", acctest.RandIntRange(10, 100))
+	instanceName := fmt.Sprintf("tf-instance-%d", acctest.RandIntRange(10, 100))
+	publicKey := strings.TrimSpace(`
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
+`)
+	sshname := fmt.Sprintf("tf-ssh-%d", acctest.RandIntRange(10, 100))
+	volname := fmt.Sprintf("tf-vol-%d", acctest.RandIntRange(10, 100))
+	name1 := fmt.Sprintf("tfsnapshotuat-%d", acctest.RandIntRange(10, 100))
+	apiVersion := "2025-07-02"
+	bareMetalServer := "true"
+	instanceval := "true"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISInstanceConfig_AllowedUse(vpcname, subnetname, sshname, publicKey, volname, name, name1, apiVersion, bareMetalServer, instanceval, instanceName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISInstanceExists("ibm_is_instance.testacc_instance_allowed_use", instance),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance_allowed_use", "name", instanceName),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance_allowed_use", "zone", acc.ISZoneName),
+
+					// Volume prototype checks
+					resource.TestCheckResourceAttr("ibm_is_instance.testacc_instance_allowed_use", "volume_prototypes.#", "1"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance.testacc_instance_allowed_use", "volume_prototypes.0.allowed_use.#"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance.testacc_instance_allowed_use", "volume_prototypes.0.allowed_use.0.bare_metal_server"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance.testacc_instance_allowed_use", "volume_prototypes.0.allowed_use.0.instance"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance.testacc_instance_allowed_use", "volume_prototypes.0.allowed_use.0.api_version"),
+					resource.TestCheckResourceAttr("ibm_is_instance.testacc_instance_allowed_use", "volume_prototypes.0.allowed_use.0.bare_metal_server", bareMetalServer),
+					resource.TestCheckResourceAttr("ibm_is_instance.testacc_instance_allowed_use", "volume_prototypes.0.allowed_use.0.instance", instanceval),
+					resource.TestCheckResourceAttr("ibm_is_instance.testacc_instance_allowed_use", "volume_prototypes.0.allowed_use.0.api_version", apiVersion),
+
+					// Boot volume checks
+					resource.TestCheckResourceAttr("ibm_is_instance.testacc_instance_allowed_use", "boot_volume.#", "1"),
+					resource.TestCheckResourceAttrSet("ibm_is_instance.testacc_instance_allowed_use", "boot_volume.0.volume_id"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance.testacc_instance_allowed_use", "boot_volume.0.allowed_use.#"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance.testacc_instance_allowed_use", "boot_volume.0.allowed_use.0.bare_metal_server"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance.testacc_instance_allowed_use", "boot_volume.0.allowed_use.0.instance"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance.testacc_instance_allowed_use", "boot_volume.0.allowed_use.0.api_version"),
+					resource.TestCheckResourceAttr("ibm_is_instance.testacc_instance_allowed_use", "boot_volume.0.allowed_use.0.bare_metal_server", bareMetalServer),
+					resource.TestCheckResourceAttr("ibm_is_instance.testacc_instance_allowed_use", "boot_volume.0.allowed_use.0.instance", instanceval),
+					resource.TestCheckResourceAttr("ibm_is_instance.testacc_instance_allowed_use", "boot_volume.0.allowed_use.0.api_version", apiVersion),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMISInstanceConfig_AllowedUse(vpcname, subnetname, sshname, publicKey, volname, name, name1, apiVersion, bareMetalServer, instanceval, insName string) string {
+
+	return testAccCheckIBMISSnapshotConfig(vpcname, subnetname, sshname, publicKey, volname, name, name1) + fmt.Sprintf(`
+	resource "ibm_is_instance" "testacc_instance_allowed_use" {
+	name    = "%s"
+	profile = "%s"
+	primary_network_interface {
+		subnet = ibm_is_subnet.testacc_subnet.id
+	}
+	vpc  = ibm_is_vpc.testacc_vpc.id
+	zone = "%s"
+	keys = [ibm_is_ssh_key.testacc_sshkey.id]
+	boot_volume {
+		name     = "example-boot-volume"
+		snapshot = ibm_is_snapshot.testacc_snapshot.id
+		size = 100
+		allowed_use {
+			api_version       = "%s"
+			instance          = "%s"
+			bare_metal_server = "%s"
+		}
+	}
+	volume_prototypes {
+		name                             = "example-prototype"
+		delete_volume_on_instance_delete = true
+		volume_name                      = "example-volume"
+		volume_capacity                  = 100
+		volume_profile                   = "custom"
+		volume_source_snapshot           = ibm_is_snapshot.testacc_snapshot.id
+		allowed_use {
+			api_version       = "%s"
+			bare_metal_server = "%s"
+			instance          = "%s"
+		}
+	}
+	}
+	`, insName, acc.InstanceProfileName, acc.ISZoneName, apiVersion, bareMetalServer, instanceval, apiVersion, bareMetalServer, instanceval)
+}

@@ -516,6 +516,30 @@ func DataSourceSnapshots() *schema.Resource {
 								},
 							},
 						},
+						"allowed_use": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The usage constraints to match against the requested instance or bare metal server properties to determine compatibility. Can only be specified for bootable snapshots.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"bare_metal_server": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The expression that must be satisfied by the properties of a bare metal server provisioned using the image data in this snapshot.",
+									},
+									"instance": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The expression that must be satisfied by the properties of a virtual server instance provisioned using this snapshot.",
+									},
+									"api_version": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The API version with which to evaluate the expressions.",
+									},
+								},
+							},
+						},
 					},
 				},
 			},
@@ -762,6 +786,16 @@ func getSnapshots(context context.Context, d *schema.ResourceData, meta interfac
 			backupPolicyPlanList = append(backupPolicyPlanList, backupPolicyPlan)
 		}
 		l[isSnapshotBackupPolicyPlan] = backupPolicyPlanList
+		if snapshot.AllowedUse != nil {
+			allowedUseList := []map[string]interface{}{}
+			modelMap, err := DataSourceIBMIsSnapshotAllowedUseToMap(snapshot.AllowedUse)
+			if err != nil {
+				tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_is_snapshots", "read")
+				log.Println(tfErr.GetDiag())
+			}
+			allowedUseList = append(allowedUseList, modelMap)
+			l["allowed_use"] = allowedUseList
+		}
 		accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *snapshot.CRN, "", isAccessTagType)
 		if err != nil {
 			log.Printf(
