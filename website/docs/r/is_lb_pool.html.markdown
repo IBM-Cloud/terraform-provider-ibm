@@ -175,7 +175,12 @@ Review the argument references that you can specify for your resource.
 - `algorithm` - (Required, String) The load-balancing algorithm. Supported values are `round_robin`, `weighted_round_robin`, or `least_connections`. Choose `least_connections` for workloads with varying response times.
 - `failsafe_policy` - (Optional, List) The failsafe policy defines behavior when all pool members are unhealthy. If unspecified, the default failsafe policy from the load balancer profile applies.
 	Nested schema for **failsafe_policy**:
-	- `action` - (Optional, String) Failsafe policy action: `forward` (routes requests to target pool) or `fail` (rejects requests with HTTP 503). The enumerated values for this property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.
+	- `action` - (Optional, String) Failsafe policy action. The enumerated values for this property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future, currently:
+      - `bypass`: Bypasses the members and sends requests directly to their destination IPs.
+      - `drop`: Drops requests.
+      - `fail`: Fails requests with an HTTP 503 status code.
+      - `forward`: Forwards requests to the target pool.
+
 	- `target` - (Optional, List) Target pool for `forward` action. Not applicable when action is `fail`. The targets supported by this property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future. 
 		Nested schema for **target**:
 		- `href` - (Optional, String) The URL for the target load balancer pool. Mutually exclusive with `id`. Specify "null" during update to remove an existing failsafe target pool.
