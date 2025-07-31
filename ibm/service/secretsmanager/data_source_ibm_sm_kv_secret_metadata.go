@@ -133,7 +133,12 @@ func dataSourceIbmSmKvSecretMetadataRead(context context.Context, d *schema.Reso
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetSecretMetadataWithContext failed %s\n%s", err, response), fmt.Sprintf("(Data) %s_metadata", KvSecretResourceName), "read")
 		return tfErr.GetDiag()
 	}
-	kVSecretMetadata := kVSecretMetadataIntf.(*secretsmanagerv2.KVSecretMetadata)
+
+	kVSecretMetadata, ok := kVSecretMetadataIntf.(*secretsmanagerv2.KVSecretMetadata)
+	if !ok {
+		tfErr := flex.TerraformErrorf(nil, fmt.Sprintf("Wrong secret type: The provided secret is not a KV secret."), fmt.Sprintf("(Data) %s_metadata", KvSecretResourceName), "read")
+		return tfErr.GetDiag()
+	}
 
 	d.SetId(fmt.Sprintf("%s/%s/%s", region, instanceId, secretId))
 

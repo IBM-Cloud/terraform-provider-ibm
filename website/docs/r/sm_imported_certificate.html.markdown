@@ -72,6 +72,7 @@ Review the argument reference that you can specify for your resource.
 * `certificate` - (Optional, String) The PEM-encoded contents of your certificate. You can manually rotate the secret by modifying this argument, together with the optional arguments `intermediate` and `private_key`. Modifying the certificate creates a new version of the secret. If the secret is used to generate a Certificate Signing Reques (CSR) no certificate should be provided initially. Add the certificate value only after the CSR is signed.
   * Constraints: The maximum length is `100000` characters. The minimum length is `50` characters. The value must match regular expression `/^(-{5}BEGIN.+?-{5}[\\s\\S]+-{5}END.+?-{5})$/`.
 * `custom_metadata` - (Optional, Map) The secret metadata that a user can customize.
+  * Constraints: Nested JSONs are supported in Terraform only as string-encoded JSONs.
 * `description` - (Optional, String) An extended description of your secret.To protect your privacy, do not use personal data, such as your name or location, as a description for your secret group.
   * Constraints: The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/(.*?)/`.
 * `expiration_date` - (Optional, Forces new resource, String) The date a secret is expired. The date format follows RFC 3339.
@@ -114,6 +115,8 @@ Review the argument reference that you can specify for your resource.
   * Constraints: The maximum length is `100000` characters. The minimum length is `50` characters. The value must match regular expression `/^(-{5}BEGIN.+?-{5}[\\s\\S]+-{5}END.+?-{5})$/`.
 * `secret_group_id` - (Optional, Forces new resource, String) A UUID identifier, or `default` secret group.
   * Constraints: The maximum length is `36` characters. The minimum length is `7` characters. The value must match regular expression `/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|default)$/`.
+* `version_custom_metadata` - (Map) The custom metadata of the current secret version.
+  * Constraints: Nested JSONs are supported in Terraform only as string-encoded JSONs.
 
 ## Attribute Reference
 

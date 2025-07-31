@@ -82,7 +82,12 @@ func dataSourceIbmSmPublicCertificateConfigurationCALetsEncryptRead(context cont
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetConfigurationWithContext failed %s\n%s", err, response), fmt.Sprintf("(Data) %s", PublicCertConfigCALetsEncryptResourceName), "read")
 		return tfErr.GetDiag()
 	}
-	publicCertificateConfigurationCALetsEncrypt := publicCertificateConfigurationCALetsEncryptIntf.(*secretsmanagerv2.PublicCertificateConfigurationCALetsEncrypt)
+
+	publicCertificateConfigurationCALetsEncrypt, ok := publicCertificateConfigurationCALetsEncryptIntf.(*secretsmanagerv2.PublicCertificateConfigurationCALetsEncrypt)
+	if !ok {
+		tfErr := flex.TerraformErrorf(nil, fmt.Sprintf("Wrong configuration type: The provided configuration is not a Public Certificate CA Let's Encrypt configuration."), fmt.Sprintf("(Data) %s", PublicCertConfigCALetsEncryptResourceName), "read")
+		return tfErr.GetDiag()
+	}
 
 	d.SetId(fmt.Sprintf("%s/%s/%s", region, instanceId, *getConfigurationOptions.Name))
 

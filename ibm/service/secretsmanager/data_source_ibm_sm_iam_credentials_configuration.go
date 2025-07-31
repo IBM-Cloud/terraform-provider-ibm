@@ -87,7 +87,12 @@ func dataSourceIbmSmIamCredentialsConfigurationRead(context context.Context, d *
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetConfigurationWithContext failed %s\n%s", err, response), fmt.Sprintf("(Data) %s", IAMCredentialsConfigResourceName), "read")
 		return tfErr.GetDiag()
 	}
-	iAMCredentialsConfiguration := iAMCredentialsConfigurationIntf.(*secretsmanagerv2.IAMCredentialsConfiguration)
+
+	iAMCredentialsConfiguration, ok := iAMCredentialsConfigurationIntf.(*secretsmanagerv2.IAMCredentialsConfiguration)
+	if !ok {
+		tfErr := flex.TerraformErrorf(nil, fmt.Sprintf("Wrong configuration type: The provided configuration is not an IAM Credentials configuration."), fmt.Sprintf("(Data) %s", IAMCredentialsConfigResourceName), "read")
+		return tfErr.GetDiag()
+	}
 
 	d.SetId(fmt.Sprintf("%s/%s/%s", region, instanceId, *getConfigurationOptions.Name))
 

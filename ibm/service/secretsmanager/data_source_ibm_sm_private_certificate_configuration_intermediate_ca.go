@@ -327,7 +327,11 @@ func dataSourceIbmSmPrivateCertificateConfigurationIntermediateCARead(context co
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetConfigurationWithContext failed %s\n%s", err, response), fmt.Sprintf("(Data) %s", PrivateCertConfigIntermediateCAResourceName), "read")
 		return tfErr.GetDiag()
 	}
-	privateCertificateConfigurationIntermediateCA := configurationIntf.(*secretsmanagerv2.PrivateCertificateConfigurationIntermediateCA)
+	privateCertificateConfigurationIntermediateCA, ok := configurationIntf.(*secretsmanagerv2.PrivateCertificateConfigurationIntermediateCA)
+	if !ok {
+		tfErr := flex.TerraformErrorf(nil, fmt.Sprintf("Wrong configuration type: The provided configuration is not a Private Certificate Intermediate CA configuration."), fmt.Sprintf("(Data) %s", PrivateCertConfigIntermediateCAResourceName), "read")
+		return tfErr.GetDiag()
+	}
 
 	d.SetId(fmt.Sprintf("%s/%s/%s", region, instanceId, *getConfigurationOptions.Name))
 
