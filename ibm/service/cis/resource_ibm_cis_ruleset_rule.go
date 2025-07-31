@@ -237,6 +237,42 @@ var CISRulesetsRulesObject = &schema.Resource{
 				},
 			},
 		},
+		CISRulesetsRuleRatelimit: {
+			Type:        schema.TypeList,
+			Optional:    true,
+			MaxItems:    1,
+			Description: "Ratelimit of the Rulesets Rule",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					CISRulesetsRuleRatelimitCharacteristics: {
+						Type:        schema.TypeList,
+						Optional:    true,
+						Description: "List of Characteristics of the ratelimit on rulesets rule.",
+						Elem:        &schema.Schema{Type: schema.TypeString},
+					},
+					CISRulesetsRuleRatelimitCountingExpression: {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Description: "Counting expression of the ratelimit on rulesets rule.",
+					},
+					CISRulesetsRuleRatelimitMitigationTimeout: {
+						Type:        schema.TypeInt,
+						Optional:    true,
+						Description: "Mitigation timeout of the ratelimit on rulesets rule.",
+					},
+					CISRulesetsRuleRatelimitPeriod: {
+						Type:        schema.TypeInt,
+						Optional:    true,
+						Description: "Period of the ratelimit on rulesets rule.",
+					},
+					CISRulesetsRuleRatelimitRequestsPerPeriod: {
+						Type:        schema.TypeInt,
+						Optional:    true,
+						Description: "Requests per period of the ratelimit on rulesets rule.",
+					},
+				},
+			},
+		},
 		CISRulesetsRuleLastUpdatedAt: {
 			Type:        schema.TypeString,
 			Optional:    true,
@@ -328,6 +364,18 @@ func ResourceIBMCISRulesetRuleCreate(d *schema.ResourceData, meta interface{}) e
 			}
 		}
 		opt.SetPosition(&position)
+
+		ratelimit := rulesetsv1.Ratelimit{}
+		if v, ok := rulesObject[CISRulesetsRuleRatelimit]; ok && v != nil {
+			ratelimit, err = expandCISRulesetsRulesRatelimits(v)
+			if err != nil {
+				return fmt.Errorf("[ERROR] Error while creating the zone Rule: %s", err)
+			}
+
+			if !DataSourceCISRulesetsRuleIsEmptyRatelimit(ratelimit) {
+				opt.SetRatelimit(&ratelimit)
+			}
+		}
 
 		actionParameterObj := rulesetsv1.ActionParameters{}
 		if len(rulesObject[CISRulesetsRuleActionParameters].(*schema.Set).List()) != 0 {
@@ -457,6 +505,17 @@ func ResourceIBMCISRulesetRuleUpdate(d *schema.ResourceData, meta interface{}) e
 		}
 		opt.SetPosition(&position)
 
+		if v, ok := rulesetsRuleObject[CISRulesetsRuleRatelimit]; ok && v != nil {
+			ratelimit, ratelimitErr := expandCISRulesetsRulesRatelimits(v)
+			if ratelimitErr != nil {
+				return fmt.Errorf("[ERROR] Error while updating the zone Ruleset: %s", ratelimitErr)
+			}
+
+			if !DataSourceCISRulesetsRuleIsEmptyRatelimit(ratelimit) {
+				opt.SetRatelimit(&ratelimit)
+			}
+		}
+
 		opt.SetRulesetID(rulesetId)
 		opt.SetRuleID(ruleId)
 		opt.SetID(ruleId)
@@ -532,4 +591,12 @@ func ResourceIBMCISRulesetRuleDelete(d *schema.ResourceData, meta interface{}) e
 
 func dataSourceCISRulesetsRuleCheckID(d *schema.ResourceData, ruleId string) string {
 	return ruleId + ":" + d.Get(CISRulesetsId).(string) + ":" + d.Get(cisDomainID).(string) + ":" + d.Get(cisID).(string)
+}
+
+func DataSourceCISRulesetsRuleIsEmptyRatelimit(r rulesetsv1.Ratelimit) bool {
+	return len(r.Characteristics) == 0 &&
+		r.CountingExpression == nil &&
+		r.MitigationTimeout == nil &&
+		r.Period == nil &&
+		r.RequestsPerPeriod == nil
 }
