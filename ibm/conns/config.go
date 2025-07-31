@@ -1627,7 +1627,15 @@ func (c *Config) ClientSession() (interface{}, error) {
 
 	var authenticator core.Authenticator
 
-	if c.BluemixAPIKey != "" || sess.BluemixSession.Config.IAMRefreshToken != "" {
+	if (c.BluemixAPIKey != "") && c.IAMTrustedProfileID != "" {
+		authenticator, err = core.NewIamAssumeAuthenticatorBuilder().
+			SetApiKey(c.BluemixAPIKey).
+			SetIAMProfileID(c.IAMTrustedProfileID).
+			Build()
+		if err != nil {
+			log.Fatalf("Error in authenticating using NewIamAssumeAuthenticatorBuilder. Error: %s", err)
+		}
+	} else if c.BluemixAPIKey != "" || sess.BluemixSession.Config.IAMRefreshToken != "" {
 		if c.BluemixAPIKey != "" {
 			authenticator = &core.IamAuthenticator{
 				ApiKey: c.BluemixAPIKey,
@@ -3775,9 +3783,9 @@ func newSession(c *Config) (*Session, error) {
 	if c.IAMTrustedProfileID == "" && (c.IAMToken != "" && c.IAMRefreshToken == "") || (c.IAMToken == "" && c.IAMRefreshToken != "") {
 		return nil, fmt.Errorf("iam_token and iam_refresh_token must be provided")
 	}
-	if c.IAMTrustedProfileID != "" && c.IAMToken == "" {
-		return nil, fmt.Errorf("iam_token and iam_profile_id must be provided")
-	}
+	// if c.IAMTrustedProfileID != "" && c.IAMToken == "" {
+	// 	return nil, fmt.Errorf("iam_token and iam_profile_id must be provided")
+	// }
 
 	if c.IAMToken != "" {
 		log.Println("Configuring IBM Cloud Session with token")
