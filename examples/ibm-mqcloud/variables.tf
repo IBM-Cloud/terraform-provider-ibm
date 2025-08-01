@@ -85,6 +85,11 @@ variable "mqcloud_keystore_certificate_certificate_file" {
   type        = string
   default     = "SGVsbG8gd29ybGQ="
 }
+variable "mqcloud_keystore_certificate_config_ams_channel_name" {
+  description = "A channel's information that is configured with this certificate."
+  type        = string
+  default     = "CLOUD.APP.SVRCONN"
+}
 
 variable "mqcloud_keystore_certificate_config_ams_channel_name" {
   description = "A channel's information that is configured with this certificate."

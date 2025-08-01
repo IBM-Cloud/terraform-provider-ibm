@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_mqcloud_queue_manager"
 description: |-
   Manages mqcloud_queue_manager.
-subcategory: "MQaaS"
+subcategory: "MQ SaaS"
 ---
 
 # ibm_mqcloud_queue_manager
@@ -15,34 +15,13 @@ Create, update, and delete mqcloud_queue_managers with this resource.
 ## Example Usage
 
 ```hcl
-resource "ibm_resource_instance" "mqcloud_deployment" {
-  location          = var.region
-  name              = var.name
-  plan              = "reserved-deployment"
-  resource_group_id = var.resource_group_id
-  parameters = {
-    "selectedCapacityPlan" = var.mq_capacity_guid
-  }
-  service = "mqcloud"
-  tags    = var.tags
-}
-data "ibm_mqcloud_queue_manager_options" "mqcloud_options" {
-  service_instance_guid = ibm_resource_instance.mqcloud_deployment.guid
-  depends_on = [
-      resource.ibm_resource_instance.mqcloud_deployment
-  ]
-}
-
 resource "ibm_mqcloud_queue_manager" "mqcloud_queue_manager_instance" {
   display_name = "A test queue manager"
-  location = data.ibm_mqcloud_queue_manager_options.mqcloud_options.locations[0]
+  location = "reserved-eu-de-cluster-f884"
   name = "testqm"
-  service_instance_guid = ibm_resource_instance.mqcloud_deployment.guid
-  size = "xsmall"
-  version = data.ibm_mqcloud_queue_manager_options.mqcloud_options.latest_version
-  depends_on = [
-      data.ibm_mqcloud_queue_manager_options.mqcloud_options
-  ]
+  service_instance_guid = "a2b4d4bc-dadb-4637-bcec-9b7d1e723af8"
+  size = "small"
+  version = "9.3.2_2"
 }
 ```
 
@@ -58,15 +37,15 @@ mqcloud_queue_manager provides the following [Timeouts](https://www.terraform.io
 
 You can specify the following arguments for this resource.
 
-* `display_name` - (Optional, String) A displayable name for the queue manager - limited only in length.
+* `display_name` - (Optional, Forces new resource, String) A displayable name for the queue manager - limited only in length.
   * Constraints: The maximum length is `150` characters.
-* `location` - (Required, String) The location in which the queue manager could be deployed.
+* `location` - (Required, Forces new resource, String) The locations in which the queue manager could be deployed.
   * Constraints: The maximum length is `150` characters. The minimum length is `2` characters. The value must match regular expression `/^([^[:ascii:]]|[a-zA-Z0-9-._: ])+$/`. Details of applicable locations can be found from either the use of the `ibm_mqcloud_queue_manager_options` datasource for the resource instance or can be found using the [IBM API for MQaaS](https://cloud.ibm.com/apidocs/mq-on-cloud) and be set as a variable.
-* `name` - (Required, String) A queue manager name conforming to MQ restrictions.
+* `name` - (Required, Forces new resource, String) A queue manager name conforming to MQ restrictions.
   * Constraints: The maximum length is `48` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9._]*$/`.
-* `service_instance_guid` - (Required, Forces new resource, String) The GUID that uniquely identifies the MQaaS service instance.
+* `service_instance_guid` - (Required, Forces new resource, String) The GUID that uniquely identifies the MQ SaaS service instance.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/`.
-* `size` - (Required, String) The queue manager sizes of deployment available.
+* `size` - (Required, Forces new resource, String) The queue manager sizes of deployment available.
   * Constraints: Allowable values are: `xsmall`, `small`, `medium`, `large`.
 * `version` - (Optional, String) The MQ version of the queue manager.
   * Constraints: The maximum length is `15` characters. The minimum length is `7` characters. The value must match regular expression `/^[0-9]+.[0-9]+.[0-9]+_[0-9]+$/`. Details of applicable versions can be found from either the use of the `ibm_mqcloud_queue_manager_options` datasource for the resource instance, can be found using the [IBM API for MQaaS](https://cloud.ibm.com/apidocs/mq-on-cloud) or with the variable not included at all to default to the latest version.
@@ -96,8 +75,8 @@ The `id` property can be formed from `service_instance_guid`, and `queue_manager
 <pre>
 &lt;service_instance_guid&gt;/&lt;queue_manager_id&gt;
 </pre>
-* `service_instance_guid`: A string in the format `a2b4d4bc-dadb-4637-bcec-9b7d1e723af8`. The GUID that uniquely identifies the MQaaS service instance.
-* `queue_manager_id`: A string. The ID of the queue manager which was allocated on creation, and can be used for delete calls.
+* `service_instance_guid`: A string in the format `a2b4d4bc-dadb-4637-bcec-9b7d1e723af8`. The GUID that uniquely identifies the MQ SaaS service instance.
+* `queue_manager_id`: A string in the format `b8e1aeda078009cf3db74e90d5d42328`. The ID of the queue manager which was allocated on creation, and can be used for delete calls.
 
 # Syntax
 <pre>

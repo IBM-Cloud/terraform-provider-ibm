@@ -1,8 +1,8 @@
-// Copyright IBM Corp. 2024 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.95.2-120e65bc-20240924-152329
+ * IBM OpenAPI Terraform Generator Version: 3.104.0-b4a47c49-20250418-184351
  */
 
 package mqcloud
@@ -29,7 +29,7 @@ func DataSourceIbmMqcloudQueueManagerStatus() *schema.Resource {
 			"service_instance_guid": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The GUID that uniquely identifies the MQaaS service instance.",
+				Description: "The GUID that uniquely identifies the MQ SaaS service instance.",
 			},
 			"queue_manager_id": {
 				Type:        schema.TypeString,
@@ -48,15 +48,7 @@ func DataSourceIbmMqcloudQueueManagerStatus() *schema.Resource {
 func dataSourceIbmMqcloudQueueManagerStatusRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	mqcloudClient, err := meta.(conns.ClientSession).MqcloudV1()
 	if err != nil {
-		// Error is coming from SDK client, so it doesn't need to be discriminated.
-		tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_mqcloud_queue_manager_status", "read")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		return tfErr.GetDiag()
-	}
-
-	err = checkSIPlan(d, meta)
-	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Read Queue Manager Status failed: %s", err.Error()), "(Data) ibm_mqcloud_queue_manager_status", "read")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_mqcloud_queue_manager_status", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
