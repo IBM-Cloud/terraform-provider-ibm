@@ -1,8 +1,8 @@
-// Copyright IBM Corp. 2024 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.95.2-120e65bc-20240924-152329
+ * IBM OpenAPI Terraform Generator Version: 3.104.0-b4a47c49-20250418-184351
  */
 
 package mqcloud
@@ -37,7 +37,7 @@ func ResourceIbmMqcloudTruststoreCertificate() *schema.Resource {
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_mqcloud_truststore_certificate", "service_instance_guid"),
-				Description:  "The GUID that uniquely identifies the MQaaS service instance.",
+				Description:  "The GUID that uniquely identifies the MQ SaaS service instance.",
 			},
 			"queue_manager_id": {
 				Type:         schema.TypeString,
@@ -157,15 +157,7 @@ func ResourceIbmMqcloudTruststoreCertificateValidator() *validate.ResourceValida
 func resourceIbmMqcloudTruststoreCertificateCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	mqcloudClient, err := meta.(conns.ClientSession).MqcloudV1()
 	if err != nil {
-		// Error is coming from SDK client, so it doesn't need to be discriminated.
-		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_mqcloud_truststore_certificate", "create")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		return tfErr.GetDiag()
-	}
-
-	err = checkSIPlan(d, meta)
-	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Create Truststore Certificate failed: %s", err.Error()), "ibm_mqcloud_truststore_certificate", "create")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_mqcloud_truststore_certificate", "create", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -196,7 +188,7 @@ func resourceIbmMqcloudTruststoreCertificateCreate(context context.Context, d *s
 func resourceIbmMqcloudTruststoreCertificateRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	mqcloudClient, err := meta.(conns.ClientSession).MqcloudV1()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_mqcloud_truststore_certificate", "read")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_mqcloud_truststore_certificate", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -286,14 +278,7 @@ func resourceIbmMqcloudTruststoreCertificateRead(context context.Context, d *sch
 func resourceIbmMqcloudTruststoreCertificateDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	mqcloudClient, err := meta.(conns.ClientSession).MqcloudV1()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_mqcloud_truststore_certificate", "delete")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		return tfErr.GetDiag()
-	}
-
-	err = checkSIPlan(d, meta)
-	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Delete Truststore Certificate failed: %s", err.Error()), "ibm_mqcloud_truststore_certificate", "delete")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_mqcloud_truststore_certificate", "delete", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
