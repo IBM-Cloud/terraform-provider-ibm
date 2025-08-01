@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_mqcloud_truststore_certificate"
 description: |-
   Get information about mqcloud_truststore_certificate
-subcategory: "MQaaS"
+subcategory: "MQ SaaS"
 ---
 
 # ibm_mqcloud_truststore_certificate
@@ -30,7 +30,7 @@ You can specify the following arguments for this data source.
   * Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9_.]*$/`.
 * `queue_manager_id` - (Required, Forces new resource, String) The id of the queue manager to retrieve its full details.
   * Constraints: The maximum length is `32` characters. The minimum length is `32` characters. The value must match regular expression `/^[0-9a-fA-F]{32}$/`.
-* `service_instance_guid` - (Required, Forces new resource, String) The GUID that uniquely identifies the MQaaS service instance.
+* `service_instance_guid` - (Required, Forces new resource, String) The GUID that uniquely identifies the MQ SaaS service instance.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/`.
 
 ## Attribute Reference

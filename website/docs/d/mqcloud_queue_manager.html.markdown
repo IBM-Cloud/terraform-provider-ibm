@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_mqcloud_queue_manager"
 description: |-
   Get information about mqcloud_queue_manager
-subcategory: "MQaaS"
+subcategory: "MQ SaaS"
 ---
 
 # ibm_mqcloud_queue_manager
@@ -25,9 +25,9 @@ data "ibm_mqcloud_queue_manager" "mqcloud_queue_manager" {
 
 You can specify the following arguments for this data source.
 
-* `name` - (Optional, String) A queue manager name conforming to MQ restrictions.
+* `name` - (Optional, Forces new resource, String) A queue manager name conforming to MQ restrictions.
   * Constraints: The maximum length is `48` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9._]*$/`.
-* `service_instance_guid` - (Required, String) The GUID that uniquely identifies the MQaaS service instance.
+* `service_instance_guid` - (Required, Forces new resource, String) The GUID that uniquely identifies the MQ SaaS service instance.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/`.
 
 ## Attribute Reference
@@ -42,16 +42,16 @@ Nested schema for **queue_managers**:
 	* `available_upgrade_versions_uri` - (String) The uri through which the available versions to upgrade to can be found for this queue manager.
 	* `connection_info_uri` - (String) The uri through which the CDDT for this queue manager can be obtained.
 	* `date_created` - (String) RFC3339 formatted UTC date for when the queue manager was created.
-	* `display_name` - (String) A displayable name for the queue manager - limited only in length.
+	* `display_name` - (Forces new resource, String) A displayable name for the queue manager - limited only in length.
 	  * Constraints: The maximum length is `150` characters.
 	* `href` - (String) The URL for this queue manager.
 	* `id` - (String) The ID of the queue manager which was allocated on creation, and can be used for delete calls.
-	* `location` - (String) The locations in which the queue manager could be deployed.
+	* `location` - (Forces new resource, String) The locations in which the queue manager could be deployed.
 	  * Constraints: The maximum length is `150` characters. The minimum length is `2` characters. The value must match regular expression `/^([^[:ascii:]]|[a-zA-Z0-9-._: ])+$/`.
-	* `name` - (String) A queue manager name conforming to MQ restrictions.
+	* `name` - (Forces new resource, String) A queue manager name conforming to MQ restrictions.
 	  * Constraints: The maximum length is `48` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9._]*$/`.
 	* `rest_api_endpoint_url` - (String) The url through which to access REST APIs for this queue manager.
-	* `size` - (String) The queue manager sizes of deployment available.
+	* `size` - (Forces new resource, String) The queue manager sizes of deployment available.
 	  * Constraints: Allowable values are: `xsmall`, `small`, `medium`, `large`.
 	* `status_uri` - (String) A reference uri to get deployment status of the queue manager.
 	* `upgrade_available` - (Boolean) Describes whether an upgrade is available for this queue manager.

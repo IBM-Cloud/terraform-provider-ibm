@@ -1,8 +1,8 @@
-// Copyright IBM Corp. 2024 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.95.2-120e65bc-20240924-152329
+ * IBM OpenAPI Terraform Generator Version: 3.104.0-b4a47c49-20250418-184351
  */
 
 package mqcloud
@@ -18,6 +18,7 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/mqcloud-go-sdk/mqcloudv1"
 )
 
@@ -29,7 +30,7 @@ func DataSourceIbmMqcloudKeystoreCertificate() *schema.Resource {
 			"service_instance_guid": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The GUID that uniquely identifies the MQaaS service instance.",
+				Description: "The GUID that uniquely identifies the MQ SaaS service instance.",
 			},
 			"queue_manager_id": {
 				Type:        schema.TypeString,
@@ -167,15 +168,7 @@ func DataSourceIbmMqcloudKeystoreCertificate() *schema.Resource {
 func dataSourceIbmMqcloudKeystoreCertificateRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	mqcloudClient, err := meta.(conns.ClientSession).MqcloudV1()
 	if err != nil {
-		// Error is coming from SDK client, so it doesn't need to be discriminated.
-		tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_mqcloud_keystore_certificate", "read")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		return tfErr.GetDiag()
-	}
-
-	err = checkSIPlan(d, meta)
-	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Read Keystore Certificate failed: %s", err.Error()), "(Data) ibm_mqcloud_keystore_certificate", "read")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_mqcloud_keystore_certificate", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -219,23 +212,24 @@ func dataSourceIbmMqcloudKeystoreCertificateRead(context context.Context, d *sch
 		d.SetId(dataSourceIbmMqcloudKeystoreCertificateID(d))
 	}
 
-	if err = d.Set("total_count", flex.IntValue(keyStoreCertificateDetailsCollection.TotalCount)); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting total_count: %s", err), "(Data) ibm_mqcloud_keystore_certificate", "read", "set-total_count").GetDiag()
+	if !core.IsNil(keyStoreCertificateDetailsCollection.TotalCount) {
+		if err = d.Set("total_count", flex.IntValue(keyStoreCertificateDetailsCollection.TotalCount)); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting total_count: %s", err), "(Data) ibm_mqcloud_keystore_certificate", "read", "set-total_count").GetDiag()
+		}
 	}
 
-	keyStore := []map[string]interface{}{}
-	if keyStoreCertificateDetailsCollection.KeyStore != nil {
-		for _, modelItem := range keyStoreCertificateDetailsCollection.KeyStore {
-			modelItem := modelItem
-			modelMap, err := DataSourceIbmMqcloudKeystoreCertificateKeyStoreCertificateDetailsToMap(&modelItem)
+	if !core.IsNil(keyStoreCertificateDetailsCollection.KeyStore) {
+		keyStore := []map[string]interface{}{}
+		for _, keyStoreItem := range keyStoreCertificateDetailsCollection.KeyStore {
+			keyStoreItemMap, err := DataSourceIbmMqcloudKeystoreCertificateKeyStoreCertificateDetailsToMap(&keyStoreItem) // #nosec G601
 			if err != nil {
 				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_mqcloud_keystore_certificate", "read", "key_store-to-map").GetDiag()
 			}
-			keyStore = append(keyStore, modelMap)
+			keyStore = append(keyStore, keyStoreItemMap)
 		}
-	}
-	if err = d.Set("key_store", keyStore); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting key_store: %s", err), "(Data) ibm_mqcloud_keystore_certificate", "read", "set-key_store").GetDiag()
+		if err = d.Set("key_store", keyStore); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting key_store: %s", err), "(Data) ibm_mqcloud_keystore_certificate", "read", "set-key_store").GetDiag()
+		}
 	}
 
 	return nil
@@ -284,7 +278,6 @@ func DataSourceIbmMqcloudKeystoreCertificateChannelsDetailsToMap(model *mqcloudv
 	modelMap := make(map[string]interface{})
 	channels := []map[string]interface{}{}
 	for _, channelsItem := range model.Channels {
-		channelsItem := channelsItem
 		channelsItemMap, err := DataSourceIbmMqcloudKeystoreCertificateChannelDetailsToMap(&channelsItem) // #nosec G601
 		if err != nil {
 			return modelMap, err

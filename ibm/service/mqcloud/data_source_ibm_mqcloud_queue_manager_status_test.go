@@ -1,8 +1,8 @@
-// Copyright IBM Corp. 2024 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
-* IBM OpenAPI Terraform Generator Version: 3.95.2-120e65bc-20240924-152329
+ * IBM OpenAPI Terraform Generator Version: 3.104.0-b4a47c49-20250418-184351
  */
 
 package mqcloud_test
@@ -17,7 +17,6 @@ import (
 )
 
 func TestAccIbmMqcloudQueueManagerStatusDataSourceBasic(t *testing.T) {
-	t.Parallel()
 	service_instance_guid := acc.MqcloudDeploymentID
 	queue_manager_id := acc.MqcloudQueueManagerID
 
