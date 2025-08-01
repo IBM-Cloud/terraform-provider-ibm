@@ -984,7 +984,7 @@ func Provider() *schema.Provider {
 			"ibm_en_destination_sn":             eventnotification.DataSourceIBMEnServiceNowDestination(),
 			"ibm_en_subscription_sn":            eventnotification.DataSourceIBMEnFCMSubscription(),
 			"ibm_en_destination_ce":             eventnotification.DataSourceIBMEnCodeEngineDestination(),
-			"ibm_en_subscription_ce":            eventnotification.DataSourceIBMEnFCMSubscription(),
+			"ibm_en_subscription_ce":            eventnotification.DataSourceIBMEnCodeEngineSubscription(),
 			"ibm_en_destination_cos":            eventnotification.DataSourceIBMEnCOSDestination(),
 			"ibm_en_subscription_cos":           eventnotification.DataSourceIBMEnFCMSubscription(),
 			"ibm_en_destination_huawei":         eventnotification.DataSourceIBMEnHuaweiDestination(),
@@ -1010,6 +1010,9 @@ func Provider() *schema.Provider {
 			"ibm_en_destination_event_streams":  eventnotification.DataSourceIBMEnEventStreamsDestination(),
 			"ibm_en_subscription_event_streams": eventnotification.DataSourceIBMEnEventStreamsSubscription(),
 			"ibm_en_event_streams_template":     eventnotification.DataSourceIBMEnEventStreamsTemplate(),
+			"ibm_en_pre_defined_template":       eventnotification.DataSourceIBMEnPreDefinedTemplate(),
+			"ibm_en_pre_defined_templates":      eventnotification.DataSourceIBMEnPreDefinedTemplates(),
+			"ibm_en_code_engine_template":       eventnotification.DataSourceIBMEnCodeEngineTemplate(),
 
 			// Added for Toolchain
 			"ibm_cd_toolchain":                         cdtoolchain.DataSourceIBMCdToolchain(),
@@ -1661,7 +1664,7 @@ func Provider() *schema.Provider {
 			"ibm_en_destination_sn":             eventnotification.ResourceIBMEnServiceNowDestination(),
 			"ibm_en_subscription_sn":            eventnotification.ResourceIBMEnFCMSubscription(),
 			"ibm_en_destination_ce":             eventnotification.ResourceIBMEnCodeEngineDestination(),
-			"ibm_en_subscription_ce":            eventnotification.ResourceIBMEnFCMSubscription(),
+			"ibm_en_subscription_ce":            eventnotification.ResourceIBMEnCodeEngineSubscription(),
 			"ibm_en_destination_cos":            eventnotification.ResourceIBMEnCOSDestination(),
 			"ibm_en_subscription_cos":           eventnotification.ResourceIBMEnFCMSubscription(),
 			"ibm_en_destination_huawei":         eventnotification.ResourceIBMEnHuaweiDestination(),
@@ -1683,6 +1686,7 @@ func Provider() *schema.Provider {
 			"ibm_en_destination_event_streams":  eventnotification.ResourceIBMEnEventStreamsDestination(),
 			"ibm_en_subscription_event_streams": eventnotification.ResourceIBMEnEventStreamsSubscription(),
 			"ibm_en_event_streams_template":     eventnotification.ResourceIBMEnEventStreamsTemplate(),
+			"ibm_en_code_engine_template":       eventnotification.ResourceIBMEnCodeEngineTemplate(),
 
 			// Added for Toolchain
 			"ibm_cd_toolchain":                         cdtoolchain.ResourceIBMCdToolchain(),
