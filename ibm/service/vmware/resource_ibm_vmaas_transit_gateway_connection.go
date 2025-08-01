@@ -52,15 +52,10 @@ func ResourceIbmVmaasTransitGatewayConnection() *schema.Resource {
 				ValidateFunc: validate.InvokeValidator("ibm_vmaas_transit_gateway_connection", "edge_id"),
 				Description:  "A unique ID for an edge.",
 			},
-			"accept_language": &schema.Schema{
-				Type:         schema.TypeString,
-				Optional:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_vmaas_transit_gateway_connection", "accept_language"),
-				Description:  "Language.",
-			},
 			"region": &schema.Schema{
 				Type:         schema.TypeString,
 				Optional:     true,
+				Computed:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_vmaas_transit_gateway_connection", "region"),
 				Description:  "The region where the IBM Transit Gateway is deployed.",
 			},
@@ -183,15 +178,6 @@ func ResourceIbmVmaasTransitGatewayConnectionValidator() *validate.ResourceValid
 			MaxValueLength:             128,
 		},
 		validate.ValidateSchema{
-			Identifier:                 "accept_language",
-			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
-			Type:                       validate.TypeString,
-			Optional:                   true,
-			Regexp:                     `^[A-Za-z0-9-,;=\.\*\s]{1,256}$`,
-			MinValueLength:             1,
-			MaxValueLength:             256,
-		},
-		validate.ValidateSchema{
 			Identifier:                 "region",
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
@@ -224,20 +210,12 @@ func resourceIbmVmaasTransitGatewayConnectionCreate(context context.Context, d *
 	}
 
 	addTransitGatewayConnectionsOptions := &vmwarev1.AddTransitGatewayConnectionsOptions{}
-
 	addTransitGatewayConnectionsOptions.SetVdcID(d.Get("vdc_id").(string))
 	addTransitGatewayConnectionsOptions.SetEdgeID(d.Get("edge_id").(string))
 	addTransitGatewayConnectionsOptions.SetID(d.Get("vmaas_transit_gateway_connection_id").(string))
 
-	region := ""
 	if v, ok := d.GetOk("region"); ok {
-		region = v.(string)
-		addTransitGatewayConnectionsOptions.SetRegion(d.Get("region").(string))
-	}
-	acceptLang := ""
-	if v, ok := d.GetOk("accept_language"); ok {
-		acceptLang = v.(string)
-		addTransitGatewayConnectionsOptions.SetAcceptLanguage(d.Get("accept_language").(string))
+		addTransitGatewayConnectionsOptions.SetRegion(v.(string))
 	}
 
 	transitGateway, _, err := vmwareClient.AddTransitGatewayConnectionsWithContext(context, addTransitGatewayConnectionsOptions)
@@ -246,41 +224,78 @@ func resourceIbmVmaasTransitGatewayConnectionCreate(context context.Context, d *
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
-	d.SetId(fmt.Sprintf("%s/%s/%s/%s/%s", *addTransitGatewayConnectionsOptions.VdcID, *addTransitGatewayConnectionsOptions.EdgeID, *transitGateway.ID, acceptLang, region))
 
-	fmt.Println("[INFO] Transit Gateway connection created (initial state)")
+	vdcID := *addTransitGatewayConnectionsOptions.VdcID
+	edgeID := *addTransitGatewayConnectionsOptions.EdgeID
+	tgwID := *transitGateway.ID
+
+	d.SetId(fmt.Sprintf("%s/%s/%s", vdcID, edgeID, tgwID))
+
+	fmt.Println("[INFO] Transit Gateway connection created, waiting for tunnel IP...")
+
+	tgw, err := waitForTransitGatewayConnectionTunnelIp(context, vdcID, edgeID, tgwID, meta)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	d.Set("connections", flattenTransitGatewayConnections(tgw.Connections))
+	d.Set("region", tgw.Region)
 
 	return resourceIbmVmaasTransitGatewayConnectionRead(context, d, meta)
 }
 
 func resourceIbmVmaasTransitGatewayConnectionRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-
 	parts := strings.Split(d.Id(), "/")
 	if len(parts) < 3 {
 		err := fmt.Errorf("unexpected ID format (%q), expected vdcID/edgeID/transitGatewayID", d.Id())
-		return flex.TerraformErrorf(err, err.Error(), "ibm_vmaas_transit_gateways", "read").GetDiag()
+		return flex.TerraformErrorf(err, err.Error(), "ibm_vmaas_transit_gateway_connection", "read").GetDiag()
 	}
 	vdcID := parts[0]
 	edgeID := parts[1]
 	tgwID := parts[2]
-	acceptLang := parts[3]
-	region := parts[4]
 
-	tgw, err := waitForTransitGatewayConnectionTunnelIp(context, vdcID, edgeID, tgwID, acceptLang, meta)
+	vmwareClient, err := meta.(conns.ClientSession).VmwareV1()
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	getVdcOptions := &vmwarev1.GetVdcOptions{}
+	getVdcOptions.SetID(vdcID)
+
+	vdc, _, err := vmwareClient.GetVdcWithContext(context, getVdcOptions)
 
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("vdc_id", vdcID)
-	_ = d.Set("edge_id", edgeID)
-	_ = d.Set("vmaas_transit_gateway_connection_id", tgwID)
-	_ = d.Set("connections", flattenTransitGatewayConnections(tgw.Connections))
-	_ = d.Set("region", region)
-	_ = d.Set("accept_language", acceptLang)
+	var foundEdge *vmwarev1.Edge
+	for _, edge := range vdc.Edges {
+		if *edge.ID == edgeID {
+			foundEdge = &edge
+			break
+		}
+	}
+	if foundEdge == nil {
+		return diag.Errorf("Edge %q not found in VDC %q", edgeID, vdcID)
+	}
+
+	var foundTGW *vmwarev1.TransitGateway
+	for _, conn := range foundEdge.TransitGateways {
+		if *conn.ID == tgwID {
+			foundTGW = &conn
+			break
+		}
+	}
+	if foundTGW == nil {
+		return diag.Errorf("Transit Gateway %q not found in edge %q", tgwID, edgeID)
+	}
+
+	d.Set("vdc_id", vdcID)
+	d.Set("edge_id", edgeID)
+	d.Set("vmaas_transit_gateway_connection_id", tgwID)
+	d.Set("connections", flattenTransitGatewayConnections(foundTGW.Connections))
+	d.Set("region", foundTGW.Region)
 
 	return nil
-
 }
 
 func resourceIbmVmaasTransitGatewayConnectionUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -300,33 +315,12 @@ func resourceIbmVmaasTransitGatewayConnectionUpdate(context context.Context, d *
 
 	swapHaEdgeSitesOptions.SetVdcID(parts[0])
 	swapHaEdgeSitesOptions.SetEdgeID(parts[1])
-	// swapHaEdgeSitesOptions.SetID(parts[2])
-	// swapHaEdgeSitesOptions.SetID(parts[3])
 
-	hasChange := false
-
-	if d.HasChange("vdc_id") {
-		errMsg := fmt.Sprintf("Cannot update resource property \"%s\" with the ForceNew annotation."+
-			" The resource must be re-created to update this property.", "vdc_id")
-		return flex.DiscriminatedTerraformErrorf(nil, errMsg, "ibm_vmaas_transit_gateway_connection", "update", "vdc_id-forces-new").GetDiag()
-	}
-	if d.HasChange("edge_id") {
-		errMsg := fmt.Sprintf("Cannot update resource property \"%s\" with the ForceNew annotation."+
-			" The resource must be re-created to update this property.", "edge_id")
-		return flex.DiscriminatedTerraformErrorf(nil, errMsg, "ibm_vmaas_transit_gateway_connection", "update", "edge_id-forces-new").GetDiag()
-	}
-	if d.HasChange("accept_language") {
-		swapHaEdgeSitesOptions.SetAcceptLanguage(d.Get("accept_language").(string))
-		hasChange = true
-	}
-
-	if hasChange {
-		_, _, err = vmwareClient.SwapHaEdgeSitesWithContext(context, swapHaEdgeSitesOptions)
-		if err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("SwapHaEdgeSitesWithContext failed: %s", err.Error()), "ibm_vmaas_transit_gateway_connection", "update")
-			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-			return tfErr.GetDiag()
-		}
+	_, _, err = vmwareClient.SwapHaEdgeSitesWithContext(context, swapHaEdgeSitesOptions)
+	if err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("SwapHaEdgeSitesWithContext failed: %s", err.Error()), "ibm_vmaas_transit_gateway_connection", "update")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	return resourceIbmVmaasTransitGatewayConnectionRead(context, d, meta)
@@ -349,13 +343,6 @@ func resourceIbmVmaasTransitGatewayConnectionDelete(context context.Context, d *
 	removeTransitGatewayConnectionsOptions.SetVdcID(parts[0])
 	removeTransitGatewayConnectionsOptions.SetEdgeID(parts[1])
 	removeTransitGatewayConnectionsOptions.SetID(parts[2])
-	// removeTransitGatewayConnectionsOptions.SetID(parts[3])
-	var acceptLang string
-	if val, ok := d.GetOk("accept_language"); ok {
-		acceptLang = val.(string)
-		removeTransitGatewayConnectionsOptions.SetAcceptLanguage(d.Get("accept_language").(string))
-
-	}
 
 	_, _, err = vmwareClient.RemoveTransitGatewayConnectionsWithContext(context, removeTransitGatewayConnectionsOptions)
 
@@ -366,7 +353,7 @@ func resourceIbmVmaasTransitGatewayConnectionDelete(context context.Context, d *
 	}
 	fmt.Println("[INFO] Waiting for Transit Gateway connection " + *removeTransitGatewayConnectionsOptions.ID + " to be deleted...")
 
-	err = waitForTransitGatewayConnectionDelete(context, *removeTransitGatewayConnectionsOptions.VdcID, *removeTransitGatewayConnectionsOptions.EdgeID, *removeTransitGatewayConnectionsOptions.ID, acceptLang, meta)
+	err = waitForTransitGatewayConnectionDelete(context, *removeTransitGatewayConnectionsOptions.VdcID, *removeTransitGatewayConnectionsOptions.EdgeID, *removeTransitGatewayConnectionsOptions.ID, meta)
 
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Timeout waiting for Transit Gateway connection %q to be deleted", *removeTransitGatewayConnectionsOptions.ID), "ibm_vmaas_transit_gateway_connection", "delete")
@@ -379,8 +366,8 @@ func resourceIbmVmaasTransitGatewayConnectionDelete(context context.Context, d *
 }
 
 func waitForTransitGatewayConnectionDelete(
-	ctx context.Context,
-	vdcID, edgeID, tgwID, acceptLanguage string,
+	context context.Context,
+	vdcID, edgeID, tgwID string,
 	meta interface{},
 ) error {
 	vmwareClient, err := meta.(conns.ClientSession).VmwareV1()
@@ -390,15 +377,13 @@ func waitForTransitGatewayConnectionDelete(
 
 	getVdcOptions := &vmwarev1.GetVdcOptions{}
 	getVdcOptions.SetID(vdcID)
-	if acceptLanguage != "" {
-		getVdcOptions.SetAcceptLanguage(acceptLanguage)
-	}
 
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{"exists"},
 		Target:  []string{"deleted"},
 		Refresh: func() (interface{}, string, error) {
-			vdc, _, err := vmwareClient.GetVdcWithContext(ctx, getVdcOptions)
+			vdc, _, err := vmwareClient.GetVdcWithContext(context, getVdcOptions)
+
 			if err != nil {
 				return nil, "", err
 			}
@@ -423,13 +408,13 @@ func waitForTransitGatewayConnectionDelete(
 		Delay:      40 * time.Second,
 	}
 
-	_, err = stateConf.WaitForStateContext(ctx)
+	_, err = stateConf.WaitForStateContext(context)
 	return err
 }
 
 func waitForTransitGatewayConnectionTunnelIp(
-	ctx context.Context,
-	vdcID, edgeID, tgwID, acceptLanguage string,
+	context context.Context,
+	vdcID, edgeID, tgwID string,
 	meta interface{},
 ) (*vmwarev1.TransitGateway, error) {
 	vmwareClient, err := meta.(conns.ClientSession).VmwareV1()
@@ -439,15 +424,13 @@ func waitForTransitGatewayConnectionTunnelIp(
 
 	getVdcOptions := &vmwarev1.GetVdcOptions{}
 	getVdcOptions.SetID(vdcID)
-	if acceptLanguage != "" {
-		getVdcOptions.SetAcceptLanguage(acceptLanguage)
-	}
 
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{"not_ready"},
 		Target:  []string{"ready"},
 		Refresh: func() (interface{}, string, error) {
-			vdc, response, err := vmwareClient.GetVdcWithContext(ctx, getVdcOptions)
+			vdc, response, err := vmwareClient.GetVdcWithContext(context, getVdcOptions)
+
 			if err != nil {
 				if response != nil && response.StatusCode == 404 {
 					return nil, "", nil // Resource deleted
@@ -490,7 +473,7 @@ func waitForTransitGatewayConnectionTunnelIp(
 		Delay:      10 * time.Second,
 	}
 
-	result, err := stateConf.WaitForStateContext(ctx)
+	result, err := stateConf.WaitForStateContext(context)
 	if err != nil {
 		return nil, err
 	}

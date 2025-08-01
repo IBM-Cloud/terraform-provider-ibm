@@ -26,7 +26,7 @@ func TestAccIbmVmaasTransitGatewayConnectionDataSourceBasic(t *testing.T) {
 	transitGatewayID := acc.Vmaas_transit_gateway_id
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheckVMwareService(t) },
+		PreCheck:  func() { acc.TestAccPreCheckVMwareTGWService(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
@@ -46,16 +46,15 @@ func TestAccIbmVmaasTransitGatewayConnectionDataSourceBasic(t *testing.T) {
 func TestAccIbmVmaasTransitGatewayConnectionDataSourceAllArgs(t *testing.T) {
 	transitGatewayVdcID := acc.Vmaas_vdc_id
 	transitGatewayEdgeID := acc.Vmaas_edge_id
-	transitGatewayAcceptLanguage := "en-us"
 	transitGatewayRegion := "jp-tok"
 	transitGatewayID := acc.Vmaas_transit_gateway_id
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheckVMwareService(t) },
+		PreCheck:  func() { acc.TestAccPreCheckVMwareTGWService(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmVmaasTransitGatewayConnectionDataSourceConfig(transitGatewayVdcID, transitGatewayEdgeID, transitGatewayAcceptLanguage, transitGatewayRegion, transitGatewayID),
+				Config: testAccCheckIbmVmaasTransitGatewayConnectionDataSourceConfig(transitGatewayVdcID, transitGatewayEdgeID, transitGatewayRegion, transitGatewayID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_vmaas_transit_gateway_connection.vmaas_transit_gateway_connection_instance", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_vmaas_transit_gateway_connection.vmaas_transit_gateway_connection_instance", "vmaas_transit_gateway_connection_id"),
@@ -97,12 +96,11 @@ func testAccCheckIbmVmaasTransitGatewayConnectionDataSourceConfigBasic(transitGa
 	`, transitGatewayVdcID, transitGatewayEdgeID, transitGatewayID)
 }
 
-func testAccCheckIbmVmaasTransitGatewayConnectionDataSourceConfig(transitGatewayVdcID string, transitGatewayEdgeID string, transitGatewayAcceptLanguage string, transitGatewayRegion string, transitGatewayID string) string {
+func testAccCheckIbmVmaasTransitGatewayConnectionDataSourceConfig(transitGatewayVdcID string, transitGatewayEdgeID string, transitGatewayRegion string, transitGatewayID string) string {
 	return fmt.Sprintf(`
 		resource "ibm_vmaas_transit_gateway_connection" "vmaas_transit_gateway_connection_instance" {
 			vdc_id = "%s"
 			edge_id = "%s"
-			accept_language = "%s"
 			region = "%s"
 			vmaas_transit_gateway_connection_id ="%s"
 		}
@@ -112,7 +110,7 @@ func testAccCheckIbmVmaasTransitGatewayConnectionDataSourceConfig(transitGateway
 			edge_id = ibm_vmaas_transit_gateway_connection.vmaas_transit_gateway_connection_instance.edge_id
 			vmaas_transit_gateway_connection_id = ibm_vmaas_transit_gateway_connection.vmaas_transit_gateway_connection_instance.vmaas_transit_gateway_connection_id
 		}
-	`, transitGatewayVdcID, transitGatewayEdgeID, transitGatewayAcceptLanguage, transitGatewayRegion, transitGatewayID)
+	`, transitGatewayVdcID, transitGatewayEdgeID, transitGatewayRegion, transitGatewayID)
 }
 
 func TestDataSourceIbmVmaasTransitGatewayConnectionTransitGatewayConnectionToMap(t *testing.T) {

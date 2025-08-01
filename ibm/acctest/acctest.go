@@ -2494,6 +2494,11 @@ func TestAccPreCheckVMwareService(t *testing.T) {
 	if Vmaas_Directorsite_pvdc_id == "" {
 		t.Fatal("IBM_VMAAS_DS_PVDC_ID must be set for acceptance tests")
 	}
+}
+func TestAccPreCheckVMwareTGWService(t *testing.T) {
+	if v := os.Getenv("IC_API_KEY"); v == "" {
+		t.Fatal("IC_API_KEY must be set for acceptance tests")
+	}
 	if Vmaas_edge_id == "" {
 		t.Fatal("IBM_VMAAS_EDGE_ID must be set for acceptance tests")
 	}

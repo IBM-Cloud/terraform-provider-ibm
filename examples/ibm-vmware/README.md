@@ -68,6 +68,36 @@ resource "ibm_vmaas_vdc" "vmaas_vdc_instance" {
 | status | Determines the state of the virtual data center. |
 | type | Determines whether this virtual data center is in a single-tenant or multitenant Cloud Director site. |
 
+### Resource: ibm_vmaas_transit_gateway_connection
+
+```hcl
+resource "ibm_vmaas_transit_gateway_connection" "vmaas_transit_gateway_connection_instance" {
+  vdc_id = var.vmaas_transit_gateway_connection_vdc_id
+  edge_id = var.vmaas_transit_gateway_connection_edge_id
+  region = var.vmaas_transit_gateway_connection_region
+  vmaas_transit_gateway_connection_id = var.vmaas_transit_gateway_connection_id
+}
+```
+
+#### Inputs
+
+| Name | Description | Type | Required |
+|------|-------------|------|---------|
+| ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
+| vdc_id | A unique ID for a virtual data center. | `string` | true |
+| edge_id | A unique ID for an edge. | `string` | true |
+| region | The region where the IBM Transit Gateway is deployed. | `string` | false |
+| vmaas_transit_gateway_connection_id | A unique ID for an IBM Transit Gateway. | `string` | true |
+
+#### Outputs
+
+| Name | Description |
+|------|-------------|
+| connections | IBM Transit Gateway connections. |
+| status | Determines the state of the IBM Transit Gateway based on its connections. |
+| vmaas_transit_gateway_connection_id | A unique ID for an IBM Transit Gateway. |
+
+
 ## VMware Cloud Foundation as a Service API data sources
 
 ### Data source: ibm_vmaas_vdc
@@ -109,6 +139,28 @@ data "ibm_vmaas_vdc" "vmaas_vdc_instance" {
 | rhel_byol | Indicates if the RHEL VMs will be using the license from IBM or the customer will use their own license (BYOL). |
 | windows_byol | Indicates if the Microsoft Windows VMs will be using the license from IBM or the customer will use their own license (BYOL). |
 | director_site | The Cloud Director site in which to deploy the virtual data center (VDC). |
+
+### Data source: ibm_vmaas_transit_gateway_connection
+
+```hcl
+data "ibm_vmaas_transit_gateway_connection" "vmaas_transit_gateway_connection_instance" {
+  vmaas_transit_gateway_connection_id = var.data_vmaas_transit_gateway_connection_vmaas_transit_gateway_connection_id
+}
+```
+
+#### Inputs
+
+| Name | Description | Type | Required |
+|------|-------------|------|---------|
+| vmaas_transit_gateway_connection_id | A unique ID for a specified virtual data center. | `string` | true |
+
+#### Outputs
+
+| Name | Description |
+|------|-------------|
+| connections | IBM Transit Gateway connections. |
+| status | Determines the state of the IBM Transit Gateway based on its connections. |
+| region | The region where the IBM Transit Gateway is deployed. |
 
 ## Assumptions
 

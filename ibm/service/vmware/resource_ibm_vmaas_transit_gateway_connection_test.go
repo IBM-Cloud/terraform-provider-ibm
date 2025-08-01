@@ -27,7 +27,7 @@ func TestAccIbmVmaasTransitGatewayConnectionBasic(t *testing.T) {
 	id := acc.Vmaas_transit_gateway_id
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheckVMwareService(t) },
+		PreCheck:     func() { acc.TestAccPreCheckVMwareTGWService(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmVmaasTransitGatewayConnectionDestroy,
 		Steps: []resource.TestStep{
@@ -49,33 +49,29 @@ func TestAccIbmVmaasTransitGatewayConnectionAllArgs(t *testing.T) {
 	vdcID := acc.Vmaas_vdc_id
 	edgeID := acc.Vmaas_edge_id
 	id := acc.Vmaas_transit_gateway_id
-	acceptLanguage := "en-us"
 	region := "jp-tok"
-	acceptLanguageUpdate := acceptLanguage
 	regionUpdate := region
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheckVMwareService(t) },
+		PreCheck:     func() { acc.TestAccPreCheckVMwareTGWService(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmVmaasTransitGatewayConnectionDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmVmaasTransitGatewayConnectionConfig(vdcID, edgeID, acceptLanguage, region, id),
+				Config: testAccCheckIbmVmaasTransitGatewayConnectionConfig(vdcID, edgeID, region, id),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmVmaasTransitGatewayConnectionExists("ibm_vmaas_transit_gateway_connection.vmaas_transit_gateway_connection_instance", conf),
 					resource.TestCheckResourceAttr("ibm_vmaas_transit_gateway_connection.vmaas_transit_gateway_connection_instance", "vdc_id", vdcID),
 					resource.TestCheckResourceAttr("ibm_vmaas_transit_gateway_connection.vmaas_transit_gateway_connection_instance", "edge_id", edgeID),
-					resource.TestCheckResourceAttr("ibm_vmaas_transit_gateway_connection.vmaas_transit_gateway_connection_instance", "accept_language", acceptLanguage),
 					resource.TestCheckResourceAttr("ibm_vmaas_transit_gateway_connection.vmaas_transit_gateway_connection_instance", "region", region),
 					resource.TestCheckResourceAttr("ibm_vmaas_transit_gateway_connection.vmaas_transit_gateway_connection_instance", "vmaas_transit_gateway_connection_id", id),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmVmaasTransitGatewayConnectionConfig(vdcID, edgeID, acceptLanguageUpdate, regionUpdate, id),
+				Config: testAccCheckIbmVmaasTransitGatewayConnectionConfig(vdcID, edgeID, regionUpdate, id),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_vmaas_transit_gateway_connection.vmaas_transit_gateway_connection_instance", "vdc_id", vdcID),
 					resource.TestCheckResourceAttr("ibm_vmaas_transit_gateway_connection.vmaas_transit_gateway_connection_instance", "edge_id", edgeID),
-					resource.TestCheckResourceAttr("ibm_vmaas_transit_gateway_connection.vmaas_transit_gateway_connection_instance", "accept_language", acceptLanguageUpdate),
 					resource.TestCheckResourceAttr("ibm_vmaas_transit_gateway_connection.vmaas_transit_gateway_connection_instance", "region", regionUpdate),
 					resource.TestCheckResourceAttr("ibm_vmaas_transit_gateway_connection.vmaas_transit_gateway_connection_instance", "vmaas_transit_gateway_connection_id", id),
 				),
@@ -99,16 +95,15 @@ func testAccCheckIbmVmaasTransitGatewayConnectionConfigBasic(vdcID string, edgeI
 	`, vdcID, edgeID, id)
 }
 
-func testAccCheckIbmVmaasTransitGatewayConnectionConfig(vdcID string, edgeID string, acceptLanguage string, region string, id string) string {
+func testAccCheckIbmVmaasTransitGatewayConnectionConfig(vdcID string, edgeID string, region string, id string) string {
 	return fmt.Sprintf(`
 		resource "ibm_vmaas_transit_gateway_connection" "vmaas_transit_gateway_connection_instance" {
 			vdc_id = "%s"
 			edge_id = "%s"
-			accept_language = "%s"
 			region = "%s"
 			vmaas_transit_gateway_connection_id ="%s"
 		}
-	`, vdcID, edgeID, acceptLanguage, region, id)
+	`, vdcID, edgeID, region, id)
 }
 
 func testAccCheckIbmVmaasTransitGatewayConnectionExists(n string, obj vmwarev1.TransitGateway) resource.TestCheckFunc {

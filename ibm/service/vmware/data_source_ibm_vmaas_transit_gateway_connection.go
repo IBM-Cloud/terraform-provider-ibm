@@ -135,17 +135,8 @@ func dataSourceIbmVmaasTransitGatewayConnectionRead(context context.Context, d *
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
-	vdcIDRaw, ok := d.GetOk("vdc_id")
-	if !ok || vdcIDRaw == nil {
-		return diag.Errorf("missing required attribute 'vdc_id'")
-	}
-	vdcID := vdcIDRaw.(string)
-
-	edgeIDRaw, ok := d.GetOk("edge_id")
-	if !ok || edgeIDRaw == nil {
-		return diag.Errorf("missing required attribute 'edge_id'")
-	}
-	edgeID := edgeIDRaw.(string)
+	vdcID := d.Get("vdc_id").(string)
+	edgeID := d.Get("edge_id").(string)
 	tgwID := d.Get("vmaas_transit_gateway_connection_id").(string)
 	getVdcOptions := &vmwarev1.GetVdcOptions{}
 

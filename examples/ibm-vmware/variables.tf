@@ -51,11 +51,7 @@ variable "vmaas_transit_gateway_connection_edge_id" {
   type        = string
   default     = "edge_id"
 }
-variable "vmaas_transit_gateway_connection_accept_language" {
-  description = "Language."
-  type        = string
-  default     = "en-us"
-}
+
 variable "vmaas_transit_gateway_connection_region" {
   description = "The region where the IBM Transit Gateway is deployed."
   type        = string
