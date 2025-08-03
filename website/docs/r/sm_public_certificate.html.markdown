@@ -45,6 +45,7 @@ Review the argument reference that you can specify for your resource.
 * `common_name` - (Optional, Forces new resource, String) The Common Name (AKA CN) represents the server name protected by the SSL certificate.
   * Constraints: The maximum length is `64` characters. The minimum length is `4` characters. The value must match regular expression `/^(\\*\\.)?(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9])\\.?$/`.
 * `custom_metadata` - (Optional, Map) The secret metadata that a user can customize.
+    * Constraints: Nested JSONs are supported in Terraform only as string-encoded JSONs.
 * `description` - (Optional, String) An extended description of your secret.To protect your privacy, do not use personal data, such as your name or location, as a description for your secret group.
   * Constraints: The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/(.*?)/`.
 * `dns` - (Required, Forces new resource, String) The name of the DNS provider configuration.
@@ -72,6 +73,8 @@ Nested scheme for **akamai**:
       * `host` - (Optional, Forces new resource, String) Akamai's authentication credentials.
       * `access_token` - (Optional, Forces new resource, String) Akamai's authentication credentials.
       * `client_token` - (Optional, Forces new resource, String) Akamai's authentication credentials.
+* `version_custom_metadata` - (Map) The custom metadata of the current secret version.
+    * Constraints: Nested JSONs are supported in Terraform only as string-encoded JSONs.
 
 ## Attribute Reference
 

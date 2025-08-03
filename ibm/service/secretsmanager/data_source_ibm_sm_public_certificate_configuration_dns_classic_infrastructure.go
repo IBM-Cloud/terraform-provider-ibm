@@ -87,7 +87,12 @@ func dataSourceIbmSmPublicCertificateConfigurationDNSClassicInfrastructureRead(c
 		return tfErr.GetDiag()
 	}
 
-	publicCertificateConfigurationDNSClassicInfrastructure := publicCertificateConfigurationDNSClassicInfrastructureInf.(*secretsmanagerv2.PublicCertificateConfigurationDNSClassicInfrastructure)
+	publicCertificateConfigurationDNSClassicInfrastructure, ok := publicCertificateConfigurationDNSClassicInfrastructureInf.(*secretsmanagerv2.PublicCertificateConfigurationDNSClassicInfrastructure)
+	if !ok {
+		tfErr := flex.TerraformErrorf(nil, fmt.Sprintf("Wrong configuration type: The provided configuration is not a Public Certificate DNS Classic Infrastructure configuration."), fmt.Sprintf("(Data) %s", PublicCertConfigDnsClassicInfrastructureResourceName), "read")
+		return tfErr.GetDiag()
+	}
+
 	d.SetId(fmt.Sprintf("%s/%s/%s", region, instanceId, *getConfigurationOptions.Name))
 
 	if err = d.Set("region", region); err != nil {
