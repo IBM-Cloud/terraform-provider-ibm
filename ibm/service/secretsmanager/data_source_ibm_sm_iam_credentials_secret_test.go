@@ -32,6 +32,7 @@ func TestAccIbmSmIamCredentialsSecretDataSourceBasic(t *testing.T) {
 							resource.TestCheckResourceAttrSet("data.ibm_sm_iam_credentials_secret.sm_iam_credentials_secret", "versions_total"),
 							resource.TestCheckResourceAttrSet("data.ibm_sm_iam_credentials_secret.sm_iam_credentials_secret", "ttl"),
 							resource.TestCheckResourceAttrSet("data.ibm_sm_iam_credentials_secret.sm_iam_credentials_secret", "reuse_api_key"),
+							resource.TestCheckResourceAttrSet("data.ibm_sm_iam_credentials_secret.sm_iam_credentials_secret_by_name", "secret_id"),
 						),
 					},
 				},
