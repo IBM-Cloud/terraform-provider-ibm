@@ -581,12 +581,15 @@ func ResourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{}) e
 	}
 	rsCatRepo := rsCatClient.ResourceCatalog()
 
-	serviceOff, err := rsCatRepo.GetServiceName(*instance.ResourceID)
-	if err != nil {
-		return fmt.Errorf("[ERROR] Error retrieving service offering: %s", err)
+	if *instance.ResourceID != "compliance" {
+		serviceOff, err := rsCatRepo.GetServiceName(*instance.ResourceID)
+		if err != nil {
+			return fmt.Errorf("[ERROR] Error retrieving service offering: %s", err)
+		}
+		d.Set("service", serviceOff)
+	} else {
+		d.Set("service", *instance.ResourceID)
 	}
-
-	d.Set("service", serviceOff)
 
 	d.Set(flex.ResourceName, instance.Name)
 	d.Set(flex.ResourceCRN, instance.CRN)
@@ -599,11 +602,16 @@ func ResourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{}) e
 	}
 	d.Set(flex.ResourceControllerURL, rcontroller+"/services/")
 
-	servicePlan, err := rsCatRepo.GetServicePlanName(*instance.ResourcePlanID)
-	if err != nil {
-		return fmt.Errorf("[ERROR] Error retrieving plan: %s", err)
+	if *instance.ResourceID != "compliance" {
+		servicePlan, err := rsCatRepo.GetServicePlanName(*instance.ResourcePlanID)
+		if err != nil {
+			return fmt.Errorf("[ERROR] Error retrieving plan: %s", err)
+		}
+		d.Set("plan", servicePlan)
+	} else {
+		d.Set("plan", *instance.ResourcePlanID)
 	}
-	d.Set("plan", servicePlan)
+
 	d.Set("guid", instance.GUID)
 	// ### Modificataion : Setting  "onetime_credentials"
 	d.Set("onetime_credentials", instance.OnetimeCredentials)
