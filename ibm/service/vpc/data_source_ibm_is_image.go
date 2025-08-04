@@ -197,6 +197,34 @@ func DataSourceIBMISImage() *schema.Resource {
 				Computed:    true,
 				Description: "The type of encryption used on the image",
 			},
+			"remote": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "If present, this property indicates that the resource associated with this reference is remote and therefore may not be directly retrievable.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"account": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "If present, this property indicates that the referenced resource is remote to this account, and identifies the owning account.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"id": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The unique identifier for this resource group.",
+									},
+									"resource_type": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The resource type.",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
 			"source_volume": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -254,6 +282,30 @@ func DataSourceIBMISImage() *schema.Resource {
 									},
 								},
 							},
+						},
+					},
+				},
+			},
+			"allowed_use": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The usage constraints to match against the requested instance or bare metal server properties to determine compatibility.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"api_version": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The API version with which to evaluate the expressions.",
+						},
+						"bare_metal_server": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The expression that must be satisfied by the properties of a bare metal server provisioned using this image.",
+						},
+						"instance": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The expression that must be satisfied by the properties of a virtual server instance provisioned using this image.",
 						},
 					},
 				},
@@ -366,6 +418,22 @@ func imageGetByName(context context.Context, d *schema.ResourceData, meta interf
 			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_group: %s", err), "(Data) ibm_is_image", "read", "set-resource_group").GetDiag()
 		}
 	}
+	if image.Remote != nil {
+		imageRemoteList := []map[string]interface{}{}
+		imageRemoteMap, err := dataSourceImageRemote(image)
+		if err != nil {
+			if err != nil {
+				tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_image", "read", "initialize-client")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
+			}
+		}
+		imageRemoteList = append(imageRemoteList, imageRemoteMap)
+		if err = d.Set(isImageRemote, imageRemoteList); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting remote: %s", err), "(Data) ibm_is_image", "read", "set-remote").GetDiag()
+		}
+	}
+
 	if err = d.Set("os", image.OperatingSystem.Name); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting os: %s", err), "(Data) ibm_is_image", "read", "set-os").GetDiag()
 	}
@@ -414,6 +482,19 @@ func imageGetByName(context context.Context, d *schema.ResourceData, meta interf
 			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting catalog_offering: %s", err), "(Data) ibm_is_image", "read", "set-catalog_offering").GetDiag()
 		}
 	}
+	allowedUse := []map[string]interface{}{}
+	if image.AllowedUse != nil {
+		modelMap, err := DataSourceIBMIsImageAllowedUseToMap(image.AllowedUse)
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_is_image", "read")
+			log.Println(tfErr.GetDiag())
+		}
+		allowedUse = append(allowedUse, modelMap)
+	}
+	if err = d.Set("allowed_use", allowedUse); err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting allowed_use: %s", err), "(Data) ibm_is_image", "read")
+		log.Println(tfErr.GetDiag())
+	}
 	return nil
 
 }
@@ -443,6 +524,21 @@ func imageGetById(context context.Context, d *schema.ResourceData, meta interfac
 	if *image.Status == "deprecated" {
 		fmt.Printf("[WARN] Given image %s is deprecated and soon will be obsolete.", name)
 	}
+
+	if image.Remote != nil {
+		imageRemoteList := []map[string]interface{}{}
+		imageRemoteMap, err := dataSourceImageRemote(*image)
+		if err != nil {
+			tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_legacy_vendor_images", "read", "initialize-client")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
+		imageRemoteList = append(imageRemoteList, imageRemoteMap)
+		if err = d.Set(isImageRemote, imageRemoteList); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting remote: %s", err), "(Data) ibm_is_image", "read", "set-remote").GetDiag()
+		}
+	}
+
 	if len(image.StatusReasons) > 0 {
 		if err = d.Set("status_reasons", dataSourceIBMIsImageFlattenStatusReasons(image.StatusReasons)); err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting status_reasons: %s", err), "(Data) ibm_is_image", "read", "set-status_reasons").GetDiag()
@@ -509,6 +605,19 @@ func imageGetById(context context.Context, d *schema.ResourceData, meta interfac
 			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting catalog_offering: %s", err), "(Data) ibm_is_image", "read", "set-catalog_offering").GetDiag()
 		}
 	}
+	allowedUse := []map[string]interface{}{}
+	if image.AllowedUse != nil {
+		modelMap, err := DataSourceIBMIsImageAllowedUseToMap(image.AllowedUse)
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_is_image", "read")
+			log.Println(tfErr.GetDiag())
+		}
+		allowedUse = append(allowedUse, modelMap)
+	}
+	if err = d.Set("allowed_use", allowedUse); err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting allowed_use: %s", err), "(Data) ibm_is_image", "read")
+		log.Println(tfErr.GetDiag())
+	}
 	return nil
 }
 
@@ -571,6 +680,27 @@ func dataSourceImageCollectionCatalogOfferingToMap(imageCatalogOfferingItem vpcv
 	return imageCatalogOfferingMap
 }
 
+func dataSourceImageRemote(imageRemote vpcv1.Image) (map[string]interface{}, error) {
+	if imageRemote.Remote == nil || imageRemote.Remote.Account == nil {
+		return nil, nil
+	}
+
+	accountMap := map[string]interface{}{}
+
+	if imageRemote.Remote.Account.ID != nil {
+		accountMap["id"] = *imageRemote.Remote.Account.ID
+	}
+	if imageRemote.Remote.Account.ResourceType != nil {
+		accountMap["resource_type"] = *imageRemote.Remote.Account.ResourceType
+	}
+
+	remoteMap := map[string]interface{}{
+		"account": []interface{}{accountMap},
+	}
+
+	return remoteMap, nil
+}
+
 func dataSourceIBMIsImageFlattenStatusReasons(result []vpcv1.ImageStatusReason) (statusReasons []map[string]interface{}) {
 	for _, statusReasonsItem := range result {
 		statusReasons = append(statusReasons, dataSourceIBMIsImageStatusReasonToMap(&statusReasonsItem))
@@ -606,4 +736,18 @@ func dataSourceImageResourceGroupToMap(resourceGroupItem vpcv1.ResourceGroupRefe
 	}
 
 	return resourceGroupMap
+}
+
+func DataSourceIBMIsImageAllowedUseToMap(model *vpcv1.ImageAllowedUse) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.BareMetalServer != nil {
+		modelMap["bare_metal_server"] = *model.BareMetalServer
+	}
+	if model.Instance != nil {
+		modelMap["instance"] = *model.Instance
+	}
+	if model.ApiVersion != nil {
+		modelMap["api_version"] = *model.ApiVersion
+	}
+	return modelMap, nil
 }

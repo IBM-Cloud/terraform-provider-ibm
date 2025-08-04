@@ -110,6 +110,14 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 						resName, "volumes.0.operating_system.0.vendor"),
 					resource.TestCheckResourceAttrSet(
 						resName, "volumes.0.operating_system.0.version"),
+					resource.TestCheckResourceAttrSet(
+						resName, "volumes.0.allowed_use.#"),
+					resource.TestCheckResourceAttrSet(
+						resName, "volumes.0.allowed_use.0.bare_metal_server"),
+					resource.TestCheckResourceAttrSet(
+						resName, "volumes.0.allowed_use.0.instance"),
+					resource.TestCheckResourceAttrSet(
+						resName, "volumes.0.allowed_use.0.api_version"),
 				),
 			},
 		},

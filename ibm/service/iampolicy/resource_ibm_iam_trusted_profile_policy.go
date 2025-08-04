@@ -39,20 +39,19 @@ func ResourceIBMIAMTrustedProfilePolicy() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"profile_id": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ExactlyOneOf: []string{"profile_id", "iam_id"},
-				Description:  "UUID of Trusted Profile",
-				ForceNew:     true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "UUID of Trusted Profile",
+				ForceNew:    true,
+				Deprecated:  "This field is deprecated and will be removed starting with this 1.82.0 release. Please use iam_id field instead.",
 				ValidateFunc: validate.InvokeValidator("ibm_iam_trusted_profile_policy",
 					"profile_id"),
 			},
 			"iam_id": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ExactlyOneOf: []string{"profile_id", "iam_id"},
-				Description:  "IAM ID of Trusted Profile",
-				ForceNew:     true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "IAM ID of Trusted Profile",
+				ForceNew:    true,
 			},
 			"roles": {
 				Type:        schema.TypeList,

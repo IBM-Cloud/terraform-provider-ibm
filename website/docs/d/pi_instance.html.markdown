@@ -106,4 +106,5 @@ In addition to all argument reference list, you can access the following attribu
   Nested scheme for `virtual_serial_number`:
   - `description` - (String) Description for virtual serial number.
   - `serial` - (String) Virtual serial number.
+  - `software_tier` - (String) Software tier of virtual serial number.
 - `volumes` - (List) List of volume IDs that are attached to the instance.

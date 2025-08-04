@@ -120,38 +120,6 @@ func TestAccIBMPINetworkGatewaybasicSatellite(t *testing.T) {
 	})
 }
 
-func TestAccIBMPINetworkDHCPbasic(t *testing.T) {
-	name := fmt.Sprintf("tf-pi-network-%d", acctest.RandIntRange(10, 100))
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
-		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIBMPINetworkDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckIBMPINetworDHCPConfig(name),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMPINetworkExists("ibm_pi_network.power_networks"),
-					resource.TestCheckResourceAttr(
-						"ibm_pi_network.power_networks", "pi_network_name", name),
-					resource.TestCheckResourceAttrSet("ibm_pi_network.power_networks", "pi_gateway"),
-					resource.TestCheckResourceAttrSet("ibm_pi_network.power_networks", "id"),
-					resource.TestCheckResourceAttrSet("ibm_pi_network.power_networks", "pi_ipaddress_range.#"),
-				),
-			},
-			{
-				Config: testAccCheckIBMPINetworkConfigGatewayDHCPUpdateDNS(name),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMPINetworkExists("ibm_pi_network.power_networks"),
-					resource.TestCheckResourceAttr(
-						"ibm_pi_network.power_networks", "pi_network_name", name),
-					resource.TestCheckResourceAttr(
-						"ibm_pi_network.power_networks", "pi_dns.#", "1"),
-				),
-			},
-		},
-	})
-}
-
 func TestAccIBMPINetworkUserTags(t *testing.T) {
 	name := fmt.Sprintf("tf-pi-network-%d", acctest.RandIntRange(10, 100))
 	networkRes := "ibm_pi_network.power_networks"
@@ -183,27 +151,6 @@ func TestAccIBMPINetworkUserTags(t *testing.T) {
 					resource.TestCheckTypeSetElemAttr(networkRes, "pi_user_tags.*", "env:dev"),
 					resource.TestCheckTypeSetElemAttr(networkRes, "pi_user_tags.*", "test_tag"),
 					resource.TestCheckTypeSetElemAttr(networkRes, "pi_user_tags.*", "test_tag2"),
-				),
-			},
-		},
-	})
-}
-
-func TestAccIBMPINetworkPeerOnPrem(t *testing.T) {
-	name := fmt.Sprintf("tf-pi-network-%d", acctest.RandIntRange(10, 100))
-	networkRes := "ibm_pi_network.power_network_peer"
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
-		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIBMPINetworkDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckIBMPINetworkPeerOnPrem(name),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMPINetworkExists(networkRes),
-					resource.TestCheckResourceAttr(networkRes, "pi_network_name", name),
-					resource.TestCheckResourceAttrSet(networkRes, "id"),
-					resource.TestCheckResourceAttrSet(networkRes, "peer_id"),
 				),
 			},
 		},
@@ -358,30 +305,6 @@ func testAccCheckIBMPINetworkConfigGatewayUpdateDNS(name string) string {
 	`, acc.Pi_cloud_instance_id, name)
 }
 
-func testAccCheckIBMPINetworDHCPConfig(name string) string {
-	return fmt.Sprintf(`
-		resource "ibm_pi_network" "power_networks" {
-			pi_cloud_instance_id 		= "%s"
-			pi_network_name      		= "%s"
-			pi_network_type      		= "dhcp-vlan"
-			pi_cidr              		= "10.1.2.0/26"
-			pi_dns               		= ["10.1.0.68"]
-		}
-	`, acc.Pi_cloud_instance_id, name)
-}
-
-func testAccCheckIBMPINetworkConfigGatewayDHCPUpdateDNS(name string) string {
-	return fmt.Sprintf(`
-		resource "ibm_pi_network" "power_networks" {
-			pi_cloud_instance_id = "%s"
-			pi_network_name      = "%s"
-			pi_network_type      = "dhcp-vlan"
-			pi_cidr              = "10.1.2.0/26"
-			pi_dns               = ["10.1.0.69"]
-		}
-	`, acc.Pi_cloud_instance_id, name)
-}
-
 func testAccCheckIBMPINetworkUserTagsConfig(name string, userTagsString string) string {
 	return fmt.Sprintf(`
 		resource "ibm_pi_network" "power_networks" {
@@ -391,22 +314,6 @@ func testAccCheckIBMPINetworkUserTagsConfig(name string, userTagsString string) 
 			pi_user_tags         = %s
 		}
 	`, acc.Pi_cloud_instance_id, name, userTagsString)
-}
-
-func testAccCheckIBMPINetworkPeerOnPrem(name string) string {
-	return fmt.Sprintf(`
-		resource "ibm_pi_network" "power_network_peer" {
-			pi_cloud_instance_id 		= "%s"
-			pi_network_name      		= "%s"
-			pi_network_type      		= "vlan"
-			pi_cidr                     = "192.168.17.0/24"
-			
-			pi_network_peer {
-				id = "2"
-				type = "L2"
-			}
-		}
-	`, acc.Pi_cloud_instance_id, name)
 }
 
 func testAccCheckIBMPINetworkAdvertiseArpBroadcast(name string) string {

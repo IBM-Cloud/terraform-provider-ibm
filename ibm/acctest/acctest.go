@@ -104,6 +104,8 @@ var (
 	InstanceName                    string
 	InstanceProfileName             string
 	InstanceProfileNameUpdate       string
+	ISCatalogImageName              string
+	ISBootSnapshotID                string
 	IsBareMetalServerProfileName    string
 	IsBareMetalServerImage          string
 	IsBareMetalServerImage2         string
@@ -137,6 +139,7 @@ var (
 	imageName                       string
 	functionNamespace               string
 	HpcsInstanceID                  string
+	HpcsInstanceName                string
 	ToolchainID                     string
 )
 
@@ -972,6 +975,18 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable SL_INSTANCE_PROFILE_UPDATE for testing ibm_is_instance resource else it is set to default value 'cx2-4x8'")
 	}
 
+	ISCatalogImageName = os.Getenv("IS_CATALOG_IMAGE_NAME")
+	if ISCatalogImageName == "" {
+		ISCatalogImageName = "test-catalog"
+		fmt.Println("[INFO] Set the environment variable IS_CATALOG_IMAGE_NAME for testing ibm_is_instance_template resource else it is set to default value 'test-catalog'")
+	}
+
+	ISBootSnapshotID = os.Getenv("IS_BOOT_SNAPSHOT_ID")
+	if ISBootSnapshotID == "" {
+		ISBootSnapshotID = "r006-d7fejbe-2dhj-442df-b2iha-ccjbecbjbcejce"
+		fmt.Println("[INFO] Set the environment variable IS_BOOT_SNAPSHOT_ID for testing ibm_is_instance_template resource else it is set to default value 'r006-d7fejbe-2dhj-442df-b2iha-ccjbecbjbcejce'")
+	}
+
 	IsBareMetalServerProfileName = os.Getenv("IS_BARE_METAL_SERVER_PROFILE")
 	if IsBareMetalServerProfileName == "" {
 		IsBareMetalServerProfileName = "bx2-metal-96x384" // for next gen infrastructure
@@ -1506,6 +1521,12 @@ func init() {
 	if HpcsInstanceID == "" {
 		HpcsInstanceID = "5af62d5d-5d90-4b84-bbcd-90d2123ae6c8"
 		fmt.Println("[INFO] Set the environment variable HPCS_INSTANCE_ID for testing data_source_ibm_kms_key_test else it is set to default value")
+	}
+
+	HpcsInstanceName = os.Getenv("HPCS_INSTANCE_NAME")
+	if HpcsInstanceName == "" {
+		HpcsInstanceName = "test-hpcs"
+		fmt.Println("[INFO] Set the environment variable HPCS_INSTANCE_NAME for testing data_source_ibm_hpcs_test else it is set to default value")
 	}
 
 	SecretsManagerInstanceID = os.Getenv("SECRETS_MANAGER_INSTANCE_ID")
