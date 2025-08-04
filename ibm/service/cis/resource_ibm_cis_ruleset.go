@@ -713,7 +713,7 @@ func expandCISRulesetsRulesActionParametersOverridesRules(obj interface{}) []rul
 	return finalResponse
 }
 
-func expandCISRulesetsRulesRatelimits(obj interface{}) (rulesetsv1.Ratelimit, error) {
+func expandCISRulesetsRulesRateLimits(obj interface{}) (rulesetsv1.Ratelimit, error) {
 	ratelimitRespObj := rulesetsv1.Ratelimit{}
 
 	// return empty object if ratelimit is not provided.
@@ -725,26 +725,26 @@ func expandCISRulesetsRulesRatelimits(obj interface{}) (rulesetsv1.Ratelimit, er
 
 	ratelimitMap := ratelimitList[0].(map[string]interface{})
 
-	if v, ok := ratelimitMap[CISRulesetsRuleRatelimitCharacteristics]; ok && v != nil {
+	if v, ok := ratelimitMap[CISRulesetsRuleRateLimitCharacteristics]; ok && v != nil {
 		ratelimitRespObj.Characteristics = flex.ExpandStringList(v.([]interface{}))
 	}
 
-	if v, ok := ratelimitMap[CISRulesetsRuleRatelimitCountingExpression]; ok && v.(string) != "" {
+	if v, ok := ratelimitMap[CISRulesetsRuleRateLimitCountingExpression]; ok && v.(string) != "" {
 		val := v.(string)
 		ratelimitRespObj.CountingExpression = &val
 	}
 
-	if v, ok := ratelimitMap[CISRulesetsRuleRatelimitMitigationTimeout]; ok && v.(int) != 0 {
+	if v, ok := ratelimitMap[CISRulesetsRuleRateLimitMitigationTimeout]; ok && v.(int) != 0 {
 		val := int64(v.(int))
 		ratelimitRespObj.MitigationTimeout = &val
 	}
 
-	if v, ok := ratelimitMap[CISRulesetsRuleRatelimitPeriod]; ok && v.(int) != 0 {
+	if v, ok := ratelimitMap[CISRulesetsRuleRateLimitPeriod]; ok && v.(int) != 0 {
 		val := int64(v.(int))
 		ratelimitRespObj.Period = &val
 	}
 
-	if v, ok := ratelimitMap[CISRulesetsRuleRatelimitRequestsPerPeriod]; ok && v.(int) != 0 {
+	if v, ok := ratelimitMap[CISRulesetsRuleRateLimitRequestsPerPeriod]; ok && v.(int) != 0 {
 		val := int64(v.(int))
 		ratelimitRespObj.RequestsPerPeriod = &val
 	}

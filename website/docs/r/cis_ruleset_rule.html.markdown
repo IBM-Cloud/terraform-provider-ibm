@@ -100,7 +100,7 @@ Provides an IBM Cloud Internet Services rulesets rule resource to create, update
       description = "var.description"
       expression = "true"
       enabled = "false"
-      ratelimit {
+      rate_limit {
         characteristics = ['cf.colo.id', ...var.ratelimit.characteristics]
         mitigation_timeout = var.ratelimit.mitigation_timeout
         period = var.ratelimit.period
@@ -161,7 +161,7 @@ Review the argument references that you can specify for your resource.
       - `index` (Optional, String) Index of the rule to be added.
       - `before` (Optional, String) ID of the rule before which the new rule will be added.
       - `after` (Optional, String) ID of the rule after which the new rule will be added.
-    - `ratelimit` (Optional, Map) Ratelimit of the rule to be added(custom ruleset). entry point ruleset should be `http_ratelimit` and Ruleset action should not be `execute`
+    - `rate_limit` (Optional, Map) Ratelimit of the rule to be added(custom ruleset). entry point ruleset should be `http_ratelimit` and Ruleset action should not be `execute`
       - `characteristics` (StringList) Set of parameters defining how tracks the request rate for the rule. `cf.colo.id` is mandatory to be passed, regardless of any additional strings in the list.
       - `counting_expression` (Optional, String) Defines the criteria used for determining the request rate. By default, the counting expression is the same as the rule matching expression (defined in If incoming requests match).
       - `mitigation_timeout` (Integer) Once the rate is reached, the rate limiting rule applies the rule action to further requests for the period of time defined in this field (in seconds).
