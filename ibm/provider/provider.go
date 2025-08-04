@@ -1274,6 +1274,7 @@ func Provider() *schema.Provider {
 			"ibm_iam_api_key":                               iamidentity.ResourceIBMIAMApiKey(),
 			"ibm_iam_trusted_profile":                       iamidentity.ResourceIBMIAMTrustedProfile(),
 			"ibm_iam_trusted_profile_identity":              iamidentity.ResourceIBMIamTrustedProfileIdentity(),
+			"ibm_iam_trusted_profile_identities":            iamidentity.ResourceIBMIamTrustedProfileIdentities(),
 			"ibm_iam_trusted_profile_claim_rule":            iamidentity.ResourceIBMIAMTrustedProfileClaimRule(),
 			"ibm_iam_trusted_profile_link":                  iamidentity.ResourceIBMIAMTrustedProfileLink(),
 			"ibm_iam_trusted_profile_policy":                iampolicy.ResourceIBMIAMTrustedProfilePolicy(),

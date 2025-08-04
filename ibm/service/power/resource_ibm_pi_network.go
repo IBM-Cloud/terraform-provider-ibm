@@ -37,9 +37,9 @@ func ResourceIBMPINetwork() *schema.Resource {
 		Importer:      &schema.ResourceImporter{},
 
 		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(60 * time.Minute),
-			Update: schema.DefaultTimeout(60 * time.Minute),
-			Delete: schema.DefaultTimeout(60 * time.Minute),
+			Create: schema.DefaultTimeout(15 * time.Minute),
+			Update: schema.DefaultTimeout(10 * time.Minute),
+			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
 		CustomizeDiff: customdiff.Sequence(
 			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
@@ -51,12 +51,14 @@ func ResourceIBMPINetwork() *schema.Resource {
 			// Arguments
 			Arg_Advertise: {
 				Description:  "Enable the network to be advertised.",
+				Default:      Enable,
 				Optional:     true,
 				Type:         schema.TypeString,
 				ValidateFunc: validation.StringInSlice([]string{Enable, Disable}, false),
 			},
 			Arg_ARPBroadcast: {
 				Description:  "Enable ARP Broadcast.",
+				Default:      Disable,
 				Optional:     true,
 				Type:         schema.TypeString,
 				ValidateFunc: validation.StringInSlice([]string{Enable, Disable}, false),
@@ -164,10 +166,10 @@ func ResourceIBMPINetwork() *schema.Resource {
 				Type:     schema.TypeList,
 			},
 			Arg_NetworkType: {
-				Description:  "The type of network that you want to create. Valid values are `pub-vlan`, `vlan` and `dhcp-vlan`.",
+				Description:  "The type of network that you want to create. Valid values are `pub-vlan`, and `vlan`.",
 				Required:     true,
 				Type:         schema.TypeString,
-				ValidateFunc: validate.ValidateAllowedStringValues([]string{DHCPVlan, PubVlan, Vlan}),
+				ValidateFunc: validate.ValidateAllowedStringValues([]string{PubVlan, Vlan}),
 			},
 			Arg_UserTags: {
 				Computed:    true,
@@ -252,7 +254,7 @@ func resourceIBMPINetworkCreate(ctx context.Context, d *schema.ResourceData, met
 		body.Peer = peerModel
 	}
 
-	if networktype == DHCPVlan || networktype == Vlan {
+	if networktype == Vlan {
 		var networkcidr string
 		var ipBodyRanges []*models.IPAddressRange
 		if v, ok := d.GetOk(Arg_Cidr); ok {
@@ -279,24 +281,10 @@ func resourceIBMPINetworkCreate(ctx context.Context, d *schema.ResourceData, met
 		body.IPAddressRanges = ipBodyRanges
 		body.Gateway = gateway
 		body.Cidr = networkcidr
-
-		if networktype == Vlan {
-			if v, ok := d.GetOk(Arg_Advertise); ok {
-				body.Advertise = flex.PtrToString(v.(string))
-			}
-			if v, ok := d.GetOk(Arg_ARPBroadcast); ok {
-				body.ArpBroadcast = flex.PtrToString(v.(string))
-			}
-		}
 	}
 
-	if networktype == PubVlan {
-		_, ok1 := d.GetOk(Arg_Advertise)
-		_, ok2 := d.GetOk(Arg_ARPBroadcast)
-		_, ok3 := d.GetOk(Arg_Cidr)
-		if ok1 || ok2 || ok3 {
-			return diag.Errorf("%s, %s, and %s cannot be set when %s is pub-vlan", Arg_Advertise, Arg_ARPBroadcast, Arg_Cidr, Arg_NetworkType)
-		}
+	if _, ok := d.GetOk(Arg_Cidr); ok && networktype == PubVlan {
+		return diag.Errorf("%s cannot be set when %s is pub-vlan", Arg_Cidr, Arg_NetworkType)
 	}
 
 	if !sess.IsOnPrem() {
@@ -309,6 +297,15 @@ func resourceIBMPINetworkCreate(ctx context.Context, d *schema.ResourceData, met
 			_, err = waitForPERWorkspaceActive(ctx, wsclient, cloudInstanceID, d.Timeout(schema.TimeoutRead))
 			if err != nil {
 				return diag.FromErr(err)
+			}
+
+			if networktype == Vlan {
+				if v, ok := d.GetOk(Arg_Advertise); ok {
+					body.Advertise = flex.PtrToString(v.(string))
+				}
+				if v, ok := d.GetOk(Arg_ARPBroadcast); ok {
+					body.ArpBroadcast = flex.PtrToString(v.(string))
+				}
 			}
 		}
 	}
@@ -364,8 +361,26 @@ func resourceIBMPINetworkRead(ctx context.Context, d *schema.ResourceData, meta 
 		}
 		d.Set(Arg_UserTags, tags)
 	}
-	d.Set(Arg_Advertise, networkdata.Advertise)
-	d.Set(Arg_ARPBroadcast, networkdata.ArpBroadcast)
+
+	if !sess.IsOnPrem() {
+		wsclient := instance.NewIBMPIWorkspacesClient(ctx, sess, cloudInstanceID)
+		wsData, err := wsclient.Get(cloudInstanceID)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if wsData.Capabilities[PER] {
+			_, err = waitForPERWorkspaceActive(ctx, wsclient, cloudInstanceID, d.Timeout(schema.TimeoutRead))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+
+			if *networkdata.Type == Vlan {
+				d.Set(Arg_Advertise, networkdata.Advertise)
+				d.Set(Arg_ARPBroadcast, networkdata.ArpBroadcast)
+			}
+		}
+	}
+
 	d.Set(Arg_Cidr, networkdata.Cidr)
 	d.Set(Arg_DNS, networkdata.DNSServers)
 	d.Set(Arg_Gateway, networkdata.Gateway)

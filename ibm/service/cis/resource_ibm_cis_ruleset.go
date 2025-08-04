@@ -343,7 +343,7 @@ func ResourceIBMCISRulesetValidator() *validate.ResourceValidator {
 func ResourceIBMCISRulesetCreate(d *schema.ResourceData, meta interface{}) error {
 	// check if it is a new resource, if true then return error that user need to import it first
 	if d.IsNewResource() {
-		return fmt.Errorf("[ERROR] You can not create a new resource. Please import the resource first. Check documentation for import usage")
+		return flex.FmtErrorf("[ERROR] You can not create a new resource. Please import the resource first. Check documentation for import usage")
 	}
 	return nil
 }
@@ -351,7 +351,7 @@ func ResourceIBMCISRulesetCreate(d *schema.ResourceData, meta interface{}) error
 func ResourceIBMCISRulesetUpdate(d *schema.ResourceData, meta interface{}) error {
 	sess, err := meta.(conns.ClientSession).CisRulesetsSession()
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while getting the CisRulesetsSession %s", err)
+		return flex.FmtErrorf("[ERROR] Error while getting the CisRulesetsSession %s", err)
 	}
 
 	crn := d.Get(cisID).(string)
@@ -375,7 +375,7 @@ func ResourceIBMCISRulesetUpdate(d *schema.ResourceData, meta interface{}) error
 		_, resp, err := sess.UpdateZoneRuleset(opt)
 
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error while updating the zone Ruleset %s", resp)
+			return flex.FmtErrorf("[ERROR] Error while updating the zone Ruleset %s", resp)
 		}
 
 		d.SetId(dataSourceCISRulesetsCheckID(d))
@@ -394,7 +394,7 @@ func ResourceIBMCISRulesetUpdate(d *schema.ResourceData, meta interface{}) error
 		_, _, err := sess.UpdateInstanceRuleset(opt)
 
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error while updating the zone Ruleset %s", err)
+			return flex.FmtErrorf("[ERROR] Error while updating the zone Ruleset %s", err)
 		}
 
 		d.SetId(dataSourceCISRulesetsCheckID(d))
@@ -406,7 +406,7 @@ func ResourceIBMCISRulesetUpdate(d *schema.ResourceData, meta interface{}) error
 func ResourceIBMCISRulesetRead(d *schema.ResourceData, meta interface{}) error {
 	sess, err := meta.(conns.ClientSession).CisRulesetsSession()
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while getting the CisRulesetsSession %s", err)
+		return flex.FmtErrorf("[ERROR] Error while getting the CisRulesetsSession %s", err)
 	}
 
 	rulesetId, zoneId, crn, _ := flex.ConvertTfToCisThreeVar(d.Id())
@@ -421,7 +421,7 @@ func ResourceIBMCISRulesetRead(d *schema.ResourceData, meta interface{}) error {
 		opt := sess.NewGetZoneRulesetOptions(rulesetId)
 		result, resp, err := sess.GetZoneRuleset(opt)
 		if err != nil {
-			return fmt.Errorf("[WARN] Resource: Get zone ruleset failed:  %v \n", resp)
+			return flex.FmtErrorf("[WARN] Resource: Get zone ruleset failed:  %v \n", resp)
 		}
 
 		rulesetObj := flattenCISRulesets(*result.Result)
@@ -435,7 +435,7 @@ func ResourceIBMCISRulesetRead(d *schema.ResourceData, meta interface{}) error {
 		opt := sess.NewGetInstanceRulesetOptions(rulesetId)
 		result, resp, err := sess.GetInstanceRuleset(opt)
 		if err != nil {
-			return fmt.Errorf("[WARN] Resource: Get Instance ruleset failed: %v \n", resp)
+			return flex.FmtErrorf("[WARN] Resource: Get Instance ruleset failed: %v \n", resp)
 		}
 
 		rulesetObj := flattenCISRulesets(*result.Result)
@@ -453,7 +453,7 @@ func ResourceIBMCISRulesetDelete(d *schema.ResourceData, meta interface{}) error
 
 	sess, err := meta.(conns.ClientSession).CisRulesetsSession()
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while getting the CisRulesetsSession %s", err)
+		return flex.FmtErrorf("[ERROR] Error while getting the CisRulesetsSession %s", err)
 	}
 
 	rulesetId, zoneId, crn, _ := flex.ConvertTfToCisThreeVar(d.Id())
@@ -464,13 +464,13 @@ func ResourceIBMCISRulesetDelete(d *schema.ResourceData, meta interface{}) error
 		opt := sess.NewDeleteZoneRulesetOptions(rulesetId)
 		res, err := sess.DeleteZoneRuleset(opt)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error deleting the zone ruleset %s:%s", err, res)
+			return flex.FmtErrorf("[ERROR] Error deleting the zone ruleset %s:%s", err, res)
 		}
 	} else {
 		opt := sess.NewDeleteInstanceRulesetOptions(rulesetId)
 		res, err := sess.DeleteInstanceRuleset(opt)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error deleting the Instance ruleset %s:%s", err, res)
+			return flex.FmtErrorf("[ERROR] Error deleting the Instance ruleset %s:%s", err, res)
 		}
 	}
 
@@ -552,7 +552,7 @@ func expandCISRulesetsRulesPositions(obj interface{}) (rulesetsv1.Position, erro
 				Index: &index,
 			}
 		} else {
-			return rulesetsv1.Position{}, fmt.Errorf("only one of 'before', 'after', or 'index' can be set")
+			return rulesetsv1.Position{}, flex.FmtErrorf("only one of 'before', 'after', or 'index' can be set")
 		}
 	}
 	return responseObj, nil

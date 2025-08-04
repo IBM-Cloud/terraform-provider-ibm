@@ -558,7 +558,6 @@ const (
 	DeploymentTypeVMNoStorage = "VMNoStorage"
 	DestinationUnreach        = "destination-unreach"
 	Detach                    = "detach"
-	DHCPVlan                  = "dhcp-vlan"
 	Disable                   = "disable"
 	Echo                      = "echo"
 	EchoReply                 = "echo-reply"
