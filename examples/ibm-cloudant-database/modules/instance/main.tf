@@ -67,7 +67,7 @@ data "ibm_iam_service_id" "data_serviceID" {
 }
 
 resource "ibm_iam_service_policy" "policy" {
-  iam_service_id = var.service_policy_provision ? ibm_iam_service_id.serviceID.0.id : data.ibm_iam_service_id.ds_serviceID.0.id
+  iam_id = var.service_policy_provision ? ibm_iam_service_id.serviceID.0.id : data.ibm_iam_service_id.data_serviceID.0.id
   roles          = var.roles
 
   resources {

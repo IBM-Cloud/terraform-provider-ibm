@@ -35,7 +35,18 @@ output "cloudant_key_username" {
 
 output "cloudant_key_password" {
   description = "password"
-  value       = var.provision_resource_key ? concat(ibm_resource_key.resource_key.*.credentials.password, [""])[0] : concat(data.ibm_resource_key.cloudant_resource_key.*.credentials.password, [""])[0]
+  value       = var.provision_resource_key ? try(
+  # First try to get the password field (available when legacy_credentials = true)
+  ibm_resource_key.resource_key.0.credentials.password,
+  # If password doesn't exist, fall back to apikey (IAM credentials)
+  ibm_resource_key.resource_key.0.credentials.apikey,
+  # Fallback empty string
+  ""
+  ) : try(
+  data.ibm_resource_key.cloudant_resource_key.0.credentials.password,
+  data.ibm_resource_key.cloudant_resource_key.0.credentials.apikey,
+  ""
+)
 }
 
 output "cloudant_key_apikey" {
@@ -50,7 +61,7 @@ output "cloudant_key_apikey" {
 
 output "cloudant_service_uuid" {
   description = "The UUID of the service ID"
-  value       = ibm_iam_service_policy.policy.iam_service_id
+  value       = ibm_iam_service_policy.policy.iam_id
 }
 
 output "cloudant_service_iam_id" {
