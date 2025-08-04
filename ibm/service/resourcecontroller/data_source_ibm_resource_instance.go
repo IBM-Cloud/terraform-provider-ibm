@@ -190,6 +190,7 @@ func DataSourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{})
 	}
 	if _, ok := d.GetOk("name"); ok {
 		name := d.Get("name").(string)
+
 		resourceInstanceListOptions := rc.ListResourceInstancesOptions{
 			Name: &name,
 		}
@@ -302,12 +303,16 @@ func DataSourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{})
 
 		ID: instance.ResourceID,
 	}
-	service, _, err := globalClient.GetCatalogEntry(&options)
-	if err != nil {
-		return fmt.Errorf("[ERROR] Error retrieving service offering: %s", err)
-	}
 
-	d.Set("service", service.Name)
+	if *instance.ResourceID == "compliance" {
+		d.Set("service", "compliance")
+	} else {
+		service, _, err := globalClient.GetCatalogEntry(&options)
+		if err != nil {
+			return fmt.Errorf("[ERROR] Error retrieving service offering: %s", err)
+		}
+		d.Set("service", service.Name)
+	}
 
 	d.Set(flex.ResourceName, instance.Name)
 	d.Set(flex.ResourceCRN, instance.CRN)
@@ -354,11 +359,17 @@ func DataSourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{})
 
 		ID: instance.ResourcePlanID,
 	}
-	plan, _, err := globalClient.GetCatalogEntry(&planOptions)
-	if err != nil {
-		return fmt.Errorf("[ERROR] Error retrieving plan: %s", err)
+
+	if *instance.ResourceID == "compliance" {
+		d.Set("plan", "security-compliance-center-standard-plan")
+	} else {
+		plan, _, err := globalClient.GetCatalogEntry(&planOptions)
+		if err != nil {
+			return fmt.Errorf("[ERROR] Error retrieving plan: %s", err)
+		}
+		d.Set("plan", plan.Name)
 	}
-	d.Set("plan", plan.Name)
+
 	d.Set("crn", instance.CRN)
 	tags, err := flex.GetTagsUsingCRN(meta, *instance.CRN)
 	if err != nil {

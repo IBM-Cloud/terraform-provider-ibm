@@ -581,14 +581,14 @@ func ResourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{}) e
 	}
 	rsCatRepo := rsCatClient.ResourceCatalog()
 
-	if *instance.ResourceID != "compliance" {
+	if *instance.ResourceID == "compliance" {
+		d.Set("service", *instance.ResourceID)
+	} else {
 		serviceOff, err := rsCatRepo.GetServiceName(*instance.ResourceID)
 		if err != nil {
 			return fmt.Errorf("[ERROR] Error retrieving service offering: %s", err)
 		}
 		d.Set("service", serviceOff)
-	} else {
-		d.Set("service", *instance.ResourceID)
 	}
 
 	d.Set(flex.ResourceName, instance.Name)
@@ -602,14 +602,14 @@ func ResourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{}) e
 	}
 	d.Set(flex.ResourceControllerURL, rcontroller+"/services/")
 
-	if *instance.ResourceID != "compliance" {
+	if *instance.ResourceID == "compliance" {
+		d.Set("plan", "security-compliance-center-standard-plan")
+	} else {
 		servicePlan, err := rsCatRepo.GetServicePlanName(*instance.ResourcePlanID)
 		if err != nil {
 			return fmt.Errorf("[ERROR] Error retrieving plan: %s", err)
 		}
 		d.Set("plan", servicePlan)
-	} else {
-		d.Set("plan", *instance.ResourcePlanID)
 	}
 
 	d.Set("guid", instance.GUID)
