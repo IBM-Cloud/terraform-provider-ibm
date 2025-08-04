@@ -304,6 +304,7 @@ func DataSourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{})
 		ID: instance.ResourceID,
 	}
 
+	// Note: Once the Compliance service (SCC) reaches its end of life, this conditional check can be revisited or safely removed.
 	if *instance.ResourceID == "compliance" {
 		d.Set("service", "compliance")
 	} else {
@@ -360,6 +361,7 @@ func DataSourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{})
 		ID: instance.ResourcePlanID,
 	}
 
+	// Note: Once the Compliance service (SCC) reaches its end of life, this conditional check can be revisited or safely removed.
 	if *instance.ResourceID == "compliance" {
 		d.Set("plan", "security-compliance-center-standard-plan")
 	} else {

@@ -581,6 +581,7 @@ func ResourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{}) e
 	}
 	rsCatRepo := rsCatClient.ResourceCatalog()
 
+	// Note: Once the Compliance service (SCC) reaches its end of life, this conditional check can be revisited or safely removed.
 	if *instance.ResourceID == "compliance" {
 		d.Set("service", *instance.ResourceID)
 	} else {
@@ -602,6 +603,7 @@ func ResourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{}) e
 	}
 	d.Set(flex.ResourceControllerURL, rcontroller+"/services/")
 
+	// Note: Once the Compliance service (SCC) reaches its end of life, this conditional check can be revisited or safely removed.
 	if *instance.ResourceID == "compliance" {
 		d.Set("plan", "security-compliance-center-standard-plan")
 	} else {
