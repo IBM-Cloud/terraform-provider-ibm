@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -120,7 +121,7 @@ func resourceIBMPrivateDNSZoneCreate(d *schema.ResourceData, meta interface{}) e
 	createZoneOptions.SetLabel(zoneLabel)
 	response, detail, err := sess.CreateDnszone(createZoneOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error creating pdns zone:%s\n%s", err, detail)
+		return flex.FmtErrorf("[ERROR] Error creating dns services zone:%s\n%s", err, detail)
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", *response.InstanceID, *response.ID))
@@ -139,7 +140,7 @@ func resourceIBMPrivateDNSZoneRead(d *schema.ResourceData, meta interface{}) err
 	getZoneOptions := sess.NewGetDnszoneOptions(idSet[0], idSet[1])
 	response, detail, err := sess.GetDnszone(getZoneOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error fetching pdns zone:%s\n%s", err, detail)
+		return flex.FmtErrorf("[ERROR] Error fetching dns services zone:%s\n%s", err, detail)
 	}
 
 	d.Set(pdnsZoneID, response.ID)
@@ -166,7 +167,7 @@ func resourceIBMPrivateDNSZoneUpdate(d *schema.ResourceData, meta interface{}) e
 	getZoneOptions := sess.NewGetDnszoneOptions(idSet[0], idSet[1])
 	_, response, err := sess.GetDnszone(getZoneOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error fetching pdns zone:%s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error fetching dns services zone:%s\n%s", err, response)
 	}
 
 	// Update DNS zone if attributes has any change
@@ -181,7 +182,7 @@ func resourceIBMPrivateDNSZoneUpdate(d *schema.ResourceData, meta interface{}) e
 		_, detail, err := sess.UpdateDnszone(updateZoneOptions)
 
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error updating pdns zone:%s\n%s", err, detail)
+			return flex.FmtErrorf("[ERROR] Error updating dns services zone:%s\n%s", err, detail)
 		}
 	}
 
@@ -199,7 +200,7 @@ func resourceIBMPrivateDNSZoneDelete(d *schema.ResourceData, meta interface{}) e
 	deleteZoneOptions := sess.NewDeleteDnszoneOptions(idSet[0], idSet[1])
 	response, err := sess.DeleteDnszone(deleteZoneOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error deleting pdns zone:%s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error deleting dns services zone:%s\n%s", err, response)
 	}
 
 	d.SetId("")
@@ -215,7 +216,7 @@ func resourceIBMPrivateDNSZoneExists(d *schema.ResourceData, meta interface{}) (
 
 	idSet := strings.Split(d.Id(), "/")
 	if len(idSet) < 2 {
-		return false, fmt.Errorf("[ERROR] Incorrect ID %s: Id should be a combination of InstanceID/zoneID", d.Id())
+		return false, flex.FmtErrorf("[ERROR] Incorrect ID %s: Id should be a combination of InstanceID/zoneID", d.Id())
 	}
 	getZoneOptions := sess.NewGetDnszoneOptions(idSet[0], idSet[1])
 	_, response, err := sess.GetDnszone(getZoneOptions)

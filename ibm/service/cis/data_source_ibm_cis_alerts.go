@@ -5,11 +5,11 @@ package cis
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/networking-go-sdk/alertsv1"
@@ -146,12 +146,12 @@ func dataIBMCISAlertPolicyRead(d *schema.ResourceData, meta interface{}) error {
 		alertOutput[cisAlertType] = *alertObj.AlertType
 		filterOpt, err := json.Marshal(alertObj.Filters)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error marshalling the created filters: %s", err)
+			return flex.FmtErrorf("[ERROR] Error marshalling the created filters: %s", err)
 		}
 		alertOutput[cisAlertFilters] = string(filterOpt)
 		conditionsOpt, err := json.Marshal(alertObj.Conditions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error marshalling the created Conditions: %s", err)
+			return flex.FmtErrorf("[ERROR] Error marshalling the created Conditions: %s", err)
 		}
 		alertOutput[cisAlertConditions] = string(conditionsOpt)
 		alertOutput[cisAlertMechanisms] = dataflattenCISMechanism(*alertObj.Mechanisms)

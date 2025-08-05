@@ -68,7 +68,6 @@ func ResourceIBMEnPagerDutyDestination() *schema.Resource {
 										Type:        schema.TypeString,
 										Sensitive:   true,
 										Optional:    true,
-										Default:     "",
 										Description: "API Key for the PagerDuty account.",
 										Deprecated:  "The api_key parameter under config has  been deprecated and will be removed in future",
 									},

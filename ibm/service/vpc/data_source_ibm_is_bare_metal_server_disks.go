@@ -71,6 +71,25 @@ func DataSourceIBMIsBareMetalServerDisks() *schema.Resource {
 							Computed:    true,
 							Description: "The size of the disk in GB (gigabytes)",
 						},
+						"allowed_use": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The usage constraints to be matched against the requested bare metal server properties to determine compatibility.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"bare_metal_server": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The expression that must be satisfied by the properties of a bare metal server provisioned using the image data in this disk.",
+									},
+									"api_version": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The API version with which to evaluate the expressions.",
+									},
+								},
+							},
+						},
 					},
 				},
 			},
@@ -107,8 +126,18 @@ func dataSourceIBMISBareMetalServerDisksRead(context context.Context, d *schema.
 			isBareMetalServerDiskResourceType:  disk.ResourceType,
 			isBareMetalServerDiskSize:          disk.Size,
 		}
+		if disk.AllowedUse != nil {
+			usageConstraintList := []map[string]interface{}{}
+			modelMap, err := ResourceceIBMIsBareMetalServerDiskAllowedUseToMap(disk.AllowedUse)
+			if err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting allowed_use: %s", err), "(Data) ibm_is_bare_metal_server_disks", "read", "set-allowed_use").GetDiag()
+			}
+			usageConstraintList = append(usageConstraintList, modelMap)
+			l["allowed_use"] = usageConstraintList
+		}
 		disksInfo = append(disksInfo, l)
 	}
+
 	d.SetId(dataSourceIBMISBMSDisksID(d))
 	if err = d.Set(isBareMetalServerDisks, disksInfo); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting disks: %s", err), "(Data) ibm_is_bare_metal_server_disks", "read", "set-disks").GetDiag()

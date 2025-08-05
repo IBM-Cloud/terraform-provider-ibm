@@ -16,6 +16,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -211,6 +212,26 @@ func ResourceIBMIAMActionControlAssignment() *schema.Resource {
 													Type:        schema.TypeInt,
 													Computed:    true,
 													Description: "The HTTP error code of the response.",
+												},
+												"name": {
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Name of the error.",
+												},
+												"error_code": {
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Internal error code.",
+												},
+												"message": {
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Error message detailing the nature of the error.",
+												},
+												"code": {
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Internal status code for the error.",
 												},
 											},
 										},
@@ -563,19 +584,31 @@ func ResourceIBMActionControlAssignmentActionControlAssignmentResourceCreatedToM
 	return modelMap, nil
 }
 
-func ResourceIBMActionControlAssignmentErrorResponseToMap(model *iampolicymanagementv1.ErrorResponse) (map[string]interface{}, error) {
+func ResourceIBMActionControlAssignmentErrorResponseToMap(model *iampolicymanagementv1.AssignmentResourceError) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["trace"] = *model.Trace
-	errors := []map[string]interface{}{}
-	for _, errorsItem := range model.Errors {
-		errorsItemMap, err := ResourceIBMActionControlAssignmentErrorObjectToMap(&errorsItem) // #nosec G601
-		if err != nil {
-			return modelMap, err
-		}
-		errors = append(errors, errorsItemMap)
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
 	}
-	modelMap["errors"] = errors
-	modelMap["status_code"] = flex.IntValue(model.StatusCode)
+	if model.ErrorCode != nil {
+		modelMap["error_code"] = *model.ErrorCode
+	}
+	if model.Message != nil {
+		modelMap["message"] = *model.Message
+	}
+	if model.Code != nil {
+		modelMap["code"] = *model.Code
+	}
+	if model.Errors != nil {
+		errors := []map[string]interface{}{}
+		for _, errorsItem := range model.Errors {
+			errorsItemMap, err := ResourceIBMActionControlAssignmentErrorObjectToMap(&errorsItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			errors = append(errors, errorsItemMap)
+		}
+		modelMap["errors"] = errors
+	}
 	return modelMap, nil
 }
 
@@ -633,11 +666,11 @@ func ResourceIBMActionControlAssignmentActionControlAssignmentTemplateToMap(mode
 	return modelMap, nil
 }
 
-func isActionControlAssignmentAssigned(id string, meta interface{}) resource.StateRefreshFunc {
+func isActionControlAssignmentAssigned(id string, meta interface{}) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		iamPolicyManagementClient, err := meta.(conns.ClientSession).IAMPolicyManagementV1API()
 		if err != nil {
-			return nil, failed, err
+			return nil, READY, err
 		}
 
 		getAssignmentActionControlOptions := &iampolicymanagementv1.GetActionControlAssignmentOptions{
@@ -650,27 +683,27 @@ func isActionControlAssignmentAssigned(id string, meta interface{}) resource.Sta
 
 		if err != nil {
 			if response != nil && response.StatusCode == 404 {
-				return nil, failed, err
+				return nil, READY, err
 			}
-			return nil, failed, err
+			return nil, READY, err
 		}
 
 		if assignment != nil {
 			if *assignment.Status == "accepted" || *assignment.Status == "in_progress" {
 				log.Printf("Assignment still in progress\n")
-				return assignment, InProgress, nil
+				return assignment, WAITING, nil
 			}
 
 			if *assignment.Status == "succeeded" {
-				return assignment, complete, nil
+				return assignment, READY, nil
 			}
 
 			if *assignment.Status == "failed" {
-				return assignment, failed, fmt.Errorf("[ERROR] The assignment %s did not complete successfully and has a 'failed' status. Please check assignment resource for detailed errors: %s\n", id, response)
+				return assignment, READY, fmt.Errorf("[ERROR] The assignment %s did not complete successfully and has a 'failed' status. Please check assignment resource for detailed errors: %s\n", id, response)
 			}
 		}
 
-		return assignment, failed, fmt.Errorf("[ERROR] Unexpected status reached for assignment %s.: %s\n", id, response)
+		return assignment, READY, fmt.Errorf("[ERROR] Unexpected status reached for assignment %s.: %s\n", id, response)
 	}
 }
 
@@ -678,7 +711,7 @@ func isAccessActionControlAssignedDeleted(id string, meta interface{}) resource.
 	return func() (interface{}, string, error) {
 		iamPolicyManagementClient, err := meta.(conns.ClientSession).IAMPolicyManagementV1API()
 		if err != nil {
-			return nil, failed, err
+			return nil, READY, err
 		}
 
 		getAssignmentActionControlOptions := &iampolicymanagementv1.GetActionControlAssignmentOptions{
@@ -691,22 +724,22 @@ func isAccessActionControlAssignedDeleted(id string, meta interface{}) resource.
 
 		if err != nil {
 			if response != nil && response.StatusCode == 404 {
-				return nil, failed, err
+				return nil, READY, err
 			}
-			return nil, failed, err
+			return nil, READY, err
 		}
 
 		if assignment != nil {
 			if *assignment.Status == "accepted" || *assignment.Status == "in_progress" {
 				log.Printf("Assignment still in progress\n")
-				return assignment, InProgress, nil
+				return assignment, WAITING, nil
 			}
 
 			if *assignment.Status == "failed" {
-				return assignment, failed, fmt.Errorf("[ERROR] The assignment %s did not complete successfully and has a 'failed' status. Please check assignment resource for detailed errors: %s\n", id, response)
+				return assignment, READY, fmt.Errorf("[ERROR] The assignment %s did not complete successfully and has a 'failed' status. Please check assignment resource for detailed errors: %s\n", id, response)
 			}
 		}
 
-		return assignment, failed, fmt.Errorf("[ERROR] Unexpected status reached for assignment %s.: %s\n", id, response)
+		return assignment, READY, fmt.Errorf("[ERROR] Unexpected status reached for assignment %s.: %s\n", id, response)
 	}
 }

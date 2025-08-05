@@ -321,6 +321,30 @@ func DataSourceIBMISVolume() *schema.Resource {
 				Computed:    true,
 				Description: "The resource group name in which resource is provisioned",
 			},
+			"allowed_use": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The usage constraints to be matched against the requested instance or bare metal server properties to determine compatibility.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"bare_metal_server": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The expression that must be satisfied by the properties of a bare metal server provisioned using the image data in this volume.",
+						},
+						"instance": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The expression that must be satisfied by the properties of a virtual server instance provisioned using this volume.",
+						},
+						"api_version": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The API version with which to evaluate the expressions.",
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -579,6 +603,17 @@ func volumeGet(context context.Context, d *schema.ResourceData, meta interface{}
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting adjustable_iops_states: %s", err), "(Data) ibm_is_volume", "read", "set-adjustable_iops_states").GetDiag()
 	}
 
+	allowedUses := []map[string]interface{}{}
+	if volume.AllowedUse != nil {
+		modelMap, err := ResourceceIBMIsVolumeAllowedUseToMap(volume.AllowedUse)
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting allowed_use: %s", err), "(Data) ibm_is_volume", "read", "set-allowed_use").GetDiag()
+		}
+		allowedUses = append(allowedUses, modelMap)
+	}
+	if err = d.Set("allowed_use", allowedUses); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting allowed_use: %s", err), "(Data) ibm_is_volume", "read", "set-allowed_use").GetDiag()
+	}
 	return nil
 }
 

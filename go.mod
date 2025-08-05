@@ -14,8 +14,8 @@ require (
 	github.com/IBM/code-engine-go-sdk v0.0.0-20241217191651-e1821f8c58c3
 	github.com/IBM/configuration-aggregator-go-sdk v0.0.2
 	github.com/IBM/container-registry-go-sdk v1.1.0
-	github.com/IBM/continuous-delivery-go-sdk/v2 v2.0.2
-	github.com/IBM/event-notifications-go-admin-sdk v0.14.0
+	github.com/IBM/continuous-delivery-go-sdk/v2 v2.0.3
+	github.com/IBM/event-notifications-go-admin-sdk v0.15.0
 	github.com/IBM/eventstreams-go-sdk v1.4.0
 	github.com/IBM/go-sdk-core/v5 v5.20.1
 	github.com/IBM/ibm-backup-recovery-sdk-go v1.0.3
@@ -27,8 +27,8 @@ require (
 	github.com/IBM/logs-go-sdk v0.4.0
 	github.com/IBM/logs-router-go-sdk v1.0.8
 	github.com/IBM/mqcloud-go-sdk v0.2.0
-	github.com/IBM/networking-go-sdk v0.51.7
-	github.com/IBM/platform-services-go-sdk v0.83.3
+	github.com/IBM/networking-go-sdk v0.51.9
+	github.com/IBM/platform-services-go-sdk v0.84.4
 	github.com/IBM/project-go-sdk v0.3.5
 	github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5
 	github.com/IBM/sarama v1.45.0
@@ -36,9 +36,9 @@ require (
 	github.com/IBM/schematics-go-sdk v0.3.0
 	github.com/IBM/sds-go-sdk v1.0.1
 	github.com/IBM/secrets-manager-go-sdk/v2 v2.0.11
-	github.com/IBM/vmware-go-sdk v0.1.3
+	github.com/IBM/vmware-go-sdk v0.1.5
 	github.com/IBM/vpc-beta-go-sdk v0.8.0
-	github.com/IBM/vpc-go-sdk v0.67.1
+	github.com/IBM/vpc-go-sdk v0.70.1
 	github.com/ScaleFT/sshkeys v0.0.0-20200327173127-6142f742bca5
 	github.com/akamai/AkamaiOPEN-edgegrid-golang v1.2.2
 	github.com/akamai/AkamaiOPEN-edgegrid-golang/v5 v5.0.0
@@ -205,7 +205,7 @@ require (
 	golang.org/x/net v0.40.0 // indirect
 	golang.org/x/oauth2 v0.27.0 // indirect
 	golang.org/x/sync v0.14.0 // indirect
-	golang.org/x/sys v0.33.0 // indirect
+	golang.org/x/sys v0.34.0 // indirect
 	golang.org/x/term v0.32.0 // indirect
 	golang.org/x/text v0.25.0 // indirect
 	golang.org/x/time v0.9.0 // indirect

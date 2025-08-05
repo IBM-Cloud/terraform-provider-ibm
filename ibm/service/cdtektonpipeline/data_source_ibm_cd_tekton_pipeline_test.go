@@ -431,6 +431,7 @@ func TestDataSourceIBMCdTektonPipelineTriggerToMap(t *testing.T) {
 		model["max_concurrent_runs"] = int(4)
 		model["enabled"] = true
 		model["favorite"] = false
+		model["limit_waiting_runs"] = false
 		model["enable_events_from_forks"] = false
 		model["source"] = []map[string]interface{}{triggerSourceModel}
 		model["events"] = []string{"push", "pull_request"}
@@ -491,6 +492,7 @@ func TestDataSourceIBMCdTektonPipelineTriggerToMap(t *testing.T) {
 	model.MaxConcurrentRuns = core.Int64Ptr(int64(4))
 	model.Enabled = core.BoolPtr(true)
 	model.Favorite = core.BoolPtr(false)
+	model.LimitWaitingRuns = core.BoolPtr(false)
 	model.EnableEventsFromForks = core.BoolPtr(false)
 	model.Source = triggerSourceModel
 	model.Events = []string{"push", "pull_request"}
@@ -677,6 +679,7 @@ func TestDataSourceIBMCdTektonPipelineTriggerManualTriggerToMap(t *testing.T) {
 		model["max_concurrent_runs"] = int(4)
 		model["enabled"] = true
 		model["favorite"] = false
+		model["limit_waiting_runs"] = false
 
 		assert.Equal(t, result, model)
 	}
@@ -707,6 +710,7 @@ func TestDataSourceIBMCdTektonPipelineTriggerManualTriggerToMap(t *testing.T) {
 	model.MaxConcurrentRuns = core.Int64Ptr(int64(4))
 	model.Enabled = core.BoolPtr(true)
 	model.Favorite = core.BoolPtr(false)
+	model.LimitWaitingRuns = core.BoolPtr(false)
 
 	result, err := cdtektonpipeline.DataSourceIBMCdTektonPipelineTriggerManualTriggerToMap(model)
 	assert.Nil(t, err)
@@ -756,6 +760,7 @@ func TestDataSourceIBMCdTektonPipelineTriggerScmTriggerToMap(t *testing.T) {
 		model["max_concurrent_runs"] = int(4)
 		model["enabled"] = true
 		model["favorite"] = false
+		model["limit_waiting_runs"] = false
 		model["enable_events_from_forks"] = false
 		model["source"] = []map[string]interface{}{triggerSourceModel}
 		model["events"] = []string{"push", "pull_request"}
@@ -805,6 +810,7 @@ func TestDataSourceIBMCdTektonPipelineTriggerScmTriggerToMap(t *testing.T) {
 	model.MaxConcurrentRuns = core.Int64Ptr(int64(4))
 	model.Enabled = core.BoolPtr(true)
 	model.Favorite = core.BoolPtr(false)
+	model.LimitWaitingRuns = core.BoolPtr(false)
 	model.EnableEventsFromForks = core.BoolPtr(false)
 	model.Source = triggerSourceModel
 	model.Events = []string{"push", "pull_request"}
@@ -843,6 +849,7 @@ func TestDataSourceIBMCdTektonPipelineTriggerTimerTriggerToMap(t *testing.T) {
 		model["max_concurrent_runs"] = int(4)
 		model["enabled"] = true
 		model["favorite"] = false
+		model["limit_waiting_runs"] = false
 		model["cron"] = "testString"
 		model["timezone"] = "America/Los_Angeles, CET, Europe/London, GMT, US/Eastern, or UTC"
 
@@ -875,6 +882,7 @@ func TestDataSourceIBMCdTektonPipelineTriggerTimerTriggerToMap(t *testing.T) {
 	model.MaxConcurrentRuns = core.Int64Ptr(int64(4))
 	model.Enabled = core.BoolPtr(true)
 	model.Favorite = core.BoolPtr(false)
+	model.LimitWaitingRuns = core.BoolPtr(false)
 	model.Cron = core.StringPtr("testString")
 	model.Timezone = core.StringPtr("America/Los_Angeles, CET, Europe/London, GMT, US/Eastern, or UTC")
 
@@ -918,6 +926,7 @@ func TestDataSourceIBMCdTektonPipelineTriggerGenericTriggerToMap(t *testing.T) {
 		model["max_concurrent_runs"] = int(4)
 		model["enabled"] = true
 		model["favorite"] = false
+		model["limit_waiting_runs"] = false
 		model["secret"] = []map[string]interface{}{genericSecretModel}
 		model["webhook_url"] = "testString"
 		model["filter"] = "event.type == 'message' && event.text.contains('urgent')"
@@ -958,6 +967,7 @@ func TestDataSourceIBMCdTektonPipelineTriggerGenericTriggerToMap(t *testing.T) {
 	model.MaxConcurrentRuns = core.Int64Ptr(int64(4))
 	model.Enabled = core.BoolPtr(true)
 	model.Favorite = core.BoolPtr(false)
+	model.LimitWaitingRuns = core.BoolPtr(false)
 	model.Secret = genericSecretModel
 	model.WebhookURL = core.StringPtr("testString")
 	model.Filter = core.StringPtr("event.type == 'message' && event.text.contains('urgent')")
