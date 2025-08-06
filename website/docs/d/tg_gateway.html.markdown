@@ -49,7 +49,7 @@ In addition to the argument reference list, you can access the following attribu
   - `base_connection_id` - (String) The ID of a network_type `classic` connection a tunnel is configured over.  This field applies to network type `gre_tunnel` or `unbound_gre_tunnel` connections.
   - `base_network_type` - (String) The type of network the unbound gre tunnel is targeting. This field is required for network type `unbound_gre_tunnel`.
   - `name` - (String) The user-defined name for the transit gateway connection.
-  - `network_type` - (String) The type of network connected with the connection. Possible values are `classic`, `directlink`, `vpc`, `gre_tunnel`,  `unbound_gre_tunnel`, or `power_virtual_server`.
+  - `network_type` - (String) The type of network connected with the connection. Possible values are `classic`, `directlink`, `vpc`, `gre_tunnel`,  `unbound_gre_tunnel`, `vpn_gateway`, or `power_virtual_server`.
   - `network_account_id` - (String) The ID of the network connected account. This is used if the network is in a different account than the gateway.
   - `network_id` - (String) The ID of the network being connected with the connection.
   - `local_bgp_asn` - (Integer) The local network BGP ASN. This field only applies to network type '`gre_tunnel` connections.
