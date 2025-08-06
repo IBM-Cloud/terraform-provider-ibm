@@ -32,6 +32,7 @@ func TestAccIbmSmKvSecretDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_sm_kv_secret.sm_kv_secret", "data.%"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_kv_secret.sm_kv_secret_by_name", "name"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_kv_secret.sm_kv_secret_by_name", "secret_group_name"),
+					resource.TestCheckResourceAttrSet("data.ibm_sm_kv_secret.sm_kv_secret_by_name", "secret_id"),
 				),
 			},
 		},

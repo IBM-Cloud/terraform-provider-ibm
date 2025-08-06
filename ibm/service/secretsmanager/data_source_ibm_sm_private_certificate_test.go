@@ -39,6 +39,7 @@ func TestAccIbmSmPrivateCertificateDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_sm_private_certificate.sm_private_certificate", "private_key"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_private_certificate.sm_private_certificate_by_name", "name"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_private_certificate.sm_private_certificate_by_name", "secret_group_name"),
+					resource.TestCheckResourceAttrSet("data.ibm_sm_private_certificate.sm_private_certificate_by_name", "secret_id"),
 				),
 			},
 		},

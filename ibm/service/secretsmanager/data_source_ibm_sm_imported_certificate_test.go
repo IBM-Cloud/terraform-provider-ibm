@@ -39,6 +39,7 @@ func TestAccIbmSmImportedCertificateDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_sm_imported_certificate.sm_imported_certificate", "certificate"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_imported_certificate.sm_imported_certificate_by_name", "name"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_imported_certificate.sm_imported_certificate_by_name", "secret_group_name"),
+					resource.TestCheckResourceAttrSet("data.ibm_sm_imported_certificate.sm_imported_certificate_by_name", "secret_id"),
 				),
 			},
 		},

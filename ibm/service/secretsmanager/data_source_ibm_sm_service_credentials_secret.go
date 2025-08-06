@@ -351,6 +351,11 @@ func dataSourceIbmSmServiceCredentialsSecretRead(context context.Context, d *sch
 		return tfErr.GetDiag()
 	}
 
+	if err = d.Set("secret_id", ServiceCredentialsSecret.ID); err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting secret_id"), fmt.Sprintf("(Data) %s", ServiceCredentialsSecretResourceName), "read")
+		return tfErr.GetDiag()
+	}
+
 	if err = d.Set("secret_group_id", ServiceCredentialsSecret.SecretGroupID); err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting secret_group_id"), fmt.Sprintf("(Data) %s", ServiceCredentialsSecretResourceName), "read")
 		return tfErr.GetDiag()

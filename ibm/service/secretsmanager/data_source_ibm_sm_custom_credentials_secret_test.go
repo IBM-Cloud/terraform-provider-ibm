@@ -5,16 +5,15 @@ package secretsmanager_test
 
 import (
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"strconv"
 	"testing"
-
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
 func TestAccIbmSmCustomCredentialsSecretDataSource(t *testing.T) {
-	dataSourceName := "ibm_sm_custom_credentials_secret.sm_custom_credentials_secret"
+	dataSourceName := "data.ibm_sm_custom_credentials_secret.sm_custom_credentials_secret"
 	expectedStrCredential := customCredentialsStrParam + "_output"
 	expectedBoolCredential := !customCredentialsBoolParam
 	expectedIntCredential := customCredentialsIntParam + 1
@@ -41,6 +40,9 @@ func TestAccIbmSmCustomCredentialsSecretDataSource(t *testing.T) {
 					resource.TestCheckResourceAttr(dataSourceName, "credentials_content.0.string_values.str_credential", expectedStrCredential),
 					resource.TestCheckResourceAttr(dataSourceName, "credentials_content.0.integer_values.int_credential", strconv.Itoa(expectedIntCredential)),
 					resource.TestCheckResourceAttr(dataSourceName, "credentials_content.0.boolean_values.bool_credential", strconv.FormatBool(expectedBoolCredential)),
+					resource.TestCheckResourceAttrSet("data.ibm_sm_custom_credentials_secret.by_name", "name"),
+					resource.TestCheckResourceAttrSet("data.ibm_sm_custom_credentials_secret.by_name", "secret_group_name"),
+					resource.TestCheckResourceAttrSet("data.ibm_sm_custom_credentials_secret.by_name", "secret_id"),
 				),
 			},
 		},
@@ -50,10 +52,17 @@ func TestAccIbmSmCustomCredentialsSecretDataSource(t *testing.T) {
 func customCredentialsSecretDataSourceConfig() string {
 	return customCredentialsSecretConfigAllArgs() +
 		fmt.Sprintf(`
-		data "ibm_sm_custom_credentials_secret" "sm_custom_credenbtials_secret" {
+		data "ibm_sm_custom_credentials_secret" "sm_custom_credentials_secret" {
 			instance_id = "%s"
 			region = "%s"
 			secret_id = ibm_sm_custom_credentials_secret.sm_custom_credentials_secret.secret_id
 		}
-	`, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion)
+
+		data "ibm_sm_custom_credentials_secret" "by_name" {
+			instance_id   = "%s"
+			region = "%s"
+			name = ibm_sm_custom_credentials_secret.sm_custom_credentials_secret.name
+			secret_group_name = "default"
+		}
+	`, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion)
 }

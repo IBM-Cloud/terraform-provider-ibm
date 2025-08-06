@@ -32,6 +32,7 @@ func TestAccIbmSmPublicCertificateDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_sm_public_certificate.sm_public_certificate", "rotation.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_public_certificate.sm_public_certificate_by_name", "name"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_public_certificate.sm_public_certificate_by_name", "secret_group_name"),
+					resource.TestCheckResourceAttrSet("data.ibm_sm_public_certificate.sm_public_certificate_by_name", "secret_id"),
 				),
 			},
 		},
