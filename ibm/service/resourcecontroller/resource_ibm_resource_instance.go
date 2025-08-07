@@ -581,12 +581,16 @@ func ResourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{}) e
 	}
 	rsCatRepo := rsCatClient.ResourceCatalog()
 
-	serviceOff, err := rsCatRepo.GetServiceName(*instance.ResourceID)
-	if err != nil {
-		return fmt.Errorf("[ERROR] Error retrieving service offering: %s", err)
+	// Note: Once the Compliance service (SCC) reaches its end of life, this conditional check can be revisited or safely removed.
+	if *instance.ResourceID == "compliance" {
+		d.Set("service", *instance.ResourceID)
+	} else {
+		serviceOff, err := rsCatRepo.GetServiceName(*instance.ResourceID)
+		if err != nil {
+			return fmt.Errorf("[ERROR] Error retrieving service offering: %s", err)
+		}
+		d.Set("service", serviceOff)
 	}
-
-	d.Set("service", serviceOff)
 
 	d.Set(flex.ResourceName, instance.Name)
 	d.Set(flex.ResourceCRN, instance.CRN)
@@ -599,11 +603,17 @@ func ResourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{}) e
 	}
 	d.Set(flex.ResourceControllerURL, rcontroller+"/services/")
 
-	servicePlan, err := rsCatRepo.GetServicePlanName(*instance.ResourcePlanID)
-	if err != nil {
-		return fmt.Errorf("[ERROR] Error retrieving plan: %s", err)
+	// Note: Once the Compliance service (SCC) reaches its end of life, this conditional check can be revisited or safely removed.
+	if *instance.ResourceID == "compliance" {
+		d.Set("plan", "security-compliance-center-standard-plan")
+	} else {
+		servicePlan, err := rsCatRepo.GetServicePlanName(*instance.ResourcePlanID)
+		if err != nil {
+			return fmt.Errorf("[ERROR] Error retrieving plan: %s", err)
+		}
+		d.Set("plan", servicePlan)
 	}
-	d.Set("plan", servicePlan)
+
 	d.Set("guid", instance.GUID)
 	// ### Modificataion : Setting  "onetime_credentials"
 	d.Set("onetime_credentials", instance.OnetimeCredentials)

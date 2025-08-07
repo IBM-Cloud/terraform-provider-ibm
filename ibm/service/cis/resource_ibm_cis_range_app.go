@@ -4,7 +4,6 @@
 package cis
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -277,7 +276,7 @@ func ResourceIBMCISRangeAppCreate(d *schema.ResourceData, meta interface{}) erro
 
 	result, resp, err := cisClient.CreateRangeApp(opt)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Failed to create range application: %v", resp)
+		return flex.FmtErrorf("[ERROR] Failed to create range application: %v", resp)
 	}
 	d.SetId(flex.ConvertCisToTfThreeVar(*result.Result.ID, zoneID, crn))
 	return ResourceIBMCISRangeAppRead(d, meta)
@@ -296,7 +295,7 @@ func ResourceIBMCISRangeAppRead(d *schema.ResourceData, meta interface{}) error 
 	opt := cisClient.NewGetRangeAppOptions(rangeAppID)
 	result, resp, err := cisClient.GetRangeApp(opt)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Failed to read range application: %v", resp)
+		return flex.FmtErrorf("[ERROR] Failed to read range application: %v", resp)
 	}
 	d.Set(cisID, crn)
 	d.Set(cisDomainID, zoneID)
@@ -382,7 +381,7 @@ func ResourceIBMCISRangeAppUpdate(d *schema.ResourceData, meta interface{}) erro
 		}
 		_, resp, err := cisClient.UpdateRangeApp(opt)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Failed to update range application: %v", resp)
+			return flex.FmtErrorf("[ERROR] Failed to update range application: %v", resp)
 		}
 	}
 	return ResourceIBMCISRangeAppRead(d, meta)
@@ -400,7 +399,7 @@ func ResourceIBMCISRangeAppDelete(d *schema.ResourceData, meta interface{}) erro
 	opt := cisClient.NewDeleteRangeAppOptions(rangeAppID)
 	_, resp, err := cisClient.DeleteRangeApp(opt)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Failed to delete range application: %v", resp)
+		return flex.FmtErrorf("[ERROR] Failed to delete range application: %v", resp)
 	}
 	return nil
 }
@@ -420,7 +419,7 @@ func ResourceIBMCISRangeAppExists(d *schema.ResourceData, meta interface{}) (boo
 			log.Println("range application is not found")
 			return false, nil
 		}
-		return false, fmt.Errorf("[ERROR] Failed to getting existing range application: %v", err)
+		return false, flex.FmtErrorf("[ERROR] Failed to getting existing range application: %v", err)
 	}
 	return true, nil
 }

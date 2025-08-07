@@ -53,7 +53,13 @@ Review the attribute references that you can access after you retrieve your data
 		Nested scheme for `dns`:
 		- `instance_crn` - (String) The CRN of the DNS instance associated with the DNS zone
 		- `zone_id` - (String) The unique identifier of the DNS zone.
-	- `failsafe_policy_actions` - (List) The supported `failsafe_policy.action` values for this load balancer's pools. Allowable list items are: `fail`, `forward`.
+	- `failsafe_policy_actions` - (List) The supported `failsafe_policy.action` values for this load balancer's pools. Allowable list items are: [ `bypass`, `drop`, `fail`, `forward` ]. A load balancer failsafe policy action:
+
+		- `bypass`: Bypasses the members and sends requests directly to their destination IPs.
+		- `drop`: Drops requests.
+		- `fail`: Fails requests with an HTTP 503 status code.
+		- `forward`: Forwards requests to the target pool.
+
 	- `name` - (String) Name of the load balancer.
 	- `subnets` - (List) The subnets this load balancer is part of.
 
