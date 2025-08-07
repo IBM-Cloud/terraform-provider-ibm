@@ -41,4 +41,8 @@ In addition to all argument references listed, you can access the following attr
 
 - `topic_id` - (String) Topic ID.
 
+- `attributes` - (List)
+
+  - `template_id_notification` - (String) The template id for notification
+
 - `updated_at` - (String) Last updated time.
