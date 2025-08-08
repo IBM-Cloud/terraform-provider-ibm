@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2024 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package mqcloud_test
@@ -17,13 +17,14 @@ import (
 )
 
 func TestAccIbmMqcloudApplicationBasic(t *testing.T) {
-	t.Parallel()
 	var conf mqcloudv1.ApplicationDetails
 	serviceInstanceGuid := acc.MqcloudDeploymentID
 	name := "appbasic"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheckMqcloud(t) },
+		PreCheck: func() {
+			acc.TestAccPreCheckMqcloud(t)
+		},
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmMqcloudApplicationDestroy,
 		Steps: []resource.TestStep{

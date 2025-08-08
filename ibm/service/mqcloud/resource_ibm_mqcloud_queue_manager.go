@@ -1,8 +1,8 @@
-// Copyright IBM Corp. 2024 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.95.2-120e65bc-20240924-152329
+ * IBM OpenAPI Terraform Generator Version: 3.104.0-b4a47c49-20250418-184351
  */
 
 package mqcloud
@@ -43,7 +43,7 @@ func ResourceIbmMqcloudQueueManager() *schema.Resource {
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_mqcloud_queue_manager", "service_instance_guid"),
-				Description:  "The GUID that uniquely identifies the MQaaS service instance.",
+				Description:  "The GUID that uniquely identifies the MQ SaaS service instance.",
 			},
 			"name": {
 				Type:         schema.TypeString,
@@ -198,15 +198,7 @@ func ResourceIbmMqcloudQueueManagerValidator() *validate.ResourceValidator {
 func resourceIbmMqcloudQueueManagerCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	mqcloudClient, err := meta.(conns.ClientSession).MqcloudV1()
 	if err != nil {
-		// Error is coming from SDK client, so it doesn't need to be discriminated.
-		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_mqcloud_queue_manager", "create")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		return tfErr.GetDiag()
-	}
-
-	err = checkSIPlan(d, meta)
-	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Create Queue Manager failed: %s", err.Error()), "ibm_mqcloud_queue_manager", "create")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_mqcloud_queue_manager", "create", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -246,7 +238,7 @@ func resourceIbmMqcloudQueueManagerCreate(context context.Context, d *schema.Res
 func resourceIbmMqcloudQueueManagerRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	mqcloudClient, err := meta.(conns.ClientSession).MqcloudV1()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_mqcloud_queue_manager", "read")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_mqcloud_queue_manager", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -289,6 +281,7 @@ func resourceIbmMqcloudQueueManagerRead(context context.Context, d *schema.Resou
 		err = fmt.Errorf("Error setting service_instance_guid: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_mqcloud_queue_manager", "read", "set-service_instance_guid").GetDiag()
 	}
+
 	if err = d.Set("name", queueManagerDetails.Name); err != nil {
 		err = fmt.Errorf("Error setting name: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_mqcloud_queue_manager", "read", "set-name").GetDiag()
@@ -360,14 +353,7 @@ func resourceIbmMqcloudQueueManagerRead(context context.Context, d *schema.Resou
 func resourceIbmMqcloudQueueManagerUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	mqcloudClient, err := meta.(conns.ClientSession).MqcloudV1()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_mqcloud_queue_manager", "update")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		return tfErr.GetDiag()
-	}
-
-	err = checkSIPlan(d, meta)
-	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Update Queue Manager failed: %s", err.Error()), "ibm_mqcloud_queue_manager", "update")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_mqcloud_queue_manager", "update", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -419,14 +405,7 @@ func resourceIbmMqcloudQueueManagerUpdate(context context.Context, d *schema.Res
 func resourceIbmMqcloudQueueManagerDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	mqcloudClient, err := meta.(conns.ClientSession).MqcloudV1()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_mqcloud_queue_manager", "delete")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		return tfErr.GetDiag()
-	}
-
-	err = checkSIPlan(d, meta)
-	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Delete Queue Manager failed: %s", err.Error()), "ibm_mqcloud_queue_manager", "delete")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_mqcloud_queue_manager", "delete", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
