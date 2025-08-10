@@ -91,6 +91,63 @@ func TestAccIBMTransitGateway_globalUpdate(t *testing.T) {
 	})
 }
 
+func TestAccIBMTransitGateway_greERPUpdate(t *testing.T) {
+	var instance string
+	gatewayname := fmt.Sprintf("tg-gateway-name-%d", acctest.RandIntRange(10, 100))
+	newgatewayname := fmt.Sprintf("newgateway-name-%d", acctest.RandIntRange(10, 100))
+	location := "us-south"
+	global := true
+	greERPTrue := true
+	greERPFalse := false
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMTransitGatewayDestroy, // Delete test case
+		Steps: []resource.TestStep{
+			{
+				//Create test case
+				Config: testAccCheckIBMTransitGatewayGreERPUpdateConfig(gatewayname, location, greERPTrue),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMTransitGatewayExists("ibm_tg_gateway.test_tg_gateway", instance),
+					resource.TestCheckResourceAttr("ibm_tg_gateway.test_tg_gateway", "name", gatewayname),
+					resource.TestCheckResourceAttr("ibm_tg_gateway.test_tg_gateway", "location", location),
+					resource.TestCheckResourceAttr("ibm_tg_gateway.test_tg_gateway", "global", fmt.Sprintf("%t", global)),
+					resource.TestCheckResourceAttr(
+						"ibm_tg_gateway.test_tg_gateway",
+						"gre_enhanced_route_propagation", fmt.Sprintf("%t", greERPTrue),
+					),
+				),
+			},
+			{
+				//Update test case
+				Config: testAccCheckIBMTransitGatewayGreERPUpdateConfig(newgatewayname, location, greERPFalse),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMTransitGatewayExists("ibm_tg_gateway.test_tg_gateway", instance),
+					resource.TestCheckResourceAttr("ibm_tg_gateway.test_tg_gateway", "name", newgatewayname),
+					resource.TestCheckResourceAttr("ibm_tg_gateway.test_tg_gateway", "global", fmt.Sprintf("%t", global)),
+					resource.TestCheckResourceAttr(
+						"ibm_tg_gateway.test_tg_gateway",
+						"gre_enhanced_route_propagation", fmt.Sprintf("%t", greERPFalse),
+					),
+				),
+			},
+			{
+				//Update test case
+				Config: testAccCheckIBMTransitGatewayGreERPUpdateConfig(newgatewayname, location, greERPTrue),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMTransitGatewayExists("ibm_tg_gateway.test_tg_gateway", instance),
+					resource.TestCheckResourceAttr("ibm_tg_gateway.test_tg_gateway", "name", newgatewayname),
+					resource.TestCheckResourceAttr("ibm_tg_gateway.test_tg_gateway", "global", fmt.Sprintf("%t", global)),
+					resource.TestCheckResourceAttr(
+						"ibm_tg_gateway.test_tg_gateway",
+						"gre_enhanced_route_propagation", fmt.Sprintf("%t", greERPTrue),
+					),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMTransitGatewayConfig(gatewayname, location string) string {
 	return fmt.Sprintf(`
 	  
@@ -110,6 +167,18 @@ func testAccCheckIBMTransitGatewayGlobalUpdateConfig(gatewayname, location strin
 		global=%t
 		}
 	  `, gatewayname, location, global)
+}
+
+func testAccCheckIBMTransitGatewayGreERPUpdateConfig(gatewayname, location string, greerp bool) string {
+	return fmt.Sprintf(`
+	  
+	resource "ibm_tg_gateway" "test_tg_gateway"{
+		name="%s"
+		location="%s"
+		global=true
+		gre_enhanced_route_propagation=%t
+		}
+	  `, gatewayname, location, greerp)
 }
 
 func testAccCheckIBMTransitGatewayExists(n string, instance string) resource.TestCheckFunc {
