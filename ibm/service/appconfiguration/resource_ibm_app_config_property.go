@@ -26,6 +26,7 @@ func ResourceIBMIbmAppConfigProperty() *schema.Resource {
 			"guid": {
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 				Description: "GUID of the App Configuration service. Get it from the service instance credentials section of the dashboard.",
 			},
 			"environment_id": {

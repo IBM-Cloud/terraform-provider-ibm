@@ -86,7 +86,7 @@ func resourceEnvironmentCreate(d *schema.ResourceData, meta interface{}) error {
 	if _, ok := GetFieldExists(d, "tags"); ok {
 		options.SetTags(d.Get("tags").(string))
 	}
-	if _, ok := GetFieldExists(d, "color_code"); ok {
+	if _, ok := GetFieldExists(d, "color_code"); ok && d.Get("color_code").(string) != "" {
 		options.SetColorCode(d.Get("color_code").(string))
 	}
 	_, response, err := appconfigClient.CreateEnvironment(options)
@@ -120,7 +120,7 @@ func resourceEnvironmentUpdate(d *schema.ResourceData, meta interface{}) error {
 		if _, ok := GetFieldExists(d, "tags"); ok {
 			options.SetTags(d.Get("tags").(string))
 		}
-		if _, ok := GetFieldExists(d, "color_code"); ok {
+		if _, ok := GetFieldExists(d, "color_code"); ok && d.Get("color_code").(string) != "" {
 			options.SetColorCode(d.Get("color_code").(string))
 		}
 
