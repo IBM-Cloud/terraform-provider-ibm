@@ -106,6 +106,7 @@ Review the argument reference that you can specify for your resource.
 * `name` - (Required, String) The human-readable name of your secret.
     * Constraints: The maximum length is `256` characters. The minimum length is `2` characters. The value must match regular expression `^[A-Za-z0-9_][A-Za-z0-9_]*(?:_*-*\.*[A-Za-z0-9]*)*[A-Za-z0-9]+$`.
 * `custom_metadata` - (Optional, Map) The secret metadata that a user can customize.
+    * Constraints: Nested JSONs are supported in Terraform only as string-encoded JSONs.
 * `description` - (Optional, String) An extended description of your secret.To protect your privacy, do not use personal data, such as your name or location, as a description for your secret group.
   * Constraints: The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/(.*?)/`.
 * `labels` - (Optional, List) Labels that you can use to search for secrets in your instance.Up to 30 labels can be created.
@@ -130,6 +131,8 @@ Nested scheme for **source_service**:
     * `parameters` - (Optional, List) Configuration options represented as key-value pairs. Service-defined options are used in the generation of credentials for some services. For example, Cloud Object Storage accepts the optional boolean parameter HMAC for creating specific kind of credentials.
 * `ttl` - (Required, String) The time-to-live (TTL) or lease duration to assign to generated credentials. The TTL defines for how long generated credentials remain valid. The value should be a string that specifies the number of seconds. Minimum duration is 86400 (1 day). Maximum is 7776000 seconds (90 days).
   * Constraints: The maximum length is `7` characters. The minimum length is `2` characters. 
+* `version_custom_metadata` - (Map) The custom metadata of the current secret version.
+    * Constraints: Nested JSONs are supported in Terraform only as string-encoded JSONs.
 
 ## Attribute Reference
 
