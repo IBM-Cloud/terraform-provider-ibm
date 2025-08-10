@@ -339,8 +339,7 @@ func ResourceIBMCISFirewallrulesValidator() *validate.ResourceValidator {
 			Identifier:                 cisFirewallrulesDescription,
 			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
 			Type:                       validate.TypeString,
-			Required:                   true,
-			AllowedValues:              "Firewallrules-creation"})
+			Required:                   true})
 
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
