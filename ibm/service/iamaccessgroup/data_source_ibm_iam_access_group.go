@@ -4,7 +4,6 @@
 package iamaccessgroup
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -174,7 +173,7 @@ func dataIBMIAMAccessGroupRead(d *schema.ResourceData, meta interface{}) error {
 
 		serviceIDs, resp, err := iamClient.ListServiceIds(&listServiceIDOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error listing Service Ids %s %s", err, resp)
+			return flex.FmtErrorf("[ERROR] Error listing Service Ids %s %s", err, resp)
 		}
 		start = flex.GetNextIAM(serviceIDs.Next)
 		allrecs = append(allrecs, serviceIDs.Serviceids...)
@@ -197,7 +196,7 @@ func dataIBMIAMAccessGroupRead(d *schema.ResourceData, meta interface{}) error {
 
 		profileIDs, resp, err := iamClient.ListProfiles(&listProfilesOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error listing Trusted Profiles %s %s", err, resp)
+			return flex.FmtErrorf("[ERROR] Error listing Trusted Profiles %s %s", err, resp)
 		}
 		profileStart = flex.GetNextIAM(profileIDs.Next)
 		allprofiles = append(allprofiles, profileIDs.Profiles...)
@@ -213,11 +212,11 @@ func dataIBMIAMAccessGroupRead(d *schema.ResourceData, meta interface{}) error {
 	listAccessGroupOption.SetShowCRN(true)
 	retreivedGroups, detailedResponse, err := iamAccessGroupsClient.ListAccessGroups(listAccessGroupOption)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error retrieving access groups: %s. API Response is: %s", err, detailedResponse)
+		return flex.FmtErrorf("[ERROR] Error retrieving access groups: %s. API Response is: %s", err, detailedResponse)
 	}
 
 	if len(retreivedGroups.Groups) == 0 {
-		return fmt.Errorf("[ERROR] No access group in account")
+		return flex.FmtErrorf("[ERROR] No access group in account")
 	}
 	allGroups := retreivedGroups.Groups
 
@@ -227,7 +226,7 @@ func dataIBMIAMAccessGroupRead(d *schema.ResourceData, meta interface{}) error {
 		listAccessGroupOption.SetOffset(offset)
 		retreivedGroups, detailedResponse, err := iamAccessGroupsClient.ListAccessGroups(listAccessGroupOption)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error retrieving access groups: %s. API Response is: %s", err, detailedResponse)
+			return flex.FmtErrorf("[ERROR] Error retrieving access groups: %s. API Response is: %s", err, detailedResponse)
 		}
 
 		allGroups = append(allGroups, retreivedGroups.Groups...)
@@ -245,7 +244,7 @@ func dataIBMIAMAccessGroupRead(d *schema.ResourceData, meta interface{}) error {
 		matchGroups = allGroups
 	}
 	if len(matchGroups) == 0 {
-		return fmt.Errorf("[ERROR] No Access Groups with name %s in Account", agName)
+		return flex.FmtErrorf("[ERROR] No Access Groups with name %s in Account", agName)
 	}
 
 	grpMap := make([]map[string]interface{}, 0, len(matchGroups))
