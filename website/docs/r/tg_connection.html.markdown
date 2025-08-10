@@ -57,12 +57,13 @@ Review the argument references that you can specify for your resource.
 - `local_tunnel_ip` - (Optional, Forces new resource, String) - The local tunnel IP address. This field is required for and only applicable to type gre_tunnel connections.
 - `name` -  (Optional, String) Enter a name. If the name is not given, the default name is provided based on the network type, such as `vpc` for network type VPC and `classic` for network type classic.
 - `network_account_id` - (Optional, Forces new resource, String) The ID of the network connected account. This is used if the network is in a different account than the gateway.
-- `network_type` - (Required, Forces new resource, String) Enter the network type. Allowed values are `classic`, `directlink`, `gre_tunnel`, `unbound_gre_tunnel`,  `vpc`, and `power_virtual_server`.
+- `network_type` - (Required, Forces new resource, String) Enter the network type. Allowed values are `classic`, `directlink`, `gre_tunnel`, `unbound_gre_tunnel`,  `vpc`, `vpn_gateway`, and `power_virtual_server`.
 - `network_id` -  (Optional, Forces new resource, String) Enter the ID of the network being connected through this connection. This parameter is required for network type `vpc` and `directlink`, the CRN of the VPC or direct link gateway to be connected. This field is required to be unspecified for network type `classic`. For example, `crn:v1:bluemix:public:is:us-south:a/123456::vpc:4727d842-f94f-4a2d-824a-9bc9b02c523b`.
 - `remote_bgp_asn` - (Optional, Forces new resource, Integer) - The remote network BGP ASN (will be generated for the connection if not specified). This field only applies to network type `gre_tunnel` and `unbound_gre_tunnel` connections.
 - `remote_gateway_ip` - (Optional, Forces new resource, String) - The remote gateway IP address. This field only applies to network type `gre_tunnel` and `unbound_gre_tunnel` connections.
 - `remote_tunnel_ip` - (Optional, Forces new resource, String) - The remote tunnel IP address. This field only applies to network type `gre_tunnel` and `unbound_gre_tunnel` connections.
 - `zone` - (Optional, Forces new resource, String) - The location of the GRE tunnel. This field only applies to network type `gre_tunnel` and `unbound_gre_tunnel` connections.
+- `cidr` - (Optional, String) - network_type `vpn_gateway` connections use `cidr` to specify the CIDR to use for the VPN GRE tunnels.
 - `tunnels` - (Optional, List) List of GRE tunnels for a transit gateway redundant GRE tunnel connection. This field is required for 'redundant_gre' connections.
 Nested scheme for `tunnel`:
   - `name` - (Required, String) The user-defined name for this tunnel connection.
