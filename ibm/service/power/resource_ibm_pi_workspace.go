@@ -119,6 +119,20 @@ func resourceIBMPIWorkspaceCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
+	if !sess.IsOnPrem() {
+		wsclient := instance.NewIBMPIWorkspacesClient(ctx, sess, cloudInstanceID)
+		wsData, err := wsclient.Get(cloudInstanceID)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if wsData.Capabilities[PER] {
+			_, err = waitForPERWorkspaceActive(ctx, wsclient, cloudInstanceID, d.Timeout(schema.TimeoutRead))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
+	}
+
 	// Add user tags for newly created workspace
 	if tags, ok := d.GetOk(Arg_UserTags); ok {
 		if len(flex.FlattenSet(tags.(*schema.Set))) > 0 {
@@ -129,6 +143,7 @@ func resourceIBMPIWorkspaceCreate(ctx context.Context, d *schema.ResourceData, m
 			}
 		}
 	}
+
 	return resourceIBMPIWorkspaceRead(ctx, d, meta)
 }
 
