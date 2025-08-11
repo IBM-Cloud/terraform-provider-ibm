@@ -6,8 +6,10 @@ package vpc
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -82,7 +84,9 @@ func dataSourceIBMISBareMetalServerNetworkInterfaceFloatingIPRead(context contex
 	fipID := d.Get(isBareMetalServerNetworkInterfaceFloatingIPID).(string)
 	sess, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_bare_metal_server_network_interface_floating_ip", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	options := &vpcv1.GetBareMetalServerNetworkInterfaceFloatingIPOptions{
 		BareMetalServerID:  &bareMetalServerID,
@@ -90,20 +94,37 @@ func dataSourceIBMISBareMetalServerNetworkInterfaceFloatingIPRead(context contex
 		ID:                 &fipID,
 	}
 
-	ip, response, err := sess.GetBareMetalServerNetworkInterfaceFloatingIPWithContext(context, options)
+	ip, _, err := sess.GetBareMetalServerNetworkInterfaceFloatingIPWithContext(context, options)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error fetching floating IP for bare metal server %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetBareMetalServerNetworkInterfaceFloatingIPWithContext failed: %s", err.Error()), "(Data) ibm_is_bare_metal_server_network_interface_floating_ip", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
-	d.Set(floatingIPName, *ip.Name)
-	d.Set(floatingIPAddress, *ip.Address)
-	d.Set(floatingIPStatus, *ip.Status)
-	d.Set(floatingIPZone, *ip.Zone.Name)
 
-	d.Set(floatingIPCRN, *ip.CRN)
+	if err = d.Set(floatingIPName, *ip.Name); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_is_bare_metal_server_network_interface_floating_ip", "read", "set-name").GetDiag()
+	}
 
+	if err = d.Set(floatingIPAddress, *ip.Address); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting address: %s", err), "(Data) ibm_is_bare_metal_server_network_interface_floating_ip", "read", "set-address").GetDiag()
+	}
+
+	if err = d.Set(floatingIPStatus, *ip.Status); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting status: %s", err), "(Data) ibm_is_bare_metal_server_network_interface_floating_ip", "read", "set-status").GetDiag()
+	}
+	if err = d.Set(floatingIPZone, *ip.Zone.Name); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting zone: %s", err), "(Data) ibm_is_bare_metal_server_network_interface_floating_ip", "read", "set-zone").GetDiag()
+	}
+
+	if err = d.Set(floatingIPCRN, *ip.CRN); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting crn: %s", err), "(Data) ibm_is_bare_metal_server_network_interface_floating_ip", "read", "set-crn").GetDiag()
+	}
 	target, ok := ip.Target.(*vpcv1.FloatingIPTarget)
 	if ok {
-		d.Set(floatingIPTarget, target.ID)
+
+		if err = d.Set(floatingIPTarget, target.ID); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting target: %s", err), "(Data) ibm_is_bare_metal_server_network_interface_floating_ip", "read", "set-target").GetDiag()
+		}
 	}
 
 	d.SetId(*ip.ID)

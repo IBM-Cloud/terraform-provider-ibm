@@ -4,7 +4,6 @@
 package cis
 
 import (
-	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -94,7 +93,7 @@ func ResourceIBMCISEdgeFunctionsActionCreate(d *schema.ResourceData, meta interf
 
 	_, _, err = cisClient.UpdateEdgeFunctionsAction(opt)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error: %v", err)
+		return flex.FmtErrorf("[ERROR] Error: %v", err)
 	}
 	d.SetId(flex.ConvertCisToTfThreeVar(scriptName, zoneID, crn))
 	return ResourceIBMCISEdgeFunctionsActionRead(d, meta)
@@ -121,7 +120,7 @@ func ResourceIBMCISEdgeFunctionsActionRead(d *schema.ResourceData, meta interfac
 	opt := cisClient.NewGetEdgeFunctionsActionOptions(scriptName)
 	result, resp, err := cisClient.GetEdgeFunctionsAction(opt)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error: %v", resp)
+		return flex.FmtErrorf("[ERROR] Error: %v", resp)
 	}
 
 	// read script content
@@ -136,7 +135,7 @@ func ResourceIBMCISEdgeFunctionsActionRead(d *schema.ResourceData, meta interfac
 	}
 	err = result.Close()
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error in closing reader")
+		return flex.FmtErrorf("[ERROR] Error in closing reader")
 	}
 
 	d.Set(cisID, crn)
@@ -149,7 +148,7 @@ func ResourceIBMCISEdgeFunctionsActionRead(d *schema.ResourceData, meta interfac
 func ResourceIBMCISEdgeFunctionsActionExists(d *schema.ResourceData, meta interface{}) (bool, error) {
 	cisClient, err := meta.(conns.ClientSession).CisEdgeFunctionClientSession()
 	if err != nil {
-		return false, fmt.Errorf("[ERROR] Error in creating CIS object")
+		return false, flex.FmtErrorf("[ERROR] Error in creating CIS object")
 	}
 
 	scriptName, zoneID, crn, _ := flex.ConvertTfToCisThreeVar(d.Id())
@@ -163,7 +162,7 @@ func ResourceIBMCISEdgeFunctionsActionExists(d *schema.ResourceData, meta interf
 			log.Printf("Edge functions action script is not found")
 			return false, nil
 		}
-		return false, fmt.Errorf("[ERROR] Error: %v", response)
+		return false, flex.FmtErrorf("[ERROR] Error: %v", response)
 	}
 	return true, nil
 }
@@ -171,7 +170,7 @@ func ResourceIBMCISEdgeFunctionsActionExists(d *schema.ResourceData, meta interf
 func ResourceIBMCISEdgeFunctionsActionDelete(d *schema.ResourceData, meta interface{}) error {
 	cisClient, err := meta.(conns.ClientSession).CisEdgeFunctionClientSession()
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error in creating CIS object")
+		return flex.FmtErrorf("[ERROR] Error in creating CIS object")
 	}
 
 	scriptName, zoneID, crn, _ := flex.ConvertTfToCisThreeVar(d.Id())
@@ -181,7 +180,7 @@ func ResourceIBMCISEdgeFunctionsActionDelete(d *schema.ResourceData, meta interf
 	opt := cisClient.NewDeleteEdgeFunctionsActionOptions(scriptName)
 	_, response, err := cisClient.DeleteEdgeFunctionsAction(opt)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error in edge function action script deletion: %v", response)
+		return flex.FmtErrorf("[ERROR] Error in edge function action script deletion: %v", response)
 	}
 	return nil
 }

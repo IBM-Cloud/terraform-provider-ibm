@@ -192,7 +192,7 @@ func ResourceIBMPrivateDNSGLBMonitor() *schema.Resource {
 func ResourceIBMPrivateDNSGLBMonitorValidator() *validate.ResourceValidator {
 	monitorCheckTypes := "HTTP, HTTPS, TCP"
 	methods := "GET, HEAD"
-	expectedcode := "200,201,202,203,204,205,206,207,208,226,2xx"
+	expectedcode := "200,201,202,203,204,205,206,207,208,226,2xx,3xx,4xx,5xx"
 
 	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
@@ -270,7 +270,7 @@ func resourceIBMPrivateDNSGLBMonitorCreate(d *schema.ResourceData, meta interfac
 
 	response, detail, err := sess.CreateMonitor(createMonitorOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error creating pdns GLB monitor:%s\n%s", err, detail)
+		return flex.FmtErrorf("[ERROR] Error creating dns services GLB monitor:%s\n%s", err, detail)
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", instanceID, *response.ID))
@@ -303,7 +303,7 @@ func resourceIBMPrivateDNSGLBMonitorRead(d *schema.ResourceData, meta interface{
 	getMonitorOptions := sess.NewGetMonitorOptions(idset[0], idset[1])
 	response, detail, err := sess.GetMonitor(getMonitorOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error fetching pdns GLB Monitor:%s\n%s", err, detail)
+		return flex.FmtErrorf("[ERROR] Error fetching dns services GLB Monitor:%s\n%s", err, detail)
 	}
 	d.Set(pdnsInstanceID, idset[0])
 	d.Set(pdnsGlbMonitorID, response.ID)
@@ -425,7 +425,7 @@ func resourceIBMPrivateDNSGLBMonitorUpdate(d *schema.ResourceData, meta interfac
 		_, detail, err := sess.UpdateMonitor(updateMonitorOptions)
 
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error updating pdns GLB Monitor:%s\n%s", err, detail)
+			return flex.FmtErrorf("[ERROR] Error updating dns services GLB Monitor:%s\n%s", err, detail)
 		}
 	}
 
@@ -444,7 +444,7 @@ func resourceIBMPrivateDNSGLBMonitorDelete(d *schema.ResourceData, meta interfac
 	response, err := sess.DeleteMonitor(DeleteMonitorOptions)
 
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error deleting pdns GLB Monitor:%s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error deleting dns services GLB Monitor:%s\n%s", err, response)
 	}
 
 	d.SetId("")
@@ -459,7 +459,7 @@ func resourceIBMPrivateDNSGLBMonitorExists(d *schema.ResourceData, meta interfac
 
 	idset := strings.Split(d.Id(), "/")
 	if len(idset) < 2 {
-		return false, fmt.Errorf("[ERROR] Incorrect ID %s: Id should be a combination of InstanceID/monitorID", d.Id())
+		return false, flex.FmtErrorf("[ERROR] Incorrect ID %s: Id should be a combination of InstanceID/monitorID", d.Id())
 	}
 
 	getMonitorOptions := sess.NewGetMonitorOptions(idset[0], idset[1])

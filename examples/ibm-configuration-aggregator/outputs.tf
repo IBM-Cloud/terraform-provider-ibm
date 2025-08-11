@@ -4,21 +4,20 @@ locals {
   entries = [
     for config in data.ibm_config_aggregator_configurations.example.configs : {
       about = {
-        account_id               = config.about.account_id
-        config_type              = config.about.config_type
-        last_config_refresh_time  = config.about.last_config_refresh_time
-        location                 = config.about.location
-        resource_crn             = config.about.resource_crn
-        resource_group_id        = config.about.resource_group_id
-        resource_name            = config.about.resource_name
-        service_name             = config.about.service_name
-        tags={}
+        account_id               = jsondecode(config.about).account_id
+        config_type              = jsondecode(config.about).config_type
+        last_config_refresh_time = jsondecode(config.about).last_config_refresh_time
+        location                 = jsondecode(config.about).location
+        resource_crn             = jsondecode(config.about).resource_crn
+        resource_group_id        = jsondecode(config.about).resource_group_id
+        resource_name            = jsondecode(config.about).resource_name
+        service_name             = jsondecode(config.about).service_name
+        tags                     = {}
       }
       config = jsondecode(config.config)
     }
   ]
 }
-
 output "ibm_config_aggregator_configurations" {
   value = {
     configs=local.entries

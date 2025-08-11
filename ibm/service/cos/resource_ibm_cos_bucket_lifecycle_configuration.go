@@ -568,7 +568,7 @@ func resourceIBMCOSBucketLifecycleConfigurationRead(ctx context.Context, d *sche
 	}
 	//getBucketConfiguration
 	const (
-		lifecycleConfigurationRulesSteadyTimeout = 2 * time.Minute
+		lifecycleConfigurationRulesSteadyTimeout = 5 * time.Minute
 	)
 	getLifecycleConfigurationInput := &s3.GetBucketLifecycleConfigurationInput{
 		Bucket: aws.String(bucketName),
@@ -580,8 +580,7 @@ func resourceIBMCOSBucketLifecycleConfigurationRead(ctx context.Context, d *sche
 		var err error
 		output, err = s3Client.GetBucketLifecycleConfiguration(getLifecycleConfigurationInput)
 
-		if d.IsNewResource() && err != nil && strings.Contains(err.Error(), "NoSuchLifecycleConfiguration: The lifecycle configuration does not exist") {
-
+		if err != nil && strings.Contains(err.Error(), "NoSuchLifecycleConfiguration: The lifecycle configuration does not exist") {
 			return resource.RetryableError(err)
 		}
 		if err != nil {

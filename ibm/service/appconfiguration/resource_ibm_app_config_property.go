@@ -190,7 +190,7 @@ func resourceIbmIbmAppConfigPropertyCreate(d *schema.ResourceData, meta interfac
 			value := e.(map[string]interface{})
 			segmentRulesItem, err := resourceIbmAppConfigPropertyMapToSegmentRule(d, value)
 			if err != nil {
-				return flex.FmtErrorf(fmt.Sprintf("%s", err))
+				return flex.FmtErrorf("%s", err)
 			}
 			segmentRules = append(segmentRules, segmentRulesItem)
 		}
@@ -356,7 +356,7 @@ func resourceIbmIbmAppConfigPropertyUpdate(d *schema.ResourceData, meta interfac
 				value := e.(map[string]interface{})
 				segmentRulesItem, err := resourceIbmAppConfigPropertyMapToSegmentRule(d, value)
 				if err != nil {
-					return flex.FmtErrorf(fmt.Sprintf("%s", err))
+					return flex.FmtErrorf("%s", err)
 				}
 				segmentRules = append(segmentRules, segmentRulesItem)
 			}

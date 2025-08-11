@@ -154,6 +154,24 @@ The `ibm_is_instance_volume_attachment` resource provides the following [Timeout
 ## Argument reference
 Review the argument references that you can specify for your resource.
 
+- `allowed_use` - (Optional, List) The usage constraints to be matched against requested instance or bare metal server properties to determine compatibility. Can only be specified if source_snapshot is bootable. If not specified, the value of this property will be inherited from the source_snapshot
+    
+    Nested schema for `allowed_use`:
+    - `api_version` - (Optional, String) The API version with which to evaluate the expressions.
+	  
+    - `bare_metal_server` - (Optional, String) The expression that must be satisfied by the properties of a bare metal server provisioned using the image data in this volume. If unspecified, the expression will be set to `true`. The expression follows [Common Expression Language](https://github.com/google/cel-spec/blob/master/doc/langdef.md), but does not support built-in functions and macros. 
+   
+    ~> **NOTE** </br> In addition, the following property is supported, corresponding to the BareMetalServer property: </br>
+      **&#x2022;** `enable_secure_boot` - (boolean) Indicates whether secure boot is enabled.
+	 
+    - `instance` - (Optional, String) The expression that must be satisfied by the properties of a virtual server instance provisioned using this volume. If unspecified, the expression will be set to `true`. The expression follows [Common Expression Language](https://github.com/google/cel-spec/blob/master/doc/langdef.md), but does not support built-in functions and macros.
+    
+    ~> **NOTE** </br> In addition, the following variables are supported, corresponding to `Instance` properties: </br>
+      **&#x2022;** `gpu.count` - (integer) The number of GPUs. </br>
+      **&#x2022;** `gpu.manufacturer` - (string) The GPU manufacturer. </br>
+      **&#x2022;** `gpu.memory` - (integer) The overall amount of GPU memory in GiB (gibibytes). </br>
+      **&#x2022;** `gpu.model` - (string) The GPU model. </br>
+      **&#x2022;** `enable_secure_boot` - (boolean) Indicates whether secure boot is enabled. </br>
 - `bandwidth` - (Optional, Integer) The maximum bandwidth (in megabits per second) for the volume. For this property to be specified, the volume storage_generation must be 2.
 - `capacity` - (Optional, Integer) The capacity of the volume in gigabytes.
 

@@ -90,7 +90,7 @@ func ResourceIBMEnTopic() *schema.Resource {
 												},
 												"ends_at": {
 													Type:        schema.TypeString,
-													Required:    true,
+													Optional:    true,
 													Description: "event schedule end time.",
 												},
 												"expression": {

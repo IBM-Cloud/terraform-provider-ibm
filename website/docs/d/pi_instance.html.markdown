@@ -66,7 +66,7 @@ In addition to all argument reference list, you can access the following attribu
 - `ibmi_rds` - (Boolean) IBM i Rational Dev Studio.
 - `ibmi_rds_users` - (Integer) IBM i Rational Dev Studio Number of User Licenses.
 - `id` - (String) The unique identifier of the instance.
-- `license_repository_capacity` - (Deprecated, Integer) The VTL license repository capacity TB value. Only available with VTL instances.
+- `license_repository_capacity` - (Integer) The VTL license repository capacity TB value. Only available with VTL instances.
 - `maxmem`- (Float) The maximum amount of memory that can be allocated to the instance without shutting down or rebooting the `LPAR`.
 - `maxproc`- (Float) The maximum number of processors that can be allocated to the instance without shutting down or rebooting the `LPAR`.
 - `max_virtual_cores` - (Integer) The maximum number of virtual cores that can be assigned without rebooting the instance.
@@ -106,4 +106,5 @@ In addition to all argument reference list, you can access the following attribu
   Nested scheme for `virtual_serial_number`:
   - `description` - (String) Description for virtual serial number.
   - `serial` - (String) Virtual serial number.
+  - `software_tier` - (String) Software tier of virtual serial number.
 - `volumes` - (List) List of volume IDs that are attached to the instance.

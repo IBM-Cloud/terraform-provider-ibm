@@ -155,13 +155,13 @@ Nested schema for **metadata**:
 				* `media` - (Optional, List) The list of supporting media for this product.
 				  * Constraints: The maximum length is `100` items. The minimum length is `0` items.
 				Nested schema for **media**:
-					* `caption` - (Required, String) Provide a descriptive caption that indicates what the media illustrates. This caption is displayed in the catalog.
+					* `caption` - (Optional, String) Provide a descriptive caption that indicates what the media illustrates. This caption is displayed in the catalog.
 					  * Constraints: The maximum length is `2000` characters. The minimum length is `0` characters. The value must match regular expression `/^[ -~\\s]*$/`.
 					* `thumbnail` - (Optional, String) The reduced-size version of your images and videos.
 					  * Constraints: The maximum length is `2083` characters. The minimum length is `0` characters.
-					* `type` - (Required, String) The type of the media.
+					* `type` - (Optional, String) The type of the media.
 					  * Constraints: Allowable values are: `image`, `youtube`, `video_mp_4`, `video_webm`.
-					* `url` - (Required, String) The URL that links to the media that shows off the product.
+					* `url` - (Optional, String) The URL that links to the media that shows off the product.
 					  * Constraints: The maximum length is `2083` characters. The minimum length is `0` characters.
 				* `navigation_items` - (Optional, List) List of custom navigation panel.
 				  * Constraints: The maximum length is `100` items. The minimum length is `0` items.
@@ -206,7 +206,7 @@ Nested schema for **overview_ui**:
   * Constraints: The list items must match regular expression `/^[a-z0-9\\-._]+$/`. The maximum length is `100` items. The minimum length is `0` items.
 * `product_id` - (Required, Forces new resource, String) The unique ID of the product.
   * Constraints: The maximum length is `71` characters. The minimum length is `71` characters. The value must match regular expression `/^[a-zA-Z0-9]{32}:o:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/`.
-* `tags` - (Required, List) A list of tags that carry information about your product. These tags can be used to find your product in the IBM Cloud catalog.
+* `tags` - (Optional, List) A list of tags that carry information about your product. These tags can be used to find your product in the IBM Cloud catalog.
   * Constraints: The list items must match regular expression `/^[a-z0-9\\-._]+$/`. The maximum length is `100` items. The minimum length is `0` items.
 
 ## Attribute Reference

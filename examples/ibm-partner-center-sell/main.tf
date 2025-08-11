@@ -99,7 +99,20 @@ resource "ibm_onboarding_catalog_deployment" "onboarding_catalog_deployment_inst
         }
         value = [ "value" ]
         layout = "layout"
-        associations = { "key" = "anything as a string" }
+        associations {
+          plan {
+            show_for = [ "show_for" ]
+            options_refresh = true
+          }
+          parameters {
+            name = "name"
+            show_for = [ "show_for" ]
+            options_refresh = true
+          }
+          location {
+            show_for = [ "show_for" ]
+          }
+        }
         validation_url = "validation_url"
         options_url = "options_url"
         invalidmessage = "invalidmessage"
@@ -368,7 +381,20 @@ resource "ibm_onboarding_catalog_product" "onboarding_catalog_product_instance" 
         }
         value = [ "value" ]
         layout = "layout"
-        associations = { "key" = "anything as a string" }
+        associations {
+          plan {
+            show_for = [ "show_for" ]
+            options_refresh = true
+          }
+          parameters {
+            name = "name"
+            show_for = [ "show_for" ]
+            options_refresh = true
+          }
+          location {
+            show_for = [ "show_for" ]
+          }
+        }
         validation_url = "validation_url"
         options_url = "options_url"
         invalidmessage = "invalidmessage"

@@ -88,7 +88,8 @@ After your resource is created, you can read values from the listed arguments an
 
 You can import the `ibm_iam_account_settings_template_assignment` resource by using `id`. Assignment record Id.
 
-# Syntax
-```
-$ terraform import ibm_iam_account_settings_template_assignment.account_settings_template_assignment_instance <id>
+### Syntax
+
+```bash
+$ terraform import ibm_iam_account_settings_template_assignment.account_settings_template_assignment_instance $id
 ```

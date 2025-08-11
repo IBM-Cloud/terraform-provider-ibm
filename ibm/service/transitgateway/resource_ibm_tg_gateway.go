@@ -5,7 +5,6 @@ package transitgateway
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"os"
 	"time"
@@ -255,7 +254,7 @@ func isTransitGatewayRefreshFunc(client *transitgatewayapisv1.TransitGatewayApis
 		}
 		transitGateway, response, err := client.GetTransitGateway(gettgwoptions)
 		if err != nil {
-			return nil, "", fmt.Errorf("[ERROR] Error Getting Transit Gateway: %s\n%s", err, response)
+			return nil, "", flex.FmtErrorf("[ERROR] Error Getting Transit Gateway: %s\n%s", err, response)
 		}
 
 		if *transitGateway.Status == "available" || *transitGateway.Status == "failed" {
@@ -387,7 +386,7 @@ func resourceIBMTransitGatewayDelete(d *schema.ResourceData, meta interface{}) e
 		if response != nil && response.StatusCode == 404 {
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error deleting Transit Gateway (%s): %s\n%s", ID, err, response)
+		return flex.FmtErrorf("[ERROR] Error deleting Transit Gateway (%s): %s\n%s", ID, err, response)
 	}
 	_, err = isWaitForTransitGatewayDeleted(client, ID, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
@@ -423,7 +422,7 @@ func isTransitGatewayDeleteRefreshFunc(client *transitgatewayapisv1.TransitGatew
 			if response != nil && response.StatusCode == 404 {
 				return transitGateway, isTransitGatewayDeleted, nil
 			}
-			return nil, "", fmt.Errorf("[ERROR] Error Getting Transit Gateway: %s\n%s", err, response)
+			return nil, "", flex.FmtErrorf("[ERROR] Error Getting Transit Gateway: %s\n%s", err, response)
 		}
 		return transitGateway, isTransitGatewayDeleting, err
 	}
@@ -448,7 +447,7 @@ func resourceIBMTransitGatewayExists(d *schema.ResourceData, meta interface{}) (
 			d.SetId("")
 			return false, nil
 		}
-		return false, fmt.Errorf("[ERROR] Error Getting Transit Gateway: %s\n%s", err, response)
+		return false, flex.FmtErrorf("[ERROR] Error Getting Transit Gateway: %s\n%s", err, response)
 	}
 
 	return true, nil

@@ -4,7 +4,6 @@
 package cis
 
 import (
-	"fmt"
 	"reflect"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -135,7 +134,19 @@ var CISRulesetsRulesObject = &schema.Resource{
 					CISRuleset: {
 						Type:        schema.TypeString,
 						Optional:    true,
-						Description: "Ruleset ID of the ruleset to apply action to",
+						Description: "Ruleset of the rule",
+					},
+					CISRulesetsRulePhases: {
+						Type:        schema.TypeList,
+						Optional:    true,
+						Description: "Phases of the rule",
+						Elem:        &schema.Schema{Type: schema.TypeString},
+					},
+					CISRulesetsRuleProducts: {
+						Type:        schema.TypeList,
+						Optional:    true,
+						Description: "Products of the rule",
+						Elem:        &schema.Schema{Type: schema.TypeString},
 					},
 					CISRulesetList: {
 						Type:        schema.TypeList,
@@ -288,7 +299,7 @@ func ResourceIBMCISRulesetRuleValidator() *validate.ResourceValidator {
 func ResourceIBMCISRulesetRuleCreate(d *schema.ResourceData, meta interface{}) error {
 	sess, err := meta.(conns.ClientSession).CisRulesetsSession()
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while getting the CisRulesetsSession %s", err)
+		return flex.FmtErrorf("[ERROR] Error while getting the CisRulesetsSession %s", err)
 	}
 	crn := d.Get(cisID).(string)
 	zoneId := d.Get(cisDomainID).(string)
@@ -313,7 +324,7 @@ func ResourceIBMCISRulesetRuleCreate(d *schema.ResourceData, meta interface{}) e
 		if !reflect.ValueOf(rulesObject[CISRulesetsRulePosition]).IsNil() {
 			position, err = expandCISRulesetsRulesPositions(rulesObject[CISRulesetsRulePosition])
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error while creating the zone Rule %s", err)
+				return flex.FmtErrorf("[ERROR] Error while creating the zone Rule %s", err)
 			}
 		}
 		opt.SetPosition(&position)
@@ -327,7 +338,7 @@ func ResourceIBMCISRulesetRuleCreate(d *schema.ResourceData, meta interface{}) e
 		result, resp, err := sess.CreateZoneRulesetRule(opt)
 
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error while creating the zone Rule %s", resp)
+			return flex.FmtErrorf("[ERROR] Error while creating the zone Rule %s", resp)
 		}
 		len_rules := len(result.Result.Rules)
 
@@ -386,7 +397,7 @@ func ResourceIBMCISRulesetRuleCreate(d *schema.ResourceData, meta interface{}) e
 		if reflect.ValueOf(rulesObject[CISRulesetsRulePosition]).IsNil() {
 			position, err = expandCISRulesetsRulesPositions(rulesObject[CISRulesetsRulePosition])
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error while creating the instance Rule %s", err)
+				return flex.FmtErrorf("[ERROR] Error while creating the instance Rule %s", err)
 			}
 		}
 		opt.SetPosition(&position)
@@ -400,7 +411,7 @@ func ResourceIBMCISRulesetRuleCreate(d *schema.ResourceData, meta interface{}) e
 		result, resp, err := sess.CreateInstanceRulesetRule(opt)
 
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error while creating the instance Rule %s", resp)
+			return flex.FmtErrorf("[ERROR] Error while creating the instance Rule %s", resp)
 		}
 
 		len_rules := len(result.Result.Rules)
@@ -419,7 +430,7 @@ func ResourceIBMCISRulesetRuleRead(d *schema.ResourceData, meta interface{}) err
 func ResourceIBMCISRulesetRuleUpdate(d *schema.ResourceData, meta interface{}) error {
 	sess, err := meta.(conns.ClientSession).CisRulesetsSession()
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while getting the CisRulesetsSession %s", err)
+		return flex.FmtErrorf("[ERROR] Error while getting the CisRulesetsSession %s", err)
 	}
 
 	ruleId, rulesetId, zoneId, crn, _ := flex.ConvertTfToCisFourVar(d.Id())
@@ -433,17 +444,16 @@ func ResourceIBMCISRulesetRuleUpdate(d *schema.ResourceData, meta interface{}) e
 		rulesetsRuleObject := d.Get(CISRulesetsRule).([]interface{})[0].(map[string]interface{})
 		opt.SetDescription(rulesetsRuleObject[CISRulesetsDescription].(string))
 		opt.SetAction(rulesetsRuleObject[CISRulesetsRuleAction].(string))
-		if d.HasChange(CISRulesetsRuleActionParameters) {
+		if rulesetsRuleObject[CISRulesetsRuleActionParameters] != nil {
 			actionParameters := expandCISRulesetsRulesActionParameters(rulesetsRuleObject[CISRulesetsRuleActionParameters])
 			opt.SetActionParameters(&actionParameters)
 		}
-
 		opt.SetEnabled(rulesetsRuleObject[CISRulesetsRuleActionEnabled].(bool))
 		opt.SetExpression(rulesetsRuleObject[CISRulesetsRuleExpression].(string))
 		opt.SetRef(rulesetsRuleObject[CISRulesetsRuleRef].(string))
 		position, positionError := expandCISRulesetsRulesPositions(rulesetsRuleObject[CISRulesetsRulePosition])
 		if positionError != nil {
-			return fmt.Errorf("[ERROR] Error while updating the zone Ruleset %s", err)
+			return flex.FmtErrorf("[ERROR] Error while updating the zone Ruleset %s", err)
 		}
 		opt.SetPosition(&position)
 
@@ -454,7 +464,7 @@ func ResourceIBMCISRulesetRuleUpdate(d *schema.ResourceData, meta interface{}) e
 		_, _, err := sess.UpdateZoneRulesetRule(opt)
 
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error while updating the zone Ruleset %s", err)
+			return flex.FmtErrorf("[ERROR] Error while updating the zone Ruleset %s", err)
 		}
 
 		d.SetId(dataSourceCISRulesetsRuleCheckID(d, ruleId))
@@ -472,7 +482,7 @@ func ResourceIBMCISRulesetRuleUpdate(d *schema.ResourceData, meta interface{}) e
 		opt.SetRef(rulesetsRuleObject[CISRulesetsRuleAction].(string))
 		position, err := expandCISRulesetsRulesPositions(rulesetsRuleObject[CISRulesetsRulePosition])
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error while updating the zone Ruleset %s", err)
+			return flex.FmtErrorf("[ERROR] Error while updating the instance Ruleset %s", err)
 		}
 		opt.SetPosition(&position)
 
@@ -483,7 +493,7 @@ func ResourceIBMCISRulesetRuleUpdate(d *schema.ResourceData, meta interface{}) e
 		_, _, err = sess.UpdateInstanceRulesetRule(opt)
 
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error while updating the zone Ruleset %s", err)
+			return flex.FmtErrorf("[ERROR] Error while updating the instance Ruleset %s", err)
 		}
 
 		d.SetId(dataSourceCISRulesetsRuleCheckID(d, ruleId))
@@ -495,7 +505,7 @@ func ResourceIBMCISRulesetRuleDelete(d *schema.ResourceData, meta interface{}) e
 
 	sess, err := meta.(conns.ClientSession).CisRulesetsSession()
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while getting the CisRulesetsSession %s", err)
+		return flex.FmtErrorf("[ERROR] Error while getting the CisRulesetsSession %s", err)
 	}
 
 	ruleId, rulesetId, zoneId, crn, _ := flex.ConvertTfToCisFourVar(d.Id())
@@ -506,13 +516,13 @@ func ResourceIBMCISRulesetRuleDelete(d *schema.ResourceData, meta interface{}) e
 		opt := sess.NewDeleteZoneRulesetRuleOptions(rulesetId, ruleId)
 		_, res, err := sess.DeleteZoneRulesetRule(opt)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error deleting the zone ruleset rule %s:%s", err, res)
+			return flex.FmtErrorf("[ERROR] Error deleting the zone ruleset rule %s:%s", err, res)
 		}
 	} else {
 		opt := sess.NewDeleteInstanceRulesetRuleOptions(rulesetId, ruleId)
 		_, res, err := sess.DeleteInstanceRulesetRule(opt)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error deleting the Instance ruleset rule %s:%s", err, res)
+			return flex.FmtErrorf("[ERROR] Error deleting the Instance ruleset rule %s:%s", err, res)
 		}
 	}
 

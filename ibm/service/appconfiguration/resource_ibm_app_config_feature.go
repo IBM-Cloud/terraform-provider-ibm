@@ -172,7 +172,7 @@ func resourceIbmIbmAppConfigFeatureCreate(d *schema.ResourceData, meta interface
 	guid := d.Get("guid").(string)
 	appconfigClient, err := getAppConfigClient(meta, guid)
 	if err != nil {
-		return flex.FmtErrorf(fmt.Sprintf("%s", err))
+		return flex.FmtErrorf("%s", err)
 	}
 	options := &appconfigurationv1.CreateFeatureOptions{}
 	options.SetType(d.Get("type").(string))
@@ -203,7 +203,7 @@ func resourceIbmIbmAppConfigFeatureCreate(d *schema.ResourceData, meta interface
 			value := e.(map[string]interface{})
 			segmentRulesItem, err := resourceIbmAppConfigFeatureMapToSegmentRule(d, value)
 			if err != nil {
-				return flex.FmtErrorf(fmt.Sprintf("%s", err))
+				return flex.FmtErrorf("%s", err)
 			}
 			segmentRules = append(segmentRules, segmentRulesItem)
 		}
@@ -235,7 +235,7 @@ func resourceIbmIbmAppConfigFeatureUpdate(d *schema.ResourceData, meta interface
 	}
 	appconfigClient, err := getAppConfigClient(meta, parts[0])
 	if err != nil {
-		return flex.FmtErrorf(fmt.Sprintf("%s", err))
+		return flex.FmtErrorf("%s", err)
 	}
 
 	options := &appconfigurationv1.UpdateFeatureOptions{}
@@ -265,7 +265,7 @@ func resourceIbmIbmAppConfigFeatureUpdate(d *schema.ResourceData, meta interface
 				value := e.(map[string]interface{})
 				segmentRulesItem, err := resourceIbmAppConfigFeatureMapToSegmentRule(d, value)
 				if err != nil {
-					return flex.FmtErrorf(fmt.Sprintf("%s", err))
+					return flex.FmtErrorf("%s", err)
 				}
 				segmentRules = append(segmentRules, segmentRulesItem)
 			}
@@ -297,7 +297,7 @@ func resourceIbmIbmAppConfigFeatureRead(d *schema.ResourceData, meta interface{}
 	}
 	appconfigClient, err := getAppConfigClient(meta, parts[0])
 	if err != nil {
-		return flex.FmtErrorf(fmt.Sprintf("%s", err))
+		return flex.FmtErrorf("%s", err)
 	}
 
 	options := &appconfigurationv1.GetFeatureOptions{}
@@ -429,7 +429,7 @@ func resourceIbmIbmAppConfigFeatureDelete(d *schema.ResourceData, meta interface
 	}
 	appconfigClient, err := getAppConfigClient(meta, parts[0])
 	if err != nil {
-		return flex.FmtErrorf(fmt.Sprintf("%s", err))
+		return flex.FmtErrorf("%s", err)
 	}
 
 	options := &appconfigurationv1.DeleteFeatureOptions{}

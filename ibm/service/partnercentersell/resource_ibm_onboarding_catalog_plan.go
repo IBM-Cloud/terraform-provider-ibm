@@ -2,7 +2,7 @@
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.103.0-e8b84313-20250402-201816
+ * IBM OpenAPI Terraform Generator Version: 3.104.0-b4a47c49-20250418-184351
  */
 
 package partnercentersell
@@ -115,7 +115,7 @@ func ResourceIbmOnboardingCatalogPlan() *schema.Resource {
 			},
 			"tags": &schema.Schema{
 				Type:        schema.TypeList,
-				Required:    true,
+				Optional:    true,
 				Description: "A list of tags that carry information about your product. These tags can be used to find your product in the IBM Cloud catalog.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
@@ -206,7 +206,7 @@ func ResourceIbmOnboardingCatalogPlan() *schema.Resource {
 																	Schema: map[string]*schema.Schema{
 																		"caption": &schema.Schema{
 																			Type:        schema.TypeString,
-																			Required:    true,
+																			Optional:    true,
 																			Description: "Provide a descriptive caption that indicates what the media illustrates. This caption is displayed in the catalog.",
 																		},
 																		"thumbnail": &schema.Schema{
@@ -216,12 +216,12 @@ func ResourceIbmOnboardingCatalogPlan() *schema.Resource {
 																		},
 																		"type": &schema.Schema{
 																			Type:        schema.TypeString,
-																			Required:    true,
+																			Optional:    true,
 																			Description: "The type of the media.",
 																		},
 																		"url": &schema.Schema{
 																			Type:        schema.TypeString,
-																			Required:    true,
+																			Optional:    true,
 																			Description: "The URL that links to the media that shows off the product.",
 																		},
 																	},
@@ -350,7 +350,6 @@ func ResourceIbmOnboardingCatalogPlan() *schema.Resource {
 									"unique_api_key": &schema.Schema{
 										Type:        schema.TypeBool,
 										Computed:    true,
-										Sensitive:   true,
 										Description: "Indicates whether the deployment uses a unique API key or not.",
 									},
 								},
@@ -525,12 +524,6 @@ func resourceIbmOnboardingCatalogPlanCreate(context context.Context, d *schema.R
 	createCatalogPlanOptions.SetActive(d.Get("active").(bool))
 	createCatalogPlanOptions.SetDisabled(d.Get("disabled").(bool))
 	createCatalogPlanOptions.SetKind(d.Get("kind").(string))
-	var tags []string
-	for _, v := range d.Get("tags").([]interface{}) {
-		tagsItem := v.(string)
-		tags = append(tags, tagsItem)
-	}
-	createCatalogPlanOptions.SetTags(tags)
 	objectProviderModel, err := ResourceIbmOnboardingCatalogPlanMapToCatalogProductProvider(d.Get("object_provider.0").(map[string]interface{}))
 	if err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_onboarding_catalog_plan", "create", "parse-object_provider").GetDiag()
@@ -545,6 +538,14 @@ func resourceIbmOnboardingCatalogPlanCreate(context context.Context, d *schema.R
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_onboarding_catalog_plan", "create", "parse-overview_ui").GetDiag()
 		}
 		createCatalogPlanOptions.SetOverviewUi(overviewUiModel)
+	}
+	if _, ok := d.GetOk("tags"); ok {
+		var tags []string
+		for _, v := range d.Get("tags").([]interface{}) {
+			tagsItem := v.(string)
+			tags = append(tags, tagsItem)
+		}
+		createCatalogPlanOptions.SetTags(tags)
 	}
 	if _, ok := d.GetOk("pricing_tags"); ok {
 		var pricingTags []string
@@ -642,9 +643,11 @@ func resourceIbmOnboardingCatalogPlanRead(context context.Context, d *schema.Res
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_onboarding_catalog_plan", "read", "set-overview_ui").GetDiag()
 		}
 	}
-	if err = d.Set("tags", globalCatalogPlan.Tags); err != nil {
-		err = fmt.Errorf("Error setting tags: %s", err)
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_onboarding_catalog_plan", "read", "set-tags").GetDiag()
+	if !core.IsNil(globalCatalogPlan.Tags) {
+		if err = d.Set("tags", globalCatalogPlan.Tags); err != nil {
+			err = fmt.Errorf("Error setting tags: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_onboarding_catalog_plan", "read", "set-tags").GetDiag()
+		}
 	}
 	if !core.IsNil(globalCatalogPlan.PricingTags) {
 		if err = d.Set("pricing_tags", globalCatalogPlan.PricingTags); err != nil {
@@ -913,7 +916,7 @@ func ResourceIbmOnboardingCatalogPlanMapToGlobalCatalogPlanMetadataPrototypePatc
 		}
 		model.Plan = PlanModel
 	}
-	if modelMap["other"] != nil && len(modelMap["other"].([]interface{})) > 0 {
+	if modelMap["other"] != nil && len(modelMap["other"].([]interface{})) > 0 && modelMap["other"].([]interface{})[0] != nil {
 		OtherModel, err := ResourceIbmOnboardingCatalogPlanMapToGlobalCatalogPlanMetadataOther(modelMap["other"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
@@ -1011,12 +1014,18 @@ func ResourceIbmOnboardingCatalogPlanMapToCatalogHighlightItem(modelMap map[stri
 
 func ResourceIbmOnboardingCatalogPlanMapToCatalogProductMediaItem(modelMap map[string]interface{}) (*partnercentersellv1.CatalogProductMediaItem, error) {
 	model := &partnercentersellv1.CatalogProductMediaItem{}
-	model.Caption = core.StringPtr(modelMap["caption"].(string))
+	if modelMap["caption"] != nil && modelMap["caption"].(string) != "" {
+		model.Caption = core.StringPtr(modelMap["caption"].(string))
+	}
 	if modelMap["thumbnail"] != nil && modelMap["thumbnail"].(string) != "" {
 		model.Thumbnail = core.StringPtr(modelMap["thumbnail"].(string))
 	}
-	model.Type = core.StringPtr(modelMap["type"].(string))
-	model.URL = core.StringPtr(modelMap["url"].(string))
+	if modelMap["type"] != nil && modelMap["type"].(string) != "" {
+		model.Type = core.StringPtr(modelMap["type"].(string))
+	}
+	if modelMap["url"] != nil && modelMap["url"].(string) != "" {
+		model.URL = core.StringPtr(modelMap["url"].(string))
+	}
 	return model, nil
 }
 
@@ -1117,7 +1126,7 @@ func ResourceIbmOnboardingCatalogPlanMapToGlobalCatalogPlanMetadataPlan(modelMap
 
 func ResourceIbmOnboardingCatalogPlanMapToGlobalCatalogPlanMetadataOther(modelMap map[string]interface{}) (*partnercentersellv1.GlobalCatalogPlanMetadataOther, error) {
 	model := &partnercentersellv1.GlobalCatalogPlanMetadataOther{}
-	if modelMap["resource_controller"] != nil && len(modelMap["resource_controller"].([]interface{})) > 0 {
+	if modelMap["resource_controller"] != nil && len(modelMap["resource_controller"].([]interface{})) > 0 && modelMap["resource_controller"].([]interface{})[0] != nil {
 		ResourceControllerModel, err := ResourceIbmOnboardingCatalogPlanMapToGlobalCatalogPlanMetadataOtherResourceController(modelMap["resource_controller"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
@@ -1303,12 +1312,18 @@ func ResourceIbmOnboardingCatalogPlanCatalogHighlightItemToMap(model *partnercen
 
 func ResourceIbmOnboardingCatalogPlanCatalogProductMediaItemToMap(model *partnercentersellv1.CatalogProductMediaItem) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["caption"] = *model.Caption
+	if model.Caption != nil {
+		modelMap["caption"] = *model.Caption
+	}
 	if model.Thumbnail != nil {
 		modelMap["thumbnail"] = *model.Thumbnail
 	}
-	modelMap["type"] = *model.Type
-	modelMap["url"] = *model.URL
+	if model.Type != nil {
+		modelMap["type"] = *model.Type
+	}
+	if model.URL != nil {
+		modelMap["url"] = *model.URL
+	}
 	return modelMap, nil
 }
 
@@ -1795,11 +1810,29 @@ func ResourceIbmOnboardingCatalogPlanGlobalCatalogMetadataUINavigationItemAsPatc
 func ResourceIbmOnboardingCatalogPlanCatalogProductMediaItemAsPatch(patch map[string]interface{}, d *schema.ResourceData, rootPath string) {
 	var path string
 
+	path = rootPath + ".caption"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["caption"] = nil
+	} else if !exists {
+		delete(patch, "caption")
+	}
 	path = rootPath + ".thumbnail"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["thumbnail"] = nil
 	} else if !exists {
 		delete(patch, "thumbnail")
+	}
+	path = rootPath + ".type"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["type"] = nil
+	} else if !exists {
+		delete(patch, "type")
+	}
+	path = rootPath + ".url"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["url"] = nil
+	} else if !exists {
+		delete(patch, "url")
 	}
 }
 

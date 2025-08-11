@@ -132,7 +132,10 @@ func resourceIBMCISOriginAuthPullCreate(context context.Context, d *schema.Resou
 
 	sess, err := meta.(conns.ClientSession).CisOrigAuthSession()
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error while getting the CisOrigAuthSession %v", err))
+		tfErr := flex.TerraformErrorf(err,
+			fmt.Sprintf("resourceIBMCISOriginAuthPullCreate CisOrigAuthSession initialization failed: %s", err.Error()),
+			"ibm_cis_origin_auth", "create")
+		return tfErr.GetDiag()
 	}
 
 	crn := d.Get(cisID).(string)
@@ -166,7 +169,10 @@ func resourceIBMCISOriginAuthPullCreate(context context.Context, d *schema.Resou
 
 		result, resp, opErr := sess.UploadZoneOriginPullCertificate(options)
 		if opErr != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error while uploading certificate zone level %v", resp))
+			tfErr := flex.TerraformErrorf(opErr,
+				fmt.Sprintf("resourceIBMCISOriginAuthPullCreate UploadZoneOriginPullCertificate failed: %s \nResponse: %v", opErr.Error(), resp),
+				"ibm_cis_origin_auth", "create")
+			return tfErr.GetDiag()
 		}
 
 		d.SetId(flex.ConvertCisToTfFourVar(*result.Result.ID, level_val, zoneID, crn))
@@ -177,7 +183,10 @@ func resourceIBMCISOriginAuthPullCreate(context context.Context, d *schema.Resou
 		options.SetPrivateKey(key_val)
 		result, resp, opErr := sess.UploadHostnameOriginPullCertificate(options)
 		if opErr != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error while uploading certificate host level %v", resp))
+			tfErr := flex.TerraformErrorf(opErr,
+				fmt.Sprintf("resourceIBMCISOriginAuthPullCreate UploadHostnameOriginPullCertificate failed: %s \nResponse: %v", opErr.Error(), resp),
+				"ibm_cis_origin_auth", "create")
+			return tfErr.GetDiag()
 		}
 
 		d.SetId(flex.ConvertCisToTfFourVar(*result.Result.ID, level_val, zoneID, crn))
@@ -191,7 +200,10 @@ func resourceIBMCISOriginAuthPullRead(context context.Context, d *schema.Resourc
 	var zone_config bool
 	sess, err := meta.(conns.ClientSession).CisOrigAuthSession()
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error while getting the CisOrigAuthSession %v", err))
+		tfErr := flex.TerraformErrorf(err,
+			fmt.Sprintf("resourceIBMCISOriginAuthPullRead CisOrigAuthSession initialization failed: %s", err.Error()),
+			"ibm_cis_origin_auth", "read")
+		return tfErr.GetDiag()
 	}
 
 	certID, level_val, zoneID, crn, _ := flex.ConvertTfToCisFourVar(d.Id())
@@ -210,7 +222,10 @@ func resourceIBMCISOriginAuthPullRead(context context.Context, d *schema.Resourc
 		result, response, err := sess.GetZoneOriginPullCertificate(getOptions)
 
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error while getting detail of zone origin auth pull %v:%v", err, response))
+			tfErr := flex.TerraformErrorf(err,
+				fmt.Sprintf("resourceIBMCISOriginAuthPullRead GetZoneOriginPullCertificate failed: %s \nResponse: %v", err.Error(), response),
+				"ibm_cis_origin_auth", "read")
+			return tfErr.GetDiag()
 		}
 		d.Set(cisOriginAuthID, *result.Result.ID)
 		d.Set(cisOriginAuthCertContent, *result.Result.Certificate)
@@ -226,7 +241,10 @@ func resourceIBMCISOriginAuthPullRead(context context.Context, d *schema.Resourc
 		result, response, err := sess.GetHostnameOriginPullCertificate(getOptions)
 
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error while getting detail of host origin auth pull %v:%v", err, response))
+			tfErr := flex.TerraformErrorf(err,
+				fmt.Sprintf("resourceIBMCISOriginAuthPullRead GetHostnameOriginPullCertificate failed: %s \nResponse: %v", err.Error(), response),
+				"ibm_cis_origin_auth", "read")
+			return tfErr.GetDiag()
 		}
 		d.Set(cisOriginAuthID, *result.Result.ID)
 		d.Set(cisOriginAuthCertContent, *result.Result.Certificate)
@@ -247,7 +265,10 @@ func resourceIBMCISOriginAuthPullUpdate(context context.Context, d *schema.Resou
 	var host_name string
 	sess, err := meta.(conns.ClientSession).CisOrigAuthSession()
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error while getting the CisOrigAuthSession %v", err))
+		tfErr := flex.TerraformErrorf(err,
+			fmt.Sprintf("resourceIBMCISOriginAuthPullUpdate CisOrigAuthSession initialization failed: %s", err.Error()),
+			"ibm_cis_origin_auth", "update")
+		return tfErr.GetDiag()
 	}
 
 	certID, level_val, zoneID, crn, _ := flex.ConvertTfToCisFourVar(d.Id())
@@ -267,7 +288,10 @@ func resourceIBMCISOriginAuthPullUpdate(context context.Context, d *schema.Resou
 			_, response, err := sess.SetZoneOriginPullSettings(updateOption)
 
 			if err != nil {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error while updaing the zone origin auth pull setting %v:%v", err, response))
+				tfErr := flex.TerraformErrorf(err,
+					fmt.Sprintf("resourceIBMCISOriginAuthPullUpdate SetZoneOriginPullSettings failed: %s \nResponse: %v", err.Error(), response),
+					"ibm_cis_origin_auth", "update")
+				return tfErr.GetDiag()
 			}
 
 		}
@@ -288,7 +312,10 @@ func resourceIBMCISOriginAuthPullUpdate(context context.Context, d *schema.Resou
 			setOption.SetConfig([]authenticatedoriginpullapiv1.HostnameOriginPullSettings{*model})
 			_, setResp, setErr := sess.SetHostnameOriginPullSettings(setOption)
 			if setErr != nil {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error while updaing the host origin auth pull setting %v:%v", setErr, setResp))
+				tfErr := flex.TerraformErrorf(setErr,
+					fmt.Sprintf("resourceIBMCISOriginAuthPullUpdate SetZoneOriginPullSettings failed: %s \nResponse: %v", setErr.Error(), setResp),
+					"ibm_cis_origin_auth", "update")
+				return tfErr.GetDiag()
 			}
 
 		}
@@ -302,7 +329,10 @@ func resourceIBMCISOriginAuthPullDelete(context context.Context, d *schema.Resou
 	var zone_config bool
 	sess, err := meta.(conns.ClientSession).CisOrigAuthSession()
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error while getting the CisOrigAuthSession %v", err))
+		tfErr := flex.TerraformErrorf(err,
+			fmt.Sprintf("resourceIBMCISOriginAuthPullDelete CisOrigAuthSession initialization failed: %s", err.Error()),
+			"ibm_cis_origin_auth", "delete")
+		return tfErr.GetDiag()
 	}
 
 	certID, level_val, zoneID, crn, _ := flex.ConvertTfToCisFourVar(d.Id())
@@ -319,7 +349,10 @@ func resourceIBMCISOriginAuthPullDelete(context context.Context, d *schema.Resou
 		_, resp, err := sess.DeleteZoneOriginPullCertificate(delOpt)
 
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error while deleting the certificate zone level %v: %v", certID, resp))
+			tfErr := flex.TerraformErrorf(err,
+				fmt.Sprintf("resourceIBMCISOriginAuthPullDelete DeleteZoneOriginPullCertificate failed: %s \nResponse: %v", err.Error(), resp),
+				"ibm_cis_origin_auth", "delete")
+			return tfErr.GetDiag()
 		}
 
 	} else {
@@ -327,7 +360,10 @@ func resourceIBMCISOriginAuthPullDelete(context context.Context, d *schema.Resou
 		_, resp, err := sess.DeleteHostnameOriginPullCertificate(delOpt)
 
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error while deleting the certificate host level %v: %v", certID, resp))
+			tfErr := flex.TerraformErrorf(err,
+				fmt.Sprintf("resourceIBMCISOriginAuthPullDelete DeleteHostnameOriginPullCertificate failed: %s \nResponse: %v", err.Error(), resp),
+				"ibm_cis_origin_auth", "delete")
+			return tfErr.GetDiag()
 		}
 
 	}
