@@ -80,7 +80,7 @@ func resourceIntegrationKmsCreate(d *schema.ResourceData, meta interface{}) erro
 	guid := d.Get("guid").(string)
 	appconfigClient, err := getAppConfigClient(meta, guid)
 	if err != nil {
-		return flex.FmtErrorf(fmt.Sprintf("%s", err))
+		return flex.FmtErrorf("%s", fmt.Sprintf("%s", err))
 	}
 	options := &appconfigurationv1.CreateIntegrationOptions{}
 	options.SetIntegrationType("KMS")
@@ -112,7 +112,7 @@ func resourceIntegrationKmsRead(d *schema.ResourceData, meta interface{}) error 
 	}
 	appconfigClient, err := getAppConfigClient(meta, parts[0])
 	if err != nil {
-		return flex.FmtErrorf(fmt.Sprintf("%s", err))
+		return flex.FmtErrorf("%s", fmt.Sprintf("%s", err))
 	}
 
 	options := &appconfigurationv1.GetIntegrationOptions{}
@@ -162,7 +162,7 @@ func resourceIntegrationKmsDelete(d *schema.ResourceData, meta interface{}) erro
 
 	appconfigClient, err := getAppConfigClient(meta, parts[0])
 	if err != nil {
-		return flex.FmtErrorf(fmt.Sprintf("%s", err))
+		return flex.FmtErrorf("%s", fmt.Sprintf("%s", err))
 	}
 
 	options := &appconfigurationv1.DeleteIntegrationOptions{}

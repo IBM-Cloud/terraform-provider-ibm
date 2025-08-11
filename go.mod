@@ -5,9 +5,8 @@ go 1.24.2
 require (
 	github.com/IBM-Cloud/bluemix-go v0.0.0-20250324085928-caa6511f0c13
 	github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20240725064144-454a2ae23113
-	github.com/IBM/apigateway-go-sdk v0.0.0-20210714141226-a5d5d49caaca
-	github.com/IBM/appconfiguration-go-admin-sdk v0.5.1
 	github.com/IBM-Cloud/power-go-client v1.12.0
+	github.com/IBM/appconfiguration-go-admin-sdk v0.5.1
 	github.com/IBM/appid-management-go-sdk v0.0.0-20210908164609-dd0e0eaf732f
 	github.com/IBM/cloud-databases-go-sdk v0.8.0
 	github.com/IBM/cloud-db2-go-sdk v0.2.3
@@ -214,7 +213,6 @@ require (
 	google.golang.org/appengine v1.6.8 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240814211410-ddb44dafa142 // indirect
 	google.golang.org/grpc v1.67.1 // indirect
-	gopkg.in/go-playground/validator.v9 v9.31.0 // indirect
 	google.golang.org/protobuf v1.36.5 // indirect
 	gopkg.in/evanphx/json-patch.v4 v4.12.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
