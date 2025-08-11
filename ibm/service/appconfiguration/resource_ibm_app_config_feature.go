@@ -27,6 +27,7 @@ func ResourceIBMIbmAppConfigFeature() *schema.Resource {
 			"guid": {
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 				Description: "GUID of the App Configuration service. Get it from the service instance credentials section of the dashboard.",
 			},
 			"environment_id": {
@@ -129,6 +130,11 @@ func ResourceIBMIbmAppConfigFeature() *schema.Resource {
 							Type:        schema.TypeString,
 							Required:    true,
 							Description: "Collection id.",
+						},
+						"deleted": {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Description: "Remove Collection Association with Resource",
 						},
 					},
 				},
@@ -266,10 +272,10 @@ func resourceIbmIbmAppConfigFeatureUpdate(d *schema.ResourceData, meta interface
 			options.SetSegmentRules(segmentRules)
 		}
 		if _, ok := GetFieldExists(d, "collections"); ok {
-			var collections []appconfigurationv1.CollectionRef
+			var collections []appconfigurationv1.CollectionUpdateRef
 			for _, e := range d.Get("collections").([]interface{}) {
 				value := e.(map[string]interface{})
-				collectionsItem := resourceIbmAppConfigFeatureMapToCollectionRef(value)
+				collectionsItem := resourceIbmAppConfigFeatureMapToCollectionUpdateRef(value)
 				collections = append(collections, collectionsItem)
 			}
 			options.SetCollections(collections)
@@ -555,4 +561,13 @@ func resourceIbmAppConfigFeatureMapToCollectionRef(collectionRefMap map[string]i
 	collectionRef.CollectionID = core.StringPtr(collectionRefMap["collection_id"].(string))
 
 	return collectionRef
+}
+
+func resourceIbmAppConfigFeatureMapToCollectionUpdateRef(collectionUpdateRefMap map[string]interface{}) appconfigurationv1.CollectionUpdateRef {
+	collectionUpdateRef := appconfigurationv1.CollectionUpdateRef{}
+	collectionUpdateRef.CollectionID = core.StringPtr(collectionUpdateRefMap["collection_id"].(string))
+	if value, exists := collectionUpdateRefMap["deleted"]; exists {
+		collectionUpdateRef.Deleted = core.BoolPtr(value.(bool))
+	}
+	return collectionUpdateRef
 }
