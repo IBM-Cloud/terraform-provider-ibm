@@ -51,6 +51,11 @@ variable "vmaas_transit_gateway_connection_edge_id" {
   type        = string
   default     = "edge_id"
 }
+variable "vmaas_transit_gateway_connection_id" {
+  description = "A unique ID for a transit gateway."
+  type        = string
+  default     = "tgw_id"
+}
 
 variable "vmaas_transit_gateway_connection_region" {
   description = "The region where the IBM Transit Gateway is deployed."
