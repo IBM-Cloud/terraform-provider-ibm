@@ -100,7 +100,6 @@ func ResourceIBMPIImage() *schema.Resource {
 			},
 			Arg_ImageBucketAccess: {
 				ConflictsWith: []string{Arg_ImageID},
-				Default:       Public,
 				Description:   "Indicates if the bucket has public or private access",
 				ForceNew:      true,
 				Optional:      true,
