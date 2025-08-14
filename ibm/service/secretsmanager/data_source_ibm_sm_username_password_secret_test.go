@@ -35,6 +35,7 @@ func TestAccIbmSmUsernamePasswordSecretDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_sm_username_password_secret.sm_username_password_secret", "password"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_username_password_secret.sm_username_password_secret_by_name", "name"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_username_password_secret.sm_username_password_secret_by_name", "secret_group_name"),
+					resource.TestCheckResourceAttrSet("data.ibm_sm_username_password_secret.sm_username_password_secret_by_name", "secret_id"),
 				),
 			},
 		},
