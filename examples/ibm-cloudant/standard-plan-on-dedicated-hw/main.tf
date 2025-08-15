@@ -13,8 +13,8 @@ resource "ibm_cloudant" "cloudant" {
   name     = "test_standard_plan_on_dedicated_hw_cloudant"
   location = var.service_region
   plan     = "standard"
-  // Optional arguments:
-  environment_crn = ibm_resource_instance.cloudant-dedicated-cluster.id
+  // Optional arguments (existing dedicated cluster):
+  environment_crn = data.ibm_resource_instance.cloudant-dedicated-cluster.id
 }
 
 // Create cloudant data source
