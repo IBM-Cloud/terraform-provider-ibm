@@ -342,6 +342,11 @@ func DataSourceIBMCdTektonPipeline() *schema.Resource {
 							Computed:    true,
 							Description: "When enabled, pull request events from forks of the selected repository will trigger a pipeline run.",
 						},
+						"disable_draft_events": &schema.Schema{
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Prevent new pipeline runs from being triggered by events from draft pull requests.",
+						},
 						"source": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
@@ -823,6 +828,9 @@ func DataSourceIBMCdTektonPipelineTriggerToMap(model cdtektonpipelinev2.TriggerI
 		if model.EnableEventsFromForks != nil {
 			modelMap["enable_events_from_forks"] = *model.EnableEventsFromForks
 		}
+		if model.DisableDraftEvents != nil {
+			modelMap["disable_draft_events"] = *model.DisableDraftEvents
+		}
 		if model.Source != nil {
 			sourceMap, err := DataSourceIBMCdTektonPipelineTriggerSourceToMap(model.Source)
 			if err != nil {
@@ -1031,6 +1039,9 @@ func DataSourceIBMCdTektonPipelineTriggerScmTriggerToMap(model *cdtektonpipeline
 	}
 	if model.EnableEventsFromForks != nil {
 		modelMap["enable_events_from_forks"] = *model.EnableEventsFromForks
+	}
+	if model.DisableDraftEvents != nil {
+		modelMap["disable_draft_events"] = *model.DisableDraftEvents
 	}
 	if model.Source != nil {
 		sourceMap, err := DataSourceIBMCdTektonPipelineTriggerSourceToMap(model.Source)
