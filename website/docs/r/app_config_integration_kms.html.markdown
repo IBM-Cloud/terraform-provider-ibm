@@ -41,3 +41,19 @@ In addition to all argument references list, you can access the following attrib
 - `created_time` - (Timestamp) The creation time of the feature flag.
 - `updated_time` - (Timestamp) The last modified time of the feature flag data.
 - `href` - (String) The feature flag URL.
+
+## Import
+
+The `ibm_app_config_integration_kms` resource can be imported by using `guid` of the App Configuration instance and `integrationId`. Get the `guid` from the service instance credentials section of the dashboard.
+
+## Syntax
+
+```bash
+terraform import ibm_app_config_integration_kms.sample  <guid/integrationId>
+```
+
+## Example
+
+```bash
+terraform import ibm_app_config_integration_kms.sample 272111153-c118-4116-8116-b811fbc31132/sample_integration_kms
+```
