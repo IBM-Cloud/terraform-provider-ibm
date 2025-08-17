@@ -77,9 +77,6 @@ You can access the following attribute references after your data source is crea
 		- `value` - (String) Indicated whether source ip session persistence is supported. Applicable only if `type` is **fixed**
 
 	- `name` - (String) The name for this load balancer profile.
-	- `reserved_ip_target_supported` - (Bool) The Reserved IP Target support for a load balancer with this profile.	
-	- `reserved_ip_type` - (String) The reserved ip type for this load balancer profile, one of [fixed, dependent]
-
 	- `route_mode_supported` - (Bool) The route mode support for a load balancer with this profile.
 	- `route_mode_type` - (String) The route mode type for this load balancer profile, one of [fixed, dependent]
 	- `targetable_load_balancer_profiles` - (List) The load balancer profiles that load balancers with this profile can target
@@ -87,8 +84,12 @@ You can access the following attribute references after your data source is crea
 		Nested scheme for `targetable_load_balancer_profiles`:
 		- `family` - (String) The product family this load balancer profile belongs to.
 		- `href` - (String) The URL for this load balancer profile.
-		- `name` - (String) The name for this load balancer profile.  	
-	
+		- `name` - (String) The name for this load balancer profile.  
+	- `targetable_resource_types` - (List) The targetable resource types configuration for a load balancer with this profile.
+		
+		Nested schema for `targetable_resource_types`:
+		- `type` - (String) The type for this profile field.
+		- `values` - (List) The resource types that pool members of load balancers with this profile can target.
 	- `udp_supported` - (Bool) The UDP support for a load balancer with this profile.
 	- `udp_supported_type` - (String) The UDP support type for a load balancer with this profile, one of [fixed, dependent]
 

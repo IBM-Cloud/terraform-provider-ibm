@@ -42,7 +42,6 @@ const (
 	isLBDeleted                      = "done"
 	isLBProvisioning                 = "provisioning"
 	isLBProvisioningDone             = "done"
-	isLBReservedIPtargetSupported    = "reserved_ip_target_supported"
 	isLBResourceGroup                = "resource_group"
 	isLBProfile                      = "profile"
 	isLBRouteMode                    = "route_mode"
@@ -296,13 +295,6 @@ func ResourceIBMISLB() *schema.Resource {
 				Set:         flex.ResourceIBMVPCHash,
 				Description: "List of access management tags",
 			},
-
-			isLBReservedIPtargetSupported: {
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: "Indicates whether this load balancer supports members with reserved IP as target.",
-			},
-
 			isLBResourceGroup: {
 				Type:     schema.TypeString,
 				ForceNew: true,
@@ -797,9 +789,6 @@ func lbGet(context context.Context, d *schema.ResourceData, meta interface{}, id
 	if err = d.Set(isLBHostName, *loadBalancer.Hostname); err != nil {
 		err = fmt.Errorf("Error setting hostname: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb", "read", "set-hostname").GetDiag()
-	}
-	if lb.ReservedIPTargetSupported != nil {
-		d.Set(isLBReservedIPtargetSupported, *lb.ReservedIPTargetSupported)
 	}
 	if loadBalancer.UDPSupported != nil {
 		if err = d.Set(isLBUdpSupported, *loadBalancer.UDPSupported); err != nil {

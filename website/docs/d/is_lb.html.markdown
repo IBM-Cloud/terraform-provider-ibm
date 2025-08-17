@@ -124,7 +124,6 @@ In addition to all argument reference list, you can access the following attribu
 	- `reserved_ip`- (String) The unique identifier for this reserved IP
 	- `resource_type`- (String) The resource type.
 - `private_ips` - (List) The private IP addresses assigned to this load balancer. Same as `private_ip.[].address`
-- `reserved_ip_target_supported`- (Bool) Indicates whether this load balancer supports members with reserved IP as target.
 - `resource_group` - (String) The resource group id, where the load balancer is created.
 - `route_mode` - (Bool) Indicates whether route mode is enabled for this load balancer.
 - `security_groups`- (String) A list of security groups that are used with this load balancer. This option is supported only for application load balancers.

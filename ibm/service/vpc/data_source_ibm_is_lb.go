@@ -97,11 +97,6 @@ func DataSourceIBMISLB() *schema.Resource {
 				Computed:    true,
 				Description: "Indicates whether this load balancer supports source IP session persistence.",
 			},
-			isLBReservedIPtargetSupported: {
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: "Indicates whether this load balancer supports members with reserved IP as target.",
-			},
 			isLBUdpSupported: {
 				Type:        schema.TypeBool,
 				Computed:    true,
@@ -488,9 +483,6 @@ func lbGetByName(context context.Context, d *schema.ResourceData, meta interface
 				if err = d.Set(isLBRouteMode, *loadBalancer.RouteMode); err != nil {
 					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting route_mode: %s", err), "(Data) ibm_is_lb", "read", "set-route_mode").GetDiag()
 				}
-			}
-			if lb.ReservedIPTargetSupported != nil {
-				d.Set(isLBReservedIPtargetSupported, *lb.ReservedIPTargetSupported)
 			}
 			if err = d.Set("udp_supported", loadBalancer.UDPSupported); err != nil {
 				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting udp_supported: %s", err), "(Data) ibm_is_lb", "read", "set-udp_supported").GetDiag()

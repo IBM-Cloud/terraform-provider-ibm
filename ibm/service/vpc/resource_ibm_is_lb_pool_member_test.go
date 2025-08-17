@@ -589,47 +589,6 @@ func testAccCheckIBMISLBPoolMemberIDConfigWithLBTarget(vpcname, subnetname, zone
 `, vpcname, subnetname, zone, cidr, albName, nlbName, nlbPoolName)
 }
 
-func testAccCheckIBMISLBPoolMemberIDConfigWithLBTarget(vpcname, subnetname, zone, cidr, albName, nlbName, nlbPoolName string) string {
-	return fmt.Sprintf(`
-	resource "ibm_is_vpc" "testacc_vpc" {
-		name = "%s"
-	}
-	resource "ibm_is_subnet" "testacc_subnet" {
-		name = "%s"
-		vpc = "${ibm_is_vpc.testacc_vpc.id}"
-		zone = "%s"
-		ipv4_cidr_block = "%s"
-	}
-	resource "ibm_is_lb" "testacc_LB" {
-		name = "%s"
-		subnets = ["${ibm_is_subnet.testacc_subnet.id}"]
-	}
-	resource "ibm_is_lb" "testacc_NLB" {
-		name = "%s"
-		subnets = ["${ibm_is_subnet.testacc_subnet.id}"]
-		profile = "network-private-path"
-		type    = "private_path"
-	}
-	resource "ibm_is_lb_pool" "testacc_nlb_pool" {
-		name = "%s"
-		lb = "${ibm_is_lb.testacc_NLB.id}"
-		algorithm      = "weighted_round_robin"
-        protocol       = "tcp"
-        health_delay   = 60
-        health_retries = 5
-        health_timeout = 30
-        health_type    = "tcp"
-	}
-	resource "ibm_is_lb_pool_member" "testacc_nlb_mem" {
-		lb = "${ibm_is_lb.testacc_NLB.id}"
-		pool = "${element(split("/",ibm_is_lb_pool.testacc_nlb_pool.id),1)}"
-		port = 8080
-        weight = 20
-		target_id = "${ibm_is_lb.testacc_LB.id}"
-	}
-`, vpcname, subnetname, zone, cidr, albName, nlbName, nlbPoolName)
-}
-
 func testAccCheckIBMISLBPoolMemberIDConfigWithReservedIPTarget(vpcname, subnetname, resIpSubnetName, zone, cidr, sshname, publickey,
 	isImageName, vsiName, nlbName, nlbPoolName string) string {
 	return fmt.Sprintf(`

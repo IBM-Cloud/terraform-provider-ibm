@@ -86,10 +86,26 @@ func DataSourceIBMISLbProfile() *schema.Resource {
 				Computed:    true,
 				Description: "The product family this load balancer profile belongs to",
 			},
-			"reserved_ip_target_supported": {
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: "The Reserved IP Target support for a load balancer with this profile",
+			"targetable_resource_types": &schema.Schema{
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"type": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The type for this profile field.",
+						},
+						"values": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The resource types that pool members of load balancers with this profile can target",
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+						},
+					},
+				},
 			},
 			"reserved_ip_type": {
 				Type:        schema.TypeString,
@@ -285,36 +301,36 @@ func dataSourceIBMISLbProfileRead(context context.Context, d *schema.ResourceDat
 			}
 		}
 	}
-	if lbProfile.ReservedIPTargetSupported != nil {
-		reservedIPTargetSupported := lbProfile.ReservedIPTargetSupported
-		switch reflect.TypeOf(reservedIPTargetSupported).String() {
-		case "*vpcv1.LoadBalancerProfileReservedIPTargetSupportedFixed":
-			{
-				reservedIP := reservedIPTargetSupported.(*vpcv1.LoadBalancerProfileReservedIPTargetSupportedFixed)
-				d.Set("reserved_ip_target_supported", reservedIP.Value)
-				d.Set("reserved_ip_type", reservedIP.Type)
-			}
-		case "*vpcv1.LoadBalancerProfileReservedIPTargetSupportedDependent":
-			{
-				reservedIP := reservedIPTargetSupported.(*vpcv1.LoadBalancerProfileReservedIPTargetSupportedDependent)
-				if reservedIP.Type != nil {
-					d.Set("reserved_ip_type", *reservedIP.Type)
-				}
-			}
-		case "*vpcv1.LoadBalancerProfileReservedIPTargetSupported":
-			{
-				reservedIP := reservedIPTargetSupported.(*vpcv1.LoadBalancerProfileReservedIPTargetSupported)
-				if reservedIP.Type != nil {
-					d.Set("reserved_ip_type", *reservedIP.Type)
-				}
-				if reservedIP.Value != nil {
-					d.Set("reserved_ip_target_supported", *reservedIP.Value)
-				}
-			}
+
+	if loadBalancerProfile.TargetableResourceTypes != nil {
+		err = d.Set("targetable_resource_types", dataSourceTargetableResourceTypes(*loadBalancerProfile.TargetableResourceTypes))
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting targetable_resource_types: %s", err), "(Data) ibm_is_lb_profile", "read", "set-targetable_resource_types").GetDiag()
 		}
 	}
 	d.SetId(*loadBalancerProfile.Name)
 	return nil
+}
+
+func dataSourceTargetableResourceTypes(result vpcv1.LoadBalancerProfileTargetableResourceTypes) (finalList []map[string]interface{}) {
+	finalList = []map[string]interface{}{}
+	finalMap := dataSourceTargetableResourceTypesToMap(result)
+	finalList = append(finalList, finalMap)
+
+	return finalList
+}
+
+func dataSourceTargetableResourceTypesToMap(resTermItem vpcv1.LoadBalancerProfileTargetableResourceTypes) map[string]interface{} {
+	resTermMap := map[string]interface{}{}
+
+	if resTermItem.Type != nil {
+		resTermMap["type"] = resTermItem.Type
+	}
+	if resTermItem.Values != nil {
+		resTermMap["values"] = resTermItem.Values
+	}
+
+	return resTermMap
 }
 
 func dataSourceIBMIsLbProfileLoadBalancerProfileFailsafePolicyActionsToMap(model vpcv1.LoadBalancerProfileFailsafePolicyActionsIntf) (map[string]interface{}, error) {
