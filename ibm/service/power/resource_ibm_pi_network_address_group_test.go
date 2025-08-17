@@ -59,6 +59,52 @@ func testAccCheckIBMPINetworkAddressGroupConfigBasic(name string) string {
 	`, acc.Pi_cloud_instance_id, name)
 }
 
+func TestAccIBMPINetworkAddressGroupUserTags(t *testing.T) {
+	name := fmt.Sprintf("tf-nag-name-%d", acctest.RandIntRange(10, 100))
+	nagRes := "ibm_pi_network_address_group.network_address_group"
+	userTagsString := `["env:dev", "test_tag"]`
+	userTagsStringUpdated := `["env:dev", "test_tag", "ibm"]`
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPINetworkAddressGroupDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMPINetworkAddressGroupConfigUserTags(name, userTagsString),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMPINetworkAddressGroupExists(nagRes),
+					resource.TestCheckResourceAttrSet(nagRes, power.Attr_ID),
+					resource.TestCheckResourceAttrSet(nagRes, power.Attr_CRN),
+					resource.TestCheckResourceAttr(nagRes, power.Arg_UserTags+".#", "2"),
+					resource.TestCheckTypeSetElemAttr(nagRes, power.Arg_UserTags+".*", "env:dev"),
+					resource.TestCheckTypeSetElemAttr(nagRes, power.Arg_UserTags+".*", "test_tag"),
+				),
+			},
+			{
+				Config: testAccCheckIBMPINetworkAddressGroupConfigUserTags(name, userTagsStringUpdated),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet(nagRes, power.Attr_ID),
+					resource.TestCheckResourceAttrSet(nagRes, power.Attr_CRN),
+					resource.TestCheckResourceAttr(nagRes, power.Arg_UserTags+".#", "3"),
+					resource.TestCheckTypeSetElemAttr(nagRes, power.Arg_UserTags+".*", "env:dev"),
+					resource.TestCheckTypeSetElemAttr(nagRes, power.Arg_UserTags+".*", "test_tag"),
+					resource.TestCheckTypeSetElemAttr(nagRes, power.Arg_UserTags+".*", "ibm"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMPINetworkAddressGroupConfigUserTags(name string, userTagsString string) string {
+	return fmt.Sprintf(`
+		resource "ibm_pi_network_address_group" "network_address_group" {
+			pi_cloud_instance_id = "%[1]s"	
+			pi_name = "%[2]s"
+			pi_user_tags = %[3]s
+		}
+	`, acc.Pi_cloud_instance_id, name, userTagsString)
+}
+
 func testAccCheckIBMPINetworkAddressGroupExists(n string) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {

@@ -102,6 +102,21 @@ After your resource is created, you can read values from the listed arguments an
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}$/`.
 * `build` - (String) Reference to a build that is associated with the job.
 * `build_run` - (String) Reference to a build run that is associated with the job.
+* `computed_env_variables` - (List) References to config maps, secrets or literal values, which are defined and set by Code Engine and are exposed as environment variables in the job run.
+  * Constraints: The maximum length is `100` items. The minimum length is `0` items.
+Nested schema for **computed_env_variables**:
+	* `key` - (String) The key to reference as environment variable.
+	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[\\-._a-zA-Z0-9]+$/`.
+	* `name` - (String) The name of the environment variable.
+	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[\\-._a-zA-Z0-9]+$/`.
+	* `prefix` - (String) A prefix that can be added to all keys of a full secret or config map reference.
+	  * Constraints: The maximum length is `253` characters. The minimum length is `0` characters. The value must match regular expression `/^[a-zA-Z_][a-zA-Z0-9_]*$/`.
+	* `reference` - (String) The name of the secret or config map.
+	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[a-z0-9]([\\-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([\\-a-z0-9]*[a-z0-9])?)*$/`.
+	* `type` - (String) Specify the type of the environment variable.
+	  * Constraints: The default value is `literal`. Allowable values are: `literal`, `config_map_full_reference`, `secret_full_reference`, `config_map_key_reference`, `secret_key_reference`. The value must match regular expression `/^(literal|config_map_full_reference|secret_full_reference|config_map_key_reference|secret_key_reference)$/`.
+	* `value` - (String) The literal value of the environment variable.
+      * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[\\-._a-zA-Z0-9]+$/`.
 * `created_at` - (String) The timestamp when the resource was created.
 * `entity_tag` - (String) The version of the job instance, which is used to achieve optimistic locking.
   * Constraints: The maximum length is `63` characters. The minimum length is `1` character. The value must match regular expression `/^[\\*\\-a-z0-9]+$/`.
@@ -110,7 +125,6 @@ After your resource is created, you can read values from the listed arguments an
 * `region` - (String) The region of the project the resource is located in. Possible values: 'au-syd', 'br-sao', 'ca-tor', 'eu-de', 'eu-gb', 'jp-osa', 'jp-tok', 'us-east', 'us-south'.
 * `resource_type` - (String) The type of the job.
   * Constraints: Allowable values are: `job_v2`.
-
 * `etag` - ETag identifier for code_engine_job.
 
 ## Import

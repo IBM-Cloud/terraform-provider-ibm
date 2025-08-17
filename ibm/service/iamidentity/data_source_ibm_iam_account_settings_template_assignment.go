@@ -467,7 +467,7 @@ func dataSourceIBMAccountSettingsTemplateAssignmentTemplateAssignmentResponseRes
 			}
 			policyTemplateRefs = append(policyTemplateRefs, policyTemplateRefsItemMap)
 		}
-		modelMap["policy_template_refs"] = policyTemplateRefs
+		modelMap["policy_template_references"] = policyTemplateRefs
 	}
 	return modelMap, nil
 }

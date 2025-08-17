@@ -318,6 +318,41 @@ variable "sm_username_password_secret_password" {
   type        = string
   default     = "password"
 }
+variable "sm_custom_credentials_secret_group_id" {
+  description = "A UUID identifier, or `default` secret group."
+  type        = string
+  default     = "default"
+}
+variable "sm_custom_credentials_labels" {
+  description = "Labels that you can use to search for secrets in your instance.Up to 30 labels can be created."
+  type        = list(string)
+  default     = [ "my-label" ]
+}
+variable "sm_custom_credentials_name" {
+  description = "The human-readable name of your secret."
+  type        = string
+  default     = "my-custom-credentials-secret"
+}
+variable "sm_arbitrary_secret_metadata_id" {
+  description = "The ID of the secret."
+  type        = string
+  default     = "0b5571f7-21e6-42b7-91c5-3f5ac9793a46"
+}
+variable "custom_credentials_project_id" {
+  description = "The Code Engine project ID."
+  type        = string
+  default     = "0b5571f7-21e6-42b7-91c5-3f5ac9793a46"
+}
+variable "custom_credentials_job_name" {
+  description = "The Code Engine job name."
+  type        = string
+  default     = "my-code-engine-job"
+}
+variable "custom_credentials_api_key_ref" {
+  description = "The ID of the IAM credentials secret used by the custom credentials configuration."
+  type        = string
+  default     = "0b5571f7-21e6-42b7-91c5-3f5ac9793a46"
+}
 
 // Resource arguments for sm_private_certificate
 variable "sm_private_certificate_name" {
@@ -773,6 +808,13 @@ variable "sm_public_certificate_id" {
 
 // Data source arguments for sm_kv_secret
 variable "sm_kv_secret_id" {
+  description = "The ID of the secret."
+  type        = string
+  default     = "0b5571f7-21e6-42b7-91c5-3f5ac9793a46"
+}
+
+// Data source arguments for sm_custom_credentials_secret
+variable "sm_custom_credentials_secret_id" {
   description = "The ID of the secret."
   type        = string
   default     = "0b5571f7-21e6-42b7-91c5-3f5ac9793a46"

@@ -1,5 +1,4 @@
 ---
-
 subcategory: "Power Systems"
 layout: "ibm"
 page_title: "IBM: pi_workspace"
@@ -11,7 +10,7 @@ description: |-
 
 Create or Delete a PowerVS Workspace
 
-## Example usage
+## Example Usage
 
 ```terraform
 data "ibm_resource_group" "group" {
@@ -39,7 +38,7 @@ The `ibm_pi_workspace` provides the following [timeouts](https://developer.hashi
 - **create** - (Default 30 minutes) Used for creating powervs workspace.
 - **delete** - (Default 30 minutes) Used for deleting powervs workspace.
 
-## Argument reference
+## Argument Reference
 
 Review the argument references that you can specify for your resource.
 
@@ -49,7 +48,7 @@ Review the argument references that you can specify for your resource.
 - `pi_resource_group_id` - (Required, String) The ID of the resource group where you want to create the workspace. You can retrieve the value from data source `ibm_resource_group`.
 - `pi_user_tags` - (Optional, List) List of user tags attached to the resource.
 
-## Attribute reference
+## Attribute Reference
 
 In addition to all argument reference listed, you can access the following attribute references after your resource source is created.
 

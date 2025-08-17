@@ -11,10 +11,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -51,12 +53,12 @@ func ResourceIBMISEndpointGateway() *schema.Resource {
 	targetNameFmt := fmt.Sprintf("%s.0.%s", isVirtualEndpointGatewayTarget, isVirtualEndpointGatewayTargetName)
 	targetCRNFmt := fmt.Sprintf("%s.0.%s", isVirtualEndpointGatewayTarget, isVirtualEndpointGatewayTargetCRN)
 	return &schema.Resource{
-		Create:   resourceIBMisVirtualEndpointGatewayCreate,
-		Read:     resourceIBMisVirtualEndpointGatewayRead,
-		Update:   resourceIBMisVirtualEndpointGatewayUpdate,
-		Delete:   resourceIBMisVirtualEndpointGatewayDelete,
-		Exists:   resourceIBMisVirtualEndpointGatewayExists,
-		Importer: &schema.ResourceImporter{},
+		CreateContext: resourceIBMisVirtualEndpointGatewayCreate,
+		ReadContext:   resourceIBMisVirtualEndpointGatewayRead,
+		UpdateContext: resourceIBMisVirtualEndpointGatewayUpdate,
+		DeleteContext: resourceIBMisVirtualEndpointGatewayDelete,
+		Exists:        resourceIBMisVirtualEndpointGatewayExists,
+		Importer:      &schema.ResourceImporter{},
 
 		CustomizeDiff: customdiff.All(
 			customdiff.Sequence(
@@ -308,10 +310,12 @@ func ResourceIBMISEndpointGatewayValidator() *validate.ResourceValidator {
 	return &ibmEndpointGatewayResourceValidator
 }
 
-func resourceIBMisVirtualEndpointGatewayCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMisVirtualEndpointGatewayCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_virtual_endpoint_gateway", "create", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	name := d.Get(isVirtualEndpointGatewayName).(string)
@@ -333,6 +337,11 @@ func resourceIBMisVirtualEndpointGatewayCreate(d *schema.ResourceData, meta inte
 	vpcID := d.Get(isVirtualEndpointGatewayVpcID).(string)
 	vpcOpt := &vpcv1.VPCIdentity{
 		ID: core.StringPtr(vpcID),
+	}
+	if vpcID != "" {
+		isVPCKey := "vpe_vpc_key_" + vpcID
+		conns.IbmMutexKV.Lock(isVPCKey)
+		defer conns.IbmMutexKV.Unlock(isVPCKey)
 	}
 
 	// update option
@@ -377,8 +386,9 @@ func resourceIBMisVirtualEndpointGatewayCreate(d *schema.ResourceData, meta inte
 	}
 	endpointGateway, response, err := sess.CreateEndpointGateway(opt)
 	if err != nil {
-		log.Printf("Create Endpoint Gateway failed: %v", response)
-		return fmt.Errorf("[ERROR] Create Endpoint Gateway failed %s\n%s", err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("[ERROR] Create Endpoint Gateway failed %s\n%s", err, response), "ibm_is_virtual_endpoint_gateway", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(*endpointGateway.ID)
@@ -392,7 +402,9 @@ func resourceIBMisVirtualEndpointGatewayCreate(d *schema.ResourceData, meta inte
 				endpointGateway, response, err := sess.GetEndpointGateway(opt)
 				if err != nil {
 					log.Printf("Get Endpoint Gateway failed: %v", response)
-					return fmt.Errorf("[ERROR] Get Endpoint Gateway failed %s\n%s", err, response)
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetEndpointGateway failed: %s", err.Error()), "ibm_is_virtual_endpoint_gateway", "read")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
 				if len(endpointGateway.LifecycleReasons) > 0 {
 					if endpointGateway.LifecycleReasons[0].Code != nil && strings.Compare(*endpointGateway.LifecycleReasons[0].Code, "access_pending") == 0 {
@@ -401,10 +413,10 @@ func resourceIBMisVirtualEndpointGatewayCreate(d *schema.ResourceData, meta inte
 				}
 			}
 			if !isAccessPending {
-				return err
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_virtual_endpoint_gateway", "create", "access-pending").GetDiag()
 			}
 		} else {
-			return err
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_virtual_endpoint_gateway", "create", "not-private-path-service-gateway").GetDiag()
 		}
 	}
 
@@ -427,13 +439,15 @@ func resourceIBMisVirtualEndpointGatewayCreate(d *schema.ResourceData, meta inte
 		}
 	}
 
-	return resourceIBMisVirtualEndpointGatewayRead(d, meta)
+	return resourceIBMisVirtualEndpointGatewayRead(context, d, meta)
 }
 
-func resourceIBMisVirtualEndpointGatewayUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMisVirtualEndpointGatewayUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_virtual_endpoint_gateway", "update", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	// create option
@@ -451,7 +465,7 @@ func resourceIBMisVirtualEndpointGatewayUpdate(d *schema.ResourceData, meta inte
 	_, response, err := sess.UpdateEndpointGateway(opt)
 	if err != nil {
 		log.Printf("Update Endpoint Gateway failed: %v", response)
-		return fmt.Errorf("Update Endpoint Gateway failed : %s\n%s", err, response)
+		return flex.TerraformErrorf(err, err.Error(), "ibm_is_virtual_endpoint_gateway", "update").GetDiag()
 	}
 	id := d.Id()
 	var remove, add []string
@@ -468,11 +482,13 @@ func resourceIBMisVirtualEndpointGatewayUpdate(d *schema.ResourceData, meta inte
 				createSecurityGroupTargetBindingOptions.ID = &id
 				_, response, err := sess.CreateSecurityGroupTargetBinding(createSecurityGroupTargetBindingOptions)
 				if err != nil {
-					return fmt.Errorf("Error while creating Security Group Target Binding %s\n%s", err, response)
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error while creating Security Group Target Binding %s\n%s", err, response), "ibm_is_virtual_endpoint_gateway", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
 				_, err = isWaitForVirtualEndpointGatewayAvailable(sess, d.Id(), d.Timeout(schema.TimeoutUpdate))
 				if err != nil {
-					return err
+					return flex.TerraformErrorf(err, fmt.Sprintf("isWaitForVirtualEndpointGatewayAvailable failed: %s", err.Error()), "ibm_is_virtual_endpoint_gateway", "update").GetDiag()
 				}
 			}
 		}
@@ -487,16 +503,18 @@ func resourceIBMisVirtualEndpointGatewayUpdate(d *schema.ResourceData, meta inte
 					if response != nil && response.StatusCode == 404 {
 						continue
 					}
-					return fmt.Errorf("Error Getting Security Group Target for this endpoint gateway (%s): %s\n%s", sgId, err, response)
+					return flex.TerraformErrorf(err, fmt.Sprintf("Error Getting Security Group Target for this endpoint gateway (%s): %s\n%s", sgId, err, response), "ibm_is_virtual_endpoint_gateway", "update").GetDiag()
+
 				}
 				deleteSecurityGroupTargetBindingOptions := sess.NewDeleteSecurityGroupTargetBindingOptions(sgId, id)
 				response, err = sess.DeleteSecurityGroupTargetBinding(deleteSecurityGroupTargetBindingOptions)
 				if err != nil {
-					return fmt.Errorf("Error Deleting Security Group Target for this endpoint gateway : %s\n%s", err, response)
+					return flex.TerraformErrorf(err, fmt.Sprintf("Error Deleting Security Group Target for this endpoint gateway : %s\n%s", err, response), "ibm_is_virtual_endpoint_gateway", "update").GetDiag()
+
 				}
 				_, err = isWaitForVirtualEndpointGatewayAvailable(sess, d.Id(), d.Timeout(schema.TimeoutUpdate))
 				if err != nil {
-					return err
+					return flex.TerraformErrorf(err, fmt.Sprintf("isWaitForVirtualEndpointGatewayAvailable failed: %s", err.Error()), "ibm_is_virtual_endpoint_gateway", "update").GetDiag()
 				}
 			}
 		}
@@ -506,7 +524,8 @@ func resourceIBMisVirtualEndpointGatewayUpdate(d *schema.ResourceData, meta inte
 		opt := sess.NewGetEndpointGatewayOptions(d.Id())
 		endpointGateway, response, err := sess.GetEndpointGateway(opt)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error getting VPE: %s\n%s", err, response)
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("[ERROR] Error getting VPE: %s\n%s", err, response), "ibm_is_virtual_endpoint_gateway", "update", "get-vpe").GetDiag()
+
 		}
 		if d.HasChange(isVirtualEndpointGatewayTags) {
 			oldList, newList := d.GetChange(isVirtualEndpointGatewayTags)
@@ -514,6 +533,7 @@ func resourceIBMisVirtualEndpointGatewayUpdate(d *schema.ResourceData, meta inte
 			if err != nil {
 				log.Printf(
 					"Error on update of VPE (%s) tags: %s", d.Id(), err)
+
 			}
 		}
 
@@ -526,13 +546,15 @@ func resourceIBMisVirtualEndpointGatewayUpdate(d *schema.ResourceData, meta inte
 			}
 		}
 	}
-	return resourceIBMisVirtualEndpointGatewayRead(d, meta)
+	return resourceIBMisVirtualEndpointGatewayRead(context, d, meta)
 }
 
-func resourceIBMisVirtualEndpointGatewayRead(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMisVirtualEndpointGatewayRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_virtual_endpoint_gateway", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	// read option
 	opt := sess.NewGetEndpointGatewayOptions(d.Id())
@@ -543,14 +565,14 @@ func resourceIBMisVirtualEndpointGatewayRead(d *schema.ResourceData, meta interf
 			return nil
 		}
 		log.Printf("Get Endpoint Gateway failed: %v", response)
-		return fmt.Errorf("[ERROR] Get Endpoint Gateway failed %s\n%s", err, response)
+		return flex.TerraformErrorf(err, err.Error(), "ibm_is_virtual_endpoint_gateway", "read").GetDiag()
 	}
 	d.Set(isVirtualEndpointGatewayName, endpointGateway.Name)
 	d.Set(isVirtualEndpointGatewayHealthState, endpointGateway.HealthState)
 	d.Set(isVirtualEndpointGatewayCreatedAt, endpointGateway.CreatedAt.String())
 	d.Set(isVirtualEndpointGatewayLifecycleState, endpointGateway.LifecycleState)
 	if err := d.Set(isVirtualEndpointGatewayLifecycleReasons, resourceEGWFlattenLifecycleReasons(endpointGateway.LifecycleReasons)); err != nil {
-		return fmt.Errorf("[ERROR] Error setting lifecycle_reasons: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("[ERROR] Error setting lifecycle_reasons: %s", err), "ibm_is_virtual_endpoint_gateway", "read", "set-lifecycle-reasons").GetDiag()
 	}
 	d.Set(isVirtualEndpointGatewayAllowDnsResolutionBinding, endpointGateway.AllowDnsResolutionBinding)
 	d.Set(isVirtualEndpointGatewayResourceType, endpointGateway.ResourceType)
@@ -644,21 +666,25 @@ func isVirtualEndpointGatewayRefreshFunc(sess *vpcv1.VpcV1, endPointGatewayId st
 	}
 }
 
-func resourceIBMisVirtualEndpointGatewayDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMisVirtualEndpointGatewayDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_virtual_endpoint_gateway", "delete", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	opt := sess.NewDeleteEndpointGatewayOptions(d.Id())
 	response, err := sess.DeleteEndpointGateway(opt)
 	if err != nil {
 		log.Printf("Delete Endpoint Gateway failed: %v", response)
-		return fmt.Errorf("Delete Endpoint Gateway failed : %s\n%s", err, response)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_virtual_endpoint_gateway", "delete", "sep-id-parts").GetDiag()
 	}
 	_, err = isWaitForEGWDelete(sess, d, d.Id())
 	if err != nil {
-		return err
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteEndpointGateway failed: %s", err.Error()), "ibm_is_virtual_endpoint_gateway", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	return nil
 }

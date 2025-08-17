@@ -58,7 +58,6 @@ func TestAccIbmSccControlLibraryAllArgs(t *testing.T) {
 	controlLibraryName := fmt.Sprintf("tf_control_library_name_%d", acctest.RandIntRange(10, 100))
 	controlLibraryDescription := fmt.Sprintf("tf_control_library_description_%d", acctest.RandIntRange(10, 100))
 	controlLibraryType := "custom"
-	versionGroupLabel := "11111111-2222-3333-4444-555555555555"
 	controlLibraryVersion := "0.0.0"
 	latest := "true"
 	controlsCount := "1"
@@ -66,7 +65,6 @@ func TestAccIbmSccControlLibraryAllArgs(t *testing.T) {
 	controlLibraryNameUpdate := controlLibraryName
 	controlLibraryDescriptionUpdate := controlLibraryDescription
 	controlLibraryTypeUpdate := "custom"
-	versionGroupLabelUpdate := versionGroupLabel
 	controlLibraryVersionUpdate := "0.0.1"
 	latestUpdate := "true"
 
@@ -82,19 +80,17 @@ func TestAccIbmSccControlLibraryAllArgs(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library_instance", "control_library_name", controlLibraryName),
 					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library_instance", "control_library_description", controlLibraryDescription),
 					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library_instance", "control_library_type", controlLibraryType),
-					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library_instance", "version_group_label", versionGroupLabel),
 					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library_instance", "control_library_version", controlLibraryVersion),
 					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library_instance", "latest", latest),
 					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library_instance", "controls_count", controlsCount),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmSccControlLibraryConfig(acc.SccInstanceID, controlLibraryNameUpdate, controlLibraryDescriptionUpdate, controlLibraryTypeUpdate, versionGroupLabelUpdate, controlLibraryVersionUpdate, latestUpdate),
+				Config: testAccCheckIbmSccControlLibraryConfig(acc.SccInstanceID, controlLibraryNameUpdate, controlLibraryDescriptionUpdate, controlLibraryTypeUpdate, controlLibraryVersionUpdate, latestUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library_instance", "control_library_name", controlLibraryNameUpdate),
 					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library_instance", "control_library_description", controlLibraryDescriptionUpdate),
 					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library_instance", "control_library_type", controlLibraryTypeUpdate),
-					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library_instance", "version_group_label", versionGroupLabelUpdate),
 					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library_instance", "control_library_version", controlLibraryVersionUpdate),
 					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library_instance", "latest", latestUpdate),
 					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library_instance", "controls_count", controlsCount),
@@ -116,7 +112,6 @@ func testAccCheckIbmSccControlLibraryConfigBasic(instanceID string, controlLibra
 			control_library_name = "%s"
 			control_library_description = "%s"
 			control_library_type = "%s"
-			version_group_label = "11111111-2222-3333-4444-555555555555"
 			latest = true
 			controls {
 				control_name = "control-name"
@@ -138,7 +133,7 @@ func testAccCheckIbmSccControlLibraryConfigBasic(instanceID string, controlLibra
 						assessment_description = "test 1"
 						parameters {
 							parameter_display_name = "Sign out due to inactivity in seconds"
-              				parameter_name         = "session_invalidation_in_seconds"
+							parameter_name         = "session_invalidation_in_seconds"
 							parameter_type         = "numeric"
 						}
 					}
@@ -147,6 +142,11 @@ func testAccCheckIbmSccControlLibraryConfigBasic(instanceID string, controlLibra
 						assessment_method = "ibm-cloud-rule"
 						assessment_type = "automated"
 						assessment_description = "test 2"
+						parameters {
+							parameter_display_name = "Maximum length of netmask bit that is considered as wide flow"
+							parameter_name         = "netmask_bits_length"
+							parameter_type         = "numeric"
+						}
 					}
 				}
 				control_docs {
@@ -160,7 +160,7 @@ func testAccCheckIbmSccControlLibraryConfigBasic(instanceID string, controlLibra
 	`, instanceID, controlLibraryName, controlLibraryDescription, controlLibraryType)
 }
 
-func testAccCheckIbmSccControlLibraryConfig(instanceID string, controlLibraryName string, controlLibraryDescription string, controlLibraryType string, versionGroupLabel string, controlLibraryVersion string, latest string) string {
+func testAccCheckIbmSccControlLibraryConfig(instanceID string, controlLibraryName string, controlLibraryDescription string, controlLibraryType string, controlLibraryVersion string, latest string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_scc_control_library" "scc_control_library_instance" {
@@ -168,7 +168,6 @@ func testAccCheckIbmSccControlLibraryConfig(instanceID string, controlLibraryNam
 			control_library_name = "%s"
 			control_library_description = "%s"
 			control_library_type = "%s"
-			version_group_label = "%s"
 			control_library_version = "%s"
 			latest = %s
 			controls {
@@ -189,6 +188,11 @@ func testAccCheckIbmSccControlLibraryConfig(instanceID string, controlLibraryNam
 						assessment_method = "ibm-cloud-rule"
 						assessment_type = "automated"
 						assessment_description = "test 2"
+						parameters {
+							parameter_display_name = "Maximum length of netmask bit that is considered as wide flow"
+							parameter_name         = "netmask_bits_length"
+							parameter_type         = "numeric"
+						}
 					}
 					assessments {
 						assessment_id = "rule-a637949b-7e51-46c4-afd4-b96619001bf1"
@@ -197,7 +201,7 @@ func testAccCheckIbmSccControlLibraryConfig(instanceID string, controlLibraryNam
 						assessment_description = "test 1"
 						parameters {
 							parameter_display_name  = "Sign out due to inactivity in seconds"
-              				parameter_name          = "session_invalidation_in_seconds"
+							parameter_name          = "session_invalidation_in_seconds"
 							parameter_type          = "numeric"
 						}
 					}
@@ -210,7 +214,7 @@ func testAccCheckIbmSccControlLibraryConfig(instanceID string, controlLibraryNam
 				status = "enabled"
 			}
 		}
-	`, instanceID, controlLibraryName, controlLibraryDescription, controlLibraryType, versionGroupLabel, controlLibraryVersion, latest)
+	`, instanceID, controlLibraryName, controlLibraryDescription, controlLibraryType, controlLibraryVersion, latest)
 }
 
 func testAccCheckIbmSccControlLibraryExists(n string, obj securityandcompliancecenterapiv3.ControlLibrary) resource.TestCheckFunc {
@@ -230,7 +234,7 @@ func testAccCheckIbmSccControlLibraryExists(n string, obj securityandcompliancec
 
 		id := strings.Split(rs.Primary.ID, "/")
 		getControlLibraryOptions.SetInstanceID(id[0])
-		getControlLibraryOptions.SetControlLibrariesID(id[1])
+		getControlLibraryOptions.SetControlLibraryID(id[1])
 
 		controlLibrary, _, err := securityandcompliancecenterapiClient.GetControlLibrary(getControlLibraryOptions)
 		if err != nil {
@@ -256,7 +260,7 @@ func testAccCheckIbmSccControlLibraryDestroy(s *terraform.State) error {
 
 		id := strings.Split(rs.Primary.ID, "/")
 		getControlLibraryOptions.SetInstanceID(id[0])
-		getControlLibraryOptions.SetControlLibrariesID(id[1])
+		getControlLibraryOptions.SetControlLibraryID(id[1])
 
 		// Try to find the key
 		_, response, err := securityandcompliancecenterapiClient.GetControlLibrary(getControlLibraryOptions)

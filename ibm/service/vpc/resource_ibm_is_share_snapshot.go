@@ -318,7 +318,7 @@ func resourceIBMIsShareSnapshotCreate(context context.Context, d *schema.Resourc
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
 		// Error is coming from SDK client, so it doesn't need to be discriminated.
-		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_is_share_snapshot", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("vpcClient creation failed: %s", err.Error()), "ibm_is_share_snapshot", "create")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -357,14 +357,15 @@ func resourceIBMIsShareSnapshotCreate(context context.Context, d *schema.Resourc
 	d.SetId(fmt.Sprintf("%s/%s", *createShareSnapshotOptions.ShareID, *shareSnapshot.ID))
 	_, err = isWaitForShareSnapshotAvailable(context, vpcClient, *createShareSnapshotOptions.ShareID, *shareSnapshot.ID, d, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
-		return diag.FromErr(err)
+		return flex.TerraformErrorf(err, fmt.Sprintf("isWaitForShareSnapshotAvailable failed: %s", err.Error()), "ibm_is_share_snapshot", "create").GetDiag()
 	}
 	if _, ok := d.GetOk("access_tags"); ok {
 		oldList, newList := d.GetChange(isSubnetAccessTags)
 		err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *shareSnapshot.CRN, "", isAccessTagType)
 		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateGlobalTagsUsingCRN failed: %s", err.Error()), "ibm_is_share_snapshot", "create")
 			log.Printf(
-				"[ERROR] Error on create of resource share snapshot (%s) access tags: %s", d.Id(), err)
+				"[ERROR] Error on create of resource share snapshot (%s) access tags: %s", d.Id(), tfErr.GetDebugMessage())
 		}
 	}
 	return resourceIBMIsShareSnapshotRead(context, d, meta)
@@ -373,7 +374,7 @@ func resourceIBMIsShareSnapshotCreate(context context.Context, d *schema.Resourc
 func resourceIBMIsShareSnapshotRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_is_share_snapshot", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("vpcClient creation failed: %s", err.Error()), "ibm_is_share_snapshot", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -507,7 +508,7 @@ func resourceIBMIsShareSnapshotRead(context context.Context, d *schema.ResourceD
 func resourceIBMIsShareSnapshotUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_is_share_snapshot", "update")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("vpcClient creation failed: %s", err.Error()), "ibm_is_share_snapshot", "update")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -579,15 +580,16 @@ func resourceIBMIsShareSnapshotUpdate(context context.Context, d *schema.Resourc
 		}
 		_, err = isWaitForShareSnapshotAvailable(context, vpcClient, parts[0], parts[1], d, d.Timeout(schema.TimeoutCreate))
 		if err != nil {
-			return diag.FromErr(err)
+			return flex.TerraformErrorf(err, fmt.Sprintf("isWaitForShareSnapshotAvailable failed: %s", err.Error()), "ibm_is_share_snapshot", "update").GetDiag()
 		}
 	}
 	if d.HasChange("access_tags") {
 		oldList, newList := d.GetChange("access_tags")
 		err := flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, d.Get(isSnapshotCRN).(string), "", isAccessTagType)
 		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateGlobalTagsUsingCRN failed: %s", err.Error()), "ibm_is_share_snapshot", "update")
 			log.Printf(
-				"[ERROR] Error on update of resource share snapshot (%s) access tags: %s", d.Id(), err)
+				"[ERROR] Error on update of resource share snapshot (%s) access tags: %s", d.Id(), tfErr)
 		}
 	}
 	return resourceIBMIsShareSnapshotRead(context, d, meta)
@@ -596,7 +598,7 @@ func resourceIBMIsShareSnapshotUpdate(context context.Context, d *schema.Resourc
 func resourceIBMIsShareSnapshotDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_is_share_snapshot", "delete")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("vpcClient creation failed: %s", err.Error()), "ibm_is_share_snapshot", "delete")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}

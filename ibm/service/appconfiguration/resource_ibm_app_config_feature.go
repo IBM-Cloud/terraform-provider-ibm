@@ -140,7 +140,7 @@ func ResourceIBMIbmAppConfigFeature() *schema.Resource {
 			},
 			"enabled": {
 				Type:        schema.TypeBool,
-				Computed:    true,
+				Optional:    true,
 				Description: "The state of the feature flag.",
 			},
 			"created_time": {
@@ -166,7 +166,7 @@ func resourceIbmIbmAppConfigFeatureCreate(d *schema.ResourceData, meta interface
 	guid := d.Get("guid").(string)
 	appconfigClient, err := getAppConfigClient(meta, guid)
 	if err != nil {
-		return flex.FmtErrorf(fmt.Sprintf("%s", err))
+		return flex.FmtErrorf("%s", err)
 	}
 	options := &appconfigurationv1.CreateFeatureOptions{}
 	options.SetType(d.Get("type").(string))
@@ -175,32 +175,35 @@ func resourceIbmIbmAppConfigFeatureCreate(d *schema.ResourceData, meta interface
 	options.SetEnabledValue(d.Get("enabled_value").(string))
 	options.SetEnvironmentID(d.Get("environment_id").(string))
 	options.SetDisabledValue(d.Get("disabled_value").(string))
-	if _, ok := d.GetOk("rollout_percentage"); ok {
+	if _, ok := GetFieldExists(d, "rollout_percentage"); ok {
 		options.SetRolloutPercentage(int64(d.Get("rollout_percentage").(int)))
 	}
-	if _, ok := d.GetOk("format"); ok {
+	if _, ok := GetFieldExists(d, "format"); ok {
 		options.SetFormat(d.Get("format").(string))
 	}
-	if _, ok := d.GetOk("description"); ok {
+	if _, ok := GetFieldExists(d, "description"); ok {
 		options.SetDescription(d.Get("description").(string))
 	}
-	if _, ok := d.GetOk("tags"); ok {
+	if _, ok := GetFieldExists(d, "tags"); ok {
 		options.SetTags(d.Get("tags").(string))
 	}
+	if _, ok := GetFieldExists(d, "enabled"); ok {
+		options.SetEnabled(d.Get("enabled").(bool))
+	}
 
-	if _, ok := d.GetOk("segment_rules"); ok {
+	if _, ok := GetFieldExists(d, "segment_rules"); ok {
 		var segmentRules []appconfigurationv1.FeatureSegmentRule
 		for _, e := range d.Get("segment_rules").([]interface{}) {
 			value := e.(map[string]interface{})
 			segmentRulesItem, err := resourceIbmAppConfigFeatureMapToSegmentRule(d, value)
 			if err != nil {
-				return flex.FmtErrorf(fmt.Sprintf("%s", err))
+				return flex.FmtErrorf("%s", err)
 			}
 			segmentRules = append(segmentRules, segmentRulesItem)
 		}
 		options.SetSegmentRules(segmentRules)
 	}
-	if _, ok := d.GetOk("collections"); ok {
+	if _, ok := GetFieldExists(d, "collections"); ok {
 		var collections []appconfigurationv1.CollectionRef
 		for _, e := range d.Get("collections").([]interface{}) {
 			value := e.(map[string]interface{})
@@ -226,40 +229,43 @@ func resourceIbmIbmAppConfigFeatureUpdate(d *schema.ResourceData, meta interface
 	}
 	appconfigClient, err := getAppConfigClient(meta, parts[0])
 	if err != nil {
-		return flex.FmtErrorf(fmt.Sprintf("%s", err))
+		return flex.FmtErrorf("%s", err)
 	}
 
 	options := &appconfigurationv1.UpdateFeatureOptions{}
 	options.SetEnvironmentID(parts[1])
 	options.SetFeatureID(parts[2])
 
-	if ok := d.HasChanges("name", "enabled_value", "disabled_value", "description", "rollout_percentage", "tags", "segment_rules", "collections"); ok {
+	if ok := d.HasChanges("name", "enabled_value", "disabled_value", "description", "rollout_percentage", "tags", "segment_rules", "collections", "enabled"); ok {
 		options.SetName(d.Get("name").(string))
 		options.SetEnabledValue(d.Get("enabled_value").(string))
 		options.SetDisabledValue(d.Get("disabled_value").(string))
 
-		if _, ok := d.GetOk("description"); ok {
+		if _, ok := GetFieldExists(d, "description"); ok {
 			options.SetDescription(d.Get("description").(string))
 		}
-		if _, ok := d.GetOk("rollout_percentage"); ok {
+		if _, ok := GetFieldExists(d, "enabled"); ok {
+			options.SetEnabled(d.Get("enabled").(bool))
+		}
+		if _, ok := GetFieldExists(d, "rollout_percentage"); ok {
 			options.SetRolloutPercentage(int64(d.Get("rollout_percentage").(int)))
 		}
-		if _, ok := d.GetOk("tags"); ok {
+		if _, ok := GetFieldExists(d, "tags"); ok {
 			options.SetTags(d.Get("tags").(string))
 		}
-		if _, ok := d.GetOk("segment_rules"); ok {
+		if _, ok := GetFieldExists(d, "segment_rules"); ok {
 			var segmentRules []appconfigurationv1.FeatureSegmentRule
 			for _, e := range d.Get("segment_rules").([]interface{}) {
 				value := e.(map[string]interface{})
 				segmentRulesItem, err := resourceIbmAppConfigFeatureMapToSegmentRule(d, value)
 				if err != nil {
-					return flex.FmtErrorf(fmt.Sprintf("%s", err))
+					return flex.FmtErrorf("%s", err)
 				}
 				segmentRules = append(segmentRules, segmentRulesItem)
 			}
 			options.SetSegmentRules(segmentRules)
 		}
-		if _, ok := d.GetOk("collections"); ok {
+		if _, ok := GetFieldExists(d, "collections"); ok {
 			var collections []appconfigurationv1.CollectionRef
 			for _, e := range d.Get("collections").([]interface{}) {
 				value := e.(map[string]interface{})
@@ -285,7 +291,7 @@ func resourceIbmIbmAppConfigFeatureRead(d *schema.ResourceData, meta interface{}
 	}
 	appconfigClient, err := getAppConfigClient(meta, parts[0])
 	if err != nil {
-		return flex.FmtErrorf(fmt.Sprintf("%s", err))
+		return flex.FmtErrorf("%s", err)
 	}
 
 	options := &appconfigurationv1.GetFeatureOptions{}
@@ -417,7 +423,7 @@ func resourceIbmIbmAppConfigFeatureDelete(d *schema.ResourceData, meta interface
 	}
 	appconfigClient, err := getAppConfigClient(meta, parts[0])
 	if err != nil {
-		return flex.FmtErrorf(fmt.Sprintf("%s", err))
+		return flex.FmtErrorf("%s", err)
 	}
 
 	options := &appconfigurationv1.DeleteFeatureOptions{}

@@ -215,8 +215,8 @@ func dataSourceIbmConfigAggregatorConfigurationsRead(context context.Context, d 
 	d.SetId(dataSourceIbmConfigAggregatorConfigurationsID(d))
 
 	mapSlice := []map[string]interface{}{}
-	for _, modelItem := range allItems {
-		modelMap, err := DataSourceIbmConfigAggregatorConfigurationsConfigToMap(&modelItem)
+	for _, model := range allItems {
+		modelMap, err := DataSourceIbmConfigAggregatorConfigurationsConfigToMap(&model)
 		if err != nil {
 			tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_config_aggregator_configurations", "read")
 			return tfErr.GetDiag()
@@ -249,18 +249,34 @@ func DataSourceIbmConfigAggregatorConfigurationsPaginatedPreviousToMap(model *co
 }
 
 func DataSourceIbmConfigAggregatorConfigurationsConfigToMap(model *configurationaggregatorv1.Config) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	aboutMap, err := DataSourceIbmConfigAggregatorConfigurationsAboutToMap(model.About)
-	if err != nil {
-		return modelMap, err
+	if model == nil {
+		return nil, fmt.Errorf("model is nil")
 	}
-	modelMap["about"] = aboutMap
-	configMap, err := DataSourceIbmConfigAggregatorConfigurationsConfigurationToMap(model.Config)
-	if err != nil {
-		return modelMap, err
+
+	// Convert About struct to JSON string or "{}"
+	aboutStr := "{}"
+	if model.About != nil {
+		bytes, err := json.Marshal(model.About)
+		if err != nil {
+			return nil, fmt.Errorf("failed to marshal About: %v", err)
+		}
+		aboutStr = string(bytes)
 	}
-	modelMap["config"] = configMap
-	return modelMap, nil
+
+	// Convert Config struct to JSON string or "{}"
+	configStr := "{}"
+	if model.Config != nil {
+		bytes, err := json.Marshal(model.Config)
+		if err != nil {
+			return nil, fmt.Errorf("failed to marshal Config: %v", err)
+		}
+		configStr = string(bytes)
+	}
+
+	return map[string]interface{}{
+		"about":  aboutStr,
+		"config": configStr,
+	}, nil
 }
 
 func DataSourceIbmConfigAggregatorConfigurationsAboutToMap(model *configurationaggregatorv1.About) (string, error) {
@@ -293,14 +309,21 @@ func DataSourceIbmConfigAggregatorConfigurationsAboutToMap(model *configurationa
 // }
 
 func DataSourceIbmConfigAggregatorConfigurationsConfigurationToMap(model *configurationaggregatorv1.Configuration) (string, error) {
-	checkMap := model.GetProperties()
-	tryMap := make(map[string]interface{})
-	for i, v := range checkMap {
-		tryMap[i] = v
+	if model == nil {
+		return "", nil
 	}
-	jsonData, err := json.Marshal(tryMap)
-	if err != nil {
-		return "", err
+
+	if len(model.GetProperties()) != 0 {
+		checkMap := model.GetProperties()
+		tryMap := make(map[string]interface{})
+		for i, v := range checkMap {
+			tryMap[i] = v
+		}
+		jsonData, err := json.Marshal(tryMap)
+		if err != nil {
+			return "", err
+		}
+		return string(jsonData), nil
 	}
-	return string(jsonData), nil
+	return "", nil
 }

@@ -16,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/power/models"
@@ -106,9 +107,10 @@ func ResourceIBMPIInstance() *schema.Resource {
 						},
 					},
 				},
-				Optional: true,
-				MaxItems: 1,
-				Type:     schema.TypeSet,
+				MaxItems:     1,
+				Optional:     true,
+				RequiredWith: []string{Arg_SysType},
+				Type:         schema.TypeSet,
 			},
 			Arg_DeploymentType: {
 				Description:  "Custom Deployment Type Information",
@@ -158,7 +160,6 @@ func ResourceIBMPIInstance() *schema.Resource {
 			},
 			Arg_LicenseRepositoryCapacity: {
 				Computed:    true,
-				Deprecated:  "This field is deprecated.",
 				Description: "The VTL license repository capacity TB value",
 				Optional:    true,
 				Type:        schema.TypeInt,
@@ -176,29 +177,47 @@ func ResourceIBMPIInstance() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						Attr_IPAddress: {
-							Type:     schema.TypeString,
-							Optional: true,
 							Computed: true,
+							Optional: true,
+							Type:     schema.TypeString,
 						},
 						Attr_MacAddress: {
-							Type:     schema.TypeString,
 							Computed: true,
+							Type:     schema.TypeString,
 						},
 						Attr_NetworkID: {
-							Type:     schema.TypeString,
 							Required: true,
+							Type:     schema.TypeString,
+						},
+						Attr_NetworkInterfaceID: {
+							Computed:    true,
+							Description: "ID of the network interface.",
+							Type:        schema.TypeString,
 						},
 						Attr_NetworkName: {
-							Type:     schema.TypeString,
 							Computed: true,
+							Type:     schema.TypeString,
+						},
+						Attr_NetworkSecurityGroupIDs: {
+							Computed:    true,
+							Description: "Network security groups that the network interface is a member of. There is a limit of 1 network security group in the array. If not specified, default network security group is used.",
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Optional:    true,
+							Type:        schema.TypeSet,
+						},
+						Attr_NetworkSecurityGroupsHref: {
+							Computed:    true,
+							Description: "Links to the network security groups that the network interface is a member of.",
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Type:        schema.TypeList,
 						},
 						Attr_Type: {
-							Type:     schema.TypeString,
 							Computed: true,
+							Type:     schema.TypeString,
 						},
 						Attr_ExternalIP: {
-							Type:     schema.TypeString,
 							Computed: true,
+							Type:     schema.TypeString,
 						},
 					},
 				},
@@ -214,7 +233,6 @@ func ResourceIBMPIInstance() *schema.Resource {
 			},
 			Arg_PlacementGroupID: {
 				Description: "Placement group ID",
-				Computed:    true,
 				Optional:    true,
 				Type:        schema.TypeString,
 			},
@@ -315,7 +333,7 @@ func ResourceIBMPIInstance() *schema.Resource {
 			},
 			Arg_SysType: {
 				Computed:    true,
-				Description: "PI Instance system type",
+				Description: "The type of system on which to create the VM (e880/e980/e1080/e1150/e1180/s922/s1022/s1122).",
 				ForceNew:    true,
 				Optional:    true,
 				Type:        schema.TypeString,
@@ -362,6 +380,13 @@ func ResourceIBMPIInstance() *schema.Resource {
 							DiffSuppressFunc: supressVSNDiffAutoAssign,
 							Type:             schema.TypeString,
 						},
+						Attr_SoftwareTier: {
+							Computed:     true,
+							Description:  "Software tier. Enum: [\"P05\", \"P10\", \"P20\", \"P30\"].",
+							Optional:     true,
+							Type:         schema.TypeString,
+							ValidateFunc: validation.StringInSlice([]string{"P05", "P10", "P20", "P30"}, false),
+						},
 					},
 				},
 				MaxItems: 1,
@@ -382,6 +407,16 @@ func ResourceIBMPIInstance() *schema.Resource {
 				Computed:    true,
 				Description: "The CRN of this resource.",
 				Type:        schema.TypeString,
+			},
+			Attr_DedicatedHostID: {
+				Computed:    true,
+				Description: "The dedicated host ID where the shared processor pool resides.",
+				Type:        schema.TypeString,
+			},
+			Attr_Fault: {
+				Computed:    true,
+				Description: "Fault information.",
+				Type:        schema.TypeMap,
 			},
 			Attr_HealthStatus: {
 				Computed:    true,
@@ -459,11 +494,6 @@ func ResourceIBMPIInstance() *schema.Resource {
 				Computed:    true,
 				Description: "PI instance status",
 				Type:        schema.TypeString,
-			},
-			Attr_Fault: {
-				Computed:    true,
-				Description: "Fault information.",
-				Type:        schema.TypeMap,
 			},
 		},
 	}
@@ -587,7 +617,7 @@ func resourceIBMPIInstanceRead(ctx context.Context, d *schema.ResourceData, meta
 
 	if powervmdata.Crn != "" {
 		d.Set(Attr_CRN, powervmdata.Crn)
-		tags, err := flex.GetTagsUsingCRN(meta, string(powervmdata.Crn))
+		tags, err := flex.GetGlobalTagsUsingCRN(meta, string(powervmdata.Crn), "", UserTagType)
 		if err != nil {
 			log.Printf("Error on get of ibm pi instance (%s) pi_user_tags: %s", *powervmdata.PvmInstanceID, err)
 		}
@@ -598,18 +628,15 @@ func resourceIBMPIInstanceRead(ctx context.Context, d *schema.ResourceData, meta
 	if powervmdata.Status != nil {
 		d.Set(Attr_Status, powervmdata.Status)
 	}
+	d.Set(Arg_CloudInstanceID, cloudInstanceID)
+	d.Set(Arg_ImageID, powervmdata.ImageID)
+	d.Set(Arg_InstanceName, powervmdata.ServerName)
 	d.Set(Arg_ProcType, powervmdata.ProcType)
-	d.Set(Attr_MinProcessors, powervmdata.Minproc)
-	d.Set(Attr_Progress, powervmdata.Progress)
-	if powervmdata.StorageType != nil && *powervmdata.StorageType != "" {
-		d.Set(Arg_StorageType, powervmdata.StorageType)
-	}
 	d.Set(Arg_StoragePool, powervmdata.StoragePool)
 	d.Set(Arg_StoragePoolAffinity, powervmdata.StoragePoolAffinity)
-	d.Set(Arg_CloudInstanceID, cloudInstanceID)
 	d.Set(Attr_InstanceID, powervmdata.PvmInstanceID)
-	d.Set(Arg_InstanceName, powervmdata.ServerName)
-	d.Set(Arg_ImageID, powervmdata.ImageID)
+	d.Set(Attr_MinProcessors, powervmdata.Minproc)
+	d.Set(Attr_Progress, powervmdata.Progress)
 	if *powervmdata.PlacementGroup != None {
 		d.Set(Arg_PlacementGroupID, powervmdata.PlacementGroup)
 	}
@@ -621,12 +648,19 @@ func resourceIBMPIInstanceRead(ctx context.Context, d *schema.ResourceData, meta
 		for _, n := range powervmdata.Networks {
 			if n != nil {
 				v := map[string]interface{}{
-					Attr_IPAddress:   n.IPAddress,
-					Attr_MacAddress:  n.MacAddress,
-					Attr_NetworkID:   n.NetworkID,
-					Attr_NetworkName: n.NetworkName,
-					Attr_Type:        n.Type,
-					Attr_ExternalIP:  n.ExternalIP,
+					Attr_ExternalIP:         n.ExternalIP,
+					Attr_IPAddress:          n.IPAddress,
+					Attr_MacAddress:         n.MacAddress,
+					Attr_NetworkID:          n.NetworkID,
+					Attr_NetworkInterfaceID: n.NetworkInterfaceID,
+					Attr_NetworkName:        n.NetworkName,
+					Attr_Type:               n.Type,
+				}
+				if len(n.NetworkSecurityGroupIDs) > 0 {
+					v[Attr_NetworkSecurityGroupIDs] = n.NetworkSecurityGroupIDs
+				}
+				if len(n.NetworkSecurityGroupsHref) > 0 {
+					v[Attr_NetworkSecurityGroupsHref] = n.NetworkSecurityGroupsHref
 				}
 				networksMap = append(networksMap, v)
 			}
@@ -638,6 +672,7 @@ func resourceIBMPIInstanceRead(ctx context.Context, d *schema.ResourceData, meta
 		d.Set(Arg_SAPProfileID, powervmdata.SapProfile.ProfileID)
 	}
 	d.Set(Arg_SysType, powervmdata.SysType)
+	d.Set(Attr_DedicatedHostID, powervmdata.DedicatedHostID)
 	d.Set(Attr_MinMemory, powervmdata.Minmem)
 	d.Set(Attr_MaxProcessors, powervmdata.Maxproc)
 	d.Set(Attr_MaxMemory, powervmdata.Maxmem)
@@ -653,8 +688,8 @@ func resourceIBMPIInstanceRead(ctx context.Context, d *schema.ResourceData, meta
 		d.Set(Attr_MaxVirtualCores, powervmdata.VirtualCores.Max)
 		d.Set(Attr_MinVirtualCores, powervmdata.VirtualCores.Min)
 	}
-	d.Set(Arg_LicenseRepositoryCapacity, powervmdata.LicenseRepositoryCapacity)
 	d.Set(Arg_DeploymentType, powervmdata.DeploymentType)
+	d.Set(Arg_LicenseRepositoryCapacity, powervmdata.LicenseRepositoryCapacity)
 	if powervmdata.SoftwareLicenses != nil {
 		d.Set(Arg_IBMiCSS, powervmdata.SoftwareLicenses.IbmiCSS)
 		d.Set(Arg_IBMiPHA, powervmdata.SoftwareLicenses.IbmiPHA)
@@ -681,7 +716,6 @@ func resourceIBMPIInstanceRead(ctx context.Context, d *schema.ResourceData, meta
 }
 
 func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-
 	name := d.Get(Arg_InstanceName).(string)
 	mem := d.Get(Arg_Memory).(float64)
 	procs := d.Get(Arg_Processors).(float64)
@@ -988,16 +1022,12 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 
 	if d.HasChange(Arg_VirtualSerialNumber) {
 		vsnClient := instance.NewIBMPIVSNClient(ctx, sess, cloudInstanceID)
-
+		restartInstance := false
 		if d.HasChange(Arg_VirtualSerialNumber + ".0." + Attr_Serial) {
-			instanceRestart := false
-			status := d.Get(Attr_Status).(string)
-			if strings.ToLower(status) != State_Shutoff {
-				err := stopLparForResourceChange(ctx, client, instanceID, d)
-				if err != nil {
-					return diag.FromErr(err)
-				}
-				instanceRestart = true
+			// Stop Lpar, serial change requires Lpar to be in shutoff state
+			restartInstance, err = stopLparForVSNChange(ctx, client, instanceID, d.Timeout(schema.TimeoutUpdate))
+			if err != nil {
+				return diag.FromErr(err)
 			}
 
 			oldVSN, newVSN := d.GetChange(Arg_VirtualSerialNumber)
@@ -1008,11 +1038,13 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 				}
 				err := vsnClient.PVMInstanceDeleteVSN(instanceID, deleteBody)
 				if err != nil {
+					err = instanceRestartAfterVSNFailure(ctx, instanceID, restartInstance, client, d, err)
 					return diag.FromErr(err)
 				}
 
-				_, err = isWaitForPIInstanceStopped(ctx, client, instanceID, d.Timeout(schema.TimeoutUpdate))
+				_, err = isWaitForPIInstanceVSNRemoved(ctx, client, instanceID, d.Timeout(schema.TimeoutUpdate))
 				if err != nil {
+					err = instanceRestartAfterVSNFailure(ctx, instanceID, restartInstance, client, d, err)
 					return diag.FromErr(err)
 				}
 			}
@@ -1025,35 +1057,89 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 					Description: description,
 					Serial:      &serial,
 				}
+
 				_, err := vsnClient.PVMInstanceAttachVSN(instanceID, addBody)
 				if err != nil {
+					err = instanceRestartAfterVSNFailure(ctx, instanceID, restartInstance, client, d, err)
 					return diag.FromErr(err)
 				}
 
-				_, err = isWaitForPIInstanceStopped(ctx, client, instanceID, d.Timeout(schema.TimeoutUpdate))
+				pvm, err := isWaitForPIInstanceVSNAssignedOrUpdatedAndStopped(ctx, client, instanceID, nil, d.Timeout(schema.TimeoutUpdate))
 				if err != nil {
+					err = instanceRestartAfterVSNFailure(ctx, instanceID, restartInstance, client, d, err)
+					return diag.FromErr(err)
+				}
+
+				// newly attached VSN may not match software tier defined by user in configuration, need to update to match
+				pvmInstance := pvm.(*models.PVMInstance)
+				softwareTier := models.SoftwareTier(newVSNMap[Attr_SoftwareTier].(string))
+				if softwareTier != "" && pvmInstance.VirtualSerialNumber.SoftwareTier != softwareTier {
+					updateBody := &models.UpdateServerVirtualSerialNumber{
+						SoftwareTier: softwareTier,
+					}
+					_, err = vsnClient.PVMInstanceUpdateVSN(instanceID, updateBody)
+					if err != nil {
+						err = instanceRestartAfterVSNFailure(ctx, instanceID, restartInstance, client, d, err)
+						return diag.FromErr(err)
+					}
+					_, err = isWaitForPIInstanceVSNAssignedOrUpdatedAndStopped(ctx, client, instanceID, updateBody, d.Timeout(schema.TimeoutUpdate))
+					if err != nil {
+						err = instanceRestartAfterVSNFailure(ctx, instanceID, restartInstance, client, d, err)
+						return diag.FromErr(err)
+					}
+				}
+			}
+		} else if d.HasChange(Arg_VirtualSerialNumber+".0."+Attr_SoftwareTier) || d.HasChange(Arg_VirtualSerialNumber+".0."+Attr_Description) {
+			// below updates are split up since both VSN software tier and VSN description cannot be updated at the same time (mutually exclusive)
+			if d.HasChange(Arg_VirtualSerialNumber + ".0." + Attr_Description) {
+				newDescription := d.Get(Arg_VirtualSerialNumber + ".0." + Attr_Description).(string)
+				updateBody := &models.UpdateServerVirtualSerialNumber{
+					Description: &newDescription,
+				}
+				_, err = vsnClient.PVMInstanceUpdateVSN(instanceID, updateBody)
+				if err != nil {
+					err = instanceRestartAfterVSNFailure(ctx, instanceID, restartInstance, client, d, err)
 					return diag.FromErr(err)
 				}
 			}
 
-			if instanceRestart {
-				err = startLparAfterResourceChange(ctx, client, instanceID, d)
+			if d.HasChange(Arg_VirtualSerialNumber + ".0." + Attr_SoftwareTier) {
+				// Stop Lpar if active since software tier update requires shutoff
+				restartInstanceUpdateSoftwareTier, err := stopLparForVSNChange(ctx, client, instanceID, d.Timeout(schema.TimeoutUpdate))
 				if err != nil {
+					return diag.FromErr(err)
+				}
+				restartInstance = restartInstance || restartInstanceUpdateSoftwareTier
+
+				newSoftwareTier := models.SoftwareTier(d.Get(Arg_VirtualSerialNumber + ".0." + Attr_SoftwareTier).(string))
+				updateBody := &models.UpdateServerVirtualSerialNumber{
+					SoftwareTier: newSoftwareTier,
+				}
+
+				updateBody.SoftwareTier = models.SoftwareTier(newSoftwareTier)
+				_, err = vsnClient.PVMInstanceUpdateVSN(instanceID, updateBody)
+				if err != nil {
+					err = instanceRestartAfterVSNFailure(ctx, instanceID, restartInstance, client, d, err)
+					return diag.FromErr(err)
+				}
+
+				// Wait for new software tier to be reflected since it is an asynchronous operation
+				_, err = isWaitForPIInstanceVSNAssignedOrUpdatedAndStopped(ctx, client, instanceID, updateBody, d.Timeout(schema.TimeoutUpdate))
+				if err != nil {
+					err = instanceRestartAfterVSNFailure(ctx, instanceID, restartInstance, client, d, err)
 					return diag.FromErr(err)
 				}
 			}
 		}
 
-		if !d.HasChange(Arg_VirtualSerialNumber+".0."+Attr_Serial) && d.HasChange(Arg_VirtualSerialNumber+".0."+Attr_Description) {
-			newDescriptionString := d.Get(Arg_VirtualSerialNumber + ".0." + Attr_Description).(string)
-			updateBody := &models.UpdateServerVirtualSerialNumber{
-				Description: &newDescriptionString,
-			}
-			_, err = vsnClient.PVMInstanceUpdateVSN(instanceID, updateBody)
+		// set to true or false during vsn assign and software tier updates
+		if restartInstance {
+			err = startLparAfterVSNChange(ctx, client, instanceID, d.Timeout(schema.TimeoutUpdate))
 			if err != nil {
 				return diag.FromErr(err)
 			}
 		}
+
 	}
 
 	return resourceIBMPIInstanceRead(ctx, d, meta)
@@ -1511,8 +1597,9 @@ func expandPVMNetworks(networks []interface{}) []*models.PVMInstanceAddNetwork {
 	for _, v := range networks {
 		network := v.(map[string]interface{})
 		pvmInstanceNetwork := &models.PVMInstanceAddNetwork{
-			IPAddress: network[Attr_IPAddress].(string),
-			NetworkID: flex.PtrToString(network[Attr_NetworkID].(string)),
+			IPAddress:               network[Attr_IPAddress].(string),
+			NetworkID:               flex.PtrToString(network[Attr_NetworkID].(string)),
+			NetworkSecurityGroupIDs: flex.ExpandStringList((network[Attr_NetworkSecurityGroupIDs].(*schema.Set)).List()),
 		}
 		pvmNetworks = append(pvmNetworks, pvmInstanceNetwork)
 	}
@@ -1531,7 +1618,6 @@ func checkCloudInstanceCapability(cloudInstance *models.CloudInstance, custom_ca
 }
 
 func createSAPInstance(d *schema.ResourceData, sapClient *instance.IBMPISAPInstanceClient) (*models.PVMInstanceList, error) {
-
 	name := d.Get(Arg_InstanceName).(string)
 	profileID := d.Get(Arg_SAPProfileID).(string)
 	imageid := d.Get(Arg_ImageID).(string)
@@ -1727,7 +1813,7 @@ func createPVMInstance(d *schema.ResourceData, client *instance.IBMPIInstanceCli
 		SysType:                 systype,
 		ImageID:                 flex.PtrToString(imageid),
 		ProcType:                flex.PtrToString(processortype),
-		Replicants:              replicants,
+		Replicants:              &replicants,
 		UserData:                encodeBase64(userData),
 		ReplicantNamingScheme:   flex.PtrToString(replicationNamingScheme),
 		ReplicantAffinityPolicy: flex.PtrToString(replicationpolicy),
@@ -1864,7 +1950,7 @@ func createPVMInstance(d *schema.ResourceData, client *instance.IBMPIInstanceCli
 	}
 	if vsn, ok := d.GetOk(Arg_VirtualSerialNumber); ok {
 		vsnListType := vsn.([]interface{})
-		vsnCreateModel := vsnSetToCreateModel(vsnListType, d)
+		vsnCreateModel := vsnSetToCreateModel(vsnListType)
 		body.VirtualSerialNumber = vsnCreateModel
 	}
 
@@ -1879,6 +1965,7 @@ func createPVMInstance(d *schema.ResourceData, client *instance.IBMPIInstanceCli
 
 	return pvmList, nil
 }
+
 func expandDeploymentTarget(dt []interface{}) *models.DeploymentTarget {
 	dtexpanded := &models.DeploymentTarget{}
 	for _, v := range dt {
@@ -1888,6 +1975,7 @@ func expandDeploymentTarget(dt []interface{}) *models.DeploymentTarget {
 	}
 	return dtexpanded
 }
+
 func splitID(id string) (id1, id2 string, err error) {
 	parts, err := flex.IdParts(id)
 	if err != nil {
@@ -1897,7 +1985,8 @@ func splitID(id string) (id1, id2 string, err error) {
 	id2 = parts[1]
 	return
 }
-func vsnSetToCreateModel(vsnSetList []interface{}, d *schema.ResourceData) *models.CreateServerVirtualSerialNumber {
+
+func vsnSetToCreateModel(vsnSetList []interface{}) *models.CreateServerVirtualSerialNumber {
 	vsnItemMap := vsnSetList[0].(map[string]interface{})
 	serialString := vsnItemMap[Attr_Serial].(string)
 	model := &models.CreateServerVirtualSerialNumber{
@@ -1907,19 +1996,101 @@ func vsnSetToCreateModel(vsnSetList []interface{}, d *schema.ResourceData) *mode
 	if description != "" {
 		model.Description = description
 	}
+	softwareTier := vsnItemMap[Attr_SoftwareTier].(string)
+	if softwareTier != "" {
+		model.SoftwareTier = models.SoftwareTier(softwareTier)
+	}
 
 	return model
 }
+
 func flattenVirtualSerialNumberToList(vsn *models.GetServerVirtualSerialNumber) []map[string]interface{} {
 	v := make([]map[string]interface{}, 1)
 	v[0] = map[string]interface{}{
-		Attr_Description: vsn.Description,
-		Attr_Serial:      vsn.Serial,
+		Attr_Description:  vsn.Description,
+		Attr_Serial:       vsn.Serial,
+		Attr_SoftwareTier: vsn.SoftwareTier,
 	}
+
 	return v
 }
 
 // Do not show a diff if VSN is changed to existing assigned VSN
 func supressVSNDiffAutoAssign(k, old, new string, d *schema.ResourceData) bool {
 	return new == old || (new == AutoAssign && old != "")
+}
+
+func instanceRestartAfterVSNFailure(ctx context.Context, instanceID string, restartInstance bool, instanceClient *instance.IBMPIInstanceClient, d *schema.ResourceData, err error) error {
+	if restartInstance {
+		startErr := startLparAfterVSNChange(ctx, instanceClient, instanceID, d.Timeout(schema.TimeoutDelete))
+		if startErr != nil {
+			err = fmt.Errorf("%w; %w, the pvm instance may still be shutoff", err, startErr)
+		}
+	}
+	return err
+}
+
+// isWaitForPIInstanceVSNAssignedOrUpdatedAndStopped will wait for VSN assigned, will also wait for correct values in updateBody if specified (specify nil to ignore updateBody checks)
+// Will also wait for VM to be in stopped state, mainly used for async VSN operations
+func isWaitForPIInstanceVSNAssignedOrUpdatedAndStopped(ctx context.Context, client *instance.IBMPIInstanceClient, id string, updateBody *models.UpdateServerVirtualSerialNumber, timeout time.Duration) (interface{}, error) {
+
+	log.Printf("Waiting until VSN assigned to %s or updated.", id)
+
+	stateConf := &retry.StateChangeConf{
+		Pending:    []string{State_Updating},
+		Target:     []string{State_Completed},
+		Refresh:    isPIInstanceVSNAssignedOrUpdatedAndStoppedRefreshFunc(client, id, updateBody),
+		Delay:      Timeout_Delay,
+		MinTimeout: Timeout_Active,
+		Timeout:    timeout,
+	}
+
+	return stateConf.WaitForStateContext(ctx)
+}
+
+func isPIInstanceVSNAssignedOrUpdatedAndStoppedRefreshFunc(client *instance.IBMPIInstanceClient, id string, updateBody *models.UpdateServerVirtualSerialNumber) retry.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		pvm, err := client.Get(id)
+		if err != nil {
+			return nil, "", err
+		}
+		if updateBody != nil && updateBody.SoftwareTier != "" && pvm.VirtualSerialNumber != nil && pvm.VirtualSerialNumber.SoftwareTier != updateBody.SoftwareTier {
+			return pvm, State_Updating, nil
+		}
+		if pvm.VirtualSerialNumber != nil && strings.ToLower(*pvm.Status) == State_Shutoff && pvm.Health.Status == OK {
+			return pvm, State_Completed, nil
+		}
+
+		return pvm, State_Updating, nil
+	}
+}
+
+func isWaitForPIInstanceVSNRemoved(ctx context.Context, client *instance.IBMPIInstanceClient, id string, timeout time.Duration) (interface{}, error) {
+
+	log.Printf("Waiting until VSN removed from %s.", id)
+
+	stateConf := &retry.StateChangeConf{
+		Pending:    []string{State_Removing},
+		Target:     []string{State_Shutoff},
+		Refresh:    isPIInstanceVSNRemovedRefreshFunc(client, id),
+		Delay:      Timeout_Delay,
+		MinTimeout: Timeout_Active,
+		Timeout:    timeout,
+	}
+
+	return stateConf.WaitForStateContext(ctx)
+}
+
+func isPIInstanceVSNRemovedRefreshFunc(client *instance.IBMPIInstanceClient, id string) retry.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		pvm, err := client.Get(id)
+		if err != nil {
+			return nil, "", err
+		}
+		if pvm.VirtualSerialNumber == nil && strings.ToLower(*pvm.Status) == State_Shutoff && pvm.Health.Status == OK {
+			return pvm, State_Shutoff, nil
+		}
+
+		return pvm, State_Removing, nil
+	}
 }

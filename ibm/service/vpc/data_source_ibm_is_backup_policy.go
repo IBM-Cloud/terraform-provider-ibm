@@ -220,7 +220,9 @@ func DataSourceIBMIsBackupPolicy() *schema.Resource {
 func dataSourceIBMIsBackupPolicyRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("vpcClient creation failed: %s", err.Error()), "(Data) ibm_is_backup_policy", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	var backupPolicy *vpcv1.BackupPolicy
 
@@ -231,8 +233,9 @@ func dataSourceIBMIsBackupPolicyRead(context context.Context, d *schema.Resource
 		getBackupPolicyOptions.SetID(id)
 		backupPolicyInfo, response, err := sess.GetBackupPolicyWithContext(context, getBackupPolicyOptions)
 		if err != nil {
-			log.Printf("[DEBUG] GetBackupPolicyWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("[ERROR] GetBackupPolicyWithContext failed %s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetBackupPolicyWithContext failed: %s\n%s", err.Error(), response), "(Data) ibm_is_backup_policy", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		backupPolicy = backupPolicyInfo.(*vpcv1.BackupPolicy)
 
@@ -248,8 +251,9 @@ func dataSourceIBMIsBackupPolicyRead(context context.Context, d *schema.Resource
 			}
 			backupPolicyCollection, response, err := sess.ListBackupPoliciesWithContext(context, listBackupPoliciesOptions)
 			if err != nil {
-				log.Printf("[DEBUG] ListBackupPoliciesWithContext failed %s\n%s", err, response)
-				return diag.FromErr(fmt.Errorf("[ERROR] ListBackupPoliciesWithContext failed %s\n%s", err, response))
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListBackupPoliciesWithContext failed: %s\n%s", err.Error(), response), "(Data) ibm_is_backup_policy", "read")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			if backupPolicyCollection != nil && *backupPolicyCollection.TotalCount == int64(0) {
 				break
@@ -270,37 +274,40 @@ func dataSourceIBMIsBackupPolicyRead(context context.Context, d *schema.Resource
 			}
 		}
 		if backupPolicy == nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] No backup policy found with name (%s)", name))
+			err = fmt.Errorf("[ERROR] No backup policy found with name (%s)", name)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListBackupPoliciesWithContext failed: %s", err.Error()), "(Data) ibm_is_backup_policy", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 
 	d.SetId(*backupPolicy.ID)
 
 	if err = d.Set("created_at", backupPolicy.CreatedAt.String()); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting created_at: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting created_at: %s", err), "(Data) ibm_is_backup_policy", "read", "set-created_at").GetDiag()
 	}
 	if err = d.Set("crn", backupPolicy.CRN); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting crn: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting crn: %s", err), "(Data) ibm_is_backup_policy", "read", "set-crn").GetDiag()
 	}
 	if err = d.Set("href", backupPolicy.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting href: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting href: %s", err), "(Data) ibm_is_backup_policy", "read", "set-href").GetDiag()
 	}
 	if backupPolicy.LastJobCompletedAt != nil {
 		if err = d.Set("last_job_completed_at", backupPolicy.LastJobCompletedAt.String()); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting last_job_completed_at: %s", err))
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting last_job_completed_at: %s", err), "(Data) ibm_is_backup_policy", "read", "set-last_job_completed_at").GetDiag()
 		}
 	}
 	if err = d.Set("lifecycle_state", backupPolicy.LifecycleState); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting lifecycle_state: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting lifecycle_state: %s", err), "(Data) ibm_is_backup_policy", "read", "set-lifecycle_state").GetDiag()
 	}
 	if err = d.Set("name", backupPolicy.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting name: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_is_backup_policy", "read", "set-name").GetDiag()
 	}
 
 	if backupPolicy.Plans != nil {
 		err = d.Set("plans", dataSourceBackupPolicyFlattenPlans(backupPolicy.Plans))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting plans %s", err))
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting plans: %s", err), "(Data) ibm_is_backup_policy", "read", "set-plans").GetDiag()
 		}
 	}
 
@@ -320,28 +327,28 @@ func dataSourceIBMIsBackupPolicyRead(context context.Context, d *schema.Resource
 		d.Set("health_reasons", healthReasonsList)
 	}
 	if err = d.Set("health_state", backupPolicy.HealthState); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting health_state: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting health_state: %s", err), "(Data) ibm_is_backup_policy", "read", "set-health_state").GetDiag()
 	}
 
 	if backupPolicy.Scope != nil {
 		err = d.Set("scope", dataSourceBackupPolicyFlattenScope(*backupPolicy.Scope.(*vpcv1.BackupPolicyScope)))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting scope: %s", err))
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting scope: %s", err), "(Data) ibm_is_backup_policy", "read", "set-scope").GetDiag()
 		}
 	}
 
 	if backupPolicy.MatchResourceType != nil {
 		if err = d.Set("match_resource_types", []string{*backupPolicy.MatchResourceType}); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting match_resource_types: %s", err))
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting match_resource_types: %s", err), "(Data) ibm_is_backup_policy", "read", "set-match_resource_types").GetDiag()
 		}
 		if err = d.Set("match_resource_type", *backupPolicy.MatchResourceType); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting match_resource_type: %s", err))
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting match_resource_type: %s", err), "(Data) ibm_is_backup_policy", "read", "set-match_resource_type").GetDiag()
 		}
 	}
 
 	if backupPolicy.IncludedContent != nil {
 		if err = d.Set("included_content", backupPolicy.IncludedContent); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting included_content: %s", err))
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting included_content: %s", err), "(Data) ibm_is_backup_policy", "read", "set-included_content").GetDiag()
 		}
 	}
 
@@ -356,11 +363,11 @@ func dataSourceIBMIsBackupPolicyRead(context context.Context, d *schema.Resource
 	if backupPolicy.ResourceGroup != nil {
 		err = d.Set("resource_group", dataSourceBackupPolicyFlattenResourceGroup(*backupPolicy.ResourceGroup))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting resource_group %s", err))
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_group: %s", err), "(Data) ibm_is_backup_policy", "read", "set-resource_group").GetDiag()
 		}
 	}
 	if err = d.Set("resource_type", backupPolicy.ResourceType); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting resource_type: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_type: %s", err), "(Data) ibm_is_backup_policy", "read", "set-resource_type").GetDiag()
 	}
 
 	return nil

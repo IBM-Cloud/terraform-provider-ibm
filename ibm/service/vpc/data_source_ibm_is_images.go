@@ -4,6 +4,7 @@
 package vpc
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"time"
@@ -11,6 +12,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -18,11 +20,12 @@ const (
 	isImages                = "images"
 	isImagesResourceGroupID = "resource_group"
 	isImageCatalogManaged   = "catalog_managed"
+	isImageRemoteAccountId  = "remote_account_id"
 )
 
 func DataSourceIBMISImages() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceIBMISImagesRead,
+		ReadContext: dataSourceIBMISImagesRead,
 
 		Schema: map[string]*schema.Schema{
 			isImagesResourceGroupID: {
@@ -51,6 +54,11 @@ func DataSourceIBMISImages() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "Whether the image is publicly visible or private to the account",
+			},
+			isImageRemoteAccountId: {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Filters the collection to images with a remote.account.id property matching the specified account identifier.",
 			},
 			isImageUserDataFormat: {
 				Type:        schema.TypeSet,
@@ -178,6 +186,34 @@ func DataSourceIBMISImages() *schema.Resource {
 							Computed:    true,
 							Description: "The operating system architecture",
 						},
+						"remote": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "If present, this property indicates that the resource associated with this reference is remote and therefore may not be directly retrievable.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"account": {
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "If present, this property indicates that the referenced resource is remote to this account, and identifies the owning account.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"id": {
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The unique identifier for this resource group.",
+												},
+												"resource_type": {
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The resource type.",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
 						"resource_group": {
 							Type:        schema.TypeList,
 							Computed:    true,
@@ -268,6 +304,30 @@ func DataSourceIBMISImages() *schema.Resource {
 								},
 							},
 						},
+						"allowed_use": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The usage constraints to match against the requested instance or bare metal server properties to determine compatibility.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"api_version": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The API version with which to evaluate the expressions.",
+									},
+									"bare_metal_server": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The expression that must be satisfied by the properties of a bare metal server provisioned using this image.",
+									},
+									"instance": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The expression that must be satisfied by the properties of a virtual server instance provisioned using this image.",
+									},
+								},
+							},
+						},
 						isImageUserDataFormat: {
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -302,19 +362,21 @@ func DataSourceIBMISImagesValidator() *validate.ResourceValidator {
 	return &ibmISImageResourceValidator
 }
 
-func dataSourceIBMISImagesRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceIBMISImagesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
-	err := imageList(d, meta)
+	err := imageList(context, d, meta)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func imageList(d *schema.ResourceData, meta interface{}) error {
+func imageList(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_images", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	start := ""
 	allrecs := []vpcv1.Image{}
@@ -334,6 +396,10 @@ func imageList(d *schema.ResourceData, meta interface{}) error {
 		visibility = v.(string)
 	}
 
+	var remoteAccountId string
+	if v, ok := d.GetOk(isImageRemoteAccountId); ok {
+		remoteAccountId = v.(string)
+	}
 	var status string
 	if v, ok := d.GetOk(isImageStatus); ok {
 		status = v.(string)
@@ -350,6 +416,19 @@ func imageList(d *schema.ResourceData, meta interface{}) error {
 	if imageName != "" {
 		listImagesOptions.SetName(imageName)
 	}
+
+	if remoteAccountId != "" {
+		if remoteAccountId == "user" {
+			remoteAccountId = "null"
+			listImagesOptions.SetRemoteAccountID(remoteAccountId)
+		} else if remoteAccountId == "provider" {
+			remoteAccountId = "not:null"
+			listImagesOptions.SetRemoteAccountID(remoteAccountId)
+		} else {
+			listImagesOptions.SetRemoteAccountID(remoteAccountId)
+		}
+	}
+
 	if visibility != "" {
 		listImagesOptions.SetVisibility(visibility)
 	}
@@ -369,9 +448,11 @@ func imageList(d *schema.ResourceData, meta interface{}) error {
 		if start != "" {
 			listImagesOptions.Start = &start
 		}
-		availableImages, response, err := sess.ListImages(listImagesOptions)
+		availableImages, _, err := sess.ListImagesWithContext(context, listImagesOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Fetching Images %s\n%s", err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListImagesWithContext failed %s", err), "(Data) ibm_is_images", "read")
+			log.Printf("[DEBUG] %s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		start = flex.GetNext(availableImages.Next)
 		allrecs = append(allrecs, availableImages.Images...)
@@ -448,6 +529,32 @@ func imageList(d *schema.ResourceData, meta interface{}) error {
 			catalogOfferingList = append(catalogOfferingList, catalogOfferingMap)
 			l[isImageCatalogOffering] = catalogOfferingList
 		}
+
+		if image.Remote != nil {
+			imageRemoteMap, err := dataSourceImageRemote(image)
+			if err != nil {
+				if err != nil {
+					tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_image", "read", "initialize-client")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
+				}
+			}
+			if len(imageRemoteMap) > 0 {
+				l["remote"] = []interface{}{imageRemoteMap}
+			}
+		}
+
+		if image.AllowedUse != nil {
+			usageConstraintList := []map[string]interface{}{}
+			modelMap, err := DataSourceIBMIsImageAllowedUseToMap(image.AllowedUse)
+			if err != nil {
+				tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_is_image", "read")
+				log.Println(tfErr.GetDiag())
+			}
+			usageConstraintList = append(usageConstraintList, modelMap)
+			l["allowed_use"] = usageConstraintList
+		}
+
 		accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *image.CRN, "", isImageAccessTagType)
 		if err != nil {
 			log.Printf(
@@ -457,7 +564,9 @@ func imageList(d *schema.ResourceData, meta interface{}) error {
 		imagesInfo = append(imagesInfo, l)
 	}
 	d.SetId(dataSourceIBMISImagesID(d))
-	d.Set(isImages, imagesInfo)
+	if err = d.Set("images", imagesInfo); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting images %s", err), "(Data) ibm_is_images", "read", "images-set").GetDiag()
+	}
 	return nil
 }
 

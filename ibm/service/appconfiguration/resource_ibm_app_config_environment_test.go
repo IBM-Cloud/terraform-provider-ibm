@@ -103,12 +103,12 @@ func testAccCheckIbmAppConfigEnvironmentExists(n string, obj appconfigurationv1.
 
 		parts, err := flex.IdParts(rs.Primary.ID)
 		if err != nil {
-			return flex.FmtErrorf(fmt.Sprintf("%s", err))
+			return flex.FmtErrorf("%s", err)
 		}
 
 		appconfigClient, err := getAppConfigClient(acc.TestAccProvider.Meta(), parts[0])
 		if err != nil {
-			return flex.FmtErrorf(fmt.Sprintf("%s", err))
+			return flex.FmtErrorf("%s", err)
 		}
 
 		options := &appconfigurationv1.GetEnvironmentOptions{}
@@ -116,7 +116,7 @@ func testAccCheckIbmAppConfigEnvironmentExists(n string, obj appconfigurationv1.
 
 		result, _, err := appconfigClient.GetEnvironment(options)
 		if err != nil {
-			return flex.FmtErrorf(fmt.Sprintf("%s", err))
+			return flex.FmtErrorf("%s", err)
 		}
 
 		obj = *result
@@ -132,12 +132,12 @@ func testAccCheckIbmAppConfigEnvironmentDestroy(s *terraform.State) error {
 
 		parts, err := flex.IdParts(rs.Primary.ID)
 		if err != nil {
-			return flex.FmtErrorf(fmt.Sprintf("%s", err))
+			return flex.FmtErrorf("%s", err)
 		}
 
 		appconfigClient, err := getAppConfigClient(acc.TestAccProvider.Meta(), parts[0])
 		if err != nil {
-			return flex.FmtErrorf(fmt.Sprintf("%s", err))
+			return flex.FmtErrorf("%s", err)
 		}
 		options := &appconfigurationv1.GetEnvironmentOptions{}
 		options.SetEnvironmentID(parts[1])

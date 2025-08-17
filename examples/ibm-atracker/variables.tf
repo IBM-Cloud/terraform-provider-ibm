@@ -34,8 +34,11 @@ variable "atracker_route_receive_global_events" {
 }
 variable "atracker_route_rules" {
   description = "Routing rules that will be evaluated in their order of the array."
-  type        = list(object({ example=string }))
-  default     = [ { "target_ids" : [ "target_ids" ] } ]
+  type        = list(object({
+    target_ids = list(string)
+    locations = list(string)
+  }))
+  default     = [ ]
 }
 
 // Data source arguments for atracker_targets
@@ -57,6 +60,13 @@ variable "atracker_settings_metadata_region_primary" {
   type        = string
   default     = "us-south"
 }
+
+variable "atracker_settings_metadata_region_backup" {
+  description = "To store all your meta data in a single region."
+  type        = string
+  default     = "us-east"
+}
+
 variable "atracker_settings_private_api_endpoint_only" {
   description = "If you set this true then you cannot access api through public network."
   type        = bool

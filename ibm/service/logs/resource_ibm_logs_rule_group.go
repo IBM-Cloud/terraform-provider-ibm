@@ -422,7 +422,10 @@ func resourceIbmLogsRuleGroupCreate(context context.Context, d *schema.ResourceD
 
 	region := getLogsInstanceRegion(logsClient, d)
 	instanceId := d.Get("instance_id").(string)
-	logsClient = getClientWithLogsInstanceEndpoint(logsClient, instanceId, region, getLogsInstanceEndpointType(logsClient, d))
+	logsClient, err = getClientWithLogsInstanceEndpoint(logsClient, meta, instanceId, region, getLogsInstanceEndpointType(logsClient, d))
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("Unable to get updated logs instance client"))
+	}
 
 	createRuleGroupOptions := &logsv0.CreateRuleGroupOptions{}
 
@@ -480,7 +483,7 @@ func resourceIbmLogsRuleGroupRead(context context.Context, d *schema.ResourceDat
 		return tfErr.GetDiag()
 	}
 
-	logsClient, region, instanceId, ruleGroupId, err := updateClientURLWithInstanceEndpoint(d.Id(), logsClient, d)
+	logsClient, region, instanceId, ruleGroupId, err := updateClientURLWithInstanceEndpoint(d.Id(), meta, logsClient, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -564,7 +567,7 @@ func resourceIbmLogsRuleGroupUpdate(context context.Context, d *schema.ResourceD
 		return tfErr.GetDiag()
 	}
 
-	logsClient, _, _, ruleGroupId, err := updateClientURLWithInstanceEndpoint(d.Id(), logsClient, d)
+	logsClient, _, _, ruleGroupId, err := updateClientURLWithInstanceEndpoint(d.Id(), meta, logsClient, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -636,7 +639,7 @@ func resourceIbmLogsRuleGroupDelete(context context.Context, d *schema.ResourceD
 		return tfErr.GetDiag()
 	}
 
-	logsClient, _, _, ruleGroupId, err := updateClientURLWithInstanceEndpoint(d.Id(), logsClient, d)
+	logsClient, _, _, ruleGroupId, err := updateClientURLWithInstanceEndpoint(d.Id(), meta, logsClient, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}

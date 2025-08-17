@@ -158,7 +158,7 @@ func dataSourceIbmAppConfigPropertyRead(d *schema.ResourceData, meta interface{}
 	options.SetEnvironmentID(d.Get("environment_id").(string))
 	options.SetPropertyID(d.Get("property_id").(string))
 
-	if _, ok := d.GetOk("include"); ok {
+	if _, ok := GetFieldExists(d, "include"); ok {
 		dataString := d.Get("include").(string)
 		options.SetInclude(strings.Split(dataString, ","))
 	}

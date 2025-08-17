@@ -292,11 +292,11 @@ func testAccCheckIBMDatabaseInstanceElasticsearchBasic(databaseResourceGroup str
 		service                      = "databases-for-elasticsearch"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "password12345678"
+		adminpassword                = "secure-Password12345"
 		service_endpoints            = "public"
 		users {
 		  name     = "user123"
-		  password = "password12345678"
+		  password = "secure-Password12345"
 		}
 		allowlist {
 		  address     = "172.168.1.2/32"
@@ -335,15 +335,15 @@ func testAccCheckIBMDatabaseInstanceElasticsearchFullyspecified(databaseResource
 		service                      = "databases-for-elasticsearch"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "password12345678"
+		adminpassword                = "secure-Password12345"
 		service_endpoints            = "public"
 		users {
 		  name     = "user123"
-		  password = "password12345678"
+		  password = "secure-Password12345"
 		}
 		users {
 		  name     = "user124"
-		  password = "password12345678"
+		  password = "secure-Password12345"
 		}
 		allowlist {
 		  address     = "172.168.1.2/32"
@@ -387,7 +387,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchReduced(databaseResourceGroup s
 		service                      = "databases-for-elasticsearch"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "password12345678"
+		adminpassword                = "secure-Password12345"
 		service_endpoints            = "public"
 
 		group {
@@ -422,7 +422,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchGroupMigration(databaseResource
 		service                      = "databases-for-elasticsearch"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "password12345678"
+		adminpassword                = "secure-Password12345"
 		service_endpoints            = "public"
 
 		group {
@@ -461,7 +461,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchNodeBasic(databaseResourceGroup
 		service                      = "databases-for-elasticsearch"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "password12345678"
+		adminpassword                = "secure-Password12345"
 		service_endpoints            = "public"
 
 		group {
@@ -484,7 +484,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchNodeBasic(databaseResourceGroup
 		}
 		users {
 		  name     = "user123"
-		  password = "password12345678"
+		  password = "secure-Password12345"
 		}
 		allowlist {
 		  address     = "172.168.1.2/32"
@@ -513,7 +513,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchNodeFullyspecified(databaseReso
 		service                      = "databases-for-elasticsearch"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "password12345678"
+		adminpassword                = "secure-Password12345"
 		service_endpoints            = "public"
 		group {
 			group_id = "member"
@@ -535,11 +535,11 @@ func testAccCheckIBMDatabaseInstanceElasticsearchNodeFullyspecified(databaseReso
 		}
 		users {
 		  name     = "user123"
-		  password = "password12345678"
+		  password = "secure-Password12345"
 		}
 		users {
 		  name     = "user124"
-		  password = "password12345678"
+		  password = "secure-Password12345"
 		}
 		allowlist {
 		  address     = "172.168.1.2/32"
@@ -572,7 +572,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchNodeReduced(databaseResourceGro
 		service                      = "databases-for-elasticsearch"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "password12345678"
+		adminpassword                = "secure-Password12345"
 		service_endpoints            = "public"
 		group {
 			group_id = "member"
@@ -615,7 +615,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchNodeScaleOut(databaseResourceGr
 		service                      = "databases-for-elasticsearch"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "password12345678"
+		adminpassword                = "secure-Password12345"
 		service_endpoints            = "public"
 		group {
 			group_id = "member"
@@ -658,7 +658,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchGroupBasic(databaseResourceGrou
 		service                      = "databases-for-elasticsearch"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "password12345678"
+		adminpassword                = "secure-Password12345"
 		service_endpoints            = "public"
 
 		group {
@@ -682,7 +682,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchGroupBasic(databaseResourceGrou
 
 		users {
 		  name     = "user123"
-		  password = "password12345678"
+		  password = "secure-Password12345"
 		}
 		allowlist {
 		  address     = "172.168.1.2/32"
@@ -711,7 +711,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchGroupFullyspecified(databaseRes
 		service                      = "databases-for-elasticsearch"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "password12345678"
+		adminpassword                = "secure-Password12345"
 		service_endpoints            = "public"
 
 		group {
@@ -734,11 +734,11 @@ func testAccCheckIBMDatabaseInstanceElasticsearchGroupFullyspecified(databaseRes
 		}
 		users {
 		  name     = "user123"
-		  password = "password12345678"
+		  password = "secure-Password12345"
 		}
 		users {
 		  name     = "user124"
-		  password = "password12345678"
+		  password = "secure-Password12345"
 		}
 		allowlist {
 		  address     = "172.168.1.2/32"
@@ -772,7 +772,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchGroupReduced(databaseResourceGr
 		service                      = "databases-for-elasticsearch"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "password12345678"
+		adminpassword                = "secure-Password12345"
 		service_endpoints            = "public"
 
 		group {
@@ -816,7 +816,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchGroupScaleOut(databaseResourceG
 		service                      = "databases-for-elasticsearch"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "password12345678"
+		adminpassword                = "secure-Password12345"
 		service_endpoints            = "public"
 
 		group {

@@ -4,11 +4,14 @@
 package vpc
 
 import (
+	"context"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -18,7 +21,7 @@ const (
 
 func DataSourceIBMISOperatingSystems() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceIBMISOperatingSystemsRead,
+		ReadContext: dataSourceIBMISOperatingSystemsRead,
 
 		Schema: map[string]*schema.Schema{
 			isOperatingSystems: {
@@ -87,18 +90,20 @@ func DataSourceIBMISOperatingSystems() *schema.Resource {
 	}
 }
 
-func dataSourceIBMISOperatingSystemsRead(d *schema.ResourceData, meta interface{}) error {
-	err := osList(d, meta)
+func dataSourceIBMISOperatingSystemsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	err := osList(context, d, meta)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func osList(d *schema.ResourceData, meta interface{}) error {
+func osList(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_operating_systems", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	start := ""
 	allrecs := []vpcv1.OperatingSystem{}
@@ -108,9 +113,11 @@ func osList(d *schema.ResourceData, meta interface{}) error {
 			listOperatingSystemsOptions.Start = &start
 		}
 
-		osList, response, err := sess.ListOperatingSystems(listOperatingSystemsOptions)
+		osList, _, err := sess.ListOperatingSystemsWithContext(context, listOperatingSystemsOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Fetching operating systems %s\n%s", err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListOperatingSystemsWithContext failed %s", err), "(Data) ibm_is_operating_systems", "read")
+			log.Printf("[DEBUG] %s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		start = flex.GetNext(osList.Next)
 		allrecs = append(allrecs, osList.OperatingSystems...)
@@ -139,7 +146,9 @@ func osList(d *schema.ResourceData, meta interface{}) error {
 		osInfo = append(osInfo, l)
 	}
 	d.SetId(dataSourceIBMISOperatingSystemsId(d))
-	d.Set(isOperatingSystems, osInfo)
+	if err = d.Set("operating_systems", osInfo); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting operating_systems %s", err), "(Data) ibm_is_operating_systems", "read", "operating_systems-set").GetDiag()
+	}
 	return nil
 }
 

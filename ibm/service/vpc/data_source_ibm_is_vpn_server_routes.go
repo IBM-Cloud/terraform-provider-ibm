@@ -9,6 +9,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -136,9 +137,11 @@ func DataSourceIBMIsVPNServerRoutes() *schema.Resource {
 }
 
 func dataSourceIBMIsVPNServerRoutesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	sess, err := vpcClient(meta)
+	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_vpn_server_routes", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	start := ""
@@ -151,10 +154,11 @@ func dataSourceIBMIsVPNServerRoutesRead(context context.Context, d *schema.Resou
 		if start != "" {
 			listVPNServerRoutesOptions.Start = &start
 		}
-		vpnServerRouteCollection, response, err := sess.ListVPNServerRoutesWithContext(context, listVPNServerRoutesOptions)
+		vpnServerRouteCollection, _, err := vpcClient.ListVPNServerRoutesWithContext(context, listVPNServerRoutesOptions)
 		if err != nil {
-			log.Printf("[DEBUG] ListVPNServerRoutesWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("[ERROR] ListVPNServerRoutesWithContext failed %s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("[DEBUG] ListVPNServerRoutesWithContext failed %s", err), "(Data) ibm_is_vpn_server_routes", "read")
+			log.Printf("[DEBUG] %s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		start = flex.GetNext(vpnServerRouteCollection.Next)
 		allrecs = append(allrecs, vpnServerRouteCollection.Routes...)
@@ -168,7 +172,7 @@ func dataSourceIBMIsVPNServerRoutesRead(context context.Context, d *schema.Resou
 	if allrecs != nil {
 		err = d.Set("routes", dataSourceVPNServerRouteCollectionFlattenRoutes(allrecs))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting routes %s", err))
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_vpn_server_routes", "read", "VPNServers-to-map").GetDiag()
 		}
 	}
 

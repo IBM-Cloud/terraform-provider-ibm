@@ -4,17 +4,19 @@
 package vpc
 
 import (
+	"context"
 	"fmt"
 	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func DataSourceIBMISPublicGateway() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceIBMISPublicGatewayRead,
+		ReadContext: dataSourceIBMISPublicGatewayRead,
 
 		Schema: map[string]*schema.Schema{
 			isPublicGatewayName: {
@@ -109,10 +111,12 @@ func DataSourceIBMISPublicGateway() *schema.Resource {
 	}
 }
 
-func dataSourceIBMISPublicGatewayRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceIBMISPublicGatewayRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_public_gateway", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	name := d.Get(isPublicGatewayName).(string)
 	rgroup := ""
@@ -129,9 +133,11 @@ func dataSourceIBMISPublicGatewayRead(d *schema.ResourceData, meta interface{}) 
 		if rgroup != "" {
 			listPublicGatewaysOptions.ResourceGroupID = &rgroup
 		}
-		publicgws, response, err := sess.ListPublicGateways(listPublicGatewaysOptions)
+		publicgws, _, err := sess.ListPublicGatewaysWithContext(context, listPublicGatewaysOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Fetching public gateways %s\n%s", err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListPublicGatewaysWithContext failed: %s", err.Error()), "(Data) ibm_is_public_gateway", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		start = flex.GetNext(publicgws.Next)
 		allrecs = append(allrecs, publicgws.PublicGateways...)
@@ -142,48 +148,76 @@ func dataSourceIBMISPublicGatewayRead(d *schema.ResourceData, meta interface{}) 
 	for _, publicgw := range allrecs {
 		if *publicgw.Name == name {
 			d.SetId(*publicgw.ID)
-			d.Set(isPublicGatewayName, *publicgw.Name)
+			if err = d.Set("name", publicgw.Name); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_is_public_gateway", "read", "set-name").GetDiag()
+			}
 			if publicgw.FloatingIP != nil {
 				floatIP := map[string]interface{}{
 					"id":                             *publicgw.FloatingIP.ID,
 					isPublicGatewayFloatingIPAddress: *publicgw.FloatingIP.Address,
 				}
-				d.Set(isPublicGatewayFloatingIP, floatIP)
-
+				if err = d.Set("floating_ip", floatIP); err != nil {
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting floating_ip: %s", err), "(Data) ibm_is_public_gateway", "read", "set-floating_ip").GetDiag()
+				}
 			}
-			d.Set(isPublicGatewayStatus, *publicgw.Status)
-			d.Set(isPublicGatewayZone, *publicgw.Zone.Name)
-			d.Set(isPublicGatewayVPC, *publicgw.VPC.ID)
+			if err = d.Set("status", publicgw.Status); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting status: %s", err), "(Data) ibm_is_public_gateway", "read", "set-status").GetDiag()
+			}
+			if err = d.Set("zone", publicgw.Zone.Name); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting zone: %s", err), "(Data) ibm_is_public_gateway", "read", "set-zone").GetDiag()
+			}
+			if err = d.Set("vpc", *publicgw.VPC.ID); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting vpc: %s", err), "(Data) ibm_is_public_gateway", "read", "set-vpc").GetDiag()
+			}
 			tags, err := flex.GetGlobalTagsUsingCRN(meta, *publicgw.CRN, "", isUserTagType)
 			if err != nil {
 				log.Printf(
 					"Error on get of vpc public gateway (%s) tags: %s", *publicgw.ID, err)
 			}
-			d.Set(isPublicGatewayTags, tags)
-
+			if err = d.Set("tags", tags); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting tags: %s", err), "(Data) ibm_is_public_gateway", "read", "set-tags").GetDiag()
+			}
 			accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *publicgw.CRN, "", isAccessTagType)
 			if err != nil {
 				log.Printf(
 					"Error on get of vpc public gateway (%s) access tags: %s", d.Id(), err)
 			}
-
-			d.Set(isPublicGatewayAccessTags, accesstags)
+			if err = d.Set("access_tags", accesstags); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting access_tags: %s", err), "(Data) ibm_is_public_gateway", "read", "set-access_tags").GetDiag()
+			}
 
 			controller, err := flex.GetBaseController(meta)
 			if err != nil {
-				return err
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetBaseController failed: %s", err.Error()), "(Data) ibm_is_public_gateway", "read")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			d.Set(flex.ResourceControllerURL, controller+"/vpc-ext/network/publicGateways")
-			d.Set(flex.ResourceName, *publicgw.Name)
-			d.Set(flex.ResourceCRN, *publicgw.CRN)
-			d.Set(isPublicGatewayCRN, *publicgw.CRN)
-			d.Set(flex.ResourceStatus, *publicgw.Status)
+			if err = d.Set("resource_name", publicgw.Name); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_name: %s", err), "(Data) ibm_is_public_gateway", "read", "set-resource_name").GetDiag()
+			}
+
+			if err = d.Set("resource_crn", publicgw.CRN); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_crn: %s", err), "(Data) ibm_is_public_gateway", "read", "set-resource_crn").GetDiag()
+			}
+			if err = d.Set("crn", publicgw.CRN); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting crn: %s", err), "(Data) ibm_is_public_gateway", "read", "set-crn").GetDiag()
+			}
+			if err = d.Set("resource_status", publicgw.Status); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_status: %s", err), "(Data) ibm_is_public_gateway", "read", "set-resource_status").GetDiag()
+			}
 			if publicgw.ResourceGroup != nil {
-				d.Set(isPublicGatewayResourceGroup, *publicgw.ResourceGroup.ID)
-				d.Set(flex.ResourceGroupName, *publicgw.ResourceGroup.Name)
+				if err = d.Set("resource_group", publicgw.ResourceGroup.ID); err != nil {
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_group: %s", err), "(Data) ibm_is_public_gateway", "read", "set-resource_group").GetDiag()
+				}
+				if err = d.Set("resource_group_name", publicgw.ResourceGroup.Name); err != nil {
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_group_name: %s", err), "(Data) ibm_is_public_gateway", "read", "set-resource_group_name").GetDiag()
+				}
 			}
 			return nil
 		}
 	}
-	return fmt.Errorf("[ERROR] No Public gateway found with name %s", name)
+	tfErr := flex.TerraformErrorf(err, fmt.Sprintf("No Public gateway found with name: %s", name), "(Data) ibm_is_public_gateway", "read")
+	log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+	return tfErr.GetDiag()
 }

@@ -80,6 +80,21 @@ After your resource is created, you can read values from the listed arguments an
 * `id` - The unique identifier of the code_engine_function.
 * `function_id` - (String) The identifier of the resource.
 	* Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}$/`.
+* `computed_env_variables` - (List) References to config maps, secrets or literal values, which are defined and set by Code Engine and are exposed as environment variables in the function.
+  * Constraints: The maximum length is `100` items. The minimum length is `0` items.
+Nested schema for **computed_env_variables**:
+	* `key` - (String) The key to reference as environment variable.
+	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[\\-._a-zA-Z0-9]+$/`.
+	* `name` - (String) The name of the environment variable.
+	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[\\-._a-zA-Z0-9]+$/`.
+	* `prefix` - (String) A prefix that can be added to all keys of a full secret or config map reference.
+	  * Constraints: The maximum length is `253` characters. The minimum length is `0` characters. The value must match regular expression `/^[a-zA-Z_][a-zA-Z0-9_]*$/`.
+	* `reference` - (String) The name of the secret or config map.
+	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[a-z0-9]([\\-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([\\-a-z0-9]*[a-z0-9])?)*$/`.
+	* `type` - (String) Specify the type of the environment variable.
+	  * Constraints: The default value is `literal`. Allowable values are: `literal`, `config_map_full_reference`, `secret_full_reference`, `config_map_key_reference`, `secret_key_reference`. The value must match regular expression `/^(literal|config_map_full_reference|secret_full_reference|config_map_key_reference|secret_key_reference)$/`.
+	* `value` - (String) The literal value of the environment variable.
+      * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[\\-._a-zA-Z0-9]+$/`.
 * `created_at` - (String) The timestamp when the resource was created.
 * `endpoint` - (String) URL to invoke the function.
   * Constraints: The maximum length is `2048` characters. The minimum length is `0` characters. The value must match regular expression `/(([^:\/?#]+):)?(\/\/([^\/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?$/`.

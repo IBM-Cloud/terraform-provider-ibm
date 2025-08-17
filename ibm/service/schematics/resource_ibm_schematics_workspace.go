@@ -581,7 +581,7 @@ func ResourceIBMSchematicsWorkspaceValidator() *validate.ResourceValidator {
 			Identifier:                 schematicsWorkspaceTemplateType,
 			ValidateFunctionIdentifier: validate.ValidateRegexp,
 			Type:                       validate.TypeString,
-			Regexp:                     `^terraform_v(?:1\.4|1\.5|1\.6|1\.7|1\.8|1\.9)(?:\.\d+)?$`,
+			Regexp:                     `^terraform_v(?:1\.4|1\.5|1\.6|1\.7|1\.8|1\.9|1\.10)(?:\.\d+)?$`,
 			Default:                    "[]",
 			Optional:                   true})
 

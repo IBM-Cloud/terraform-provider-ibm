@@ -416,3 +416,200 @@ func testAccCheckIBMIsInstanceNetworkAttachmentDestroy(s *terraform.State) error
 
 	return nil
 }
+
+// TestAccIBMIsInstanceNetworkAttachmentVniResourceGroupChange tests attachment with external VNI's resource group change
+func TestAccIBMIsInstanceNetworkAttachmentVniResourceGroupChange(t *testing.T) {
+	var conf vpcv1.InstanceNetworkAttachment
+	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tf-vsi-%d", acctest.RandIntRange(10, 100))
+	vniname := fmt.Sprintf("tf-vni-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tvni-subnet-%d", acctest.RandIntRange(10, 100))
+	naname := fmt.Sprintf("tvni-na-%d", acctest.RandIntRange(10, 100))
+	publicKey := strings.TrimSpace(`
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
+`)
+	sshname := fmt.Sprintf("tf-sshname-%d", acctest.RandIntRange(10, 100))
+	rg1 := acc.IsResourceGroupID
+	rg2 := acc.IsResourceGroupIDUpdate
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMIsInstanceNetworkAttachmentDestroy,
+		Steps: []resource.TestStep{
+			// Initial setup with resource group 1
+			{
+				Config: testAccCheckIBMIsInstanceNetworkAttachmentVniResourceGroup(vpcname, subnetname, sshname, publicKey, vniname, name, naname, rg1),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIsInstanceNetworkAttachmentExists("ibm_is_instance_network_attachment.is_instance_network_attachment", conf),
+					resource.TestCheckResourceAttr("ibm_is_instance_network_attachment.is_instance_network_attachment", "name", naname),
+					resource.TestCheckResourceAttr("ibm_is_virtual_network_interface.testacc_vni2", "resource_group", rg1),
+					resource.TestCheckResourceAttrSet("ibm_is_instance_network_attachment.is_instance_network_attachment", "virtual_network_interface.#"),
+				),
+			},
+			// Change to resource group 2, should trigger force-new for VNI and recreate attachment
+			{
+				Config: testAccCheckIBMIsInstanceNetworkAttachmentVniResourceGroup(vpcname, subnetname, sshname, publicKey, vniname, name, naname, rg2),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIsInstanceNetworkAttachmentExists("ibm_is_instance_network_attachment.is_instance_network_attachment", conf),
+					resource.TestCheckResourceAttr("ibm_is_instance_network_attachment.is_instance_network_attachment", "name", naname),
+					resource.TestCheckResourceAttr("ibm_is_virtual_network_interface.testacc_vni2", "resource_group", rg2),
+					resource.TestCheckResourceAttrSet("ibm_is_instance_network_attachment.is_instance_network_attachment", "virtual_network_interface.#"),
+				),
+			},
+		},
+	})
+}
+
+// TestAccIBMIsInstanceNetworkAttachmentInlineVniResourceGroupChange tests attachment with inline VNI resource group change
+func TestAccIBMIsInstanceNetworkAttachmentInlineVniResourceGroupChange(t *testing.T) {
+	var conf vpcv1.InstanceNetworkAttachment
+	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tf-vsi-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tvni-subnet-%d", acctest.RandIntRange(10, 100))
+	naname := fmt.Sprintf("tvni-na-%d", acctest.RandIntRange(10, 100))
+	publicKey := strings.TrimSpace(`
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
+`)
+	sshname := fmt.Sprintf("tf-sshname-%d", acctest.RandIntRange(10, 100))
+	vniname := fmt.Sprintf("tf-vni-%d", acctest.RandIntRange(10, 100))
+	rg1 := acc.IsResourceGroupID
+	rg2 := acc.IsResourceGroupIDUpdate
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMIsInstanceNetworkAttachmentDestroy,
+		Steps: []resource.TestStep{
+			// Initial setup with resource group 1
+			{
+				Config: testAccCheckIBMIsInstanceNetworkAttachmentInlineVniResourceGroup(vpcname, subnetname, sshname, publicKey, vniname, name, naname, rg1),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIsInstanceNetworkAttachmentExists("ibm_is_instance_network_attachment.is_instance_network_attachment", conf),
+					resource.TestCheckResourceAttr("ibm_is_instance_network_attachment.is_instance_network_attachment", "name", naname),
+					resource.TestCheckResourceAttr("ibm_is_instance_network_attachment.is_instance_network_attachment", "virtual_network_interface.0.resource_group", rg1),
+				),
+			},
+			// Change to resource group 2, should trigger force-new
+			{
+				Config: testAccCheckIBMIsInstanceNetworkAttachmentInlineVniResourceGroup(vpcname, subnetname, sshname, publicKey, vniname, name, naname, rg2),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIsInstanceNetworkAttachmentExists("ibm_is_instance_network_attachment.is_instance_network_attachment", conf),
+					resource.TestCheckResourceAttr("ibm_is_instance_network_attachment.is_instance_network_attachment", "name", naname),
+					resource.TestCheckResourceAttr("ibm_is_instance_network_attachment.is_instance_network_attachment", "virtual_network_interface.0.resource_group", rg2),
+				),
+			},
+		},
+	})
+}
+
+// Config generators
+
+func testAccCheckIBMIsInstanceNetworkAttachmentVniResourceGroup(vpcname, subnetname, sshname, publicKey, vniname, name, naname, resourceGroup string) string {
+	return fmt.Sprintf(`
+resource "ibm_is_vpc" "testacc_vpc" {
+	name = "%s"
+}
+  
+resource "ibm_is_subnet" "testacc_subnet" {
+	name            			= "%s"
+	vpc             			= ibm_is_vpc.testacc_vpc.id
+	zone            			= "%s"
+	total_ipv4_address_count 	= 16
+}
+  
+resource "ibm_is_ssh_key" "testacc_sshkey" {
+	name       			= "%s"
+	public_key 			= "%s"
+}
+
+resource "ibm_is_virtual_network_interface" "testacc_vni" {
+	name = "%s"
+	subnet = ibm_is_subnet.testacc_subnet.id
+	auto_delete = false
+}
+
+resource "ibm_is_virtual_network_interface" "testacc_vni2" {
+	name = "%s2"
+	subnet = ibm_is_subnet.testacc_subnet.id
+	resource_group = "%s"
+	auto_delete = false
+}
+
+resource "ibm_is_instance" "testacc_vsi" {
+	profile 			= "%s"
+	name 				= "%s"
+	image 				= "%s"
+	zone 				= "%s"
+	keys 				= [ibm_is_ssh_key.testacc_sshkey.id]
+	primary_network_attachment {
+		 name = "vni-primary"
+		 virtual_network_interface {
+			id = ibm_is_virtual_network_interface.testacc_vni.id
+		 }
+	}
+	vpc 				= ibm_is_vpc.testacc_vpc.id
+}
+
+resource "ibm_is_instance_network_attachment" "is_instance_network_attachment" {
+	instance = ibm_is_instance.testacc_vsi.id
+	name = "%s"
+	virtual_network_interface {
+		id = ibm_is_virtual_network_interface.testacc_vni2.id
+	}
+}
+`, vpcname, subnetname, acc.ISZoneName, sshname, publicKey, vniname, vniname, resourceGroup, acc.InstanceProfileName, name, acc.IsImage, acc.ISZoneName, naname)
+}
+
+func testAccCheckIBMIsInstanceNetworkAttachmentInlineVniResourceGroup(vpcname, subnetname, sshname, publicKey, vniname, name, naname, resourceGroup string) string {
+	return fmt.Sprintf(`
+resource "ibm_is_vpc" "testacc_vpc" {
+	name = "%s"
+}
+  
+resource "ibm_is_subnet" "testacc_subnet" {
+	name            			= "%s"
+	vpc             			= ibm_is_vpc.testacc_vpc.id
+	zone            			= "%s"
+	total_ipv4_address_count 	= 16
+}
+  
+resource "ibm_is_ssh_key" "testacc_sshkey" {
+	name       			= "%s"
+	public_key 			= "%s"
+}
+
+resource "ibm_is_virtual_network_interface" "testacc_vni" {
+	name = "%s"
+	subnet = ibm_is_subnet.testacc_subnet.id
+	enable_infrastructure_nat = true
+	auto_delete = false
+}
+
+resource "ibm_is_instance" "testacc_vsi" {
+	profile 			= "%s"
+	name 				= "%s"
+	image 				= "%s"
+	zone 				= "%s"
+	keys 				= [ibm_is_ssh_key.testacc_sshkey.id]
+	primary_network_attachment {
+		 name = "vni-primary"
+		 virtual_network_interface {
+			id = ibm_is_virtual_network_interface.testacc_vni.id
+		 }
+	}
+	vpc 				= ibm_is_vpc.testacc_vpc.id
+}
+
+resource "ibm_is_instance_network_attachment" "is_instance_network_attachment" {
+	instance = ibm_is_instance.testacc_vsi.id
+	name = "%s"
+	virtual_network_interface {
+		subnet = ibm_is_subnet.testacc_subnet.id
+		resource_group = "%s"
+		name = "inline-vni-na"
+		auto_delete = true
+	}
+}
+`, vpcname, subnetname, acc.ISZoneName, sshname, publicKey, vniname, acc.InstanceProfileName, name, acc.IsImage, acc.ISZoneName, naname, resourceGroup)
+}

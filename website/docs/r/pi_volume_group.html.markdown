@@ -10,7 +10,7 @@ description: |-
 
 Create, update, or delete a volume group. For more information, about managing volume groups, see [getting started with IBM Power Systems Virtual Servers](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-getting-started).
 
-## Example usage
+## Example Usage
 
 The following example creates a volume group.
 
@@ -46,7 +46,7 @@ ibm_pi_volume_group provides the following [timeouts](https://www.terraform.io/d
 - **update** - (Default 30 minutes) Used for updating volume group.
 - **delete** - (Default 10 minutes) Used for deleting volume group.
 
-## Argument reference
+## Argument Reference
 
 Review the argument references that you can specify for your resource.
 
@@ -55,7 +55,7 @@ Review the argument references that you can specify for your resource.
 - `pi_volume_group_name` - (Optional, String) The name of the volume group, required if `pi_consistency_group_name` is not provided.
 - `pi_volume_ids` - (Required, Set of String) List of volume IDs to add in volume group.
 
-## Attribute reference
+## Attribute Reference
 
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 

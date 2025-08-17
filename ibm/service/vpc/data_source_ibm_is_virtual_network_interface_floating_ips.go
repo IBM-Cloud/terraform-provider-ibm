@@ -6,6 +6,7 @@ package vpc
 import (
 	"context"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -81,7 +82,9 @@ func DataSourceIBMIsVirtualNetworkInterfaceFloatingIPs() *schema.Resource {
 func dataSourceIBMIsVirtualNetworkInterfaceFloatingIPsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_virtual_network_interface_floating_ips", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	vniId := d.Get("virtual_network_interface").(string)
 
@@ -93,9 +96,11 @@ func dataSourceIBMIsVirtualNetworkInterfaceFloatingIPsRead(context context.Conte
 		if start != "" {
 			listNetworkInterfaceFloatingIpsOptions.Start = &start
 		}
-		floatingIPCollection, response, err := sess.ListNetworkInterfaceFloatingIpsWithContext(context, listNetworkInterfaceFloatingIpsOptions)
+		floatingIPCollection, _, err := sess.ListNetworkInterfaceFloatingIpsWithContext(context, listNetworkInterfaceFloatingIpsOptions)
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error ListNetworkInterfaceFloatingIpsWithContext %s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListNetworkInterfaceFloatingIpsWithContext failed %s", err), "(Data) ibm_is_virtual_network_interface_floating_ips", "read")
+			log.Printf("[DEBUG] %s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		start = flex.GetNext(floatingIPCollection.Next)
 		allrecs = append(allrecs, floatingIPCollection.FloatingIps...)
@@ -123,7 +128,10 @@ func dataSourceIBMIsVirtualNetworkInterfaceFloatingIPsRead(context context.Conte
 		floatingIpsInfo = append(floatingIpsInfo, l)
 	}
 	d.SetId(dataSourceIBMISVirtualNetworkInterfaceFloatingIPsID(d))
-	d.Set("floating_ips", floatingIpsInfo)
+
+	if err = d.Set("floating_ips", floatingIpsInfo); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting virtual_network_interfaces %s", err), "(Data) ibm_is_virtual_network_interface_floating_ips", "read", "floating_ips-set").GetDiag()
+	}
 
 	return nil
 }

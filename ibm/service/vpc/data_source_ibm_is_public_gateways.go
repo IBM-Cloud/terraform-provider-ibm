@@ -4,12 +4,14 @@
 package vpc
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -19,7 +21,7 @@ const (
 
 func DataSourceIBMISPublicGateways() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceIBMISPublicGatewaysRead,
+		ReadContext: dataSourceIBMISPublicGatewaysRead,
 
 		Schema: map[string]*schema.Schema{
 			isPublicGatewayResourceGroup: {
@@ -132,18 +134,20 @@ func DataSourceIBMISPublicGateways() *schema.Resource {
 	}
 }
 
-func dataSourceIBMISPublicGatewaysRead(d *schema.ResourceData, meta interface{}) error {
-	err := publicGatewaysGet(d, meta, name)
+func dataSourceIBMISPublicGatewaysRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	err := publicGatewaysGet(context, d, meta, name)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func publicGatewaysGet(d *schema.ResourceData, meta interface{}, name string) error {
+func publicGatewaysGet(context context.Context, d *schema.ResourceData, meta interface{}, name string) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_public_gateways", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	rgroup := ""
 	if rg, ok := d.GetOk(isPublicGatewayResourceGroup); ok {
@@ -159,9 +163,11 @@ func publicGatewaysGet(d *schema.ResourceData, meta interface{}, name string) er
 		if rgroup != "" {
 			listPublicGatewaysOptions.ResourceGroupID = &rgroup
 		}
-		publicgws, response, err := sess.ListPublicGateways(listPublicGatewaysOptions)
+		publicgws, _, err := sess.ListPublicGatewaysWithContext(context, listPublicGatewaysOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Fetching public gateways %s\n%s", err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListPublicGatewaysWithContext failed %s", err), "(Data) ibm_is_public_gateways", "read")
+			log.Printf("[DEBUG] %s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		start = flex.GetNext(publicgws.Next)
 		allrecs = append(allrecs, publicgws.PublicGateways...)
@@ -208,7 +214,9 @@ func publicGatewaysGet(d *schema.ResourceData, meta interface{}, name string) er
 
 		controller, err := flex.GetBaseController(meta)
 		if err != nil {
-			return err
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetBaseController failed %s", err), "(Data) ibm_is_public_gateways", "read")
+			log.Printf("[DEBUG] %s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		l[flex.ResourceControllerURL] = controller + "/vpc-ext/network/publicGateways"
 		if publicgw.ResourceGroup != nil {
@@ -218,7 +226,9 @@ func publicGatewaysGet(d *schema.ResourceData, meta interface{}, name string) er
 		publicgwInfo = append(publicgwInfo, l)
 	}
 	d.SetId(dataSourceIBMISPublicGatewaysID(d))
-	d.Set(isPublicGateways, publicgwInfo)
+	if err = d.Set("public_gateways", publicgwInfo); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting public_gateways %s", err), "(Data) ibm_is_public_gateways", "read", "public_gateways-set").GetDiag()
+	}
 	return nil
 }
 

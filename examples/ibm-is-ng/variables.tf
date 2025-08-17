@@ -1,3 +1,6 @@
+variable "region" {
+  default = "us-south"
+}
 variable "zone1" {
   default = "us-south-1"
 }
@@ -11,7 +14,7 @@ variable "ssh_public_key" {
 }
 
 variable "image" {
-  default = "r006-ed3f775f-ad7e-4e37-ae62-7199b4988b00"
+  default = "r006-618b224d-eb88-492f-9825-dc246bb5211a"
 }
 
 variable "profile" {

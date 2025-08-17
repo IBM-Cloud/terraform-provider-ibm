@@ -71,7 +71,10 @@ func resourceIbmLogsViewFolderCreate(context context.Context, d *schema.Resource
 
 	region := getLogsInstanceRegion(logsClient, d)
 	instanceId := d.Get("instance_id").(string)
-	logsClient = getClientWithLogsInstanceEndpoint(logsClient, instanceId, region, getLogsInstanceEndpointType(logsClient, d))
+	logsClient, err = getClientWithLogsInstanceEndpoint(logsClient, meta, instanceId, region, getLogsInstanceEndpointType(logsClient, d))
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("Unable to get updated logs instance client"))
+	}
 
 	createViewFolderOptions := &logsv0.CreateViewFolderOptions{}
 
@@ -98,7 +101,7 @@ func resourceIbmLogsViewFolderRead(context context.Context, d *schema.ResourceDa
 		return tfErr.GetDiag()
 	}
 
-	logsClient, region, instanceId, viewFolderId, err := updateClientURLWithInstanceEndpoint(d.Id(), logsClient, d)
+	logsClient, region, instanceId, viewFolderId, err := updateClientURLWithInstanceEndpoint(d.Id(), meta, logsClient, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -142,7 +145,7 @@ func resourceIbmLogsViewFolderUpdate(context context.Context, d *schema.Resource
 		return tfErr.GetDiag()
 	}
 
-	logsClient, _, _, viewFolderId, err := updateClientURLWithInstanceEndpoint(d.Id(), logsClient, d)
+	logsClient, _, _, viewFolderId, err := updateClientURLWithInstanceEndpoint(d.Id(), meta, logsClient, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -178,7 +181,7 @@ func resourceIbmLogsViewFolderDelete(context context.Context, d *schema.Resource
 		return tfErr.GetDiag()
 	}
 
-	logsClient, _, _, viewFolderId, err := updateClientURLWithInstanceEndpoint(d.Id(), logsClient, d)
+	logsClient, _, _, viewFolderId, err := updateClientURLWithInstanceEndpoint(d.Id(), meta, logsClient, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}

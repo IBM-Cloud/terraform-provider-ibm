@@ -9,14 +9,14 @@ import (
 	"fmt"
 	"testing"
 
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
+
+	"github.com/IBM-Cloud/power-go-client/clients/instance"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-
-	st "github.com/IBM-Cloud/power-go-client/clients/instance"
-	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 )
 
 func TestAccIBMPIVolumeOnboardingbasic(t *testing.T) {
@@ -60,7 +60,7 @@ func testAccCheckIBMPIVolumeOnboardingExists(n string) resource.TestCheckFunc {
 			return err
 		}
 		cloudInstanceID, onboardID := ids[0], ids[1]
-		client := st.NewIBMPIVolumeOnboardingClient(context.Background(), sess, cloudInstanceID)
+		client := instance.NewIBMPIVolumeOnboardingClient(context.Background(), sess, cloudInstanceID)
 
 		_, err = client.Get(onboardID)
 		if err != nil {
@@ -82,6 +82,5 @@ func testAccCheckIBMPIVolumeOnboardingConfig(name string) string {
 				pi_display_name = "%[2]s-1"
 			}
 		}
-	  }
-	`, acc.Pi_cloud_instance_id, name, acc.Pi_volume_onboarding_source_crn, acc.Pi_auxiliary_volume_name)
+	}`, acc.Pi_cloud_instance_id, name, acc.Pi_volume_onboarding_source_crn, acc.Pi_auxiliary_volume_name)
 }

@@ -39,20 +39,19 @@ func ResourceIBMIAMServicePolicy() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"iam_service_id": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ExactlyOneOf: []string{"iam_service_id", "iam_id"},
-				Description:  "UUID of ServiceID",
-				ForceNew:     true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "UUID of ServiceID",
+				ForceNew:    true,
+				Deprecated:  "This field is deprecated and will be removed starting with this 1.82.0 release. Please use iam_id field instead.",
 				ValidateFunc: validate.InvokeValidator("ibm_iam_service_policy",
 					"iam_service_id"),
 			},
 			"iam_id": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ExactlyOneOf: []string{"iam_service_id", "iam_id"},
-				Description:  "IAM ID of ServiceID",
-				ForceNew:     true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "IAM ID of ServiceID",
+				ForceNew:    true,
 			},
 			"roles": {
 				Type:        schema.TypeList,

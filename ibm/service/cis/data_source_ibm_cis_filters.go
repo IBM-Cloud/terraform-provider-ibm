@@ -4,7 +4,6 @@
 package cis
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -87,20 +86,20 @@ func dataIBMCISFiltersRead(d *schema.ResourceData, meta interface{}) error {
 
 	sess, err := meta.(conns.ClientSession).BluemixSession()
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while Getting IAM Access Token using BluemixSession %s", err)
+		return flex.FmtErrorf("[ERROR] Error while Getting IAM Access Token using BluemixSession %s", err)
 	}
 	xAuthtoken := sess.Config.IAMAccessToken
 
 	cisClient, err := meta.(conns.ClientSession).CisFiltersSession()
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while getting the CisFiltersSession %s", err)
+		return flex.FmtErrorf("[ERROR] Error while getting the CisFiltersSession %s", err)
 	}
 	crn := d.Get(cisID).(string)
 	zoneID, _, _ := flex.ConvertTftoCisTwoVar(d.Get(cisDomainID).(string))
 
 	result, resp, err := cisClient.ListAllFilters(cisClient.NewListAllFiltersOptions(xAuthtoken, crn, zoneID))
 	if err != nil || result == nil {
-		return fmt.Errorf("[ERROR] Error Listing all filters %q: %s %s", d.Id(), err, resp)
+		return flex.FmtErrorf("[ERROR] Error Listing all filters %q: %s %s", d.Id(), err, resp)
 	}
 
 	filtersList := make([]map[string]interface{}, 0)

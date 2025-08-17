@@ -19,7 +19,8 @@ import (
 
 func DataSourceIBMPISystemPools() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIBMPISystemPoolsRead,
+		DeprecationMessage: "This resource is deprecated and will be removed in a future release.",
+		ReadContext:        dataSourceIBMPISystemPoolsRead,
 		Schema: map[string]*schema.Schema{
 			// Arguments
 			Arg_CloudInstanceID: {

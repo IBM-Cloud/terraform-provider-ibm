@@ -55,6 +55,72 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 		},
 	})
 }
+
+func TestAccIBMISSnapshot_allowedUse(t *testing.T) {
+	var snapshot string
+	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tf-instnace-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tf-subnet-%d", acctest.RandIntRange(10, 100))
+	publicKey := strings.TrimSpace(`
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
+`)
+	sshname := fmt.Sprintf("tf-ssh-%d", acctest.RandIntRange(10, 100))
+	volname := fmt.Sprintf("tf-vol-%d", acctest.RandIntRange(10, 100))
+	name1 := fmt.Sprintf("tfsnapshotuat-%d", acctest.RandIntRange(10, 100))
+	name2 := fmt.Sprintf("tfsnapshotuat-%d", acctest.RandIntRange(10, 100))
+	apiVersion := "2025-07-01"
+	bareMetalServer := "true"
+	instance := "true"
+	apiVersionUpdate := "2025-07-02"
+	bareMetalServerUpdate := "true"
+	instanceUpdate := "true"
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISSnapshotDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISSnapshotConfigAllowedUse(vpcname, subnetname, sshname, publicKey, volname, name, name1, apiVersion, bareMetalServer, instance),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISSnapshotExists("ibm_is_snapshot.testacc_snapshot", snapshot),
+					resource.TestCheckResourceAttr(
+						"ibm_is_snapshot.testacc_snapshot", "name", name1),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_snapshot.testacc_snapshot", "allowed_use.#"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_snapshot.testacc_snapshot", "allowed_use.0.bare_metal_server"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_snapshot.testacc_snapshot", "allowed_use.0.instance"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_snapshot.testacc_snapshot", "allowed_use.0.api_version"),
+					resource.TestCheckResourceAttr("ibm_is_snapshot.testacc_snapshot", "allowed_use.0.bare_metal_server", bareMetalServer),
+					resource.TestCheckResourceAttr("ibm_is_snapshot.testacc_snapshot", "allowed_use.0.instance", instance),
+					resource.TestCheckResourceAttr("ibm_is_snapshot.testacc_snapshot", "allowed_use.0.api_version", apiVersion),
+				),
+			},
+			{
+				Config: testAccCheckIBMISSnapshotConfigAllowedUse(vpcname, subnetname, sshname, publicKey, volname, name, name2, apiVersionUpdate, bareMetalServerUpdate, instanceUpdate),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISSnapshotExists("ibm_is_snapshot.testacc_snapshot", snapshot),
+					resource.TestCheckResourceAttr(
+						"ibm_is_snapshot.testacc_snapshot", "name", name2),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_snapshot.testacc_snapshot", "allowed_use.#"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_snapshot.testacc_snapshot", "allowed_use.0.bare_metal_server"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_snapshot.testacc_snapshot", "allowed_use.0.instance"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_snapshot.testacc_snapshot", "allowed_use.0.api_version"),
+					resource.TestCheckResourceAttr("ibm_is_snapshot.testacc_snapshot", "allowed_use.0.bare_metal_server", bareMetalServerUpdate),
+					resource.TestCheckResourceAttr("ibm_is_snapshot.testacc_snapshot", "allowed_use.0.instance", instanceUpdate),
+					resource.TestCheckResourceAttr("ibm_is_snapshot.testacc_snapshot", "allowed_use.0.api_version", apiVersionUpdate),
+				),
+			},
+		},
+	})
+}
+
 func TestAccIBMISSnapshot_serviceTags(t *testing.T) {
 	var snapshot string
 	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
@@ -310,6 +376,52 @@ func testAccCheckIBMISSnapshotConfig(vpcname, subnetname, sshname, publicKey, vo
 	}`, vpcname, subnetname, acc.ISZoneName, sshname, publicKey, name, acc.IsImage, acc.InstanceProfileName, acc.ISZoneName, sname)
 
 }
+
+func testAccCheckIBMISSnapshotConfigAllowedUse(vpcname, subnetname, sshname, publicKey, volname, name, sname, apiVersion, bareMetalServer, instance string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	  }
+	  
+	  resource "ibm_is_subnet" "testacc_subnet" {
+		name           				= "%s"
+		vpc             			= ibm_is_vpc.testacc_vpc.id
+		zone            			= "%s"
+		total_ipv4_address_count 	= 16
+	  }
+	  
+	  resource "ibm_is_ssh_key" "testacc_sshkey" {
+		name       = "%s"
+		public_key = "%s"
+	  } 
+	  
+	  resource "ibm_is_instance" "testacc_instance" {
+		name    = "%s"
+		image   = "%s"
+		profile = "%s"
+		primary_network_interface {
+		  subnet     = ibm_is_subnet.testacc_subnet.id
+		}
+		vpc  = ibm_is_vpc.testacc_vpc.id
+		zone = "%s"
+		keys = [ibm_is_ssh_key.testacc_sshkey.id]
+		network_interfaces {
+		  subnet = ibm_is_subnet.testacc_subnet.id
+		  name   = "eth1"
+		}
+	  }
+	resource "ibm_is_snapshot" "testacc_snapshot" {
+		name 			= "%s"
+		source_volume 	= ibm_is_instance.testacc_instance.volume_attachments[0].volume_id
+		allowed_use {
+   			api_version       = "%s"
+    		bare_metal_server = "%s"
+    		instance          = "%s"
+  		}
+	}`, vpcname, subnetname, acc.ISZoneName, sshname, publicKey, name, acc.IsImage, acc.InstanceProfileName, acc.ISZoneName, sname, apiVersion, bareMetalServer, instance)
+
+}
+
 func testAccCheckIBMISSnapshotEncryptedConfig(vpcname, subnetname, sshname, publicKey, volname, name, sname string) string {
 	return fmt.Sprintf(`
 	resource "ibm_is_vpc" "testacc_vpc" {

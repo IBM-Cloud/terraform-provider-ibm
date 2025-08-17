@@ -10,7 +10,7 @@ description: |-
 
 Provides a read-only data source to retrieve information about a host group you can use in Power Systems Virtual Server. For more information, about Power Systems Virtual Server host group, see [host groups](https://cloud.ibm.com/apidocs/power-cloud#endpoint).
 
-## Example usage
+## Example Usage
 
 ```terraform
 data "ibm_pi_host_group" "ds_host_group" {

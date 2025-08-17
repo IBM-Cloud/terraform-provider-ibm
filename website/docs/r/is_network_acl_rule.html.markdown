@@ -119,6 +119,13 @@ Review the argument references that you can specify for your resource.
 
 - `action` - (Required, String) Whether to **allow** or **deny** matching traffic.
 - `before` - (Optional, String) The unique identifier of the rule that this rule is immediately before. If unspecified, this rule will be inserted after all existing rules. While modifying the resource, specify **"null"** (within double quotes) to move this rule after all existing rules.
+
+~> **NOTE:** When using the `before` attribute to specify rule ordering:</br>
+    1. Adding a new rule with the `before` attribute will change the position of that rule in the ACL rule list, which may affect the evaluation order of other rules.</br>
+    2. Updating the `before` attribute of an existing rule will reposition that rule, potentially causing changes to other rules' relative positions in the evaluation sequence.</br>
+    3. Setting `before = "null"` will move the rule to the end of the ACL rule list.</br>
+    These position changes are expected and reflect the actual state of your network ACL ruleset, however, they may cause Terraform to show additional changes in other rules during subsequent plan/apply operations.
+
 - `destination` - (Required, String) The destination IP address or CIDR block.
 - `direction` - (Required, String) Whether the traffic to be matched is **inbound** or **outbound**.
 - `icmp` - (Optional, List) The protocol ICMP.
@@ -144,7 +151,7 @@ Review the argument references that you can specify for your resource.
    - `source_port_max` - (Optional, Integer) The highest port in the range of ports to be matched; if unspecified, **65535** is used.
    - `source_port_min` - (Optional, Integer) The lowest port in the range of ports to be matched; if unspecified, **1** is used.
 
-~> **NOTE:**: Only one type of protocol out of **icmp**, **tcp**, or **udp** can be used to create a new rule. If none is provided, **all** is selected.
+~> **NOTE:** Only one type of protocol out of **icmp**, **tcp**, or **udp** can be used to create a new rule. If none is provided, **all** is selected.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.

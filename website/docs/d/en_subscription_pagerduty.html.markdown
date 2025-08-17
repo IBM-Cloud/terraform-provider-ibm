@@ -47,4 +47,8 @@ In addition to all argument references listed, you can access the following attr
 
 - `topic_name` - (String) Topic name.
 
+- `attributes` - (Required, List)
+
+  - `template_id_notification` - (String) The templete id for notification
+
 - `updated_at` - (String) Last updated time.

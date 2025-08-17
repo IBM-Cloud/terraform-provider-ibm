@@ -321,7 +321,7 @@ func resourceIBMISLBListenerCreate(context context.Context, d *schema.ResourceDa
 	conns.IbmMutexKV.Lock(isLBKey)
 	defer conns.IbmMutexKV.Unlock(isLBKey)
 
-	err := lbListenerCreate(d, meta, lbID, protocol, defPool, certificateCRN, listener, uri, port, portMin, portMax, connLimit, httpStatusCode)
+	err := lbListenerCreate(context, d, meta, lbID, protocol, defPool, certificateCRN, listener, uri, port, portMin, portMax, connLimit, httpStatusCode)
 	if err != nil {
 		return err
 	}
@@ -329,10 +329,12 @@ func resourceIBMISLBListenerCreate(context context.Context, d *schema.ResourceDa
 	return resourceIBMISLBListenerRead(context, d, meta)
 }
 
-func lbListenerCreate(d *schema.ResourceData, meta interface{}, lbID, protocol, defPool, certificateCRN, listener, uri string, port, portMin, portMax, connLimit, httpStatusCode int64) diag.Diagnostics {
+func lbListenerCreate(context context.Context, d *schema.ResourceData, meta interface{}, lbID, protocol, defPool, certificateCRN, listener, uri string, port, portMin, portMax, connLimit, httpStatusCode int64) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_listener", "create", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	options := &vpcv1.CreateLoadBalancerListenerOptions{
@@ -343,14 +345,19 @@ func lbListenerCreate(d *schema.ResourceData, meta interface{}, lbID, protocol, 
 	getlboptions := &vpcv1.GetLoadBalancerOptions{
 		ID: &lbID,
 	}
-	lb, response, err := sess.GetLoadBalancer(getlboptions)
+	lb, _, err := sess.GetLoadBalancerWithContext(context, getlboptions)
 
 	if err != nil || lb == nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error getting Load Balancer : %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetLoadBalancerWithContext failed: %s", err.Error()), "ibm_is_lb_listener", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if lb != nil && *lb.RouteMode && lb.Profile != nil && *lb.Profile.Name == "network-fixed" {
 		if portMin > 0 && portMax > 0 && portMin != 1 && portMax != 65535 {
-			return diag.FromErr(fmt.Errorf("[ERROR] Only acceptable value for port_min is 1 and port_max is 65535 for route_mode enabled private network load balancer"))
+			err = fmt.Errorf("[ERROR] Only acceptable value for port_min is 1 and port_max is 65535 for route_mode enabled private network load balancer")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Validation failed: %s", err.Error()), "ibm_is_lb_listener", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		pmin := int64(1)
 		pmax := int64(65535)
@@ -360,8 +367,11 @@ func lbListenerCreate(d *schema.ResourceData, meta interface{}, lbID, protocol, 
 	} else if lb != nil && lb.Profile != nil {
 		if strings.EqualFold(*lb.Profile.Family, "network") && *lb.IsPublic {
 			if port == 0 && (portMin == 0 || portMax == 0) {
-				return diag.FromErr(fmt.Errorf(
-					"[ERROR] Error port_min(%d)/port_max(%d) for public network load balancer(%s) needs to be in between 1-65335", portMin, portMax, lbID))
+				err = fmt.Errorf(
+					"[ERROR] Error port_min(%d)/port_max(%d) for public network load balancer(%s) needs to be in between 1-65335", portMin, portMax, lbID)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Validation failed: %s", err.Error()), "ibm_is_lb_listener", "create")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			} else {
 				if port != 0 {
 					options.Port = &port
@@ -371,7 +381,10 @@ func lbListenerCreate(d *schema.ResourceData, meta interface{}, lbID, protocol, 
 				}
 			}
 		} else if portMin != portMax {
-			return diag.FromErr(fmt.Errorf("[ERROR] Listener port_min and port_max values have to be equal for ALB and private NLB (excluding route mode)"))
+			err = fmt.Errorf("[ERROR] Listener port_min and port_max values have to be equal for ALB and private NLB (excluding route mode)")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Validation failed: %s", err.Error()), "ibm_is_lb_listener", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		} else {
 			if port != 0 && (portMin == 0 || port == portMin) {
 				options.Port = &port
@@ -411,7 +424,9 @@ func lbListenerCreate(d *schema.ResourceData, meta interface{}, lbID, protocol, 
 	if _, ok := d.GetOk("https_redirect"); ok {
 		httpsRedirectModel, err := resourceIBMIsLbListenerMapToLoadBalancerListenerHTTPSRedirectPrototype(d.Get("https_redirect.0").(map[string]interface{}))
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceIBMIsLbListenerMapToLoadBalancerListenerHTTPSRedirectPrototype failed: %s", err.Error()), "ibm_is_lb_listener", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		options.SetHTTPSRedirect(httpsRedirectModel)
 	}
@@ -425,21 +440,29 @@ func lbListenerCreate(d *schema.ResourceData, meta interface{}, lbID, protocol, 
 	}
 	_, err = isWaitForLBAvailable(sess, lbID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error checking for load balancer (%s) is active: %s", lbID, err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForLBAvailable failed: %s", err.Error()), "ibm_is_lb_listener", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
-	lbListener, response, err := sess.CreateLoadBalancerListener(options)
+	lbListener, _, err := sess.CreateLoadBalancerListenerWithContext(context, options)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error while creating Load Balanacer Listener err %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateLoadBalancerListenerWithContext failed: %s", err.Error()), "ibm_is_lb_listener", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	d.SetId(fmt.Sprintf("%s/%s", lbID, *lbListener.ID))
 	_, err = isWaitForLBListenerAvailable(sess, lbID, *lbListener.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error waiting for load balancer listener(%s) to become ready: %s", d.Id(), err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForLBListenerAvailable failed: %s", err.Error()), "ibm_is_lb_listener", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	_, err = isWaitForLBAvailable(sess, lbID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error waiting for load balancer (%s) to become ready: %s", lbID, err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForLBAvailable failed: %s", err.Error()), "ibm_is_lb_listener", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	log.Printf("[INFO] Load balancer Listener : %s", *lbListener.ID)
@@ -485,13 +508,13 @@ func resourceIBMISLBListenerRead(context context.Context, d *schema.ResourceData
 
 	parts, err := flex.IdParts(d.Id())
 	if err != nil {
-		diag.FromErr(err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_listener", "read", "sep-id-parts").GetDiag()
 	}
 
 	lbID := parts[0]
 	lbListenerID := parts[1]
 
-	diagEerr := lbListenerGet(d, meta, lbID, lbListenerID)
+	diagEerr := lbListenerGet(context, d, meta, lbID, lbListenerID)
 	if diagEerr != nil {
 		return diagEerr
 	}
@@ -499,76 +522,133 @@ func resourceIBMISLBListenerRead(context context.Context, d *schema.ResourceData
 	return nil
 }
 
-func lbListenerGet(d *schema.ResourceData, meta interface{}, lbID, lbListenerID string) diag.Diagnostics {
+func lbListenerGet(context context.Context, d *schema.ResourceData, meta interface{}, lbID, lbListenerID string) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_listener", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	getLoadBalancerListenerOptions := &vpcv1.GetLoadBalancerListenerOptions{
 		LoadBalancerID: &lbID,
 		ID:             &lbListenerID,
 	}
-	lbListener, response, err := sess.GetLoadBalancerListener(getLoadBalancerListenerOptions)
+	loadBalancerListener, response, err := sess.GetLoadBalancerListenerWithContext(context, getLoadBalancerListenerOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
 			return nil
 		}
-		return diag.FromErr(fmt.Errorf("[ERROR] Error Getting Load Balancer Listener : %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetLoadBalancerListenerWithContext failed: %s", err.Error()), "ibm_is_lb_listener", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
-	d.Set(isLBListenerLBID, lbID)
-	if lbListener.Port != nil {
-		d.Set(isLBListenerPort, *lbListener.Port)
+	if err = d.Set(isLBListenerLBID, lbID); err != nil {
+		err = fmt.Errorf("Error setting lb: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_listener", "read", "set-lb").GetDiag()
 	}
-	if lbListener.PortMin != nil {
-		d.Set(isLBListenerPortMin, *lbListener.PortMin)
+	if !core.IsNil(loadBalancerListener.Port) {
+		if err = d.Set("port", flex.IntValue(loadBalancerListener.Port)); err != nil {
+			err = fmt.Errorf("Error setting port: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_listener", "read", "set-port").GetDiag()
+		}
 	}
-	if lbListener.PortMax != nil {
-		d.Set(isLBListenerPortMax, *lbListener.PortMax)
+	if !core.IsNil(loadBalancerListener.PortMin) {
+		if err = d.Set("port_min", flex.IntValue(loadBalancerListener.PortMin)); err != nil {
+			err = fmt.Errorf("Error setting port_min: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_listener", "read", "set-port_min").GetDiag()
+		}
 	}
-	d.Set(isLBListenerProtocol, *lbListener.Protocol)
-	d.Set(isLBListenerAcceptProxyProtocol, *lbListener.AcceptProxyProtocol)
-	d.Set(isLBListenerID, lbListenerID)
-	if lbListener.DefaultPool != nil {
-		d.Set(isLBListenerDefaultPool, *lbListener.DefaultPool.ID)
+	if !core.IsNil(loadBalancerListener.PortMax) {
+		if err = d.Set("port_max", flex.IntValue(loadBalancerListener.PortMax)); err != nil {
+			err = fmt.Errorf("Error setting port_max: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_listener", "read", "set-port_max").GetDiag()
+		}
 	}
-	if lbListener.HTTPSRedirect != nil {
+	if err = d.Set("protocol", loadBalancerListener.Protocol); err != nil {
+		err = fmt.Errorf("Error setting protocol: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_listener", "read", "set-protocol").GetDiag()
+	}
+	if !core.IsNil(loadBalancerListener.AcceptProxyProtocol) {
+		if err = d.Set("accept_proxy_protocol", loadBalancerListener.AcceptProxyProtocol); err != nil {
+			err = fmt.Errorf("Error setting accept_proxy_protocol: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_listener", "read", "set-accept_proxy_protocol").GetDiag()
+		}
+	}
+	if err = d.Set(isLBListenerID, lbListenerID); err != nil {
+		err = fmt.Errorf("Error setting listener_id: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_listener", "read", "set-listener_id").GetDiag()
+	}
+	if !core.IsNil(loadBalancerListener.DefaultPool) {
+		if err = d.Set(isLBListenerDefaultPool, *loadBalancerListener.DefaultPool.ID); err != nil {
+			err = fmt.Errorf("Error setting default_pool: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_listener", "read", "set-default_pool").GetDiag()
+		}
+	}
+	if loadBalancerListener.HTTPSRedirect != nil {
 		if _, ok := d.GetOk("https_redirect"); ok {
-			httpsRedirectMap, err := resourceIBMIsLbListenerLoadBalancerListenerHTTPSRedirectToMap(lbListener.HTTPSRedirect)
+			httpsRedirectMap, err := resourceIBMIsLbListenerLoadBalancerListenerHTTPSRedirectToMap(loadBalancerListener.HTTPSRedirect)
 			if err != nil {
-				return diag.FromErr(err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_listener", "read", "https_redirect-to-map").GetDiag()
 			}
 			if err = d.Set("https_redirect", []map[string]interface{}{httpsRedirectMap}); err != nil {
-				return diag.FromErr(fmt.Errorf("Error setting https_redirect: %s", err))
+				err = fmt.Errorf("Error setting https_redirect: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_listener", "read", "set-https_redirect").GetDiag()
 			}
 
 		} else {
-			d.Set(isLBListenerHTTPSRedirectStatusCode, *lbListener.HTTPSRedirect.HTTPStatusCode)
-			d.Set(isLBListenerHTTPSRedirectListener, *lbListener.HTTPSRedirect.Listener.ID)
-			if lbListener.HTTPSRedirect.URI != nil {
-				d.Set(isLBListenerHTTPSRedirectURI, *lbListener.HTTPSRedirect.URI)
+			if err = d.Set(isLBListenerHTTPSRedirectStatusCode, *loadBalancerListener.HTTPSRedirect.HTTPStatusCode); err != nil {
+				err = fmt.Errorf("Error setting https_redirect_status_code: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_listener", "read", "set-https_redirect_status_code").GetDiag()
+			}
+			if err = d.Set(isLBListenerHTTPSRedirectListener, *loadBalancerListener.HTTPSRedirect.Listener.ID); err != nil {
+				err = fmt.Errorf("Error setting https_redirect_listener: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_listener", "read", "set-https_redirect_listener").GetDiag()
+			}
+			if loadBalancerListener.HTTPSRedirect.URI != nil {
+				if err = d.Set(isLBListenerHTTPSRedirectURI, *loadBalancerListener.HTTPSRedirect.URI); err != nil {
+					err = fmt.Errorf("Error setting https_redirect_uri: %s", err)
+					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_listener", "read", "set-https_redirect_uri").GetDiag()
+				}
 			}
 		}
 	}
-	if lbListener.CertificateInstance != nil {
-		d.Set(isLBListenerCertificateInstance, *lbListener.CertificateInstance.CRN)
+	if loadBalancerListener.CertificateInstance != nil {
+		if err = d.Set(isLBListenerCertificateInstance, *loadBalancerListener.CertificateInstance.CRN); err != nil {
+			err = fmt.Errorf("Error setting certificate_instance: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_listener", "read", "set-certificate_instance").GetDiag()
+		}
 	}
-	if lbListener.ConnectionLimit != nil {
-		d.Set(isLBListenerConnectionLimit, *lbListener.ConnectionLimit)
+	if loadBalancerListener.ConnectionLimit != nil {
+		if err = d.Set(isLBListenerConnectionLimit, *loadBalancerListener.ConnectionLimit); err != nil {
+			err = fmt.Errorf("Error setting connection_limit: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_listener", "read", "set-connection_limit").GetDiag()
+		}
 	}
-	d.Set(isLBListenerStatus, *lbListener.ProvisioningStatus)
+	if err = d.Set(isLBListenerStatus, *loadBalancerListener.ProvisioningStatus); err != nil {
+		err = fmt.Errorf("Error setting status: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_listener", "read", "set-status").GetDiag()
+	}
 
-	if lbListener.IdleConnectionTimeout != nil {
-		d.Set(isLBListenerIdleConnectionTimeout, *lbListener.IdleConnectionTimeout)
+	if loadBalancerListener.IdleConnectionTimeout != nil {
+		if err = d.Set(isLBListenerIdleConnectionTimeout, *loadBalancerListener.IdleConnectionTimeout); err != nil {
+			err = fmt.Errorf("Error setting idle_connection_timeout: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_listener", "read", "set-idle_connection_timeout").GetDiag()
+		}
 	}
 	getLoadBalancerOptions := &vpcv1.GetLoadBalancerOptions{
 		ID: &lbID,
 	}
-	lb, response, err := sess.GetLoadBalancer(getLoadBalancerOptions)
+	lb, response, err := sess.GetLoadBalancerWithContext(context, getLoadBalancerOptions)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error Getting Load Balancer : %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetLoadBalancerWithContext failed: %s", err.Error()), "ibm_is_lb_listener", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
-	d.Set(flex.RelatedCRN, *lb.CRN)
+	if err = d.Set(flex.RelatedCRN, *lb.CRN); err != nil {
+		err = fmt.Errorf("Error setting related_crn: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_listener", "read", "set-related_crn").GetDiag()
+	}
 	return nil
 }
 
@@ -576,13 +656,13 @@ func resourceIBMISLBListenerUpdate(context context.Context, d *schema.ResourceDa
 
 	parts, err := flex.IdParts(d.Id())
 	if err != nil {
-		diag.FromErr(err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_listener", "update", "sep-id-parts").GetDiag()
 	}
 
 	lbID := parts[0]
 	lbListenerID := parts[1]
 
-	diagEerr := lbListenerUpdate(d, meta, lbID, lbListenerID)
+	diagEerr := lbListenerUpdate(context, d, meta, lbID, lbListenerID)
 	if diagEerr != nil {
 		return diagEerr
 	}
@@ -590,10 +670,12 @@ func resourceIBMISLBListenerUpdate(context context.Context, d *schema.ResourceDa
 	return resourceIBMISLBListenerRead(context, d, meta)
 }
 
-func lbListenerUpdate(d *schema.ResourceData, meta interface{}, lbID, lbListenerID string) diag.Diagnostics {
+func lbListenerUpdate(context context.Context, d *schema.ResourceData, meta interface{}, lbID, lbListenerID string) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_listener", "update", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	hasChanged := false
 	var certificateInstance, defPool, protocol, listener, uri string
@@ -717,7 +799,9 @@ func lbListenerUpdate(d *schema.ResourceData, meta interface{}, lbID, lbListener
 	if hasChanged {
 		loadBalancerListenerPatch, err := loadBalancerListenerPatchModel.AsPatch()
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error calling asPatch for LoadBalancerListenerPatch: %s", err))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("loadBalancerListenerPatchModel.AsPatch() failed: %s", err.Error()), "ibm_is_lb_listener", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		if httpsRedirectRemoved {
 			loadBalancerListenerPatch["https_redirect"] = nil
@@ -733,24 +817,29 @@ func lbListenerUpdate(d *schema.ResourceData, meta interface{}, lbID, lbListener
 
 		_, err = isWaitForLBAvailable(sess, lbID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf(
-				"Error checking for load balancer (%s) is active: %s", lbID, err))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForLBAvailable failed: %s", err.Error()), "ibm_is_lb_listener", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
-		_, response, err := sess.UpdateLoadBalancerListener(updateLoadBalancerListenerOptions)
+		_, _, err = sess.UpdateLoadBalancerListenerWithContext(context, updateLoadBalancerListenerOptions)
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error Updating Load Balancer Listener : %s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateLoadBalancerListenerWithContext failed: %s", err.Error()), "ibm_is_lb_listener", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
 		_, err = isWaitForLBListenerAvailable(sess, lbID, lbListenerID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf(
-				"Error waiting for load balancer listener(%s) to become ready: %s", d.Id(), err))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForLBListenerAvailable failed: %s", err.Error()), "ibm_is_lb_listener", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
 		_, err = isWaitForLBAvailable(sess, lbID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf(
-				"Error waiting for load balancer (%s) to become ready: %s", lbID, err))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForLBAvailable failed: %s", err.Error()), "ibm_is_lb_listener", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 	return nil
@@ -760,7 +849,7 @@ func resourceIBMISLBListenerDelete(context context.Context, d *schema.ResourceDa
 
 	parts, err := flex.IdParts(d.Id())
 	if err != nil {
-		diag.FromErr(err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_listener", "delete", "sep-id-parts").GetDiag()
 	}
 
 	lbID := parts[0]
@@ -770,7 +859,7 @@ func resourceIBMISLBListenerDelete(context context.Context, d *schema.ResourceDa
 	conns.IbmMutexKV.Lock(isLBKey)
 	defer conns.IbmMutexKV.Unlock(isLBKey)
 
-	diagEerr := lbListenerDelete(d, meta, lbID, lbListenerID)
+	diagEerr := lbListenerDelete(context, d, meta, lbID, lbListenerID)
 	if diagEerr != nil {
 		return diagEerr
 	}
@@ -778,43 +867,55 @@ func resourceIBMISLBListenerDelete(context context.Context, d *schema.ResourceDa
 	return nil
 }
 
-func lbListenerDelete(d *schema.ResourceData, meta interface{}, lbID, lbListenerID string) diag.Diagnostics {
+func lbListenerDelete(context context.Context, d *schema.ResourceData, meta interface{}, lbID, lbListenerID string) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_listener", "delete", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	getLoadBalancerListenerOptions := &vpcv1.GetLoadBalancerListenerOptions{
 		LoadBalancerID: &lbID,
 		ID:             &lbListenerID,
 	}
-	_, response, err := sess.GetLoadBalancerListener(getLoadBalancerListenerOptions)
+	_, response, err := sess.GetLoadBalancerListenerWithContext(context, getLoadBalancerListenerOptions)
 
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
 			return nil
 		}
-		return diag.FromErr(fmt.Errorf("[ERROR] Error Getting vpc load balancer listener(%s): %s\n%s", lbListenerID, err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetLoadBalancerListenerWithContext failed: %s", err.Error()), "ibm_is_lb_listener", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	_, err = isWaitForLBAvailable(sess, lbID, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error checking for load balancer (%s) is active: %s", lbID, err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForLBAvailable failed: %s", err.Error()), "ibm_is_lb_listener", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	deleteLoadBalancerListenerOptions := &vpcv1.DeleteLoadBalancerListenerOptions{
 		LoadBalancerID: &lbID,
 		ID:             &lbListenerID,
 	}
-	response, err = sess.DeleteLoadBalancerListener(deleteLoadBalancerListenerOptions)
+	response, err = sess.DeleteLoadBalancerListenerWithContext(context, deleteLoadBalancerListenerOptions)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error Deleting Load Balancer Pool : %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteLoadBalancerListenerWithContext failed: %s", err.Error()), "ibm_is_lb_listener", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	_, err = isWaitForLBListenerDeleted(sess, lbID, lbListenerID, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
-		diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForLBListenerDeleted failed: %s", err.Error()), "ibm_is_lb_listener", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	_, err = isWaitForLBAvailable(sess, lbID, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error waiting for load balancer (%s) to be active: %s", lbID, err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForLBAvailable failed: %s", err.Error()), "ibm_is_lb_listener", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId("")
@@ -857,10 +958,12 @@ func resourceIBMISLBListenerExists(d *schema.ResourceData, meta interface{}) (bo
 
 	parts, err := flex.IdParts(d.Id())
 	if err != nil {
-		return false, err
+		return false, flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_listener", "exists", "sep-id-parts")
+
 	}
 	if len(parts) != 2 {
-		return false, fmt.Errorf("[ERROR] Incorrect ID %s: ID should be a combination of lbID/lbListenerID", d.Id())
+		err = fmt.Errorf("[ERROR] Incorrect ID %s: ID should be a combination of lbID/lbListenerID", d.Id())
+		return false, flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_listener", "exists", "sep-id-parts")
 	}
 	lbID := parts[0]
 	lbListenerID := parts[1]
@@ -873,7 +976,9 @@ func resourceIBMISLBListenerExists(d *schema.ResourceData, meta interface{}) (bo
 func lbListenerExists(d *schema.ResourceData, meta interface{}, lbID, lbListenerID string) (bool, error) {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return false, err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_listener", "exists", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return false, tfErr
 	}
 
 	getLoadBalancerListenerOptions := &vpcv1.GetLoadBalancerListenerOptions{
@@ -885,7 +990,9 @@ func lbListenerExists(d *schema.ResourceData, meta interface{}, lbID, lbListener
 		if response != nil && response.StatusCode == 404 {
 			return false, nil
 		}
-		return false, fmt.Errorf("[ERROR] Error getting Load balancer Listener: %s\n%s", err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetLoadBalancerListener failed: %s", err.Error()), "ibm_is_lb_listener", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return false, tfErr
 	}
 	return true, nil
 }

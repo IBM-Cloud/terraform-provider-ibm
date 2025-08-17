@@ -17,6 +17,8 @@ import (
 
 func TestAccIBMDNSLinkedZone_basic(t *testing.T) {
 	name := fmt.Sprintf("seczone-cr-%s", acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum))
+	ownerInstanceId := "OWNER Instance ID"
+	ownerZoneId := "OWNER ZONE ID"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() {},
@@ -24,9 +26,11 @@ func TestAccIBMDNSLinkedZone_basic(t *testing.T) {
 		CheckDestroy: testAccCheckIBMDNSLinkedZoneDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMDNSLinkedZoneBasic(name),
+				Config: testAccCheckIBMDNSLinkedZoneBasic(name, ownerInstanceId, ownerZoneId),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_dns_linked_zone.test", "name", name),
+					resource.TestCheckResourceAttr("ibm_dns_linked_zone.test", "owner_instance_id", ownerInstanceId),
+					resource.TestCheckResourceAttr("ibm_dns_linked_zone.test", "owner_zone_id", ownerZoneId),
 				),
 			},
 		},
@@ -35,13 +39,15 @@ func TestAccIBMDNSLinkedZone_basic(t *testing.T) {
 
 func TestAccIBMDNSLinkedZone_update(t *testing.T) {
 	name := fmt.Sprintf("seczone-cr-%s", acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum))
+	ownerInstanceId := "OWNER Instance ID"
+	ownerZoneId := "OWNER ZONE ID"
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() {},
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMDNSLinkedZoneDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMDNSLinkedZoneBasic(name),
+				Config: testAccCheckIBMDNSLinkedZoneBasic(name, ownerInstanceId, ownerZoneId),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_dns_linked_zone.test", "name", name),
 				),
@@ -69,25 +75,28 @@ func testAccCheckIBMDNSLinkedZoneUpdateConfig(name string, description string, l
 		plan				= "standard"
 	}
 	resource "ibm_dns_linked_zone" "test" {
+		name = "%s"
 		instance_id	= ibm_resource_instance.test-pdns-cr-instance.id
 		owner_instance_id = "OWNER Instance ID"
                 owner_zone_id = "OWNER ZONE ID"
-		description	= "new test CR - TF"
-		label		= "label"
+		description	= "%s"
+		label		= "%s"
 	}
-	`)
+	`, name, description, label)
 }
 
 func TestAccIBMDNSLinkedZoneImport(t *testing.T) {
 	var linkedZoneID string
 	name := fmt.Sprintf("seczone-vpc-%s", acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum))
+	ownerInstanceId := "OWNER Instance ID"
+	ownerZoneId := "OWNER ZONE ID"
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMDNSLinkedZoneDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMDNSLinkedZoneBasic(name),
+				Config: testAccCheckIBMDNSLinkedZoneBasic(name, ownerInstanceId, ownerZoneId),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMDNSLinkedZoneExists("ibm_dns_linked_zone.test", &linkedZoneID),
 					resource.TestCheckResourceAttr("ibm_dns_linked_zone.test", "name", name),
@@ -134,7 +143,7 @@ func testAccCheckIBMDNSLinkedZoneDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckIBMDNSLinkedZoneBasic(name string) string {
+func testAccCheckIBMDNSLinkedZoneBasic(name string, ownerInstanceId string, ownerZoneId string) string {
 	return fmt.Sprintf(`
 	resource "ibm_resource_group" "rg" {
 		name		= "DNS_linked_zone_test"
@@ -149,10 +158,10 @@ func testAccCheckIBMDNSLinkedZoneBasic(name string) string {
 	resource "ibm_dns_linked_zone" "test" {
 		name		= "%s"
 		instance_id = ibm_resource_instance.test-pdns-cr-instance.id
-                owner_instance_id = "OWNER Instance ID"
-                owner_zone_id = "OWNER ZONE ID"
+                owner_instance_id = "%s"
+                owner_zone_id = "%s"
 	}
-	`, name)
+	`, name, ownerInstanceId, ownerZoneId)
 }
 
 //func testAccCheckIBMDNSLinkedZoneResource(vpcname, subnetname, zone, cidr, name, description string) string {

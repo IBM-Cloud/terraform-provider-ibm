@@ -133,7 +133,9 @@ func DataSourceIBMIsSshKeys() *schema.Resource {
 func dataSourceIBMIsSshKeysRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_ssh_keys", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	start := ""
@@ -145,10 +147,11 @@ func dataSourceIBMIsSshKeysRead(context context.Context, d *schema.ResourceData,
 			listKeysOptions.Start = &start
 		}
 
-		keyCollection, response, err := vpcClient.ListKeysWithContext(context, listKeysOptions)
-		if err != nil || keyCollection == nil {
-			log.Printf("[DEBUG] ListKeysWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("ListKeysWithContext failed %s\n%s", err, response))
+		keyCollection, _, err := vpcClient.ListKeysWithContext(context, listKeysOptions)
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListKeysWithContext failed %s", err), "(Data) ibm_is_ssh_keys", "read")
+			log.Printf("[DEBUG] %s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
 		start = flex.GetNext(keyCollection.Next)
@@ -163,7 +166,7 @@ func dataSourceIBMIsSshKeysRead(context context.Context, d *schema.ResourceData,
 	d.SetId(dataSourceIBMIsSshKeysID(d))
 	err = d.Set(isKeys, dataSourceKeyCollectionFlattenKeys(allrecs, d, meta))
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting keys %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting keys %s", err), "(Data) ibm_is_ssh_keys", "read", "keys-set").GetDiag()
 	}
 
 	return nil

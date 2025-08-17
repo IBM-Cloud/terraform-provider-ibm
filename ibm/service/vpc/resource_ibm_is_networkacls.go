@@ -14,8 +14,10 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -50,12 +52,12 @@ const (
 
 func ResourceIBMISNetworkACL() *schema.Resource {
 	return &schema.Resource{
-		Create:   resourceIBMISNetworkACLCreate,
-		Read:     resourceIBMISNetworkACLRead,
-		Update:   resourceIBMISNetworkACLUpdate,
-		Delete:   resourceIBMISNetworkACLDelete,
-		Exists:   resourceIBMISNetworkACLExists,
-		Importer: &schema.ResourceImporter{},
+		CreateContext: resourceIBMISNetworkACLCreate,
+		ReadContext:   resourceIBMISNetworkACLRead,
+		UpdateContext: resourceIBMISNetworkACLUpdate,
+		DeleteContext: resourceIBMISNetworkACLDelete,
+		Exists:        resourceIBMISNetworkACLExists,
+		Importer:      &schema.ResourceImporter{},
 
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(10 * time.Minute),
@@ -401,27 +403,29 @@ func ResourceIBMISNetworkACLValidator() *validate.ResourceValidator {
 	return &ibmISNetworkACLResourceValidator
 }
 
-func resourceIBMISNetworkACLCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMISNetworkACLCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 	name := d.Get(isNetworkACLName).(string)
-	err := nwaclCreate(d, meta, name)
+	err := nwaclCreate(context, d, meta, name)
 	if err != nil {
 		return err
 	}
-	return resourceIBMISNetworkACLRead(d, meta)
+	return resourceIBMISNetworkACLRead(context, d, meta)
 
 }
 
-func nwaclCreate(d *schema.ResourceData, meta interface{}, name string) error {
+func nwaclCreate(context context.Context, d *schema.ResourceData, meta interface{}, name string) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_network_acl", "create", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	var vpc, rg string
 	if vpcID, ok := d.GetOk(isNetworkACLVPC); ok {
 		vpc = vpcID.(string)
 	} else {
-		return fmt.Errorf("[ERROR] Required parameter vpc is not set")
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_network_acl", "create", "parse-vpc").GetDiag()
 	}
 
 	nwaclTemplate := &vpcv1.NetworkACLPrototype{
@@ -446,16 +450,18 @@ func nwaclCreate(d *schema.ResourceData, meta interface{}, name string) error {
 	}
 	err = validateInlineRules(rules)
 	if err != nil {
-		return err
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_network_acl", "create", "validate-inline-rules").GetDiag()
 	}
 
 	options := &vpcv1.CreateNetworkACLOptions{
 		NetworkACLPrototype: nwaclTemplate,
 	}
 
-	nwacl, response, err := sess.CreateNetworkACL(options)
+	nwacl, _, err := sess.CreateNetworkACLWithContext(context, options)
 	if err != nil {
-		return fmt.Errorf("[DEBUG]Error while creating Network ACL err %s\n%s", err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateNetworkACLWithContext failed: %s", err.Error()), "ibm_is_network_acl", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	d.SetId(*nwacl.ID)
 	log.Printf("[INFO] Network ACL : %s", *nwacl.ID)
@@ -464,12 +470,16 @@ func nwaclCreate(d *schema.ResourceData, meta interface{}, name string) error {
 	//Remove default rules
 	err = clearRules(sess, nwaclid)
 	if err != nil {
-		return err
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("clearRules failed: %s", err.Error()), "ibm_is_network_acl", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	err = createInlineRules(sess, nwaclid, rules)
 	if err != nil {
-		return err
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("createInlineRules failed: %s", err.Error()), "ibm_is_network_acl", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	v := os.Getenv("IC_ENV_TAGS")
 	if _, ok := d.GetOk(isNetworkACLTags); ok || v != "" {
@@ -491,36 +501,57 @@ func nwaclCreate(d *schema.ResourceData, meta interface{}, name string) error {
 	return nil
 }
 
-func resourceIBMISNetworkACLRead(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMISNetworkACLRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	id := d.Id()
-	err := nwaclGet(d, meta, id)
+	err := nwaclGet(context, d, meta, id)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func nwaclGet(d *schema.ResourceData, meta interface{}, id string) error {
+func nwaclGet(context context.Context, d *schema.ResourceData, meta interface{}, id string) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_network_acl", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	getNetworkAclOptions := &vpcv1.GetNetworkACLOptions{
 		ID: &id,
 	}
-	nwacl, response, err := sess.GetNetworkACL(getNetworkAclOptions)
+	nwacl, response, err := sess.GetNetworkACLWithContext(context, getNetworkAclOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error getting Network ACL(%s) : %s\n%s", id, err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetNetworkACLWithContext failed: %s", err.Error()), "ibm_is_network_acl", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
-	d.Set(isNetworkACLName, *nwacl.Name)
-	d.Set(isNetworkACLVPC, *nwacl.VPC.ID)
+	if !core.IsNil(nwacl.Name) {
+		if err = d.Set("name", nwacl.Name); err != nil {
+			err = fmt.Errorf("Error setting name: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_network_acl", "read", "set-name").GetDiag()
+		}
+	}
+
+	if !core.IsNil(nwacl.VPC) {
+		if err = d.Set(isNetworkACLVPC, *nwacl.VPC.ID); err != nil {
+			err = fmt.Errorf("Error setting vpc: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_network_acl", "read", "set-vpc").GetDiag()
+		}
+	}
 	if nwacl.ResourceGroup != nil {
-		d.Set(isNetworkACLResourceGroup, *nwacl.ResourceGroup.ID)
-		d.Set(flex.ResourceGroupName, *nwacl.ResourceGroup.Name)
+		if err = d.Set(isNetworkACLResourceGroup, *nwacl.ResourceGroup.ID); err != nil {
+			err = fmt.Errorf("Error setting resource_group: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_network_acl", "read", "set-resource_group").GetDiag()
+		}
+		if err = d.Set(flex.ResourceGroupName, *nwacl.ResourceGroup.Name); err != nil {
+			err = fmt.Errorf("Error setting resource_group_name: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_network_acl", "read", "set-resource_group_name").GetDiag()
+		}
 	}
 	tags, err := flex.GetGlobalTagsUsingCRN(meta, *nwacl.CRN, "", isUserTagType)
 	if err != nil {
@@ -534,9 +565,18 @@ func nwaclGet(d *schema.ResourceData, meta interface{}, id string) error {
 			"Error on get of resource network acl (%s) access tags: %s", d.Id(), err)
 	}
 
-	d.Set(isNetworkACLTags, tags)
-	d.Set(isNetworkACLAccessTags, accesstags)
-	d.Set(isNetworkACLCRN, *nwacl.CRN)
+	if err = d.Set(isNetworkACLTags, tags); err != nil {
+		err = fmt.Errorf("Error setting tags: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_network_acl", "read", "set-tags").GetDiag()
+	}
+	if err = d.Set(isNetworkACLAccessTags, accesstags); err != nil {
+		err = fmt.Errorf("Error setting access_tags: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_network_acl", "read", "set-access_tags").GetDiag()
+	}
+	if err = d.Set("crn", nwacl.CRN); err != nil {
+		err = fmt.Errorf("Error setting crn: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_network_acl", "read", "set-crn").GetDiag()
+	}
 	rules := make([]interface{}, 0)
 	if len(nwacl.Rules) > 0 {
 		for _, rulex := range nwacl.Rules {
@@ -617,18 +657,29 @@ func nwaclGet(d *schema.ResourceData, meta interface{}, id string) error {
 			rules = append(rules, rule)
 		}
 	}
-	d.Set(isNetworkACLRules, rules)
+	if err = d.Set(isNetworkACLRules, rules); err != nil {
+		err = fmt.Errorf("Error setting rules: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_network_acl", "read", "set-rules").GetDiag()
+	}
 	controller, err := flex.GetBaseController(meta)
 	if err != nil {
-		return err
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetBaseController failed: %s", err.Error()), "ibm_is_network_acl", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
-	d.Set(flex.ResourceControllerURL, controller+"/vpc-ext/network/acl")
-	d.Set(flex.ResourceName, *nwacl.Name)
+	if err = d.Set(flex.ResourceControllerURL, controller+"/vpc-ext/network/acl"); err != nil {
+		err = fmt.Errorf("Error setting resource_controller_url: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_network_acl", "read", "set-resource_controller_url").GetDiag()
+	}
+	if err = d.Set(flex.ResourceName, *nwacl.Name); err != nil {
+		err = fmt.Errorf("Error setting resource_name: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_network_acl", "read", "set-resource_name").GetDiag()
+	}
 	// d.Set(flex.ResourceCRN, *nwacl.Crn)
 	return nil
 }
 
-func resourceIBMISNetworkACLUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMISNetworkACLUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	id := d.Id()
 
 	name := ""
@@ -639,17 +690,19 @@ func resourceIBMISNetworkACLUpdate(d *schema.ResourceData, meta interface{}) err
 		hasChanged = true
 	}
 
-	err := nwaclUpdate(d, meta, id, name, hasChanged)
+	err := nwaclUpdate(context, d, meta, id, name, hasChanged)
 	if err != nil {
 		return err
 	}
-	return resourceIBMISNetworkACLRead(d, meta)
+	return resourceIBMISNetworkACLRead(context, d, meta)
 }
 
-func nwaclUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChanged bool) error {
+func nwaclUpdate(context context.Context, d *schema.ResourceData, meta interface{}, id, name string, hasChanged bool) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_network_acl", "update", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	rules := d.Get(isNetworkACLRules).([]interface{})
 	if hasChanged {
@@ -661,12 +714,16 @@ func nwaclUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasC
 		}
 		networkACLPatch, err := networkACLPatchModel.AsPatch()
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for NetworkACLPatch: %s", err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("networkACLPatchModel.AsPatch() failed: %s", err.Error()), "ibm_is_network_acl", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		updateNetworkACLOptions.NetworkACLPatch = networkACLPatch
-		_, response, err := sess.UpdateNetworkACL(updateNetworkACLOptions)
+		_, _, err = sess.UpdateNetworkACLWithContext(context, updateNetworkACLOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Updating Network ACL(%s) : %s\n%s", id, err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateNetworkACLWithContext failed: %s", err.Error()), "ibm_is_network_acl", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 	if d.HasChange(isNetworkACLTags) {
@@ -688,25 +745,31 @@ func nwaclUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasC
 	if d.HasChange(isNetworkACLRules) {
 		err := validateInlineRules(rules)
 		if err != nil {
-			return err
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("validateInlineRules failed: %s", err.Error()), "ibm_is_network_acl", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		//Delete all existing rules
 		err = clearRules(sess, id)
 		if err != nil {
-			return err
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("clearRules failed: %s", err.Error()), "ibm_is_network_acl", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		//Create the rules as per the def
 		err = createInlineRules(sess, id, rules)
 		if err != nil {
-			return err
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("createInlineRules failed: %s", err.Error()), "ibm_is_network_acl", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 	return nil
 }
 
-func resourceIBMISNetworkACLDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMISNetworkACLDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	id := d.Id()
-	err := nwaclDelete(d, meta, id)
+	err := nwaclDelete(context, d, meta, id)
 	if err != nil {
 		return err
 	}
@@ -715,31 +778,37 @@ func resourceIBMISNetworkACLDelete(d *schema.ResourceData, meta interface{}) err
 	return nil
 }
 
-func nwaclDelete(d *schema.ResourceData, meta interface{}, id string) error {
+func nwaclDelete(context context.Context, d *schema.ResourceData, meta interface{}, id string) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_network_acl", "delete", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	getNetworkAclOptions := &vpcv1.GetNetworkACLOptions{
 		ID: &id,
 	}
-	_, response, err := sess.GetNetworkACL(getNetworkAclOptions)
+	_, response, err := sess.GetNetworkACLWithContext(context, getNetworkAclOptions)
 
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error Getting Network ACL (%s): %s\n%s", id, err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetNetworkACLWithContext failed: %s", err.Error()), "ibm_is_network_acl", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	deleteNetworkAclOptions := &vpcv1.DeleteNetworkACLOptions{
 		ID: &id,
 	}
-	response, err = sess.DeleteNetworkACL(deleteNetworkAclOptions)
+	response, err = sess.DeleteNetworkACLWithContext(context, deleteNetworkAclOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error Deleting Network ACL : %s\n%s", err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteNetworkACLWithContext failed: %s", err.Error()), "ibm_is_network_acl", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	d.SetId("")
 	return nil
@@ -754,7 +823,9 @@ func resourceIBMISNetworkACLExists(d *schema.ResourceData, meta interface{}) (bo
 func nwaclExists(d *schema.ResourceData, meta interface{}, id string) (bool, error) {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return false, err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_network_acl", "exists", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return false, tfErr
 	}
 	getNetworkAclOptions := &vpcv1.GetNetworkACLOptions{
 		ID: &id,
@@ -764,7 +835,9 @@ func nwaclExists(d *schema.ResourceData, meta interface{}, id string) (bool, err
 		if response != nil && response.StatusCode == 404 {
 			return false, nil
 		}
-		return false, fmt.Errorf("[ERROR] Error getting Network ACL: %s\n%s", err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetNetworkACL failed: %s", err.Error()), "ibm_is_network_acl", "exists")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return false, tfErr
 	}
 	return true, nil
 }

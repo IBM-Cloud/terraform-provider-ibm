@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 )
 
@@ -109,7 +110,9 @@ func DataSourceIBMIsPrivatePathServiceGatewayEndpointGatewayBindings() *schema.R
 func dataSourceIBMIsPrivatePathServiceGatewayEndpointGatewayBindingsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_private_path_service_gateway_endpoint_gateway_bindings", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	listPrivatePathServiceGatewayEndpointGatewayBindingsOptions := &vpcv1.ListPrivatePathServiceGatewayEndpointGatewayBindingsOptions{}
@@ -129,13 +132,16 @@ func dataSourceIBMIsPrivatePathServiceGatewayEndpointGatewayBindingsRead(context
 	var pager *vpcv1.PrivatePathServiceGatewayEndpointGatewayBindingsPager
 	pager, err = vpcClient.NewPrivatePathServiceGatewayEndpointGatewayBindingsPager(listPrivatePathServiceGatewayEndpointGatewayBindingsOptions)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("NewPrivatePathServiceGatewayEndpointGatewayBindingsPager error: %s", err.Error()), "ibm_is_private_path_service_gateway_endpoint_gateway_bindings", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	allItems, err := pager.GetAll()
 	if err != nil {
-		log.Printf("[DEBUG] PrivatePathServiceGatewayEndpointGatewayBindingsPager.GetAll() failed %s", err)
-		return diag.FromErr(fmt.Errorf("PrivatePathServiceGatewayEndpointGatewayBindingsPager.GetAll() failed %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("PrivatePathServiceGatewayEndpointGatewayBindingsPager error: %s", err.Error()), "ibm_is_private_path_service_gateway_endpoint_gateway_bindings", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(*listPrivatePathServiceGatewayEndpointGatewayBindingsOptions.PrivatePathServiceGatewayID)
@@ -150,7 +156,7 @@ func dataSourceIBMIsPrivatePathServiceGatewayEndpointGatewayBindingsRead(context
 	}
 
 	if err = d.Set("endpoint_gateway_bindings", mapSlice); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting endpoint_gateway_bindings %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_type: %s", err), "(Data) ibm_is_private_path_service_gateway_endpoint_gateway_bindings", "read", "set-endpoint_gateway_bindings").GetDiag()
 	}
 
 	return nil

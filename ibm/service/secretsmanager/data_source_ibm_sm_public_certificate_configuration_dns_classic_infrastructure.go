@@ -66,7 +66,7 @@ func DataSourceIbmSmPublicCertificateConfigurationDNSClassicInfrastructure() *sc
 }
 
 func dataSourceIbmSmPublicCertificateConfigurationDNSClassicInfrastructureRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
+	secretsManagerClient, endpointsFile, err := getSecretsManagerSession(meta.(conns.ClientSession))
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, "", fmt.Sprintf("(Data) %s", PublicCertConfigDnsClassicInfrastructureResourceName), "read")
 		return tfErr.GetDiag()
@@ -74,7 +74,7 @@ func dataSourceIbmSmPublicCertificateConfigurationDNSClassicInfrastructureRead(c
 
 	region := getRegion(secretsManagerClient, d)
 	instanceId := d.Get("instance_id").(string)
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d), endpointsFile)
 
 	getConfigurationOptions := &secretsmanagerv2.GetConfigurationOptions{}
 

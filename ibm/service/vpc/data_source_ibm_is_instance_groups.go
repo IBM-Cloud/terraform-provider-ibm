@@ -328,7 +328,9 @@ func DataSourceIBMISInstanceGroups() *schema.Resource {
 func DataSourceIBMIsInstanceGroupsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instance_groups", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	start := ""
@@ -340,10 +342,11 @@ func DataSourceIBMIsInstanceGroupsRead(context context.Context, d *schema.Resour
 			listInstanceGroupsOptions.Start = &start
 		}
 
-		instanceGroupCollection, response, err := vpcClient.ListInstanceGroupsWithContext(context, listInstanceGroupsOptions)
+		instanceGroupCollection, _, err := vpcClient.ListInstanceGroupsWithContext(context, listInstanceGroupsOptions)
 		if err != nil {
-			log.Printf("[DEBUG] ListInstanceGroupsWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("ListInstanceGroupsWithContext failed %s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListInstanceGroupsWithContext failed %s", err), "(Data) ibm_is_instance_groups", "read")
+			log.Printf("[DEBUG] %s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		start = flex.GetNext(instanceGroupCollection.Next)
 		allrecs = append(allrecs, instanceGroupCollection.InstanceGroups...)
@@ -363,9 +366,8 @@ func DataSourceIBMIsInstanceGroupsRead(context context.Context, d *schema.Resour
 		}
 		instanceGroups = append(instanceGroups, instanceGroup)
 	}
-
 	if err = d.Set("instance_groups", instanceGroups); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting instance_groups %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting instance_groups %s", err), "(Data) ibm_is_instance_groups", "read", "instance_groups-set").GetDiag()
 	}
 
 	return nil

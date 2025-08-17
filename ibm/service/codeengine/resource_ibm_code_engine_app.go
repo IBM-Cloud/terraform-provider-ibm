@@ -340,6 +340,50 @@ func ResourceIbmCodeEngineApp() *schema.Resource {
 				Computed:    true,
 				Description: "Reference to a build run that is associated with the application.",
 			},
+			"computed_env_variables": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "References to config maps, secrets or literal values, which are defined and set by Code Engine and are exposed as environment variables in the application.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"key": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "The key to reference as environment variable.",
+						},
+						"name": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "The name of the environment variable.",
+						},
+						"prefix": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "A prefix that can be added to all keys of a full secret or config map reference.",
+						},
+						"reference": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "The name of the secret or config map.",
+						},
+						"type": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Specify the type of the environment variable.",
+						},
+						"value": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "The literal value of the environment variable.",
+						},
+					},
+				},
+			},
 			"created_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -896,6 +940,20 @@ func resourceIbmCodeEngineAppRead(context context.Context, d *schema.ResourceDat
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_code_engine_app", "read", "set-build_run").GetDiag()
 		}
 	}
+	if !core.IsNil(app.ComputedEnvVariables) {
+		computedEnvVariables := []map[string]interface{}{}
+		for _, computedEnvVariablesItem := range app.ComputedEnvVariables {
+			computedEnvVariablesItemMap, err := ResourceIbmCodeEngineAppEnvVarToMap(&computedEnvVariablesItem) // #nosec G601
+			if err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_code_engine_app", "read", "computed_env_variables-to-map").GetDiag()
+			}
+			computedEnvVariables = append(computedEnvVariables, computedEnvVariablesItemMap)
+		}
+		if err = d.Set("computed_env_variables", computedEnvVariables); err != nil {
+			err = fmt.Errorf("Error setting computed_env_variables: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_code_engine_app", "read", "set-computed_env_variables").GetDiag()
+		}
+	}
 	if !core.IsNil(app.CreatedAt) {
 		if err = d.Set("created_at", app.CreatedAt); err != nil {
 			err = fmt.Errorf("Error setting created_at: %s", err)
@@ -1333,8 +1391,6 @@ func ResourceIbmCodeEngineAppAppPatchAsPatch(patchVals *codeenginev2.AppPatch, d
 	path = "probe_liveness"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["probe_liveness"] = nil
-	} else if exists && patch["probe_liveness"] != nil {
-		ResourceIbmCodeEngineAppProbePrototypeAsPatch(patch["probe_liveness"].(map[string]interface{}), d)
 	}
 	path = "probe_readiness"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
@@ -1354,9 +1410,8 @@ func ResourceIbmCodeEngineAppAppPatchAsPatch(patchVals *codeenginev2.AppPatch, d
 	}
 	path = "run_env_variables"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
-		patch["run_env_variables"] = nil
-	} else if exists && patch["run_env_variables"] != nil {
-		ResourceIbmCodeEngineAppEnvVarPrototypeAsPatch(patch["run_env_variables"].([]interface{})[0].(map[string]interface{}), d)
+		runEnvVariables := []map[string]interface{}{}
+		patch["run_env_variables"] = runEnvVariables
 	}
 	path = "run_service_account"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
@@ -1364,9 +1419,8 @@ func ResourceIbmCodeEngineAppAppPatchAsPatch(patchVals *codeenginev2.AppPatch, d
 	}
 	path = "run_volume_mounts"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
-		patch["run_volume_mounts"] = nil
-	} else if exists && patch["run_volume_mounts"] != nil {
-		ResourceIbmCodeEngineAppVolumeMountPrototypeAsPatch(patch["run_volume_mounts"].([]interface{})[0].(map[string]interface{}), d)
+		runVolumeMounts := []map[string]interface{}{}
+		patch["run_volume_mounts"] = runVolumeMounts
 	}
 	path = "scale_concurrency"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {

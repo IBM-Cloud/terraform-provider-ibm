@@ -269,7 +269,9 @@ func ResourceIBMIsVPCDnsResolutionBinding() *schema.Resource {
 func resourceIBMIsVPCDnsResolutionBindingCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_dns_resolution_binding", "create", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	spokeVPCID := d.Get("vpc_id").(string)
 	createVPCDnsResolutionBindingOptions := &vpcv1.CreateVPCDnsResolutionBindingOptions{}
@@ -297,10 +299,11 @@ func resourceIBMIsVPCDnsResolutionBindingCreate(context context.Context, d *sche
 		}
 		createVPCDnsResolutionBindingOptions.SetVPC(vPCIdentityIntf)
 	}
-	vpcdnsResolutionBinding, response, err := sess.CreateVPCDnsResolutionBindingWithContext(context, createVPCDnsResolutionBindingOptions)
+	vpcdnsResolutionBinding, _, err := sess.CreateVPCDnsResolutionBindingWithContext(context, createVPCDnsResolutionBindingOptions)
 	if err != nil {
-		log.Printf("[DEBUG] CreateVPCDnsResolutionBindingWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("CreateVPCDnsResolutionBindingWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateVPCDnsResolutionBindingWithContext failed: %s", err.Error()), "ibm_is_vpc_dns_resolution_binding", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	d.SetId(MakeTerraformVPCDNSID(spokeVPCID, *vpcdnsResolutionBinding.ID))
 	intf, err := isWaitForVpcDnsCreated(sess, spokeVPCID, *vpcdnsResolutionBinding.ID, d.Timeout(schema.TimeoutCreate))
@@ -309,9 +312,9 @@ func resourceIBMIsVPCDnsResolutionBindingCreate(context context.Context, d *sche
 	}
 
 	if vpcdnsResolutionBinding, ok := intf.(*vpcv1.VpcdnsResolutionBinding); ok {
-		err = resourceIBMIsVPCDnsResolutionBindingGet(vpcdnsResolutionBinding, d)
-		if err != nil {
-			return diag.FromErr(err)
+		diagErr := resourceIBMIsVPCDnsResolutionBindingGet(vpcdnsResolutionBinding, d)
+		if diagErr != nil {
+			return diagErr
 		}
 	} else {
 		return resourceIBMIsVPCDnsResolutionBindingRead(context, d, meta)
@@ -322,11 +325,13 @@ func resourceIBMIsVPCDnsResolutionBindingCreate(context context.Context, d *sche
 func resourceIBMIsVPCDnsResolutionBindingRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_dns_resolution_binding", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	vpcId, id, err := ParseVPCDNSTerraformID(d.Id())
 	if err != nil {
-		return diag.FromErr(err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_dns_resolution_binding", "read", "sep-id-parts").GetDiag()
 	}
 	getVPCDnsResolutionBindingOptions := &vpcv1.GetVPCDnsResolutionBindingOptions{}
 
@@ -337,21 +342,25 @@ func resourceIBMIsVPCDnsResolutionBindingRead(context context.Context, d *schema
 	if err != nil {
 		log.Printf("[DEBUG] GetVPCDnsResolutionBindingWithContext failed %s\n%s", err, response)
 		if response.StatusCode != 404 {
-			return diag.FromErr(fmt.Errorf("GetVPCDnsResolutionBindingWithContext failed %s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetVPCDnsResolutionBindingWithContext failed: %s", err.Error()), "ibm_is_vpc_dns_resolution_binding", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		} else {
 			d.SetId("")
 			return nil
 		}
 	}
-	err = resourceIBMIsVPCDnsResolutionBindingGet(vpcdnsResolutionBinding, d)
-	if err != nil {
-		return diag.FromErr(err)
+	diagErr := resourceIBMIsVPCDnsResolutionBindingGet(vpcdnsResolutionBinding, d)
+	if diagErr != nil {
+		return diagErr
 	}
 	return nil
 }
-func resourceIBMIsVPCDnsResolutionBindingGet(vpcdnsResolutionBinding *vpcv1.VpcdnsResolutionBinding, d *schema.ResourceData) error {
-	if err := d.Set("created_at", flex.DateTimeToString(vpcdnsResolutionBinding.CreatedAt)); err != nil {
-		return fmt.Errorf("[ERROR] Error setting created_at: %s", err)
+func resourceIBMIsVPCDnsResolutionBindingGet(vpcdnsResolutionBinding *vpcv1.VpcdnsResolutionBinding, d *schema.ResourceData) diag.Diagnostics {
+	var err error
+	if err = d.Set("created_at", flex.DateTimeToString(vpcdnsResolutionBinding.CreatedAt)); err != nil {
+		err = fmt.Errorf("Error setting created_at: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_dns_resolution_binding", "read", "set-created_at").GetDiag()
 	}
 
 	endpointGateways := []map[string]interface{}{}
@@ -359,65 +368,74 @@ func resourceIBMIsVPCDnsResolutionBindingGet(vpcdnsResolutionBinding *vpcv1.Vpcd
 		for _, modelItem := range vpcdnsResolutionBinding.EndpointGateways {
 			modelMap, err := dataSourceIBMIsVPCDnsResolutionBindingEndpointGatewayReferenceRemoteToMap(&modelItem)
 			if err != nil {
-				return err
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_dns_resolution_binding", "read", "endpoint_gateways-to-map").GetDiag()
 			}
 			endpointGateways = append(endpointGateways, modelMap)
 		}
 	}
 	if err := d.Set("endpoint_gateways", endpointGateways); err != nil {
-		return fmt.Errorf("[ERROR] Error setting endpoint_gateways %s", err)
+		err = fmt.Errorf("Error setting endpoint_gateways: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_dns_resolution_binding", "read", "set-endpoint_gateways").GetDiag()
 	}
 
 	if err := d.Set("href", vpcdnsResolutionBinding.Href); err != nil {
-		return fmt.Errorf("[ERROR] Error setting href: %s", err)
+		err = fmt.Errorf("Error setting href: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_dns_resolution_binding", "read", "set-href").GetDiag()
 	}
 
 	if err := d.Set("lifecycle_state", vpcdnsResolutionBinding.LifecycleState); err != nil {
-		return fmt.Errorf("[ERROR] Error setting lifecycle_state: %s", err)
+		err = fmt.Errorf("Error setting lifecycle_state: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_dns_resolution_binding", "read", "set-lifecycle_state").GetDiag()
 	}
 	healthReasons := []map[string]interface{}{}
 	for _, healthReasonsItem := range vpcdnsResolutionBinding.HealthReasons {
 		healthReasonsItemMap, err := resourceIBMIsVPCDnsResolutionBindingVpcdnsResolutionBindingHealthReasonToMap(&healthReasonsItem)
 		if err != nil {
-			return err
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_dns_resolution_binding", "read", "health_reasons-to-map").GetDiag()
 		}
 		healthReasons = append(healthReasons, healthReasonsItemMap)
 	}
 	if err := d.Set("health_reasons", healthReasons); err != nil {
-		return fmt.Errorf("[ERROR] Error setting health_reasons: %s", err)
+		err = fmt.Errorf("Error setting health_reasons: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_dns_resolution_binding", "read", "set-health_reasons").GetDiag()
 	}
 	if err := d.Set("health_state", vpcdnsResolutionBinding.HealthState); err != nil {
-		return fmt.Errorf("[ERROR] Error setting health_state: %s", err)
+		err = fmt.Errorf("Error setting health_state: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_dns_resolution_binding", "read", "set-health_state").GetDiag()
 	}
 	if err := d.Set("name", vpcdnsResolutionBinding.Name); err != nil {
-		return fmt.Errorf("[ERROR] Error setting name: %s", err)
+		err = fmt.Errorf("Error setting name: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_dns_resolution_binding", "read", "set-name").GetDiag()
 	}
 
 	if err := d.Set("resource_type", vpcdnsResolutionBinding.ResourceType); err != nil {
-		return fmt.Errorf("[ERROR] Error setting resource_type: %s", err)
+		err = fmt.Errorf("Error setting resource_type: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_dns_resolution_binding", "read", "set-resource_type").GetDiag()
 	}
 
 	vpc := []map[string]interface{}{}
 	if vpcdnsResolutionBinding.VPC != nil {
 		modelMap, err := dataSourceIBMIsVPCDnsResolutionBindingVPCReferenceRemoteToMap(vpcdnsResolutionBinding.VPC)
 		if err != nil {
-			return err
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_dns_resolution_binding", "read", "vpc-to-map").GetDiag()
 		}
 		vpc = append(vpc, modelMap)
 	}
 	if err := d.Set("vpc", vpc); err != nil {
-		return fmt.Errorf("[ERROR] Error setting vpc %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_dns_resolution_binding", "read", "set-vpc").GetDiag()
 	}
 	return nil
 }
 func resourceIBMIsVPCDnsResolutionBindingUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_dns_resolution_binding", "update", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	vpcId, id, err := ParseVPCDNSTerraformID(d.Id())
 	if err != nil {
-		return diag.FromErr(err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_dns_resolution_binding", "update", "sep-id-parts").GetDiag()
 	}
 	if d.HasChange(isVPCDnsResolutionBindingName) {
 		nameChange := d.Get(isVPCDnsResolutionBindingName).(string)
@@ -426,7 +444,9 @@ func resourceIBMIsVPCDnsResolutionBindingUpdate(context context.Context, d *sche
 		}
 		vpcdnsResolutionBindingPatchAsPatch, err := vpcdnsResolutionBindingPatch.AsPatch()
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf(" vpcdnsResolutionBindingPatch.AsPatch() failed: %s", err.Error()), "ibm_is_vpc_dns_resolution_binding", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		updateVPCDnsResolutionBindingOptions := &vpcv1.UpdateVPCDnsResolutionBindingOptions{}
 
@@ -434,14 +454,15 @@ func resourceIBMIsVPCDnsResolutionBindingUpdate(context context.Context, d *sche
 		updateVPCDnsResolutionBindingOptions.SetID(id)
 		updateVPCDnsResolutionBindingOptions.SetVpcdnsResolutionBindingPatch(vpcdnsResolutionBindingPatchAsPatch)
 
-		vpcdnsResolutionBinding, response, err := sess.UpdateVPCDnsResolutionBindingWithContext(context, updateVPCDnsResolutionBindingOptions)
+		vpcdnsResolutionBinding, _, err := sess.UpdateVPCDnsResolutionBindingWithContext(context, updateVPCDnsResolutionBindingOptions)
 		if err != nil {
-			log.Printf("[DEBUG] UpdateVPCDnsResolutionBindingWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("UpdateVPCDnsResolutionBindingWithContext failed %s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateVPCDnsResolutionBindingWithContext failed: %s", err.Error()), "ibm_is_vpc_dns_resolution_binding", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
-		err = resourceIBMIsVPCDnsResolutionBindingGet(vpcdnsResolutionBinding, d)
-		if err != nil {
-			return diag.FromErr(err)
+		diagErr := resourceIBMIsVPCDnsResolutionBindingGet(vpcdnsResolutionBinding, d)
+		if diagErr != nil {
+			return diagErr
 		}
 	}
 
@@ -450,27 +471,30 @@ func resourceIBMIsVPCDnsResolutionBindingUpdate(context context.Context, d *sche
 func resourceIBMIsVPCDnsResolutionBindingDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_dns_resolution_binding", "delete", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	vpcId, id, err := ParseVPCDNSTerraformID(d.Id())
 	if err != nil {
-		return diag.FromErr(err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_dns_resolution_binding", "delete", "sep-id-parts").GetDiag()
 	}
 	deleteVPCDnsResolutionBindingOptions := &vpcv1.DeleteVPCDnsResolutionBindingOptions{}
 
 	deleteVPCDnsResolutionBindingOptions.SetVPCID(vpcId)
 	deleteVPCDnsResolutionBindingOptions.SetID(id)
 
-	dns, response, err := sess.DeleteVPCDnsResolutionBindingWithContext(context, deleteVPCDnsResolutionBindingOptions)
+	dns, _, err := sess.DeleteVPCDnsResolutionBindingWithContext(context, deleteVPCDnsResolutionBindingOptions)
 	if err != nil {
-		log.Printf("[DEBUG] DeleteVPCDnsResolutionBindingWithContext failed %s\n%s", err, response)
-		if response.StatusCode != 404 {
-			return diag.FromErr(fmt.Errorf("DeleteVPCDnsResolutionBindingWithContext failed %s\n%s", err, response))
-		}
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteVPCDnsResolutionBindingWithContext failed: %s", err.Error()), "ibm_is_vpc_dns_resolution_binding", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	_, err = isWaitForVpcDnsDeleted(sess, vpcId, id, d.Timeout(schema.TimeoutDelete), dns)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForVpcDnsDeleted failed: %s", err.Error()), "ibm_is_vpc_dns_resolution_binding", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	d.SetId("")
 	return nil

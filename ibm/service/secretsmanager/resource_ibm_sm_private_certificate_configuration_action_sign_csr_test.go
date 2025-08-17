@@ -59,7 +59,7 @@ func testAccCheckIbmSmPrivateCertificateConfigurationActionSignCsrConfigBasic() 
 			ttl = "2h"
 			name = ibm_sm_private_certificate_configuration_root_ca.ibm_sm_private_certificate_configuration_root_ca_instance.name
 			csr = ibm_sm_private_certificate_configuration_intermediate_ca.sm_private_certificate_configuration_intermediate_ca.data[0].csr
-			max_path_length = 80
+			max_path_length = 8
 		}
 		
 		resource "ibm_sm_private_certificate_configuration_action_set_signed" "ibm_sm_private_certificate_configuration_action_set_signed_instance" {

@@ -41,5 +41,5 @@ variable "standard_key" {
 variable "bucket_name" {
    description = "The cos bucket name"
   type        = string
-  default = "test_buck"
+  default = "kptestbucket"
 }

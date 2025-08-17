@@ -91,7 +91,9 @@ func DataSourceIBMIsPrivatePathServiceGatewayEndpointGatewayBinding() *schema.Re
 func dataSourceIBMIsPrivatePathServiceGatewayEndpointGatewayBindingRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_private_path_service_gateway_endpoint_gateway_binding", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	getPrivatePathServiceGatewayEndpointGatewayBindingOptions := &vpcv1.GetPrivatePathServiceGatewayEndpointGatewayBindingOptions{}
@@ -101,8 +103,9 @@ func dataSourceIBMIsPrivatePathServiceGatewayEndpointGatewayBindingRead(context 
 
 	privatePathServiceGatewayEndpointGatewayBinding, response, err := vpcClient.GetPrivatePathServiceGatewayEndpointGatewayBindingWithContext(context, getPrivatePathServiceGatewayEndpointGatewayBindingOptions)
 	if err != nil {
-		log.Printf("[DEBUG] GetPrivatePathServiceGatewayEndpointGatewayBindingWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetPrivatePathServiceGatewayEndpointGatewayBindingWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetPrivatePathServiceGatewayEndpointGatewayBindingWithContext failed: %s\n%s", err.Error(), response), "(Data) ibm_is_private_path_service_gateway_endpoint_gateway_binding", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(fmt.Sprintf("%s//%s", *getPrivatePathServiceGatewayEndpointGatewayBindingOptions.PrivatePathServiceGatewayID, *privatePathServiceGatewayEndpointGatewayBinding.ID))
@@ -116,31 +119,31 @@ func dataSourceIBMIsPrivatePathServiceGatewayEndpointGatewayBindingRead(context 
 		account = append(account, modelMap)
 	}
 	if err = d.Set("account", account); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting account %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting account: %s", err), "(Data) ibm_is_private_path_service_gateway_endpoint_gateway_binding", "read", "set-account").GetDiag()
 	}
 
 	if err = d.Set("created_at", flex.DateTimeToString(privatePathServiceGatewayEndpointGatewayBinding.CreatedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting created_at: %s", err), "(Data) ibm_is_private_path_service_gateway_endpoint_gateway_binding", "read", "set-created_at").GetDiag()
 	}
 
 	if err = d.Set("expiration_at", flex.DateTimeToString(privatePathServiceGatewayEndpointGatewayBinding.ExpirationAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting expiration_at: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting expiration_at: %s", err), "(Data) ibm_is_private_path_service_gateway_endpoint_gateway_binding", "read", "set-expiration_at").GetDiag()
 	}
 
 	if err = d.Set("href", privatePathServiceGatewayEndpointGatewayBinding.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting href: %s", err), "(Data) ibm_is_private_path_service_gateway_endpoint_gateway_binding", "read", "set-href").GetDiag()
 	}
 
 	if err = d.Set("lifecycle_state", privatePathServiceGatewayEndpointGatewayBinding.LifecycleState); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting lifecycle_state: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting lifecycle_state: %s", err), "(Data) ibm_is_private_path_service_gateway_endpoint_gateway_binding", "read", "set-lifecycle_state").GetDiag()
 	}
 
 	if err = d.Set("resource_type", privatePathServiceGatewayEndpointGatewayBinding.ResourceType); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting resource_type: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_type: %s", err), "(Data) ibm_is_private_path_service_gateway_endpoint_gateway_binding", "read", "set-resource_type").GetDiag()
 	}
 
 	if err = d.Set("status", privatePathServiceGatewayEndpointGatewayBinding.Status); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting status: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting status: %s", err), "(Data) ibm_is_private_path_service_gateway_endpoint_gateway_binding", "read", "set-status").GetDiag()
 	}
 
 	// if privatePathServiceGatewayEndpointGatewayBinding.UpdatedAt != nil {

@@ -76,6 +76,9 @@ In addition to all argument reference list, you can access the following attribu
   - `role` -  (String) The high availability role assigned to the VPN gateway member.
 - `public_ip_address` - (String) The IP address assigned to this VPN gateway.
 - `public_ip_address2` -  (String) The Second Public IP address assigned to this VPN gateway member.
+
+  ~>**Note:** If one of the public IP addresses is "0.0.0.0", you can use a conditional expression to get the valid IP address: `ibm_is_vpn_gateway.example.public_ip_address == "0.0.0.0" ? ibm_is_vpn_gateway.example.public_ip_address2 : ibm_is_vpn_gateway.example.public_ip_address`
+
 - `private_ip_address` -  (String) The Private IP address assigned to this VPN gateway member.
 - `private_ip_address2` -  (String) The Second Private IP address assigned to this VPN gateway.
 - `health_reasons` - (List) The reasons for the current health_state (if any).

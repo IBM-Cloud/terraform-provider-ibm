@@ -8,19 +8,21 @@ description: |-
 
 # ibm_pi_snapshot
 
+~> This resource is deprecated and will be removed in the next major version. Use `ibm_pi_instance_snapshot` resource instead.
+
 Creates, updates, deletes, and manages snapshots in the Power Virtual Server Cloud. For more information, about snapshots in the Power Virutal Server, see [snapshotting, cloning, and restoring](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-volume-snapshot-clone).
 
-## Example usage
+## Example Usage
 
 The following example enables you to create a snapshot:
 
 ```terraform
 resource "ibm_pi_snapshot" "testacc_snapshot"{
-  pi_cloud_instance_id = "<value of the cloud_instance_id>"
-  pi_description  = "Testing snapshot for instance"
-  pi_instance_name       = test-instance
-  pi_snap_shot_name       = test-snapshot
-  pi_volume_ids       = ["volumeid1","volumeid2"]
+  pi_cloud_instance_id  = "<value of the cloud_instance_id>"
+  pi_description        = "Testing snapshot for instance"
+  pi_instance_name      = test-instance
+  pi_snap_shot_name     = test-snapshot
+  pi_volume_ids         = ["volumeid1","volumeid2"]
 }
 ```
 
@@ -48,7 +50,7 @@ The `ibm_pi_snapshot` provides the following [Timeouts](https://www.terraform.io
 - **update** - (Default 60 minutes) Used for Updating snapshot.
 - **delete** - (Default 10 minutes) Used for Deleting snapshot.
 
-## Argument reference
+## Argument Reference
 
 Review the argument references that you can specify for your resource.
 
@@ -59,7 +61,7 @@ Review the argument references that you can specify for your resource.
 - `pi_user_tags` - (Optional, List) The user tags attached to this resource.
 - `pi_volume_ids` - (Optional, String) A list of volume IDs of the instance that will be part of the snapshot. If none are provided, then all the volumes of the instance will be part of the snapshot.
 
-## Attribute reference
+## Attribute Reference
 
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 

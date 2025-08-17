@@ -132,7 +132,7 @@ var rootCaFullConfigFormat = `
 			private_key_format = "pkcs8"
 			key_type = "ec"
 			key_bits = 384
-			max_path_length = 80
+			max_path_length = 8
 			exclude_cn_from_sans = true
 			permitted_dns_domains  = ["example.com"]
 			ou = ["ou1", "ou2"]
@@ -183,8 +183,8 @@ func privateCertificateRootCAConfigCryptoKey() string {
 			common_name   = "ibm.com"
 			alt_names = ["ddd.com", "aaa.com"]
 			crypto_key {
-				allow_generate_key = true
-				label = "e2e-tf-test"
+				allow_generate_key = false
+				label = "e2e-tf-ca"
 				provider {
 					type = "%s"
 					instance_crn = "%s"

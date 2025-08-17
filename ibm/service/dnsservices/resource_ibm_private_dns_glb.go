@@ -152,12 +152,11 @@ func resourceIBMPrivateDNSGLBCreate(d *schema.ResourceData, meta interface{}) er
 	}
 	instanceID := d.Get(pdnsInstanceID).(string)
 	zoneID := d.Get(pdnsZoneID).(string)
-	createlbOptions := sess.NewCreateLoadBalancerOptions(instanceID, zoneID)
-
 	lbname := d.Get(pdnsGLBName).(string)
-	createlbOptions.SetName(lbname)
-	createlbOptions.SetFallbackPool(d.Get(pdnsGLBFallbackPool).(string))
-	createlbOptions.SetDefaultPools(flex.ExpandStringList(d.Get(pdnsGLBDefaultPool).([]interface{})))
+	fallbackPool := d.Get(pdnsGLBFallbackPool).(string)
+	defaultPool := flex.ExpandStringList(d.Get(pdnsGLBDefaultPool).([]interface{}))
+
+	createlbOptions := sess.NewCreateLoadBalancerOptions(instanceID, zoneID, lbname, fallbackPool, defaultPool)
 
 	if description, ok := d.GetOk(pdnsGLBDescription); ok {
 		createlbOptions.SetDescription(description.(string))
@@ -197,7 +196,7 @@ func resourceIBMPrivateDNSGLBRead(d *schema.ResourceData, meta interface{}) erro
 	getlbOptions := sess.NewGetLoadBalancerOptions(idset[0], idset[1], idset[2])
 	presponse, resp, err := sess.GetLoadBalancer(getlbOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error fetching pdns GLB :%s\n%s", err, resp)
+		return flex.FmtErrorf("[ERROR] Error fetching dns services GLB :%s\n%s", err, resp)
 	}
 
 	response := *presponse
@@ -259,7 +258,7 @@ func resourceIBMPrivateDNSGLBUpdate(d *schema.ResourceData, meta interface{}) er
 
 		_, detail, err := sess.UpdateLoadBalancer(updatelbOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error updating pdns GLB :%s\n%s", err, detail)
+			return flex.FmtErrorf("[ERROR] Error updating pdns GLB :%s\n%s", err, detail)
 		}
 	}
 
@@ -276,7 +275,7 @@ func resourceIBMPrivateDNSGLBDelete(d *schema.ResourceData, meta interface{}) er
 	deletelbOptions := sess.NewDeleteLoadBalancerOptions(idset[0], idset[1], idset[2])
 	response, err := sess.DeleteLoadBalancer(deletelbOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error deleting pdns GLB :%s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error deleting dns services GLB :%s\n%s", err, response)
 	}
 	_, err = isWaitForLoadBalancerDeleted(sess, d, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
@@ -292,7 +291,7 @@ func resourceIBMPrivateDNSGLBExists(d *schema.ResourceData, meta interface{}) (b
 	}
 	idset := strings.Split(d.Id(), "/")
 	if len(idset) < 3 {
-		return false, fmt.Errorf("[ERROR] Incorrect ID %s: Id should be a combination of InstanceID/zoneID/glbID", d.Id())
+		return false, flex.FmtErrorf("[ERROR] Incorrect ID %s: Id should be a combination of InstanceID/zoneID/glbID", d.Id())
 	}
 
 	getlbOptions := sess.NewGetLoadBalancerOptions(idset[0], idset[1], idset[2])
@@ -308,14 +307,14 @@ func resourceIBMPrivateDNSGLBExists(d *schema.ResourceData, meta interface{}) (b
 	return true, nil
 }
 
-func expandPDNSGlbAZPools(azpool interface{}) ([]dnssvcsv1.LoadBalancerAzPoolsItem, error) {
+func expandPDNSGlbAZPools(azpool interface{}) ([]dnssvcsv1.AzPoolsItem, error) {
 	azpools := azpool.(*schema.Set).List()
-	expandAZpools := make([]dnssvcsv1.LoadBalancerAzPoolsItem, 0)
+	expandAZpools := make([]dnssvcsv1.AzPoolsItem, 0)
 	for _, v := range azpools {
 		locationConfig := v.(map[string]interface{})
 		avzone := locationConfig[pdnsGLBAvailabilityZone].(string)
 		pools := flex.ExpandStringList(locationConfig[pdnsGLBAZPoolsPools].([]interface{}))
-		aZItem := dnssvcsv1.LoadBalancerAzPoolsItem{
+		aZItem := dnssvcsv1.AzPoolsItem{
 			AvailabilityZone: &avzone,
 			Pools:            pools,
 		}
@@ -324,7 +323,7 @@ func expandPDNSGlbAZPools(azpool interface{}) ([]dnssvcsv1.LoadBalancerAzPoolsIt
 	return expandAZpools, nil
 }
 
-func flattenPDNSGlbAZpool(azpool []dnssvcsv1.LoadBalancerAzPoolsItem) interface{} {
+func flattenPDNSGlbAZpool(azpool []dnssvcsv1.AzPoolsItem) interface{} {
 	flattened := make([]interface{}, 0)
 	for _, v := range azpool {
 		cfg := map[string]interface{}{
@@ -368,7 +367,7 @@ func isVLoadBalancerDeleteRefreshFunc(LoadBalancer *dnssvcsv1.DnsSvcsV1, d *sche
 			if response != nil && response.StatusCode == 404 {
 				return "", pdnsGLBDeleted, nil
 			}
-			return "", "", fmt.Errorf("[ERROR] Error Getting PDNS Load Balancer : %s\n%s", err, response)
+			return "", "", flex.FmtErrorf("[ERROR] Error Getting DNS Services Load Balancer : %s\n%s", err, response)
 		}
 		return LoadBalancer, pdnsGLBDeleting, err
 

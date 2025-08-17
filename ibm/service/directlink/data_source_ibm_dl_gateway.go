@@ -4,13 +4,13 @@
 package directlink
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/IBM/networking-go-sdk/directlinkv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 )
 
@@ -373,7 +373,7 @@ func dataSourceIBMDLGatewayVirtualConnectionsRead(d *schema.ResourceData, meta i
 	listVcOptions.SetGatewayID(dlGatewayId)
 	listGatewayVirtualConnections, response, err := directLink.ListGatewayVirtualConnections(listVcOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while listing directlink gateway's virtual connections XXX %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error while listing directlink gateway's virtual connections XXX %s\n%s", err, response)
 	}
 	gatewayVCs := make([]map[string]interface{}, 0)
 	for _, instance := range listGatewayVirtualConnections.VirtualConnections {
@@ -550,54 +550,54 @@ func dataSourceIBMDLGatewayRead(d *schema.ResourceData, meta interface{}) error 
 
 			dtype := *instance.Type
 			if dtype == "dedicated" {
-				if instance.MacsecConfig != nil {
-					macsecList := make([]map[string]interface{}, 0)
-					currentMacSec := map[string]interface{}{}
-					// Construct an instance of the GatewayMacsecConfigTemplate model
-					gatewayMacsecConfigTemplateModel := instance.MacsecConfig
-					if gatewayMacsecConfigTemplateModel.Active != nil {
-						currentMacSec[dlActive] = *gatewayMacsecConfigTemplateModel.Active
-					}
-					if gatewayMacsecConfigTemplateModel.ActiveCak != nil {
-						if gatewayMacsecConfigTemplateModel.ActiveCak.Crn != nil {
-							currentMacSec[dlActiveCak] = *gatewayMacsecConfigTemplateModel.ActiveCak.Crn
-						}
-					}
-					if gatewayMacsecConfigTemplateModel.PrimaryCak != nil {
-						currentMacSec[dlPrimaryCak] = *gatewayMacsecConfigTemplateModel.PrimaryCak.Crn
-					}
-					if gatewayMacsecConfigTemplateModel.FallbackCak != nil {
-						if gatewayMacsecConfigTemplateModel.FallbackCak.Crn != nil {
-							currentMacSec[dlFallbackCak] = *gatewayMacsecConfigTemplateModel.FallbackCak.Crn
-						}
-					}
-					if gatewayMacsecConfigTemplateModel.SakExpiryTime != nil {
-						currentMacSec[dlSakExpiryTime] = *gatewayMacsecConfigTemplateModel.SakExpiryTime
-					}
-					if gatewayMacsecConfigTemplateModel.SecurityPolicy != nil {
-						currentMacSec[dlSecurityPolicy] = *gatewayMacsecConfigTemplateModel.SecurityPolicy
-					}
-					if gatewayMacsecConfigTemplateModel.WindowSize != nil {
-						currentMacSec[dlWindowSize] = *gatewayMacsecConfigTemplateModel.WindowSize
-					}
-					if gatewayMacsecConfigTemplateModel.CipherSuite != nil {
-						currentMacSec[dlCipherSuite] = *gatewayMacsecConfigTemplateModel.CipherSuite
-					}
-					if gatewayMacsecConfigTemplateModel.ConfidentialityOffset != nil {
-						currentMacSec[dlConfidentialityOffset] = *gatewayMacsecConfigTemplateModel.ConfidentialityOffset
-					}
-					if gatewayMacsecConfigTemplateModel.CryptographicAlgorithm != nil {
-						currentMacSec[dlCryptographicAlgorithm] = *gatewayMacsecConfigTemplateModel.CryptographicAlgorithm
-					}
-					if gatewayMacsecConfigTemplateModel.KeyServerPriority != nil {
-						currentMacSec[dlKeyServerPriority] = *gatewayMacsecConfigTemplateModel.KeyServerPriority
-					}
-					if gatewayMacsecConfigTemplateModel.Status != nil {
-						currentMacSec[dlMacSecConfigStatus] = *gatewayMacsecConfigTemplateModel.Status
-					}
-					macsecList = append(macsecList, currentMacSec)
-					d.Set(dlMacSecConfig, macsecList)
-				}
+				// if instance.MacsecConfig != nil {
+				// 	macsecList := make([]map[string]interface{}, 0)
+				// 	currentMacSec := map[string]interface{}{}
+				// 	// Construct an instance of the GatewayMacsecConfigTemplate model
+				// 	gatewayMacsecConfigTemplateModel := instance.MacsecConfig
+				// 	if gatewayMacsecConfigTemplateModel.Active != nil {
+				// 		currentMacSec[dlActive] = *gatewayMacsecConfigTemplateModel.Active
+				// 	}
+				// 	if gatewayMacsecConfigTemplateModel.ActiveCak != nil {
+				// 		if gatewayMacsecConfigTemplateModel.ActiveCak.Crn != nil {
+				// 			currentMacSec[dlActiveCak] = *gatewayMacsecConfigTemplateModel.ActiveCak.Crn
+				// 		}
+				// 	}
+				// 	if gatewayMacsecConfigTemplateModel.PrimaryCak != nil {
+				// 		currentMacSec[dlPrimaryCak] = *gatewayMacsecConfigTemplateModel.PrimaryCak.Crn
+				// 	}
+				// 	if gatewayMacsecConfigTemplateModel.FallbackCak != nil {
+				// 		if gatewayMacsecConfigTemplateModel.FallbackCak.Crn != nil {
+				// 			currentMacSec[dlFallbackCak] = *gatewayMacsecConfigTemplateModel.FallbackCak.Crn
+				// 		}
+				// 	}
+				// 	if gatewayMacsecConfigTemplateModel.SakExpiryTime != nil {
+				// 		currentMacSec[dlSakExpiryTime] = *gatewayMacsecConfigTemplateModel.SakExpiryTime
+				// 	}
+				// 	if gatewayMacsecConfigTemplateModel.SecurityPolicy != nil {
+				// 		currentMacSec[dlSecurityPolicy] = *gatewayMacsecConfigTemplateModel.SecurityPolicy
+				// 	}
+				// 	if gatewayMacsecConfigTemplateModel.WindowSize != nil {
+				// 		currentMacSec[dlWindowSize] = *gatewayMacsecConfigTemplateModel.WindowSize
+				// 	}
+				// 	if gatewayMacsecConfigTemplateModel.CipherSuite != nil {
+				// 		currentMacSec[dlCipherSuite] = *gatewayMacsecConfigTemplateModel.CipherSuite
+				// 	}
+				// 	if gatewayMacsecConfigTemplateModel.ConfidentialityOffset != nil {
+				// 		currentMacSec[dlConfidentialityOffset] = *gatewayMacsecConfigTemplateModel.ConfidentialityOffset
+				// 	}
+				// 	if gatewayMacsecConfigTemplateModel.CryptographicAlgorithm != nil {
+				// 		currentMacSec[dlCryptographicAlgorithm] = *gatewayMacsecConfigTemplateModel.CryptographicAlgorithm
+				// 	}
+				// 	if gatewayMacsecConfigTemplateModel.KeyServerPriority != nil {
+				// 		currentMacSec[dlKeyServerPriority] = *gatewayMacsecConfigTemplateModel.KeyServerPriority
+				// 	}
+				// 	if gatewayMacsecConfigTemplateModel.Status != nil {
+				// 		currentMacSec[dlMacSecConfigStatus] = *gatewayMacsecConfigTemplateModel.Status
+				// 	}
+				// 	macsecList = append(macsecList, currentMacSec)
+				// 	d.Set(dlMacSecConfig, macsecList)
+				// }
 			}
 			if instance.ChangeRequest != nil {
 				gatewayChangeRequestIntf := instance.ChangeRequest
@@ -609,9 +609,9 @@ func dataSourceIBMDLGatewayRead(d *schema.ResourceData, meta interface{}) error 
 				d.Set(dlResourceGroup, *rg.ID)
 			}
 
-			if instance.AuthenticationKey != nil {
-				d.Set(dlAuthenticationKey, *instance.AuthenticationKey.Crn)
-			}
+			// if instance.AuthenticationKey != nil {
+			// 	d.Set(dlAuthenticationKey, *instance.AuthenticationKey.Crn)
+			// }
 
 			if instance.ConnectionMode != nil {
 				d.Set(dlConnectionMode, *instance.ConnectionMode)
@@ -621,7 +621,7 @@ func dataSourceIBMDLGatewayRead(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	if !found {
-		return fmt.Errorf("[ERROR] Error Gateway with name  (%s) not found ", dlGatewayName)
+		return flex.FmtErrorf("[ERROR] Error Gateway with name  (%s) not found ", dlGatewayName)
 	}
 	return dataSourceIBMDLGatewayVirtualConnectionsRead(d, meta)
 }

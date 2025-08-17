@@ -50,6 +50,23 @@ In addition to all argument references listed, you can access the following attr
 
   - `params` - (List)
 
+  - `spf` - (List) The SPF attributes.
+		Nested schema for **spf**:
+			* `txt_name` - (String) spf text name.
+			  * Constraints: The maximum length is `255` characters. The minimum length is `1` character. The value must match regular expression `/.*/`.
+			* `txt_value` - (String) spf text value.
+			  * Constraints: The maximum length is `500` characters. The minimum length is `1` character. The value must match regular expression `/.*/`.
+			* `verification` - (String) spf verification.
+			  * Constraints: The maximum length is `255` characters. The minimum length is `1` character. The value must match regular expression `/.*/`.
+  - `dkim` - (List) The DKIM attributes.
+		Nested schema for **dkim**:
+			* `public_key` - (String) dkim public key.
+			  * Constraints: The maximum length is `500` characters. The minimum length is `1` character. The value must match regular expression `/.*/`.
+			* `selector` - (String) dkim selector.
+			  * Constraints: The maximum length is `500` characters. The minimum length is `1` character. The value must match regular expression `/.*/`.
+			* `verification` - (String) dkim verification.
+			  * Constraints: The maximum length is `255` characters. The minimum length is `1` character. The value must match regular expression `/.*/`.      
+
   Nested scheme for **params**:
 
   - `domain` - (String) The Custom Domain.

@@ -4,7 +4,6 @@
 package cis
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -417,7 +416,7 @@ func expandGeoPools(pool interface{}, geoType string) (map[string][]string, erro
 			geoPools := flex.ExpandStringList(locationConfig[cisGLBRegionPoolsPoolIDs].([]interface{}))
 			expandPool[location], _, _ = flex.ConvertTfToCisTwoVarSlice(geoPools)
 		} else {
-			return nil, fmt.Errorf("duplicate entry specified for %s pool in location %q. "+
+			return nil, flex.FmtErrorf("duplicate entry specified for %s pool in location %q. "+
 				"each location must only be specified once", geoType, location)
 		}
 	}

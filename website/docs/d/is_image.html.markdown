@@ -47,6 +47,7 @@ Review the argument references that you can specify for your data source.
 
 - `visibility` - (Optional, String) The visibility of the image. Accepted values are `public` or `private`.
 
+
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created.
 
@@ -102,7 +103,34 @@ In addition to all argument reference list, you can access the following attribu
   - `more_info` - (String) Link to documentation about this status reason
 
 - `source_volume` - The source volume id of the image.
+- `allowed_use` - (List) The usage constraints to match against the requested instance or bare metal server properties to  determine  compatibility.
+    
+    Nested schema for `allowed_use`:
+    - `api_version` - (String) The API version with which to evaluate the expressions.
+	  
+    - `bare_metal_server` - (String) The expression that must be satisfied by the properties of a bare metal server provisioned using this image. If unspecified, the expression will be set to true. The expression follows [Common Expression Language](https://github.com/google/cel-spec/blob/master/doc/langdef.md), but does not support built-in functions and macros. 
+   
+    ~> **NOTE** </br> In addition, the following property is supported, corresponding to `BareMetalServer` properties: </br>
+      **&#x2022;** `enable_secure_boot` - (boolean) Indicates whether secure boot is enabled.
+	  
+    - `instance` - (String) The expression that must be satisfied by the properties of a virtual server instance provisioned using this image. If unspecified, the expression will be set to true. The expression follows [Common Expression Language](https://github.com/google/cel-spec/blob/master/doc/langdef.md), but does not support built-in functions and macros. 
+     
+     ~> **NOTE** </br> In addition, the following variables are supported, corresponding to `Instance` properties: </br> 
+      **&#x2022;** `gpu.count` - (integer) The number of GPUs. </br> 
+      **&#x2022;** `gpu.manufacturer` - (string) The GPU manufacturer. </br> 
+      **&#x2022;** `gpu.memory` - (integer) The overall amount of GPU memory in GiB (gibibytes). </br> 
+      **&#x2022;** `gpu.model` - (string) The GPU model. </br> 
+      **&#x2022;** `enable_secure_boot` - (boolean) Indicates whether secure boot is enabled. </br> 
 - `user_data_format` - (String) The user data format for this image.
+- `remote` - (Optional, List) If present, this property indicates that the resource associated with this reference is remote and therefore may not be directly retrievable.
+
+      **Nested schema for `remote`:**
+       - `account` - (Optional, List)  Indicates that the referenced resource is remote to this account, and identifies the owning account.
+
+          **Nested schema for `account`:**
+           - `id` – (Computed, String) The unique identifier for this account.  
+           - `resource_type` – (Computed, String) The resource type.
+    
   
   ~> **Note:** </br> Supported values are : </br>
   **&#x2022;** `cloud_init`: user_data will be interpreted according to the cloud-init standard.</br>

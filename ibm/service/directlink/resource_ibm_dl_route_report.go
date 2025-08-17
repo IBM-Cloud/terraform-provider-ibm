@@ -206,11 +206,11 @@ func resourceIBMdlGatewayRouteReportCreate(d *schema.ResourceData, meta interfac
 	routeReport, response, err := directLink.CreateGatewayRouteReport(createGatewayRouteReportOptionsModel)
 	if err != nil {
 		log.Println("[DEBUG] Create Route Report for DirectLink gateway", gatewayId, "err: ", err, " with response code:", response.StatusCode)
-		return fmt.Errorf("[ERROR] Create Route Report for DirectLink gateway(%s) err: %s with response code: %d", gatewayId, err, response.StatusCode)
+		return flex.FmtErrorf("[ERROR] Create Route Report for DirectLink gateway(%s) err: %s with response code: %d", gatewayId, err, response.StatusCode)
 	}
 
 	if routeReport == nil {
-		return fmt.Errorf("error creating route report for gateway: %s with response code: %d", gatewayId, response.StatusCode)
+		return flex.FmtErrorf("error creating route report for gateway: %s with response code: %d", gatewayId, response.StatusCode)
 	} else if routeReport.ID != nil {
 		d.SetId(fmt.Sprintf("%s/%s", gatewayId, *routeReport.ID))
 		d.Set(dlRouteReportId, *routeReport.ID)
@@ -238,7 +238,7 @@ func isDirectLinkGatewayRouteReportRefreshFunc(client *directlinkv1.DirectLinkV1
 
 		parts, err := flex.IdParts(ID)
 		if err != nil {
-			return nil, "", fmt.Errorf("error getting ID for directlink route report: %s", err)
+			return nil, "", flex.FmtErrorf("error getting ID for directlink route report: %s", err)
 		}
 
 		gatewayId := parts[0]
@@ -250,7 +250,7 @@ func isDirectLinkGatewayRouteReportRefreshFunc(client *directlinkv1.DirectLinkV1
 		}
 		routeReport, response, err := client.GetGatewayRouteReport(getOptions)
 		if err != nil {
-			return nil, "", fmt.Errorf("[ERROR] error fetching directlink route report: %s\n%s", err, response)
+			return nil, "", flex.FmtErrorf("[ERROR] error fetching directlink route report: %s\n%s", err, response)
 		}
 		if *routeReport.Status == "complete" {
 			return routeReport, dlRouteReportComplete, nil
@@ -286,11 +286,11 @@ func resourceIBMDLRouteReportRead(d *schema.ResourceData, meta interface{}) erro
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error fetching DL Route Reports for gateway(%s) err: %s with response code  %d", gatewayId, err, response.StatusCode)
+		return flex.FmtErrorf("[ERROR] Error fetching DL Route Reports for gateway(%s) err: %s with response code  %d", gatewayId, err, response.StatusCode)
 	}
 
 	if report == nil {
-		return fmt.Errorf("error fetching route report for gateway: %s and route report: %s with response code: %d", gatewayId, routeReportId, response.StatusCode)
+		return flex.FmtErrorf("error fetching route report for gateway: %s and route report: %s with response code: %d", gatewayId, routeReportId, response.StatusCode)
 	}
 
 	if report.Status != nil {

@@ -111,7 +111,7 @@ func dataSourceIBMKmsKMIPClientCertList(d *schema.ResourceData, meta interface{}
 	ctx := context.Background()
 	adapter, err := api.GetKMIPAdapter(ctx, adapterNameOrID)
 	if err != nil {
-		return flex.FmtErrorf("[ERROR] Error while retriving KMIP adapter to list certificates: %s", err)
+		return flex.FmtErrorf("[ERROR] Error while retrieving KMIP adapter to list certificates: %s", err)
 	}
 	if err = d.Set("adapter_id", adapter.ID); err != nil {
 		return flex.FmtErrorf("[ERROR] Error setting adapter_id: %s", err)

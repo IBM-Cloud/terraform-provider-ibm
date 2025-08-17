@@ -95,6 +95,7 @@ func ResourceIBMPIIKEPolicy() *schema.Resource {
 				Description: "IKE Policy ID",
 			},
 		},
+		DeprecationMessage: "Resource ibm_pi_ike_policy is deprecated. VPN has reached end of life.",
 	}
 }
 

@@ -31,15 +31,21 @@ In addition to all argument references listed, you can access the following attr
 
 * `id` - The unique identifier of the ibm_cm_catalog.
 * `catalog_filters` - (List) Filters for account and catalog filters.
-Nested scheme for **catalog_filters**:
-	* `category_filters` - (Map) Filter against offering properties.
+Nested schema for **catalog_filters**:
+	* `category_filters` - (List) Filter against offering properties.
+	Nested schema for **category_filters**:
+    	* `category_name` - (String) Name of the category.
+    	* `include` -  (Boolean) Whether to include the category in the catalog filter.
+    	* `filter` - (List) Filter terms related to the category.
+		Nested schema for **filter**:
+			* `filter_terms` - (List) List of values to match against. If include is true, then if the offering has one of the values then the offering is included. If include is false, then if the offering has one of the values then the offering is excluded.
 	* `id_filters` - (List) Filter on offering ID's. There is an include filter and an exclule filter. Both can be set.
-	Nested scheme for **id_filters**:
+	Nested schema for **id_filters**:
 		* `exclude` - (List) Offering filter terms.
-		Nested scheme for **exclude**:
+		Nested schema for **exclude**:
 			* `filter_terms` - (List) List of values to match against. If include is true, then if the offering has one of the values then the offering is included. If include is false, then if the offering has one of the values then the offering is excluded.
 		* `include` - (List) Offering filter terms.
-		Nested scheme for **include**:
+		Nested schema for **include**:
 			* `filter_terms` - (List) List of values to match against. If include is true, then if the offering has one of the values then the offering is included. If include is false, then if the offering has one of the values then the offering is excluded.
 	* `include_all` - (Boolean) -> true - Include all of the public catalog when filtering. Further settings will specifically exclude some offerings. false - Exclude all of the public catalog when filtering. Further settings will specifically include some offerings.
 

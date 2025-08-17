@@ -7,23 +7,27 @@ description: |-
 ---
 
 # ibm_pi_cloud_connection
+
 Retrieve information about an existing IBM Cloud Power Virtual Server Cloud cloud connection. For more information, about IBM power virtual server cloud, see [getting started with IBM Power Systems Virtual Servers](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-getting-started).
 
-## Example usage
+## Example Usage
+
 ```terraform
 data "ibm_pi_cloud_connection" "example" {
-	pi_cloud_connection_name  = "test_cloud_connection"
-	pi_cloud_instance_id      = "<value of the cloud_instance_id>"
+  pi_cloud_connection_name  = "test_cloud_connection"
+  pi_cloud_instance_id      = "<value of the cloud_instance_id>"
 }
 ```
 
-**Notes**
+### Notes
+
 - Please find [supported Regions](https://cloud.ibm.com/apidocs/power-cloud#endpoint) for endpoints.
 - If a Power cloud instance is provisioned at `lon04`, The provider level attributes should be as follows:
   - `region` - `lon`
   - `zone` - `lon04`
 
 Example usage:
+
   ```terraform
     provider "ibm" {
       region    =   "lon"
@@ -31,13 +35,15 @@ Example usage:
     }
   ```
 
-## Argument reference
+## Argument Reference
+
 Review the argument references that you can specify for your data source.
 
 - `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
 - `pi_cloud_connection_name` - (Required, String) The cloud connection name to be used.
 
-## Attribute reference
+## Attribute Reference
+
 In addition to all argument reference list, you can access the following attribute references after your data source is created.
 
 - `classic_enabled` - (Boolean) Enable classic endpoint destination.

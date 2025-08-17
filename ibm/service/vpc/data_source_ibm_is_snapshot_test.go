@@ -42,6 +42,10 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 					resource.TestCheckResourceAttrSet(snpName, "crn"),
 					resource.TestCheckResourceAttrSet(snpName, "lifecycle_state"),
 					resource.TestCheckResourceAttrSet(snpName, "encryption"),
+					resource.TestCheckResourceAttrSet(snpName, "allowed_use.#"),
+					resource.TestCheckResourceAttrSet(snpName, "allowed_use.0.bare_metal_server"),
+					resource.TestCheckResourceAttrSet(snpName, "allowed_use.0.instance"),
+					resource.TestCheckResourceAttrSet(snpName, "allowed_use.0.api_version"),
 					// resource.TestCheckResourceAttrSet(snpName, "captured_at"), // Commented as the attribute is optional.
 				),
 			},

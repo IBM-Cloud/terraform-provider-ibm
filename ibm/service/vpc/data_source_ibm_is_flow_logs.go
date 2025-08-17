@@ -4,12 +4,15 @@
 package vpc
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -19,7 +22,7 @@ const (
 
 func DataSourceIBMISFlowLogs() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceIBMISFlowLogsRead,
+		ReadContext: dataSourceIBMISFlowLogsRead,
 
 		Schema: map[string]*schema.Schema{
 			"resource_group": {
@@ -140,10 +143,12 @@ func DataSourceIBMISFlowLogs() *schema.Resource {
 	}
 }
 
-func dataSourceIBMISFlowLogsRead(d *schema.ResourceData, meta interface{}) error {
-	sess, err := vpcClient(meta)
+func dataSourceIBMISFlowLogsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_ibm_is_flow_logs", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	start := ""
@@ -182,9 +187,11 @@ func dataSourceIBMISFlowLogsRead(d *schema.ResourceData, meta interface{}) error
 		if start != "" {
 			listOptions.Start = &start
 		}
-		flowlogCollectors, response, err := sess.ListFlowLogCollectors(listOptions)
+		flowlogCollectors, _, err := vpcClient.ListFlowLogCollectorsWithContext(context, listOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Fetching Flow Logs for VPC %s\n%s", err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListFlowLogCollectorsWithContext failed %s", err), "(Data) ibm_ibm_is_flow_logs", "read")
+			log.Printf("[DEBUG] %s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		start = flex.GetNext(flowlogCollectors.Next)
 		allrecs = append(allrecs, flowlogCollectors.FlowLogCollectors...)
@@ -201,13 +208,13 @@ func dataSourceIBMISFlowLogsRead(d *schema.ResourceData, meta interface{}) error
 		tags, err := flex.GetGlobalTagsUsingCRN(meta, *flowlogCollector.CRN, "", isUserTagType)
 		if err != nil {
 			log.Printf(
-				"Error on get of resource vpc flow log (%s) tags: %s", d.Id(), err)
+				"Error on get of resource vpc flow log (%s) tags: %s", *flowlogCollector.ID, err)
 		}
 
 		accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *flowlogCollector.CRN, "", isAccessTagType)
 		if err != nil {
 			log.Printf(
-				"Error on get of resource VPC Flow Log (%s) access tags: %s", d.Id(), err)
+				"Error on get of resource VPC Flow Log (%s) access tags: %s", *flowlogCollector.ID, err)
 		}
 
 		l := map[string]interface{}{
@@ -228,7 +235,9 @@ func dataSourceIBMISFlowLogsRead(d *schema.ResourceData, meta interface{}) error
 		flowlogsInfo = append(flowlogsInfo, l)
 	}
 	d.SetId(dataSourceIBMISFlowLogsID(d))
-	d.Set(isFlowLogs, flowlogsInfo)
+	if err = d.Set(isFlowLogs, flowlogsInfo); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting flow_log_collectors %s", err), "(Data) ibm_ibm_is_flow_logs", "read", "flow_log_collectors-set").GetDiag()
+	}
 	return nil
 }
 

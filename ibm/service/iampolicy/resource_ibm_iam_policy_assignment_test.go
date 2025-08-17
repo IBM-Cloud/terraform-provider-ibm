@@ -17,7 +17,7 @@ import (
 )
 
 func TestAccIBMPolicyAssignmentBasic(t *testing.T) {
-	var conf iampolicymanagementv1.GetPolicyAssignmentResponse
+	var conf iampolicymanagementv1.PolicyTemplateAssignmentItems
 	var name string = fmt.Sprintf("TerraformTemplateTest%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -47,7 +47,7 @@ func TestAccIBMPolicyAssignmentBasic(t *testing.T) {
 }
 
 func TestAccIBMPolicyAssignmentS2SBasic(t *testing.T) {
-	var conf iampolicymanagementv1.GetPolicyAssignmentResponse
+	var conf iampolicymanagementv1.PolicyTemplateAssignmentItems
 	var name string = fmt.Sprintf("TerraformTemplateTest%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -70,8 +70,8 @@ func TestAccIBMPolicyAssignmentS2SBasic(t *testing.T) {
 	})
 }
 
-func TestAccIBMPolicyAssignmentEnterprise(t *testing.T) {
-	var conf iampolicymanagementv1.GetPolicyAssignmentResponse
+func TestAccIBMPolicyAssignmentAccountGroup(t *testing.T) {
+	var conf iampolicymanagementv1.PolicyTemplateAssignmentItems
 	var name string = fmt.Sprintf("TerraformTemplateTest%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -79,7 +79,7 @@ func TestAccIBMPolicyAssignmentEnterprise(t *testing.T) {
 		CheckDestroy: testAccCheckIBMPolicyAssignmentDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMPolicyAssignmentConfigEnterprise(name, acc.TargetEnterpriseId),
+				Config: testAccCheckIBMPolicyAssignmentConfigAccountGroup(name, acc.TargetAccountGroupId),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMPolicyAssignmentExists("ibm_iam_policy_assignment.policy_assignment", conf),
 					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_s2s_template", "name", name),
@@ -135,7 +135,7 @@ func testAccCheckIBMPolicyAssignmentS2SConfigBasic(name string, targetId string)
 			name = "%s"
 			policy {
 				type = "authorization"
-				description = "Test terraform enterprise S2S"
+				description = "Test terraform AccountGroup S2S"
 				resource {
 					attributes {
 						key = "serviceName"
@@ -181,7 +181,7 @@ func testAccCheckIBMPolicyAssignmentS2SConfigBasic(name string, targetId string)
 
 func testAccCheckIBMPolicyAssignmentConfigUpdate(name string, targetId string) string {
 	return fmt.Sprintf(`
-		resource "ibm_iam_policy_template" "policy_s2stemplate" {
+		resource "ibm_iam_policy_template" "policy_s2s_template" {
 			name = "%s"
 			policy {
 				type = "authorization"
@@ -242,7 +242,7 @@ func testAccCheckIBMPolicyAssignmentConfigUpdate(name string, targetId string) s
 		}`, name, targetId)
 }
 
-func testAccCheckIBMPolicyAssignmentConfigEnterprise(name string, targetId string) string {
+func testAccCheckIBMPolicyAssignmentConfigAccountGroup(name string, targetId string) string {
 	return fmt.Sprintf(`
 		resource "ibm_iam_policy_template" "policy_s2s_template" {
 			name = "%s"
@@ -270,7 +270,7 @@ func testAccCheckIBMPolicyAssignmentConfigEnterprise(name string, targetId strin
 		resource "ibm_iam_policy_assignment" "policy_assignment" {
 			version = "1.0"
 			target  ={
-				type = "Enterprise"
+				type = "AccountGroup"
 				id = "%s"
 			}
 			templates{
@@ -280,7 +280,7 @@ func testAccCheckIBMPolicyAssignmentConfigEnterprise(name string, targetId strin
 		}`, name, targetId)
 }
 
-func testAccCheckIBMPolicyAssignmentExists(n string, obj iampolicymanagementv1.GetPolicyAssignmentResponse) resource.TestCheckFunc {
+func testAccCheckIBMPolicyAssignmentExists(n string, obj iampolicymanagementv1.PolicyTemplateAssignmentItems) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -303,7 +303,7 @@ func testAccCheckIBMPolicyAssignmentExists(n string, obj iampolicymanagementv1.G
 			return err
 		}
 
-		assignmentDetails := policyAssignmentV1.(*iampolicymanagementv1.GetPolicyAssignmentResponse)
+		assignmentDetails := policyAssignmentV1.(*iampolicymanagementv1.PolicyTemplateAssignmentItems)
 
 		obj = *assignmentDetails
 		return nil

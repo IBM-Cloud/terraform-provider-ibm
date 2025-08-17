@@ -103,7 +103,7 @@ func ResourceIbmSmPublicCertificateConfigurationDNSClassicInfrastructureValidato
 }
 
 func resourceIbmSmPublicCertificateConfigurationDNSClassicInfrastructureCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
+	secretsManagerClient, endpointsFile, err := getSecretsManagerSession(meta.(conns.ClientSession))
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, "", PublicCertConfigDnsClassicInfrastructureResourceName, "create")
 		return tfErr.GetDiag()
@@ -111,7 +111,7 @@ func resourceIbmSmPublicCertificateConfigurationDNSClassicInfrastructureCreate(c
 
 	region := getRegion(secretsManagerClient, d)
 	instanceId := d.Get("instance_id").(string)
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d), endpointsFile)
 	bodyModelMap := map[string]interface{}{}
 	createConfigurationOptions := &secretsmanagerv2.CreateConfigurationOptions{}
 
@@ -148,7 +148,7 @@ func resourceIbmSmPublicCertificateConfigurationDNSClassicInfrastructureCreate(c
 }
 
 func resourceIbmSmPublicCertificateConfigurationDNSClassicInfrastructureRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
+	secretsManagerClient, endpointsFile, err := getSecretsManagerSession(meta.(conns.ClientSession))
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, "", PublicCertConfigDnsClassicInfrastructureResourceName, "read")
 		return tfErr.GetDiag()
@@ -162,7 +162,7 @@ func resourceIbmSmPublicCertificateConfigurationDNSClassicInfrastructureRead(con
 	region := id[0]
 	instanceId := id[1]
 	configName := id[2]
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d), endpointsFile)
 	getConfigurationOptions := &secretsmanagerv2.GetConfigurationOptions{}
 
 	getConfigurationOptions.SetName(configName)
@@ -230,7 +230,7 @@ func resourceIbmSmPublicCertificateConfigurationDNSClassicInfrastructureRead(con
 }
 
 func resourceIbmSmPublicCertificateConfigurationDNSClassicInfrastructureUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
+	secretsManagerClient, endpointsFile, err := getSecretsManagerSession(meta.(conns.ClientSession))
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, "", PublicCertConfigDnsClassicInfrastructureResourceName, "update")
 		return tfErr.GetDiag()
@@ -240,7 +240,7 @@ func resourceIbmSmPublicCertificateConfigurationDNSClassicInfrastructureUpdate(c
 	region := id[0]
 	instanceId := id[1]
 	configName := id[2]
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d), endpointsFile)
 	updateConfigurationOptions := &secretsmanagerv2.UpdateConfigurationOptions{}
 
 	updateConfigurationOptions.SetName(configName)
@@ -273,7 +273,7 @@ func resourceIbmSmPublicCertificateConfigurationDNSClassicInfrastructureUpdate(c
 }
 
 func resourceIbmSmPublicCertificateConfigurationDNSClassicInfrastructureDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
+	secretsManagerClient, endpointsFile, err := getSecretsManagerSession(meta.(conns.ClientSession))
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, "", PublicCertConfigDnsClassicInfrastructureResourceName, "delete")
 		return tfErr.GetDiag()
@@ -283,7 +283,7 @@ func resourceIbmSmPublicCertificateConfigurationDNSClassicInfrastructureDelete(c
 	region := id[0]
 	instanceId := id[1]
 	configName := id[2]
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d), endpointsFile)
 	deleteConfigurationOptions := &secretsmanagerv2.DeleteConfigurationOptions{}
 
 	deleteConfigurationOptions.SetName(configName)

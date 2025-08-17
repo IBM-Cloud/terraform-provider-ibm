@@ -126,10 +126,10 @@ func DataSourceIBMIAMPolicyAssignment() *schema.Resource {
 										Description: "The error response from API.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
-												"trace": {
+												"trace": &schema.Schema{
 													Type:        schema.TypeString,
 													Computed:    true,
-													Description: "The unique transaction id for the request.",
+													Description: "The unique transaction ID for the request.",
 												},
 												"errors": {
 													Type:        schema.TypeList,
@@ -188,10 +188,30 @@ func DataSourceIBMIAMPolicyAssignment() *schema.Resource {
 														},
 													},
 												},
-												"status_code": {
+												"status_code": &schema.Schema{
 													Type:        schema.TypeInt,
 													Computed:    true,
-													Description: "The http error code of the response.",
+													Description: "The HTTP error code of the response.",
+												},
+												"name": {
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Name of the error.",
+												},
+												"error_code": {
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Internal error code.",
+												},
+												"message": {
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Error message detailing the nature of the error.",
+												},
+												"code": {
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Internal status code for the error.",
 												},
 											},
 										},
@@ -233,7 +253,7 @@ func dataSourceIBMIAMPolicyAssignmentRead(context context.Context, d *schema.Res
 		return diag.FromErr(fmt.Errorf("GetPolicyAssignmentWithContext failed %s\n%s", err, response))
 	}
 
-	policyAssignmentRecord := assignmentResponse.(*iampolicymanagementv1.GetPolicyAssignmentResponse)
+	policyAssignmentRecord := assignmentResponse.(*iampolicymanagementv1.PolicyTemplateAssignmentItems)
 	d.SetId(*policyAssignmentRecord.ID)
 
 	targetMap, err := ResourceIBMPolicyAssignmentAssignmentTargetDetailsToMap(policyAssignmentRecord.Target)
@@ -353,24 +373,30 @@ func ResourceIBMPolicyAssignmentErrorObjectToMap(model *iampolicymanagementv1.Er
 	return modelMap, nil
 }
 
-func ResourceIBMPolicyAssignmentErrorResponseToMap(model *iampolicymanagementv1.ErrorResponse) (map[string]interface{}, error) {
+func ResourceIBMPolicyAssignmentErrorResponseToMap(model *iampolicymanagementv1.AssignmentResourceError) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	if model.Trace != nil {
-		modelMap["trace"] = *model.Trace
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
+	}
+	if model.ErrorCode != nil {
+		modelMap["error_code"] = *model.ErrorCode
+	}
+	if model.Message != nil {
+		modelMap["message"] = *model.Message
+	}
+	if model.Code != nil {
+		modelMap["code"] = *model.Code
 	}
 	if model.Errors != nil {
 		errors := []map[string]interface{}{}
 		for _, errorsItem := range model.Errors {
-			errorsItemMap, err := ResourceIBMPolicyAssignmentErrorObjectToMap(&errorsItem)
+			errorsItemMap, err := ResourceIBMActionControlAssignmentErrorObjectToMap(&errorsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
 			errors = append(errors, errorsItemMap)
 		}
 		modelMap["errors"] = errors
-	}
-	if model.StatusCode != nil {
-		modelMap["status_code"] = flex.IntValue(model.StatusCode)
 	}
 	return modelMap, nil
 }
@@ -415,7 +441,7 @@ func ResourceIBMPolicyAssignmentPolicyAssignmentV1ResourcesToMap(model *iampolic
 	}
 	return modelMap, nil
 }
-func DataSourceIBMPolicyAssignmentPolicyAssignmentV1Subject(model *iampolicymanagementv1.GetPolicyAssignmentResponseSubject) (map[string]interface{}, error) {
+func DataSourceIBMPolicyAssignmentPolicyAssignmentV1Subject(model *iampolicymanagementv1.PolicyAssignmentV1Subject) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
 		modelMap["id"] = *model.ID

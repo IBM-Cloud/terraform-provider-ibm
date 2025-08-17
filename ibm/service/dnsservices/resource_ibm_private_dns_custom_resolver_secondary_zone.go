@@ -22,6 +22,7 @@ const (
 	pdnsSecondaryZoneDescription  = "description"
 	pdnsSecondaryZoneCreatedOn    = "created_on"
 	pdnsSecondaryZoneModifiedOn   = "modified_on"
+	pdnsResolverID                = "resolver_id"
 )
 
 func ResourceIBMPrivateDNSSecondaryZone() *schema.Resource {
@@ -94,7 +95,8 @@ func ResourceIBMPrivateDNSSecondaryZone() *schema.Resource {
 func resourceIBMPrivateDNSSecondaryZoneCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).PrivateDNSClientSession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceIBMDNSServicesSecondaryZoneCreate Client initialization failed: %s", err.Error()), "ibm_dns_custom_resolver_secondary_zone", "create")
+		return tfErr.GetDiag()
 	}
 
 	instanceID := d.Get(pdnsInstanceID).(string)
@@ -104,12 +106,10 @@ func resourceIBMPrivateDNSSecondaryZoneCreate(ctx context.Context, d *schema.Res
 	enabled := d.Get(pdnsSecondaryZoneEnabled).(bool)
 	transferFrom := flex.ExpandStringList(d.Get(pdnsSecondaryZoneTransferFrom).([]interface{}))
 
-	createSecondaryZoneOptions := sess.NewCreateSecondaryZoneOptions(instanceID, resolverID)
+	createSecondaryZoneOptions := sess.NewCreateSecondaryZoneOptions(instanceID, resolverID, zone, transferFrom)
 
-	createSecondaryZoneOptions.SetZone(zone)
 	createSecondaryZoneOptions.SetDescription(description)
 	createSecondaryZoneOptions.SetEnabled(enabled)
-	createSecondaryZoneOptions.SetTransferFrom(transferFrom)
 
 	mk := "private_dns_secondary_zone_" + instanceID + resolverID
 	conns.IbmMutexKV.Lock(mk)
@@ -117,7 +117,8 @@ func resourceIBMPrivateDNSSecondaryZoneCreate(ctx context.Context, d *schema.Res
 
 	resource, response, err := sess.CreateSecondaryZone(createSecondaryZoneOptions)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error creating DNS Services secondary zone:%s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateSecondaryZone failed with error: %s and response:\n%s", err, response), "ibm_dns_custom_resolver_secondary_zone", "create")
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s/%s", instanceID, resolverID, *resource.ID))
@@ -127,11 +128,14 @@ func resourceIBMPrivateDNSSecondaryZoneCreate(ctx context.Context, d *schema.Res
 func resourceIBMPrivateDNSSecondaryZoneRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).PrivateDNSClientSession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceIBMDNSServicesSecondaryZoneRead Client initialization failed: %s", err.Error()), "ibm_dns_custom_resolver_secondary_zone", "read")
+		return tfErr.GetDiag()
 	}
 	idSet := strings.Split(d.Id(), "/")
 	if len(idSet) < 3 {
-		return diag.FromErr(fmt.Errorf("[ERROR] Incorrect ID %s: Id should be a combination of InstanceID/resolverID/secondaryZoneID", d.Id()))
+		err := fmt.Errorf("[ERROR] Incorrect ID %s: Id should be a combination of InstanceID/resolverID/secondaryZoneID", d.Id())
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_dns_custom_resolver_secondary_zone", "read")
+		return tfErr.GetDiag()
 	}
 	instanceID := idSet[0]
 	resolverID := idSet[1]
@@ -144,7 +148,9 @@ func resourceIBMPrivateDNSSecondaryZoneRead(ctx context.Context, d *schema.Resou
 			d.SetId("")
 			return nil
 		}
-		return diag.FromErr(fmt.Errorf("[ERROR] Error reading DNS Services secondary zone:%s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetSecondaryZone failed with error: %s and response:\n%s", err, response), "ibm_dns_custom_resolver_secondary_zone", "read")
+		return tfErr.GetDiag()
+
 	}
 
 	transferFrom := []string{}
@@ -168,12 +174,15 @@ func resourceIBMPrivateDNSSecondaryZoneRead(ctx context.Context, d *schema.Resou
 func resourceIBMPrivateDNSSecondaryZoneUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).PrivateDNSClientSession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceIBMDNSServicesSecondaryZoneUpdate Client initialization failed: %s", err.Error()), "ibm_dns_custom_resolver_secondary_zone", "update")
+		return tfErr.GetDiag()
 	}
 
 	idSet := strings.Split(d.Id(), "/")
 	if len(idSet) < 3 {
-		return diag.FromErr(fmt.Errorf("[ERROR] Incorrect ID %s: Id should be a combination of InstanceID/resolverID/secondaryZoneID", d.Id()))
+		err := fmt.Errorf("[ERROR] Incorrect ID %s: Id should be a combination of InstanceID/resolverID/secondaryZoneID", d.Id())
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_dns_custom_resolver_secondary_zone", "update")
+		return tfErr.GetDiag()
 	}
 	instanceID := idSet[0]
 	resolverID := idSet[1]
@@ -183,7 +192,8 @@ func resourceIBMPrivateDNSSecondaryZoneUpdate(ctx context.Context, d *schema.Res
 	getZoneOptions := sess.NewGetSecondaryZoneOptions(instanceID, resolverID, secondaryZoneID)
 	_, response, err := sess.GetSecondaryZone(getZoneOptions)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error fetching secondary zone:%s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetSecondaryZone failed with error: %s and response:\n%s", err, response), "ibm_dns_custom_resolver_secondary_zone", "update")
+		return tfErr.GetDiag()
 	}
 
 	// Update DNS zone if attributes has any change
@@ -205,7 +215,8 @@ func resourceIBMPrivateDNSSecondaryZoneUpdate(ctx context.Context, d *schema.Res
 		_, response, err := sess.UpdateSecondaryZone(updateSecondaryZoneOptions)
 
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error updating DNS Services zone:%s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateSecondaryZone failed with error: %s and response:\n%s", err, response), "ibm_dns_custom_resolver_secondary_zone", "update")
+			return tfErr.GetDiag()
 		}
 	}
 
@@ -215,11 +226,14 @@ func resourceIBMPrivateDNSSecondaryZoneUpdate(ctx context.Context, d *schema.Res
 func resourceIBMPrivateDNSSecondaryZoneDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).PrivateDNSClientSession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceIBMPrivateDNSSecondaryZoneDelete Client initialization failed: %s", err.Error()), "ibm_dns_custom_resolver_secondary_zone", "delete")
+		return tfErr.GetDiag()
 	}
 	idSet := strings.Split(d.Id(), "/")
 	if len(idSet) < 3 {
-		return diag.FromErr(fmt.Errorf("[ERROR] Incorrect ID %s: Id should be a combination of InstanceID/resolverID/secondaryZoneID", d.Id()))
+		err := fmt.Errorf("[ERROR] Incorrect ID %s: Id should be a combination of InstanceID/resolverID/secondaryZoneID", d.Id())
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_dns_custom_resolver_secondary_zone", "delete")
+		return tfErr.GetDiag()
 	}
 	instanceID := idSet[0]
 	resolverID := idSet[1]
@@ -235,7 +249,9 @@ func resourceIBMPrivateDNSSecondaryZoneDelete(ctx context.Context, d *schema.Res
 		if response != nil && response.StatusCode == 404 {
 			return nil
 		}
-		return diag.FromErr(fmt.Errorf("[ERROR] Error reading DNS Services secondary zone:%s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteSecondaryZone failed with error: %s and response:\n%s", err, response), "ibm_dns_custom_resolver_secondary_zone", "delete")
+		return tfErr.GetDiag()
+
 	}
 
 	d.SetId("")

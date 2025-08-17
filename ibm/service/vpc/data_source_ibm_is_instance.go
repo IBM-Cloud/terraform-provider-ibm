@@ -1313,30 +1313,37 @@ func dataSourceIBMISInstanceRead(context context.Context, d *schema.ResourceData
 
 	name := d.Get(isInstanceName).(string)
 
-	err := instanceGetByName(d, meta, name)
+	err := instanceGetByName(context, d, meta, name)
 	if err != nil {
-		return diag.FromErr(err)
+		return err
 	}
 	return nil
 }
 
-func instanceGetByName(d *schema.ResourceData, meta interface{}, name string) error {
+func instanceGetByName(context context.Context, d *schema.ResourceData, meta interface{}, name string) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instance", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	listInstancesOptions := &vpcv1.ListInstancesOptions{
 		Name: &name,
 	}
 
-	instances, response, err := sess.ListInstances(listInstancesOptions)
+	instances, _, err := sess.ListInstancesWithContext(context, listInstancesOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error Fetching Instances %s\n%s", err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListInstancesWithContext failed: %s", err.Error()), "(Data) ibm_is_instance", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	allrecs := instances.Instances
 
 	if len(allrecs) == 0 {
-		return fmt.Errorf("[ERROR] No Instance found with name %s", name)
+		err = fmt.Errorf("No Instance found with name %s", name)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListInstancesWithContext failed: %s", err.Error()), "(Data) ibm_is_instance", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	instance := allrecs[0]
 	d.SetId(*instance.ID)
@@ -1348,24 +1355,24 @@ func instanceGetByName(d *schema.ResourceData, meta interface{}, name string) er
 	if !core.IsNil(instance.ClusterNetwork) {
 		clusterNetworkMap, err := DataSourceIBMIsInstanceClusterNetworkReferenceToMap(instance.ClusterNetwork)
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instance", "read", "cluster_network-to-map")
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instance", "read", "cluster_network-to-map").GetDiag()
 		}
 		clusterNetwork = append(clusterNetwork, clusterNetworkMap)
 	}
 	if err = d.Set("cluster_network", clusterNetwork); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting cluster_network: %s", err), "(Data) ibm_is_instance", "read", "set-cluster_network")
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting cluster_network: %s", err), "(Data) ibm_is_instance", "read", "set-cluster_network").GetDiag()
 	}
 
 	clusterNetworkAttachments := []map[string]interface{}{}
 	for _, clusterNetworkAttachmentsItem := range instance.ClusterNetworkAttachments {
 		clusterNetworkAttachmentsItemMap, err := DataSourceIBMIsInstanceInstanceClusterNetworkAttachmentReferenceToMap(&clusterNetworkAttachmentsItem) // #nosec G601
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instance", "read", "cluster_network_attachments-to-map")
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instance", "read", "cluster_network_attachments-to-map").GetDiag()
 		}
 		clusterNetworkAttachments = append(clusterNetworkAttachments, clusterNetworkAttachmentsItemMap)
 	}
 	if err = d.Set("cluster_network_attachments", clusterNetworkAttachments); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting cluster_network_attachments: %s", err), "(Data) ibm_is_instance", "read", "set-cluster_network_attachments")
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting cluster_network_attachments: %s", err), "(Data) ibm_is_instance", "read", "set-cluster_network_attachments").GetDiag()
 	}
 
 	// catalog
@@ -1384,16 +1391,23 @@ func instanceGetByName(d *schema.ResourceData, meta interface{}, name string) er
 			}
 		}
 		catalogList = append(catalogList, catalogMap)
-		d.Set(isInstanceCatalogOffering, catalogList)
+		if err = d.Set("catalog_offering", catalogList); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting catalog_offering: %s", err), "(Data) ibm_is_instance", "read", "set-catalog_offering").GetDiag()
+		}
 	}
 
-	d.Set(isInstanceName, *instance.Name)
+	if err = d.Set("name", instance.Name); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_is_instance", "read", "set-name").GetDiag()
+	}
 	if instance.Profile != nil {
-		d.Set(isInstanceProfile, *instance.Profile.Name)
+		if err = d.Set("profile", *instance.Profile.Name); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting profile: %s", err), "(Data) ibm_is_instance", "read", "set-profile").GetDiag()
+		}
 	}
 	if instance.MetadataService != nil {
-		d.Set(isInstanceMetadataServiceEnabled, instance.MetadataService.Enabled)
-
+		if err = d.Set("metadata_service_enabled", instance.MetadataService.Enabled); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting metadata_service_enabled: %s", err), "(Data) ibm_is_instance", "read", "set-metadata_service_enabled").GetDiag()
+		}
 		metadataService := []map[string]interface{}{}
 		metadataServiceMap := map[string]interface{}{}
 
@@ -1406,11 +1420,15 @@ func instanceGetByName(d *schema.ResourceData, meta interface{}, name string) er
 		}
 
 		metadataService = append(metadataService, metadataServiceMap)
-		d.Set(isInstanceMetadataService, metadataService)
+		if err = d.Set(isInstanceMetadataService, metadataService); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting metadata_service: %s", err), "(Data) ibm_is_instance", "read", "set-metadata_service").GetDiag()
+		}
 	}
 
 	if instance.AvailabilityPolicy != nil && instance.AvailabilityPolicy.HostFailure != nil {
-		d.Set(isInstanceAvailablePolicyHostFailure, *instance.AvailabilityPolicy.HostFailure)
+		if err = d.Set(isInstanceAvailablePolicyHostFailure, *instance.AvailabilityPolicy.HostFailure); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting availability_policy_host_failure: %s", err), "(Data) ibm_is_instance", "read", "set-availability_policy_host_failure").GetDiag()
+		}
 	}
 	cpuList := make([]map[string]interface{}, 0)
 	if instance.Vcpu != nil {
@@ -1420,16 +1438,22 @@ func instanceGetByName(d *schema.ResourceData, meta interface{}, name string) er
 		currentCPU[isInstanceCPUManufacturer] = *instance.Vcpu.Manufacturer // Added for AMD support, manufacturer details.
 		cpuList = append(cpuList, currentCPU)
 	}
-	d.Set(isInstanceCPU, cpuList)
-
+	if err = d.Set(isInstanceCPU, cpuList); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting vcpu: %s", err), "(Data) ibm_is_instance", "read", "set-vcpu").GetDiag()
+	}
 	if instance.PlacementTarget != nil {
 		placementTargetMap := resourceIbmIsInstanceInstancePlacementToMap(*instance.PlacementTarget.(*vpcv1.InstancePlacementTarget))
-		d.Set("placement_target", []map[string]interface{}{placementTargetMap})
+		if err = d.Set("placement_target", []map[string]interface{}{placementTargetMap}); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting placement_target: %s", err), "(Data) ibm_is_instance", "read", "set-placement_target").GetDiag()
+		}
 	}
-
-	d.Set(isInstanceMemory, *instance.Memory)
+	if err = d.Set(isInstanceMemory, *instance.Memory); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting memory: %s", err), "(Data) ibm_is_instance", "read", "set-memory").GetDiag()
+	}
 	if instance.NumaCount != nil {
-		d.Set("numa_count", *instance.NumaCount)
+		if err = d.Set("numa_count", *instance.NumaCount); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting numa_count: %s", err), "(Data) ibm_is_instance", "read", "set-numa_count").GetDiag()
+		}
 	}
 	gpuList := make([]map[string]interface{}, 0)
 	if instance.Gpu != nil {
@@ -1439,23 +1463,32 @@ func instanceGetByName(d *schema.ResourceData, meta interface{}, name string) er
 		currentGpu[isInstanceGpuCount] = instance.Gpu.Count
 		currentGpu[isInstanceGpuMemory] = instance.Gpu.Memory
 		gpuList = append(gpuList, currentGpu)
-		d.Set(isInstanceGpu, gpuList)
+		if err = d.Set(isInstanceGpu, gpuList); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting gpu: %s", err), "(Data) ibm_is_instance", "read", "set-gpu").GetDiag()
+		}
 	}
-
 	if instance.Bandwidth != nil {
-		d.Set(isInstanceBandwidth, int(*instance.Bandwidth))
+		if err = d.Set(isInstanceBandwidth, int(*instance.Bandwidth)); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting bandwidth: %s", err), "(Data) ibm_is_instance", "read", "set-bandwidth").GetDiag()
+		}
 	}
 
 	if instance.TotalNetworkBandwidth != nil {
-		d.Set(isInstanceTotalNetworkBandwidth, int(*instance.TotalNetworkBandwidth))
+		if err = d.Set("total_network_bandwidth", flex.IntValue(instance.TotalNetworkBandwidth)); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting total_network_bandwidth: %s", err), "(Data) ibm_is_instance", "read", "set-total_network_bandwidth").GetDiag()
+		}
 	}
 
 	if instance.TotalVolumeBandwidth != nil {
-		d.Set(isInstanceTotalVolumeBandwidth, int(*instance.TotalVolumeBandwidth))
+		if err = d.Set("total_volume_bandwidth", flex.IntValue(instance.TotalVolumeBandwidth)); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting total_volume_bandwidth: %s", err), "(Data) ibm_is_instance", "read", "set-total_volume_bandwidth").GetDiag()
+		}
 	}
 
 	if instance.Disks != nil {
-		d.Set(isInstanceDisks, dataSourceInstanceFlattenDisks(instance.Disks))
+		if err = d.Set("disks", dataSourceInstanceFlattenDisks(instance.Disks)); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting disks: %s", err), "(Data) ibm_is_instance", "read", "set-disks").GetDiag()
+		}
 	}
 
 	if instance.PrimaryNetworkInterface != nil {
@@ -1490,9 +1523,11 @@ func instanceGetByName(d *schema.ResourceData, meta interface{}, name string) er
 			InstanceID: &id,
 			ID:         instance.PrimaryNetworkInterface.ID,
 		}
-		insnic, response, err := sess.GetInstanceNetworkInterface(getnicoptions)
+		insnic, _, err := sess.GetInstanceNetworkInterfaceWithContext(context, getnicoptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error getting network interfaces attached to the instance %s\n%s", err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetInstanceNetworkInterfaceWithContext failed: %s", err.Error()), "(Data) ibm_is_instance", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		if insnic.PortSpeed != nil {
 			currentPrimNic[isInstanceNicPortSpeed] = *insnic.PortSpeed
@@ -1507,25 +1542,27 @@ func instanceGetByName(d *schema.ResourceData, meta interface{}, name string) er
 		}
 
 		primaryNicList = append(primaryNicList, currentPrimNic)
-		d.Set(isInstancePrimaryNetworkInterface, primaryNicList)
+		if err = d.Set("primary_network_interface", primaryNicList); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting primary_network_interface: %s", err), "(Data) ibm_is_instance", "read", "set-primary_network_interface").GetDiag()
+		}
 	}
 	if err = d.Set("confidential_compute_mode", instance.ConfidentialComputeMode); err != nil {
-		return fmt.Errorf("Error setting confidential_compute_mode: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting confidential_compute_mode: %s", err), "(Data) ibm_is_instance", "read", "set-confidential_compute_mode").GetDiag()
 	}
 	primaryNetworkAttachment := []map[string]interface{}{}
 	if instance.PrimaryNetworkAttachment != nil {
 		modelMap, err := dataSourceIBMIsInstanceInstanceNetworkAttachmentReferenceToMap(instance.PrimaryNetworkAttachment)
 		if err != nil {
-			return err
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instance", "read", "primary_network_attachment-to-map").GetDiag()
 		}
 		primaryNetworkAttachment = append(primaryNetworkAttachment, modelMap)
 	}
 	if err = d.Set("primary_network_attachment", primaryNetworkAttachment); err != nil {
-		return fmt.Errorf("Error setting primary_network_attachment %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting primary_network_attachment: %s", err), "(Data) ibm_is_instance", "read", "set-primary_network_attachment").GetDiag()
 	}
 
 	if err = d.Set("enable_secure_boot", instance.EnableSecureBoot); err != nil {
-		return fmt.Errorf("Error setting enable_secure_boot: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting enable_secure_boot: %s", err), "(Data) ibm_is_instance", "read", "set-enable_secure_boot").GetDiag()
 	}
 	if instance.NetworkInterfaces != nil {
 		interfacesList := make([]map[string]interface{}, 0)
@@ -1561,9 +1598,11 @@ func instanceGetByName(d *schema.ResourceData, meta interface{}, name string) er
 					InstanceID: &id,
 					ID:         intfc.ID,
 				}
-				insnic, response, err := sess.GetInstanceNetworkInterface(getnicoptions)
+				insnic, _, err := sess.GetInstanceNetworkInterfaceWithContext(context, getnicoptions)
 				if err != nil {
-					return fmt.Errorf("[ERROR] Error getting network interfaces attached to the instance %s\n%s", err, response)
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetInstanceNetworkInterfaceWithContext failed: %s", err.Error()), "(Data) ibm_is_instance", "read")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
 				currentNic[isInstanceNicSubnet] = *insnic.Subnet.ID
 				if len(insnic.SecurityGroups) != 0 {
@@ -1577,26 +1616,29 @@ func instanceGetByName(d *schema.ResourceData, meta interface{}, name string) er
 
 			}
 		}
-
-		d.Set(isInstanceNetworkInterfaces, interfacesList)
+		if err = d.Set("network_interfaces", interfacesList); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting network_interfaces: %s", err), "(Data) ibm_is_instance", "read", "set-network_interfaces").GetDiag()
+		}
 	}
 	networkAttachments := []map[string]interface{}{}
 	if instance.NetworkAttachments != nil {
 		for _, modelItem := range instance.NetworkAttachments {
 			modelMap, err := dataSourceIBMIsInstanceInstanceNetworkAttachmentReferenceToMap(&modelItem)
 			if err != nil {
-				return err
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instance", "read", "network_attachments-to-map").GetDiag()
 			}
 			networkAttachments = append(networkAttachments, modelMap)
 		}
 	}
 	if err = d.Set("network_attachments", networkAttachments); err != nil {
-		return fmt.Errorf("Error setting network_attachments %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting network_attachments: %s", err), "(Data) ibm_is_instance", "read", "set-network_attachments").GetDiag()
 	}
 
 	var rsaKey *rsa.PrivateKey
 	if instance.Image != nil {
-		d.Set(isInstanceImage, *instance.Image.ID)
+		if err = d.Set(isInstanceImage, *instance.Image.ID); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting image: %s", err), "(Data) ibm_is_instance", "read", "set-image").GetDiag()
+		}
 		image := *instance.Image.Name
 		res := strings.Contains(image, "windows")
 		if res {
@@ -1607,14 +1649,20 @@ func instanceGetByName(d *schema.ResourceData, meta interface{}, name string) er
 				if keyFlag != "" {
 					block, err := pem.Decode(keybytes)
 					if block == nil {
-						return fmt.Errorf("[ERROR] Failed to load the private key from the given key contents. Instead of the key file path, please make sure the private key is pem format (%v)", err)
+						converterr := fmt.Errorf("Failed to load the private key from the given key contents. Instead of the key file path, please make sure the private key is pem format (%v)", err)
+						tfErr := flex.TerraformErrorf(converterr, fmt.Sprintf("Decode failed: %s", converterr.Error()), "(Data) ibm_is_instance", "read")
+						log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+						return tfErr.GetDiag()
 					}
 					isEncrypted := false
 					if block.Type == "OPENSSH PRIVATE KEY" {
 						var err error
 						isEncrypted, err = isOpenSSHPrivKeyEncrypted(block.Bytes)
 						if err != nil {
-							return fmt.Errorf("[ERROR] Failed to check if the provided open ssh key is encrypted or not %s", err)
+							err = fmt.Errorf("Failed to check if the provided open ssh key is encrypted or not %s", err)
+							tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isOpenSSHPrivKeyEncrypted failed: %s", err.Error()), "(Data) ibm_is_instance", "read")
+							log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+							return tfErr.GetDiag()
 						}
 					} else {
 						isEncrypted = x509.IsEncryptedPEMBlock(block)
@@ -1625,24 +1673,36 @@ func instanceGetByName(d *schema.ResourceData, meta interface{}, name string) er
 						if pass, ok := d.GetOk(isInstancePassphrase); ok {
 							passphrase = pass.(string)
 						} else {
-							return fmt.Errorf("[ERROR] Mandatory field 'passphrase' not provided")
+							converterr := fmt.Errorf("Mandatory field 'passphrase' not provided")
+							tfErr := flex.TerraformErrorf(converterr, fmt.Sprintf("passphrase failed: %s", converterr.Error()), "(Data) ibm_is_instance", "read")
+							log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+							return tfErr.GetDiag()
 						}
 						var err error
 						privateKey, err = sshkeys.ParseEncryptedRawPrivateKey(keybytes, []byte(passphrase))
 						if err != nil {
-							return fmt.Errorf("[ERROR] Fail to decrypting the private key: %s", err)
+							err = fmt.Errorf("Fail to decrypting the private key: %s", err)
+							tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ParseEncryptedRawPrivateKey failed: %s", err.Error()), "(Data) ibm_is_instance", "read")
+							log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+							return tfErr.GetDiag()
 						}
 					} else {
 						var err error
 						privateKey, err = sshkeys.ParseEncryptedRawPrivateKey(keybytes, nil)
 						if err != nil {
-							return fmt.Errorf("[ERROR] Fail to decrypting the private key: %s", err)
+							err = fmt.Errorf("Fail to decrypting the private key: %s", err)
+							tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ParseEncryptedRawPrivateKey failed: %s", err.Error()), "(Data) ibm_is_instance", "read")
+							log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+							return tfErr.GetDiag()
 						}
 					}
 					var ok bool
 					rsaKey, ok = privateKey.(*rsa.PrivateKey)
 					if !ok {
-						return fmt.Errorf("[ERROR] Failed to convert to RSA private key")
+						converterr := fmt.Errorf("Failed to convert to RSA private key")
+						tfErr := flex.TerraformErrorf(converterr, fmt.Sprintf("privateKey.(*rsa.PrivateKey) failed: %s", converterr.Error()), "(Data) ibm_is_instance", "read")
+						log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+						return tfErr.GetDiag()
 					}
 				}
 			}
@@ -1652,9 +1712,11 @@ func instanceGetByName(d *schema.ResourceData, meta interface{}, name string) er
 	getInstanceInitializationOptions := &vpcv1.GetInstanceInitializationOptions{
 		ID: &id,
 	}
-	initParms, response, err := sess.GetInstanceInitialization(getInstanceInitializationOptions)
+	initParms, _, err := sess.GetInstanceInitializationWithContext(context, getInstanceInitializationOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error Getting instance Initialization: %s\n%s", err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetInstanceInitializationWithContext failed: %s", err.Error()), "(Data) ibm_is_instance", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if initParms.Keys != nil {
 		initKeyList := make([]map[string]interface{}, 0)
@@ -1674,14 +1736,20 @@ func instanceGetByName(d *schema.ResourceData, meta interface{}, name string) er
 			break
 
 		}
-		d.Set(isInstanceInitKeys, initKeyList)
+		if err = d.Set(isInstanceInitKeys, initKeyList); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting keys: %s", err), "(Data) ibm_is_instance", "read", "set-keys").GetDiag()
+		}
 	}
 	//set the lifecycle status, reasons
 	if instance.LifecycleState != nil {
-		d.Set(isInstanceLifecycleState, *instance.LifecycleState)
+		if err = d.Set(isInstanceLifecycleState, *instance.LifecycleState); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting lifecycle_state: %s", err), "(Data) ibm_is_instance", "read", "set-lifecycle_state").GetDiag()
+		}
 	}
 	if instance.LifecycleReasons != nil {
-		d.Set(isInstanceLifecycleReasons, dataSourceInstanceFlattenLifecycleReasons(instance.LifecycleReasons))
+		if err = d.Set(isInstanceLifecycleReasons, dataSourceInstanceFlattenLifecycleReasons(instance.LifecycleReasons)); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting lifecycle_reasons: %s", err), "(Data) ibm_is_instance", "read", "set-lifecycle_reasons").GetDiag()
+		}
 	}
 
 	if initParms.Password != nil && initParms.Password.EncryptedPassword != nil {
@@ -1691,14 +1759,21 @@ func instanceGetByName(d *schema.ResourceData, meta interface{}, name string) er
 			rng := rand.Reader
 			clearPassword, err := rsa.DecryptPKCS1v15(rng, rsaKey, ciphertext)
 			if err != nil {
-				return fmt.Errorf("[ERROR] Can not decrypt the password with the given key, %s", err)
+				err = fmt.Errorf("Can not decrypt the password with the given key, %s", err)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DecryptPKCS1v15 failed: %s", err.Error()), "(Data) ibm_is_instance", "read")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			password = string(clearPassword)
 		}
-		d.Set(isInstanceInitPassword, password)
+		if err = d.Set(isInstanceInitPassword, password); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting password: %s", err), "(Data) ibm_is_instance", "read", "set-password").GetDiag()
+		}
 	}
 
-	d.Set(isInstanceStatus, *instance.Status)
+	if err = d.Set(isInstanceStatus, *instance.Status); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting status: %s", err), "(Data) ibm_is_instance", "read", "set-status").GetDiag()
+	}
 	//set the status reasons
 	if instance.StatusReasons != nil {
 		statusReasonsList := make([]map[string]interface{}, 0)
@@ -1713,11 +1788,16 @@ func instanceGetByName(d *schema.ResourceData, meta interface{}, name string) er
 				statusReasonsList = append(statusReasonsList, currentSR)
 			}
 		}
-		d.Set(isInstanceStatusReasons, statusReasonsList)
+		if err = d.Set(isInstanceStatusReasons, statusReasonsList); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting status_reasons: %s", err), "(Data) ibm_is_instance", "read", "set-status_reasons").GetDiag()
+		}
 	}
-	d.Set(isInstanceVPC, *instance.VPC.ID)
-	d.Set(isInstanceZone, *instance.Zone.Name)
-
+	if err = d.Set(isInstanceVPC, *instance.VPC.ID); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting vpc: %s", err), "(Data) ibm_is_instance", "read", "set-vpc").GetDiag()
+	}
+	if err = d.Set(isInstanceZone, *instance.Zone.Name); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting zone: %s", err), "(Data) ibm_is_instance", "read", "set-zone").GetDiag()
+	}
 	var volumes []string
 	volumes = make([]string, 0)
 	if instance.VolumeAttachments != nil {
@@ -1727,7 +1807,9 @@ func instanceGetByName(d *schema.ResourceData, meta interface{}, name string) er
 			}
 		}
 	}
-	d.Set(isInstanceVolumes, flex.NewStringSet(schema.HashString, volumes))
+	if err = d.Set(isInstanceVolumes, flex.NewStringSet(schema.HashString, volumes)); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting volumes: %s", err), "(Data) ibm_is_instance", "read", "set-volumes").GetDiag()
+	}
 	if instance.VolumeAttachments != nil {
 		volList := make([]map[string]interface{}, 0)
 		for _, volume := range instance.VolumeAttachments {
@@ -1741,7 +1823,9 @@ func instanceGetByName(d *schema.ResourceData, meta interface{}, name string) er
 				volList = append(volList, vol)
 			}
 		}
-		d.Set(isInstanceVolumeAttachments, volList)
+		if err = d.Set(isInstanceVolumeAttachments, volList); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting volume_attachments: %s", err), "(Data) ibm_is_instance", "read", "set-volume_attachments").GetDiag()
+		}
 	}
 	if instance.BootVolumeAttachment != nil {
 		bootVolList := make([]map[string]interface{}, 0)
@@ -1757,33 +1841,54 @@ func instanceGetByName(d *schema.ResourceData, meta interface{}, name string) er
 			bootVol["volume_crn"] = *instance.BootVolumeAttachment.Volume.CRN
 		}
 		bootVolList = append(bootVolList, bootVol)
-		d.Set(isInstanceBootVolume, bootVolList)
+		if err = d.Set(isInstanceBootVolume, bootVolList); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting boot_volume: %s", err), "(Data) ibm_is_instance", "read", "set-boot_volume").GetDiag()
+		}
 	}
 	tags, err := flex.GetGlobalTagsUsingCRN(meta, *instance.CRN, "", isInstanceUserTagType)
 	if err != nil {
 		log.Printf(
 			"[ERROR] Error on get of resource vpc Instance (%s) tags: %s", d.Id(), err)
 	}
-	d.Set(isInstanceTags, tags)
+	if err = d.Set(isInstanceTags, tags); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting tags: %s", err), "(Data) ibm_is_instance", "read", "set-tags").GetDiag()
+	}
 	accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *instance.CRN, "", isInstanceAccessTagType)
 	if err != nil {
 		log.Printf(
 			"Error on get of resource vpc Instance (%s) access tags: %s", d.Id(), err)
 	}
-	d.Set(isInstanceAccessTags, accesstags)
-
+	if err = d.Set(isInstanceAccessTags, accesstags); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting access_tags: %s", err), "(Data) ibm_is_instance", "read", "set-access_tags").GetDiag()
+	}
 	controller, err := flex.GetBaseController(meta)
 	if err != nil {
-		return err
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetBaseController failed: %s", err.Error()), "(Data) ibm_is_instance", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
-	d.Set(flex.ResourceControllerURL, controller+"/vpc-ext/compute/vs")
-	d.Set(flex.ResourceName, instance.Name)
-	d.Set(flex.ResourceCRN, instance.CRN)
-	d.Set(IsInstanceCRN, instance.CRN)
-	d.Set(flex.ResourceStatus, instance.Status)
+	if err = d.Set(flex.ResourceControllerURL, controller+"/vpc-ext/compute/vs"); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_controller_url: %s", err), "(Data) ibm_is_instance", "read", "set-resource_controller_url").GetDiag()
+	}
+	if err = d.Set(flex.ResourceName, instance.Name); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_name: %s", err), "(Data) ibm_is_instance", "read", "set-resource_name").GetDiag()
+	}
+	if err = d.Set(flex.ResourceCRN, instance.CRN); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_crn: %s", err), "(Data) ibm_is_instance", "read", "set-resource_crn").GetDiag()
+	}
+	if err = d.Set(IsInstanceCRN, instance.CRN); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting crn: %s", err), "(Data) ibm_is_instance", "read", "set-crn").GetDiag()
+	}
+	if err = d.Set(flex.ResourceStatus, instance.Status); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_status: %s", err), "(Data) ibm_is_instance", "read", "set-resource_status").GetDiag()
+	}
 	if instance.ResourceGroup != nil {
-		d.Set(isInstanceResourceGroup, instance.ResourceGroup.ID)
-		d.Set(flex.ResourceGroupName, instance.ResourceGroup.Name)
+		if err = d.Set(isInstanceResourceGroup, instance.ResourceGroup.ID); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_group: %s", err), "(Data) ibm_is_instance", "read", "set-resource_group").GetDiag()
+		}
+		if err = d.Set(flex.ResourceGroupName, instance.ResourceGroup.Name); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_group_name: %s", err), "(Data) ibm_is_instance", "read", "set-resource_group_name").GetDiag()
+		}
 	}
 	if instance.HealthReasons != nil {
 		healthReasonsList := make([]map[string]interface{}, 0)
@@ -1798,10 +1903,12 @@ func instanceGetByName(d *schema.ResourceData, meta interface{}, name string) er
 				healthReasonsList = append(healthReasonsList, currentSR)
 			}
 		}
-		d.Set("health_reasons", healthReasonsList)
+		if err = d.Set("health_reasons", healthReasonsList); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting health_reasons: %s", err), "(Data) ibm_is_instance", "read", "set-health_reasons").GetDiag()
+		}
 	}
 	if err = d.Set("health_state", instance.HealthState); err != nil {
-		return err
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting health_state: %s", err), "(Data) ibm_is_instance", "read", "set-health_state").GetDiag()
 	}
 	if instance.ReservationAffinity != nil {
 		reservationAffinity := []map[string]interface{}{}
@@ -1829,7 +1936,9 @@ func instanceGetByName(d *schema.ResourceData, meta interface{}, name string) er
 			reservationAffinityMap[isReservationAffinityPool] = poolList
 		}
 		reservationAffinity = append(reservationAffinity, reservationAffinityMap)
-		d.Set(isReservationAffinity, reservationAffinity)
+		if err = d.Set("reservation_affinity", reservationAffinity); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting reservation_affinity: %s", err), "(Data) ibm_is_instance", "read", "set-reservation_affinity").GetDiag()
+		}
 	}
 	if instance.Reservation != nil {
 		resList := make([]map[string]interface{}, 0)
@@ -1847,7 +1956,9 @@ func instanceGetByName(d *schema.ResourceData, meta interface{}, name string) er
 			res[isReservationDeleted] = deletedList
 		}
 		resList = append(resList, res)
-		d.Set(isInstanceReservation, resList)
+		if err = d.Set("reservation", resList); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting reservation: %s", err), "(Data) ibm_is_instance", "read", "set-reservation").GetDiag()
+		}
 	}
 	return nil
 

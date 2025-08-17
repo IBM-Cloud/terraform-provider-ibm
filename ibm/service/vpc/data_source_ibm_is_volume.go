@@ -321,6 +321,30 @@ func DataSourceIBMISVolume() *schema.Resource {
 				Computed:    true,
 				Description: "The resource group name in which resource is provisioned",
 			},
+			"allowed_use": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The usage constraints to be matched against the requested instance or bare metal server properties to determine compatibility.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"bare_metal_server": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The expression that must be satisfied by the properties of a bare metal server provisioned using the image data in this volume.",
+						},
+						"instance": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The expression that must be satisfied by the properties of a virtual server instance provisioned using this volume.",
+						},
+						"api_version": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The API version with which to evaluate the expressions.",
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -344,20 +368,22 @@ func DataSourceIBMISVolumeValidator() *validate.ResourceValidator {
 
 func dataSourceIBMISVolumeRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
-	err := volumeGet(d, meta)
+	err := volumeGet(context, d, meta)
 	if err != nil {
-		return diag.FromErr(err)
+		return err
 	}
 	return nil
 }
 
-func volumeGet(d *schema.ResourceData, meta interface{}) error {
+func volumeGet(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_volume", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
-	var vol vpcv1.Volume
+	var volume vpcv1.Volume
 	if volName, ok := d.GetOk(isVolumeName); ok {
 		name := volName.(string)
 		zone := ""
@@ -372,71 +398,99 @@ func volumeGet(d *schema.ResourceData, meta interface{}) error {
 			listVolumesOptions.ZoneName = &zone
 		}
 		listVolumesOptions.Name = &name
-		vols, response, err := sess.ListVolumes(listVolumesOptions)
+		vols, _, err := sess.ListVolumesWithContext(context, listVolumesOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Fetching volumes %s\n%s", err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListVolumesWithContext failed: %s", err.Error()), "(Data) ibm_is_volume", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		allrecs := vols.Volumes
 
 		if len(allrecs) == 0 {
-			return fmt.Errorf("[ERROR] No Volume found with name %s", name)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("No Volume found with name: %s", name), "(Data) ibm_is_volume", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
-		vol = allrecs[0]
+		volume = allrecs[0]
 	} else {
 		identifier := d.Get("identifier").(string)
 		getVolumeOptions := &vpcv1.GetVolumeOptions{
 			ID: &identifier,
 		}
 
-		volPtr, response, err := sess.GetVolume(getVolumeOptions)
+		volPtr, _, err := sess.GetVolumeWithContext(context, getVolumeOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error on get volume %s\n%s", err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetVolumeWithContext failed: %s", err.Error()), "(Data) ibm_is_volume", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
-		vol = *volPtr
+		volume = *volPtr
 	}
-	d.SetId(*vol.ID)
-	if vol.Active != nil {
-		d.Set(isVolumesActive, vol.Active)
+	d.SetId(*volume.ID)
+	if err = d.Set("active", volume.Active); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting active: %s", err), "(Data) ibm_is_volume", "read", "set-active").GetDiag()
 	}
-	if vol.AttachmentState != nil {
-		d.Set(isVolumeAttachmentState, vol.AttachmentState)
+	if err = d.Set("attachment_state", volume.AttachmentState); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting attachment_state: %s", err), "(Data) ibm_is_volume", "read", "set-attachment_state").GetDiag()
 	}
-	d.Set(isVolumeBandwidth, int(*vol.Bandwidth))
-	if vol.Busy != nil {
-		d.Set(isVolumesBusy, vol.Busy)
+	if err = d.Set("bandwidth", flex.IntValue(volume.Bandwidth)); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting bandwidth: %s", err), "(Data) ibm_is_volume", "read", "set-bandwidth").GetDiag()
 	}
-	if vol.Capacity != nil {
-		d.Set(isVolumesCapacity, vol.Capacity)
+	if err = d.Set("busy", volume.Busy); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting busy: %s", err), "(Data) ibm_is_volume", "read", "set-busy").GetDiag()
 	}
-	if vol.CreatedAt != nil {
-		d.Set(isVolumesCreatedAt, flex.DateTimeToString(vol.CreatedAt))
+	if err = d.Set("capacity", flex.IntValue(volume.Capacity)); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting capacity: %s", err), "(Data) ibm_is_volume", "read", "set-capacity").GetDiag()
 	}
-	d.Set(isVolumeName, *vol.Name)
-	d.Set("identifier", *vol.ID)
-	if vol.OperatingSystem != nil {
+	if err = d.Set("created_at", flex.DateTimeToString(volume.CreatedAt)); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting created_at: %s", err), "(Data) ibm_is_volume", "read", "set-created_at").GetDiag()
+	}
+	if err = d.Set("name", volume.Name); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_is_volume", "read", "set-name").GetDiag()
+	}
+	d.Set("identifier", *volume.ID)
+	if volume.OperatingSystem != nil {
 		operatingSystemList := []map[string]interface{}{}
-		operatingSystemMap := dataSourceVolumeCollectionVolumesOperatingSystemToMap(*vol.OperatingSystem)
+		operatingSystemMap := dataSourceVolumeCollectionVolumesOperatingSystemToMap(*volume.OperatingSystem)
 		operatingSystemList = append(operatingSystemList, operatingSystemMap)
-		d.Set(isVolumesOperatingSystem, operatingSystemList)
+		if err = d.Set(isVolumesOperatingSystem, operatingSystemList); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting operating_system: %s", err), "(Data) ibm_is_volume", "read", "set-operating_system").GetDiag()
+		}
 	}
-	d.Set(isVolumeProfileName, *vol.Profile.Name)
-	d.Set(isVolumeZone, *vol.Zone.Name)
-	if vol.EncryptionKey != nil {
-		d.Set(isVolumeEncryptionKey, vol.EncryptionKey.CRN)
+	if err = d.Set(isVolumeProfileName, *volume.Profile.Name); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting profile: %s", err), "(Data) ibm_is_volume", "read", "set-profile").GetDiag()
 	}
-	if vol.Encryption != nil {
-		d.Set(isVolumeEncryptionType, vol.Encryption)
+	if err = d.Set(isVolumeZone, *volume.Zone.Name); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting zone: %s", err), "(Data) ibm_is_volume", "read", "set-zone").GetDiag()
 	}
-	if vol.SourceSnapshot != nil {
-		d.Set(isVolumeSourceSnapshot, *vol.SourceSnapshot.ID)
+	if volume.EncryptionKey != nil {
+		if err = d.Set(isVolumeEncryptionKey, volume.EncryptionKey.CRN); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting encryption_key: %s", err), "(Data) ibm_is_volume", "read", "set-encryption_key").GetDiag()
+		}
 	}
-	d.Set(isVolumeIops, *vol.Iops)
-	d.Set(isVolumeCapacity, *vol.Capacity)
-	d.Set(isVolumeCrn, *vol.CRN)
-	d.Set(isVolumeStatus, *vol.Status)
-	if vol.StatusReasons != nil {
+	if err = d.Set("encryption_type", volume.Encryption); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting encryption_type: %s", err), "(Data) ibm_is_volume", "read", "set-encryption_type").GetDiag()
+	}
+	if volume.SourceSnapshot != nil {
+		if err = d.Set(isVolumeSourceSnapshot, *volume.SourceSnapshot.ID); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting source_snapshot: %s", err), "(Data) ibm_is_volume", "read", "set-source_snapshot").GetDiag()
+		}
+	}
+	if err = d.Set("iops", flex.IntValue(volume.Iops)); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting iops: %s", err), "(Data) ibm_is_volume", "read", "set-iops").GetDiag()
+	}
+	if err = d.Set("capacity", flex.IntValue(volume.Capacity)); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting capacity: %s", err), "(Data) ibm_is_volume", "read", "set-capacity").GetDiag()
+	}
+	if err = d.Set("crn", volume.CRN); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting crn: %s", err), "(Data) ibm_is_volume", "read", "set-crn").GetDiag()
+	}
+	if err = d.Set("status", volume.Status); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting status: %s", err), "(Data) ibm_is_volume", "read", "set-status").GetDiag()
+	}
+	if volume.StatusReasons != nil {
 		statusReasonsList := make([]map[string]interface{}, 0)
-		for _, sr := range vol.StatusReasons {
+		for _, sr := range volume.StatusReasons {
 			currentSR := map[string]interface{}{}
 			if sr.Code != nil && sr.Message != nil {
 				currentSR[isVolumeStatusReasonsCode] = *sr.Code
@@ -446,32 +500,54 @@ func volumeGet(d *schema.ResourceData, meta interface{}) error {
 				}
 				statusReasonsList = append(statusReasonsList, currentSR)
 			}
-			d.Set(isVolumeStatusReasons, statusReasonsList)
+			if err = d.Set(isVolumeStatusReasons, statusReasonsList); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting status_reasons: %s", err), "(Data) ibm_is_volume", "read", "set-status_reasons").GetDiag()
+			}
 		}
 	}
-	d.Set(isVolumeTags, vol.UserTags)
-	accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *vol.CRN, "", isVolumeAccessTagType)
+	if err = d.Set(isVolumeTags, volume.UserTags); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting tags: %s", err), "(Data) ibm_is_volume", "read", "set-tags").GetDiag()
+	}
+	accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *volume.CRN, "", isVolumeAccessTagType)
 	if err != nil {
 		log.Printf(
 			"Error on get of resource vpc volume (%s) access tags: %s", d.Id(), err)
 	}
-	d.Set(isVolumeAccessTags, accesstags)
+	if err = d.Set(isVolumeAccessTags, accesstags); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting access_tags: %s", err), "(Data) ibm_is_volume", "read", "set-access_tags").GetDiag()
+	}
 	controller, err := flex.GetBaseController(meta)
 	if err != nil {
-		return err
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetBaseController failed: %s", err.Error()), "(Data) ibm_is_volume", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
-	d.Set(flex.ResourceControllerURL, controller+"/vpc-ext/storage/storageVolumes")
-	d.Set(flex.ResourceName, *vol.Name)
-	d.Set(flex.ResourceCRN, *vol.CRN)
-	d.Set(flex.ResourceStatus, *vol.Status)
-	if vol.ResourceGroup != nil {
-		d.Set(flex.ResourceGroupName, vol.ResourceGroup.Name)
-		d.Set(isVolumeResourceGroup, *vol.ResourceGroup.ID)
+	if err = d.Set(flex.ResourceControllerURL, controller+"/vpc-ext/storage/storageVolumes"); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_controller_url: %s", err), "(Data) ibm_is_volume", "read", "set-resource_controller_url").GetDiag()
 	}
 
-	if vol.HealthReasons != nil {
+	if err = d.Set(flex.ResourceName, *volume.Name); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_name: %s", err), "(Data) ibm_is_volume", "read", "set-resource_name").GetDiag()
+	}
+
+	if err = d.Set(flex.ResourceCRN, *volume.CRN); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_crn: %s", err), "(Data) ibm_is_volume", "read", "set-resource_crn").GetDiag()
+	}
+	if err = d.Set("resource_status", volume.Status); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_status: %s", err), "(Data) ibm_is_volume", "read", "set-resource_status").GetDiag()
+	}
+	if volume.ResourceGroup != nil {
+		if err = d.Set(flex.ResourceGroupName, volume.ResourceGroup.Name); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_group_name: %s", err), "(Data) ibm_is_volume", "read", "set-resource_group_name").GetDiag()
+		}
+		if err = d.Set(isVolumeResourceGroup, *volume.ResourceGroup.ID); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_group: %s", err), "(Data) ibm_is_volume", "read", "set-resource_group").GetDiag()
+		}
+	}
+
+	if volume.HealthReasons != nil {
 		healthReasonsList := make([]map[string]interface{}, 0)
-		for _, sr := range vol.HealthReasons {
+		for _, sr := range volume.HealthReasons {
 			currentSR := map[string]interface{}{}
 			if sr.Code != nil && sr.Message != nil {
 				currentSR[isVolumeHealthReasonsCode] = *sr.Code
@@ -482,47 +558,62 @@ func volumeGet(d *schema.ResourceData, meta interface{}) error {
 				healthReasonsList = append(healthReasonsList, currentSR)
 			}
 		}
-		d.Set(isVolumeHealthReasons, healthReasonsList)
+		if err = d.Set(isVolumeHealthReasons, healthReasonsList); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting health_reasons: %s", err), "(Data) ibm_is_volume", "read", "set-health_reasons").GetDiag()
+		}
 	}
 	// catalog
-	if vol.CatalogOffering != nil {
+	if volume.CatalogOffering != nil {
 		versionCrn := ""
-		if vol.CatalogOffering.Version != nil && vol.CatalogOffering.Version.CRN != nil {
-			versionCrn = *vol.CatalogOffering.Version.CRN
+		if volume.CatalogOffering.Version != nil && volume.CatalogOffering.Version.CRN != nil {
+			versionCrn = *volume.CatalogOffering.Version.CRN
 		}
 		catalogList := make([]map[string]interface{}, 0)
 		catalogMap := map[string]interface{}{}
 		if versionCrn != "" {
 			catalogMap[isVolumeCatalogOfferingVersionCrn] = versionCrn
 		}
-		if vol.CatalogOffering.Plan != nil {
+		if volume.CatalogOffering.Plan != nil {
 			planCrn := ""
-			if vol.CatalogOffering.Plan.CRN != nil {
-				planCrn = *vol.CatalogOffering.Plan.CRN
+			if volume.CatalogOffering.Plan.CRN != nil {
+				planCrn = *volume.CatalogOffering.Plan.CRN
 			}
 			if planCrn != "" {
-				catalogMap[isVolumeCatalogOfferingPlanCrn] = *vol.CatalogOffering.Plan.CRN
+				catalogMap[isVolumeCatalogOfferingPlanCrn] = *volume.CatalogOffering.Plan.CRN
 			}
-			if vol.CatalogOffering.Plan.Deleted != nil {
-				deletedMap := resourceIbmIsVolumeCatalogOfferingVersionPlanReferenceDeletedToMap(*vol.CatalogOffering.Plan.Deleted)
+			if volume.CatalogOffering.Plan.Deleted != nil {
+				deletedMap := resourceIbmIsVolumeCatalogOfferingVersionPlanReferenceDeletedToMap(*volume.CatalogOffering.Plan.Deleted)
 				catalogMap["deleted"] = []map[string]interface{}{deletedMap}
 			}
 		}
 		catalogList = append(catalogList, catalogMap)
-		d.Set(isVolumeCatalogOffering, catalogList)
+
+		if err = d.Set(isVolumeCatalogOffering, catalogList); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting catalog_offering: %s", err), "(Data) ibm_is_volume", "read", "set-catalog_offering").GetDiag()
+		}
 	}
-	if vol.HealthState != nil {
-		d.Set(isVolumeHealthState, *vol.HealthState)
+	if err = d.Set("health_state", volume.HealthState); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting health_state: %s", err), "(Data) ibm_is_volume", "read", "set-health_state").GetDiag()
 	}
 
-	if err = d.Set("adjustable_capacity_states", vol.AdjustableCapacityStates); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting adjustable_capacity_states: %s", err), "(Data) ibm_is_volume", "read", "set-adjustable_capacity_states")
+	if err = d.Set("adjustable_capacity_states", volume.AdjustableCapacityStates); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting adjustable_capacity_states: %s", err), "(Data) ibm_is_volume", "read", "set-adjustable_capacity_states").GetDiag()
+	}
+	if err = d.Set("adjustable_iops_states", volume.AdjustableIopsStates); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting adjustable_iops_states: %s", err), "(Data) ibm_is_volume", "read", "set-adjustable_iops_states").GetDiag()
 	}
 
-	if err = d.Set("adjustable_iops_states", vol.AdjustableIopsStates); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting adjustable_iops_states: %s", err), "(Data) ibm_is_volume", "read", "set-adjustable_iops_states")
+	allowedUses := []map[string]interface{}{}
+	if volume.AllowedUse != nil {
+		modelMap, err := ResourceceIBMIsVolumeAllowedUseToMap(volume.AllowedUse)
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting allowed_use: %s", err), "(Data) ibm_is_volume", "read", "set-allowed_use").GetDiag()
+		}
+		allowedUses = append(allowedUses, modelMap)
 	}
-
+	if err = d.Set("allowed_use", allowedUses); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting allowed_use: %s", err), "(Data) ibm_is_volume", "read", "set-allowed_use").GetDiag()
+	}
 	return nil
 }
 

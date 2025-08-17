@@ -200,7 +200,10 @@ func resourceIbmLogsPolicyCreate(context context.Context, d *schema.ResourceData
 
 	region := getLogsInstanceRegion(logsClient, d)
 	instanceId := d.Get("instance_id").(string)
-	logsClient = getClientWithLogsInstanceEndpoint(logsClient, instanceId, region, getLogsInstanceEndpointType(logsClient, d))
+	logsClient, err = getClientWithLogsInstanceEndpoint(logsClient, meta, instanceId, region, getLogsInstanceEndpointType(logsClient, d))
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("Unable to get updated logs instance client"))
+	}
 
 	bodyModelMap := map[string]interface{}{}
 	createPolicyOptions := &logsv0.CreatePolicyOptions{}
@@ -252,7 +255,7 @@ func resourceIbmLogsPolicyRead(context context.Context, d *schema.ResourceData, 
 		return tfErr.GetDiag()
 	}
 
-	logsClient, region, instanceId, policyId, err := updateClientURLWithInstanceEndpoint(d.Id(), logsClient, d)
+	logsClient, region, instanceId, policyId, err := updateClientURLWithInstanceEndpoint(d.Id(), meta, logsClient, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -372,7 +375,7 @@ func resourceIbmLogsPolicyUpdate(context context.Context, d *schema.ResourceData
 		return tfErr.GetDiag()
 	}
 
-	logsClient, _, _, policyId, err := updateClientURLWithInstanceEndpoint(d.Id(), logsClient, d)
+	logsClient, _, _, policyId, err := updateClientURLWithInstanceEndpoint(d.Id(), meta, logsClient, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -441,7 +444,7 @@ func resourceIbmLogsPolicyDelete(context context.Context, d *schema.ResourceData
 		return tfErr.GetDiag()
 	}
 
-	logsClient, _, _, policyId, err := updateClientURLWithInstanceEndpoint(d.Id(), logsClient, d)
+	logsClient, _, _, policyId, err := updateClientURLWithInstanceEndpoint(d.Id(), meta, logsClient, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}

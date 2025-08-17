@@ -4,17 +4,20 @@
 package vpc
 
 import (
+	"context"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func DataSourceIBMISInstanceGroupManagers() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceIBMISInstanceGroupManagersRead,
+		ReadContext: dataSourceIBMISInstanceGroupManagersRead,
 
 		Schema: map[string]*schema.Schema{
 
@@ -113,10 +116,12 @@ func DataSourceIBMISInstanceGroupManagers() *schema.Resource {
 	}
 }
 
-func dataSourceIBMISInstanceGroupManagersRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceIBMISInstanceGroupManagersRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instance_group_managers", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	instanceGroupID := d.Get("instance_group").(string)
@@ -132,9 +137,11 @@ func dataSourceIBMISInstanceGroupManagersRead(d *schema.ResourceData, meta inter
 		if start != "" {
 			listInstanceGroupManagerOptions.Start = &start
 		}
-		instanceGroupManagerCollections, response, err := sess.ListInstanceGroupManagers(&listInstanceGroupManagerOptions)
+		instanceGroupManagerCollections, _, err := sess.ListInstanceGroupManagersWithContext(context, &listInstanceGroupManagerOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Getting InstanceGroup Managers %s\n%s", err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListInstanceGroupManagersWithContext failed %s", err), "(Data) ibm_is_instance_group_managers", "read")
+			log.Printf("[DEBUG] %s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
 		start = flex.GetNext(instanceGroupManagerCollections.Next)
@@ -195,7 +202,9 @@ func dataSourceIBMISInstanceGroupManagersRead(d *schema.ResourceData, meta inter
 		}
 
 	}
-	d.Set("instance_group_managers", instanceGroupMnagers)
+	if err = d.Set("instance_group_managers", instanceGroupMnagers); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting instance_group_managers %s", err), "(Data) ibm_is_instance_group_managers", "read", "instance_group_managers-set").GetDiag()
+	}
 	d.SetId(dataSourceIBMISInstanceGroupManagersID(d))
 	return nil
 }

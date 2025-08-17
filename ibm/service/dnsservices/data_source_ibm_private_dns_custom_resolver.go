@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -51,6 +52,16 @@ func DataSourceIBMPrivateDNSCustomResolver() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
+						pdnsCRProfile: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The profile name of the custom resolver.",
+						},
+						pdnsCRAllowDisruptiveUpdates: {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Whether a disruptive update is allowed for the custom resolver",
+						},
 						pdnsCustomResolverLocations: {
 							Type:        schema.TypeList,
 							Description: "Locations on which the custom resolver will be running",
@@ -91,14 +102,16 @@ func DataSourceIBMPrivateDNSCustomResolver() *schema.Resource {
 func dataSourceIBMDNSCustomResolverRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).PrivateDNSClientSession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMDNSCustomResolverRead Client initialization failed: %s", err.Error()), "ibm_dns_custom_resolver", "read")
+		return tfErr.GetDiag()
 	}
 	instanceID := d.Get(pdnsInstanceID).(string)
 
 	opt := sess.NewListCustomResolversOptions(instanceID)
 	result, resp, err := sess.ListCustomResolversWithContext(context, opt)
 	if err != nil || result == nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error listing the custom resolvers %s:%s", err, resp))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMDNSCustomResolverRead ListCustomResolversWithContext failed with error: %s and response:\n%s", err, resp), "ibm_dns_custom_resolver", "read")
+		return tfErr.GetDiag()
 	}
 
 	customResolvers := make([]interface{}, 0)
@@ -109,17 +122,19 @@ func dataSourceIBMDNSCustomResolverRead(context context.Context, d *schema.Resou
 		customResolver[pdnsCRDescription] = *instance.Description
 		customResolver[pdnsCRHealth] = *instance.Health
 		customResolver[pdnsCREnabled] = *instance.Enabled
+		customResolver[pdnsCRProfile] = *instance.Profile
+		customResolver[pdnsCRAllowDisruptiveUpdates] = *instance.AllowDisruptiveUpdates
 		customResolver[pdnsCustomResolverLocations] = flattenPdnsCRLocations(instance.Locations)
 
 		customResolvers = append(customResolvers, customResolver)
 	}
-	d.SetId(dataSourceIBMPrivateDNSCustomResolverID(d))
+	d.SetId(dataSourceIBMPrivateDNSCustomResolverID())
 	d.Set(pdnsInstanceID, instanceID)
 	d.Set(pdnsCustomResolvers, customResolvers)
 	return nil
 }
 
 // dataSourceIBMPrivateDNSCustomResolverID returns a reasonable ID for dns  custom resolver list.
-func dataSourceIBMPrivateDNSCustomResolverID(d *schema.ResourceData) string {
+func dataSourceIBMPrivateDNSCustomResolverID() string {
 	return time.Now().UTC().String()
 }

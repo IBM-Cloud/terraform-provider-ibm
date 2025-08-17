@@ -53,6 +53,10 @@ func TestAccIBMISImagesDataSource_All(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resName, "images.0.status"),
 					resource.TestCheckResourceAttrSet(resName, "images.0.resource_group.0.id"),
 					resource.TestCheckResourceAttrSet(resName, "images.0.resource_group.0.name"),
+					resource.TestCheckResourceAttrSet(resName, "images.0.allowed_use.#"),
+					resource.TestCheckResourceAttrSet(resName, "images.0.allowed_use.0.api_version"),
+					resource.TestCheckResourceAttrSet(resName, "images.0.allowed_use.0.bare_metal_server"),
+					resource.TestCheckResourceAttrSet(resName, "images.0.allowed_use.0.instance"),
 				),
 			},
 		},
@@ -90,6 +94,25 @@ func TestAccIBMISImageDataSource_With_FilterVisibilty(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resName, "images.0.name"),
 					resource.TestCheckResourceAttrSet(resName, "images.0.status"),
 					resource.TestCheckResourceAttrSet(resName, "images.0.architecture"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMISImageDataSource_With_FilterRemoteAccountId(t *testing.T) {
+	resName := "data.ibm_is_images.example"
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISImagesDataSourceWithRemoteAccountId("provider"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(resName, "images.0.remote.#"),
+					resource.TestCheckResourceAttrSet(resName, "images.0.remote.0.account.#"),
+					resource.TestCheckResourceAttrSet(resName, "images.0.remote.0.account.0.id"),
+					resource.TestCheckResourceAttrSet(resName, "images.0.remote.0.account.0.resource_type"),
 				),
 			},
 		},
@@ -148,4 +171,13 @@ func testAccCheckIBMISImagesDataSourceWithStatusPublic(status string) string {
 		status = "%s"
 	}
 	`, status)
+}
+
+func testAccCheckIBMISImagesDataSourceWithRemoteAccountId(remoteAccountId string) string {
+	return fmt.Sprintf(`
+	data "ibm_is_images" "example" {
+		remote_account_id = "%s"
+		status = "available"
+	}
+	`, remoteAccountId)
 }

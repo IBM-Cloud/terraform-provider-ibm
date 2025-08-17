@@ -4,6 +4,7 @@
 package vpc
 
 import (
+	"context"
 	"fmt"
 	"log"
 
@@ -12,6 +13,7 @@ import (
 
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -56,11 +58,11 @@ const (
 
 func ResourceIBMISReservation() *schema.Resource {
 	return &schema.Resource{
-		Create:   resourceIBMISReservationCreate,
-		Read:     resourceIBMISReservationRead,
-		Update:   resourceIBMISReservationUpdate,
-		Delete:   resourceIBMISReservationDelete,
-		Importer: &schema.ResourceImporter{},
+		CreateContext: resourceIBMISReservationCreate,
+		ReadContext:   resourceIBMISReservationRead,
+		UpdateContext: resourceIBMISReservationUpdate,
+		DeleteContext: resourceIBMISReservationDelete,
+		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
 			isReservationAffinityPolicy: &schema.Schema{
@@ -320,7 +322,7 @@ func ResourceIBMISReservationValidator() *validate.ResourceValidator {
 	return &ibmISVPCResourceValidator
 }
 
-func resourceIBMISReservationCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMISReservationCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 	createReservationOptions := &vpcv1.CreateReservationOptions{}
 	if _, ok := d.GetOk(isReservationCapacity); ok {
@@ -386,42 +388,51 @@ func resourceIBMISReservationCreate(d *schema.ResourceData, meta interface{}) er
 		}
 	}
 	sess, err := vpcClient(meta)
-
-	reservation, response, err := sess.CreateReservation(createReservationOptions)
 	if err != nil {
-		log.Printf("[DEBUG] Reservation creation err %s\n%s", err, response)
-		return fmt.Errorf("[ERROR] Error while creating Reservation %s\n%v", err, response)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_reservation", "create", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+	}
+	reservation, _, err := sess.CreateReservationWithContext(context, createReservationOptions)
+	if err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateReservationWithContext failed: %s", err.Error()), "ibm_is_reservation", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	d.SetId(*reservation.ID)
 	log.Printf("[INFO] Reservation : %s", *reservation.ID)
 
-	return resourceIBMISReservationRead(d, meta)
+	return resourceIBMISReservationRead(context, d, meta)
 }
 
-func resourceIBMISReservationRead(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMISReservationRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 	id := d.Id()
 
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_reservation", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	getReservationOptions := &vpcv1.GetReservationOptions{
 		ID: &id,
 	}
-	reservation, response, err := sess.GetReservation(getReservationOptions)
+	reservation, response, err := sess.GetReservationWithContext(context, getReservationOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error Getting Reservation (%s): %s\n%s", id, err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetReservationWithContext failed: %s", err.Error()), "ibm_is_reservation", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
-	if reservation.AffinityPolicy != nil {
-		if err = d.Set(isReservationAffinityPolicy, reservation.AffinityPolicy); err != nil {
-			log.Printf("[ERROR] Error setting %s: %s", isReservationAffinityPolicy, err)
-			return fmt.Errorf("[ERROR] Error setting %s: %s", isReservationAffinityPolicy, err)
+	if !core.IsNil(reservation.AffinityPolicy) {
+		if err = d.Set("affinity_policy", reservation.AffinityPolicy); err != nil {
+			err = fmt.Errorf("Error setting affinity_policy: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_reservation", "read", "set-affinity_policy").GetDiag()
 		}
 	}
 
@@ -445,7 +456,10 @@ func resourceIBMISReservationRead(d *schema.ResourceData, meta interface{}) erro
 			finalList[isReservationCapacityStatus] = reservation.Capacity.Status
 		}
 		capacityMap = append(capacityMap, finalList)
-		d.Set(isReservationCapacity, capacityMap)
+		if err = d.Set("capacity", capacityMap); err != nil {
+			err = fmt.Errorf("Error setting capacity: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_reservation", "read", "set-capacity").GetDiag()
+		}
 	}
 
 	if reservation.CommittedUse != nil {
@@ -462,41 +476,36 @@ func resourceIBMISReservationRead(d *schema.ResourceData, meta interface{}) erro
 			finalList[isReservationComittedUseTerm] = *reservation.CommittedUse.Term
 		}
 		committedUseMap = append(committedUseMap, finalList)
-		d.Set(isReservationCommittedUse, committedUseMap)
-	}
-
-	if reservation.CreatedAt != nil {
-		if err = d.Set(isReservationCreatedAt, flex.DateTimeToString(reservation.CreatedAt)); err != nil {
-			log.Printf("[ERROR] Error setting %s: %s", isReservationCreatedAt, err)
-			return fmt.Errorf("[ERROR] Error setting %s: %s", isReservationCreatedAt, err)
+		if err = d.Set("committed_use", committedUseMap); err != nil {
+			err = fmt.Errorf("Error setting committed_use: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_reservation", "read", "set-committed_use").GetDiag()
 		}
 	}
 
-	if reservation.CRN != nil {
-		if err = d.Set(isReservationCrn, reservation.CRN); err != nil {
-			log.Printf("[ERROR] Error setting %s: %s", isReservationCrn, err)
-			return fmt.Errorf("[ERROR] Error setting %s: %s", isReservationCrn, err)
-		}
+	if err = d.Set("created_at", flex.DateTimeToString(reservation.CreatedAt)); err != nil {
+		err = fmt.Errorf("Error setting created_at: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_reservation", "read", "set-created_at").GetDiag()
 	}
 
-	if reservation.Href != nil {
-		if err = d.Set(isReservationHref, reservation.Href); err != nil {
-			log.Printf("[ERROR] Error setting %s: %s", isReservationHref, err)
-			return fmt.Errorf("[ERROR] Error setting %s: %s", isReservationHref, err)
-		}
+	if err = d.Set("crn", reservation.CRN); err != nil {
+		err = fmt.Errorf("Error setting crn: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_reservation", "read", "set-crn").GetDiag()
 	}
 
-	if reservation.LifecycleState != nil {
-		if err = d.Set(isReservationLifecycleState, reservation.LifecycleState); err != nil {
-			log.Printf("[ERROR] Error setting %s: %s", isReservationLifecycleState, err)
-			return fmt.Errorf("[ERROR] Error setting %s: %s", isReservationLifecycleState, err)
-		}
+	if err = d.Set("href", reservation.Href); err != nil {
+		err = fmt.Errorf("Error setting href: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_reservation", "read", "set-href").GetDiag()
 	}
 
-	if reservation.Name != nil {
-		if err = d.Set(isReservationName, reservation.Name); err != nil {
-			log.Printf("[ERROR] Error setting %s: %s", isReservationName, err)
-			return fmt.Errorf("[ERROR] Error setting %s: %s", isReservationName, err)
+	if err = d.Set("lifecycle_state", reservation.LifecycleState); err != nil {
+		err = fmt.Errorf("Error setting lifecycle_state: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_reservation", "read", "set-lifecycle_state").GetDiag()
+	}
+
+	if !core.IsNil(reservation.Name) {
+		if err = d.Set("name", reservation.Name); err != nil {
+			err = fmt.Errorf("Error setting name: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_reservation", "read", "set-name").GetDiag()
 		}
 	}
 
@@ -516,7 +525,10 @@ func resourceIBMISReservationRead(d *schema.ResourceData, meta interface{}) erro
 			finalList[isReservationProfileResourceType] = profileItem.ResourceType
 		}
 		profileMap = append(profileMap, finalList)
-		d.Set(isReservationProfile, profileMap)
+		if err = d.Set("profile", profileMap); err != nil {
+			err = fmt.Errorf("Error setting profile: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_reservation", "read", "set-profile").GetDiag()
+		}
 	}
 
 	if reservation.ResourceGroup != nil {
@@ -533,21 +545,20 @@ func resourceIBMISReservationRead(d *schema.ResourceData, meta interface{}) erro
 			finalList[isReservationResourceGroupName] = reservation.ResourceGroup.Name
 		}
 		rgMap = append(rgMap, finalList)
-		d.Set(isReservationResourceGroup, rgMap)
-	}
-
-	if reservation.ResourceType != nil {
-		if err = d.Set(isReservationResourceType, reservation.ResourceType); err != nil {
-			log.Printf("[ERROR] Error setting %s: %s", isReservationResourceType, err)
-			return fmt.Errorf("[ERROR] Error setting %s: %s", isReservationResourceType, err)
+		if err = d.Set("resource_group", rgMap); err != nil {
+			err = fmt.Errorf("Error setting resource_group: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_reservation", "read", "set-resource_group").GetDiag()
 		}
 	}
 
-	if reservation.Status != nil {
-		if err = d.Set(isReservationStatus, reservation.Status); err != nil {
-			log.Printf("[ERROR] Error setting %s: %s", isReservationStatus, err)
-			return fmt.Errorf("[ERROR] Error setting %s: %s", isReservationStatus, err)
-		}
+	if err = d.Set("resource_type", reservation.ResourceType); err != nil {
+		err = fmt.Errorf("Error setting resource_type: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_reservation", "read", "set-resource_type").GetDiag()
+	}
+
+	if err = d.Set("status", reservation.Status); err != nil {
+		err = fmt.Errorf("Error setting status: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_reservation", "read", "set-status").GetDiag()
 	}
 
 	if reservation.StatusReasons != nil {
@@ -557,22 +568,27 @@ func resourceIBMISReservationRead(d *schema.ResourceData, meta interface{}) erro
 		for i := 0; i < srLen; i++ {
 			srList = append(srList, reservation.StatusReasons[i])
 		}
-		d.Set(isReservationStatusReasons, srList)
+		if err = d.Set("status_reasons", srList); err != nil {
+			err = fmt.Errorf("Error setting status_reasons: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_reservation", "read", "set-status_reasons").GetDiag()
+		}
 	}
 
 	if reservation.Zone != nil && reservation.Zone.Name != nil {
-		if err = d.Set(isReservationZone, reservation.Zone.Name); err != nil {
-			log.Printf("[ERROR] Error setting %s: %s", isReservationZone, err)
-			return fmt.Errorf("[ERROR] Error setting %s: %s", isReservationZone, err)
+		if err = d.Set("zone", reservation.Zone.Name); err != nil {
+			err = fmt.Errorf("Error setting zone: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_reservation", "read", "set-zone").GetDiag()
 		}
 	}
 	return nil
 }
 
-func resourceIBMISReservationUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMISReservationUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_reservation", "update", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	hasChanged := false
 	name := ""
@@ -650,32 +666,40 @@ func resourceIBMISReservationUpdate(d *schema.ResourceData, meta interface{}) er
 	if hasChanged {
 		reservationPatch, err := reservationPatchModel.AsPatch()
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for ReservationPatch: %s", err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("reservationPatchModel.AsPatch failed: %s", err.Error()), "ibm_is_reservation", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		updateReservationOptions := &vpcv1.UpdateReservationOptions{}
 		updateReservationOptions.ReservationPatch = reservationPatch
 		updateReservationOptions.ID = core.StringPtr(d.Id())
-		_, response, err := sess.UpdateReservation(updateReservationOptions)
+		_, _, err = sess.UpdateReservationWithContext(context, updateReservationOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Updating Reservation : %s\n%s", err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateReservationWithContext failed: %s", err.Error()), "ibm_is_reservation", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
-	return resourceIBMISReservationRead(d, meta)
+	return resourceIBMISReservationRead(context, d, meta)
 }
 
-func resourceIBMISReservationDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMISReservationDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	id := d.Id()
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_reservation", "delete", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	deleteReservationOptions := &vpcv1.DeleteReservationOptions{
 		ID: &id,
 	}
-	_, _, err = sess.DeleteReservation(deleteReservationOptions)
+	_, _, err = sess.DeleteReservationWithContext(context, deleteReservationOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error Deleting Reservation : %s", err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteReservationWithContext failed: %s", err.Error()), "ibm_is_reservation", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	d.SetId("")
 	return nil

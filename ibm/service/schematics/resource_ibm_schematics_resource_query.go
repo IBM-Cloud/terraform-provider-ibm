@@ -40,11 +40,10 @@ func ResourceIBMSchematicsResourceQuery() *schema.Resource {
 				Description: "Resource query name.",
 			},
 			"location": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Computed:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_schematics_resource_query", "location"),
-				Description:  "List of locations supported by IBM Cloud Schematics service.  While creating your workspace or action, choose the right region, since it cannot be changed.  Note, this does not limit the location of the IBM Cloud resources, provisioned using Schematics.",
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "List of locations supported by IBM Cloud Schematics service.  While creating your workspace or action, choose the right region, since it cannot be changed.  Note, this does not limit the location of the IBM Cloud resources, provisioned using Schematics.",
 			},
 			"queries": {
 				Type:     schema.TypeList,
@@ -121,13 +120,6 @@ func ResourceIBMSchematicsResourceQueryValidator() *validate.ResourceValidator {
 			Type:                       validate.TypeString,
 			Optional:                   true,
 			AllowedValues:              "vsi",
-		},
-		validate.ValidateSchema{
-			Identifier:                 "location",
-			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
-			Type:                       validate.TypeString,
-			Optional:                   true,
-			AllowedValues:              "eu-de, eu-gb, us-east, us-south",
 		})
 
 	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_schematics_resource_query", Schema: validateSchema}

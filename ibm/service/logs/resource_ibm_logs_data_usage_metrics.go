@@ -43,7 +43,10 @@ func resourceIbmLogsDataUsageMetricsCreate(context context.Context, d *schema.Re
 	}
 	region := getLogsInstanceRegion(logsClient, d)
 	instanceId := d.Get("instance_id").(string)
-	logsClient = getClientWithLogsInstanceEndpoint(logsClient, instanceId, region, getLogsInstanceEndpointType(logsClient, d))
+	logsClient, err = getClientWithLogsInstanceEndpoint(logsClient, meta, instanceId, region, getLogsInstanceEndpointType(logsClient, d))
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("Unable to get updated logs instance client"))
+	}
 
 	updateDataUsageMetricsExportStatusOptions := &logsv0.UpdateDataUsageMetricsExportStatusOptions{}
 
@@ -68,7 +71,7 @@ func resourceIbmLogsDataUsageMetricsRead(context context.Context, d *schema.Reso
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
-	logsClient, region, instanceId, _, err := updateClientURLWithInstanceEndpoint(d.Id(), logsClient, d)
+	logsClient, region, instanceId, _, err := updateClientURLWithInstanceEndpoint(d.Id(), meta, logsClient, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -106,7 +109,7 @@ func resourceIbmLogsDataUsageMetricsUpdate(context context.Context, d *schema.Re
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
-	logsClient, _, _, _, err = updateClientURLWithInstanceEndpoint(d.Id(), logsClient, d)
+	logsClient, _, _, _, err = updateClientURLWithInstanceEndpoint(d.Id(), meta, logsClient, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}

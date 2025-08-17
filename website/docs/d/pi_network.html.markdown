@@ -10,7 +10,7 @@ description: |-
 
 Retrieve information about the network that your Power Systems Virtual Server instance is connected to. For more information, about power virtual server instance network, see [setting up an IBM network install server](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-configuring-subnet).
 
-## Example usage
+## Example Usage
 
 ```terraform
 data "ibm_pi_network" "ds_network" {
@@ -35,31 +35,31 @@ Example usage:
     }
   ```
   
-## Argument reference
+## Argument Reference
 
 Review the argument references that you can specify for your data source.
 
 - `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
 - `pi_network_name` - (Required, String) The name of the network.
 
-## Attribute reference
+## Attribute Reference
 
 In addition to all argument reference list, you can access the following attribute references after your data source is created.
 
-- `access_config` - (Deprecated, String) The network communication configuration option of the network (for on-prem locations only). Use `peer_id` instead.
+- `advertise` - (String) Indicates if the network is advertised.
+- `arp_broadcast` - (String) Indicates if ARP Broadcast is enabled.
 - `available_ip_count` - (Float) The total number of IP addresses that you have in your network.
 - `cidr` - (String) The CIDR of the network.
 - `crn` - (String) The CRN of this resource.
 - `dns`- (Set) The DNS Servers for the network.
 - `gateway` - (String) The network gateway that is attached to your network.
 - `id` - (String) The ID of the network.
-- `jumbo` - (Deprecated, Boolean) MTU Jumbo option of the network (for multi-zone locations only).
 - `mtu` - (Boolean) Maximum Transmission Unit option of the network.
-- `network_address_translation` - (List) Contains the network address translation details (for on-prem locations only).
+- `network_address_translation` - (Deprecated, List) Contains the network address translation details (for on-prem locations only).
 
     Nested schema for  `network_address_translation`:
-      - `source_ip` - (String) source IP address.
-- `peer_id` - (String) Network peer ID (for on-prem locations only).
+      - `source_ip` - (Deprecated, String) source IP address.
+- `peer_id` - (Deprecated, String) Network peer ID (for on-prem locations only).
 - `type` - (String) The type of network.
 - `used_ip_count` - (Float) The number of used IP addresses.
 - `used_ip_percent` - (Float) The percentage of IP addresses used.

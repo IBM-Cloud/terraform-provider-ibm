@@ -4,10 +4,10 @@
 package dnsservices
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -87,7 +87,7 @@ func dataSourceIBMPrivateDNSZonesRead(d *schema.ResourceData, meta interface{}) 
 	listDNSZonesOptions := sess.NewListDnszonesOptions(instanceID)
 	availableDNSZones, detail, err := sess.ListDnszones(listDNSZonesOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error reading list of dns zones:%s\n%s", err, detail)
+		return flex.FmtErrorf("[ERROR] Error reading list of dns zones:%s\n%s", err, detail)
 	}
 	dnsZones := make([]map[string]interface{}, 0)
 	for _, instance := range availableDNSZones.Dnszones {

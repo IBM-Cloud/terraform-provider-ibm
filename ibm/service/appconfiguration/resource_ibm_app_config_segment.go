@@ -92,26 +92,26 @@ func resourceIbmIbmAppConfigSegmentCreate(d *schema.ResourceData, meta interface
 	guid := d.Get("guid").(string)
 	appconfigClient, err := getAppConfigClient(meta, guid)
 	if err != nil {
-		return flex.FmtErrorf(fmt.Sprintf("%s", err))
+		return flex.FmtErrorf("%s", err)
 	}
 	options := &appconfigurationv1.CreateSegmentOptions{}
 	options.SetName(d.Get("name").(string))
 	options.SetSegmentID(d.Get("segment_id").(string))
 
-	if _, ok := d.GetOk("description"); ok {
+	if _, ok := GetFieldExists(d, "description"); ok {
 		options.SetDescription(d.Get("description").(string))
 	}
-	if _, ok := d.GetOk("tags"); ok {
+	if _, ok := GetFieldExists(d, "tags"); ok {
 		options.SetTags(d.Get("tags").(string))
 	}
 
-	if _, ok := d.GetOk("rules"); ok {
+	if _, ok := GetFieldExists(d, "rules"); ok {
 		var segmentRules []appconfigurationv1.Rule
 		for _, e := range d.Get("rules").([]interface{}) {
 			value := e.(map[string]interface{})
 			segmentRulesItem, err := resourceIbmAppConfigMapToSegmentRule(value)
 			if err != nil {
-				return flex.FmtErrorf(fmt.Sprintf("%s", err))
+				return flex.FmtErrorf("%s", err)
 			}
 			segmentRules = append(segmentRules, segmentRulesItem)
 		}
@@ -151,7 +151,7 @@ func resourceIbmIbmAppConfigSegmentRead(d *schema.ResourceData, meta interface{}
 
 	appconfigClient, err := getAppConfigClient(meta, parts[0])
 	if err != nil {
-		return flex.FmtErrorf(fmt.Sprintf("%s", err))
+		return flex.FmtErrorf("%s", err)
 	}
 
 	options := &appconfigurationv1.GetSegmentOptions{}
@@ -234,7 +234,7 @@ func resourceIbmIbmAppConfigSegmentUpdate(d *schema.ResourceData, meta interface
 	}
 	appconfigClient, err := getAppConfigClient(meta, parts[0])
 	if err != nil {
-		return flex.FmtErrorf(fmt.Sprintf("%s", err))
+		return flex.FmtErrorf("%s", err)
 	}
 	options := &appconfigurationv1.UpdateSegmentOptions{}
 
@@ -242,22 +242,22 @@ func resourceIbmIbmAppConfigSegmentUpdate(d *schema.ResourceData, meta interface
 
 	if ok := d.HasChanges("name", "description", "tags", "rules", "attribute_name", "operator", "values"); ok {
 
-		if _, ok := d.GetOk("name"); ok {
+		if _, ok := GetFieldExists(d, "name"); ok {
 			options.SetName(d.Get("name").(string))
 		}
-		if _, ok := d.GetOk("description"); ok {
+		if _, ok := GetFieldExists(d, "description"); ok {
 			options.SetDescription(d.Get("description").(string))
 		}
-		if _, ok := d.GetOk("tags"); ok {
+		if _, ok := GetFieldExists(d, "tags"); ok {
 			options.SetTags(d.Get("tags").(string))
 		}
-		if _, ok := d.GetOk("rules"); ok {
+		if _, ok := GetFieldExists(d, "rules"); ok {
 			var segmentRules []appconfigurationv1.Rule
 			for _, e := range d.Get("rules").([]interface{}) {
 				value := e.(map[string]interface{})
 				segmentRulesItem, err := resourceIbmAppConfigMapToSegmentRule(value)
 				if err != nil {
-					return flex.FmtErrorf(fmt.Sprintf("%s", err))
+					return flex.FmtErrorf("%s", err)
 				}
 				segmentRules = append(segmentRules, segmentRulesItem)
 			}
@@ -280,7 +280,7 @@ func resourceIbmIbmAppConfigSegmentDelete(d *schema.ResourceData, meta interface
 	}
 	appconfigClient, err := getAppConfigClient(meta, parts[0])
 	if err != nil {
-		return flex.FmtErrorf(fmt.Sprintf("%s", err))
+		return flex.FmtErrorf("%s", err)
 	}
 
 	options := &appconfigurationv1.DeleteSegmentOptions{}

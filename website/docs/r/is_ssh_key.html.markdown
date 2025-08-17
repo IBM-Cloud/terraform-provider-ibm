@@ -55,9 +55,11 @@ Review the argument references that you can specify for your resource.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
+- `id` - (String) The ID of the SSH key.
+- `created_at` - (String) The date and time that the key was created.
 - `crn` - (String) The CRN for this key.
 - `fingerprint`-  (String) The SHA256 fingerprint of the public key.
-- `id` - (String) The ID of the SSH key.
+- `href` - (String) The URL for this key.
 - `length` - (String) The length of this key.
 
 ## Import

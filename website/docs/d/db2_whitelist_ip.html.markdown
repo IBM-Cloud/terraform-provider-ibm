@@ -10,6 +10,9 @@ description: |-
 
 Retrieve information about Whitelisted IPs of an existing [IBM Db2 Instance](https://cloud.ibm.com/docs/Db2onCloud).
 
+# DEPRECATED
+Datasource `ibm_db2_whitelist_ip` has now deprecated and replaced with `ibm_db2_allowlist_ip`, backend services will no longer available after the next major release. This docs will be removed in coming release.
+
 ## Example Usage
 
 ```hcl
@@ -17,7 +20,6 @@ data "ibm_db2_whitelist_ip" "db2_whitelistips" {
     x_deployment_id = "<crn>"
 }
 ```
-
 ## Argument Reference
 
 Review the argument reference that you can specify for your data source.
