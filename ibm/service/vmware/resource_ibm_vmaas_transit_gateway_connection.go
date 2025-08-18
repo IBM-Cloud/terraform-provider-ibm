@@ -335,6 +335,10 @@ func resourceIbmVmaasTransitGatewayConnectionDelete(context context.Context, d *
 	if err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_vmaas_transit_gateway_connection", "delete", "sep-id-parts").GetDiag()
 	}
+	if len(parts) < 3 {
+		err := fmt.Errorf("unexpected ID format (%q), expected vdcID/edgeID/transitGatewayID", d.Id())
+		return flex.TerraformErrorf(err, err.Error(), "ibm_vmaas_transit_gateway_connection", "delete").GetDiag()
+	}
 	removeTransitGatewayConnectionsOptions.SetVdcID(parts[0])
 	removeTransitGatewayConnectionsOptions.SetEdgeID(parts[1])
 	removeTransitGatewayConnectionsOptions.SetID(parts[2])
