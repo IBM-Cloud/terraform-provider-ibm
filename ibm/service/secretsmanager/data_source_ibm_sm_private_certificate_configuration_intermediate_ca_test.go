@@ -36,27 +36,29 @@ func TestAccIbmSmPrivateCertificateConfigurationIntermediateCADataSourceBasic(t 
 }
 
 func TestAccIbmSmPrivateCertificateConfigurationIntermediateCADataSourceCryptoKey(t *testing.T) {
-	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheck(t) },
-		Providers: acc.TestAccProviders,
-		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: testAccCheckIbmSmPrivateCertificateConfigurationIntermediateCADataSourceConfigCryptoKey(),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_sm_private_certificate_configuration_intermediate_ca.sm_private_certificate_configuration_intermediate_ca_crypto_key", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_sm_private_certificate_configuration_intermediate_ca.sm_private_certificate_configuration_intermediate_ca_crypto_key", "name"),
-					resource.TestCheckResourceAttrSet("data.ibm_sm_private_certificate_configuration_intermediate_ca.sm_private_certificate_configuration_intermediate_ca_crypto_key", "config_type"),
-					resource.TestCheckResourceAttrSet("data.ibm_sm_private_certificate_configuration_intermediate_ca.sm_private_certificate_configuration_intermediate_ca_crypto_key", "secret_type"),
-					//resource.TestCheckResourceAttrSet("data.ibm_sm_private_certificate_configuration_intermediate_ca.sm_private_certificate_configuration_intermediate_ca_crypto_key", "created_by"),
-					//resource.TestCheckResourceAttrSet("data.ibm_sm_private_certificate_configuration_intermediate_ca.sm_private_certificate_configuration_intermediate_ca_crypto_key", "created_at"),
-					//resource.TestCheckResourceAttrSet("data.ibm_sm_private_certificate_configuration_intermediate_ca.sm_private_certificate_configuration_intermediate_ca_crypto_key", "updated_at"),
-					resource.TestCheckResourceAttrSet("data.ibm_sm_private_certificate_configuration_intermediate_ca.sm_private_certificate_configuration_intermediate_ca_crypto_key", "signing_method"),
-					resource.TestCheckResourceAttrSet("data.ibm_sm_private_certificate_configuration_intermediate_ca.sm_private_certificate_configuration_intermediate_ca_crypto_key", "common_name"),
-					resource.TestCheckResourceAttrSet("data.ibm_sm_private_certificate_configuration_intermediate_ca.sm_private_certificate_configuration_intermediate_ca_crypto_key", "crypto_key.#"),
-				),
+	if acc.SecretsManagerPrivateCertificateConfigurationCryptoKeyProviderInstanceCrn != "" {
+		resource.Test(t, resource.TestCase{
+			PreCheck:  func() { acc.TestAccPreCheck(t) },
+			Providers: acc.TestAccProviders,
+			Steps: []resource.TestStep{
+				resource.TestStep{
+					Config: testAccCheckIbmSmPrivateCertificateConfigurationIntermediateCADataSourceConfigCryptoKey(),
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttrSet("data.ibm_sm_private_certificate_configuration_intermediate_ca.sm_private_certificate_configuration_intermediate_ca_crypto_key", "id"),
+						resource.TestCheckResourceAttrSet("data.ibm_sm_private_certificate_configuration_intermediate_ca.sm_private_certificate_configuration_intermediate_ca_crypto_key", "name"),
+						resource.TestCheckResourceAttrSet("data.ibm_sm_private_certificate_configuration_intermediate_ca.sm_private_certificate_configuration_intermediate_ca_crypto_key", "config_type"),
+						resource.TestCheckResourceAttrSet("data.ibm_sm_private_certificate_configuration_intermediate_ca.sm_private_certificate_configuration_intermediate_ca_crypto_key", "secret_type"),
+						//resource.TestCheckResourceAttrSet("data.ibm_sm_private_certificate_configuration_intermediate_ca.sm_private_certificate_configuration_intermediate_ca_crypto_key", "created_by"),
+						//resource.TestCheckResourceAttrSet("data.ibm_sm_private_certificate_configuration_intermediate_ca.sm_private_certificate_configuration_intermediate_ca_crypto_key", "created_at"),
+						//resource.TestCheckResourceAttrSet("data.ibm_sm_private_certificate_configuration_intermediate_ca.sm_private_certificate_configuration_intermediate_ca_crypto_key", "updated_at"),
+						resource.TestCheckResourceAttrSet("data.ibm_sm_private_certificate_configuration_intermediate_ca.sm_private_certificate_configuration_intermediate_ca_crypto_key", "signing_method"),
+						resource.TestCheckResourceAttrSet("data.ibm_sm_private_certificate_configuration_intermediate_ca.sm_private_certificate_configuration_intermediate_ca_crypto_key", "common_name"),
+						resource.TestCheckResourceAttrSet("data.ibm_sm_private_certificate_configuration_intermediate_ca.sm_private_certificate_configuration_intermediate_ca_crypto_key", "crypto_key.#"),
+					),
+				},
 			},
-		},
-	})
+		})
+	}
 }
 
 func testAccCheckIbmSmPrivateCertificateConfigurationIntermediateCADataSourceConfigBasic() string {
