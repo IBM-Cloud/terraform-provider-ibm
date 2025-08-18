@@ -28,12 +28,10 @@ func ResourceIbmVmaasTransitGatewayConnection() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceIbmVmaasTransitGatewayConnectionCreate,
 		ReadContext:   resourceIbmVmaasTransitGatewayConnectionRead,
-		UpdateContext: resourceIbmVmaasTransitGatewayConnectionUpdate,
 		DeleteContext: resourceIbmVmaasTransitGatewayConnectionDelete,
 		Importer:      &schema.ResourceImporter{},
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(15 * time.Minute),
-			Update: schema.DefaultTimeout(25 * time.Minute),
 			Delete: schema.DefaultTimeout(40 * time.Minute),
 		},
 
@@ -56,6 +54,7 @@ func ResourceIbmVmaasTransitGatewayConnection() *schema.Resource {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Computed:     true,
+				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_vmaas_transit_gateway_connection", "region"),
 				Description:  "The region where the IBM Transit Gateway is deployed.",
 			},
@@ -296,29 +295,6 @@ func resourceIbmVmaasTransitGatewayConnectionRead(context context.Context, d *sc
 	d.Set("region", foundTGW.Region)
 
 	return nil
-}
-
-func resourceIbmVmaasTransitGatewayConnectionUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vmwareClient, err := meta.(conns.ClientSession).VmwareV1()
-	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_vmaas_transit_gateway_connection", "update", "initialize-client")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		return tfErr.GetDiag()
-	}
-
-	swapHaEdgeSitesOptions := &vmwarev1.SwapHaEdgeSitesOptions{}
-
-	swapHaEdgeSitesOptions.SetVdcID(d.Get("vdc_id").(string))
-	swapHaEdgeSitesOptions.SetEdgeID(d.Get("edge_id").(string))
-
-	_, _, err = vmwareClient.SwapHaEdgeSitesWithContext(context, swapHaEdgeSitesOptions)
-	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("SwapHaEdgeSitesWithContext failed: %s", err.Error()), "ibm_vmaas_transit_gateway_connection", "update")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		return tfErr.GetDiag()
-	}
-
-	return resourceIbmVmaasTransitGatewayConnectionRead(context, d, meta)
 }
 
 func resourceIbmVmaasTransitGatewayConnectionDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
