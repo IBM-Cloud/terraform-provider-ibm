@@ -1,3 +1,15 @@
+# 1.81.1 (August 6, 2025)
+
+## Bug Fixes
+
+### Resource controller
+* bypassing scc refresh after deprecation ([6401](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6401))
+
+### VPC Infrastructure
+* prevent 409 errors in is_virtual_endpoint_gateway by locking on VPC ID during create ([6378](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6378))
+
+
+
 # 1.81.0 (July 31, 2025)
 
 * Support for Cloud Internet Services 
