@@ -6,7 +6,7 @@ data "ibm_resource_group" "group" {
 resource "ibm_db2" "db2_instance" {
   name                         = "demo-db2-v8"
   service                      = "dashdb-for-transactions"
-  plan                         = "performance"
+  plan                         = "performance-dev"
   location                     = var.region
   resource_group_id            = data.ibm_resource_group.group.id
   service_endpoints            = "public-and-private"
@@ -17,13 +17,13 @@ resource "ibm_db2" "db2_instance" {
   disk_encryption_key_crn      = "none"
   oracle_compatibility         = "no"
 
-  autoscale_config {
-    auto_scaling_enabled          = "true"
-    auto_scaling_threshold        = "60"
-    auto_scaling_over_time_period = "15"
-    auto_scaling_pause_limit      = "70"
-    auto_scaling_allow_plan_limit = "true"
-  }
+//  autoscale_config {
+#    auto_scaling_enabled          = "true"
+#    auto_scaling_threshold        = "60"
+#    auto_scaling_over_time_period = "15"
+#    auto_scaling_pause_limit      = "70"
+#    auto_scaling_allow_plan_limit = "true"
+#  }
   // custom_setting_config {
 //     db {
 //       act_sortmem_limit    = "NONE"
@@ -204,14 +204,6 @@ resource "ibm_db2" "db2_instance" {
 //     x_deployment_id = "crn:v1:staging:public:dashdb-for-transactions:us-south:a/e7e3e87b512f474381c0684a5ecbba03:ce675950-4096-43e4-b85f-c685b4326069::"
 // }
 
-//DataSource reading existing Db2 SaaS instance
-# data "ibm_db2" "db2_instance" {
-#   name              = "dDb2-v0-test-public"
-#   resource_group_id = data.ibm_resource_group.group.id
-#   location          = var.region
-#   service           = "dashdb-for-transactions"
-# }
-
 //DataSource reading tuneable params of Db2 instance
 # data "ibm_db2_tuneable_param" "Db2-kj-test-pub" {
 # }
@@ -220,3 +212,22 @@ resource "ibm_db2" "db2_instance" {
 # data "ibm_db2_backup" "Db2-kj-test-pub" {
 #  deployment_id = "crn%3Av1%3Astaging%3Apublic%3Adashdb-for-transactions%3Aus-south%3Aa%2Fe7e3e87b512f474381c0684a5ecbba03%3A5d673016-3dbf-428c-8e59-e6ab82028b53%3A%3A"
 # }
+
+//DataSource reading existing Db2 SaaS instance
+# data "ibm_db2" "db2_instance" {
+#   name              = "dDb2-v0-test-public"
+#   resource_group_id = data.ibm_resource_group.group.id
+#   location          = var.region
+#   service           = "dashdb-for-transactions"
+# }
+
+// Db2 SaaS List Users
+ data "ibm_db2_users" "db2_list_users" {
+     x_deployment_id = "crn:v1:staging:public:dashdb-for-transactions:us-east:a/081cc8d873fc41268d721af06b1f81e2:f506db68-be4f-488e-83d8-f145bd4c4645::"
+ }
+
+//Db2 SaaS List Users by ID
+// data "ibm_db2_users_by_id" "db2_list_users_by_id" {
+//     x_deployment_id = "crn:v1:staging:public:dashdb-for-transactions:us-south:a/e7e3e87b512f474381c0684a5ecbba03:ce675950-4096-43e4-b85f-c685b4326069::"
+//     id = "test_user"
+// }

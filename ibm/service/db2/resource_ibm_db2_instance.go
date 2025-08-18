@@ -804,6 +804,10 @@ func ResourceIBMDb2Instance() *schema.Resource {
 		},
 	}
 
+	// Post allowlist
+
+	// Post Users
+
 	return &schema.Resource{
 		Create:   resourceIBMDb2InstanceCreate,
 		Read:     resourcecontroller.ResourceIBMResourceInstanceRead,
