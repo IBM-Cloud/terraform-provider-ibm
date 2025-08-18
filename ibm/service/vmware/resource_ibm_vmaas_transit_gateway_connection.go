@@ -308,13 +308,8 @@ func resourceIbmVmaasTransitGatewayConnectionUpdate(context context.Context, d *
 
 	swapHaEdgeSitesOptions := &vmwarev1.SwapHaEdgeSitesOptions{}
 
-	parts, err := flex.SepIdParts(d.Id(), "/")
-	if err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_vmaas_transit_gateway_connection", "update", "sep-id-parts").GetDiag()
-	}
-
-	swapHaEdgeSitesOptions.SetVdcID(parts[0])
-	swapHaEdgeSitesOptions.SetEdgeID(parts[1])
+	swapHaEdgeSitesOptions.SetVdcID(d.Get("vdc_id").(string))
+	swapHaEdgeSitesOptions.SetEdgeID(d.Get("edge_id").(string))
 
 	_, _, err = vmwareClient.SwapHaEdgeSitesWithContext(context, swapHaEdgeSitesOptions)
 	if err != nil {
