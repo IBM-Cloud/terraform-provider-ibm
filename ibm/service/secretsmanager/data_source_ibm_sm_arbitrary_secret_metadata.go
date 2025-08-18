@@ -139,7 +139,11 @@ func dataSourceIbmSmArbitrarySecretMetadataRead(context context.Context, d *sche
 		return tfErr.GetDiag()
 	}
 
-	arbitrarySecretMetadata := arbitrarySecretMetadataIntf.(*secretsmanagerv2.ArbitrarySecretMetadata)
+	arbitrarySecretMetadata, ok := arbitrarySecretMetadataIntf.(*secretsmanagerv2.ArbitrarySecretMetadata)
+	if !ok {
+		tfErr := flex.TerraformErrorf(nil, fmt.Sprintf("Wrong secret type: The provided secret is not an Arbitrary secret."), fmt.Sprintf("(Data) %s_metadata", ArbitrarySecretResourceName), "read")
+		return tfErr.GetDiag()
+	}
 
 	d.SetId(fmt.Sprintf("%s/%s/%s", region, instanceId, secretId))
 

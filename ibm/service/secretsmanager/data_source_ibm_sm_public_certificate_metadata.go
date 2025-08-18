@@ -303,7 +303,11 @@ func dataSourceIbmSmPublicCertificateMetadataRead(context context.Context, d *sc
 		return tfErr.GetDiag()
 	}
 
-	publicCertificateMetadata := publicCertificateMetadataIntf.(*secretsmanagerv2.PublicCertificateMetadata)
+	publicCertificateMetadata, ok := publicCertificateMetadataIntf.(*secretsmanagerv2.PublicCertificateMetadata)
+	if !ok {
+		tfErr := flex.TerraformErrorf(nil, fmt.Sprintf("Wrong secret type: The provided secret is not a Public Certificate secret."), fmt.Sprintf("(Data) %s_metadata", PublicCertSecretResourceName), "read")
+		return tfErr.GetDiag()
+	}
 
 	d.SetId(fmt.Sprintf("%s/%s/%s", region, instanceId, secretId))
 

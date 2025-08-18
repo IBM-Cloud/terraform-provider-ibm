@@ -53,6 +53,7 @@ Review the argument reference that you can specify for your resource.
     * Constraints: Allowable values are: `private`, `public`.
 * `configuration` - (Required, Forces new resource, String) The name of the custom credentials secret configuration.
 * `custom_metadata` - (Optional, Map) The secret metadata that a user can customize.
+  * Constraints: Nested JSONs are supported in Terraform only as string-encoded JSONs.
 * `description` - (Optional, String) An extended description of your secret.To protect your privacy, do not use personal data, such as your name or location, as a description for your secret group.
   * Constraints: The maximum length is `1024` characters. The minimum length is `0` characters.
 * `labels` - (Optional, List) Labels that you can use to search for secrets in your instance.Up to 30 labels can be created.
@@ -75,6 +76,8 @@ Review the argument reference that you can specify for your resource.
   * Constraints: The maximum length is `36` characters. The minimum length is `7` characters. The value must match regular expression `/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|default)$/`.
 * `ttl` - (Required, String) The time-to-live (in seconds) to assign to generated credentials. Minimum duration is 86400 seconds (one day).
   * Constraints: Must represent an integer not less than 86400. 
+* `version_custom_metadata` - (Map) The custom metadata of the current secret version.
+  * Constraints: Nested JSONs are supported in Terraform only as string-encoded JSONs.
 
 ## Attribute Reference
 
@@ -103,7 +106,6 @@ In addition to all argument references listed, you can access the following attr
 * `secret_type` - (String) The secret type. Supported types are arbitrary, certificates (imported, public, and private), IAM credentials, custom credentials, key-value, and user credentials.
     * Constraints: Allowable values are: `arbitrary`, `imported_cert`, `public_cert`, `custom_credentials`, `kv`, `username_password`, `private_cert`.
 * `updated_at` - (String) The date when a resource was recently modified. The date format follows RFC 3339.
-* `version_custom_metadata` - (Map) The custom metadata of the current secret version.
 * `versions_total` - (Integer) The number of versions of the secret.
     * Constraints: The maximum value is `50`. The minimum value is `0`.
 * `expiration_date` - (String) The date a secret is expired. The date format follows RFC 3339.
