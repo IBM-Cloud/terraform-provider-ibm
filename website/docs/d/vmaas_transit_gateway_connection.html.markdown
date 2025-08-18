@@ -15,6 +15,9 @@ Provides a read-only data source to retrieve information about a vmaas_transit_g
 ```hcl
 data "ibm_vmaas_transit_gateway_connection" "vmaas_transit_gateway_connection" {
 	vmaas_transit_gateway_connection_id = ibm_vmaas_transit_gateway_connection.vmaas_transit_gateway_connection_instance.vmaas_transit_gateway_connection_id
+	vdc_id = "vdc_id"
+    edge_id = "edge_id"
+    region = "us-south"
 }
 ```
 
@@ -24,6 +27,14 @@ You can specify the following arguments for this data source.
 
 * `vmaas_transit_gateway_connection_id` - (Required, Forces new resource, String) A unique ID for a specified virtual data center.
   * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9_-]{1,128}$/`.
+* `vdc_id` - (Required, Forces new resource, String) A unique ID for a virtual data center.  
+  * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9_-]{1,128}$/`.
+
+* `edge_id` - (Required, Forces new resource, String) A unique ID for an edge.  
+  * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9_-]{1,128}$/`.
+
+* `region` - (Optional, Computed, String) The region where the IBM Transit Gateway is deployed.  
+  * Constraints: The value must be a valid IBM Cloud region string, such as `us-south` or `eu-de`. The value must match regular e*
 
 ## Attribute Reference
 
