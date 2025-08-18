@@ -712,3 +712,42 @@ func expandCISRulesetsRulesActionParametersOverridesRules(obj interface{}) []rul
 
 	return finalResponse
 }
+
+func expandCISRulesetsRulesRateLimits(obj interface{}) (rulesetsv1.Ratelimit, error) {
+	ratelimitRespObj := rulesetsv1.Ratelimit{}
+
+	// return empty object if ratelimit is not provided.
+	// Expecting obj to be a []interface{}, since the schema uses TypeList
+	ratelimitList, ok := obj.([]interface{})
+	if !ok || len(ratelimitList) == 0 || ratelimitList[0] == nil {
+		return ratelimitRespObj, nil
+	}
+
+	ratelimitMap := ratelimitList[0].(map[string]interface{})
+
+	if v, ok := ratelimitMap[CISRulesetsRuleRateLimitCharacteristics]; ok && v != nil {
+		ratelimitRespObj.Characteristics = flex.ExpandStringList(v.([]interface{}))
+	}
+
+	if v, ok := ratelimitMap[CISRulesetsRuleRateLimitCountingExpression]; ok && v.(string) != "" {
+		val := v.(string)
+		ratelimitRespObj.CountingExpression = &val
+	}
+
+	if v, ok := ratelimitMap[CISRulesetsRuleRateLimitMitigationTimeout]; ok && v.(int) != 0 {
+		val := int64(v.(int))
+		ratelimitRespObj.MitigationTimeout = &val
+	}
+
+	if v, ok := ratelimitMap[CISRulesetsRuleRateLimitPeriod]; ok && v.(int) != 0 {
+		val := int64(v.(int))
+		ratelimitRespObj.Period = &val
+	}
+
+	if v, ok := ratelimitMap[CISRulesetsRuleRateLimitRequestsPerPeriod]; ok && v.(int) != 0 {
+		val := int64(v.(int))
+		ratelimitRespObj.RequestsPerPeriod = &val
+	}
+
+	return ratelimitRespObj, nil
+}
