@@ -1069,7 +1069,9 @@ func Provider() *schema.Provider {
 			"ibm_project_environment": project.DataSourceIbmProjectEnvironment(),
 
 			// Added for VMware as a Service
-			"ibm_vmaas_vdc": vmware.DataSourceIbmVmaasVdc(),
+			"ibm_vmaas_vdc":                        vmware.DataSourceIbmVmaasVdc(),
+			"ibm_vmaas_transit_gateway_connection": vmware.DataSourceIbmVmaasTransitGatewayConnection(),
+
 			// Logs Service
 			"ibm_logs_alert":              logs.AddLogsInstanceFields(logs.DataSourceIbmLogsAlert()),
 			"ibm_logs_alerts":             logs.AddLogsInstanceFields(logs.DataSourceIbmLogsAlerts()),
@@ -1745,7 +1747,9 @@ func Provider() *schema.Provider {
 			"ibm_project_environment": project.ResourceIbmProjectEnvironment(),
 
 			// Added for VMware as a Service
-			"ibm_vmaas_vdc": vmware.ResourceIbmVmaasVdc(),
+			"ibm_vmaas_vdc":                        vmware.ResourceIbmVmaasVdc(),
+			"ibm_vmaas_transit_gateway_connection": vmware.ResourceIbmVmaasTransitGatewayConnection(),
+
 			// Logs Service
 			"ibm_logs_alert":              logs.AddLogsInstanceFields(logs.ResourceIbmLogsAlert()),
 			"ibm_logs_rule_group":         logs.AddLogsInstanceFields(logs.ResourceIbmLogsRuleGroup()),
@@ -2253,7 +2257,9 @@ func Validator() validate.ValidatorDict {
 				"ibm_en_destination_custom_email": eventnotification.ResourceIBMEnEmailDestinationValidator(),
 
 				// Added for VMware as a Service
-				"ibm_vmaas_vdc":             vmware.ResourceIbmVmaasVdcValidator(),
+				"ibm_vmaas_vdc":                        vmware.ResourceIbmVmaasVdcValidator(),
+				"ibm_vmaas_transit_gateway_connection": vmware.ResourceIbmVmaasTransitGatewayConnectionValidator(),
+
 				"ibm_logs_alert":            logs.ResourceIbmLogsAlertValidator(),
 				"ibm_logs_rule_group":       logs.ResourceIbmLogsRuleGroupValidator(),
 				"ibm_logs_outgoing_webhook": logs.ResourceIbmLogsOutgoingWebhookValidator(),
