@@ -17,9 +17,28 @@ resource "ibm_db2" "db2_instance" {
   disk_encryption_key_crn      = "none"
   oracle_compatibility         = "no"
 
-// users{}
 
-// allowlist{}
+// users{
+#  id = "test-user"
+#  iam = "false"
+#  ibmid = "test-ibm-id"
+#  name =  "test_user"
+#  password =  "dEkMc43@gfAPl!867^dSbu"
+#  role =  "bluuser"
+#  email = "test_user@mycompany.com"
+#  locked = "no"
+#  authentication {
+#    method = "internal"
+#    policy_id = "Default"
+#   }
+#  }
+
+// allowlist{
+#   ip_addresses {
+#      address     = "127.0.0.1"
+#      description = "A sample IP address"
+#    }
+# }
 
 //  autoscale_config {
 #    auto_scaling_enabled          = "true"
@@ -28,7 +47,8 @@ resource "ibm_db2" "db2_instance" {
 #    auto_scaling_pause_limit      = "70"
 #    auto_scaling_allow_plan_limit = "true"
 #  }
-  // custom_setting_config {
+
+// custom_setting_config {
 //     db {
 //       act_sortmem_limit    = "NONE"
 //       alt_collate          = "IDENTITY_16BIT"
@@ -227,7 +247,7 @@ resource "ibm_db2" "db2_instance" {
 
 // Db2 SaaS List Users
  data "ibm_db2_users" "db2_list_users" {
-     x_deployment_id = "crn:v1:staging:public:dashdb-for-transactions:us-east:a/081cc8d873fc41268d721af06b1f81e2:f506db68-be4f-488e-83d8-f145bd4c4645::"
+     x_deployment_id = "crn:v1:staging:public:dashdb-for-transactions:us-east:a/081cc8d873fc41268d721af06b1f81e2:13367859-937d-4aef-a511-07247c15d1fc::"
  }
 
 //Db2 SaaS List Users by ID
