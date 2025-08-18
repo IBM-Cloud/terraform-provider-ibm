@@ -804,9 +804,105 @@ func ResourceIBMDb2Instance() *schema.Resource {
 		},
 	}
 
-	// Post allowlist
+	// Post allowlist // write manually
+	riSchema["allowlist"] = &schema.Schema{
+		Description: "The db2 allowlist",
+		Optional:    true,
+		Type:        schema.TypeList,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"ip_addresses": {
+					Description: "The ip_addresses allowed for the instance",
+					Optional:    true,
+					Type:        schema.TypeList,
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"address": {
+								Type:        schema.TypeString,
+								Optional:    true,
+								Description: "The IP address",
+							},
+							"description": {
+								Type:        schema.TypeString,
+								Optional:    true,
+								Description: "The description for the ip address",
+							},
+						},
+					},
+				},
+			},
+		},
+	}
 
-	// Post Users
+	// Post Users // write manually
+	riSchema["users"] = &schema.Schema{
+		Description: "The db2 new users gets created (available only for platform users)",
+		Optional:    true,
+		Type:        schema.TypeList,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"id": {
+					Description: "The id of the user",
+					Optional:    true,
+					Type:        schema.TypeString,
+				},
+				"iam": {
+					Description: "The iam of the user",
+					Optional:    true,
+					Type:        schema.TypeBool,
+				},
+				"ibmid": {
+					Type:        schema.TypeString,
+					Optional:    true,
+					Description: "The ibmid of the user",
+				},
+				"name": {
+					Type:        schema.TypeString,
+					Optional:    true,
+					Description: "The name of the user",
+				},
+				"password": {
+					Type:        schema.TypeString,
+					Optional:    true,
+					Description: "The password of the user",
+				},
+				"role": {
+					Type:        schema.TypeString,
+					Optional:    true,
+					Description: "The role of the user (say: bluuser)",
+				},
+				"email": {
+					Type:        schema.TypeString,
+					Optional:    true,
+					Description: "The email of the user ",
+				},
+				"locked": {
+					Type:        schema.TypeString,
+					Optional:    true,
+					Description: "It decribes if user is locked or not",
+				},
+				"authentication": {
+					Type:        schema.TypeList,
+					Optional:    true,
+					Description: "The authentication for user",
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"method": {
+								Type:        schema.TypeString,
+								Optional:    true,
+								Description: "The method of authentication for user",
+							},
+							"policy_id": {
+								Type:        schema.TypeString,
+								Optional:    true,
+								Description: "The policy_id for the user",
+							},
+						},
+					},
+				},
+			},
+		},
+	}
 
 	return &schema.Resource{
 		Create:   resourceIBMDb2InstanceCreate,
@@ -827,7 +923,9 @@ func ResourceIBMDb2Instance() *schema.Resource {
 				return flex.ResourceTagsCustomizeDiff(diff)
 			},
 		),
-
+		// need to figure out additional crud block to be added (we need to figure out this for delete, put users)
+		// post users
+		// post allowlist will work without crud bloack as well
 		Schema: riSchema,
 	}
 }
@@ -1047,6 +1145,184 @@ func resourceIBMDb2InstanceCreate(d *schema.ResourceData, meta interface{}) erro
 			result, response, err := db2SaasClient.PutDb2SaasAutoscale(input)
 			if err != nil {
 				log.Printf("Error while updating autoscaling config to DB2Saas: %s", err)
+			} else {
+				log.Printf("StatusCode of response %d", response.StatusCode)
+				log.Printf("Success result %v", result)
+			}
+		}
+
+	}
+
+	// validation check for allowlist
+	if allowlistConfigRaw, ok := d.GetOk("allowlist"); ok {
+		if allowlistConfigRaw == nil || reflect.ValueOf(allowlistConfigRaw).IsNil() {
+			fmt.Println("No allowlist config is provided, Skipping.")
+		} else {
+			allowlistConfig := allowlistConfigRaw.([]interface{})[0].(map[string]interface{})
+
+			var (
+				allowlistAddress     string
+				allowlistDescription string
+			)
+
+			if allowlistConfig["address"] != nil {
+				allowlistAddress, ok = allowlistConfig["address"].(string)
+				if !ok {
+					fmt.Println("Error in extracting address: not a string")
+					return fmt.Errorf("allowlist address is not a string")
+				}
+			}
+
+			if allowlistConfig["description"] != nil {
+				allowlistDescription, ok = allowlistConfig["description"].(string)
+				if !ok {
+					fmt.Println("Error in extracting description: not a string")
+					return fmt.Errorf("allowlist description is not a string")
+				}
+			}
+
+			input := &db2saasv1.PostDb2SaasAllowlistOptions{
+				XDeploymentID: core.StringPtr(encodedCRN),
+				IpAddresses: []db2saasv1.IpAddress{
+					{
+						Address:     core.StringPtr(allowlistAddress),
+						Description: core.StringPtr(allowlistDescription),
+					},
+				},
+			}
+
+			result, response, err := db2SaasClient.PostDb2SaasAllowlist(input)
+			if err != nil {
+				log.Printf("Error while updating allowlist config to DB2Saas: %s", err)
+			} else {
+				log.Printf("StatusCode of response %d", response.StatusCode)
+				log.Printf("Success result %v", result)
+			}
+		}
+
+	}
+
+	// validation check for users
+	if usersConfigRaw, ok := d.GetOk("users"); ok {
+		if usersConfigRaw == nil || reflect.ValueOf(usersConfigRaw).IsNil() {
+			fmt.Println("No users config is provided, Skipping.")
+		} else {
+			usersConfig := usersConfigRaw.([]interface{})[0].(map[string]interface{})
+
+			var (
+				id       string
+				iam      bool
+				ibmID    string
+				name     string
+				password string
+				role     string
+				email    string
+				locked   string
+				method   string
+				policyID string
+			)
+
+			if usersConfig["id"] != nil {
+				id, ok = usersConfig["id"].(string)
+				if !ok {
+					return fmt.Errorf("Error in extracting id")
+				}
+			}
+
+			if rawIAM, exists := usersConfig["iam"]; exists {
+				iam, ok = rawIAM.(bool)
+				if !ok {
+					return fmt.Errorf("failed to extract 'iam': expected bool, got %T", rawIAM)
+				}
+			}
+
+			if rawIBMID, exists := usersConfig["ibmid"]; exists {
+				ibmID, ok = rawIBMID.(string)
+				if !ok {
+					return fmt.Errorf("failed to extract 'ibmid': expected string, got %T", rawIBMID)
+				}
+			}
+
+			if rawName, exists := usersConfig["name"]; exists {
+				name, ok = rawName.(string)
+				if !ok {
+					return fmt.Errorf("failed to extract 'name': expected string, got %T", rawName)
+				}
+			}
+
+			if rawPassword, exists := usersConfig["password"]; exists {
+				password, ok = rawPassword.(string)
+				if !ok {
+					return fmt.Errorf("failed to extract 'password': expected string, got %T", rawPassword)
+				}
+			}
+
+			if rawRole, exists := usersConfig["role"]; exists {
+				role, ok = rawRole.(string)
+				if !ok {
+					return fmt.Errorf("failed to extract 'role': expected string, got %T", rawRole)
+				}
+			}
+
+			if rawEmail, exists := usersConfig["email"]; exists {
+				email, ok = rawEmail.(string)
+				if !ok {
+					return fmt.Errorf("failed to extract 'email': expected string, got %T", rawEmail)
+				}
+			}
+
+			if rawLocked, exists := usersConfig["locked"]; exists {
+				locked, ok = rawLocked.(string)
+				if !ok {
+					return fmt.Errorf("failed to extract 'locked': expected string, got %T", rawLocked)
+				}
+			}
+
+			if rawAuthList, exists := usersConfig["authentication"]; exists {
+				authList, ok := rawAuthList.([]interface{})
+				if !ok || len(authList) == 0 {
+					return fmt.Errorf("failed to extract 'authentication': expected non-empty list, got %T", rawAuthList)
+				}
+
+				authMap, ok := authList[0].(map[string]interface{})
+				if !ok {
+					return fmt.Errorf("failed to extract 'authentication[0]': expected map[string]interface{}, got %T", authList[0])
+				}
+
+				if rawMethod, exists := authMap["method"]; exists {
+					method, ok = rawMethod.(string)
+					if !ok {
+						return fmt.Errorf("failed to extract 'authentication.method': expected string, got %T", rawMethod)
+					}
+				}
+
+				if rawPolicyID, exists := authMap["policy_id"]; exists {
+					policyID, ok = rawPolicyID.(string)
+					if !ok {
+						return fmt.Errorf("failed to extract 'authentication.policy_id': expected string, got %T", rawPolicyID)
+					}
+				}
+			}
+
+			input := &db2saasv1.PostDb2SaasUserOptions{
+				XDeploymentID: core.StringPtr(encodedCRN),
+				ID:            core.StringPtr(id),
+				Iam:           core.BoolPtr(iam),
+				Ibmid:         core.StringPtr(ibmID),
+				Name:          core.StringPtr(name),
+				Password:      core.StringPtr(password),
+				Role:          core.StringPtr(role),
+				Email:         core.StringPtr(email),
+				Locked:        core.StringPtr(locked),
+				Authentication: &db2saasv1.CreateUserAuthentication{
+					Method:   core.StringPtr(method),
+					PolicyID: core.StringPtr(policyID),
+				},
+			}
+
+			result, response, err := db2SaasClient.PostDb2SaasUser(input)
+			if err != nil {
+				log.Printf("Error while updating users config to DB2Saas: %s", err)
 			} else {
 				log.Printf("StatusCode of response %d", response.StatusCode)
 				log.Printf("Success result %v", result)

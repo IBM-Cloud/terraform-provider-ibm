@@ -17,6 +17,10 @@ resource "ibm_db2" "db2_instance" {
   disk_encryption_key_crn      = "none"
   oracle_compatibility         = "no"
 
+// users{}
+
+// allowlist{}
+
 //  autoscale_config {
 #    auto_scaling_enabled          = "true"
 #    auto_scaling_threshold        = "60"
