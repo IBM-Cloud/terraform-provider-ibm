@@ -295,7 +295,6 @@ func ResourceIBMISLB() *schema.Resource {
 				Set:         flex.ResourceIBMVPCHash,
 				Description: "List of access management tags",
 			},
-
 			isLBResourceGroup: {
 				Type:     schema.TypeString,
 				ForceNew: true,

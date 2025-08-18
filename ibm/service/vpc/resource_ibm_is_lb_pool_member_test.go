@@ -230,6 +230,34 @@ func TestAccIBMISLBPoolMember_basic_network_target_application_load_balancer(t *
 	})
 }
 
+func TestAccIBMISLBPoolMember_basic_network_target_reservedIP(t *testing.T) {
+	var lb string
+
+	vpcname := fmt.Sprintf("tflbpm-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tflbpmc-name-%d", acctest.RandIntRange(10, 100))
+	resIpSubnetName := fmt.Sprintf("tflbpmc-name-%d", acctest.RandIntRange(10, 100))
+	nlbPoolName := fmt.Sprintf("tfnlbpoolc%d", acctest.RandIntRange(10, 100))
+
+	nlbName := fmt.Sprintf("tfnlbcreate%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISLBPoolMemberDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISLBPoolMemberIDConfigWithReservedIPTarget(
+					vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, resIpSubnetName, nlbName, nlbPoolName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISLBPoolMemberExists("ibm_is_lb_pool_member.testacc_nlb_mem", lb),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_pool_member.testacc_nlb_mem", "weight", "20"),
+				),
+			},
+		},
+	})
+}
+
 // Weight set to zero from TF when it wasn't passed, must be kept blank so that backend could set it to default.
 // Function to validate if the weight is set to default as 50, when it is not provided in TF config.
 func TestAccIBMISLBPoolMember_basic_opt_weight_check(t *testing.T) {
@@ -542,4 +570,45 @@ func testAccCheckIBMISLBPoolMemberIDConfigWithLBTarget(vpcname, subnetname, zone
 		target_id = "${ibm_is_lb.testacc_LB.id}"
 	}
 `, vpcname, subnetname, zone, cidr, albName, nlbName, nlbPoolName)
+}
+
+func testAccCheckIBMISLBPoolMemberIDConfigWithReservedIPTarget(vpcname, subnetname, zone, cidr, resIpSubnetName, nlbName, nlbPoolName string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	}
+	resource "ibm_is_subnet" "testacc_subnet" {
+		name = "%s"
+		vpc = "${ibm_is_vpc.testacc_vpc.id}"
+		zone = "%s"
+		ipv4_cidr_block = "%s"
+	}
+	resource "ibm_is_subnet_reserved_ip" "testacc_rip" {
+		subnet = ibm_is_subnet.testacc_subnet.id
+		name = "%s"
+	}	
+	resource "ibm_is_lb" "testacc_NLB" {
+		name = "%s"
+		subnets = ["${ibm_is_subnet.testacc_subnet.id}"]
+		profile = "network-private-path"
+  		type    = "private_path"
+	}
+	resource "ibm_is_lb_pool" "testacc_nlb_pool" {
+		name = "%s"
+		lb = "${ibm_is_lb.testacc_NLB.id}"
+		algorithm      = "weighted_round_robin"
+        protocol       = "tcp"
+        health_delay   = 60
+        health_retries = 5
+        health_timeout = 30
+        health_type    = "tcp"
+	}
+	resource "ibm_is_lb_pool_member" "testacc_nlb_mem" {
+		lb = "${ibm_is_lb.testacc_NLB.id}"
+		pool = "${element(split("/",ibm_is_lb_pool.testacc_nlb_pool.id),1)}"
+		port = 8080
+        weight = 20
+		target_id = "${element(split("/",ibm_is_subnet_reserved_ip.testacc_rip.id),1)}"
+	}
+`, vpcname, subnetname, zone, cidr, resIpSubnetName, nlbName, nlbPoolName)
 }
