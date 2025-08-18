@@ -107,11 +107,6 @@ func DataSourceIBMISLbProfile() *schema.Resource {
 					},
 				},
 			},
-			"reserved_ip_type": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The Reserved IP Target support for a load balancer profile, one of [fixed, dependent]",
-			},
 			"route_mode_supported": {
 				Type:        schema.TypeBool,
 				Computed:    true,
