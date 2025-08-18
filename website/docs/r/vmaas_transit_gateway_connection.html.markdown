@@ -8,7 +8,7 @@ subcategory: "VMware Cloud Foundation as a Service API"
 
 # ibm_vmaas_transit_gateway_connection
 
-Create, update, and delete vmaas_transit_gateway_connections with this resource.
+Add and remove vmaas_transit_gateway_connections with this resource.
 
 ## Example Usage
 
