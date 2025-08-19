@@ -47,6 +47,10 @@ func DataSourceIBMTransitGateway() *schema.Resource {
 				Type:     schema.TypeBool,
 				Computed: true,
 			},
+			tgGreEnhancedRoutePropagation: {
+				Type:     schema.TypeBool,
+				Computed: true,
+			},
 			tgStatus: {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -253,6 +257,7 @@ func dataSourceIBMTransitGatewayRead(d *schema.ResourceData, meta interface{}) e
 				d.Set(tgUpdatedAt, tgw.UpdatedAt.String())
 			}
 			d.Set(tgGlobal, tgw.Global)
+			d.Set(tgGreEnhancedRoutePropagation, tgw.GreEnhancedRoutePropagation)
 			d.Set(tgStatus, tgw.Status)
 
 			if tgw.ResourceGroup != nil {
