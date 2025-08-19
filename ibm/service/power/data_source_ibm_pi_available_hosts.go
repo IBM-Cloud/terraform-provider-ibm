@@ -60,7 +60,7 @@ func DataSourceIBMPIAvailableHosts() *schema.Resource {
 	}
 }
 
-func dataSourceIBMPIAvailableHostsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMPIAvailableHostsRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
 		return diag.FromErr(err)
@@ -71,10 +71,10 @@ func dataSourceIBMPIAvailableHostsRead(ctx context.Context, d *schema.ResourceDa
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	availableHosts := []map[string]interface{}{}
+	availableHosts := []map[string]any{}
 	for _, value := range hostlist {
 		if value.Capacity != nil {
-			availableHosts = append(availableHosts, map[string]interface{}{
+			availableHosts = append(availableHosts, map[string]any{
 				Attr_Count:           int(value.Count),
 				Attr_SysType:         value.SysType,
 				Attr_AvailableCores:  value.Capacity.Cores.Total,

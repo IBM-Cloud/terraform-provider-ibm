@@ -136,7 +136,7 @@ func DataSourceIBMPICatalogImages() *schema.Resource {
 	}
 }
 
-func dataSourceIBMPICatalogImagesRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMPICatalogImagesRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
 		return diag.FromErr(err)
@@ -151,9 +151,9 @@ func dataSourceIBMPICatalogImagesRead(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	images := make([]map[string]interface{}, 0)
+	images := make([]map[string]any, 0)
 	for _, i := range stockImages.Images {
-		image := make(map[string]interface{})
+		image := make(map[string]any)
 		image[Attr_ImageID] = *i.ImageID
 		image[Attr_Name] = *i.Name
 
