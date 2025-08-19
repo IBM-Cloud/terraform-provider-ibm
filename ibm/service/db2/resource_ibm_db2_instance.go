@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"net"
 	"net/url"
 	"os"
 	"reflect"
@@ -805,7 +806,7 @@ func ResourceIBMDb2Instance() *schema.Resource {
 	}
 
 	// Post allowlist // write manually
-	riSchema["allowlist"] = &schema.Schema{
+	riSchema["allowlist_config"] = &schema.Schema{
 		Description: "The db2 allowlist",
 		Optional:    true,
 		Type:        schema.TypeList,
@@ -835,7 +836,7 @@ func ResourceIBMDb2Instance() *schema.Resource {
 	}
 
 	// Post Users // write manually
-	riSchema["users"] = &schema.Schema{
+	riSchema["users_config"] = &schema.Schema{
 		Description: "The db2 new users gets created (available only for platform users)",
 		Optional:    true,
 		Type:        schema.TypeList,
@@ -1091,6 +1092,7 @@ func resourceIBMDb2InstanceCreate(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	encodedCRN := url.QueryEscape(*instance.CRN)
+	log.Print("encoded CRN: ", encodedCRN)
 
 	if autoscaleConfigRaw, ok := d.GetOk("autoscale_config"); ok {
 		if autoscaleConfigRaw == nil || reflect.ValueOf(autoscaleConfigRaw).IsNil() {
@@ -1154,41 +1156,47 @@ func resourceIBMDb2InstanceCreate(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	// validation check for allowlist
-	if allowlistConfigRaw, ok := d.GetOk("allowlist"); ok {
-		if allowlistConfigRaw == nil || reflect.ValueOf(allowlistConfigRaw).IsNil() {
-			fmt.Println("No allowlist config is provided, Skipping.")
+	if allowlistConfigRaw, ok := d.GetOk("allowlist_config"); ok {
+		list := allowlistConfigRaw.([]interface{})
+		if len(list) == 0 {
+			fmt.Println("No allowlist config provided, skipping.")
 		} else {
-			allowlistConfig := allowlistConfigRaw.([]interface{})[0].(map[string]interface{})
+			ipList := make([]db2saasv1.IpAddress, 0, len(list))
 
-			var (
-				allowlistAddress     string
-				allowlistDescription string
-			)
+			for _, item := range list {
+				entry := item.(map[string]interface{})
+				var address, description string
 
-			if allowlistConfig["address"] != nil {
-				allowlistAddress, ok = allowlistConfig["address"].(string)
-				if !ok {
-					fmt.Println("Error in extracting address: not a string")
-					return fmt.Errorf("allowlist address is not a string")
+				if rawAddress, ok := entry["address"]; ok && rawAddress != nil {
+					str, ok := rawAddress.(string)
+					if !ok {
+						log.Printf("allowlist address is not a string")
+						return fmt.Errorf("allowlist address is not a string")
+					}
+					if ip := net.ParseIP(str); ip == nil {
+						log.Printf("invalid IP address format")
+						return fmt.Errorf("invalid IP address format: %s", str)
+					}
+					address = str
 				}
-			}
-
-			if allowlistConfig["description"] != nil {
-				allowlistDescription, ok = allowlistConfig["description"].(string)
-				if !ok {
-					fmt.Println("Error in extracting description: not a string")
-					return fmt.Errorf("allowlist description is not a string")
+				if rawDescription, ok := entry["description"]; ok && rawDescription != nil {
+					str, ok := rawDescription.(string)
+					if !ok {
+						log.Printf("allowlist description is not a string")
+						return fmt.Errorf("allowlist description is not a string")
+					}
+					description = str
 				}
+
+				ipList = append(ipList, db2saasv1.IpAddress{
+					Address:     core.StringPtr(address),
+					Description: core.StringPtr(description),
+				})
 			}
 
 			input := &db2saasv1.PostDb2SaasAllowlistOptions{
 				XDeploymentID: core.StringPtr(encodedCRN),
-				IpAddresses: []db2saasv1.IpAddress{
-					{
-						Address:     core.StringPtr(allowlistAddress),
-						Description: core.StringPtr(allowlistDescription),
-					},
-				},
+				IpAddresses:   ipList,
 			}
 
 			result, response, err := db2SaasClient.PostDb2SaasAllowlist(input)
@@ -1199,15 +1207,17 @@ func resourceIBMDb2InstanceCreate(d *schema.ResourceData, meta interface{}) erro
 				log.Printf("Success result %v", result)
 			}
 		}
-
 	}
 
 	// validation check for users
-	if usersConfigRaw, ok := d.GetOk("users"); ok {
-		if usersConfigRaw == nil || reflect.ValueOf(usersConfigRaw).IsNil() {
-			fmt.Println("No users config is provided, Skipping.")
-		} else {
-			usersConfig := usersConfigRaw.([]interface{})[0].(map[string]interface{})
+	if usersConfigRaw, ok := d.GetOk("users_config"); ok {
+		usersList := usersConfigRaw.([]interface{})
+		if len(usersList) == 0 {
+			fmt.Println("No users config provided, skipping.")
+		}
+
+		for _, u := range usersList {
+			userMap := u.(map[string]interface{})
 
 			var (
 				id       string
@@ -1220,86 +1230,85 @@ func resourceIBMDb2InstanceCreate(d *schema.ResourceData, meta interface{}) erro
 				locked   string
 				method   string
 				policyID string
+				ok       bool
 			)
 
-			if usersConfig["id"] != nil {
-				id, ok = usersConfig["id"].(string)
+			if rawID, exists := userMap["id"]; exists && rawID != nil {
+				id, ok = rawID.(string)
 				if !ok {
-					return fmt.Errorf("Error in extracting id")
+					log.Printf("failed to extract 'id'")
+					return fmt.Errorf("failed to extract 'id': expected string, got %T", rawID)
 				}
 			}
-
-			if rawIAM, exists := usersConfig["iam"]; exists {
+			if rawIAM, exists := userMap["iam"]; exists && rawIAM != nil {
 				iam, ok = rawIAM.(bool)
 				if !ok {
+					log.Printf("failed to extract 'iam'")
 					return fmt.Errorf("failed to extract 'iam': expected bool, got %T", rawIAM)
 				}
 			}
-
-			if rawIBMID, exists := usersConfig["ibmid"]; exists {
+			if rawIBMID, exists := userMap["ibmid"]; exists && rawIBMID != nil {
 				ibmID, ok = rawIBMID.(string)
 				if !ok {
+					log.Printf("failed to extract 'ibmid'")
 					return fmt.Errorf("failed to extract 'ibmid': expected string, got %T", rawIBMID)
 				}
 			}
-
-			if rawName, exists := usersConfig["name"]; exists {
+			if rawName, exists := userMap["name"]; exists && rawName != nil {
 				name, ok = rawName.(string)
 				if !ok {
+					log.Printf("failed to extract 'name'")
 					return fmt.Errorf("failed to extract 'name': expected string, got %T", rawName)
 				}
 			}
-
-			if rawPassword, exists := usersConfig["password"]; exists {
+			if rawPassword, exists := userMap["password"]; exists && rawPassword != nil {
 				password, ok = rawPassword.(string)
 				if !ok {
+					log.Printf("failed to extract 'password'")
 					return fmt.Errorf("failed to extract 'password': expected string, got %T", rawPassword)
 				}
 			}
-
-			if rawRole, exists := usersConfig["role"]; exists {
+			if rawRole, exists := userMap["role"]; exists && rawRole != nil {
 				role, ok = rawRole.(string)
 				if !ok {
+					log.Printf("failed to extract 'role'")
 					return fmt.Errorf("failed to extract 'role': expected string, got %T", rawRole)
 				}
 			}
-
-			if rawEmail, exists := usersConfig["email"]; exists {
+			if rawEmail, exists := userMap["email"]; exists && rawEmail != nil {
 				email, ok = rawEmail.(string)
 				if !ok {
+					log.Printf("failed to extract 'email'")
 					return fmt.Errorf("failed to extract 'email': expected string, got %T", rawEmail)
 				}
 			}
-
-			if rawLocked, exists := usersConfig["locked"]; exists {
+			if rawLocked, exists := userMap["locked"]; exists && rawLocked != nil {
 				locked, ok = rawLocked.(string)
 				if !ok {
+					log.Printf("failed to extract 'locked'")
 					return fmt.Errorf("failed to extract 'locked': expected string, got %T", rawLocked)
 				}
 			}
 
-			if rawAuthList, exists := usersConfig["authentication"]; exists {
-				authList, ok := rawAuthList.([]interface{})
-				if !ok || len(authList) == 0 {
-					return fmt.Errorf("failed to extract 'authentication': expected non-empty list, got %T", rawAuthList)
-				}
+			// authentication block
+			if rawAuth, exists := userMap["authentication"]; exists && rawAuth != nil {
+				authList := rawAuth.([]interface{})
+				if len(authList) > 0 {
+					authMap := authList[0].(map[string]interface{})
 
-				authMap, ok := authList[0].(map[string]interface{})
-				if !ok {
-					return fmt.Errorf("failed to extract 'authentication[0]': expected map[string]interface{}, got %T", authList[0])
-				}
-
-				if rawMethod, exists := authMap["method"]; exists {
-					method, ok = rawMethod.(string)
-					if !ok {
-						return fmt.Errorf("failed to extract 'authentication.method': expected string, got %T", rawMethod)
+					if rawMethod, exists := authMap["method"]; exists && rawMethod != nil {
+						method, ok = rawMethod.(string)
+						if !ok {
+							log.Printf("failed to extract 'authentication.method'")
+							return fmt.Errorf("failed to extract 'authentication.method': expected string, got %T", rawMethod)
+						}
 					}
-				}
-
-				if rawPolicyID, exists := authMap["policy_id"]; exists {
-					policyID, ok = rawPolicyID.(string)
-					if !ok {
-						return fmt.Errorf("failed to extract 'authentication.policy_id': expected string, got %T", rawPolicyID)
+					if rawPolicy, exists := authMap["policy_id"]; exists && rawPolicy != nil {
+						policyID, ok = rawPolicy.(string)
+						if !ok {
+							log.Printf("failed to extract 'authentication.policy_id'")
+							return fmt.Errorf("failed to extract 'authentication.policy_id': expected string, got %T", rawPolicy)
+						}
 					}
 				}
 			}
@@ -1328,7 +1337,6 @@ func resourceIBMDb2InstanceCreate(d *schema.ResourceData, meta interface{}) erro
 				log.Printf("Success result %v", result)
 			}
 		}
-
 	}
 
 	if customSettingRaw, ok := d.GetOk("custom_setting_config"); ok {

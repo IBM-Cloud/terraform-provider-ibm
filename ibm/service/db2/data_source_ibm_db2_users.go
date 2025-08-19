@@ -31,13 +31,13 @@ func DataSourceIbmDb2SaasUsers() *schema.Resource {
 				Required:    true,
 				Description: "CRN deployment id.",
 			},
-			"count": &schema.Schema{
+			"users_count": &schema.Schema{
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Description: "The total number of resources.",
 			},
 			"resources": &schema.Schema{
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Computed:    true,
 				Description: "A list of user resource.",
 				Elem: &schema.Resource{
