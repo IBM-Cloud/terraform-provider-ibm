@@ -63,7 +63,7 @@ Review the argument references that you can specify for your resource.
 - `remote_gateway_ip` - (Optional, Forces new resource, String) - The remote gateway IP address. This field only applies to network type `gre_tunnel` and `unbound_gre_tunnel` connections.
 - `remote_tunnel_ip` - (Optional, Forces new resource, String) - The remote tunnel IP address. This field only applies to network type `gre_tunnel` and `unbound_gre_tunnel` connections.
 - `zone` - (Optional, Forces new resource, String) - The location of the GRE tunnel. This field only applies to network type `gre_tunnel` and `unbound_gre_tunnel` connections.
-- `cidr` - (Optional, String) - network_type `vpn_gateway` connections use `cidr` to specify the CIDR to use for the VPN GRE tunnels.
+- `cidr` - (Optional, String) - network_type `vpn_gateway` connections use `cidr` to specify the CIDR to use for the VPN GRE tunnels. This field is required for network type `vpn_gateway` connections.
 - `tunnels` - (Optional, List) List of GRE tunnels for a transit gateway redundant GRE tunnel connection. This field is required for 'redundant_gre' connections.
 Nested scheme for `tunnel`:
   - `name` - (Required, String) The user-defined name for this tunnel connection.
