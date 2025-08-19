@@ -31,7 +31,7 @@ func ResourceIBMPIWorkspace() *schema.Resource {
 			Update: schema.DefaultTimeout(10 * time.Minute),
 		},
 		CustomizeDiff: customdiff.Sequence(
-			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
+			func(_ context.Context, diff *schema.ResourceDiff, v any) error {
 				return flex.ResourcePowerUserTagsCustomizeDiff(diff)
 			},
 		),
@@ -92,10 +92,12 @@ func ResourceIBMPIWorkspace() *schema.Resource {
 	}
 }
 
-func resourceIBMPIWorkspaceCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMPIWorkspaceCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "(Resource) ibm_pi_workspace", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	name := d.Get(Arg_Name).(string)
@@ -107,8 +109,9 @@ func resourceIBMPIWorkspaceCreate(ctx context.Context, d *schema.ResourceData, m
 	client := instance.NewIBMPIWorkspacesClient(ctx, sess, "")
 	controller, _, err := client.Create(name, datacenter, resourceGroup, plan)
 	if err != nil {
-		log.Printf("[DEBUG] create workspace failed %v", err)
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Create failed: %s", err.Error()), "(Resource) ibm_pi_workspace", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID := *controller.GUID
@@ -116,19 +119,25 @@ func resourceIBMPIWorkspaceCreate(ctx context.Context, d *schema.ResourceData, m
 
 	_, err = waitForResourceWorkspaceCreate(ctx, client, cloudInstanceID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("waitForResourceWorkspaceCreate failed: %s", err.Error()), "(Resource) ibm_pi_workspace", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	if !sess.IsOnPrem() {
 		wsclient := instance.NewIBMPIWorkspacesClient(ctx, sess, cloudInstanceID)
 		wsData, err := wsclient.Get(cloudInstanceID)
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Get failed: %s", err.Error()), "(Resource) ibm_pi_workspace", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		if wsData.Capabilities[PER] {
 			_, err = waitForPERWorkspaceActive(ctx, wsclient, cloudInstanceID, d.Timeout(schema.TimeoutRead))
 			if err != nil {
-				return diag.FromErr(err)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("waitForPERWorkspaceActive failed: %s", err.Error()), "(Resource) ibm_pi_workspace", "create")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 		}
 	}
@@ -143,11 +152,10 @@ func resourceIBMPIWorkspaceCreate(ctx context.Context, d *schema.ResourceData, m
 			}
 		}
 	}
-
 	return resourceIBMPIWorkspaceRead(ctx, d, meta)
 }
 
-func waitForResourceWorkspaceCreate(ctx context.Context, client *instance.IBMPIWorkspacesClient, id string, timeout time.Duration) (interface{}, error) {
+func waitForResourceWorkspaceCreate(ctx context.Context, client *instance.IBMPIWorkspacesClient, id string, timeout time.Duration) (any, error) {
 	stateConf := &retry.StateChangeConf{
 		Pending:    []string{State_InProgress, State_Inactive, State_Provisioning},
 		Target:     []string{State_Active},
@@ -160,30 +168,34 @@ func waitForResourceWorkspaceCreate(ctx context.Context, client *instance.IBMPIW
 }
 
 func isIBMPIWorkspaceCreateRefreshFunc(client *instance.IBMPIWorkspacesClient, id string) retry.StateRefreshFunc {
-	return func() (interface{}, string, error) {
+	return func() (any, string, error) {
 		controller, _, err := client.GetRC(id)
 		if err != nil {
 			return nil, "", err
 		}
 		if *controller.State == State_Failed {
-			return controller, *controller.State, fmt.Errorf("[ERROR] The resource instance %s failed to create", id)
+			return controller, *controller.State, flex.FmtErrorf("[ERROR] The resource instance %s failed to create", id)
 		}
 		return controller, *controller.State, nil
 	}
 }
 
-func resourceIBMPIWorkspaceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMPIWorkspaceRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	// session
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "(Resource) ibm_pi_workspace", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID := d.Id()
 	client := instance.NewIBMPIWorkspacesClient(ctx, sess, cloudInstanceID)
 	controller, _, err := client.GetRC(cloudInstanceID)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetRC failed: %s", err.Error()), "(Resource) ibm_pi_workspace", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	d.Set(Arg_Name, controller.Name)
 	tags, err := flex.GetGlobalTagsUsingCRN(meta, *controller.CRN, "", UserTagType)
@@ -195,7 +207,7 @@ func resourceIBMPIWorkspaceRead(ctx context.Context, d *schema.ResourceData, met
 	d.Set(Attr_CRN, controller.CRN)
 
 	// Deprecated Workspace Details Set
-	wsDetails := map[string]interface{}{
+	wsDetails := map[string]any{
 		Attr_CreationDate: controller.CreatedAt,
 		Attr_CRN:          controller.CRN,
 	}
@@ -204,10 +216,12 @@ func resourceIBMPIWorkspaceRead(ctx context.Context, d *schema.ResourceData, met
 	return nil
 }
 
-func resourceIBMPIWorkspaceDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMPIWorkspaceDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "(Resource) ibm_pi_workspace", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID := d.Id()
@@ -218,14 +232,16 @@ func resourceIBMPIWorkspaceDelete(ctx context.Context, d *schema.ResourceData, m
 	}
 	_, err = waitForResourceWorkspaceDelete(ctx, client, cloudInstanceID, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("waitForResourceWorkspaceDelete failed: %s", err.Error()), "(Resource) ibm_pi_workspace", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	d.SetId("")
 
 	return nil
 }
 
-func waitForResourceWorkspaceDelete(ctx context.Context, client *instance.IBMPIWorkspacesClient, id string, timeout time.Duration) (interface{}, error) {
+func waitForResourceWorkspaceDelete(ctx context.Context, client *instance.IBMPIWorkspacesClient, id string, timeout time.Duration) (any, error) {
 	stateConf := &retry.StateChangeConf{
 		Pending:    []string{State_InProgress, State_Inactive, State_Active},
 		Target:     []string{State_Removed, State_PendingReclamation},
@@ -238,7 +254,7 @@ func waitForResourceWorkspaceDelete(ctx context.Context, client *instance.IBMPIW
 }
 
 func isIBMPIResourceDeleteRefreshFunc(client *instance.IBMPIWorkspacesClient, id string) retry.StateRefreshFunc {
-	return func() (interface{}, string, error) {
+	return func() (any, string, error) {
 		controller, response, err := client.GetRC(id)
 		if err != nil {
 			if response != nil && response.StatusCode == 404 {
@@ -250,14 +266,14 @@ func isIBMPIResourceDeleteRefreshFunc(client *instance.IBMPIWorkspacesClient, id
 			return controller, State_Removed, nil
 		} else {
 			if *controller.State == State_Failed {
-				return controller, *controller.State, fmt.Errorf("[ERROR] The resource instance %s failed to delete", id)
+				return controller, *controller.State, flex.FmtErrorf("[ERROR] The resource instance %s failed to delete", id)
 			}
 			return controller, *controller.State, nil
 		}
 	}
 }
 
-func resourceIBMPIWorkspaceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMPIWorkspaceUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	if d.HasChange(Arg_UserTags) {
 		if crn, ok := d.GetOk(Attr_CRN); ok {
 			oldList, newList := d.GetChange(Arg_UserTags)
