@@ -8,7 +8,6 @@
 package db2_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -31,7 +30,7 @@ func TestAccIbmDb2SaasUsersDataSourceBasic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_db2_saas_users.db2_saas_users_instance", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_db2_saas_users.db2_saas_users_instance", "x_deployment_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_db2_saas_users.db2_saas_users_instance", "count"),
+					resource.TestCheckResourceAttrSet("data.ibm_db2_saas_users.db2_saas_users_instance", "user_count"),
 					resource.TestCheckResourceAttrSet("data.ibm_db2_saas_users.db2_saas_users_instance", "resources.#"),
 				),
 			},
@@ -40,11 +39,9 @@ func TestAccIbmDb2SaasUsersDataSourceBasic(t *testing.T) {
 }
 
 func testAccCheckIbmDb2SaasUsersDataSourceConfigBasic() string {
-	return fmt.Sprintf(`
-		data "ibm_db2_saas_users" "db2_saas_users_instance" {
-			x-deployment-id = "crn:v1:staging:public:dashdb-for-transactions:us-south:a/e7e3e87b512f474381c0684a5ecbba03:69db420f-33d5-4953-8bd8-1950abd356f6::"
-		}
-	`)
+	return `data "ibm_db2_saas_users" "db2_saas_users_instance" {
+			x-deployment-id = "crn:v1:staging:public:dashdb-for-transactions:us-south:a/081cc8d873fc41268d721af06b1f81e2:f03f761b-9a01-4bb5-a06b-57dab66ff8c9::"
+		}`
 }
 
 func TestDataSourceIbmDb2SaasUsersSuccessGetUserInfoResourcesItemToMap(t *testing.T) {
