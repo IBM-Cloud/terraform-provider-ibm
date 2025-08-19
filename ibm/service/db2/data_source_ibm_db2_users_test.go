@@ -3,7 +3,7 @@
 
 /*
  * IBM OpenAPI Terraform Generator Version: 3.106.0-09823488-20250707-071701
-*/
+ */
 
 package db2_test
 
@@ -46,7 +46,6 @@ func testAccCheckIbmDb2SaasUsersDataSourceConfigBasic() string {
 		}
 	`)
 }
-
 
 func TestDataSourceIbmDb2SaasUsersSuccessGetUserInfoResourcesItemToMap(t *testing.T) {
 	checkResult := func(result map[string]interface{}) {
