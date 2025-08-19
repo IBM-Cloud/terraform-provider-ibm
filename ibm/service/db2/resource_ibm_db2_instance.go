@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"net"
 	"net/url"
 	"os"
 	"reflect"
@@ -1171,6 +1172,10 @@ func resourceIBMDb2InstanceCreate(d *schema.ResourceData, meta interface{}) erro
 					if !ok {
 						log.Printf("allowlist address is not a string")
 						return fmt.Errorf("allowlist address is not a string")
+					}
+					if ip := net.ParseIP(str); ip == nil {
+						log.Printf("invalid IP address format")
+						return fmt.Errorf("invalid IP address format: %s", str)
 					}
 					address = str
 				}
