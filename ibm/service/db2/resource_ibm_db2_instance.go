@@ -806,7 +806,7 @@ func ResourceIBMDb2Instance() *schema.Resource {
 	}
 
 	// Post allowlist // write manually
-	riSchema["allowlist"] = &schema.Schema{
+	riSchema["allowlist_config"] = &schema.Schema{
 		Description: "The db2 allowlist",
 		Optional:    true,
 		Type:        schema.TypeList,
@@ -836,7 +836,7 @@ func ResourceIBMDb2Instance() *schema.Resource {
 	}
 
 	// Post Users // write manually
-	riSchema["users"] = &schema.Schema{
+	riSchema["users_config"] = &schema.Schema{
 		Description: "The db2 new users gets created (available only for platform users)",
 		Optional:    true,
 		Type:        schema.TypeList,
@@ -1156,7 +1156,7 @@ func resourceIBMDb2InstanceCreate(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	// validation check for allowlist
-	if allowlistConfigRaw, ok := d.GetOk("allowlist"); ok {
+	if allowlistConfigRaw, ok := d.GetOk("allowlist_config"); ok {
 		list := allowlistConfigRaw.([]interface{})
 		if len(list) == 0 {
 			fmt.Println("No allowlist config provided, skipping.")
@@ -1210,7 +1210,7 @@ func resourceIBMDb2InstanceCreate(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	// validation check for users
-	if usersConfigRaw, ok := d.GetOk("users"); ok {
+	if usersConfigRaw, ok := d.GetOk("users_config"); ok {
 		usersList := usersConfigRaw.([]interface{})
 		if len(usersList) == 0 {
 			fmt.Println("No users config provided, skipping.")
