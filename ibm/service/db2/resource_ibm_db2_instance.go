@@ -805,7 +805,6 @@ func ResourceIBMDb2Instance() *schema.Resource {
 		},
 	}
 
-	// Post allowlist // write manually
 	riSchema["allowlist_config"] = &schema.Schema{
 		Description: "The db2 allowlist",
 		Optional:    true,
@@ -835,7 +834,6 @@ func ResourceIBMDb2Instance() *schema.Resource {
 		},
 	}
 
-	// Post Users // write manually
 	riSchema["users_config"] = &schema.Schema{
 		Description: "The db2 new users gets created (available only for platform users)",
 		Optional:    true,
@@ -924,9 +922,6 @@ func ResourceIBMDb2Instance() *schema.Resource {
 				return flex.ResourceTagsCustomizeDiff(diff)
 			},
 		),
-		// need to figure out additional crud block to be added (we need to figure out this for delete, put users)
-		// post users
-		// post allowlist will work without crud bloack as well
 		Schema: riSchema,
 	}
 }
