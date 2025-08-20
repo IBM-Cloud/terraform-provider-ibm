@@ -19,6 +19,9 @@ func TestStringifyString(t *testing.T) {
 
 	foo = ""
 	assert.Equal(t, foo, Stringify(foo))
+
+	s := "a string"
+	assert.Equal(t, s, Stringify(&s))
 }
 
 func TestStringifyDate(t *testing.T) {

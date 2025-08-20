@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"testing"
 
-	v "github.com/IBM-Cloud/terraform-provider-ibm/version"
 	"github.com/IBM/go-sdk-core/v5/core"
+	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -134,6 +136,196 @@ func TestTerraformProblemGetDiag(t *testing.T) {
 	assert.Equal(t, terraformProb.GetConsoleMessage(), diagnostic.Summary)
 }
 
+func TestTerraformProblemSeverity(t *testing.T) {
+	terraformProb := getPopulatedTerraformProblem()
+	assert.Equal(t, terraformProb.Severity(), diag.SeverityError)
+}
+
+func TestTerraformProblemSummary(t *testing.T) {
+	terraformProb := getPopulatedTerraformProblem()
+	assert.Equal(t, terraformProb.Summary(), terraformProb.IBMProblem.Summary)
+}
+
+func TestTerraformProblemDetail(t *testing.T) {
+	terraformProb := getPopulatedTerraformProblem()
+	assert.Equal(t, terraformProb.Detail(), terraformProb.GetConsoleMessage())
+}
+
+func TestTerraformProblemEqual(t *testing.T) {
+	terraformProb := getPopulatedTerraformProblem()
+
+	terraformProbCopy := getPopulatedTerraformProblem()
+	assert.True(t, terraformProb.Equal(terraformProbCopy))
+
+	terraformProbCopy.Resource = "changed"
+	assert.False(t, terraformProb.Equal(terraformProbCopy))
+}
+
+func TestAddCreateProblems(t *testing.T) {
+	resp := &resource.CreateResponse{}
+	var diags diag.Diagnostics
+
+	diags.AddError("my summary", "my extra details")
+
+	AddCreateProblems(resp, diags, "my_resource", "my_discriminator")
+	assert.True(t, resp.Diagnostics.HasError())
+	assert.Equal(t, 1, resp.Diagnostics.ErrorsCount())
+	asDiag := resp.Diagnostics.Errors()[0]
+	assert.Equal(t, "my summary: my extra details", asDiag.Summary())
+	assert.Equal(t, diag.SeverityError, asDiag.Severity())
+
+	asProblem, ok := asDiag.(*TerraformProblem)
+	assert.True(t, ok)
+	assert.Equal(t, asProblem.GetDebugMessage(), asDiag.Detail())
+	assert.Equal(t, core.ErrorSeverity, asProblem.IBMProblem.Severity)
+	assert.Equal(t, "create", asProblem.Operation)
+	assert.Equal(t, "my_resource", asProblem.Resource)
+	assert.Equal(t, "terraform-9beeb6f3", asProblem.GetID())
+}
+
+func TestAddUpdateProblems(t *testing.T) {
+	resp := &resource.UpdateResponse{}
+	var diags diag.Diagnostics
+
+	diags.AddError("my summary", "my extra details")
+
+	AddUpdateProblems(resp, diags, "my_resource", "my_discriminator")
+	assert.True(t, resp.Diagnostics.HasError())
+	assert.Equal(t, 1, resp.Diagnostics.ErrorsCount())
+	asDiag := resp.Diagnostics.Errors()[0]
+	assert.Equal(t, "my summary: my extra details", asDiag.Summary())
+	assert.Equal(t, diag.SeverityError, asDiag.Severity())
+
+	asProblem, ok := asDiag.(*TerraformProblem)
+	assert.True(t, ok)
+	assert.Equal(t, asProblem.GetDebugMessage(), asDiag.Detail())
+	assert.Equal(t, core.ErrorSeverity, asProblem.IBMProblem.Severity)
+	assert.Equal(t, "update", asProblem.Operation)
+	assert.Equal(t, "my_resource", asProblem.Resource)
+	assert.Equal(t, "terraform-32a9172a", asProblem.GetID())
+}
+
+func TestAddReadProblems(t *testing.T) {
+	resp := &resource.ReadResponse{}
+	var diags diag.Diagnostics
+
+	diags.AddError("my summary", "my extra details")
+
+	AddReadProblems(resp, diags, "my_resource", "my_discriminator")
+	assert.True(t, resp.Diagnostics.HasError())
+	assert.Equal(t, 1, resp.Diagnostics.ErrorsCount())
+	asDiag := resp.Diagnostics.Errors()[0]
+	assert.Equal(t, "my summary: my extra details", asDiag.Summary())
+	assert.Equal(t, diag.SeverityError, asDiag.Severity())
+
+	asProblem, ok := asDiag.(*TerraformProblem)
+	assert.True(t, ok)
+	assert.Equal(t, asProblem.GetDebugMessage(), asDiag.Detail())
+	assert.Equal(t, core.ErrorSeverity, asProblem.IBMProblem.Severity)
+	assert.Equal(t, "read", asProblem.Operation)
+	assert.Equal(t, "my_resource", asProblem.Resource)
+	assert.Equal(t, "terraform-e4739647", asProblem.GetID())
+}
+
+func TestAddDeleteProblems(t *testing.T) {
+	resp := &resource.DeleteResponse{}
+	var diags diag.Diagnostics
+
+	diags.AddError("my summary", "my extra details")
+
+	AddDeleteProblems(resp, diags, "my_resource", "my_discriminator")
+	assert.True(t, resp.Diagnostics.HasError())
+	assert.Equal(t, 1, resp.Diagnostics.ErrorsCount())
+	asDiag := resp.Diagnostics.Errors()[0]
+	assert.Equal(t, "my summary: my extra details", asDiag.Summary())
+	assert.Equal(t, diag.SeverityError, asDiag.Severity())
+
+	asProblem, ok := asDiag.(*TerraformProblem)
+	assert.True(t, ok)
+	assert.Equal(t, asProblem.GetDebugMessage(), asDiag.Detail())
+	assert.Equal(t, core.ErrorSeverity, asProblem.IBMProblem.Severity)
+	assert.Equal(t, "delete", asProblem.Operation)
+	assert.Equal(t, "my_resource", asProblem.Resource)
+	assert.Equal(t, "terraform-fbc62906", asProblem.GetID())
+}
+
+func TestAddDataSourceReadProblems(t *testing.T) {
+	resp := &datasource.ReadResponse{}
+	var diags diag.Diagnostics
+
+	diags.AddError("my summary", "my extra details")
+
+	AddDataSourceReadProblems(resp, diags, "my_resource", "my_discriminator")
+	assert.True(t, resp.Diagnostics.HasError())
+	assert.Equal(t, 1, resp.Diagnostics.ErrorsCount())
+	asDiag := resp.Diagnostics.Errors()[0]
+	assert.Equal(t, "my summary: my extra details", asDiag.Summary())
+	assert.Equal(t, diag.SeverityError, asDiag.Severity())
+
+	asProblem, ok := asDiag.(*TerraformProblem)
+	assert.True(t, ok)
+	assert.Equal(t, asProblem.GetDebugMessage(), asDiag.Detail())
+	assert.Equal(t, core.ErrorSeverity, asProblem.IBMProblem.Severity)
+	assert.Equal(t, "read", asProblem.Operation)
+	assert.Equal(t, "(Data) my_resource", asProblem.Resource)
+	assert.Equal(t, "terraform-502ffcc1", asProblem.GetID())
+}
+
+func TestAddProblems(t *testing.T) {
+	var targetDiags, sourceDiags diag.Diagnostics
+
+	targetDiags.Append(getPopulatedTerraformProblem())
+	sourceDiags.AddError("summary", "details")
+
+	addProblems(&targetDiags, &sourceDiags, "my_resource", "create", "my_discriminator")
+
+	assert.True(t, targetDiags.HasError())
+	assert.Equal(t, 2, targetDiags.ErrorsCount())
+}
+
+func TestAddProblemsWithNils(t *testing.T) {
+	var targetDiags, sourceDiags diag.Diagnostics
+
+	assert.Nil(t, targetDiags)
+	assert.Nil(t, sourceDiags)
+
+	addProblems(&targetDiags, &sourceDiags, "my_resource", "create", "my_discriminator")
+
+	assert.False(t, targetDiags.HasError())
+	assert.Equal(t, 0, targetDiags.ErrorsCount())
+}
+
+func TestFromDiagnostic(t *testing.T) {
+	var d diag.Diagnostic
+
+	// Error
+	d = diag.NewErrorDiagnostic("summary", "details")
+	prob := FromDiagnostic(d, "resource", "operation", "discriminator")
+	assert.Equal(t, "summary: details", prob.IBMProblem.Summary)
+	assert.Equal(t, core.ErrorSeverity, prob.IBMProblem.Severity)
+	assert.Equal(t, "operation", prob.Operation)
+	assert.Equal(t, "resource", prob.Resource)
+	assert.Equal(t, "terraform-01ca8439", prob.GetID())
+
+	// Warning
+	d = diag.NewWarningDiagnostic("summary", "details")
+	prob = FromDiagnostic(d, "resource", "operation", "discriminator")
+	assert.Equal(t, "summary: details", prob.IBMProblem.Summary)
+	assert.Equal(t, core.WarningSeverity, prob.IBMProblem.Severity)
+	assert.Equal(t, "operation", prob.Operation)
+	assert.Equal(t, "resource", prob.Resource)
+	assert.Equal(t, "terraform-140a3d88", prob.GetID())
+
+	// Existing TerraformProblem - ignores the given values
+	d = getPopulatedTerraformProblem()
+	prob = FromDiagnostic(d, "resource", "operation", "discriminator")
+	assert.Equal(t, "Create failed.", prob.IBMProblem.Summary)
+	assert.Equal(t, core.ErrorSeverity, prob.IBMProblem.Severity)
+	assert.Equal(t, "create", prob.Operation)
+	assert.Equal(t, "ibm_some_resource", prob.Resource)
+	assert.Equal(t, "terraform-98c0e1fd", prob.GetID())
+}
+
 func TestTerraformErrorf(t *testing.T) {
 	causedBy := &core.SDKProblem{}
 	summary := "Update failed."
@@ -142,9 +334,9 @@ func TestTerraformErrorf(t *testing.T) {
 
 	terraformProb := TerraformErrorf(causedBy, summary, resourceName, operation)
 	assert.NotNil(t, terraformProb)
-	assert.Equal(t, summary, terraformProb.Summary)
-	assert.Equal(t, getComponentInfo(), terraformProb.Component)
-	assert.Equal(t, core.ErrorSeverity, terraformProb.Severity)
+	assert.Equal(t, summary, terraformProb.IBMProblem.Summary)
+	assert.Equal(t, getComponentInfo(), terraformProb.IBMProblem.Component)
+	assert.Equal(t, core.ErrorSeverity, terraformProb.IBMProblem.Severity)
 }
 
 func TestFmtErrorfWithProblem(t *testing.T) {
@@ -157,11 +349,10 @@ func TestFmtErrorfWithProblem(t *testing.T) {
 
 	err := FmtErrorf("Operation failed: %s", sdkProb)
 
-	var tfErr *TerraformProblem
-	assert.ErrorAs(t, err, &tfErr)
-	assert.NotNil(t, tfErr)
-	assert.Equal(t, "Operation failed: Request failed.", tfErr.Summary)
-	assert.ErrorIs(t, tfErr.GetCausedBy(), sdkProb)
+	var errAsProb *core.SDKProblem
+	assert.True(t, errors.As(err, &errAsProb))
+	assert.NotNil(t, errAsProb)
+	assert.Equal(t, msg, errAsProb.Summary)
 }
 
 func TestFmtErrorfWithNoError(t *testing.T) {
@@ -189,11 +380,10 @@ func TestFmtErrorfWithProblemInServiceErrorResponse(t *testing.T) {
 
 	err := FmtErrorf("Operation failed: %s", ser)
 
-	var tfErr *TerraformProblem
-	assert.ErrorAs(t, err, &tfErr)
-	assert.NotNil(t, tfErr)
-	assert.Equal(t, fmt.Sprintf("Operation failed: %s", ser), tfErr.Summary)
-	assert.ErrorIs(t, tfErr.GetCausedBy(), sdkProb)
+	var errAsProb *core.SDKProblem
+	assert.True(t, errors.As(err, &errAsProb))
+	assert.NotNil(t, errAsProb)
+	assert.Equal(t, msg, errAsProb.Summary)
 }
 
 func TestDiscriminatedTerraformErrorf(t *testing.T) {
@@ -204,9 +394,9 @@ func TestDiscriminatedTerraformErrorf(t *testing.T) {
 
 	terraformProb := DiscriminatedTerraformErrorf(nil, summary, resourceName, operation, discriminator)
 	assert.NotNil(t, terraformProb)
-	assert.Equal(t, summary, terraformProb.Summary)
-	assert.Equal(t, getComponentInfo(), terraformProb.Component)
-	assert.Equal(t, core.ErrorSeverity, terraformProb.Severity)
+	assert.Equal(t, summary, terraformProb.IBMProblem.Summary)
+	assert.Equal(t, getComponentInfo(), terraformProb.IBMProblem.Component)
+	assert.Equal(t, core.ErrorSeverity, terraformProb.IBMProblem.Severity)
 
 	// The discriminator field is private, so it can't be checked, so make
 	// sure the hash is unique - that is the purpose of the discriminator.
@@ -218,7 +408,7 @@ func TestGetComponentInfo(t *testing.T) {
 	component := getComponentInfo()
 	assert.NotNil(t, component)
 	assert.Equal(t, MODULE_NAME, component.Name)
-	assert.Equal(t, v.Version, component.Version)
+	assert.Equal(t, "0.0.1", component.Version)
 }
 
 func getPopulatedTerraformProblem() *TerraformProblem {

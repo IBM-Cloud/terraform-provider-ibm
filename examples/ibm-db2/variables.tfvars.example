@@ -1,3 +1,0 @@
-ibmcloud_api_key                = "<ibm-cloud-api-key>"
-region                          = "<ibm-cloud-region>"
-resource_group                  = "<ibm-cloud-resource-group>"

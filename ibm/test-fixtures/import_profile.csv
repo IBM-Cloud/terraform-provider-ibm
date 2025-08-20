@@ -1,6 +1,0 @@
-"profilename","sample_tf_test_profile"
-"profilemnemonic",
-"profiledescription","profile Import-24Jan2022"
-"##METAINFO ENDS##"
-"ExternalControlId","Description","Parent","ControlId","Tags"
-"1","GoalProfile11","","1000103,1000101,1000102,1000104,1000105,1000106","CIS,IAM,IAM,AWS"

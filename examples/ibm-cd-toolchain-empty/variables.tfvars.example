@@ -1,2 +1,0 @@
-resource_group                  = "<ibm-cloud-resource-group>"
-ibmcloud_api_key                = "<ibm-cloud-api-key>"

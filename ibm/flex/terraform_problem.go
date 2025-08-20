@@ -6,7 +6,10 @@ import (
 
 	v "github.com/IBM-Cloud/terraform-provider-ibm/version"
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+	sdkDiag "github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 )
 
 // TerraformProblem provides a type that holds standardized information
@@ -17,6 +20,10 @@ type TerraformProblem struct {
 	Resource  string
 	Operation string
 }
+
+// Compile-time check that the TerraformProblem struct implements
+// the Terraform Plugin Framework's Diagnostic interface.
+var _ diag.Diagnostic = &TerraformProblem{}
 
 // GetID returns a hash value computed from stable fields in the
 // TerraformProblem instance, including Resource and Operation.
@@ -40,11 +47,11 @@ func (e *TerraformProblem) GetConsoleOrderedMaps() *core.OrderedMaps {
 	orderedMaps := core.NewOrderedMaps()
 
 	orderedMaps.Add("id", e.GetID())
-	orderedMaps.Add("summary", e.Summary)
-	orderedMaps.Add("severity", e.Severity)
+	orderedMaps.Add("summary", e.IBMProblem.Summary)
+	orderedMaps.Add("severity", e.IBMProblem.Severity)
 	orderedMaps.Add("resource", e.Resource)
 	orderedMaps.Add("operation", e.Operation)
-	orderedMaps.Add("component", e.Component)
+	orderedMaps.Add("component", e.IBMProblem.Component)
 
 	return orderedMaps
 }
@@ -63,8 +70,32 @@ func (e *TerraformProblem) GetDebugOrderedMaps() *core.OrderedMaps {
 // GetDiag returns a new Diagnostics object using the console
 // message as the summary. It is used to create a Diagnostics
 // object from a TerraformProblem in the resource/data source code.
-func (e *TerraformProblem) GetDiag() diag.Diagnostics {
-	return diag.Errorf("%s", e.GetConsoleMessage())
+func (e *TerraformProblem) GetDiag() sdkDiag.Diagnostics {
+	return sdkDiag.Errorf("%s", e.GetConsoleMessage())
+}
+
+// Implement the Terraform Plugin Framework `Diagnostic` interface.
+func (e *TerraformProblem) Severity() diag.Severity {
+	if e.IBMProblem.Severity == core.WarningSeverity {
+		return diag.SeverityWarning
+	}
+
+	return diag.SeverityError
+}
+
+func (e *TerraformProblem) Summary() string {
+	return e.IBMProblem.Summary
+}
+
+func (e *TerraformProblem) Detail() string {
+	return e.GetConsoleMessage()
+}
+
+func (e *TerraformProblem) Equal(d diag.Diagnostic) bool {
+	if tfErr, ok := d.(*TerraformProblem); ok {
+		return tfErr.GetID() == e.GetID()
+	}
+	return false
 }
 
 // TerraformErrorf creates and returns a new instance of `TerraformProblem`
@@ -88,8 +119,72 @@ func DiscriminatedTerraformErrorf(err error, summary, resource, operation, discr
 	}
 }
 
+// FromDiagnostic accepts an instance of the Diagnostic interface and converts
+// it to a new TerraformProblem instance, preserving the information stored in
+// the diagnostic.
+func FromDiagnostic(d diag.Diagnostic, resource, operation, discriminator string) *TerraformProblem {
+	// Since the TerraformProblem struct implements the Diagnositc interface,
+	// check if this is already a TerraformProblem instance. If it is, return
+	// it to preserve its details.
+	if asProb, ok := d.(*TerraformProblem); ok {
+		return asProb
+	}
+
+	// Combine the "summary" and "details" to preserve the original diagnostic information.
+	msg := fmt.Sprintf("%s: %s", d.Summary(), d.Detail())
+	prob := &TerraformProblem{
+		IBMProblem: core.IBMErrorf(nil, getComponentInfo(), msg, discriminator),
+		Resource:   resource,
+		Operation:  operation,
+	}
+
+	// IBM problems are errors by default but the diagnostic instances may have
+	// warning severity - ensure the severity is preserved.
+	if d.Severity() == diag.SeverityWarning {
+		prob.IBMProblem.Severity = core.WarningSeverity
+	}
+
+	return prob
+}
+
 func getComponentInfo() *core.ProblemComponent {
 	return core.NewProblemComponent("github.com/IBM-Cloud/terraform-provider-ibm", v.Version)
+}
+
+// AddCreateProblems converts Diagnostics instances to TerraformProblem instances and
+// appends them to the given CreateResponse instance.
+func AddCreateProblems(resp *resource.CreateResponse, d diag.Diagnostics, resource, discriminator string) {
+	addProblems(&resp.Diagnostics, &d, resource, "create", discriminator)
+}
+
+// AddUpdateProblems converts Diagnostics instances to TerraformProblem instances and
+// appends them to the given UpdateResponse instance.
+func AddUpdateProblems(resp *resource.UpdateResponse, d diag.Diagnostics, resource, discriminator string) {
+	addProblems(&resp.Diagnostics, &d, resource, "update", discriminator)
+}
+
+// AddReadProblems converts Diagnostics instances to TerraformProblem instances and
+// appends them to the given ReadResponse instance.
+func AddReadProblems(resp *resource.ReadResponse, d diag.Diagnostics, resource, discriminator string) {
+	addProblems(&resp.Diagnostics, &d, resource, "read", discriminator)
+}
+
+// AddDeleteProblems converts Diagnostics instances to TerraformProblem instances and
+// appends them to the given DeleteResponse instance.
+func AddDeleteProblems(resp *resource.DeleteResponse, d diag.Diagnostics, resource, discriminator string) {
+	addProblems(&resp.Diagnostics, &d, resource, "delete", discriminator)
+}
+
+// AddDataSourceReadProblems converts Diagnostics instances to TerraformProblem instances and
+// appends them to the given ReadResponse instance.
+func AddDataSourceReadProblems(resp *datasource.ReadResponse, d diag.Diagnostics, datasource, discriminator string) {
+	addProblems(&resp.Diagnostics, &d, "(Data) "+datasource, "read", discriminator)
+}
+
+func addProblems(target, source *diag.Diagnostics, resource, operation, discriminator string) {
+	for _, diagnostic := range *source {
+		target.Append(FromDiagnostic(diagnostic, resource, operation, discriminator))
+	}
 }
 
 // FmtErrorf wraps `fmt.Errorf(format string, a ...interface{}) error`
@@ -116,7 +211,7 @@ func FmtErrorf(format string, a ...interface{}) error {
 				tfError = TerraformErrorf(err, err.Error(), "", "")
 			}
 
-			tfError.Summary = intendedError.Error()
+			tfError.IBMProblem.Summary = intendedError.Error()
 			return tfError
 		}
 	}
