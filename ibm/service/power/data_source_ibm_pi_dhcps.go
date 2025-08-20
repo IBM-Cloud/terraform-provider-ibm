@@ -67,7 +67,7 @@ func DataSourceIBMPIDhcps() *schema.Resource {
 func dataSourceIBMPIDhcpServersRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "(Data) ibm_pi_dhcps", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "(Data) ibm_pi_dhcps", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -76,7 +76,7 @@ func dataSourceIBMPIDhcpServersRead(ctx context.Context, d *schema.ResourceData,
 	client := instance.NewIBMPIDhcpClient(ctx, sess, cloudInstanceID)
 	dhcpServers, err := client.GetAll()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetAll failed: %s", err.Error()), "(Data) ibm_pi_dhcps", "")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetAll failed: %s", err.Error()), "(Data) ibm_pi_dhcps", "read")
 		log.Printf("[DEBUG] get all DHCP failed \n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
