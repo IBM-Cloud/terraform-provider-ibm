@@ -236,6 +236,12 @@ func ResourceIBMPIInstance() *schema.Resource {
 				Optional:    true,
 				Type:        schema.TypeString,
 			},
+			Arg_PreferredProcessorCompatibilityMode: {
+				Computed:    true,
+				Description: "Preferred processor compatibility mode.",
+				Optional:    true,
+				Type:        schema.TypeString,
+			},
 			Arg_ProcType: {
 				Computed:      true,
 				ConflictsWith: []string{Arg_SAPProfileID},
@@ -411,6 +417,11 @@ func ResourceIBMPIInstance() *schema.Resource {
 			Attr_DedicatedHostID: {
 				Computed:    true,
 				Description: "The dedicated host ID where the shared processor pool resides.",
+				Type:        schema.TypeString,
+			},
+			Attr_EffectiveProcessorCompatibilityMode: {
+				Computed:    true,
+				Description: "Effective processor compatibility mode.",
 				Type:        schema.TypeString,
 			},
 			Attr_Fault: {
@@ -711,6 +722,8 @@ func resourceIBMPIInstanceRead(ctx context.Context, d *schema.ResourceData, meta
 	} else {
 		d.Set(Arg_VirtualSerialNumber, nil)
 	}
+	d.Set(Arg_PreferredProcessorCompatibilityMode, powervmdata.PreferredProcessorCompatibilityMode)
+	d.Set(Attr_EffectiveProcessorCompatibilityMode, powervmdata.EffectiveProcessorCompatibilityMode)
 
 	return nil
 }
@@ -746,7 +759,7 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 	}
 	cores_enabled := checkCloudInstanceCapability(cloudInstance, CUSTOM_VIRTUAL_CORES)
 
-	if d.HasChanges(Arg_InstanceName, Arg_VirtualOpticalDevice) {
+	if d.HasChanges(Arg_InstanceName, Arg_VirtualOpticalDevice, Arg_PreferredProcessorCompatibilityMode) {
 		if d.HasChange(Arg_InstanceName) && d.HasChange(Arg_VirtualOpticalDevice) {
 			oldVOD, _ := d.GetChange(Arg_VirtualOpticalDevice)
 			d.Set(Arg_VirtualOpticalDevice, oldVOD)
@@ -763,6 +776,9 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 			} else {
 				body.CloudInitialization.VirtualOpticalDevice = Detach
 			}
+		}
+		if d.HasChange(Arg_PreferredProcessorCompatibilityMode) {
+			body.PreferredProcessorCompatibilityMode = d.Get(Arg_PreferredProcessorCompatibilityMode).(string)
 		}
 		_, err = client.Update(instanceID, body)
 		if err != nil {
@@ -1736,6 +1752,9 @@ func createSAPInstance(d *schema.ResourceData, sapClient *instance.IBMPISAPInsta
 	if tags, ok := d.GetOk(Arg_UserTags); ok {
 		body.UserTags = flex.FlattenSet(tags.(*schema.Set))
 	}
+	if ppcm, ok := d.GetOk(Arg_PreferredProcessorCompatibilityMode); ok {
+		body.PreferredProcessorCompatibilityMode = ppcm.(string)
+	}
 	pvmList, err := sapClient.Create(body)
 	if err != nil {
 		return nil, fmt.Errorf("failed to provision: %v", err)
@@ -1952,6 +1971,9 @@ func createPVMInstance(d *schema.ResourceData, client *instance.IBMPIInstanceCli
 		vsnListType := vsn.([]interface{})
 		vsnCreateModel := vsnSetToCreateModel(vsnListType)
 		body.VirtualSerialNumber = vsnCreateModel
+	}
+	if ppcm, ok := d.GetOk(Arg_PreferredProcessorCompatibilityMode); ok {
+		body.PreferredProcessorCompatibilityMode = ppcm.(string)
 	}
 
 	pvmList, err := client.Create(body)
