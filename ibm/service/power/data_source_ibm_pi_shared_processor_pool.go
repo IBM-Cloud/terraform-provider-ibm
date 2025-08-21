@@ -181,7 +181,7 @@ func dataSourceIBMPISharedProcessorPoolRead(ctx context.Context, d *schema.Resou
 			d.Set(Attr_UserTags, tags)
 		}
 	}
-	d.Set(Attr_CreationDate, response.SharedProcessorPool.CreationDate)
+	d.Set(Attr_CreationDate, response.SharedProcessorPool.CreationDate.String())
 	d.Set(Attr_DedicatedHostID, response.SharedProcessorPool.DedicatedHostID)
 	d.Set(Attr_HostID, response.SharedProcessorPool.HostID)
 	d.Set(Attr_Name, response.SharedProcessorPool.Name)

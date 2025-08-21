@@ -343,7 +343,7 @@ func resourceIBMPISharedProcessorPoolRead(ctx context.Context, d *schema.Resourc
 			d.Set(Arg_SharedProcessorPoolPlacementGroups, pgIDs)
 		}
 	}
-	d.Set(Attr_CreationDate, response.SharedProcessorPool.CreationDate)
+	d.Set(Attr_CreationDate, response.SharedProcessorPool.CreationDate.String())
 	d.Set(Attr_DedicatedHostID, response.SharedProcessorPool.DedicatedHostID)
 	d.Set(Attr_HostID, response.SharedProcessorPool.HostID)
 	d.Set(Attr_Status, response.SharedProcessorPool.Status)

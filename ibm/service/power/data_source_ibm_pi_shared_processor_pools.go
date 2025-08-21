@@ -123,7 +123,7 @@ func dataSourceIBMPISharedProcessorPoolsRead(ctx context.Context, d *schema.Reso
 		key := map[string]any{
 			Attr_AllocatedCores:        *pool.AllocatedCores,
 			Attr_AvailableCores:        *pool.AvailableCores,
-			Attr_CreationDate:          *pool.CreationDate,
+			Attr_CreationDate:          pool.CreationDate.String(),
 			Attr_DedicatedHostID:       pool.DedicatedHostID,
 			Attr_HostID:                pool.HostID,
 			Attr_Name:                  *pool.Name,
