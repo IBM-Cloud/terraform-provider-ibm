@@ -152,7 +152,7 @@ func DataSourceIbmDb2SaasUsers() *schema.Resource {
 func dataSourceIbmDb2SaasUsersRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	db2saasClient, err := meta.(conns.ClientSession).Db2saasV1()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_db2_saas_users", "read", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_db2_users", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -163,27 +163,27 @@ func dataSourceIbmDb2SaasUsersRead(context context.Context, d *schema.ResourceDa
 
 	successGetUserInfo, _, err := db2saasClient.GetDb2SaasUserWithContext(context, getDb2SaasUserOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetDb2SaasUserWithContext failed: %s", err.Error()), "(Data) ibm_db2_saas_users", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetDb2SaasUserWithContext failed: %s", err.Error()), "(Data) ibm_db2_users", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 
 	d.SetId(dataSourceIbmDb2SaasUsersID(d))
 
-	if err = d.Set("count", flex.IntValue(successGetUserInfo.Count)); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting count: %s", err), "(Data) ibm_db2_saas_users", "read", "set-count").GetDiag()
+	if err = d.Set("users_count", flex.IntValue(successGetUserInfo.Count)); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting count: %s", err), "(Data) ibm_db2_users", "read", "set-count").GetDiag()
 	}
 
 	resources := []map[string]interface{}{}
 	for _, resourcesItem := range successGetUserInfo.Resources {
 		resourcesItemMap, err := DataSourceIbmDb2SaasUsersSuccessGetUserInfoResourcesItemToMap(&resourcesItem) // #nosec G601
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_db2_saas_users", "read", "resources-to-map").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_db2_users", "read", "resources-to-map").GetDiag()
 		}
 		resources = append(resources, resourcesItemMap)
 	}
 	if err = d.Set("resources", resources); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resources: %s", err), "(Data) ibm_db2_saas_users", "read", "set-resources").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resources: %s", err), "(Data) ibm_db2_users", "read", "set-resources").GetDiag()
 	}
 
 	return nil

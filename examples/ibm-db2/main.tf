@@ -3,19 +3,19 @@ data "ibm_resource_group" "group" {
 }
 
 //Db2 SaaS Instance Creation
-resource "ibm_db2" "db2_instance" {
-  name                         = "test31-db2-v32"
-  service                      = "dashdb-for-transactions"
-  plan                         = "performance-dev"
-  location                     = var.region
-  resource_group_id            = data.ibm_resource_group.group.id
-  service_endpoints            = "public-and-private"
-  instance_type                = "bx2.4x16"
-  high_availability            = "yes"
-  backup_location              = "us"
-  disk_encryption_instance_crn = "none"
-  disk_encryption_key_crn      = "none"
-  oracle_compatibility         = "no"
+#resource "ibm_db2" "db2_instance" {
+#  name                         = "test31-db2-v32"
+#  service                      = "dashdb-for-transactions"
+#  plan                         = "performance-dev"
+#  location                     = var.region
+#  resource_group_id            = data.ibm_resource_group.group.id
+#  service_endpoints            = "public-and-private"
+#  instance_type                = "bx2.4x16"
+#  high_availability            = "yes"
+#  backup_location              = "us"
+#  disk_encryption_instance_crn = "none"
+# disk_encryption_key_crn      = "none"
+#  oracle_compatibility         = "no"
 
 
 // users_config {
@@ -33,12 +33,12 @@ resource "ibm_db2" "db2_instance" {
 #   }
 #  }
 
- allowlist_config {
-   ip_addresses {
-      address     = "127.0.0.32"
-      description = "A sample IP address 32"
-    }
- }
+// allowlist_config {
+#   ip_addresses {
+#      address     = "127.0.0.32"
+#      description = "A sample IP address 32"
+#    }
+# }
 
 //  autoscale_config {
 #    auto_scaling_enabled          = "true"
@@ -200,12 +200,12 @@ resource "ibm_db2" "db2_instance" {
 //     }
 //   }
 
-  timeouts {
-    create = "720m"
-    update = "60m"
-    delete = "30m"
-  }
-}
+#  timeouts {
+#    create = "720m"
+#    update = "60m"
+#    delete = "30m"
+#  }
+#}
 
 //Db2 SaaS Connection Info
 # data "ibm_db2_connection_info" "db2_connection_info" {
@@ -246,9 +246,9 @@ resource "ibm_db2" "db2_instance" {
 # }
 
 // Db2 SaaS List Users
-# data "ibm_db2_users" "db2_list_users" {
-#     x_deployment_id = "crn:v1:staging:public:dashdb-for-transactions:us-east:a/081cc8d873fc41268d721af06b1f81e2:13367859-937d-4aef-a511-07247c15d1fc::"
-# }
+data "ibm_db2_users" "db2_list_users" {
+  x_deployment_id = "crn:v1:staging:public:dashdb-for-transactions:us-south:a/081cc8d873fc41268d721af06b1f81e2:f03f761b-9a01-4bb5-a06b-57dab66ff8c9::"
+}
 
 //Db2 SaaS List Users by ID
 // data "ibm_db2_users_by_id" "db2_list_users_by_id" {
