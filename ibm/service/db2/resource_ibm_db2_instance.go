@@ -806,7 +806,7 @@ func ResourceIBMDb2Instance() *schema.Resource {
 	}
 
 	// Post allowlist // write manually
-	riSchema["allowlist"] = &schema.Schema{
+	riSchema["allowlist_config"] = &schema.Schema{
 		Description: "The db2 allowlist",
 		Optional:    true,
 		Type:        schema.TypeList,
