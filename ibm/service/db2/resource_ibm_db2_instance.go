@@ -805,7 +805,6 @@ func ResourceIBMDb2Instance() *schema.Resource {
 		},
 	}
 
-	// Post allowlist // write manually
 	riSchema["allowlist_config"] = &schema.Schema{
 		Description: "The db2 allowlist",
 		Optional:    true,
@@ -1330,7 +1329,7 @@ func resourceIBMDb2InstanceCreate(d *schema.ResourceData, meta interface{}) erro
 			var response *core.DetailedResponse
 			var err error
 
-			// need to uncomment following once, updated sdk is uploaded
+			// // need to uncomment following, once updated sdk is uploaded
 			// if id != "" {
 			// 	// If ID exists, try updating with PUT
 			// 	updateInput := &db2saasv1.PutDb2SaasUserOptions{
