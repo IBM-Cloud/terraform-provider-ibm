@@ -806,7 +806,7 @@ func ResourceIBMDb2Instance() *schema.Resource {
 	}
 
 	// Post allowlist // write manually
-	riSchema["allowlist_config"] = &schema.Schema{
+	riSchema["allowlist"] = &schema.Schema{
 		Description: "The db2 allowlist",
 		Optional:    true,
 		Type:        schema.TypeList,
@@ -835,7 +835,6 @@ func ResourceIBMDb2Instance() *schema.Resource {
 		},
 	}
 
-	// Post Users // write manually
 	riSchema["users_config"] = &schema.Schema{
 		Description: "The db2 new users gets created (available only for platform users)",
 		Optional:    true,
@@ -924,9 +923,6 @@ func ResourceIBMDb2Instance() *schema.Resource {
 				return flex.ResourceTagsCustomizeDiff(diff)
 			},
 		),
-		// need to figure out additional crud block to be added (we need to figure out this for delete, put users)
-		// post users
-		// post allowlist will work without crud bloack as well
 		Schema: riSchema,
 	}
 }
@@ -1156,7 +1152,7 @@ func resourceIBMDb2InstanceCreate(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	// validation check for allowlist
-	if allowlistConfigRaw, ok := d.GetOk("allowlist"); ok {
+	if allowlistConfigRaw, ok := d.GetOk("allowlist_config"); ok {
 		list := allowlistConfigRaw.([]interface{})
 		if len(list) == 0 {
 			fmt.Println("No allowlist config provided, skipping.")
@@ -1173,12 +1169,10 @@ func resourceIBMDb2InstanceCreate(d *schema.ResourceData, meta interface{}) erro
 						log.Printf("allowlist address is not a string")
 						return fmt.Errorf("allowlist address is not a string")
 					}
-
 					if ip := net.ParseIP(str); ip == nil {
 						log.Printf("invalid IP address format")
 						return fmt.Errorf("invalid IP address format: %s", str)
 					}
-
 					address = str
 				}
 
@@ -1213,7 +1207,7 @@ func resourceIBMDb2InstanceCreate(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	// validation check for users
-	if usersConfigRaw, ok := d.GetOk("users"); ok {
+	if usersConfigRaw, ok := d.GetOk("users_config"); ok {
 		usersList := usersConfigRaw.([]interface{})
 		if len(usersList) == 0 {
 			fmt.Println("No users config provided, skipping.")
@@ -1332,9 +1326,36 @@ func resourceIBMDb2InstanceCreate(d *schema.ResourceData, meta interface{}) erro
 				},
 			}
 
-			result, response, err := db2SaasClient.PostDb2SaasUser(input)
+			var result interface{}
+			var response *core.DetailedResponse
+			var err error
+
+			// need to uncomment following once, updated sdk is uploaded
+			// if id != "" {
+			// 	// If ID exists, try updating with PUT
+			// 	updateInput := &db2saasv1.PutDb2SaasUserOptions{
+			// 		XDeploymentID: core.StringPtr(encodedCRN),
+			// 		ID:            core.StringPtr(id),
+			// 		Iam:           core.BoolPtr(iam),
+			// 		Ibmid:         core.StringPtr(ibmID),
+			// 		Name:          core.StringPtr(name),
+			// 		Password:      core.StringPtr(password),
+			// 		Role:          core.StringPtr(role),
+			// 		Email:         core.StringPtr(email),
+			// 		Locked:        core.StringPtr(locked),
+			// 		Authentication: &db2saasv1.CreateUserAuthentication{
+			// 			Method:   core.StringPtr(method),
+			// 			PolicyID: core.StringPtr(policyID),
+			// 		},
+			// 	}
+			// 	result, response, err = db2SaasClient.PutDb2SaasUser(updateInput)
+			// } else {
+			// Otherwise create new user with POST
+			result, response, err = db2SaasClient.PostDb2SaasUser(input)
+			// }
+
 			if err != nil {
-				log.Printf("Error while updating users config to DB2Saas: %s", err)
+				log.Printf("Error while sending users config to DB2: %s", err)
 			} else {
 				log.Printf("StatusCode of response %d", response.StatusCode)
 				log.Printf("Success result %v", result)
