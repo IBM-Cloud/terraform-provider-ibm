@@ -170,7 +170,7 @@ func dataSourceIbmDb2SaasUsersRead(context context.Context, d *schema.ResourceDa
 
 	d.SetId(dataSourceIbmDb2SaasUsersID(d))
 
-	if err = d.Set("count", flex.IntValue(successGetUserInfo.Count)); err != nil {
+	if err = d.Set("users_count", flex.IntValue(successGetUserInfo.Count)); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting count: %s", err), "(Data) ibm_db2_saas_users", "read", "set-count").GetDiag()
 	}
 

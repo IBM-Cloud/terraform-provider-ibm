@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"net"
 	"net/url"
 	"os"
 	"reflect"
@@ -805,7 +806,7 @@ func ResourceIBMDb2Instance() *schema.Resource {
 	}
 
 	// Post allowlist // write manually
-	riSchema["allowlist"] = &schema.Schema{
+	riSchema["allowlist_config"] = &schema.Schema{
 		Description: "The db2 allowlist",
 		Optional:    true,
 		Type:        schema.TypeList,
@@ -835,7 +836,7 @@ func ResourceIBMDb2Instance() *schema.Resource {
 	}
 
 	// Post Users // write manually
-	riSchema["users"] = &schema.Schema{
+	riSchema["users_config"] = &schema.Schema{
 		Description: "The db2 new users gets created (available only for platform users)",
 		Optional:    true,
 		Type:        schema.TypeList,
@@ -1172,8 +1173,15 @@ func resourceIBMDb2InstanceCreate(d *schema.ResourceData, meta interface{}) erro
 						log.Printf("allowlist address is not a string")
 						return fmt.Errorf("allowlist address is not a string")
 					}
+
+					if ip := net.ParseIP(str); ip == nil {
+						log.Printf("invalid IP address format")
+						return fmt.Errorf("invalid IP address format: %s", str)
+					}
+
 					address = str
 				}
+
 				if rawDescription, ok := entry["description"]; ok && rawDescription != nil {
 					str, ok := rawDescription.(string)
 					if !ok {
