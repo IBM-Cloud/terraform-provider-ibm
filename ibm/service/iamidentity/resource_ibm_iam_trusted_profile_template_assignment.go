@@ -672,9 +672,9 @@ func resourceIBMTrustedProfileTemplateAssignmentTemplateAssignmentResponseResour
 		}
 		modelMap["profile"] = []map[string]interface{}{profileMap}
 	}
-	if model.PolicyTemplateRefs != nil {
+	if model.PolicyTemplateReferences != nil {
 		policyTemplateRefs := []map[string]interface{}{}
-		for _, policyTemplateRefsItem := range model.PolicyTemplateRefs {
+		for _, policyTemplateRefsItem := range model.PolicyTemplateReferences {
 			policyTemplateRefsItemMap, err := resourceIBMTrustedProfileTemplateAssignmentTemplateAssignmentResponseResourceDetailToMap(&policyTemplateRefsItem)
 			if err != nil {
 				return modelMap, err

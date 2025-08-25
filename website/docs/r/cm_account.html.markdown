@@ -47,6 +47,24 @@ resource "ibm_cm_account" "cm_account_instance" {
     }
     include_all = true
   }
+
+  terraform_engines {
+    name = "my-tfe-instance"
+    type = "terraform-enterprise"
+    public_endpoint = "<public_endpoint>"
+    private_endpoint = "<private_endpoint>"
+    api_token = "<api_token>"
+    da_creation {
+      enabled = true
+      default_private_catalog_id = "<catalog_id>"
+      polling_info {
+        scopes {
+          name = "<project_name>"
+          type = "project"
+        }
+      }
+    }
+  }
 }
 ```
 
@@ -77,6 +95,27 @@ Nested schema for **account_filters**:
 * `hide_ibm_cloud_catalog` - (Boolean, Optional) Hide the public catalog in this account.
 * `region_filter` - (String, Optional) Region filter string.
 * `rev` - (String) Cloudant revision.
+* `terraform_engines` - (List) List of terraform engines configured for this account.
+Nested schema for **terraform_engines**:
+	* `api_token` - (String) The api key used to access the engine instance.
+	* `da_creation` - (List) The settings that determines how deployable architectures are auto-created from workspaces in the terraform engine.
+	Nested schema for **da_creation**:
+		* `default_private_catalog_id` - (String) Default private catalog to create the deployable architectures in.
+		* `enabled` - (Boolean) Determines whether deployable architectures are auto-created from workspaces in the engine.
+		* `polling_info` - (List) Determines which workspace scope to query to auto-create deployable architectures from.
+		Nested schema for **polling_info**:
+			* `last_polling_status` - (List) Last polling status of the engine scope.
+			Nested schema for **last_polling_status**:
+				* `code` - (Integer) Status code of the last polling attempt.
+				* `message` - (String) Status message from the last polling attempt.
+			* `scopes` - (List) List of scopes to auto-create deployable architectures from workspaces in the engine.
+			Nested schema for **scopes**:
+				* `name` - (String) Identifier for the specified type in the scope.
+				* `type` - (String) Scope to auto-create deployable architectures from. The supported scopes today are workspace, org, and project.
+	* `name` - (String) User provided name for the specified engine.
+	* `private_endpoint` - (String) The private endpoint for the engine instance.
+	* `public_endpoint` - (String) The public endpoint for the engine instance.
+	* `type` - (String) The terraform engine type. The only one supported at the moment is terraform-enterprise.
 
 
 ## Import
