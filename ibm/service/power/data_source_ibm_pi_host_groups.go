@@ -5,15 +5,17 @@ package power
 
 import (
 	"context"
-
-	"github.com/hashicorp/go-uuid"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"fmt"
+	"log"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/hashicorp/go-uuid"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 func DataSourceIBMPIHostGroups() *schema.Resource {
@@ -78,17 +80,21 @@ func DataSourceIBMPIHostGroups() *schema.Resource {
 	}
 }
 
-func dataSourceIBMPIHostGroupsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMPIHostGroupsRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "(Data) ibm_pi_host_groups", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
 
 	client := instance.NewIBMPIHostGroupsClient(ctx, sess, cloudInstanceID)
 	hostGroups, err := client.GetHostGroups()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetHostGroups failed: %s", err.Error()), "(Data) ibm_pi_host_groups", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	var clientgenU, _ = uuid.GenerateUUID()
 	d.SetId(clientgenU)
@@ -97,10 +103,10 @@ func dataSourceIBMPIHostGroupsRead(ctx context.Context, d *schema.ResourceData, 
 
 	return nil
 }
-func flattenHostGroups(hostGroupList models.HostGroupList) []map[string]interface{} {
-	hostGroups := make([]map[string]interface{}, 0, len(hostGroupList))
+func flattenHostGroups(hostGroupList models.HostGroupList) []map[string]any {
+	hostGroups := make([]map[string]any, 0, len(hostGroupList))
 	for _, hg := range hostGroupList {
-		hostGroup := map[string]interface{}{
+		hostGroup := map[string]any{
 			Attr_CreationDate: hg.CreationDate.String(),
 			Attr_Hosts:        hg.Hosts,
 			Attr_ID:           hg.ID,
