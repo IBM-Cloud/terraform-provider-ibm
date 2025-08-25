@@ -1,7 +1,7 @@
 ---
 subcategory: "Power Systems"
 layout: "ibm"
-page_title: "IBM: pi_volume_flash_copy_mappings"
+page_title: "IBM: ibm_pi_volume_flash_copy_mappings"
 description: |-
   Manages a volume flash copy mappings in the Power Virtual Server cloud.
 ---
@@ -15,7 +15,7 @@ Retrieves information about flash copy mappings of a volume. For more informatio
 The following example retrieves information about flash copy mappings of a volume in Power Systems Virtual Server.
 
 ```terraform
-data "pi_volume_flash_copy_mappings" "ds_volume_flash_copy_mappings" {
+data "ibm_pi_volume_flash_copy_mappings" "ds_volume_flash_copy_mappings" {
   pi_volume_id         = "810b5fde-e054-4577-ab5e-3f866a1f6f66"
   pi_cloud_instance_id = "49fba6c9-23f8-40bc-9899-aca322ee7d5b"
 }
