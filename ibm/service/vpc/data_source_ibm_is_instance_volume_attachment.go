@@ -165,8 +165,10 @@ func instanceVolumeAttachmentGetByName(context context.Context, d *schema.Resour
 			if err = d.Set("delete_volume_on_instance_delete", volumeAttachment.DeleteVolumeOnInstanceDelete); err != nil {
 				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting delete_volume_on_instance_delete: %s", err), "(Data) ibm_is_instance_volume_attachment", "read", "set-delete_volume_on_instance_delete").GetDiag()
 			}
-			if err = d.Set("device", *volumeAttachment.Device.ID); err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting device: %s", err), "(Data) ibm_is_instance_volume_attachment", "read", "set-device").GetDiag()
+			if volumeAttachment.Device != nil {
+				if err = d.Set("device", *volumeAttachment.Device.ID); err != nil {
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting device: %s", err), "(Data) ibm_is_instance_volume_attachment", "read", "set-device").GetDiag()
+				}
 			}
 			if err = d.Set("href", volumeAttachment.Href); err != nil {
 				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting href: %s", err), "(Data) ibm_is_instance_volume_attachment", "read", "set-href").GetDiag()
