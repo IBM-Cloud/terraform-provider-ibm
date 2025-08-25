@@ -5,6 +5,8 @@ package power
 
 import (
 	"context"
+	"fmt"
+	"log"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/power/models"
@@ -176,10 +178,12 @@ func DataSourceIBMPIDatacenter() *schema.Resource {
 	}
 }
 
-func dataSourceIBMPIDatacenterRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMPIDatacenterRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "(Data) ibm_pi_datacenter", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	datacenterZone := sess.Options.Zone
@@ -195,12 +199,14 @@ func dataSourceIBMPIDatacenterRead(ctx context.Context, d *schema.ResourceData, 
 
 	dcData, err := client.Get(datacenterZone)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Get failed: %s", err.Error()), "(Data) ibm_pi_datacenter", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	var genID, _ = uuid.GenerateUUID()
 	d.SetId(genID)
 	d.Set(Attr_DatacenterCapabilities, dcData.Capabilities)
-	dclocation := map[string]interface{}{
+	dclocation := map[string]any{
 		Attr_Region: *dcData.Location.Region,
 		Attr_Type:   *dcData.Location.Type,
 		Attr_URL:    *dcData.Location.URL,
@@ -209,11 +215,13 @@ func dataSourceIBMPIDatacenterRead(ctx context.Context, d *schema.ResourceData, 
 	d.Set(Attr_DatacenterLocation, flex.Flatten(dclocation))
 	d.Set(Attr_DatacenterStatus, dcData.Status)
 	d.Set(Attr_DatacenterType, dcData.Type)
-	capabilityDetails := make([]map[string]interface{}, 0, 10)
+	capabilityDetails := make([]map[string]any, 0, 10)
 	if dcData.CapabilitiesDetails != nil {
 		capabilityDetailsMap, err := capabilityDetailsToMap(dcData.CapabilitiesDetails)
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("capabilityDetailsToMap failed: %s", err.Error()), "(Data) ibm_pi_datacenter", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		capabilityDetails = append(capabilityDetails, capabilityDetailsMap)
 	}
@@ -222,37 +230,36 @@ func dataSourceIBMPIDatacenterRead(ctx context.Context, d *schema.ResourceData, 
 	return nil
 }
 
-func capabilityDetailsToMap(cd *models.CapabilitiesDetails) (map[string]interface{}, error) {
-	capabilityDetailsMap := make(map[string]interface{})
+func capabilityDetailsToMap(cd *models.CapabilitiesDetails) (map[string]any, error) {
+	capabilityDetailsMap := make(map[string]any)
 	disasterRecoveryMap := disasterRecoveryToMap(cd.DisasterRecovery)
-	capabilityDetailsMap[Attr_DisasterRecovery] = []map[string]interface{}{disasterRecoveryMap}
+	capabilityDetailsMap[Attr_DisasterRecovery] = []map[string]any{disasterRecoveryMap}
 
-	supportedSystemsMap := make(map[string]interface{})
+	supportedSystemsMap := make(map[string]any)
 	supportedSystemsMap[Attr_Dedicated] = cd.SupportedSystems.Dedicated
 	supportedSystemsMap[Attr_General] = cd.SupportedSystems.General
-	capabilityDetailsMap[Attr_SupportedSystems] = []map[string]interface{}{supportedSystemsMap}
+	capabilityDetailsMap[Attr_SupportedSystems] = []map[string]any{supportedSystemsMap}
+
 	return capabilityDetailsMap, nil
 }
 
-func disasterRecoveryToMap(dr *models.DisasterRecovery) map[string]interface{} {
-	disasterRecoveryMap := make(map[string]interface{})
+func disasterRecoveryToMap(dr *models.DisasterRecovery) map[string]any {
+	disasterRecoveryMap := make(map[string]any)
 	asynchronousReplicationMap := replicationServiceToMap(dr.AsynchronousReplication)
-	disasterRecoveryMap[Attr_AsynchronousReplication] = []map[string]interface{}{asynchronousReplicationMap}
+	disasterRecoveryMap[Attr_AsynchronousReplication] = []map[string]any{asynchronousReplicationMap}
 	if dr.SynchronousReplication != nil {
 		synchronousReplicationMap := replicationServiceToMap(dr.SynchronousReplication)
-		disasterRecoveryMap[Attr_SynchronousReplication] = []map[string]interface{}{synchronousReplicationMap}
+		disasterRecoveryMap[Attr_SynchronousReplication] = []map[string]any{synchronousReplicationMap}
 	}
-
 	return disasterRecoveryMap
 }
 
-func replicationServiceToMap(rs *models.ReplicationService) map[string]interface{} {
-	replicationMap := make(map[string]interface{})
+func replicationServiceToMap(rs *models.ReplicationService) map[string]any {
+	replicationMap := make(map[string]any)
 	replicationMap[Attr_Enabled] = rs.Enabled
-	targetLocations := []map[string]interface{}{}
+	targetLocations := []map[string]any{}
 	for _, targetLocationsItem := range rs.TargetLocations {
-
-		targetLocationsItemMap := make(map[string]interface{})
+		targetLocationsItemMap := make(map[string]any)
 		if targetLocationsItem.Region != "" {
 			targetLocationsItemMap[Attr_Region] = targetLocationsItem.Region
 		}
