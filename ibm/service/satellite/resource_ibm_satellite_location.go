@@ -87,7 +87,9 @@ func ResourceIBMSatelliteLocation() *schema.Resource {
 				DiffSuppressFunc: func(k, o, n string, d *schema.ResourceData) bool {
 					if o == "" {
 						return false
-					} else if o[0:3] == n[0:3] {
+					} else if len(o) >= 3 && len(n) >= 3 && o[0:3] == n[0:3] {
+						return true
+					} else if len(o) >= 2 && len(n) >= 2 && o[0:2] == n[0:2] {
 						return true
 					}
 					return o == n
