@@ -1,3 +1,67 @@
+# 1.82.0-beta0 (August 21, 2025)
+
+* Support for **App Configuration**
+  * **Datasources**
+    * `ibm_app_config_integrations`
+    * `ibm_app_config_integration_en`
+    * `ibm_app_config_integration_kms`
+  * **Resources**
+    * `ibm_app_config_integration_en`
+    * `ibm_app_config_integration_kms`
+* Support for **Event Notifications**
+  * **Datasources**
+    * `ibm_en_pre_defined_template`
+    * `ibm_en_pre_defined_templates`
+    * `ibm_en_code_engine_template`
+  * **Resources**
+    * `ibm_en_code_engine_template`
+* Support for **VMware**
+  * **Datasources**
+    * `ibm_vmaas_transit_gateway_connection`
+  * **Resources**
+    * `ibm_vmaas_transit_gateway_connection`
+
+## Enhancements
+
+### Power Systems
+* Refactor Terraform errors to use new toolchain in available hosts and catalog images data sources ([6407](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6407))
+
+### App Configuration
+* Addition of Integration Resources support ([6405](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6405))
+
+### CD Tekton Pipeline
+* Add support for `ca-mon` region ([6402](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6402))
+
+### Event Streams
+* Pre-defined templates and Code Engine templates support ([6398](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6398))
+
+### MQ Service
+* Add ability to update user and app names ([6397](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6397))
+
+### VMware
+* Transit Gateway support for Vmaas Terraform ([6377](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6377))
+
+### CIS
+* Added rulesets ratelimit changes for custom rules ([6379](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6379))
+
+### VPC Infrastructure
+* Added `storage_generation` attribute to `is_volume` ([6413](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6413))
+
+### General
+* Bump `actions/checkout` from 4.2.2 to 5.0.0 ([6406](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6406))
+
+## Bug Fixes
+
+### Secrets Manager
+* Fix missing `secret_id` property ([6400](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6400))
+* Update docs - nested JSONs and fixes ([6356](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6356))
+
+## Tests
+
+### Secrets Manager
+* Optionally disable SM crypto key tests ([6408](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6408))
+
+
 # 1.81.1 (August 6, 2025)
 
 ## Bug Fixes

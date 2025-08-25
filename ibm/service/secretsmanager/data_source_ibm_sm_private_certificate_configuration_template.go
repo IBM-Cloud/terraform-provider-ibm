@@ -308,7 +308,12 @@ func dataSourceIbmSmPrivateCertificateConfigurationTemplateRead(context context.
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetConfigurationWithContext failed %s\n%s", err, response), fmt.Sprintf("(Data) %s", PrivateCertConfigTemplateResourceName), "read")
 		return tfErr.GetDiag()
 	}
-	privateCertificateConfigurationTemplate := privateCertificateConfigurationTemplateIntf.(*secretsmanagerv2.PrivateCertificateConfigurationTemplate)
+
+	privateCertificateConfigurationTemplate, ok := privateCertificateConfigurationTemplateIntf.(*secretsmanagerv2.PrivateCertificateConfigurationTemplate)
+	if !ok {
+		tfErr := flex.TerraformErrorf(nil, fmt.Sprintf("Wrong configuration type: The provided configuration is not a Private Certificate Template configuration."), fmt.Sprintf("(Data) %s", PrivateCertConfigTemplateResourceName), "read")
+		return tfErr.GetDiag()
+	}
 
 	d.SetId(fmt.Sprintf("%s/%s/%s", region, instanceId, *getConfigurationOptions.Name))
 

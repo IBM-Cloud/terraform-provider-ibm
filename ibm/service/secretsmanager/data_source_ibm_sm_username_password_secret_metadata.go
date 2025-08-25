@@ -196,7 +196,12 @@ func dataSourceIbmSmUsernamePasswordSecretMetadataRead(context context.Context, 
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetSecretMetadataWithContext failed %s\n%s", err, response), fmt.Sprintf("(Data) %s_metadata", UsernamePasswordSecretResourceName), "read")
 		return tfErr.GetDiag()
 	}
-	usernamePasswordSecretMetadata := usernamePasswordSecretMetadataIntf.(*secretsmanagerv2.UsernamePasswordSecretMetadata)
+
+	usernamePasswordSecretMetadata, ok := usernamePasswordSecretMetadataIntf.(*secretsmanagerv2.UsernamePasswordSecretMetadata)
+	if !ok {
+		tfErr := flex.TerraformErrorf(nil, fmt.Sprintf("Wrong secret type: The provided secret is not a User Credentials secret."), fmt.Sprintf("(Data) %s_metadata", UsernamePasswordSecretResourceName), "read")
+		return tfErr.GetDiag()
+	}
 
 	d.SetId(fmt.Sprintf("%s/%s/%s", region, instanceId, secretId))
 

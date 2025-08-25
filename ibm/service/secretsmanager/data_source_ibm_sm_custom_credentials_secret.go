@@ -235,7 +235,11 @@ func dataSourceIbmSmCustomCredentialsSecretRead(context context.Context, d *sche
 		return diagError
 	}
 
-	customCredentialsSecret := secret.(*secretsmanagerv2.CustomCredentialsSecret)
+	customCredentialsSecret, ok := secret.(*secretsmanagerv2.CustomCredentialsSecret)
+	if !ok {
+		tfErr := flex.TerraformErrorf(nil, fmt.Sprintf("Wrong secret type: The provided secret is not a Custom Credentials secret."), fmt.Sprintf("(Data) %s", CustomCredentialsSecretResourceName), "read")
+		return tfErr.GetDiag()
+	}
 
 	d.SetId(fmt.Sprintf("%s/%s/%s", region, instanceId, *customCredentialsSecret.ID))
 
@@ -298,6 +302,11 @@ func dataSourceIbmSmCustomCredentialsSecretRead(context context.Context, d *sche
 
 	if err = d.Set("name", customCredentialsSecret.Name); err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting name"), fmt.Sprintf("(Data) %s", CustomCredentialsSecretResourceName), "read")
+		return tfErr.GetDiag()
+	}
+
+	if err = d.Set("secret_id", customCredentialsSecret.ID); err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting secret_id"), fmt.Sprintf("(Data) %s", CustomCredentialsSecretResourceName), "read")
 		return tfErr.GetDiag()
 	}
 
