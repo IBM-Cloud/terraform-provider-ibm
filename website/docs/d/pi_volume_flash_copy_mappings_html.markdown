@@ -1,7 +1,7 @@
 ---
 subcategory: "Power Systems"
 layout: "ibm"
-page_title: "IBM: ibm_pi_volume_flash_copy_mappings"
+page_title: "IBM: pi_volume_flash_copy_mappings"
 description: |-
   Manages a volume flash copy mappings in the Power Virtual Server cloud.
 ---
