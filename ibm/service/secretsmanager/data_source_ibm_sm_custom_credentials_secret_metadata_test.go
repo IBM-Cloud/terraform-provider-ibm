@@ -27,6 +27,7 @@ func TestAccIbmSmCustomCredentialsSecretMetadataDataSource(t *testing.T) {
 					resource.TestCheckResourceAttrSet(dataSourceName, "created_by"),
 					resource.TestCheckResourceAttrSet(dataSourceName, "created_at"),
 					resource.TestCheckResourceAttrSet(dataSourceName, "updated_at"),
+					resource.TestCheckResourceAttrSet(dataSourceName, "retrieved_at"),
 					resource.TestCheckResourceAttrSet(dataSourceName, "crn"),
 					resource.TestCheckResourceAttrSet(dataSourceName, "downloaded"),
 					resource.TestCheckResourceAttrSet(dataSourceName, "next_rotation_date"),

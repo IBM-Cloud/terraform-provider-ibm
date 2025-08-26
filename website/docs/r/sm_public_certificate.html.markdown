@@ -118,6 +118,7 @@ Nested scheme for **issuance_info**:
   * Constraints: The maximum value is `1000`. The minimum value is `0`.
 * `private_key` - (Forces new resource, String) (Optional) The PEM-encoded private key to associate with the certificate.
   * Constraints: The maximum length is `100000` characters. The minimum length is `50` characters. The value must match regular expression `/^(-{5}BEGIN.+?-{5}[\\s\\S]+-{5}END.+?-{5})$/`.
+* `retrieved_at` - (String) The date when the data of the secret was last retrieved. The date format follows RFC 3339. Epoch date if there is no record of secret data retrieval.
 * `serial_number` - (String) The unique serial number that was assigned to a certificate by the issuing certificate authority.
   * Constraints: The maximum length is `64` characters. The minimum length is `2` characters. The value must match regular expression `/[^a-fA-F0-9]/`.
 * `secret_type` - (String) The secret type. Supported types are arbitrary, certificates (imported, public, and private), IAM credentials, key-value, and user credentials.

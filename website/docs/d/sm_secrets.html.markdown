@@ -28,7 +28,7 @@ Review the argument reference that you can specify for your data source.
 * `endpoint_type` - (Optional, String) - The endpoint type. If not provided the endpoint type is determined by the `visibility` argument provided in the provider configuration.
     * Constraints: Allowable values are: `private`, `public`.
 * `sort` - (Optional, String) - Sort a collection of secrets by the specified field in ascending order. To sort in descending order use the `-` character. 
-	* Constraints: Allowable values are: `id`, `created_at`, `updated_at`, `expiration_date`, `secret_type`, `name`.
+	* Constraints: Allowable values are: `id`, `created_at`, `updated_at`, `retrieved_at`, `expiration_date`, `secret_type`, `name`.
 * `search` - (Optional, String) - Obtain a collection of secrets that contain the specified string in one or more of the fields: `id`, `name`, `description`, `labels`, `secret_type`.
 * `groups` - (Optional, String) - Filter secrets by groups. You can apply multiple filters by using a comma-separated list of secret group IDs. If you need to filter secrets that are in the default secret group, use the `default` keyword.
 * `secret_types` - (Optional, List) - Filter secrets by secret types. You can apply multiple filters by using a comma-separated list of secret types.
@@ -100,6 +100,7 @@ Nested scheme for **secrets**:
 	  * Constraints: The maximum length is `256` characters. The minimum length is `2` characters.
 	* `next_rotation_date` - (String) The date that the secret is scheduled for automatic rotation.The service automatically creates a new version of the secret on its next rotation date. This field exists only for secrets that have an existing rotation policy.
 	* `private_key_included` - (Boolean) Indicates whether the certificate was imported with an associated private key.
+    * `retrieved_at` - (String) The date when the data of the secret was last retrieved. The date format follows RFC 3339. Epoch date if there is no record of secret data retrieval.
 	* `reuse_api_key` - (Boolean) Determines whether to use the same service ID and API key for future read operations on an`iam_credentials` secret. The value is always `true` for IAM credentials secrets managed by Terraform.
 	* `revocation_time_rfc3339` - (String) The date and time that the certificate was revoked. The date format follows RFC 3339.
 	* `revocation_time_seconds` - (Integer) The timestamp of the certificate revocation.

@@ -82,6 +82,8 @@ In addition to all argument references listed, you can access the following attr
 
 * `next_rotation_date` - (String) The date that the secret is scheduled for automatic rotation.The service automatically creates a new version of the secret on its next rotation date. This field exists only for secrets that have an existing rotation policy.
 
+* `retrieved_at` - (String) The date when the data of the secret was last retrieved. The date format follows RFC 3339. Epoch date if there is no record of secret data retrieval.
+
 * `revocation_time_rfc3339` - (String) The date and time that the certificate was revoked. The date format follows RFC 3339.
 
 * `revocation_time_seconds` - (Integer) The timestamp of the certificate revocation.
