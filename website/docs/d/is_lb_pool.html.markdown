@@ -36,7 +36,11 @@ In addition to all argument references listed, you can access the following attr
 - `created_at` - (String) The date and time that this pool was created.
 - `failsafe_policy` - (List) 
 	Nested schema for **failsafe_policy**:
-	- `action` - (String) A load balancer failsafe policy action:- `forward`: Forwards requests to the `target` pool.- `fail`: Rejects requests with an HTTP `503` status code.The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future. Allowable values are: `fail`, `forward`.
+	- `action` - (String) A load balancer failsafe policy action. The enumerated values for this property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future, currently allowed values are:
+		- `bypass`: Bypasses the members and sends requests directly to their destination IPs.
+		- `drop`: Drops requests.
+		- `fail`: Fails requests with an HTTP 503 status code.
+		- `forward`: Forwards requests to the target pool.
 	- `healthy_member_threshold_count` - (Integer) The healthy member count at which the failsafe policy action will be triggered. At present, this is always `0`, but may be modifiable in the future.
 	- `target` - (List) If `action` is `forward`, the target pool to forward to.If `action` is `fail`, this property will be absent.The targets supported by this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.
 		Nested schema for **target**:

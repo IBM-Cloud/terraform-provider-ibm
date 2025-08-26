@@ -48,7 +48,7 @@ func TestAccIbmSmServiceCredentialsSecretBasic(t *testing.T) {
 				ResourceName:            resourceName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"ttl"},
+				ImportStateVerifyIgnore: []string{"ttl", "updated_at"},
 			},
 		},
 	})
@@ -88,7 +88,7 @@ func TestAccIbmSmServiceCredentialsSecretAllArgs(t *testing.T) {
 				ResourceName:            resourceName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"ttl"},
+				ImportStateVerifyIgnore: []string{"ttl", "updated_at"},
 			},
 		},
 	})

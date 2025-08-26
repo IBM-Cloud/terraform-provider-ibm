@@ -139,6 +139,7 @@ var (
 	imageName                       string
 	functionNamespace               string
 	HpcsInstanceID                  string
+	HpcsInstanceName                string
 	ToolchainID                     string
 )
 
@@ -1523,6 +1524,12 @@ func init() {
 	if HpcsInstanceID == "" {
 		HpcsInstanceID = "5af62d5d-5d90-4b84-bbcd-90d2123ae6c8"
 		fmt.Println("[INFO] Set the environment variable HPCS_INSTANCE_ID for testing data_source_ibm_kms_key_test else it is set to default value")
+	}
+
+	HpcsInstanceName = os.Getenv("HPCS_INSTANCE_NAME")
+	if HpcsInstanceName == "" {
+		HpcsInstanceName = "test-hpcs"
+		fmt.Println("[INFO] Set the environment variable HPCS_INSTANCE_NAME for testing data_source_ibm_hpcs_test else it is set to default value")
 	}
 
 	SecretsManagerInstanceID = os.Getenv("SECRETS_MANAGER_INSTANCE_ID")

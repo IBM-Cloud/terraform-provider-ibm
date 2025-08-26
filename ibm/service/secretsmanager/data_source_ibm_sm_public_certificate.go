@@ -312,7 +312,11 @@ func dataSourceIbmSmPublicCertificateSecretRead(context context.Context, d *sche
 		return diagError
 	}
 
-	publicCertificate := publicCertificateIntf.(*secretsmanagerv2.PublicCertificate)
+	publicCertificate, ok := publicCertificateIntf.(*secretsmanagerv2.PublicCertificate)
+	if !ok {
+		tfErr := flex.TerraformErrorf(nil, fmt.Sprintf("Wrong secret type: The provided secret is not a Public Certificate secret."), fmt.Sprintf("(Data) %s", PublicCertSecretResourceName), "read")
+		return tfErr.GetDiag()
+	}
 
 	d.SetId(fmt.Sprintf("%s/%s/%s", region, instanceId, *publicCertificate.ID))
 
@@ -376,6 +380,11 @@ func dataSourceIbmSmPublicCertificateSecretRead(context context.Context, d *sche
 
 	if err = d.Set("name", publicCertificate.Name); err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting name"), fmt.Sprintf("(Data) %s", PublicCertSecretResourceName), "read")
+		return tfErr.GetDiag()
+	}
+
+	if err = d.Set("secret_id", publicCertificate.ID); err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting secret_id"), fmt.Sprintf("(Data) %s", PublicCertSecretResourceName), "read")
 		return tfErr.GetDiag()
 	}
 

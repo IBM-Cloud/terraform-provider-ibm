@@ -5,10 +5,12 @@ package power
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/go-uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -124,10 +126,12 @@ func DataSourceIBMPICloudConnections() *schema.Resource {
 	}
 }
 
-func dataSourceIBMPICloudConnectionsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMPICloudConnectionsRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "(Data) ibm_pi_cloud_connections", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
@@ -135,13 +139,14 @@ func dataSourceIBMPICloudConnectionsRead(ctx context.Context, d *schema.Resource
 
 	cloudConnections, err := client.GetAll()
 	if err != nil {
-		log.Printf("[DEBUG] get cloud connections failed %v", err)
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetAll failed: %s", err.Error()), "(Data) ibm_pi_cloud_connections", "read")
+		log.Printf("[DEBUG] get cloud connections failed\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
-	result := make([]map[string]interface{}, 0, len(cloudConnections.CloudConnections))
+	result := make([]map[string]any, 0, len(cloudConnections.CloudConnections))
 	for _, cloudConnection := range cloudConnections.CloudConnections {
-		cc := map[string]interface{}{
+		cc := map[string]any{
 			Attr_CloudConnectionID: *cloudConnection.CloudConnectionID,
 			Attr_ConnectionMode:    cloudConnection.ConnectionMode,
 			Attr_GlobalRouting:     *cloudConnection.GlobalRouting,

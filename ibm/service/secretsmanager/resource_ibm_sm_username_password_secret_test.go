@@ -61,9 +61,10 @@ func TestAccIbmSmUsernamePasswordSecretBasic(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				ResourceName:      resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"updated_at"},
 			},
 		},
 	})
@@ -99,9 +100,10 @@ func TestAccIbmSmUsernamePasswordSecretAllArgs(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				ResourceName:      resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"updated_at"},
 			},
 		},
 	})

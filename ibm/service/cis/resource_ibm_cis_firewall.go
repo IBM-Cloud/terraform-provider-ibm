@@ -4,7 +4,6 @@
 package cis
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -417,7 +416,7 @@ func ResourceIBMCISFirewallRecordCreate(d *schema.ResourceData, meta interface{}
 		mode := uaRule[cisFirewallUARuleMode].(string)
 		configList := uaRule[cisFirewallUARuleConfiguration].([]interface{})
 		if len(configList) > 1 {
-			return fmt.Errorf("[ERROR] Only one configuration is allowed for %s type", firewallType)
+			return flex.FmtErrorf("[ERROR] Only one configuration is allowed for %s type", firewallType)
 		}
 		config := configList[0].(map[string]interface{})
 		target := config[cisFirewallLockdownConfigurationsTarget].(string)
