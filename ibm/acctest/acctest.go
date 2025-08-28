@@ -104,6 +104,8 @@ var (
 	InstanceName                    string
 	InstanceProfileName             string
 	InstanceProfileNameUpdate       string
+	ISCatalogImageName              string
+	ISBootSnapshotID                string
 	IsBareMetalServerProfileName    string
 	IsBareMetalServerImage          string
 	IsBareMetalServerImage2         string
@@ -137,6 +139,7 @@ var (
 	imageName                       string
 	functionNamespace               string
 	HpcsInstanceID                  string
+	HpcsInstanceName                string
 	ToolchainID                     string
 )
 
@@ -422,6 +425,9 @@ var (
 var (
 	Vmaas_Directorsite_id      string
 	Vmaas_Directorsite_pvdc_id string
+	Vmaas_edge_id              string
+	Vmaas_transit_gateway_id   string
+	Vmaas_vdc_id               string
 )
 
 // For IAM Access Management
@@ -972,6 +978,18 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable SL_INSTANCE_PROFILE_UPDATE for testing ibm_is_instance resource else it is set to default value 'cx2-4x8'")
 	}
 
+	ISCatalogImageName = os.Getenv("IS_CATALOG_IMAGE_NAME")
+	if ISCatalogImageName == "" {
+		ISCatalogImageName = "test-catalog"
+		fmt.Println("[INFO] Set the environment variable IS_CATALOG_IMAGE_NAME for testing ibm_is_instance_template resource else it is set to default value 'test-catalog'")
+	}
+
+	ISBootSnapshotID = os.Getenv("IS_BOOT_SNAPSHOT_ID")
+	if ISBootSnapshotID == "" {
+		ISBootSnapshotID = "r006-d7fejbe-2dhj-442df-b2iha-ccjbecbjbcejce"
+		fmt.Println("[INFO] Set the environment variable IS_BOOT_SNAPSHOT_ID for testing ibm_is_instance_template resource else it is set to default value 'r006-d7fejbe-2dhj-442df-b2iha-ccjbecbjbcejce'")
+	}
+
 	IsBareMetalServerProfileName = os.Getenv("IS_BARE_METAL_SERVER_PROFILE")
 	if IsBareMetalServerProfileName == "" {
 		IsBareMetalServerProfileName = "bx2-metal-96x384" // for next gen infrastructure
@@ -1506,6 +1524,12 @@ func init() {
 	if HpcsInstanceID == "" {
 		HpcsInstanceID = "5af62d5d-5d90-4b84-bbcd-90d2123ae6c8"
 		fmt.Println("[INFO] Set the environment variable HPCS_INSTANCE_ID for testing data_source_ibm_kms_key_test else it is set to default value")
+	}
+
+	HpcsInstanceName = os.Getenv("HPCS_INSTANCE_NAME")
+	if HpcsInstanceName == "" {
+		HpcsInstanceName = "test-hpcs"
+		fmt.Println("[INFO] Set the environment variable HPCS_INSTANCE_NAME for testing data_source_ibm_hpcs_test else it is set to default value")
 	}
 
 	SecretsManagerInstanceID = os.Getenv("SECRETS_MANAGER_INSTANCE_ID")
@@ -2082,6 +2106,21 @@ func init() {
 		fmt.Println("[WARN] Set the environment variable IBM_VMAAS_DS_PVDC_ID for testing ibm_vmaas_vdc resource else tests will fail if this is not set correctly")
 	}
 
+	Vmaas_edge_id = os.Getenv("IBM_VMAAS_EDGE_ID")
+	if Vmaas_edge_id == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_VMAAS_EDGE_ID for testing ibm_vmaas_vdc resource else tests will fail if this is not set correctly")
+	}
+
+	Vmaas_transit_gateway_id = os.Getenv("IBM_VMAAS_TRANSIT_GATEWAY_ID")
+	if Vmaas_transit_gateway_id == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_VMAAS_TRANSIT_GATEWAY_ID for testing ibm_vmaas_vdc resource else tests will fail if this is not set correctly")
+	}
+
+	Vmaas_vdc_id = os.Getenv("IBM_VMAAS_VDC_ID")
+	if Vmaas_vdc_id == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_VMAAS_VDC_ID for testing ibm_vmaas_vdc resource else tests will fail if this is not set correctly")
+	}
+
 	TargetAccountId = os.Getenv("IBM_POLICY_ASSIGNMENT_TARGET_ACCOUNT_ID")
 	if TargetAccountId == "" {
 		fmt.Println("[INFO] Set the environment variable IBM_POLICY_ASSIGNMENT_TARGET_ACCOUNT_ID for testing ibm_iam_policy_assignment resource else tests will fail if this is not set correctly")
@@ -2461,6 +2500,20 @@ func TestAccPreCheckVMwareService(t *testing.T) {
 	}
 	if Vmaas_Directorsite_pvdc_id == "" {
 		t.Fatal("IBM_VMAAS_DS_PVDC_ID must be set for acceptance tests")
+	}
+}
+func TestAccPreCheckVMwareTGWService(t *testing.T) {
+	if v := os.Getenv("IC_API_KEY"); v == "" {
+		t.Fatal("IC_API_KEY must be set for acceptance tests")
+	}
+	if Vmaas_edge_id == "" {
+		t.Fatal("IBM_VMAAS_EDGE_ID must be set for acceptance tests")
+	}
+	if Vmaas_transit_gateway_id == "" {
+		t.Fatal("IBM_VMAAS_TRANSIT_GATEWAY_ID must be set for acceptance tests")
+	}
+	if Vmaas_vdc_id == "" {
+		t.Fatal("IBM_VMAAS_VDC_ID must be set for acceptance tests")
 	}
 }
 

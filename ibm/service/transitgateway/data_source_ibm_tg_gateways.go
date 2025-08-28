@@ -4,9 +4,9 @@
 package transitgateway
 
 import (
-	"fmt"
 	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/networking-go-sdk/transitgatewayapisv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -79,7 +79,7 @@ func dataSourceIBMTransitGatewaysRead(d *schema.ResourceData, meta interface{}) 
 	listTransitGatewaysOptionsModel := &transitgatewayapisv1.ListTransitGatewaysOptions{}
 	listTransitGateways, response, err := client.ListTransitGateways(listTransitGatewaysOptionsModel)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while listing transit gateways %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error while listing transit gateways %s\n%s", err, response)
 	}
 
 	tgws := make([]map[string]interface{}, 0)

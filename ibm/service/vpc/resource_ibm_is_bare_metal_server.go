@@ -259,6 +259,25 @@ func ResourceIBMIsBareMetalServer() *schema.Resource {
 							Computed:    true,
 							Description: "The size of the disk in GB (gigabytes)",
 						},
+						"allowed_use": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The usage constraints to match against the requested instance or bare metal server properties to determine compatibility.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"bare_metal_server": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "An image can only be used for bare metal instantiation if this expression resolves to true.",
+									},
+									"api_version": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The API version with which to evaluate the expressions.",
+									},
+								},
+							},
+						},
 					},
 				},
 			},
@@ -490,6 +509,11 @@ func ResourceIBMIsBareMetalServer() *schema.Resource {
 										Optional:    true,
 										Computed:    true,
 										Description: "The virtual network interface id for this bare metal server network attachment.",
+									},
+									"crn": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The crn of the virtual network interface.",
 									},
 									"allow_ip_spoofing": &schema.Schema{
 										Type:          schema.TypeBool,
@@ -892,6 +916,11 @@ func ResourceIBMIsBareMetalServer() *schema.Resource {
 										Optional:    true,
 										Computed:    true,
 										Description: "The virtual network interface id for this bare metal server network attachment.",
+									},
+									"crn": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The crn of the virtual network interface.",
 									},
 									"allow_ip_spoofing": &schema.Schema{
 										Type:        schema.TypeBool,
@@ -2191,6 +2220,16 @@ func bareMetalServerGet(context context.Context, d *schema.ResourceData, meta in
 				isBareMetalServerDiskName:          disk.Name,
 				isBareMetalServerDiskResourceType:  disk.ResourceType,
 				isBareMetalServerDiskSize:          disk.Size,
+			}
+			if disk.AllowedUse != nil {
+				usageConstraintList := []map[string]interface{}{}
+				modelMap, err := ResourceceIBMIsBareMetalServerDiskAllowedUseToMap(disk.AllowedUse)
+				if err != nil {
+					tfErr := flex.TerraformErrorf(err, err.Error(), "(Resource) ibm_is_bare_metal_server", "read")
+					log.Println(tfErr.GetDiag())
+				}
+				usageConstraintList = append(usageConstraintList, modelMap)
+				currentDisk["allowed_use"] = usageConstraintList
 			}
 			diskList = append(diskList, currentDisk)
 		}
@@ -4265,11 +4304,13 @@ func bareMetalServerDelete(context context.Context, d *schema.ResourceData, meta
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
-		_, err = isWaitForBareMetalServerActionStop(sess, d.Timeout(schema.TimeoutDelete), id, d)
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForBareMetalServerActionStop failed: %s", err.Error()), "ibm_is_bare_metal_server", "delete")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		return tfErr.GetDiag()
 
+		_, err = isWaitForBareMetalServerActionStop(sess, d.Timeout(schema.TimeoutDelete), id, d)
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForBareMetalServerActionStop failed: %s", err.Error()), "ibm_is_bare_metal_server", "delete")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
 	}
 	options := &vpcv1.DeleteBareMetalServerOptions{
 		ID: &id,
@@ -4687,6 +4728,7 @@ func resourceIBMIsBareMetalServerBareMetalServerNetworkAttachmentReferenceToMap(
 				vniid = *vna.VirtualNetworkInterface.ID
 				vniMap["id"] = vniid
 				vniMap["name"] = vna.VirtualNetworkInterface.Name
+				vniMap["crn"] = vna.VirtualNetworkInterface.CRN
 				vniMap["resource_type"] = vna.VirtualNetworkInterface.ResourceType
 			}
 		}
@@ -4703,6 +4745,7 @@ func resourceIBMIsBareMetalServerBareMetalServerNetworkAttachmentReferenceToMap(
 				vniid = *vna.VirtualNetworkInterface.ID
 				vniMap["id"] = vniid
 				vniMap["name"] = vna.VirtualNetworkInterface.Name
+				vniMap["crn"] = vna.VirtualNetworkInterface.CRN
 				vniMap["resource_type"] = vna.VirtualNetworkInterface.ResourceType
 			}
 		}
@@ -4713,6 +4756,7 @@ func resourceIBMIsBareMetalServerBareMetalServerNetworkAttachmentReferenceToMap(
 				vniid = *vna.VirtualNetworkInterface.ID
 				vniMap["id"] = vniid
 				vniMap["name"] = vna.VirtualNetworkInterface.Name
+				vniMap["crn"] = vna.VirtualNetworkInterface.CRN
 				vniMap["resource_type"] = vna.VirtualNetworkInterface.ResourceType
 			}
 			if vna.AllowedVlans != nil {

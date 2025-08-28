@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_iam_action_control_assignment"
 description: |-
   Manages action_control_assignment.
-subcategory: "IAM ActionControl Management"
+subcategory: "Identity & Access Management (IAM)"
 ---
 
 # ibm_iam_action_control_assignment
@@ -32,52 +32,38 @@ resource "ibm_iam_action_control_template_version" "template_version" {
 
 resource "ibm_iam_action_control_assignment" "action_control_assignment" {
 	target  ={
-		type = "Account"
+		type = "Account" or "Account Group" or "Enterprise"
 		id = "<target-accountId>"
 	}
 	
 	templates{
-		id = ibm_iam_action_control_template.action_template.action_control_template_id 
+		id = ibm_iam_action_control_template.action_template.action_control_template_id
 		version = ibm_iam_action_control_template.action_template.version
 	}
-	template_version=ibm_iam_action_control_template_version.template_version.version
 }
 
 resource "ibm_iam_action_control_assignment" "action_control_assignment" {
 	target  ={
-		type = "Account Group"
-		id = "<target-accountgroupId>"
+		type = "Account"  # or "Account Group" or "Enterprise"
+		id = "<target-accountId>"
 	}
 	
 	templates{
-		id = ibm_iam_action_control_template.action_template.template_id 
+		id = ibm_iam_action_control_template.action_template.action_control_template_id
 		version = ibm_iam_action_control_template.action_template.version
 	}
+
+	 # Optional: Use this during update to assign a specific template version
 	template_version=ibm_iam_action_control_template_version.template_version.version
 }
 
-resource "ibm_iam_action_control_assignment" "action_control_assignment" {
-	target  ={
-		type = "Enterprise"
-		id = "<target-enterpriseId>"
-	}
-	
-	templates{
-		id = ibm_iam_action_control_template.action_template.template_id 
-		version = ibm_iam_action_control_template.action_template.version
-	}
-	template_version=ibm_iam_action_control_template_version.template_version.version
-}
 ```
 **Note**: Above configuration is to create action control template versions and assign to a target
-enterprise account. Update this parameter(***template_version***) and terraform apply again to update the assignment
+enterprise account. Add this parameter(***template_version***) and terraform apply again to update the assignment
 
 ## Argument Reference
 
 You can specify the following arguments for this resource.
-
-* `accept_language` - (Optional, String) Language code for translations* `default` - English* `de` -  German (Standard)* `en` - English* `es` - Spanish (Spain)* `fr` - French (Standard)* `it` - Italian (Standard)* `ja` - Japanese* `ko` - Korean* `pt-br` - Portuguese (Brazil)* `zh-cn` - Chinese (Simplified, PRC)* `zh-tw` - (Chinese, Taiwan).
-  * Constraints: The default value is `default`. The minimum length is `1` character.
 * `templates` - (Required, List) The set of properties required for a ActionControl assignment.
 Nested schema for **templates**:
 	* `id` - (Required, String) ID of the template.
@@ -90,8 +76,6 @@ Nested schema for **target**:
 	  * Constraints: The maximum length is `32` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9-]*$/`.
 	* `type` - (Required, String) Assignment target type.
 	  * Constraints: Allowable values are: `Account`, `Account Group` and `Enterprise`. The maximum length is `30` characters. The minimum length is `1` character.
-* `version` - (Required, String) specify version of response body format.
-  * Constraints: Allowable values are: `1.0`. The minimum length is `1` character.
 
 ## Timeouts section
 
@@ -133,6 +117,10 @@ Nested schema for **resources**:
 				* `message` - (String) The error message returned by the API.
 				* `more_info` - (String) Additional info for error.
 			* `status_code` - (Integer) The http error code of the response.
+			* `name` - (String) Name of the error.
+			* `errorCode` - (String) error code.
+			* `message` - (String) Error message detailing the nature of the error.
+			* `code` - (String) error code.
 		* `resource_created` - (List) On success, includes the  action_control assigned.
 		Nested schema for **resource_created**:
 			* `id` - (String) action_control id.
@@ -145,12 +133,6 @@ Nested schema for **resources**:
 		  * Constraints: The maximum length is `2` characters. The minimum length is `1` character. The value must match regular expression `/^[0-9]*$/`.
 * `status` - (String) The action_control assignment status.
   * Constraints: Allowable values are: `in_progress`, `succeeded`, `succeed_with_errors`, `failed`.
-* `subject` - (List) subject details of access type assignment.
-Nested schema for **subject**:
-	* `id` - (String)
-	  * Constraints: The minimum length is `1` character. The value must match regular expression `/^((IBMid)|(iam-ServiceId)|(AccessGroupId)|(iam-Profile)|(SL)|([a-zA-Z0-9]{3,10}))-/`.
-	* `type` - (String)
-	  * Constraints: Allowable values are: `iam_id`, `access_group_id`. The minimum length is `1` character.
 * `template` - (List) action_control template details.
 Nested schema for **template**:
 	* `id` - (String) action_control template id.

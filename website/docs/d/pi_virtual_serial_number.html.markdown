@@ -48,3 +48,4 @@ In addition to the argument reference list, you can access the following attribu
 
 - `description` - (String) Description for virtual serial number.
 - `pvm_instance_id` - (String) ID of PVM virtual serial number is attached to.
+- `software_tier` - (String) Software tier of virtual serial number.

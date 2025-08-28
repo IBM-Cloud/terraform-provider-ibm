@@ -52,6 +52,7 @@ import (
 	cisglbhealthcheckv1 "github.com/IBM/networking-go-sdk/globalloadbalancermonitorv1"
 	cisglbpoolv0 "github.com/IBM/networking-go-sdk/globalloadbalancerpoolsv0"
 	cisglbv1 "github.com/IBM/networking-go-sdk/globalloadbalancerv1"
+	cislistsapiv1 "github.com/IBM/networking-go-sdk/listsapiv1"
 	cislogpushjobsapiv1 "github.com/IBM/networking-go-sdk/logpushjobsapiv1"
 	cismtlsv1 "github.com/IBM/networking-go-sdk/mtlsv1"
 	cispagerulev1 "github.com/IBM/networking-go-sdk/pageruleapiv1"
@@ -296,6 +297,7 @@ type ClientSession interface {
 	CisLockdownClientSession() (*cislockdownv1.ZoneLockdownV1, error)
 	CisRangeAppClientSession() (*cisrangeappv1.RangeApplicationsV1, error)
 	CisWAFRuleClientSession() (*ciswafrulev1.WafRulesApiV1, error)
+	CisListsSession() (*cislistsapiv1.ListsApiV1, error)
 	IAMIdentityV1API() (*iamidentity.IamIdentityV1, error)
 	IBMCloudShellV1() (*ibmcloudshellv1.IBMCloudShellV1, error)
 	ResourceManagerV2API() (*resourcemanager.ResourceManagerV2, error)
@@ -550,6 +552,11 @@ type clientSession struct {
 	// CIS WAF rule service options
 	cisWAFRuleErr    error
 	cisWAFRuleClient *ciswafrulev1.WafRulesApiV1
+
+	// CIS LISTS
+	cisListsClient *cislistsapiv1.ListsApiV1
+	cisListsErr    error
+
 	// IAM Identity Option
 	iamIdentityErr error
 	iamIdentityAPI *iamidentity.IamIdentityV1
@@ -1149,6 +1156,14 @@ func (sess clientSession) CisOrigAuthSession() (*cisoriginpull.AuthenticatedOrig
 	return sess.cisOriginAuthClient.Clone(), nil
 }
 
+// CIS Lists
+func (sess clientSession) CisListsSession() (*cislistsapiv1.ListsApiV1, error) {
+	if sess.cisListsErr != nil {
+		return sess.cisListsClient, sess.cisListsErr
+	}
+	return sess.cisListsClient.Clone(), nil
+}
+
 // IAM Identity Session
 func (sess clientSession) IAMIdentityV1API() (*iamidentity.IamIdentityV1, error) {
 	return sess.iamIdentityAPI, sess.iamIdentityErr
@@ -1297,7 +1312,7 @@ func (session clientSession) ProjectV1() (*project.ProjectV1, error) {
 	return session.projectClient, session.projectClientErr
 }
 
-// MQaaS
+// MQ SaaS
 func (session clientSession) MqcloudV1() (*mqcloudv1.MqcloudV1, error) {
 	if session.mqcloudClientErr != nil {
 		sessionMqcloudClient := session.mqcloudClient
@@ -3165,6 +3180,27 @@ func (c *Config) ClientSession() (interface{}, error) {
 		})
 	}
 
+	// IBM Network CIS Lists
+	cisListsOpt := &cislistsapiv1.ListsApiV1Options{
+		URL:           cisEndPoint,
+		Crn:           core.StringPtr(""),
+		Authenticator: authenticator,
+		ItemID:        core.StringPtr(""),
+		ListID:        core.StringPtr(""),
+		OperationID:   core.StringPtr(""),
+	}
+	session.cisListsClient, session.cisListsErr = cislistsapiv1.NewListsApiV1(cisListsOpt)
+	if session.cisListsErr != nil {
+		session.cisListsErr = fmt.Errorf("[ERROR] Error occured while configuring CIS Lists : %s",
+			session.cisListsErr)
+	}
+	if session.cisListsClient != nil && session.cisListsClient.Service != nil {
+		session.cisListsClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.cisListsClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	}
+
 	// IAM IDENTITY Service
 	// iamIdenityURL := fmt.Sprintf("https://%s.iam.cloud.ibm.com/v1", c.Region)
 	iamIdenityURL := iamidentity.DefaultServiceURL
@@ -3566,7 +3602,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		URL:           EnvFallBack([]string{"IBMCLOUD_MQCLOUD_CONFIG_ENDPOINT"}, mqCloudURL),
 	}
 
-	// Construct the service client for MQaaS.
+	// Construct the service client for MQ SaaS.
 	session.mqcloudClient, err = mqcloudv1.NewMqcloudV1(mqcloudClientOptions)
 	if err == nil {
 		// Enable retries for API calls
@@ -3576,7 +3612,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
 	} else {
-		session.mqcloudClientErr = fmt.Errorf("Error occurred while configuringMQaaS service: %q", err)
+		session.mqcloudClientErr = fmt.Errorf("Error occurred while constructing 'MQ SaaS' service client: %q", err)
 	}
 
 	// VMware Cloud Foundation as a Service

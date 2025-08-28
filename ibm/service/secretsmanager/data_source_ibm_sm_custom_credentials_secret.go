@@ -143,6 +143,11 @@ func DataSourceIbmSmCustomCredentialsSecret() *schema.Resource {
 					},
 				},
 			},
+			"retrieved_at": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The date when the data of the secret was last retrieved. The date format follows RFC 3339. Epoch date if there is no record of secret data retrieval.",
+			},
 			"secret_group_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -235,7 +240,11 @@ func dataSourceIbmSmCustomCredentialsSecretRead(context context.Context, d *sche
 		return diagError
 	}
 
-	customCredentialsSecret := secret.(*secretsmanagerv2.CustomCredentialsSecret)
+	customCredentialsSecret, ok := secret.(*secretsmanagerv2.CustomCredentialsSecret)
+	if !ok {
+		tfErr := flex.TerraformErrorf(nil, fmt.Sprintf("Wrong secret type: The provided secret is not a Custom Credentials secret."), fmt.Sprintf("(Data) %s", CustomCredentialsSecretResourceName), "read")
+		return tfErr.GetDiag()
+	}
 
 	d.SetId(fmt.Sprintf("%s/%s/%s", region, instanceId, *customCredentialsSecret.ID))
 
@@ -301,6 +310,11 @@ func dataSourceIbmSmCustomCredentialsSecretRead(context context.Context, d *sche
 		return tfErr.GetDiag()
 	}
 
+	if err = d.Set("secret_id", customCredentialsSecret.ID); err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting secret_id"), fmt.Sprintf("(Data) %s", CustomCredentialsSecretResourceName), "read")
+		return tfErr.GetDiag()
+	}
+
 	if err = d.Set("secret_group_id", customCredentialsSecret.SecretGroupID); err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting secret_group_id"), fmt.Sprintf("(Data) %s", CustomCredentialsSecretResourceName), "read")
 		return tfErr.GetDiag()
@@ -328,6 +342,11 @@ func dataSourceIbmSmCustomCredentialsSecretRead(context context.Context, d *sche
 
 	if err = d.Set("updated_at", DateTimeToRFC3339(customCredentialsSecret.UpdatedAt)); err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting updated_at"), fmt.Sprintf("(Data) %s", CustomCredentialsSecretResourceName), "read")
+		return tfErr.GetDiag()
+	}
+
+	if err = d.Set("retrieved_at", DateTimeToRFC3339(customCredentialsSecret.RetrievedAt)); err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting retrieved_at"), fmt.Sprintf("(Data) %s", CustomCredentialsSecretResourceName), "read")
 		return tfErr.GetDiag()
 	}
 
