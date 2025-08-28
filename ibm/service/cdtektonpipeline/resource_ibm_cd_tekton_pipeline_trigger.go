@@ -117,6 +117,12 @@ func ResourceIBMCdTektonPipelineTrigger() *schema.Resource {
 				Default:     false,
 				Description: "When enabled, pull request events from forks of the selected repository will trigger a pipeline run.",
 			},
+			"disable_draft_events": &schema.Schema{
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Prevent new pipeline runs from being triggered by events from draft pull requests.",
+			},
 			"source": &schema.Schema{
 				Type:        schema.TypeList,
 				MaxItems:    1,
@@ -461,6 +467,9 @@ func resourceIBMCdTektonPipelineTriggerCreate(context context.Context, d *schema
 	if _, ok := d.GetOk("enable_events_from_forks"); ok {
 		createTektonPipelineTriggerOptions.SetEnableEventsFromForks(d.Get("enable_events_from_forks").(bool))
 	}
+	if _, ok := d.GetOk("disable_draft_events"); ok {
+		createTektonPipelineTriggerOptions.SetDisableDraftEvents(d.Get("disable_draft_events").(bool))
+	}
 
 	triggerIntf, _, err := cdTektonPipelineClient.CreateTektonPipelineTriggerWithContext(context, createTektonPipelineTriggerOptions)
 	if err != nil {
@@ -565,6 +574,12 @@ func resourceIBMCdTektonPipelineTriggerRead(context context.Context, d *schema.R
 		if err = d.Set("enable_events_from_forks", trigger.EnableEventsFromForks); err != nil {
 			err = fmt.Errorf("Error setting enable_events_from_forks: %s", err)
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cd_tekton_pipeline_trigger", "read", "set-enable_events_from_forks").GetDiag()
+		}
+	}
+	if !core.IsNil(trigger.DisableDraftEvents) {
+		if err = d.Set("disable_draft_events", trigger.DisableDraftEvents); err != nil {
+			err = fmt.Errorf("Error setting disable_draft_events: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cd_tekton_pipeline_trigger", "read", "set-disable_draft_events").GetDiag()
 		}
 	}
 	if !core.IsNil(trigger.Source) {
@@ -770,6 +785,11 @@ func resourceIBMCdTektonPipelineTriggerUpdate(context context.Context, d *schema
 	if d.HasChange("enable_events_from_forks") {
 		newEnableEventsFromForks := d.Get("enable_events_from_forks").(bool)
 		patchVals.EnableEventsFromForks = &newEnableEventsFromForks
+		hasChange = true
+	}
+	if d.HasChange("disable_draft_events") {
+		newDisableDraftEvents := d.Get("disable_draft_events").(bool)
+		patchVals.DisableDraftEvents = &newDisableDraftEvents
 		hasChange = true
 	}
 
@@ -1064,6 +1084,12 @@ func ResourceIBMCdTektonPipelineTriggerTriggerPatchAsPatch(patchVals *cdtektonpi
 		patch["enable_events_from_forks"] = nil
 	} else if !exists {
 		delete(patch, "enable_events_from_forks")
+	}
+	path = "disable_draft_events"
+	if _, exists := d.GetOkExists(path); d.HasChange(path) && !exists {
+		patch["disable_draft_events"] = nil
+	} else if !exists {
+		delete(patch, "disable_draft_events")
 	}
 
 	return patch

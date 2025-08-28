@@ -26,6 +26,7 @@ func TestAccIbmSmPublicCertificateDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_sm_public_certificate.sm_public_certificate", "secret_group_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_public_certificate.sm_public_certificate", "secret_type"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_public_certificate.sm_public_certificate", "updated_at"),
+					resource.TestCheckResourceAttrSet("data.ibm_sm_public_certificate.sm_public_certificate", "retrieved_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_public_certificate.sm_public_certificate", "versions_total"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_public_certificate.sm_public_certificate", "common_name"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_public_certificate.sm_public_certificate", "key_algorithm"),

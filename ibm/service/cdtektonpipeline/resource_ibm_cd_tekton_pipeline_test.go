@@ -459,6 +459,7 @@ func TestResourceIBMCdTektonPipelineTriggerToMap(t *testing.T) {
 		model["favorite"] = false
 		model["limit_waiting_runs"] = false
 		model["enable_events_from_forks"] = false
+		model["disable_draft_events"] = false
 		model["source"] = []map[string]interface{}{triggerSourceModel}
 		model["events"] = []string{"push", "pull_request"}
 		model["filter"] = "header['x-github-event'] == 'push' && body.ref == 'refs/heads/main'"
@@ -520,6 +521,7 @@ func TestResourceIBMCdTektonPipelineTriggerToMap(t *testing.T) {
 	model.Favorite = core.BoolPtr(false)
 	model.LimitWaitingRuns = core.BoolPtr(false)
 	model.EnableEventsFromForks = core.BoolPtr(false)
+	model.DisableDraftEvents = core.BoolPtr(false)
 	model.Source = triggerSourceModel
 	model.Events = []string{"push", "pull_request"}
 	model.Filter = core.StringPtr("header['x-github-event'] == 'push' && body.ref == 'refs/heads/main'")
@@ -768,6 +770,7 @@ func TestResourceIBMCdTektonPipelineTriggerScmTriggerToMap(t *testing.T) {
 		model["favorite"] = false
 		model["limit_waiting_runs"] = false
 		model["enable_events_from_forks"] = false
+		model["disable_draft_events"] = false
 		model["source"] = []map[string]interface{}{triggerSourceModel}
 		model["events"] = []string{"push", "pull_request"}
 		model["filter"] = "header['x-github-event'] == 'push' && body.ref == 'refs/heads/main'"
@@ -818,6 +821,7 @@ func TestResourceIBMCdTektonPipelineTriggerScmTriggerToMap(t *testing.T) {
 	model.Favorite = core.BoolPtr(false)
 	model.LimitWaitingRuns = core.BoolPtr(false)
 	model.EnableEventsFromForks = core.BoolPtr(false)
+	model.DisableDraftEvents = core.BoolPtr(false)
 	model.Source = triggerSourceModel
 	model.Events = []string{"push", "pull_request"}
 	model.Filter = core.StringPtr("header['x-github-event'] == 'push' && body.ref == 'refs/heads/main'")

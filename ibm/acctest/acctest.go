@@ -425,6 +425,9 @@ var (
 var (
 	Vmaas_Directorsite_id      string
 	Vmaas_Directorsite_pvdc_id string
+	Vmaas_edge_id              string
+	Vmaas_transit_gateway_id   string
+	Vmaas_vdc_id               string
 )
 
 // For IAM Access Management
@@ -2103,6 +2106,21 @@ func init() {
 		fmt.Println("[WARN] Set the environment variable IBM_VMAAS_DS_PVDC_ID for testing ibm_vmaas_vdc resource else tests will fail if this is not set correctly")
 	}
 
+	Vmaas_edge_id = os.Getenv("IBM_VMAAS_EDGE_ID")
+	if Vmaas_edge_id == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_VMAAS_EDGE_ID for testing ibm_vmaas_vdc resource else tests will fail if this is not set correctly")
+	}
+
+	Vmaas_transit_gateway_id = os.Getenv("IBM_VMAAS_TRANSIT_GATEWAY_ID")
+	if Vmaas_transit_gateway_id == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_VMAAS_TRANSIT_GATEWAY_ID for testing ibm_vmaas_vdc resource else tests will fail if this is not set correctly")
+	}
+
+	Vmaas_vdc_id = os.Getenv("IBM_VMAAS_VDC_ID")
+	if Vmaas_vdc_id == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_VMAAS_VDC_ID for testing ibm_vmaas_vdc resource else tests will fail if this is not set correctly")
+	}
+
 	TargetAccountId = os.Getenv("IBM_POLICY_ASSIGNMENT_TARGET_ACCOUNT_ID")
 	if TargetAccountId == "" {
 		fmt.Println("[INFO] Set the environment variable IBM_POLICY_ASSIGNMENT_TARGET_ACCOUNT_ID for testing ibm_iam_policy_assignment resource else tests will fail if this is not set correctly")
@@ -2482,6 +2500,20 @@ func TestAccPreCheckVMwareService(t *testing.T) {
 	}
 	if Vmaas_Directorsite_pvdc_id == "" {
 		t.Fatal("IBM_VMAAS_DS_PVDC_ID must be set for acceptance tests")
+	}
+}
+func TestAccPreCheckVMwareTGWService(t *testing.T) {
+	if v := os.Getenv("IC_API_KEY"); v == "" {
+		t.Fatal("IC_API_KEY must be set for acceptance tests")
+	}
+	if Vmaas_edge_id == "" {
+		t.Fatal("IBM_VMAAS_EDGE_ID must be set for acceptance tests")
+	}
+	if Vmaas_transit_gateway_id == "" {
+		t.Fatal("IBM_VMAAS_TRANSIT_GATEWAY_ID must be set for acceptance tests")
+	}
+	if Vmaas_vdc_id == "" {
+		t.Fatal("IBM_VMAAS_VDC_ID must be set for acceptance tests")
 	}
 }
 
