@@ -153,7 +153,7 @@ func ResourceIBMTransitGatewayConnection() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				ForceNew:    true,
-				Description: "Location of GRE tunnel. This field only applies to network type 'gre_tunnel' and 'unbound_gre_tunnel' connections.",
+				Description: "Location of connection. This field only applies to network type 'gre_tunnel' and 'unbound_gre_tunnel' connections and optional for network type 'vpn_gateway' connections",
 			},
 			tgCreatedAt: {
 				Type:        schema.TypeString,
@@ -532,6 +532,14 @@ func resourceIBMTransitGatewayConnectionRead(d *schema.ResourceData, meta interf
 		d.Set(tgDefaultPrefixFilter, *instance.PrefixFiltersDefault)
 	}
 
+	if instance.Zone != nil {
+		d.Set(tgZone, *instance.Zone)
+	}
+
+	if instance.Cidr != nil {
+		d.Set(tgCidr, *instance.Cidr)
+	}
+
 	d.Set(tgConnectionId, *instance.ID)
 	d.Set(tgGatewayId, gatewayId)
 	getTransitGatewayOptions := &transitgatewayapisv1.GetTransitGatewayOptions{
@@ -563,7 +571,7 @@ func resourceIBMTransitGatewayConnectionRead(d *schema.ResourceData, meta interf
 		if rGREtunnel.RemoteTunnelIp != nil {
 			tunnel[tgRemoteTunnelIp] = *rGREtunnel.RemoteTunnelIp
 		}
-		if rGREtunnel.Mtu != nil {
+		if rGREtunnel.Mtu != nil && *instance.NetworkType != "vpn_gateway" {
 			tunnel[tgMtu] = *rGREtunnel.Mtu
 		}
 		if rGREtunnel.RemoteBgpAsn != nil {
@@ -573,7 +581,11 @@ func resourceIBMTransitGatewayConnectionRead(d *schema.ResourceData, meta interf
 			tunnel[tgconTunnelName] = *rGREtunnel.Name
 		}
 		if rGREtunnel.Zone.Name != nil {
-			tunnel[tgZone] = *rGREtunnel.Zone.Name
+			if *instance.NetworkType != "vpn_gateway" {
+				tunnel[tgZone] = *rGREtunnel.Zone
+			} else {
+				tunnel[tgZone] = *rGREtunnel.Zone.Name
+			}
 		}
 		if rGREtunnel.LocalBgpAsn != nil {
 			tunnel[tgLocalBgpAsn] = *rGREtunnel.LocalBgpAsn
