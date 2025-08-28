@@ -28,6 +28,7 @@ func TestAccIbmSmUsernamePasswordSecretDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_sm_username_password_secret.sm_username_password_secret", "secret_group_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_username_password_secret.sm_username_password_secret", "secret_type"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_username_password_secret.sm_username_password_secret", "updated_at"),
+					resource.TestCheckResourceAttrSet("data.ibm_sm_username_password_secret.sm_username_password_secret", "retrieved_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_username_password_secret.sm_username_password_secret", "versions_total"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_username_password_secret.sm_username_password_secret", "rotation.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_username_password_secret.sm_username_password_secret", "password_generation_policy.#"),
