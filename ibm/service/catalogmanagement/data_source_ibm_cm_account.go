@@ -298,7 +298,6 @@ func dataSourceIBMCmAccountRead(context context.Context, d *schema.ResourceData,
 				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_cm_account", "read", "terraform_engines-to-map").GetDiag()
 			}
 			terraformEngines = append(terraformEngines, terraformEnginesItemMap)
-			fmt.Println("TF ENGINES: ", terraformEngines)
 		}
 		if err = d.Set("terraform_engines", terraformEngines); err != nil {
 			err = fmt.Errorf("Error setting terraform_engines: %s", err)
