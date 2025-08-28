@@ -60,7 +60,7 @@ output "cloudant_key_apikey" {
 #####################################################
 
 output "cloudant_service_uuid" {
-  description = "The UUID of the service ID"
+  description = "The IAM id of the service ID"
   value       = ibm_iam_service_policy.policy.iam_id
 }
 
