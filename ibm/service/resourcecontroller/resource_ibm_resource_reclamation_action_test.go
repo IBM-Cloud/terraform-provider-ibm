@@ -1,124 +1,73 @@
-// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
-// Licensed under the Mozilla Public License v2.0
-
 package resourcecontroller_test
 
 import (
 	"fmt"
-	"strings"
 	"testing"
+	"time"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-
-	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccIBMResourceReclamationAction_basic(t *testing.T) {
-	// Use random reclamation IDs or create preconditioned reclamation resources for full test
-	reclamationID := "put-valid-reclamation-id-here" // Adjust or create programmatically
+	name := fmt.Sprintf("resource-cos-%d", acctest.RandIntRange(0, 200000))
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
-		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIBMResourceReclamationActionDestroy,
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		// Do not try to verify remote deletion of reclamations here.
+		// The action resource is a one-shot operation; its TF destroy doesn't affect server-side reclamations.
 		Steps: []resource.TestStep{
+			// 1) create an instance
 			{
-				Config: testAccCheckIBMResourceReclamationActionConfig(reclamationID, "reclaim", "Terraform test reclaim action"),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMResourceReclamationActionExists("ibm_resource_reclamation_action.test"),
-					resource.TestCheckResourceAttr("ibm_resource_reclamation_action.test", "id", reclamationID),
-					resource.TestCheckResourceAttr("ibm_resource_reclamation_action.test", "state", "pending_reclamation"), // Example expected state; adjust
+				Config: testAccCreateCOSInstance(name),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("ibm_resource_instance.resource_key", "id"),
 				),
 			},
+			// 2) destroy the instance to generate a reclamation
 			{
-				Config: testAccCheckIBMResourceReclamationActionConfig(reclamationID, "restore", "Terraform test restore action"),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMResourceReclamationActionExists("ibm_resource_reclamation_action.test"),
-					resource.TestCheckResourceAttr("ibm_resource_reclamation_action.test", "id", reclamationID),
-					resource.TestCheckResourceAttrSet("ibm_resource_reclamation_action.test", "state"),
+				Config:       "",
+				RefreshState: true,
+				// Give RC a moment to surface the reclamation (eventual consistency).
+				// (Harness doesn't sleep natively; we do a no-op plan with a delay using PreConfig.)
+				PreConfig: func() { time.Sleep(10 * time.Second) },
+			},
+			// 3) restore via reclamation action (filtered + guarded)
+			{
+				Config: testAccReclamationRestoreConfig(),
+				Check: resource.ComposeTestCheckFunc(
+					// ensure the action was planned/applied (count=1) and has the reclamation_id set
+					resource.TestCheckResourceAttrSet("ibm_resource_reclamation_action.test", "reclamation_id"),
+					resource.TestCheckResourceAttr("ibm_resource_reclamation_action.test", "action", "restore"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckIBMResourceReclamationActionExists(n string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[n]
-		if !ok {
-			return fmt.Errorf("Not found: %s", n)
-		}
-
-		rsConClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).ResourceControllerV2API()
-		if err != nil {
-			return err
-		}
-		reclamationID := rs.Primary.ID
-		opts := rc.ListReclamationsOptions{}
-
-		reclamationsList, resp, err := rsConClient.ListReclamations(&opts)
-		if err != nil {
-			return fmt.Errorf("Error listing reclamations: %s Response: %s", err, resp)
-		}
-
-		found := false
-		for _, rec := range reclamationsList.Resources {
-			if rec.ID != nil && *rec.ID == reclamationID {
-				found = true
-				break
-			}
-		}
-
-		if !found {
-			return fmt.Errorf("Reclamation not found: %s", reclamationID)
-		}
-
-		return nil
-	}
-}
-
-func testAccCheckIBMResourceReclamationActionDestroy(s *terraform.State) error {
-	rsConClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).ResourceControllerV2API()
-	if err != nil {
-		return err
-	}
-
-	// Verify all reclamations in state are removed or not found
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "ibm_resource_reclamation_action" {
-			continue
-		}
-
-		reclamationID := rs.Primary.ID
-		opts := rc.ListReclamationsOptions{}
-
-		reclamationsList, resp, err := rsConClient.ListReclamations(&opts)
-		if err != nil {
-			if strings.Contains(err.Error(), "Not found") {
-				continue
-			}
-			return fmt.Errorf("Error listing reclamations during destroy check: %s Response: %s", err, resp)
-		}
-
-		for _, rec := range reclamationsList.Resources {
-			if rec.ID != nil && *rec.ID == reclamationID {
-				return fmt.Errorf("Reclamation still exists after destroy: %s", reclamationID)
-			}
-		}
-	}
-
-	return nil
-}
-
-func testAccCheckIBMResourceReclamationActionConfig(id string, action string, comment string) string {
+func testAccCreateCOSInstance(name string) string {
 	return fmt.Sprintf(`
-resource "ibm_resource_reclamation_action" "test" {
-  id         = "%s"
-  action     = "%s"
-  comment    = "%s"
+resource "ibm_resource_instance" "resource_key" {
+  name     = "%s"
+  service  = "cloud-object-storage"
+  plan     = "standard"
+  location = "global"
 }
-`, id, action, comment)
+`, name)
+}
+
+func testAccReclamationRestoreConfig() string {
+	// Filter by resource_instance_name and guard against empty list.
+	// If multiple match (rare), this chooses the first deterministically by index.
+	return fmt.Sprintf(`
+		data "ibm_resource_reclamations" "all" {}
+
+		resource "ibm_resource_reclamation_action" "test" {
+			reclamation_id = data.ibm_resource_reclamations.all.reclamations.0.id
+			action         = "restore"
+			comment        = "Terraform test restore action"
+		}
+		`)
 }

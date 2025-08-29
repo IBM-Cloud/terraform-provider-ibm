@@ -32,17 +32,17 @@ resource "ibm_resource_reclamation_action" "delete" {
 
 ```
 resource "ibm_resource_reclamation_action" "restore" {
-  id     = "1234abcd-56ef-78gh-90ij-klmnopqrstuv"
-  action = "restore"
+  reclamation_id      = "1234abcd-56ef-78gh-90ij-klmnopqrstuv"
+  action              = "restore"
 }
 ```
 
 ## Argument Reference
 
-- `id` - (Required, String, ForceNew) The unique ID of the reclamation resource.
+- `reclamation_id` - (Required, String, ForceNew) The unique ID of the reclamation resource.
 - `action` - (Required, String, ForceNew) The reclamation action to perform. Valid values: `reclaim` or `restore`.
-- `request_by` - (Optional, String) The identifier of the user who requested the action, if different from the authentication token.
-- `comment` - (Optional, String) A descriptive comment about the action.
+- `request_by` - (Optional, String, ForceNew) The identifier of the user who requested the action, if different from the authentication token.
+- `comment` - (Optional, String, ForceNew) A descriptive comment about the action.
 
 ## Attribute Reference
 

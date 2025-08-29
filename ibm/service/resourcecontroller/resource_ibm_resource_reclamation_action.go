@@ -36,7 +36,7 @@ func ResourceIBMResourceReclamationAction() *schema.Resource {
 		Description:   "Perform a reclamation action ('reclaim' or 'restore') on a resource reclamation.",
 
 		Schema: map[string]*schema.Schema{
-			"id": {
+			"reclamation_id": {
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
@@ -52,11 +52,13 @@ func ResourceIBMResourceReclamationAction() *schema.Resource {
 			"request_by": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				ForceNew:    true,
 				Description: "The request initiator different from the authentication token (optional).",
 			},
 			"comment": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				ForceNew:    true,
 				Description: "A comment to describe the action (optional).",
 			},
 
@@ -146,7 +148,7 @@ func resourceIBMResourceReclamationActionCreate(ctx context.Context, d *schema.R
 		return tfErr.GetDiag()
 	}
 
-	recID := d.Get("id").(string)
+	recID := d.Get("reclamation_id").(string)
 	action := strings.ToLower(d.Get("action").(string))
 
 	actionOpts := &rc.RunReclamationActionOptions{
@@ -164,7 +166,7 @@ func resourceIBMResourceReclamationActionCreate(ctx context.Context, d *schema.R
 	}
 
 	reclamation, _, err := rsConClient.RunReclamationActionWithContext(ctx, actionOpts)
-	if err != nil {
+	if err != nil || (reclamation == nil || reclamation.ID == nil) {
 		tfErr := flex.TerraformErrorf(
 			err,
 			fmt.Sprintf("RunReclamationActionWithContext failed (%s): %s", action, err.Error()),
@@ -175,11 +177,7 @@ func resourceIBMResourceReclamationActionCreate(ctx context.Context, d *schema.R
 		return tfErr.GetDiag()
 	}
 
-	if reclamation == nil || reclamation.ID == nil {
-		d.SetId(recID)
-	} else {
-		d.SetId(*reclamation.ID)
-	}
+	d.SetId(*reclamation.ID)
 
 	flattenAndSetReclamation(d, reclamation)
 
@@ -253,6 +251,7 @@ func flattenAndSetReclamation(d *schema.ResourceData, rec *rc.Reclamation) {
 
 	if rec.ID != nil {
 		setField("id", *rec.ID)
+		setField("reclamation_id", *rec.ID)
 	}
 	if rec.EntityID != nil {
 		setField("entity_id", *rec.EntityID)
