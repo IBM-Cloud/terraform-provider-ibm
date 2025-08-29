@@ -1,3 +1,76 @@
+# 1.82.0 (August 29, 2025)
+* Support for **App Configuration**
+  * **Datasources**
+    * `ibm_app_config_integrations`
+    * `ibm_app_config_integration_en`
+    * `ibm_app_config_integration_kms`
+  * **Resources**
+    * `ibm_app_config_integration_en`
+    * `ibm_app_config_integration_kms`
+* Support for **Event Notifications**
+  * **Datasources**
+    * `ibm_en_pre_defined_template`
+    * `ibm_en_pre_defined_templates`
+    * `ibm_en_code_engine_template`
+  * **Resources**
+    * `ibm_en_code_engine_template`
+* Support for **VMware**
+  * **Datasources**
+    * `ibm_vmaas_transit_gateway_connection`
+  * **Resources**
+    * `ibm_vmaas_transit_gateway_connection`
+
+## Bug Fixes
+### Cloudant
+* Example validation updates ([6403](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6403))
+### Global Catalog, IAM
+* Bump platform go SDK, add new fields ([6415](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6415))
+### Power Systems
+* Refactor Terraform errors to use new toolchain in available hosts and catalog images data sources ([6407](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6407))
+* Refactor Terraform errors to use new toolchain in cloud connection, cloud instance, and datacenter data sources ([6411](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6411))
+* Refactor Terraform errors to use new toolchain in DHCP, disaster recovery location, and host group data sources ([6416](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6416))
+* Refactor Terraform errors to use new toolchain in host, image location, and instance console language data sources ([6417](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6417))
+### Secrets Manager
+* Fix missing `secret_id` property ([6400](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6400))
+* Update docs - nested JSONs and fixes ([6356](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6356))
+* Fix secret manager tests ([6412](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6412)
+* Add retrieved_at attribute to secret metadata [6423](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6423))
+### VMware
+* Fix bad request when updating `fast_provisioning_enabled` ([6425](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6425))
+### VPC Infrastructure
+* Handle absent device on VSIs ([6419](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6419))
+
+## Enhancements
+### CD Tekton Pipeline
+* Add support for `ca-mon` region ([6402](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6402))
+### App Configuration
+* Addition of Integration Resources support ([6405](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6405))
+### Event Streams
+* Pre-defined templates and Code Engine templates support ([6398](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6398))
+### MQ Service
+* Add ability to update user and app names ([6397](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6397))
+### VMware
+* Transit Gateway support for Vmaas Terraform ([6377](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6377))
+### CIS
+* Add ratelimit changes in custom rulesets ([6379](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6379))
+### VPC Infrastructure
+* Added `storage_generation` attribute to `is_volume` ([6413](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6413))
+### Satellite
+* Added length validation check for satellite location ([6421](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6421))
+### Transit Gateway
+* Added option to enable or disable GRE enhanced route propagation ([6311](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6311))
+### Power Systems
+* Update Volume Flash Copy documentation ([6420](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6420))
+
+### General
+* Bump `actions/checkout` from 4.2.2 to 5.0.0 ([6406](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6406))
+* Upgrade `bluemix-go` dependency ([6409](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6409))
+* Fix evaluation order for `endpoints_file_path` precedence ([6429](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6429))
+
+## Tests
+### Secrets Manager
+* Optionally disable SM crypto key tests ([6408](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6408))
+
 # 1.82.0-beta0 (August 21, 2025)
 
 * Support for **App Configuration**
