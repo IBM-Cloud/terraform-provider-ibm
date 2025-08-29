@@ -366,6 +366,16 @@ func resourceIBMTransitGatewayConnectionRgreTunnelUpdate(d *schema.ResourceData,
 	updateTransitGatewayConnectionOptions.SetID(connectionID)
 	updateTransitGatewayConnectionOptions.SetGreTunnelID(rGRETunnelID)
 
+	if d.HasChange(tgconTunnelName) {
+		if d.Get(tgconTunnelName) != nil {
+			name := d.Get(tgconTunnelName).(string)
+			gwTunnelPatch := map[string]interface{}{
+				"name": &name,
+			}
+			updateTransitGatewayConnectionOptions.SetTransitGatewayTunnelPatch(gwTunnelPatch)
+		}
+	}
+
 	_, response, err := client.UpdateTransitGatewayConnectionTunnels(updateTransitGatewayConnectionOptions)
 	if err != nil {
 		return flex.FmtErrorf("[ERROR] Error in Update Transit Gateway Connection Tunnel: %s\n%s", err, response)
