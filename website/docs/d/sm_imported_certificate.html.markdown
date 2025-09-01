@@ -135,6 +135,8 @@ In addition to all argument references listed, you can access the following attr
 
 * `private_key_included` - (Boolean) Indicates whether the certificate was imported with an associated private key.
 
+* `retrieved_at` - (String) The date when the data of the secret was last retrieved. The date format follows RFC 3339. Epoch date if there is no record of secret data retrieval.
+
 * `secret_group_id` - (String) A UUID identifier, or `default` secret group.
   * Constraints: The maximum length is `36` characters. The minimum length is `7` characters. The value must match regular expression `/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|default)$/`.
 

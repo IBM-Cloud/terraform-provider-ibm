@@ -101,6 +101,8 @@ Nested scheme for **issuance_info**:
 * `name` - (String) The human-readable name of your secret.
   * Constraints: The maximum length is `256` characters. The minimum length is `2` characters.
 
+* `retrieved_at` - (String) The date when the data of the secret was last retrieved. The date format follows RFC 3339. Epoch date if there is no record of secret data retrieval.
+
 * `rotation` - (List) Determines whether Secrets Manager rotates your secrets automatically.
 Nested scheme for **rotation**:
 	* `auto_rotate` - (Boolean) Determines whether Secrets Manager rotates your secret automatically.Default is `false`. If `auto_rotate` is set to `true` the service rotates your secret based on the defined interval.
