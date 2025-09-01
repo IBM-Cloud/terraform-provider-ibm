@@ -805,7 +805,6 @@ func ResourceIBMDb2Instance() *schema.Resource {
 		},
 	}
 
-	// Post allowlist // write manually
 	riSchema["allowlist_config"] = &schema.Schema{
 		Description: "The db2 allowlist",
 		Optional:    true,
@@ -835,7 +834,6 @@ func ResourceIBMDb2Instance() *schema.Resource {
 		},
 	}
 
-	// Post Users // write manually
 	riSchema["users_config"] = &schema.Schema{
 		Description: "The db2 new users gets created (available only for platform users)",
 		Optional:    true,
@@ -924,9 +922,6 @@ func ResourceIBMDb2Instance() *schema.Resource {
 				return flex.ResourceTagsCustomizeDiff(diff)
 			},
 		),
-		// need to figure out additional crud block to be added (we need to figure out this for delete, put users)
-		// post users
-		// post allowlist will work without crud bloack as well
 		Schema: riSchema,
 	}
 }
@@ -1337,9 +1332,36 @@ func resourceIBMDb2InstanceCreate(d *schema.ResourceData, meta interface{}) erro
 				},
 			}
 
-			result, response, err := db2SaasClient.PostDb2SaasUser(input)
+			var result interface{}
+			var response *core.DetailedResponse
+			var err error
+
+			// // need to uncomment following, once updated sdk is uploaded
+			// if id != "" {
+			// 	// If ID exists, try updating with PUT
+			// 	updateInput := &db2saasv1.PutDb2SaasUserOptions{
+			// 		XDeploymentID: core.StringPtr(encodedCRN),
+			// 		ID:            core.StringPtr(id),
+			// 		Iam:           core.BoolPtr(iam),
+			// 		Ibmid:         core.StringPtr(ibmID),
+			// 		Name:          core.StringPtr(name),
+			// 		Password:      core.StringPtr(password),
+			// 		Role:          core.StringPtr(role),
+			// 		Email:         core.StringPtr(email),
+			// 		Locked:        core.StringPtr(locked),
+			// 		Authentication: &db2saasv1.CreateUserAuthentication{
+			// 			Method:   core.StringPtr(method),
+			// 			PolicyID: core.StringPtr(policyID),
+			// 		},
+			// 	}
+			// 	result, response, err = db2SaasClient.PutDb2SaasUser(updateInput)
+			// } else {
+			// Otherwise create new user with POST
+			result, response, err = db2SaasClient.PostDb2SaasUser(input)
+			// }
+
 			if err != nil {
-				log.Printf("Error while updating users config to DB2Saas: %s", err)
+				log.Printf("Error while sending users config to DB2: %s", err)
 			} else {
 				log.Printf("StatusCode of response %d", response.StatusCode)
 				log.Printf("Success result %v", result)
