@@ -1,3 +1,11 @@
+# 1.82.1 (September 1, 2025)
+
+## Bug Fixes
+
+### Kubernetes Cluster
+* rollback vendor for cluster config ([6432](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6432))
+
+
 # 1.82.0 (August 29, 2025)
 * Support for **App Configuration**
   * **Datasources**
