@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"net/url"
 	"os"
 	"strconv"
 	"strings"
@@ -799,6 +800,11 @@ func ResourceIBMResourceInstanceUpdate(d *schema.ResourceData, meta interface{})
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error waiting for update resource instance (%s) to be succeeded: %s", d.Id(), err)
 	}
+
+	encodedCRN := url.QueryEscape(*instance.CRN)
+	log.Print("encoded CRN: ", encodedCRN)
+
+	// call update users sdk function, with users_config
 
 	return ResourceIBMResourceInstanceRead(d, meta)
 }
