@@ -93,9 +93,6 @@ func dataSourceIBMPINetworkPeersRead(ctx context.Context, d *schema.ResourceData
 
 func dataSourceIBMPINetworkPeersNetworkPeerToMap(np *models.NetworkPeer) map[string]interface{} {
 	npMap := make(map[string]interface{})
-	if np.Description != nil {
-		npMap[Attr_Description] = np.Description
-	}
 	if np.ID != nil {
 		npMap[Attr_ID] = np.ID
 	}

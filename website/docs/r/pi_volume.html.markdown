@@ -63,6 +63,7 @@ Review the argument references that you can specify for your resource.
   **Note:** `replication_sites` will be populated automatically with default sites if set to true and sites are not specified.
 
 - `pi_replication_sites` - (Optional, List) List of replication sites for volume replication. Must set `pi_replication_enabled` to true to use.
+- `pi_target_crn` - (Optional, String) Target CRN of the secondary workspace where the auxiliary data resides; optional; only valid for replication enabled volumes; if specified, and the volume is replication enabled, the corresponding auxiliary volume will also be deleted.
 - `pi_user_tags` - (Optional, List) The user tags attached to this resource.
 - `pi_volume_name` - (Required, String) The name of the volume.
 - `pi_volume_pool` - (Optional, String) Volume pool where the volume will be created; if provided then `pi_affinity_policy` values will be ignored.

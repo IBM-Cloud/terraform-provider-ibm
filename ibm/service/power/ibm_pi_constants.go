@@ -152,6 +152,7 @@ const (
 	Arg_StorageType                          = "pi_storage_type"
 	Arg_SysType                              = "pi_sys_type"
 	Arg_Target                               = "pi_target"
+	Arg_TargetCRN                            = "pi_target_crn"
 	Arg_TargetStorageTier                    = "pi_target_storage_tier"
 	Arg_Type                                 = "pi_type"
 	Arg_UserData                             = "pi_user_data"

@@ -258,6 +258,7 @@ var (
 	Pi_spp_placement_group_id         string
 	Pi_storage_connection             string
 	Pi_target_storage_tier            string
+	Pi_target_crn                     string
 	Pi_virtual_serial_number          string
 	Pi_volume_clone_task_id           string
 	Pi_volume_group_id                string

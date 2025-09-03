@@ -46,6 +46,41 @@ func TestAccIBMPIVolumebasic(t *testing.T) {
 	})
 }
 
+func TestAccIBMPIVolumeDeleteWithTargetCRN(t *testing.T) {
+	name := fmt.Sprintf("tf-pi-volume-%d", acctest.RandIntRange(10, 100))
+	volumeRes := "ibm_pi_volume.power_volume"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPIVolumeDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMPIVolumeDeleteWithTargetCRNConfig(name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIVolumeExists(volumeRes),
+					resource.TestCheckResourceAttr(volumeRes, "pi_volume_name", name),
+					resource.TestCheckResourceAttr(volumeRes, "pi_replication_enabled", "true"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMPIVolumeDeleteWithTargetCRNConfig(name string) string {
+	return fmt.Sprintf(`
+		resource "ibm_pi_volume" "power_volume" {
+			pi_cloud_instance_id    = "%[2]s"
+			pi_volume_name          = "%[1]s"
+			pi_volume_pool          = "%[3]s"
+			pi_volume_shareable     = true
+			pi_volume_size          = 20
+			pi_volume_type          = "tier3"
+			pi_replication_enabled  = true
+			pi_target_crn           = "%[4]s"
+		}`, name, acc.Pi_cloud_instance_id, acc.PiStoragePool, acc.Pi_target_crn)
+}
+
 func testAccCheckIBMPIVolumeDestroy(s *terraform.State) error {
 	sess, err := acc.TestAccProvider.Meta().(conns.ClientSession).IBMPISession()
 	if err != nil {
