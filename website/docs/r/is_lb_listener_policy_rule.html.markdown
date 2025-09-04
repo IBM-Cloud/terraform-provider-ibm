@@ -85,7 +85,7 @@ resource "ibm_is_lb_listener_policy" "example" {
   target_url              = "https://www.redirect.com"
   rules {
     condition = "contains"
-    type      = "header"
+    type      = "tcp"
     field     = "1"
     value     = "2"
   }
@@ -119,7 +119,17 @@ Review the argument references that you can specify for your resource.
 - `lb` - (Required, Forces new resource, String) The ID of the load balancer for which you want to create a listener policy rule.
 - `listener` - (Required, Forces new resource, String) The ID of the load balancer listener for which you want to create a policy rule. 
 - `policy` - (Required, Forces new resource, String) The ID of the load balancer listener policy for which you want to create a policy rule. 
-- `type` - (Required, String) The object where you want to apply the rule. Supported values are `header`, `hostname`,`sni_hostname` and `path`.
+- `type` - (Required, String) The object where you want to apply the rule. Supported values are `body`, `header`, `hostname`, `path`, `query`, and `sni_hostname`.
+  The content the rule applies to:
+    - `body`: The UTF-8 form-encoded HTTP request body
+    - `header`: The HTTP header
+    - `hostname`: The fully-qualified domain name of the server specified in the Host HTTP request header
+    - `path`: The path of the HTTP request
+    - `query`: The query of the HTTP request URL
+    - `sni_hostname`: The fully-qualified domain name of the server provided in the "server name indicator" extension during TLS negotiation
+    - For listeners with protocol http or https, any type may be specified.
+    - For listeners with protocol tcp, only type `sni_hostname` may be specified.
+
 - `value` - (Required, String) The value that must match the rule condition. The value can be between 1 and 128 characters long. No.
 
 ## Attribute reference
