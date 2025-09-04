@@ -367,3 +367,68 @@ func testAccCheckIBMDb2InstanceCreateAllowlist(databaseResourceGroup string, tes
 	}
 	`, databaseResourceGroup, testName)
 }
+
+func TestAccIBMDb2InstanceCreateUsers(t *testing.T) {
+	databaseResourceGroup := "Default"
+	var databaseInstanceOne string
+	rnd := fmt.Sprintf("tf-db2-%d", acctest.RandIntRange(10, 100))
+	testName := rnd
+	// testName = "test-db2-v4"
+	name := "ibm_db2." + testName
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMDb2InstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+
+				Config: testAccCheckIBMDb2InstanceCreateUsers(databaseResourceGroup, testName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMDb2InstanceExists(name, &databaseInstanceOne),
+					resource.TestCheckResourceAttr(name, "name", testName),
+					resource.TestCheckResourceAttr(name, "service", "dashdb-for-transactions"),
+					resource.TestCheckResourceAttr(name, "plan", "performance-dev"),
+					resource.TestCheckResourceAttr(name, "location", "us-east"),
+					resource.TestCheckResourceAttr(name, "service_endpoints", "public-and-private"),
+					resource.TestCheckResourceAttr(name, "users_config.#", "1"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMDb2InstanceCreateUsers(databaseResourceGroup string, testName string) string {
+	return fmt.Sprintf(`
+    data "ibm_resource_group" "group" {
+		name = "%[1]s"
+	}
+	resource "ibm_db2" "%[2]s" {
+		name              = "%[2]s"
+		service           = "dashdb-for-transactions"
+		plan              = "performance-dev"
+		location          = "us-east"
+		resource_group_id = data.ibm_resource_group.group.id
+		service_endpoints = "public-and-private"
+		timeouts {
+			create = "720m"
+			update = "30m"
+			delete = "30m"
+		}
+		users_config {
+		id = "test-user101"
+		iam = "false"
+		ibmid = "test-ibm-id"
+		name =  "test_user"
+		password =  "dEkMc43@gfAPl!867^dSbu"
+		role =  "bluuser"
+		email = "test_user@mycompany.com"
+		locked = "no"
+		authentication {
+				method = "internal"
+				policy_id = "Default"
+			}
+		}
+	}
+	`, databaseResourceGroup, testName)
+}

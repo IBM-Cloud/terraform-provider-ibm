@@ -17,6 +17,21 @@ resource "ibm_db2" "db2_instance" {
   disk_encryption_key_crn      = "none"
   oracle_compatibility         = "no"
 
+  users_config {
+    id = "test-user"
+    iam = "false"
+    ibmid = "test-ibm-id"
+    name =  "test_user"
+    password =  "dEkMc43@gfAPl!867^dSbu"
+    role =  "bluuser"
+    email = "test_user@mycompany.com"
+    locked = "no"
+    authentication {
+      method = "internal"
+      policy_id = "Default"
+    }
+  }
+
   allowlist_config {
    ip_addresses {
       address     = "127.0.0.32"
