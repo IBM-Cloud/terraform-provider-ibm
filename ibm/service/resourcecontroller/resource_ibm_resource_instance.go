@@ -815,7 +815,7 @@ func ResourceIBMResourceInstanceUpdate(d *schema.ResourceData, meta interface{})
 		return err
 	}
 
-	err = userConfigValidation(d, encodedCRN, db2saasClient)
+	err = UserConfigValidation(d, encodedCRN, db2saasClient)
 	if err != nil {
 		log.Printf("User config validation failed: %s", err)
 	}
@@ -823,7 +823,7 @@ func ResourceIBMResourceInstanceUpdate(d *schema.ResourceData, meta interface{})
 	return ResourceIBMResourceInstanceRead(d, meta)
 }
 
-func userConfigValidation(d *schema.ResourceData, encodedCRN string, db2SaasClient *db2saasv1.Db2saasV1) error {
+func UserConfigValidation(d *schema.ResourceData, encodedCRN string, db2SaasClient *db2saasv1.Db2saasV1) error {
 
 	if usersConfigRaw, ok := d.GetOk("users_config"); ok {
 		usersList := usersConfigRaw.([]interface{})

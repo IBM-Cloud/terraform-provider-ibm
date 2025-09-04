@@ -9,8 +9,6 @@ import (
 	"fmt"
 	"log"
 	"net"
-
-	"net/http"
 	"net/url"
 	"os"
 	"reflect"
@@ -25,7 +23,6 @@ import (
 	"github.com/IBM/cloud-db2-go-sdk/db2saasv1"
 	"github.com/IBM/go-sdk-core/v5/core"
 	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -1235,7 +1232,7 @@ func resourceIBMDb2InstanceCreate(d *schema.ResourceData, meta interface{}) erro
 		}
 	}
 
-	err = userConfigValidation(d, encodedCRN, db2SaasClient)
+	err = resourcecontroller.UserConfigValidation(d, encodedCRN, db2SaasClient)
 	if err != nil {
 		log.Printf("User config validation failed: %s", err)
 	}
@@ -1708,184 +1705,7 @@ func checkStringNilValue(config map[string]interface{}, key string) *string {
 	return nil
 }
 
-func userConfigValidation(d *schema.ResourceData, encodedCRN string, db2SaasClient *db2saasv1.Db2saasV1) error {
-
-	if usersConfigRaw, ok := d.GetOk("users_config"); ok {
-		usersList := usersConfigRaw.([]interface{})
-		if len(usersList) == 0 {
-			fmt.Println("No users config provided, skipping.")
-		}
-
-		for _, u := range usersList {
-			userMap := u.(map[string]interface{})
-
-			var (
-				id       string
-				iam      bool
-				ibmID    string
-				name     string
-				password string
-				role     string
-				email    string
-				locked   string
-				method   string
-				policyID string
-				ok       bool
-			)
-
-			if rawID, exists := userMap["id"]; exists && rawID != nil {
-				id, ok = rawID.(string)
-				if !ok {
-					log.Printf("failed to extract 'id'")
-					return fmt.Errorf("failed to extract 'id': expected string, got %T", rawID)
-				}
-			}
-			if rawIAM, exists := userMap["iam"]; exists && rawIAM != nil {
-				iam, ok = rawIAM.(bool)
-				if !ok {
-					log.Printf("failed to extract 'iam'")
-					return fmt.Errorf("failed to extract 'iam': expected bool, got %T", rawIAM)
-				}
-			}
-			if rawIBMID, exists := userMap["ibmid"]; exists && rawIBMID != nil {
-				ibmID, ok = rawIBMID.(string)
-				if !ok {
-					log.Printf("failed to extract 'ibmid'")
-					return fmt.Errorf("failed to extract 'ibmid': expected string, got %T", rawIBMID)
-				}
-			}
-			if rawName, exists := userMap["name"]; exists && rawName != nil {
-				name, ok = rawName.(string)
-				if !ok {
-					log.Printf("failed to extract 'name'")
-					return fmt.Errorf("failed to extract 'name': expected string, got %T", rawName)
-				}
-			}
-			if rawPassword, exists := userMap["password"]; exists && rawPassword != nil {
-				password, ok = rawPassword.(string)
-				if !ok {
-					log.Printf("failed to extract 'password'")
-					return fmt.Errorf("failed to extract 'password': expected string, got %T", rawPassword)
-				}
-			}
-			if rawRole, exists := userMap["role"]; exists && rawRole != nil {
-				role, ok = rawRole.(string)
-				if !ok {
-					log.Printf("failed to extract 'role'")
-					return fmt.Errorf("failed to extract 'role': expected string, got %T", rawRole)
-				}
-			}
-			if rawEmail, exists := userMap["email"]; exists && rawEmail != nil {
-				email, ok = rawEmail.(string)
-				if !ok {
-					log.Printf("failed to extract 'email'")
-					return fmt.Errorf("failed to extract 'email': expected string, got %T", rawEmail)
-				}
-			}
-			if rawLocked, exists := userMap["locked"]; exists && rawLocked != nil {
-				locked, ok = rawLocked.(string)
-				if !ok {
-					log.Printf("failed to extract 'locked'")
-					return fmt.Errorf("failed to extract 'locked': expected string, got %T", rawLocked)
-				}
-			}
-
-			// authentication block
-			if rawAuth, exists := userMap["authentication"]; exists && rawAuth != nil {
-				authList := rawAuth.([]interface{})
-				if len(authList) > 0 {
-					authMap := authList[0].(map[string]interface{})
-
-					if rawMethod, exists := authMap["method"]; exists && rawMethod != nil {
-						method, ok = rawMethod.(string)
-						if !ok {
-							log.Printf("failed to extract 'authentication.method'")
-							return fmt.Errorf("failed to extract 'authentication.method': expected string, got %T", rawMethod)
-						}
-					}
-					if rawPolicy, exists := authMap["policy_id"]; exists && rawPolicy != nil {
-						policyID, ok = rawPolicy.(string)
-						if !ok {
-							log.Printf("failed to extract 'authentication.policy_id'")
-							return fmt.Errorf("failed to extract 'authentication.policy_id': expected string, got %T", rawPolicy)
-						}
-					}
-				}
-			}
-
-			input := &db2saasv1.PostDb2SaasUserOptions{
-				XDeploymentID: core.StringPtr(encodedCRN),
-				ID:            core.StringPtr(id),
-				Iam:           core.BoolPtr(iam),
-				Ibmid:         core.StringPtr(ibmID),
-				Name:          core.StringPtr(name),
-				Password:      core.StringPtr(password),
-				Role:          core.StringPtr(role),
-				Email:         core.StringPtr(email),
-				Locked:        core.StringPtr(locked),
-				Authentication: &db2saasv1.CreateUserAuthentication{
-					Method:   core.StringPtr(method),
-					PolicyID: core.StringPtr(policyID),
-				},
-			}
-
-			var result interface{}
-			var response *core.DetailedResponse
-			var err error
-			var existingUser bool
-
-			// get users by id is required to switch between put and post
-			log.Print("checking existence of user...")
-			getUsersInput := &db2saasv1.GetbyidDb2SaasUserOptions{
-				XDeploymentID: core.StringPtr(encodedCRN),
-				ID:            core.StringPtr(id),
-			}
-
-			_, resp, err := db2SaasClient.GetbyidDb2SaasUser(getUsersInput)
-
-			if resp != nil && resp.StatusCode == http.StatusOK {
-				log.Print("User exists, thus will proceed with update")
-				existingUser = true
-			}
-			if err != nil {
-				log.Printf("Error while fetching user by ID: %s", err)
-			}
-
-			if existingUser {
-				log.Print("User exists, updating...")
-				updateInput := &db2saasv1.PutDb2SaasUserOptions{
-					XDeploymentID: core.StringPtr(encodedCRN),
-					ID:            core.StringPtr(id),
-					NewID:         core.StringPtr(id),
-					NewIam:        core.BoolPtr(iam),
-					NewIbmid:      core.StringPtr(ibmID),
-					NewName:       core.StringPtr(name),
-					NewPassword:   core.StringPtr(password),
-					NewRole:       core.StringPtr(role),
-					NewEmail:      core.StringPtr(email),
-					NewLocked:     core.StringPtr(locked),
-					NewAuthentication: &db2saasv1.UpdateUserAuthentication{
-						Method:   core.StringPtr(method),
-						PolicyID: core.StringPtr(policyID),
-					},
-				}
-				result, response, err = db2SaasClient.PutDb2SaasUser(updateInput)
-			} else {
-				log.Print("User doesn't exist, creating...")
-				result, response, err = db2SaasClient.PostDb2SaasUser(input)
-			}
-
-			if err != nil {
-				log.Printf("Error while sending users config to DB2: %s", err)
-			} else {
-				log.Printf("StatusCode of response %d", response.StatusCode)
-				log.Printf("Success result %v", result)
-			}
-		}
-	}
-	return nil
-}
-
+/*
 func resourceIbmDb2SaasUsersUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	db2saasClient, err := meta.(conns.ClientSession).Db2saasV1()
 	if err != nil {
@@ -1913,7 +1733,7 @@ func resourceIbmDb2SaasUsersUpdate(context context.Context, d *schema.ResourceDa
 	// putDb2SaasUserOptions.SetNewAuthentication(newAuthentication)
 
 	encodedCRN := getEncodedCRN(d)
-	userConfigValidation(d, encodedCRN, db2saasClient)
+	resourcecontroller.UserConfigValidation(d, encodedCRN, db2saasClient)
 
 	// _, _, err = db2saasClient.PutDb2SaasUserWithContext(context, putDb2SaasUserOptions)
 	// if err != nil {
@@ -1931,3 +1751,4 @@ func getEncodedCRN(d *schema.ResourceData) string {
 	}
 	return ""
 }
+*/

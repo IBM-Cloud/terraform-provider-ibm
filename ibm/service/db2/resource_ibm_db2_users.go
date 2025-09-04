@@ -418,41 +418,41 @@ func resourceIbmDb2SaasUsersRead(context context.Context, d *schema.ResourceData
 	return nil
 }
 
-// func resourceIbmDb2SaasUsersUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-// 	db2saasClient, err := meta.(conns.ClientSession).Db2saasV1()
-// 	if err != nil {
-// 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_db2_saas_users", "update", "initialize-client")
-// 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-// 		return tfErr.GetDiag()
-// 	}
+func resourceIbmDb2SaasUsersUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	db2saasClient, err := meta.(conns.ClientSession).Db2saasV1()
+	if err != nil {
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_db2_saas_users", "update", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+	}
 
-// 	putDb2SaasUserOptions := &db2saasv1.PutDb2SaasUserOptions{}
+	putDb2SaasUserOptions := &db2saasv1.PutDb2SaasUserOptions{}
 
-// 	putDb2SaasUserOptions.SetID(d.Id())
-// 	putDb2SaasUserOptions.SetXDeploymentID(d.Get("x_deployment_id").(string))
-// 	putDb2SaasUserOptions.SetNewID(d.Get("id").(string))
-// 	putDb2SaasUserOptions.SetNewIam(d.Get("iam").(bool))
-// 	putDb2SaasUserOptions.SetNewIbmid(d.Get("ibmid").(string))
-// 	putDb2SaasUserOptions.SetNewName(d.Get("name").(string))
-// 	putDb2SaasUserOptions.SetNewPassword(d.Get("password").(string))
-// 	putDb2SaasUserOptions.SetNewRole(d.Get("role").(string))
-// 	putDb2SaasUserOptions.SetNewEmail(d.Get("email").(string))
-// 	putDb2SaasUserOptions.SetNewLocked(d.Get("locked").(string))
-// 	newAuthentication, err := ResourceIbmDb2SaasUsersMapToUpdateUserAuthentication(d.Get("authentication.0").(map[string]interface{}))
-// 	if err != nil {
-// 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_db2_saas_users", "update", "parse-authentication").GetDiag()
-// 	}
-// 	putDb2SaasUserOptions.SetNewAuthentication(newAuthentication)
+	putDb2SaasUserOptions.SetID(d.Id())
+	putDb2SaasUserOptions.SetXDeploymentID(d.Get("x_deployment_id").(string))
+	putDb2SaasUserOptions.SetNewID(d.Get("id").(string))
+	putDb2SaasUserOptions.SetNewIam(d.Get("iam").(bool))
+	putDb2SaasUserOptions.SetNewIbmid(d.Get("ibmid").(string))
+	putDb2SaasUserOptions.SetNewName(d.Get("name").(string))
+	putDb2SaasUserOptions.SetNewPassword(d.Get("password").(string))
+	putDb2SaasUserOptions.SetNewRole(d.Get("role").(string))
+	putDb2SaasUserOptions.SetNewEmail(d.Get("email").(string))
+	putDb2SaasUserOptions.SetNewLocked(d.Get("locked").(string))
+	newAuthentication, err := ResourceIbmDb2SaasUsersMapToUpdateUserAuthentication(d.Get("authentication.0").(map[string]interface{}))
+	if err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_db2_saas_users", "update", "parse-authentication").GetDiag()
+	}
+	putDb2SaasUserOptions.SetNewAuthentication(newAuthentication)
 
-// 	_, _, err = db2saasClient.PutDb2SaasUserWithContext(context, putDb2SaasUserOptions)
-// 	if err != nil {
-// 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("PutDb2SaasUserWithContext failed: %s", err.Error()), "ibm_db2_saas_users", "update")
-// 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-// 		return tfErr.GetDiag()
-// 	}
+	_, _, err = db2saasClient.PutDb2SaasUserWithContext(context, putDb2SaasUserOptions)
+	if err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("PutDb2SaasUserWithContext failed: %s", err.Error()), "ibm_db2_saas_users", "update")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+	}
 
-// 	return resourceIbmDb2SaasUsersRead(context, d, meta)
-// }
+	return resourceIbmDb2SaasUsersRead(context, d, meta)
+}
 
 func resourceIbmDb2SaasUsersDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	db2saasClient, err := meta.(conns.ClientSession).Db2saasV1()
