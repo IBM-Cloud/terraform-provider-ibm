@@ -166,4 +166,3 @@ $ terraform import ibm_is_lb_listener_policy_rule.example <loadbalancer_ID>/<lis
 ```console
 $ terraform import ibm_is_lb_listener_policy_rule.example c1e3d5d3-8836-4328-b473-a90e0c9ba941/3ea13dc7-25b4-4c62-8cc7-0f7e092e7a8f/2161a3fb-123c-4a33-9a3d-b3154ef42009/356789523dc7-25b4-4c62-8cc7-0f7e092e7a8f
 ```
-
