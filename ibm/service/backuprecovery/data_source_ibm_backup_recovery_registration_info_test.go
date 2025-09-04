@@ -330,7 +330,7 @@ func TestDataSourceIbmBackupRecoveryRegistrationInfoProtectionSourceTreeInfoToMa
 		kubernetesProtectionSourceModel := make(map[string]interface{})
 		kubernetesProtectionSourceModel["datamover_image_location"] = "testString"
 		kubernetesProtectionSourceModel["datamover_service_type"] = int(38)
-		kubernetesProtectionSourceModel["datamover_upgradability"] = int(38)
+		kubernetesProtectionSourceModel["datamover_upgradability"] = "testString"
 		kubernetesProtectionSourceModel["default_vlan_params"] = []map[string]interface{}{vlanParametersModel}
 		kubernetesProtectionSourceModel["description"] = "testString"
 		kubernetesProtectionSourceModel["distribution"] = "kMainline"
@@ -1053,7 +1053,7 @@ func TestDataSourceIbmBackupRecoveryRegistrationInfoProtectionSourceTreeInfoToMa
 	kubernetesProtectionSourceModel := new(backuprecoveryv1.KubernetesProtectionSource)
 	kubernetesProtectionSourceModel.DatamoverImageLocation = core.StringPtr("testString")
 	kubernetesProtectionSourceModel.DatamoverServiceType = core.Int64Ptr(int64(38))
-	kubernetesProtectionSourceModel.DatamoverUpgradability = core.Int64Ptr(int64(38))
+	kubernetesProtectionSourceModel.DatamoverUpgradability = core.StringPtr("kCurrent")
 	kubernetesProtectionSourceModel.DefaultVlanParams = vlanParametersModel
 	kubernetesProtectionSourceModel.Description = core.StringPtr("testString")
 	kubernetesProtectionSourceModel.Distribution = core.StringPtr("kMainline")
@@ -1780,7 +1780,7 @@ func TestDataSourceIbmBackupRecoveryRegistrationInfoApplicationInfoToMap(t *test
 		kubernetesProtectionSourceModel := make(map[string]interface{})
 		kubernetesProtectionSourceModel["datamover_image_location"] = "testString"
 		kubernetesProtectionSourceModel["datamover_service_type"] = int(38)
-		kubernetesProtectionSourceModel["datamover_upgradability"] = int(38)
+		kubernetesProtectionSourceModel["datamover_upgradability"] = "testString"
 		kubernetesProtectionSourceModel["default_vlan_params"] = []map[string]interface{}{vlanParametersModel}
 		kubernetesProtectionSourceModel["description"] = "testString"
 		kubernetesProtectionSourceModel["distribution"] = "kMainline"
@@ -2128,7 +2128,7 @@ func TestDataSourceIbmBackupRecoveryRegistrationInfoApplicationInfoToMap(t *test
 	kubernetesProtectionSourceModel := new(backuprecoveryv1.KubernetesProtectionSource)
 	kubernetesProtectionSourceModel.DatamoverImageLocation = core.StringPtr("testString")
 	kubernetesProtectionSourceModel.DatamoverServiceType = core.Int64Ptr(int64(38))
-	kubernetesProtectionSourceModel.DatamoverUpgradability = core.Int64Ptr(int64(38))
+	kubernetesProtectionSourceModel.DatamoverUpgradability = core.StringPtr("kCurrent")
 	kubernetesProtectionSourceModel.DefaultVlanParams = vlanParametersModel
 	kubernetesProtectionSourceModel.Description = core.StringPtr("testString")
 	kubernetesProtectionSourceModel.Distribution = core.StringPtr("kMainline")
@@ -2480,7 +2480,7 @@ func TestDataSourceIbmBackupRecoveryRegistrationInfoProtectionSourceNodeToMap(t 
 		kubernetesProtectionSourceModel := make(map[string]interface{})
 		kubernetesProtectionSourceModel["datamover_image_location"] = "testString"
 		kubernetesProtectionSourceModel["datamover_service_type"] = int(38)
-		kubernetesProtectionSourceModel["datamover_upgradability"] = int(38)
+		kubernetesProtectionSourceModel["datamover_upgradability"] = "testString"
 		kubernetesProtectionSourceModel["default_vlan_params"] = []map[string]interface{}{vlanParametersModel}
 		kubernetesProtectionSourceModel["description"] = "testString"
 		kubernetesProtectionSourceModel["distribution"] = "kMainline"
@@ -2824,7 +2824,7 @@ func TestDataSourceIbmBackupRecoveryRegistrationInfoProtectionSourceNodeToMap(t 
 	kubernetesProtectionSourceModel := new(backuprecoveryv1.KubernetesProtectionSource)
 	kubernetesProtectionSourceModel.DatamoverImageLocation = core.StringPtr("testString")
 	kubernetesProtectionSourceModel.DatamoverServiceType = core.Int64Ptr(int64(38))
-	kubernetesProtectionSourceModel.DatamoverUpgradability = core.Int64Ptr(int64(38))
+	kubernetesProtectionSourceModel.DatamoverUpgradability = core.StringPtr("kCurrent")
 	kubernetesProtectionSourceModel.DefaultVlanParams = vlanParametersModel
 	kubernetesProtectionSourceModel.Description = core.StringPtr("testString")
 	kubernetesProtectionSourceModel.Distribution = core.StringPtr("kMainline")
@@ -5146,7 +5146,7 @@ func TestDataSourceIbmBackupRecoveryRegistrationInfoKubernetesProtectionSourceTo
 		model := make(map[string]interface{})
 		model["datamover_image_location"] = "testString"
 		model["datamover_service_type"] = int(38)
-		model["datamover_upgradability"] = int(38)
+		model["datamover_upgradability"] = "testString"
 		model["default_vlan_params"] = []map[string]interface{}{vlanParametersModel}
 		model["description"] = "testString"
 		model["distribution"] = "kMainline"
@@ -5208,7 +5208,7 @@ func TestDataSourceIbmBackupRecoveryRegistrationInfoKubernetesProtectionSourceTo
 	model := new(backuprecoveryv1.KubernetesProtectionSource)
 	model.DatamoverImageLocation = core.StringPtr("testString")
 	model.DatamoverServiceType = core.Int64Ptr(int64(38))
-	model.DatamoverUpgradability = core.Int64Ptr(int64(38))
+	model.DatamoverUpgradability = core.StringPtr("kCurrent")
 	model.DefaultVlanParams = vlanParametersModel
 	model.Description = core.StringPtr("testString")
 	model.Distribution = core.StringPtr("kMainline")

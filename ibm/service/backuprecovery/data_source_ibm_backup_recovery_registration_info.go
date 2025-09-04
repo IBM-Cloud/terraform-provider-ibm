@@ -1513,7 +1513,7 @@ func DataSourceIbmBackupRecoveryRegistrationInfo() *schema.Resource {
 																Description: "Specifies Type of service to be deployed for communication with DataMover pods. Currently, LoadBalancer and NodePort are supported. [default = kNodePort].",
 															},
 															"datamover_upgradability": &schema.Schema{
-																Type:        schema.TypeInt,
+																Type:        schema.TypeString,
 																Computed:    true,
 																Description: "Specifies if the deployed Datamover image needs to be upgraded for this kubernetes entity.",
 															},
@@ -5391,7 +5391,7 @@ func DataSourceIbmBackupRecoveryRegistrationInfo() *schema.Resource {
 													Description: "Specifies Type of service to be deployed for communication with DataMover pods. Currently, LoadBalancer and NodePort are supported. [default = kNodePort].",
 												},
 												"datamover_upgradability": &schema.Schema{
-													Type:        schema.TypeInt,
+													Type:        schema.TypeString,
 													Computed:    true,
 													Description: "Specifies if the deployed Datamover image needs to be upgraded for this kubernetes entity.",
 												},
@@ -7157,7 +7157,7 @@ func DataSourceIbmBackupRecoveryRegistrationInfoKubernetesProtectionSourceToMap(
 		modelMap["datamover_service_type"] = flex.IntValue(model.DatamoverServiceType)
 	}
 	if model.DatamoverUpgradability != nil {
-		modelMap["datamover_upgradability"] = flex.IntValue(model.DatamoverUpgradability)
+		modelMap["datamover_upgradability"] = *model.DatamoverUpgradability
 	}
 	if model.DefaultVlanParams != nil {
 		defaultVlanParamsMap, err := DataSourceIbmBackupRecoveryRegistrationInfoVlanParametersToMap(model.DefaultVlanParams)
