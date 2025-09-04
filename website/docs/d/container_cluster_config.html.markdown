@@ -110,7 +110,7 @@ Example for getting kubeconfig for VPC Kubernetes cluster with admin certificate
 data "ibm_container_cluster_config" "cluster_foo" {
   cluster_name_id = "FOO"
   config_dir      = "/home/foo_config"
-  admint          = "true"
+  admin           = "true"
   endpoint_type   = "vpe"
 }
 ```
