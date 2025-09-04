@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"net"
 	"net/url"
 	"os"
 	"reflect"
@@ -804,6 +805,35 @@ func ResourceIBMDb2Instance() *schema.Resource {
 		},
 	}
 
+	riSchema["allowlist_config"] = &schema.Schema{
+		Description: "The db2 allowlist",
+		Optional:    true,
+		Type:        schema.TypeList,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"ip_addresses": {
+					Description: "The ip_addresses allowed for the instance",
+					Optional:    true,
+					Type:        schema.TypeList,
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"address": {
+								Type:        schema.TypeString,
+								Optional:    true,
+								Description: "The IP address",
+							},
+							"description": {
+								Type:        schema.TypeString,
+								Optional:    true,
+								Description: "The description for the ip address",
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
 	return &schema.Resource{
 		Create:   resourceIBMDb2InstanceCreate,
 		Read:     resourcecontroller.ResourceIBMResourceInstanceRead,
@@ -1279,6 +1309,67 @@ func resourceIBMDb2InstanceCreate(d *schema.ResourceData, meta interface{}) erro
 			result, response, err := db2SaasClient.PostDb2SaasDbConfiguration(input)
 			if err != nil {
 				log.Printf("Error while posting DB configuration to DB2Saas: %s", err)
+			} else {
+				log.Printf("StatusCode of response %d", response.StatusCode)
+				log.Printf("Success result %v", result)
+			}
+		}
+	}
+
+	if allowlistConfigRaw, ok := d.GetOk("allowlist_config"); ok {
+		list := allowlistConfigRaw.([]interface{})
+		if len(list) == 0 {
+			fmt.Println("No allowlist config provided, skipping.")
+		} else {
+			ipList := make([]db2saasv1.IpAddress, 0)
+
+			for _, item := range list {
+				entry := item.(map[string]interface{})
+
+				if ipAddrsRaw, ok := entry["ip_addresses"]; ok {
+					ipAddrs := ipAddrsRaw.([]interface{})
+					for _, ipItem := range ipAddrs {
+						ipEntry := ipItem.(map[string]interface{})
+						var address, description string
+
+						if rawAddress, ok := ipEntry["address"]; ok && rawAddress != nil {
+							str, ok := rawAddress.(string)
+							if !ok {
+								log.Printf("allowlist address is not a string")
+								return fmt.Errorf("allowlist address is not a string")
+							}
+							if ip := net.ParseIP(str); ip == nil {
+								log.Printf("invalid IP address format: %s", str)
+								return fmt.Errorf("invalid IP address format: %s", str)
+							}
+							address = str
+						}
+
+						if rawDescription, ok := ipEntry["description"]; ok && rawDescription != nil {
+							str, ok := rawDescription.(string)
+							if !ok {
+								log.Printf("allowlist description is not a string")
+								return fmt.Errorf("allowlist description is not a string")
+							}
+							description = str
+						}
+
+						ipList = append(ipList, db2saasv1.IpAddress{
+							Address:     core.StringPtr(address),
+							Description: core.StringPtr(description),
+						})
+					}
+				}
+			}
+
+			input := &db2saasv1.PostDb2SaasAllowlistOptions{
+				XDeploymentID: core.StringPtr(encodedCRN),
+				IpAddresses:   ipList,
+			}
+
+			result, response, err := db2SaasClient.PostDb2SaasAllowlist(input)
+			if err != nil {
+				log.Printf("Error while updating allowlist config to DB2Saas: %s", err)
 			} else {
 				log.Printf("StatusCode of response %d", response.StatusCode)
 				log.Printf("Success result %v", result)

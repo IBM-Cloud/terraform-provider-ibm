@@ -8,7 +8,7 @@ description: |-
 
 # ibm_db2
 
-Create or delete an IBM Db2 SaaS on IBM Cloud instance. The `ibmcloud_api_key` that are used by Terraform should grant IAM rights to create and modify IBM Cloud Db2 Databases and have access to the resource group the Db2 SaaS instance is associated with. For more information, see [documentation](https://cloud.ibm.com/docs/Db2onCloud?topic=Db2onCloud-getting-started) to manage Db2 SaaS instances.
+Create, update or delete an IBM Db2 SaaS on IBM Cloud instance. The `ibmcloud_api_key` that are used by Terraform should grant IAM rights to create and modify IBM Cloud Db2 Databases and have access to the resource group the Db2 SaaS instance is associated with. For more information, see [documentation](https://cloud.ibm.com/docs/Db2onCloud?topic=Db2onCloud-getting-started) to manage Db2 SaaS instances.
 
 
 Configuration of an Db2 SaaS resource requires that the `region` parameter is set for the IBM provider in the `provider.tf` to be the same as the target Db2 SaaS `location/region`. If the Terraform configuration needs to deploy resources into multiple regions, provider alias can be used. For more information, see [Terraform provider configuration](https://www.terraform.io/docs/configuration/providers.html#multiple-provider-instances).
@@ -45,6 +45,89 @@ resource "ibm_db2" "<your_database>" {
 }
 
 ```
+
+Sample Db2 SaaS instance using `users_config` attribute
+
+```terraform
+data "ibm_resource_group" "group" {
+  name = "<your_group>"
+}
+
+resource "ibm_db2" "<your_database>" {
+  name              = "<your_database_name>"
+  service           = "dashdb-for-transactions"
+  plan              = "performance" 
+  location          = "us-south"
+  resource_group_id = data.ibm_resource_group.group.id
+  service_endpoints = "public-and-private"
+  instance_type     = "bx2.4x16"
+  high_availability = "yes"
+  backup_location   = "us"
+  disk_encryption_instance_crn = "none"
+  disk_encryption_key_crn = "none"
+  oracle_compatibility = "no"
+  subscription_id = "<id_of_subscription_plan>"
+
+  timeouts {
+    create = "720m"
+    update = "30m"
+    delete = "30m"
+  }
+
+  users_config  {
+    email = "test_user@mycompany.com"
+    iam = false
+    ibmid = "test-ibm-id"
+    locked = "no"
+    name = "test_user"
+    password = "dEkMc43@gfAPl!867^dSbu"
+    role = "bluuser"
+    x_deployment_id = "crn:v1:staging:public:dashdb-for-transactions:us-south:a/e7e3e87b512f474381c0684a5ecbba03:69db420f-33d5-4953-8bd8-1950abd356f6::"
+    authentication {
+      method = "method"
+      policy_id = "policy_id"
+    }
+  }
+}
+```
+
+Sample Db2 SaaS instance using `allowlist_config` attribute
+
+```terraform
+data "ibm_resource_group" "group" {
+  name = "<your_group>"
+}
+
+resource "ibm_db2" "<your_database>" {
+  name              = "<your_database_name>"
+  service           = "dashdb-for-transactions"
+  plan              = "performance" 
+  location          = "us-south"
+  resource_group_id = data.ibm_resource_group.group.id
+  service_endpoints = "public-and-private"
+  instance_type     = "bx2.4x16"
+  high_availability = "yes"
+  backup_location   = "us"
+  disk_encryption_instance_crn = "none"
+  disk_encryption_key_crn = "none"
+  oracle_compatibility = "no"
+  subscription_id = "<id_of_subscription_plan>"
+
+  timeouts {
+    create = "720m"
+    update = "30m"
+    delete = "30m"
+  }
+
+  allowlist_config  {
+    ip_addresses {
+      address     = "127.0.0.1"
+      description = "A sample IP address 1"
+    }
+  }
+}
+```
+
 Sample Db2 SaaS instance using `autoscale_config` attribute
 
 ```terraform
@@ -313,6 +396,29 @@ Review the argument reference that you can specify for your resource.
 
   Nested schema for `parameters_json`:
   - `backup_encryption_key_crn` -  (Optional, Forces new resource, String) The CRN of a key protect key, that you want to use for encrypting disk that holds deployment backups. A key protect CRN is in the format `crn:v1:<...>:key:`. `backup_encryption_key_crn` can be added only at the time of creation and no update support  are available.
+- `users_config` - (Optional, List) Defines users configurations you want to set to Db2 SaaS instance.
+    Nested schema for `users_config`
+    - `email` - (Required, String) Email address of the user.
+    - `iam` - (Required, Boolean) Indicates if IAM is enabled or not.
+    - `ibmid` - (Required, String) IBM ID of the user.
+    - `locked` - (Required, String) Account lock status for the user.
+      - Constraints: Allowable values are: `yes`, `no`.
+    - `name` - (Required, String) The display name of the user.
+    - `password` - (Required, String) User's password.
+    - `role` - (Required, String) Role assigned to the user.
+      - Constraints: Allowable values are: `bluadmin`, `bluuser`.
+    - `x_deployment_id` - (Required, String) CRN deployment id.
+      - Constraints: The maximum length is `63` characters. The minimum length is `1` character. The value must match regular expression `/^crn(:[A-Za-z0-9\\-\\.]*){9}$/`.
+    - `authentication` - (Required, List) Authentication details for the user.
+    Nested schema for **authentication**:
+      * `method` - (Required, String) Authentication method.
+      * `policy_id` - (Required, String) Policy ID of authentication.
+
+- `allowlist_config` - (Optional, List) Defines allowlist configurations you want to set to Db2 SaaS instance.
+    Nested schema for `allowlist_config`
+    - `address` - (Required, String) Indicates teh IP Address to be allowed
+    - `description` - (Required, String) Defines the description.
+
 - `autoscale_config` - (Optional, List) Defines autoscale configurations you want to set to Db2 SaaS instance.
     Nested schema for `autoscale_config`
       - `auto_scaling_enabled` - (Optional, Boolean) Indicates if automatic scaling is enabled or not.
@@ -496,6 +602,13 @@ In addition to all argument references list, you can access the following attrib
 - `id` - (String) The CRN of the database instance.
 - `status` - (String) The status of the instance.
 - `version` - (String) The database version.
+- `all_clean` - (Boolean) Indicates if the user account has no issues.
+- `dv_role` - (String) User's DV role.
+- `formated_ibmid` - (String) Formatted IBM ID.
+- `iamid` - (String) IAM ID for the user.
+- `init_error_msg` - (String) Initial error message.
+- `metadata` - (Map) Metadata associated with the user.
+- `permitted_actions` - (List) List of allowed actions of the user.
 
 ## Import
 The database instance can be imported by using the ID, that is formed from the CRN. To import the resource, you must specify the `region` parameter in the `provider` block of your  Terraform configuration file. If the region is not specified, `us-south` is used by default. An  Terraform refresh or apply fails, if the database instance is not in the same region as configured in the provider or its alias.

@@ -17,6 +17,13 @@ resource "ibm_db2" "db2_instance" {
   disk_encryption_key_crn      = "none"
   oracle_compatibility         = "no"
 
+  allowlist_config {
+   ip_addresses {
+      address     = "127.0.0.32"
+      description = "A sample IP address 32"
+    }
+  }
+
   autoscale_config {
     auto_scaling_enabled          = "true"
     auto_scaling_threshold        = "60"
