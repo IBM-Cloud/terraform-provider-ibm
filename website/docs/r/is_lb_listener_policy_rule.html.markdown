@@ -7,7 +7,7 @@ description: |-
   Manages IBM VPC load balancer listener policy rule.
 ---
 
-# ibm_is_lb_listener_policy
+# ibm_is_lb_listener_policy_rule
 Create, update, or delete a VPC load balancer listener policy rule. For more information, about load balancer listener policy and rules, see [layer 7 load balancing policies and rules](https://cloud.ibm.com/docs/vpc?topic=vpc-layer-7-load-balancing).
 
 **Note:** 
@@ -105,7 +105,7 @@ resource "ibm_is_lb_listener_policy_rule" "example" {
 
 
 ## Timeouts
-The `ibm_is_lb_listener_policy` rule provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
+The `ibm_is_lb_listener_policy_rule` rule provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
 - **Create**: The creation of the resource is considered failed if no response is received for 10 minutes. 
 - **Update**: The update of the resource is considered failed if no response is received for 10 minutes. 
@@ -125,9 +125,9 @@ Review the argument references that you can specify for your resource.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-- `id` - (String) The ID of the load balancer listener policy rule. The ID is composed of ` <loadbalancer_ID>/<listener_ID>/<policy>ID>`.
+- `id` - (String) The ID of the load balancer listener policy rule. The ID is composed of ` <loadbalancer_ID>/<listener_ID>/<policy_ID>/<rule_ID>`.
 - `rule` - (String) The ID of the rule.
-- `status` - (String) The status of the load balancer listener.
+- `status` - (String) The status of the load balancer listener policy rule.
 
 ## Import
 The `ibm_is_lb_listener_policy_rule` resource can be imported by using `lb_ID`, `listener_ID`, `policy_ID` and `rule_ID`.
@@ -135,11 +135,11 @@ The `ibm_is_lb_listener_policy_rule` resource can be imported by using `lb_ID`, 
 **Syntax**
 
 ```
-$ terraform import ibm_is_lb_listener_policy.example <loadbalancer_ID>/<listener_ID>/<policy>ID>
+$ terraform import ibm_is_lb_listener_policy_rule.example <loadbalancer_ID>/<listener_ID>/<policy_ID>/<rule_ID>
 ```
 
 **Example**
 
 ```
-$ terraform import ibm_is_lb_listener_policy.example c1e3d5d3-8836-4328-b473-a90e0c9ba941/3ea13dc7-25b4-4c62-8cc7-0f7e092e7a8f/2161a3fb-123c-4a33-9a3d-b3154ef42009/356789523dc7-25b4-4c62-8cc7-0f7e092e7a8f
+$ terraform import ibm_is_lb_listener_policy_rule.example c1e3d5d3-8836-4328-b473-a90e0c9ba941/3ea13dc7-25b4-4c62-8cc7-0f7e092e7a8f/2161a3fb-123c-4a33-9a3d-b3154ef42009/356789523dc7-25b4-4c62-8cc7-0f7e092e7a8f
 ```
