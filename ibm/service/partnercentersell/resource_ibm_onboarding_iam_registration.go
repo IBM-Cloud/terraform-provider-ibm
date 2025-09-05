@@ -1395,7 +1395,7 @@ func resourceIbmOnboardingIamRegistrationCreate(context context.Context, d *sche
 
 func resourceIbmOnboardingIamRegistrationRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	//Downstream service Read-Your-Writes is not consistent we need to wait to get proper results
-	time.Sleep(15 * time.Second)
+	time.Sleep(25 * time.Second)
 	partnerCenterSellClient, err := meta.(conns.ClientSession).PartnerCenterSellV1()
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_onboarding_iam_registration", "read", "initialize-client")

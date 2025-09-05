@@ -47,12 +47,12 @@ func TestAccIbmOnboardingIamRegistrationAllArgs(t *testing.T) {
 	productID := acc.PcsOnboardingProductWithCatalogProduct
 	env := "current"
 	name := acc.PcsIamServiceRegistrationId
-	roleDisplayName := fmt.Sprintf("random-%d", acctest.RandIntRange(10, 100))
+	roleDisplayName := fmt.Sprintf("random-name-%d", acctest.RandIntRange(10, 100))
 	iamRegistrationRole := fmt.Sprintf("crn:v1:bluemix:public:%s::::serviceRole:%s", acc.PcsIamServiceRegistrationId, roleDisplayName)
 	enabled := "true"
 	serviceType := "platform_service"
 	envUpdate := "current"
-	roleDisplayNameUpdate := fmt.Sprintf("random-%d", acctest.RandIntRange(10, 100))
+	roleDisplayNameUpdate := fmt.Sprintf("random-name-%d", acctest.RandIntRange(10, 100))
 	iamRegistrationRoleUpdate := fmt.Sprintf("crn:v1:bluemix:public:%s::::serviceRole:%s", acc.PcsIamServiceRegistrationId, roleDisplayNameUpdate)
 	nameUpdate := acc.PcsIamServiceRegistrationId
 	enabledUpdate := "true"
@@ -176,6 +176,7 @@ func testAccCheckIbmOnboardingIamRegistrationConfig(
 			service_type = "%s"
 			actions {
 				id = "id"
+				api_types = ["crn:v1:bluemix:public:context-based-restrictions::::api-type:control-plane", "crn:v1:bluemix:public:%s::::api-type:smtp-configuration"]
 				roles = [ "%s" ]
 				description {
 					default = "%s"
@@ -313,6 +314,58 @@ func testAccCheckIbmOnboardingIamRegistrationConfig(
 						hidden = false
 					}
 				}
+				operations {
+					api_types {
+						name = "crn:v1:bluemix:public:context-based-restrictions::::api-type:control-plane"
+						description {					
+							default = "default"
+							en = "en"
+							de = "de"
+							es = "es"
+							fr = "fr"
+							it = "it"
+							ja = "ja"
+							ko = "ko"
+							pt_br = "pt_br"
+							zh_tw = "zh_tw"
+							zh_cn = "zh_cn"
+						}
+					}
+					api_types {
+						name = "crn:v1:bluemix:public:%s::::api-type:smtp-configuration"
+						description {					
+							default = "default"
+							en = "en"
+							de = "de"
+							es = "es"
+							fr = "fr"
+							it = "it"
+							ja = "ja"
+							ko = "ko"
+							pt_br = "pt_br"
+							zh_tw = "zh_tw"
+							zh_cn = "zh_cn"
+						}
+						display_name {					
+							default = "default"
+							en = "en"
+							de = "de"
+							es = "es"
+							fr = "fr"
+							it = "it"
+							ja = "ja"
+							ko = "ko"
+							pt_br = "pt_br"
+							zh_tw = "zh_tw"
+							zh_cn = "zh_cn"
+						}
+					}
+				}
+				self_managed_allowlist_enforcement {
+					event_publishing {
+						api_types = ["crn:v1:bluemix:public:%s::::api-type:smtp-configuration"]
+					}
+				}
 			}
 			supported_anonymous_accesses {
 				attributes {
@@ -323,7 +376,7 @@ func testAccCheckIbmOnboardingIamRegistrationConfig(
 				roles = [ "%s" ]
 			}
 		}
-	`, productID, env, name, enabled, serviceType, iamRegistrationRole, actionDescription, name, name, supportedAttributeDisplayName, supportedAttributeInputDetailsDisplayName, supportedAuthorizationSubjectsService, iamRegistrationRole, iamRegistrationRole, roleDisplayName, environmentAttributesValues, iamRegistrationID, supportedAnonymousAccessesAdditionalPropValue, iamRegistrationRole)
+	`, productID, env, name, enabled, serviceType, iamRegistrationID, iamRegistrationRole, actionDescription, name, name, supportedAttributeDisplayName, supportedAttributeInputDetailsDisplayName, supportedAuthorizationSubjectsService, iamRegistrationRole, iamRegistrationRole, roleDisplayName, environmentAttributesValues, iamRegistrationID, iamRegistrationID, iamRegistrationID, supportedAnonymousAccessesAdditionalPropValue, iamRegistrationRole)
 }
 
 func testAccCheckIbmOnboardingIamRegistrationUpdateConfig(
@@ -342,7 +395,7 @@ func testAccCheckIbmOnboardingIamRegistrationUpdateConfig(
 	environmentAttributesValues string,
 	supportedAnonymousAccessesAdditionalPropValue string,
 ) string {
-	roleDisplayName2 := fmt.Sprintf("random-2-%d", acctest.RandIntRange(10, 100))
+	roleDisplayName2 := fmt.Sprintf("random-name-2-%d", acctest.RandIntRange(10, 100))
 	iamRegistrationRole2 := fmt.Sprintf("crn:v1:bluemix:public:%s::::serviceRole:%s", iamRegistrationID, roleDisplayName2)
 
 	return fmt.Sprintf(`
@@ -354,6 +407,7 @@ func testAccCheckIbmOnboardingIamRegistrationUpdateConfig(
 			service_type = "%s"
 			actions {
 				id = "id"
+				api_types = ["crn:v1:bluemix:public:context-based-restrictions::::api-type:control-plane", "crn:v1:bluemix:public:%s::::api-type:smtp-configuration"]
 				roles = [ "%s", "%s" ]
 				description {
 					default = "%s"
@@ -387,6 +441,7 @@ func testAccCheckIbmOnboardingIamRegistrationUpdateConfig(
 			}
 			actions {
 				id = "idtwo"
+				api_types = ["crn:v1:bluemix:public:context-based-restrictions::::api-type:control-plane"]
 				roles = [ "%s" ]
 				description {
 					default = "default"
@@ -549,6 +604,55 @@ func testAccCheckIbmOnboardingIamRegistrationUpdateConfig(
 						hidden = true
 					}
 				}
+				operations {
+					api_types {
+						name = "crn:v1:bluemix:public:context-based-restrictions::::api-type:control-plane"
+						enforcement_method = ["authz-network"]
+						description {					
+							default = "default"
+							en = "en"
+							de = "de"
+							es = "es"
+							fr = "fr"
+							it = "it"
+							ja = "ja"
+							ko = "ko"
+							pt_br = "pt_br"
+							zh_tw = "zh_tw"
+							zh_cn = "zh_cn"
+						}
+					}
+					api_types {
+						name = "crn:v1:bluemix:public:%s::::api-type:smtp-configuration"
+						enforcement_method = ["authz-network"]
+						description {					
+							default = "default"
+							en = "en"
+							de = "de"
+							es = "es"
+							fr = "fr"
+							it = "it"
+							ja = "ja"
+							ko = "ko"
+							pt_br = "pt_br"
+							zh_tw = "zh_tw"
+							zh_cn = "zh_cn"
+						}
+						display_name {					
+							default = "default"
+							en = "en"
+							de = "de"
+							es = "es"
+							fr = "fr"
+							it = "it"
+							ja = "ja"
+							ko = "ko"
+							pt_br = "pt_br"
+							zh_tw = "zh_tw"
+							zh_cn = "zh_cn"
+						}
+					}
+				}
 			}
 			supported_anonymous_accesses {
 				attributes {
@@ -567,7 +671,7 @@ func testAccCheckIbmOnboardingIamRegistrationUpdateConfig(
 				roles = [ "%s" ]
 			}
 		}
-	`, productID, env, name, enabled, serviceType, iamRegistrationRole, iamRegistrationRole2, iamRegistrationRole, iamRegistrationRole, name, name, name, supportedAttributeDisplayName, supportedAttributeInputDetailsDisplayName, supportedAuthorizationSubjectsService, iamRegistrationRole, iamRegistrationRole, roleDisplayName, iamRegistrationRole2, roleDisplayName2, environmentAttributesValues, iamRegistrationID, supportedAnonymousAccessesAdditionalPropValue, iamRegistrationRole, iamRegistrationID, iamRegistrationRole)
+	`, productID, env, name, enabled, serviceType, iamRegistrationID, iamRegistrationRole, iamRegistrationRole2, iamRegistrationRole, iamRegistrationRole, name, name, name, supportedAttributeDisplayName, supportedAttributeInputDetailsDisplayName, supportedAuthorizationSubjectsService, iamRegistrationRole, iamRegistrationRole, roleDisplayName, iamRegistrationRole2, roleDisplayName2, environmentAttributesValues, iamRegistrationID, iamRegistrationID, supportedAnonymousAccessesAdditionalPropValue, iamRegistrationRole, iamRegistrationID, iamRegistrationRole)
 }
 
 func testAccCheckIbmOnboardingIamRegistrationExists(n string, obj partnercentersellv1.IamServiceRegistration) resource.TestCheckFunc {
