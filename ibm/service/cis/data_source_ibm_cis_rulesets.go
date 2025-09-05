@@ -562,11 +562,19 @@ func flattenCISRulesetsRuleActionParameters(rulesetsRuleActionParameterObj *rule
 		resultOutput[CISRulesetOverrides] = []map[string]interface{}{flattenCISRulesetsRuleActionParameterOverrides}
 	}
 
-	// if val, ok := actionParametersOutput["rules_to_skip"]; ok {
-	// 	flattenCISRulesToSkip := val.(map[string][]string)
-	// 	resultOutput[CISRulesToSkip] = flattenCISRulesToSkip
+	if rulesToSkip := rulesetsRuleActionParameterObj.Rules; rulesToSkip != nil && len(rulesToSkip) > 0 {
+		flattenedRulesToSkip := make([]map[string]interface{}, 0, len(rulesToSkip))
 
-	// }
+		for rulesetID, ruleIDs := range rulesToSkip {
+			entry := map[string]interface{}{
+				"ruleset_id": rulesetID,
+				"rule_ids":   ruleIDs,
+			}
+			flattenedRulesToSkip = append(flattenedRulesToSkip, entry)
+		}
+
+		resultOutput[CISRulesToSkip] = flattenedRulesToSkip
+	}
 
 	return resultOutput
 }

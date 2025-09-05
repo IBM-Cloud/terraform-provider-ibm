@@ -597,31 +597,31 @@ func expandCISRulesetsRulesActionParameters(obj interface{}) rulesetsv1.ActionPa
 	productsList := flex.ExpandStringList(products)
 	actionParameterRespObj.Products = productsList
 
-	// if rulesToSkip, ok := actionParameterObj[CISRulesToSkip].(map[string]interface{}); ok {
+	if v, ok := actionParameterObj[CISRulesToSkip].([]interface{}); ok && len(v) > 0 {
+		rulesToSkipMap := make(map[string][]string)
 
-	// 	rulesToSkipMap := make(map[string][]string)
+		for _, item := range v {
+			if item == nil {
+				continue
+			}
+			entry := item.(map[string]interface{})
 
-	// 	for rulesetId, rulesetIdInterface := range rulesToSkip {
-	// 		ruleIDs, ok := rulesetIdInterface.([]interface{})
-	// 		if !ok {
-	// 			//skip if ruleIds are not of expected type
-	// 			continue
-	// 		}
+			rulesetID, _ := entry["ruleset_id"].(string)
+			if rulesetID == "" {
+				continue
+			}
 
-	// 		ruleIdList := make([]string, len(ruleIDs))
-	// 		for i, ruleID := range ruleIDs {
-	// 			ruleIdList[i] = fmt.Sprint(ruleID)
-	// 		}
+			ruleIDsIface, _ := entry["rule_ids"].([]interface{})
+			ruleIDs := make([]string, 0, len(ruleIDsIface))
+			for _, ruleID := range ruleIDsIface {
+				ruleIDs = append(ruleIDs, fmt.Sprint(ruleID))
+			}
 
-	// 		rulesToSkip[rulesetId] = ruleIdList
+			rulesToSkipMap[rulesetID] = ruleIDs
+		}
 
-	// 		log.Println(rulesetId, " -> ", ruleIdList)
-
-	// 	}
-
-	// 	actionParameterRespObj.Rules = rulesToSkipMap
-
-	// }
+		actionParameterRespObj.Rules = rulesToSkipMap
+	}
 
 	finalResponse := make([]rulesetsv1.ActionParameters, 0)
 
