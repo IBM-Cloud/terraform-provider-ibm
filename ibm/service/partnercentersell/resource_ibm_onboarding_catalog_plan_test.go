@@ -279,11 +279,11 @@ func testAccCheckIbmOnboardingCatalogPlanUpdateConfig(productID string, catalogP
 					provision_type = "ibm_cloud"
 				}
 				service {
-				    rc_provisionable = true
+					rc_provisionable = true
       				iam_compatible = false
-				    bindable = true
-      				plan_updateable = true
-      				service_key_supported = true
+					bindable = true
+					plan_updateable = true
+					service_key_supported = true
 				}
 				ui {
             		strings {
@@ -949,6 +949,7 @@ func TestResourceIbmOnboardingCatalogPlanGlobalCatalogPlanMetadataOtherToMap(t *
 
 		model := make(map[string]interface{})
 		model["resource_controller"] = []map[string]interface{}{globalCatalogPlanMetadataOtherResourceControllerModel}
+		model["target_plans"] = []map[string]interface{}{globalCatalogPlanMetadataOtherTargetPlansItemModel}
 
 		assert.Equal(t, result, model)
 	}
@@ -958,6 +959,7 @@ func TestResourceIbmOnboardingCatalogPlanGlobalCatalogPlanMetadataOtherToMap(t *
 
 	model := new(partnercentersellv1.GlobalCatalogPlanMetadataOther)
 	model.ResourceController = globalCatalogPlanMetadataOtherResourceControllerModel
+	model.TargetPlans = []partnercentersellv1.GlobalCatalogPlanMetadataOtherTargetPlansItem{*globalCatalogPlanMetadataOtherTargetPlansItemModel}
 
 	result, err := partnercentersell.ResourceIbmOnboardingCatalogPlanGlobalCatalogPlanMetadataOtherToMap(model)
 	assert.Nil(t, err)
@@ -976,6 +978,24 @@ func TestResourceIbmOnboardingCatalogPlanGlobalCatalogPlanMetadataOtherResourceC
 	model.SubscriptionProviderID = core.StringPtr("testString")
 
 	result, err := partnercentersell.ResourceIbmOnboardingCatalogPlanGlobalCatalogPlanMetadataOtherResourceControllerToMap(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestResourceIbmOnboardingCatalogPlanGlobalCatalogPlanMetadataOtherTargetPlansItemToMap(t *testing.T) {
+	checkResult := func(result map[string]interface{}) {
+		model := make(map[string]interface{})
+		model["id"] = "testString"
+		model["name"] = "testString"
+
+		assert.Equal(t, result, model)
+	}
+
+	model := new(partnercentersellv1.GlobalCatalogPlanMetadataOtherTargetPlansItem)
+	model.ID = core.StringPtr("testString")
+	model.Name = core.StringPtr("testString")
+
+	result, err := partnercentersell.ResourceIbmOnboardingCatalogPlanGlobalCatalogPlanMetadataOtherTargetPlansItemToMap(model)
 	assert.Nil(t, err)
 	checkResult(result)
 }
@@ -1545,6 +1565,7 @@ func TestResourceIbmOnboardingCatalogPlanMapToGlobalCatalogPlanMetadataOther(t *
 
 		model := new(partnercentersellv1.GlobalCatalogPlanMetadataOther)
 		model.ResourceController = globalCatalogPlanMetadataOtherResourceControllerModel
+		model.TargetPlans = []partnercentersellv1.GlobalCatalogPlanMetadataOtherTargetPlansItem{*globalCatalogPlanMetadataOtherTargetPlansItemModel}
 
 		assert.Equal(t, result, model)
 	}
@@ -1554,6 +1575,7 @@ func TestResourceIbmOnboardingCatalogPlanMapToGlobalCatalogPlanMetadataOther(t *
 
 	model := make(map[string]interface{})
 	model["resource_controller"] = []interface{}{globalCatalogPlanMetadataOtherResourceControllerModel}
+	model["target_plans"] = []interface{}{globalCatalogPlanMetadataOtherTargetPlansItemModel}
 
 	result, err := partnercentersell.ResourceIbmOnboardingCatalogPlanMapToGlobalCatalogPlanMetadataOther(model)
 	assert.Nil(t, err)
@@ -1572,6 +1594,24 @@ func TestResourceIbmOnboardingCatalogPlanMapToGlobalCatalogPlanMetadataOtherReso
 	model["subscription_provider_id"] = "testString"
 
 	result, err := partnercentersell.ResourceIbmOnboardingCatalogPlanMapToGlobalCatalogPlanMetadataOtherResourceController(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestResourceIbmOnboardingCatalogPlanMapToGlobalCatalogPlanMetadataOtherTargetPlansItem(t *testing.T) {
+	checkResult := func(result *partnercentersellv1.GlobalCatalogPlanMetadataOtherTargetPlansItem) {
+		model := new(partnercentersellv1.GlobalCatalogPlanMetadataOtherTargetPlansItem)
+		model.ID = core.StringPtr("testString")
+		model.Name = core.StringPtr("testString")
+
+		assert.Equal(t, result, model)
+	}
+
+	model := make(map[string]interface{})
+	model["id"] = "testString"
+	model["name"] = "testString"
+
+	result, err := partnercentersell.ResourceIbmOnboardingCatalogPlanMapToGlobalCatalogPlanMetadataOtherTargetPlansItem(model)
 	assert.Nil(t, err)
 	checkResult(result)
 }
