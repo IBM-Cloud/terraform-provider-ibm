@@ -65,6 +65,7 @@ const (
 	CISRulesetOverridesScoreThreshold                  = "score_threshold"
 	CISRulesetsRulePhases                              = "phases"
 	CISRulesetsRuleProducts                            = "products"
+	CISRulesToSkip                                     = "rules_to_skip"
 )
 
 var CISResponseObject = &schema.Resource{
@@ -559,6 +560,20 @@ func flattenCISRulesetsRuleActionParameters(rulesetsRuleActionParameterObj *rule
 	if _, ok := actionParametersOutput["overrides"]; ok {
 		flattenCISRulesetsRuleActionParameterOverrides := flattenCISRulesetsRuleActionParameterOverrides(rulesetsRuleActionParameterObj.Overrides)
 		resultOutput[CISRulesetOverrides] = []map[string]interface{}{flattenCISRulesetsRuleActionParameterOverrides}
+	}
+
+	if rulesToSkip := rulesetsRuleActionParameterObj.Rules; rulesToSkip != nil && len(rulesToSkip) > 0 {
+		flattenedRulesToSkip := make([]map[string]interface{}, 0, len(rulesToSkip))
+
+		for rulesetID, ruleIDs := range rulesToSkip {
+			entry := map[string]interface{}{
+				"ruleset_id": rulesetID,
+				"rule_ids":   ruleIDs,
+			}
+			flattenedRulesToSkip = append(flattenedRulesToSkip, entry)
+		}
+
+		resultOutput[CISRulesToSkip] = flattenedRulesToSkip
 	}
 
 	return resultOutput
