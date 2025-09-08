@@ -54,5 +54,9 @@ In addition to all argument reference list, you can access the following attribu
 - `saps` - (Integer) SAP application performance standard.
 - `supported_systems` - (List) List of supported systems.
 - `type` - (String) Type of profile.
+- `vpmem_volume` - (Map) vpmem volume.
+  Nested scheme for `vpmem_volume`:
+  - `max_percent` - (Integer) Maximum percent of memory to be assigned for carved out vPMEM volume.
+  - `min_percent` - (Integer) Minimum percent of memory to be assigned for carved out vPMEM volume.
 - `workload_type` - (List) List of workload types.
   
