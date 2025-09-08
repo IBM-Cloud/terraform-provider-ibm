@@ -133,6 +133,10 @@ Review the argument references that you can specify for your resource.
 
       ~> **Note** When set to "auto-assign", changes to `serial` outside of terraform will not be detected. In addition, if a new generated virtual serial number is needed, the old serial must be removed before a new one is generated.
 - `pi_volume_ids` - (Optional, List of String) The list of volume IDs that you want to attach to the instance during creation.
+- `pi_vpmem_volumes` - (Optional, List of Map) List of one or more vPMEM volumes to attach to the instance.
+  The `pi_vpmem_volumes` block supports:
+  - `name` - (Required, String) Volume base name.
+  - `size` - (Required, Integer) Volume size (GB).
 
 ## Attribute Reference
 
@@ -174,6 +178,18 @@ In addition to all argument reference list, you can access the following attribu
 - `progress` - (Float) - Specifies the overall progress of the instance deployment process in percentage.
 - `shared_processor_pool_id` - (String)  The ID of the shared processor pool for the instance.
 - `status` - (String) The status of the instance.
+- `vpmem_volumes` - (List) List of vPMEM volumes.
+   Nested schema for `vpmem_volumes`:
+  - `created_at` - (String) Time when the volume was created.
+  - `crn` - (String) The CRN for this resource.
+  - `href` - (String) Link to vPMEM volume resource.
+  - `name` - (String) Volume Name.
+  - `pvm_instance_id` - (String) PVM Instance ID which the volume is attached to.
+  - `size` - (Float) Volume Size (GB).
+  - `status` - (String) Status of the volume.
+  - `updated_at` - (String) Time when the volume was updated.
+  - `user_tags` - (List) List of user tags.
+  - `volume_id` - (String) Volume ID.
 
 ## Import
 
