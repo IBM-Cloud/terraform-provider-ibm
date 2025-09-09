@@ -454,7 +454,8 @@ func TestAccIBMDb2InstanceUpdateUsers(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDb2InstanceExists(name, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(name, "users_config.0.name", "test_user"),
-					resource.TestCheckResourceAttr(name, "users_config.0.role", "bluuser"),
+					resource.TestCheckResourceAttr(name, "users_config.0.email", "test_user@mycompany.com"),
+					resource.TestCheckResourceAttr(name, "users_config.0.locked", "no"),
 				),
 			},
 			// Update user
@@ -463,7 +464,8 @@ func TestAccIBMDb2InstanceUpdateUsers(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDb2InstanceExists(name, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(name, "users_config.0.name", "test_user_updated"),
-					resource.TestCheckResourceAttr(name, "users_config.0.role", "dbadmin"),
+					resource.TestCheckResourceAttr(name, "users_config.0.email", "test_user_updated@mycompany.com"),
+					resource.TestCheckResourceAttr(name, "users_config.0.locked", "yes"),
 				),
 			},
 		},
@@ -497,7 +499,7 @@ func testAccCheckIBMDb2InstanceUpdateUsers(databaseResourceGroup string, testNam
 		  name     = "test_user_updated"   # <-- changed
 		  password = "dEkMc43@gfAPl!867^dSbu"
 		  role     = "bluuser"
-		  email    = "test_user_updated@mycompany.com"
+		  email    = "test_user_updated@mycompany.com" # <-- changed
 		  locked   = "yes"                 # <-- changed
 		  authentication {
 			  method    = "internal"
