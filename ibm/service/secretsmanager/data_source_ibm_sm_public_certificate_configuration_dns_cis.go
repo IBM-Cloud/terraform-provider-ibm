@@ -87,7 +87,11 @@ func dataSourceIbmSmConfigurationPublicCertificateDNSCisRead(context context.Con
 		return tfErr.GetDiag()
 	}
 
-	publicCertificateConfigurationDNSCloudInternetServices := publicCertificateConfigurationDNSCloudInternetServicesIntf.(*secretsmanagerv2.PublicCertificateConfigurationDNSCloudInternetServices)
+	publicCertificateConfigurationDNSCloudInternetServices, ok := publicCertificateConfigurationDNSCloudInternetServicesIntf.(*secretsmanagerv2.PublicCertificateConfigurationDNSCloudInternetServices)
+	if !ok {
+		tfErr := flex.TerraformErrorf(nil, fmt.Sprintf("Wrong configuration type: The provided configuration is not a Public Certificate DNS CIS configuration."), fmt.Sprintf("(Data) %s", PublicCertConfigDnsCISResourceName), "read")
+		return tfErr.GetDiag()
+	}
 
 	d.SetId(fmt.Sprintf("%s/%s/%s", region, instanceId, *getConfigurationOptions.Name))
 

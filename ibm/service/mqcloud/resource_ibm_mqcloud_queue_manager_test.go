@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2024 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package mqcloud_test
@@ -18,7 +18,6 @@ import (
 )
 
 func TestAccIbmMqcloudQueueManagerBasic(t *testing.T) {
-	t.Parallel()
 	var conf mqcloudv1.QueueManagerDetails
 	serviceInstanceGuid := acc.MqcloudDeploymentID
 	name := fmt.Sprintf("tf_queue_manager_basic%d", acctest.RandIntRange(10, 100))
@@ -45,7 +44,6 @@ func TestAccIbmMqcloudQueueManagerBasic(t *testing.T) {
 }
 
 func TestAccIbmMqcloudQueueManagerAllArgs(t *testing.T) {
-	t.Parallel()
 	var conf mqcloudv1.QueueManagerDetails
 	serviceInstanceGuid := acc.MqcloudDeploymentID
 	name := fmt.Sprintf("tf_queue_manager_allargs%d", acctest.RandIntRange(10, 100))

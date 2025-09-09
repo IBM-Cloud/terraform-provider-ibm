@@ -111,6 +111,7 @@ In addition to all argument reference list, you can access the following attribu
   - `code` - (String)  A snake case string identifying the status reason.
   - `message` - (String)  An explanation of the status reason
   - `more_info` - (String) Link to documentation about this status reason
+- `storage_generation` - (Int) The storage generation indicates which generation the profile family belongs to. For the custom and tiered profiles, this value is 1. For the sdp profile, this value is 2.
 - `tags` - (String) User Tags associated with the volume. (https://cloud.ibm.com/apidocs/tagging#types-of-tags)
 - `unattached_capacity_update_supported` - (Boolean) Indicates whether the capacity for the volume can be changed when not attached to a running virtual server instance.
 - `unattached_iops_update_supported` - (Boolean) Indicates whether the IOPS for the volume can be changed when not attached to a running virtual server instance.

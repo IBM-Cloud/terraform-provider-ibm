@@ -1,8 +1,8 @@
-// Copyright IBM Corp. 2024 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.95.2-120e65bc-20240924-152329
+ * IBM OpenAPI Terraform Generator Version: 3.104.0-b4a47c49-20250418-184351
  */
 
 package mqcloud
@@ -29,7 +29,7 @@ func DataSourceIbmMqcloudUser() *schema.Resource {
 			"service_instance_guid": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The GUID that uniquely identifies the MQaaS service instance.",
+				Description: "The GUID that uniquely identifies the MQ SaaS service instance.",
 			},
 			"name": {
 				Type:        schema.TypeString,
@@ -57,6 +57,11 @@ func DataSourceIbmMqcloudUser() *schema.Resource {
 							Computed:    true,
 							Description: "The email of the user.",
 						},
+						"iam_service_id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The IAM ID of the user.",
+						},
 						"href": {
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -72,14 +77,7 @@ func DataSourceIbmMqcloudUser() *schema.Resource {
 func dataSourceIbmMqcloudUserRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	mqcloudClient, err := meta.(conns.ClientSession).MqcloudV1()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_mqcloud_user", "read")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		return tfErr.GetDiag()
-	}
-
-	err = checkSIPlan(d, meta)
-	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Read User failed: %s", err.Error()), "(Data) ibm_mqcloud_user", "read")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_mqcloud_user", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -133,18 +131,15 @@ func dataSourceIbmMqcloudUserRead(context context.Context, d *schema.ResourceDat
 
 	mapSlice := []map[string]interface{}{}
 	for _, modelItem := range allItems {
-		modelItem := modelItem
 		modelMap, err := DataSourceIbmMqcloudUserUserDetailsToMap(&modelItem) // #nosec G601
 		if err != nil {
-			tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_mqcloud_user", "read")
-			return tfErr.GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_mqcloud_user", "read", "Users-to-map").GetDiag()
 		}
 		mapSlice = append(mapSlice, modelMap)
 	}
 
 	if err = d.Set("users", mapSlice); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting users %s", err), "(Data) ibm_mqcloud_user", "read")
-		return tfErr.GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting users %s", err), "(Data) ibm_mqcloud_user", "read", "users-set").GetDiag()
 	}
 
 	return nil
@@ -160,6 +155,7 @@ func DataSourceIbmMqcloudUserUserDetailsToMap(model *mqcloudv1.UserDetails) (map
 	modelMap["id"] = *model.ID
 	modelMap["name"] = *model.Name
 	modelMap["email"] = *model.Email
+	modelMap["iam_service_id"] = *model.IamServiceID
 	modelMap["href"] = *model.Href
 	return modelMap, nil
 }

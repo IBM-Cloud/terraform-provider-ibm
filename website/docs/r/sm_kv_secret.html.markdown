@@ -34,6 +34,7 @@ Review the argument reference that you can specify for your resource.
 * `endpoint_type` - (Optional, String) - The endpoint type. If not provided the endpoint type is determined by the `visibility` argument provided in the provider configuration.
   * Constraints: Allowable values are: `private`, `public`.
 * `custom_metadata` - (Optional, Map) The secret metadata that a user can customize.
+  * Constraints: Nested JSONs are supported in Terraform only as string-encoded JSONs.
 * `data` - (Optional, Map) The payload data of a key-value secret. You can manually rotate the secret by modifying this argument. Modifying the payload creates a new version of the secret.
   * Constraints: The minimum length is `1` item.
 * `description` - (Optional, String) An extended description of your secret.To protect your privacy, do not use personal data, such as your name or location, as a description for your secret group.
@@ -58,6 +59,7 @@ In addition to all argument references listed, you can access the following attr
 * `downloaded` - (Boolean) Indicates whether the secret data that is associated with a secret version was retrieved in a call to the service API.
 * `locks_total` - (Integer) The number of locks of the secret.
   * Constraints: The maximum value is `1000`. The minimum value is `0`.
+* `retrieved_at` - (String) The date when the data of the secret was last retrieved. The date format follows RFC 3339. Epoch date if there is no record of secret data retrieval.
 * `secret_type` - (String) The secret type. Supported types are arbitrary, certificates (imported, public, and private), IAM credentials, key-value, and user credentials.
   * Constraints: Allowable values are: `arbitrary`, `imported_cert`, `public_cert`, `iam_credentials`, `kv`, `username_password`, `private_cert`.
 * `state` - (Integer) The secret state that is based on NIST SP 800-57. States are integers and correspond to the `Pre-activation = 0`, `Active = 1`,  `Suspended = 2`, `Deactivated = 3`, and `Destroyed = 5` values.
@@ -67,6 +69,8 @@ In addition to all argument references listed, you can access the following attr
 * `updated_at` - (String) The date when a resource was recently modified. The date format follows RFC 3339.
 * `versions_total` - (Integer) The number of versions of the secret.
   * Constraints: The maximum value is `50`. The minimum value is `0`.
+* `version_custom_metadata` - (Map) The custom metadata of the current secret version.
+  * Constraints: Nested JSONs are supported in Terraform only as string-encoded JSONs.
 
 ## Provider Configuration
 

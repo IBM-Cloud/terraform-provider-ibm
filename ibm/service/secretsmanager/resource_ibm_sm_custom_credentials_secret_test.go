@@ -45,13 +45,15 @@ func TestAccIbmSmCustomCredentialsSecretBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "updated_at"),
 					resource.TestCheckResourceAttrSet(resourceName, "crn"),
 					resource.TestCheckResourceAttrSet(resourceName, "downloaded"),
+					resource.TestCheckResourceAttrSet(resourceName, "retrieved_at"),
 					resource.TestCheckResourceAttr(resourceName, "state", "1"),
 				),
 			},
 			resource.TestStep{
-				ResourceName:      resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"updated_at", "retrieved_at"},
 			},
 		},
 	})
@@ -97,9 +99,10 @@ func TestAccIbmSmCustomCredentialsSecretAllArgs(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				ResourceName:      resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"updated_at", "retrieved_at"},
 			},
 		},
 	})
