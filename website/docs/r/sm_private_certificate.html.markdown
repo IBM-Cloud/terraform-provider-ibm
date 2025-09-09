@@ -45,6 +45,7 @@ Review the argument reference that you can specify for your resource.
 * `common_name` - (Required, Forces new resource, String) The Common Name (AKA CN) represents the server name that is protected by the SSL certificate.
     * Constraints: The maximum length is `128` characters. The minimum length is `4` characters. The value must match regular expression `/(.*?)/`.
 * `custom_metadata` - (Optional, Map) The secret metadata that a user can customize.
+  * Constraints: Nested JSONs are supported in Terraform only as string-encoded JSONs.
 * `description` - (Optional, String) An extended description of your secret.To protect your privacy, do not use personal data, such as your name or location, as a description for your secret group.
   * Constraints: The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/(.*?)/`.
 * `labels` - (Optional, List) Labels that you can use to search for secrets in your instance.Up to 30 labels can be created.
@@ -61,6 +62,8 @@ Nested scheme for **rotation**:
 * `secret_group_id` - (Optional, Forces new resource, String) A UUID identifier, or `default` secret group.
   * Constraints: The maximum length is `36` characters. The minimum length is `7` characters. The value must match regular expression `/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|default)$/`.
 * `ttl` - (Optional, Forces new resource, String) The time-to-live (TTL) to assign to the private certificate. The value can be supplied as a string duration with time unit suffix - `d` for days, `h` for hours, `m` for minutes, or `s` for seconds. For example, `2d` or `48h` or `172800s`.
+* `version_custom_metadata` - (Map) The custom metadata of the current secret version.
+  * Constraints: Nested JSONs are supported in Terraform only as string-encoded JSONs.
 
 ## Attribute Reference
 
@@ -92,6 +95,7 @@ In addition to all argument references listed, you can access the following attr
 * `next_rotation_date` - (String) The date that the secret is scheduled for automatic rotation.The service automatically creates a new version of the secret on its next rotation date. This field exists only for secrets that have an existing rotation policy.
 * `private_key` - (Forces new resource, String) (Optional) The PEM-encoded private key to associate with the certificate.
   * Constraints: The maximum length is `100000` characters. The minimum length is `50` characters. The value must match regular expression `/^(-{5}BEGIN.+?-{5}[\\s\\S]+-{5}END.+?-{5})$/`.
+* `retrieved_at` - (String) The date when the data of the secret was last retrieved. The date format follows RFC 3339. Epoch date if there is no record of secret data retrieval.
 * `revocation_time_rfc3339` - (String) The date and time that the certificate was revoked. The date format follows RFC 3339.
 * `revocation_time_seconds` - (Integer) The timestamp of the certificate revocation.
 * `secret_type` - (String) The secret type. Supported types are arbitrary, certificates (imported, public, and private), IAM credentials, key-value, and user credentials.

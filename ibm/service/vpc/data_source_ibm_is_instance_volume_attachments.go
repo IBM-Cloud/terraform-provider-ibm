@@ -153,7 +153,9 @@ func instanceGetVolumeAttachments(context context.Context, d *schema.ResourceDat
 		// bandwidth changes
 		currentVolAtt["bandwidth"] = *volumeAtt.Bandwidth
 		currentVolAtt[isInstanceVolumeDeleteOnInstanceDelete] = *volumeAtt.DeleteVolumeOnInstanceDelete
-		currentVolAtt[isInstanceVolumeAttDevice] = *volumeAtt.Device.ID
+		if volumeAtt.Device != nil {
+			currentVolAtt[isInstanceVolumeAttDevice] = volumeAtt.Device.ID
+		}
 		currentVolAtt[isInstanceVolumeAttHref] = *volumeAtt.Href
 		currentVolAtt[isInstanceVolAttId] = *volumeAtt.ID
 		currentVolAtt[isInstanceVolumeAttStatus] = *volumeAtt.Status

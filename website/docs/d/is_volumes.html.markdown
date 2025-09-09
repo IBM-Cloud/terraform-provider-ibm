@@ -143,6 +143,7 @@ In addition to all argument references listed, you can access the following attr
 		- `code` - (String) A snake case string succinctly identifying the status reason.
 		- `message` - (String) An explanation of the status reason.
 		- `more_info` - (Optional, String) Link to documentation about this status reason.
+	- `storage_generation` - (Int) The storage generation indicates which generation the profile family belongs to. For the custom and tiered profiles, this value is 1. For the sdp profile, this value is 2.
 	- `tags` - (String) User Tags associated with the volume. (https://cloud.ibm.com/apidocs/tagging#types-of-tags)
 	- `volume_attachments` - (List) The volume attachments for this volume.
 		Nested scheme for **volume_attachments**:

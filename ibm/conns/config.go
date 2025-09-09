@@ -1312,7 +1312,7 @@ func (session clientSession) ProjectV1() (*project.ProjectV1, error) {
 	return session.projectClient, session.projectClientErr
 }
 
-// MQaaS
+// MQ SaaS
 func (session clientSession) MqcloudV1() (*mqcloudv1.MqcloudV1, error) {
 	if session.mqcloudClientErr != nil {
 		sessionMqcloudClient := session.mqcloudClient
@@ -3523,7 +3523,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 
 	// Construct an "options" struct for creating the service client.
 	var cdToolchainClientURL string
-	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		cdToolchainClientURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_TOOLCHAIN_ENDPOINT", c.Region, cdToolchainClientURL)
+	} else if c.Visibility == "private" || c.Visibility == "public-and-private" {
 		cdToolchainClientURL, err = cdtoolchainv2.GetServiceURLForRegion("private." + c.Region)
 		if err != nil && c.Visibility == "public-and-private" {
 			cdToolchainClientURL, err = cdtoolchainv2.GetServiceURLForRegion(c.Region)
@@ -3533,9 +3535,6 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	if err != nil {
 		session.cdToolchainClientErr = fmt.Errorf("Error occurred while configuring Toolchain service: %q", err)
-	}
-	if fileMap != nil && c.Visibility != "public-and-private" {
-		cdToolchainClientURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_TOOLCHAIN_ENDPOINT", c.Region, cdToolchainClientURL)
 	}
 	cdToolchainClientOptions := &cdtoolchainv2.CdToolchainV2Options{
 		Authenticator: authenticator,
@@ -3557,7 +3556,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 
 	// Construct an "options" struct for creating the tekton pipeline service client.
 	var cdTektonPipelineClientURL string
-	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		cdTektonPipelineClientURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_TEKTON_PIPELINE_ENDPOINT", c.Region, cdTektonPipelineClientURL)
+	} else if c.Visibility == "private" || c.Visibility == "public-and-private" {
 		cdTektonPipelineClientURL, err = cdtektonpipelinev2.GetServiceURLForRegion("private." + c.Region)
 		if err != nil && c.Visibility == "public-and-private" {
 			cdTektonPipelineClientURL, err = cdtektonpipelinev2.GetServiceURLForRegion(c.Region)
@@ -3567,9 +3568,6 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	if err != nil {
 		cdTektonPipelineClientURL = cdtektonpipelinev2.DefaultServiceURL
-	}
-	if fileMap != nil && c.Visibility != "public-and-private" {
-		cdTektonPipelineClientURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_TEKTON_PIPELINE_ENDPOINT", c.Region, cdTektonPipelineClientURL)
 	}
 	cdTektonPipelineClientOptions := &cdtektonpipelinev2.CdTektonPipelineV2Options{
 		Authenticator: authenticator,
@@ -3602,7 +3600,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		URL:           EnvFallBack([]string{"IBMCLOUD_MQCLOUD_CONFIG_ENDPOINT"}, mqCloudURL),
 	}
 
-	// Construct the service client for MQaaS.
+	// Construct the service client for MQ SaaS.
 	session.mqcloudClient, err = mqcloudv1.NewMqcloudV1(mqcloudClientOptions)
 	if err == nil {
 		// Enable retries for API calls
@@ -3612,7 +3610,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
 	} else {
-		session.mqcloudClientErr = fmt.Errorf("Error occurred while configuringMQaaS service: %q", err)
+		session.mqcloudClientErr = fmt.Errorf("Error occurred while constructing 'MQ SaaS' service client: %q", err)
 	}
 
 	// VMware Cloud Foundation as a Service

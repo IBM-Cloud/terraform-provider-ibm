@@ -48,6 +48,37 @@ func TestAccIBMISVolume_basic(t *testing.T) {
 		},
 	})
 }
+func TestAccIBMISVolume_storage_generation(t *testing.T) {
+	var vol string
+	name := fmt.Sprintf("tf-vol-%d", acctest.RandIntRange(10, 100))
+	name1 := fmt.Sprintf("tf-vol-tier-%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISVolumeDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISVolumeStorageConfig(name, name1),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISVolumeExists("ibm_is_volume.storage", vol),
+					resource.TestCheckResourceAttr(
+						"ibm_is_volume.storage", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_is_volume.storage2", "name", name1),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_volume.storage", "storage_generation"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_volume.storage2", "storage_generation"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_volume.storage", "storage_generation", "1"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_volume.storage2", "storage_generation", "2"),
+				),
+			},
+		},
+	})
+}
 func TestAccIBMISVolume_sdp(t *testing.T) {
 	var vol string
 	name := fmt.Sprintf("tf-vol-%d", acctest.RandIntRange(10, 100))
@@ -590,6 +621,25 @@ func testAccCheckIBMISVolumeConfig(name string) string {
 		# capacity= 200
 	}
 `, name)
+
+}
+func testAccCheckIBMISVolumeStorageConfig(name, name2 string) string {
+	return fmt.Sprintf(
+		`
+	resource "ibm_is_volume" "storage"{
+		name 			= "%s"
+		profile 		= "10iops-tier"
+		zone 			= "%s"
+		# capacity= 200
+	}
+	resource "ibm_is_volume" "storage2"{
+		name 			= "%s"
+		profile 		= "sdp"
+		zone 			= "%s"
+		capacity		= 100
+		bandwidth		= 6000
+	}
+`, name, acc.ISZoneName, name2, acc.ISZoneName)
 
 }
 

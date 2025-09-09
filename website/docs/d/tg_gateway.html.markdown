@@ -41,6 +41,7 @@ In addition to the argument reference list, you can access the following attribu
 - `id` - (String) The unique identifier of this gateway.
 - `location` - (String) The gateway location.
 - `resource_group` - (String) The resource group identifier.
+- `gre_enhanced_route_propagation` - (String) The gateways with GRE enhanced route propagation true to share routes across all GRE connections on the same gateway.
 - `connections` - (String) A list of connections in the gateway
 
   Nested scheme for `connections`:

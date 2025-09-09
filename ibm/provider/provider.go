@@ -685,6 +685,9 @@ func Provider() *schema.Provider {
 			"ibm_app_config_segments":                appconfiguration.DataSourceIBMAppConfigSegments(),
 			"ibm_app_config_snapshot":                appconfiguration.DataSourceIBMAppConfigSnapshot(),
 			"ibm_app_config_snapshots":               appconfiguration.DataSourceIBMAppConfigSnapshots(),
+			"ibm_app_config_integrations":            appconfiguration.DataSourceIBMAppConfigIntegrations(),
+			"ibm_app_config_integration_en":          appconfiguration.DataSourceIBMAppConfigIntegrationEn(),
+			"ibm_app_config_integration_kms":         appconfiguration.DataSourceIBMAppConfigIntegrationKms(),
 
 			"ibm_resource_quota":    resourcecontroller.DataSourceIBMResourceQuota(),
 			"ibm_resource_group":    resourcemanager.DataSourceIBMResourceGroup(),
@@ -986,7 +989,7 @@ func Provider() *schema.Provider {
 			"ibm_en_destination_sn":             eventnotification.DataSourceIBMEnServiceNowDestination(),
 			"ibm_en_subscription_sn":            eventnotification.DataSourceIBMEnFCMSubscription(),
 			"ibm_en_destination_ce":             eventnotification.DataSourceIBMEnCodeEngineDestination(),
-			"ibm_en_subscription_ce":            eventnotification.DataSourceIBMEnFCMSubscription(),
+			"ibm_en_subscription_ce":            eventnotification.DataSourceIBMEnCodeEngineSubscription(),
 			"ibm_en_destination_cos":            eventnotification.DataSourceIBMEnCOSDestination(),
 			"ibm_en_subscription_cos":           eventnotification.DataSourceIBMEnFCMSubscription(),
 			"ibm_en_destination_huawei":         eventnotification.DataSourceIBMEnHuaweiDestination(),
@@ -1012,6 +1015,9 @@ func Provider() *schema.Provider {
 			"ibm_en_destination_event_streams":  eventnotification.DataSourceIBMEnEventStreamsDestination(),
 			"ibm_en_subscription_event_streams": eventnotification.DataSourceIBMEnEventStreamsSubscription(),
 			"ibm_en_event_streams_template":     eventnotification.DataSourceIBMEnEventStreamsTemplate(),
+			"ibm_en_pre_defined_template":       eventnotification.DataSourceIBMEnPreDefinedTemplate(),
+			"ibm_en_pre_defined_templates":      eventnotification.DataSourceIBMEnPreDefinedTemplates(),
+			"ibm_en_code_engine_template":       eventnotification.DataSourceIBMEnCodeEngineTemplate(),
 
 			// Added for Toolchain
 			"ibm_cd_toolchain":                         cdtoolchain.DataSourceIBMCdToolchain(),
@@ -1065,7 +1071,9 @@ func Provider() *schema.Provider {
 			"ibm_project_environment": project.DataSourceIbmProjectEnvironment(),
 
 			// Added for VMware as a Service
-			"ibm_vmaas_vdc": vmware.DataSourceIbmVmaasVdc(),
+			"ibm_vmaas_vdc":                        vmware.DataSourceIbmVmaasVdc(),
+			"ibm_vmaas_transit_gateway_connection": vmware.DataSourceIbmVmaasTransitGatewayConnection(),
+
 			// Logs Service
 			"ibm_logs_alert":              logs.AddLogsInstanceFields(logs.DataSourceIbmLogsAlert()),
 			"ibm_logs_alerts":             logs.AddLogsInstanceFields(logs.DataSourceIbmLogsAlerts()),
@@ -1414,6 +1422,8 @@ func Provider() *schema.Provider {
 			"ibm_app_config_property":                      appconfiguration.ResourceIBMIbmAppConfigProperty(),
 			"ibm_app_config_segment":                       appconfiguration.ResourceIBMIbmAppConfigSegment(),
 			"ibm_app_config_snapshot":                      appconfiguration.ResourceIBMIbmAppConfigSnapshot(),
+			"ibm_app_config_integration_en":                appconfiguration.ResourceIBMAppConfigIntegrationEn(),
+			"ibm_app_config_integration_kms":               appconfiguration.ResourceIBMAppConfigIntegrationKms(),
 			"ibm_kms_key":                                  kms.ResourceIBMKmskey(),
 			"ibm_kms_key_with_policy_overrides":            kms.ResourceIBMKmsKeyWithPolicyOverrides(),
 			"ibm_kms_key_alias":                            kms.ResourceIBMKmskeyAlias(),
@@ -1664,7 +1674,7 @@ func Provider() *schema.Provider {
 			"ibm_en_destination_sn":             eventnotification.ResourceIBMEnServiceNowDestination(),
 			"ibm_en_subscription_sn":            eventnotification.ResourceIBMEnFCMSubscription(),
 			"ibm_en_destination_ce":             eventnotification.ResourceIBMEnCodeEngineDestination(),
-			"ibm_en_subscription_ce":            eventnotification.ResourceIBMEnFCMSubscription(),
+			"ibm_en_subscription_ce":            eventnotification.ResourceIBMEnCodeEngineSubscription(),
 			"ibm_en_destination_cos":            eventnotification.ResourceIBMEnCOSDestination(),
 			"ibm_en_subscription_cos":           eventnotification.ResourceIBMEnFCMSubscription(),
 			"ibm_en_destination_huawei":         eventnotification.ResourceIBMEnHuaweiDestination(),
@@ -1686,6 +1696,7 @@ func Provider() *schema.Provider {
 			"ibm_en_destination_event_streams":  eventnotification.ResourceIBMEnEventStreamsDestination(),
 			"ibm_en_subscription_event_streams": eventnotification.ResourceIBMEnEventStreamsSubscription(),
 			"ibm_en_event_streams_template":     eventnotification.ResourceIBMEnEventStreamsTemplate(),
+			"ibm_en_code_engine_template":       eventnotification.ResourceIBMEnCodeEngineTemplate(),
 
 			// Added for Toolchain
 			"ibm_cd_toolchain":                         cdtoolchain.ResourceIBMCdToolchain(),
@@ -1738,7 +1749,9 @@ func Provider() *schema.Provider {
 			"ibm_project_environment": project.ResourceIbmProjectEnvironment(),
 
 			// Added for VMware as a Service
-			"ibm_vmaas_vdc": vmware.ResourceIbmVmaasVdc(),
+			"ibm_vmaas_vdc":                        vmware.ResourceIbmVmaasVdc(),
+			"ibm_vmaas_transit_gateway_connection": vmware.ResourceIbmVmaasTransitGatewayConnection(),
+
 			// Logs Service
 			"ibm_logs_alert":              logs.AddLogsInstanceFields(logs.ResourceIbmLogsAlert()),
 			"ibm_logs_rule_group":         logs.AddLogsInstanceFields(logs.ResourceIbmLogsRuleGroup()),
@@ -2246,7 +2259,9 @@ func Validator() validate.ValidatorDict {
 				"ibm_en_destination_custom_email": eventnotification.ResourceIBMEnEmailDestinationValidator(),
 
 				// Added for VMware as a Service
-				"ibm_vmaas_vdc":             vmware.ResourceIbmVmaasVdcValidator(),
+				"ibm_vmaas_vdc":                        vmware.ResourceIbmVmaasVdcValidator(),
+				"ibm_vmaas_transit_gateway_connection": vmware.ResourceIbmVmaasTransitGatewayConnectionValidator(),
+
 				"ibm_logs_alert":            logs.ResourceIbmLogsAlertValidator(),
 				"ibm_logs_rule_group":       logs.ResourceIbmLogsRuleGroupValidator(),
 				"ibm_logs_outgoing_webhook": logs.ResourceIbmLogsOutgoingWebhookValidator(),

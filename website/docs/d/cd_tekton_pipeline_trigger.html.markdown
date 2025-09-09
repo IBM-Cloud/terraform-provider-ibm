@@ -35,6 +35,8 @@ After your data source is created, you can read values from the following attrib
 * `id` - The unique identifier of the cd_tekton_pipeline_trigger.
 * `cron` - (String) Only needed for timer triggers. CRON expression that indicates when this trigger will activate. Maximum frequency is every 5 minutes. The string is based on UNIX crontab syntax: minute, hour, day of month, month, day of week. Example: The CRON expression 0 *_/2 * * * - translates to - every 2 hours.
   * Constraints: The maximum length is `253` characters. The minimum length is `5` characters. The value must match regular expression `/^[-0-9a-zA-Z,\\*\/ ]{5,253}$/`.
+* `disable_draft_events` - (Boolean) Prevent new pipeline runs from being triggered by events from draft pull requests.
+  * Constraints: The default value is `false`.
 * `enable_events_from_forks` - (Boolean) When enabled, pull request events from forks of the selected repository will trigger a pipeline run.
   * Constraints: The default value is `false`.
 * `enabled` - (Boolean) Flag to check if the trigger is enabled.
