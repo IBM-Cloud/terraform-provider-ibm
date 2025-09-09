@@ -2,7 +2,7 @@
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.104.0-b4a47c49-20250418-184351
+ * IBM OpenAPI Terraform Generator Version: 3.107.1-41b0fbd0-20250825-080732
  */
 
 package mqcloud
@@ -53,6 +53,17 @@ func ResourceIbmMqcloudUser() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The IAM ID of the user.",
+			},
+			"roles": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "A list of roles the user has.",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+			},
+			"iam_managed": {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Indicates whether the user is managed by IAM.",
 			},
 			"href": {
 				Type:        schema.TypeString,
@@ -172,6 +183,14 @@ func resourceIbmMqcloudUserRead(context context.Context, d *schema.ResourceData,
 	if err = d.Set("iam_service_id", userDetails.IamServiceID); err != nil {
 		err = fmt.Errorf("Error setting iam_service_id: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_mqcloud_user", "read", "set-iam_service_id").GetDiag()
+	}
+	if err = d.Set("roles", userDetails.Roles); err != nil {
+		err = fmt.Errorf("Error setting roles: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_mqcloud_user", "read", "set-roles").GetDiag()
+	}
+	if err = d.Set("iam_managed", userDetails.IamManaged); err != nil {
+		err = fmt.Errorf("Error setting iam_managed: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_mqcloud_user", "read", "set-iam_managed").GetDiag()
 	}
 	if err = d.Set("href", userDetails.Href); err != nil {
 		err = fmt.Errorf("Error setting href: %s", err)
