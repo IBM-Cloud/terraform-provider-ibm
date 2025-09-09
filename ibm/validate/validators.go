@@ -17,6 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/mitchellh/go-homedir"
+	// "github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 
 	"github.com/IBM-Cloud/bluemix-go/helpers"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -1231,6 +1232,97 @@ func InvokeValidator(resourceName, identifier string) schema.SchemaValidateFunc 
 		return nil
 	}
 }
+
+/*
+// This is the main validation function. This function will be used in all the provider code.
+func InvokeValidatorWithDiagnostics(resourceName, identifier string) schema.SchemaValidateDiagFunc {
+	// Loop through dictionary and identify the resource and then the parameter configuration.
+	var schemaToInvoke ValidateSchema
+	found := false
+	resourceItem := validatorDict.ResourceValidatorDictionary[resourceName]
+	if resourceItem.ResourceName == resourceName {
+		parameterValidateSchema := resourceItem.Schema
+		for _, validateSchema := range parameterValidateSchema {
+			if validateSchema.Identifier == identifier {
+				schemaToInvoke = validateSchema
+				found = true
+				break
+			}
+		}
+	}
+
+	if found {
+		return invokeValidatorInternalWithDiagnostics(schemaToInvoke)
+	} else {
+		// Return a diag error instead of nil (safer)
+		return func(v interface{}, path cty.Path) diag.Diagnostics {
+			return diag.Diagnostics{
+				diag.Diagnostic{
+					Severity: diag.Error,
+					Summary:  "Validator not found",
+					Detail:   "No validator found for " + resourceName + "." + identifier,
+				},
+			}
+		}
+	}
+}
+
+func invokeValidatorInternalWithDiagnostics(schema ValidateSchema) schema.SchemaValidateDiagFunc {
+	funcIdentifier := schema.ValidateFunctionIdentifier
+
+	switch funcIdentifier {
+	case IntBetween:
+		minValue := schema.GetValue(MinValue)
+		maxValue := schema.GetValue(MaxValue)
+		return validation.ToDiagFunc(validation.IntBetween(minValue.(int), maxValue.(int)))
+	case IntAtLeast:
+		minValue := schema.GetValue(MinValue)
+		return validation.ToDiagFunc(validation.IntAtLeast(minValue.(int)))
+	case IntAtMost:
+		maxValue := schema.GetValue(MaxValue)
+		return validation.ToDiagFunc(validation.IntAtMost(maxValue.(int)))
+	case ValidateAllowedStringValue:
+		allowedValues := schema.GetValue(AllowedValues)
+		return validation.ToDiagFunc(ValidateAllowedStringValues(allowedValues.([]string)))
+	case StringLenBetween:
+		return validation.ToDiagFunc(validation.StringLenBetween(schema.MinValueLength, schema.MaxValueLength))
+	case ValidateIPorCIDR:
+		return validation.ToDiagFunc(validateIPorCIDR())
+	case ValidateCIDRAddress:
+		return validation.ToDiagFunc(validateCIDRAddress())
+	case ValidateAllowedIntValue:
+		allowedValues := schema.GetValue(AllowedValues)
+		return validation.ToDiagFunc(ValidateAllowedIntValues(allowedValues.([]int)))
+	case ValidateRegexpLen:
+		return validation.ToDiagFunc(validateRegexpLen(schema.MinValueLength, schema.MaxValueLength, schema.Regexp))
+	case ValidateRegexp:
+		return validation.ToDiagFunc(ValidateRegexps(schema.Regexp))
+	case ValidateNoZeroValues:
+		return validation.ToDiagFunc(validateNoZeroValues())
+	case ValidateJSONString:
+		return validation.ToDiagFunc(validateJSONString())
+	case ValidateBindedPackageName:
+		return validation.ToDiagFunc(validateBindedPackageName())
+	case ValidateOverlappingAddress:
+		return validation.ToDiagFunc(validateOverlappingAddress())
+	case ValidateCloudData:
+		// No-op, return success
+		return func(v interface{}, path cty.Path) diag.Diagnostics {
+			return nil
+		}
+	default:
+		return func(v interface{}, path cty.Path) diag.Diagnostics {
+			return diag.Diagnostics{
+				diag.Diagnostic{
+					Severity: diag.Error,
+					Summary:  "Unknown validator",
+					Detail:   "Validator " + funcIdentifier + " is not implemented",
+				},
+			}
+		}
+	}
+}
+*/
 
 func InvokeDataSourceValidator(resourceName, identifier string) schema.SchemaValidateFunc {
 	// Loop through dictionary and identify the resource and then the parameter configuration.
