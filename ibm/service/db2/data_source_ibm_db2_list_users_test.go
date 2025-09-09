@@ -40,7 +40,7 @@ func TestAccIbmDb2SaasUsersDataSourceBasic(t *testing.T) {
 
 func testAccCheckIbmDb2SaasUsersDataSourceConfigBasic() string {
 	return `data "ibm_db2_users" "db2_list_users" {
-			x_deployment_id = "crn:v1:staging:public:dashdb-for-transactions:us-south:a/081cc8d873fc41268d721af06b1f81e2:f03f761b-9a01-4bb5-a06b-57dab66ff8c9::"
+			x_deployment_id = "crn:v1:staging:public:dashdb-for-transactions:us-east:a/081cc8d873fc41268d721af06b1f81e2:131dab7a-d7a3-4d07-a502-c80ed2d1d002::"
 		}`
 }
 

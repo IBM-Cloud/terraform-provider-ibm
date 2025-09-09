@@ -878,7 +878,7 @@ func UserConfigValidation(d *schema.ResourceData, encodedCRN string, db2SaasClie
 				password, ok = rawPassword.(string)
 				if !ok {
 					log.Printf("failed to extract 'password'")
-					return fmt.Errorf("failed to extract 'password': expected string, got %T", rawPassword)
+					return fmt.Errorf("failed to extract 'password'")
 				}
 			}
 			if rawRole, exists := userMap["role"]; exists && rawRole != nil {
