@@ -37,14 +37,39 @@ func DataSourceIBMPIImages() *schema.Resource {
 				Description: "List of all supported images.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						Attr_Architecture: {
+							Computed:    true,
+							Description: "The CPU architecture that the image is designed for.",
+							Type:        schema.TypeString,
+						},
 						Attr_CRN: {
 							Computed:    true,
 							Description: "The CRN of this resource.",
 							Type:        schema.TypeString,
 						},
+						Attr_ContainerFormat: {
+							Computed:    true,
+							Description: "The container format.",
+							Type:        schema.TypeString,
+						},
+						Attr_DiskFormat: {
+							Computed:    true,
+							Description: "The disk format.",
+							Type:        schema.TypeString,
+						},
+						Attr_Endianness: {
+							Computed:    true,
+							Description: "The endianness order.",
+							Type:        schema.TypeString,
+						},
 						Attr_Href: {
 							Computed:    true,
 							Description: "The hyper link of an image.",
+							Type:        schema.TypeString,
+						},
+						Attr_Hypervisor: {
+							Computed:    true,
+							Description: "Hypervision Type.",
 							Type:        schema.TypeString,
 						},
 						Attr_ID: {
@@ -61,6 +86,16 @@ func DataSourceIBMPIImages() *schema.Resource {
 							Computed:    true,
 							Description: "The name of an image.",
 							Type:        schema.TypeString,
+						},
+						Attr_OperatingSystem: {
+							Computed:    true,
+							Description: "The operating system that is installed with the image.",
+							Type:        schema.TypeString,
+						},
+						Attr_Shared: {
+							Computed:    true,
+							Description: "Indicates whether the image is shared.",
+							Type:        schema.TypeBool,
 						},
 						Attr_SourceChecksum: {
 							Computed:    true,
@@ -126,14 +161,21 @@ func flattenStockImages(list []*models.ImageReference, meta any) []map[string]an
 	result := make([]map[string]any, 0, len(list))
 	for _, i := range list {
 		l := map[string]any{
-			Attr_Href:           *i.Href,
-			Attr_ID:             *i.ImageID,
-			Attr_ImageType:      i.Specifications.ImageType,
-			Attr_Name:           *i.Name,
-			Attr_SourceChecksum: i.Specifications.SourceChecksum,
-			Attr_State:          *i.State,
-			Attr_StoragePool:    *i.StoragePool,
-			Attr_StorageType:    *i.StorageType,
+			Attr_Architecture:    i.Specifications.Architecture,
+			Attr_ContainerFormat: i.Specifications.ContainerFormat,
+			Attr_DiskFormat:      i.Specifications.DiskFormat,
+			Attr_Endianness:      i.Specifications.Endianness,
+			Attr_Href:            *i.Href,
+			Attr_Hypervisor:      i.Specifications.HypervisorType,
+			Attr_ID:              *i.ImageID,
+			Attr_ImageType:       i.Specifications.ImageType,
+			Attr_Name:            *i.Name,
+			Attr_OperatingSystem: i.Specifications.OperatingSystem,
+			Attr_Shared:          i.Specifications.Shared,
+			Attr_SourceChecksum:  i.Specifications.SourceChecksum,
+			Attr_State:           *i.State,
+			Attr_StoragePool:     *i.StoragePool,
+			Attr_StorageType:     *i.StorageType,
 		}
 		if i.Crn != "" {
 			l[Attr_CRN] = i.Crn
