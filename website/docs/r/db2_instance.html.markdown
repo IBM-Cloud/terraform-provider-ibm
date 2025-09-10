@@ -121,7 +121,7 @@ resource "ibm_db2" "<your_database>" {
   allowlist_config  {
     ip_addresses {
       address     = "127.0.0.1"
-      description = "A sample IP address 1"
+      description = "A sample IP address"
     }
   }
 }
@@ -406,8 +406,6 @@ Review the argument reference that you can specify for your resource.
     - `password` - (Required, String) User's password.
     - `role` - (Required, String) Role assigned to the user.
       - Constraints: Allowable values are: `bluadmin`, `bluuser`.
-    - `x_deployment_id` - (Required, String) CRN deployment id.
-      - Constraints: The maximum length is `63` characters. The minimum length is `1` character. The value must match regular expression `/^crn(:[A-Za-z0-9\\-\\.]*){9}$/`.
     - `authentication` - (Required, List) Authentication details for the user.
     Nested schema for **authentication**:
       * `method` - (Required, String) Authentication method.
@@ -415,8 +413,8 @@ Review the argument reference that you can specify for your resource.
 
 - `allowlist_config` - (Optional, List) Defines allowlist configurations you want to set to Db2 SaaS instance.
     Nested schema for `allowlist_config`
-    - `address` - (Required, String) Indicates teh IP Address to be allowed
-    - `description` - (Required, String) Defines the description.
+    - `address` - (Required, String) Indicates the IP Address to be allowed
+    - `description` - (Required, String) Defines the description of the ip address.
 
 - `autoscale_config` - (Optional, List) Defines autoscale configurations you want to set to Db2 SaaS instance.
     Nested schema for `autoscale_config`

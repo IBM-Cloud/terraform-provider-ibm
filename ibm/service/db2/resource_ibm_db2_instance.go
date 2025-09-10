@@ -812,7 +812,7 @@ func ResourceIBMDb2Instance() *schema.Resource {
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"ip_addresses": {
-					Description: "The ip_addresses allowed for the instance",
+					Description: "The ip_addresses allowed to access the Db2 instance",
 					Optional:    true,
 					Type:        schema.TypeList,
 					Elem: &schema.Resource{
