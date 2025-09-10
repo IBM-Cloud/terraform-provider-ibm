@@ -82,7 +82,6 @@ resource "ibm_db2" "<your_database>" {
     name = "test_user"
     password = "dEkMc43@gfAPl!867^dSbu"
     role = "bluuser"
-    x_deployment_id = "crn:v1:staging:public:dashdb-for-transactions:us-south:a/e7e3e87b512f474381c0684a5ecbba03:69db420f-33d5-4953-8bd8-1950abd356f6::"
     authentication {
       method = "method"
       policy_id = "policy_id"

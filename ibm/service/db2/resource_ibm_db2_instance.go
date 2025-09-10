@@ -819,13 +819,13 @@ func ResourceIBMDb2Instance() *schema.Resource {
 						Schema: map[string]*schema.Schema{
 							"address": {
 								Type:        schema.TypeString,
-								Optional:    true,
 								Description: "The IP address",
+								Optional:    true,
 							},
 							"description": {
 								Type:        schema.TypeString,
-								Optional:    true,
 								Description: "The description for the ip address",
+								Optional:    true,
 							},
 						},
 					},
