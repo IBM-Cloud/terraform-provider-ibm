@@ -363,7 +363,7 @@ func Provider() *schema.Provider {
 			"ibm_db2_autoscale":                             db2.DataSourceIbmDb2Autoscale(),
 			"ibm_db2_backup":                                db2.DataSourceIbmDb2Backup(),
 			"ibm_db2_tuneable_param":                        db2.DataSourceIbmDb2TuneableParam(),
-			"ibm_db2_users":                                 db2.DataSourceIbmDb2SaasUsers(),
+			"ibm_db2_users":                                 db2.DataSourceIbmDb2ListUsers(),
 			"ibm_compute_bare_metal":                        classicinfrastructure.DataSourceIBMComputeBareMetal(),
 			"ibm_compute_image_template":                    classicinfrastructure.DataSourceIBMComputeImageTemplate(),
 			"ibm_compute_placement_group":                   classicinfrastructure.DataSourceIBMComputePlacementGroup(),

@@ -21,7 +21,7 @@ import (
 	"github.com/IBM/cloud-db2-go-sdk/db2saasv1"
 )
 
-func DataSourceIbmDb2SaasUsers() *schema.Resource {
+func DataSourceIbmDb2ListUsers() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceIbmDb2SaasUsersRead,
 
