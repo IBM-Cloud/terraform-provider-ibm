@@ -5,6 +5,7 @@ package power
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"strconv"
 
@@ -260,11 +261,13 @@ func DataSourceIBMPIInstances() *schema.Resource {
 	}
 }
 
-func dataSourceIBMPIInstancesAllRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMPIInstancesAllRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_instances", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
@@ -273,7 +276,9 @@ func dataSourceIBMPIInstancesAllRead(ctx context.Context, d *schema.ResourceData
 	powervmdata, err := powerC.GetAll()
 
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetAll failed: %s", err.Error()), "ibm_pi_instances", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	var clientgenU, _ = uuid.GenerateUUID()
@@ -283,10 +288,10 @@ func dataSourceIBMPIInstancesAllRead(ctx context.Context, d *schema.ResourceData
 	return nil
 }
 
-func flattenPvmInstances(list []*models.PVMInstanceReference, meta interface{}) []map[string]interface{} {
-	result := make([]map[string]interface{}, 0, len(list))
+func flattenPvmInstances(list []*models.PVMInstanceReference, meta any) []map[string]any {
+	result := make([]map[string]any, 0, len(list))
 	for _, i := range list {
-		l := map[string]interface{}{
+		l := map[string]any{
 			Attr_DedicatedHostID:           i.DedicatedHostID,
 			Attr_LicenseRepositoryCapacity: i.LicenseRepositoryCapacity,
 			Attr_MaxMem:                    i.Maxmem,
@@ -339,11 +344,11 @@ func flattenPvmInstances(list []*models.PVMInstanceReference, meta interface{}) 
 	return result
 }
 
-func flattenPvmInstanceNetworks(list []*models.PVMInstanceNetwork) (networks []map[string]interface{}) {
+func flattenPvmInstanceNetworks(list []*models.PVMInstanceNetwork) (networks []map[string]any) {
 	if list != nil {
-		networks = make([]map[string]interface{}, len(list))
+		networks = make([]map[string]any, len(list))
 		for i, pvmip := range list {
-			p := make(map[string]interface{})
+			p := make(map[string]any)
 			p[Attr_ExternalIP] = pvmip.ExternalIP
 			p[Attr_IP] = pvmip.IPAddress
 			p[Attr_MacAddress] = pvmip.MacAddress
@@ -365,8 +370,8 @@ func flattenPvmInstanceNetworks(list []*models.PVMInstanceNetwork) (networks []m
 	return
 }
 
-func flattenPvmInstanceFault(fault *models.PVMInstanceFault) map[string]interface{} {
-	faultMap := make(map[string]interface{})
+func flattenPvmInstanceFault(fault *models.PVMInstanceFault) map[string]any {
+	faultMap := make(map[string]any)
 	faultMap[Attr_Code] = strconv.FormatFloat(fault.Code, 'f', -1, 64)
 	if !fault.Created.IsZero() {
 		faultMap[Attr_Created] = fault.Created.String()

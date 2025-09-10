@@ -5,6 +5,7 @@ package power
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
@@ -105,17 +106,21 @@ func DataSourceIBMPIInstanceSnapshots() *schema.Resource {
 	}
 }
 
-func dataSourceIBMPIInstanceSnapshotsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMPIInstanceSnapshotsRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "(Data) ibm_pi_instance_snapshots", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
 	snapshot := instance.NewIBMPISnapshotClient(ctx, sess, cloudInstanceID)
 	snapshotData, err := snapshot.GetAll()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetAll failed: %s", err.Error()), "(Data) ibm_pi_instance_snapshots", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	var clientgenU, _ = uuid.GenerateUUID()
@@ -125,11 +130,11 @@ func dataSourceIBMPIInstanceSnapshotsRead(ctx context.Context, d *schema.Resourc
 	return nil
 }
 
-func flattenSnapshotsInstances(list []*models.Snapshot, meta interface{}) []map[string]interface{} {
+func flattenSnapshotsInstances(list []*models.Snapshot, meta any) []map[string]any {
 	log.Printf("Calling the flattenSnapshotsInstances call with list %d", len(list))
-	result := make([]map[string]interface{}, 0, len(list))
+	result := make([]map[string]any, 0, len(list))
 	for _, i := range list {
-		l := map[string]interface{}{
+		l := map[string]any{
 			Attr_Action:          i.Action,
 			Attr_CreationDate:    i.CreationDate.String(),
 			Attr_Description:     i.Description,
