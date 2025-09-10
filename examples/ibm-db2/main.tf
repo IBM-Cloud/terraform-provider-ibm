@@ -37,7 +37,7 @@ resource "ibm_db2" "db2_instance" {
 #  allowlist_config {
 #   ip_addresses {
 #      address     = "127.0.0.32"
-#      description = "A sample IP address 32"
+#      description = "A sample IP address"
 #    }
 #  }
 

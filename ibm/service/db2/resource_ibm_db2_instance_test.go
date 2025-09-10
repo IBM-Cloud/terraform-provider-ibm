@@ -361,7 +361,7 @@ func testAccCheckIBMDb2InstanceCreateAllowlist(databaseResourceGroup string, tes
 		allowlist_config {
 		ip_addresses {
 			address     = "127.0.0.5"
-			description = "A sample IP address 5"
+			description = "A sample IP address"
 			}
 		}
 	}
