@@ -806,7 +806,7 @@ func ResourceIBMDb2Instance() *schema.Resource {
 	}
 
 	riSchema["allowlist_config"] = &schema.Schema{
-		Description: "The db2 allowlist",
+		Description: "The db2 allowed list of IPs",
 		Optional:    true,
 		Type:        schema.TypeList,
 		Elem: &schema.Resource{
@@ -1388,7 +1388,7 @@ func resourceIBMDb2InstanceCreate(d *schema.ResourceData, meta interface{}) erro
 	if allowlistConfigRaw, ok := d.GetOk("allowlist_config"); ok {
 		list := allowlistConfigRaw.([]interface{})
 		if len(list) == 0 {
-			log.Printf("[DEBUG] No allowlist config provided, skipping.")
+			fmt.Println("No allowlist config provided, skipping.")
 		} else {
 			ipList := make([]db2saasv1.IpAddress, 0)
 
@@ -1404,7 +1404,7 @@ func resourceIBMDb2InstanceCreate(d *schema.ResourceData, meta interface{}) erro
 						if rawAddress, ok := ipEntry["address"]; ok && rawAddress != nil {
 							str, ok := rawAddress.(string)
 							if !ok {
-								log.Printf("allowlist address is not a string")
+								log.Printf("[ERROR] allowlist address is not a string")
 								return fmt.Errorf("allowlist address is not a string")
 							}
 							if ip := net.ParseIP(str); ip == nil {
@@ -1438,7 +1438,7 @@ func resourceIBMDb2InstanceCreate(d *schema.ResourceData, meta interface{}) erro
 
 			result, response, err := db2SaasClient.PostDb2SaasAllowlist(input)
 			if err != nil {
-				log.Printf("[ERROR] Error while updating allowlist config to DB2Saas: %s", err)
+				log.Printf("[ERROR] Error while posting allowlist config to DB2Saas: %s", err)
 			} else {
 				log.Printf("[DEBUG] StatusCode of response %d", response.StatusCode)
 				log.Printf("[DEBUG] Success result \n%v", result)
@@ -1448,7 +1448,7 @@ func resourceIBMDb2InstanceCreate(d *schema.ResourceData, meta interface{}) erro
 
 	err = resourcecontroller.UserConfigValidation(d, encodedCRN, db2SaasClient)
 	if err != nil {
-		log.Printf("[ERROR]User config validation failed: %s", err)
+		log.Printf("[ERROR] User config validation failed: %s", err)
 	}
 
 	v := os.Getenv("IC_ENV_TAGS")

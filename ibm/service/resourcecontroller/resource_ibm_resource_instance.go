@@ -826,7 +826,8 @@ func UserConfigValidation(d *schema.ResourceData, encodedCRN string, db2SaasClie
 	if usersConfigRaw, ok := d.GetOk("users_config"); ok {
 		usersList := usersConfigRaw.([]interface{})
 		if len(usersList) == 0 {
-			fmt.Println("No users config provided, skipping.")
+			fmt.Println(" No users config provided, skipping.")
+			return fmt.Errorf("no users config provided")
 		}
 
 		for _, u := range usersList {
@@ -849,56 +850,56 @@ func UserConfigValidation(d *schema.ResourceData, encodedCRN string, db2SaasClie
 			if rawID, exists := userMap["id"]; exists && rawID != nil {
 				id, ok = rawID.(string)
 				if !ok {
-					log.Printf("failed to extract 'id'")
+					log.Printf("[ERROR] failed to extract 'id'")
 					return fmt.Errorf("failed to extract 'id': expected string, got %T", rawID)
 				}
 			}
 			if rawIAM, exists := userMap["iam"]; exists && rawIAM != nil {
 				iam, ok = rawIAM.(bool)
 				if !ok {
-					log.Printf("failed to extract 'iam'")
+					log.Printf("[ERROR] failed to extract 'iam'")
 					return fmt.Errorf("failed to extract 'iam': expected bool, got %T", rawIAM)
 				}
 			}
 			if rawIBMID, exists := userMap["ibmid"]; exists && rawIBMID != nil {
 				ibmID, ok = rawIBMID.(string)
 				if !ok {
-					log.Printf("failed to extract 'ibmid'")
+					log.Printf("[ERROR] failed to extract 'ibmid'")
 					return fmt.Errorf("failed to extract 'ibmid': expected string, got %T", rawIBMID)
 				}
 			}
 			if rawName, exists := userMap["name"]; exists && rawName != nil {
 				name, ok = rawName.(string)
 				if !ok {
-					log.Printf("failed to extract 'name'")
+					log.Printf("[ERROR] failed to extract 'name'")
 					return fmt.Errorf("failed to extract 'name': expected string, got %T", rawName)
 				}
 			}
 			if rawPassword, exists := userMap["password"]; exists && rawPassword != nil {
 				password, ok = rawPassword.(string)
 				if !ok {
-					log.Printf("failed to extract 'password'")
+					log.Printf("[ERROR] failed to extract 'password'")
 					return fmt.Errorf("failed to extract 'password'")
 				}
 			}
 			if rawRole, exists := userMap["role"]; exists && rawRole != nil {
 				role, ok = rawRole.(string)
 				if !ok {
-					log.Printf("failed to extract 'role'")
+					log.Printf("[ERROR] failed to extract 'role'")
 					return fmt.Errorf("failed to extract 'role': expected string, got %T", rawRole)
 				}
 			}
 			if rawEmail, exists := userMap["email"]; exists && rawEmail != nil {
 				email, ok = rawEmail.(string)
 				if !ok {
-					log.Printf("failed to extract 'email'")
+					log.Printf("[ERROR] failed to extract 'email'")
 					return fmt.Errorf("failed to extract 'email': expected string, got %T", rawEmail)
 				}
 			}
 			if rawLocked, exists := userMap["locked"]; exists && rawLocked != nil {
 				locked, ok = rawLocked.(string)
 				if !ok {
-					log.Printf("failed to extract 'locked'")
+					log.Printf("[ERROR] failed to extract 'locked'")
 					return fmt.Errorf("failed to extract 'locked': expected string, got %T", rawLocked)
 				}
 			}
@@ -912,14 +913,14 @@ func UserConfigValidation(d *schema.ResourceData, encodedCRN string, db2SaasClie
 					if rawMethod, exists := authMap["method"]; exists && rawMethod != nil {
 						method, ok = rawMethod.(string)
 						if !ok {
-							log.Printf("failed to extract 'authentication.method'")
+							log.Printf("[ERROR] failed to extract 'authentication.method'")
 							return fmt.Errorf("failed to extract 'authentication.method': expected string, got %T", rawMethod)
 						}
 					}
 					if rawPolicy, exists := authMap["policy_id"]; exists && rawPolicy != nil {
 						policyID, ok = rawPolicy.(string)
 						if !ok {
-							log.Printf("failed to extract 'authentication.policy_id'")
+							log.Printf("[ERROR] failed to extract 'authentication.policy_id'")
 							return fmt.Errorf("failed to extract 'authentication.policy_id': expected string, got %T", rawPolicy)
 						}
 					}
@@ -957,11 +958,11 @@ func UserConfigValidation(d *schema.ResourceData, encodedCRN string, db2SaasClie
 			_, resp, err := db2SaasClient.GetbyidDb2SaasUser(getUsersInput)
 
 			if resp != nil && resp.StatusCode == http.StatusOK {
-				log.Print("User exists, thus will proceed with update")
+				log.Print("[DEBUG] User exists, thus will proceed with update")
 				existingUser = true
 			}
 			if err != nil {
-				log.Printf("Error while fetching user by ID: %s", err)
+				log.Printf("[ERROR] Error while fetching user by ID: %s", err)
 			}
 
 			if existingUser {
@@ -989,10 +990,10 @@ func UserConfigValidation(d *schema.ResourceData, encodedCRN string, db2SaasClie
 			}
 
 			if err != nil {
-				log.Printf("Error while sending users config to DB2: %s", err)
+				log.Printf("[ERROR] Error while sending users config to DB2: %s", err)
 			} else {
-				log.Printf("StatusCode of response %d", response.StatusCode)
-				log.Printf("Success result %v", result)
+				log.Printf("[INFO] StatusCode of response %d", response.StatusCode)
+				log.Printf("[INFO] Success result %v", result)
 			}
 		}
 	}
