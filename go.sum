@@ -112,8 +112,8 @@ github.com/IBM/code-engine-go-sdk v0.0.0-20241217191651-e1821f8c58c3 h1:bNopmSDZ
 github.com/IBM/code-engine-go-sdk v0.0.0-20241217191651-e1821f8c58c3/go.mod h1:OiTumANXHfRr89a+0GjGWI70yzwZI+7ja2JFGpfnPFY=
 github.com/IBM/configuration-aggregator-go-sdk v0.0.2 h1:IRDIrGyLNXq+wQRj/js/Bzr74iQk7xaHiYB8g3TcMyY=
 github.com/IBM/configuration-aggregator-go-sdk v0.0.2/go.mod h1:Ql2N5j4d4Pj1/GoLzFwZw0DomCG4b1O33kKs3TZ+O+I=
-github.com/IBM/container-registry-go-sdk v1.1.0 h1:sYyknIod8R4RJZQqAheiduP6wbSTphE9Ag8ho28yXjc=
-github.com/IBM/container-registry-go-sdk v1.1.0/go.mod h1:4TwsCnQtVfZ4Vkapy/KPvQBKFc3VOyUZYkwRU4FTPrs=
+github.com/IBM/container-registry-go-sdk v1.2.0 h1:DX08GSKFvgCcUne9rWwb9+UttevV4WiG2YfEvKjY5HA=
+github.com/IBM/container-registry-go-sdk v1.2.0/go.mod h1:fE1iNfehccXBx1wmX/RUWksDteWOOOXJFtHWYlT4zKk=
 github.com/IBM/continuous-delivery-go-sdk/v2 v2.0.6 h1:CdJWGVzcHngf6un5N2C4KDgIzqViA2Md6pSeZNZzsLQ=
 github.com/IBM/continuous-delivery-go-sdk/v2 v2.0.6/go.mod h1:Iibf+4gRasEZHakDgnMm7TOX87xex0L+DfghUclcmcg=
 github.com/IBM/event-notifications-go-admin-sdk v0.18.0 h1:G4230wYVCjHnHFEcingfMVznjSJeUoSWzyEMsEFYCmo=
