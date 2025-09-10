@@ -1,14 +1,14 @@
 ---
-layout: "ibm"
 subcategory: "Db2 SaaS"
+layout: "ibm"
 page_title: "IBM : ibm_db2_users"
 description: |-
-  Get information about db2_users
+  Get information about IBM Db2 users
 ---
 
 # ibm_db2_users
 
-Provides a read-only data source to retrieve information about db2_users. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
+Retrieve information about users of an existing [IBM Db2 Instance](https://cloud.ibm.com/docs/Db2onCloud).
 
 ## Example Usage
 
@@ -20,37 +20,35 @@ data "ibm_db2_users" "db2_users" {
 
 ## Argument Reference
 
-You can specify the following arguments for this data source.
+Review the argument reference that you can specify for your data source.
 
-* `x_deployment_id` - (Required, String) CRN deployment id.
-  * Constraints: The maximum length is `63` characters. The minimum length is `1` character. The value must match regular expression `/^crn(:[A-Za-z0-9\\-\\.]*){9}$/`.
+* `x_deployment_id` - (Required, String) CRN of the instance this list of users relates to.
 
 ## Attribute Reference
 
-After your data source is created, you can read values from the following attributes.
+In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
-* `id` - The unique identifier of the db2_users.
 * `count` - (Integer) The total number of resources.
 * `resources` - (List) A list of user resource.
 Nested schema for **resources**:
 	* `all_clean` - (Boolean) Indicates if the user account has no issues.
 	* `authentication` - (List) Authentication details for the user.
 	Nested schema for **authentication**:
-		* `method` - (String) Authentication method.
-		* `policy_id` - (String) Policy ID of authentication.
+		* `method` - (String) The Authentication method used.
+		* `policy_id` - (String) The Policy ID of the authentication.
 	* `dv_role` - (String) User's DV role.
-	* `email` - (String) Email address of the user.
+	* `email` - (String) Email address of the IBM Db2 user.
 	* `formated_ibmid` - (String) Formatted IBM ID.
 	* `iam` - (Boolean) Indicates if IAM is enabled or not.
-	* `iamid` - (String) IAM ID for the user.
-	* `ibmid` - (String) IBM ID of the user.
-	* `id` - (String) Unique identifier for the user.
+	* `iamid` - (String) IAM ID for the IBM Db2 user.
+	* `ibmid` - (String) IBM ID of the IBM Db2 user.
+	* `id` - (String) Unique identifier for the IBM Db2 user.
 	* `init_error_msg` - (String) Initial error message.
-	* `locked` - (String) Account lock status for the user.
+	* `locked` - (String) Account lock status for the IBM Db2 user.
 	  * Constraints: Allowable values are: `yes`, `no`.
-	* `metadata` - (Map) Metadata associated with the user.
+	* `metadata` - (Map) Metadata associated with the IBM Db2 user.
 	* `name` - (String) The display name of the user.
 	* `password` - (String) User's password.
-	* `permitted_actions` - (List) List of allowed actions of the user.
+	* `permitted_actions` - (List) List of allowed actions of the IBM Db2  user.
 	* `role` - (String) Role assigned to the user.
 	  * Constraints: Allowable values are: `bluadmin`, `bluuser`.
