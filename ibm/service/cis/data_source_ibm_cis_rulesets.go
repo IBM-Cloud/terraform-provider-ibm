@@ -272,6 +272,28 @@ var CISResponseObject = &schema.Resource{
 										},
 									},
 								},
+								CISRulesToSkip: {
+									Type:        schema.TypeList,
+									Computed:    true,
+									Description: "A list of ruleset mappings, where each element is a map of ruleset_id and its associated rule_ids",
+									Elem: &schema.Resource{
+										Schema: map[string]*schema.Schema{
+											"ruleset_id": {
+												Type:        schema.TypeString,
+												Computed:    true,
+												Description: "The ruleset identifier",
+											},
+											"rule_ids": {
+												Type:        schema.TypeList,
+												Computed:    true,
+												Description: "A list of rule IDs to be skipped",
+												Elem: &schema.Schema{
+													Type: schema.TypeString,
+												},
+											},
+										},
+									},
+								},
 							},
 						},
 					},
