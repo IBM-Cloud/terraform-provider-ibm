@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"net"
 	"net/url"
 	"os"
 	"reflect"
@@ -804,6 +805,104 @@ func ResourceIBMDb2Instance() *schema.Resource {
 		},
 	}
 
+	riSchema["allowlist_config"] = &schema.Schema{
+		Description: "The db2 allowed list of IPs",
+		Optional:    true,
+		Type:        schema.TypeList,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"ip_addresses": {
+					Description: "The ip_addresses allowed to access the Db2 instance",
+					Optional:    true,
+					Type:        schema.TypeList,
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"address": {
+								Type:        schema.TypeString,
+								Description: "The IP address",
+								Optional:    true,
+							},
+							"description": {
+								Type:        schema.TypeString,
+								Description: "The description for the ip address",
+								Optional:    true,
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	riSchema["users_config"] = &schema.Schema{
+		Description: "The db2 new users gets created (available only for platform users)",
+		Optional:    true,
+		Type:        schema.TypeList,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"id": {
+					Description: "The id of the user",
+					Optional:    true,
+					Type:        schema.TypeString,
+				},
+				"iam": {
+					Description: "The iam of the user",
+					Optional:    true,
+					Type:        schema.TypeBool,
+				},
+				"ibmid": {
+					Type:        schema.TypeString,
+					Optional:    true,
+					Description: "The ibmid of the user",
+				},
+				"name": {
+					Type:        schema.TypeString,
+					Optional:    true,
+					Description: "The name of the user",
+				},
+				"password": {
+					Type:        schema.TypeString,
+					Optional:    true,
+					Description: "The password of the user",
+				},
+				"role": {
+					Type:        schema.TypeString,
+					Optional:    true,
+					Description: "The role of the user (say: bluuser)",
+				},
+				"email": {
+					Type:        schema.TypeString,
+					Optional:    true,
+					Description: "The email of the user ",
+				},
+				"locked": {
+					Type:        schema.TypeString,
+					Optional:    true,
+					Description: "It decribes if user is locked or not",
+				},
+				"authentication": {
+					Type:        schema.TypeList,
+					Optional:    true,
+					Description: "The authentication for user",
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"method": {
+								Type:        schema.TypeString,
+								Optional:    true,
+								Description: "The method of authentication for user",
+							},
+							"policy_id": {
+								Type:        schema.TypeString,
+								Optional:    true,
+								Description: "The policy_id for the user",
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
 	return &schema.Resource{
 		Create:   resourceIBMDb2InstanceCreate,
 		Read:     resourcecontroller.ResourceIBMResourceInstanceRead,
@@ -1284,6 +1383,72 @@ func resourceIBMDb2InstanceCreate(d *schema.ResourceData, meta interface{}) erro
 				log.Printf("Success result %v", result)
 			}
 		}
+	}
+
+	if allowlistConfigRaw, ok := d.GetOk("allowlist_config"); ok {
+		list := allowlistConfigRaw.([]interface{})
+		if len(list) == 0 {
+			fmt.Println("No allowlist config provided, skipping.")
+		} else {
+			ipList := make([]db2saasv1.IpAddress, 0)
+
+			for _, item := range list {
+				entry := item.(map[string]interface{})
+
+				if ipAddrsRaw, ok := entry["ip_addresses"]; ok {
+					ipAddrs := ipAddrsRaw.([]interface{})
+					for _, ipItem := range ipAddrs {
+						ipEntry := ipItem.(map[string]interface{})
+						var address, description string
+
+						if rawAddress, ok := ipEntry["address"]; ok && rawAddress != nil {
+							str, ok := rawAddress.(string)
+							if !ok {
+								log.Printf("[ERROR] allowlist address is not a string")
+								return fmt.Errorf("allowlist address is not a string")
+							}
+							if ip := net.ParseIP(str); ip == nil {
+								log.Printf("[ERROR] invalid IP address format: %s", str)
+								return fmt.Errorf("invalid IP address format: %s", str)
+							}
+							address = str
+						}
+
+						if rawDescription, ok := ipEntry["description"]; ok && rawDescription != nil {
+							str, ok := rawDescription.(string)
+							if !ok {
+								log.Printf("[ERROR] allowlist description is not a string")
+								return fmt.Errorf("allowlist description is not a string")
+							}
+							description = str
+						}
+
+						ipList = append(ipList, db2saasv1.IpAddress{
+							Address:     core.StringPtr(address),
+							Description: core.StringPtr(description),
+						})
+					}
+				}
+			}
+
+			input := &db2saasv1.PostDb2SaasAllowlistOptions{
+				XDeploymentID: core.StringPtr(encodedCRN),
+				IpAddresses:   ipList,
+			}
+
+			result, response, err := db2SaasClient.PostDb2SaasAllowlist(input)
+			if err != nil {
+				log.Printf("[ERROR] Error while posting allowlist config to DB2Saas: %s", err)
+			} else {
+				log.Printf("[DEBUG] StatusCode of response %d", response.StatusCode)
+				log.Printf("[DEBUG] Success result \n%v", result)
+			}
+		}
+	}
+
+	err = resourcecontroller.UserConfigValidation(d, encodedCRN, db2SaasClient)
+	if err != nil {
+		log.Printf("[ERROR] User config validation failed: %s", err)
 	}
 
 	v := os.Getenv("IC_ENV_TAGS")
