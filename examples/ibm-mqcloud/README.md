@@ -96,6 +96,7 @@ resource "ibm_mqcloud_application" "mqcloud_application_instance" {
 
 | Name | Description |
 |------|-------------|
+| iam_service_id | The IAM ID of the application. |
 | create_api_key_uri | The URI to create a new apikey for the application. |
 | href | The URL for this application. |
 | application_id | The ID of the application which was allocated on creation, and can be used for delete calls. |
@@ -123,6 +124,9 @@ resource "ibm_mqcloud_user" "mqcloud_user_instance" {
 
 | Name | Description |
 |------|-------------|
+| iam_service_id | The IAM ID of the user. |
+| roles | A list of roles the user has. |
+| iam_managed | Indicates whether the user is managed by IAM. |
 | href | The URL for the user details. |
 | user_id | The ID of the user which was allocated on creation, and can be used for delete calls. |
 

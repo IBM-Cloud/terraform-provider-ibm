@@ -2,7 +2,7 @@
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.104.0-b4a47c49-20250418-184351
+ * IBM OpenAPI Terraform Generator Version: 3.107.1-41b0fbd0-20250825-080732
  */
 
 package mqcloud
@@ -61,6 +61,19 @@ func DataSourceIbmMqcloudUser() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The IAM ID of the user.",
+						},
+						"roles": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "A list of roles the user has.",
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+						},
+						"iam_managed": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Indicates whether the user is managed by IAM.",
 						},
 						"href": {
 							Type:        schema.TypeString,
@@ -156,6 +169,8 @@ func DataSourceIbmMqcloudUserUserDetailsToMap(model *mqcloudv1.UserDetails) (map
 	modelMap["name"] = *model.Name
 	modelMap["email"] = *model.Email
 	modelMap["iam_service_id"] = *model.IamServiceID
+	modelMap["roles"] = model.Roles
+	modelMap["iam_managed"] = *model.IamManaged
 	modelMap["href"] = *model.Href
 	return modelMap, nil
 }
