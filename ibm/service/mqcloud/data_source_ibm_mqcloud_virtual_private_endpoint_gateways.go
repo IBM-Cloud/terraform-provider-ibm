@@ -1,8 +1,8 @@
-// Copyright IBM Corp. 2024 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.96.0-d6dec9d7-20241008-212902
+ * IBM OpenAPI Terraform Generator Version: 3.104.0-b4a47c49-20250418-184351
  */
 
 package mqcloud
@@ -29,12 +29,12 @@ func DataSourceIbmMqcloudVirtualPrivateEndpointGateways() *schema.Resource {
 			"service_instance_guid": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The GUID that uniquely identifies the MQaaS service instance.",
+				Description: "The GUID that uniquely identifies the MQ SaaS service instance.",
 			},
 			"trusted_profile": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "The CRN of the trusted profile to assume for this request.",
+				Description: "The CRN of the trusted profile to assume for this request. This can only be retrieved using the CLI using `ibmcloud iam tp <profile_id> -o json`.",
 			},
 			"name": {
 				Type:        schema.TypeString,

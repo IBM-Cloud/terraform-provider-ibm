@@ -33,7 +33,7 @@ provider "ibm" {
   
   # ... other provider configuration ...
 
-  visiblity="private"
+  visibility="private"
   endpoints_file_path= "endpoints.json"
 }
 ```

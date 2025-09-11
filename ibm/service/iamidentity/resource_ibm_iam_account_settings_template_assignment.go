@@ -530,9 +530,9 @@ func resourceIBMAccountSettingsTemplateAssignmentTemplateAssignmentResponseResou
 		}
 		modelMap["account_settings"] = []map[string]interface{}{accountSettingsMap}
 	}
-	if model.PolicyTemplateRefs != nil {
+	if model.PolicyTemplateReferences != nil {
 		var policyTemplateRefs []map[string]interface{}
-		for _, policyTemplateRefsItem := range model.PolicyTemplateRefs {
+		for _, policyTemplateRefsItem := range model.PolicyTemplateReferences {
 			policyTemplateRefsItemMap, err := resourceIBMAccountSettingsTemplateAssignmentTemplateAssignmentResponseResourceDetailToMap(&policyTemplateRefsItem)
 			if err != nil {
 				return modelMap, err
