@@ -157,6 +157,13 @@ Review the argument references that you can specify for your resource.
           - `category` (Required, String) Category of the rule.
           - `enabled` (Optional, Boolean) Enables/Disables the rule.
           - `action` (Optional, String) Action of the rule.
+
+      - `rules_to_skip` (Optional, List) Rules to be skipped when action is `skip`
+        
+        Nested scheme of `rules_to_skip`
+        - `ruleset_id` (Required, String) Id of the Ruleset
+        - `rule_ids` (Required, List) List of rule-ids
+  
     - `position` (Optional, List). You can use only one of the before, after, and index fields at a time. It is used to update the positing of the existing rule.
       - `index` (Optional, String) Index of the rule to be added.
       - `before` (Optional, String) ID of the rule before which the new rule will be added.
