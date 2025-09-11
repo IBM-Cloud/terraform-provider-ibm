@@ -5,6 +5,7 @@ package power
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
@@ -123,10 +124,12 @@ func DataSourceIBMPICloudInstance() *schema.Resource {
 	}
 }
 
-func dataSourceIBMPICloudInstanceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMPICloudInstanceRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "(Data) ibm_pi_cloud_instance", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
@@ -134,7 +137,9 @@ func dataSourceIBMPICloudInstanceRead(ctx context.Context, d *schema.ResourceDat
 	cloud_instance := instance.NewIBMPICloudInstanceClient(ctx, sess, cloudInstanceID)
 	cloud_instance_data, err := cloud_instance.Get(cloudInstanceID)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Get failed: %s", err.Error()), "(Data) ibm_pi_cloud_instance", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(*cloud_instance_data.CloudInstanceID)
@@ -153,10 +158,10 @@ func dataSourceIBMPICloudInstanceRead(ctx context.Context, d *schema.ResourceDat
 	return nil
 }
 
-func flattenpvminstances(list []*models.PVMInstanceReference, meta interface{}) []map[string]interface{} {
-	pvms := make([]map[string]interface{}, 0)
+func flattenpvminstances(list []*models.PVMInstanceReference, meta any) []map[string]any {
+	pvms := make([]map[string]any, 0)
 	for _, lpars := range list {
-		l := map[string]interface{}{
+		l := map[string]any{
 			Attr_CreationDate: lpars.CreationDate.String(),
 			Attr_ID:           *lpars.PvmInstanceID,
 			Attr_Href:         *lpars.Href,

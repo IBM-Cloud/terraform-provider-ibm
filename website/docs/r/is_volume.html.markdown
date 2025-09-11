@@ -156,6 +156,7 @@ In addition to all argument reference list, you can access the following attribu
     
       Nested schema for `deleted`:
         - `more_info`  - (String) Link to documentation about deleted resources.
+- `crn` - (String) The CRN for the volume.
 - `encryption_type` - (String) The type of encryption used in the volume [**provider_managed**, **user_managed**].
 - `health_reasons` - (List) The reasons for the current health_state (if any).
 
@@ -172,7 +173,7 @@ In addition to all argument reference list, you can access the following attribu
   - `code` - (String) A string with an underscore as a special character identifying the status reason.
   - `message` - (String) An explanation of the status reason.
   - `more_info` - (String) Link to documentation about this status reason
-- `crn` - (String) The CRN for the volume.
+- `storage_generation` - (Int) The storage generation indicates which generation the profile family belongs to. For the custom and tiered profiles, this value is 1. For the sdp profile, this value is 2.
 
 ## Import
 The `ibm_is_volume` resource can be imported by using volume ID.

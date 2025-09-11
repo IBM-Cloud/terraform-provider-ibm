@@ -608,7 +608,37 @@ func ResourceIBMCmVersion() *schema.Resource {
 							Type:        schema.TypeString,
 							Optional:    true,
 							Computed:    true,
-							Description: "Constraint associated with value, e.g., for string type - regx:[a-z].",
+							Description: "Deprecated - Constraint associated with value, e.g., for string type - regx:[a-z].",
+							Deprecated:  "This field is deprecated use value_constraints instead.",
+						},
+						"value_constraints": &schema.Schema{
+							Type:        schema.TypeList,
+							Optional:    true,
+							Computed:    true,
+							Description: "Validation rules for this input value.",
+							ConfigMode:  schema.SchemaConfigModeAttr,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"type": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Computed:    true,
+										Description: "Type of constraint.",
+									},
+									"value": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Computed:    true,
+										Description: "Contstraint value.  For type regex, this is a regular expression in Javascript notation.",
+									},
+									"description": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Computed:    true,
+										Description: "The value to display if the inptu value does not match the specified constraint.",
+									},
+								},
+							},
 						},
 						"description": &schema.Schema{
 							Type:        schema.TypeString,
@@ -2023,7 +2053,7 @@ func resourceIBMCmVersionCreate(context context.Context, d *schema.ResourceData,
 		patchUpdateVersionOptions.Updates = append(patchUpdateVersionOptions.Updates, update)
 		hasChange = true
 	}
-	if d.HasChange("long_description") {
+	if _, ok := d.GetOk("long_description"); ok {
 		var method string
 		if activeVersion.LongDescription == nil {
 			method = "add"
@@ -2959,6 +2989,17 @@ func resourceIBMCmVersionConfigurationToMap(model *catalogmanagementv1.Configura
 	if model.ValueConstraint != nil {
 		modelMap["value_constraint"] = model.ValueConstraint
 	}
+	if model.ValueConstraints != nil {
+		valueConstraints := []map[string]interface{}{}
+		for _, valueConstraintsItem := range model.ValueConstraints {
+			valueConstraintsItemMap, err := ResourceIBMCmVersionValueConstraintToMap(&valueConstraintsItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			valueConstraints = append(valueConstraints, valueConstraintsItemMap)
+		}
+		modelMap["value_constraints"] = valueConstraints
+	}
 	if model.Description != nil {
 		modelMap["description"] = model.Description
 	}
@@ -2984,6 +3025,20 @@ func resourceIBMCmVersionConfigurationToMap(model *catalogmanagementv1.Configura
 	}
 	if model.TypeMetadata != nil {
 		modelMap["type_metadata"] = model.TypeMetadata
+	}
+	return modelMap, nil
+}
+
+func ResourceIBMCmVersionValueConstraintToMap(model *catalogmanagementv1.ValueConstraint) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Type != nil {
+		modelMap["type"] = *model.Type
+	}
+	if model.Value != nil {
+		modelMap["value"] = *model.Value
+	}
+	if model.Description != nil {
+		modelMap["description"] = *model.Description
 	}
 	return modelMap, nil
 }

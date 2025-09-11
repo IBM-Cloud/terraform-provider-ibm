@@ -160,6 +160,11 @@ func DataSourceIBMCdTektonPipelineTrigger() *schema.Resource {
 				Computed:    true,
 				Description: "When enabled, pull request events from forks of the selected repository will trigger a pipeline run.",
 			},
+			"disable_draft_events": &schema.Schema{
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Prevent new pipeline runs from being triggered by events from draft pull requests.",
+			},
 			"source": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -398,6 +403,12 @@ func dataSourceIBMCdTektonPipelineTriggerRead(context context.Context, d *schema
 	if !core.IsNil(trigger.EnableEventsFromForks) {
 		if err = d.Set("enable_events_from_forks", trigger.EnableEventsFromForks); err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting enable_events_from_forks: %s", err), "(Data) ibm_cd_tekton_pipeline_trigger", "read", "set-enable_events_from_forks").GetDiag()
+		}
+	}
+
+	if !core.IsNil(trigger.DisableDraftEvents) {
+		if err = d.Set("disable_draft_events", trigger.DisableDraftEvents); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting disable_draft_events: %s", err), "(Data) ibm_cd_tekton_pipeline_trigger", "read", "set-disable_draft_events").GetDiag()
 		}
 	}
 

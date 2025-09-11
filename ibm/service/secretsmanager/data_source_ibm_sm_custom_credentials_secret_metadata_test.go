@@ -14,7 +14,7 @@ import (
 )
 
 func TestAccIbmSmCustomCredentialsSecretMetadataDataSource(t *testing.T) {
-	dataSourceName := "ibm_sm_custom_credentials_secret.sm_custom_credentials_secret"
+	dataSourceName := "data.ibm_sm_custom_credentials_secret_metadata.sm_custom_credentials_secret"
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
@@ -27,6 +27,7 @@ func TestAccIbmSmCustomCredentialsSecretMetadataDataSource(t *testing.T) {
 					resource.TestCheckResourceAttrSet(dataSourceName, "created_by"),
 					resource.TestCheckResourceAttrSet(dataSourceName, "created_at"),
 					resource.TestCheckResourceAttrSet(dataSourceName, "updated_at"),
+					resource.TestCheckResourceAttrSet(dataSourceName, "retrieved_at"),
 					resource.TestCheckResourceAttrSet(dataSourceName, "crn"),
 					resource.TestCheckResourceAttrSet(dataSourceName, "downloaded"),
 					resource.TestCheckResourceAttrSet(dataSourceName, "next_rotation_date"),
@@ -44,7 +45,7 @@ func TestAccIbmSmCustomCredentialsSecretMetadataDataSource(t *testing.T) {
 func customCredentialsSecretMetadataDataSourceConfig() string {
 	return customCredentialsSecretConfigAllArgs() +
 		fmt.Sprintf(`
-		data "ibm_sm_custom_credentials_secret_metadata" "sm_custom_credenbtials_secret" {
+		data "ibm_sm_custom_credentials_secret_metadata" "sm_custom_credentials_secret" {
 			instance_id = "%s"
 			region = "%s"
 			secret_id = ibm_sm_custom_credentials_secret.sm_custom_credentials_secret.secret_id

@@ -720,8 +720,48 @@ func resourceIbmVmaasVdcUpdate(context context.Context, d *schema.ResourceData, 
 			return tfErr.GetDiag()
 		}
 	}
-
+	_, err = waitForIbmVmaasVdcUpdate(d, meta)
+	if err != nil {
+		errMsg := fmt.Sprintf("Error waiting for resource IbmVmaasVdc (%s) to be created: %s", d.Id(), err)
+		return flex.DiscriminatedTerraformErrorf(err, errMsg, "ibm_vmaas_vdc", "create", "wait-for-state").GetDiag()
+	}
 	return resourceIbmVmaasVdcRead(context, d, meta)
+}
+
+func waitForIbmVmaasVdcUpdate(d *schema.ResourceData, meta interface{}) (interface{}, error) {
+	vmwareClient, err := meta.(conns.ClientSession).VmwareV1()
+	if err != nil {
+		return false, err
+	}
+	getVdcOptions := &vmwarev1.GetVdcOptions{}
+
+	getVdcOptions.SetID(d.Id())
+
+	stateConf := &resource.StateChangeConf{
+		Pending: []string{"modifying"},
+		Target:  []string{"ready_to_use"},
+		Refresh: func() (interface{}, string, error) {
+			stateObj, response, err := vmwareClient.GetVdc(getVdcOptions)
+			if err != nil {
+				if sdkErr, ok := err.(*core.SDKProblem); ok && response.GetStatusCode() == 404 {
+					sdkErr.Summary = fmt.Sprintf("The instance %s does not exist anymore: %s", "getVdcOptions", err)
+					return nil, "", sdkErr
+				}
+				return nil, "", err
+			}
+			failStates := map[string]bool{"failed": true}
+			if failStates[*stateObj.Status] {
+				return stateObj, *stateObj.Status, fmt.Errorf("The instance %s failed: %s", "getVdcOptions", err)
+			}
+			fmt.Println("The vdc is currently in the " + *stateObj.Status + " state ....")
+			return stateObj, *stateObj.Status, nil
+		},
+		Timeout:    d.Timeout(schema.TimeoutCreate),
+		Delay:      60 * time.Second,
+		MinTimeout: 60 * time.Second,
+	}
+
+	return stateConf.WaitForStateContext(context.Background())
 }
 
 func resourceIbmVmaasVdcDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -1020,10 +1060,11 @@ func ResourceIbmVmaasVdcVDCPatchAsPatch(patchVals *vmwarev1.VDCPatch, d *schema.
 		delete(patch, "cpu")
 	}
 	path = "fast_provisioning_enabled"
-	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
-		patch["fast_provisioning_enabled"] = nil
-	} else if !exists {
-		delete(patch, "fast_provisioning_enabled")
+	if d.HasChange(path) {
+		_, newVal := d.GetChange(path)
+		if newVal == nil {
+			patch["fast_provisioning_enabled"] = nil
+		}
 	}
 	path = "ram"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {

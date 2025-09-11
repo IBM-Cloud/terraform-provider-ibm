@@ -5,9 +5,12 @@ package power
 
 import (
 	"context"
+	"fmt"
+	"log"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/go-uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -177,10 +180,12 @@ func DataSourceIBMPIDatacenters() *schema.Resource {
 	}
 }
 
-func dataSourceIBMPIDatacentersRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMPIDatacentersRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "(Data) ibm_pi_datacenters", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	cloudInstanceID := ""
 	if cloudInstance, ok := d.GetOk(Arg_CloudInstanceID); ok {
@@ -189,16 +194,17 @@ func dataSourceIBMPIDatacentersRead(ctx context.Context, d *schema.ResourceData,
 	client := instance.NewIBMPIDatacenterClient(ctx, sess, cloudInstanceID)
 	datacentersData, err := client.GetAll()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetAll failed: %s", err.Error()), "(Data) ibm_pi_datacenters", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
-	datacenters := make([]map[string]interface{}, 0, len(datacentersData.Datacenters))
+	datacenters := make([]map[string]any, 0, len(datacentersData.Datacenters))
 	for _, datacenter := range datacentersData.Datacenters {
 		if datacenter != nil {
-			dc := map[string]interface{}{
-
+			dc := map[string]any{
 				Attr_DatacenterCapabilities: datacenter.Capabilities,
 				Attr_DatacenterHref:         datacenter.Href,
-				Attr_DatacenterLocation: map[string]interface{}{
+				Attr_DatacenterLocation: map[string]any{
 					Attr_Region: datacenter.Location.Region,
 					Attr_Type:   datacenter.Location.Type,
 					Attr_URL:    datacenter.Location.URL,
@@ -209,7 +215,7 @@ func dataSourceIBMPIDatacentersRead(ctx context.Context, d *schema.ResourceData,
 			if datacenter.CapabilitiesDetails != nil {
 				capabilityDetailsMap, _ := capabilityDetailsToMap(datacenter.CapabilitiesDetails)
 
-				dc[Attr_CapabilityDetails] = []map[string]interface{}{capabilityDetailsMap}
+				dc[Attr_CapabilityDetails] = []map[string]any{capabilityDetailsMap}
 			}
 			datacenters = append(datacenters, dc)
 		}

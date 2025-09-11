@@ -130,6 +130,11 @@ func ResourceIBMISVolume() *schema.Resource {
 				Computed:    true,
 				Description: "Volume encryption type info",
 			},
+			"storage_generation": {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "storage_generation indicates which generation the profile family belongs to. For the custom and tiered profiles, this value is 1.",
+			},
 
 			isVolumeCapacity: {
 				Type:     schema.TypeInt,
@@ -683,6 +688,9 @@ func volGet(context context.Context, d *schema.ResourceData, meta interface{}, i
 			err = fmt.Errorf("Error setting name: %s", err)
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_volume", "read", "set-name").GetDiag()
 		}
+	}
+	if err = d.Set("storage_generation", flex.IntValue(volume.StorageGeneration)); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting storage_generation: %s", err), "(Data) ibm_is_volume", "read", "set-storage_generation").GetDiag()
 	}
 	if !core.IsNil(volume.Profile) {
 		if err = d.Set("profile", *volume.Profile.Name); err != nil {

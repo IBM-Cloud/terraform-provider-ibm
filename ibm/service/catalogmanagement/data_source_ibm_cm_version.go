@@ -164,6 +164,31 @@ func DataSourceIBMCmVersion() *schema.Resource {
 							Computed:    true,
 							Description: "Constraint associated with value, e.g., for string type - regx:[a-z].",
 						},
+						"value_constraints": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "Validation rules for this input value.",
+							ConfigMode:  schema.SchemaConfigModeAttr,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Type of constraint.",
+									},
+									"value": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Contstraint value.  For type regex, this is a regular expression in Javascript notation.",
+									},
+									"description": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The value to display if the inptu value does not match the specified constraint.",
+									},
+								},
+							},
+						},
 						"description": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -2061,6 +2086,17 @@ func dataSourceIBMCmVersionConfigurationToMap(model *catalogmanagementv1.Configu
 	if model.ValueConstraint != nil {
 		modelMap["value_constraint"] = *model.ValueConstraint
 	}
+	if model.ValueConstraints != nil {
+		valueConstraints := []map[string]interface{}{}
+		for _, valueConstraintsItem := range model.ValueConstraints {
+			valueConstraintsItemMap, err := dataSourceIBMCmVersionValueConstraintToMap(&valueConstraintsItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			valueConstraints = append(valueConstraints, valueConstraintsItemMap)
+		}
+		modelMap["value_constraints"] = valueConstraints
+	}
 	if model.Description != nil {
 		modelMap["description"] = *model.Description
 	}
@@ -2108,6 +2144,20 @@ func dataSourceIBMCmVersionRenderTypeToMap(model *catalogmanagementv1.RenderType
 			return modelMap, err
 		}
 		modelMap["associations"] = []map[string]interface{}{associationsMap}
+	}
+	return modelMap, nil
+}
+
+func dataSourceIBMCmVersionValueConstraintToMap(model *catalogmanagementv1.ValueConstraint) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Type != nil {
+		modelMap["type"] = *model.Type
+	}
+	if model.Value != nil {
+		modelMap["value"] = *model.Value
+	}
+	if model.Description != nil {
+		modelMap["description"] = *model.Description
 	}
 	return modelMap, nil
 }

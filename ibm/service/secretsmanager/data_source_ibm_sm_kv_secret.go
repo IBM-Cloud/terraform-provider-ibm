@@ -79,6 +79,11 @@ func DataSourceIbmSmKvSecret() *schema.Resource {
 				RequiredWith: []string{"secret_group_name"},
 				Description:  "The human-readable name of your secret.",
 			},
+			"retrieved_at": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The date when the data of the secret was last retrieved. The date format follows RFC 3339. Epoch date if there is no record of secret data retrieval.",
+			},
 			"secret_group_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -135,7 +140,11 @@ func dataSourceIbmSmKvSecretRead(context context.Context, d *schema.ResourceData
 		return diagError
 	}
 
-	kVSecret := secret.(*secretsmanagerv2.KVSecret)
+	kVSecret, ok := secret.(*secretsmanagerv2.KVSecret)
+	if !ok {
+		tfErr := flex.TerraformErrorf(nil, fmt.Sprintf("Wrong secret type: The provided secret is not a KV secret."), fmt.Sprintf("(Data) %s", KvSecretResourceName), "read")
+		return tfErr.GetDiag()
+	}
 
 	d.SetId(fmt.Sprintf("%s/%s/%s", region, instanceId, *kVSecret.ID))
 	var err error
@@ -195,6 +204,11 @@ func dataSourceIbmSmKvSecretRead(context context.Context, d *schema.ResourceData
 		return tfErr.GetDiag()
 	}
 
+	if err = d.Set("secret_id", kVSecret.ID); err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting secret_id"), fmt.Sprintf("(Data) %s", KvSecretResourceName), "read")
+		return tfErr.GetDiag()
+	}
+
 	if err = d.Set("secret_group_id", kVSecret.SecretGroupID); err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting secret_group_id"), fmt.Sprintf("(Data) %s", KvSecretResourceName), "read")
 		return tfErr.GetDiag()
@@ -217,6 +231,11 @@ func dataSourceIbmSmKvSecretRead(context context.Context, d *schema.ResourceData
 
 	if err = d.Set("updated_at", DateTimeToRFC3339(kVSecret.UpdatedAt)); err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting updated_at"), fmt.Sprintf("(Data) %s", KvSecretResourceName), "read")
+		return tfErr.GetDiag()
+	}
+
+	if err = d.Set("retrieved_at", DateTimeToRFC3339(kVSecret.RetrievedAt)); err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting retrieved_at"), fmt.Sprintf("(Data) %s", KvSecretResourceName), "read")
 		return tfErr.GetDiag()
 	}
 

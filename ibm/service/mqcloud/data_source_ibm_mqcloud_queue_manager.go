@@ -1,8 +1,8 @@
-// Copyright IBM Corp. 2024 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.95.2-120e65bc-20240924-152329
+ * IBM OpenAPI Terraform Generator Version: 3.104.0-b4a47c49-20250418-184351
  */
 
 package mqcloud
@@ -29,7 +29,7 @@ func DataSourceIbmMqcloudQueueManager() *schema.Resource {
 			"service_instance_guid": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The GUID that uniquely identifies the MQaaS service instance.",
+				Description: "The GUID that uniquely identifies the MQ SaaS service instance.",
 			},
 			"name": {
 				Type:        schema.TypeString,
@@ -127,14 +127,7 @@ func DataSourceIbmMqcloudQueueManager() *schema.Resource {
 func dataSourceIbmMqcloudQueueManagerRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	mqcloudClient, err := meta.(conns.ClientSession).MqcloudV1()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_mqcloud_queue_manager", "read")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		return tfErr.GetDiag()
-	}
-
-	err = checkSIPlan(d, meta)
-	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Read Queue Manager failed: %s", err.Error()), "(Data) ibm_mqcloud_queue_manager", "read")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_mqcloud_queue_manager", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -188,18 +181,15 @@ func dataSourceIbmMqcloudQueueManagerRead(context context.Context, d *schema.Res
 
 	mapSlice := []map[string]interface{}{}
 	for _, modelItem := range allItems {
-		modelItem := modelItem
 		modelMap, err := DataSourceIbmMqcloudQueueManagerQueueManagerDetailsToMap(&modelItem) // #nosec G601
 		if err != nil {
-			tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_mqcloud_queue_manager", "read")
-			return tfErr.GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_mqcloud_queue_manager", "read", "QueueManagers-to-map").GetDiag()
 		}
 		mapSlice = append(mapSlice, modelMap)
 	}
 
 	if err = d.Set("queue_managers", mapSlice); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting queue_managers %s", err), "(Data) ibm_mqcloud_queue_manager", "read")
-		return tfErr.GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting queue_managers %s", err), "(Data) ibm_mqcloud_queue_manager", "read", "queue_managers-set").GetDiag()
 	}
 
 	return nil

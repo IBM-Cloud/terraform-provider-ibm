@@ -31,6 +31,7 @@ resource "ibm_sm_arbitrary_secret" "sm_arbitrary_secret" {
 Review the argument reference that you can specify for your resource.
 
 * `custom_metadata` - (Optional, Map) The secret metadata that a user can customize.
+  * Constraints: Nested JSONs are supported in Terraform only as string-encoded JSONs.
 * `description` - (Optional, String) An extended description of your secret.To protect your privacy, do not use personal data, such as your name or location, as a description for your secret group.
   * Constraints: The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/(.*?)/`.
 * `endpoint_type` - (Optional, String) - The endpoint type. If not provided the endpoint type is determined by the `visibility` argument provided in the provider configuration.
@@ -46,6 +47,8 @@ Review the argument reference that you can specify for your resource.
   * Constraints: The maximum length is `100000` characters. The minimum length is `0` characters. The value must match regular expression `/(.*?)/`.
 * `secret_group_id` - (Optional, Forces new resource, String) A UUID identifier, or `default` secret group.
   * Constraints: The maximum length is `36` characters. The minimum length is `7` characters. The value must match regular expression `/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|default)$/`.
+* `version_custom_metadata` - (Map) The custom metadata of the current secret version.
+  * Constraints: Nested JSONs are supported in Terraform only as string-encoded JSONs.
 
 ## Attribute Reference
 
@@ -60,6 +63,7 @@ In addition to all argument references listed, you can access the following attr
 * `downloaded` - (Boolean) Indicates whether the secret data that is associated with a secret version was retrieved in a call to the service API.
 * `locks_total` - (Integer) The number of locks of the secret.
   * Constraints: The maximum value is `1000`. The minimum value is `0`.
+* `retrieved_at` - (String) The date when the data of the secret was last retrieved. The date format follows RFC 3339. Epoch date if there is no record of secret data retrieval.
 * `secret_type` - (String) The secret type. Supported types are arbitrary, certificates (imported, public, and private), IAM credentials, key-value, and user credentials.
   * Constraints: Allowable values are: `arbitrary`, `imported_cert`, `public_cert`, `iam_credentials`, `kv`, `username_password`, `private_cert`.
 * `state` - (Integer) The secret state that is based on NIST SP 800-57. States are integers and correspond to the `Pre-activation = 0`, `Active = 1`,  `Suspended = 2`, `Deactivated = 3`, and `Destroyed = 5` values.

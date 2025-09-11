@@ -211,6 +211,19 @@ func testAccCheckIBMCmVersionComplexConfig(zipurl string, targetVersion string, 
 				label = "Standard"
 				index = 1
 			}
+			configuration {
+				default_value = "foo"
+				description = "The name to pass to the template."
+				key = "name"
+				type = "string"
+				hidden = false
+				required = false
+				value_constraints {
+					type  = "regex"
+					value = "*"
+					description = "Invalid name input"
+				}
+			}
 			install {
 				instructions = "%s"
 			}

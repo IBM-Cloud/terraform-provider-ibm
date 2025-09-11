@@ -79,16 +79,16 @@ func testAccCheckIbmAppConfigEnvironmentConfigBasic(name, envName, environmentID
 		 }`, name, envName, environmentID, description, colorCode)
 }
 func getAppConfigClient(meta interface{}, guid string) (*appconfigurationv1.AppConfigurationV1, error) {
-	appconfigClient, err := meta.(conns.ClientSession).AppConfigurationV1()
-	if err != nil {
-		return nil, err
-	}
 	bluemixSession, err := meta.(conns.ClientSession).BluemixSession()
 	if err != nil {
 		return nil, err
 	}
-	appConfigURL := fmt.Sprintf("https://%s.apprapp.cloud.ibm.com/apprapp/feature/v1/instances/%s", bluemixSession.Config.Region, guid)
-	url := conns.EnvFallBack([]string{"IBMCLOUD_APP_CONFIG_API_ENDPOINT"}, appConfigURL)
+	appConfigURL := fmt.Sprintf("https://%s.apprapp.cloud.ibm.com", bluemixSession.Config.Region)
+	url := fmt.Sprintf("%s/apprapp/feature/v1/instances/%s", conns.EnvFallBack([]string{"IBMCLOUD_APP_CONFIG_API_ENDPOINT"}, appConfigURL), guid)
+	appconfigClient, err := meta.(conns.ClientSession).AppConfigurationV1()
+	if err != nil {
+		return nil, err
+	}
 	appconfigClient.Service.Options.URL = url
 	return appconfigClient, nil
 }

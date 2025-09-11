@@ -352,7 +352,11 @@ func dataSourceIbmSmPrivateCertificateConfigurationRootCARead(context context.Co
 		return tfErr.GetDiag()
 	}
 
-	privateCertificateConfigurationRootCA := privateCertificateConfigurationRootCAIntf.(*secretsmanagerv2.PrivateCertificateConfigurationRootCA)
+	privateCertificateConfigurationRootCA, ok := privateCertificateConfigurationRootCAIntf.(*secretsmanagerv2.PrivateCertificateConfigurationRootCA)
+	if !ok {
+		tfErr := flex.TerraformErrorf(nil, fmt.Sprintf("Wrong configuration type: The provided configuration is not a Private Certificate Root CA configuration."), fmt.Sprintf("(Data) %s", PrivateCertConfigRootCAResourceName), "read")
+		return tfErr.GetDiag()
+	}
 
 	d.SetId(fmt.Sprintf("%s/%s/%s", region, instanceId, *getConfigurationOptions.Name))
 

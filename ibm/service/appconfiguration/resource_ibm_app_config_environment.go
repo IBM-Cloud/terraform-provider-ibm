@@ -6,7 +6,6 @@ package appconfiguration
 import (
 	"fmt"
 
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/appconfiguration-go-admin-sdk/appconfigurationv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -71,21 +70,6 @@ func ResourceIBMAppConfigEnvironment() *schema.Resource {
 	}
 }
 
-func getAppConfigClient(meta interface{}, guid string) (*appconfigurationv1.AppConfigurationV1, error) {
-	appconfigClient, err := meta.(conns.ClientSession).AppConfigurationV1()
-	if err != nil {
-		return nil, err
-	}
-	bluemixSession, err := meta.(conns.ClientSession).BluemixSession()
-	if err != nil {
-		return nil, err
-	}
-	appConfigURL := fmt.Sprintf("https://%s.apprapp.cloud.ibm.com/apprapp/feature/v1/instances/%s", bluemixSession.Config.Region, guid)
-	url := conns.EnvFallBack([]string{"IBMCLOUD_APP_CONFIG_API_ENDPOINT"}, appConfigURL)
-	appconfigClient.Service.Options.URL = url
-	return appconfigClient, nil
-}
-
 func resourceEnvironmentCreate(d *schema.ResourceData, meta interface{}) error {
 	guid := d.Get("guid").(string)
 	appconfigClient, err := getAppConfigClient(meta, guid)
@@ -102,7 +86,7 @@ func resourceEnvironmentCreate(d *schema.ResourceData, meta interface{}) error {
 	if _, ok := GetFieldExists(d, "tags"); ok {
 		options.SetTags(d.Get("tags").(string))
 	}
-	if _, ok := GetFieldExists(d, "color_code"); ok {
+	if _, ok := GetFieldExists(d, "color_code"); ok && d.Get("color_code").(string) != "" {
 		options.SetColorCode(d.Get("color_code").(string))
 	}
 	_, response, err := appconfigClient.CreateEnvironment(options)
@@ -136,7 +120,7 @@ func resourceEnvironmentUpdate(d *schema.ResourceData, meta interface{}) error {
 		if _, ok := GetFieldExists(d, "tags"); ok {
 			options.SetTags(d.Get("tags").(string))
 		}
-		if _, ok := GetFieldExists(d, "color_code"); ok {
+		if _, ok := GetFieldExists(d, "color_code"); ok && d.Get("color_code").(string) != "" {
 			options.SetColorCode(d.Get("color_code").(string))
 		}
 

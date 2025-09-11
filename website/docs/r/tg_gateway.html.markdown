@@ -27,6 +27,7 @@ Review the argument references that you can specify for your resource.
 - `location` - (Optional, Forces new resource, Integer) The location of the transit gateway. For example, `us-south`.
 - `name` - (Required, String) The unique user-defined name for the gateway. For example, `myGateway`.
 - `global` - (Required, Bool) The gateways with global routing (true) to connect to the networks outside their associated region.
+- `gre_enhanced_route_propagation` - (Optional, Bool) Allows route propagation across all GREs connected to the same transit gateway. This affects connections on the gateway of type redundant_gre, unbound_gre_tunnel and gre_tunnel.
 - `resource_group` -  (Optional, Forces new resource, String) The resource group ID where the transit gateway to be created.
 
 ## Attribute reference

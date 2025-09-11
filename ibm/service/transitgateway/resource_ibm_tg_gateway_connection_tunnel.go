@@ -369,7 +369,10 @@ func resourceIBMTransitGatewayConnectionRgreTunnelUpdate(d *schema.ResourceData,
 	if d.HasChange(tgconTunnelName) {
 		if d.Get(tgconTunnelName) != nil {
 			name := d.Get(tgconTunnelName).(string)
-			updateTransitGatewayConnectionOptions.Name = &name
+			gwTunnelPatch := map[string]interface{}{
+				"name": &name,
+			}
+			updateTransitGatewayConnectionOptions.SetTransitGatewayTunnelPatch(gwTunnelPatch)
 		}
 	}
 

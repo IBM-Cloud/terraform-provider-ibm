@@ -81,3 +81,103 @@ func testAccCheckIBMISInstanceVolumeAttsDataSourceConfig(vpcname, subnetname, ss
 	 
 	  `, vpcname, subnetname, acc.ISZoneName, sshname, publicKey, name, acc.IsImage, acc.InstanceProfileName, acc.ISZoneName)
 }
+
+func TestAccIBMISInstanceVolumeAttsDataSource_nodevice(t *testing.T) {
+	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tf-instance-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tf-subnet-%d", acctest.RandIntRange(10, 100))
+
+	publicKey := strings.TrimSpace(`
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
+`)
+	sshname := fmt.Sprintf("tf-ssh-%d", acctest.RandIntRange(10, 100))
+	action1 := "stop"
+	action2 := "start"
+	resName := "data.ibm_is_instance_volume_attachments.ds_vol_atts"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISInstanceVolumeAttachmentsDataSourceNodeviceConfig(
+					vpcname, subnetname, sshname, publicKey, name, action1,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(resName, "volume_attachments.0.name"),
+					resource.TestCheckResourceAttrSet(resName, "volume_attachments.0.href"),
+					resource.TestCheckResourceAttrSet(resName, "volume_attachments.0.volume_attachment_id"),
+					resource.TestCheckResourceAttrSet(resName, "volume_attachments.0.bandwidth"),
+					resource.TestCheckResourceAttr(resName, "volume_attachments.0.type", "boot"),
+				),
+			},
+			{
+				Config: testAccCheckIBMISInstanceVolumeAttachmentsDataSourceNodeviceConfig(
+					vpcname, subnetname, sshname, publicKey, name, action2,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(resName, "volume_attachments.0.name"),
+					resource.TestCheckResourceAttrSet(resName, "volume_attachments.0.href"),
+					resource.TestCheckResourceAttrSet(resName, "volume_attachments.0.volume_attachment_id"),
+					resource.TestCheckResourceAttrSet(resName, "volume_attachments.0.bandwidth"),
+					resource.TestCheckResourceAttrSet(resName, "volume_attachments.0.device"),
+					resource.TestCheckResourceAttrSet(resName, "volume_attachments.1.device"),
+					resource.TestCheckResourceAttr(resName, "volume_attachments.1.type", "data"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMISInstanceVolumeAttachmentsDataSourceNodeviceConfig(vpcname, subnetname, sshname, publicKey, name, action string) string {
+	return fmt.Sprintf(`
+resource "ibm_is_vpc" "testacc_vpc" {
+  name = "%s"
+}
+
+resource "ibm_is_subnet" "testacc_subnet" {
+  name                     = "%s"
+  vpc                      = ibm_is_vpc.testacc_vpc.id
+  zone                     = "%s"
+  total_ipv4_address_count = 16
+}
+
+resource "ibm_is_ssh_key" "testacc_sshkey" {
+  name       = "%s"
+  public_key = "%s"
+}
+
+resource "ibm_is_instance" "testacc_instance" {
+  name    = "%s"
+  image   = "%s"
+  profile = "%s"
+
+  primary_network_interface {
+    subnet = ibm_is_subnet.testacc_subnet.id
+  }
+
+  vpc  = ibm_is_vpc.testacc_vpc.id
+  zone = "%s"
+  keys = [ibm_is_ssh_key.testacc_sshkey.id]
+
+  // Add second (data) volume so .1 is valid
+  volume_prototypes {
+    name                             = "%s-data-vol"
+    delete_volume_on_instance_delete = true
+    volume_name                      = "%s-data-vol"
+    volume_capacity                  = 20
+    volume_profile                   = "general-purpose"
+  }
+}
+resource "ibm_is_instance_action" "is_instance_action" {
+	depends_on = [ibm_is_instance.testacc_instance]
+	action = "%s"
+	instance = ibm_is_instance.testacc_instance.id
+}
+data "ibm_is_instance_volume_attachments" "ds_vol_atts" {
+  depends_on = [ibm_is_instance_action.is_instance_action]
+  instance = ibm_is_instance.testacc_instance.id
+}
+`, vpcname, subnetname, acc.ISZoneName, sshname, publicKey, name,
+		acc.IsImage, acc.InstanceProfileName, acc.ISZoneName, name, name, action)
+}

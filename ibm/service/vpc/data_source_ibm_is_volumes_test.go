@@ -60,6 +60,27 @@ func TestAccIBMIsVolumesDataSourceSdpBasic(t *testing.T) {
 		},
 	})
 }
+func TestAccIBMIsVolumesDataSourceStorageGenerationBasic(t *testing.T) {
+	name := fmt.Sprintf("tf-vol-%d", acctest.RandIntRange(10, 100))
+	name1 := fmt.Sprintf("tf-vol2-%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMIsVolumesDataSourceStorageGenerationConfig(name, name1),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("data.ibm_is_volumes.is_volumes", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_volumes.is_volumes", "volumes.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_volumes.is_volumes", "volumes.0.name"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_volumes.is_volumes", "volumes.0.storage_generation"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_volumes.is_volumes", "volumes.1.name"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_volumes.is_volumes", "volumes.1.storage_generation"),
+				),
+			},
+		},
+	})
+}
 func TestAccIBMIsVolumesFromSnapshotDataSourceBasic(t *testing.T) {
 	resName := "data.ibm_is_volumes.is_volumes"
 	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
@@ -175,6 +196,13 @@ func testAccCheckIBMIsVolumesDataSourceConfigBasic() string {
 func testAccCheckIBMIsVolumesDataSourceSdpConfig() string {
 	return fmt.Sprintf(`
 		data "ibm_is_volumes" "is_volumes" {
+		}
+	`)
+}
+func testAccCheckIBMIsVolumesDataSourceStorageGenerationConfig(name, name1 string) string {
+	return testAccCheckIBMISVolumeStorageConfig(name, name1) + fmt.Sprintf(`
+		data "ibm_is_volumes" "is_volumes" {
+			depends_on = [ibm_is_volume.storage, ibm_is_volume.storage2]
 		}
 	`)
 }

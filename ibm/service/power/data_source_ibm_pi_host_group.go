@@ -5,14 +5,15 @@ package power
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 )
 
 func DataSourceIBMPIHostGroup() *schema.Resource {
@@ -69,18 +70,21 @@ func DataSourceIBMPIHostGroup() *schema.Resource {
 	}
 }
 
-func dataSourceIBMPIHostGroupRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMPIHostGroupRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "(Data) ibm_pi_host_group", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
 	hostGroupID := d.Get(Arg_HostGroupID).(string)
 	client := instance.NewIBMPIHostGroupsClient(ctx, sess, cloudInstanceID)
 	hostGroup, err := client.GetHostGroup(hostGroupID)
 	if err != nil {
-		log.Printf("[DEBUG] get host group %v", err)
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetHostGroup failed: %s", err.Error()), "(Data) ibm_pi_host_group", "read")
+		log.Printf("[DEBUG] get host group \n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(hostGroup.ID)

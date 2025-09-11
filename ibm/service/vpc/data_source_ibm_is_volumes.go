@@ -411,6 +411,11 @@ func DataSourceIBMIsVolumes() *schema.Resource {
 								Type: schema.TypeString,
 							},
 						},
+						"storage_generation": {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "storage_generation indicates which generation the profile family belongs to. For the custom and tiered profiles, this value is 1.",
+						},
 						isVolumesStatus: &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -798,6 +803,9 @@ func dataSourceVolumeCollectionVolumesToMap(volumesItem vpcv1.Volume, meta inter
 	}
 	if volumesItem.Iops != nil {
 		volumesMap[isVolumesIops] = volumesItem.Iops
+	}
+	if volumesItem.StorageGeneration != nil {
+		volumesMap["storage_generation"] = volumesItem.StorageGeneration
 	}
 	if volumesItem.Name != nil {
 		volumesMap[isVolumesName] = volumesItem.Name

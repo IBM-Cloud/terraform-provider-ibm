@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
@@ -336,6 +337,11 @@ func resourceIBMisVirtualEndpointGatewayCreate(context context.Context, d *schem
 	vpcID := d.Get(isVirtualEndpointGatewayVpcID).(string)
 	vpcOpt := &vpcv1.VPCIdentity{
 		ID: core.StringPtr(vpcID),
+	}
+	if vpcID != "" {
+		isVPCKey := "vpe_vpc_key_" + vpcID
+		conns.IbmMutexKV.Lock(isVPCKey)
+		defer conns.IbmMutexKV.Unlock(isVPCKey)
 	}
 
 	// update option

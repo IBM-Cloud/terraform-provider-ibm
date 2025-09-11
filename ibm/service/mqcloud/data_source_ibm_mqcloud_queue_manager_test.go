@@ -1,8 +1,8 @@
-// Copyright IBM Corp. 2024 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.95.2-120e65bc-20240924-152329
+ * IBM OpenAPI Terraform Generator Version: 3.104.0-b4a47c49-20250418-184351
  */
 
 package mqcloud_test
@@ -23,7 +23,6 @@ import (
 )
 
 func TestAccIbmMqcloudQueueManagerDataSourceBasic(t *testing.T) {
-	t.Parallel()
 	queueManagerDetailsServiceInstanceGuid := acc.MqcloudDeploymentID
 	queueManagerDetailsName := fmt.Sprintf("tf_queue_manager_ds_basic%d", acctest.RandIntRange(10, 100))
 	queueManagerDetailsLocation := acc.MqCloudQueueManagerLocation
@@ -49,7 +48,6 @@ func TestAccIbmMqcloudQueueManagerDataSourceBasic(t *testing.T) {
 }
 
 func TestAccIbmMqcloudQueueManagerDataSourceAllArgs(t *testing.T) {
-	t.Parallel()
 	queueManagerDetailsServiceInstanceGuid := acc.MqcloudDeploymentID
 	queueManagerDetailsName := fmt.Sprintf("tf_queue_manager_ds_allargs%d", acctest.RandIntRange(10, 100))
 	queueManagerDetailsDisplayName := queueManagerDetailsName
@@ -124,14 +122,13 @@ func testAccCheckIbmMqcloudQueueManagerDataSourceConfig(queueManagerDetailsServi
 }
 
 func TestDataSourceIbmMqcloudQueueManagerQueueManagerDetailsToMap(t *testing.T) {
-	t.Parallel()
 	checkResult := func(result map[string]interface{}) {
 		model := make(map[string]interface{})
 		model["id"] = "testString"
 		model["name"] = "testString"
 		model["display_name"] = "testString"
 		model["location"] = "reserved-eu-de-cluster-f884"
-		model["size"] = "xsmall"
+		model["size"] = "small"
 		model["status_uri"] = "testString"
 		model["version"] = "9.3.2_2"
 		model["web_console_url"] = "testString"
@@ -151,7 +148,7 @@ func TestDataSourceIbmMqcloudQueueManagerQueueManagerDetailsToMap(t *testing.T) 
 	model.Name = core.StringPtr("testString")
 	model.DisplayName = core.StringPtr("testString")
 	model.Location = core.StringPtr("reserved-eu-de-cluster-f884")
-	model.Size = core.StringPtr("xsmall")
+	model.Size = core.StringPtr("small")
 	model.StatusURI = core.StringPtr("testString")
 	model.Version = core.StringPtr("9.3.2_2")
 	model.WebConsoleURL = core.StringPtr("testString")

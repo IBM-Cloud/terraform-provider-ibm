@@ -1,8 +1,8 @@
-// Copyright IBM Corp. 2024 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.96.0-d6dec9d7-20241008-212902
+ * IBM OpenAPI Terraform Generator Version: 3.104.0-b4a47c49-20250418-184351
  */
 
 package mqcloud_test
@@ -22,7 +22,6 @@ import (
 )
 
 func TestAccIbmMqcloudVirtualPrivateEndpointGatewaysDataSourceBasic(t *testing.T) {
-	t.Parallel()
 	virtualPrivateEndpointGatewayDetailsServiceInstanceGuid := acc.MqcloudCapacityID
 	virtualPrivateEndpointGatewayDetailsName := fmt.Sprintf("tf-name-%d", acctest.RandIntRange(10, 100))
 	virtualPrivateEndpointGatewayDetailsTargetCrn := acc.MqCloudVirtualPrivateEndPointTargetCrn
@@ -46,7 +45,6 @@ func TestAccIbmMqcloudVirtualPrivateEndpointGatewaysDataSourceBasic(t *testing.T
 }
 
 func TestAccIbmMqcloudVirtualPrivateEndpointGatewaysDataSourceAllArgs(t *testing.T) {
-	t.Parallel()
 	virtualPrivateEndpointGatewayDetailsServiceInstanceGuid := acc.MqcloudCapacityID
 	virtualPrivateEndpointGatewayDetailsTrustedProfile := acc.MqCloudVirtualPrivateEndPointTrustedProfile
 	virtualPrivateEndpointGatewayDetailsName := fmt.Sprintf("tf-name-%d", acctest.RandIntRange(10, 100))
@@ -109,7 +107,6 @@ func testAccCheckIbmMqcloudVirtualPrivateEndpointGatewaysDataSourceConfig(virtua
 }
 
 func TestDataSourceIbmMqcloudVirtualPrivateEndpointGatewaysVirtualPrivateEndpointGatewayDetailsToMap(t *testing.T) {
-	t.Parallel()
 	checkResult := func(result map[string]interface{}) {
 		model := make(map[string]interface{})
 		model["href"] = "testString"

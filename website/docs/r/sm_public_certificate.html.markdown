@@ -45,6 +45,7 @@ Review the argument reference that you can specify for your resource.
 * `common_name` - (Optional, Forces new resource, String) The Common Name (AKA CN) represents the server name protected by the SSL certificate.
   * Constraints: The maximum length is `64` characters. The minimum length is `4` characters. The value must match regular expression `/^(\\*\\.)?(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9])\\.?$/`.
 * `custom_metadata` - (Optional, Map) The secret metadata that a user can customize.
+    * Constraints: Nested JSONs are supported in Terraform only as string-encoded JSONs.
 * `description` - (Optional, String) An extended description of your secret.To protect your privacy, do not use personal data, such as your name or location, as a description for your secret group.
   * Constraints: The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/(.*?)/`.
 * `dns` - (Required, Forces new resource, String) The name of the DNS provider configuration.
@@ -72,6 +73,8 @@ Nested scheme for **akamai**:
       * `host` - (Optional, Forces new resource, String) Akamai's authentication credentials.
       * `access_token` - (Optional, Forces new resource, String) Akamai's authentication credentials.
       * `client_token` - (Optional, Forces new resource, String) Akamai's authentication credentials.
+* `version_custom_metadata` - (Map) The custom metadata of the current secret version.
+    * Constraints: Nested JSONs are supported in Terraform only as string-encoded JSONs.
 
 ## Attribute Reference
 
@@ -115,6 +118,7 @@ Nested scheme for **issuance_info**:
   * Constraints: The maximum value is `1000`. The minimum value is `0`.
 * `private_key` - (Forces new resource, String) (Optional) The PEM-encoded private key to associate with the certificate.
   * Constraints: The maximum length is `100000` characters. The minimum length is `50` characters. The value must match regular expression `/^(-{5}BEGIN.+?-{5}[\\s\\S]+-{5}END.+?-{5})$/`.
+* `retrieved_at` - (String) The date when the data of the secret was last retrieved. The date format follows RFC 3339. Epoch date if there is no record of secret data retrieval.
 * `serial_number` - (String) The unique serial number that was assigned to a certificate by the issuing certificate authority.
   * Constraints: The maximum length is `64` characters. The minimum length is `2` characters. The value must match regular expression `/[^a-fA-F0-9]/`.
 * `secret_type` - (String) The secret type. Supported types are arbitrary, certificates (imported, public, and private), IAM credentials, key-value, and user credentials.

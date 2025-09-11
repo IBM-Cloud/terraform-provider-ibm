@@ -47,6 +47,7 @@ In addition to all argument references listed, you can access the following attr
     * Constraints: The maximum length is `512` characters. The minimum length is `9` characters. The value must match regular expression `/^crn:v[0-9](:([A-Za-z0-9-._~!$&'()*+,;=@\/]|%[0-9A-Z]{2})*){8}$/`.
 
 * `custom_metadata` - (Map) The secret metadata that a user can customize.
+  * Constraints: Nested JSONs are supported in Terraform only as string-encoded JSONs.
 
 * `description` - (String) An extended description of your secret.To protect your privacy, do not use personal data, such as your name or location, as a description for your secret group.
     * Constraints: The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/(.*?)/`.
@@ -63,6 +64,8 @@ In addition to all argument references listed, you can access the following attr
     * Constraints: The maximum length is `256` characters. The minimum length is `2` characters.
 
 * `next_rotation_date` - (String) The date that the secret is scheduled for automatic rotation.The service automatically creates a new version of the secret on its next rotation date. This field exists only for secrets that have an existing rotation policy.
+
+* `retrieved_at` - (String) The date when the data of the secret was last retrieved. The date format follows RFC 3339. Epoch date if there is no record of secret data retrieval.
 
 * `rotation` - (List) Determines whether Secrets Manager rotates your secrets automatically.
   Nested scheme for **rotation**:

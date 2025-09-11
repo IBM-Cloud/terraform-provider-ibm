@@ -62,6 +62,19 @@ resource "ibm_cm_version" "cm_version" {
 		label = "label"
 		index = 1
   }
+  configuration {
+    default_value = "foo"
+    description = "The name to pass to the template."
+    key = "name"
+    type = "string"
+    hidden = false
+    required = false
+    value_constraints {
+      type = "regex"
+      value = "*"
+      description = "Invalid name input updated"
+    }
+  }
 }
 ```
 
@@ -94,7 +107,12 @@ Nested scheme for **configuration**:
 	* `required` - (Optional, Boolean) Is key required to install.
 	* `type` - (Optional, String) Value type (string, boolean, int).
 	* `type_metadata` - (Optional, String) The original type, as found in the source being onboarded.
-	* `value_constraint` - (Optional, String) Constraint associated with value, e.g., for string type - regx:[a-z].
+	* `value_constraint` - (Optional, String) This field is deprecated. Use value_constraints instead.
+	* `value_constraints` - (Optional, List) Validation rules for this input value.
+	Nested scheme for **value_constraints**:
+		* `description` - (Optional, String) The value to display if the inptu value does not match the specified constraint.
+		* `type` - (Optional, String) Type of constraint.
+		* `value` - (Optional, String) Contstraint value. For type regex, this is a regular expression in Javascript notation.
 * `deprecate` - (Optional, Boolean) Specify if this version should be deprecated.
 * `flavor` - (Optional, Forces new resource, List) Version Flavor Information.  Only supported for Product kind Solution.
 Nested scheme for **flavor**:
@@ -240,6 +258,11 @@ Nested scheme for **configuration**:
 	* `type` - (String) Value type (string, boolean, int).
 	* `type_metadata` - (String) The original type, as found in the source being onboarded.
 	* `value_constraint` - (String) Constraint associated with value, e.g., for string type - regx:[a-z].
+	* `value_constraints` - (List) Validation rules for this input value.
+	Nested scheme for **value_constraints**:
+		* `description` - (String) The value to display if the inptu value does not match the specified constraint.
+		* `type` - (String) Type of constraint.
+		* `value` - (String) Contstraint value. For type regex, this is a regular expression in Javascript notation.
 * `created` - (String) The date and time this version was created.
 * `crn` - (String) Version's CRN.
 * `deprecate_pending` - (List) Deprecation information for an Offering.
