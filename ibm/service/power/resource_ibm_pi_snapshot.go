@@ -228,7 +228,7 @@ func resourceIBMPISnapshotUpdate(ctx context.Context, d *schema.ResourceData, me
 	if d.HasChange(Arg_SnapShotName) || d.HasChange(Arg_Description) {
 		name := d.Get(Arg_SnapShotName).(string)
 		description := d.Get(Arg_Description).(string)
-		snapshotBody := &models.SnapshotUpdate{Name: name, Description: description}
+		snapshotBody := &models.SnapshotUpdate{Name: &name, Description: &description}
 
 		_, err := client.Update(snapshotID, snapshotBody)
 		if err != nil {

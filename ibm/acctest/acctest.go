@@ -243,13 +243,16 @@ var (
 	Pi_network_id                     string
 	Pi_network_interface_id           string
 	Pi_network_name                   string
+	Pi_network_peer_id                string
 	Pi_network_security_group_id      string
 	Pi_network_security_group_rule_id string
+	Pi_peer_interface_id              string
 	Pi_placement_group_name           string
 	Pi_remote_id                      string
 	Pi_remote_type                    string
 	Pi_replication_volume_name        string
 	Pi_resource_group_id              string
+	Pi_route_filter_id                string
 	Pi_route_id                       string
 	Pi_sap_image                      string
 	Pi_sap_profile_id                 string
@@ -1204,6 +1207,23 @@ func init() {
 	if Pi_network_id == "" {
 		Pi_network_id = "terraform-test-power"
 		fmt.Println("[INFO] Set the environment variable PI_NETWORK_ID for testing ibm_pi_network_interface resource else it is set to default value 'terraform-test-power'")
+	}
+
+	Pi_network_peer_id = os.Getenv("PI_NETWORK_PEER_ID")
+	if Pi_network_peer_id == "" {
+		Pi_network_peer_id = "terraform-test-power"
+		fmt.Println("[INFO] Set the environment variable PI_NETWORK_ID for testing ibm_pi_network_interface resource else it is set to default value 'terraform-test-power'")
+	}
+
+	Pi_peer_interface_id = os.Getenv("PI_PEER_INTERFACE_ID")
+	if Pi_peer_interface_id == "" {
+		Pi_peer_interface_id = "terraform-test-power"
+		fmt.Println("[INFO] Set the environment variable PI_NETWORK_ID for testing ibm_pi_network_interface resource else it is set to default value 'terraform-test-power'")
+	}
+	Pi_route_filter_id = os.Getenv("PI_ROUTE_FILTER_ID")
+	if Pi_route_filter_id == "" {
+		Pi_route_filter_id = "terraform-test-power"
+		fmt.Println("[INFO] Set the environment variable PI_ROUTE_FILTER_ID for testing ibm_pi_network_peer_route_filter resource else it is set to default value 'terraform-test-power'")
 	}
 	Pi_network_interface_id = os.Getenv("PI_NETWORK_INTERFACE_ID")
 	if Pi_network_interface_id == "" {
