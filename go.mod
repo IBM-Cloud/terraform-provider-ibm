@@ -238,3 +238,5 @@ exclude (
 	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
 	k8s.io/client-go v12.0.0+incompatible
 )
+
+replace github.com/IBM/logs-go-sdk v0.4.0 => ../../IBM/logs-go-sdk

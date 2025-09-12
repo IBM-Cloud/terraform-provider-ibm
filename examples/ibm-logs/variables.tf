@@ -90,6 +90,11 @@ variable "logs_policy_priority" {
   type        = string
   default     = "type_high"
 }
+variable "logs_policy_enabled" {
+  description = "Flag to enable or disable a policy. This flag is supported only while updating a policy, since the policies are always enabled during creation."
+  type        = bool
+  default     = true
+}
 
 // Resource arguments for logs_dashboard
 variable "logs_dashboard_href" {
@@ -161,6 +166,106 @@ variable "logs_view_folder_name" {
   default     = "My Folder"
 }
 
+// Resource arguments for logs_data_access_rule
+variable "logs_data_access_rule_display_name" {
+  description = "Data Access Rule Display Name."
+  type        = string
+  default     = "Test Data Access Rule"
+}
+variable "logs_data_access_rule_description" {
+  description = "Optional Data Access Rule Description."
+  type        = string
+  default     = "Data Access Rule intended for testing"
+}
+variable "logs_data_access_rule_default_expression" {
+  description = "Default expression to use when no filter matches the query."
+  type        = string
+  default     = "<v1>true"
+}
+
+// Resource arguments for logs_enrichment
+variable "logs_enrichment_field_name" {
+  description = "The enrichment field name."
+  type        = string
+  default     = "ip"
+}
+
+// Resource arguments for logs_data_usage_metrics
+variable "logs_data_usage_metrics_enabled" {
+  description = "The \"enabled\" parameter for metrics export."
+  type        = bool
+  default     = true
+}
+
+// Resource arguments for logs_stream
+variable "logs_stream_name" {
+  description = "The name of the Event stream."
+  type        = string
+  default     = "Live Screen"
+}
+variable "logs_stream_is_active" {
+  description = "Whether the Event stream is active."
+  type        = bool
+  default     = true
+}
+variable "logs_stream_dpxl_expression" {
+  description = "The DPXL expression of the Event stream."
+  type        = string
+  default     = "<v1>contains(kubernetes.labels.CX_AZ, 'eu-west-1')"
+}
+variable "logs_stream_compression_type" {
+  description = "The compression type of the stream."
+  type        = string
+  default     = "gzip"
+}
+
+// Resource arguments for logs_alert_definition
+variable "logs_alert_definition_name" {
+  description = "The name of the alert definition."
+  type        = string
+  default     = "Unique count alert"
+}
+variable "logs_alert_definition_description" {
+  description = "A detailed description of what the alert monitors and when it triggers."
+  type        = string
+  default     = "Example of unique count alert from terraform"
+}
+variable "logs_alert_definition_enabled" {
+  description = "Whether the alert is currently active and monitoring."
+  type        = bool
+  default     = true
+}
+variable "logs_alert_definition_priority" {
+  description = "The priority of the alert definition."
+  type        = string
+  default     = "p1"
+}
+variable "logs_alert_definition_type" {
+  description = "Alert type."
+  type        = string
+  default     = "flow"
+}
+variable "logs_alert_definition_group_by_keys" {
+  description = "Keys used to group and aggregate alert data."
+  type        = list(string)
+  default     = ["key1","key2"]
+}
+variable "logs_alert_definition_entity_labels" {
+  description = "Labels used to identify and categorize the alert entity."
+  type        = map(string)
+  default     = {"key":"value"}
+}
+variable "logs_alert_definition_phantom_mode" {
+  description = "Whether the alert is in phantom mode (creating incidents or not)."
+  type        = bool
+  default     = false
+}
+variable "logs_alert_definition_deleted" {
+  description = "Whether the alert has been marked as deleted."
+  type        = bool
+  default     = false
+}
+
 // Data source arguments for logs_alert
 variable "data_logs_alert_logs_alert_id" {
   description = "Alert ID."
@@ -218,6 +323,8 @@ variable "data_logs_dashboard_dashboard_id" {
 }
 
 
+
+
 // Data source arguments for logs_e2m
 variable "data_logs_e2m_logs_e2m_id" {
   description = "ID of e2m to be deleted."
@@ -241,3 +348,40 @@ variable "data_logs_view_folder_logs_view_folder_id" {
   default     = 3dc02998-0b50-4ea8-b68a-4779d716fa1f
 }
 
+
+// Data source arguments for logs_data_access_rule
+variable "data_logs_data_access_rule_logs_data_access_rule_id" {
+  description = "Array of data access rule IDs."
+  type        = list()
+  default     = ["4f966911-4bda-407e-b069-477394effa59"]
+}
+
+// Data source arguments for logs_data_access_rules
+variable "logs_data_access_rules_logs_data_access_rules_id" {
+  description = "Array of data access rule IDs."
+  type        = list()
+  default     = ["4f966911-4bda-407e-b069-477394effa59"]
+}
+
+
+
+// Data source arguments for logs_data_usage_metrics
+variable "data_logs_data_usage_metrics_range" {
+  description = "Range of days to get the data usage for, by default it will use current month."
+  type        = string
+  default     = "last_week"
+}
+variable "data_logs_data_usage_metrics_query" {
+  description = "Query to filter daily or detailed the data usage, by default it will use daily one."
+  type        = string
+  default     = "daily"
+}
+
+
+
+// Data source arguments for logs_alert_definition
+variable "data_logs_alert_definition_logs_alert_definition_id" {
+  description = "Alert definition ID."
+  type        = 
+  default     = 3dc02998-0b50-4ea8-b68a-4779d716fa1f
+}

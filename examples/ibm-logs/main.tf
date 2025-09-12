@@ -113,14 +113,19 @@ resource "ibm_logs_outgoing_webhook" "logs_outgoing_webhook_instance" {
     region_id = "eu-es"
     source_id = "crn:v1:staging:public:logs:eu-gb:a/223af6f4260f42ebe23e95fcddd33cb7:63a3e4be-cb73-4f52-898e-8e93484a70a5::"
     source_name = "IBM Cloud Event Notifications"
+    endpoint_type = "private"
   }
 }
 
 // Provision logs_policy resource instance
 resource "ibm_logs_policy" "logs_policy_instance" {
+  before {
+    id = "9fab83da-98cb-4f18-a7ba-b6f0435c9673"
+  }
   name = var.logs_policy_name
   description = var.logs_policy_description
   priority = var.logs_policy_priority
+  enabled = var.logs_policy_enabled
   application_rule {
     rule_type_id = "includes"
     name = "Rule Name"
@@ -224,6 +229,9 @@ resource "ibm_logs_dashboard" "logs_dashboard_instance" {
           updated_at = "2021-01-01T00:00:00.000Z"
         }
       }
+      options {
+        internal = {  }
+      }
     }
   }
   variables {
@@ -242,9 +250,14 @@ resource "ibm_logs_dashboard" "logs_dashboard_instance" {
           all = {  }
         }
         values_order_direction = "desc"
+        selection_options {
+          selection_type = "single"
+        }
       }
     }
     display_name = "Service Name"
+    description = "description"
+    display_type = "nothing"
   }
   filters {
     source {
@@ -364,6 +377,377 @@ resource "ibm_logs_view_folder" "logs_view_folder_instance" {
   name = var.logs_view_folder_name
 }
 
+// Provision logs_data_access_rule resource instance
+resource "ibm_logs_data_access_rule" "logs_data_access_rule_instance" {
+  display_name = var.logs_data_access_rule_display_name
+  description = var.logs_data_access_rule_description
+  filters {
+    entity_type = "logs"
+    expression = "true"
+  }
+  default_expression = var.logs_data_access_rule_default_expression
+}
+
+// Provision logs_enrichment resource instance
+resource "ibm_logs_enrichment" "logs_enrichment_instance" {
+  field_name = var.logs_enrichment_field_name
+  enrichment_type {
+    geo_ip = {  }
+  }
+}
+
+// Provision logs_data_usage_metrics resource instance
+resource "ibm_logs_data_usage_metrics" "logs_data_usage_metrics_instance" {
+  enabled = var.logs_data_usage_metrics_enabled
+}
+
+// Provision logs_stream resource instance
+resource "ibm_logs_stream" "logs_stream_instance" {
+  name = var.logs_stream_name
+  is_active = var.logs_stream_is_active
+  dpxl_expression = var.logs_stream_dpxl_expression
+  compression_type = var.logs_stream_compression_type
+  ibm_event_streams {
+    brokers = "kafka01.example.com:9093"
+    topic = "live.screen"
+  }
+}
+
+// Provision logs_alert_definition resource instance
+resource "ibm_logs_alert_definition" "logs_alert_definition_instance" {
+  name = var.logs_alert_definition_name
+  description = var.logs_alert_definition_description
+  enabled = var.logs_alert_definition_enabled
+  priority = var.logs_alert_definition_priority
+  active_on {
+    day_of_week = ["sunday"]
+    start_time {
+      hours = 14
+      minutes = 30
+    }
+    end_time {
+      hours = 14
+      minutes = 30
+    }
+  }
+  type = var.logs_alert_definition_type
+  group_by_keys = var.logs_alert_definition_group_by_keys
+  incidents_settings {
+    notify_on = "triggered_and_resolved"
+    minutes = 30
+  }
+  notification_group {
+    group_by_keys = ["key1","key2"]
+    webhooks {
+      notify_on = "triggered_and_resolved"
+      integration {
+        integration_id = 123
+      }
+      minutes = 15
+    }
+  }
+  entity_labels = var.logs_alert_definition_entity_labels
+  phantom_mode = var.logs_alert_definition_phantom_mode
+  deleted = var.logs_alert_definition_deleted
+  logs_immediate {
+    logs_filter {
+      simple_filter {
+        lucene_query = "text:"error""
+        label_filters {
+          application_name {
+            value = "my-app"
+            operation = "starts_with"
+          }
+          subsystem_name {
+            value = "my-app"
+            operation = "starts_with"
+          }
+          severities = ["critical"]
+        }
+      }
+    }
+    notification_payload_filter = ["obj.field"]
+  }
+  logs_threshold {
+    logs_filter {
+      simple_filter {
+        lucene_query = "text:"error""
+        label_filters {
+          application_name {
+            value = "my-app"
+            operation = "starts_with"
+          }
+          subsystem_name {
+            value = "my-app"
+            operation = "starts_with"
+          }
+          severities = ["critical"]
+        }
+      }
+    }
+    undetected_values_management {
+      trigger_undetected_values = true
+      auto_retire_timeframe = "hours_24"
+    }
+    rules {
+      condition {
+        threshold = 100.0
+        time_window {
+          logs_time_window_specific_value = "hours_36"
+        }
+      }
+      override {
+        priority = "p1"
+      }
+    }
+    condition_type = "less_than"
+    notification_payload_filter = ["obj.field"]
+    evaluation_delay_ms = 60000
+  }
+  logs_ratio_threshold {
+    numerator {
+      simple_filter {
+        lucene_query = "text:"error""
+        label_filters {
+          application_name {
+            value = "my-app"
+            operation = "starts_with"
+          }
+          subsystem_name {
+            value = "my-app"
+            operation = "starts_with"
+          }
+          severities = ["critical"]
+        }
+      }
+    }
+    numerator_alias = "numerator_alias"
+    denominator {
+      simple_filter {
+        lucene_query = "text:"error""
+        label_filters {
+          application_name {
+            value = "my-app"
+            operation = "starts_with"
+          }
+          subsystem_name {
+            value = "my-app"
+            operation = "starts_with"
+          }
+          severities = ["critical"]
+        }
+      }
+    }
+    denominator_alias = "denominator_alias"
+    rules {
+      condition {
+        threshold = 10.0
+        time_window {
+          logs_ratio_time_window_specific_value = "hours_36"
+        }
+      }
+      override {
+        priority = "p1"
+      }
+    }
+    condition_type = "less_than"
+    notification_payload_filter = ["obj.field"]
+    group_by_for = "denumerator_only"
+    undetected_values_management {
+      trigger_undetected_values = true
+      auto_retire_timeframe = "hours_24"
+    }
+    ignore_infinity = true
+    evaluation_delay_ms = 60000
+  }
+  logs_time_relative_threshold {
+    logs_filter {
+      simple_filter {
+        lucene_query = "text:"error""
+        label_filters {
+          application_name {
+            value = "my-app"
+            operation = "starts_with"
+          }
+          subsystem_name {
+            value = "my-app"
+            operation = "starts_with"
+          }
+          severities = ["critical"]
+        }
+      }
+    }
+    rules {
+      condition {
+        threshold = 100.0
+        compared_to = "same_day_last_month"
+      }
+      override {
+        priority = "p1"
+      }
+    }
+    condition_type = "less_than"
+    ignore_infinity = true
+    notification_payload_filter = ["obj.field"]
+    undetected_values_management {
+      trigger_undetected_values = true
+      auto_retire_timeframe = "hours_24"
+    }
+    evaluation_delay_ms = 60000
+  }
+  metric_threshold {
+    metric_filter {
+      promql = "avg_over_time(metric_name[5m]) > 10"
+    }
+    rules {
+      condition {
+        threshold = 100.0
+        for_over_pct = 80
+        of_the_last {
+          metric_time_window_specific_value = "hours_36"
+        }
+      }
+      override {
+        priority = "p1"
+      }
+    }
+    condition_type = "less_than_or_equals"
+    undetected_values_management {
+      trigger_undetected_values = true
+      auto_retire_timeframe = "hours_24"
+    }
+    missing_values {
+      replace_with_zero = true
+    }
+    evaluation_delay_ms = 60000
+  }
+  flow {
+    stages {
+      timeframe_ms = "60000"
+      timeframe_type = "up_to"
+      flow_stages_groups {
+        groups {
+          alert_defs {
+            id = "9fab83da-98cb-4f18-a7ba-b6f0435c9673"
+            not = true
+          }
+          next_op = "or"
+          alerts_op = "or"
+        }
+      }
+    }
+    enforce_suppression = true
+  }
+  logs_anomaly {
+    logs_filter {
+      simple_filter {
+        lucene_query = "text:"error""
+        label_filters {
+          application_name {
+            value = "my-app"
+            operation = "starts_with"
+          }
+          subsystem_name {
+            value = "my-app"
+            operation = "starts_with"
+          }
+          severities = ["critical"]
+        }
+      }
+    }
+    rules {
+      condition {
+        minimum_threshold = 10.0
+        time_window {
+          logs_time_window_specific_value = "hours_36"
+        }
+      }
+    }
+    condition_type = "more_than_usual_or_unspecified"
+    notification_payload_filter = ["obj.field"]
+    evaluation_delay_ms = 60000
+    anomaly_alert_settings {
+      percentage_of_deviation = 10.0
+    }
+  }
+  metric_anomaly {
+    metric_filter {
+      promql = "avg_over_time(metric_name[5m]) > 10"
+    }
+    rules {
+      condition {
+        threshold = 10.0
+        for_over_pct = 20
+        of_the_last {
+          metric_time_window_specific_value = "hours_36"
+        }
+        min_non_null_values_pct = 10
+      }
+    }
+    condition_type = "less_than_usual"
+    evaluation_delay_ms = 60000
+    anomaly_alert_settings {
+      percentage_of_deviation = 10.0
+    }
+  }
+  logs_new_value {
+    logs_filter {
+      simple_filter {
+        lucene_query = "text:"error""
+        label_filters {
+          application_name {
+            value = "my-app"
+            operation = "starts_with"
+          }
+          subsystem_name {
+            value = "my-app"
+            operation = "starts_with"
+          }
+          severities = ["critical"]
+        }
+      }
+    }
+    rules {
+      condition {
+        keypath_to_track = "metadata.field"
+        time_window {
+          logs_new_value_time_window_specific_value = "months_3"
+        }
+      }
+    }
+    notification_payload_filter = ["obj.field"]
+  }
+  logs_unique_count {
+    logs_filter {
+      simple_filter {
+        lucene_query = "text:"error""
+        label_filters {
+          application_name {
+            value = "my-app"
+            operation = "starts_with"
+          }
+          subsystem_name {
+            value = "my-app"
+            operation = "starts_with"
+          }
+          severities = ["critical"]
+        }
+      }
+    }
+    rules {
+      condition {
+        max_unique_count = "100"
+        time_window {
+          logs_unique_value_time_window_specific_value = "hours_36"
+        }
+      }
+    }
+    notification_payload_filter = ["obj.field"]
+    max_unique_count_per_group_by_key = "100"
+    unique_count_keypath = "obj.field"
+  }
+}
+
 // Data source is not linked to a resource instance
 // Uncomment if an existing data source instance exists
 /*
@@ -376,8 +760,8 @@ data "ibm_logs_alert" "logs_alert_instance" {
 // Data source is not linked to a resource instance
 // Uncomment if an existing data source instance exists
 /*
-// Create logs_alerts data source
-data "ibm_logs_alerts" "logs_alerts_instance" {
+// Create logs_alert_definitions data source
+data "ibm_logs_alert_definitions" "logs_alert_definitions_instance" {
 }
 */
 
@@ -447,8 +831,24 @@ data "ibm_logs_dashboard" "logs_dashboard_instance" {
 // Data source is not linked to a resource instance
 // Uncomment if an existing data source instance exists
 /*
+// Create logs_dashboard_folder data source
+data "ibm_logs_dashboard_folder" "logs_dashboard_folder_instance" {
+}
+*/
+
+// Data source is not linked to a resource instance
+// Uncomment if an existing data source instance exists
+/*
 // Create logs_dashboard_folders data source
 data "ibm_logs_dashboard_folders" "logs_dashboard_folders_instance" {
+}
+*/
+
+// Data source is not linked to a resource instance
+// Uncomment if an existing data source instance exists
+/*
+// Create logs_dashboards data source
+data "ibm_logs_dashboards" "logs_dashboards_instance" {
 }
 */
 
@@ -500,5 +900,74 @@ data "ibm_logs_view_folder" "logs_view_folder_instance" {
 /*
 // Create logs_view_folders data source
 data "ibm_logs_view_folders" "logs_view_folders_instance" {
+}
+*/
+
+// Data source is not linked to a resource instance
+// Uncomment if an existing data source instance exists
+/*
+// Create logs_data_access_rule data source
+data "ibm_logs_data_access_rule" "logs_data_access_rule_instance" {
+  logs_data_access_rule_id = var.data_logs_data_access_rule_logs_data_access_rule_id
+}
+*/
+
+// Data source is not linked to a resource instance
+// Uncomment if an existing data source instance exists
+/*
+// Create logs_data_access_rules data source
+data "ibm_logs_data_access_rules" "logs_data_access_rules_instance" {
+  logs_data_access_rules_id = var.logs_data_access_rules_logs_data_access_rules_id
+}
+*/
+
+// Data source is not linked to a resource instance
+// Uncomment if an existing data source instance exists
+/*
+// Create logs_enrichment data source
+data "ibm_logs_enrichment" "logs_enrichment_instance" {
+}
+*/
+
+// Data source is not linked to a resource instance
+// Uncomment if an existing data source instance exists
+/*
+// Create logs_enrichments data source
+data "ibm_logs_enrichments" "logs_enrichments_instance" {
+}
+*/
+
+// Data source is not linked to a resource instance
+// Uncomment if an existing data source instance exists
+/*
+// Create logs_data_usage_metrics data source
+data "ibm_logs_data_usage_metrics" "logs_data_usage_metrics_instance" {
+  range = var.data_logs_data_usage_metrics_range
+  query = var.data_logs_data_usage_metrics_query
+}
+*/
+
+// Data source is not linked to a resource instance
+// Uncomment if an existing data source instance exists
+/*
+// Create logs_stream data source
+data "ibm_logs_stream" "logs_stream_instance" {
+}
+*/
+
+// Data source is not linked to a resource instance
+// Uncomment if an existing data source instance exists
+/*
+// Create logs_streams data source
+data "ibm_logs_streams" "logs_streams_instance" {
+}
+*/
+
+// Data source is not linked to a resource instance
+// Uncomment if an existing data source instance exists
+/*
+// Create logs_alert_definition data source
+data "ibm_logs_alert_definition" "logs_alert_definition_instance" {
+  logs_alert_definition_id = var.data_logs_alert_definition_logs_alert_definition_id
 }
 */
