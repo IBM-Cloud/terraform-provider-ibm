@@ -188,7 +188,7 @@ resource "ibm_iam_service_policy" "policy1" {
 
 data "ibm_iam_service_policy" "testacc_ds_service_policy" {
   iam_service_id = ibm_iam_service_policy.policy.iam_service_id
-  sort = "id"
+  sort = "created_at"
 }`, name, name)
 
 }
