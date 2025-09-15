@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"net/http"
 	"net/url"
 	"os"
 	"reflect"
@@ -906,7 +907,7 @@ func ResourceIBMDb2Instance() *schema.Resource {
 	return &schema.Resource{
 		Create:   resourceIBMDb2InstanceCreate,
 		Read:     resourcecontroller.ResourceIBMResourceInstanceRead,
-		Update:   resourcecontroller.ResourceIBMResourceInstanceUpdate,
+		Update:   resourceIBMResourceInstanceUpdate,
 		Delete:   resourcecontroller.ResourceIBMResourceInstanceDelete,
 		Exists:   resourcecontroller.ResourceIBMResourceInstanceExists,
 		Importer: &schema.ResourceImporter{},
@@ -1440,13 +1441,13 @@ func resourceIBMDb2InstanceCreate(d *schema.ResourceData, meta interface{}) erro
 			if err != nil {
 				log.Printf("[ERROR] Error while posting allowlist config to DB2Saas: %s", err)
 			} else {
-				log.Printf("[DEBUG] StatusCode of response %d", response.StatusCode)
-				log.Printf("[DEBUG] Success result \n%v", result)
+				log.Printf("[INFO] StatusCode of response %d", response.StatusCode)
+				log.Printf("[INFO] Success result \n%v", result)
 			}
 		}
 	}
 
-	err = resourcecontroller.UserConfigValidation(d, encodedCRN, db2SaasClient)
+	err = userConfigValidation(d, encodedCRN, db2SaasClient)
 	if err != nil {
 		log.Printf("[ERROR] User config validation failed: %s", err)
 	}
@@ -1506,5 +1507,327 @@ func checkStringNilValue(config map[string]interface{}, key string) *string {
 		}
 	}
 
+	return nil
+}
+
+func resourceIBMResourceInstanceUpdate(d *schema.ResourceData, meta interface{}) error {
+	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
+	if err != nil {
+		return err
+	}
+
+	instanceID := d.Id()
+
+	resourceInstanceUpdate := rc.UpdateResourceInstanceOptions{
+		ID: &instanceID,
+	}
+	if d.HasChange("name") {
+		name := d.Get("name").(string)
+		resourceInstanceUpdate.Name = &name
+	}
+
+	if d.HasChange("plan") {
+		plan := d.Get("plan").(string)
+		service := d.Get("service").(string)
+		rsCatClient, err := meta.(conns.ClientSession).ResourceCatalogAPI()
+		if err != nil {
+			return err
+		}
+		rsCatRepo := rsCatClient.ResourceCatalog()
+
+		serviceOff, err := rsCatRepo.FindByName(service, true)
+		if err != nil {
+			return fmt.Errorf("[ERROR] Error retrieving service offering: %s", err)
+		}
+
+		servicePlan, err := rsCatRepo.GetServicePlanID(serviceOff[0], plan)
+		if err != nil {
+			return fmt.Errorf("[ERROR] Error retrieving plan: %s", err)
+		}
+
+		resourceInstanceUpdate.ResourcePlanID = &servicePlan
+
+	}
+	params := map[string]interface{}{}
+
+	if d.HasChange("service_endpoints") {
+		endpoint := d.Get("service_endpoints").(string)
+		params["service-endpoints"] = endpoint
+	}
+
+	resourceInstanceGet := rc.GetResourceInstanceOptions{
+		ID: &instanceID,
+	}
+	if d.HasChange("parameters") {
+		instance, resp, err := rsConClient.GetResourceInstance(&resourceInstanceGet)
+		if err != nil {
+			return fmt.Errorf("[ERROR] Error retrieving resource instance: %s with resp code: %s", err, resp)
+		}
+
+		if parameters, ok := d.GetOk("parameters"); ok {
+			temp := parameters.(map[string]interface{})
+			for k, v := range temp {
+				if v == "true" || v == "false" {
+					b, _ := strconv.ParseBool(v.(string))
+					params[k] = b
+				} else if strings.HasPrefix(v.(string), "[") && strings.HasSuffix(v.(string), "]") {
+					//transform v.(string) to be []string
+					result := []string{}
+					arrayString := v.(string)
+					trimLeft := strings.TrimLeft(arrayString, "[")
+					trimRight := strings.TrimRight(trimLeft, "]")
+					if len(trimRight) == 0 {
+						params[k] = result
+					} else {
+						array := strings.Split(trimRight, ",")
+						for _, a := range array {
+							result = append(result, strings.Trim(a, "\""))
+						}
+						params[k] = result
+					}
+
+				} else {
+					params[k] = v
+				}
+			}
+		}
+		if _, ok := params["service-endpoints"]; !ok {
+			serviceEndpoints := d.Get("service_endpoints").(string)
+			if serviceEndpoints != "" {
+				endpoint := d.Get("service_endpoints").(string)
+				params["service-endpoints"] = endpoint
+			} else if _, ok := instance.Parameters["service-endpoints"]; ok {
+				params["service-endpoints"] = instance.Parameters["service-endpoints"]
+			}
+		}
+
+	}
+
+	if d.HasChange("service_endpoints") || d.HasChange("parameters") {
+		resourceInstanceUpdate.Parameters = params
+	}
+	if d.HasChange("parameters_json") {
+		if s, ok := d.GetOk("parameters_json"); ok {
+			json.Unmarshal([]byte(s.(string)), &params)
+			resourceInstanceUpdate.Parameters = params
+		}
+	}
+	instance, resp, err := rsConClient.GetResourceInstance(&resourceInstanceGet)
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error Getting resource instance: %s with resp code: %s", err, resp)
+	}
+
+	if d.HasChange("tags") {
+		oldList, newList := d.GetChange("tags")
+		err = flex.UpdateTagsUsingCRN(oldList, newList, meta, *instance.CRN)
+		if err != nil {
+			log.Printf(
+				"Error on update of resource instance (%s) tags: %s", d.Id(), err)
+		}
+	}
+
+	_, resp, err = rsConClient.UpdateResourceInstance(&resourceInstanceUpdate)
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error updating resource instance: %s with resp code: %s", err, resp)
+	}
+
+	_, err = resourcecontroller.WaitForResourceInstanceUpdate(d, meta)
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error waiting for update resource instance (%s) to be succeeded: %s", d.Id(), err)
+	}
+
+	encodedCRN := url.QueryEscape(*instance.CRN)
+
+	db2saasClient, err := meta.(conns.ClientSession).Db2saasV1()
+	if err != nil {
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_db2_saas_users", "update", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return err
+	}
+
+	err = userConfigValidation(d, encodedCRN, db2saasClient)
+	if err != nil {
+		log.Printf("[ERROR] User config validation failed: %s", err)
+	}
+
+	return resourcecontroller.ResourceIBMResourceInstanceRead(d, meta)
+}
+
+func userConfigValidation(d *schema.ResourceData, encodedCRN string, db2SaasClient *db2saasv1.Db2saasV1) error {
+
+	if usersConfigRaw, ok := d.GetOk("users_config"); ok {
+		usersList := usersConfigRaw.([]interface{})
+		if len(usersList) == 0 {
+			log.Printf(" No users config provided, skipping.")
+			return fmt.Errorf("no users config provided")
+		}
+
+		for _, u := range usersList {
+			userMap := u.(map[string]interface{})
+
+			var (
+				id       string
+				iam      bool
+				ibmID    string
+				name     string
+				password string
+				role     string
+				email    string
+				locked   string
+				method   string
+				policyID string
+				ok       bool
+			)
+
+			if rawID, exists := userMap["id"]; exists && rawID != nil {
+				id, ok = rawID.(string)
+				if !ok {
+					log.Printf("[ERROR] failed to extract 'id'")
+					return fmt.Errorf("failed to extract 'id': expected string, got %T", rawID)
+				}
+			}
+			if rawIAM, exists := userMap["iam"]; exists && rawIAM != nil {
+				iam, ok = rawIAM.(bool)
+				if !ok {
+					log.Printf("[ERROR] failed to extract 'iam'")
+					return fmt.Errorf("failed to extract 'iam': expected bool, got %T", rawIAM)
+				}
+			}
+			if rawIBMID, exists := userMap["ibmid"]; exists && rawIBMID != nil {
+				ibmID, ok = rawIBMID.(string)
+				if !ok {
+					log.Printf("[ERROR] failed to extract 'ibmid'")
+					return fmt.Errorf("failed to extract 'ibmid': expected string, got %T", rawIBMID)
+				}
+			}
+			if rawName, exists := userMap["name"]; exists && rawName != nil {
+				name, ok = rawName.(string)
+				if !ok {
+					log.Printf("[ERROR] failed to extract 'name'")
+					return fmt.Errorf("failed to extract 'name': expected string, got %T", rawName)
+				}
+			}
+			if rawPassword, exists := userMap["password"]; exists && rawPassword != nil {
+				password, ok = rawPassword.(string)
+				if !ok {
+					log.Printf("[ERROR] failed to extract 'password'")
+					return fmt.Errorf("failed to extract 'password'")
+				}
+			}
+			if rawRole, exists := userMap["role"]; exists && rawRole != nil {
+				role, ok = rawRole.(string)
+				if !ok {
+					log.Printf("[ERROR] failed to extract 'role'")
+					return fmt.Errorf("failed to extract 'role': expected string, got %T", rawRole)
+				}
+			}
+			if rawEmail, exists := userMap["email"]; exists && rawEmail != nil {
+				email, ok = rawEmail.(string)
+				if !ok {
+					log.Printf("[ERROR] failed to extract 'email'")
+					return fmt.Errorf("failed to extract 'email': expected string, got %T", rawEmail)
+				}
+			}
+			if rawLocked, exists := userMap["locked"]; exists && rawLocked != nil {
+				locked, ok = rawLocked.(string)
+				if !ok {
+					log.Printf("[ERROR] failed to extract 'locked'")
+					return fmt.Errorf("failed to extract 'locked': expected string, got %T", rawLocked)
+				}
+			}
+
+			// authentication block
+			if rawAuth, exists := userMap["authentication"]; exists && rawAuth != nil {
+				authList := rawAuth.([]interface{})
+				if len(authList) > 0 {
+					authMap := authList[0].(map[string]interface{})
+
+					if rawMethod, exists := authMap["method"]; exists && rawMethod != nil {
+						method, ok = rawMethod.(string)
+						if !ok {
+							log.Printf("[ERROR] failed to extract 'authentication.method'")
+							return fmt.Errorf("failed to extract 'authentication.method': expected string, got %T", rawMethod)
+						}
+					}
+					if rawPolicy, exists := authMap["policy_id"]; exists && rawPolicy != nil {
+						policyID, ok = rawPolicy.(string)
+						if !ok {
+							log.Printf("[ERROR] failed to extract 'authentication.policy_id'")
+							return fmt.Errorf("failed to extract 'authentication.policy_id': expected string, got %T", rawPolicy)
+						}
+					}
+				}
+			}
+
+			input := &db2saasv1.PostDb2SaasUserOptions{
+				XDeploymentID: core.StringPtr(encodedCRN),
+				ID:            core.StringPtr(id),
+				Iam:           core.BoolPtr(iam),
+				Ibmid:         core.StringPtr(ibmID),
+				Name:          core.StringPtr(name),
+				Password:      core.StringPtr(password),
+				Role:          core.StringPtr(role),
+				Email:         core.StringPtr(email),
+				Locked:        core.StringPtr(locked),
+				Authentication: &db2saasv1.CreateUserAuthentication{
+					Method:   core.StringPtr(method),
+					PolicyID: core.StringPtr(policyID),
+				},
+			}
+
+			var result interface{}
+			var response *core.DetailedResponse
+			var err error
+			var existingUser bool
+
+			// get users by id is required to switch between put and post
+			log.Print("checking existence of user...")
+			getUsersInput := &db2saasv1.GetbyidDb2SaasUserOptions{
+				XDeploymentID: core.StringPtr(encodedCRN),
+				ID:            core.StringPtr(id),
+			}
+
+			_, resp, err := db2SaasClient.GetbyidDb2SaasUser(getUsersInput)
+
+			if resp != nil && resp.StatusCode == http.StatusOK {
+				log.Print("[INFO] User exists, thus will proceed with update")
+				existingUser = true
+			}
+			if err != nil {
+				log.Printf("[ERROR] Error while fetching user by ID: %s", err)
+			}
+
+			if existingUser {
+				log.Print("User exists, updating...")
+				updateInput := &db2saasv1.PutDb2SaasUserOptions{
+					XDeploymentID: core.StringPtr(encodedCRN),
+					ID:            core.StringPtr(id),
+					NewID:         core.StringPtr(id),
+					NewIam:        core.BoolPtr(iam),
+					NewIbmid:      core.StringPtr(ibmID),
+					NewName:       core.StringPtr(name),
+					NewPassword:   core.StringPtr(password),
+					NewRole:       core.StringPtr(role),
+					NewEmail:      core.StringPtr(email),
+					NewLocked:     core.StringPtr(locked),
+					NewAuthentication: &db2saasv1.UpdateUserAuthentication{
+						Method:   core.StringPtr(method),
+						PolicyID: core.StringPtr(policyID),
+					},
+				}
+				result, response, err = db2SaasClient.PutDb2SaasUser(updateInput)
+			} else {
+				log.Print("User doesn't exist, creating...")
+				result, response, err = db2SaasClient.PostDb2SaasUser(input)
+			}
+
+			if err != nil {
+				log.Printf("[ERROR] Error while sending users config to DB2: %s", err)
+			} else {
+				log.Printf("[INFO] StatusCode of response %d", response.StatusCode)
+				log.Printf("[INFO] Success result %v", result)
+			}
+		}
+	}
 	return nil
 }
