@@ -175,12 +175,14 @@ func ResourceIbmBackupRecoverySourceRegistration() *schema.Resource {
 							Type:        schema.TypeList,
 							MaxItems:    1,
 							Optional:    true,
+							Computed:    true,
 							Description: "Specifies the parameters to auto protect the source after registration.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"error_message": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
+										Computed:    true,
 										Description: "Specifies the error message in case source registration is successful but protection job creation fails.",
 									},
 									"is_default_auto_protected": &schema.Schema{
@@ -196,20 +198,24 @@ func ResourceIbmBackupRecoverySourceRegistration() *schema.Resource {
 									"protection_group_id": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
+										Computed:    true,
 										Description: "Specifies the protection group Id after it is successfully created.",
 									},
 									"storage_domain_id": &schema.Schema{
 										Type:        schema.TypeInt,
 										Optional:    true,
+										Computed:    true,
 										Description: "Specifies the storage domain id for the protection job.",
 									},
 								},
 							},
 						},
 						"client_private_key": &schema.Schema{
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "Specifies the bearer token or private key of Kubernetes source.",
+							Type:             schema.TypeString,
+							Required:         true,
+							Sensitive:        true,
+							DiffSuppressFunc: suppressParameterDuringRefresh,
+							Description:      "Specifies the bearer token or private key of Kubernetes source.",
 						},
 						"data_mover_image_location": &schema.Schema{
 							Type:        schema.TypeString,
@@ -247,9 +253,11 @@ func ResourceIbmBackupRecoverySourceRegistration() *schema.Resource {
 							},
 						},
 						"endpoint": &schema.Schema{
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "Specifies the endpoint of Kubernetes source.",
+							Type:             schema.TypeString,
+							Required:         true,
+							Sensitive:        true,
+							DiffSuppressFunc: suppressParameterDuringRefresh,
+							Description:      "Specifies the endpoint of Kubernetes source.",
 						},
 						"init_container_image_location": &schema.Schema{
 							Type:        schema.TypeString,
@@ -1323,6 +1331,33 @@ func ResourceIbmBackupRecoverySourceRegistrationValidator() *validate.ResourceVa
 	return &resourceValidator
 }
 
+func suppressParameterDuringRefresh(k, o, n string, d *schema.ResourceData) bool {
+	if len(d.Id()) == 0 {
+		return false
+	}
+	if len(d.Id()) != 0 {
+		if d.HasChange("kubernetes_params.0.data_mover_image_location") ||
+			d.HasChange("kubernetes_params.0.datamover_service_type") ||
+			d.HasChange("kubernetes_params.0.vlan_info_vec") ||
+			d.HasChange("kubernetes_params.0.resource_annotations") ||
+			d.HasChange("kubernetes_params.0.resource_labels") ||
+			d.HasChange("kubernetes_params.0.velero_openshift_plugin_image_location") ||
+			d.HasChange("kubernetes_params.0.velero_image_location") ||
+			d.HasChange("kubernetes_params.0.velero_aws_plugin_image_location") ||
+			d.HasChange("kubernetes_params.0.san_fields") ||
+			d.HasChange("kubernetes_params.0.service_annotations") ||
+			d.HasChange("kubernetes_params.0.priority_class_name") ||
+			d.HasChange("kubernetes_params.0.kubernetes_type") ||
+			d.HasChange("kubernetes_params.0.kubernetes_distribution") ||
+			d.HasChange("kubernetes_params.0.init_container_image_location") ||
+			d.HasChange("kubernetes_params.0.auto_protect_config") ||
+			d.HasChange("kubernetes_params.0.default_vlan_params") {
+			return false
+		}
+	}
+	return true
+}
+
 func resourceIbmBackupRecoverySourceRegistrationCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
@@ -1808,7 +1843,7 @@ func ResourceIbmBackupRecoverySourceRegistrationMapToKeyValuePair(modelMap map[s
 
 func ResourceIbmBackupRecoverySourceRegistrationMapToKubernetesSourceRegistrationParams(modelMap map[string]interface{}) (*backuprecoveryv1.KubernetesSourceRegistrationParams, error) {
 	model := &backuprecoveryv1.KubernetesSourceRegistrationParams{}
-	if modelMap["auto_protect_config"] != nil && len(modelMap["auto_protect_config"].([]interface{})) > 0 {
+	if modelMap["auto_protect_config"] != nil && len(modelMap["auto_protect_config"].([]interface{})) > 0 && modelMap["auto_protect_config"].([]interface{})[0] != nil {
 		AutoProtectConfigModel, err := ResourceIbmBackupRecoverySourceRegistrationMapToKubernetesAutoProtectConfig(modelMap["auto_protect_config"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
