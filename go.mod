@@ -3,7 +3,7 @@ module github.com/IBM-Cloud/terraform-provider-ibm
 go 1.24.2
 
 require (
-	github.com/IBM-Cloud/bluemix-go v0.0.0-20250324085928-caa6511f0c13
+	github.com/IBM-Cloud/bluemix-go v0.0.0-20250902164610-b399a22591a0
 	github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20240725064144-454a2ae23113
 	github.com/IBM-Cloud/power-go-client v1.12.0
 	github.com/IBM/appconfiguration-go-admin-sdk v0.5.1
@@ -13,7 +13,7 @@ require (
 	github.com/IBM/cloudant-go-sdk v0.8.0
 	github.com/IBM/code-engine-go-sdk v0.0.0-20241217191651-e1821f8c58c3
 	github.com/IBM/configuration-aggregator-go-sdk v0.0.2
-	github.com/IBM/container-registry-go-sdk v1.1.0
+	github.com/IBM/container-registry-go-sdk v1.2.0
 	github.com/IBM/continuous-delivery-go-sdk/v2 v2.0.6
 	github.com/IBM/event-notifications-go-admin-sdk v0.18.0
 	github.com/IBM/eventstreams-go-sdk v1.4.0
@@ -28,7 +28,7 @@ require (
 	github.com/IBM/logs-router-go-sdk v1.0.8
 	github.com/IBM/mqcloud-go-sdk v0.3.0
 	github.com/IBM/networking-go-sdk v0.51.12
-	github.com/IBM/platform-services-go-sdk v0.86.0
+	github.com/IBM/platform-services-go-sdk v0.86.1
 	github.com/IBM/project-go-sdk v0.3.5
 	github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5
 	github.com/IBM/sarama v1.45.0
