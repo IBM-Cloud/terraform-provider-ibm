@@ -147,8 +147,8 @@ github.com/IBM/logs-router-go-sdk v1.0.8 h1:MU1TdYNdVbvVTUXeqeYPItu6BoiSV/NMN49y
 github.com/IBM/logs-router-go-sdk v1.0.8/go.mod h1:tCN2vFgu5xG0ob9iJcxi5M4bJ6mWmu3nhmRPnvlwev0=
 github.com/IBM/mqcloud-go-sdk v0.3.0 h1:zuRe+lu6IwIzsBsmoVKZT4JgX+GxH5PJG06r5y5Xnh4=
 github.com/IBM/mqcloud-go-sdk v0.3.0/go.mod h1:7zigCUz6k3eRrNE8KOcDkY72oPppEmoQifF+SB0NPRM=
-github.com/IBM/networking-go-sdk v0.51.11 h1:l+yMXcO9GDcb7JU9jl8riUOXjnHTvIKSLnXYFlYlKXo=
-github.com/IBM/networking-go-sdk v0.51.11/go.mod h1:TAXWyBUk3C3R7aS1m84EfKdnDcBMZMAClwLfDj/SYZc=
+github.com/IBM/networking-go-sdk v0.51.12 h1:2qv6neG8msFR1dtf9v+rbaC2gIkw9HnzohvQpgVye5w=
+github.com/IBM/networking-go-sdk v0.51.12/go.mod h1:TAXWyBUk3C3R7aS1m84EfKdnDcBMZMAClwLfDj/SYZc=
 github.com/IBM/platform-services-go-sdk v0.86.1 h1:ngBpaXvUF3gmLvbU1Z4lX1wowOSYgGoKBEBaR/urt30=
 github.com/IBM/platform-services-go-sdk v0.86.1/go.mod h1:aGD045m6I8pfcB77wft8w2cHqWOJjcM3YSSV55BX0Js=
 github.com/IBM/project-go-sdk v0.3.5 h1:L+YClFUa14foS0B/hOOY9n7sIdsT5/XQicnXOyJSpyM=
