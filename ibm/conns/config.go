@@ -1449,7 +1449,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		return session, nil
 	}
 
-	if sess.BluemixSession.Config.BluemixAPIKey != "" {
+	if sess.BluemixSession.Config.BluemixAPIKey != "" && c.IAMTrustedProfileID == "" {
 		err = authenticateAPIKey(sess.BluemixSession)
 		if err != nil {
 			for count := c.RetryCount; count >= 0; count-- {
@@ -1469,7 +1469,27 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.functionConfigErr = fmt.Errorf("[ERROR] Error occured while fetching auth key for function: %q", err)
 	}
 
-	if c.IAMTrustedProfileID == "" && sess.BluemixSession.Config.IAMAccessToken != "" && sess.BluemixSession.Config.BluemixAPIKey == "" {
+	if sess.BluemixSession.Config.BluemixAPIKey != "" && c.IAMTrustedProfileID != "" {
+		err = authenticateAssume(sess.BluemixSession)
+		if err != nil {
+			for count := c.RetryCount; count >= 0; count-- {
+				if err == nil || !isRetryable(err) {
+					break
+				}
+				time.Sleep(c.RetryDelay)
+				log.Printf("Retrying IAM Authentication %d", count)
+				err = authenticateAssume(sess.BluemixSession)
+			}
+			if err != nil {
+				session.bmxUserFetchErr = fmt.Errorf("[ERROR] Error occured while fetching auth key for account user details: %q", err)
+				session.functionConfigErr = fmt.Errorf("[ERROR] Error occured while fetching auth key for function: %q", err)
+			}
+		}
+
+		session.functionConfigErr = fmt.Errorf("[ERROR] Error occured while fetching auth key for function: %q", err)
+	}
+
+	if c.IAMTrustedProfileID == "" && sess.BluemixSession.Config.BluemixAPIKey == "" && sess.BluemixSession.Config.IAMAccessToken != "" && sess.BluemixSession.Config.IAMRefreshToken != "" {
 		err := RefreshToken(sess.BluemixSession)
 		if err != nil {
 			for count := c.RetryCount; count >= 0; count-- {
@@ -1627,7 +1647,15 @@ func (c *Config) ClientSession() (interface{}, error) {
 
 	var authenticator core.Authenticator
 
-	if c.BluemixAPIKey != "" || sess.BluemixSession.Config.IAMRefreshToken != "" {
+	if (c.BluemixAPIKey != "") && c.IAMTrustedProfileID != "" {
+		authenticator, err = core.NewIamAssumeAuthenticatorBuilder().
+			SetApiKey(c.BluemixAPIKey).
+			SetIAMProfileID(c.IAMTrustedProfileID).
+			Build()
+		if err != nil {
+			log.Fatalf("Error in authenticating using NewIamAssumeAuthenticatorBuilder. Error: %s", err)
+		}
+	} else if c.BluemixAPIKey != "" || sess.BluemixSession.Config.IAMRefreshToken != "" {
 		if c.BluemixAPIKey != "" {
 			authenticator = &core.IamAuthenticator{
 				ApiKey: c.BluemixAPIKey,
@@ -3770,12 +3798,12 @@ func newSession(c *Config) (*Session, error) {
 	softlayerSession.AppendUserAgent(fmt.Sprintf("terraform-provider-ibm/%s", version.Version))
 	ibmSession.SoftLayerSession = softlayerSession
 
-	if c.IAMTrustedProfileID == "" && (c.IAMToken != "" && c.IAMRefreshToken == "") || (c.IAMToken == "" && c.IAMRefreshToken != "") {
+	/*if c.IAMTrustedProfileID == "" && (c.IAMToken != "" && c.IAMRefreshToken == "") || (c.IAMToken == "" && c.IAMRefreshToken != "") {
 		return nil, fmt.Errorf("iam_token and iam_refresh_token must be provided")
 	}
 	if c.IAMTrustedProfileID != "" && c.IAMToken == "" {
 		return nil, fmt.Errorf("iam_token and iam_profile_id must be provided")
-	}
+	}*/
 
 	if c.IAMToken != "" {
 		log.Println("Configuring IBM Cloud Session with token")
@@ -3818,6 +3846,7 @@ func newSession(c *Config) (*Session, error) {
 			PrivateEndpointType: c.PrivateEndpointType,
 			EndpointsFile:       c.EndpointsFile,
 			UserAgent:           fmt.Sprintf("terraform-provider-ibm/%s", version.Version),
+			IAMTrustedProfileID: c.IAMTrustedProfileID,
 		}
 		sess, err := bxsession.New(bmxConfig)
 		if err != nil {
@@ -3843,6 +3872,20 @@ func authenticateAPIKey(sess *bxsession.Session) error {
 	return tokenRefresher.AuthenticateAPIKey(config.BluemixAPIKey)
 }
 
+func authenticateAssume(sess *bxsession.Session) error {
+	config := sess.Config
+	tokenRefresher, err := authentication.NewIAMAuthRepository(config, &rest.Client{
+		DefaultHeader: gohttp.Header{
+			"User-Agent":            []string{http.UserAgent()},
+			"X-Original-User-Agent": []string{config.UserAgent},
+		},
+	})
+	if err != nil {
+		return err
+	}
+	return tokenRefresher.AuthenticateAssume(config.BluemixAPIKey, config.IAMTrustedProfileID)
+}
+
 func fetchUserDetails(sess *bxsession.Session, retries int, retryDelay time.Duration) (*UserConfig, error) {
 	config := sess.Config
 	user := UserConfig{}
@@ -3860,11 +3903,17 @@ func fetchUserDetails(sess *bxsession.Session, retries int, retryDelay time.Dura
 	// TODO validate with key
 	if err != nil && !strings.Contains(err.Error(), "key is of invalid type") {
 		if retries > 0 {
-			if config.BluemixAPIKey != "" {
+			if config.BluemixAPIKey != "" && config.IAMTrustedProfileID == "" {
 				time.Sleep(retryDelay)
 				log.Printf("Retrying authentication for user details %d", retries)
 				_ = authenticateAPIKey(sess)
 				return fetchUserDetails(sess, retries-1, retryDelay)
+			} else if config.BluemixAPIKey != "" && config.IAMTrustedProfileID != "" {
+				time.Sleep(retryDelay)
+				log.Printf("Retrying authentication for user details %d", retries)
+				_ = authenticateAssume(sess)
+				return fetchUserDetails(sess, retries-1, retryDelay)
+
 			}
 		}
 		return &user, err
