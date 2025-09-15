@@ -752,7 +752,7 @@ func networkMapToNetworkCreatePeer(networkCreatePeerMap map[string]interface{}) 
 	ncp := &models.NetworkCreatePeer{}
 	if networkCreatePeerMap[Attr_ID].(string) != "" {
 		id := networkCreatePeerMap[Attr_ID].(string)
-		ncp.ID = &id
+		ncp.ID = id
 	}
 	if networkCreatePeerMap[Attr_NetworkAddressTranslation] != nil && len(networkCreatePeerMap[Attr_NetworkAddressTranslation].([]interface{})) > 0 {
 		networkAddressTranslationModel := natMapToNetworkAddressTranslation(networkCreatePeerMap[Attr_NetworkAddressTranslation].([]interface{})[0].(map[string]interface{}))

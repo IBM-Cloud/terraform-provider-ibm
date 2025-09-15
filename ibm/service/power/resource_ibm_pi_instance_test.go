@@ -985,7 +985,71 @@ func testAccCheckIBMPIInstanceUserTagsConfig(name, instanceHealthStatus string, 
 	  }
 	`, acc.Pi_cloud_instance_id, name, acc.Pi_image, acc.Pi_network_name, instanceHealthStatus, acc.PiStorageType, userTagsString)
 }
+func TestAccIBMPIInstanceCompMode(t *testing.T) {
+	instanceRes := "ibm_pi_instance.power_instance"
+	name := fmt.Sprintf("tf-pi-instance-%d", acctest.RandIntRange(10, 100))
 
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPIInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMPInstanceCompMode(name, power.OK, "0.25", "2", "default"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIInstanceExists(instanceRes),
+					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),
+					resource.TestCheckResourceAttr(instanceRes, "pi_preferred_processor_compatibility_mode", "default"),
+					resource.TestCheckResourceAttr(instanceRes, "status", strings.ToUpper(power.State_Active)),
+				),
+			},
+			{
+				Config: testAccCheckIBMPInstanceCompMode(name, power.OK, "0.25", "2", "POWER10"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIInstanceExists(instanceRes),
+					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),
+					resource.TestCheckResourceAttr(instanceRes, "pi_preferred_processor_compatibility_mode", "POWER10"),
+				),
+			},
+		},
+	})
+}
+func testAccCheckIBMPInstanceCompMode(name, instanceHealthStatus, proc, memory, compMode string) string {
+	return fmt.Sprintf(`
+	data "ibm_pi_image" "power_image" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_image_name        = "%[3]s"
+	}
+	data "ibm_pi_network" "power_networks" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_network_name      = "%[4]s"
+	}
+	resource "ibm_pi_volume" "power_volume" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_volume_name       = "%[2]s"
+		pi_volume_pool       = data.ibm_pi_image.power_image.storage_pool
+		pi_volume_shareable  = true
+		pi_volume_size       = 20
+	}
+	resource "ibm_pi_instance" "power_instance" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_health_status     = "%[5]s"
+		pi_image_id          = data.ibm_pi_image.power_image.id
+		pi_instance_name     = "%[2]s"
+		pi_memory            = "%[7]s"
+		pi_pin_policy        = "none"
+		pi_proc_type         = "shared"
+		pi_processors        = "%[6]s"
+		pi_preferred_processor_compatibility_mode =  "%[8]s"
+		pi_storage_pool      = data.ibm_pi_image.power_image.storage_pool
+		pi_sys_type          = "s1022"
+		pi_volume_ids        = [ibm_pi_volume.power_volume.volume_id]
+		pi_network {
+			network_id = data.ibm_pi_network.power_networks.id
+		}
+	}
+	`, acc.Pi_cloud_instance_id, name, acc.Pi_image, acc.Pi_network_name, instanceHealthStatus, proc, memory, compMode)
+}
 func testAccCheckIBMPIInstanceDestroy(s *terraform.State) error {
 	sess, err := acc.TestAccProvider.Meta().(conns.ClientSession).IBMPISession()
 	if err != nil {
