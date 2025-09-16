@@ -18,19 +18,18 @@ import (
 )
 
 func TestAccIBMTrustedProfileTemplateAssignmentDataSourceBasic(t *testing.T) {
+	enterpriseAccountId := acc.IamIdentityEnterpriseAccountId
+	targetId := acc.IamIdentityAssignmentTargetAccountId
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			acc.TestAccPreCheckEnterprise(t)
-			acc.TestAccPreCheckAssignmentTargetAccount(t)
-		},
+		PreCheck:                  func() { acc.TestAccPreCheckIamIdentityEnterpriseTemplates(t) },
 		Providers:                 acc.TestAccProviders,
 		CheckDestroy:              testAccCheckIBMTrustedProfileTemplateAssignmentDataSourceDestroy,
 		PreventPostDestroyRefresh: true,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMTrustedProfileTemplateAssignmentDataSourceConfigBasic(name),
+				Config: testAccCheckIBMTrustedProfileTemplateAssignmentDataSourceConfigBasic(enterpriseAccountId, targetId, name),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_iam_trusted_profile_template_assignment.trusted_profile_template_assignment_instance", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_iam_trusted_profile_template_assignment.trusted_profile_template_assignment_instance", "account_id"),
@@ -51,9 +50,10 @@ func TestAccIBMTrustedProfileTemplateAssignmentDataSourceBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMTrustedProfileTemplateAssignmentDataSourceConfigBasic(name string) string {
+func testAccCheckIBMTrustedProfileTemplateAssignmentDataSourceConfigBasic(enterpriseAccountId string, targetId string, name string) string {
 	return fmt.Sprintf(`
 		resource "ibm_iam_trusted_profile_template" "trusted_profile_template" {
+			account_id = "%s"
 			name = "%s"
 			profile {
 				name = "%s"
@@ -78,7 +78,7 @@ func testAccCheckIBMTrustedProfileTemplateAssignmentDataSourceConfigBasic(name s
 		data "ibm_iam_trusted_profile_template_assignment" "trusted_profile_template_assignment_instance" {
 			assignment_id = ibm_iam_trusted_profile_template_assignment.trusted_profile_template_assignment_instance.id
 		}
-	`, name, name, acc.IamIdentityAssignmentTargetAccountId)
+	`, enterpriseAccountId, name, name, targetId)
 }
 
 func testAccCheckIBMTrustedProfileTemplateAssignmentDataSourceDestroy(s *terraform.State) error {

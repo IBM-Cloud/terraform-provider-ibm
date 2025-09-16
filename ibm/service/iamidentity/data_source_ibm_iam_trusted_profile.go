@@ -241,7 +241,7 @@ func dataSourceIBMIamTrustedProfileRead(context context.Context, d *schema.Resou
 	if !core.IsNil(trustedProfile.History) {
 		history := []map[string]interface{}{}
 		for _, historyItem := range trustedProfile.History {
-			historyItemMap, err := DataSourceIBMIamTrustedProfileEnityHistoryRecordToMap(&historyItem) // #nosec G601
+			historyItemMap, err := EnityHistoryRecordToMap(&historyItem) // #nosec G601
 			if err != nil {
 				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_iam_trusted_profile", "read", "history-to-map").GetDiag()
 			}
@@ -253,15 +253,4 @@ func dataSourceIBMIamTrustedProfileRead(context context.Context, d *schema.Resou
 	}
 
 	return nil
-}
-
-func DataSourceIBMIamTrustedProfileEnityHistoryRecordToMap(model *iamidentityv1.EnityHistoryRecord) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["timestamp"] = *model.Timestamp
-	modelMap["iam_id"] = *model.IamID
-	modelMap["iam_id_account"] = *model.IamIDAccount
-	modelMap["action"] = *model.Action
-	modelMap["params"] = model.Params
-	modelMap["message"] = *model.Message
-	return modelMap, nil
 }

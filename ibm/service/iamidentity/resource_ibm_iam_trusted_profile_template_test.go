@@ -18,6 +18,7 @@ import (
 )
 
 func TestAccIBMTrustedProfileTemplateBasic(t *testing.T) {
+	enterpriseAccountId := acc.IamIdentityEnterpriseAccountId
 	var conf iamidentityv1.TrustedProfileTemplateResponse
 
 	name := fmt.Sprintf("tf_tp_name_%d", acctest.RandIntRange(10, 100))
@@ -31,7 +32,7 @@ func TestAccIBMTrustedProfileTemplateBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIBMTrustedProfileTemplateDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMTrustedProfileTemplateConfigBasic(name, description, profileName),
+				Config: testAccCheckIBMTrustedProfileTemplateConfigBasic(enterpriseAccountId, name, description, profileName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMTrustedProfileTemplateExists("ibm_iam_trusted_profile_template.trusted_profile_template", conf),
 					resource.TestCheckResourceAttr("ibm_iam_trusted_profile_template.trusted_profile_template", "name", name),
@@ -39,7 +40,7 @@ func TestAccIBMTrustedProfileTemplateBasic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckIBMTrustedProfileTemplateConfigBasic(name, descriptionUpdate, profileName),
+				Config: testAccCheckIBMTrustedProfileTemplateConfigBasic(enterpriseAccountId, name, descriptionUpdate, profileName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMTrustedProfileTemplateExists("ibm_iam_trusted_profile_template.trusted_profile_template", conf),
 					resource.TestCheckResourceAttr("ibm_iam_trusted_profile_template.trusted_profile_template", "name", name),
@@ -51,6 +52,7 @@ func TestAccIBMTrustedProfileTemplateBasic(t *testing.T) {
 }
 
 func TestAccIBMTrustedProfileTemplateVersionBasic(t *testing.T) {
+	enterpriseAccountId := acc.IamIdentityEnterpriseAccountId
 	var conf iamidentityv1.TrustedProfileTemplateResponse
 
 	name := fmt.Sprintf("tf_tp_name_%d", acctest.RandIntRange(10, 100))
@@ -62,7 +64,7 @@ func TestAccIBMTrustedProfileTemplateVersionBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIBMTrustedProfileTemplateDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMTrustedProfileTemplateVersionConfigBasic(name, profileName),
+				Config: testAccCheckIBMTrustedProfileTemplateVersionConfigBasic(enterpriseAccountId, name, profileName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMTrustedProfileTemplateExists("ibm_iam_trusted_profile_template.trusted_profile_template", conf),
 					testAccCheckIBMTrustedProfileTemplateExists("ibm_iam_trusted_profile_template.trusted_profile_template_version", conf),
@@ -76,6 +78,7 @@ func TestAccIBMTrustedProfileTemplateVersionBasic(t *testing.T) {
 }
 
 func TestAccIBMTrustedProfileTemplateAllArgs(t *testing.T) {
+	enterpriseAccountId := acc.IamIdentityEnterpriseAccountId
 	var conf iamidentityv1.TrustedProfileTemplateResponse
 	name := fmt.Sprintf("tf_tp_name_%d", acctest.RandIntRange(10, 100))
 	description := fmt.Sprintf("tf_tp_desc_%d", acctest.RandIntRange(10, 100))
@@ -87,7 +90,7 @@ func TestAccIBMTrustedProfileTemplateAllArgs(t *testing.T) {
 		CheckDestroy: testAccCheckIBMTrustedProfileTemplateDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMTrustedProfileTemplateConfig(name, description, "false"),
+				Config: testAccCheckIBMTrustedProfileTemplateConfig(enterpriseAccountId, name, description, "false"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMTrustedProfileTemplateExists("ibm_iam_trusted_profile_template.trusted_profile_template", conf),
 					resource.TestCheckResourceAttr("ibm_iam_trusted_profile_template.trusted_profile_template", "name", name),
@@ -95,14 +98,14 @@ func TestAccIBMTrustedProfileTemplateAllArgs(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckIBMTrustedProfileTemplateConfig(name, descriptionUpdate, "false"),
+				Config: testAccCheckIBMTrustedProfileTemplateConfig(enterpriseAccountId, name, descriptionUpdate, "false"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_iam_trusted_profile_template.trusted_profile_template", "name", name),
 					resource.TestCheckResourceAttr("ibm_iam_trusted_profile_template.trusted_profile_template", "description", descriptionUpdate),
 				),
 			},
 			{
-				Config: testAccCheckIBMTrustedProfileTemplateConfig(name, descriptionUpdate, "true"),
+				Config: testAccCheckIBMTrustedProfileTemplateConfig(enterpriseAccountId, name, descriptionUpdate, "true"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_iam_trusted_profile_template.trusted_profile_template", "name", name),
 					resource.TestCheckResourceAttr("ibm_iam_trusted_profile_template.trusted_profile_template", "description", descriptionUpdate),
@@ -117,21 +120,23 @@ func TestAccIBMTrustedProfileTemplateAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMTrustedProfileTemplateConfigBasic(name string, description string, profileName string) string {
+func testAccCheckIBMTrustedProfileTemplateConfigBasic(enterpriseAccountId string, name string, description string, profileName string) string {
 	return fmt.Sprintf(`
 		resource "ibm_iam_trusted_profile_template" "trusted_profile_template" {
+			account_id = "%s"
 			name = "%s"
 			description = "%s"
 			profile {
 				name = "%s"
 			}
 		}
-	`, name, description, profileName)
+	`, enterpriseAccountId, name, description, profileName)
 }
 
-func testAccCheckIBMTrustedProfileTemplateVersionConfigBasic(name string, profileName string) string {
+func testAccCheckIBMTrustedProfileTemplateVersionConfigBasic(enterpriseAccountId string, name string, profileName string) string {
 	return fmt.Sprintf(`
 		resource "ibm_iam_trusted_profile_template" "trusted_profile_template" {
+			account_id = "%s"
 			name = "%s"
 			profile {
 				name = "%s"
@@ -140,18 +145,20 @@ func testAccCheckIBMTrustedProfileTemplateVersionConfigBasic(name string, profil
 
 		resource "ibm_iam_trusted_profile_template" "trusted_profile_template_version" {
 			template_id = ibm_iam_trusted_profile_template.trusted_profile_template.id
+			account_id = ibm_iam_trusted_profile_template.trusted_profile_template.account_id
 			name = "%s"
 			description = "New version description"
 			profile {
 				name = "%s"
 			}
 		}
-	`, name, profileName, name, profileName)
+	`, enterpriseAccountId, name, profileName, name, profileName)
 }
 
-func testAccCheckIBMTrustedProfileTemplateConfig(name string, description string, committed string) string {
+func testAccCheckIBMTrustedProfileTemplateConfig(enterpriseAccountId string, name string, description string, committed string) string {
 	return fmt.Sprintf(`
 		resource "ibm_iam_trusted_profile_template" "trusted_profile_template" {
+			account_id = "%s"
 			name = "%s"
 			description = "%s"
 			committed = "%s"
@@ -176,7 +183,7 @@ func testAccCheckIBMTrustedProfileTemplateConfig(name string, description string
 				}
 			}
 		}
-	`, name, description, committed)
+	`, enterpriseAccountId, name, description, committed)
 }
 
 func testAccCheckIBMTrustedProfileTemplateExists(n string, obj iamidentityv1.TrustedProfileTemplateResponse) resource.TestCheckFunc {
