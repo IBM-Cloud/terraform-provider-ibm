@@ -1447,7 +1447,6 @@ func resourceIBMDb2InstanceCreate(d *schema.ResourceData, meta interface{}) erro
 		}
 	}
 
-
 	err = userConfigValidation(d, encodedCRN, db2SaasClient)
 	if err != nil {
 		log.Printf("[ERROR] User config validation failed: %s", err)
