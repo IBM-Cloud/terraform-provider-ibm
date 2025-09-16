@@ -1689,6 +1689,13 @@ func dataSourceIbmLogsAlertDefinitionRead(context context.Context, d *schema.Res
 		return tfErr.GetDiag()
 	}
 
+	region := getLogsInstanceRegion(logsClient, d)
+	instanceId := d.Get("instance_id").(string)
+	logsClient, err = getClientWithLogsInstanceEndpoint(logsClient, meta, instanceId, region, getLogsInstanceEndpointType(logsClient, d))
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("Unable to get updated logs instance client"))
+	}
+
 	getAlertDefOptions := &logsv0.GetAlertDefOptions{}
 
 	getAlertDefOptions.SetID(core.UUIDPtr(strfmt.UUID(d.Get("logs_alert_definition_id").(string))))
@@ -1702,6 +1709,13 @@ func dataSourceIbmLogsAlertDefinitionRead(context context.Context, d *schema.Res
 	alertDefinition := alertDefinitionIntf.(*logsv0.AlertDefinition)
 
 	d.SetId(fmt.Sprintf("%s", *getAlertDefOptions.ID))
+
+	if err = d.Set("instance_id", instanceId); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting instance_id: %s", err))
+	}
+	if err = d.Set("region", region); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting region: %s", err))
+	}
 
 	if !core.IsNil(alertDefinition.CreatedTime) {
 		if err = d.Set("created_time", flex.DateTimeToString(alertDefinition.CreatedTime)); err != nil {

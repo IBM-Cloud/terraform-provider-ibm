@@ -3,7 +3,7 @@
 
 /*
  * IBM OpenAPI Terraform Generator Version: 3.104.0-b4a47c49-20250418-184351
-*/
+ */
 
 package logs
 
@@ -1697,6 +1697,13 @@ func dataSourceIbmLogsAlertDefinitionsRead(context context.Context, d *schema.Re
 		return tfErr.GetDiag()
 	}
 
+	region := getLogsInstanceRegion(logsClient, d)
+	instanceId := d.Get("instance_id").(string)
+	logsClient, err = getClientWithLogsInstanceEndpoint(logsClient, meta, instanceId, region, getLogsInstanceEndpointType(logsClient, d))
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("Unable to get updated logs instance client"))
+	}
+
 	listAlertDefsOptions := &logsv0.ListAlertDefsOptions{}
 
 	alertDefinitionCollection, _, err := logsClient.ListAlertDefsWithContext(context, listAlertDefsOptions)
@@ -1707,6 +1714,12 @@ func dataSourceIbmLogsAlertDefinitionsRead(context context.Context, d *schema.Re
 	}
 
 	d.SetId(dataSourceIbmLogsAlertDefinitionsID(d))
+	if err = d.Set("instance_id", instanceId); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting instance_id: %s", err))
+	}
+	if err = d.Set("region", region); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting region: %s", err))
+	}
 
 	alertDefinitions := []map[string]interface{}{}
 	for _, alertDefinitionsItem := range alertDefinitionCollection.AlertDefinitions {

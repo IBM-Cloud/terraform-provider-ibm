@@ -385,3 +385,4 @@ variable "data_logs_alert_definition_logs_alert_definition_id" {
   type        = 
   default     = 3dc02998-0b50-4ea8-b68a-4779d716fa1f
 }
+

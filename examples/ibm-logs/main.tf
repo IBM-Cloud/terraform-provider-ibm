@@ -760,8 +760,8 @@ data "ibm_logs_alert" "logs_alert_instance" {
 // Data source is not linked to a resource instance
 // Uncomment if an existing data source instance exists
 /*
-// Create logs_alert_definitions data source
-data "ibm_logs_alert_definitions" "logs_alert_definitions_instance" {
+// Create logs_alerts data source
+data "ibm_logs_alerts" "logs_alerts_instance" {
 }
 */
 
@@ -969,5 +969,13 @@ data "ibm_logs_streams" "logs_streams_instance" {
 // Create logs_alert_definition data source
 data "ibm_logs_alert_definition" "logs_alert_definition_instance" {
   logs_alert_definition_id = var.data_logs_alert_definition_logs_alert_definition_id
+}
+*/
+
+// Data source is not linked to a resource instance
+// Uncomment if an existing data source instance exists
+/*
+// Create logs_alert_definitions data source
+data "ibm_logs_alert_definitions" "logs_alert_definitions_instance" {
 }
 */

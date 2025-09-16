@@ -20,7 +20,7 @@ The following resources are supported:
 
 The following data sources are supported:
 * ibm_logs_alert
-* ibm_logs_alert_definitions
+* ibm_logs_alerts
 * ibm_logs_rule_group
 * ibm_logs_rule_groups
 * ibm_logs_outgoing_webhooks
@@ -45,6 +45,7 @@ The following data sources are supported:
 * ibm_logs_stream
 * ibm_logs_streams
 * ibm_logs_alert_definition
+* ibm_logs_alert_definitions
 
 ## Usage
 
@@ -513,10 +514,10 @@ data "ibm_logs_alert" "logs_alert_instance" {
 | unique_identifier | Alert unique identifier. |
 | incident_settings | Incident settings, will create the incident based on this configuration. |
 
-### Data source: ibm_logs_alert_definitions
+### Data source: ibm_logs_alerts
 
 ```hcl
-data "ibm_logs_alert_definitions" "logs_alert_definitions_instance" {
+data "ibm_logs_alerts" "logs_alerts_instance" {
 }
 ```
 
@@ -1017,6 +1018,19 @@ data "ibm_logs_alert_definition" "logs_alert_definition_instance" {
 | metric_anomaly | Configuration for metric-based anomaly detection alerts. |
 | logs_new_value | Configuration for alerts triggered by new log values. |
 | logs_unique_count | Configuration for alerts based on unique log value counts. |
+
+### Data source: ibm_logs_alert_definitions
+
+```hcl
+data "ibm_logs_alert_definitions" "logs_alert_definitions_instance" {
+}
+```
+
+#### Outputs
+
+| Name | Description |
+|------|-------------|
+| alert_definitions | List of alert definitions. |
 
 ## Assumptions
 

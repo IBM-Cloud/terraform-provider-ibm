@@ -1114,6 +1114,8 @@ func Provider() *schema.Provider {
 			"ibm_logs_data_access_rules":  logs.AddLogsInstanceFields(logs.DataSourceIbmLogsDataAccessRules()),
 			"ibm_logs_stream":             logs.AddLogsInstanceFields(logs.DataSourceIbmLogsStream()),
 			"ibm_logs_streams":            logs.AddLogsInstanceFields(logs.DataSourceIbmLogsStreams()),
+			"ibm_logs_alert_definition":   logs.AddLogsInstanceFields(logs.DataSourceIbmLogsAlertDefinition()),
+			"ibm_logs_alert_definitions":  logs.AddLogsInstanceFields(logs.DataSourceIbmLogsAlertDefinitions()),
 
 			// Logs Router Service
 			"ibm_logs_router_tenants": logsrouting.DataSourceIBMLogsRouterTenants(),
@@ -1786,6 +1788,7 @@ func Provider() *schema.Provider {
 			"ibm_logs_enrichment":         logs.AddLogsInstanceFields(logs.ResourceIbmLogsEnrichment()),
 			"ibm_logs_data_access_rule":   logs.AddLogsInstanceFields(logs.ResourceIbmLogsDataAccessRule()),
 			"ibm_logs_stream":             logs.AddLogsInstanceFields(logs.ResourceIbmLogsStream()),
+			"ibm_logs_alert_definition":   logs.AddLogsInstanceFields(logs.ResourceIbmLogsAlertDefinition()),
 
 			// Logs Router Service
 			"ibm_logs_router_tenant": logsrouting.ResourceIBMLogsRouterTenant(),
@@ -2294,6 +2297,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_logs_enrichment":       logs.ResourceIbmLogsEnrichmentValidator(),
 				"ibm_logs_data_access_rule": logs.ResourceIbmLogsDataAccessRuleValidator(),
 				"ibm_logs_stream":           logs.ResourceIbmLogsStreamValidator(),
+				"ibm_logs_alert_definition": logs.ResourceIbmLogsAlertDefinitionValidator(),
 
 				// Added for Logs Router Service
 				"ibm_logs_router_tenant": logsrouting.ResourceIBMLogsRouterTenantValidator(),

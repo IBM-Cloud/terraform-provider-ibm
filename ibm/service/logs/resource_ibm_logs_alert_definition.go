@@ -121,7 +121,7 @@ func ResourceIbmLogsAlertDefinition() *schema.Resource {
 			},
 			"group_by_keys": &schema.Schema{
 				Type:        schema.TypeList,
-				Required:    true,
+				Optional:    true,
 				Description: "Keys used to group and aggregate alert data.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
@@ -1811,7 +1811,7 @@ func resourceIbmLogsAlertDefinitionCreate(context context.Context, d *schema.Res
 	if _, ok := d.GetOk("description"); ok {
 		bodyModelMap["description"] = d.Get("description")
 	}
-	if _, ok := d.GetOk("enabled"); ok {
+	if _, ok := d.GetOkExists("enabled"); ok {
 		bodyModelMap["enabled"] = d.Get("enabled")
 	}
 	if _, ok := d.GetOk("priority"); ok {
@@ -2174,7 +2174,7 @@ func resourceIbmLogsAlertDefinitionUpdate(context context.Context, d *schema.Res
 		if _, ok := d.GetOk("description"); ok {
 			bodyModelMap["description"] = d.Get("description")
 		}
-		if _, ok := d.GetOk("enabled"); ok {
+		if _, ok := d.GetOkExists("enabled"); ok {
 			bodyModelMap["enabled"] = d.Get("enabled")
 		}
 		if _, ok := d.GetOk("priority"); ok {
@@ -2342,22 +2342,26 @@ func ResourceIbmLogsAlertDefinitionMapToApisAlertDefinitionAlertDefWebhooksSetti
 	if modelMap["notify_on"] != nil && modelMap["notify_on"].(string) != "" {
 		model.NotifyOn = core.StringPtr(modelMap["notify_on"].(string))
 	}
-	IntegrationModel, err := ResourceIbmLogsAlertDefinitionMapToApisAlertDefinitionIntegrationType(modelMap["integration"].([]interface{})[0].(map[string]interface{}))
+	IntegrationModel, err := ResourceIbmLogsAlertDefinitionMapToApisAlertDefinitionIntegrationType(modelMap["integration"].([]interface{}))
 	if err != nil {
 		return model, err
 	}
 	model.Integration = IntegrationModel
-	if modelMap["minutes"] != nil {
+	if modelMap["minutes"] != nil && modelMap["minutes"] != 0 { // manual change: as tf by default takes int value as 0 if not provided by user.
 		model.Minutes = core.Int64Ptr(int64(modelMap["minutes"].(int)))
 	}
 	return model, nil
 }
 
-func ResourceIbmLogsAlertDefinitionMapToApisAlertDefinitionIntegrationType(modelMap map[string]interface{}) (logsv0.ApisAlertDefinitionIntegrationTypeIntf, error) {
+func ResourceIbmLogsAlertDefinitionMapToApisAlertDefinitionIntegrationType(modelMap []interface{}) (logsv0.ApisAlertDefinitionIntegrationTypeIntf, error) {
 	model := &logsv0.ApisAlertDefinitionIntegrationType{}
-	if modelMap["integration_id"] != nil {
-		model.IntegrationID = core.Int64Ptr(int64(modelMap["integration_id"].(int)))
+	if len(modelMap) > 0 && modelMap[0] != nil {
+		modelMapElement := modelMap[0].(map[string]interface{})
+		if modelMapElement["integration_id"] != nil {
+			model.IntegrationID = core.Int64Ptr(int64(modelMapElement["integration_id"].(int)))
+		}
 	}
+
 	return model, nil
 }
 
