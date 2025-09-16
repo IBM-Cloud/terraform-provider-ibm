@@ -1403,11 +1403,7 @@ func resourceIBMDb2InstanceCreate(d *schema.ResourceData, meta interface{}) erro
 						var address, description string
 
 						if rawAddress, ok := ipEntry["address"]; ok && rawAddress != nil {
-							str, ok := rawAddress.(string)
-							if !ok {
-								log.Printf("[ERROR] allowlist address is not a string")
-								return fmt.Errorf("allowlist address is not a string")
-							}
+							str := rawAddress.(string)
 							if ip := net.ParseIP(str); ip == nil {
 								log.Printf("[ERROR] invalid IP address format: %s", str)
 								return fmt.Errorf("invalid IP address format: %s", str)
@@ -1416,11 +1412,7 @@ func resourceIBMDb2InstanceCreate(d *schema.ResourceData, meta interface{}) erro
 						}
 
 						if rawDescription, ok := ipEntry["description"]; ok && rawDescription != nil {
-							str, ok := rawDescription.(string)
-							if !ok {
-								log.Printf("[ERROR] allowlist description is not a string")
-								return fmt.Errorf("allowlist description is not a string")
-							}
+							str := rawDescription.(string)
 							description = str
 						}
 
@@ -1676,64 +1668,31 @@ func userConfigValidation(d *schema.ResourceData, encodedCRN string, db2SaasClie
 				locked   string
 				method   string
 				policyID string
-				ok       bool
 			)
 
 			if rawID, exists := userMap["id"]; exists && rawID != nil {
-				id, ok = rawID.(string)
-				if !ok {
-					log.Printf("[ERROR] failed to extract 'id'")
-					return fmt.Errorf("failed to extract 'id': expected string, got %T", rawID)
-				}
+				id = rawID.(string)
 			}
 			if rawIAM, exists := userMap["iam"]; exists && rawIAM != nil {
-				iam, ok = rawIAM.(bool)
-				if !ok {
-					log.Printf("[ERROR] failed to extract 'iam'")
-					return fmt.Errorf("failed to extract 'iam': expected bool, got %T", rawIAM)
-				}
+				iam = rawIAM.(bool)
 			}
 			if rawIBMID, exists := userMap["ibmid"]; exists && rawIBMID != nil {
-				ibmID, ok = rawIBMID.(string)
-				if !ok {
-					log.Printf("[ERROR] failed to extract 'ibmid'")
-					return fmt.Errorf("failed to extract 'ibmid': expected string, got %T", rawIBMID)
-				}
+				ibmID = rawIBMID.(string)
 			}
 			if rawName, exists := userMap["name"]; exists && rawName != nil {
-				name, ok = rawName.(string)
-				if !ok {
-					log.Printf("[ERROR] failed to extract 'name'")
-					return fmt.Errorf("failed to extract 'name': expected string, got %T", rawName)
-				}
+				name = rawName.(string)
 			}
 			if rawPassword, exists := userMap["password"]; exists && rawPassword != nil {
-				password, ok = rawPassword.(string)
-				if !ok {
-					log.Printf("[ERROR] failed to extract 'password'")
-					return fmt.Errorf("failed to extract 'password'")
-				}
+				password = rawPassword.(string)
 			}
 			if rawRole, exists := userMap["role"]; exists && rawRole != nil {
-				role, ok = rawRole.(string)
-				if !ok {
-					log.Printf("[ERROR] failed to extract 'role'")
-					return fmt.Errorf("failed to extract 'role': expected string, got %T", rawRole)
-				}
+				role = rawRole.(string)
 			}
 			if rawEmail, exists := userMap["email"]; exists && rawEmail != nil {
-				email, ok = rawEmail.(string)
-				if !ok {
-					log.Printf("[ERROR] failed to extract 'email'")
-					return fmt.Errorf("failed to extract 'email': expected string, got %T", rawEmail)
-				}
+				email = rawEmail.(string)
 			}
 			if rawLocked, exists := userMap["locked"]; exists && rawLocked != nil {
-				locked, ok = rawLocked.(string)
-				if !ok {
-					log.Printf("[ERROR] failed to extract 'locked'")
-					return fmt.Errorf("failed to extract 'locked': expected string, got %T", rawLocked)
-				}
+				locked = rawLocked.(string)
 			}
 
 			// authentication block
@@ -1743,18 +1702,10 @@ func userConfigValidation(d *schema.ResourceData, encodedCRN string, db2SaasClie
 					authMap := authList[0].(map[string]interface{})
 
 					if rawMethod, exists := authMap["method"]; exists && rawMethod != nil {
-						method, ok = rawMethod.(string)
-						if !ok {
-							log.Printf("[ERROR] failed to extract 'authentication.method'")
-							return fmt.Errorf("failed to extract 'authentication.method': expected string, got %T", rawMethod)
-						}
+						method = rawMethod.(string)
 					}
 					if rawPolicy, exists := authMap["policy_id"]; exists && rawPolicy != nil {
-						policyID, ok = rawPolicy.(string)
-						if !ok {
-							log.Printf("[ERROR] failed to extract 'authentication.policy_id'")
-							return fmt.Errorf("failed to extract 'authentication.policy_id': expected string, got %T", rawPolicy)
-						}
+						policyID = rawPolicy.(string)
 					}
 				}
 			}
