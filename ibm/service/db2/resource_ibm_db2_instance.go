@@ -1668,31 +1668,64 @@ func userConfigValidation(d *schema.ResourceData, encodedCRN string, db2SaasClie
 				locked   string
 				method   string
 				policyID string
+				ok       bool
 			)
 
 			if rawID, exists := userMap["id"]; exists && rawID != nil {
-				id = rawID.(string)
+				id, ok = rawID.(string)
+				if !ok {
+					log.Printf("[ERROR] failed to extract 'id'")
+					return fmt.Errorf("failed to extract 'id': expected string, got %T", rawID)
+				}
 			}
 			if rawIAM, exists := userMap["iam"]; exists && rawIAM != nil {
-				iam = rawIAM.(bool)
+				iam, ok = rawIAM.(bool)
+				if !ok {
+					log.Printf("[ERROR] failed to extract 'iam'")
+					return fmt.Errorf("failed to extract 'iam': expected bool, got %T", rawIAM)
+				}
 			}
 			if rawIBMID, exists := userMap["ibmid"]; exists && rawIBMID != nil {
-				ibmID = rawIBMID.(string)
+				ibmID, ok = rawIBMID.(string)
+				if !ok {
+					log.Printf("[ERROR] failed to extract 'ibmid'")
+					return fmt.Errorf("failed to extract 'ibmid': expected string, got %T", rawIBMID)
+				}
 			}
 			if rawName, exists := userMap["name"]; exists && rawName != nil {
-				name = rawName.(string)
+				name, ok = rawName.(string)
+				if !ok {
+					log.Printf("[ERROR] failed to extract 'name'")
+					return fmt.Errorf("failed to extract 'name': expected string, got %T", rawName)
+				}
 			}
 			if rawPassword, exists := userMap["password"]; exists && rawPassword != nil {
-				password = rawPassword.(string)
+				password, ok = rawPassword.(string)
+				if !ok {
+					log.Printf("[ERROR] failed to extract 'password'")
+					return fmt.Errorf("failed to extract 'password'")
+				}
 			}
 			if rawRole, exists := userMap["role"]; exists && rawRole != nil {
-				role = rawRole.(string)
+				role, ok = rawRole.(string)
+				if !ok {
+					log.Printf("[ERROR] failed to extract 'role'")
+					return fmt.Errorf("failed to extract 'role': expected string, got %T", rawRole)
+				}
 			}
 			if rawEmail, exists := userMap["email"]; exists && rawEmail != nil {
-				email = rawEmail.(string)
+				email, ok = rawEmail.(string)
+				if !ok {
+					log.Printf("[ERROR] failed to extract 'email'")
+					return fmt.Errorf("failed to extract 'email': expected string, got %T", rawEmail)
+				}
 			}
 			if rawLocked, exists := userMap["locked"]; exists && rawLocked != nil {
-				locked = rawLocked.(string)
+				locked, ok = rawLocked.(string)
+				if !ok {
+					log.Printf("[ERROR] failed to extract 'locked'")
+					return fmt.Errorf("failed to extract 'locked': expected string, got %T", rawLocked)
+				}
 			}
 
 			// authentication block
@@ -1702,10 +1735,18 @@ func userConfigValidation(d *schema.ResourceData, encodedCRN string, db2SaasClie
 					authMap := authList[0].(map[string]interface{})
 
 					if rawMethod, exists := authMap["method"]; exists && rawMethod != nil {
-						method = rawMethod.(string)
+						method, ok = rawMethod.(string)
+						if !ok {
+							log.Printf("[ERROR] failed to extract 'authentication.method'")
+							return fmt.Errorf("failed to extract 'authentication.method': expected string, got %T", rawMethod)
+						}
 					}
 					if rawPolicy, exists := authMap["policy_id"]; exists && rawPolicy != nil {
-						policyID = rawPolicy.(string)
+						policyID, ok = rawPolicy.(string)
+						if !ok {
+							log.Printf("[ERROR] failed to extract 'authentication.policy_id'")
+							return fmt.Errorf("failed to extract 'authentication.policy_id': expected string, got %T", rawPolicy)
+						}
 					}
 				}
 			}
