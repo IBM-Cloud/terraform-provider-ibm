@@ -1354,7 +1354,11 @@ func ResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogMetadataServiceCust
 	if modelMap["value"] != nil {
 		value := []string{}
 		for _, valueItem := range modelMap["value"].([]interface{}) {
-			value = append(value, valueItem.(string))
+			if valueItem == nil {
+				value = append(value, "")
+			} else {
+				value = append(value, valueItem.(string))
+			}
 		}
 		model.Value = value
 	}

@@ -949,7 +949,6 @@ func TestResourceIbmOnboardingCatalogPlanGlobalCatalogPlanMetadataOtherToMap(t *
 
 		model := make(map[string]interface{})
 		model["resource_controller"] = []map[string]interface{}{globalCatalogPlanMetadataOtherResourceControllerModel}
-		model["target_plans"] = []map[string]interface{}{globalCatalogPlanMetadataOtherTargetPlansItemModel}
 
 		assert.Equal(t, result, model)
 	}
@@ -959,7 +958,6 @@ func TestResourceIbmOnboardingCatalogPlanGlobalCatalogPlanMetadataOtherToMap(t *
 
 	model := new(partnercentersellv1.GlobalCatalogPlanMetadataOther)
 	model.ResourceController = globalCatalogPlanMetadataOtherResourceControllerModel
-	model.TargetPlans = []partnercentersellv1.GlobalCatalogPlanMetadataOtherTargetPlansItem{*globalCatalogPlanMetadataOtherTargetPlansItemModel}
 
 	result, err := partnercentersell.ResourceIbmOnboardingCatalogPlanGlobalCatalogPlanMetadataOtherToMap(model)
 	assert.Nil(t, err)
@@ -1565,7 +1563,6 @@ func TestResourceIbmOnboardingCatalogPlanMapToGlobalCatalogPlanMetadataOther(t *
 
 		model := new(partnercentersellv1.GlobalCatalogPlanMetadataOther)
 		model.ResourceController = globalCatalogPlanMetadataOtherResourceControllerModel
-		model.TargetPlans = []partnercentersellv1.GlobalCatalogPlanMetadataOtherTargetPlansItem{*globalCatalogPlanMetadataOtherTargetPlansItemModel}
 
 		assert.Equal(t, result, model)
 	}
@@ -1575,7 +1572,6 @@ func TestResourceIbmOnboardingCatalogPlanMapToGlobalCatalogPlanMetadataOther(t *
 
 	model := make(map[string]interface{})
 	model["resource_controller"] = []interface{}{globalCatalogPlanMetadataOtherResourceControllerModel}
-	model["target_plans"] = []interface{}{globalCatalogPlanMetadataOtherTargetPlansItemModel}
 
 	result, err := partnercentersell.ResourceIbmOnboardingCatalogPlanMapToGlobalCatalogPlanMetadataOther(model)
 	assert.Nil(t, err)
