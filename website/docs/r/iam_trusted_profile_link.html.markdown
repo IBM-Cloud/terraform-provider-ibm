@@ -19,6 +19,8 @@ resource "ibm_iam_trusted_profile_link" "iam_trusted_profile_link_instance" {
 		crn = "crn"
 		namespace = "namespace"
 		name = "name"
+		component_type = "component_type"
+		component_name = "component_name"
   }
   profile_id = "profile_id"
 }
@@ -28,9 +30,11 @@ resource "ibm_iam_trusted_profile_link" "iam_trusted_profile_link_instance" {
 
 You can specify the following arguments for this resource.
 
-* `cr_type` - (Required, Forces new resource, String) The compute resource type. Valid values are VSI, IKS_SA, ROKS_SA.
+* `cr_type` - (Required, Forces new resource, String) The compute resource type. Valid values are VSI, BMS, IKS_SA, ROKS_SA, CE.
 * `link` - (Required, Forces new resource, List) Link details.
 Nested schema for **link**:
+	* `component_name` - (Optional, String) Component name of the compute resource, only required if cr_type is CE.
+	* `component_type` - (Optional, String) Component type of the compute resource, only required if cr_type is CE.
 	* `crn` - (Optional, String) The CRN of the compute resource.
 	* `name` - (Optional, String) Name of the compute resource, only required if cr_type is IKS_SA or ROKS_SA.
 	* `namespace` - (Optional, String) The compute resource namespace, only required if cr_type is IKS_SA or ROKS_SA.
