@@ -5,8 +5,10 @@ package iamidentity_test
 
 import (
 	"fmt"
+	"strconv"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/stretchr/testify/assert"
@@ -21,36 +23,29 @@ import (
 func TestAccIBMIamTrustedProfileIdentitiesBasic(t *testing.T) {
 	var conf iamidentityv1.ProfileIdentitiesResponse
 	profileID := acc.IAMTrustedProfileID
+	accountId := acc.IAMAccountId
+	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	ibmID1 := acc.Ibmid1
-	ibmID2 := acc.Ibmid2
-	identities := []map[string]interface{}{
-		{
-			"identity_type": "user",
-			"identifier":    acc.Ibmid2,
-			"type":          "user",
-			"description":   fmt.Sprintf("tf_description_%s", "profile identity description"),
-		},
-	}
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMIamTrustedProfileIdentitiesDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: testAccCheckIBMIamTrustedProfileIdentitiesConfigBasic(profileID, ibmID1, ibmID2),
+			{
+				Config: testAccCheckIBMIamTrustedProfileIdentitiesConfigBasic(name, profileID, ibmID1, accountId),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIamTrustedProfileIdentitiesExists("ibm_iam_trusted_profile_identities.iam_trusted_profile_identities", conf),
 					resource.TestCheckResourceAttr("ibm_iam_trusted_profile_identities.iam_trusted_profile_identities", "profile_id", profileID),
 				),
 			},
-			resource.TestStep{
-				Config: testAccCheckIBMIamTrustedProfileIdentitiesConfigBasic(profileID, ibmID1, ibmID2),
+			{
+				Config: testAccCheckIBMIamTrustedProfileIdentitiesConfigBasic(name, profileID, ibmID1, accountId),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_iam_trusted_profile_identities.iam_trusted_profile_identities", "profile_id", profileID),
-					resource.TestCheckResourceAttr("ibm_iam_trusted_profile_identities.iam_trusted_profile_identities", "identities.0.type", identities[0]["type"].(string)),
+					testCheckIdentitiesCount(),
 				),
 			},
-			resource.TestStep{
+			{
 				ResourceName:      "ibm_iam_trusted_profile_identities.iam_trusted_profile_identities",
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -59,26 +54,50 @@ func TestAccIBMIamTrustedProfileIdentitiesBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMIamTrustedProfileIdentitiesConfigBasic(profileID string, ibmID1 string, ibmID2 string) string {
+func testAccCheckIBMIamTrustedProfileIdentitiesConfigBasic(name string, profileID string, ibmID1 string, accountId string) string {
 	return fmt.Sprintf(`
+		resource "ibm_iam_service_id" "serviceID" {
+			name        = "%s"
+			description = "ServiceID for test"
+		}
+
 		resource "ibm_iam_trusted_profile_identities" "iam_trusted_profile_identities" {
-          profile_id = "%s"
-		  identities {
-		    iam_id     = "%s"
-			type       = "user"
-			identifier = "%s"
-			accounts = ["86a1004d3f1848a291de32874cb48120"]
-			description = "tf_description_profile identity description"
+			profile_id = "%s"
+			identities {
+				type       = "serviceid"
+				iam_id     = ibm_iam_service_id.serviceID.iam_id
+				identifier = ibm_iam_service_id.serviceID.id
 			}
 			identities {
-		    iam_id     = "%s"
-			type       = "user"
-			identifier = "%s"
-			accounts = ["86a1004d3f1848a291de32874cb48120"]
-			description = "tf_description_profile identity description"
+				iam_id     = "%s"
+				type       = "user"
+				identifier = "%s"
+				accounts = ["%s"]
+				description = "tf_description_profile identity description"
             }
 		}
-	`, profileID, ibmID1, ibmID1, ibmID2, ibmID2)
+	`, name, profileID, ibmID1, ibmID1, accountId)
+}
+
+func testCheckIdentitiesCount() resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources["ibm_iam_trusted_profile_identities.iam_trusted_profile_identities"]
+		if !ok {
+			return fmt.Errorf("not found: %s", "ibm_iam_trusted_profile_identities.iam_trusted_profile_identities")
+		}
+
+		countStr := rs.Primary.Attributes["identities.#"]
+		count, err := strconv.Atoi(countStr)
+		if err != nil {
+			return err
+		}
+
+		if count < 2 {
+			return fmt.Errorf("expected at least 2 identities, got %d", count)
+		}
+
+		return nil
+	}
 }
 
 func testAccCheckIBMIamTrustedProfileIdentitiesExists(n string, obj iamidentityv1.ProfileIdentitiesResponse) resource.TestCheckFunc {

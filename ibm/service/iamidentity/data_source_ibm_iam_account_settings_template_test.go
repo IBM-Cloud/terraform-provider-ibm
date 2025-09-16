@@ -14,15 +14,16 @@ import (
 )
 
 func TestAccIBMAccountSettingsTemplateDataSourceBasic(t *testing.T) {
+	enterpriseAccountId := acc.IamIdentityEnterpriseAccountId
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	description := fmt.Sprintf("tf_desc_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		PreCheck:  func() { acc.TestAccPreCheckIamIdentityEnterpriseTemplates(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMAccountSettingsTemplateDataSourceConfigBasic(name, description),
+				Config: testAccCheckIBMAccountSettingsTemplateDataSourceConfigBasic(enterpriseAccountId, name, description),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_iam_account_settings_template.account_settings_template", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_iam_account_settings_template.account_settings_template", "template_id"),
@@ -40,15 +41,16 @@ func TestAccIBMAccountSettingsTemplateDataSourceBasic(t *testing.T) {
 }
 
 func TestAccIBMAccountSettingsTemplateDataSourceAllArgs(t *testing.T) {
+	enterpriseAccountId := acc.IamIdentityEnterpriseAccountId
 	accountSettingsTemplateResponseName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	accountSettingsTemplateResponseDescription := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		PreCheck:  func() { acc.TestAccPreCheckIamIdentityEnterpriseTemplates(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMAccountSettingsTemplateDataSourceConfig(accountSettingsTemplateResponseName, accountSettingsTemplateResponseDescription),
+				Config: testAccCheckIBMAccountSettingsTemplateDataSourceConfig(enterpriseAccountId, accountSettingsTemplateResponseName, accountSettingsTemplateResponseDescription),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_iam_account_settings_template.account_settings_template", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_iam_account_settings_template.account_settings_template", "version"),
@@ -80,9 +82,10 @@ func TestAccIBMAccountSettingsTemplateDataSourceAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMAccountSettingsTemplateDataSourceConfigBasic(name string, description string) string {
+func testAccCheckIBMAccountSettingsTemplateDataSourceConfigBasic(enterpriseAccountId string, name string, description string) string {
 	return fmt.Sprintf(`
 		resource "ibm_iam_account_settings_template" "account_settings_template" {
+			account_id = "%s"
 			name = "%s"
 			description = "%s"
 			account_settings {
@@ -93,12 +96,13 @@ func testAccCheckIBMAccountSettingsTemplateDataSourceConfigBasic(name string, de
 		data "ibm_iam_account_settings_template" "account_settings_template" {
 			template_id = ibm_iam_account_settings_template.account_settings_template.id
 		}
-	`, name, description)
+	`, enterpriseAccountId, name, description)
 }
 
-func testAccCheckIBMAccountSettingsTemplateDataSourceConfig(accountSettingsTemplateResponseName string, accountSettingsTemplateResponseDescription string) string {
+func testAccCheckIBMAccountSettingsTemplateDataSourceConfig(enterpriseAccountId string, accountSettingsTemplateResponseName string, accountSettingsTemplateResponseDescription string) string {
 	return fmt.Sprintf(`
 		resource "ibm_iam_account_settings_template" "account_settings_template" {
+			account_id = "%s"
 			name = "%s"
 			description = "%s"
 			account_settings {
@@ -121,5 +125,5 @@ func testAccCheckIBMAccountSettingsTemplateDataSourceConfig(accountSettingsTempl
 		data "ibm_iam_account_settings_template" "account_settings_template" {
 			template_id = ibm_iam_account_settings_template.account_settings_template.id
 		}
-	`, accountSettingsTemplateResponseName, accountSettingsTemplateResponseDescription)
+	`, enterpriseAccountId, accountSettingsTemplateResponseName, accountSettingsTemplateResponseDescription)
 }
