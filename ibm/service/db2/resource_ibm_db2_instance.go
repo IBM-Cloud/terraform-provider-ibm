@@ -1403,7 +1403,11 @@ func resourceIBMDb2InstanceCreate(d *schema.ResourceData, meta interface{}) erro
 						var address, description string
 
 						if rawAddress, ok := ipEntry["address"]; ok && rawAddress != nil {
-							str := rawAddress.(string)
+							str, ok := rawAddress.(string)
+							if !ok {
+								log.Printf("[ERROR] allowlist address is not a string")
+								return fmt.Errorf("allowlist address is not a string")
+							}
 							if ip := net.ParseIP(str); ip == nil {
 								log.Printf("[ERROR] invalid IP address format: %s", str)
 								return fmt.Errorf("invalid IP address format: %s", str)
@@ -1412,7 +1416,11 @@ func resourceIBMDb2InstanceCreate(d *schema.ResourceData, meta interface{}) erro
 						}
 
 						if rawDescription, ok := ipEntry["description"]; ok && rawDescription != nil {
-							str := rawDescription.(string)
+							str, ok := rawDescription.(string)
+							if !ok {
+								log.Printf("[ERROR] allowlist description is not a string")
+								return fmt.Errorf("allowlist description is not a string")
+							}
 							description = str
 						}
 
@@ -1438,6 +1446,7 @@ func resourceIBMDb2InstanceCreate(d *schema.ResourceData, meta interface{}) erro
 			}
 		}
 	}
+
 
 	err = userConfigValidation(d, encodedCRN, db2SaasClient)
 	if err != nil {
