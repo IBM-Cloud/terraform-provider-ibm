@@ -5,7 +5,7 @@ import (
 )
 
 // Version is the current provider main version
-const Version = "1.82.1"
+const Version = "1.83.0-beta0"
 
 // GitCommit is the git commit that was compiled. This will be filled in by the compiler.
 var GitCommit string

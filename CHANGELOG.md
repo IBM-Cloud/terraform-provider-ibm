@@ -1,3 +1,31 @@
+# 1.83.0-beta0 (September 15, 2025)
+
+## Bug Fixes
+
+### Configuration Aggregator
+* fixed docs for is_lb_listener_policy_rule and container_cluster_config ([6438](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6438))
+
+### IAM
+* update service, trusted id policies ([6453](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6453))
+
+## Enhancements
+
+### Configuration Aggregator
+* add way to test admin config ([6434](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6434))
+
+### General
+* Support for Trusted profile authentication ([6458](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6458))
+
+### IAM
+* profile link additional param ([6454](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6454))
+
+### Secrets Manager
+* Pull in new icr SDK which adds new regions endpoints ([6451](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6451))
+
+### VPC Infrastructure
+* add rules_to_skip in ibm_cis_ruleset_rule ([6441](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6441))
+
+
 # 1.82.1 (September 1, 2025)
 
 ## Bug Fixes
