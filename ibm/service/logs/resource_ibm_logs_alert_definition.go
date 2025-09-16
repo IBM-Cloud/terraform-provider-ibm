@@ -129,6 +129,7 @@ func ResourceIbmLogsAlertDefinition() *schema.Resource {
 				Type:        schema.TypeList,
 				MaxItems:    1,
 				Optional:    true,
+				Computed:    true,
 				Description: "Incident creation and management settings.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
