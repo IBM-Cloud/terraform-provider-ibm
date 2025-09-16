@@ -172,6 +172,7 @@ func ResourceIBMIsBareMetalServer() *schema.Resource {
 
 			isBareMetalServerMetadataService: {
 				Type:        schema.TypeList,
+				MaxItems:    1,
 				Optional:    true,
 				Computed:    true,
 				Description: "The metadata service configuration",
