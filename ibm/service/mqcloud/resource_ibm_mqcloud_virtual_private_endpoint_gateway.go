@@ -1,8 +1,8 @@
-// Copyright IBM Corp. 2024 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.96.0-d6dec9d7-20241008-212902
+ * IBM OpenAPI Terraform Generator Version: 3.104.0-b4a47c49-20250418-184351
  */
 
 package mqcloud
@@ -34,14 +34,14 @@ func ResourceIbmMqcloudVirtualPrivateEndpointGateway() *schema.Resource {
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_mqcloud_virtual_private_endpoint_gateway", "service_instance_guid"),
-				Description:  "The GUID that uniquely identifies the MQaaS service instance.",
+				Description:  "The GUID that uniquely identifies the MQ SaaS service instance.",
 			},
 			"trusted_profile": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_mqcloud_virtual_private_endpoint_gateway", "trusted_profile"),
-				Description:  "The CRN of the trusted profile to assume for this request.",
+				Description:  "The CRN of the trusted profile to assume for this request. This can only be retrieved using the CLI using `ibmcloud iam tp <profile_id> -o json`.",
 			},
 			"name": {
 				Type:         schema.TypeString,
@@ -129,13 +129,6 @@ func resourceIbmMqcloudVirtualPrivateEndpointGatewayCreate(context context.Conte
 		return tfErr.GetDiag()
 	}
 
-	err = checkSIPlan(d, meta)
-	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Create Virtual Private Endpoint Gateway failed: %s", err.Error()), "ibm_mqcloud_virtual_private_endpoint_gateway", "create")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		return tfErr.GetDiag()
-	}
-
 	createVirtualPrivateEndpointGatewayOptions := &mqcloudv1.CreateVirtualPrivateEndpointGatewayOptions{}
 
 	createVirtualPrivateEndpointGatewayOptions.SetServiceInstanceGuid(d.Get("service_instance_guid").(string))
@@ -217,13 +210,6 @@ func resourceIbmMqcloudVirtualPrivateEndpointGatewayDelete(context context.Conte
 	mqcloudClient, err := meta.(conns.ClientSession).MqcloudV1()
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_mqcloud_virtual_private_endpoint_gateway", "delete", "initialize-client")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		return tfErr.GetDiag()
-	}
-
-	err = checkSIPlan(d, meta)
-	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Delete Virtual Private Endpoint Gateway failed: %s", err.Error()), "ibm_mqcloud_virtual_private_endpoint_gateway", "delete")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}

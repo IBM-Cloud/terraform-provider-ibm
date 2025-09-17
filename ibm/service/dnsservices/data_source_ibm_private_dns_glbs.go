@@ -4,10 +4,10 @@
 package dnsservices
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -131,7 +131,7 @@ func dataSourceIBMPrivateDNSGLBsRead(d *schema.ResourceData, meta interface{}) e
 	listDNSGLBs := sess.NewListLoadBalancersOptions(instanceID, zoneID)
 	availableGLBs, detail, err := sess.ListLoadBalancers(listDNSGLBs)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error reading list of pdns GLB load balancers:%s\n%s", err, detail)
+		return flex.FmtErrorf("[ERROR] Error reading list of dns services GLB load balancers:%s\n%s", err, detail)
 	}
 
 	dnslbs := make([]interface{}, 0)

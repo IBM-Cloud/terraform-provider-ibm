@@ -1,6 +1,6 @@
-# Examples for MQaaS
+# Examples for MQ SaaS
 
-These examples illustrate how to use the resources and data sources associated with MQaaS.
+These examples illustrate how to use the resources and data sources associated with MQ SaaS.
 
 The following resources are supported:
 * ibm_mqcloud_queue_manager
@@ -33,7 +33,7 @@ $ terraform apply
 
 Run `terraform destroy` when you don't need these resources.
 
-## MQaaS resources
+## MQ SaaS resources
 
 ### Resource: ibm_mqcloud_queue_manager
 
@@ -53,7 +53,7 @@ resource "ibm_mqcloud_queue_manager" "mqcloud_queue_manager_instance" {
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
 | ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
-| service_instance_guid | The GUID that uniquely identifies the MQaaS service instance. | `string` | true |
+| service_instance_guid | The GUID that uniquely identifies the MQ SaaS service instance. | `string` | true |
 | name | A queue manager name conforming to MQ restrictions. | `string` | true |
 | display_name | A displayable name for the queue manager - limited only in length. | `string` | false |
 | location | The locations in which the queue manager could be deployed. | `string` | true |
@@ -89,13 +89,14 @@ resource "ibm_mqcloud_application" "mqcloud_application_instance" {
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
 | ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
-| service_instance_guid | The GUID that uniquely identifies the MQaaS service instance. | `string` | true |
+| service_instance_guid | The GUID that uniquely identifies the MQ SaaS service instance. | `string` | true |
 | name | The name of the application - conforming to MQ rules. | `string` | true |
 
 #### Outputs
 
 | Name | Description |
 |------|-------------|
+| iam_service_id | The IAM ID of the application. |
 | create_api_key_uri | The URI to create a new apikey for the application. |
 | href | The URL for this application. |
 | application_id | The ID of the application which was allocated on creation, and can be used for delete calls. |
@@ -115,7 +116,7 @@ resource "ibm_mqcloud_user" "mqcloud_user_instance" {
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
 | ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
-| service_instance_guid | The GUID that uniquely identifies the MQaaS service instance. | `string` | true |
+| service_instance_guid | The GUID that uniquely identifies the MQ SaaS service instance. | `string` | true |
 | name | The shortname of the user that will be used as the IBM MQ administrator in interactions with a queue manager for this service instance. | `string` | true |
 | email | The email of the user. | `string` | true |
 
@@ -123,6 +124,9 @@ resource "ibm_mqcloud_user" "mqcloud_user_instance" {
 
 | Name | Description |
 |------|-------------|
+| iam_service_id | The IAM ID of the user. |
+| roles | A list of roles the user has. |
+| iam_managed | Indicates whether the user is managed by IAM. |
 | href | The URL for the user details. |
 | user_id | The ID of the user which was allocated on creation, and can be used for delete calls. |
 
@@ -150,7 +154,7 @@ resource "ibm_mqcloud_keystore_certificate" "mqcloud_keystore_certificate_instan
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
 | ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
-| service_instance_guid | The GUID that uniquely identifies the MQaaS service instance. | `string` | true |
+| service_instance_guid | The GUID that uniquely identifies the MQ SaaS service instance. | `string` | true |
 | queue_manager_id | The id of the queue manager to retrieve its full details. | `string` | true |
 | label | The label to use for the certificate to be uploaded. | `string` | true |
 | certificate_file | The filename and path of the certificate to be uploaded. | `base64-encoded string` | true |
@@ -190,7 +194,7 @@ resource "ibm_mqcloud_truststore_certificate" "mqcloud_truststore_certificate_in
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
 | ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
-| service_instance_guid | The GUID that uniquely identifies the MQaaS service instance. | `string` | true |
+| service_instance_guid | The GUID that uniquely identifies the MQ SaaS service instance. | `string` | true |
 | queue_manager_id | The id of the queue manager to retrieve its full details. | `string` | true |
 | label | The label to use for the certificate to be uploaded. | `string` | true |
 | certificate_file | The filename and path of the certificate to be uploaded. | `base64-encoded string` | true |
@@ -227,7 +231,7 @@ resource "ibm_mqcloud_virtual_private_endpoint_gateway" "mqcloud_virtual_private
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
 | ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
-| service_instance_guid | The GUID that uniquely identifies the MQaaS service instance. | `string` | true |
+| service_instance_guid | The GUID that uniquely identifies the MQ SaaS service instance. | `string` | true |
 | trusted_profile | The CRN of the trusted profile to assume for this request. | `string` | false |
 | name | The name of the virtual private endpoint gateway, created by the user. | `string` | true |
 | target_crn | The CRN of the reserved capacity service instance the user is trying to connect to. | `string` | true |
@@ -240,7 +244,7 @@ resource "ibm_mqcloud_virtual_private_endpoint_gateway" "mqcloud_virtual_private
 | status | The lifecycle state of this virtual privage endpoint. |
 | virtual_private_endpoint_gateway_guid | The ID of the virtual private endpoint gateway which was allocated on creation. |
 
-## MQaaS data sources
+## MQ SaaS data sources
 
 ### Data source: ibm_mqcloud_queue_manager_options
 
@@ -254,7 +258,7 @@ data "ibm_mqcloud_queue_manager_options" "mqcloud_queue_manager_options_instance
 
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
-| service_instance_guid | The GUID that uniquely identifies the MQaaS service instance. | `string` | true |
+| service_instance_guid | The GUID that uniquely identifies the MQ SaaS service instance. | `string` | true |
 
 #### Outputs
 
@@ -278,7 +282,7 @@ data "ibm_mqcloud_queue_manager" "mqcloud_queue_manager_instance" {
 
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
-| service_instance_guid | The GUID that uniquely identifies the MQaaS service instance. | `string` | true |
+| service_instance_guid | The GUID that uniquely identifies the MQ SaaS service instance. | `string` | true |
 | name | A queue manager name conforming to MQ restrictions. | `string` | false |
 
 #### Outputs
@@ -300,7 +304,7 @@ data "ibm_mqcloud_queue_manager_status" "mqcloud_queue_manager_status_instance" 
 
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
-| service_instance_guid | The GUID that uniquely identifies the MQaaS service instance. | `string` | true |
+| service_instance_guid | The GUID that uniquely identifies the MQ SaaS service instance. | `string` | true |
 | queue_manager_id | The id of the queue manager to retrieve its full details. | `string` | true |
 
 #### Outputs
@@ -322,7 +326,7 @@ data "ibm_mqcloud_application" "mqcloud_application_instance" {
 
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
-| service_instance_guid | The GUID that uniquely identifies the MQaaS service instance. | `string` | true |
+| service_instance_guid | The GUID that uniquely identifies the MQ SaaS service instance. | `string` | true |
 | name | The name of the application - conforming to MQ rules. | `string` | false |
 
 #### Outputs
@@ -344,7 +348,7 @@ data "ibm_mqcloud_user" "mqcloud_user_instance" {
 
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
-| service_instance_guid | The GUID that uniquely identifies the MQaaS service instance. | `string` | true |
+| service_instance_guid | The GUID that uniquely identifies the MQ SaaS service instance. | `string` | true |
 | name | The shortname of the user that will be used as the IBM MQ administrator in interactions with a queue manager for this service instance. | `string` | false |
 
 #### Outputs
@@ -367,7 +371,7 @@ data "ibm_mqcloud_truststore_certificate" "mqcloud_truststore_certificate_instan
 
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
-| service_instance_guid | The GUID that uniquely identifies the MQaaS service instance. | `string` | true |
+| service_instance_guid | The GUID that uniquely identifies the MQ SaaS service instance. | `string` | true |
 | queue_manager_id | The id of the queue manager to retrieve its full details. | `string` | true |
 | label | Certificate label in queue manager store. | `string` | false |
 
@@ -392,7 +396,7 @@ data "ibm_mqcloud_keystore_certificate" "mqcloud_keystore_certificate_instance" 
 
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
-| service_instance_guid | The GUID that uniquely identifies the MQaaS service instance. | `string` | true |
+| service_instance_guid | The GUID that uniquely identifies the MQ SaaS service instance. | `string` | true |
 | queue_manager_id | The id of the queue manager to retrieve its full details. | `string` | true |
 | label | Certificate label in queue manager store. | `string` | false |
 
@@ -417,7 +421,7 @@ data "ibm_mqcloud_virtual_private_endpoint_gateways" "mqcloud_virtual_private_en
 
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
-| service_instance_guid | The GUID that uniquely identifies the MQaaS service instance. | `string` | true |
+| service_instance_guid | The GUID that uniquely identifies the MQ SaaS service instance. | `string` | true |
 | trusted_profile | The CRN of the trusted profile to assume for this request. | `string` | false |
 | name | The name of the virtual private endpoint gateway, created by the user. | `string` | false |
 
@@ -441,7 +445,7 @@ data "ibm_mqcloud_virtual_private_endpoint_gateway" "mqcloud_virtual_private_end
 
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
-| service_instance_guid | The GUID that uniquely identifies the MQaaS service instance. | `string` | true |
+| service_instance_guid | The GUID that uniquely identifies the MQ SaaS service instance. | `string` | true |
 | virtual_private_endpoint_gateway_guid | The id of the virtual private endpoint gateway. | `string` | true |
 | trusted_profile | The CRN of the trusted profile to assume for this request. | `string` | false |
 

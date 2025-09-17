@@ -79,6 +79,11 @@ func DataSourceIbmSmPrivateCertificate() *schema.Resource {
 				RequiredWith: []string{"secret_group_name"},
 				Description:  "The human-readable name of your secret.",
 			},
+			"retrieved_at": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The date when the data of the secret was last retrieved. The date format follows RFC 3339. Epoch date if there is no record of secret data retrieval.",
+			},
 			"secret_group_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -258,7 +263,11 @@ func dataSourceIbmSmPrivateCertificateRead(context context.Context, d *schema.Re
 		return diagError
 	}
 
-	privateCertificate := privateCertificateIntf.(*secretsmanagerv2.PrivateCertificate)
+	privateCertificate, ok := privateCertificateIntf.(*secretsmanagerv2.PrivateCertificate)
+	if !ok {
+		tfErr := flex.TerraformErrorf(nil, fmt.Sprintf("Wrong secret type: The provided secret is not a Private Certificate secret."), fmt.Sprintf("(Data) %s", PrivateCertSecretResourceName), "read")
+		return tfErr.GetDiag()
+	}
 
 	d.SetId(fmt.Sprintf("%s/%s/%s", region, instanceId, *privateCertificate.ID))
 
@@ -319,6 +328,11 @@ func dataSourceIbmSmPrivateCertificateRead(context context.Context, d *schema.Re
 		return tfErr.GetDiag()
 	}
 
+	if err = d.Set("secret_id", privateCertificate.ID); err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting secret_id"), fmt.Sprintf("(Data) %s", PrivateCertSecretResourceName), "read")
+		return tfErr.GetDiag()
+	}
+
 	if err = d.Set("secret_group_id", privateCertificate.SecretGroupID); err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting secret_group_id"), fmt.Sprintf("(Data) %s", PrivateCertSecretResourceName), "read")
 		return tfErr.GetDiag()
@@ -341,6 +355,11 @@ func dataSourceIbmSmPrivateCertificateRead(context context.Context, d *schema.Re
 
 	if err = d.Set("updated_at", DateTimeToRFC3339(privateCertificate.UpdatedAt)); err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting updated_at"), fmt.Sprintf("(Data) %s", PrivateCertSecretResourceName), "read")
+		return tfErr.GetDiag()
+	}
+
+	if err = d.Set("retrieved_at", DateTimeToRFC3339(privateCertificate.RetrievedAt)); err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting retrieved_at"), fmt.Sprintf("(Data) %s", PrivateCertSecretResourceName), "read")
 		return tfErr.GetDiag()
 	}
 

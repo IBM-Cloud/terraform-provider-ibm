@@ -35,6 +35,7 @@ func TestAccIbmSmPublicCertificateBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "created_by"),
 					resource.TestCheckResourceAttrSet(resourceName, "created_at"),
 					resource.TestCheckResourceAttrSet(resourceName, "updated_at"),
+					resource.TestCheckResourceAttrSet(resourceName, "retrieved_at"),
 					resource.TestCheckResourceAttrSet(resourceName, "crn"),
 					resource.TestCheckResourceAttrSet(resourceName, "downloaded"),
 					resource.TestCheckResourceAttrSet(resourceName, "issuer"),
@@ -55,9 +56,10 @@ func TestAccIbmSmPublicCertificateBasic(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				ResourceName:      resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"updated_at", "retrieved_at"},
 			},
 		},
 	})
@@ -106,9 +108,10 @@ func TestAccIbmSmPublicCertificateAllArgs(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				ResourceName:      resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"updated_at", "retrieved_at"},
 			},
 		},
 	})

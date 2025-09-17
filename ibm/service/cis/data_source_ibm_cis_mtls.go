@@ -118,7 +118,10 @@ func dataIBMCISMtlsRead(context context.Context, d *schema.ResourceData, meta in
 	sess, err := meta.(conns.ClientSession).CisMtlsSession()
 
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error while getting the CisMtlsSession() %s %v", err, sess))
+		tfErr := flex.TerraformErrorf(err,
+			fmt.Sprintf("dataIBMCISMtlsRead CisMtlsSession initialization failed: %s", err.Error()),
+			"ibm_cis_mtls", "read")
+		return tfErr.GetDiag()
 	}
 
 	zoneID, crn, _ := flex.ConvertTftoCisTwoVar(d.Id())
@@ -128,8 +131,11 @@ func dataIBMCISMtlsRead(context context.Context, d *schema.ResourceData, meta in
 
 	result, resp, err := sess.ListAccessCertificates(opt)
 	if err != nil {
-		log.Printf("[WARN] List all certificates failed: %v\n", resp)
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err,
+			fmt.Sprintf("dataIBMCISMtlsRead ListAccessCertificates failed: %s", err.Error()),
+			"ibm_cis_mtls", "read")
+		log.Printf("[WARN] List all certificates failed: %v\n%s\n", resp, tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	mtlsCertLists := make([]map[string]interface{}, 0)
 	for _, certObj := range result.Result {

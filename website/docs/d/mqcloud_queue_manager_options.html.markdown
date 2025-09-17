@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_mqcloud_queue_manager_options"
 description: |-
   Get information about mqcloud_queue_manager_options
-subcategory: "MQaaS"
+subcategory: "MQ SaaS"
 ---
 
 # ibm_mqcloud_queue_manager_options
@@ -24,7 +24,7 @@ data "ibm_mqcloud_queue_manager_options" "mqcloud_queue_manager_options" {
 
 You can specify the following arguments for this data source.
 
-* `service_instance_guid` - (Required, Forces new resource, String) The GUID that uniquely identifies the MQaaS service instance.
+* `service_instance_guid` - (Required, Forces new resource, String) The GUID that uniquely identifies the MQ SaaS service instance.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/`.
 
 ## Attribute Reference

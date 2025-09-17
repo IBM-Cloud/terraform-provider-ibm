@@ -46,6 +46,8 @@ Review the argument references that you can specify for your data source.
 
 In addition to all argument reference list, you can access the following attribute references after your data source is created.
 
+- `crn` - (String) The CRN of this resource.
 - `members` - (List) List of shared processor pool IDs that are members of the placement group.
 - `name` - (String) The name of the shared processor pool placement group.
 - `policy` - (String) The value of the group's affinity policy. Valid values are affinity and anti-affinity.
+- `user_tags` - (List) List of user tags attached to the resource.

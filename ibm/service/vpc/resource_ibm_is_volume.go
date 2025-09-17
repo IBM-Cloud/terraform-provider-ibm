@@ -130,6 +130,11 @@ func ResourceIBMISVolume() *schema.Resource {
 				Computed:    true,
 				Description: "Volume encryption type info",
 			},
+			"storage_generation": {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "storage_generation indicates which generation the profile family belongs to. For the custom and tiered profiles, this value is 1.",
+			},
 
 			isVolumeCapacity: {
 				Type:     schema.TypeInt,
@@ -235,6 +240,38 @@ func ResourceIBMISVolume() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The CRN for this version of a catalog offering",
+						},
+					},
+				},
+			},
+			"allowed_use": &schema.Schema{
+				Type:        schema.TypeList,
+				MaxItems:    1,
+				Optional:    true,
+				Computed:    true,
+				Description: "The usage constraints to match against the requested instance or bare metal server properties to determine compatibility.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"api_version": &schema.Schema{
+							Type:         schema.TypeString,
+							Optional:     true,
+							Computed:     true,
+							ValidateFunc: validate.InvokeValidator("ibm_is_volume", "allowed_use.api_version"),
+							Description:  "The API version with which to evaluate the expressions.",
+						},
+						"bare_metal_server": &schema.Schema{
+							Type:         schema.TypeString,
+							Optional:     true,
+							Computed:     true,
+							ValidateFunc: validate.InvokeValidator("ibm_is_volume", "allowed_use.bare_metal_server"),
+							Description:  "The expression that must be satisfied by the properties of a bare metal server provisioned using the image data in this volume.",
+						},
+						"instance": &schema.Schema{
+							Type:         schema.TypeString,
+							Optional:     true,
+							Computed:     true,
+							ValidateFunc: validate.InvokeValidator("ibm_is_volume", "allowed_use.instance"),
+							Description:  "The expression that must be satisfied by the properties of a virtual server instance provisioned using this volume.",
 						},
 					},
 				},
@@ -448,6 +485,27 @@ func ResourceIBMISVolumeValidator() *validate.ResourceValidator {
 			Regexp:                     `^([A-Za-z0-9_.-]|[A-Za-z0-9_.-][A-Za-z0-9_ .-]*[A-Za-z0-9_.-]):([A-Za-z0-9_.-]|[A-Za-z0-9_.-][A-Za-z0-9_ .-]*[A-Za-z0-9_.-])$`,
 			MinValueLength:             1,
 			MaxValueLength:             128})
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "allowed_use.api_version",
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			Regexp:                     `^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$`})
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "allowed_use.bare_metal_server",
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			Regexp:                     `^([a-zA-Z_][a-zA-Z0-9_]*|[-+*/%]|&&|\|\||!|==|!=|<|<=|>|>=|~|\bin\b|\(|\)|\[|\]|,|\.|"|'|"|'|\s+|\d+)+$`})
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "allowed_use.instance",
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			Regexp:                     `^([a-zA-Z_][a-zA-Z0-9_]*|[-+*/%]|&&|\|\||!|==|!=|<|<=|>|>=|~|\bin\b|\(|\)|\[|\]|,|\.|"|'|"|'|\s+|\d+)+$`})
 
 	ibmISVolumeResourceValidator := validate.ResourceValidator{ResourceName: "ibm_is_volume", Schema: validateSchema}
 	return &ibmISVolumeResourceValidator
@@ -562,6 +620,11 @@ func volCreate(context context.Context, d *schema.ResourceData, meta interface{}
 			volTemplate.UserTags = userTagsArray
 		}
 	}
+	if allowedUse, ok := d.GetOk("allowed_use"); ok && len(allowedUse.([]interface{})) > 0 {
+		allowedUseModel, _ := ResourceIBMIsVolumeAllowedUseMapToVolumeAllowedUsePrototype(allowedUse.([]interface{})[0].(map[string]interface{}))
+		volTemplate.AllowedUse = allowedUseModel
+	}
+
 	options.VolumePrototype = volTemplate
 	vol, _, err := sess.CreateVolumeWithContext(context, options)
 	if err != nil {
@@ -625,6 +688,9 @@ func volGet(context context.Context, d *schema.ResourceData, meta interface{}, i
 			err = fmt.Errorf("Error setting name: %s", err)
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_volume", "read", "set-name").GetDiag()
 		}
+	}
+	if err = d.Set("storage_generation", flex.IntValue(volume.StorageGeneration)); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting storage_generation: %s", err), "(Data) ibm_is_volume", "read", "set-storage_generation").GetDiag()
 	}
 	if !core.IsNil(volume.Profile) {
 		if err = d.Set("profile", *volume.Profile.Name); err != nil {
@@ -739,6 +805,19 @@ func volGet(context context.Context, d *schema.ResourceData, meta interface{}, i
 			err = fmt.Errorf("Error setting health_reasons: %s", err)
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_volume", "read", "set-health_reasons").GetDiag()
 		}
+	}
+	allowedUses := []map[string]interface{}{}
+	if volume.AllowedUse != nil {
+		modelMap, err := ResourceceIBMIsVolumeAllowedUseToMap(volume.AllowedUse)
+		if err != nil {
+			err = fmt.Errorf("Error setting allowed_use: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_volume", "read", "set-allowed_use").GetDiag()
+		}
+		allowedUses = append(allowedUses, modelMap)
+	}
+	if err = d.Set("allowed_use", allowedUses); err != nil {
+		err = fmt.Errorf("Error setting allowed_use: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_volume", "read", "set-allowed_use").GetDiag()
 	}
 	// catalog
 	catalogList := make([]map[string]interface{}, 0)
@@ -957,6 +1036,49 @@ func volUpdate(context context.Context, d *schema.ResourceData, meta interface{}
 			}
 			eTag = response.Headers.Get("ETag")
 			options.IfMatch = &eTag
+		}
+	}
+
+	if d.HasChange("allowed_use") {
+		allowedUseModel, _ := ResourceIBMIsInstanceMapToVolumeAllowedUsePatchPrototype(d.Get("allowed_use").([]interface{})[0].(map[string]interface{}))
+		optionsget := &vpcv1.GetVolumeOptions{
+			ID: &id,
+		}
+		_, response, err := sess.GetVolume(optionsget)
+		if err != nil {
+			if response != nil && response.StatusCode == 404 {
+				d.SetId("")
+				return nil
+			}
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetVolumeWithContext failed: %s", err.Error()), "ibm_is_volume", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
+		eTag := response.Headers.Get("ETag")
+		options := &vpcv1.UpdateVolumeOptions{
+			ID: &id,
+		}
+		options.IfMatch = &eTag
+		volumePatchModel := &vpcv1.VolumePatch{}
+		volumePatchModel.AllowedUse = allowedUseModel
+		volumePatch, err := volumePatchModel.AsPatch()
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("volumeProfilePatchModel.AsPatch() for iops failed: %s", err.Error()), "ibm_is_volume", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
+		options.VolumePatch = volumePatch
+		_, _, err = sess.UpdateVolumeWithContext(context, options)
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateVolumeWithContext failed: %s", err.Error()), "ibm_is_volume", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
+		_, err = isWaitForVolumeAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForVolumeAvailable failed: %s", err.Error()), "ibm_is_volume", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 
@@ -1366,4 +1488,60 @@ func deleteAllSnapshots(sess *vpcv1.VpcV1, id string) error {
 		return fmt.Errorf("[ERROR] Error deleting snapshots from volume %s\n%s", err, response)
 	}
 	return nil
+}
+
+func ResourceIBMIsVolumeAllowedUseMapToVolumeAllowedUsePrototype(modelMap map[string]interface{}) (*vpcv1.VolumeAllowedUsePrototype, error) {
+	model := &vpcv1.VolumeAllowedUsePrototype{}
+	if modelMap["api_version"] != nil && modelMap["api_version"].(string) != "" {
+		model.ApiVersion = core.StringPtr(modelMap["api_version"].(string))
+	}
+	if modelMap["bare_metal_server"] != nil && modelMap["bare_metal_server"].(string) != "" {
+		model.BareMetalServer = core.StringPtr(modelMap["bare_metal_server"].(string))
+	}
+	if modelMap["instance"] != nil && modelMap["instance"].(string) != "" {
+		model.Instance = core.StringPtr(modelMap["instance"].(string))
+	}
+	return model, nil
+}
+
+func ResourceIBMIsInstanceMapToVolumeAllowedUsePatchPrototype(modelMap map[string]interface{}) (*vpcv1.VolumeAllowedUsePatch, error) {
+	model := &vpcv1.VolumeAllowedUsePatch{}
+	if modelMap["api_version"] != nil && modelMap["api_version"].(string) != "" {
+		model.ApiVersion = core.StringPtr(modelMap["api_version"].(string))
+	}
+	if modelMap["bare_metal_server"] != nil && modelMap["bare_metal_server"].(string) != "" {
+		model.BareMetalServer = core.StringPtr(modelMap["bare_metal_server"].(string))
+	}
+	if modelMap["instance"] != nil && modelMap["instance"].(string) != "" {
+		model.Instance = core.StringPtr(modelMap["instance"].(string))
+	}
+	return model, nil
+}
+
+func ResourceIBMIsVolumeAllowedUseToMap(model *vpcv1.VolumeAllowedUsePrototype) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.BareMetalServer != nil {
+		modelMap["bare_metal_server"] = *model.BareMetalServer
+	}
+	if model.Instance != nil {
+		modelMap["instance"] = *model.Instance
+	}
+	if model.ApiVersion != nil {
+		modelMap["api_version"] = *model.ApiVersion
+	}
+	return modelMap, nil
+}
+
+func ResourceceIBMIsVolumeAllowedUseToMap(model *vpcv1.VolumeAllowedUse) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.BareMetalServer != nil {
+		modelMap["bare_metal_server"] = *model.BareMetalServer
+	}
+	if model.Instance != nil {
+		modelMap["instance"] = *model.Instance
+	}
+	if model.ApiVersion != nil {
+		modelMap["api_version"] = *model.ApiVersion
+	}
+	return modelMap, nil
 }
