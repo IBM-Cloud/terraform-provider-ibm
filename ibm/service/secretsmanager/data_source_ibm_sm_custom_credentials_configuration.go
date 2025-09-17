@@ -157,7 +157,11 @@ func dataSourceIbmSmCustomCredentialsConfigurationRead(context context.Context, 
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetConfigurationWithContext failed %s\n%s", err, response), fmt.Sprintf("(Data) %s", CustomCredentialsConfigResourceName), "read")
 		return tfErr.GetDiag()
 	}
-	config := configIntf.(*secretsmanagerv2.CustomCredentialsConfiguration)
+	config, ok := configIntf.(*secretsmanagerv2.CustomCredentialsConfiguration)
+	if !ok {
+		tfErr := flex.TerraformErrorf(nil, fmt.Sprintf("Wrong configuration type: The provided configuration is not a Custom Credentials configuration."), fmt.Sprintf("(Data) %s", CustomCredentialsConfigResourceName), "read")
+		return tfErr.GetDiag()
+	}
 
 	d.SetId(fmt.Sprintf("%s/%s/%s", region, instanceId, *getConfigurationOptions.Name))
 

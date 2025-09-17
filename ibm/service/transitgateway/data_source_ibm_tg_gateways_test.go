@@ -38,6 +38,7 @@ func TestAccIBMTransitGatewaysDataSource_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resName, "transit_gateways.0.name"),
 					resource.TestCheckResourceAttrSet(resName, "transit_gateways.0.location"),
 					resource.TestCheckResourceAttrSet(resName, "transit_gateways.0.global"),
+					resource.TestCheckResourceAttrSet(resName, "transit_gateways.0.gre_enhanced_route_propagation"),
 				),
 			},
 		},

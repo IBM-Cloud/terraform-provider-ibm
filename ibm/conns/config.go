@@ -52,6 +52,7 @@ import (
 	cisglbhealthcheckv1 "github.com/IBM/networking-go-sdk/globalloadbalancermonitorv1"
 	cisglbpoolv0 "github.com/IBM/networking-go-sdk/globalloadbalancerpoolsv0"
 	cisglbv1 "github.com/IBM/networking-go-sdk/globalloadbalancerv1"
+	cislistsapiv1 "github.com/IBM/networking-go-sdk/listsapiv1"
 	cislogpushjobsapiv1 "github.com/IBM/networking-go-sdk/logpushjobsapiv1"
 	cismtlsv1 "github.com/IBM/networking-go-sdk/mtlsv1"
 	cispagerulev1 "github.com/IBM/networking-go-sdk/pageruleapiv1"
@@ -296,6 +297,7 @@ type ClientSession interface {
 	CisLockdownClientSession() (*cislockdownv1.ZoneLockdownV1, error)
 	CisRangeAppClientSession() (*cisrangeappv1.RangeApplicationsV1, error)
 	CisWAFRuleClientSession() (*ciswafrulev1.WafRulesApiV1, error)
+	CisListsSession() (*cislistsapiv1.ListsApiV1, error)
 	IAMIdentityV1API() (*iamidentity.IamIdentityV1, error)
 	IBMCloudShellV1() (*ibmcloudshellv1.IBMCloudShellV1, error)
 	ResourceManagerV2API() (*resourcemanager.ResourceManagerV2, error)
@@ -550,6 +552,11 @@ type clientSession struct {
 	// CIS WAF rule service options
 	cisWAFRuleErr    error
 	cisWAFRuleClient *ciswafrulev1.WafRulesApiV1
+
+	// CIS LISTS
+	cisListsClient *cislistsapiv1.ListsApiV1
+	cisListsErr    error
+
 	// IAM Identity Option
 	iamIdentityErr error
 	iamIdentityAPI *iamidentity.IamIdentityV1
@@ -1149,6 +1156,14 @@ func (sess clientSession) CisOrigAuthSession() (*cisoriginpull.AuthenticatedOrig
 	return sess.cisOriginAuthClient.Clone(), nil
 }
 
+// CIS Lists
+func (sess clientSession) CisListsSession() (*cislistsapiv1.ListsApiV1, error) {
+	if sess.cisListsErr != nil {
+		return sess.cisListsClient, sess.cisListsErr
+	}
+	return sess.cisListsClient.Clone(), nil
+}
+
 // IAM Identity Session
 func (sess clientSession) IAMIdentityV1API() (*iamidentity.IamIdentityV1, error) {
 	return sess.iamIdentityAPI, sess.iamIdentityErr
@@ -1297,7 +1312,7 @@ func (session clientSession) ProjectV1() (*project.ProjectV1, error) {
 	return session.projectClient, session.projectClientErr
 }
 
-// MQaaS
+// MQ SaaS
 func (session clientSession) MqcloudV1() (*mqcloudv1.MqcloudV1, error) {
 	if session.mqcloudClientErr != nil {
 		sessionMqcloudClient := session.mqcloudClient
@@ -1434,7 +1449,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		return session, nil
 	}
 
-	if sess.BluemixSession.Config.BluemixAPIKey != "" {
+	if sess.BluemixSession.Config.BluemixAPIKey != "" && c.IAMTrustedProfileID == "" {
 		err = authenticateAPIKey(sess.BluemixSession)
 		if err != nil {
 			for count := c.RetryCount; count >= 0; count-- {
@@ -1454,7 +1469,27 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.functionConfigErr = fmt.Errorf("[ERROR] Error occured while fetching auth key for function: %q", err)
 	}
 
-	if c.IAMTrustedProfileID == "" && sess.BluemixSession.Config.IAMAccessToken != "" && sess.BluemixSession.Config.BluemixAPIKey == "" {
+	if sess.BluemixSession.Config.BluemixAPIKey != "" && c.IAMTrustedProfileID != "" {
+		err = authenticateAssume(sess.BluemixSession)
+		if err != nil {
+			for count := c.RetryCount; count >= 0; count-- {
+				if err == nil || !isRetryable(err) {
+					break
+				}
+				time.Sleep(c.RetryDelay)
+				log.Printf("Retrying IAM Authentication %d", count)
+				err = authenticateAssume(sess.BluemixSession)
+			}
+			if err != nil {
+				session.bmxUserFetchErr = fmt.Errorf("[ERROR] Error occured while fetching auth key for account user details: %q", err)
+				session.functionConfigErr = fmt.Errorf("[ERROR] Error occured while fetching auth key for function: %q", err)
+			}
+		}
+
+		session.functionConfigErr = fmt.Errorf("[ERROR] Error occured while fetching auth key for function: %q", err)
+	}
+
+	if c.IAMTrustedProfileID == "" && sess.BluemixSession.Config.BluemixAPIKey == "" && sess.BluemixSession.Config.IAMAccessToken != "" && sess.BluemixSession.Config.IAMRefreshToken != "" {
 		err := RefreshToken(sess.BluemixSession)
 		if err != nil {
 			for count := c.RetryCount; count >= 0; count-- {
@@ -1612,7 +1647,15 @@ func (c *Config) ClientSession() (interface{}, error) {
 
 	var authenticator core.Authenticator
 
-	if c.BluemixAPIKey != "" || sess.BluemixSession.Config.IAMRefreshToken != "" {
+	if (c.BluemixAPIKey != "") && c.IAMTrustedProfileID != "" {
+		authenticator, err = core.NewIamAssumeAuthenticatorBuilder().
+			SetApiKey(c.BluemixAPIKey).
+			SetIAMProfileID(c.IAMTrustedProfileID).
+			Build()
+		if err != nil {
+			log.Fatalf("Error in authenticating using NewIamAssumeAuthenticatorBuilder. Error: %s", err)
+		}
+	} else if c.BluemixAPIKey != "" || sess.BluemixSession.Config.IAMRefreshToken != "" {
 		if c.BluemixAPIKey != "" {
 			authenticator = &core.IamAuthenticator{
 				ApiKey: c.BluemixAPIKey,
@@ -3165,6 +3208,27 @@ func (c *Config) ClientSession() (interface{}, error) {
 		})
 	}
 
+	// IBM Network CIS Lists
+	cisListsOpt := &cislistsapiv1.ListsApiV1Options{
+		URL:           cisEndPoint,
+		Crn:           core.StringPtr(""),
+		Authenticator: authenticator,
+		ItemID:        core.StringPtr(""),
+		ListID:        core.StringPtr(""),
+		OperationID:   core.StringPtr(""),
+	}
+	session.cisListsClient, session.cisListsErr = cislistsapiv1.NewListsApiV1(cisListsOpt)
+	if session.cisListsErr != nil {
+		session.cisListsErr = fmt.Errorf("[ERROR] Error occured while configuring CIS Lists : %s",
+			session.cisListsErr)
+	}
+	if session.cisListsClient != nil && session.cisListsClient.Service != nil {
+		session.cisListsClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.cisListsClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	}
+
 	// IAM IDENTITY Service
 	// iamIdenityURL := fmt.Sprintf("https://%s.iam.cloud.ibm.com/v1", c.Region)
 	iamIdenityURL := iamidentity.DefaultServiceURL
@@ -3487,7 +3551,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 
 	// Construct an "options" struct for creating the service client.
 	var cdToolchainClientURL string
-	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		cdToolchainClientURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_TOOLCHAIN_ENDPOINT", c.Region, cdToolchainClientURL)
+	} else if c.Visibility == "private" || c.Visibility == "public-and-private" {
 		cdToolchainClientURL, err = cdtoolchainv2.GetServiceURLForRegion("private." + c.Region)
 		if err != nil && c.Visibility == "public-and-private" {
 			cdToolchainClientURL, err = cdtoolchainv2.GetServiceURLForRegion(c.Region)
@@ -3497,9 +3563,6 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	if err != nil {
 		session.cdToolchainClientErr = fmt.Errorf("Error occurred while configuring Toolchain service: %q", err)
-	}
-	if fileMap != nil && c.Visibility != "public-and-private" {
-		cdToolchainClientURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_TOOLCHAIN_ENDPOINT", c.Region, cdToolchainClientURL)
 	}
 	cdToolchainClientOptions := &cdtoolchainv2.CdToolchainV2Options{
 		Authenticator: authenticator,
@@ -3521,7 +3584,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 
 	// Construct an "options" struct for creating the tekton pipeline service client.
 	var cdTektonPipelineClientURL string
-	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		cdTektonPipelineClientURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_TEKTON_PIPELINE_ENDPOINT", c.Region, cdTektonPipelineClientURL)
+	} else if c.Visibility == "private" || c.Visibility == "public-and-private" {
 		cdTektonPipelineClientURL, err = cdtektonpipelinev2.GetServiceURLForRegion("private." + c.Region)
 		if err != nil && c.Visibility == "public-and-private" {
 			cdTektonPipelineClientURL, err = cdtektonpipelinev2.GetServiceURLForRegion(c.Region)
@@ -3531,9 +3596,6 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	if err != nil {
 		cdTektonPipelineClientURL = cdtektonpipelinev2.DefaultServiceURL
-	}
-	if fileMap != nil && c.Visibility != "public-and-private" {
-		cdTektonPipelineClientURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_TEKTON_PIPELINE_ENDPOINT", c.Region, cdTektonPipelineClientURL)
 	}
 	cdTektonPipelineClientOptions := &cdtektonpipelinev2.CdTektonPipelineV2Options{
 		Authenticator: authenticator,
@@ -3566,7 +3628,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		URL:           EnvFallBack([]string{"IBMCLOUD_MQCLOUD_CONFIG_ENDPOINT"}, mqCloudURL),
 	}
 
-	// Construct the service client for MQaaS.
+	// Construct the service client for MQ SaaS.
 	session.mqcloudClient, err = mqcloudv1.NewMqcloudV1(mqcloudClientOptions)
 	if err == nil {
 		// Enable retries for API calls
@@ -3576,7 +3638,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
 	} else {
-		session.mqcloudClientErr = fmt.Errorf("Error occurred while configuringMQaaS service: %q", err)
+		session.mqcloudClientErr = fmt.Errorf("Error occurred while constructing 'MQ SaaS' service client: %q", err)
 	}
 
 	// VMware Cloud Foundation as a Service
@@ -3736,12 +3798,12 @@ func newSession(c *Config) (*Session, error) {
 	softlayerSession.AppendUserAgent(fmt.Sprintf("terraform-provider-ibm/%s", version.Version))
 	ibmSession.SoftLayerSession = softlayerSession
 
-	if c.IAMTrustedProfileID == "" && (c.IAMToken != "" && c.IAMRefreshToken == "") || (c.IAMToken == "" && c.IAMRefreshToken != "") {
+	/*if c.IAMTrustedProfileID == "" && (c.IAMToken != "" && c.IAMRefreshToken == "") || (c.IAMToken == "" && c.IAMRefreshToken != "") {
 		return nil, fmt.Errorf("iam_token and iam_refresh_token must be provided")
 	}
 	if c.IAMTrustedProfileID != "" && c.IAMToken == "" {
 		return nil, fmt.Errorf("iam_token and iam_profile_id must be provided")
-	}
+	}*/
 
 	if c.IAMToken != "" {
 		log.Println("Configuring IBM Cloud Session with token")
@@ -3784,6 +3846,7 @@ func newSession(c *Config) (*Session, error) {
 			PrivateEndpointType: c.PrivateEndpointType,
 			EndpointsFile:       c.EndpointsFile,
 			UserAgent:           fmt.Sprintf("terraform-provider-ibm/%s", version.Version),
+			IAMTrustedProfileID: c.IAMTrustedProfileID,
 		}
 		sess, err := bxsession.New(bmxConfig)
 		if err != nil {
@@ -3809,6 +3872,20 @@ func authenticateAPIKey(sess *bxsession.Session) error {
 	return tokenRefresher.AuthenticateAPIKey(config.BluemixAPIKey)
 }
 
+func authenticateAssume(sess *bxsession.Session) error {
+	config := sess.Config
+	tokenRefresher, err := authentication.NewIAMAuthRepository(config, &rest.Client{
+		DefaultHeader: gohttp.Header{
+			"User-Agent":            []string{http.UserAgent()},
+			"X-Original-User-Agent": []string{config.UserAgent},
+		},
+	})
+	if err != nil {
+		return err
+	}
+	return tokenRefresher.AuthenticateAssume(config.BluemixAPIKey, config.IAMTrustedProfileID)
+}
+
 func fetchUserDetails(sess *bxsession.Session, retries int, retryDelay time.Duration) (*UserConfig, error) {
 	config := sess.Config
 	user := UserConfig{}
@@ -3826,11 +3903,17 @@ func fetchUserDetails(sess *bxsession.Session, retries int, retryDelay time.Dura
 	// TODO validate with key
 	if err != nil && !strings.Contains(err.Error(), "key is of invalid type") {
 		if retries > 0 {
-			if config.BluemixAPIKey != "" {
+			if config.BluemixAPIKey != "" && config.IAMTrustedProfileID == "" {
 				time.Sleep(retryDelay)
 				log.Printf("Retrying authentication for user details %d", retries)
 				_ = authenticateAPIKey(sess)
 				return fetchUserDetails(sess, retries-1, retryDelay)
+			} else if config.BluemixAPIKey != "" && config.IAMTrustedProfileID != "" {
+				time.Sleep(retryDelay)
+				log.Printf("Retrying authentication for user details %d", retries)
+				_ = authenticateAssume(sess)
+				return fetchUserDetails(sess, retries-1, retryDelay)
+
 			}
 		}
 		return &user, err

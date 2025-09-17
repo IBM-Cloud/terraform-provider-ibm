@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -101,14 +102,16 @@ func DataSourceIBMPrivateDNSCustomResolver() *schema.Resource {
 func dataSourceIBMDNSCustomResolverRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).PrivateDNSClientSession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMDNSCustomResolverRead Client initialization failed: %s", err.Error()), "ibm_dns_custom_resolver", "read")
+		return tfErr.GetDiag()
 	}
 	instanceID := d.Get(pdnsInstanceID).(string)
 
 	opt := sess.NewListCustomResolversOptions(instanceID)
 	result, resp, err := sess.ListCustomResolversWithContext(context, opt)
 	if err != nil || result == nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error listing the custom resolvers %s:%s", err, resp))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMDNSCustomResolverRead ListCustomResolversWithContext failed with error: %s and response:\n%s", err, resp), "ibm_dns_custom_resolver", "read")
+		return tfErr.GetDiag()
 	}
 
 	customResolvers := make([]interface{}, 0)

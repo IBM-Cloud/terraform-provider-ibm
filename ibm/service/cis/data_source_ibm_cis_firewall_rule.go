@@ -91,20 +91,29 @@ func DataSourceIBMCISFirewallRulesValidator() *validate.ResourceValidator {
 func dataSourceIBMCISFirewallRulesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).BluemixSession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err,
+			fmt.Sprintf("dataSourceIBMCISFirewallRulesRead BluemixSession initialization failed: %s", err.Error()),
+			"ibm_cis_firewall_rule", "read")
+		return tfErr.GetDiag()
 	}
 	xAuthtoken := sess.Config.IAMAccessToken
 
 	cisClient, err := meta.(conns.ClientSession).CisFirewallRulesSession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err,
+			fmt.Sprintf("dataSourceIBMCISFirewallRulesRead CisFirewallRulesSession initialization failed: %s", err.Error()),
+			"ibm_cis_firewall_rule", "read")
+		return tfErr.GetDiag()
 	}
 	crn := d.Get(cisID).(string)
 	zoneID, _, _ := flex.ConvertTftoCisTwoVar(d.Get(cisDomainID).(string))
 
 	result, resp, err := cisClient.ListAllFirewallRules(cisClient.NewListAllFirewallRulesOptions(xAuthtoken, crn, zoneID))
 	if err != nil || result == nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error listing the  firewall rules %s:%s", err, resp))
+		tfErr := flex.TerraformErrorf(err,
+			fmt.Sprintf("dataSourceIBMCISFirewallRulesRead ListAllFirewallRules failed with error: %s and response:\n%s", err, resp),
+			"ibm_cis_firewall_rule", "read")
+		return tfErr.GetDiag()
 	}
 
 	fwrList := make([]map[string]interface{}, 0)

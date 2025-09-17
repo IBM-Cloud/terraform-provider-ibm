@@ -19,6 +19,9 @@ resource "ibm_en_subscription_ce" "codeengine_subscription" {
   description      = "Code Engine destination Subscription for Event Notification"
   destination_id   = ibm_en_destination_ce.codeengine_destination.destination_id
   topic_id         = ibm_en_topic.topic1.topic_id
+  attributes {
+    template_id_notification = ibm_en_code_engine_template.en_ce_app_template.template_id
+  }
 }
 ```
 
@@ -35,6 +38,10 @@ Review the argument reference that you can specify for your resource.
 - `destination_id` - (Requires, String) Destination ID.
 
 - `topic_id` - (Required, String) Topic ID.
+
+- `attributes` - (Optional, List) Subscription attributes.
+  Nested scheme for **attributes**:
+    - `template_id_notification` - (Optional, String) The templete id for notification.
 
 
 ## Attribute reference

@@ -49,6 +49,7 @@ Review the argument reference that you can specify for your resource.
 * `name` - (String) The human-readable name of your secret.
   * Constraints: The maximum length is `256` characters. The minimum length is `2` characters. The value must match regular expression `^[A-Za-z0-9_][A-Za-z0-9_]*(?:_*-*\.*[A-Za-z0-9]*)*[A-Za-z0-9]+$`.
 * `custom_metadata` - (Optional, Map) The secret metadata that a user can customize.
+  * Constraints: Nested JSONs are supported in Terraform only as string-encoded JSONs.
 * `description` - (Optional, String) An extended description of your secret.To protect your privacy, do not use personal data, such as your name or location, as a description for your secret group.
   * Constraints: The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/(.*?)/`.
 * `expiration_date` - (Optional, String) The date a secret is expired. The date format follows RFC 3339.
@@ -74,6 +75,8 @@ Nested scheme for **rotation**:
   * Constraints: The maximum length is `36` characters. The minimum length is `7` characters. The value must match regular expression `/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|default)$/`.
 * `username` - (Required, Forces new resource, String) The username that is assigned to the secret.
   * Constraints: The maximum length is `64` characters. The minimum length is `2` characters. The value must match regular expression `/[A-Za-z0-9+-=.]*/`.
+* `version_custom_metadata` - (Map) The custom metadata of the current secret version.
+  * Constraints: Nested JSONs are supported in Terraform only as string-encoded JSONs.
 
 ## Attribute Reference
 
@@ -89,6 +92,7 @@ In addition to all argument references listed, you can access the following attr
 * `locks_total` - (Integer) The number of locks of the secret.
   * Constraints: The maximum value is `1000`. The minimum value is `0`.
 * `next_rotation_date` - (String) The date that the secret is scheduled for automatic rotation.The service automatically creates a new version of the secret on its next rotation date. This field exists only for secrets that have an existing rotation policy.
+* `retrieved_at` - (String) The date when the data of the secret was last retrieved. The date format follows RFC 3339. Epoch date if there is no record of secret data retrieval.
 * `state` - (Integer) The secret state that is based on NIST SP 800-57. States are integers and correspond to the `Pre-activation = 0`, `Active = 1`,  `Suspended = 2`, `Deactivated = 3`, and `Destroyed = 5` values.
   * Constraints: Allowable values are: `0`, `1`, `2`, `3`, `5`.
 * `state_description` - (String) A text representation of the secret state.

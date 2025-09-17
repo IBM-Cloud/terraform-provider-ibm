@@ -36,23 +36,23 @@ func ResourceIBMIAMServicePolicy() *schema.Resource {
 				return []*schema.ResourceData{d}, nil
 			},
 		},
-
 		Schema: map[string]*schema.Schema{
 			"iam_service_id": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ExactlyOneOf: []string{"iam_service_id", "iam_id"},
-				Description:  "UUID of ServiceID",
-				ForceNew:     true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "UUID of ServiceID",
+				ForceNew:    true,
+				Deprecated:  "This field is deprecated and will be removed starting with this 1.82.0 release. Please use iam_id field instead.",
 				ValidateFunc: validate.InvokeValidator("ibm_iam_service_policy",
 					"iam_service_id"),
 			},
 			"iam_id": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ExactlyOneOf: []string{"iam_service_id", "iam_id"},
-				Description:  "IAM ID of ServiceID",
-				ForceNew:     true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "IAM ID of ServiceID",
+				ForceNew:    true,
 			},
 			"roles": {
 				Type:        schema.TypeList,
@@ -454,8 +454,8 @@ func resourceIBMIAMServicePolicyCreate(d *schema.ResourceData, meta interface{})
 	}
 	if err != nil {
 		if v, ok := d.GetOk("iam_service_id"); ok && v != nil {
-			serviceIDUUID := v.(string)
-			d.SetId(fmt.Sprintf("%s/%s", serviceIDUUID, policyID))
+			d.SetId(fmt.Sprintf("%s/%s", "iam-"+v.(string), policyID))
+
 		} else if v, ok := d.GetOk("iam_id"); ok && v != nil {
 			iamID := v.(string)
 			d.SetId(fmt.Sprintf("%s/%s", iamID, policyID))
@@ -463,8 +463,7 @@ func resourceIBMIAMServicePolicyCreate(d *schema.ResourceData, meta interface{})
 		return fmt.Errorf("[ERROR] Error fetching service  policy: %s", err)
 	}
 	if v, ok := d.GetOk("iam_service_id"); ok && v != nil {
-		serviceIDUUID := v.(string)
-		d.SetId(fmt.Sprintf("%s/%s", serviceIDUUID, policyID))
+		d.SetId(fmt.Sprintf("%s/%s", "iam-"+v.(string), policyID))
 	} else if v, ok := d.GetOk("iam_id"); ok && v != nil {
 		iamID := v.(string)
 		d.SetId(fmt.Sprintf("%s/%s", iamID, policyID))
@@ -515,10 +514,15 @@ func resourceIBMIAMServicePolicyRead(d *schema.ResourceData, meta interface{}) e
 	if err != nil || servicePolicy == nil || res == nil {
 		return fmt.Errorf("[ERROR] Error retrieving servicePolicy: %s %s", err, res)
 	}
+
 	if strings.HasPrefix(serviceIDUUID, "iam-") {
 		d.Set("iam_id", serviceIDUUID)
+		d.Set("iam_service_id", strings.TrimPrefix(serviceIDUUID, "iam-"))
+		d.SetId(fmt.Sprintf("%s/%s", serviceIDUUID, servicePolicyID))
 	} else {
 		d.Set("iam_service_id", serviceIDUUID)
+		d.Set("iam_id", fmt.Sprintf("iam-%s", serviceIDUUID))
+		d.SetId(fmt.Sprintf("%s/%s", fmt.Sprintf("iam-%s", serviceIDUUID), servicePolicyID))
 	}
 
 	roles, err := flex.GetRoleNamesFromPolicyResponse(*servicePolicy, d, meta)
@@ -573,27 +577,6 @@ func resourceIBMIAMServicePolicyUpdate(d *schema.ResourceData, meta interface{})
 		servicePolicyID := parts[1]
 
 		var iamID string
-		if v, ok := d.GetOk("iam_service_id"); ok && v != nil {
-			serviceIDUUID := v.(string)
-
-			iamClient, err := meta.(conns.ClientSession).IAMIdentityV1API()
-			if err != nil {
-				return err
-			}
-			getServiceIDOptions := iamidentityv1.GetServiceIDOptions{
-				ID: &serviceIDUUID,
-			}
-
-			if transactionID, ok := d.GetOk("transaction_id"); ok {
-				getServiceIDOptions.SetHeaders(map[string]string{"Transaction-Id": transactionID.(string)})
-			}
-
-			serviceID, resp, err := iamClient.GetServiceID(&getServiceIDOptions)
-			if err != nil {
-				return fmt.Errorf("[ERROR] Error] Error Getting Service Id %s %s", err, resp)
-			}
-			iamID = *serviceID.IamID
-		}
 		if v, ok := d.GetOk("iam_id"); ok && v != nil {
 			iamID = v.(string)
 		}

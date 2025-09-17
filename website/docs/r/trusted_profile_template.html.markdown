@@ -1,12 +1,12 @@
 ---
 layout: "ibm"
-page_title: "IBM : ibm_trusted_profile_template"
+page_title: "IBM : ibm_iam_trusted_profile_template"
 description: |-
   Manages IAM trusted profile templates
 subcategory: "Identity & Access Management (IAM)"
 ---
 
-# ibm_trusted_profile_template
+# ibm_iam_trusted_profile_template
 
 Create, update, commit, and delete trusted profile templates with this resource.
 
@@ -221,10 +221,10 @@ Nested schema for **history**:
 
 ## Import
 
-You can import the `ibm_trusted_profile_template` resource by using `version`. Version of the the template.
+You can import the `ibm_iam_trusted_profile_template` resource by using `version`. Version of the the template.
 
 ### Syntax
 
 ```bash
-$ terraform import ibm_trusted_profile_template.trusted_profile_template $version
+$ terraform import ibm_iam_trusted_profile_template.trusted_profile_template $version
 ```

@@ -1,8 +1,8 @@
-// Copyright IBM Corp. 2024 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.95.2-120e65bc-20240924-152329
+ * IBM OpenAPI Terraform Generator Version: 3.104.0-b4a47c49-20250418-184351
  */
 
 package mqcloud
@@ -18,6 +18,7 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/mqcloud-go-sdk/mqcloudv1"
 )
 
@@ -29,7 +30,7 @@ func DataSourceIbmMqcloudTruststoreCertificate() *schema.Resource {
 			"service_instance_guid": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The GUID that uniquely identifies the MQaaS service instance.",
+				Description: "The GUID that uniquely identifies the MQ SaaS service instance.",
 			},
 			"queue_manager_id": {
 				Type:        schema.TypeString,
@@ -122,15 +123,7 @@ func DataSourceIbmMqcloudTruststoreCertificate() *schema.Resource {
 func dataSourceIbmMqcloudTruststoreCertificateRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	mqcloudClient, err := meta.(conns.ClientSession).MqcloudV1()
 	if err != nil {
-		// Error is coming from SDK client, so it doesn't need to be discriminated.
-		tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_mqcloud_truststore_certificate", "read")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		return tfErr.GetDiag()
-	}
-
-	err = checkSIPlan(d, meta)
-	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Read Truststore Certificate failed: %s", err.Error()), "(Data) ibm_mqcloud_truststore_certificate", "read")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_mqcloud_truststore_certificate", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -174,22 +167,24 @@ func dataSourceIbmMqcloudTruststoreCertificateRead(context context.Context, d *s
 		d.SetId(dataSourceIbmMqcloudTruststoreCertificateID(d))
 	}
 
-	if err = d.Set("total_count", flex.IntValue(trustStoreCertificateDetailsCollection.TotalCount)); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting total_count: %s", err), "(Data) ibm_mqcloud_truststore_certificate", "read", "set-total_count").GetDiag()
+	if !core.IsNil(trustStoreCertificateDetailsCollection.TotalCount) {
+		if err = d.Set("total_count", flex.IntValue(trustStoreCertificateDetailsCollection.TotalCount)); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting total_count: %s", err), "(Data) ibm_mqcloud_truststore_certificate", "read", "set-total_count").GetDiag()
+		}
 	}
-	trustStore := []map[string]interface{}{}
-	if trustStoreCertificateDetailsCollection.TrustStore != nil {
-		for _, modelItem := range trustStoreCertificateDetailsCollection.TrustStore {
-			modelItem := modelItem
-			modelMap, err := DataSourceIbmMqcloudTruststoreCertificateTrustStoreCertificateDetailsToMap(&modelItem)
+
+	if !core.IsNil(trustStoreCertificateDetailsCollection.TrustStore) {
+		trustStore := []map[string]interface{}{}
+		for _, trustStoreItem := range trustStoreCertificateDetailsCollection.TrustStore {
+			trustStoreItemMap, err := DataSourceIbmMqcloudTruststoreCertificateTrustStoreCertificateDetailsToMap(&trustStoreItem) // #nosec G601
 			if err != nil {
 				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_mqcloud_truststore_certificate", "read", "trust_store-to-map").GetDiag()
 			}
-			trustStore = append(trustStore, modelMap)
+			trustStore = append(trustStore, trustStoreItemMap)
 		}
-	}
-	if err = d.Set("trust_store", trustStore); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting trust_store: %s", err), "(Data) ibm_mqcloud_truststore_certificate", "read", "set-trust_store").GetDiag()
+		if err = d.Set("trust_store", trustStore); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting trust_store: %s", err), "(Data) ibm_mqcloud_truststore_certificate", "read", "set-trust_store").GetDiag()
+		}
 	}
 
 	return nil

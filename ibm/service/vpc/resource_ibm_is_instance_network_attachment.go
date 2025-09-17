@@ -95,6 +95,11 @@ func ResourceIBMIsInstanceNetworkAttachment() *schema.Resource {
 							ConflictsWith: []string{"virtual_network_interface.0.allow_ip_spoofing", "virtual_network_interface.0.auto_delete", "virtual_network_interface.0.enable_infrastructure_nat", "virtual_network_interface.0.ips", "virtual_network_interface.0.name", "virtual_network_interface.0.primary_ip", "virtual_network_interface.0.resource_group", "virtual_network_interface.0.security_groups", "virtual_network_interface.0.security_groups"},
 							Description:   "The virtual network interface id for this instance network attachment.",
 						},
+						"crn": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The crn of the virtual network interface.",
+						},
 						"allow_ip_spoofing": &schema.Schema{
 							Type:          schema.TypeBool,
 							Optional:      true,
@@ -429,6 +434,7 @@ func resourceIBMIsInstanceNetworkAttachmentRead(context context.Context, d *sche
 		return tfErr.GetDiag()
 	}
 	vniMap["allow_ip_spoofing"] = vniDetails.AllowIPSpoofing
+	vniMap["crn"] = vniDetails.CRN
 	vniMap["auto_delete"] = vniDetails.AutoDelete
 	vniMap["enable_infrastructure_nat"] = vniDetails.EnableInfrastructureNat
 	vniMap["name"] = vniDetails.Name

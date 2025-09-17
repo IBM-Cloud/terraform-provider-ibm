@@ -150,10 +150,20 @@ func DataSourceIBMCdTektonPipelineTrigger() *schema.Resource {
 				Computed:    true,
 				Description: "Mark the trigger as a favorite.",
 			},
+			"limit_waiting_runs": &schema.Schema{
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Flag that will limit the trigger to a maximum of one waiting run. A newly triggered run will cause any other waiting run(s) to be automatically cancelled.",
+			},
 			"enable_events_from_forks": &schema.Schema{
 				Type:        schema.TypeBool,
 				Computed:    true,
 				Description: "When enabled, pull request events from forks of the selected repository will trigger a pipeline run.",
+			},
+			"disable_draft_events": &schema.Schema{
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Prevent new pipeline runs from being triggered by events from draft pull requests.",
 			},
 			"source": &schema.Schema{
 				Type:        schema.TypeList,
@@ -384,9 +394,21 @@ func dataSourceIBMCdTektonPipelineTriggerRead(context context.Context, d *schema
 		}
 	}
 
+	if !core.IsNil(trigger.LimitWaitingRuns) {
+		if err = d.Set("limit_waiting_runs", trigger.LimitWaitingRuns); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting limit_waiting_runs: %s", err), "(Data) ibm_cd_tekton_pipeline_trigger", "read", "set-limit_waiting_runs").GetDiag()
+		}
+	}
+
 	if !core.IsNil(trigger.EnableEventsFromForks) {
 		if err = d.Set("enable_events_from_forks", trigger.EnableEventsFromForks); err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting enable_events_from_forks: %s", err), "(Data) ibm_cd_tekton_pipeline_trigger", "read", "set-enable_events_from_forks").GetDiag()
+		}
+	}
+
+	if !core.IsNil(trigger.DisableDraftEvents) {
+		if err = d.Set("disable_draft_events", trigger.DisableDraftEvents); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting disable_draft_events: %s", err), "(Data) ibm_cd_tekton_pipeline_trigger", "read", "set-disable_draft_events").GetDiag()
 		}
 	}
 

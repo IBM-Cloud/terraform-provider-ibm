@@ -30,9 +30,9 @@ func ResourceIBMPISharedProcessorPool() *schema.Resource {
 		Importer:      &schema.ResourceImporter{},
 
 		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(60 * time.Minute),
-			Update: schema.DefaultTimeout(60 * time.Minute),
-			Delete: schema.DefaultTimeout(60 * time.Minute),
+			Create: schema.DefaultTimeout(15 * time.Minute),
+			Update: schema.DefaultTimeout(15 * time.Minute),
+			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
 		CustomizeDiff: customdiff.Sequence(
 			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
@@ -54,7 +54,7 @@ func ResourceIBMPISharedProcessorPool() *schema.Resource {
 				Type:        schema.TypeString,
 			},
 			Arg_SharedProcessorPoolHostGroup: {
-				Description: "Host group of the shared processor pool. Valid values are 's922', 'e980' and 's1022'.",
+				Description: "Host group of the shared processor pool. Valid values are 'e980', 'e1080', 'e1180', 's922', 's1022' and 's1122'.",
 				ForceNew:    true,
 				Required:    true,
 				Type:        schema.TypeString,
