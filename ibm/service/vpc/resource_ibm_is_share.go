@@ -72,7 +72,7 @@ func ResourceIbmIsShare() *schema.Resource {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Computed:    true,
-				Description: "The initial group identifier for the file share.",
+				Description: "The bandwidth for the file share.",
 			},
 			"encryption_key": {
 				Type:        schema.TypeString,
