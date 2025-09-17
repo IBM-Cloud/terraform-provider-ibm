@@ -1,8 +1,8 @@
-// Copyright IBM Corp. 2024 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.95.2-120e65bc-20240924-152329
+ * IBM OpenAPI Terraform Generator Version: 3.104.0-b4a47c49-20250418-184351
  */
 
 package mqcloud
@@ -25,6 +25,7 @@ func ResourceIbmMqcloudApplication() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceIbmMqcloudApplicationCreate,
 		ReadContext:   resourceIbmMqcloudApplicationRead,
+		UpdateContext: resourceIbmMqcloudApplicationUpdate,
 		DeleteContext: resourceIbmMqcloudApplicationDelete,
 		Importer:      &schema.ResourceImporter{},
 
@@ -34,14 +35,18 @@ func ResourceIbmMqcloudApplication() *schema.Resource {
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_mqcloud_application", "service_instance_guid"),
-				Description:  "The GUID that uniquely identifies the MQaaS service instance.",
+				Description:  "The GUID that uniquely identifies the MQ SaaS service instance.",
 			},
 			"name": {
 				Type:         schema.TypeString,
 				Required:     true,
-				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_mqcloud_application", "name"),
 				Description:  "The name of the application - conforming to MQ rules.",
+			},
+			"iam_service_id": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The IAM ID of the application.",
 			},
 			"create_api_key_uri": {
 				Type:        schema.TypeString,
@@ -92,15 +97,7 @@ func ResourceIbmMqcloudApplicationValidator() *validate.ResourceValidator {
 func resourceIbmMqcloudApplicationCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	mqcloudClient, err := meta.(conns.ClientSession).MqcloudV1()
 	if err != nil {
-		// Error is coming from SDK client, so it doesn't need to be discriminated.
-		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_mqcloud_application", "create")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		return tfErr.GetDiag()
-	}
-
-	err = checkSIPlan(d, meta)
-	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Create Application failed: %s", err.Error()), "ibm_mqcloud_application", "create")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_mqcloud_application", "create", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -125,7 +122,7 @@ func resourceIbmMqcloudApplicationCreate(context context.Context, d *schema.Reso
 func resourceIbmMqcloudApplicationRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	mqcloudClient, err := meta.(conns.ClientSession).MqcloudV1()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_mqcloud_application", "read")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_mqcloud_application", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -155,6 +152,10 @@ func resourceIbmMqcloudApplicationRead(context context.Context, d *schema.Resour
 		err = fmt.Errorf("Error setting name: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_mqcloud_application", "read", "set-name").GetDiag()
 	}
+	if err = d.Set("iam_service_id", applicationDetails.IamServiceID); err != nil {
+		err = fmt.Errorf("Error setting iam_service_id: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_mqcloud_application", "read", "set-iam_service_id").GetDiag()
+	}
 	if err = d.Set("service_instance_guid", parts[0]); err != nil {
 		err = fmt.Errorf("Error setting service_instance_guid: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_mqcloud_application", "read", "set-service_instance_guid").GetDiag()
@@ -175,17 +176,52 @@ func resourceIbmMqcloudApplicationRead(context context.Context, d *schema.Resour
 	return nil
 }
 
-func resourceIbmMqcloudApplicationDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIbmMqcloudApplicationUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	mqcloudClient, err := meta.(conns.ClientSession).MqcloudV1()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_mqcloud_application", "delete")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_mqcloud_application", "update", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 
-	err = checkSIPlan(d, meta)
+	setApplicationNameOptions := &mqcloudv1.SetApplicationNameOptions{}
+
+	parts, err := flex.SepIdParts(d.Id(), "/")
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Delete Application failed: %s", err.Error()), "ibm_mqcloud_application", "delete")
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_mqcloud_application", "update", "sep-id-parts").GetDiag()
+	}
+
+	setApplicationNameOptions.SetServiceInstanceGuid(parts[0])
+	setApplicationNameOptions.SetApplicationID(parts[1])
+
+	hasChange := false
+
+	if d.HasChange("service_instance_guid") {
+		errMsg := fmt.Sprintf("Cannot update resource property \"%s\" with the ForceNew annotation."+
+			" The resource must be re-created to update this property.", "service_instance_guid")
+		return flex.DiscriminatedTerraformErrorf(nil, errMsg, "ibm_mqcloud_application", "update", "service_instance_guid-forces-new").GetDiag()
+	}
+	if d.HasChange("name") {
+		setApplicationNameOptions.SetName(d.Get("name").(string))
+		hasChange = true
+	}
+
+	if hasChange {
+		_, _, err = mqcloudClient.SetApplicationNameWithContext(context, setApplicationNameOptions)
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("SetApplicationNameWithContext failed: %s", err.Error()), "ibm_mqcloud_application", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
+	}
+
+	return resourceIbmMqcloudApplicationRead(context, d, meta)
+}
+
+func resourceIbmMqcloudApplicationDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	mqcloudClient, err := meta.(conns.ClientSession).MqcloudV1()
+	if err != nil {
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_mqcloud_application", "delete", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}

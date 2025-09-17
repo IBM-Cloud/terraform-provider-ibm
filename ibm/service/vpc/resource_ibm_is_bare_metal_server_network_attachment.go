@@ -84,6 +84,11 @@ func ResourceIBMIsBareMetalServerNetworkAttachment() *schema.Resource {
 							ForceNew:    true,
 							Description: "The virtual network interface id for this bare metal server network attachment.",
 						},
+						"crn": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The crn of the virtual network interface.",
+						},
 						"allow_ip_spoofing": &schema.Schema{
 							Type:          schema.TypeBool,
 							Optional:      true,
@@ -1349,6 +1354,7 @@ func resourceIBMIsBareMetalServerNetworkAttachmentVirtualNetworkInterfaceReferen
 		modelMap["subnet"] = *vniDetails.Subnet.ID
 	}
 	modelMap["id"] = model.ID
+	modelMap["crn"] = model.CRN
 	modelMap["name"] = model.Name
 	modelMap["resource_type"] = model.ResourceType
 	return modelMap, nil

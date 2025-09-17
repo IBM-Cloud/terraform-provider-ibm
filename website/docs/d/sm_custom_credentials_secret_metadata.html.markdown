@@ -44,6 +44,7 @@ In addition to all argument references listed, you can access the following attr
 * `crn` - (String) A CRN that uniquely identifies an IBM Cloud resource.
 
 * `custom_metadata` - (Map) The secret metadata that a user can customize.
+  * Constraints: Nested JSONs are supported in Terraform only as string-encoded JSONs.
 
 * `description` - (String) An extended description of your secret.
 
@@ -62,6 +63,8 @@ In addition to all argument references listed, you can access the following attr
   * `integer_values` - (Map) Values of integer parameters.
   * `string_values` - (Map) Values of string parameters.
   * `boolean_values` - (Map) Values of boolean parameters.
+
+* `retrieved_at` - (String) The date when the data of the secret was last retrieved. The date format follows RFC 3339. Epoch date if there is no record of secret data retrieval.
 
 * `rotation` - (List) Determines whether Secrets Manager rotates your secrets automatically.
 Nested scheme for **rotation**:

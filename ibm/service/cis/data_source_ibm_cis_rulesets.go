@@ -33,6 +33,12 @@ const (
 	CISRulesetsRuleActionParametersResponseContent     = "content"
 	CISRulesetsRuleActionParametersResponseContentType = "content_type"
 	CISRulesetsRuleActionParametersResponseStatusCode  = "status_code"
+	CISRulesetsRuleRateLimit                           = "rate_limit"
+	CISRulesetsRuleRateLimitCharacteristics            = "characteristics"
+	CISRulesetsRuleRateLimitCountingExpression         = "counting_expression"
+	CISRulesetsRuleRateLimitMitigationTimeout          = "mitigation_timeout"
+	CISRulesetsRuleRateLimitPeriod                     = "period"
+	CISRulesetsRuleRateLimitRequestsPerPeriod          = "requests_per_period"
 	CISRulesetsRuleExpression                          = "expression"
 	CISRulesetsRuleRef                                 = "ref"
 	CISRulesetsRuleLogging                             = "logging"
@@ -59,6 +65,7 @@ const (
 	CISRulesetOverridesScoreThreshold                  = "score_threshold"
 	CISRulesetsRulePhases                              = "phases"
 	CISRulesetsRuleProducts                            = "products"
+	CISRulesToSkip                                     = "rules_to_skip"
 )
 
 var CISResponseObject = &schema.Resource{
@@ -261,6 +268,28 @@ var CISResponseObject = &schema.Resource{
 												Type:        schema.TypeInt,
 												Computed:    true,
 												Description: "Action parameters response status code of the Rulesets Rule",
+											},
+										},
+									},
+								},
+								CISRulesToSkip: {
+									Type:        schema.TypeList,
+									Computed:    true,
+									Description: "A list of ruleset mappings, where each element is a map of ruleset_id and its associated rule_ids",
+									Elem: &schema.Resource{
+										Schema: map[string]*schema.Schema{
+											"ruleset_id": {
+												Type:        schema.TypeString,
+												Computed:    true,
+												Description: "The ruleset identifier",
+											},
+											"rule_ids": {
+												Type:        schema.TypeList,
+												Computed:    true,
+												Description: "A list of rule IDs to be skipped",
+												Elem: &schema.Schema{
+													Type: schema.TypeString,
+												},
 											},
 										},
 									},
@@ -553,6 +582,20 @@ func flattenCISRulesetsRuleActionParameters(rulesetsRuleActionParameterObj *rule
 	if _, ok := actionParametersOutput["overrides"]; ok {
 		flattenCISRulesetsRuleActionParameterOverrides := flattenCISRulesetsRuleActionParameterOverrides(rulesetsRuleActionParameterObj.Overrides)
 		resultOutput[CISRulesetOverrides] = []map[string]interface{}{flattenCISRulesetsRuleActionParameterOverrides}
+	}
+
+	if rulesToSkip := rulesetsRuleActionParameterObj.Rules; rulesToSkip != nil && len(rulesToSkip) > 0 {
+		flattenedRulesToSkip := make([]map[string]interface{}, 0, len(rulesToSkip))
+
+		for rulesetID, ruleIDs := range rulesToSkip {
+			entry := map[string]interface{}{
+				"ruleset_id": rulesetID,
+				"rule_ids":   ruleIDs,
+			}
+			flattenedRulesToSkip = append(flattenedRulesToSkip, entry)
+		}
+
+		resultOutput[CISRulesToSkip] = flattenedRulesToSkip
 	}
 
 	return resultOutput

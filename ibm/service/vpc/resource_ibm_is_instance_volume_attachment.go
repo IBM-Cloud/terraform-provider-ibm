@@ -224,6 +224,43 @@ func ResourceIBMISInstanceVolumeAttachment() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+
+			"allowed_use": &schema.Schema{
+				Type:        schema.TypeList,
+				MaxItems:    1,
+				Optional:    true,
+				Computed:    true,
+				ForceNew:    true,
+				Description: "The usage constraints to be matched against requested instance or bare metal server properties to determine compatibility.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"api_version": &schema.Schema{
+							Type:         schema.TypeString,
+							Optional:     true,
+							Computed:     true,
+							ForceNew:     true,
+							ValidateFunc: validate.InvokeValidator("ibm_is_instance_volume_attachment", "allowed_use.api_version"),
+							Description:  "The API version with which to evaluate the expressions.",
+						},
+						"bare_metal_server": &schema.Schema{
+							Type:         schema.TypeString,
+							Optional:     true,
+							Computed:     true,
+							ForceNew:     true,
+							ValidateFunc: validate.InvokeValidator("ibm_is_instance_volume_attachment", "allowed_use.bare_metal_server"),
+							Description:  "The expression that must be satisfied by the properties of a bare metal server provisioned using the image data in this volume.",
+						},
+						"instance": &schema.Schema{
+							Type:         schema.TypeString,
+							Optional:     true,
+							Computed:     true,
+							ForceNew:     true,
+							ValidateFunc: validate.InvokeValidator("ibm_is_instance_volume_attachment", "allowed_use.instance"),
+							Description:  "The expression that must be satisfied by the properties of a virtual server instance provisioned using this volume.",
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -281,6 +318,27 @@ func ResourceIBMISInstanceVolumeAttachmentValidator() *validate.ResourceValidato
 			Regexp:                     `^[A-Za-z0-9:_ .-]+$`,
 			MinValueLength:             1,
 			MaxValueLength:             128})
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "allowed_use.api_version",
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			Regexp:                     `^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$`})
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "allowed_use.bare_metal_server",
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			Regexp:                     `^([a-zA-Z_][a-zA-Z0-9_]*|[-+*/%]|&&|\|\||!|==|!=|<|<=|>|>=|~|\bin\b|\(|\)|\[|\]|,|\.|"|'|"|'|\s+|\d+)+$`})
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "allowed_use.instance",
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			Regexp:                     `^([a-zA-Z_][a-zA-Z0-9_]*|[-+*/%]|&&|\|\||!|==|!=|<|<=|>|>=|~|\bin\b|\(|\)|\[|\]|,|\.|"|'|"|'|\s+|\d+)+$`})
 
 	ibmISInstanceVolumeAttachmentValidator := validate.ResourceValidator{ResourceName: "ibm_is_instance_volume_attachment", Schema: validateSchema}
 	return &ibmISInstanceVolumeAttachmentValidator
@@ -379,6 +437,10 @@ func instanceVolAttachmentCreate(context context.Context, d *schema.ResourceData
 			if volBandwidthInt != 0 {
 				volProtoVol.Bandwidth = &volBandwidthInt
 			}
+		}
+		if allowedUse, ok := d.GetOk("allowed_use"); ok && len(allowedUse.([]interface{})) > 0 {
+			allowedUseModel, _ := ResourceIBMIsVolumeAllowedUseMapToVolumeAllowedUsePrototype(allowedUse.([]interface{})[0].(map[string]interface{}))
+			volProtoVol.AllowedUse = allowedUseModel
 		}
 		var iops int64
 		if volIops, ok := d.GetOk(isInstanceVolIops); ok {
@@ -598,6 +660,19 @@ func instanceVolumeAttachmentGet(context context.Context, d *schema.ResourceData
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_volume_attachment", "read", "set-snapshot_crn").GetDiag()
 		}
 	}
+	allowedUses := []map[string]interface{}{}
+	if volumeDetail.AllowedUse != nil {
+		modelMap, err := ResourceceIBMIsVolumeAllowedUseToMap(volumeDetail.AllowedUse)
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, err.Error(), "(Resource) ibm_is_instance_volume_attachment", "read")
+			log.Println(tfErr.GetDiag())
+		}
+		allowedUses = append(allowedUses, modelMap)
+	}
+	if err = d.Set("allowed_use", allowedUses); err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting allowed_use: %s", err), "(Resource) ibm_is_instance_volume_attachment", "read")
+		log.Println(tfErr.GetDiag())
+	}
 	tags, err := flex.GetGlobalTagsUsingCRN(meta, *volumeDetail.CRN, "", isInstanceUserTagType)
 	if err != nil {
 		log.Printf(
@@ -720,6 +795,7 @@ func instanceVolAttUpdate(context context.Context, d *schema.ResourceData, meta 
 	if volIdOk, ok := d.GetOk(isInstanceVolAttVol); ok {
 		volId = volIdOk.(string)
 	}
+
 	volProfile := ""
 	if volProfileOk, ok := d.GetOk(isInstanceVolProfile); ok {
 		volProfile = volProfileOk.(string)

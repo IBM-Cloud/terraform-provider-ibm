@@ -49,6 +49,24 @@ In addition to all argument reference list, you can access the following attribu
 - `attachment_state` - (Boolean) The attachment state of the volume
 - `adjustable_capacity_states` - (List) The attachment states that support adjustable capacity for this volume. Allowable list items are: `attached`, `unattached`, `unusable`. 
 - `adjustable_iops_states` - (List) The attachment states that support adjustable IOPS for this volume. Allowable list items are: `attached`, `unattached`, `unusable`.
+- `allowed_use` - (List) The usage constraints to be matched against the requested instance or bare metal server properties to determine compatibility. Only present for boot volumes. The value of this property will be inherited from the source image or snapshot at volume creation, but can be changed.
+    
+    Nested schema for `allowed_use`:
+    - `api_version` - (String) The API version with which to evaluate the expressions.
+	  
+    - `bare_metal_server` - (String) The expression that must be satisfied by the properties of a bare metal server provisioned using the image data in this volume. The expression follows [Common Expression Language](https://github.com/google/cel-spec/blob/master/doc/langdef.md), but does not support built-in functions and macros. 
+    
+    ~> **NOTE** </br> In addition, the following property is supported, corresponding to the BareMetalServer property: </br>
+      **&#x2022;** `enable_secure_boot` - (boolean) Indicates whether secure boot is enabled.
+	  
+    - `instance` - (String) The expression that must be satisfied by the properties of a virtual server instance provisioned using this volume. The expression follows [Common Expression Language](https://github.com/google/cel-spec/blob/master/doc/langdef.md), but does not support built-in functions and macros. 
+    
+    ~> **NOTE** </br> In addition, the following variables are supported, corresponding to `Instance` </br>
+       **&#x2022;** `gpu.count` - (integer) The number of GPUs. </br>
+       **&#x2022;** `gpu.manufacturer` - (string) The GPU manufacturer. </br>
+       **&#x2022;** `gpu.memory` - (integer) The overall amount of GPU memory in GiB (gibibytes). </br>
+       **&#x2022;** `gpu.model` - (string) The GPU model. </br>
+       **&#x2022;** `enable_secure_boot` - (boolean)Indicates whether secure boot is enabled. </br>
 - `bandwidth` - The maximum bandwidth (in megabits per second) for the volume
 - `busy` - (Boolean) Indicates whether this volume is performing an operation that must be serialized. This must be `false` to perform an operation that is specified to require serialization.
 - `capacity` - (String) The capacity of the volume in gigabytes.
@@ -93,6 +111,7 @@ In addition to all argument reference list, you can access the following attribu
   - `code` - (String)  A snake case string identifying the status reason.
   - `message` - (String)  An explanation of the status reason
   - `more_info` - (String) Link to documentation about this status reason
+- `storage_generation` - (Int) The storage generation indicates which generation the profile family belongs to. For the custom and tiered profiles, this value is 1. For the sdp profile, this value is 2.
 - `tags` - (String) User Tags associated with the volume. (https://cloud.ibm.com/apidocs/tagging#types-of-tags)
 - `unattached_capacity_update_supported` - (Boolean) Indicates whether the capacity for the volume can be changed when not attached to a running virtual server instance.
 - `unattached_iops_update_supported` - (Boolean) Indicates whether the IOPS for the volume can be changed when not attached to a running virtual server instance.

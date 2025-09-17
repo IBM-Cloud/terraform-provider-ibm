@@ -5,6 +5,7 @@ package power
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
@@ -96,10 +97,12 @@ func DataSourceIBMPIImages() *schema.Resource {
 	}
 }
 
-func dataSourceIBMPIImagesAllRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMPIImagesAllRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "(Data) ibm_pi_images", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
@@ -107,7 +110,9 @@ func dataSourceIBMPIImagesAllRead(ctx context.Context, d *schema.ResourceData, m
 	imageC := instance.NewIBMPIImageClient(ctx, sess, cloudInstanceID)
 	imagedata, err := imageC.GetAll()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetAll failed: %s", err.Error()), "(Data) ibm_pi_images", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	var clientgenU, _ = uuid.GenerateUUID()
@@ -117,10 +122,10 @@ func dataSourceIBMPIImagesAllRead(ctx context.Context, d *schema.ResourceData, m
 	return nil
 }
 
-func flattenStockImages(list []*models.ImageReference, meta interface{}) []map[string]interface{} {
-	result := make([]map[string]interface{}, 0, len(list))
+func flattenStockImages(list []*models.ImageReference, meta any) []map[string]any {
+	result := make([]map[string]any, 0, len(list))
 	for _, i := range list {
-		l := map[string]interface{}{
+		l := map[string]any{
 			Attr_Href:           *i.Href,
 			Attr_ID:             *i.ImageID,
 			Attr_ImageType:      i.Specifications.ImageType,

@@ -24,10 +24,20 @@ const (
 
 var (
 	AccountId                       string
+	ActionID                        string
+	ActivityTrackerInstanceCRN      string
+	AgentID                         string
 	AppIDTenantID                   string
 	AppIDTestUserEmail              string
-	BackupPolicyJobID               string
 	BackupPolicyID                  string
+	BackupPolicyJobID               string
+	BackupVaultCrn                  string
+	BackupVaultCrn2                 string
+	BackupVaultName                 string
+	BackupVaultName2                string
+	BucketCRN                       string
+	BucketName                      string
+	CertCRN                         string
 	CfOrganization                  string
 	CfSpace                         string
 	CisDomainStatic                 string
@@ -35,109 +45,102 @@ var (
 	CisInstance                     string
 	CisResourceGroup                string
 	CloudShellAccountID             string
-	CosCRN                          string
 	CosBackupPolicyID               string
-	BucketCRN                       string
-	BackupVaultName                 string
-	BackupVaultName2                string
-	BackupVaultCrn                  string
-	BackupVaultCrn2                 string
-	ActivityTrackerInstanceCRN      string
-	MetricsMonitoringCRN            string
-	KmsKeyCrn                       string
-	BucketName                      string
+	CosCRN                          string
 	CosName                         string
-	Ibmid1                          string
-	Ibmid2                          string
-	IAMUser                         string
+	CsRegion                        string
+	Customerpeerip                  string
+	Customersubnetid                string
+	DNSInstanceCRN                  string
+	DNSInstanceCRN1                 string
+	DNSZoneID                       string
+	DNSZoneID1                      string
+	Datacenter                      string
+	DedicatedHostGroupClass         string
+	DedicatedHostGroupFamily        string
+	DedicatedHostGroupID            string
+	DedicatedHostID                 string
+	DedicatedHostName               string
+	DedicatedHostProfileName        string
+	EnterpriseCRN                   string
+	ExtendedHardwareTesting         bool
+	FloatingIpID                    string
+	HpcsInstanceID                  string
+	HpcsInstanceName                string
 	IAMAccountId                    string
 	IAMServiceId                    string
 	IAMTrustedProfileID             string
-	Datacenter                      string
-	MachineType                     string
-	trustedMachineType              string
-	PublicVlanID                    string
-	PrivateVlanID                   string
-	PrivateSubnetID                 string
-	PublicSubnetID                  string
-	SubnetID                        string
+	IAMUser                         string
+	ISAddressPrefixCIDR             string
+	ISBootSnapshotID                string
+	ISCIDR                          string
+	ISCIDR2                         string
+	ISCatalogImageName              string
+	ISIPV4Address                   string
+	ISPrivateSSHKeyFilePath         string
+	ISPublicSSHKeyFilePath          string
+	ISResourceCrn                   string
+	ISRouteDestination              string
+	ISRouteNextHop                  string
+	ISSnapshotCRN                   string
+	ISZoneName                      string
+	ISZoneName2                     string
+	ISZoneName3                     string
+	Ibmid1                          string
+	Ibmid2                          string
+	InstanceCRN                     string
+	InstanceDiskProfileName         string
+	InstanceName                    string
+	InstanceProfileName             string
+	InstanceProfileNameUpdate       string
+	IpsecDatacenter                 string
+	IsAdminConfig                   string
+	IsBareMetalServerImage          string
+	IsBareMetalServerImage2         string
+	IsBareMetalServerProfileName    string
+	IsResourceGroupID               string
+	IsResourceGroupIDUpdate         string
+	JobID                           string
+	KmsKeyCrn                       string
+	KubeUpdateVersion               string
+	KubeVersion                     string
+	LbListerenerCertificateInstance string
 	LbaasDatacenter                 string
 	LbaasSubnetId                   string
-	LbListerenerCertificateInstance string
-	IpsecDatacenter                 string
-	Customersubnetid                string
-	Customerpeerip                  string
-	DedicatedHostName               string
-	DedicatedHostID                 string
-	KubeVersion                     string
-	KubeUpdateVersion               string
+	MachineType                     string
+	MetricsMonitoringCRN            string
+	PrivateSubnetID                 string
+	PrivateVlanID                   string
+	PublicSubnetID                  string
+	PublicVlanID                    string
+	RegionName                      string
+	RepoBranch                      string
+	RepoURL                         string
+	SecretCRN                       string
+	SecretCRN2                      string
+	SecretGroupID                   string
+	ShareEncryptionKey              string
+	ShareProfileName                string
+	SourceShareCRN                  string
+	SubnetID                        string
+	TemplateID                      string
+	ToolchainID                     string
+	UpdatedCertCRN                  string
+	VNIId                           string
+	VSIDataVolumeID                 string
+	VSIUnattachedBootVolumeID       string
+	VolumeProfileName               string
+	WorkerPoolSecondaryStorage      string
+	WorkspaceID                     string
 	Zone                            string
 	ZonePrivateVlan                 string
 	ZonePublicVlan                  string
 	ZoneUpdatePrivateVlan           string
 	ZoneUpdatePublicVlan            string
-	WorkerPoolSecondaryStorage      string
-	CsRegion                        string
-	ExtendedHardwareTesting         bool
 	err                             error
-	placementGroupName              string
-	CertCRN                         string
-	UpdatedCertCRN                  string
-	SecretCRN                       string
-	SecretCRN2                      string
-	EnterpriseCRN                   string
-	InstanceCRN                     string
-	SecretGroupID                   string
-	RegionName                      string
-	ISZoneName                      string
-	ISZoneName2                     string
-	ISZoneName3                     string
-	IsResourceGroupID               string
-	IsResourceGroupIDUpdate         string
-	ISResourceCrn                   string
-	ISCIDR                          string
-	ISCIDR2                         string
-	ISIPV4Address                   string
-	ISPublicSSHKeyFilePath          string
-	ISPrivateSSHKeyFilePath         string
-	ISAddressPrefixCIDR             string
-	InstanceName                    string
-	InstanceProfileName             string
-	InstanceProfileNameUpdate       string
-	IsBareMetalServerProfileName    string
-	IsBareMetalServerImage          string
-	IsBareMetalServerImage2         string
-	DNSInstanceCRN                  string
-	DNSZoneID                       string
-	DNSInstanceCRN1                 string
-	DNSZoneID1                      string
-	DedicatedHostProfileName        string
-	DedicatedHostGroupID            string
-	InstanceDiskProfileName         string
-	DedicatedHostGroupFamily        string
-	DedicatedHostGroupClass         string
-	ShareProfileName                string
-	SourceShareCRN                  string
-	ShareEncryptionKey              string
-	VNIId                           string
-	FloatingIpID                    string
-	VolumeProfileName               string
-	VSIUnattachedBootVolumeID       string
-	VSIDataVolumeID                 string
-	ISRouteDestination              string
-	ISRouteNextHop                  string
-	ISSnapshotCRN                   string
-	WorkspaceID                     string
-	TemplateID                      string
-	AgentID                         string
-	ActionID                        string
-	JobID                           string
-	RepoURL                         string
-	RepoBranch                      string
-	imageName                       string
 	functionNamespace               string
-	HpcsInstanceID                  string
-	ToolchainID                     string
+	placementGroupName              string
+	trustedMachineType              string
 )
 
 // MQ on Cloud
@@ -422,6 +425,9 @@ var (
 var (
 	Vmaas_Directorsite_id      string
 	Vmaas_Directorsite_pvdc_id string
+	Vmaas_edge_id              string
+	Vmaas_transit_gateway_id   string
+	Vmaas_vdc_id               string
 )
 
 // For IAM Access Management
@@ -972,6 +978,18 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable SL_INSTANCE_PROFILE_UPDATE for testing ibm_is_instance resource else it is set to default value 'cx2-4x8'")
 	}
 
+	ISCatalogImageName = os.Getenv("IS_CATALOG_IMAGE_NAME")
+	if ISCatalogImageName == "" {
+		ISCatalogImageName = "test-catalog"
+		fmt.Println("[INFO] Set the environment variable IS_CATALOG_IMAGE_NAME for testing ibm_is_instance_template resource else it is set to default value 'test-catalog'")
+	}
+
+	ISBootSnapshotID = os.Getenv("IS_BOOT_SNAPSHOT_ID")
+	if ISBootSnapshotID == "" {
+		ISBootSnapshotID = "r006-d7fejbe-2dhj-442df-b2iha-ccjbecbjbcejce"
+		fmt.Println("[INFO] Set the environment variable IS_BOOT_SNAPSHOT_ID for testing ibm_is_instance_template resource else it is set to default value 'r006-d7fejbe-2dhj-442df-b2iha-ccjbecbjbcejce'")
+	}
+
 	IsBareMetalServerProfileName = os.Getenv("IS_BARE_METAL_SERVER_PROFILE")
 	if IsBareMetalServerProfileName == "" {
 		IsBareMetalServerProfileName = "bx2-metal-96x384" // for next gen infrastructure
@@ -1506,6 +1524,12 @@ func init() {
 	if HpcsInstanceID == "" {
 		HpcsInstanceID = "5af62d5d-5d90-4b84-bbcd-90d2123ae6c8"
 		fmt.Println("[INFO] Set the environment variable HPCS_INSTANCE_ID for testing data_source_ibm_kms_key_test else it is set to default value")
+	}
+
+	HpcsInstanceName = os.Getenv("HPCS_INSTANCE_NAME")
+	if HpcsInstanceName == "" {
+		HpcsInstanceName = "test-hpcs"
+		fmt.Println("[INFO] Set the environment variable HPCS_INSTANCE_NAME for testing data_source_ibm_hpcs_test else it is set to default value")
 	}
 
 	SecretsManagerInstanceID = os.Getenv("SECRETS_MANAGER_INSTANCE_ID")
@@ -2082,6 +2106,21 @@ func init() {
 		fmt.Println("[WARN] Set the environment variable IBM_VMAAS_DS_PVDC_ID for testing ibm_vmaas_vdc resource else tests will fail if this is not set correctly")
 	}
 
+	Vmaas_edge_id = os.Getenv("IBM_VMAAS_EDGE_ID")
+	if Vmaas_edge_id == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_VMAAS_EDGE_ID for testing ibm_vmaas_vdc resource else tests will fail if this is not set correctly")
+	}
+
+	Vmaas_transit_gateway_id = os.Getenv("IBM_VMAAS_TRANSIT_GATEWAY_ID")
+	if Vmaas_transit_gateway_id == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_VMAAS_TRANSIT_GATEWAY_ID for testing ibm_vmaas_vdc resource else tests will fail if this is not set correctly")
+	}
+
+	Vmaas_vdc_id = os.Getenv("IBM_VMAAS_VDC_ID")
+	if Vmaas_vdc_id == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_VMAAS_VDC_ID for testing ibm_vmaas_vdc resource else tests will fail if this is not set correctly")
+	}
+
 	TargetAccountId = os.Getenv("IBM_POLICY_ASSIGNMENT_TARGET_ACCOUNT_ID")
 	if TargetAccountId == "" {
 		fmt.Println("[INFO] Set the environment variable IBM_POLICY_ASSIGNMENT_TARGET_ACCOUNT_ID for testing ibm_iam_policy_assignment resource else tests will fail if this is not set correctly")
@@ -2135,6 +2174,12 @@ func init() {
 	ToolchainID = os.Getenv("TOOLCHAIN_ID")
 	if ToolchainID == "" {
 		fmt.Println("[WARN] Set the environment variable TOOLCHAIN_ID for testing the COS toolchain integration tool else tests will fail if this is not set correctly")
+	}
+
+	IsAdminConfig = os.Getenv("IBM_IS_ADMIN_CONFIG")
+	if IsAdminConfig == "" {
+		IsAdminConfig = "false"
+		fmt.Println("[WARN] Set the environment variable IBM_IS_ADMIN_CONFIG for testing ibm_container_cluster_config datasource else tests will fail if this is not set correctly")
 	}
 }
 
@@ -2461,6 +2506,20 @@ func TestAccPreCheckVMwareService(t *testing.T) {
 	}
 	if Vmaas_Directorsite_pvdc_id == "" {
 		t.Fatal("IBM_VMAAS_DS_PVDC_ID must be set for acceptance tests")
+	}
+}
+func TestAccPreCheckVMwareTGWService(t *testing.T) {
+	if v := os.Getenv("IC_API_KEY"); v == "" {
+		t.Fatal("IC_API_KEY must be set for acceptance tests")
+	}
+	if Vmaas_edge_id == "" {
+		t.Fatal("IBM_VMAAS_EDGE_ID must be set for acceptance tests")
+	}
+	if Vmaas_transit_gateway_id == "" {
+		t.Fatal("IBM_VMAAS_TRANSIT_GATEWAY_ID must be set for acceptance tests")
+	}
+	if Vmaas_vdc_id == "" {
+		t.Fatal("IBM_VMAAS_VDC_ID must be set for acceptance tests")
 	}
 }
 

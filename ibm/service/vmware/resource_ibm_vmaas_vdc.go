@@ -1,8 +1,8 @@
-// Copyright IBM Corp. 2024 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.98.0-8be2046a-20241205-162752
+ * IBM OpenAPI Terraform Generator Version: 3.97.2-fc613b62-20241203-155509
  */
 
 package vmware
@@ -11,8 +11,10 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -29,6 +31,11 @@ func ResourceIbmVmaasVdc() *schema.Resource {
 		UpdateContext: resourceIbmVmaasVdcUpdate,
 		DeleteContext: resourceIbmVmaasVdcDelete,
 		Importer:      &schema.ResourceImporter{},
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(60 * time.Minute),
+			Update: schema.DefaultTimeout(60 * time.Minute),
+			Delete: schema.DefaultTimeout(60 * time.Minute),
+		},
 
 		Schema: map[string]*schema.Schema{
 			"accept_language": &schema.Schema{
@@ -42,6 +49,35 @@ func ResourceIbmVmaasVdc() *schema.Resource {
 				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_vmaas_vdc", "cpu"),
 				Description:  "The vCPU usage limit on the virtual data center (VDC). Supported for VDCs deployed on a multitenant Cloud Director site. This property is applicable when the resource pool type is reserved.",
+			},
+			"name": &schema.Schema{
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: validate.InvokeValidator("ibm_vmaas_vdc", "name"),
+				Description:  "A human readable ID for the virtual data center (VDC).",
+			},
+			"ram": &schema.Schema{
+				Type:         schema.TypeInt,
+				Optional:     true,
+				ValidateFunc: validate.InvokeValidator("ibm_vmaas_vdc", "ram"),
+				Description:  "The RAM usage limit on the virtual data center (VDC) in GB (1024^3 bytes). Supported for VDCs deployed on a multitenant Cloud Director site. This property is applicable when the resource pool type is reserved.",
+			},
+			"fast_provisioning_enabled": &schema.Schema{
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Determines whether this virtual data center has fast provisioning enabled or not.",
+			},
+			"rhel_byol": &schema.Schema{
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Indicates if the RHEL VMs will be using the license from IBM or the customer will use their own license (BYOL).",
+			},
+			"windows_byol": &schema.Schema{
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Indicates if the Microsoft Windows VMs will be using the license from IBM or the customer will use their own license (BYOL).",
 			},
 			"director_site": &schema.Schema{
 				Type:        schema.TypeList,
@@ -64,6 +100,12 @@ func ResourceIbmVmaasVdc() *schema.Resource {
 							Description: "The resource pool within the Director Site in which to deploy the virtual data center (VDC).",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
+									"compute_ha_enabled": &schema.Schema{
+										Type:        schema.TypeBool,
+										Optional:    true,
+										Default:     false,
+										Description: "Specifies whether compute HA is enabled for this VDC.",
+									},
 									"id": &schema.Schema{
 										Type:        schema.TypeString,
 										Required:    true,
@@ -95,35 +137,6 @@ func ResourceIbmVmaasVdc() *schema.Resource {
 					},
 				},
 			},
-			"name": &schema.Schema{
-				Type:         schema.TypeString,
-				Required:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_vmaas_vdc", "name"),
-				Description:  "A human readable ID for the virtual data center (VDC).",
-			},
-			"ram": &schema.Schema{
-				Type:         schema.TypeInt,
-				Optional:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_vmaas_vdc", "ram"),
-				Description:  "The RAM usage limit on the virtual data center (VDC) in GB (1024^3 bytes). Supported for VDCs deployed on a multitenant Cloud Director site. This property is applicable when the resource pool type is reserved.",
-			},
-			"fast_provisioning_enabled": &schema.Schema{
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Description: "Determines whether this virtual data center has fast provisioning enabled or not.",
-			},
-			"rhel_byol": &schema.Schema{
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
-				Description: "Indicates if the RHEL VMs will be using the license from IBM or the customer will use their own license (BYOL).",
-			},
-			"windows_byol": &schema.Schema{
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
-				Description: "Indicates if the Microsoft Windows VMs will be using the license from IBM or the customer will use their own license (BYOL).",
-			},
 			"href": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -143,6 +156,11 @@ func ResourceIbmVmaasVdc() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The time that the virtual data center (VDC) is deleted.",
+			},
+			"ha": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Indicates if the VDC is HA-enabled for compute only, compute and network, or network only. If not present, the VDC is not HA-enabled.",
 			},
 			"edges": &schema.Schema{
 				Type:        schema.TypeList,
@@ -289,6 +307,26 @@ func ResourceIbmVmaasVdc() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The edge version.",
+						},
+						"primary_data_center_name": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The name of the primary data center.",
+						},
+						"secondary_data_center_name": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The name of the secondary data center.",
+						},
+						"primary_pvdc_id": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The ID of the primary resource pool.",
+						},
+						"secondary_pvdc_id": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The ID of the secondary resource pool.",
 						},
 					},
 				},
@@ -447,14 +485,49 @@ func resourceIbmVmaasVdcCreate(context context.Context, d *schema.ResourceData, 
 
 	d.SetId(*vdc.ID)
 
-	if waitForVdcStatus {
-		_, err = waitForVdcStatusUpdate(context, d, meta)
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error waiting for VDC (%s) to be reeady: %s", *vdc.ID, err))
-		}
+	_, err = waitForIbmVmaasVdcCreate(d, meta)
+	if err != nil {
+		errMsg := fmt.Sprintf("Error waiting for resource IbmVmaasVdc (%s) to be created: %s", d.Id(), err)
+		return flex.DiscriminatedTerraformErrorf(err, errMsg, "ibm_vmaas_vdc", "create", "wait-for-state").GetDiag()
 	}
 
 	return resourceIbmVmaasVdcRead(context, d, meta)
+}
+
+func waitForIbmVmaasVdcCreate(d *schema.ResourceData, meta interface{}) (interface{}, error) {
+	vmwareClient, err := meta.(conns.ClientSession).VmwareV1()
+	if err != nil {
+		return false, err
+	}
+	getVdcOptions := &vmwarev1.GetVdcOptions{}
+
+	getVdcOptions.SetID(d.Id())
+
+	stateConf := &resource.StateChangeConf{
+		Pending: []string{"creating"},
+		Target:  []string{"ready_to_use"},
+		Refresh: func() (interface{}, string, error) {
+			stateObj, response, err := vmwareClient.GetVdc(getVdcOptions)
+			if err != nil {
+				if sdkErr, ok := err.(*core.SDKProblem); ok && response.GetStatusCode() == 404 {
+					sdkErr.Summary = fmt.Sprintf("The instance %s does not exist anymore: %s", "getVdcOptions", err)
+					return nil, "", sdkErr
+				}
+				return nil, "", err
+			}
+			failStates := map[string]bool{"failed": true}
+			if failStates[*stateObj.Status] {
+				return stateObj, *stateObj.Status, fmt.Errorf("The instance %s failed: %s", "getVdcOptions", err)
+			}
+			fmt.Println("The vdc is currently in the " + *stateObj.Status + " state ....")
+			return stateObj, *stateObj.Status, nil
+		},
+		Timeout:    d.Timeout(schema.TimeoutCreate),
+		Delay:      60 * time.Second,
+		MinTimeout: 60 * time.Second,
+	}
+
+	return stateConf.WaitForStateContext(context.Background())
 }
 
 func resourceIbmVmaasVdcRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -489,14 +562,6 @@ func resourceIbmVmaasVdcRead(context context.Context, d *schema.ResourceData, me
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_vmaas_vdc", "read", "set-cpu").GetDiag()
 		}
 	}
-	directorSiteMap, err := ResourceIbmVmaasVdcVDCDirectorSiteToMap(vdc.DirectorSite)
-	if err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_vmaas_vdc", "read", "director_site-to-map").GetDiag()
-	}
-	if err = d.Set("director_site", []map[string]interface{}{directorSiteMap}); err != nil {
-		err = fmt.Errorf("Error setting director_site: %s", err)
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_vmaas_vdc", "read", "set-director_site").GetDiag()
-	}
 	if err = d.Set("name", vdc.Name); err != nil {
 		err = fmt.Errorf("Error setting name: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_vmaas_vdc", "read", "set-name").GetDiag()
@@ -525,6 +590,14 @@ func resourceIbmVmaasVdcRead(context context.Context, d *schema.ResourceData, me
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_vmaas_vdc", "read", "set-windows_byol").GetDiag()
 		}
 	}
+	directorSiteMap, err := ResourceIbmVmaasVdcVDCDirectorSiteToMap(vdc.DirectorSite)
+	if err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_vmaas_vdc", "read", "director_site-to-map").GetDiag()
+	}
+	if err = d.Set("director_site", []map[string]interface{}{directorSiteMap}); err != nil {
+		err = fmt.Errorf("Error setting director_site: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_vmaas_vdc", "read", "set-director_site").GetDiag()
+	}
 	if err = d.Set("href", vdc.Href); err != nil {
 		err = fmt.Errorf("Error setting href: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_vmaas_vdc", "read", "set-href").GetDiag()
@@ -543,6 +616,12 @@ func resourceIbmVmaasVdcRead(context context.Context, d *schema.ResourceData, me
 		if err = d.Set("deleted_at", flex.DateTimeToString(vdc.DeletedAt)); err != nil {
 			err = fmt.Errorf("Error setting deleted_at: %s", err)
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_vmaas_vdc", "read", "set-deleted_at").GetDiag()
+		}
+	}
+	if !core.IsNil(vdc.Ha) {
+		if err = d.Set("ha", vdc.Ha); err != nil {
+			err = fmt.Errorf("Error setting ha: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_vmaas_vdc", "read", "set-ha").GetDiag()
 		}
 	}
 	edges := []map[string]interface{}{}
@@ -641,15 +720,48 @@ func resourceIbmVmaasVdcUpdate(context context.Context, d *schema.ResourceData, 
 			return tfErr.GetDiag()
 		}
 	}
+	_, err = waitForIbmVmaasVdcUpdate(d, meta)
+	if err != nil {
+		errMsg := fmt.Sprintf("Error waiting for resource IbmVmaasVdc (%s) to be created: %s", d.Id(), err)
+		return flex.DiscriminatedTerraformErrorf(err, errMsg, "ibm_vmaas_vdc", "create", "wait-for-state").GetDiag()
+	}
+	return resourceIbmVmaasVdcRead(context, d, meta)
+}
 
-	if waitForVdcStatus {
-		_, err = waitForVdcStatusUpdate(context, d, meta)
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error waiting for VDC to be reeady: %s", err))
-		}
+func waitForIbmVmaasVdcUpdate(d *schema.ResourceData, meta interface{}) (interface{}, error) {
+	vmwareClient, err := meta.(conns.ClientSession).VmwareV1()
+	if err != nil {
+		return false, err
+	}
+	getVdcOptions := &vmwarev1.GetVdcOptions{}
+
+	getVdcOptions.SetID(d.Id())
+
+	stateConf := &resource.StateChangeConf{
+		Pending: []string{"modifying"},
+		Target:  []string{"ready_to_use"},
+		Refresh: func() (interface{}, string, error) {
+			stateObj, response, err := vmwareClient.GetVdc(getVdcOptions)
+			if err != nil {
+				if sdkErr, ok := err.(*core.SDKProblem); ok && response.GetStatusCode() == 404 {
+					sdkErr.Summary = fmt.Sprintf("The instance %s does not exist anymore: %s", "getVdcOptions", err)
+					return nil, "", sdkErr
+				}
+				return nil, "", err
+			}
+			failStates := map[string]bool{"failed": true}
+			if failStates[*stateObj.Status] {
+				return stateObj, *stateObj.Status, fmt.Errorf("The instance %s failed: %s", "getVdcOptions", err)
+			}
+			fmt.Println("The vdc is currently in the " + *stateObj.Status + " state ....")
+			return stateObj, *stateObj.Status, nil
+		},
+		Timeout:    d.Timeout(schema.TimeoutCreate),
+		Delay:      60 * time.Second,
+		MinTimeout: 60 * time.Second,
 	}
 
-	return resourceIbmVmaasVdcRead(context, d, meta)
+	return stateConf.WaitForStateContext(context.Background())
 }
 
 func resourceIbmVmaasVdcDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -667,23 +779,60 @@ func resourceIbmVmaasVdcDelete(context context.Context, d *schema.ResourceData, 
 		deleteVdcOptions.SetAcceptLanguage(d.Get("accept_language").(string))
 	}
 
-	vdcDelete, _, err := vmwareClient.DeleteVdcWithContext(context, deleteVdcOptions)
+	_, _, err = vmwareClient.DeleteVdcWithContext(context, deleteVdcOptions)
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteVdcWithContext failed: %s", err.Error()), "ibm_vmaas_vdc", "delete")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 
-	if waitForVdcStatus {
-		_, err = waitForVdcToDelete(context, d, meta)
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error waiting for VDC (%s) to be deleted: %s", *vdcDelete.ID, err))
-		}
+	_, err = waitForIbmVmaasVdcDelete(d, meta)
+	if err != nil {
+		errMsg := fmt.Sprintf("Error waiting for resource IbmVmaasVdc (%s) to be deleted: %s", d.Id(), err)
+		return flex.DiscriminatedTerraformErrorf(err, errMsg, "ibm_vmaas_vdc", "delete", "wait-for-state").GetDiag()
 	}
 
 	d.SetId("")
 
 	return nil
+}
+
+func waitForIbmVmaasVdcDelete(d *schema.ResourceData, meta interface{}) (interface{}, error) {
+	vmwareClient, err := meta.(conns.ClientSession).VmwareV1()
+	if err != nil {
+		return false, err
+	}
+	getVdcOptions := &vmwarev1.GetVdcOptions{}
+
+	getVdcOptions.SetID(d.Id())
+
+	stateConf := &resource.StateChangeConf{
+		Pending: []string{"deleting"},
+		Target:  []string{"deleted"},
+		Refresh: func() (interface{}, string, error) {
+			stateObj, response, err := vmwareClient.GetVdc(getVdcOptions)
+			if err != nil {
+				if response != nil && response.GetStatusCode() == 404 {
+					status := "deleted"
+					fmt.Println("The vdc is deleted.")
+					stateObj := &vmwarev1.VDC{
+						Status: &status,
+					}
+
+					return stateObj, *stateObj.Status, nil
+				}
+				return nil, "", err
+			}
+
+			fmt.Println("The vdc is currently in the " + *stateObj.Status + " state ....")
+			return stateObj, *stateObj.Status, nil
+		},
+		Timeout:    d.Timeout(schema.TimeoutCreate),
+		Delay:      60 * time.Second,
+		MinTimeout: 60 * time.Second,
+	}
+
+	return stateConf.WaitForStateContext(context.Background())
 }
 
 func ResourceIbmVmaasVdcMapToVDCDirectorSitePrototype(modelMap map[string]interface{}) (*vmwarev1.VDCDirectorSitePrototype, error) {
@@ -699,6 +848,9 @@ func ResourceIbmVmaasVdcMapToVDCDirectorSitePrototype(modelMap map[string]interf
 
 func ResourceIbmVmaasVdcMapToDirectorSitePVDC(modelMap map[string]interface{}) (*vmwarev1.DirectorSitePVDC, error) {
 	model := &vmwarev1.DirectorSitePVDC{}
+	if modelMap["compute_ha_enabled"] != nil {
+		model.ComputeHaEnabled = core.BoolPtr(modelMap["compute_ha_enabled"].(bool))
+	}
 	model.ID = core.StringPtr(modelMap["id"].(string))
 	if modelMap["provider_type"] != nil && len(modelMap["provider_type"].([]interface{})) > 0 {
 		ProviderTypeModel, err := ResourceIbmVmaasVdcMapToVDCProviderType(modelMap["provider_type"].([]interface{})[0].(map[string]interface{}))
@@ -725,6 +877,40 @@ func ResourceIbmVmaasVdcMapToVDCEdgePrototype(modelMap map[string]interface{}) (
 	if modelMap["private_only"] != nil {
 		model.PrivateOnly = core.BoolPtr(modelMap["private_only"].(bool))
 	}
+	if modelMap["network_ha"] != nil && len(modelMap["network_ha"].([]interface{})) > 0 {
+		NetworkHaModel, err := ResourceIbmVmaasVdcMapToVDCEdgePrototypeNetworkHa(modelMap["network_ha"].([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.NetworkHa = NetworkHaModel
+	}
+	return model, nil
+}
+
+func ResourceIbmVmaasVdcMapToVDCEdgePrototypeNetworkHa(modelMap map[string]interface{}) (vmwarev1.VDCEdgePrototypeNetworkHaIntf, error) {
+	model := &vmwarev1.VDCEdgePrototypeNetworkHa{}
+	if modelMap["primary_data_center_name"] != nil && modelMap["primary_data_center_name"].(string) != "" {
+		model.PrimaryDataCenterName = core.StringPtr(modelMap["primary_data_center_name"].(string))
+	}
+	if modelMap["secondary_data_center_name"] != nil && modelMap["secondary_data_center_name"].(string) != "" {
+		model.SecondaryDataCenterName = core.StringPtr(modelMap["secondary_data_center_name"].(string))
+	}
+	if modelMap["secondary_pvdc_id"] != nil && modelMap["secondary_pvdc_id"].(string) != "" {
+		model.SecondaryPvdcID = core.StringPtr(modelMap["secondary_pvdc_id"].(string))
+	}
+	return model, nil
+}
+
+func ResourceIbmVmaasVdcMapToVDCEdgePrototypeNetworkHaNetworkHaOnStretched(modelMap map[string]interface{}) (*vmwarev1.VDCEdgePrototypeNetworkHaNetworkHaOnStretched, error) {
+	model := &vmwarev1.VDCEdgePrototypeNetworkHaNetworkHaOnStretched{}
+	model.PrimaryDataCenterName = core.StringPtr(modelMap["primary_data_center_name"].(string))
+	model.SecondaryDataCenterName = core.StringPtr(modelMap["secondary_data_center_name"].(string))
+	return model, nil
+}
+
+func ResourceIbmVmaasVdcMapToVDCEdgePrototypeNetworkHaNetworkHaOnNonStretched(modelMap map[string]interface{}) (*vmwarev1.VDCEdgePrototypeNetworkHaNetworkHaOnNonStretched, error) {
+	model := &vmwarev1.VDCEdgePrototypeNetworkHaNetworkHaOnNonStretched{}
+	model.SecondaryPvdcID = core.StringPtr(modelMap["secondary_pvdc_id"].(string))
 	return model, nil
 }
 
@@ -748,6 +934,9 @@ func ResourceIbmVmaasVdcVDCDirectorSiteToMap(model *vmwarev1.VDCDirectorSite) (m
 
 func ResourceIbmVmaasVdcDirectorSitePVDCToMap(model *vmwarev1.DirectorSitePVDC) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
+	if model.ComputeHaEnabled != nil {
+		modelMap["compute_ha_enabled"] = *model.ComputeHaEnabled
+	}
 	modelMap["id"] = *model.ID
 	if model.ProviderType != nil {
 		providerTypeMap, err := ResourceIbmVmaasVdcVDCProviderTypeToMap(model.ProviderType)
@@ -786,6 +975,18 @@ func ResourceIbmVmaasVdcEdgeToMap(model *vmwarev1.Edge) (map[string]interface{},
 	modelMap["transit_gateways"] = transitGateways
 	modelMap["type"] = *model.Type
 	modelMap["version"] = *model.Version
+	if model.PrimaryDataCenterName != nil {
+		modelMap["primary_data_center_name"] = *model.PrimaryDataCenterName
+	}
+	if model.SecondaryDataCenterName != nil {
+		modelMap["secondary_data_center_name"] = *model.SecondaryDataCenterName
+	}
+	if model.PrimaryPvdcID != nil {
+		modelMap["primary_pvdc_id"] = *model.PrimaryPvdcID
+	}
+	if model.SecondaryPvdcID != nil {
+		modelMap["secondary_pvdc_id"] = *model.SecondaryPvdcID
+	}
 	return modelMap, nil
 }
 
@@ -859,10 +1060,11 @@ func ResourceIbmVmaasVdcVDCPatchAsPatch(patchVals *vmwarev1.VDCPatch, d *schema.
 		delete(patch, "cpu")
 	}
 	path = "fast_provisioning_enabled"
-	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
-		patch["fast_provisioning_enabled"] = nil
-	} else if !exists {
-		delete(patch, "fast_provisioning_enabled")
+	if d.HasChange(path) {
+		_, newVal := d.GetChange(path)
+		if newVal == nil {
+			patch["fast_provisioning_enabled"] = nil
+		}
 	}
 	path = "ram"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
