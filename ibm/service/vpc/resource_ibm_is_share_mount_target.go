@@ -39,7 +39,6 @@ func ResourceIBMIsShareMountTarget() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
-				Default:     "nfs4",
 				Description: "The protocol to use to access the share for this share mount target.",
 			},
 			"name": {
@@ -362,6 +361,9 @@ func resourceIBMIsShareMountTargetCreate(context context.Context, d *schema.Reso
 	}
 	if accessProtocolIntf, ok := d.GetOk("access_protocol"); ok {
 		accessProtocol := accessProtocolIntf.(string)
+		shareMountTargetPrototype.AccessProtocol = &accessProtocol
+	} else {
+		accessProtocol := "nfs4"
 		shareMountTargetPrototype.AccessProtocol = &accessProtocol
 	}
 	if transitEncryptionIntf, ok := d.GetOk("transit_encryption"); ok {

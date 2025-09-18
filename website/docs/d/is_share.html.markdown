@@ -46,6 +46,10 @@ The following attributes are exported:
 
 - `access_control_mode` - (Boolean) The access control mode for the share.
 - `accessor_binding_role` - (String) The accessor binding role of this file share:- `none`: This file share is not participating in access with another file share- `origin`: This file share is the origin for one or more file shares  (which may be in other accounts)- `accessor`: This file share is providing access to another file share  (which may be in another account).
+- `allowed_transit_encryption_modes` - (List of string) The transit encryption modes to allow for this share.
+- `availability_mode` - (String) The data availability mode of the share
+- `allowed_access_protocols` - (String) The access protocols to allow for this share
+- `bandwidth` - (Integer) The maximum bandwidth (in megabits per second) for the share.
 - `accessor_bindings` - (List) The accessor bindings for this file share. Each accessor binding identifies a resource (possibly in another account) with access to this file share's data.
   Nested schema for **accessor_bindings**:
 	- `href` - (String) The URL for this share accessor binding.

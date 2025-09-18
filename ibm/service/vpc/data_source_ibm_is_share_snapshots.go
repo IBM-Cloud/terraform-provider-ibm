@@ -366,12 +366,13 @@ func DataSourceIBMIsShareSnapshotsShareSnapshotToMap(model *vpcv1.ShareSnapshot)
 	if model.UserTags != nil {
 		modelMap["user_tags"] = model.UserTags
 	}
-	zoneMap, err := DataSourceIBMIsShareSnapshotsZoneReferenceToMap(model.Zone)
-	if err != nil {
-		return modelMap, err
+	if model.Zone != nil {
+		zoneMap, err := DataSourceIBMIsShareSnapshotsZoneReferenceToMap(model.Zone)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["zone"] = []map[string]interface{}{zoneMap}
 	}
-	modelMap["zone"] = []map[string]interface{}{zoneMap}
-
 	if model.UserTags != nil {
 		modelMap["tags"] = model.UserTags
 	}
@@ -445,7 +446,7 @@ func DataSourceIBMIsShareSnapshotsShareSnapshotStatusReasonToMap(model *vpcv1.Sh
 	return modelMap, nil
 }
 
-func DataSourceIBMIsShareSnapshotsZoneReferenceToMap(model *vpcv1.ShareSnapshotZone) (map[string]interface{}, error) {
+func DataSourceIBMIsShareSnapshotsZoneReferenceToMap(model *vpcv1.ZoneReference) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["href"] = *model.Href
 	modelMap["name"] = *model.Name

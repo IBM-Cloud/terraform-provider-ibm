@@ -45,6 +45,11 @@ func DataSourceIbmIsShares() *schema.Resource {
 							Elem:        &schema.Schema{Type: schema.TypeString},
 							Description: "Allowed transit encryption modes",
 						},
+						"availability_mode": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Availability mode of the share.",
+						},
 						"access_control_mode": {
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -572,6 +577,11 @@ func DataSourceIbmIsShares() *schema.Resource {
 								},
 							},
 						},
+						"storage_generation": {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The storage generation for this share",
+						},
 					},
 				},
 			},
@@ -726,6 +736,9 @@ func dataSourceShareCollectionSharesToMap(meta interface{}, sharesItem vpcv1.Sha
 	if !core.IsNil(sharesItem.AllowedTransitEncryptionModes) {
 		sharesMap["allowed_transit_encryption_modes"] = sharesItem.AllowedTransitEncryptionModes
 	}
+	if sharesItem.AvailabilityMode != nil {
+		sharesMap["availability_mode"] = *sharesItem.AvailabilityMode
+	}
 	if !core.IsNil(sharesItem.AllowedAccessProtocols) {
 		sharesMap["allowed_access_protocols"] = sharesItem.AllowedAccessProtocols
 	}
@@ -790,6 +803,9 @@ func dataSourceShareCollectionSharesToMap(meta interface{}, sharesItem vpcv1.Sha
 		sourceSnapshot = append(sourceSnapshot, modelMap)
 	}
 	sharesMap["source_snapshot"] = sourceSnapshot
+
+	sharesMap["storage_generation"] = flex.IntValue(sharesItem.StorageGeneration)
+
 	accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *sharesItem.CRN, "", isAccessTagType)
 	if err != nil {
 		log.Printf(

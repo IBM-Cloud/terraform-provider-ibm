@@ -35,6 +35,11 @@ func DataSourceIbmIsShare() *schema.Resource {
 				ExactlyOneOf: []string{"share", "name"},
 				Description:  "Name of the share.",
 			},
+			"availability_mode": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Availability mode of the share.",
+			},
 			"allowed_transit_encryption_modes": {
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -601,6 +606,11 @@ func DataSourceIbmIsShare() *schema.Resource {
 					},
 				},
 			},
+			"storage_generation": {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The storage generation for this share",
+			},
 		},
 	}
 }
@@ -709,6 +719,11 @@ func dataSourceIbmIsShareRead(context context.Context, d *schema.ResourceData, m
 	}
 	if share.AccessControlMode != nil {
 		d.Set("access_control_mode", *share.AccessControlMode)
+	}
+	if share.AvailabilityMode != nil {
+		if err = d.Set("availability_mode", *share.AvailabilityMode); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_share", "read", "set-availability_mode").GetDiag()
+		}
 	}
 	if !core.IsNil(share.AllowedTransitEncryptionModes) {
 		if err = d.Set("allowed_transit_encryption_modes", share.AllowedTransitEncryptionModes); err != nil {
@@ -841,6 +856,10 @@ func dataSourceIbmIsShareRead(context context.Context, d *schema.ResourceData, m
 	}
 	if err = d.Set("source_snapshot", sourceSnapshot); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting source_snapshot: %s", err), "(Data) ibm_is_share", "read", "set-source_snapshot").GetDiag()
+	}
+
+	if err := d.Set("storage_generation", flex.IntValue(share.StorageGeneration)); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting storage_generation: %s", err), "(Data) ibm_is_share", "read", "set-storage_generation").GetDiag()
 	}
 	accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *share.CRN, "", isAccessTagType)
 	if err != nil {

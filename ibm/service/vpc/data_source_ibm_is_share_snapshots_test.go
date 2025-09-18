@@ -189,7 +189,7 @@ func TestDataSourceIBMIsShareSnapshotsShareSnapshotToMap(t *testing.T) {
 	shareSnapshotStatusReasonModel.Message = core.StringPtr("testString")
 	shareSnapshotStatusReasonModel.MoreInfo = core.StringPtr("https://cloud.ibm.com/docs/key-protect?topic=key-protect-restore-keys")
 
-	zoneReferenceModel := new(vpcv1.ShareSnapshotZone)
+	zoneReferenceModel := new(vpcv1.ZoneReference)
 	zoneReferenceModel.Href = core.StringPtr("https://us-south.iaas.cloud.ibm.com/v1/regions/us-south/zones/us-south-1")
 	zoneReferenceModel.Name = core.StringPtr("us-south-1")
 
@@ -369,7 +369,7 @@ func TestDataSourceIBMIsShareSnapshotsZoneReferenceToMap(t *testing.T) {
 		assert.Equal(t, result, model)
 	}
 
-	model := new(vpcv1.ShareSnapshotZone)
+	model := new(vpcv1.ZoneReference)
 	model.Href = core.StringPtr("https://us-south.iaas.cloud.ibm.com/v1/regions/us-south/zones/us-south-1")
 	model.Name = core.StringPtr("us-south-1")
 

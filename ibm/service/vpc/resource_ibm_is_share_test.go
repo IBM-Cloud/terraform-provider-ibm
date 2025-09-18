@@ -344,7 +344,37 @@ func TestAccIbmIsShareOriginShare(t *testing.T) {
 		},
 	})
 }
+func TestAccIbmIsShareRegionalShare(t *testing.T) {
+	var conf vpcv1.Share
 
+	// name := fmt.Sprintf("tf-fs-name-%d", acctest.RandIntRange(10, 100))
+	subnetName := fmt.Sprintf("tf-subnet-%d", acctest.RandIntRange(10, 100))
+	vpcname := fmt.Sprintf("tf-vpc-name-%d", acctest.RandIntRange(10, 100))
+	shareName := fmt.Sprintf("tf-share-%d", acctest.RandIntRange(10, 100))
+
+	tEMode1 := "stunnel"
+	allowedAccessProtocol := "nfs4"
+
+	// tEMode2 := "none"
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIbmIsShareDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIbmIsShareConfigRegionalShareConfig(vpcname, subnetName, tEMode1, shareName, allowedAccessProtocol),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIbmIsShareExists("ibm_is_share.is_share", conf),
+					resource.TestCheckResourceAttr("ibm_is_share.is_share", "name", shareName),
+					resource.TestCheckResourceAttrSet("ibm_is_share.is_share", "id"),
+					resource.TestCheckResourceAttr("ibm_is_share.is_share", "allowed_transit_encryption_modes.0", tEMode1),
+					resource.TestCheckResourceAttr("ibm_is_share.is_share", "allowed_access_protocols.0", allowedAccessProtocol),
+					resource.TestCheckResourceAttr("ibm_is_share.is_share", "bandwidth", "100"),
+				),
+			},
+		},
+	})
+}
 func TestAccIbmIsShareFromShareSnapshot(t *testing.T) {
 	var conf vpcv1.Share
 
@@ -490,6 +520,20 @@ func testAccCheckIbmIsShareConfigOriginShareConfig(vpcName, sname, tEMode, share
 		
 	  }
 	`, vpcName, sname, acc.ISCIDR, tEMode, shareName, shareName1)
+}
+
+func testAccCheckIbmIsShareConfigRegionalShareConfig(vpcName, sname, tEMode, shareName, allowedAccessProtocol string) string {
+	return fmt.Sprintf(`
+	
+	resource "ibm_is_share" "is_share" {
+		allowed_transit_encryption_modes = ["%s"]
+		allowed_access_protocols = ["%s"]
+		size    = 220
+		name    = "%s"
+		profile = "rfs"
+		bandwidth = 100
+	  }
+	`, tEMode, allowedAccessProtocol, shareName)
 }
 
 func testAccCheckIbmIsShareConfigShareSnapshotConfig(vpcName, sname, tEMode, shareName, shareSnapName, shareName1 string) string {

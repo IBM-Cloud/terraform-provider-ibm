@@ -484,9 +484,12 @@ func resourceIBMIsShareSnapshotRead(context context.Context, d *schema.ResourceD
 		err = fmt.Errorf("Error setting status_reasons: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_share_snapshot", "read", "set-status_reasons").GetDiag()
 	}
-	zoneMap, err := ResourceIBMIsShareSnapshotZoneReferenceToMap(shareSnapshot.Zone)
-	if err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_share_snapshot", "read", "zone-to-map").GetDiag()
+	zoneMap := make(map[string]interface{})
+	if shareSnapshot.Zone != nil {
+		zoneMap, err = ResourceIBMIsShareSnapshotZoneReferenceToMap(shareSnapshot.Zone)
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_share_snapshot", "read", "zone-to-map").GetDiag()
+		}
 	}
 	if err = d.Set("zone", []map[string]interface{}{zoneMap}); err != nil {
 		err = fmt.Errorf("Error setting zone: %s", err)
@@ -691,7 +694,7 @@ func ResourceIBMIsShareSnapshotShareSnapshotStatusReasonToMap(model *vpcv1.Share
 	return modelMap, nil
 }
 
-func ResourceIBMIsShareSnapshotZoneReferenceToMap(model *vpcv1.ShareSnapshotZone) (map[string]interface{}, error) {
+func ResourceIBMIsShareSnapshotZoneReferenceToMap(model *vpcv1.ZoneReference) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["href"] = *model.Href
 	modelMap["name"] = *model.Name
