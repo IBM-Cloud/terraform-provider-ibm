@@ -148,7 +148,6 @@ func testAccCheckIbmOnboardingCatalogPlanConfigBasic(productID string, catalogPr
 			object_id = "%s"
 			object_provider {
 				name = "name"
-				email = "email@email.com"
 			}
 			metadata {
                 rc_compatible =	 false
@@ -190,7 +189,6 @@ func testAccCheckIbmOnboardingCatalogPlanConfig(productID string, catalogProduct
 			pricing_tags = ["free"]
 			object_provider {
 				name = "name"
-				email = "email@email.com"
 			}
 			metadata {
 				rc_compatible = "%s"
@@ -259,7 +257,6 @@ func testAccCheckIbmOnboardingCatalogPlanUpdateConfig(productID string, catalogP
 			tags = ["tag"]
 			object_provider {
 				name = "name"
-				email = "email@email.com"
 			}
 			metadata {
 			    other {
