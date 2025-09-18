@@ -795,7 +795,7 @@ func ResourceIBMResourceInstanceUpdate(d *schema.ResourceData, meta interface{})
 		return fmt.Errorf("[ERROR] Error updating resource instance: %s with resp code: %s", err, resp)
 	}
 
-	_, err = waitForResourceInstanceUpdate(d, meta)
+	_, err = WaitForResourceInstanceUpdate(d, meta)
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error waiting for update resource instance (%s) to be succeeded: %s", d.Id(), err)
 	}
@@ -900,7 +900,7 @@ func waitForResourceInstanceCreate(d *schema.ResourceData, meta interface{}) (in
 	return stateConf.WaitForStateContext(context.Background())
 }
 
-func waitForResourceInstanceUpdate(d *schema.ResourceData, meta interface{}) (interface{}, error) {
+func WaitForResourceInstanceUpdate(d *schema.ResourceData, meta interface{}) (interface{}, error) {
 	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return false, err
