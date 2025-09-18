@@ -151,7 +151,6 @@ func testAccCheckIbmOnboardingCatalogDeploymentConfigBasic(productID string, cat
 			object_id = "%s"
 			object_provider {
 				name = "name"
-				email = "email@email.com"
 			}
 			metadata {
                 rc_compatible =	false
@@ -186,7 +185,6 @@ func testAccCheckIbmOnboardingCatalogDeploymentConfig(productID string, catalogP
 			tags = ["sample"]
 			object_provider {
 				name = "name"
-				email = "email@email.com"
 			}
 			metadata {
                 rc_compatible =	"%s"
@@ -194,7 +192,7 @@ func testAccCheckIbmOnboardingCatalogDeploymentConfig(productID string, catalogP
 					rc_provisionable = true
   					iam_compatible = "%s"
 					service_key_supported = true
-					parameters {
+            parameters {
                 		displayname = "test"
                 		name = "test"
 						type = "text"
@@ -214,7 +212,7 @@ func testAccCheckIbmOnboardingCatalogDeploymentConfig(productID string, catalogP
 								show_for = [ "eu-gb" ]
 							}
 						}
-            		}
+            }
 				}
 				deployment {
 					broker {
@@ -249,18 +247,17 @@ func testAccCheckIbmOnboardingCatalogDeploymentUpdateConfig(productID string, ca
 					long_description = "long_description"
 								}
 			}
-			tags = ["sample", "moresample"]
+			tags = [ "moresample", "sample"]
 			object_provider {
 				name = "name"
-				email = "email@email.com"
-								}
+			}
 			metadata {
                 rc_compatible =	"%s"
 				service {
 				  	rc_provisionable = true
   					iam_compatible = "%s"
 					service_key_supported = false
-					parameters {
+            parameters {
                 		displayname = "test"
                 		name = "test"
 			    		type = "text"
@@ -285,10 +282,10 @@ func testAccCheckIbmOnboardingCatalogDeploymentUpdateConfig(productID string, ca
 								show_for = [ "us-east" ]
 							}
 						}
-					}
-					parameters {
-                		displayname = "test2"
-                		name = "test2"
+            }
+				parameters {
+                	displayname = "test2"
+                	name = "test2"
 			    		type = "text"
                 		value = ["test2"]
                 		description = "test2"

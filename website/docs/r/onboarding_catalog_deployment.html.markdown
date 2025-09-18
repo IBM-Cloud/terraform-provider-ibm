@@ -210,24 +210,24 @@ Nested schema for **metadata**:
 		* `parameters` - (Optional, List)
 		  * Constraints: The maximum length is `1000` items. The minimum length is `0` items.
 		Nested schema for **parameters**:
-			* `associations` - (Optional, List) A JSON to describe other parameters or plan that are associated to this parameter.
+			* `associations` - (Optional, List) A JSON to describe other parameters or plans associated with this parameter.
 			Nested schema for **associations**:
 				* `location` - (Optional, List)
 				Nested schema for **location**:
-					* `show_for` - (Optional, List) An array of pricing plan IDs, or parameters or locations depending on parent.
+					* `show_for` - (Optional, List) An array of pricing plan IDs, parameters or locations depending on parent.
 					  * Constraints: The list items must match regular expression `/^[ -~\\s]*$/`. The maximum length is `1000` items. The minimum length is `0` items.
-				* `parameters` - (Optional, List) Indicate this parameter is associated to some other parameters.
+				* `parameters` - (Optional, List) Indicates whether this parameter is associated with any other parameters.
 				  * Constraints: The maximum length is `1000` items. The minimum length is `0` items.
 				Nested schema for **parameters**:
-					* `name` - (Optional, String) Indicate this parameter is associated to some other parameters.
+					* `name` - (Optional, String) Indicates whether this parameter is associated with any other parameters.
 					  * Constraints: The maximum length is `2000` characters. The minimum length is `0` characters. The value must match regular expression `/^[ -~\\s]*$/`.
-					* `options_refresh` - (Optional, Boolean) Indicate if re-fetching the options is needed when the plan changed.
-					* `show_for` - (Optional, List) An array of pricing plan IDs, or parameters or locations depending on parent.
+					* `options_refresh` - (Optional, Boolean) Indicates whether re-fetching the options is needed when the plan changes.
+					* `show_for` - (Optional, List) An array of pricing plan IDs, parameters or locations depending on parent.
 					  * Constraints: The list items must match regular expression `/^[ -~\\s]*$/`. The maximum length is `1000` items. The minimum length is `0` items.
 				* `plan` - (Optional, List)
 				Nested schema for **plan**:
-					* `options_refresh` - (Optional, Boolean) Indicate if re-fetching the options is needed when the plan changed.
-					* `show_for` - (Optional, List) An array of pricing plan IDs, or parameters or locations depending on parent.
+					* `options_refresh` - (Optional, Boolean) Indicates whether re-fetching the options is needed when the plan changes.
+					* `show_for` - (Optional, List) An array of pricing plan IDs, parameters or locations depending on parent.
 					  * Constraints: The list items must match regular expression `/^[ -~\\s]*$/`. The maximum length is `1000` items. The minimum length is `0` items.
 			* `description` - (Optional, String) The description of the parameter that is displayed to help users with the value of the parameter.
 			  * Constraints: The maximum length is `2000` characters. The minimum length is `1` character. The value must match regular expression `/^[ -~\\s]*$/`.
@@ -403,7 +403,7 @@ Nested schema for **overview_ui**:
 		* `description` - (Optional, String) The short description of the product that is displayed in your catalog entry.
 		* `display_name` - (Optional, String) The display name of the product.
 		* `long_description` - (Optional, String) The detailed description of your product that is displayed at the beginning of your product page in the catalog. Markdown markup language is supported.
-* `product_id` - (Required, Forces new resource, String) The unique ID of the product.
+* `product_id` - (Required, Forces new resource, String) The unique ID of the resource.
   * Constraints: The maximum length is `71` characters. The minimum length is `71` characters. The value must match regular expression `/^[a-zA-Z0-9]{32}:o:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/`.
 * `tags` - (Optional, List) A list of tags that carry information about your product. These tags can be used to find your product in the IBM Cloud catalog.
   * Constraints: The list items must match regular expression `/^[a-z0-9\\-._]+$/`. The maximum length is `100` items. The minimum length is `0` items.
@@ -427,7 +427,7 @@ The `id` property can be formed from `product_id`, `catalog_product_id`, `catalo
 
 <pre>
 product_id/catalog_product_id/catalog_plan_id/catalog_deployment_id</pre>
-* `product_id`: A string. The unique ID of the product.
+* `product_id`: A string. The unique ID of the resource.
 * `catalog_product_id`: A string. The unique ID of this global catalog product.
 * `catalog_plan_id`: A string. The unique ID of this global catalog plan.
 * `catalog_deployment_id`: A string. The ID of a global catalog object.

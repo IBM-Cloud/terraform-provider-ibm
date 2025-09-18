@@ -81,7 +81,7 @@ resource "ibm_onboarding_resource_broker" "onboarding_resource_broker_instance" 
 
 ```hcl
 resource "ibm_onboarding_catalog_deployment" "onboarding_catalog_deployment_instance" {
-  product_id = ibm_onboarding_product.onboarding_product_instance.id
+  product_id = var.onboarding_catalog_deployment_product_id
   catalog_product_id = ibm_onboarding_catalog_product.onboarding_catalog_product_instance.onboarding_catalog_product_id
   catalog_plan_id = ibm_onboarding_catalog_plan.onboarding_catalog_plan_instance.onboarding_catalog_plan_id
   env = var.onboarding_catalog_deployment_env
@@ -102,7 +102,7 @@ resource "ibm_onboarding_catalog_deployment" "onboarding_catalog_deployment_inst
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
 | ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
-| product_id | The unique ID of the product. | `string` | true |
+| product_id | The unique ID of the resource. | `string` | true |
 | catalog_product_id | The unique ID of this global catalog product. | `string` | true |
 | catalog_plan_id | The unique ID of this global catalog plan. | `string` | true |
 | env | The environment to fetch this object from. | `string` | false |
@@ -128,7 +128,7 @@ resource "ibm_onboarding_catalog_deployment" "onboarding_catalog_deployment_inst
 
 ```hcl
 resource "ibm_onboarding_catalog_plan" "onboarding_catalog_plan_instance" {
-  product_id = ibm_onboarding_product.onboarding_product_instance.id
+  product_id = var.onboarding_catalog_plan_product_id
   catalog_product_id = ibm_onboarding_catalog_product.onboarding_catalog_product_instance.onboarding_catalog_product_id
   env = var.onboarding_catalog_plan_env
   object_id = var.onboarding_catalog_plan_object_id
@@ -149,7 +149,7 @@ resource "ibm_onboarding_catalog_plan" "onboarding_catalog_plan_instance" {
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
 | ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
-| product_id | The unique ID of the product. | `string` | true |
+| product_id | The unique ID of the resource. | `string` | true |
 | catalog_product_id | The unique ID of this global catalog product. | `string` | true |
 | env | The environment to fetch this object from. | `string` | false |
 | object_id | The desired ID of the global catalog object. | `string` | false |
@@ -175,7 +175,7 @@ resource "ibm_onboarding_catalog_plan" "onboarding_catalog_plan_instance" {
 
 ```hcl
 resource "ibm_onboarding_catalog_product" "onboarding_catalog_product_instance" {
-  product_id = ibm_onboarding_product.onboarding_product_instance.id
+  product_id = var.onboarding_catalog_product_product_id
   env = var.onboarding_catalog_product_env
   object_id = var.onboarding_catalog_product_object_id
   name = var.onboarding_catalog_product_name
@@ -195,7 +195,7 @@ resource "ibm_onboarding_catalog_product" "onboarding_catalog_product_instance" 
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
 | ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
-| product_id | The unique ID of the product. | `string` | true |
+| product_id | The unique ID of the resource. | `string` | true |
 | env | The environment to fetch this object from. | `string` | false |
 | object_id | The desired ID of the global catalog object. | `string` | false |
 | name | The programmatic name of this product. | `string` | true |
@@ -222,7 +222,7 @@ resource "ibm_onboarding_catalog_product" "onboarding_catalog_product_instance" 
 
 ```hcl
 resource "ibm_onboarding_iam_registration" "onboarding_iam_registration_instance" {
-  product_id = ibm_onboarding_product.onboarding_product_instance.id
+  product_id = var.onboarding_iam_registration_product_id
   env = var.onboarding_iam_registration_env
   name = var.onboarding_iam_registration_name
   enabled = var.onboarding_iam_registration_enabled
@@ -237,6 +237,7 @@ resource "ibm_onboarding_iam_registration" "onboarding_iam_registration_instance
   supported_authorization_subjects = var.onboarding_iam_registration_supported_authorization_subjects
   supported_roles = var.onboarding_iam_registration_supported_roles
   supported_network = var.onboarding_iam_registration_supported_network
+  supported_action_control = var.onboarding_iam_registration_supported_action_control
 }
 ```
 
@@ -245,7 +246,7 @@ resource "ibm_onboarding_iam_registration" "onboarding_iam_registration_instance
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
 | ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
-| product_id | The unique ID of the product. | `string` | true |
+| product_id | The unique ID of the resource. | `string` | true |
 | env | The environment to fetch this object from. | `string` | false |
 | name | The IAM registration name, which must be the programmatic name of the product. | `string` | true |
 | enabled | Whether the service is enabled or disabled for IAM. | `bool` | false |
@@ -260,6 +261,7 @@ resource "ibm_onboarding_iam_registration" "onboarding_iam_registration_instance
 | supported_authorization_subjects | The list of supported authorization subjects. | `list()` | false |
 | supported_roles | The list of roles that you can use to assign access. | `list()` | false |
 | supported_network | The registration of set of endpoint types that are supported by your service in the `networkType` environment attribute. This constrains the context-based restriction rules specific to the service such that they describe access restrictions on only this set of endpoints. | `` | false |
+| supported_action_control | The list that indicates which actions are part of the service restrictions. | `list(string)` | false |
 
 ### Resource: ibm_onboarding_product
 

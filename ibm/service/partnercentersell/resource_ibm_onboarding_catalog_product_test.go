@@ -22,9 +22,9 @@ import (
 
 func TestAccIbmOnboardingCatalogProductBasic(t *testing.T) {
 	var conf partnercentersellv1.GlobalCatalogProduct
-	baseName := fmt.Sprintf("test-name-terraform-%d-2", acctest.RandIntRange(10, 100))
+	baseName := fmt.Sprintf("test-name-terraform-%d-2", acctest.RandIntRange(100, 999))
 	productID := acc.PcsOnboardingProductWithApprovedProgrammaticName
-	objectId := fmt.Sprintf("test-object-id-terraform-%d-2", acctest.RandIntRange(10, 100))
+	objectId := fmt.Sprintf("test-object-id-terraform-%d-2", acctest.RandIntRange(100, 999))
 	name := baseName
 	active := "true"
 	disabled := "false"
@@ -173,10 +173,9 @@ func testAccCheckIbmOnboardingCatalogProductConfigBasic(productID string, name s
 			disabled = %s
 			kind = "%s"
 			object_id = "%s"
-			tags = ["tag", "support_ibm"]
+			tags = ["support_ibm", "tag"]
 			object_provider {
 				name = "name"
-				email = "email@emai.com"
 			}
 			metadata {
 				rc_compatible = false
@@ -202,13 +201,12 @@ func testAccCheckIbmOnboardingCatalogProductConfig(productID string, env string,
 					long_description = "long_description"
 				}
 			}
-			tags = ["tag", "support_community"]
+			tags = ["support_community", "tag"]
 			images {
 				image = "image"
 			}
 			object_provider {
 				name = "name"
-				email = "email@email.com"
 			}
 			metadata {
 				rc_compatible = "%s"
@@ -362,14 +360,13 @@ func testAccCheckIbmOnboardingCatalogProductUpdateConfig(productID string, env s
 					long_description = "long_description"
 				}
 			}
-			tags = ["tag", "support_community"]
+			tags = ["support_community", "tag"]
 			images {
 				image = "image"
 			}
 			object_provider {
 				name = "name"
-				email = "email@email.com"
-							}
+			}
 			metadata {
 				rc_compatible = "%s"
 				ui {

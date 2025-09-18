@@ -2,7 +2,7 @@
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.104.0-b4a47c49-20250418-184351
+ * IBM OpenAPI Terraform Generator Version: 3.107.1-41b0fbd0-20250825-080732
  */
 
 package partnercentersell
@@ -36,7 +36,7 @@ func ResourceIbmOnboardingCatalogProduct() *schema.Resource {
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_onboarding_catalog_product", "product_id"),
-				Description:  "The unique ID of the product.",
+				Description:  "The unique ID of the resource.",
 			},
 			"env": &schema.Schema{
 				Type:         schema.TypeString,
@@ -232,7 +232,7 @@ func ResourceIbmOnboardingCatalogProduct() *schema.Resource {
 															"navigation_items": &schema.Schema{
 																Type:        schema.TypeList,
 																Optional:    true,
-																Description: "List of custom navigation panel.",
+																Description: "The list of custom navigation panels.",
 																Elem: &schema.Resource{
 																	Schema: map[string]*schema.Schema{
 																		"id": &schema.Schema{
@@ -646,7 +646,7 @@ func ResourceIbmOnboardingCatalogProduct() *schema.Resource {
 													Type:        schema.TypeList,
 													MaxItems:    1,
 													Optional:    true,
-													Description: "A JSON to describe other parameters or plan that are associated to this parameter.",
+													Description: "A JSON to describe other parameters or plans associated with this parameter.",
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
 															"plan": &schema.Schema{
@@ -658,13 +658,13 @@ func ResourceIbmOnboardingCatalogProduct() *schema.Resource {
 																		"show_for": &schema.Schema{
 																			Type:        schema.TypeList,
 																			Optional:    true,
-																			Description: "An array of pricing plan IDs, or parameters or locations depending on parent.",
+																			Description: "An array of pricing plan IDs, parameters or locations depending on parent.",
 																			Elem:        &schema.Schema{Type: schema.TypeString},
 																		},
 																		"options_refresh": &schema.Schema{
 																			Type:        schema.TypeBool,
 																			Optional:    true,
-																			Description: "Indicate if re-fetching the options is needed when the plan changed.",
+																			Description: "Indicates whether re-fetching the options is needed when the plan changes.",
 																		},
 																	},
 																},
@@ -672,24 +672,24 @@ func ResourceIbmOnboardingCatalogProduct() *schema.Resource {
 															"parameters": &schema.Schema{
 																Type:        schema.TypeList,
 																Optional:    true,
-																Description: "Indicate this parameter is associated to some other parameters.",
+																Description: "Indicates whether this parameter is associated with any other parameters.",
 																Elem: &schema.Resource{
 																	Schema: map[string]*schema.Schema{
 																		"name": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
-																			Description: "Indicate this parameter is associated to some other parameters.",
+																			Description: "Indicates whether this parameter is associated with any other parameters.",
 																		},
 																		"show_for": &schema.Schema{
 																			Type:        schema.TypeList,
 																			Optional:    true,
-																			Description: "An array of pricing plan IDs, or parameters or locations depending on parent.",
+																			Description: "An array of pricing plan IDs, parameters or locations depending on parent.",
 																			Elem:        &schema.Schema{Type: schema.TypeString},
 																		},
 																		"options_refresh": &schema.Schema{
 																			Type:        schema.TypeBool,
 																			Optional:    true,
-																			Description: "Indicate if re-fetching the options is needed when the plan changed.",
+																			Description: "Indicates whether re-fetching the options is needed when the plan changes.",
 																		},
 																	},
 																},
@@ -703,7 +703,7 @@ func ResourceIbmOnboardingCatalogProduct() *schema.Resource {
 																		"show_for": &schema.Schema{
 																			Type:        schema.TypeList,
 																			Optional:    true,
-																			Description: "An array of pricing plan IDs, or parameters or locations depending on parent.",
+																			Description: "An array of pricing plan IDs, parameters or locations depending on parent.",
 																			Elem:        &schema.Schema{Type: schema.TypeString},
 																		},
 																	},
