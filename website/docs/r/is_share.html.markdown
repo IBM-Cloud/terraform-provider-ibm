@@ -11,7 +11,7 @@ subcategory: "VPC infrastructure"
 Provides a resource for Share. This allows Share to be created, updated and deleted. For more information, about share replication, see [Share replication](https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-replication).
 
 ~> **NOTE**
-  New shares should be created with profile `dp2`. Old Tiered profiles will be deprecated soon.
+  Regional file share `rfs` profile is available for accounts that have been granted special approval to preview the feature.
 
 ## Example Usage
 
@@ -101,7 +101,7 @@ resource "ibm_is_share" "example-4" {
 ## Example share (Create accessor share for an origin share)
 ```terraform
 resource "ibm_is_share" "example-4" {
-  allowed_transit_encryption_modes = ["user_managed", "none"]
+  allowed_transit_encryption_modes = ["ipsec", "none"]
   access_control_mode = "security_group"
   name    = "my-share"
   size    = 200
@@ -121,6 +121,16 @@ resource "ibm_is_share" "example-6" {
   name                  = "my-replica1"
 }
 ```
+## Example share (Create a regional file share)
+```terraform
+resource "ibm_is_share" "example-4" {
+  allowed_transit_encryption_modes = ["stunnel", "none"]
+  access_control_mode = "security_group"
+  bandwidth = 210
+  name    = "my-share"
+  size    = 200
+  profile = "  profile = "rfs"
+}
 
 ## Argument Reference
 

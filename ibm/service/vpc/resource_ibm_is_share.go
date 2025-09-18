@@ -31,6 +31,12 @@ const (
 	IsFileShareReplicationRoleReplica = "replica"
 )
 
+func normalizeValue(value string) string {
+	if value == "user_managed" {
+		return "ipsec"
+	}
+	return value
+}
 func ResourceIbmIsShare() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceIbmIsShareCreate,
@@ -54,10 +60,26 @@ func ResourceIbmIsShare() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"allowed_transit_encryption_modes": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Computed:    true,
-				Elem:        &schema.Schema{Type: schema.TypeString},
+				Type:     schema.TypeSet,
+				Optional: true,
+				Computed: true,
+				Set: func(v interface{}) int {
+					str := v.(string)
+					normalized := normalizeValue(str)
+					return schema.HashString(normalized)
+				},
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+					DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+						if old == "user_managed" && new == "ipsec" {
+							return true
+						}
+						if old == "ipsec" && new == "user_managed" {
+							return true
+						}
+						return false
+					},
+				},
 				Description: "Allowed transit encryption modes",
 			},
 			"allowed_access_protocols": {
@@ -164,6 +186,15 @@ func ResourceIbmIsShare() *schema.Resource {
 							Optional:    true,
 							Computed:    true,
 							Description: "The transit encryption mode.",
+							DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+								if old == "user_managed" && new == "ipsec" {
+									return true
+								}
+								if old == "ipsec" && new == "user_managed" {
+									return true
+								}
+								return false
+							},
 						},
 						"name": {
 							Type:        schema.TypeString,
@@ -334,13 +365,6 @@ func ResourceIbmIsShare() *schema.Resource {
 				Description:   "Configuration for a replica file share to create and associate with this file share. Ifunspecified, a replica may be subsequently added by creating a new file share with a`source_share` referencing this file share.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"allowed_transit_encryption_modes": {
-							Type:        schema.TypeList,
-							Optional:    true,
-							Computed:    true,
-							Elem:        &schema.Schema{Type: schema.TypeString},
-							Description: "Allowed transit encryption modes",
-						},
 						"crn": {
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -447,6 +471,15 @@ func ResourceIbmIsShare() *schema.Resource {
 										Optional:    true,
 										Computed:    true,
 										Description: "The transit encryption mode.",
+										DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+											if old == "user_managed" && new == "ipsec" {
+												return true
+											}
+											if old == "ipsec" && new == "user_managed" {
+												return true
+											}
+											return false
+										},
 									},
 									"virtual_network_interface": {
 										Type:        schema.TypeList,
@@ -1170,19 +1203,6 @@ func resourceIbmIsShareCreate(context context.Context, d *schema.ResourceData, m
 			replicaShareMap := replicaShareIntf.([]interface{})[0].(map[string]interface{})
 			replicaShare := &vpcv1.SharePrototypeShareContext{}
 
-			if allowedTEMIntf, ok := replicaShareMap["allowed_transit_encryption_modes"]; ok {
-				allowedTransitEncryptionModes := []string{}
-				allowedTransitEncryptionModesIntf := allowedTEMIntf.([]interface{})
-				for _, allowedTransitEncryptionModesItemIntf := range allowedTransitEncryptionModesIntf {
-					allowedTransitEncryptionModesItem := allowedTransitEncryptionModesItemIntf.(string)
-					if allowedTransitEncryptionModesItem == "user_managed" {
-						allowedTransitEncryptionModesItem = "ipsec"
-					}
-					allowedTransitEncryptionModes = append(allowedTransitEncryptionModes, allowedTransitEncryptionModesItem)
-				}
-				replicaShare.AllowedTransitEncryptionModes = allowedTransitEncryptionModes
-			}
-
 			iopsIntf, ok := replicaShareMap["iops"]
 			iops := iopsIntf.(int)
 			if ok && iops != 0 {
@@ -1461,10 +1481,12 @@ func resourceIbmIsShareRead(context context.Context, d *schema.ResourceData, met
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_share", "read", "set-access_control_mode").GetDiag()
 		}
 	}
+	allowedaccessprotocols := []string{}
 	if share.AllowedAccessProtocols != nil && len(share.AllowedAccessProtocols) > 0 {
-		if err = d.Set("allowed_access_protocols", *&share.AllowedAccessProtocols); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_share", "read", "set-allowed_access_protocols").GetDiag()
-		}
+		allowedaccessprotocols = share.AllowedAccessProtocols
+	}
+	if err = d.Set("allowed_access_protocols", allowedaccessprotocols); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_share", "read", "set-allowed_access_protocols").GetDiag()
 	}
 	if err = d.Set("bandwidth", flex.IntValue(share.Bandwidth)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting bandwidth: %s", err))
