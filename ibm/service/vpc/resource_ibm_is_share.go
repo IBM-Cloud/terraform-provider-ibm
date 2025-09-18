@@ -1429,13 +1429,13 @@ func resourceIbmIsShareMapToShareMountTargetPrototype(d *schema.ResourceData, sh
 	if transitEncryptionIntf, ok := shareTargetPrototypeMap["transit_encryption"]; ok && transitEncryptionIntf != "" {
 		transitEncryption := transitEncryptionIntf.(string)
 		if transitEncryption == "user_managed" {
-			transitEncryption = "ipsec"
+			transitEncryption = "none"
 		}
 		shareTargetPrototype.TransitEncryption = &transitEncryption
 	} else {
 		shareProfile := d.Get("profile").(string)
 		if shareProfile == "dp2" {
-			shareTargetPrototype.TransitEncryption = &[]string{"ipsec"}[0]
+			shareTargetPrototype.TransitEncryption = &[]string{"none"}[0]
 		} else if shareProfile == "rfs" {
 			shareTargetPrototype.TransitEncryption = &[]string{"stunnel"}[0]
 		}
