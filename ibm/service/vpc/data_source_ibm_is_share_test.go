@@ -31,6 +31,7 @@ func TestAccIbmIsShareDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_is_share.is_share", "lifecycle_state"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_share.is_share", "name"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_share.is_share", "profile"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_share.is_share", "storage_generation"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_share.is_share", "resource_group"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_share.is_share", "resource_type"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_share.is_share", "size"),
