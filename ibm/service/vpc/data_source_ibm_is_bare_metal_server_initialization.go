@@ -57,6 +57,39 @@ func DataSourceIBMIsBareMetalServerInitialization() *schema.Resource {
 				Description: "Passphrase for Bare Metal Server Private Key file",
 			},
 
+			isBareMetalServerDefaultTrustedProfile: {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"auto_link": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "If set to true, the system will create a link to the specified target trusted profile during server creation. Regardless of whether a link is created by the system or manually using the IAM Identity service, it will be automatically deleted when the server is deleted.",
+						},
+						"target": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The default IAM trusted profile to use for this bare metal server",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"id": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The unique identifier for this trusted profile",
+									},
+									"crn": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The CRN for this trusted profile",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+
 			isBareMetalServerImage: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -144,6 +177,23 @@ func dataSourceIBMISBareMetalServerInitializationRead(context context.Context, d
 
 		if err = d.Set(isBareMetalServerImageName, initialization.Image.Name); err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting image_name: %s", err), "(Data) ibm_is_bare_metal_server_initialization", "read", "set-image_name").GetDiag()
+		}
+	}
+
+	if initialization.DefaultTrustedProfile != nil {
+		defaultTrustedProfileList := make([]map[string]interface{}, 0)
+		defaultTrustedProfileMap := map[string]interface{}{}
+
+		targetMap := map[string]interface{}{}
+		targetMap["id"] = *initialization.DefaultTrustedProfile.Target.ID
+		targetMap["crn"] = *initialization.DefaultTrustedProfile.Target.CRN
+
+		defaultTrustedProfileMap["auto_link"] = *initialization.DefaultTrustedProfile.AutoLink
+		defaultTrustedProfileMap["target"] = []map[string]interface{}{targetMap}
+
+		defaultTrustedProfileList = append(defaultTrustedProfileList, defaultTrustedProfileMap)
+		if err = d.Set(isBareMetalServerDefaultTrustedProfile, defaultTrustedProfileList); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting default_trusted_profile: %s", err), "(Data) ibm_is_bare_metal_server_initialization", "read", "set-default_trusted_profile").GetDiag()
 		}
 	}
 

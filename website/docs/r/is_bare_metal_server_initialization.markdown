@@ -28,16 +28,44 @@ In the following example, you can update name of a Bare Metal Server disk:
 
 ```terraform
 resource "ibm_is_bare_metal_server_initialization" "initialization" {
-  bare_metal_server   = ibm_is_bare_metal_server.bms.id
-  image               = var.image_id
-  keys                = [ var.keys ]
-  user_data           = var.userdata
+  bare_metal_server = ibm_is_bare_metal_server.bms.id
+  image             = var.image_id
+  keys              = [var.keys]
+  user_data         = var.userdata
 }
+
 ## to avoid changes on the ibm_is_bare_metal_server resource, use lifecycle meta argument ignore_changes
 resource "ibm_is_bare_metal_server" "bms" {
   ....
   lifecycle{
     ignore_changes = [ image, keys, user_data ]
+  }
+}
+```
+
+## Default trusted profile Example
+
+In the following example, you can update default trusted profile of a Bare Metal Server disk:
+
+```terraform
+resource "ibm_is_bare_metal_server_initialization" "initialization" {
+  bare_metal_server = ibm_is_bare_metal_server.bms.id
+  image             = var.image_id
+  keys              = [var.keys]
+  user_data         = var.userdata
+  default_trusted_profile {
+    auto_link = true
+    target {
+      id = var.profile_id
+    }
+  }
+}
+
+## to avoid changes on the ibm_is_bare_metal_server resource, use lifecycle meta argument ignore_changes
+resource "ibm_is_bare_metal_server" "bms" {
+  ....
+  lifecycle{
+    ignore_changes = [ image, keys, user_data, default_trusted_profile ]
   }
 }
 ```
@@ -48,6 +76,14 @@ Review the argument references that you can specify for your resource.
 
 
 - `bare_metal_server` - (Required, String) Bare metal server identifier. 
+- `default_trusted_profile`- (Optional, List) The default trusted profile to be used when initializing the bare metal server.
+
+  Nested scheme for `default_trusted_profile`:
+  - `auto_link` - (Boolean) If set to true, the system will create a link to the specified target trusted profile during server creation. Regardless of whether a link is created by the system or manually using the IAM Identity service, it will be automatically deleted when the server is deleted.
+  - `target` - (List) The default IAM trusted profile to use for this bare metal server.
+     Nested scheme for `target`: 
+     - `id` - (String) The unique identifier for this trusted profile
+     - `crn`- (String) The CRN for this trusted profile
 - `image` - (Required, String) Image id to use to reinitialize the bare metal server. 
 - `keys` - (Required, Array) Keys ids to use to reinitialize the bare metal server. 
 - `user_data` - (Optional, String) User data to transfer to the server bare metal server. If unspecified, no user data will be made available. (For reload/reinitialize provide the same user data as at the time of provisioning)

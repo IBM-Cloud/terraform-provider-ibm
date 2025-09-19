@@ -42,6 +42,15 @@ Review the argument references that you can specify for your data source.
 In addition to the argument reference list, you can access the following attribute references after your data source is created. 
 
 - `id` - (String) The unique identifier for this bare metal server.
+- `default_trusted_profile`- (Optional, List) The default trusted profile to be used when initializing the bare metal server.
+
+  Nested scheme for `default_trusted_profile`:
+  - `auto_link` - (Boolean) If set to true, the system will create a link to the specified target trusted profile during server creation. Regardless of whether a link is created by the system or manually using the IAM Identity service, it will be automatically deleted when the server is deleted.
+  - `target` - (List) The default IAM trusted profile to use for this bare metal server.
+    Nested `target` blocks have the following structure: 
+    - `id` - (String) The unique identifier for this trusted profile
+    - `crn` - (String) The CRN for this trusted profile
+    - `resource_type` - (String) The resource type
 - `image` - (String) The unique identifier for this image
 - `image_name` - (String) The user-defined or system-provided name for this image.
 - `keys` - (Array) List of public SSH keys used at initialization.

@@ -76,6 +76,27 @@ func DataSourceIBMIsBareMetalServer() *schema.Resource {
 				},
 			},
 
+			isBareMetalServerMetadataService: {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The metadata service configuration",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						isBareMetalServerMetadataServiceEnabled: {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Indicates whether the metadata service endpoint will be available to the bare metal server",
+						},
+
+						isBareMetalServerMetadataServiceProtocol: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The communication protocol to use for the metadata service endpoint. Applies only when the metadata service is enabled.",
+						},
+					},
+				},
+			},
+
 			isBareMetalServerBootTarget: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -1429,6 +1450,20 @@ func dataSourceIBMISBareMetalServerRead(context context.Context, d *schema.Resou
 		resList = append(resList, res)
 		if err = d.Set(isReservation, resList); err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting reservation: %s", err), "(Data) ibm_is_bare_metal_server", "read", "set-reservation").GetDiag()
+		}
+	}
+
+	if bareMetalServer.MetadataService != nil {
+		metadataServiceList := make([]map[string]interface{}, 0)
+		metadataServiceMap := map[string]interface{}{}
+
+		metadataServiceMap[isBareMetalServerMetadataServiceEnabled] = *bareMetalServer.MetadataService.Enabled
+		if bareMetalServer.MetadataService.Protocol != nil {
+			metadataServiceMap[isBareMetalServerMetadataServiceProtocol] = *bareMetalServer.MetadataService.Protocol
+		}
+		metadataServiceList = append(metadataServiceList, metadataServiceMap)
+		if err = d.Set(isBareMetalServerMetadataService, metadataServiceList); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting metadata service: %s", err), "(Data) ibm_is_bare_metal_server", "read", "set-metadata-service").GetDiag()
 		}
 	}
 
