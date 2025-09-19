@@ -107,7 +107,7 @@ Nested schema for **definition**:
 	* `name` - (String) The configuration name. It's unique within the account across projects and regions.
 	  * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9][a-zA-Z0-9-_ ]*$/`.
 	* `resource_crns` - (List) The CRNs of the resources that are associated with this configuration.
-	  * Constraints: The list items must match regular expression `/^(?!\\s)(?!.*\\s$)(crn)[^'"`<>{}\\s\\x00-\\x1F]*$/`. The maximum length is `110` items. The minimum length is `0` items.
+	  * Constraints: The list items must match regular expression `/^(?!\\s)(?!.*\\s$)(crn)[^'"<>{}\\s\\x00-\\x1F]*$/`. The maximum length is `110` items. The minimum length is `0` items.
 	* `settings` - (Map) The Schematics environment variables to use to deploy the configuration. Settings are only available if they are specified when the configuration is initially created.
 * `deployed_version` - (List) A summary of a project configuration version.
 Nested schema for **deployed_version**:
