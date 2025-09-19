@@ -1,8 +1,8 @@
-// Copyright IBM Corp. 2024 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.92.1-44330004-20240620-143510
+ * IBM OpenAPI Terraform Generator Version: 3.107.1-41b0fbd0-20250825-080732
  */
 
 package project
@@ -48,8 +48,7 @@ func ResourceIbmProjectEnvironment() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"description": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
-							Default:     "",
+							Required:    true,
 							Description: "The description of the environment.",
 						},
 						"name": &schema.Schema{
@@ -61,7 +60,7 @@ func ResourceIbmProjectEnvironment() *schema.Resource {
 							Type:        schema.TypeList,
 							MaxItems:    1,
 							Optional:    true,
-							Description: "The authorization details. You can authorize by using a trusted profile or an API key in Secrets Manager.",
+							Description: "The authorization details. It can authorize by using a trusted profile or an API key in Secrets Manager.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"trusted_profile_id": &schema.Schema{
@@ -72,7 +71,7 @@ func ResourceIbmProjectEnvironment() *schema.Resource {
 									"method": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
-										Description: "The authorization method. You can authorize by using a trusted profile or an API key in Secrets Manager.",
+										Description: "The authorization method. It can authorize by using a trusted profile or an API key in Secrets Manager.",
 									},
 									"api_key": &schema.Schema{
 										Type:        schema.TypeString,
@@ -121,6 +120,41 @@ func ResourceIbmProjectEnvironment() *schema.Resource {
 										Optional:    true,
 										Description: "The name of the compliance profile.",
 									},
+									"wp_policy_id": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "The unique ID for the Workload Protection policy.",
+									},
+									"wp_instance_id": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "A unique ID for the instance of a Workload Protection.",
+									},
+									"wp_instance_name": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "The name of the Workload Protection instance.",
+									},
+									"wp_instance_location": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "The location of the compliance instance.",
+									},
+									"wp_zone_id": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "A unique ID for the zone to a Workload Protection policy.",
+									},
+									"wp_zone_name": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "A unique ID for the zone to a Workload Protection policy.",
+									},
+									"wp_policy_name": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "The name of the Workload Protection policy.",
+									},
 								},
 							},
 						},
@@ -141,7 +175,7 @@ func ResourceIbmProjectEnvironment() *schema.Resource {
 						"href": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "A URL.",
+							Description: "A Url.",
 						},
 						"definition": &schema.Schema{
 							Type:        schema.TypeList,
@@ -183,7 +217,7 @@ func ResourceIbmProjectEnvironment() *schema.Resource {
 			"href": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "A URL.",
+				Description: "A Url.",
 			},
 			"project_environment_id": &schema.Schema{
 				Type:        schema.TypeString,
@@ -214,8 +248,7 @@ func ResourceIbmProjectEnvironmentValidator() *validate.ResourceValidator {
 func resourceIbmProjectEnvironmentCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	projectClient, err := meta.(conns.ClientSession).ProjectV1()
 	if err != nil {
-		// Error is coming from SDK client, so it doesn't need to be discriminated.
-		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_project_environment", "create")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project_environment", "create", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -244,7 +277,7 @@ func resourceIbmProjectEnvironmentCreate(context context.Context, d *schema.Reso
 func resourceIbmProjectEnvironmentRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	projectClient, err := meta.(conns.ClientSession).ProjectV1()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_project_environment", "read")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project_environment", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -315,7 +348,7 @@ func resourceIbmProjectEnvironmentRead(context context.Context, d *schema.Resour
 func resourceIbmProjectEnvironmentUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	projectClient, err := meta.(conns.ClientSession).ProjectV1()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_project_environment", "update")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project_environment", "update", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -361,7 +394,7 @@ func resourceIbmProjectEnvironmentUpdate(context context.Context, d *schema.Reso
 func resourceIbmProjectEnvironmentDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	projectClient, err := meta.(conns.ClientSession).ProjectV1()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_project_environment", "delete")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project_environment", "delete", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -428,7 +461,7 @@ func ResourceIbmProjectEnvironmentMapToProjectConfigAuth(modelMap map[string]int
 	return model, nil
 }
 
-func ResourceIbmProjectEnvironmentMapToProjectComplianceProfile(modelMap map[string]interface{}) (*projectv1.ProjectComplianceProfile, error) {
+func ResourceIbmProjectEnvironmentMapToProjectComplianceProfile(modelMap map[string]interface{}) (projectv1.ProjectComplianceProfileIntf, error) {
 	model := &projectv1.ProjectComplianceProfile{}
 	if modelMap["id"] != nil && modelMap["id"].(string) != "" {
 		model.ID = core.StringPtr(modelMap["id"].(string))
@@ -444,6 +477,73 @@ func ResourceIbmProjectEnvironmentMapToProjectComplianceProfile(modelMap map[str
 	}
 	if modelMap["profile_name"] != nil && modelMap["profile_name"].(string) != "" {
 		model.ProfileName = core.StringPtr(modelMap["profile_name"].(string))
+	}
+	if modelMap["wp_policy_id"] != nil && modelMap["wp_policy_id"].(string) != "" {
+		model.WpPolicyID = core.StringPtr(modelMap["wp_policy_id"].(string))
+	}
+	if modelMap["wp_instance_id"] != nil && modelMap["wp_instance_id"].(string) != "" {
+		model.WpInstanceID = core.StringPtr(modelMap["wp_instance_id"].(string))
+	}
+	if modelMap["wp_instance_name"] != nil && modelMap["wp_instance_name"].(string) != "" {
+		model.WpInstanceName = core.StringPtr(modelMap["wp_instance_name"].(string))
+	}
+	if modelMap["wp_instance_location"] != nil && modelMap["wp_instance_location"].(string) != "" {
+		model.WpInstanceLocation = core.StringPtr(modelMap["wp_instance_location"].(string))
+	}
+	if modelMap["wp_zone_id"] != nil && modelMap["wp_zone_id"].(string) != "" {
+		model.WpZoneID = core.StringPtr(modelMap["wp_zone_id"].(string))
+	}
+	if modelMap["wp_zone_name"] != nil && modelMap["wp_zone_name"].(string) != "" {
+		model.WpZoneName = core.StringPtr(modelMap["wp_zone_name"].(string))
+	}
+	if modelMap["wp_policy_name"] != nil && modelMap["wp_policy_name"].(string) != "" {
+		model.WpPolicyName = core.StringPtr(modelMap["wp_policy_name"].(string))
+	}
+	return model, nil
+}
+
+func ResourceIbmProjectEnvironmentMapToProjectComplianceProfileNullableObject(modelMap map[string]interface{}) (*projectv1.ProjectComplianceProfileNullableObject, error) {
+	model := &projectv1.ProjectComplianceProfileNullableObject{}
+	return model, nil
+}
+
+func ResourceIbmProjectEnvironmentMapToProjectComplianceProfileV1(modelMap map[string]interface{}) (*projectv1.ProjectComplianceProfileV1, error) {
+	model := &projectv1.ProjectComplianceProfileV1{}
+	if modelMap["id"] != nil && modelMap["id"].(string) != "" {
+		model.ID = core.StringPtr(modelMap["id"].(string))
+	}
+	if modelMap["instance_id"] != nil && modelMap["instance_id"].(string) != "" {
+		model.InstanceID = core.StringPtr(modelMap["instance_id"].(string))
+	}
+	if modelMap["instance_location"] != nil && modelMap["instance_location"].(string) != "" {
+		model.InstanceLocation = core.StringPtr(modelMap["instance_location"].(string))
+	}
+	if modelMap["attachment_id"] != nil && modelMap["attachment_id"].(string) != "" {
+		model.AttachmentID = core.StringPtr(modelMap["attachment_id"].(string))
+	}
+	if modelMap["profile_name"] != nil && modelMap["profile_name"].(string) != "" {
+		model.ProfileName = core.StringPtr(modelMap["profile_name"].(string))
+	}
+	if modelMap["wp_policy_id"] != nil && modelMap["wp_policy_id"].(string) != "" {
+		model.WpPolicyID = core.StringPtr(modelMap["wp_policy_id"].(string))
+	}
+	if modelMap["wp_instance_id"] != nil && modelMap["wp_instance_id"].(string) != "" {
+		model.WpInstanceID = core.StringPtr(modelMap["wp_instance_id"].(string))
+	}
+	if modelMap["wp_instance_name"] != nil && modelMap["wp_instance_name"].(string) != "" {
+		model.WpInstanceName = core.StringPtr(modelMap["wp_instance_name"].(string))
+	}
+	if modelMap["wp_instance_location"] != nil && modelMap["wp_instance_location"].(string) != "" {
+		model.WpInstanceLocation = core.StringPtr(modelMap["wp_instance_location"].(string))
+	}
+	if modelMap["wp_zone_id"] != nil && modelMap["wp_zone_id"].(string) != "" {
+		model.WpZoneID = core.StringPtr(modelMap["wp_zone_id"].(string))
+	}
+	if modelMap["wp_zone_name"] != nil && modelMap["wp_zone_name"].(string) != "" {
+		model.WpZoneName = core.StringPtr(modelMap["wp_zone_name"].(string))
+	}
+	if modelMap["wp_policy_name"] != nil && modelMap["wp_policy_name"].(string) != "" {
+		model.WpPolicyName = core.StringPtr(modelMap["wp_policy_name"].(string))
 	}
 	return model, nil
 }
@@ -485,9 +585,7 @@ func ResourceIbmProjectEnvironmentEnvironmentDefinitionRequiredPropertiesRespons
 		if err != nil {
 			return modelMap, err
 		}
-		if len(authorizationsMap) > 0 {
-			modelMap["authorizations"] = []map[string]interface{}{authorizationsMap}
-		}
+		modelMap["authorizations"] = []map[string]interface{}{authorizationsMap}
 	}
 	if model.Inputs != nil {
 		inputs := make(map[string]interface{})
@@ -522,7 +620,62 @@ func ResourceIbmProjectEnvironmentProjectConfigAuthToMap(model *projectv1.Projec
 	return modelMap, nil
 }
 
-func ResourceIbmProjectEnvironmentProjectComplianceProfileToMap(model *projectv1.ProjectComplianceProfile) (map[string]interface{}, error) {
+func ResourceIbmProjectEnvironmentProjectComplianceProfileToMap(model projectv1.ProjectComplianceProfileIntf) (map[string]interface{}, error) {
+	if _, ok := model.(*projectv1.ProjectComplianceProfileNullableObject); ok {
+		return ResourceIbmProjectEnvironmentProjectComplianceProfileNullableObjectToMap(model.(*projectv1.ProjectComplianceProfileNullableObject))
+	} else if _, ok := model.(*projectv1.ProjectComplianceProfileV1); ok {
+		return ResourceIbmProjectEnvironmentProjectComplianceProfileV1ToMap(model.(*projectv1.ProjectComplianceProfileV1))
+	} else if _, ok := model.(*projectv1.ProjectComplianceProfile); ok {
+		modelMap := make(map[string]interface{})
+		model := model.(*projectv1.ProjectComplianceProfile)
+		if model.ID != nil {
+			modelMap["id"] = *model.ID
+		}
+		if model.InstanceID != nil {
+			modelMap["instance_id"] = *model.InstanceID
+		}
+		if model.InstanceLocation != nil {
+			modelMap["instance_location"] = *model.InstanceLocation
+		}
+		if model.AttachmentID != nil {
+			modelMap["attachment_id"] = *model.AttachmentID
+		}
+		if model.ProfileName != nil {
+			modelMap["profile_name"] = *model.ProfileName
+		}
+		if model.WpPolicyID != nil {
+			modelMap["wp_policy_id"] = *model.WpPolicyID
+		}
+		if model.WpInstanceID != nil {
+			modelMap["wp_instance_id"] = *model.WpInstanceID
+		}
+		if model.WpInstanceName != nil {
+			modelMap["wp_instance_name"] = *model.WpInstanceName
+		}
+		if model.WpInstanceLocation != nil {
+			modelMap["wp_instance_location"] = *model.WpInstanceLocation
+		}
+		if model.WpZoneID != nil {
+			modelMap["wp_zone_id"] = *model.WpZoneID
+		}
+		if model.WpZoneName != nil {
+			modelMap["wp_zone_name"] = *model.WpZoneName
+		}
+		if model.WpPolicyName != nil {
+			modelMap["wp_policy_name"] = *model.WpPolicyName
+		}
+		return modelMap, nil
+	} else {
+		return nil, fmt.Errorf("Unrecognized projectv1.ProjectComplianceProfileIntf subtype encountered")
+	}
+}
+
+func ResourceIbmProjectEnvironmentProjectComplianceProfileNullableObjectToMap(model *projectv1.ProjectComplianceProfileNullableObject) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	return modelMap, nil
+}
+
+func ResourceIbmProjectEnvironmentProjectComplianceProfileV1ToMap(model *projectv1.ProjectComplianceProfileV1) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
 		modelMap["id"] = *model.ID
@@ -538,6 +691,27 @@ func ResourceIbmProjectEnvironmentProjectComplianceProfileToMap(model *projectv1
 	}
 	if model.ProfileName != nil {
 		modelMap["profile_name"] = *model.ProfileName
+	}
+	if model.WpPolicyID != nil {
+		modelMap["wp_policy_id"] = *model.WpPolicyID
+	}
+	if model.WpInstanceID != nil {
+		modelMap["wp_instance_id"] = *model.WpInstanceID
+	}
+	if model.WpInstanceName != nil {
+		modelMap["wp_instance_name"] = *model.WpInstanceName
+	}
+	if model.WpInstanceLocation != nil {
+		modelMap["wp_instance_location"] = *model.WpInstanceLocation
+	}
+	if model.WpZoneID != nil {
+		modelMap["wp_zone_id"] = *model.WpZoneID
+	}
+	if model.WpZoneName != nil {
+		modelMap["wp_zone_name"] = *model.WpZoneName
+	}
+	if model.WpPolicyName != nil {
+		modelMap["wp_policy_name"] = *model.WpPolicyName
 	}
 	return modelMap, nil
 }

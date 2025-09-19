@@ -1,8 +1,8 @@
-// Copyright IBM Corp. 2024 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.92.1-44330004-20240620-143510
+ * IBM OpenAPI Terraform Generator Version: 3.107.1-41b0fbd0-20250825-080732
  */
 
 package project
@@ -44,116 +44,16 @@ func ResourceIbmProject() *schema.Resource {
 				ForceNew:    true,
 				Description: "The resource group name where the project's data and tools are created.",
 			},
-			"definition": &schema.Schema{
-				Type:        schema.TypeList,
-				MinItems:    1,
-				MaxItems:    1,
-				Required:    true,
-				Description: "The definition of the project.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"name": &schema.Schema{
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The name of the project.  It's unique within the account across regions.",
-						},
-						"destroy_on_delete": &schema.Schema{
-							Type:        schema.TypeBool,
-							Required:    true,
-							Description: "The policy that indicates whether the resources are destroyed or not when a project is deleted.",
-						},
-						"description": &schema.Schema{
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "A brief explanation of the project's use in the configuration of a deployable architecture. You can create a project without providing a description.",
-						},
-						"auto_deploy": &schema.Schema{
-							Type:        schema.TypeBool,
-							Optional:    true,
-							Default:     false,
-							Description: "A boolean flag to enable auto deploy.",
-						},
-						"monitoring_enabled": &schema.Schema{
-							Type:        schema.TypeBool,
-							Optional:    true,
-							Default:     false,
-							Description: "A boolean flag to enable automatic drift detection. Use this field to run a daily check to compare your configurations to your deployed resources to detect any difference.",
-						},
-					},
-				},
-			},
-			"crn": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "An IBM Cloud resource name that uniquely identifies a resource.",
-			},
-			"created_at": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ to match the date and time format as specified by RFC 3339.",
-			},
-			"cumulative_needs_attention_view": &schema.Schema{
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "The cumulative list of needs attention items for a project. If the view is successfully retrieved, an empty or nonempty array is returned.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"event": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The event name.",
-						},
-						"event_id": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "A unique ID for this individual event.",
-						},
-						"config_id": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "A unique ID for the configuration.",
-						},
-						"config_version": &schema.Schema{
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Description: "The version number of the configuration.",
-						},
-					},
-				},
-			},
-			"cumulative_needs_attention_view_error": &schema.Schema{
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: "A value of `true` indicates that the fetch of the needs attention items failed. This property only exists if there was an error when you retrieved the cumulative needs attention view.",
-			},
-			"resource_group_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The resource group ID where the project's data and tools are created.",
-			},
-			"state": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The project status value.",
-			},
-			"href": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "A URL.",
-			},
-			"event_notifications_crn": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The CRN of the Event Notifications instance if one is connected to this project.",
-			},
 			"configs": &schema.Schema{
 				Type:        schema.TypeList,
+				Optional:    true,
 				Computed:    true,
 				Description: "The project configurations. These configurations are only included in the response of creating a project if a configuration array is specified in the request payload.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"approved_version": &schema.Schema{
 							Type:        schema.TypeList,
+							Optional:    true,
 							Computed:    true,
 							Description: "A summary of a project configuration version.",
 							Elem: &schema.Resource{
@@ -166,14 +66,16 @@ func ResourceIbmProject() *schema.Resource {
 											Schema: map[string]*schema.Schema{
 												"environment_id": &schema.Schema{
 													Type:        schema.TypeString,
+													Optional:    true,
 													Computed:    true,
 													Description: "The ID of the project environment.",
 												},
 												"locator_id": &schema.Schema{
 													Type:        schema.TypeString,
+													Optional:    true,
 													Computed:    true,
 													ForceNew:    true,
-													Description: "A unique concatenation of the catalog ID and the version ID that identify the deployable architecture in the catalog. I you're importing from an existing Schematics workspace that is not backed by cart, a `locator_id` is required. If you're using a Schematics workspace that is backed by cart, a `locator_id` is not necessary because the Schematics workspace has one.> There are 3 scenarios:> 1. If only a `locator_id` is specified, a new Schematics workspace is instantiated with that `locator_id`.> 2. If only a schematics `workspace_crn` is specified, a `400` is returned if a `locator_id` is not found in the existing schematics workspace.> 3. If both a Schematics `workspace_crn` and a `locator_id` are specified, a `400` message is returned if the specified `locator_id` does not agree with the `locator_id` in the existing Schematics workspace.> For more information of creating a Schematics workspace, see [Creating workspaces and importing your Terraform template](/docs/schematics?topic=schematics-sch-create-wks).",
+													Description: "A unique concatenation of the catalog ID and the version ID that identify the deployable architecture in the catalog. If importing from an existing Schematics workspace that is not backed by cart, a `locator_id` is required. If using a Schematics workspace that is backed by cart, a `locator_id` is not necessary because the Schematics workspace has one.> There are 3 scenarios:> 1. If only a `locator_id` is specified, a new Schematics workspace is instantiated with that `locator_id`.> 2. If only a schematics `workspace_crn` is specified, a `400` is returned if a `locator_id` is not found in the existing schematics workspace.> 3. If both a Schematics `workspace_crn` and a `locator_id` are specified, a `400` message is returned if the specified `locator_id` does not agree with the `locator_id` in the existing Schematics workspace.> For more information of creating a Schematics workspace, see [Creating workspaces and importing the Terraform template](/docs/schematics?topic=schematics-sch-create-wks).",
 												},
 											},
 										},
@@ -183,11 +85,6 @@ func ResourceIbmProject() *schema.Resource {
 										Computed:    true,
 										Description: "The state of the configuration.",
 									},
-									"state_code": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "Computed state code clarifying the prerequisites for validation for the configuration.",
-									},
 									"version": &schema.Schema{
 										Type:        schema.TypeInt,
 										Computed:    true,
@@ -196,13 +93,14 @@ func ResourceIbmProject() *schema.Resource {
 									"href": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "A URL.",
+										Description: "A Url.",
 									},
 								},
 							},
 						},
 						"deployed_version": &schema.Schema{
 							Type:        schema.TypeList,
+							Optional:    true,
 							Computed:    true,
 							Description: "A summary of a project configuration version.",
 							Elem: &schema.Resource{
@@ -215,14 +113,16 @@ func ResourceIbmProject() *schema.Resource {
 											Schema: map[string]*schema.Schema{
 												"environment_id": &schema.Schema{
 													Type:        schema.TypeString,
+													Optional:    true,
 													Computed:    true,
 													Description: "The ID of the project environment.",
 												},
 												"locator_id": &schema.Schema{
 													Type:        schema.TypeString,
+													Optional:    true,
 													Computed:    true,
 													ForceNew:    true,
-													Description: "A unique concatenation of the catalog ID and the version ID that identify the deployable architecture in the catalog. I you're importing from an existing Schematics workspace that is not backed by cart, a `locator_id` is required. If you're using a Schematics workspace that is backed by cart, a `locator_id` is not necessary because the Schematics workspace has one.> There are 3 scenarios:> 1. If only a `locator_id` is specified, a new Schematics workspace is instantiated with that `locator_id`.> 2. If only a schematics `workspace_crn` is specified, a `400` is returned if a `locator_id` is not found in the existing schematics workspace.> 3. If both a Schematics `workspace_crn` and a `locator_id` are specified, a `400` message is returned if the specified `locator_id` does not agree with the `locator_id` in the existing Schematics workspace.> For more information of creating a Schematics workspace, see [Creating workspaces and importing your Terraform template](/docs/schematics?topic=schematics-sch-create-wks).",
+													Description: "A unique concatenation of the catalog ID and the version ID that identify the deployable architecture in the catalog. If importing from an existing Schematics workspace that is not backed by cart, a `locator_id` is required. If using a Schematics workspace that is backed by cart, a `locator_id` is not necessary because the Schematics workspace has one.> There are 3 scenarios:> 1. If only a `locator_id` is specified, a new Schematics workspace is instantiated with that `locator_id`.> 2. If only a schematics `workspace_crn` is specified, a `400` is returned if a `locator_id` is not found in the existing schematics workspace.> 3. If both a Schematics `workspace_crn` and a `locator_id` are specified, a `400` message is returned if the specified `locator_id` does not agree with the `locator_id` in the existing Schematics workspace.> For more information of creating a Schematics workspace, see [Creating workspaces and importing the Terraform template](/docs/schematics?topic=schematics-sch-create-wks).",
 												},
 											},
 										},
@@ -232,11 +132,6 @@ func ResourceIbmProject() *schema.Resource {
 										Computed:    true,
 										Description: "The state of the configuration.",
 									},
-									"state_code": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "Computed state code clarifying the prerequisites for validation for the configuration.",
-									},
 									"version": &schema.Schema{
 										Type:        schema.TypeInt,
 										Computed:    true,
@@ -245,7 +140,7 @@ func ResourceIbmProject() *schema.Resource {
 									"href": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "A URL.",
+										Description: "A Url.",
 									},
 								},
 							},
@@ -278,7 +173,7 @@ func ResourceIbmProject() *schema.Resource {
 						"href": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "A URL.",
+							Description: "A Url.",
 						},
 						"definition": &schema.Schema{
 							Type:        schema.TypeList,
@@ -298,9 +193,10 @@ func ResourceIbmProject() *schema.Resource {
 									},
 									"locator_id": &schema.Schema{
 										Type:        schema.TypeString,
+										Optional:    true,
 										Computed:    true,
 										ForceNew:    true,
-										Description: "A unique concatenation of the catalog ID and the version ID that identify the deployable architecture in the catalog. I you're importing from an existing Schematics workspace that is not backed by cart, a `locator_id` is required. If you're using a Schematics workspace that is backed by cart, a `locator_id` is not necessary because the Schematics workspace has one.> There are 3 scenarios:> 1. If only a `locator_id` is specified, a new Schematics workspace is instantiated with that `locator_id`.> 2. If only a schematics `workspace_crn` is specified, a `400` is returned if a `locator_id` is not found in the existing schematics workspace.> 3. If both a Schematics `workspace_crn` and a `locator_id` are specified, a `400` message is returned if the specified `locator_id` does not agree with the `locator_id` in the existing Schematics workspace.> For more information of creating a Schematics workspace, see [Creating workspaces and importing your Terraform template](/docs/schematics?topic=schematics-sch-create-wks).",
+										Description: "A unique concatenation of the catalog ID and the version ID that identify the deployable architecture in the catalog. If importing from an existing Schematics workspace that is not backed by cart, a `locator_id` is required. If using a Schematics workspace that is backed by cart, a `locator_id` is not necessary because the Schematics workspace has one.> There are 3 scenarios:> 1. If only a `locator_id` is specified, a new Schematics workspace is instantiated with that `locator_id`.> 2. If only a schematics `workspace_crn` is specified, a `400` is returned if a `locator_id` is not found in the existing schematics workspace.> 3. If both a Schematics `workspace_crn` and a `locator_id` are specified, a `400` message is returned if the specified `locator_id` does not agree with the `locator_id` in the existing Schematics workspace.> For more information of creating a Schematics workspace, see [Creating workspaces and importing the Terraform template](/docs/schematics?topic=schematics-sch-create-wks).",
 									},
 								},
 							},
@@ -319,7 +215,7 @@ func ResourceIbmProject() *schema.Resource {
 									"href": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "A URL.",
+										Description: "A Url.",
 									},
 									"definition": &schema.Schema{
 										Type:        schema.TypeList,
@@ -353,6 +249,7 @@ func ResourceIbmProject() *schema.Resource {
 			},
 			"environments": &schema.Schema{
 				Type:        schema.TypeList,
+				Optional:    true,
 				Computed:    true,
 				Description: "The project environment. These environments are only included in the response if project environments were created on the project.",
 				Elem: &schema.Resource{
@@ -376,7 +273,7 @@ func ResourceIbmProject() *schema.Resource {
 									"href": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "A URL.",
+										Description: "A Url.",
 									},
 									"definition": &schema.Schema{
 										Type:        schema.TypeList,
@@ -408,7 +305,7 @@ func ResourceIbmProject() *schema.Resource {
 						"href": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "A URL.",
+							Description: "A Url.",
 						},
 						"definition": &schema.Schema{
 							Type:        schema.TypeList,
@@ -431,6 +328,166 @@ func ResourceIbmProject() *schema.Resource {
 						},
 					},
 				},
+			},
+			"definition": &schema.Schema{
+				Type:        schema.TypeList,
+				MinItems:    1,
+				MaxItems:    1,
+				Required:    true,
+				Description: "The definition of the project.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"name": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The name of the project.  It's unique within the account across regions.",
+						},
+						"description": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Default:     "",
+							Description: "A brief explanation of the project's use in the configuration of a deployable architecture. A project can be created without providing a description.",
+						},
+						"auto_deploy": &schema.Schema{
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     false,
+							Description: "A boolean flag to enable auto deploy.",
+						},
+						"monitoring_enabled": &schema.Schema{
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     false,
+							Description: "A boolean flag to enable automatic drift detection. Use this field to run a daily check to compare the configurations to those deployed resources to detect any difference.",
+						},
+						"destroy_on_delete": &schema.Schema{
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     true,
+							Description: "The policy that indicates whether the resources are undeployed or not when a project is deleted.",
+						},
+						"store": &schema.Schema{
+							Type:        schema.TypeList,
+							MaxItems:    1,
+							Optional:    true,
+							Description: "The details required to custom store project configs.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"type": &schema.Schema{
+										Type:        schema.TypeString,
+										Required:    true,
+										Description: "The type of store used for the project.",
+									},
+									"url": &schema.Schema{
+										Type:        schema.TypeString,
+										Required:    true,
+										Description: "A Url.",
+									},
+									"token": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Sensitive:   true,
+										Description: "The IBM Cloud API Key. It can be either raw or pulled from the catalog via a `CRN` or `JSON` blob.",
+									},
+									"config_directory": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Default:     "",
+										Description: "The directory where project configs are stored.",
+									},
+								},
+							},
+						},
+						"terraform_engine": &schema.Schema{
+							Type:        schema.TypeList,
+							MaxItems:    1,
+							Optional:    true,
+							Description: "Experimental schema - this is for prototyping purposes.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"id": &schema.Schema{
+										Type:        schema.TypeString,
+										Required:    true,
+										Description: "The identifier of the Terraform engine.",
+									},
+									"type": &schema.Schema{
+										Type:        schema.TypeString,
+										Required:    true,
+										Description: "The type of the engine.",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			"crn": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "An IBM Cloud resource name that uniquely identifies a resource.",
+			},
+			"created_at": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ to match the date and time format as specified by RFC 3339.",
+			},
+			"cumulative_needs_attention_view": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The cumulative list of needs attention items for a project. If the view is successfully retrieved, an empty or nonempty array is returned.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"event": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "The event name.",
+						},
+						"event_id": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "A unique ID for this individual event.",
+						},
+						"config_id": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "A unique ID for the configuration.",
+						},
+						"config_version": &schema.Schema{
+							Type:        schema.TypeInt,
+							Optional:    true,
+							Computed:    true,
+							Description: "The version number of the configuration.",
+						},
+					},
+				},
+			},
+			"cumulative_needs_attention_view_error": &schema.Schema{
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "A value of `true` indicates that the fetch of the needs attention items failed. This property only exists if there was an error while retrieving the cumulative needs attention view.",
+			},
+			"resource_group_id": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The resource group ID where the project's data and tools are created.",
+			},
+			"state": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The project status value.",
+			},
+			"href": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "A Url.",
+			},
+			"event_notifications_crn": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The CRN of the Event Notifications instance if one is connected to this project.",
 			},
 		},
 	}
@@ -464,8 +521,7 @@ func ResourceIbmProjectValidator() *validate.ResourceValidator {
 func resourceIbmProjectCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	projectClient, err := meta.(conns.ClientSession).ProjectV1()
 	if err != nil {
-		// Error is coming from SDK client, so it doesn't need to be discriminated.
-		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_project", "create")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project", "create", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -519,7 +575,7 @@ func resourceIbmProjectCreate(context context.Context, d *schema.ResourceData, m
 func resourceIbmProjectRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	projectClient, err := meta.(conns.ClientSession).ProjectV1()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_project", "read")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -547,6 +603,34 @@ func resourceIbmProjectRead(context context.Context, d *schema.ResourceData, met
 		err = fmt.Errorf("Error setting resource_group: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project", "read", "set-resource_group").GetDiag()
 	}
+	if !core.IsNil(project.Configs) {
+		configs := []map[string]interface{}{}
+		for _, configsItem := range project.Configs {
+			configsItemMap, err := ResourceIbmProjectProjectConfigSummaryToMap(&configsItem) // #nosec G601
+			if err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project", "read", "configs-to-map").GetDiag()
+			}
+			configs = append(configs, configsItemMap)
+		}
+		if err = d.Set("configs", configs); err != nil {
+			err = fmt.Errorf("Error setting configs: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project", "read", "set-configs").GetDiag()
+		}
+	}
+	if !core.IsNil(project.Environments) {
+		environments := []map[string]interface{}{}
+		for _, environmentsItem := range project.Environments {
+			environmentsItemMap, err := ResourceIbmProjectProjectEnvironmentSummaryToMap(&environmentsItem) // #nosec G601
+			if err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project", "read", "environments-to-map").GetDiag()
+			}
+			environments = append(environments, environmentsItemMap)
+		}
+		if err = d.Set("environments", environments); err != nil {
+			err = fmt.Errorf("Error setting environments: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project", "read", "set-environments").GetDiag()
+		}
+	}
 	definitionMap, err := ResourceIbmProjectProjectDefinitionPropertiesToMap(project.Definition)
 	if err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project", "read", "definition-to-map").GetDiag()
@@ -565,7 +649,7 @@ func resourceIbmProjectRead(context context.Context, d *schema.ResourceData, met
 	}
 	cumulativeNeedsAttentionView := []map[string]interface{}{}
 	for _, cumulativeNeedsAttentionViewItem := range project.CumulativeNeedsAttentionView {
-		cumulativeNeedsAttentionViewItemMap, err := ResourceIbmProjectCumulativeNeedsAttentionToMap(&cumulativeNeedsAttentionViewItem)
+		cumulativeNeedsAttentionViewItemMap, err := ResourceIbmProjectCumulativeNeedsAttentionToMap(&cumulativeNeedsAttentionViewItem) // #nosec G601
 		if err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project", "read", "cumulative_needs_attention_view-to-map").GetDiag()
 		}
@@ -599,30 +683,6 @@ func resourceIbmProjectRead(context context.Context, d *schema.ResourceData, met
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project", "read", "set-event_notifications_crn").GetDiag()
 		}
 	}
-	configs := []map[string]interface{}{}
-	for _, configsItem := range project.Configs {
-		configsItemMap, err := ResourceIbmProjectProjectConfigSummaryToMap(&configsItem)
-		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project", "read", "configs-to-map").GetDiag()
-		}
-		configs = append(configs, configsItemMap)
-	}
-	if err = d.Set("configs", configs); err != nil {
-		err = fmt.Errorf("Error setting configs: %s", err)
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project", "read", "set-configs").GetDiag()
-	}
-	environments := []map[string]interface{}{}
-	for _, environmentsItem := range project.Environments {
-		environmentsItemMap, err := ResourceIbmProjectProjectEnvironmentSummaryToMap(&environmentsItem)
-		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project", "read", "environments-to-map").GetDiag()
-		}
-		environments = append(environments, environmentsItemMap)
-	}
-	if err = d.Set("environments", environments); err != nil {
-		err = fmt.Errorf("Error setting environments: %s", err)
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project", "read", "set-environments").GetDiag()
-	}
 
 	return nil
 }
@@ -630,7 +690,7 @@ func resourceIbmProjectRead(context context.Context, d *schema.ResourceData, met
 func resourceIbmProjectUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	projectClient, err := meta.(conns.ClientSession).ProjectV1()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_project", "update")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project", "update", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -665,7 +725,7 @@ func resourceIbmProjectUpdate(context context.Context, d *schema.ResourceData, m
 func resourceIbmProjectDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	projectClient, err := meta.(conns.ClientSession).ProjectV1()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_project", "delete")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project", "delete", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -689,9 +749,6 @@ func resourceIbmProjectDelete(context context.Context, d *schema.ResourceData, m
 func ResourceIbmProjectMapToProjectPrototypeDefinition(modelMap map[string]interface{}) (*projectv1.ProjectPrototypeDefinition, error) {
 	model := &projectv1.ProjectPrototypeDefinition{}
 	model.Name = core.StringPtr(modelMap["name"].(string))
-	if modelMap["destroy_on_delete"] != nil {
-		model.DestroyOnDelete = core.BoolPtr(modelMap["destroy_on_delete"].(bool))
-	}
 	if modelMap["description"] != nil && modelMap["description"].(string) != "" {
 		model.Description = core.StringPtr(modelMap["description"].(string))
 	}
@@ -701,6 +758,43 @@ func ResourceIbmProjectMapToProjectPrototypeDefinition(modelMap map[string]inter
 	if modelMap["monitoring_enabled"] != nil {
 		model.MonitoringEnabled = core.BoolPtr(modelMap["monitoring_enabled"].(bool))
 	}
+	if modelMap["destroy_on_delete"] != nil {
+		model.DestroyOnDelete = core.BoolPtr(modelMap["destroy_on_delete"].(bool))
+	}
+	if modelMap["store"] != nil && len(modelMap["store"].([]interface{})) > 0 {
+		StoreModel, err := ResourceIbmProjectMapToProjectDefinitionStore(modelMap["store"].([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.Store = StoreModel
+	}
+	if modelMap["terraform_engine"] != nil && len(modelMap["terraform_engine"].([]interface{})) > 0 {
+		TerraformEngineModel, err := ResourceIbmProjectMapToProjectTerraformEngineSettings(modelMap["terraform_engine"].([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.TerraformEngine = TerraformEngineModel
+	}
+	return model, nil
+}
+
+func ResourceIbmProjectMapToProjectDefinitionStore(modelMap map[string]interface{}) (*projectv1.ProjectDefinitionStore, error) {
+	model := &projectv1.ProjectDefinitionStore{}
+	model.Type = core.StringPtr(modelMap["type"].(string))
+	model.URL = core.StringPtr(modelMap["url"].(string))
+	if modelMap["token"] != nil && modelMap["token"].(string) != "" {
+		model.Token = core.StringPtr(modelMap["token"].(string))
+	}
+	if modelMap["config_directory"] != nil && modelMap["config_directory"].(string) != "" {
+		model.ConfigDirectory = core.StringPtr(modelMap["config_directory"].(string))
+	}
+	return model, nil
+}
+
+func ResourceIbmProjectMapToProjectTerraformEngineSettings(modelMap map[string]interface{}) (*projectv1.ProjectTerraformEngineSettings, error) {
+	model := &projectv1.ProjectTerraformEngineSettings{}
+	model.ID = core.StringPtr(modelMap["id"].(string))
+	model.Type = core.StringPtr(modelMap["type"].(string))
 	return model, nil
 }
 
@@ -733,14 +827,22 @@ func ResourceIbmProjectMapToProjectConfigDefinitionPrototype(modelMap map[string
 	if modelMap["locator_id"] != nil && modelMap["locator_id"].(string) != "" {
 		model.LocatorID = core.StringPtr(modelMap["locator_id"].(string))
 	}
+	if modelMap["members"] != nil {
+		members := []projectv1.StackMember{}
+		for _, membersItem := range modelMap["members"].([]interface{}) {
+			membersItemModel, err := ResourceIbmProjectMapToStackMember(membersItem.(map[string]interface{}))
+			if err != nil {
+				return model, err
+			}
+			members = append(members, *membersItemModel)
+		}
+		model.Members = members
+	}
 	if modelMap["description"] != nil && modelMap["description"].(string) != "" {
 		model.Description = core.StringPtr(modelMap["description"].(string))
 	}
 	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
 		model.Name = core.StringPtr(modelMap["name"].(string))
-	}
-	if modelMap["environment_id"] != nil && modelMap["environment_id"].(string) != "" {
-		model.EnvironmentID = core.StringPtr(modelMap["environment_id"].(string))
 	}
 	if modelMap["authorizations"] != nil && len(modelMap["authorizations"].([]interface{})) > 0 {
 		AuthorizationsModel, err := ResourceIbmProjectMapToProjectConfigAuth(modelMap["authorizations"].([]interface{})[0].(map[string]interface{}))
@@ -755,6 +857,9 @@ func ResourceIbmProjectMapToProjectConfigDefinitionPrototype(modelMap map[string
 	if modelMap["settings"] != nil {
 		model.Settings = modelMap["settings"].(map[string]interface{})
 	}
+	if modelMap["environment_id"] != nil && modelMap["environment_id"].(string) != "" {
+		model.EnvironmentID = core.StringPtr(modelMap["environment_id"].(string))
+	}
 	if modelMap["resource_crns"] != nil {
 		resourceCrns := []string{}
 		for _, resourceCrnsItem := range modelMap["resource_crns"].([]interface{}) {
@@ -765,7 +870,7 @@ func ResourceIbmProjectMapToProjectConfigDefinitionPrototype(modelMap map[string
 	return model, nil
 }
 
-func ResourceIbmProjectMapToProjectComplianceProfile(modelMap map[string]interface{}) (*projectv1.ProjectComplianceProfile, error) {
+func ResourceIbmProjectMapToProjectComplianceProfile(modelMap map[string]interface{}) (projectv1.ProjectComplianceProfileIntf, error) {
 	model := &projectv1.ProjectComplianceProfile{}
 	if modelMap["id"] != nil && modelMap["id"].(string) != "" {
 		model.ID = core.StringPtr(modelMap["id"].(string))
@@ -782,6 +887,80 @@ func ResourceIbmProjectMapToProjectComplianceProfile(modelMap map[string]interfa
 	if modelMap["profile_name"] != nil && modelMap["profile_name"].(string) != "" {
 		model.ProfileName = core.StringPtr(modelMap["profile_name"].(string))
 	}
+	if modelMap["wp_policy_id"] != nil && modelMap["wp_policy_id"].(string) != "" {
+		model.WpPolicyID = core.StringPtr(modelMap["wp_policy_id"].(string))
+	}
+	if modelMap["wp_instance_id"] != nil && modelMap["wp_instance_id"].(string) != "" {
+		model.WpInstanceID = core.StringPtr(modelMap["wp_instance_id"].(string))
+	}
+	if modelMap["wp_instance_name"] != nil && modelMap["wp_instance_name"].(string) != "" {
+		model.WpInstanceName = core.StringPtr(modelMap["wp_instance_name"].(string))
+	}
+	if modelMap["wp_instance_location"] != nil && modelMap["wp_instance_location"].(string) != "" {
+		model.WpInstanceLocation = core.StringPtr(modelMap["wp_instance_location"].(string))
+	}
+	if modelMap["wp_zone_id"] != nil && modelMap["wp_zone_id"].(string) != "" {
+		model.WpZoneID = core.StringPtr(modelMap["wp_zone_id"].(string))
+	}
+	if modelMap["wp_zone_name"] != nil && modelMap["wp_zone_name"].(string) != "" {
+		model.WpZoneName = core.StringPtr(modelMap["wp_zone_name"].(string))
+	}
+	if modelMap["wp_policy_name"] != nil && modelMap["wp_policy_name"].(string) != "" {
+		model.WpPolicyName = core.StringPtr(modelMap["wp_policy_name"].(string))
+	}
+	return model, nil
+}
+
+func ResourceIbmProjectMapToProjectComplianceProfileNullableObject(modelMap map[string]interface{}) (*projectv1.ProjectComplianceProfileNullableObject, error) {
+	model := &projectv1.ProjectComplianceProfileNullableObject{}
+	return model, nil
+}
+
+func ResourceIbmProjectMapToProjectComplianceProfileV1(modelMap map[string]interface{}) (*projectv1.ProjectComplianceProfileV1, error) {
+	model := &projectv1.ProjectComplianceProfileV1{}
+	if modelMap["id"] != nil && modelMap["id"].(string) != "" {
+		model.ID = core.StringPtr(modelMap["id"].(string))
+	}
+	if modelMap["instance_id"] != nil && modelMap["instance_id"].(string) != "" {
+		model.InstanceID = core.StringPtr(modelMap["instance_id"].(string))
+	}
+	if modelMap["instance_location"] != nil && modelMap["instance_location"].(string) != "" {
+		model.InstanceLocation = core.StringPtr(modelMap["instance_location"].(string))
+	}
+	if modelMap["attachment_id"] != nil && modelMap["attachment_id"].(string) != "" {
+		model.AttachmentID = core.StringPtr(modelMap["attachment_id"].(string))
+	}
+	if modelMap["profile_name"] != nil && modelMap["profile_name"].(string) != "" {
+		model.ProfileName = core.StringPtr(modelMap["profile_name"].(string))
+	}
+	if modelMap["wp_policy_id"] != nil && modelMap["wp_policy_id"].(string) != "" {
+		model.WpPolicyID = core.StringPtr(modelMap["wp_policy_id"].(string))
+	}
+	if modelMap["wp_instance_id"] != nil && modelMap["wp_instance_id"].(string) != "" {
+		model.WpInstanceID = core.StringPtr(modelMap["wp_instance_id"].(string))
+	}
+	if modelMap["wp_instance_name"] != nil && modelMap["wp_instance_name"].(string) != "" {
+		model.WpInstanceName = core.StringPtr(modelMap["wp_instance_name"].(string))
+	}
+	if modelMap["wp_instance_location"] != nil && modelMap["wp_instance_location"].(string) != "" {
+		model.WpInstanceLocation = core.StringPtr(modelMap["wp_instance_location"].(string))
+	}
+	if modelMap["wp_zone_id"] != nil && modelMap["wp_zone_id"].(string) != "" {
+		model.WpZoneID = core.StringPtr(modelMap["wp_zone_id"].(string))
+	}
+	if modelMap["wp_zone_name"] != nil && modelMap["wp_zone_name"].(string) != "" {
+		model.WpZoneName = core.StringPtr(modelMap["wp_zone_name"].(string))
+	}
+	if modelMap["wp_policy_name"] != nil && modelMap["wp_policy_name"].(string) != "" {
+		model.WpPolicyName = core.StringPtr(modelMap["wp_policy_name"].(string))
+	}
+	return model, nil
+}
+
+func ResourceIbmProjectMapToStackMember(modelMap map[string]interface{}) (*projectv1.StackMember, error) {
+	model := &projectv1.StackMember{}
+	model.Name = core.StringPtr(modelMap["name"].(string))
+	model.ConfigID = core.StringPtr(modelMap["config_id"].(string))
 	return model, nil
 }
 
@@ -799,13 +978,6 @@ func ResourceIbmProjectMapToProjectConfigAuth(modelMap map[string]interface{}) (
 	return model, nil
 }
 
-func ResourceIbmProjectMapToStackConfigMember(modelMap map[string]interface{}) (*projectv1.StackConfigMember, error) {
-	model := &projectv1.StackConfigMember{}
-	model.Name = core.StringPtr(modelMap["name"].(string))
-	model.ConfigID = core.StringPtr(modelMap["config_id"].(string))
-	return model, nil
-}
-
 func ResourceIbmProjectMapToProjectConfigDefinitionPrototypeDAConfigDefinitionPropertiesPrototype(modelMap map[string]interface{}) (*projectv1.ProjectConfigDefinitionPrototypeDAConfigDefinitionPropertiesPrototype, error) {
 	model := &projectv1.ProjectConfigDefinitionPrototypeDAConfigDefinitionPropertiesPrototype{}
 	if modelMap["compliance_profile"] != nil && len(modelMap["compliance_profile"].([]interface{})) > 0 {
@@ -818,13 +990,21 @@ func ResourceIbmProjectMapToProjectConfigDefinitionPrototypeDAConfigDefinitionPr
 	if modelMap["locator_id"] != nil && modelMap["locator_id"].(string) != "" {
 		model.LocatorID = core.StringPtr(modelMap["locator_id"].(string))
 	}
+	if modelMap["members"] != nil {
+		members := []projectv1.StackMember{}
+		for _, membersItem := range modelMap["members"].([]interface{}) {
+			membersItemModel, err := ResourceIbmProjectMapToStackMember(membersItem.(map[string]interface{}))
+			if err != nil {
+				return model, err
+			}
+			members = append(members, *membersItemModel)
+		}
+		model.Members = members
+	}
 	if modelMap["description"] != nil && modelMap["description"].(string) != "" {
 		model.Description = core.StringPtr(modelMap["description"].(string))
 	}
 	model.Name = core.StringPtr(modelMap["name"].(string))
-	if modelMap["environment_id"] != nil && modelMap["environment_id"].(string) != "" {
-		model.EnvironmentID = core.StringPtr(modelMap["environment_id"].(string))
-	}
 	if modelMap["authorizations"] != nil && len(modelMap["authorizations"].([]interface{})) > 0 {
 		AuthorizationsModel, err := ResourceIbmProjectMapToProjectConfigAuth(modelMap["authorizations"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
@@ -837,6 +1017,9 @@ func ResourceIbmProjectMapToProjectConfigDefinitionPrototypeDAConfigDefinitionPr
 	}
 	if modelMap["settings"] != nil {
 		model.Settings = modelMap["settings"].(map[string]interface{})
+	}
+	if modelMap["environment_id"] != nil && modelMap["environment_id"].(string) != "" {
+		model.EnvironmentID = core.StringPtr(modelMap["environment_id"].(string))
 	}
 	return model, nil
 }
@@ -854,9 +1037,6 @@ func ResourceIbmProjectMapToProjectConfigDefinitionPrototypeResourceConfigDefini
 		model.Description = core.StringPtr(modelMap["description"].(string))
 	}
 	model.Name = core.StringPtr(modelMap["name"].(string))
-	if modelMap["environment_id"] != nil && modelMap["environment_id"].(string) != "" {
-		model.EnvironmentID = core.StringPtr(modelMap["environment_id"].(string))
-	}
 	if modelMap["authorizations"] != nil && len(modelMap["authorizations"].([]interface{})) > 0 {
 		AuthorizationsModel, err := ResourceIbmProjectMapToProjectConfigAuth(modelMap["authorizations"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
@@ -869,6 +1049,9 @@ func ResourceIbmProjectMapToProjectConfigDefinitionPrototypeResourceConfigDefini
 	}
 	if modelMap["settings"] != nil {
 		model.Settings = modelMap["settings"].(map[string]interface{})
+	}
+	if modelMap["environment_id"] != nil && modelMap["environment_id"].(string) != "" {
+		model.EnvironmentID = core.StringPtr(modelMap["environment_id"].(string))
 	}
 	return model, nil
 }
@@ -922,9 +1105,6 @@ func ResourceIbmProjectMapToProjectPatchDefinitionBlock(modelMap map[string]inte
 	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
 		model.Name = core.StringPtr(modelMap["name"].(string))
 	}
-	if modelMap["destroy_on_delete"] != nil {
-		model.DestroyOnDelete = core.BoolPtr(modelMap["destroy_on_delete"].(bool))
-	}
 	if modelMap["auto_deploy"] != nil {
 		model.AutoDeploy = core.BoolPtr(modelMap["auto_deploy"].(bool))
 	}
@@ -934,38 +1114,24 @@ func ResourceIbmProjectMapToProjectPatchDefinitionBlock(modelMap map[string]inte
 	if modelMap["monitoring_enabled"] != nil {
 		model.MonitoringEnabled = core.BoolPtr(modelMap["monitoring_enabled"].(bool))
 	}
+	if modelMap["destroy_on_delete"] != nil {
+		model.DestroyOnDelete = core.BoolPtr(modelMap["destroy_on_delete"].(bool))
+	}
+	if modelMap["store"] != nil && len(modelMap["store"].([]interface{})) > 0 {
+		StoreModel, err := ResourceIbmProjectMapToProjectDefinitionStore(modelMap["store"].([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.Store = StoreModel
+	}
+	if modelMap["terraform_engine"] != nil && len(modelMap["terraform_engine"].([]interface{})) > 0 {
+		TerraformEngineModel, err := ResourceIbmProjectMapToProjectTerraformEngineSettings(modelMap["terraform_engine"].([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.TerraformEngine = TerraformEngineModel
+	}
 	return model, nil
-}
-
-func ResourceIbmProjectProjectDefinitionPropertiesToMap(model *projectv1.ProjectDefinitionProperties) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["name"] = *model.Name
-	modelMap["destroy_on_delete"] = *model.DestroyOnDelete
-	modelMap["description"] = *model.Description
-	if model.AutoDeploy != nil {
-		modelMap["auto_deploy"] = *model.AutoDeploy
-	}
-	if model.MonitoringEnabled != nil {
-		modelMap["monitoring_enabled"] = *model.MonitoringEnabled
-	}
-	return modelMap, nil
-}
-
-func ResourceIbmProjectCumulativeNeedsAttentionToMap(model *projectv1.CumulativeNeedsAttention) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.Event != nil {
-		modelMap["event"] = *model.Event
-	}
-	if model.EventID != nil {
-		modelMap["event_id"] = *model.EventID
-	}
-	if model.ConfigID != nil {
-		modelMap["config_id"] = *model.ConfigID
-	}
-	if model.ConfigVersion != nil {
-		modelMap["config_version"] = flex.IntValue(model.ConfigVersion)
-	}
-	return modelMap, nil
 }
 
 func ResourceIbmProjectProjectConfigSummaryToMap(model *projectv1.ProjectConfigSummary) (map[string]interface{}, error) {
@@ -1000,9 +1166,7 @@ func ResourceIbmProjectProjectConfigSummaryToMap(model *projectv1.ProjectConfigS
 		return modelMap, err
 	}
 	modelMap["project"] = []map[string]interface{}{projectMap}
-	if model.DeploymentModel != nil {
-		modelMap["deployment_model"] = *model.DeploymentModel
-	}
+	modelMap["deployment_model"] = *model.DeploymentModel
 	return modelMap, nil
 }
 
@@ -1014,9 +1178,6 @@ func ResourceIbmProjectProjectConfigVersionSummaryToMap(model *projectv1.Project
 	}
 	modelMap["definition"] = []map[string]interface{}{definitionMap}
 	modelMap["state"] = *model.State
-	if model.StateCode != nil {
-		modelMap["state_code"] = *model.StateCode
-	}
 	modelMap["version"] = flex.IntValue(model.Version)
 	modelMap["href"] = *model.Href
 	return modelMap, nil
@@ -1084,5 +1245,76 @@ func ResourceIbmProjectProjectEnvironmentSummaryDefinitionToMap(model *projectv1
 	modelMap := make(map[string]interface{})
 	modelMap["description"] = *model.Description
 	modelMap["name"] = *model.Name
+	return modelMap, nil
+}
+
+func ResourceIbmProjectProjectDefinitionPropertiesToMap(model *projectv1.ProjectDefinitionProperties) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
+	}
+	if model.Description != nil {
+		modelMap["description"] = *model.Description
+	}
+	if model.AutoDeploy != nil {
+		modelMap["auto_deploy"] = *model.AutoDeploy
+	}
+	if model.MonitoringEnabled != nil {
+		modelMap["monitoring_enabled"] = *model.MonitoringEnabled
+	}
+	if model.DestroyOnDelete != nil {
+		modelMap["destroy_on_delete"] = *model.DestroyOnDelete
+	}
+	if model.Store != nil {
+		storeMap, err := ResourceIbmProjectProjectDefinitionStoreToMap(model.Store)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["store"] = []map[string]interface{}{storeMap}
+	}
+	if model.TerraformEngine != nil {
+		terraformEngineMap, err := ResourceIbmProjectProjectTerraformEngineSettingsToMap(model.TerraformEngine)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["terraform_engine"] = []map[string]interface{}{terraformEngineMap}
+	}
+	return modelMap, nil
+}
+
+func ResourceIbmProjectProjectDefinitionStoreToMap(model *projectv1.ProjectDefinitionStore) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["type"] = *model.Type
+	modelMap["url"] = *model.URL
+	if model.Token != nil {
+		modelMap["token"] = *model.Token
+	}
+	if model.ConfigDirectory != nil {
+		modelMap["config_directory"] = *model.ConfigDirectory
+	}
+	return modelMap, nil
+}
+
+func ResourceIbmProjectProjectTerraformEngineSettingsToMap(model *projectv1.ProjectTerraformEngineSettings) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["id"] = *model.ID
+	modelMap["type"] = *model.Type
+	return modelMap, nil
+}
+
+func ResourceIbmProjectCumulativeNeedsAttentionToMap(model *projectv1.CumulativeNeedsAttention) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Event != nil {
+		modelMap["event"] = *model.Event
+	}
+	if model.EventID != nil {
+		modelMap["event_id"] = *model.EventID
+	}
+	if model.ConfigID != nil {
+		modelMap["config_id"] = *model.ConfigID
+	}
+	if model.ConfigVersion != nil {
+		modelMap["config_version"] = flex.IntValue(model.ConfigVersion)
+	}
 	return modelMap, nil
 }
