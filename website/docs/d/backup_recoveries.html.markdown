@@ -10,9 +10,6 @@ subcategory: "IBM Backup Recovery"
 
 Provides a read-only data source to retrieve information about a List of Recoveries.. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
 
-**Note**
-
-IBM Cloud Backup and Recovery is the Limited Availability (LA) offering in the present release and currently not available under the "General Availability (GA)".  Only after the GA release, it would be available through the "IBM Global Catalog" for delivery and consumption from all available Data center Region/Zones.  For more details/Questions about products, sales, support etc at https://www.ibm.com/contact/global
 
 ## Example Usage
 
