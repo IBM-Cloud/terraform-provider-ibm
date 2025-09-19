@@ -374,8 +374,9 @@ func dataSourceIBMIsShareTargetRead(context context.Context, d *schema.ResourceD
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_share_mount_target", "read", "set-resource_type").GetDiag()
 	}
 	if shareTarget.AccessProtocol != nil {
-		if err = d.Set("access_protocol", *shareTarget.AccessProtocol); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting access_protocol: %s", err))
+		if err := d.Set("access_protocol", *shareTarget.AccessProtocol); err != nil {
+			err = fmt.Errorf("Error setting access_protocol: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_share_mount_target", "read", "set-access_protocol").GetDiag()
 		}
 	}
 	if shareTarget.TransitEncryption != nil {

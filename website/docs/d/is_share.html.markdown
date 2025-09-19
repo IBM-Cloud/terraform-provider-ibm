@@ -55,9 +55,6 @@ The following attributes are exported:
 	- `href` - (String) The URL for this share accessor binding.
 	- `id` - (String) The unique identifier for this share accessor binding.
 	- `resource_type` - (String) The resource type.
-- `allowed_transit_encryption_modes` - (List of string) The transit encryption modes allowed for this share.
-- `allowed_access_protocols` - (List of string) Allowed access protocols for the share.
-- `bandwidth` - (Integer) Bandwidth of the share
 - `access_tags`  - (String) Access management tags associated to the share.
 - `created_at` - The date and time that the file share is created.
 - `crn` - The CRN for this share.
