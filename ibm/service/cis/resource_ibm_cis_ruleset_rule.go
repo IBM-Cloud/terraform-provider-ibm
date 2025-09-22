@@ -503,7 +503,9 @@ func ResourceIBMCISRulesetRuleUpdate(d *schema.ResourceData, meta interface{}) e
 		if positionError != nil {
 			return flex.FmtErrorf("[ERROR] Error while updating the zone Ruleset %s", err)
 		}
-		opt.SetPosition(&position)
+		if d.HasChange(CISRulesetsRule + ".0." + CISRulesetsRulePosition) {
+			opt.SetPosition(&position)
+		}
 
 		if v, ok := rulesetsRuleObject[CISRulesetsRuleRateLimit]; ok && v != nil {
 			ratelimit, ratelimitErr := expandCISRulesetsRulesRateLimits(v)
