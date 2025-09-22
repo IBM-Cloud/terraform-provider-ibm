@@ -35,6 +35,12 @@ func ResourceIBMIsShareMountTarget() *schema.Resource {
 				ForceNew:    true,
 				Description: "The file share identifier.",
 			},
+			"access_protocol": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "The protocol to use to access the share for this share mount target.",
+			},
 			"name": {
 				Type:         schema.TypeString,
 				Required:     true,
@@ -47,6 +53,15 @@ func ResourceIBMIsShareMountTarget() *schema.Resource {
 				ForceNew:    true,
 				Computed:    true,
 				Description: "The transit encryption mode.",
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					if old == "user_managed" && new == "ipsec" {
+						return true
+					}
+					if old == "ipsec" && new == "user_managed" {
+						return true
+					}
+					return false
+				},
 			},
 			"access_control_mode": {
 				Type:        schema.TypeString,
@@ -344,9 +359,36 @@ func resourceIBMIsShareMountTargetCreate(context context.Context, d *schema.Reso
 		name := nameIntf.(string)
 		shareMountTargetPrototype.Name = &name
 	}
+	if accessProtocolIntf, ok := d.GetOk("access_protocol"); ok {
+		accessProtocol := accessProtocolIntf.(string)
+		shareMountTargetPrototype.AccessProtocol = &accessProtocol
+	} else {
+		accessProtocol := "nfs4"
+		shareMountTargetPrototype.AccessProtocol = &accessProtocol
+	}
 	if transitEncryptionIntf, ok := d.GetOk("transit_encryption"); ok {
 		transitEncryption := transitEncryptionIntf.(string)
+		if transitEncryption == "user_managed" {
+			transitEncryption = "ipsec"
+		}
 		shareMountTargetPrototype.TransitEncryption = &transitEncryption
+	} else {
+		getShareOptions := &vpcv1.GetShareOptions{
+			ID: &shareId,
+		}
+		share, _, err := vpcClient.GetShareWithContext(context, getShareOptions)
+		if err != nil || share == nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetShareWithContext failed: %s", err.Error()), "ibm_is_share_mount_target", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
+		if share != nil && share.Profile != nil && share.Profile.Name != nil {
+			if *share.Profile.Name == "dp2" {
+				shareMountTargetPrototype.TransitEncryption = &[]string{"ipsec"}[0]
+			} else if *share.Profile.Name == "rfs" {
+				shareMountTargetPrototype.TransitEncryption = &[]string{"stunnel"}[0]
+			}
+		}
 	}
 	createShareMountTargetOptions.ShareMountTargetPrototype = shareMountTargetPrototype
 	shareTarget, response, err := vpcClient.CreateShareMountTargetWithContext(context, createShareMountTargetOptions)
@@ -425,7 +467,11 @@ func resourceIBMIsShareMountTargetRead(context context.Context, d *schema.Resour
 			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("[ERROR] Error setting transit_encryption: %s", err), "ibm_is_share_mount_target", "read", "set-transit_encryption").GetDiag()
 		}
 	}
-
+	if shareTarget.AccessProtocol != nil {
+		if err = d.Set("access_protocol", *shareTarget.AccessProtocol); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting access_protocol: %s", err))
+		}
+	}
 	if err = d.Set("created_at", shareTarget.CreatedAt.String()); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("[ERROR] Error setting created_at: %s", err), "ibm_is_share_mount_target", "read", "set-created_at").GetDiag()
 	}
