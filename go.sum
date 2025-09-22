@@ -149,8 +149,8 @@ github.com/IBM/mqcloud-go-sdk v0.4.0 h1:BuZNXA6iYEg5OEPr13CMGrhH0ew4rH/4L56b1nFt
 github.com/IBM/mqcloud-go-sdk v0.4.0/go.mod h1:7zigCUz6k3eRrNE8KOcDkY72oPppEmoQifF+SB0NPRM=
 github.com/IBM/networking-go-sdk v0.51.12 h1:2qv6neG8msFR1dtf9v+rbaC2gIkw9HnzohvQpgVye5w=
 github.com/IBM/networking-go-sdk v0.51.12/go.mod h1:TAXWyBUk3C3R7aS1m84EfKdnDcBMZMAClwLfDj/SYZc=
-github.com/IBM/platform-services-go-sdk v0.86.1 h1:ngBpaXvUF3gmLvbU1Z4lX1wowOSYgGoKBEBaR/urt30=
-github.com/IBM/platform-services-go-sdk v0.86.1/go.mod h1:aGD045m6I8pfcB77wft8w2cHqWOJjcM3YSSV55BX0Js=
+github.com/IBM/platform-services-go-sdk v0.87.0 h1:hLx/I7n7cb1CyAXdb2qypmCoFiYuxh2g50qN8OGnEQc=
+github.com/IBM/platform-services-go-sdk v0.87.0/go.mod h1:aGD045m6I8pfcB77wft8w2cHqWOJjcM3YSSV55BX0Js=
 github.com/IBM/project-go-sdk v0.3.8 h1:RPu4vrNHLrs1+csKMI/TWXCgJMf23la8IM2OBd+zb1o=
 github.com/IBM/project-go-sdk v0.3.8/go.mod h1:FOJM9ihQV3EEAY6YigcWiTNfVCThtdY8bLC/nhQHFvo=
 github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5 h1:NPUhkoOCRuv3OFWt19PmwjXGGTKlvmbuPg9fUrBUNe4=
@@ -169,8 +169,8 @@ github.com/IBM/vmware-go-sdk v0.1.5 h1:aQbwcJBceaaauuIoJ0OJn+ttwjb+QTX6XV9Jbrdpj
 github.com/IBM/vmware-go-sdk v0.1.5/go.mod h1:OyQKRInGGsBaOyE5LIZCqH7b1DZ01BvIYa8BgGy+wWo=
 github.com/IBM/vpc-beta-go-sdk v0.8.0 h1:cEPpv4iw3Ba5W2d0AWg3TIbKeJ8y1nPuUuibR5Jt9eE=
 github.com/IBM/vpc-beta-go-sdk v0.8.0/go.mod h1:hORgIyTFRzXrZIK9IohaWmCRBBlYiDRagsufi7M6akE=
-github.com/IBM/vpc-go-sdk v0.70.1 h1:6NsbRkiA5gDNxe7cjNx8Pi1j9s0PlhwNQj29wsKZxAo=
-github.com/IBM/vpc-go-sdk v0.70.1/go.mod h1:K3vVlje72PYE3ZRt1iouE+jSIq+vCyYzT1HiFC06hUA=
+github.com/IBM/vpc-go-sdk v0.72.0 h1:3Pj7nNuYmlaRPiMyC/5Uro3+5hzNBM6v2Lrq5UABBkQ=
+github.com/IBM/vpc-go-sdk v0.72.0/go.mod h1:K3vVlje72PYE3ZRt1iouE+jSIq+vCyYzT1HiFC06hUA=
 github.com/Logicalis/asn1 v0.0.0-20190312173541-d60463189a56 h1:vuquMR410psHNax14XKNWa0Ae/kYgWJcXi0IFuX60N0=
 github.com/Logicalis/asn1 v0.0.0-20190312173541-d60463189a56/go.mod h1:Zb3OT4l0mf7P/GOs2w2Ilj5sdm5Whoq3pa24dAEBHFc=
 github.com/Masterminds/semver/v3 v3.2.1 h1:RN9w6+7QoMeJVGyfmbcgs28Br8cvmnucEXnY0rYXWg0=

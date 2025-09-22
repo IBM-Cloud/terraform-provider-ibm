@@ -264,6 +264,35 @@ func TestAccIbmIsShareVNIID(t *testing.T) {
 	})
 }
 
+func TestAccIbmIsRegionalShare(t *testing.T) {
+	var conf vpcv1.Share
+
+	name := fmt.Sprintf("tf-fs-name-%d", acctest.RandIntRange(10, 100))
+	subnetName := fmt.Sprintf("tf-subnet-%d", acctest.RandIntRange(10, 100))
+	shareTargetName := fmt.Sprintf("tf-fs-tg-name-%d", acctest.RandIntRange(10, 100))
+	vpcname := fmt.Sprintf("tf-vpc-name-%d", acctest.RandIntRange(10, 100))
+	vniname := fmt.Sprintf("tf-vni-%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIbmIsShareDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIbmIsRegionalShareConfig(vpcname, subnetName, shareTargetName, vniname, name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIbmIsShareExists("ibm_is_share.is_share", conf),
+					resource.TestCheckResourceAttr("ibm_is_share.is_share", "name", name),
+					resource.TestCheckResourceAttrSet("ibm_is_share.is_share", "id"),
+					resource.TestCheckResourceAttrSet("ibm_is_share.is_share", "mount_targets.0.virtual_network_interface.0.id"),
+					resource.TestCheckResourceAttr("ibm_is_share.is_share", "mount_targets.0.access_protocol", "nfs4"),
+					resource.TestCheckResourceAttrSet("ibm_is_share.is_share", "mount_targets.0.virtual_network_interface.0.name"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccIbmIsShareOriginShare(t *testing.T) {
 	var conf vpcv1.Share
 
@@ -315,7 +344,37 @@ func TestAccIbmIsShareOriginShare(t *testing.T) {
 		},
 	})
 }
+func TestAccIbmIsShareRegionalShare(t *testing.T) {
+	var conf vpcv1.Share
 
+	// name := fmt.Sprintf("tf-fs-name-%d", acctest.RandIntRange(10, 100))
+	subnetName := fmt.Sprintf("tf-subnet-%d", acctest.RandIntRange(10, 100))
+	vpcname := fmt.Sprintf("tf-vpc-name-%d", acctest.RandIntRange(10, 100))
+	shareName := fmt.Sprintf("tf-share-%d", acctest.RandIntRange(10, 100))
+
+	tEMode1 := "stunnel"
+	allowedAccessProtocol := "nfs4"
+
+	// tEMode2 := "none"
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIbmIsShareDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIbmIsShareConfigRegionalShareConfig(vpcname, subnetName, tEMode1, shareName, allowedAccessProtocol),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIbmIsShareExists("ibm_is_share.is_share", conf),
+					resource.TestCheckResourceAttr("ibm_is_share.is_share", "name", shareName),
+					resource.TestCheckResourceAttrSet("ibm_is_share.is_share", "id"),
+					resource.TestCheckResourceAttr("ibm_is_share.is_share", "allowed_transit_encryption_modes.0", tEMode1),
+					resource.TestCheckResourceAttr("ibm_is_share.is_share", "allowed_access_protocols.0", allowedAccessProtocol),
+					resource.TestCheckResourceAttr("ibm_is_share.is_share", "bandwidth", "100"),
+				),
+			},
+		},
+	})
+}
 func TestAccIbmIsShareFromShareSnapshot(t *testing.T) {
 	var conf vpcv1.Share
 
@@ -396,6 +455,43 @@ func testAccCheckIbmIsShareConfigVNIID(vpcName, sname, targetName, vniName, shar
 	`, vpcName, sname, acc.ISCIDR, vniName, shareName, targetName)
 }
 
+func testAccCheckIbmIsRegionalShareConfig(vpcName, sname, targetName, vniName, shareName string) string {
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "group" {
+		is_default = "true"
+	}
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	}
+	resource "ibm_is_subnet" "testacc_subnet" {
+		name = "%s"
+		vpc = ibm_is_vpc.testacc_vpc.id
+		zone = "us-south-1"
+		ipv4_cidr_block = "%s"
+	}
+	resource "ibm_is_virtual_network_interface" "testacc_vni"{
+		name = "%s"
+		subnet = ibm_is_subnet.testacc_subnet.id
+	}
+	resource "ibm_is_share" "is_share" {
+		access_control_mode = "security_group"
+		allowed_access_protocols = "nfs4"
+		zone    = "us-south-1"
+		size    = 220
+		name    = "%s"
+		profile = "rfs"
+		mount_targets {
+		  transit_encryption = "ipsec"
+		  access_protocol = "nfs4"
+		  name = "%s"
+		  virtual_network_interface {
+			id = ibm_is_virtual_network_interface.testacc_vni.id
+		  }
+		}
+	  }
+	`, vpcName, sname, acc.ISCIDR, vniName, shareName, targetName)
+}
+
 func testAccCheckIbmIsShareConfigOriginShareConfig(vpcName, sname, tEMode, shareName, shareName1 string) string {
 	return fmt.Sprintf(`
 	
@@ -424,6 +520,20 @@ func testAccCheckIbmIsShareConfigOriginShareConfig(vpcName, sname, tEMode, share
 		
 	  }
 	`, vpcName, sname, acc.ISCIDR, tEMode, shareName, shareName1)
+}
+
+func testAccCheckIbmIsShareConfigRegionalShareConfig(vpcName, sname, tEMode, shareName, allowedAccessProtocol string) string {
+	return fmt.Sprintf(`
+	
+	resource "ibm_is_share" "is_share" {
+		allowed_transit_encryption_modes = ["%s"]
+		allowed_access_protocols = ["%s"]
+		size    = 220
+		name    = "%s"
+		profile = "rfs"
+		bandwidth = 100
+	  }
+	`, tEMode, allowedAccessProtocol, shareName)
 }
 
 func testAccCheckIbmIsShareConfigShareSnapshotConfig(vpcName, sname, tEMode, shareName, shareSnapName, shareName1 string) string {
