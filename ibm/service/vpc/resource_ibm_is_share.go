@@ -1148,7 +1148,8 @@ func resourceIbmIsShareCreate(context context.Context, d *schema.ResourceData, m
 	}
 	if allowedTransitEncryptionModesIntf, ok := d.GetOk("allowed_transit_encryption_modes"); ok {
 		allowedTransitEncryptionModes := []string{}
-		for _, allowedTransitEncryptionModesItemIntf := range allowedTransitEncryptionModesIntf.([]interface{}) {
+		allowedTransitEncryptionModesItems := allowedTransitEncryptionModesIntf.(*schema.Set)
+		for _, allowedTransitEncryptionModesItemIntf := range allowedTransitEncryptionModesItems.List() {
 			allowedTransitEncryptionModesItem := allowedTransitEncryptionModesItemIntf.(string)
 			if allowedTransitEncryptionModesItem == "user_managed" {
 				allowedTransitEncryptionModesItem = "ipsec"
@@ -1419,7 +1420,7 @@ func resourceIbmIsShareMapToShareMountTargetPrototype(d *schema.ResourceData, sh
 		}
 
 	}
-	if accessProtocolIntf, ok := shareTargetPrototypeMap["access_protocol"]; ok && accessProtocolIntf != nil {
+	if accessProtocolIntf, ok := shareTargetPrototypeMap["access_protocol"]; ok && accessProtocolIntf != nil && accessProtocolIntf.(string) != "" {
 		accessProtocol := accessProtocolIntf.(string)
 		shareTargetPrototype.AccessProtocol = &accessProtocol
 	} else {
@@ -1429,7 +1430,7 @@ func resourceIbmIsShareMapToShareMountTargetPrototype(d *schema.ResourceData, sh
 	if transitEncryptionIntf, ok := shareTargetPrototypeMap["transit_encryption"]; ok && transitEncryptionIntf != "" {
 		transitEncryption := transitEncryptionIntf.(string)
 		if transitEncryption == "user_managed" {
-			transitEncryption = "none"
+			transitEncryption = "ipsec"
 		}
 		shareTargetPrototype.TransitEncryption = &transitEncryption
 	} else {
@@ -2153,15 +2154,18 @@ func shareUpdate(vpcClient *vpcv1.VpcV1, context context.Context, d *schema.Reso
 		}
 		if d.HasChange("allowed_transit_encryption_modes") {
 			var allowedTransitEncryptionModes []string
-			for _, v := range d.Get("allowed_transit_encryption_modes").([]interface{}) {
-				allowedTransitEncryptionModesItem := v.(string)
-				if allowedTransitEncryptionModesItem == "user_managed" {
-					allowedTransitEncryptionModesItem = "ipsec"
+			if allowedTPMModesItemsIntf, ok := d.GetOk("allowed_transit_encryption_modes"); ok {
+				allowedTPMModesItems := allowedTPMModesItemsIntf.(*schema.Set)
+				for _, v := range allowedTPMModesItems.List() {
+					allowedTransitEncryptionModesItem := v.(string)
+					if allowedTransitEncryptionModesItem == "user_managed" {
+						allowedTransitEncryptionModesItem = "ipsec"
+					}
+					allowedTransitEncryptionModes = append(allowedTransitEncryptionModes, allowedTransitEncryptionModesItem)
 				}
-				allowedTransitEncryptionModes = append(allowedTransitEncryptionModes, allowedTransitEncryptionModesItem)
+				sharePatchModel.AllowedTransitEncryptionModes = allowedTransitEncryptionModes
+				hasChange = true
 			}
-			sharePatchModel.AllowedTransitEncryptionModes = allowedTransitEncryptionModes
-			hasChange = true
 		}
 		if d.HasChange("access_control_protocols") {
 			var access_control_protocols []string
