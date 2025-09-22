@@ -294,13 +294,13 @@ func waitForIbmSmCustomCredentialsSecretCreate(secretsManagerClient *secretsmana
 		Target:  []string{"active"},
 		Refresh: func() (interface{}, string, error) {
 			secretIntf, _, err := secretsManagerClient.GetSecret(getSecretOptions)
-			secret := secretIntf.(*secretsmanagerv2.CustomCredentialsSecret)
 			if err != nil {
 				if apiErr, ok := err.(bmxerror.RequestFailure); ok && apiErr.StatusCode() == 404 {
 					return nil, "", fmt.Errorf("The secret does not exist anymore")
 				}
 				return nil, "", err
 			}
+			secret := secretIntf.(*secretsmanagerv2.CustomCredentialsSecret)
 			if *secret.StateDescription == "destroyed" {
 				return secret, *secret.StateDescription, fmt.Errorf("Failed to get the secret %w", err)
 			}
