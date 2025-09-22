@@ -499,11 +499,11 @@ func ResourceIBMCISRulesetRuleUpdate(d *schema.ResourceData, meta interface{}) e
 		opt.SetEnabled(rulesetsRuleObject[CISRulesetsRuleActionEnabled].(bool))
 		opt.SetExpression(rulesetsRuleObject[CISRulesetsRuleExpression].(string))
 		opt.SetRef(rulesetsRuleObject[CISRulesetsRuleRef].(string))
-		position, positionError := expandCISRulesetsRulesPositions(rulesetsRuleObject[CISRulesetsRulePosition])
-		if positionError != nil {
-			return flex.FmtErrorf("[ERROR] Error while updating the zone Ruleset %s", err)
-		}
 		if d.HasChange(CISRulesetsRule + ".0." + CISRulesetsRulePosition) {
+			position, positionError := expandCISRulesetsRulesPositions(rulesetsRuleObject[CISRulesetsRulePosition])
+			if positionError != nil {
+				return flex.FmtErrorf("[ERROR] Error while updating the zone Ruleset %s", positionError)
+			}
 			opt.SetPosition(&position)
 		}
 
