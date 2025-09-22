@@ -39,22 +39,23 @@ func ResourceIBMIsBareMetalServerInitialization() *schema.Resource {
 				Description: "Bare metal server identifier",
 			},
 			isBareMetalServerDefaultTrustedProfile: {
-				Type:     schema.TypeList,
-				Optional: true,
-				Computed: true,
-				MaxItems: 1,
+				Type:        schema.TypeList,
+				Optional:    true,
+				ForceNew:    true,
+				MaxItems:    1,
+				Description: "The default trusted profile configuration for the bare metal server",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"auto_link": {
 							Type:        schema.TypeBool,
 							Optional:    true,
-							Computed:    true,
-							Description: "If set to true, the system will create a link to the specified target trusted profile during server creation. Regardless of whether a link is created by the system or manually using the IAM Identity service, it will be automatically deleted when the server is deleted.",
+							ForceNew:    true,
+							Description: "If set to true, the system will create a link to the specified target trusted profile during server initialization.",
 						},
 						"target": {
 							Type:        schema.TypeList,
 							Optional:    true,
-							Computed:    true,
+							ForceNew:    true,
 							MaxItems:    1,
 							Description: "The default IAM trusted profile to use for this bare metal server",
 							Elem: &schema.Resource{
@@ -62,14 +63,14 @@ func ResourceIBMIsBareMetalServerInitialization() *schema.Resource {
 									"id": {
 										Type:          schema.TypeString,
 										Optional:      true,
-										Computed:      true,
+										ForceNew:      true,
 										Description:   "The unique identifier for this trusted profile",
 										ConflictsWith: []string{"default_trusted_profile.0.target.0.crn"},
 									},
 									"crn": {
 										Type:          schema.TypeString,
 										Optional:      true,
-										Computed:      true,
+										ForceNew:      true,
 										Description:   "The CRN for this trusted profile",
 										ConflictsWith: []string{"default_trusted_profile.0.target.0.id"},
 									},
