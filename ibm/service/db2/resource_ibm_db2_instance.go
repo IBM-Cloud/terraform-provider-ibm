@@ -8,6 +8,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"net"
+	"net/http"
 	"net/url"
 	"os"
 	"reflect"
@@ -804,10 +806,108 @@ func ResourceIBMDb2Instance() *schema.Resource {
 		},
 	}
 
+	riSchema["allowlist_config"] = &schema.Schema{
+		Description: "The db2 allowed list of IPs",
+		Optional:    true,
+		Type:        schema.TypeList,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"ip_addresses": {
+					Description: "The ip_addresses allowed to access the Db2 instance",
+					Optional:    true,
+					Type:        schema.TypeList,
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"address": {
+								Type:        schema.TypeString,
+								Description: "The IP address",
+								Optional:    true,
+							},
+							"description": {
+								Type:        schema.TypeString,
+								Description: "The description for the ip address",
+								Optional:    true,
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	riSchema["users_config"] = &schema.Schema{
+		Description: "The db2 new users gets created (available only for platform users)",
+		Optional:    true,
+		Type:        schema.TypeList,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"id": {
+					Description: "The id of the user",
+					Optional:    true,
+					Type:        schema.TypeString,
+				},
+				"iam": {
+					Description: "The iam of the user",
+					Optional:    true,
+					Type:        schema.TypeBool,
+				},
+				"ibmid": {
+					Type:        schema.TypeString,
+					Optional:    true,
+					Description: "The ibmid of the user",
+				},
+				"name": {
+					Type:        schema.TypeString,
+					Optional:    true,
+					Description: "The name of the user",
+				},
+				"password": {
+					Type:        schema.TypeString,
+					Optional:    true,
+					Description: "The password of the user",
+				},
+				"role": {
+					Type:        schema.TypeString,
+					Optional:    true,
+					Description: "The role of the user (say: bluuser)",
+				},
+				"email": {
+					Type:        schema.TypeString,
+					Optional:    true,
+					Description: "The email of the user ",
+				},
+				"locked": {
+					Type:        schema.TypeString,
+					Optional:    true,
+					Description: "It decribes if user is locked or not",
+				},
+				"authentication": {
+					Type:        schema.TypeList,
+					Optional:    true,
+					Description: "The authentication for user",
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"method": {
+								Type:        schema.TypeString,
+								Optional:    true,
+								Description: "The method of authentication for user",
+							},
+							"policy_id": {
+								Type:        schema.TypeString,
+								Optional:    true,
+								Description: "The policy_id for the user",
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
 	return &schema.Resource{
 		Create:   resourceIBMDb2InstanceCreate,
 		Read:     resourcecontroller.ResourceIBMResourceInstanceRead,
-		Update:   resourcecontroller.ResourceIBMResourceInstanceUpdate,
+		Update:   resourceIBMResourceInstanceUpdate,
 		Delete:   resourcecontroller.ResourceIBMResourceInstanceDelete,
 		Exists:   resourcecontroller.ResourceIBMResourceInstanceExists,
 		Importer: &schema.ResourceImporter{},
@@ -1286,6 +1386,64 @@ func resourceIBMDb2InstanceCreate(d *schema.ResourceData, meta interface{}) erro
 		}
 	}
 
+	if allowlistConfigRaw, ok := d.GetOk("allowlist_config"); ok {
+		list := allowlistConfigRaw.([]interface{})
+		if len(list) == 0 {
+			fmt.Println("No allowlist config provided, skipping.")
+		} else {
+			ipList := make([]db2saasv1.IpAddress, 0)
+
+			for _, item := range list {
+				entry := item.(map[string]interface{})
+
+				if ipAddrsRaw, ok := entry["ip_addresses"]; ok {
+					ipAddrs := ipAddrsRaw.([]interface{})
+					for _, ipItem := range ipAddrs {
+						ipEntry := ipItem.(map[string]interface{})
+						var address, description string
+
+						if rawAddress, ok := ipEntry["address"]; ok && rawAddress != nil {
+							str := rawAddress.(string)
+							if ip := net.ParseIP(str); ip == nil {
+								log.Printf("[ERROR] invalid IP address format: %s", str)
+								return fmt.Errorf("invalid IP address format: %s", str)
+							}
+							address = str
+						}
+
+						if rawDescription, ok := ipEntry["description"]; ok && rawDescription != nil {
+							str := rawDescription.(string)
+							description = str
+						}
+
+						ipList = append(ipList, db2saasv1.IpAddress{
+							Address:     core.StringPtr(address),
+							Description: core.StringPtr(description),
+						})
+					}
+				}
+			}
+
+			input := &db2saasv1.PostDb2SaasAllowlistOptions{
+				XDeploymentID: core.StringPtr(encodedCRN),
+				IpAddresses:   ipList,
+			}
+
+			result, response, err := db2SaasClient.PostDb2SaasAllowlist(input)
+			if err != nil {
+				log.Printf("[ERROR] Error while posting allowlist config to DB2Saas: %s", err)
+			} else {
+				log.Printf("[INFO] StatusCode of response %d", response.StatusCode)
+				log.Printf("[INFO] Success result \n%v", result)
+			}
+		}
+	}
+
+	err = userConfigValidation(d, encodedCRN, db2SaasClient)
+	if err != nil {
+		log.Printf("[ERROR] User config validation failed: %s", err)
+	}
+
 	v := os.Getenv("IC_ENV_TAGS")
 	if _, ok := d.GetOk("tags"); ok || v != "" {
 		oldList, newList := d.GetChange("tags")
@@ -1341,5 +1499,286 @@ func checkStringNilValue(config map[string]interface{}, key string) *string {
 		}
 	}
 
+	return nil
+}
+
+func resourceIBMResourceInstanceUpdate(d *schema.ResourceData, meta interface{}) error {
+	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
+	if err != nil {
+		return err
+	}
+
+	instanceID := d.Id()
+
+	resourceInstanceUpdate := rc.UpdateResourceInstanceOptions{
+		ID: &instanceID,
+	}
+	if d.HasChange("name") {
+		name := d.Get("name").(string)
+		resourceInstanceUpdate.Name = &name
+	}
+
+	if d.HasChange("plan") {
+		plan := d.Get("plan").(string)
+		service := d.Get("service").(string)
+		rsCatClient, err := meta.(conns.ClientSession).ResourceCatalogAPI()
+		if err != nil {
+			return err
+		}
+		rsCatRepo := rsCatClient.ResourceCatalog()
+
+		serviceOff, err := rsCatRepo.FindByName(service, true)
+		if err != nil {
+			return fmt.Errorf("[ERROR] Error retrieving service offering: %s", err)
+		}
+
+		servicePlan, err := rsCatRepo.GetServicePlanID(serviceOff[0], plan)
+		if err != nil {
+			return fmt.Errorf("[ERROR] Error retrieving plan: %s", err)
+		}
+
+		resourceInstanceUpdate.ResourcePlanID = &servicePlan
+
+	}
+	params := map[string]interface{}{}
+
+	if d.HasChange("service_endpoints") {
+		endpoint := d.Get("service_endpoints").(string)
+		params["service-endpoints"] = endpoint
+	}
+
+	resourceInstanceGet := rc.GetResourceInstanceOptions{
+		ID: &instanceID,
+	}
+	if d.HasChange("parameters") {
+		instance, resp, err := rsConClient.GetResourceInstance(&resourceInstanceGet)
+		if err != nil {
+			return fmt.Errorf("[ERROR] Error retrieving resource instance: %s with resp code: %s", err, resp)
+		}
+
+		if parameters, ok := d.GetOk("parameters"); ok {
+			temp := parameters.(map[string]interface{})
+			for k, v := range temp {
+				if v == "true" || v == "false" {
+					b, _ := strconv.ParseBool(v.(string))
+					params[k] = b
+				} else if strings.HasPrefix(v.(string), "[") && strings.HasSuffix(v.(string), "]") {
+					//transform v.(string) to be []string
+					result := []string{}
+					arrayString := v.(string)
+					trimLeft := strings.TrimLeft(arrayString, "[")
+					trimRight := strings.TrimRight(trimLeft, "]")
+					if len(trimRight) == 0 {
+						params[k] = result
+					} else {
+						array := strings.Split(trimRight, ",")
+						for _, a := range array {
+							result = append(result, strings.Trim(a, "\""))
+						}
+						params[k] = result
+					}
+
+				} else {
+					params[k] = v
+				}
+			}
+		}
+		if _, ok := params["service-endpoints"]; !ok {
+			serviceEndpoints := d.Get("service_endpoints").(string)
+			if serviceEndpoints != "" {
+				endpoint := d.Get("service_endpoints").(string)
+				params["service-endpoints"] = endpoint
+			} else if _, ok := instance.Parameters["service-endpoints"]; ok {
+				params["service-endpoints"] = instance.Parameters["service-endpoints"]
+			}
+		}
+
+	}
+
+	if d.HasChange("service_endpoints") || d.HasChange("parameters") {
+		resourceInstanceUpdate.Parameters = params
+	}
+	if d.HasChange("parameters_json") {
+		if s, ok := d.GetOk("parameters_json"); ok {
+			json.Unmarshal([]byte(s.(string)), &params)
+			resourceInstanceUpdate.Parameters = params
+		}
+	}
+	instance, resp, err := rsConClient.GetResourceInstance(&resourceInstanceGet)
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error Getting resource instance: %s with resp code: %s", err, resp)
+	}
+
+	if d.HasChange("tags") {
+		oldList, newList := d.GetChange("tags")
+		err = flex.UpdateTagsUsingCRN(oldList, newList, meta, *instance.CRN)
+		if err != nil {
+			log.Printf(
+				"Error on update of resource instance (%s) tags: %s", d.Id(), err)
+		}
+	}
+
+	_, resp, err = rsConClient.UpdateResourceInstance(&resourceInstanceUpdate)
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error updating resource instance: %s with resp code: %s", err, resp)
+	}
+
+	_, err = resourcecontroller.WaitForResourceInstanceUpdate(d, meta)
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error waiting for update resource instance (%s) to be succeeded: %s", d.Id(), err)
+	}
+
+	encodedCRN := url.QueryEscape(*instance.CRN)
+
+	db2saasClient, err := meta.(conns.ClientSession).Db2saasV1()
+	if err != nil {
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_db2_saas_users", "update", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return err
+	}
+
+	err = userConfigValidation(d, encodedCRN, db2saasClient)
+	if err != nil {
+		log.Printf("[ERROR] User config validation failed: %s", err)
+	}
+
+	return resourcecontroller.ResourceIBMResourceInstanceRead(d, meta)
+}
+
+func userConfigValidation(d *schema.ResourceData, encodedCRN string, db2SaasClient *db2saasv1.Db2saasV1) error {
+
+	if usersConfigRaw, ok := d.GetOk("users_config"); ok {
+		usersList := usersConfigRaw.([]interface{})
+		if len(usersList) == 0 {
+			log.Printf(" No users config provided, skipping.")
+			return fmt.Errorf("no users config provided")
+		}
+
+		for _, u := range usersList {
+			userMap := u.(map[string]interface{})
+
+			var (
+				id       string
+				iam      bool
+				ibmID    string
+				name     string
+				password string
+				role     string
+				email    string
+				locked   string
+				method   string
+				policyID string
+			)
+
+			if rawID, exists := userMap["id"]; exists && rawID != nil {
+				id = rawID.(string)
+			}
+			if rawIAM, exists := userMap["iam"]; exists && rawIAM != nil {
+				iam = rawIAM.(bool)
+			}
+			if rawIBMID, exists := userMap["ibmid"]; exists && rawIBMID != nil {
+				ibmID = rawIBMID.(string)
+			}
+			if rawName, exists := userMap["name"]; exists && rawName != nil {
+				name = rawName.(string)
+			}
+			if rawPassword, exists := userMap["password"]; exists && rawPassword != nil {
+				password = rawPassword.(string)
+			}
+			if rawRole, exists := userMap["role"]; exists && rawRole != nil {
+				role = rawRole.(string)
+			}
+			if rawEmail, exists := userMap["email"]; exists && rawEmail != nil {
+				email = rawEmail.(string)
+			}
+			if rawLocked, exists := userMap["locked"]; exists && rawLocked != nil {
+				locked = rawLocked.(string)
+			}
+
+			// authentication block
+			if rawAuth, exists := userMap["authentication"]; exists && rawAuth != nil {
+				authList := rawAuth.([]interface{})
+				if len(authList) > 0 {
+					authMap := authList[0].(map[string]interface{})
+
+					if rawMethod, exists := authMap["method"]; exists && rawMethod != nil {
+						method = rawMethod.(string)
+					}
+					if rawPolicy, exists := authMap["policy_id"]; exists && rawPolicy != nil {
+						policyID = rawPolicy.(string)
+					}
+				}
+			}
+
+			input := &db2saasv1.PostDb2SaasUserOptions{
+				XDeploymentID: core.StringPtr(encodedCRN),
+				ID:            core.StringPtr(id),
+				Iam:           core.BoolPtr(iam),
+				Ibmid:         core.StringPtr(ibmID),
+				Name:          core.StringPtr(name),
+				Password:      core.StringPtr(password),
+				Role:          core.StringPtr(role),
+				Email:         core.StringPtr(email),
+				Locked:        core.StringPtr(locked),
+				Authentication: &db2saasv1.CreateUserAuthentication{
+					Method:   core.StringPtr(method),
+					PolicyID: core.StringPtr(policyID),
+				},
+			}
+
+			var result interface{}
+			var response *core.DetailedResponse
+			var err error
+			var existingUser bool
+
+			// get users by id is required to switch between put and post
+			log.Print("checking existence of user...")
+			getUsersInput := &db2saasv1.GetbyidDb2SaasUserOptions{
+				XDeploymentID: core.StringPtr(encodedCRN),
+				ID:            core.StringPtr(id),
+			}
+
+			_, resp, err := db2SaasClient.GetbyidDb2SaasUser(getUsersInput)
+
+			if resp != nil && resp.StatusCode == http.StatusOK {
+				log.Print("[INFO] User exists, thus will proceed with update")
+				existingUser = true
+			}
+			if err != nil {
+				log.Printf("[ERROR] Error while fetching user by ID: %s", err)
+			}
+
+			if existingUser {
+				log.Print("User exists, updating...")
+				updateInput := &db2saasv1.PutDb2SaasUserOptions{
+					XDeploymentID: core.StringPtr(encodedCRN),
+					ID:            core.StringPtr(id),
+					NewID:         core.StringPtr(id),
+					NewIam:        core.BoolPtr(iam),
+					NewIbmid:      core.StringPtr(ibmID),
+					NewName:       core.StringPtr(name),
+					NewPassword:   core.StringPtr(password),
+					NewRole:       core.StringPtr(role),
+					NewEmail:      core.StringPtr(email),
+					NewLocked:     core.StringPtr(locked),
+					NewAuthentication: &db2saasv1.UpdateUserAuthentication{
+						Method:   core.StringPtr(method),
+						PolicyID: core.StringPtr(policyID),
+					},
+				}
+				result, response, err = db2SaasClient.PutDb2SaasUser(updateInput)
+			} else {
+				log.Print("User doesn't exist, creating...")
+				result, response, err = db2SaasClient.PostDb2SaasUser(input)
+			}
+
+			if err != nil {
+				log.Printf("[ERROR] Error while sending users config to DB2: %s", err)
+			} else {
+				log.Printf("[INFO] StatusCode of response %d", response.StatusCode)
+				log.Printf("[INFO] Success result %v", result)
+			}
+		}
+	}
 	return nil
 }
