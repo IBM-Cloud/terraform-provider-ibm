@@ -63,65 +63,7 @@ func DataSourceIBMPINetworkPeer() *schema.Resource {
 				Description: "Error description.",
 				Type:        schema.TypeString,
 			},
-			Attr_ExportRouteFilters: {
-				Computed:    true,
-				Description: "List of export route filters.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						Attr_Action: {
-							Computed:    true,
-							Description: "Action of the filter.",
-							Type:        schema.TypeString,
-						},
-						Attr_CreationDate: {
-							Computed:    true,
-							Description: "Time stamp for create route filter.",
-							Type:        schema.TypeString,
-						},
-						Attr_Direction: {
-							Computed:    true,
-							Description: "Direction of the filter.",
-							Type:        schema.TypeString,
-						},
-						Attr_Error: {
-							Computed:    true,
-							Description: "Error description.",
-							Type:        schema.TypeString,
-						},
-						Attr_GE: {
-							Computed:    true,
-							Description: "The minimum matching length of the prefix-set.",
-							Type:        schema.TypeInt,
-						},
-						Attr_Index: {
-							Computed:    true,
-							Description: "Priority or order of the filter.",
-							Type:        schema.TypeInt,
-						},
-						Attr_LE: {
-							Computed:    true,
-							Description: "The maximum matching length of the prefix-set.",
-							Type:        schema.TypeInt,
-						},
-						Attr_Prefix: {
-							Computed:    true,
-							Description: "IP prefix representing an address and mask length of the prefix-set.",
-							Type:        schema.TypeString,
-						},
-						Attr_RouteFilterID: {
-							Computed:    true,
-							Description: "Route filter ID.",
-							Type:        schema.TypeString,
-						},
-						Attr_State: {
-							Computed:    true,
-							Description: "Status of the route filter.",
-							Type:        schema.TypeString,
-						},
-					},
-				},
-				Type: schema.TypeList,
-			},
+			Attr_ExportRouteFilters: routeFilterSchema("List of export route filters."),
 			Attr_IBMASN: {
 				Computed:    true,
 				Description: "ASN number at IBM PowerVS side.",
@@ -132,65 +74,7 @@ func DataSourceIBMPINetworkPeer() *schema.Resource {
 				Description: "IP address used for configuring IBM network interface with network subnet mask.",
 				Type:        schema.TypeString,
 			},
-			Attr_ImportRouteFilters: {
-				Computed:    true,
-				Description: "List of import route filters.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						Attr_Action: {
-							Computed:    true,
-							Description: "Action of the filter.",
-							Type:        schema.TypeString,
-						},
-						Attr_CreationDate: {
-							Computed:    true,
-							Description: "Time stamp for create route filter.",
-							Type:        schema.TypeString,
-						},
-						Attr_Direction: {
-							Computed:    true,
-							Description: "Direction of the filter.",
-							Type:        schema.TypeString,
-						},
-						Attr_Error: {
-							Computed:    true,
-							Description: "Error description.",
-							Type:        schema.TypeString,
-						},
-						Attr_GE: {
-							Computed:    true,
-							Description: "The minimum matching length of the prefix-set.",
-							Type:        schema.TypeInt,
-						},
-						Attr_Index: {
-							Computed:    true,
-							Description: "Priority or order of the filter.",
-							Type:        schema.TypeInt,
-						},
-						Attr_LE: {
-							Computed:    true,
-							Description: "The maximum matching length of the prefix-set.",
-							Type:        schema.TypeInt,
-						},
-						Attr_Prefix: {
-							Computed:    true,
-							Description: "IP prefix representing an address and mask length of the prefix-set.",
-							Type:        schema.TypeString,
-						},
-						Attr_RouteFilterID: {
-							Computed:    true,
-							Description: "Route filter ID.",
-							Type:        schema.TypeString,
-						},
-						Attr_State: {
-							Computed:    true,
-							Description: "Status of the route filter.",
-							Type:        schema.TypeString,
-						},
-					},
-				},
-				Type: schema.TypeList,
-			},
+			Attr_ImportRouteFilters: routeFilterSchema("List of import route filters."),
 			Attr_Name: {
 				Computed:    true,
 				Description: "User defined name.",
@@ -271,4 +155,66 @@ func dataSourceIBMPINetworkPeerRead(ctx context.Context, d *schema.ResourceData,
 	d.Set(Attr_VLAN, networkdata.Vlan)
 
 	return nil
+}
+
+func routeFilterSchema(description string) *schema.Schema {
+	return &schema.Schema{
+		Computed:    true,
+		Description: description,
+		Type:        schema.TypeList,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				Attr_Action: {
+					Computed:    true,
+					Description: "Action of the filter.",
+					Type:        schema.TypeString,
+				},
+				Attr_CreationDate: {
+					Computed:    true,
+					Description: "Time stamp for create route filter.",
+					Type:        schema.TypeString,
+				},
+				Attr_Direction: {
+					Computed:    true,
+					Description: "Direction of the filter.",
+					Type:        schema.TypeString,
+				},
+				Attr_Error: {
+					Computed:    true,
+					Description: "Error description.",
+					Type:        schema.TypeString,
+				},
+				Attr_GE: {
+					Computed:    true,
+					Description: "The minimum matching length of the prefix-set.",
+					Type:        schema.TypeInt,
+				},
+				Attr_Index: {
+					Computed:    true,
+					Description: "Priority or order of the filter.",
+					Type:        schema.TypeInt,
+				},
+				Attr_LE: {
+					Computed:    true,
+					Description: "The maximum matching length of the prefix-set.",
+					Type:        schema.TypeInt,
+				},
+				Attr_Prefix: {
+					Computed:    true,
+					Description: "IP prefix representing an address and mask length of the prefix-set.",
+					Type:        schema.TypeString,
+				},
+				Attr_RouteFilterID: {
+					Computed:    true,
+					Description: "Route filter ID.",
+					Type:        schema.TypeString,
+				},
+				Attr_State: {
+					Computed:    true,
+					Description: "Status of the route filter.",
+					Type:        schema.TypeString,
+				},
+			},
+		},
+	}
 }
