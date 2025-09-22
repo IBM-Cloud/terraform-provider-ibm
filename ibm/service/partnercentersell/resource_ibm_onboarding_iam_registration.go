@@ -2,7 +2,7 @@
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.103.0-e8b84313-20250402-201816
+ * IBM OpenAPI Terraform Generator Version: 3.107.1-41b0fbd0-20250825-080732
  */
 
 package partnercentersell
@@ -11,6 +11,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -36,7 +37,7 @@ func ResourceIbmOnboardingIamRegistration() *schema.Resource {
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_onboarding_iam_registration", "product_id"),
-				Description:  "The unique ID of the product.",
+				Description:  "The unique ID of the resource.",
 			},
 			"env": &schema.Schema{
 				Type:         schema.TypeString,
@@ -222,6 +223,12 @@ func ResourceIbmOnboardingIamRegistration() *schema.Resource {
 									},
 								},
 							},
+						},
+						"api_types": &schema.Schema{
+							Type:        schema.TypeList,
+							Optional:    true,
+							Description: "Context-based-restrictions API type configuration for an action.",
+							Elem:        &schema.Schema{Type: schema.TypeString},
 						},
 					},
 				},
@@ -1007,8 +1014,200 @@ func ResourceIbmOnboardingIamRegistration() *schema.Resource {
 								},
 							},
 						},
+						"operations": &schema.Schema{
+							Type:        schema.TypeList,
+							MaxItems:    1,
+							Optional:    true,
+							Description: "Specifies API types that the service supports.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"api_types": &schema.Schema{
+										Type:        schema.TypeList,
+										Optional:    true,
+										Description: "The environment attribute for support.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"name": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Description: "The cloud resource name (CRN) or name of the API type.",
+												},
+												"enforcement_method": &schema.Schema{
+													Type:        schema.TypeList,
+													Optional:    true,
+													Description: "The enforcement method used for the API type.",
+													Elem:        &schema.Schema{Type: schema.TypeString},
+												},
+												"display_name": &schema.Schema{
+													Type:        schema.TypeList,
+													MaxItems:    1,
+													Optional:    true,
+													Description: "The display name of the object.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"default": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Description: "The fallback string for the description object.",
+															},
+															"en": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Description: "English.",
+															},
+															"de": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Description: "German.",
+															},
+															"es": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Description: "Spanish.",
+															},
+															"fr": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Description: "French.",
+															},
+															"it": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Description: "Italian.",
+															},
+															"ja": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Description: "Japanese.",
+															},
+															"ko": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Description: "Korean.",
+															},
+															"pt_br": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Description: "Portuguese (Brazil).",
+															},
+															"zh_tw": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Description: "Traditional Chinese.",
+															},
+															"zh_cn": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Description: "Simplified Chinese.",
+															},
+														},
+													},
+												},
+												"description": &schema.Schema{
+													Type:        schema.TypeList,
+													MaxItems:    1,
+													Optional:    true,
+													Description: "The description for the object.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"default": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Description: "The fallback string for the description object.",
+															},
+															"en": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Description: "English.",
+															},
+															"de": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Description: "German.",
+															},
+															"es": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Description: "Spanish.",
+															},
+															"fr": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Description: "French.",
+															},
+															"it": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Description: "Italian.",
+															},
+															"ja": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Description: "Japanese.",
+															},
+															"ko": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Description: "Korean.",
+															},
+															"pt_br": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Description: "Portuguese (Brazil).",
+															},
+															"zh_tw": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Description: "Traditional Chinese.",
+															},
+															"zh_cn": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Description: "Simplified Chinese.",
+															},
+														},
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+						"self_managed_allowlist_enforcement": &schema.Schema{
+							Type:        schema.TypeList,
+							MaxItems:    1,
+							Optional:    true,
+							Description: "Deprecated field, which is optionally specified only if the service uses additional enforcement mechanisms beyond the primary one.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"event_publishing": &schema.Schema{
+										Type:        schema.TypeList,
+										MaxItems:    1,
+										Optional:    true,
+										Description: "Specifies API types that the service supports. This method is deprecated and is used only for older setups. Don't use this method when you create a context-based restrictions setup for the first time.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"api_types": &schema.Schema{
+													Type:        schema.TypeList,
+													Optional:    true,
+													Description: "The cloud resource name (CRN) or name of the API type.",
+													Elem:        &schema.Schema{Type: schema.TypeString},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
 					},
 				},
+			},
+			"supported_action_control": &schema.Schema{
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "The list that indicates which actions are part of the service restrictions.",
+				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 		},
 	}
@@ -1170,6 +1369,14 @@ func resourceIbmOnboardingIamRegistrationCreate(context context.Context, d *sche
 		}
 		createIamRegistrationOptions.SetSupportedNetwork(supportedNetworkModel)
 	}
+	if _, ok := d.GetOk("supported_action_control"); ok {
+		var supportedActionControl []string
+		for _, v := range d.Get("supported_action_control").([]interface{}) {
+			supportedActionControlItem := v.(string)
+			supportedActionControl = append(supportedActionControl, supportedActionControlItem)
+		}
+		createIamRegistrationOptions.SetSupportedActionControl(supportedActionControl)
+	}
 	if _, ok := d.GetOk("env"); ok {
 		createIamRegistrationOptions.SetEnv(d.Get("env").(string))
 	}
@@ -1187,6 +1394,8 @@ func resourceIbmOnboardingIamRegistrationCreate(context context.Context, d *sche
 }
 
 func resourceIbmOnboardingIamRegistrationRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	//Downstream service Read-Your-Writes is not consistent we need to wait to get proper results
+	time.Sleep(25 * time.Second)
 	partnerCenterSellClient, err := meta.(conns.ClientSession).PartnerCenterSellV1()
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_onboarding_iam_registration", "read", "initialize-client")
@@ -1353,6 +1562,12 @@ func resourceIbmOnboardingIamRegistrationRead(context context.Context, d *schema
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_onboarding_iam_registration", "read", "set-supported_network").GetDiag()
 		}
 	}
+	if !core.IsNil(iamServiceRegistration.SupportedActionControl) {
+		if err = d.Set("supported_action_control", iamServiceRegistration.SupportedActionControl); err != nil {
+			err = fmt.Errorf("Error setting supported_action_control: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_onboarding_iam_registration", "read", "set-supported_action_control").GetDiag()
+		}
+	}
 
 	return nil
 }
@@ -1503,6 +1718,15 @@ func resourceIbmOnboardingIamRegistrationUpdate(context context.Context, d *sche
 		patchVals.SupportedNetwork = supportedNetwork
 		hasChange = true
 	}
+	if d.HasChange("supported_action_control") {
+		var supportedActionControl []string
+		for _, v := range d.Get("supported_action_control").([]interface{}) {
+			supportedActionControlItem := v.(string)
+			supportedActionControl = append(supportedActionControl, supportedActionControlItem)
+		}
+		patchVals.SupportedActionControl = supportedActionControl
+		hasChange = true
+	}
 
 	if hasChange {
 		// Fields with `nil` values are omitted from the generic map,
@@ -1586,6 +1810,13 @@ func ResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationAction(model
 			return model, err
 		}
 		model.Options = OptionsModel
+	}
+	if modelMap["api_types"] != nil {
+		apiTypes := []string{}
+		for _, apiTypesItem := range modelMap["api_types"].([]interface{}) {
+			apiTypes = append(apiTypes, apiTypesItem.(string))
+		}
+		model.ApiTypes = apiTypes
 	}
 	return model, nil
 }
@@ -2017,6 +2248,20 @@ func ResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupportedNet
 		}
 		model.EnvironmentAttributes = environmentAttributes
 	}
+	if modelMap["operations"] != nil && len(modelMap["operations"].([]interface{})) > 0 {
+		OperationsModel, err := ResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupportedNetworkOperations(modelMap["operations"].([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.Operations = OperationsModel
+	}
+	if modelMap["self_managed_allowlist_enforcement"] != nil && len(modelMap["self_managed_allowlist_enforcement"].([]interface{})) > 0 {
+		SelfManagedAllowlistEnforcementModel, err := ResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcement(modelMap["self_managed_allowlist_enforcement"].([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.SelfManagedAllowlistEnforcement = SelfManagedAllowlistEnforcementModel
+	}
 	return model, nil
 }
 
@@ -2050,6 +2295,75 @@ func ResourceIbmOnboardingIamRegistrationMapToEnvironmentAttributeOptions(modelM
 	return model, nil
 }
 
+func ResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupportedNetworkOperations(modelMap map[string]interface{}) (*partnercentersellv1.IamServiceRegistrationSupportedNetworkOperations, error) {
+	model := &partnercentersellv1.IamServiceRegistrationSupportedNetworkOperations{}
+	if modelMap["api_types"] != nil {
+		apiTypes := []partnercentersellv1.IamServiceRegistrationSupportedNetworkOperationsApiTypeItems{}
+		for _, apiTypesItem := range modelMap["api_types"].([]interface{}) {
+			apiTypesItemModel, err := ResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupportedNetworkOperationsApiTypeItems(apiTypesItem.(map[string]interface{}))
+			if err != nil {
+				return model, err
+			}
+			apiTypes = append(apiTypes, *apiTypesItemModel)
+		}
+		model.ApiTypes = apiTypes
+	}
+	return model, nil
+}
+
+func ResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupportedNetworkOperationsApiTypeItems(modelMap map[string]interface{}) (*partnercentersellv1.IamServiceRegistrationSupportedNetworkOperationsApiTypeItems, error) {
+	model := &partnercentersellv1.IamServiceRegistrationSupportedNetworkOperationsApiTypeItems{}
+	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
+		model.Name = core.StringPtr(modelMap["name"].(string))
+	}
+	if modelMap["enforcement_method"] != nil {
+		enforcementMethod := []string{}
+		for _, enforcementMethodItem := range modelMap["enforcement_method"].([]interface{}) {
+			enforcementMethod = append(enforcementMethod, enforcementMethodItem.(string))
+		}
+		model.EnforcementMethod = enforcementMethod
+	}
+	if modelMap["display_name"] != nil && len(modelMap["display_name"].([]interface{})) > 0 {
+		DisplayNameModel, err := ResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationDisplayNameObject(modelMap["display_name"].([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.DisplayName = DisplayNameModel
+	}
+	if modelMap["description"] != nil && len(modelMap["description"].([]interface{})) > 0 {
+		DescriptionModel, err := ResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationDescriptionObject(modelMap["description"].([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.Description = DescriptionModel
+	}
+	return model, nil
+}
+
+func ResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcement(modelMap map[string]interface{}) (*partnercentersellv1.IamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcement, error) {
+	model := &partnercentersellv1.IamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcement{}
+	if modelMap["event_publishing"] != nil && len(modelMap["event_publishing"].([]interface{})) > 0 {
+		EventPublishingModel, err := ResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcementEventPublishing(modelMap["event_publishing"].([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.EventPublishing = EventPublishingModel
+	}
+	return model, nil
+}
+
+func ResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcementEventPublishing(modelMap map[string]interface{}) (*partnercentersellv1.IamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcementEventPublishing, error) {
+	model := &partnercentersellv1.IamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcementEventPublishing{}
+	if modelMap["api_types"] != nil {
+		apiTypes := []string{}
+		for _, apiTypesItem := range modelMap["api_types"].([]interface{}) {
+			apiTypes = append(apiTypes, apiTypesItem.(string))
+		}
+		model.ApiTypes = apiTypes
+	}
+	return model, nil
+}
+
 func ResourceIbmOnboardingIamRegistrationIamServiceRegistrationActionToMap(model *partnercentersellv1.IamServiceRegistrationAction) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
@@ -2078,6 +2392,9 @@ func ResourceIbmOnboardingIamRegistrationIamServiceRegistrationActionToMap(model
 			return modelMap, err
 		}
 		modelMap["options"] = []map[string]interface{}{optionsMap}
+	}
+	if model.ApiTypes != nil {
+		modelMap["api_types"] = model.ApiTypes
 	}
 	return modelMap, nil
 }
@@ -2482,6 +2799,20 @@ func ResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedNetworkT
 		}
 		modelMap["environment_attributes"] = environmentAttributes
 	}
+	if model.Operations != nil {
+		operationsMap, err := ResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedNetworkOperationsToMap(model.Operations)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["operations"] = []map[string]interface{}{operationsMap}
+	}
+	if model.SelfManagedAllowlistEnforcement != nil {
+		selfManagedAllowlistEnforcementMap, err := ResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcementToMap(model.SelfManagedAllowlistEnforcement)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["self_managed_allowlist_enforcement"] = []map[string]interface{}{selfManagedAllowlistEnforcementMap}
+	}
 	return modelMap, nil
 }
 
@@ -2507,6 +2838,67 @@ func ResourceIbmOnboardingIamRegistrationEnvironmentAttributeOptionsToMap(model 
 	modelMap := make(map[string]interface{})
 	if model.Hidden != nil {
 		modelMap["hidden"] = *model.Hidden
+	}
+	return modelMap, nil
+}
+
+func ResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedNetworkOperationsToMap(model *partnercentersellv1.IamServiceRegistrationSupportedNetworkOperations) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.ApiTypes != nil {
+		apiTypes := []map[string]interface{}{}
+		for _, apiTypesItem := range model.ApiTypes {
+			apiTypesItemMap, err := ResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedNetworkOperationsApiTypeItemsToMap(&apiTypesItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			apiTypes = append(apiTypes, apiTypesItemMap)
+		}
+		modelMap["api_types"] = apiTypes
+	}
+	return modelMap, nil
+}
+
+func ResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedNetworkOperationsApiTypeItemsToMap(model *partnercentersellv1.IamServiceRegistrationSupportedNetworkOperationsApiTypeItems) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
+	}
+	if model.EnforcementMethod != nil {
+		modelMap["enforcement_method"] = model.EnforcementMethod
+	}
+	if model.DisplayName != nil {
+		displayNameMap, err := ResourceIbmOnboardingIamRegistrationIamServiceRegistrationDisplayNameObjectToMap(model.DisplayName)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["display_name"] = []map[string]interface{}{displayNameMap}
+	}
+	if model.Description != nil {
+		descriptionMap, err := ResourceIbmOnboardingIamRegistrationIamServiceRegistrationDescriptionObjectToMap(model.Description)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["description"] = []map[string]interface{}{descriptionMap}
+	}
+	return modelMap, nil
+}
+
+func ResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcementToMap(model *partnercentersellv1.IamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcement) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.EventPublishing != nil {
+		eventPublishingMap, err := ResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcementEventPublishingToMap(model.EventPublishing)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["event_publishing"] = []map[string]interface{}{eventPublishingMap}
+	}
+	return modelMap, nil
+}
+
+func ResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcementEventPublishingToMap(model *partnercentersellv1.IamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcementEventPublishing) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.ApiTypes != nil {
+		modelMap["api_types"] = model.ApiTypes
 	}
 	return modelMap, nil
 }
@@ -2616,6 +3008,12 @@ func ResourceIbmOnboardingIamRegistrationIamServiceRegistrationPatchAsPatch(patc
 	} else if !exists {
 		delete(patch, "supported_network")
 	}
+	path = "supported_action_control"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["supported_action_control"] = nil
+	} else if !exists {
+		delete(patch, "supported_action_control")
+	}
 
 	return patch
 }
@@ -2633,6 +3031,95 @@ func ResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedNetworkA
 		}
 	} else if !exists {
 		delete(patch, "environment_attributes")
+	}
+	path = rootPath + ".operations"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["operations"] = nil
+	} else if exists && patch["operations"] != nil {
+		ResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedNetworkOperationsAsPatch(patch["operations"].(map[string]interface{}), d, fmt.Sprintf("%s.0", path))
+	} else if !exists {
+		delete(patch, "operations")
+	}
+	path = rootPath + ".self_managed_allowlist_enforcement"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["self_managed_allowlist_enforcement"] = nil
+	} else if exists && patch["self_managed_allowlist_enforcement"] != nil {
+		ResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcementAsPatch(patch["self_managed_allowlist_enforcement"].(map[string]interface{}), d, fmt.Sprintf("%s.0", path))
+	} else if !exists {
+		delete(patch, "self_managed_allowlist_enforcement")
+	}
+}
+
+func ResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcementAsPatch(patch map[string]interface{}, d *schema.ResourceData, rootPath string) {
+	var path string
+
+	path = rootPath + ".event_publishing"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["event_publishing"] = nil
+	} else if exists && patch["event_publishing"] != nil {
+		ResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcementEventPublishingAsPatch(patch["event_publishing"].(map[string]interface{}), d, fmt.Sprintf("%s.0", path))
+	} else if !exists {
+		delete(patch, "event_publishing")
+	}
+}
+
+func ResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcementEventPublishingAsPatch(patch map[string]interface{}, d *schema.ResourceData, rootPath string) {
+	var path string
+
+	path = rootPath + ".api_types"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["api_types"] = nil
+	} else if !exists {
+		delete(patch, "api_types")
+	}
+}
+
+func ResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedNetworkOperationsAsPatch(patch map[string]interface{}, d *schema.ResourceData, rootPath string) {
+	var path string
+
+	path = rootPath + ".api_types"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["api_types"] = nil
+	} else if exists && patch["api_types"] != nil {
+		api_typesList := patch["api_types"].([]map[string]interface{})
+		for i, api_typesItem := range api_typesList {
+			ResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedNetworkOperationsApiTypeItemsAsPatch(api_typesItem, d, fmt.Sprintf("%s.%d", path, i))
+		}
+	} else if !exists {
+		delete(patch, "api_types")
+	}
+}
+
+func ResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedNetworkOperationsApiTypeItemsAsPatch(patch map[string]interface{}, d *schema.ResourceData, rootPath string) {
+	var path string
+
+	path = rootPath + ".name"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["name"] = nil
+	} else if !exists {
+		delete(patch, "name")
+	}
+	path = rootPath + ".enforcement_method"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["enforcement_method"] = nil
+	} else if !exists {
+		delete(patch, "enforcement_method")
+	}
+	path = rootPath + ".display_name"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["display_name"] = nil
+	} else if exists && patch["display_name"] != nil {
+		ResourceIbmOnboardingIamRegistrationIamServiceRegistrationDisplayNameObjectAsPatch(patch["display_name"].(map[string]interface{}), d, fmt.Sprintf("%s.0", path))
+	} else if !exists {
+		delete(patch, "display_name")
+	}
+	path = rootPath + ".description"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["description"] = nil
+	} else if exists && patch["description"] != nil {
+		ResourceIbmOnboardingIamRegistrationIamServiceRegistrationDescriptionObjectAsPatch(patch["description"].(map[string]interface{}), d, fmt.Sprintf("%s.0", path))
+	} else if !exists {
+		delete(patch, "description")
 	}
 }
 
@@ -3101,6 +3588,12 @@ func ResourceIbmOnboardingIamRegistrationIamServiceRegistrationActionAsPatch(pat
 		ResourceIbmOnboardingIamRegistrationIamServiceRegistrationActionOptionsAsPatch(patch["options"].(map[string]interface{}), d, fmt.Sprintf("%s.0", path))
 	} else if !exists {
 		delete(patch, "options")
+	}
+	path = rootPath + ".api_types"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["api_types"] = nil
+	} else if !exists {
+		delete(patch, "api_types")
 	}
 }
 
