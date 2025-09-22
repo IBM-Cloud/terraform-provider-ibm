@@ -109,7 +109,7 @@ In addition to all argument reference list, you can access the following attribu
 
 ## Import
 
-The `ibm_pi_network_peer` resource can be imported by using `pi_cloud_instance_id` and `peer_id`. user defined name.
+The `ibm_pi_network_peer` resource can be imported by using `pi_cloud_instance_id` and `peer_id`.
 
 ### Example
 
