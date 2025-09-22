@@ -2,7 +2,7 @@
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.104.0-b4a47c49-20250418-184351
+ * IBM OpenAPI Terraform Generator Version: 3.107.1-41b0fbd0-20250825-080732
  */
 
 package mqcloud_test
@@ -66,6 +66,8 @@ func TestDataSourceIbmMqcloudUserUserDetailsToMap(t *testing.T) {
 		model["name"] = "testString"
 		model["email"] = "user@host.org"
 		model["iam_service_id"] = "testString"
+		model["roles"] = []string{"testString"}
+		model["iam_managed"] = true
 		model["href"] = "testString"
 
 		assert.Equal(t, result, model)
@@ -76,6 +78,8 @@ func TestDataSourceIbmMqcloudUserUserDetailsToMap(t *testing.T) {
 	model.Name = core.StringPtr("testString")
 	model.Email = core.StringPtr("user@host.org")
 	model.IamServiceID = core.StringPtr("testString")
+	model.Roles = []string{"testString"}
+	model.IamManaged = core.BoolPtr(true)
 	model.Href = core.StringPtr("testString")
 
 	result, err := mqcloud.DataSourceIbmMqcloudUserUserDetailsToMap(model)
