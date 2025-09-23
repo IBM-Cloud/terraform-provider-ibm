@@ -1,4 +1,4 @@
-module github.com/IBM-Cloud/terraform-provider-ibm
+module github.com/Mavrickk3/terraform-provider-ibm
 
 go 1.24.2
 
