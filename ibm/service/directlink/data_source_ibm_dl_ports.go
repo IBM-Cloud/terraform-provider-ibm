@@ -4,9 +4,9 @@
 package directlink
 
 import (
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	dl "github.com/IBM/networking-go-sdk/directlinkv1"
+	"github.com/Mavrickk3/terraform-provider-ibm/ibm/conns"
+	"github.com/Mavrickk3/terraform-provider-ibm/ibm/flex"
 
 	"log"
 	"time"

@@ -119,7 +119,7 @@ data "ibm_dl_port" "test_ds_dl_port" {
 
 ## Examples
 
-* [ Direct Link ](https://github.com/IBM-Cloud/terraform-provider-ibm/tree/master/examples/ibm-direct-link)
+* [ Direct Link ](https://github.com/Mavrickk3/terraform-provider-ibm/tree/master/examples/ibm-direct-link)
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Requirements

@@ -80,7 +80,7 @@ data "ibm_container_vpc_cluster" "cluster" {
 
 ## Examples
 
-* [VPC Gen 2 cluster](https://github.com/IBM-Cloud/terraform-provider-ibm/tree/master/examples/ibm-cluster/vpc-gen2-cluster)
+* [VPC Gen 2 cluster](https://github.com/Mavrickk3/terraform-provider-ibm/tree/master/examples/ibm-cluster/vpc-gen2-cluster)
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Requirements

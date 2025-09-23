@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 
-	v "github.com/IBM-Cloud/terraform-provider-ibm/version"
 	"github.com/IBM/go-sdk-core/v5/core"
+	v "github.com/Mavrickk3/terraform-provider-ibm/version"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 )
 
@@ -89,7 +89,7 @@ func DiscriminatedTerraformErrorf(err error, summary, resource, operation, discr
 }
 
 func getComponentInfo() *core.ProblemComponent {
-	return core.NewProblemComponent("github.com/IBM-Cloud/terraform-provider-ibm", v.Version)
+	return core.NewProblemComponent("github.com/Mavrickk3/terraform-provider-ibm", v.Version)
 }
 
 // FmtErrorf wraps `fmt.Errorf(format string, a ...interface{}) error`

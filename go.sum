@@ -98,8 +98,8 @@ github.com/IBM-Cloud/power-go-client v1.13.0 h1:TqxPlkJe0VkNdV9hYOD5NRepxEFhhyKX
 github.com/IBM-Cloud/power-go-client v1.13.0/go.mod h1:SpTK1ttW8bfMNUVQS8qOEuWn2KOkzaCLyzfze8MG1JE=
 github.com/IBM-Cloud/softlayer-go v1.0.5-tf h1:koUAyF9b6X78lLLruGYPSOmrfY2YcGYKOj/Ug9nbKNw=
 github.com/IBM-Cloud/softlayer-go v1.0.5-tf/go.mod h1:6HepcfAXROz0Rf63krk5hPZyHT6qyx2MNvYyHof7ik4=
-github.com/IBM-Cloud/terraform-provider-ibm v1.82.1 h1:Ok019EyY86A/fLrHasimarjcDAi6gjeY4Qkgz52Z3Ac=
-github.com/IBM-Cloud/terraform-provider-ibm v1.82.1/go.mod h1:Besdri0IPP6RMlxBKWJfgwpTgHpv6X39teN+IwWm1to=
+github.com/Mavrickk3/terraform-provider-ibm v1.82.1 h1:Ok019EyY86A/fLrHasimarjcDAi6gjeY4Qkgz52Z3Ac=
+github.com/Mavrickk3/terraform-provider-ibm v1.82.1/go.mod h1:Besdri0IPP6RMlxBKWJfgwpTgHpv6X39teN+IwWm1to=
 github.com/IBM/appconfiguration-go-admin-sdk v0.5.1 h1:EAotl3yQ/u5u/uBryySJMm0COgsYhtNzQ1g2IChtlE0=
 github.com/IBM/appconfiguration-go-admin-sdk v0.5.1/go.mod h1:ikqhyFenxA/QgGh4vItBNjPes0NcI+teRof+z7pzLYM=
 github.com/IBM/appid-management-go-sdk v0.0.0-20210908164609-dd0e0eaf732f h1:4c1kqY4GqmkQ+tO03rneDb74Tv7BhTj8jDiDB1p8mdM=

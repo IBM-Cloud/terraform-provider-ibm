@@ -1,8 +1,8 @@
 package atracker
 
 import (
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM/platform-services-go-sdk/atrackerv2"
+	"github.com/Mavrickk3/terraform-provider-ibm/ibm/conns"
 )
 
 const (

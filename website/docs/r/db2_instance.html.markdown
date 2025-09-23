@@ -15,7 +15,7 @@ Configuration of an Db2 SaaS resource requires that the `region` parameter is se
 
 
 ## Example usage
-To find an example for provisioning and configuring a Db2 SaaS instance , see [here](https://github.com/IBM-Cloud/terraform-provider-ibm/tree/master/examples/ibm-db2).
+To find an example for provisioning and configuring a Db2 SaaS instance , see [here](https://github.com/Mavrickk3/terraform-provider-ibm/tree/master/examples/ibm-db2).
 
 ```terraform
 data "ibm_resource_group" "group" {

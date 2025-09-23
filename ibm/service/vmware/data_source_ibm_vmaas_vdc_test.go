@@ -14,10 +14,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
-	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/vmware"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/vmware-go-sdk/vmwarev1"
+	acc "github.com/Mavrickk3/terraform-provider-ibm/ibm/acctest"
+	"github.com/Mavrickk3/terraform-provider-ibm/ibm/service/vmware"
 	"github.com/stretchr/testify/assert"
 )
 

@@ -12,12 +12,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
+	"github.com/Mavrickk3/terraform-provider-ibm/ibm/conns"
 )
 
 func DataSourceIBMIamUserMfaEnrollments() *schema.Resource {
-	fmt.Sprintln("Inside from local terrafrom binary")
+	fmt.Println("Inside from local terrafrom binary")
 	return &schema.Resource{
 		ReadContext: dataSourceIBMIamUserMfaEnrollmentsRead,
 

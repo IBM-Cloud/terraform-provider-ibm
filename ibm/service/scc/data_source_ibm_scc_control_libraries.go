@@ -11,10 +11,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/scc-go-sdk/v5/securityandcompliancecenterapiv3"
+	"github.com/Mavrickk3/terraform-provider-ibm/ibm/conns"
+	"github.com/Mavrickk3/terraform-provider-ibm/ibm/flex"
+	"github.com/Mavrickk3/terraform-provider-ibm/ibm/validate"
 )
 
 func DataSourceIbmSccControlLibraries() *schema.Resource {

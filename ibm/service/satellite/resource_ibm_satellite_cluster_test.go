@@ -8,8 +8,8 @@ import (
 	"strings"
 	"testing"
 
-	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	acc "github.com/Mavrickk3/terraform-provider-ibm/ibm/acctest"
+	"github.com/Mavrickk3/terraform-provider-ibm/ibm/conns"
 
 	"github.com/IBM-Cloud/container-services-go-sdk/kubernetesserviceapiv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"

@@ -49,7 +49,7 @@ import (
 	"github.com/softlayer/softlayer-go/datatypes"
 	"github.com/softlayer/softlayer-go/sl"
 
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/Mavrickk3/terraform-provider-ibm/ibm/conns"
 )
 
 const (

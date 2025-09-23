@@ -50,7 +50,7 @@ data "ibm_container_cluster" "cluster_foo" {
 
 ## Examples
 
-* [ Container cluster ](https://github.com/IBM-Cloud/terraform-provider-ibm/tree/master/examples/ibm-iks-openshift)
+* [ Container cluster ](https://github.com/Mavrickk3/terraform-provider-ibm/tree/master/examples/ibm-iks-openshift)
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Requirements

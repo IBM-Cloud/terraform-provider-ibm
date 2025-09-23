@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"testing"
 
-	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
+	acc "github.com/Mavrickk3/terraform-provider-ibm/ibm/acctest"
 
 	appid "github.com/IBM/appid-management-go-sdk/appidmanagementv4"
 	"github.com/Mavrickk3/bluemix-go/helpers"

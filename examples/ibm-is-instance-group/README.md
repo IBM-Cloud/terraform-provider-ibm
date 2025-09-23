@@ -120,7 +120,7 @@ resource "ibm_is_instance_group_manager_policy" "cpuPolicy" {
 ## Additional Resources
 
 * [IBM Cloud VPC Instance Groups Documentation](https://cloud.ibm.com/docs/vpc?topic=vpc-creating-auto-scale-instance-group)
-* [IBM Terraform Provider Examples](https://github.com/IBM-Cloud/terraform-provider-ibm/tree/master/examples/ibm-is-instance-group)
+* [IBM Terraform Provider Examples](https://github.com/Mavrickk3/terraform-provider-ibm/tree/master/examples/ibm-is-instance-group)
 
 ## Input Parameters
 

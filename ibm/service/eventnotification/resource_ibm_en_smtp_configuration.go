@@ -11,11 +11,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	en "github.com/IBM/event-notifications-go-admin-sdk/eventnotificationsv1"
 	"github.com/IBM/go-sdk-core/v5/core"
+	"github.com/Mavrickk3/terraform-provider-ibm/ibm/conns"
+	"github.com/Mavrickk3/terraform-provider-ibm/ibm/flex"
+	"github.com/Mavrickk3/terraform-provider-ibm/ibm/validate"
 )
 
 func ResourceIBMEnSMTPConfiguration() *schema.Resource {

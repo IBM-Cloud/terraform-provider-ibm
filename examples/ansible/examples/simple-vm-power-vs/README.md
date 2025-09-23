@@ -91,4 +91,4 @@ Note: Alternate install path is to use 'examples/install_modules.yml' playbook.
     ```
 
 [retrieve available images]: #list-available-pi-images
-[release page]:https://github.com/IBM-Cloud/terraform-provider-ibm/releases
+[release page]:https://github.com/Mavrickk3/terraform-provider-ibm/releases

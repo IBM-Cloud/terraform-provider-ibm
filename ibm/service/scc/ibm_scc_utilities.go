@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
+	"github.com/Mavrickk3/terraform-provider-ibm/ibm/validate"
 
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/scc-go-sdk/v5/securityandcompliancecenterapiv3"

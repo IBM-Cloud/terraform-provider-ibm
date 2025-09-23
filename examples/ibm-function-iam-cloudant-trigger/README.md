@@ -155,7 +155,7 @@ data "ibm_function_rule" "rule" {
 
 ## Examples
 
-* [Cloud Functions resources](https://github.com/IBM-Cloud/terraform-provider-ibm/tree/master/examples/ibm-function-iam-cloudant-trigger)
+* [Cloud Functions resources](https://github.com/Mavrickk3/terraform-provider-ibm/tree/master/examples/ibm-function-iam-cloudant-trigger)
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Requirements

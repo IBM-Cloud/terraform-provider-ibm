@@ -14,9 +14,9 @@ import (
 
 	"github.com/IBM/cloud-db2-go-sdk/db2saasv1"
 
-	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
-	db2saas "github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/db2"
 	"github.com/IBM/go-sdk-core/v5/core"
+	acc "github.com/Mavrickk3/terraform-provider-ibm/ibm/acctest"
+	db2saas "github.com/Mavrickk3/terraform-provider-ibm/ibm/service/db2"
 	"github.com/stretchr/testify/assert"
 )
 

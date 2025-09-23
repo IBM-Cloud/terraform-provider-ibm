@@ -6,15 +6,15 @@ import (
 	"strings"
 	"time"
 
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/ibm-cos-sdk-go/aws"
 	"github.com/IBM/ibm-cos-sdk-go/aws/credentials/ibmiam"
 	token "github.com/IBM/ibm-cos-sdk-go/aws/credentials/ibmiam/token"
 	"github.com/IBM/ibm-cos-sdk-go/aws/session"
 	"github.com/IBM/ibm-cos-sdk-go/service/s3"
 	bxsession "github.com/Mavrickk3/bluemix-go/session"
+	"github.com/Mavrickk3/terraform-provider-ibm/ibm/conns"
+	"github.com/Mavrickk3/terraform-provider-ibm/ibm/flex"
+	"github.com/Mavrickk3/terraform-provider-ibm/ibm/validate"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	validation "github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"

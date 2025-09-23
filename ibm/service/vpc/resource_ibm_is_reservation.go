@@ -8,8 +8,8 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
+	"github.com/Mavrickk3/terraform-provider-ibm/ibm/flex"
+	"github.com/Mavrickk3/terraform-provider-ibm/ibm/validate"
 
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/vpc-go-sdk/vpcv1"

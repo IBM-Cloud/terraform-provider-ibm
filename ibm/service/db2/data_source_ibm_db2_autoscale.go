@@ -18,8 +18,8 @@ import (
 
 	"github.com/IBM/cloud-db2-go-sdk/db2saasv1"
 
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/Mavrickk3/terraform-provider-ibm/ibm/conns"
+	"github.com/Mavrickk3/terraform-provider-ibm/ibm/flex"
 )
 
 func DataSourceIbmDb2Autoscale() *schema.Resource {

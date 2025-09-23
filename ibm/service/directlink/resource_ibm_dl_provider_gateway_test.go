@@ -9,9 +9,9 @@ import (
 	"log"
 	"testing"
 
-	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	dlProviderV2 "github.com/IBM/networking-go-sdk/directlinkproviderv2"
+	acc "github.com/Mavrickk3/terraform-provider-ibm/ibm/acctest"
+	"github.com/Mavrickk3/terraform-provider-ibm/ibm/conns"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"

@@ -8,7 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
-	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
+	acc "github.com/Mavrickk3/terraform-provider-ibm/ibm/acctest"
 )
 
 func TestAccIBMDLGatewayMacsecCakDataSource_basic(t *testing.T) {

@@ -21,7 +21,7 @@ Terraform 0.11. Pin module version to `~> v0.25.0`. Branch - `terraform_v0.11.x`
 
   The resource `ibm_kp_key` is deprecated and replaced with `ibm_kms_key`. 
 
-  Please refer to [https://github.com/IBM-Cloud/terraform-provider-ibm/tree/master/examples/ibm-kms](examples/ibm-kms) for examples.
+  Please refer to [https://github.com/Mavrickk3/terraform-provider-ibm/tree/master/examples/ibm-kms](examples/ibm-kms) for examples.
 
 ## Usage
 
@@ -105,7 +105,7 @@ resource "ibm_cos_bucket" "flex-us-south" {
 
 ## Examples
 
-* [ Key Protect Examples ](https://github.com/IBM-Cloud/terraform-provider-ibm/tree/master/examples/ibm-key-protect)
+* [ Key Protect Examples ](https://github.com/Mavrickk3/terraform-provider-ibm/tree/master/examples/ibm-key-protect)
 
 
 

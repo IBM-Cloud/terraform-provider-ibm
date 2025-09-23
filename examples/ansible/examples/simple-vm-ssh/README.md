@@ -99,4 +99,4 @@ Note: Alternate install path is to use 'examples/install_modules.yml' playbook.
 [retrieve available profiles]: #list-available-vsi-images-and-profiles
 [Ansible search path]:https://docs.ansible.com/ansible/latest/dev_guide/overview_architecture.html#ansible-search-path
 [Obtain an IBM Cloud API key]:https://cloud.ibm.com/docs/iam?topic=iam-userapikey
-[release page]:https://github.com/IBM-Cloud/terraform-provider-ibm/releases
+[release page]:https://github.com/Mavrickk3/terraform-provider-ibm/releases

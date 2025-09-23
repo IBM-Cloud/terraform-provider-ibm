@@ -24,7 +24,6 @@ import (
 
 	"github.com/IBM-Cloud/container-services-go-sdk/kubernetesserviceapiv1"
 	"github.com/IBM-Cloud/container-services-go-sdk/satellitelinkv1"
-	"github.com/IBM-Cloud/terraform-provider-ibm/version"
 	"github.com/IBM/appconfiguration-go-admin-sdk/appconfigurationv1"
 	appid "github.com/IBM/appid-management-go-sdk/appidmanagementv4"
 	"github.com/IBM/cloud-databases-go-sdk/clouddatabasesv5"
@@ -94,6 +93,7 @@ import (
 	vpcbeta "github.com/IBM/vpc-beta-go-sdk/vpcbetav1"
 	"github.com/IBM/vpc-go-sdk/common"
 	vpc "github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/Mavrickk3/terraform-provider-ibm/version"
 	"github.com/apache/openwhisk-client-go/whisk"
 	jwt "github.com/golang-jwt/jwt/v5"
 	slsession "github.com/softlayer/softlayer-go/session"

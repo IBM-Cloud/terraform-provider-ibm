@@ -131,7 +131,7 @@ data "ibm_tg_route_report" "tg_route_report" {
 ```
 ## Examples
 
-* [ Transit Gateway](https://github.com/IBM-Cloud/terraform-provider-ibm/tree/master/examples/ibm-transit-gateway)
+* [ Transit Gateway](https://github.com/Mavrickk3/terraform-provider-ibm/tree/master/examples/ibm-transit-gateway)
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Requirements

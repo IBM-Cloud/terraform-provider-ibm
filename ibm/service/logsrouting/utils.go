@@ -4,9 +4,9 @@ import (
 	"log"
 	"strings"
 
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM/logs-router-go-sdk/ibmcloudlogsroutingv0"
 	bxsession "github.com/Mavrickk3/bluemix-go/session"
+	"github.com/Mavrickk3/terraform-provider-ibm/ibm/conns"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 

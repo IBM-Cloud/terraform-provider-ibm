@@ -5,8 +5,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/configuration-aggregator-go-sdk/configurationaggregatorv1"
+	"github.com/Mavrickk3/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 

@@ -5,9 +5,9 @@ import (
 	b64 "encoding/base64"
 	"log"
 
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	appid "github.com/IBM/appid-management-go-sdk/appidmanagementv4"
 	"github.com/Mavrickk3/bluemix-go/helpers"
+	"github.com/Mavrickk3/terraform-provider-ibm/ibm/conns"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )

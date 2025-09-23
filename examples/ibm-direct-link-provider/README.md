@@ -54,7 +54,7 @@ data "ibm_dl_provider_gateways" "test_ibm_dl_provider_gws"{
 
 ## Examples
 
-* [ Direct Link ](https://github.com/IBM-Cloud/terraform-provider-ibm/tree/master/examples/ibm-direct-link-provider)
+* [ Direct Link ](https://github.com/Mavrickk3/terraform-provider-ibm/tree/master/examples/ibm-direct-link-provider)
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Requirements

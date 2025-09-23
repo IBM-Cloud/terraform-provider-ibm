@@ -10,7 +10,7 @@ description: |-
 # ibm_dns_domain
 Provides a single DNS domain managed on IBM Cloud Classic Infrastructure (SoftLayer). Domains contain general information about the domain name, such as the name and serial number. For more information, about DNS services, see [getting started with IBM Cloud DNS Services](https://cloud.ibm.com/docs/dns-svcs?topic=dns-svcs-getting-started).
 
-Individual records, such as `A`, `AAAA`, `CTYPE`, and `MX` records, are stored in the domain's associated resource records by using the [`ibm_dns_record` resource]((https://github.com/IBM-Cloud/terraform-provider-ibm/tree/master/website/docs/r/dns_record.html.markdown)).
+Individual records, such as `A`, `AAAA`, `CTYPE`, and `MX` records, are stored in the domain's associated resource records by using the [`ibm_dns_record` resource]((https://github.com/Mavrickk3/terraform-provider-ibm/tree/master/website/docs/r/dns_record.html.markdown)).
 
 
 ## Example usage

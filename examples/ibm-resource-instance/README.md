@@ -47,7 +47,7 @@ data "ibm_resource_instance" "test" {
 
 ## Examples
 
-* [Resource Instance](https://github.com/IBM-Cloud/terraform-provider-ibm/tree/master/examples/ibm-resource-instance)
+* [Resource Instance](https://github.com/Mavrickk3/terraform-provider-ibm/tree/master/examples/ibm-resource-instance)
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 

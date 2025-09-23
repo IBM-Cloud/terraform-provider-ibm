@@ -16,9 +16,9 @@ import (
 	"log"
 	"strings"
 
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/Mavrickk3/terraform-provider-ibm/ibm/flex"
 	"github.com/ScaleFT/sshkeys"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"

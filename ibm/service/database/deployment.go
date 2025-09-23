@@ -6,9 +6,9 @@ package database
 import (
 	"fmt"
 
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM/cloud-databases-go-sdk/clouddatabasesv5"
 	"github.com/IBM/go-sdk-core/v5/core"
+	"github.com/Mavrickk3/terraform-provider-ibm/ibm/conns"
 )
 
 /* Deployment api calls

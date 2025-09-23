@@ -49,7 +49,7 @@ data ibm_container_cluster_config cluster_config {
 
 ## Examples
 
-* [Portworx VPC Gen 2 worker replace](https://github.com/IBM-Cloud/terraform-provider-ibm/tree/master/examples/portworx/vpc-worker-replace)
+* [Portworx VPC Gen 2 worker replace](https://github.com/Mavrickk3/terraform-provider-ibm/tree/master/examples/portworx/vpc-worker-replace)
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Requirements
