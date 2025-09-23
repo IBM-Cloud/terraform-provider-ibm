@@ -5,14 +5,14 @@ package secretsmanager_test
 
 import (
 	"fmt"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/Mavrickk3/terraform-provider-ibm/ibm/conns"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"strings"
 	"testing"
 
-	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM/secrets-manager-go-sdk/v2/secretsmanagerv2"
+	acc "github.com/Mavrickk3/terraform-provider-ibm/ibm/acctest"
 )
 
 var arbitrarySecretName = "terraform-test-arbitrary-secret"

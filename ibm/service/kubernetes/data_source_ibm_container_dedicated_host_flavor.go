@@ -9,8 +9,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	v2 "github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	v2 "github.com/Mavrickk3/bluemix-go/api/container/containerv2"
+	"github.com/Mavrickk3/terraform-provider-ibm/ibm/conns"
 )
 
 func DataSourceIBMContainerDedicatedHostFlavor() *schema.Resource {

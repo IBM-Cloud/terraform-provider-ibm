@@ -5,9 +5,9 @@ import (
 	"os"
 	"strings"
 
-	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM/logs-go-sdk/logsv0"
+	acc "github.com/Mavrickk3/terraform-provider-ibm/ibm/acctest"
+	"github.com/Mavrickk3/terraform-provider-ibm/ibm/conns"
 )
 
 const (

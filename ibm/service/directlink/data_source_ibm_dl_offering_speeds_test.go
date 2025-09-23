@@ -6,7 +6,7 @@ package directlink_test
 import (
 	"testing"
 
-	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
+	acc "github.com/Mavrickk3/terraform-provider-ibm/ibm/acctest"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )

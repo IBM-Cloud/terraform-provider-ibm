@@ -59,7 +59,7 @@ module "cloudant-instance" {
 ### Terraform plugins
 
 - [Terraform](https://www.terraform.io/downloads.html) 0.13 (or later)
-- [terraform-provider-ibm](https://github.com/IBM-Cloud/terraform-provider-ibm)
+- [terraform-provider-ibm](https://github.com/Mavrickk3/terraform-provider-ibm)
 
 ## Install
 
@@ -72,7 +72,7 @@ Be sure you have the correct Terraform version (0.13), you can choose the binary
 
 Be sure you have the compiled plugins on $HOME/.terraform.d/plugins/
 
-- [terraform-provider-ibm](https://github.com/IBM-Cloud/terraform-provider-ibm)
+- [terraform-provider-ibm](https://github.com/Mavrickk3/terraform-provider-ibm)
 
 ### Pre-commit hooks
 

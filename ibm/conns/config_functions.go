@@ -10,9 +10,9 @@ import (
 	"os"
 	"strings"
 
-	bluemix "github.com/IBM-Cloud/bluemix-go"
-	"github.com/IBM-Cloud/bluemix-go/api/functions"
-	bxsession "github.com/IBM-Cloud/bluemix-go/session"
+	bluemix "github.com/Mavrickk3/bluemix-go"
+	"github.com/Mavrickk3/bluemix-go/api/functions"
+	bxsession "github.com/Mavrickk3/bluemix-go/session"
 	"github.com/apache/openwhisk-client-go/whisk"
 )
 

@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"testing"
 
-	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
+	acc "github.com/Mavrickk3/terraform-provider-ibm/ibm/acctest"
 )
 
 func TestAccIbmSmCustomCredentialsSecretDataSource(t *testing.T) {

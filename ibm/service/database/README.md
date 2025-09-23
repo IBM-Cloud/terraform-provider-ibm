@@ -8,4 +8,4 @@ This area is primarily for IBM provider contributors and maintainers. For inform
 * IBM Provider Docs: [Home](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs)
 * IBM Provider Docs: [One of the Cloud Databases resources](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database)
 * IBM API Docs: [IBM API Docs for Cloud Databases](https://cloud.ibm.com/apidocs/cloud-databases-api/cloud-databases-api-v4)
-* IBM Cloud Databases SDK: [IBM SDK for Cloud Databases](https://github.com/IBM-Cloud/bluemix-go/tree/master/api/icd/icdv4)
+* IBM Cloud Databases SDK: [IBM SDK for Cloud Databases](https://github.com/Mavrickk3/bluemix-go/tree/master/api/icd/icdv4)

@@ -17,12 +17,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	v2 "github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
-	"github.com/IBM-Cloud/bluemix-go/bmxerror"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	softwaredefinedstorage "github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/kubernetes/utils/softwaredefinedstorage"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
+	v2 "github.com/Mavrickk3/bluemix-go/api/container/containerv2"
+	"github.com/Mavrickk3/bluemix-go/bmxerror"
+	"github.com/Mavrickk3/terraform-provider-ibm/ibm/conns"
+	"github.com/Mavrickk3/terraform-provider-ibm/ibm/flex"
+	softwaredefinedstorage "github.com/Mavrickk3/terraform-provider-ibm/ibm/service/kubernetes/utils/softwaredefinedstorage"
+	"github.com/Mavrickk3/terraform-provider-ibm/ibm/validate"
 
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

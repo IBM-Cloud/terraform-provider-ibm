@@ -52,7 +52,7 @@ resource "ibm_app" "app" {
 
 ## Examples
 
-* [ app ](https://github.com/IBM-Cloud/terraform-provider-ibm/tree/master/examples/ibm-app)
+* [ app ](https://github.com/Mavrickk3/terraform-provider-ibm/tree/master/examples/ibm-app)
 
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

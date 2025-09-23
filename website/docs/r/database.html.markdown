@@ -16,7 +16,7 @@ Configuration of an ICD resource requires that the `region` parameter is set for
 
 
 ## Example usage
-To find an example for configuring a virtual server instance that connects to a PostgreSQL database, see [here](https://github.com/IBM-Cloud/terraform-provider-ibm/tree/master/examples/ibm-database).
+To find an example for configuring a virtual server instance that connects to a PostgreSQL database, see [here](https://github.com/Mavrickk3/terraform-provider-ibm/tree/master/examples/ibm-database).
 
 ```terraform
 data "ibm_resource_group" "group" {
@@ -587,7 +587,7 @@ provider "ibm" {
 ```
 
 
-For more information, about an example that are related to a VSI configuration to connect to a PostgreSQL database, refer to [VSI configured connection](https://github.com/IBM-Cloud/terraform-provider-ibm/tree/master/examples/ibm-database).
+For more information, about an example that are related to a VSI configuration to connect to a PostgreSQL database, refer to [VSI configured connection](https://github.com/Mavrickk3/terraform-provider-ibm/tree/master/examples/ibm-database).
 
 
 ## Timeouts

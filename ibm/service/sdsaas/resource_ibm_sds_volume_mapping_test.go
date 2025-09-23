@@ -6,9 +6,9 @@ package sdsaas_test
 import (
 	"testing"
 
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/sdsaas"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/sds-go-sdk/sdsaasv1"
+	"github.com/Mavrickk3/terraform-provider-ibm/ibm/service/sdsaas"
 	"github.com/stretchr/testify/assert"
 )
 

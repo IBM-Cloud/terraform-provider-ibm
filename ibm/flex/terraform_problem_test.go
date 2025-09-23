@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"testing"
 
-	v "github.com/IBM-Cloud/terraform-provider-ibm/version"
 	"github.com/IBM/go-sdk-core/v5/core"
+	v "github.com/Mavrickk3/terraform-provider-ibm/version"
 	"github.com/stretchr/testify/assert"
 )
 
 const (
-	MODULE_NAME  = "github.com/IBM-Cloud/terraform-provider-ibm"
+	MODULE_NAME  = "github.com/Mavrickk3/terraform-provider-ibm"
 	MOCK_VERSION = "1.63.0"
 )
 
@@ -35,7 +35,7 @@ severity: error
 resource: ibm_some_resource
 operation: create
 component:
-  name: github.com/IBM-Cloud/terraform-provider-ibm
+  name: github.com/Mavrickk3/terraform-provider-ibm
   version: 1.63.0
 ---
 `
@@ -52,7 +52,7 @@ severity: error
 resource: ibm_some_resource
 operation: create
 component:
-  name: github.com/IBM-Cloud/terraform-provider-ibm
+  name: github.com/Mavrickk3/terraform-provider-ibm
   version: 1.63.0
 ---
 `

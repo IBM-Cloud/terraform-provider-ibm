@@ -83,7 +83,7 @@ resource "ibm_is_flow_log" "test_flowlog" {
 ## Additional Resources
 
 * [IBM Cloud Flow Logs Documentation](https://cloud.ibm.com/docs/vpc?topic=vpc-flow-logs)
-* [IBM Terraform Provider Examples](https://github.com/IBM-Cloud/terraform-provider-ibm/tree/master/examples/ibm-is-flow-log)
+* [IBM Terraform Provider Examples](https://github.com/Mavrickk3/terraform-provider-ibm/tree/master/examples/ibm-is-flow-log)
 
 ## Input Parameters
 

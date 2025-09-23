@@ -101,7 +101,7 @@ data "ibm_container_storage_attachment" "cluster" {
 
 ## Examples
 
-* [ VPC Cluster Volume attachment  ](https://github.com/IBM-Cloud/terraform-provider-ibm/tree/master/examples/ibm-cluster/vpc-cluster-vol-attachment)
+* [ VPC Cluster Volume attachment  ](https://github.com/Mavrickk3/terraform-provider-ibm/tree/master/examples/ibm-cluster/vpc-cluster-vol-attachment)
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Requirements

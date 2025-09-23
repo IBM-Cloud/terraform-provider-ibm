@@ -9,7 +9,7 @@ import (
 	"log"
 
 	"github.com/IBM-Cloud/container-services-go-sdk/satellitelinkv1"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/Mavrickk3/terraform-provider-ibm/ibm/conns"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )

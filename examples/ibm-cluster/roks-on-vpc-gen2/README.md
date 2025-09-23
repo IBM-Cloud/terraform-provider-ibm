@@ -87,4 +87,4 @@ The following variable needs to be set in the variables.tf
 
 ## References
 
-1. [Conainer Cluster Bluemix-go SDK](https://github.com/IBM-Cloud/bluemix-go/tree/master/api/container/containerv2)
+1. [Conainer Cluster Bluemix-go SDK](https://github.com/Mavrickk3/bluemix-go/tree/master/api/container/containerv2)

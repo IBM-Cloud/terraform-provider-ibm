@@ -87,7 +87,7 @@ resource "ibm_iam_access_group_policy" "policy" {
 
 ## Examples
 
-* [ Create custom role and import in policy example ](https://github.com/IBM-Cloud/terraform-provider-ibm/tree/master/examples/ibm-iam-custom-role)
+* [ Create custom role and import in policy example ](https://github.com/Mavrickk3/terraform-provider-ibm/tree/master/examples/ibm-iam-custom-role)
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Requirements

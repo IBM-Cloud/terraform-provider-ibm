@@ -1,6 +1,6 @@
 schemaVersion: oss-license-declaration.cloud.ibm.com:v4
 name: terraform-provider-ibm
-source: https://github.com/IBM-Cloud/terraform-provider-ibm
+source: https://github.com/Mavrickk3/terraform-provider-ibm
 issues: https://github.ibm.com/blueprint/security-project-management/issues
 objectCodeOnly: false
 additionalDownloads:
@@ -47,7 +47,7 @@ dependencies:
     licenses:
       - BSD-3-Clause
       - GooglePatentClause
-  - name: github.com/IBM-Cloud/bluemix-go
+  - name: github.com/Mavrickk3/bluemix-go
     version: v0.0.0-20220209072802-61d92fc63fd1
     licenses:
       - Apache-2.0

@@ -55,7 +55,7 @@ data "ibm_iam_user_policy" "testacc_ds_user_policy" {
 
 ## Examples
 
-* [IAM User Policy resource](https://github.com/IBM-Cloud/terraform-provider-ibm/tree/master/examples/ibm-iam-policy)
+* [IAM User Policy resource](https://github.com/Mavrickk3/terraform-provider-ibm/tree/master/examples/ibm-iam-policy)
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Requirements

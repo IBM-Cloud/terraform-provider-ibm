@@ -7,9 +7,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	rc "github.com/IBM/ibm-cos-sdk-go-config/v2/resourceconfigurationv1"
 	"github.com/IBM/ibm-cos-sdk-go/aws"
+	"github.com/Mavrickk3/terraform-provider-ibm/ibm/conns"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 

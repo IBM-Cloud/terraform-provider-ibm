@@ -12,7 +12,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/provider"
+	"github.com/Mavrickk3/terraform-provider-ibm/ibm/provider"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	terraformsdk "github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )

@@ -9,7 +9,7 @@ import (
 	"log"
 	"testing"
 
-	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
+	acc "github.com/Mavrickk3/terraform-provider-ibm/ibm/acctest"
 
 	"github.com/IBM/networking-go-sdk/transitgatewayapisv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"

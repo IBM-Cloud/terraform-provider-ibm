@@ -195,7 +195,7 @@ data "ibm_cos_bucket" "standard-ams03" {
 
 ## Examples
 
-* [Cloud Object Storage](https://github.com/IBM-Cloud/terraform-provider-ibm/tree/master/examples/ibm-cos-bucket)
+* [Cloud Object Storage](https://github.com/Mavrickk3/terraform-provider-ibm/tree/master/examples/ibm-cos-bucket)
 
 <!-- COS SATELLITE PROJECT -->
 

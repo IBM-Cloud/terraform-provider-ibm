@@ -514,7 +514,7 @@ data "ibm_cis_cache_settings" "test" {
 
 ## Examples
 
-* [CIS Examples](https://github.com/IBM-Cloud/terraform-provider-ibm/tree/master/examples/ibm-cis)
+* [CIS Examples](https://github.com/Mavrickk3/terraform-provider-ibm/tree/master/examples/ibm-cis)
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Requirements
@@ -676,5 +676,5 @@ Customise the variables in `variables.tf` to your local environment and chosen D
 
 ## References
 
-1. [CIS Bluemix-go SDK](https://github.com/IBM-Cloud/bluemix-go/blob/master/api/cis/cisv1/)
+1. [CIS Bluemix-go SDK](https://github.com/Mavrickk3/bluemix-go/blob/master/api/cis/cisv1/)
 

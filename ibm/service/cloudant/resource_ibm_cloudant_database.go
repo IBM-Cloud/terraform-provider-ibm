@@ -14,8 +14,8 @@ import (
 
 	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/Mavrickk3/terraform-provider-ibm/ibm/conns"
+	"github.com/Mavrickk3/terraform-provider-ibm/ibm/flex"
 )
 
 func ResourceIBMCloudantDatabase() *schema.Resource {

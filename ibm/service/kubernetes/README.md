@@ -8,4 +8,4 @@ This area is primarily for IBM provider contributors and maintainers. For inform
 * IBM Provider Docs: [Home](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs)
 * IBM Provider Docs: [One of the Kubernetes Services resources](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/container_addons)
 * IBM API Docs: [IBM API Docs for Kubernetes Services](https://containers.cloud.ibm.com/global/swagger-global-api/)
-* IBM Kubernetes Services SDK: [IBM SDK for Kubernetes Services](https://github.com/IBM-Cloud/bluemix-go/tree/master/api/container)
+* IBM Kubernetes Services SDK: [IBM SDK for Kubernetes Services](https://github.com/Mavrickk3/bluemix-go/tree/master/api/container)

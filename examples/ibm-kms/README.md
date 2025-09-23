@@ -102,7 +102,7 @@ resource "ibm_cos_bucket" "flex-us-south" {
 
 ## Examples
 
-* [ KMS Examples ](https://github.com/IBM-Cloud/terraform-provider-ibm/tree/master/examples/ibm-kms)
+* [ KMS Examples ](https://github.com/Mavrickk3/terraform-provider-ibm/tree/master/examples/ibm-kms)
 
 
 

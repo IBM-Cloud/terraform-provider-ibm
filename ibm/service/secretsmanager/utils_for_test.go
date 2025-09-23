@@ -6,7 +6,7 @@ package secretsmanager_test
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/Mavrickk3/terraform-provider-ibm/ibm/conns"
 	"github.com/go-openapi/strfmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -15,8 +15,8 @@ import (
 	"strings"
 	"time"
 
-	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM/secrets-manager-go-sdk/v2/secretsmanagerv2"
+	acc "github.com/Mavrickk3/terraform-provider-ibm/ibm/acctest"
 )
 
 var description = "Some description for this secret."

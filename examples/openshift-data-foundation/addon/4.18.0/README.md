@@ -136,7 +136,7 @@ ocsUpgrade = "false" -> "true"
 
 ## Examples
 
-* [ ODF Deployment & Management ](https://github.com/IBM-Cloud/terraform-provider-ibm/tree/master/examples/openshift-data-foundation/deployment)
+* [ ODF Deployment & Management ](https://github.com/Mavrickk3/terraform-provider-ibm/tree/master/examples/openshift-data-foundation/deployment)
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 

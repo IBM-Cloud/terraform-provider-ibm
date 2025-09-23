@@ -5,7 +5,7 @@
 ![GitHub contributors](https://img.shields.io/github/contributors/IBM-Cloud/terraform-provider-ibm?color=blueviolet)
 ![GitHub commit activity](https://img.shields.io/github/commit-activity/m/IBM-Cloud/terraform-provider-ibm?color=blueviolet)
 ![GitHub all releases](https://img.shields.io/github/downloads/IBM-Cloud/terraform-provider-ibm/total)
-[![GitHub stars](https://img.shields.io/github/stars/IBM-Cloud/terraform-provider-ibm?color=yellow)](https://github.com/IBM-Cloud/terraform-provider-ibm/stargazers)
+[![GitHub stars](https://img.shields.io/github/stars/IBM-Cloud/terraform-provider-ibm?color=yellow)](https://github.com/Mavrickk3/terraform-provider-ibm/stargazers)
 
 # Terraform Provider
 
@@ -130,7 +130,7 @@ You will also need to export the following environment variables for running the
 
 Additional environment variables may be required depending on the tests being run. Check console log for warning messages about required variables. 
 
-Alternatively, look for the name of the function by PreCheck under the specific test case and inspect [ibm/acctest/acctest.go](https://github.com/IBM-Cloud/terraform-provider-ibm/blob/master/ibm/acctest/acctest.go) to find the list of environment variables required for the test.
+Alternatively, look for the name of the function by PreCheck under the specific test case and inspect [ibm/acctest/acctest.go](https://github.com/Mavrickk3/terraform-provider-ibm/blob/master/ibm/acctest/acctest.go) to find the list of environment variables required for the test.
 
 ```
 	resource.Test(t, resource.TestCase{
@@ -156,9 +156,9 @@ the Ansible Modules from the Ansible Collection for IBM Cloud.
 See more information on the package index entry
 [ibm.cloudcollection Ansible Collection - Ansible Galaxy](https://galaxy.ansible.com/ui/repo/published/ibm/cloudcollection).
 
-[IBM Cloud Terraform Provider]: https://github.com/IBM-Cloud/terraform-provider-ibm
+[IBM Cloud Terraform Provider]: https://github.com/Mavrickk3/terraform-provider-ibm
 [Python3]: https://www.python.org/downloads/
 [RedHat Ansible]: https://www.ansible.com/
 [Ansible search path]: https://docs.ansible.com/ansible/latest/dev_guide/overview_architecture.html#ansible-search-path
-[release page]:https://github.com/IBM-Cloud/terraform-provider-ibm/releases
+[release page]:https://github.com/Mavrickk3/terraform-provider-ibm/releases
 

@@ -1,4 +1,4 @@
-<!--- See what makes a good Pull Request at : https://github.com/IBM-Cloud/terraform-provider-ibm/blob/master/.github/CONTRIBUTING.md --->
+<!--- See what makes a good Pull Request at : https://github.com/Mavrickk3/terraform-provider-ibm/blob/master/.github/CONTRIBUTING.md --->
 
 <!--- Please keep this note for the community --->
 

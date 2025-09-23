@@ -325,7 +325,7 @@ provider "ibm" {
 
 ### Dev release
 
-The individual developers or the IBM Cloud Service team can make their own `dev` releases, from their respective Git repository (forked from https://github.com/IBM-Cloud/terraform-provider-ibm).  
+The individual developers or the IBM Cloud Service team can make their own `dev` releases, from their respective Git repository (forked from https://github.com/Mavrickk3/terraform-provider-ibm).  
 
 Note: You can use the existing GitHub actions to run the release workflows, in your forked repository. You can prepare a `dev` release by adding a new version tag in your repository.
 

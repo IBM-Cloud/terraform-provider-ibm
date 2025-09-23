@@ -12,8 +12,8 @@ import (
 	"log"
 	"strconv"
 
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
+	"github.com/Mavrickk3/terraform-provider-ibm/ibm/conns"
 )
 
 func DataSourceIBMAccountSettingsTemplate() *schema.Resource {
