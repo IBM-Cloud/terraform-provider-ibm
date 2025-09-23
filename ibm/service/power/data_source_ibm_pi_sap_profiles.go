@@ -36,7 +36,7 @@ func DataSourceIBMPISAPProfiles() *schema.Resource {
 				Description:  "SAP profile prefix filter.",
 				Optional:     true,
 				Type:         schema.TypeString,
-				ValidateFunc: validation.StringInSlice([]string{"bh1", "bh2", "ch1", "ch2", "mh1", "mh2", "umh", "ush1", "sh2", "sr2"}, false),
+				ValidateFunc: validation.StringInSlice([]string{"bh1", "bh2", "ch1", "ch2", "mh1", "mh2", "umh", "ush1", "sh2", "sr2", "sr3"}, false),
 			},
 
 			// Attributes
