@@ -46,6 +46,7 @@ Example usage:
 
 The `ibm_pi_network_peer_route_filter` provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
+- **create** - (Default 2 minutes) Used for creating a network peer route filter.
 - **delete** - (Default 2 minutes) Used for deleting a network peer route filter.
   
 ## Argument Reference
