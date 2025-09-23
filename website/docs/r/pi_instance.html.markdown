@@ -100,6 +100,7 @@ Review the argument references that you can specify for your resource.
   - `network_security_group_ids` - (Optional, List) The Network security groups that the network interface is a member of. There is a limit of 1 network security group in the array. If not specified, default network security group is used.
 - `pi_pin_policy` - (Optional, String) Select the pinning policy for your Power Systems Virtual Server instance. Supported values are `soft`, `hard`, and `none`.    **Note** You can choose to soft pin (`soft`) or hard pin (`hard`) a virtual server to the physical host where it runs. When you soft pin an instance for high availability, the instance automatically migrates back to the original host once the host is back to its operating state. If the instance has a licensing restriction with the host, the hard pin option restricts the movement of the instance during remote restart, automated remote restart, DRO, and live partition migration. The default pinning policy is `none`.
 - `pi_placement_group_id` - (Optional, String) The ID of the placement group that the instance is in or empty quotes `""` to indicate it is not in a placement group. The meta-argument `count` and a `pi_replicants` cannot be used when specifying a placement group ID. Instances provisioning in the same placement group must be provisioned one at a time; however, to provision multiple instances on the same host or different hosts then use `pi_replicants` and `pi_replication_policy` instead of `pi_placement_group_id`.
+- `pi_preferred_processor_compatibility_mode` - (Optional, String) Preferred processor compatibility mode. Supported values are `default`, `POWER7`, `POWER8`, `POWER9`, `POWER9_Base`, `POWER10`, and `POWER11`.
 - `pi_processors` - (Optional, Float) The number of vCPUs to assign to the VM as visible within the guest Operating System.
   - Required when not creating SAP instances. Conflicts with `pi_sap_profile_id`.
 - `pi_proc_type` - (Optional, String) The type of processor mode in which the VM will run with `shared`, `capped` or `dedicated`.
@@ -139,6 +140,7 @@ In addition to all argument reference list, you can access the following attribu
 
 - `crn` - (String) The CRN of this resource.
 - `dedicated_host_id` - (String) The dedicated host ID where the shared processor pool resides.
+- `effective_processor_compatibility_mode` - (String) Effective processor compatibility mode.
 - `fault` - (Map) Fault information, if any.
   
    Nested scheme for `fault`:
