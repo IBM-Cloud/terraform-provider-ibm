@@ -178,6 +178,7 @@ func dataSourceIBMPINetworkPeersNetworkPeerToMap(np *models.NetworkPeer) map[str
 			importRouteFilter := dataSourceIBMPINetworkPeerRouteFilterToMap(irf)
 			importRouteFilters = append(importRouteFilters, importRouteFilter)
 		}
+	}
 	if np.ID != nil {
 		npMap[Attr_ID] = np.ID
 	}
