@@ -48,7 +48,8 @@ func ResourceIbmProjectEnvironment() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"description": &schema.Schema{
 							Type:        schema.TypeString,
-							Required:    true,
+							Optional:    true,
+							Default:     "",
 							Description: "The description of the environment.",
 						},
 						"name": &schema.Schema{
