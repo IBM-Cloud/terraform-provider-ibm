@@ -11,9 +11,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	v1 "github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
-	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	v1 "github.com/Mavrickk3/bluemix-go/api/container/containerv1"
+	"github.com/Mavrickk3/bluemix-go/bmxerror"
 )
 
 func ResourceIBMContainerALB() *schema.Resource {

@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	v2 "github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
+	v2 "github.com/Mavrickk3/bluemix-go/api/container/containerv2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	templatev1 "github.com/openshift/api/template/v1"
 	templatev1client "github.com/openshift/client-go/template/clientset/versioned/typed/template/v1"

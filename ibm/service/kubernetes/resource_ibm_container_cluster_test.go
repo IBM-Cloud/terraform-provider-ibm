@@ -16,7 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
-	"github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
+	"github.com/Mavrickk3/bluemix-go/api/container/containerv1"
 )
 
 func TestAccIBMContainerCluster_basic(t *testing.T) {

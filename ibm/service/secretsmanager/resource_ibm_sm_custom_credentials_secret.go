@@ -7,7 +7,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/IBM-Cloud/bluemix-go/bmxerror"
+	"github.com/Mavrickk3/bluemix-go/bmxerror"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"log"
 	"strings"

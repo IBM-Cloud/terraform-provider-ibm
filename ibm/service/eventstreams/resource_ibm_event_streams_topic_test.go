@@ -19,7 +19,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"gotest.tools/assert"
 
-	"github.com/IBM-Cloud/bluemix-go/models"
+	"github.com/Mavrickk3/bluemix-go/models"
 )
 
 func TestAccIBMEventStreamsTopicResourceBasic(t *testing.T) {

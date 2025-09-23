@@ -3,7 +3,7 @@ package softwaredefinedstorage
 import (
 	"time"
 
-	v2 "github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
+	v2 "github.com/Mavrickk3/bluemix-go/api/container/containerv2"
 	"k8s.io/client-go/kubernetes"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/oidc"
 	"k8s.io/client-go/rest"

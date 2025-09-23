@@ -6,11 +6,11 @@ package cloudfoundry
 import (
 	"fmt"
 
-	"github.com/IBM-Cloud/bluemix-go/api/mccp/mccpv2"
-	"github.com/IBM-Cloud/bluemix-go/bmxerror"
-	"github.com/IBM-Cloud/bluemix-go/helpers"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/Mavrickk3/bluemix-go/api/mccp/mccpv2"
+	"github.com/Mavrickk3/bluemix-go/bmxerror"
+	"github.com/Mavrickk3/bluemix-go/helpers"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 

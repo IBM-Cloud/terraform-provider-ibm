@@ -3,7 +3,6 @@ module github.com/IBM-Cloud/terraform-provider-ibm
 go 1.24.2
 
 require (
-	github.com/IBM-Cloud/bluemix-go v0.0.0-20250912140913-e279174fe80b
 	github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20240725064144-454a2ae23113
 	github.com/IBM-Cloud/power-go-client v1.13.0
 	github.com/IBM/appconfiguration-go-admin-sdk v0.5.1
@@ -74,6 +73,7 @@ require github.com/BurntSushi/toml v1.2.0 // indirect
 
 require (
 	github.com/Logicalis/asn1 v0.0.0-20190312173541-d60463189a56 // indirect
+	github.com/Mavrickk3/bluemix-go v0.0.0-20250923122655-d74ffa1d97ed // indirect
 	github.com/PromonLogicalis/asn1 v0.0.0-20190312173541-d60463189a56 // indirect
 	github.com/ProtonMail/go-crypto v1.1.6 // indirect
 	github.com/agext/levenshtein v1.2.2 // indirect

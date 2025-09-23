@@ -24,15 +24,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	validation "github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
-	//	"github.com/IBM-Cloud/bluemix-go/api/globaltagging/globaltaggingv3"
-	"github.com/IBM-Cloud/bluemix-go/api/icd/icdv4"
-	"github.com/IBM-Cloud/bluemix-go/bmxerror"
-	"github.com/IBM-Cloud/bluemix-go/models"
+	//	"github.com/Mavrickk3/bluemix-go/api/globaltagging/globaltaggingv3"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/cloud-databases-go-sdk/clouddatabasesv5"
 	"github.com/IBM/go-sdk-core/v5/core"
+	"github.com/Mavrickk3/bluemix-go/api/icd/icdv4"
+	"github.com/Mavrickk3/bluemix-go/bmxerror"
+	"github.com/Mavrickk3/bluemix-go/models"
 )
 
 const (

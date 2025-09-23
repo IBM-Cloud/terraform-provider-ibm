@@ -15,11 +15,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	yaml "gopkg.in/yaml.v3"
 
-	v1 "github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
-	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
+	v1 "github.com/Mavrickk3/bluemix-go/api/container/containerv1"
+	"github.com/Mavrickk3/bluemix-go/bmxerror"
 )
 
 func ResourceIBMContainerAddOns() *schema.Resource {

@@ -676,5 +676,5 @@ Customise the variables in `variables.tf` to your local environment and chosen D
 
 ## References
 
-1. [CIS Bluemix-go SDK](https://github.com/IBM-Cloud/bluemix-go/blob/master/api/cis/cisv1/)
+1. [CIS Bluemix-go SDK](https://github.com/Mavrickk3/bluemix-go/blob/master/api/cis/cisv1/)
 

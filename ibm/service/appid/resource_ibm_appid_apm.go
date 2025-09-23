@@ -4,10 +4,10 @@ import (
 	"context"
 	"log"
 
-	"github.com/IBM-Cloud/bluemix-go/helpers"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	appid "github.com/IBM/appid-management-go-sdk/appidmanagementv4"
 	"github.com/IBM/go-sdk-core/v5/core"
+	"github.com/Mavrickk3/bluemix-go/helpers"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )

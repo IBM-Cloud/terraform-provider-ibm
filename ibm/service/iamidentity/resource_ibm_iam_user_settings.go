@@ -7,9 +7,9 @@ import (
 	"fmt"
 	"strings"
 
-	v2 "github.com/IBM-Cloud/bluemix-go/api/usermanagement/usermanagementv2"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	v2 "github.com/Mavrickk3/bluemix-go/api/usermanagement/usermanagementv2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 

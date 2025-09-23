@@ -15,10 +15,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	homedir "github.com/mitchellh/go-homedir"
 
-	v1 "github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
-	"github.com/IBM-Cloud/bluemix-go/helpers"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
+	v1 "github.com/Mavrickk3/bluemix-go/api/container/containerv1"
+	"github.com/Mavrickk3/bluemix-go/helpers"
 )
 
 func DataSourceIBMContainerClusterConfig() *schema.Resource {

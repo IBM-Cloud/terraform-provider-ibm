@@ -16,7 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
-	"github.com/IBM-Cloud/bluemix-go/api/mccp/mccpv2"
+	"github.com/Mavrickk3/bluemix-go/api/mccp/mccpv2"
 )
 
 func TestAccIBMAppDomainPrivate_Basic(t *testing.T) {
