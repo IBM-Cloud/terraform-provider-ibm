@@ -62,7 +62,7 @@ func DataSourceIBMPINetworkPeers() *schema.Resource {
 						},
 						Attr_Description: {
 							Computed:    true,
-							Description: "[Depracated] Description of the network peer.",
+							Description: "[Deprecated] Description of the network peer.",
 							Type:        schema.TypeString,
 						},
 						Attr_Error: {
