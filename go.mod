@@ -71,8 +71,8 @@ require (
 )
 
 require (
-	github.com/IBM-Cloud/bluemix-go v0.0.0-20250324085928-caa6511f0c13 // indirect
 	github.com/Logicalis/asn1 v0.0.0-20190312173541-d60463189a56 // indirect
+	github.com/PromonLogicalis/asn1 v0.0.0-20190312173541-d60463189a56 // indirect
 	github.com/ProtonMail/go-crypto v1.1.6 // indirect
 	github.com/agext/levenshtein v1.2.2 // indirect
 	github.com/andres-erbsen/clock v0.0.0-20160526145045-9e14626cd129 // indirect
@@ -193,6 +193,7 @@ require (
 	go.opentelemetry.io/otel v1.35.0 // indirect
 	go.opentelemetry.io/otel/metric v1.35.0 // indirect
 	go.opentelemetry.io/otel/trace v1.35.0 // indirect
+	go.uber.org/automaxprocs v1.6.0 // indirect
 	go.uber.org/ratelimit v0.2.0 // indirect
 	go.yaml.in/yaml/v2 v2.4.2 // indirect
 	golang.org/x/mod v0.26.0 // indirect
