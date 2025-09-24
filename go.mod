@@ -9,7 +9,7 @@ require (
 	github.com/IBM/appconfiguration-go-admin-sdk v0.5.1
 	github.com/IBM/appid-management-go-sdk v0.0.0-20210908164609-dd0e0eaf732f
 	github.com/IBM/cloud-databases-go-sdk v0.8.0
-	github.com/IBM/cloud-db2-go-sdk v0.2.3
+	github.com/IBM/cloud-db2-go-sdk v0.2.4
 	github.com/IBM/cloudant-go-sdk v0.8.0
 	github.com/IBM/code-engine-go-sdk v0.0.0-20241217191651-e1821f8c58c3
 	github.com/IBM/configuration-aggregator-go-sdk v0.0.2
@@ -26,7 +26,7 @@ require (
 	github.com/IBM/keyprotect-go-client v0.15.1
 	github.com/IBM/logs-go-sdk v0.4.0
 	github.com/IBM/logs-router-go-sdk v1.0.8
-	github.com/IBM/mqcloud-go-sdk v0.3.0
+	github.com/IBM/mqcloud-go-sdk v0.4.0
 	github.com/IBM/networking-go-sdk v0.51.12
 	github.com/IBM/platform-services-go-sdk v0.86.1
 	github.com/IBM/project-go-sdk v0.3.5
@@ -38,7 +38,7 @@ require (
 	github.com/IBM/secrets-manager-go-sdk/v2 v2.0.15
 	github.com/IBM/vmware-go-sdk v0.1.5
 	github.com/IBM/vpc-beta-go-sdk v0.8.0
-	github.com/IBM/vpc-go-sdk v0.71.1
+	github.com/IBM/vpc-go-sdk v0.72.0
 	github.com/ScaleFT/sshkeys v0.0.0-20200327173127-6142f742bca5
 	github.com/akamai/AkamaiOPEN-edgegrid-golang v1.2.2
 	github.com/akamai/AkamaiOPEN-edgegrid-golang/v5 v5.0.0
@@ -231,8 +231,6 @@ replace github.com/softlayer/softlayer-go v1.0.3 => github.com/IBM-Cloud/softlay
 
 // add sdk changes.
 replace github.com/portworx/sched-ops v0.0.0-20200831185134-3e8010dc7056 => github.com/portworx/sched-ops v0.20.4-openstorage-rc3 // required by rook v1.7
-
-replace github.com/IBM/vpc-go-sdk v0.71.1 => ./common/github.com/IBM/vpc-go-sdk
 
 replace github.com/hashicorp/consul/api v1.1.0 => github.com/hashicorp/consul/api v1.30.0
 
