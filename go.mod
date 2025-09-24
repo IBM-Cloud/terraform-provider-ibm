@@ -38,7 +38,7 @@ require (
 	github.com/IBM/vmware-go-sdk v0.1.5
 	github.com/IBM/vpc-beta-go-sdk v0.8.0
 	github.com/IBM/vpc-go-sdk v0.72.0
-	github.com/Mavrickk3/bluemix-go v0.0.0-20250923122655-d74ffa1d97ed
+	github.com/Mavrickk3/bluemix-go v0.0.0-20250924081655-93635cb90f45
 	github.com/ScaleFT/sshkeys v0.0.0-20200327173127-6142f742bca5
 	github.com/akamai/AkamaiOPEN-edgegrid-golang v1.2.2
 	github.com/akamai/AkamaiOPEN-edgegrid-golang/v5 v5.0.0
