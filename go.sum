@@ -90,8 +90,6 @@ github.com/BurntSushi/toml v1.2.0 h1:Rt8g24XnyGTyglgET/PRUNlrUeu9F5L+7FilkXfZgs0
 github.com/BurntSushi/toml v1.2.0/go.mod h1:CxXYINrC8qIiEnFrOxCa7Jy5BFHlXnUU2pbicEuybxQ=
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
 github.com/DataDog/datadog-go v3.2.0+incompatible/go.mod h1:LButxg5PwREeZtORoXG3tL4fMGNddJ+vMq1mwgfaqoQ=
-github.com/IBM-Cloud/bluemix-go v0.0.0-20250912140913-e279174fe80b h1:KvUKPR6fCkByNcaXf1DWoWDjjqK5zj9f6gzhK1cc4PQ=
-github.com/IBM-Cloud/bluemix-go v0.0.0-20250912140913-e279174fe80b/go.mod h1:uqxINL7UuXasMI5Y3yGBh5izcsIksdIGxgQ78oM+5Dk=
 github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20240725064144-454a2ae23113 h1:f2Erqfea1dKpaTFagTJM6W/wnD3JGq/Vn9URh8nuRwk=
 github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20240725064144-454a2ae23113/go.mod h1:xUQL9SGAjoZFd4GNjrjjtEpjpkgU7RFXRyHesbKTjiY=
 github.com/IBM-Cloud/power-go-client v1.13.0 h1:TqxPlkJe0VkNdV9hYOD5NRepxEFhhyKXWXfg22x2zhU=
@@ -169,14 +167,16 @@ github.com/IBM/vmware-go-sdk v0.1.5 h1:aQbwcJBceaaauuIoJ0OJn+ttwjb+QTX6XV9Jbrdpj
 github.com/IBM/vmware-go-sdk v0.1.5/go.mod h1:OyQKRInGGsBaOyE5LIZCqH7b1DZ01BvIYa8BgGy+wWo=
 github.com/IBM/vpc-beta-go-sdk v0.8.0 h1:cEPpv4iw3Ba5W2d0AWg3TIbKeJ8y1nPuUuibR5Jt9eE=
 github.com/IBM/vpc-beta-go-sdk v0.8.0/go.mod h1:hORgIyTFRzXrZIK9IohaWmCRBBlYiDRagsufi7M6akE=
-github.com/IBM/vpc-go-sdk v0.72.0 h1:3Pj7nNuYmlaRPiMyC/5Uro3+5hzNBM6v2Lrq5UABBkQ=
-github.com/IBM/vpc-go-sdk v0.72.0/go.mod h1:K3vVlje72PYE3ZRt1iouE+jSIq+vCyYzT1HiFC06hUA=
 github.com/IBM/vpc-go-sdk v0.73.0 h1:gMVR6NSzw8Y7pCkcDa92+heQTzu5X64q8bnBBpLJpFE=
 github.com/IBM/vpc-go-sdk v0.73.0/go.mod h1:K3vVlje72PYE3ZRt1iouE+jSIq+vCyYzT1HiFC06hUA=
 github.com/Logicalis/asn1 v0.0.0-20190312173541-d60463189a56 h1:vuquMR410psHNax14XKNWa0Ae/kYgWJcXi0IFuX60N0=
 github.com/Logicalis/asn1 v0.0.0-20190312173541-d60463189a56/go.mod h1:Zb3OT4l0mf7P/GOs2w2Ilj5sdm5Whoq3pa24dAEBHFc=
 github.com/Masterminds/semver/v3 v3.2.1 h1:RN9w6+7QoMeJVGyfmbcgs28Br8cvmnucEXnY0rYXWg0=
 github.com/Masterminds/semver/v3 v3.2.1/go.mod h1:qvl/7zhW3nngYb5+80sSMF+FG2BjYrf8m9wsX0PNOMQ=
+github.com/Mavrickk3/bluemix-go v0.0.0-20250925130830-45b19dd67cce h1:OMRP4wPGf08wjgUBYLvGi7TgyZ2eksY3uucrELSHvvQ=
+github.com/Mavrickk3/bluemix-go v0.0.0-20250925130830-45b19dd67cce/go.mod h1:LeDzcUuaHd+VDT5Filb3Qx5z6CBIQr+MxvlBhPjHTDE=
+github.com/Mavrickk3/terraform-provider-ibm v0.0.0-20250925064429-018e288d389a h1:ob1uqLOUmXJSyuG8jxhk1tfUh6lH3siQuuErizLuerw=
+github.com/Mavrickk3/terraform-provider-ibm v0.0.0-20250925064429-018e288d389a/go.mod h1:oPfYEdswcy1uS5v0o/avvJDf9yIt8cof2kRfNnU4ohE=
 github.com/Microsoft/go-winio v0.6.2 h1:F2VQgta7ecxGYO8k3ZZz3RS8fVIXVxONVUPlNERoyfY=
 github.com/Microsoft/go-winio v0.6.2/go.mod h1:yd8OoFMLzJbo9gZq8j5qaps8bJ9aShtEA8Ipt1oGCvU=
 github.com/NYTimes/gziphandler v0.0.0-20170623195520-56545f4a5d46/go.mod h1:3wb06e3pkSAbeQ52E9H9iFoQsEEwGN64994WTCIhntQ=

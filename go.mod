@@ -1,11 +1,12 @@
-module github.com/IBM-Cloud/terraform-provider-ibm
+module github.com/Mavrickk3/terraform-provider-ibm
 
 go 1.24.2
 
 require (
-	github.com/IBM-Cloud/bluemix-go v0.0.0-20250912140913-e279174fe80b
+	github.com/IBM-Cloud/bluemix-go v0.0.0-20250925065941-e1953cea5812
 	github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20240725064144-454a2ae23113
 	github.com/IBM-Cloud/power-go-client v1.13.0
+	github.com/IBM-Cloud/terraform-provider-ibm v1.82.1
 	github.com/IBM/appconfiguration-go-admin-sdk v0.5.1
 	github.com/IBM/appid-management-go-sdk v0.0.0-20210908164609-dd0e0eaf732f
 	github.com/IBM/cloud-databases-go-sdk v0.8.0
@@ -70,11 +71,8 @@ require (
 	sigs.k8s.io/controller-runtime v0.19.3
 )
 
-require github.com/BurntSushi/toml v1.2.0 // indirect
-
 require (
 	github.com/Logicalis/asn1 v0.0.0-20190312173541-d60463189a56 // indirect
-	github.com/PromonLogicalis/asn1 v0.0.0-20190312173541-d60463189a56 // indirect
 	github.com/ProtonMail/go-crypto v1.1.6 // indirect
 	github.com/agext/levenshtein v1.2.2 // indirect
 	github.com/andres-erbsen/clock v0.0.0-20160526145045-9e14626cd129 // indirect
@@ -112,7 +110,6 @@ require (
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-playground/validator/v10 v10.27.0 // indirect
-	github.com/go-test/deep v1.1.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
@@ -146,7 +143,6 @@ require (
 	github.com/hashicorp/vault/api/auth/kubernetes v0.8.0 // indirect
 	github.com/hashicorp/yamux v0.1.1 // indirect
 	github.com/hokaccha/go-prettyjson v0.0.0-20170213120834-e6b9231a2b1c // indirect
-	github.com/jarcoal/httpmock v1.0.7 // indirect
 	github.com/jcmturner/aescts/v2 v2.0.0 // indirect
 	github.com/jcmturner/dnsutils/v2 v2.0.0 // indirect
 	github.com/jcmturner/gofork v1.7.6 // indirect
@@ -197,10 +193,7 @@ require (
 	go.opentelemetry.io/otel v1.35.0 // indirect
 	go.opentelemetry.io/otel/metric v1.35.0 // indirect
 	go.opentelemetry.io/otel/trace v1.35.0 // indirect
-	go.uber.org/atomic v1.9.0 // indirect
-	go.uber.org/automaxprocs v1.6.0 // indirect
 	go.uber.org/ratelimit v0.2.0 // indirect
-	go.uber.org/zap v1.27.0 // indirect
 	go.yaml.in/yaml/v2 v2.4.2 // indirect
 	golang.org/x/mod v0.26.0 // indirect
 	golang.org/x/net v0.43.0 // indirect
@@ -246,3 +239,7 @@ exclude (
 	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
 	k8s.io/client-go v12.0.0+incompatible
 )
+
+replace github.com/IBM-Cloud/bluemix-go v0.0.0-20250925065941-e1953cea5812 => github.com/Mavrickk3/bluemix-go v0.0.0-20250925130830-45b19dd67cce
+
+replace github.com/IBM-Cloud/terraform-provider-ibm v1.82.1 => github.com/Mavrickk3/terraform-provider-ibm v0.0.0-20250925064429-018e288d389a
