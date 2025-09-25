@@ -307,26 +307,26 @@ func appconfigurationsattributesMapToAttributes(modelMap map[string]interface{})
 
 	if modelMap["template_id_notification"] != nil && modelMap["template_id_notification"].(string) != "" {
 		model.TemplateIDNotification = core.StringPtr(modelMap["template_id_notification"].(string))
+		model.FeatureFlagEnabled = nil
+	} else if rawVal, ok := modelMap["feature_flag_enabled"]; ok {
+		if boolVal, ok := rawVal.(bool); ok {
+			model.FeatureFlagEnabled = core.BoolPtr(boolVal)
+		}
 	}
-
-	if modelMap["feature_flag_enabled"] != nil {
-		model.FeatureFlagEnabled = core.BoolPtr(modelMap["feature_flag_enabled"].(bool))
-	}
-
-	fmt.Println(model.FeatureFlagEnabled)
 
 	return model, nil
 }
 
-func resourceIBMEnSubscriptionMapToSubscriptionAppConfigurationUpdateAttributes(modelMap map[string]interface{}) (en.SubscriptionUpdateAttributes, error) {
-	model := en.SubscriptionUpdateAttributes{}
+func resourceIBMEnSubscriptionMapToSubscriptionAppConfigurationUpdateAttributes(modelMap map[string]interface{}) (en.SubscriptionUpdateAttributesAppConfigurationAttributes, error) {
+	model := en.SubscriptionUpdateAttributesAppConfigurationAttributes{}
 
 	if modelMap["template_id_notification"] != nil && modelMap["template_id_notification"].(string) != "" {
 		model.TemplateIDNotification = core.StringPtr(modelMap["template_id_notification"].(string))
-	}
-
-	if modelMap["feature_flag_enabled"] != nil {
-		model.FeatureFlagEnabled = core.BoolPtr(modelMap["feature_flag_enabled"].(bool))
+		model.FeatureFlagEnabled = nil
+	} else if rawVal, ok := modelMap["feature_flag_enabled"]; ok {
+		if boolVal, ok := rawVal.(bool); ok {
+			model.FeatureFlagEnabled = core.BoolPtr(boolVal)
+		}
 	}
 
 	return model, nil
