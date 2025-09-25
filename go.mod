@@ -73,6 +73,7 @@ require (
 
 require (
 	github.com/Logicalis/asn1 v0.0.0-20190312173541-d60463189a56 // indirect
+	github.com/PromonLogicalis/asn1 v0.0.0-20190312173541-d60463189a56 // indirect
 	github.com/ProtonMail/go-crypto v1.1.6 // indirect
 	github.com/agext/levenshtein v1.2.2 // indirect
 	github.com/andres-erbsen/clock v0.0.0-20160526145045-9e14626cd129 // indirect
@@ -193,6 +194,7 @@ require (
 	go.opentelemetry.io/otel v1.35.0 // indirect
 	go.opentelemetry.io/otel/metric v1.35.0 // indirect
 	go.opentelemetry.io/otel/trace v1.35.0 // indirect
+	go.uber.org/automaxprocs v1.6.0 // indirect
 	go.uber.org/ratelimit v0.2.0 // indirect
 	go.yaml.in/yaml/v2 v2.4.2 // indirect
 	golang.org/x/mod v0.26.0 // indirect
@@ -242,4 +244,4 @@ exclude (
 
 replace github.com/IBM-Cloud/bluemix-go v0.0.0-20250925065941-e1953cea5812 => github.com/Mavrickk3/bluemix-go v0.0.0-20250925130830-45b19dd67cce
 
-replace github.com/IBM-Cloud/terraform-provider-ibm v1.82.1 => github.com/Mavrickk3/terraform-provider-ibm v0.0.0-20250925064429-018e288d389a
+replace github.com/IBM-Cloud/terraform-provider-ibm v1.82.1 => github.com/Mavrickk3/terraform-provider-ibm v0.0.0-20250925131659-c8b9b997d4e8
