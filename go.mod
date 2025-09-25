@@ -15,7 +15,7 @@ require (
 	github.com/IBM/configuration-aggregator-go-sdk v0.0.2
 	github.com/IBM/container-registry-go-sdk v1.2.0
 	github.com/IBM/continuous-delivery-go-sdk/v2 v2.0.6
-	github.com/IBM/event-notifications-go-admin-sdk v0.18.0
+	github.com/IBM/event-notifications-go-admin-sdk v0.20.0
 	github.com/IBM/eventstreams-go-sdk v1.4.0
 	github.com/IBM/go-sdk-core/v5 v5.21.0
 	github.com/IBM/ibm-backup-recovery-sdk-go v1.0.3
@@ -228,6 +228,8 @@ require (
 )
 
 replace github.com/softlayer/softlayer-go v1.0.3 => github.com/IBM-Cloud/softlayer-go v1.0.5-tf
+
+replace github.com/IBM/event-notifications-go-admin-sdk v0.18.0 => /Users/divyasingh/Documents/EN-SDK/IBM-SDK/event-notifications-go-admin-sdk
 
 // add sdk changes.
 replace github.com/portworx/sched-ops v0.0.0-20200831185134-3e8010dc7056 => github.com/portworx/sched-ops v0.20.4-openstorage-rc3 // required by rook v1.7
