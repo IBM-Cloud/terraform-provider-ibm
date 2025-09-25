@@ -8,8 +8,6 @@ description: |-
 # ibm_is_public_address_range
 Retrieve information of an existing public address range data source as a read only data source. For more information, about public address range , see [creating public address range](https://cloud.ibm.com/docs/vpc?topic=vpc-par-creating&interface=ui).
 
-**Note:** 
-The Public Address Range feature is currently available only with `Select Availability`.
 
 **Note:** 
 VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
