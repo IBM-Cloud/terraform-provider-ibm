@@ -229,8 +229,6 @@ require (
 
 replace github.com/softlayer/softlayer-go v1.0.3 => github.com/IBM-Cloud/softlayer-go v1.0.5-tf
 
-replace github.com/IBM/event-notifications-go-admin-sdk v0.18.0 => /Users/divyasingh/Documents/EN-SDK/IBM-SDK/event-notifications-go-admin-sdk
-
 // add sdk changes.
 replace github.com/portworx/sched-ops v0.0.0-20200831185134-3e8010dc7056 => github.com/portworx/sched-ops v0.20.4-openstorage-rc3 // required by rook v1.7
 

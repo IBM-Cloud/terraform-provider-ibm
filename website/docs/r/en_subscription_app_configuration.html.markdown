@@ -20,7 +20,7 @@ resource "ibm_en_subscription_app_configuration" "ac_subscription" {
   destination_id   = ibm_en_destination_app_configuration.destination1.destination_id
   topic_id         = ibm_en_topic.topic1.topic_id
   attributes {
-    template_id_notification = "e40843c8-hgft-4717-8ee4-f923f2786a34"
+    template_id_notification = "e40843c8-xxxx-4717-xxxx-f923f2786a34"
   }
 }
 ```
