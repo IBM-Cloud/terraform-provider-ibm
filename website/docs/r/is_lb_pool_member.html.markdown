@@ -77,7 +77,7 @@ resource "ibm_is_lb_pool_member" "example" {
 
 ```terraform
   resource "ibm_is_lb_pool_member" "example" {
-		lb        = ibm_is_lb.example.id
+    lb        = ibm_is_lb.example.id
     pool      = element(split("/", ibm_is_lb_pool.example.id), 1)
     port      = 8080
     weight    = 20
