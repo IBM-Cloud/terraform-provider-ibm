@@ -101,7 +101,6 @@ func dataSourceIBMPdrGetDrLocationsRead(context context.Context, d *schema.Resou
 		}
 		drLocations = append(drLocations, drLocationsItemMap)
 	}
-
 	if err = d.Set("dr_locations", drLocations); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting dr_locations: %s", err), "(Data) ibm_pdr_get_dr_locations", "read", "set-dr_locations").GetDiag()
 	}

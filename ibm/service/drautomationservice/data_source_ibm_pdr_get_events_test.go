@@ -41,10 +41,11 @@ func TestAccIBMPdrGetEventsDataSourceBasic(t *testing.T) {
 func testAccCheckIBMPdrGetEventsDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		data "ibm_pdr_get_events" "pdr_get_events_instance" {
-			instance_id = "ac645fe5-fba1-4cb3-952e-e1b09fa0df26"
+			instance_id = "xxxx2ec4-xxxx-4f84-xxxx-c2aa834dd4ed"
 			time = "2025-06-19T23:59:59Z"
-			from_time = "2025-12-08T00:00:00Z"
-			to_time = "2025-12-10T23:59:59Z"
+			from_time = "2025-06-19T00:00:00Z"
+			to_time = "2025-06-19T23:59:59Z"
+			Accept-Language = "Accept-Language"
 		}
 	`)
 }
