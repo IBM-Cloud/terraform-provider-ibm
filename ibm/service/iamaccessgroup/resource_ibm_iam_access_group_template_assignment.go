@@ -177,7 +177,9 @@ func ResourceIBMIAMAccessGroupTemplateAssignmentValidator() *validate.ResourceVa
 func resourceIBMIAMAccessGroupTemplateAssignmentCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamAccessGroupsClient, err := meta.(conns.ClientSession).IAMAccessGroupsV2()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_iam_access_group_template_assignment", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	createAssignmentOptions := &iamaccessgroupsv2.CreateAssignmentOptions{}
@@ -190,17 +192,18 @@ func resourceIBMIAMAccessGroupTemplateAssignmentCreate(context context.Context, 
 		createAssignmentOptions.SetTransactionID(d.Get("transaction_id").(string))
 	}
 
-	templateAssignmentResponse, response, err := iamAccessGroupsClient.CreateAssignmentWithContext(context, createAssignmentOptions)
+	templateAssignmentResponse, _, err := iamAccessGroupsClient.CreateAssignmentWithContext(context, createAssignmentOptions)
 	if err != nil {
-		log.Printf("[DEBUG] CreateAssignmentWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("CreateAssignmentWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateAssignmentWithContext failed: %s", err.Error()), "ibm_iam_access_group_template_assignment", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(*templateAssignmentResponse.ID)
 
 	_, err = waitForAssignment(d.Timeout(schema.TimeoutCreate), meta, d, isAccessGroupTemplateAssigned)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("error assigning %s", err))
+		return diag.FromErr(flex.FmtErrorf("error assigning %s", err))
 	}
 
 	return resourceIBMIAMAccessGroupTemplateAssignmentRead(context, d, meta)
@@ -209,7 +212,9 @@ func resourceIBMIAMAccessGroupTemplateAssignmentCreate(context context.Context, 
 func resourceIBMIAMAccessGroupTemplateAssignmentRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamAccessGroupsClient, err := meta.(conns.ClientSession).IAMAccessGroupsV2()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_iam_access_group_template_assignment", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	getAssignmentOptions := &iamaccessgroupsv2.GetAssignmentOptions{}
@@ -222,48 +227,49 @@ func resourceIBMIAMAccessGroupTemplateAssignmentRead(context context.Context, d 
 			d.SetId("")
 			return nil
 		}
-		log.Printf("[DEBUG] GetAssignmentWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetAssignmentWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetAssignmentWithContext failed: %s", err.Error()), "ibm_iam_access_group_template_assignment", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	if err = d.Set("template_id", templateAssignmentVerboseResponse.TemplateID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting template_id: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting template_id: %s", err))
 	}
 	if err = d.Set("template_version", templateAssignmentVerboseResponse.TemplateVersion); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting template_version: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting template_version: %s", err))
 	}
 	if err = d.Set("target_type", templateAssignmentVerboseResponse.TargetType); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting target_type: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting target_type: %s", err))
 	}
 	if err = d.Set("target", templateAssignmentVerboseResponse.Target); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting target: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting target: %s", err))
 	}
 	if err = d.Set("account_id", templateAssignmentVerboseResponse.AccountID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting account_id: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting account_id: %s", err))
 	}
 	if err = d.Set("operation", templateAssignmentVerboseResponse.Operation); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting operation: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting operation: %s", err))
 	}
 	if err = d.Set("status", templateAssignmentVerboseResponse.Status); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting status: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting status: %s", err))
 	}
 	if err = d.Set("href", templateAssignmentVerboseResponse.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting href: %s", err))
 	}
 	if err = d.Set("created_at", flex.DateTimeToString(templateAssignmentVerboseResponse.CreatedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting created_at: %s", err))
 	}
 	if err = d.Set("created_by_id", templateAssignmentVerboseResponse.CreatedByID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting created_by_id: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting created_by_id: %s", err))
 	}
 	if err = d.Set("last_modified_at", flex.DateTimeToString(templateAssignmentVerboseResponse.LastModifiedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting last_modified_at: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting last_modified_at: %s", err))
 	}
 	if err = d.Set("last_modified_by_id", templateAssignmentVerboseResponse.LastModifiedByID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting last_modified_by_id: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting last_modified_by_id: %s", err))
 	}
 	if err = d.Set("etag", response.Headers.Get("Etag")); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting etag: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting etag: %s", err))
 	}
 
 	return nil
@@ -272,7 +278,9 @@ func resourceIBMIAMAccessGroupTemplateAssignmentRead(context context.Context, d 
 func resourceIBMIAMAccessGroupTemplateAssignmentUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamAccessGroupsClient, err := meta.(conns.ClientSession).IAMAccessGroupsV2()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_iam_access_group_template_assignment", "update")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	updateAssignmentOptions := &iamaccessgroupsv2.UpdateAssignmentOptions{}
@@ -290,8 +298,9 @@ func resourceIBMIAMAccessGroupTemplateAssignmentUpdate(context context.Context, 
 			d.SetId("")
 			return nil
 		}
-		log.Printf("[DEBUG] GetAssignmentWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetAssignmentWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetAssignmentWithContext failed: %s", err.Error()), "ibm_iam_access_group_template_assignment", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	updateAssignmentOptions.SetIfMatch(response.Headers.Get("ETag"))
@@ -307,7 +316,7 @@ func resourceIBMIAMAccessGroupTemplateAssignmentUpdate(context context.Context, 
 		_, response, err := iamAccessGroupsClient.UpdateAssignmentWithContext(context, updateAssignmentOptions)
 		if err != nil {
 			log.Printf("[DEBUG] UpdateAssignmentWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("UpdateAssignmentWithContext failed %s\n%s", err, response))
+			return diag.FromErr(flex.FmtErrorf("UpdateAssignmentWithContext failed %s\n%s", err, response))
 		}
 		waitForAssignment(d.Timeout(schema.TimeoutUpdate), meta, d, isAccessGroupTemplateAssigned)
 	}
@@ -318,17 +327,20 @@ func resourceIBMIAMAccessGroupTemplateAssignmentUpdate(context context.Context, 
 func resourceIBMIAMAccessGroupTemplateAssignmentDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamAccessGroupsClient, err := meta.(conns.ClientSession).IAMAccessGroupsV2()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetAssignmentWithContext failed: %s", err.Error()), "ibm_iam_access_group_template_assignment", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	deleteAssignmentOptions := &iamaccessgroupsv2.DeleteAssignmentOptions{}
 
 	deleteAssignmentOptions.SetAssignmentID(d.Id())
 
-	response, err := iamAccessGroupsClient.DeleteAssignmentWithContext(context, deleteAssignmentOptions)
+	_, err = iamAccessGroupsClient.DeleteAssignmentWithContext(context, deleteAssignmentOptions)
 	if err != nil {
-		log.Printf("[DEBUG] DeleteAssignmentWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("DeleteAssignmentWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteAssignmentWithContext failed: %s", err.Error()), "ibm_iam_access_group_template_assignment", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	waitForAssignment(d.Timeout(schema.TimeoutDelete), meta, d, isAccessGroupTemplateAssignmentDeleted)
@@ -381,11 +393,11 @@ func isAccessGroupTemplateAssigned(id string, meta interface{}) resource.StateRe
 			}
 
 			if *assignment.Status == "failed" {
-				return assignment, failed, fmt.Errorf("[ERROR] The assignment %s did complete but with a 'failed' status. Please check assignment resource for detailed errors: %s\n", id, response)
+				return assignment, failed, flex.FmtErrorf("[ERROR] The assignment %s did complete but with a 'failed' status. Please check assignment resource for detailed errors: %s\n", id, response)
 			}
 		}
 
-		return assignment, failed, fmt.Errorf("[ERROR] Unexpected status reached for assignment %s.: %s\n", id, response)
+		return assignment, failed, flex.FmtErrorf("[ERROR] Unexpected status reached for assignment %s.: %s\n", id, response)
 	}
 }
 
@@ -407,7 +419,7 @@ func isAccessGroupTemplateAssignmentDeleted(id string, meta interface{}) resourc
 				return assignment, complete, nil
 			}
 
-			return nil, failed, fmt.Errorf("[ERROR] The assignment %s failed to delete or deletion was not completed within specific timeout period: %s\n%s", id, err, response)
+			return nil, failed, flex.FmtErrorf("[ERROR] The assignment %s failed to delete or deletion was not completed within specific timeout period: %s\n%s", id, err, response)
 		} else {
 			log.Printf("Assignment removal still in progress\n")
 		}
