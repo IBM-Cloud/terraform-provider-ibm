@@ -135,6 +135,7 @@ import (
 	"github.com/IBM/platform-services-go-sdk/partnercentersellv1"
 	scc "github.com/IBM/scc-go-sdk/v5/securityandcompliancecenterapiv3"
 	"github.com/IBM/secrets-manager-go-sdk/v2/secretsmanagerv2"
+	"github.ibm.com/DRAutomation/dra-go-sdk/drautomationservicev1"
 )
 
 // RetryAPIDelay - retry api delay
@@ -327,6 +328,7 @@ type ClientSession interface {
 	VmwareV1() (*vmwarev1.VmwareV1, error)
 	LogsV0() (*logsv0.LogsV0, error)
 	SdsaasV1() (*sdsaasv1.SdsaasV1, error)
+	DrAutomationServiceV1() (*drautomationservicev1.DrAutomationServiceV1, error)
 }
 
 type clientSession struct {
@@ -701,6 +703,10 @@ type clientSession struct {
 	// Global Catalog Management Option
 	globalCatalogClient    *globalcatalogv1.GlobalCatalogV1
 	globalCatalogClientErr error
+
+	// DR Automation
+	drAutomationServiceClient    *drautomationservicev1.DrAutomationServiceV1
+	drAutomationServiceClientErr error
 }
 
 // Usage Reports
@@ -1042,6 +1048,11 @@ func (sess clientSession) CisSSLClientSession() (*cissslv1.SslCertificateApiV1, 
 		return sess.cisSSLClient, sess.cisSSLErr
 	}
 	return sess.cisSSLClient.Clone(), nil
+}
+
+// DrAutomation Service
+func (session clientSession) DrAutomationServiceV1() (*drautomationservicev1.DrAutomationServiceV1, error) {
+	return session.drAutomationServiceClient, session.drAutomationServiceClientErr
 }
 
 // CIS WAF Packages
