@@ -19,7 +19,7 @@ import (
 
 func TestAccIBMPdrManagedrBasic(t *testing.T) {
 	var conf drautomationservicev1.ServiceInstanceManageDr
-	instanceID := "ac645fe5-fba1-4cb3-952e-e1b09fa0df26"
+	instanceID := "xxxx2ec4-xxxx-4f84-xxxx-c2aa834dd4ed"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },

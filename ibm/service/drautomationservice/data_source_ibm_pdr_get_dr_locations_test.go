@@ -41,7 +41,7 @@ func TestAccIBMPdrGetDrLocationsDataSourceBasic(t *testing.T) {
 func testAccCheckIBMPdrGetDrLocationsDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		data "ibm_pdr_get_dr_locations" "pdr_get_dr_locations_instance" {
-			instance_id = "ac645fe5-fba1-4cb3-952e-e1b09fa0df26"
+			instance_id = "xxxx2ec4-xxxx-4f84-xxxx-c2aa834dd4ed"
 		}
 	`)
 }

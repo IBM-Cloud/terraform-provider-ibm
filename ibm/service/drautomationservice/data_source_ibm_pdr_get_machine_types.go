@@ -85,7 +85,6 @@ func dataSourceIBMPdrGetMachineTypesRead(context context.Context, d *schema.Reso
 	if _, ok := d.GetOk("accept_language"); ok {
 		getMachineTypeOptions.SetAcceptLanguage(d.Get("accept_language").(string))
 	}
-
 	if _, ok := d.GetOk("standby_workspace_name"); ok {
 		getMachineTypeOptions.SetStandbyWorkspaceName(d.Get("standby_workspace_name").(string))
 	}

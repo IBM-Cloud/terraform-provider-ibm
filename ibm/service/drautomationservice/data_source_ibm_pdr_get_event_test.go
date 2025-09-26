@@ -47,7 +47,7 @@ func TestAccIBMPdrGetEventDataSourceBasic(t *testing.T) {
 func testAccCheckIBMPdrGetEventDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		data "ibm_pdr_get_event" "pdr_get_event_instance" {
-			instance_id = "ac645fe5-fba1-4cb3-952e-e1b09fa0df26"
+			instance_id = "xxxx2ec4-xxxx-4f84-xxxx-c2aa834dd4ed"
 			event_id = "ac645fe5-fba1-4cb3-952e-e1b09fa0df26-1765348121005392848"
 		}
 	`)
