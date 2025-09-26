@@ -89,6 +89,8 @@ github.com/BurntSushi/toml v0.3.1 h1:WXkYYl6Yr3qBf1K79EBnL4mak0OimBfB0XUf9Vl28OQ
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
 github.com/DataDog/datadog-go v3.2.0+incompatible/go.mod h1:LButxg5PwREeZtORoXG3tL4fMGNddJ+vMq1mwgfaqoQ=
+github.com/IBM-Cloud/bluemix-go v0.0.0-20250926123547-63b728a65b05 h1:5M3cNzIxuEWBQaOHUGIhhmUWJMtnw1cpZEtyMR1eImw=
+github.com/IBM-Cloud/bluemix-go v0.0.0-20250926123547-63b728a65b05/go.mod h1:lU1/3aolIs4y062yTTokFEiIEssAZqqjdj/5qvkBeq8=
 github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20240725064144-454a2ae23113 h1:f2Erqfea1dKpaTFagTJM6W/wnD3JGq/Vn9URh8nuRwk=
 github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20240725064144-454a2ae23113/go.mod h1:xUQL9SGAjoZFd4GNjrjjtEpjpkgU7RFXRyHesbKTjiY=
 github.com/IBM-Cloud/power-go-client v1.13.0 h1:TqxPlkJe0VkNdV9hYOD5NRepxEFhhyKXWXfg22x2zhU=
@@ -172,10 +174,6 @@ github.com/Logicalis/asn1 v0.0.0-20190312173541-d60463189a56 h1:vuquMR410psHNax1
 github.com/Logicalis/asn1 v0.0.0-20190312173541-d60463189a56/go.mod h1:Zb3OT4l0mf7P/GOs2w2Ilj5sdm5Whoq3pa24dAEBHFc=
 github.com/Masterminds/semver/v3 v3.2.1 h1:RN9w6+7QoMeJVGyfmbcgs28Br8cvmnucEXnY0rYXWg0=
 github.com/Masterminds/semver/v3 v3.2.1/go.mod h1:qvl/7zhW3nngYb5+80sSMF+FG2BjYrf8m9wsX0PNOMQ=
-github.com/Mavrickk3/bluemix-go v0.0.0-20250925130830-45b19dd67cce h1:OMRP4wPGf08wjgUBYLvGi7TgyZ2eksY3uucrELSHvvQ=
-github.com/Mavrickk3/bluemix-go v0.0.0-20250925130830-45b19dd67cce/go.mod h1:LeDzcUuaHd+VDT5Filb3Qx5z6CBIQr+MxvlBhPjHTDE=
-github.com/Mavrickk3/terraform-provider-ibm v0.0.0-20250925131659-c8b9b997d4e8 h1:6EUw2ZduvgWYF928vw8nBPChxXp/aBCnNwH4TR+Y5sw=
-github.com/Mavrickk3/terraform-provider-ibm v0.0.0-20250925131659-c8b9b997d4e8/go.mod h1:jH/uZIH1YxKrDz2vNbNNZmzPkU21OMVNzteZvUeVBgg=
 github.com/Microsoft/go-winio v0.6.2 h1:F2VQgta7ecxGYO8k3ZZz3RS8fVIXVxONVUPlNERoyfY=
 github.com/Microsoft/go-winio v0.6.2/go.mod h1:yd8OoFMLzJbo9gZq8j5qaps8bJ9aShtEA8Ipt1oGCvU=
 github.com/NYTimes/gziphandler v0.0.0-20170623195520-56545f4a5d46/go.mod h1:3wb06e3pkSAbeQ52E9H9iFoQsEEwGN64994WTCIhntQ=

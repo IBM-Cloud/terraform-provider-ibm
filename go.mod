@@ -1,12 +1,11 @@
-module github.com/Mavrickk3/terraform-provider-ibm
+module github.com/IBM-Cloud/terraform-provider-ibm
 
 go 1.24.2
 
 require (
-	github.com/IBM-Cloud/bluemix-go v0.0.0-20250925065941-e1953cea5812
+	github.com/IBM-Cloud/bluemix-go v0.0.0-20250926123547-63b728a65b05
 	github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20240725064144-454a2ae23113
 	github.com/IBM-Cloud/power-go-client v1.13.0
-	github.com/IBM-Cloud/terraform-provider-ibm v1.82.1
 	github.com/IBM/appconfiguration-go-admin-sdk v0.5.1
 	github.com/IBM/appid-management-go-sdk v0.0.0-20210908164609-dd0e0eaf732f
 	github.com/IBM/cloud-databases-go-sdk v0.8.0
@@ -241,7 +240,3 @@ exclude (
 	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
 	k8s.io/client-go v12.0.0+incompatible
 )
-
-replace github.com/IBM-Cloud/bluemix-go v0.0.0-20250925065941-e1953cea5812 => github.com/Mavrickk3/bluemix-go v0.0.0-20250925130830-45b19dd67cce
-
-replace github.com/IBM-Cloud/terraform-provider-ibm v1.82.1 => github.com/Mavrickk3/terraform-provider-ibm v0.0.0-20250925131659-c8b9b997d4e8
