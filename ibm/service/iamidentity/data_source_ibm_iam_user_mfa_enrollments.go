@@ -17,7 +17,6 @@ import (
 )
 
 func DataSourceIBMIamUserMfaEnrollments() *schema.Resource {
-	fmt.Println("Inside from local terrafrom binary")
 	return &schema.Resource{
 		ReadContext: dataSourceIBMIamUserMfaEnrollmentsRead,
 
