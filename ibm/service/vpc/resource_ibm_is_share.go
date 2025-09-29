@@ -1435,10 +1435,14 @@ func resourceIbmIsShareMapToShareMountTargetPrototype(d *schema.ResourceData, sh
 		shareTargetPrototype.TransitEncryption = &transitEncryption
 	} else {
 		shareProfile := d.Get("profile").(string)
-		if shareProfile == "dp2" {
-			shareTargetPrototype.TransitEncryption = &[]string{"none"}[0]
-		} else if shareProfile == "rfs" {
+		accessControlMode := ""
+		if accessControlModeIntf, ok := d.GetOk("access_control_mode"); ok {
+			accessControlMode = accessControlModeIntf.(string)
+		}
+		if accessControlMode == "security_group" && shareProfile == "rfs" {
 			shareTargetPrototype.TransitEncryption = &[]string{"stunnel"}[0]
+		} else {
+			shareTargetPrototype.TransitEncryption = &[]string{"none"}[0]
 		}
 	}
 
