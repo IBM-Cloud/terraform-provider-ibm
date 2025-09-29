@@ -1,3 +1,79 @@
+# 1.83.0 (September 29, 2025)
+
+## Bug Fixes
+
+### Configuration Aggregator
+* fixed docs for is_lb_listener_policy_rule and container_cluster_config ([6438](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6438))
+
+### IAM
+* update service, trusted id policies ([6453](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6453))
+
+### Partner Center Sell
+* Cbr for iam service registration  parnercentersellv1 ([6462](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6462))
+
+### Power Systems
+* Refactor terraform errors to use new toolchain in instance, instance snapshot, instance ip, instance volume data sources ([6448](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6448))
+* [D][R] Add creation date attribute to shared processor pool data source and resource ([6446](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6446))
+* [D][R] Add Network Peer data source and resource ([6444](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6444))
+
+### Secrets Manager
+* Secrets Manager fixes ([6460](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6460))
+
+
+## Enhancements
+
+### IKS
+* Bump bluemix-go version to remove refresh token([6480](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6480))
+
+### Backup/Recovery
+* BRS GA Release: Remove LA Note ([6464](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6464))
+
+### Configuration Aggregator
+* add way to test admin config ([6434](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6434))
+* Update connector client ([6473](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6473))
+
+### General
+* Support for Trusted profile authentication ([6458](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6458))
+* Support Trusted profile name for assume authentication ([6479](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6479))
+
+### IAM
+* profile link additional param ([6454](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6454))
+* removed unwanted print causing provider failure ([6483](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6483))
+
+### MQ Service
+* add 'iam_managed' and 'roles' fields to user details ([6447](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6447))
+
+### Power Systems
+* Add sr3 profile to sap data source ([6443](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6443))
+* Update power-go-client to V1.13.0 ([6474](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6474))
+* [R][D] Compatibility Mode ([6455](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6455))
+
+### Secrets Manager
+* Pull in new icr SDK which adds new regions endpoints ([6451](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6451))
+* Feature post allowlist and crud users ([6449](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6449))
+
+### VPC Infrastructure
+* add rules_to_skip in ibm_cis_ruleset_rule ([6441](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6441))
+* Support for metadata service configuration ([6461](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6461))
+* Support for regional file shares ([6465](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6465))
+* Support for Reserved IP as member target of PPNLB ([5930](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5930))
+* Doc changes for Public Address Range GA ([6471](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6471))
+
+
+## Documentation
+
+### Power Systems
+* Update supported sap systems documentation ([6442](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6442))
+
+### Secrets Manager
+* regenerate projects provider with new go sdk level and API doc ([6469](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6469))
+
+
+## Code Refactoring
+
+### VPC Infrastructure
+* File share mount target assign none by default for dp2 ([6482](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6482))
+
 # 1.83.0-beta0 (September 15, 2025)
 
 ## Bug Fixes
