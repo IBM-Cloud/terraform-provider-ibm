@@ -200,10 +200,19 @@ func Provider() *schema.Provider {
 				Deprecated: "The generation field is deprecated and will be removed after couple of releases",
 			},
 			"iam_profile_id": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "IAM Trusted Profile Authentication token",
-				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"IC_IAM_PROFILE_ID", "IBMCLOUD_IAM_PROFILE_ID"}, nil),
+				Type:          schema.TypeString,
+				Optional:      true,
+				Description:   "IAM Trusted Profile ID",
+				ConflictsWith: []string{"iam_profile_name"},
+				DefaultFunc:   schema.MultiEnvDefaultFunc([]string{"IC_IAM_PROFILE_ID", "IBMCLOUD_IAM_PROFILE_ID"}, nil),
+			},
+			"iam_profile_name": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				ConflictsWith: []string{"iam_profile_id"},
+				RequiredWith:  []string{"ibmcloud_account_id"},
+				Description:   "IAM Trusted Profile Name",
+				DefaultFunc:   schema.MultiEnvDefaultFunc([]string{"IC_IAM_PROFILE_NAME", "IBMCLOUD_IAM_PROFILE_NAME"}, nil),
 			},
 			"iam_token": {
 				Type:        schema.TypeString,
@@ -236,6 +245,13 @@ func Provider() *schema.Provider {
 				Optional:    true,
 				Description: "Path of the file that contains private and public regional endpoints mapping",
 				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"IC_ENDPOINTS_FILE_PATH", "IBMCLOUD_ENDPOINTS_FILE_PATH"}, nil),
+			},
+			"ibmcloud_account_id": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Description:  "The IBM Cloud account ID",
+				RequiredWith: []string{"iam_profile_name"},
+				DefaultFunc:  schema.MultiEnvDefaultFunc([]string{"IC_ACCOUNT_ID", "IBMCLOUD_ACCOUNT_ID"}, nil),
 			},
 		},
 
@@ -2386,7 +2402,7 @@ func Validator() validate.ValidatorDict {
 func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	var bluemixAPIKey string
 	var bluemixTimeout int
-	var iamToken, iamRefreshToken, iamTrustedProfileId string
+	var iamToken, iamRefreshToken, iamTrustedProfileId, iamTrustedProfileName, account string
 	if key, ok := d.GetOk("bluemix_api_key"); ok {
 		bluemixAPIKey = key.(string)
 	}
@@ -2399,8 +2415,14 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	if rtoken, ok := d.GetOk("iam_refresh_token"); ok {
 		iamRefreshToken = rtoken.(string)
 	}
-	if ttoken, ok := d.GetOk("iam_profile_id"); ok {
-		iamTrustedProfileId = ttoken.(string)
+	if tid, ok := d.GetOk("iam_profile_id"); ok {
+		iamTrustedProfileId = tid.(string)
+	}
+	if tname, ok := d.GetOk("iam_profile_name"); ok {
+		iamTrustedProfileName = tname.(string)
+	}
+	if taccount, ok := d.GetOk("ibmcloud_account_id"); ok {
+		account = taccount.(string)
 	}
 	var softlayerUsername, softlayerAPIKey, softlayerEndpointUrl string
 	var softlayerTimeout int
@@ -2465,25 +2487,27 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	}
 
 	config := conns.Config{
-		BluemixAPIKey:        bluemixAPIKey,
-		Region:               region,
-		ResourceGroup:        resourceGrp,
-		BluemixTimeout:       time.Duration(bluemixTimeout) * time.Second,
-		SoftLayerTimeout:     time.Duration(softlayerTimeout) * time.Second,
-		SoftLayerUserName:    softlayerUsername,
-		SoftLayerAPIKey:      softlayerAPIKey,
-		RetryCount:           retryCount,
-		SoftLayerEndpointURL: softlayerEndpointUrl,
-		RetryDelay:           conns.RetryAPIDelay,
-		FunctionNameSpace:    wskNameSpace,
-		RiaasEndPoint:        riaasEndPoint,
-		IAMToken:             iamToken,
-		IAMRefreshToken:      iamRefreshToken,
-		Zone:                 zone,
-		Visibility:           visibility,
-		PrivateEndpointType:  privateEndpointType,
-		EndpointsFile:        file,
-		IAMTrustedProfileID:  iamTrustedProfileId,
+		BluemixAPIKey:         bluemixAPIKey,
+		Region:                region,
+		ResourceGroup:         resourceGrp,
+		BluemixTimeout:        time.Duration(bluemixTimeout) * time.Second,
+		SoftLayerTimeout:      time.Duration(softlayerTimeout) * time.Second,
+		SoftLayerUserName:     softlayerUsername,
+		SoftLayerAPIKey:       softlayerAPIKey,
+		RetryCount:            retryCount,
+		SoftLayerEndpointURL:  softlayerEndpointUrl,
+		RetryDelay:            conns.RetryAPIDelay,
+		FunctionNameSpace:     wskNameSpace,
+		RiaasEndPoint:         riaasEndPoint,
+		IAMToken:              iamToken,
+		IAMRefreshToken:       iamRefreshToken,
+		Zone:                  zone,
+		Visibility:            visibility,
+		PrivateEndpointType:   privateEndpointType,
+		EndpointsFile:         file,
+		IAMTrustedProfileID:   iamTrustedProfileId,
+		IAMTrustedProfileName: iamTrustedProfileName,
+		Account:               account,
 	}
 
 	return config.ClientSession()
