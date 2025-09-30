@@ -49,6 +49,7 @@ func testAccCheckIBMCmAccountConfigBasic() string {
 		}
 
 		resource "ibm_cm_account" "cm_account" {
+			hide_ibm_cloud_catalog = true
 			terraform_engines {
 				name             = "my-tfe-instance"
 				type             = "terraform-enterprise"
