@@ -1,3 +1,12 @@
+# 1.83.1 (October 1, 2025)
+
+## Bug Fixes
+* fix the refresh token issue ([6489](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6489))
+* Breaking change with 1.83.0 again ([6487](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/6487))
+* Timeout since v1.83.0 with resource ibm_cos_bucket_lifecycle_configuration ([6488](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/6488))
+
+
+
 # 1.83.0 (September 29, 2025)
 
 ## Bug Fixes
