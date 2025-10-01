@@ -389,7 +389,7 @@ func resourceIBMAccountSettingsTemplateAssignmentRead(context context.Context, d
 	if !core.IsNil(templateAssignmentResponse.History) {
 		var history []map[string]interface{}
 		for _, historyItem := range templateAssignmentResponse.History {
-			historyItemMap, err := resourceIBMAccountSettingsTemplateAssignmentEnityHistoryRecordToMap(&historyItem)
+			historyItemMap, err := EnityHistoryRecordToMap(&historyItem)
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -595,20 +595,9 @@ func resourceIBMAccountSettingsTemplateAssignmentTemplateAssignmentResourceError
 	return modelMap, nil
 }
 
-func resourceIBMAccountSettingsTemplateAssignmentEnityHistoryRecordToMap(model *iamidentityv1.EnityHistoryRecord) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["timestamp"] = model.Timestamp
-	modelMap["iam_id"] = model.IamID
-	modelMap["iam_id_account"] = model.IamIDAccount
-	modelMap["action"] = model.Action
-	modelMap["params"] = model.Params
-	modelMap["message"] = model.Message
-	return modelMap, nil
-}
-
 func isAccountSettingsAssignmentRemoved(id string, meta interface{}) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		iamIdentityClient, err := meta.(conns.ClientSession).IAMIdentityV1API()
+		iamIdentityClient, _ := meta.(conns.ClientSession).IAMIdentityV1API()
 
 		getOptions := &iamidentityv1.GetAccountSettingsAssignmentOptions{
 			AssignmentID: &id,
@@ -631,7 +620,7 @@ func isAccountSettingsAssignmentRemoved(id string, meta interface{}) retry.State
 func isAccountSettingsTemplateAssigned(id string, meta interface{}) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 
-		iamIdentityClient, err := meta.(conns.ClientSession).IAMIdentityV1API()
+		iamIdentityClient, _ := meta.(conns.ClientSession).IAMIdentityV1API()
 
 		getOptions := &iamidentityv1.GetAccountSettingsAssignmentOptions{
 			AssignmentID: &id,

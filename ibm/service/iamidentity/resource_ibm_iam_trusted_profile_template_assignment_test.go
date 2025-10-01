@@ -19,19 +19,18 @@ import (
 
 func TestAccIBMTrustedProfileTemplateAssignmentBasic(t *testing.T) {
 	var conf iamidentityv1.TemplateAssignmentResponse
+	enterpriseAccountId := acc.IamIdentityEnterpriseAccountId
+	targetId := acc.IamIdentityAssignmentTargetAccountId
 	name := fmt.Sprintf("tf_tp_name_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			acc.TestAccPreCheck(t)
-			acc.TestAccPreCheckAssignmentTargetAccount(t)
-		},
+		PreCheck:     func() { acc.TestAccPreCheckIamIdentityEnterpriseTemplates(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMTrustedProfileTemplateAssignmentResourceDestroy,
 		Steps: []resource.TestStep{
 			{
 
-				Config: testAccCheckIBMTrustedProfileTemplateAssignmentConfigBasic(name, 1),
+				Config: testAccCheckIBMTrustedProfileTemplateAssignmentConfigBasic(enterpriseAccountId, targetId, name, 1),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMTrustedProfileTemplateAssignmentExists("ibm_iam_trusted_profile_template_assignment.trusted_profile_template_assignment_instance", conf),
 					resource.TestCheckResourceAttrSet("ibm_iam_trusted_profile_template_assignment.trusted_profile_template_assignment_instance", "id"),
@@ -51,10 +50,10 @@ func TestAccIBMTrustedProfileTemplateAssignmentBasic(t *testing.T) {
 			},
 			{
 				ExpectError: regexp.MustCompile("Template version '3' is not found."),
-				Config:      testAccCheckIBMTrustedProfileTemplateAssignmentConfigBasic(name, 3),
+				Config:      testAccCheckIBMTrustedProfileTemplateAssignmentConfigBasic(enterpriseAccountId, targetId, name, 3),
 			},
 			{
-				Config: testAccCheckIBMTrustedProfileTemplateAssignmentConfigBasic(name, 2),
+				Config: testAccCheckIBMTrustedProfileTemplateAssignmentConfigBasic(enterpriseAccountId, targetId, name, 2),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_iam_trusted_profile_template_assignment.trusted_profile_template_assignment_instance", "template_version", "2"),
 				),
@@ -63,9 +62,10 @@ func TestAccIBMTrustedProfileTemplateAssignmentBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMTrustedProfileTemplateAssignmentConfigBasic(name string, version int) string {
+func testAccCheckIBMTrustedProfileTemplateAssignmentConfigBasic(enterpriseAccountId string, targetId, name string, version int) string {
 	return fmt.Sprintf(`
 		resource "ibm_iam_trusted_profile_template" "trusted_profile_template" {
+			account_id = "%s"
 			name = "%s"
 			profile {
 				name = "%s"
@@ -75,6 +75,7 @@ func testAccCheckIBMTrustedProfileTemplateAssignmentConfigBasic(name string, ver
 
 		resource "ibm_iam_trusted_profile_template" "trusted_profile_template_v2" {
 			template_id = ibm_iam_trusted_profile_template.trusted_profile_template.id
+			account_id = ibm_iam_trusted_profile_template.trusted_profile_template.account_id
 			name = ibm_iam_trusted_profile_template.trusted_profile_template.name
 			description = "v2 Description"
 			profile {
@@ -98,7 +99,7 @@ func testAccCheckIBMTrustedProfileTemplateAssignmentConfigBasic(name string, ver
 				update = "5m"
 			}
 		}
-	`, name, name, version, acc.IamIdentityAssignmentTargetAccountId)
+	`, enterpriseAccountId, name, name, version, targetId)
 }
 
 func testAccCheckIBMTrustedProfileTemplateAssignmentExists(n string, obj iamidentityv1.TemplateAssignmentResponse) resource.TestCheckFunc {

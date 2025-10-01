@@ -19,13 +19,14 @@ import (
 var (
 	restrict_create_service_id                 = "NOT_SET"
 	restrict_create_platform_apikey            = "NOT_SET"
+	restrict_user_list_visibility              = "NOT_RESTRICTED"
 	entity_tag                                 = "*"
 	mfa_trait                                  = "NONE"
 	session_expiration_in_seconds              = "NOT_SET"
 	session_invalidation_in_seconds            = "NOT_SET"
 	max_sessions_per_identity                  = "NOT_SET"
 	system_access_token_expiration_in_seconds  = "3600"
-	system_refresh_token_expiration_in_seconds = "2592000"
+	system_refresh_token_expiration_in_seconds = "259200"
 )
 
 func TestAccIBMIAMAccountSettingsBasic(t *testing.T) {
@@ -93,6 +94,7 @@ func TestAccIBMIAMAccountSettingsUpdate(t *testing.T) {
 					testAccCheckIbmIamAccountSettingsExists("ibm_iam_account_settings.iam_account_settings", conf),
 					resource.TestCheckResourceAttr("ibm_iam_account_settings.iam_account_settings", "restrict_create_service_id", restrict_create_service_id),
 					resource.TestCheckResourceAttr("ibm_iam_account_settings.iam_account_settings", "restrict_create_platform_apikey", restrict_create_platform_apikey),
+					resource.TestCheckResourceAttr("ibm_iam_account_settings.iam_account_settings", "restrict_user_list_visibility", restrict_user_list_visibility),
 					resource.TestCheckResourceAttr("ibm_iam_account_settings.iam_account_settings", "mfa", mfa_trait),
 					resource.TestCheckResourceAttr("ibm_iam_account_settings.iam_account_settings", "session_expiration_in_seconds", session_expiration_in_seconds),
 					resource.TestCheckResourceAttr("ibm_iam_account_settings.iam_account_settings", "session_invalidation_in_seconds", session_invalidation_in_seconds),
@@ -128,11 +130,20 @@ func testAccCheckIbmIamAccountSettingsUpdateConfig() string {
 		resource "ibm_iam_account_settings" "iam_account_settings" {
 			restrict_create_service_id = "%s"
 			restrict_create_platform_apikey = "%s"
+			restrict_user_list_visibility = "%s"
 			if_match = "%s"
 			mfa = "%s"
 			user_mfa {
-				iam_id = "iam_id"
+				iam_id = "%s"
 				mfa = "NONE"
+			}
+			restrict_user_domains {
+				realm_id = "IBMid"
+				invitation_email_allow_patterns = [
+					"*@ibm.com",
+					"**@corp.org"
+					]
+				restrict_invitation = false
 			}
 			session_expiration_in_seconds = "%s"
 			session_invalidation_in_seconds = "%s"
@@ -143,8 +154,10 @@ func testAccCheckIbmIamAccountSettingsUpdateConfig() string {
 	`,
 		restrict_create_service_id,
 		restrict_create_platform_apikey,
+		restrict_user_list_visibility,
 		entity_tag,
 		mfa_trait,
+		acc.Ibmid1,
 		session_expiration_in_seconds,
 		session_invalidation_in_seconds,
 		max_sessions_per_identity,

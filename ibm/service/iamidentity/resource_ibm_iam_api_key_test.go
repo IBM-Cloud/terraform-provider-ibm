@@ -79,6 +79,11 @@ func TestAccIbmIamApiKeyAllArgs(t *testing.T) {
 				ResourceName:      "ibm_iam_api_key.iam_api_key",
 				ImportState:       true,
 				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"apikey",      // is only present on the initial create response
+					"entity_lock", // not part of read response
+					"store_value", // not part of read response
+				},
 			},
 		},
 	})
