@@ -89,8 +89,8 @@ github.com/BurntSushi/toml v0.3.1 h1:WXkYYl6Yr3qBf1K79EBnL4mak0OimBfB0XUf9Vl28OQ
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
 github.com/DataDog/datadog-go v3.2.0+incompatible/go.mod h1:LButxg5PwREeZtORoXG3tL4fMGNddJ+vMq1mwgfaqoQ=
-github.com/IBM-Cloud/bluemix-go v0.0.0-20250926123547-63b728a65b05 h1:5M3cNzIxuEWBQaOHUGIhhmUWJMtnw1cpZEtyMR1eImw=
-github.com/IBM-Cloud/bluemix-go v0.0.0-20250926123547-63b728a65b05/go.mod h1:lU1/3aolIs4y062yTTokFEiIEssAZqqjdj/5qvkBeq8=
+github.com/IBM-Cloud/bluemix-go v0.0.0-20251001005609-37dbcddbe871 h1:0NrvGUWBoGxPZj73Az6y7ITMcGEitZf2lRvXlzCYRgs=
+github.com/IBM-Cloud/bluemix-go v0.0.0-20251001005609-37dbcddbe871/go.mod h1:lU1/3aolIs4y062yTTokFEiIEssAZqqjdj/5qvkBeq8=
 github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20240725064144-454a2ae23113 h1:f2Erqfea1dKpaTFagTJM6W/wnD3JGq/Vn9URh8nuRwk=
 github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20240725064144-454a2ae23113/go.mod h1:xUQL9SGAjoZFd4GNjrjjtEpjpkgU7RFXRyHesbKTjiY=
 github.com/IBM-Cloud/power-go-client v1.13.0 h1:TqxPlkJe0VkNdV9hYOD5NRepxEFhhyKXWXfg22x2zhU=

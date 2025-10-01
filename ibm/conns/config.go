@@ -1548,7 +1548,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		kpurl = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_KP_API_ENDPOINT", c.Region, kpurl)
 	}
 	var options kp.ClientConfig
-	if c.BluemixAPIKey != "" {
+	if (c.BluemixAPIKey != "") && (c.IAMTrustedProfileID == "" && c.IAMTrustedProfileName == "") {
 		options = kp.ClientConfig{
 			BaseURL: EnvFallBack([]string{"IBMCLOUD_KP_API_ENDPOINT"}, kpurl),
 			APIKey:  sess.BluemixSession.Config.BluemixAPIKey, // pragma: allowlist secret
@@ -1591,7 +1591,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		kmsurl = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_KP_API_ENDPOINT", c.Region, kmsurl)
 	}
 	var kmsOptions kp.ClientConfig
-	if c.BluemixAPIKey != "" {
+	if (c.BluemixAPIKey != "") && (c.IAMTrustedProfileID == "" && c.IAMTrustedProfileName == "") {
 		kmsOptions = kp.ClientConfig{
 			BaseURL: EnvFallBack([]string{"IBMCLOUD_KP_API_ENDPOINT"}, kmsurl),
 			APIKey:  sess.BluemixSession.Config.BluemixAPIKey, // pragma: allowlist secret
@@ -1621,6 +1621,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 			authenticator, err = core.NewIamAssumeAuthenticatorBuilder().
 				SetApiKey(c.BluemixAPIKey).
 				SetIAMProfileID(c.IAMTrustedProfileID).
+				SetURL(EnvFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, iamURL)).
 				Build()
 			if err != nil {
 				log.Fatalf("Error in authenticating using NewIamAssumeAuthenticatorBuilder. Error: %s", err)
@@ -1630,6 +1631,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 				SetApiKey(c.BluemixAPIKey).
 				SetIAMProfileName(c.IAMTrustedProfileName).
 				SetIAMAccountID(c.Account).
+				SetURL(EnvFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, iamURL)).
 				Build()
 			if err != nil {
 				log.Fatalf("Error in authenticating using NewIamAssumeAuthenticatorBuilder with trusted profile name. Error: %s", err)
@@ -3785,6 +3787,7 @@ func newSession(c *Config) (*Session, error) {
 	iamURL := EnvFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, IAMURL)
 	if (c.BluemixAPIKey != "") && (c.IAMTrustedProfileID != "" || c.IAMTrustedProfileName != "") {
 		if c.IAMTrustedProfileID != "" {
+			log.Println("Configuring Session with Trusted Profile ID")
 			authenticator, err = core.NewIamAssumeAuthenticatorBuilder().
 				SetApiKey(c.BluemixAPIKey).
 				SetIAMProfileID(c.IAMTrustedProfileID).
@@ -3794,6 +3797,7 @@ func newSession(c *Config) (*Session, error) {
 				log.Fatalf("Error in authenticating using NewIamAssumeAuthenticatorBuilder. Error: %s", err)
 			}
 		} else {
+			log.Println("Configuring Session with Trusted Profile Name")
 			authenticator, err = core.NewIamAssumeAuthenticatorBuilder().
 				SetApiKey(c.BluemixAPIKey).
 				SetIAMProfileName(c.IAMTrustedProfileName).
@@ -3806,12 +3810,16 @@ func newSession(c *Config) (*Session, error) {
 		}
 	} else if c.BluemixAPIKey != "" || c.IAMRefreshToken != "" {
 		if c.BluemixAPIKey != "" {
+			log.Println("Configuring Session with API Key")
 			authenticator = &core.IamAuthenticator{
-				ApiKey: c.BluemixAPIKey,
-				URL:    iamURL,
+				ApiKey:       c.BluemixAPIKey,
+				URL:          iamURL,
+				ClientId:     "bx",
+				ClientSecret: "bx",
 			}
 		} else {
 			// Construct the IamAuthenticator with the IAM refresh token.
+			log.Println("Configuring Session with refresh token")
 			authenticator = &core.IamAuthenticator{
 				RefreshToken: c.IAMRefreshToken,
 				ClientId:     "bx",
@@ -3820,10 +3828,12 @@ func newSession(c *Config) (*Session, error) {
 			}
 		}
 	} else if strings.HasPrefix(c.IAMToken, "Bearer") {
+		log.Println("Configuring Session with access token")
 		authenticator = &core.BearerTokenAuthenticator{
 			BearerToken: c.IAMToken[7:],
 		}
 	} else {
+		log.Println("Configuring Session with access token")
 		authenticator = &core.BearerTokenAuthenticator{
 			BearerToken: c.IAMToken,
 		}
@@ -3950,7 +3960,7 @@ func RefreshToken(sess *bxsession.Session) error {
 	if err != nil {
 		return err
 	}
-	_, err = tokenRefresher.RefreshToken()
+	err = tokenRefresher.FetchAuthorizationData(config.Authenticator)
 	return err
 }
 
