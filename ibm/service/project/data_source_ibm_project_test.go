@@ -61,7 +61,8 @@ func testAccCheckIbmProjectDataSourceConfigBasic(projectLocation string, project
                 description = "acme-microservice description"
                 destroy_on_delete = true
                 monitoring_enabled = true
-                auto_deploy = true
+                auto_deploy = false
+                auto_deploy_mode = "manual_approval"
             }
 		}
 
@@ -357,7 +358,7 @@ func TestDataSourceIbmProjectProjectEnvironmentSummaryDefinitionToMap(t *testing
 	checkResult(result)
 }
 
-func TestDataSourceIbmProjectProjectDefinitionPropertiesToMap(t *testing.T) {
+func TestDataSourceIbmProjectProjectDefinitionToMap(t *testing.T) {
 	checkResult := func(result map[string]interface{}) {
 		projectDefinitionStoreModel := make(map[string]interface{})
 		projectDefinitionStoreModel["type"] = "gh"
@@ -372,11 +373,12 @@ func TestDataSourceIbmProjectProjectDefinitionPropertiesToMap(t *testing.T) {
 		model := make(map[string]interface{})
 		model["name"] = "testString"
 		model["description"] = "testString"
-		model["auto_deploy"] = false
+		model["auto_deploy_mode"] = "manual_approval"
 		model["monitoring_enabled"] = false
 		model["destroy_on_delete"] = true
 		model["store"] = []map[string]interface{}{projectDefinitionStoreModel}
 		model["terraform_engine"] = []map[string]interface{}{projectTerraformEngineSettingsModel}
+		model["auto_deploy"] = false
 
 		assert.Equal(t, result, model)
 	}
@@ -391,16 +393,17 @@ func TestDataSourceIbmProjectProjectDefinitionPropertiesToMap(t *testing.T) {
 	projectTerraformEngineSettingsModel.ID = core.StringPtr("testString")
 	projectTerraformEngineSettingsModel.Type = core.StringPtr("terraform-enterprise")
 
-	model := new(projectv1.ProjectDefinitionProperties)
+	model := new(projectv1.ProjectDefinition)
 	model.Name = core.StringPtr("testString")
 	model.Description = core.StringPtr("testString")
-	model.AutoDeploy = core.BoolPtr(false)
+	model.AutoDeployMode = core.StringPtr("manual_approval")
 	model.MonitoringEnabled = core.BoolPtr(false)
 	model.DestroyOnDelete = core.BoolPtr(true)
 	model.Store = projectDefinitionStoreModel
 	model.TerraformEngine = projectTerraformEngineSettingsModel
+	model.AutoDeploy = core.BoolPtr(false)
 
-	result, err := project.DataSourceIbmProjectProjectDefinitionPropertiesToMap(model)
+	result, err := project.DataSourceIbmProjectProjectDefinitionToMap(model)
 	assert.Nil(t, err)
 	checkResult(result)
 }

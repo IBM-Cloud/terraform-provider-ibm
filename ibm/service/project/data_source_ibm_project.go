@@ -394,10 +394,10 @@ func DataSourceIbmProject() *schema.Resource {
 							Computed:    true,
 							Description: "A brief explanation of the project's use in the configuration of a deployable architecture. A project can be created without providing a description.",
 						},
-						"auto_deploy": &schema.Schema{
-							Type:        schema.TypeBool,
+						"auto_deploy_mode": &schema.Schema{
+							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "A boolean flag to enable auto deploy.",
+							Description: "This is an advanced setting to auto deploy to tell how auto deploy should behave when it is enabled. There are 2 options:> 1. `auto_approval` will automatically approve the configuration after validated without user confirmation.> 2. `manual_approval` will require user confirmation to approve the configuration after validated before deploying the configuration starts.",
 						},
 						"monitoring_enabled": &schema.Schema{
 							Type:        schema.TypeBool,
@@ -457,6 +457,11 @@ func DataSourceIbmProject() *schema.Resource {
 									},
 								},
 							},
+						},
+						"auto_deploy": &schema.Schema{
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "A boolean flag to enable deploying configurations automatically.",
 						},
 					},
 				},
@@ -563,7 +568,7 @@ func dataSourceIbmProjectRead(context context.Context, d *schema.ResourceData, m
 	}
 
 	definition := []map[string]interface{}{}
-	definitionMap, err := DataSourceIbmProjectProjectDefinitionPropertiesToMap(project.Definition)
+	definitionMap, err := DataSourceIbmProjectProjectDefinitionToMap(project.Definition)
 	if err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_project", "read", "definition-to-map").GetDiag()
 	}
@@ -706,7 +711,7 @@ func DataSourceIbmProjectProjectEnvironmentSummaryDefinitionToMap(model *project
 	return modelMap, nil
 }
 
-func DataSourceIbmProjectProjectDefinitionPropertiesToMap(model *projectv1.ProjectDefinitionProperties) (map[string]interface{}, error) {
+func DataSourceIbmProjectProjectDefinitionToMap(model *projectv1.ProjectDefinition) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Name != nil {
 		modelMap["name"] = *model.Name
@@ -714,9 +719,7 @@ func DataSourceIbmProjectProjectDefinitionPropertiesToMap(model *projectv1.Proje
 	if model.Description != nil {
 		modelMap["description"] = *model.Description
 	}
-	if model.AutoDeploy != nil {
-		modelMap["auto_deploy"] = *model.AutoDeploy
-	}
+	modelMap["auto_deploy_mode"] = *model.AutoDeployMode
 	if model.MonitoringEnabled != nil {
 		modelMap["monitoring_enabled"] = *model.MonitoringEnabled
 	}
@@ -736,6 +739,9 @@ func DataSourceIbmProjectProjectDefinitionPropertiesToMap(model *projectv1.Proje
 			return modelMap, err
 		}
 		modelMap["terraform_engine"] = []map[string]interface{}{terraformEngineMap}
+	}
+	if model.AutoDeploy != nil {
+		modelMap["auto_deploy"] = *model.AutoDeploy
 	}
 	return modelMap, nil
 }
