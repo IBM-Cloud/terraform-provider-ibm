@@ -348,11 +348,10 @@ func ResourceIbmProject() *schema.Resource {
 							Default:     "",
 							Description: "A brief explanation of the project's use in the configuration of a deployable architecture. A project can be created without providing a description.",
 						},
-						"auto_deploy": &schema.Schema{
-							Type:        schema.TypeBool,
-							Optional:    true,
-							Default:     false,
-							Description: "A boolean flag to enable auto deploy.",
+						"auto_deploy_mode": &schema.Schema{
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "This is an advanced setting to auto deploy to tell how auto deploy should behave when it is enabled. There are 2 options:> 1. `auto_approval` will automatically approve the configuration after validated without user confirmation.> 2. `manual_approval` will require user confirmation to approve the configuration after validated before deploying the configuration starts.",
 						},
 						"monitoring_enabled": &schema.Schema{
 							Type:        schema.TypeBool,
@@ -417,6 +416,12 @@ func ResourceIbmProject() *schema.Resource {
 									},
 								},
 							},
+						},
+						"auto_deploy": &schema.Schema{
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     false,
+							Description: "A boolean flag to enable deploying configurations automatically.",
 						},
 					},
 				},
@@ -631,7 +636,7 @@ func resourceIbmProjectRead(context context.Context, d *schema.ResourceData, met
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project", "read", "set-environments").GetDiag()
 		}
 	}
-	definitionMap, err := ResourceIbmProjectProjectDefinitionPropertiesToMap(project.Definition)
+	definitionMap, err := ResourceIbmProjectProjectDefinitionToMap(project.Definition)
 	if err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project", "read", "definition-to-map").GetDiag()
 	}
@@ -702,7 +707,7 @@ func resourceIbmProjectUpdate(context context.Context, d *schema.ResourceData, m
 	hasChange := false
 
 	if d.HasChange("definition") {
-		definition, err := ResourceIbmProjectMapToProjectPatchDefinitionBlock(d.Get("definition.0").(map[string]interface{}))
+		definition, err := ResourceIbmProjectMapToProjectDefinitionPatch(d.Get("definition.0").(map[string]interface{}))
 		if err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project", "update", "parse-definition").GetDiag()
 		}
@@ -752,8 +757,8 @@ func ResourceIbmProjectMapToProjectPrototypeDefinition(modelMap map[string]inter
 	if modelMap["description"] != nil && modelMap["description"].(string) != "" {
 		model.Description = core.StringPtr(modelMap["description"].(string))
 	}
-	if modelMap["auto_deploy"] != nil {
-		model.AutoDeploy = core.BoolPtr(modelMap["auto_deploy"].(bool))
+	if modelMap["auto_deploy_mode"] != nil && modelMap["auto_deploy_mode"].(string) != "" {
+		model.AutoDeployMode = core.StringPtr(modelMap["auto_deploy_mode"].(string))
 	}
 	if modelMap["monitoring_enabled"] != nil {
 		model.MonitoringEnabled = core.BoolPtr(modelMap["monitoring_enabled"].(bool))
@@ -774,6 +779,9 @@ func ResourceIbmProjectMapToProjectPrototypeDefinition(modelMap map[string]inter
 			return model, err
 		}
 		model.TerraformEngine = TerraformEngineModel
+	}
+	if modelMap["auto_deploy"] != nil {
+		model.AutoDeploy = core.BoolPtr(modelMap["auto_deploy"].(bool))
 	}
 	return model, nil
 }
@@ -1100,16 +1108,16 @@ func ResourceIbmProjectMapToEnvironmentDefinitionRequiredProperties(modelMap map
 	return model, nil
 }
 
-func ResourceIbmProjectMapToProjectPatchDefinitionBlock(modelMap map[string]interface{}) (*projectv1.ProjectPatchDefinitionBlock, error) {
-	model := &projectv1.ProjectPatchDefinitionBlock{}
+func ResourceIbmProjectMapToProjectDefinitionPatch(modelMap map[string]interface{}) (*projectv1.ProjectDefinitionPatch, error) {
+	model := &projectv1.ProjectDefinitionPatch{}
 	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
 		model.Name = core.StringPtr(modelMap["name"].(string))
 	}
-	if modelMap["auto_deploy"] != nil {
-		model.AutoDeploy = core.BoolPtr(modelMap["auto_deploy"].(bool))
-	}
 	if modelMap["description"] != nil && modelMap["description"].(string) != "" {
 		model.Description = core.StringPtr(modelMap["description"].(string))
+	}
+	if modelMap["auto_deploy_mode"] != nil && modelMap["auto_deploy_mode"].(string) != "" {
+		model.AutoDeployMode = core.StringPtr(modelMap["auto_deploy_mode"].(string))
 	}
 	if modelMap["monitoring_enabled"] != nil {
 		model.MonitoringEnabled = core.BoolPtr(modelMap["monitoring_enabled"].(bool))
@@ -1130,6 +1138,9 @@ func ResourceIbmProjectMapToProjectPatchDefinitionBlock(modelMap map[string]inte
 			return model, err
 		}
 		model.TerraformEngine = TerraformEngineModel
+	}
+	if modelMap["auto_deploy"] != nil {
+		model.AutoDeploy = core.BoolPtr(modelMap["auto_deploy"].(bool))
 	}
 	return model, nil
 }
@@ -1248,7 +1259,7 @@ func ResourceIbmProjectProjectEnvironmentSummaryDefinitionToMap(model *projectv1
 	return modelMap, nil
 }
 
-func ResourceIbmProjectProjectDefinitionPropertiesToMap(model *projectv1.ProjectDefinitionProperties) (map[string]interface{}, error) {
+func ResourceIbmProjectProjectDefinitionToMap(model *projectv1.ProjectDefinition) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Name != nil {
 		modelMap["name"] = *model.Name
@@ -1256,9 +1267,7 @@ func ResourceIbmProjectProjectDefinitionPropertiesToMap(model *projectv1.Project
 	if model.Description != nil {
 		modelMap["description"] = *model.Description
 	}
-	if model.AutoDeploy != nil {
-		modelMap["auto_deploy"] = *model.AutoDeploy
-	}
+	modelMap["auto_deploy_mode"] = *model.AutoDeployMode
 	if model.MonitoringEnabled != nil {
 		modelMap["monitoring_enabled"] = *model.MonitoringEnabled
 	}
@@ -1278,6 +1287,9 @@ func ResourceIbmProjectProjectDefinitionPropertiesToMap(model *projectv1.Project
 			return modelMap, err
 		}
 		modelMap["terraform_engine"] = []map[string]interface{}{terraformEngineMap}
+	}
+	if model.AutoDeploy != nil {
+		modelMap["auto_deploy"] = *model.AutoDeploy
 	}
 	return modelMap, nil
 }
