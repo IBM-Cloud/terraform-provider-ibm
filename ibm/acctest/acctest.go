@@ -1319,13 +1319,13 @@ func init() {
 	Pi_instance_id = os.Getenv("PI_INSTANCE_ID")
 	if Pi_instance_id == "" {
 		Pi_instance_id = "terraform-test-power"
-		fmt.Println("[INFO] Set the environment variable PI_INSTANCE_ID for testing PI_INSTANCE_ID resource else it is set to default value 'terraform-test-power'")
+		fmt.Println("[INFO] Set the environment variable PI_INSTANCE_ID for testing ibm_pi_instance resource else it is set to default value 'terraform-test-power'")
 	}
 
 	Pi_instance_name = os.Getenv("PI_INSTANCE_NAME")
 	if Pi_instance_name == "" {
 		Pi_instance_name = "terraform-test-power"
-		fmt.Println("[INFO] Set the environment variable PI_INSTANCE_NAME for testing PI_INSTANCE_NAME resource else it is set to default value 'terraform-test-power'")
+		fmt.Println("[INFO] Set the environment variable PI_INSTANCE_NAME for testing ibm_pi_instance resource else it is set to default value 'terraform-test-power'")
 	}
 
 	Pi_dhcp_id = os.Getenv("PI_DHCP_ID")

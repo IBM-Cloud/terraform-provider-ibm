@@ -32,6 +32,6 @@ func testAccCheckIBMPIInstanceIPDataSourceConfig() string {
 		data "ibm_pi_instance_ip" "testacc_ds_instance_ip" {
 			pi_cloud_instance_id = "%[1]s"
 			pi_instance_id       = "%[2]s"
-			pi_network_id        = "%[3]s"
-		}`, acc.Pi_cloud_instance_id, acc.Pi_instance_id, acc.Pi_network_id)
+			pi_network_name      = "%[3]s"
+		}`, acc.Pi_cloud_instance_id, acc.Pi_instance_id, acc.Pi_network_name)
 }

@@ -38,6 +38,7 @@ func DataSourceIBMPIInstance() *schema.Resource {
 			Arg_InstanceName: {
 				AtLeastOneOf:  []string{Arg_InstanceID, Arg_InstanceName},
 				ConflictsWith: []string{Arg_InstanceID},
+				Deprecated:    "The pi_instance_name field is deprecated. Please use pi_instance_id instead",
 				Description:   "The name of the PVM instance.",
 				Optional:      true,
 				Type:          schema.TypeString,

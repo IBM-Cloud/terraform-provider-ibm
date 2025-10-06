@@ -40,6 +40,7 @@ func DataSourceIBMPIPVMSnapshot() *schema.Resource {
 			Arg_InstanceName: {
 				AtLeastOneOf:  []string{Arg_InstanceID, Arg_InstanceName},
 				ConflictsWith: []string{Arg_InstanceID},
+				Deprecated:    "The pi_instance_name field is deprecated. Please use pi_instance_id instead",
 				Description:   "The name of the PVM instance.",
 				Optional:      true,
 				Type:          schema.TypeString,
@@ -119,7 +120,7 @@ func DataSourceIBMPIPVMSnapshot() *schema.Resource {
 func dataSourceIBMPISnapshotRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_pvm_snapshot", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "(Data) ibm_pi_pvm_snapshot", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -136,7 +137,7 @@ func dataSourceIBMPISnapshotRead(ctx context.Context, d *schema.ResourceData, me
 	snapshotData, err := snapshot.GetSnapShotVM(instanceID)
 
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetSnapShotVM failed: %s", err.Error()), "ibm_pi_pvm_snapshot", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetSnapShotVM failed: %s", err.Error()), "(Data) ibm_pi_pvm_snapshot", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
