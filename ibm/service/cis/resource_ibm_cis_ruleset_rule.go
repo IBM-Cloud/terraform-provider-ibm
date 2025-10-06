@@ -311,6 +311,7 @@ func ResourceIBMCISRulesetRule() *schema.Resource {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "Rules of the rulesets",
+				MaxItems:    1,
 				Elem:        CISRulesetsRulesObject,
 			},
 		},
