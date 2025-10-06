@@ -28,6 +28,7 @@ func ResourceIBMTrustedProfileTemplate() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"account_id": {
 				Type:        schema.TypeString,
+				Optional:    true,
 				Computed:    true,
 				Description: "ID of the account where the template resides.",
 			},
@@ -277,6 +278,13 @@ func resourceIBMTrustedProfileTemplateCreate(context context.Context, d *schema.
 
 	createProfileTemplateOptions := &iamidentityv1.CreateProfileTemplateOptions{}
 
+	if _, ok := d.GetOk("account_id"); ok {
+		createProfileTemplateOptions.SetAccountID(d.Get("account_id").(string))
+	} else {
+		userDetails, _ := meta.(conns.ClientSession).BluemixUserDetails()
+		accountID := userDetails.UserAccount
+		createProfileTemplateOptions.SetAccountID(accountID)
+	}
 	if _, ok := d.GetOk("name"); ok {
 		createProfileTemplateOptions.SetName(d.Get("name").(string))
 	}
@@ -302,10 +310,6 @@ func resourceIBMTrustedProfileTemplateCreate(context context.Context, d *schema.
 		}
 		createProfileTemplateOptions.SetPolicyTemplateReferences(policyTemplateReferences)
 	}
-
-	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
-	accountID := userDetails.UserAccount
-	createProfileTemplateOptions.SetAccountID(accountID)
 
 	trustedProfileTemplateResponse, response, err := iamIdentityClient.CreateProfileTemplateWithContext(context, createProfileTemplateOptions)
 	if err != nil {
@@ -333,7 +337,13 @@ func resourceIBMTrustedProfileTemplateCreateVersion(context context.Context, d *
 	}
 
 	createProfileTemplateVersionOptions := &iamidentityv1.CreateProfileTemplateVersionOptions{}
-
+	if _, ok := d.GetOk("account_id"); ok {
+		createProfileTemplateVersionOptions.SetAccountID(d.Get("account_id").(string))
+	} else {
+		userDetails, _ := meta.(conns.ClientSession).BluemixUserDetails()
+		accountID := userDetails.UserAccount
+		createProfileTemplateVersionOptions.SetAccountID(accountID)
+	}
 	id, _, err := parseResourceId(d.Get("template_id").(string))
 	if err != nil {
 		log.Printf("[DEBUG] resourceIBMAccountSettingsTemplateRead failed %s", err)
@@ -367,10 +377,6 @@ func resourceIBMTrustedProfileTemplateCreateVersion(context context.Context, d *
 		}
 		createProfileTemplateVersionOptions.SetPolicyTemplateReferences(policyTemplateReferences)
 	}
-
-	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
-	accountID := userDetails.UserAccount
-	createProfileTemplateVersionOptions.SetAccountID(accountID)
 
 	trustedProfileTemplateVersionResponse, response, err := iamIdentityClient.CreateProfileTemplateVersionWithContext(context, createProfileTemplateVersionOptions)
 	if err != nil {
@@ -471,7 +477,7 @@ func resourceIBMTrustedProfileTemplateRead(context context.Context, d *schema.Re
 	var history []map[string]interface{}
 	if !core.IsNil(trustedProfileTemplateResponse.History) {
 		for _, historyItem := range trustedProfileTemplateResponse.History {
-			historyItemMap, err := resourceIBMTrustedProfileTemplateEntityHistoryRecordToMap(&historyItem)
+			historyItemMap, err := EnityHistoryRecordToMap(&historyItem)
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -805,16 +811,5 @@ func resourceIBMTrustedProfileTemplatePolicyTemplateReferenceToMap(model *iamide
 	modelMap := make(map[string]interface{})
 	modelMap["id"] = model.ID
 	modelMap["version"] = model.Version
-	return modelMap, nil
-}
-
-func resourceIBMTrustedProfileTemplateEntityHistoryRecordToMap(model *iamidentityv1.EnityHistoryRecord) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["timestamp"] = model.Timestamp
-	modelMap["iam_id"] = model.IamID
-	modelMap["iam_id_account"] = model.IamIDAccount
-	modelMap["action"] = model.Action
-	modelMap["params"] = model.Params
-	modelMap["message"] = model.Message
 	return modelMap, nil
 }

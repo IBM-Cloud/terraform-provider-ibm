@@ -19,17 +19,18 @@ import (
 
 func TestAccIBMAccountSettingsTemplateBasic(t *testing.T) {
 	var conf iamidentityv1.AccountSettingsTemplateResponse
+	enterpriseAccountId := acc.IamIdentityEnterpriseAccountId
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	description := fmt.Sprintf("tf_desc_%d", acctest.RandIntRange(10, 100))
 	descriptionUpdate := fmt.Sprintf("tf_desc_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		PreCheck:     func() { acc.TestAccPreCheckIamIdentityEnterpriseTemplates(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMAccountSettingsTemplateDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMAccountSettingsTemplateConfigBasic(name, description),
+				Config: testAccCheckIBMAccountSettingsTemplateConfigBasic(enterpriseAccountId, name, description),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMAccountSettingsTemplateExists("ibm_iam_account_settings_template.account_settings_template_instance", conf),
 					resource.TestCheckResourceAttr("ibm_iam_account_settings_template.account_settings_template_instance", "name", name),
@@ -37,7 +38,7 @@ func TestAccIBMAccountSettingsTemplateBasic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckIBMAccountSettingsTemplateConfigBasic(name, descriptionUpdate),
+				Config: testAccCheckIBMAccountSettingsTemplateConfigBasic(enterpriseAccountId, name, descriptionUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMAccountSettingsTemplateExists("ibm_iam_account_settings_template.account_settings_template_instance", conf),
 					resource.TestCheckResourceAttr("ibm_iam_account_settings_template.account_settings_template_instance", "name", name),
@@ -50,15 +51,16 @@ func TestAccIBMAccountSettingsTemplateBasic(t *testing.T) {
 
 func TestAccIBMAccountSettingsTemplateVersionBasic(t *testing.T) {
 	var conf iamidentityv1.AccountSettingsTemplateResponse
+	enterpriseAccountId := acc.IamIdentityEnterpriseAccountId
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		PreCheck:     func() { acc.TestAccPreCheckIamIdentityEnterpriseTemplates(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMAccountSettingsTemplateDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMAccountSettingsTemplateVersionConfigBasic(name),
+				Config: testAccCheckIBMAccountSettingsTemplateVersionConfigBasic(enterpriseAccountId, name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMAccountSettingsTemplateExists("ibm_iam_account_settings_template.account_settings_template_instance", conf),
 					testAccCheckIBMAccountSettingsTemplateExists("ibm_iam_account_settings_template.account_settings_template_version", conf),
@@ -72,6 +74,7 @@ func TestAccIBMAccountSettingsTemplateVersionBasic(t *testing.T) {
 
 func TestAccIBMAccountSettingsTemplateAllArgs(t *testing.T) {
 	var conf iamidentityv1.AccountSettingsTemplateResponse
+	enterpriseAccountId := acc.IamIdentityEnterpriseAccountId
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	description := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
 	mfa := "LEVEL1"
@@ -79,12 +82,12 @@ func TestAccIBMAccountSettingsTemplateAllArgs(t *testing.T) {
 	mfaUpdate := "LEVEL3"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		PreCheck:     func() { acc.TestAccPreCheckIamIdentityEnterpriseTemplates(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMAccountSettingsTemplateDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMAccountSettingsTemplateConfig(name, description, "false", mfa),
+				Config: testAccCheckIBMAccountSettingsTemplateConfig(enterpriseAccountId, name, description, "false", mfa),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMAccountSettingsTemplateExists("ibm_iam_account_settings_template.account_settings_template_instance", conf),
 					resource.TestCheckResourceAttr("ibm_iam_account_settings_template.account_settings_template_instance", "name", name),
@@ -93,7 +96,7 @@ func TestAccIBMAccountSettingsTemplateAllArgs(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckIBMAccountSettingsTemplateConfig(name, descriptionUpdate, "false", mfaUpdate),
+				Config: testAccCheckIBMAccountSettingsTemplateConfig(enterpriseAccountId, name, descriptionUpdate, "false", mfaUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_iam_account_settings_template.account_settings_template_instance", "name", name),
 					resource.TestCheckResourceAttr("ibm_iam_account_settings_template.account_settings_template_instance", "description", descriptionUpdate),
@@ -101,7 +104,7 @@ func TestAccIBMAccountSettingsTemplateAllArgs(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckIBMAccountSettingsTemplateConfig(name, descriptionUpdate, "true", mfaUpdate),
+				Config: testAccCheckIBMAccountSettingsTemplateConfig(enterpriseAccountId, name, descriptionUpdate, "true", mfaUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_iam_account_settings_template.account_settings_template_instance", "committed", "true"),
 				),
@@ -115,21 +118,23 @@ func TestAccIBMAccountSettingsTemplateAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMAccountSettingsTemplateConfigBasic(name string, description string) string {
+func testAccCheckIBMAccountSettingsTemplateConfigBasic(enterpriseAccountId string, name string, description string) string {
 	return fmt.Sprintf(`
 		resource "ibm_iam_account_settings_template" "account_settings_template_instance" {
+			account_id = "%s"
 			name = "%s"
 			description = "%s"
 			account_settings {
 				mfa = "LEVEL3"
 			}
 		}
-	`, name, description)
+	`, enterpriseAccountId, name, description)
 }
 
-func testAccCheckIBMAccountSettingsTemplateVersionConfigBasic(name string) string {
+func testAccCheckIBMAccountSettingsTemplateVersionConfigBasic(enterpriseAccountId string, name string) string {
 	return fmt.Sprintf(`
 		resource "ibm_iam_account_settings_template" "account_settings_template_instance" {
+			account_id = "%s"
 			name = "%s"
 			account_settings {
 			
@@ -137,18 +142,20 @@ func testAccCheckIBMAccountSettingsTemplateVersionConfigBasic(name string) strin
 		}
 		resource "ibm_iam_account_settings_template" "account_settings_template_version" {
 			template_id = ibm_iam_account_settings_template.account_settings_template_instance.id
+			account_id = ibm_iam_account_settings_template.account_settings_template_instance.account_id
 			name = "%s"
 			description = "Description for version 2"
 			account_settings {
 			
 			}
 		}
-	`, name, name)
+	`, enterpriseAccountId, name, name)
 }
 
-func testAccCheckIBMAccountSettingsTemplateConfig(name string, description string, committed string, mfa string) string {
+func testAccCheckIBMAccountSettingsTemplateConfig(enterpriseAccountId string, name string, description string, committed string, mfa string) string {
 	return fmt.Sprintf(`
 		resource "ibm_iam_account_settings_template" "account_settings_template_instance" {
+			account_id = "%s"
 			name = "%s"
 			description = "%s"
 			committed = "%s"
@@ -168,7 +175,7 @@ func testAccCheckIBMAccountSettingsTemplateConfig(name string, description strin
 				system_refresh_token_expiration_in_seconds = "NOT_SET"
 			}
 		}
-	`, name, description, committed, mfa)
+	`, enterpriseAccountId, name, description, committed, mfa)
 }
 
 func testAccCheckIBMAccountSettingsTemplateExists(n string, obj iamidentityv1.AccountSettingsTemplateResponse) resource.TestCheckFunc {

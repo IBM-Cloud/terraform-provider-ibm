@@ -35,13 +35,24 @@ func TestAccIBMIamTrustedProfileIdentityDataSourceBasic(t *testing.T) {
 
 func testAccCheckIBMIamTrustedProfileIdentityDataSourceConfigBasic() string {
 	profileID := acc.IAMTrustedProfileID
-	identityType := "user"
-	identifier := acc.Ibmid2
+	identifier := acc.Ibmid1
+	accountId := acc.IAMAccountId
+
 	return fmt.Sprintf(`
-		data "ibm_iam_trusted_profile_identity" "iam_trusted_profile_identity" {
+		resource "ibm_iam_trusted_profile_identity" "profile_identity" {
 			profile_id = "%s"
-			identity_type = "%s"
-			identifier_id = "%s"
+			identity_type = "user"
+			identifier = "%s"
+			type = "user"
+			accounts = [
+				"%s"
+			]
 		}
-	`, profileID, identityType, identifier)
+		
+		data "ibm_iam_trusted_profile_identity" "iam_trusted_profile_identity" {
+			profile_id = ibm_iam_trusted_profile_identity.profile_identity.profile_id
+			identity_type = ibm_iam_trusted_profile_identity.profile_identity.identity_type
+			identifier_id = ibm_iam_trusted_profile_identity.profile_identity.identifier
+		}
+	`, profileID, identifier, accountId)
 }

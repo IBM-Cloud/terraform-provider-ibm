@@ -6,9 +6,10 @@ package iamidentity
 import (
 	"context"
 	"fmt"
-	"github.com/IBM/go-sdk-core/v5/core"
 	"log"
 	"strconv"
+
+	"github.com/IBM/go-sdk-core/v5/core"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -356,7 +357,7 @@ func dataSourceIBMTrustedProfileTemplateRead(context context.Context, d *schema.
 	var history []map[string]interface{}
 	if trustedProfileTemplateResponse.History != nil {
 		for _, modelItem := range trustedProfileTemplateResponse.History {
-			modelMap, err := dataSourceIBMTrustedProfileTemplateEnityHistoryRecordToMap(&modelItem)
+			modelMap, err := EnityHistoryRecordToMap(&modelItem)
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -475,16 +476,5 @@ func dataSourceIBMTrustedProfileTemplatePolicyTemplateReferenceToMap(model *iami
 	modelMap := make(map[string]interface{})
 	modelMap["id"] = model.ID
 	modelMap["version"] = model.Version
-	return modelMap, nil
-}
-
-func dataSourceIBMTrustedProfileTemplateEnityHistoryRecordToMap(model *iamidentityv1.EnityHistoryRecord) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["timestamp"] = model.Timestamp
-	modelMap["iam_id"] = model.IamID
-	modelMap["iam_id_account"] = model.IamIDAccount
-	modelMap["action"] = model.Action
-	modelMap["params"] = model.Params
-	modelMap["message"] = model.Message
 	return modelMap, nil
 }

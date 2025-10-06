@@ -468,7 +468,7 @@ func resourceIBMTrustedProfileTemplateAssignmentRead(context context.Context, d 
 	history := []map[string]interface{}{}
 	if !core.IsNil(templateAssignmentResponse.History) {
 		for _, historyItem := range templateAssignmentResponse.History {
-			historyItemMap, err := resourceIBMTrustedProfileTemplateAssignmentEnityHistoryRecordToMap(&historyItem)
+			historyItemMap, err := EnityHistoryRecordToMap(&historyItem)
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -734,16 +734,5 @@ func resourceIBMTrustedProfileTemplateAssignmentTemplateAssignmentResourceErrorT
 	if model.StatusCode != nil {
 		modelMap["status_code"] = model.StatusCode
 	}
-	return modelMap, nil
-}
-
-func resourceIBMTrustedProfileTemplateAssignmentEnityHistoryRecordToMap(model *iamidentityv1.EnityHistoryRecord) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["timestamp"] = model.Timestamp
-	modelMap["iam_id"] = model.IamID
-	modelMap["iam_id_account"] = model.IamIDAccount
-	modelMap["action"] = model.Action
-	modelMap["params"] = model.Params
-	modelMap["message"] = model.Message
 	return modelMap, nil
 }

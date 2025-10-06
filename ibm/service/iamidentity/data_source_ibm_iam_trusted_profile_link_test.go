@@ -74,7 +74,7 @@ func testAccCheckIBMIamTrustedProfileLinkDataSourceConfigBasic(profileLinkProfil
 			profile_id = ibm_iam_trusted_profile.iam_trusted_profile.id
 			cr_type = "%s"
 			link {
-				crn = "%s"
+				crn = ibm_iam_trusted_profile.iam_trusted_profile.crn # just need a valid CRN format for testing, does not need to be CR
 				namespace = "namespace"
 				name = "name"
 			}
@@ -84,7 +84,7 @@ func testAccCheckIBMIamTrustedProfileLinkDataSourceConfigBasic(profileLinkProfil
 			profile_id = ibm_iam_trusted_profile_link.iam_trusted_profile_link.profile_id
 			link_id = ibm_iam_trusted_profile_link.iam_trusted_profile_link.link_id
 		}
-	`, profileLinkProfileName, profileLinkCrType, acc.IksSa)
+	`, profileLinkProfileName, profileLinkCrType)
 }
 
 func testAccCheckIBMIamTrustedProfileLinkDataSourceConfig(profileLinkProfileName string, profileLinkCrType string, profileLinkName string) string {
@@ -96,7 +96,7 @@ func testAccCheckIBMIamTrustedProfileLinkDataSourceConfig(profileLinkProfileName
 			profile_id = ibm_iam_trusted_profile.iam_trusted_profile.id
 			cr_type = "%s"
 			link {
-				crn = "%s"
+				crn = ibm_iam_trusted_profile.iam_trusted_profile.crn # just need a valid CRN format for testing, does not need to be CR
 				namespace = "namespace"
 				name = "name"
 			}
@@ -107,5 +107,5 @@ func testAccCheckIBMIamTrustedProfileLinkDataSourceConfig(profileLinkProfileName
 			profile_id = ibm_iam_trusted_profile_link.iam_trusted_profile_link.profile_id
 			link_id = ibm_iam_trusted_profile_link.iam_trusted_profile_link.link_id
 		}
-	`, profileLinkProfileName, profileLinkCrType, acc.IksSa, profileLinkName)
+	`, profileLinkProfileName, profileLinkCrType, profileLinkName)
 }
