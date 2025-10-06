@@ -30,8 +30,8 @@ func TestAccIBMPIInstanceIPDataSource_basic(t *testing.T) {
 func testAccCheckIBMPIInstanceIPDataSourceConfig() string {
 	return fmt.Sprintf(`
 		data "ibm_pi_instance_ip" "testacc_ds_instance_ip" {
-			pi_network_name = "%[1]s"
-			pi_instance_name = "%[2]s"
-			pi_cloud_instance_id = "%[3]s"
-		}`, acc.Pi_network_name, acc.Pi_instance_name, acc.Pi_cloud_instance_id)
+			pi_cloud_instance_id = "%[1]s"
+			pi_instance_id       = "%[2]s"
+			pi_network_id        = "%[3]s"
+		}`, acc.Pi_cloud_instance_id, acc.Pi_instance_id, acc.Pi_network_id)
 }
