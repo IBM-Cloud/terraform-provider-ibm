@@ -44,6 +44,11 @@ func DataSourceIBMPISharedProcessorPools() *schema.Resource {
 							Description: "The available cores in the shared processor pool.",
 							Type:        schema.TypeInt,
 						},
+						Attr_CreationDate: {
+							Computed:    true,
+							Description: "Date of shared processor pool creation.",
+							Type:        schema.TypeString,
+						},
 						Attr_CRN: {
 							Computed:    true,
 							Description: "The CRN of this resource.",
@@ -99,7 +104,7 @@ func DataSourceIBMPISharedProcessorPools() *schema.Resource {
 	}
 }
 
-func dataSourceIBMPISharedProcessorPoolsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMPISharedProcessorPoolsRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
 		return diag.FromErr(err)
@@ -113,11 +118,12 @@ func dataSourceIBMPISharedProcessorPoolsRead(ctx context.Context, d *schema.Reso
 		return diag.Errorf("error fetching shared processor pools: %v", err)
 	}
 
-	result := make([]map[string]interface{}, 0, len(pools.SharedProcessorPools))
+	result := make([]map[string]any, 0, len(pools.SharedProcessorPools))
 	for _, pool := range pools.SharedProcessorPools {
-		key := map[string]interface{}{
+		key := map[string]any{
 			Attr_AllocatedCores:        *pool.AllocatedCores,
 			Attr_AvailableCores:        *pool.AvailableCores,
+			Attr_CreationDate:          pool.CreationDate.String(),
 			Attr_DedicatedHostID:       pool.DedicatedHostID,
 			Attr_HostID:                pool.HostID,
 			Attr_Name:                  *pool.Name,

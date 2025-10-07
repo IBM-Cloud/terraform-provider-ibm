@@ -383,10 +383,10 @@ func resourceIBMIsShareMountTargetCreate(context context.Context, d *schema.Reso
 			return tfErr.GetDiag()
 		}
 		if share != nil && share.Profile != nil && share.Profile.Name != nil {
-			if *share.Profile.Name == "dp2" {
-				shareMountTargetPrototype.TransitEncryption = &[]string{"ipsec"}[0]
-			} else if *share.Profile.Name == "rfs" {
+			if share.AccessControlMode != nil && *share.AccessControlMode == "security_group" && *share.Profile.Name == "rfs" {
 				shareMountTargetPrototype.TransitEncryption = &[]string{"stunnel"}[0]
+			} else {
+				shareMountTargetPrototype.TransitEncryption = &[]string{"none"}[0]
 			}
 		}
 	}

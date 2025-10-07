@@ -1,8 +1,8 @@
-// Copyright IBM Corp. 2024 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.92.1-44330004-20240620-143510
+ * IBM OpenAPI Terraform Generator Version: 3.107.1-41b0fbd0-20250825-080732
  */
 
 package project
@@ -17,6 +17,7 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/project-go-sdk/projectv1"
 )
 
@@ -72,7 +73,7 @@ func DataSourceIbmProject() *schema.Resource {
 			"cumulative_needs_attention_view_error": &schema.Schema{
 				Type:        schema.TypeBool,
 				Computed:    true,
-				Description: "A value of `true` indicates that the fetch of the needs attention items failed. This property only exists if there was an error when you retrieved the cumulative needs attention view.",
+				Description: "A value of `true` indicates that the fetch of the needs attention items failed. This property only exists if there was an error while retrieving the cumulative needs attention view.",
 			},
 			"location": &schema.Schema{
 				Type:        schema.TypeString,
@@ -92,7 +93,7 @@ func DataSourceIbmProject() *schema.Resource {
 			"href": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "A URL.",
+				Description: "A Url.",
 			},
 			"resource_group": &schema.Schema{
 				Type:        schema.TypeString,
@@ -130,7 +131,7 @@ func DataSourceIbmProject() *schema.Resource {
 												"locator_id": &schema.Schema{
 													Type:        schema.TypeString,
 													Computed:    true,
-													Description: "A unique concatenation of the catalog ID and the version ID that identify the deployable architecture in the catalog. I you're importing from an existing Schematics workspace that is not backed by cart, a `locator_id` is required. If you're using a Schematics workspace that is backed by cart, a `locator_id` is not necessary because the Schematics workspace has one.> There are 3 scenarios:> 1. If only a `locator_id` is specified, a new Schematics workspace is instantiated with that `locator_id`.> 2. If only a schematics `workspace_crn` is specified, a `400` is returned if a `locator_id` is not found in the existing schematics workspace.> 3. If both a Schematics `workspace_crn` and a `locator_id` are specified, a `400` message is returned if the specified `locator_id` does not agree with the `locator_id` in the existing Schematics workspace.> For more information of creating a Schematics workspace, see [Creating workspaces and importing your Terraform template](/docs/schematics?topic=schematics-sch-create-wks).",
+													Description: "A unique concatenation of the catalog ID and the version ID that identify the deployable architecture in the catalog. If importing from an existing Schematics workspace that is not backed by cart, a `locator_id` is required. If using a Schematics workspace that is backed by cart, a `locator_id` is not necessary because the Schematics workspace has one.> There are 3 scenarios:> 1. If only a `locator_id` is specified, a new Schematics workspace is instantiated with that `locator_id`.> 2. If only a schematics `workspace_crn` is specified, a `400` is returned if a `locator_id` is not found in the existing schematics workspace.> 3. If both a Schematics `workspace_crn` and a `locator_id` are specified, a `400` message is returned if the specified `locator_id` does not agree with the `locator_id` in the existing Schematics workspace.> For more information of creating a Schematics workspace, see [Creating workspaces and importing the Terraform template](/docs/schematics?topic=schematics-sch-create-wks).",
 												},
 											},
 										},
@@ -140,11 +141,6 @@ func DataSourceIbmProject() *schema.Resource {
 										Computed:    true,
 										Description: "The state of the configuration.",
 									},
-									"state_code": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "Computed state code clarifying the prerequisites for validation for the configuration.",
-									},
 									"version": &schema.Schema{
 										Type:        schema.TypeInt,
 										Computed:    true,
@@ -153,7 +149,7 @@ func DataSourceIbmProject() *schema.Resource {
 									"href": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "A URL.",
+										Description: "A Url.",
 									},
 								},
 							},
@@ -178,7 +174,7 @@ func DataSourceIbmProject() *schema.Resource {
 												"locator_id": &schema.Schema{
 													Type:        schema.TypeString,
 													Computed:    true,
-													Description: "A unique concatenation of the catalog ID and the version ID that identify the deployable architecture in the catalog. I you're importing from an existing Schematics workspace that is not backed by cart, a `locator_id` is required. If you're using a Schematics workspace that is backed by cart, a `locator_id` is not necessary because the Schematics workspace has one.> There are 3 scenarios:> 1. If only a `locator_id` is specified, a new Schematics workspace is instantiated with that `locator_id`.> 2. If only a schematics `workspace_crn` is specified, a `400` is returned if a `locator_id` is not found in the existing schematics workspace.> 3. If both a Schematics `workspace_crn` and a `locator_id` are specified, a `400` message is returned if the specified `locator_id` does not agree with the `locator_id` in the existing Schematics workspace.> For more information of creating a Schematics workspace, see [Creating workspaces and importing your Terraform template](/docs/schematics?topic=schematics-sch-create-wks).",
+													Description: "A unique concatenation of the catalog ID and the version ID that identify the deployable architecture in the catalog. If importing from an existing Schematics workspace that is not backed by cart, a `locator_id` is required. If using a Schematics workspace that is backed by cart, a `locator_id` is not necessary because the Schematics workspace has one.> There are 3 scenarios:> 1. If only a `locator_id` is specified, a new Schematics workspace is instantiated with that `locator_id`.> 2. If only a schematics `workspace_crn` is specified, a `400` is returned if a `locator_id` is not found in the existing schematics workspace.> 3. If both a Schematics `workspace_crn` and a `locator_id` are specified, a `400` message is returned if the specified `locator_id` does not agree with the `locator_id` in the existing Schematics workspace.> For more information of creating a Schematics workspace, see [Creating workspaces and importing the Terraform template](/docs/schematics?topic=schematics-sch-create-wks).",
 												},
 											},
 										},
@@ -188,11 +184,6 @@ func DataSourceIbmProject() *schema.Resource {
 										Computed:    true,
 										Description: "The state of the configuration.",
 									},
-									"state_code": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "Computed state code clarifying the prerequisites for validation for the configuration.",
-									},
 									"version": &schema.Schema{
 										Type:        schema.TypeInt,
 										Computed:    true,
@@ -201,7 +192,7 @@ func DataSourceIbmProject() *schema.Resource {
 									"href": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "A URL.",
+										Description: "A Url.",
 									},
 								},
 							},
@@ -234,7 +225,7 @@ func DataSourceIbmProject() *schema.Resource {
 						"href": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "A URL.",
+							Description: "A Url.",
 						},
 						"definition": &schema.Schema{
 							Type:        schema.TypeList,
@@ -255,7 +246,7 @@ func DataSourceIbmProject() *schema.Resource {
 									"locator_id": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "A unique concatenation of the catalog ID and the version ID that identify the deployable architecture in the catalog. I you're importing from an existing Schematics workspace that is not backed by cart, a `locator_id` is required. If you're using a Schematics workspace that is backed by cart, a `locator_id` is not necessary because the Schematics workspace has one.> There are 3 scenarios:> 1. If only a `locator_id` is specified, a new Schematics workspace is instantiated with that `locator_id`.> 2. If only a schematics `workspace_crn` is specified, a `400` is returned if a `locator_id` is not found in the existing schematics workspace.> 3. If both a Schematics `workspace_crn` and a `locator_id` are specified, a `400` message is returned if the specified `locator_id` does not agree with the `locator_id` in the existing Schematics workspace.> For more information of creating a Schematics workspace, see [Creating workspaces and importing your Terraform template](/docs/schematics?topic=schematics-sch-create-wks).",
+										Description: "A unique concatenation of the catalog ID and the version ID that identify the deployable architecture in the catalog. If importing from an existing Schematics workspace that is not backed by cart, a `locator_id` is required. If using a Schematics workspace that is backed by cart, a `locator_id` is not necessary because the Schematics workspace has one.> There are 3 scenarios:> 1. If only a `locator_id` is specified, a new Schematics workspace is instantiated with that `locator_id`.> 2. If only a schematics `workspace_crn` is specified, a `400` is returned if a `locator_id` is not found in the existing schematics workspace.> 3. If both a Schematics `workspace_crn` and a `locator_id` are specified, a `400` message is returned if the specified `locator_id` does not agree with the `locator_id` in the existing Schematics workspace.> For more information of creating a Schematics workspace, see [Creating workspaces and importing the Terraform template](/docs/schematics?topic=schematics-sch-create-wks).",
 									},
 								},
 							},
@@ -274,7 +265,7 @@ func DataSourceIbmProject() *schema.Resource {
 									"href": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "A URL.",
+										Description: "A Url.",
 									},
 									"definition": &schema.Schema{
 										Type:        schema.TypeList,
@@ -331,7 +322,7 @@ func DataSourceIbmProject() *schema.Resource {
 									"href": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "A URL.",
+										Description: "A Url.",
 									},
 									"definition": &schema.Schema{
 										Type:        schema.TypeList,
@@ -363,7 +354,7 @@ func DataSourceIbmProject() *schema.Resource {
 						"href": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "A URL.",
+							Description: "A Url.",
 						},
 						"definition": &schema.Schema{
 							Type:        schema.TypeList,
@@ -398,15 +389,10 @@ func DataSourceIbmProject() *schema.Resource {
 							Computed:    true,
 							Description: "The name of the project.  It's unique within the account across regions.",
 						},
-						"destroy_on_delete": &schema.Schema{
-							Type:        schema.TypeBool,
-							Computed:    true,
-							Description: "The policy that indicates whether the resources are destroyed or not when a project is deleted.",
-						},
 						"description": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "A brief explanation of the project's use in the configuration of a deployable architecture. You can create a project without providing a description.",
+							Description: "A brief explanation of the project's use in the configuration of a deployable architecture. A project can be created without providing a description.",
 						},
 						"auto_deploy": &schema.Schema{
 							Type:        schema.TypeBool,
@@ -416,7 +402,61 @@ func DataSourceIbmProject() *schema.Resource {
 						"monitoring_enabled": &schema.Schema{
 							Type:        schema.TypeBool,
 							Computed:    true,
-							Description: "A boolean flag to enable automatic drift detection. Use this field to run a daily check to compare your configurations to your deployed resources to detect any difference.",
+							Description: "A boolean flag to enable automatic drift detection. Use this field to run a daily check to compare the configurations to those deployed resources to detect any difference.",
+						},
+						"destroy_on_delete": &schema.Schema{
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "The policy that indicates whether the resources are undeployed or not when a project is deleted.",
+						},
+						"store": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The details required to custom store project configs.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The type of store used for the project.",
+									},
+									"url": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "A Url.",
+									},
+									"token": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Sensitive:   true,
+										Description: "The IBM Cloud API Key. It can be either raw or pulled from the catalog via a `CRN` or `JSON` blob.",
+									},
+									"config_directory": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The directory where project configs are stored.",
+									},
+								},
+							},
+						},
+						"terraform_engine": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "Experimental schema - this is for prototyping purposes.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"id": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The identifier of the Terraform engine.",
+									},
+									"type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The type of the engine.",
+									},
+								},
+							},
 						},
 					},
 				},
@@ -428,8 +468,7 @@ func DataSourceIbmProject() *schema.Resource {
 func dataSourceIbmProjectRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	projectClient, err := meta.(conns.ClientSession).ProjectV1()
 	if err != nil {
-		// Error is coming from SDK client, so it doesn't need to be discriminated.
-		tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_project", "read")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_project", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -445,7 +484,7 @@ func dataSourceIbmProjectRead(context context.Context, d *schema.ResourceData, m
 		return tfErr.GetDiag()
 	}
 
-	d.SetId(fmt.Sprintf("%s", *getProjectOptions.ID))
+	d.SetId(*getProjectOptions.ID)
 
 	if err = d.Set("crn", project.Crn); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting crn: %s", err), "(Data) ibm_project", "read", "set-crn").GetDiag()
@@ -456,21 +495,21 @@ func dataSourceIbmProjectRead(context context.Context, d *schema.ResourceData, m
 	}
 
 	cumulativeNeedsAttentionView := []map[string]interface{}{}
-	if project.CumulativeNeedsAttentionView != nil {
-		for _, modelItem := range project.CumulativeNeedsAttentionView {
-			modelMap, err := DataSourceIbmProjectCumulativeNeedsAttentionToMap(&modelItem)
-			if err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_project", "read", "cumulative_needs_attention_view-to-map").GetDiag()
-			}
-			cumulativeNeedsAttentionView = append(cumulativeNeedsAttentionView, modelMap)
+	for _, cumulativeNeedsAttentionViewItem := range project.CumulativeNeedsAttentionView {
+		cumulativeNeedsAttentionViewItemMap, err := DataSourceIbmProjectCumulativeNeedsAttentionToMap(&cumulativeNeedsAttentionViewItem) // #nosec G601
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_project", "read", "cumulative_needs_attention_view-to-map").GetDiag()
 		}
+		cumulativeNeedsAttentionView = append(cumulativeNeedsAttentionView, cumulativeNeedsAttentionViewItemMap)
 	}
 	if err = d.Set("cumulative_needs_attention_view", cumulativeNeedsAttentionView); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting cumulative_needs_attention_view: %s", err), "(Data) ibm_project", "read", "set-cumulative_needs_attention_view").GetDiag()
 	}
 
-	if err = d.Set("cumulative_needs_attention_view_error", project.CumulativeNeedsAttentionViewError); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting cumulative_needs_attention_view_error: %s", err), "(Data) ibm_project", "read", "set-cumulative_needs_attention_view_error").GetDiag()
+	if !core.IsNil(project.CumulativeNeedsAttentionViewError) {
+		if err = d.Set("cumulative_needs_attention_view_error", project.CumulativeNeedsAttentionViewError); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting cumulative_needs_attention_view_error: %s", err), "(Data) ibm_project", "read", "set-cumulative_needs_attention_view_error").GetDiag()
+		}
 	}
 
 	if err = d.Set("location", project.Location); err != nil {
@@ -493,46 +532,42 @@ func dataSourceIbmProjectRead(context context.Context, d *schema.ResourceData, m
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_group: %s", err), "(Data) ibm_project", "read", "set-resource_group").GetDiag()
 	}
 
-	if err = d.Set("event_notifications_crn", project.EventNotificationsCrn); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting event_notifications_crn: %s", err), "(Data) ibm_project", "read", "set-event_notifications_crn").GetDiag()
+	if !core.IsNil(project.EventNotificationsCrn) {
+		if err = d.Set("event_notifications_crn", project.EventNotificationsCrn); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting event_notifications_crn: %s", err), "(Data) ibm_project", "read", "set-event_notifications_crn").GetDiag()
+		}
 	}
 
 	configs := []map[string]interface{}{}
-	if project.Configs != nil {
-		for _, modelItem := range project.Configs {
-			modelMap, err := DataSourceIbmProjectProjectConfigSummaryToMap(&modelItem)
-			if err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_project", "read", "configs-to-map").GetDiag()
-			}
-			configs = append(configs, modelMap)
+	for _, configsItem := range project.Configs {
+		configsItemMap, err := DataSourceIbmProjectProjectConfigSummaryToMap(&configsItem) // #nosec G601
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_project", "read", "configs-to-map").GetDiag()
 		}
+		configs = append(configs, configsItemMap)
 	}
 	if err = d.Set("configs", configs); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting configs: %s", err), "(Data) ibm_project", "read", "set-configs").GetDiag()
 	}
 
 	environments := []map[string]interface{}{}
-	if project.Environments != nil {
-		for _, modelItem := range project.Environments {
-			modelMap, err := DataSourceIbmProjectProjectEnvironmentSummaryToMap(&modelItem)
-			if err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_project", "read", "environments-to-map").GetDiag()
-			}
-			environments = append(environments, modelMap)
+	for _, environmentsItem := range project.Environments {
+		environmentsItemMap, err := DataSourceIbmProjectProjectEnvironmentSummaryToMap(&environmentsItem) // #nosec G601
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_project", "read", "environments-to-map").GetDiag()
 		}
+		environments = append(environments, environmentsItemMap)
 	}
 	if err = d.Set("environments", environments); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting environments: %s", err), "(Data) ibm_project", "read", "set-environments").GetDiag()
 	}
 
 	definition := []map[string]interface{}{}
-	if project.Definition != nil {
-		modelMap, err := DataSourceIbmProjectProjectDefinitionPropertiesToMap(project.Definition)
-		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_project", "read", "definition-to-map").GetDiag()
-		}
-		definition = append(definition, modelMap)
+	definitionMap, err := DataSourceIbmProjectProjectDefinitionPropertiesToMap(project.Definition)
+	if err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_project", "read", "definition-to-map").GetDiag()
 	}
+	definition = append(definition, definitionMap)
 	if err = d.Set("definition", definition); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting definition: %s", err), "(Data) ibm_project", "read", "set-definition").GetDiag()
 	}
@@ -589,9 +624,7 @@ func DataSourceIbmProjectProjectConfigSummaryToMap(model *projectv1.ProjectConfi
 		return modelMap, err
 	}
 	modelMap["project"] = []map[string]interface{}{projectMap}
-	if model.DeploymentModel != nil {
-		modelMap["deployment_model"] = *model.DeploymentModel
-	}
+	modelMap["deployment_model"] = *model.DeploymentModel
 	return modelMap, nil
 }
 
@@ -603,9 +636,6 @@ func DataSourceIbmProjectProjectConfigVersionSummaryToMap(model *projectv1.Proje
 	}
 	modelMap["definition"] = []map[string]interface{}{definitionMap}
 	modelMap["state"] = *model.State
-	if model.StateCode != nil {
-		modelMap["state_code"] = *model.StateCode
-	}
 	modelMap["version"] = flex.IntValue(model.Version)
 	modelMap["href"] = *model.Href
 	return modelMap, nil
@@ -678,14 +708,54 @@ func DataSourceIbmProjectProjectEnvironmentSummaryDefinitionToMap(model *project
 
 func DataSourceIbmProjectProjectDefinitionPropertiesToMap(model *projectv1.ProjectDefinitionProperties) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["name"] = *model.Name
-	modelMap["destroy_on_delete"] = *model.DestroyOnDelete
-	modelMap["description"] = *model.Description
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
+	}
+	if model.Description != nil {
+		modelMap["description"] = *model.Description
+	}
 	if model.AutoDeploy != nil {
 		modelMap["auto_deploy"] = *model.AutoDeploy
 	}
 	if model.MonitoringEnabled != nil {
 		modelMap["monitoring_enabled"] = *model.MonitoringEnabled
 	}
+	if model.DestroyOnDelete != nil {
+		modelMap["destroy_on_delete"] = *model.DestroyOnDelete
+	}
+	if model.Store != nil {
+		storeMap, err := DataSourceIbmProjectProjectDefinitionStoreToMap(model.Store)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["store"] = []map[string]interface{}{storeMap}
+	}
+	if model.TerraformEngine != nil {
+		terraformEngineMap, err := DataSourceIbmProjectProjectTerraformEngineSettingsToMap(model.TerraformEngine)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["terraform_engine"] = []map[string]interface{}{terraformEngineMap}
+	}
+	return modelMap, nil
+}
+
+func DataSourceIbmProjectProjectDefinitionStoreToMap(model *projectv1.ProjectDefinitionStore) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["type"] = *model.Type
+	modelMap["url"] = *model.URL
+	if model.Token != nil {
+		modelMap["token"] = *model.Token
+	}
+	if model.ConfigDirectory != nil {
+		modelMap["config_directory"] = *model.ConfigDirectory
+	}
+	return modelMap, nil
+}
+
+func DataSourceIbmProjectProjectTerraformEngineSettingsToMap(model *projectv1.ProjectTerraformEngineSettings) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["id"] = *model.ID
+	modelMap["type"] = *model.Type
 	return modelMap, nil
 }

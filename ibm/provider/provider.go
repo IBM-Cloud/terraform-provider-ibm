@@ -200,10 +200,19 @@ func Provider() *schema.Provider {
 				Deprecated: "The generation field is deprecated and will be removed after couple of releases",
 			},
 			"iam_profile_id": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "IAM Trusted Profile Authentication token",
-				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"IC_IAM_PROFILE_ID", "IBMCLOUD_IAM_PROFILE_ID"}, nil),
+				Type:          schema.TypeString,
+				Optional:      true,
+				Description:   "IAM Trusted Profile ID",
+				ConflictsWith: []string{"iam_profile_name"},
+				DefaultFunc:   schema.MultiEnvDefaultFunc([]string{"IC_IAM_PROFILE_ID", "IBMCLOUD_IAM_PROFILE_ID"}, nil),
+			},
+			"iam_profile_name": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				ConflictsWith: []string{"iam_profile_id"},
+				RequiredWith:  []string{"ibmcloud_account_id"},
+				Description:   "IAM Trusted Profile Name",
+				DefaultFunc:   schema.MultiEnvDefaultFunc([]string{"IC_IAM_PROFILE_NAME", "IBMCLOUD_IAM_PROFILE_NAME"}, nil),
 			},
 			"iam_token": {
 				Type:        schema.TypeString,
@@ -236,6 +245,13 @@ func Provider() *schema.Provider {
 				Optional:    true,
 				Description: "Path of the file that contains private and public regional endpoints mapping",
 				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"IC_ENDPOINTS_FILE_PATH", "IBMCLOUD_ENDPOINTS_FILE_PATH"}, nil),
+			},
+			"ibmcloud_account_id": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Description:  "The IBM Cloud account ID",
+				RequiredWith: []string{"iam_profile_name"},
+				DefaultFunc:  schema.MultiEnvDefaultFunc([]string{"IC_ACCOUNT_ID", "IBMCLOUD_ACCOUNT_ID"}, nil),
 			},
 		},
 
@@ -745,6 +761,9 @@ func Provider() *schema.Provider {
 			"ibm_pi_network_address_groups":                 power.DataSourceIBMPINetworkAddressGroups(),
 			"ibm_pi_network_interface":                      power.DataSourceIBMPINetworkInterface(),
 			"ibm_pi_network_interfaces":                     power.DataSourceIBMPINetworkInterfaces(),
+			"ibm_pi_network_peer_interfaces":                power.DataSourceIBMPINetworkPeerInterfaces(),
+			"ibm_pi_network_peer_route_filter":              power.DataSourceIBMPINetworkPeerRouteFilter(),
+			"ibm_pi_network_peer":                           power.DataSourceIBMPINetworkPeer(),
 			"ibm_pi_network_peers":                          power.DataSourceIBMPINetworkPeers(),
 			"ibm_pi_network_port":                           power.DataSourceIBMPINetworkPort(),
 			"ibm_pi_network_security_group":                 power.DataSourceIBMPINetworkSecurityGroup(),
@@ -755,8 +774,8 @@ func Provider() *schema.Provider {
 			"ibm_pi_placement_groups":                       power.DataSourceIBMPIPlacementGroups(),
 			"ibm_pi_public_network":                         power.DataSourceIBMPIPublicNetwork(),
 			"ibm_pi_pvm_snapshots":                          power.DataSourceIBMPIPVMSnapshot(),
-			"ibm_pi_route":                                  power.DataSourceIBMPIRoute(),
 			"ibm_pi_route_report":                           power.DataSourceIBMPIRouteReport(),
+			"ibm_pi_route":                                  power.DataSourceIBMPIRoute(),
 			"ibm_pi_routes":                                 power.DataSourceIBMPIRoutes(),
 			"ibm_pi_sap_profile":                            power.DataSourceIBMPISAPProfile(),
 			"ibm_pi_sap_profiles":                           power.DataSourceIBMPISAPProfiles(),
@@ -1475,13 +1494,15 @@ func Provider() *schema.Provider {
 			"ibm_pi_image_export":                    power.ResourceIBMPIImageExport(),
 			"ibm_pi_image":                           power.ResourceIBMPIImage(),
 			"ibm_pi_instance_action":                 power.ResourceIBMPIInstanceAction(),
-			"ibm_pi_instance":                        power.ResourceIBMPIInstance(),
 			"ibm_pi_instance_snapshot":               power.ResourceIBMPIInstanceSnapshot(),
+			"ibm_pi_instance":                        power.ResourceIBMPIInstance(),
 			"ibm_pi_ipsec_policy":                    power.ResourceIBMPIIPSecPolicy(),
 			"ibm_pi_key":                             power.ResourceIBMPIKey(),
 			"ibm_pi_network_address_group_member":    power.ResourceIBMPINetworkAddressGroupMember(),
 			"ibm_pi_network_address_group":           power.ResourceIBMPINetworkAddressGroup(),
 			"ibm_pi_network_interface":               power.ResourceIBMPINetworkInterface(),
+			"ibm_pi_network_peer_route_filter":       power.ResourceIBMPINetworkPeerRouteFilter(),
+			"ibm_pi_network_peer":                    power.ResourceIBMPINetworkPeer(),
 			"ibm_pi_network_port_attach":             power.ResourceIBMPINetworkPortAttach(),
 			"ibm_pi_network_security_group_action":   power.ResourceIBMPINetworkSecurityGroupAction(),
 			"ibm_pi_network_security_group_member":   power.ResourceIBMPINetworkSecurityGroupMember(),
@@ -2381,7 +2402,7 @@ func Validator() validate.ValidatorDict {
 func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	var bluemixAPIKey string
 	var bluemixTimeout int
-	var iamToken, iamRefreshToken, iamTrustedProfileId string
+	var iamToken, iamRefreshToken, iamTrustedProfileId, iamTrustedProfileName, account string
 	if key, ok := d.GetOk("bluemix_api_key"); ok {
 		bluemixAPIKey = key.(string)
 	}
@@ -2394,8 +2415,14 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	if rtoken, ok := d.GetOk("iam_refresh_token"); ok {
 		iamRefreshToken = rtoken.(string)
 	}
-	if ttoken, ok := d.GetOk("iam_profile_id"); ok {
-		iamTrustedProfileId = ttoken.(string)
+	if tid, ok := d.GetOk("iam_profile_id"); ok {
+		iamTrustedProfileId = tid.(string)
+	}
+	if tname, ok := d.GetOk("iam_profile_name"); ok {
+		iamTrustedProfileName = tname.(string)
+	}
+	if taccount, ok := d.GetOk("ibmcloud_account_id"); ok {
+		account = taccount.(string)
 	}
 	var softlayerUsername, softlayerAPIKey, softlayerEndpointUrl string
 	var softlayerTimeout int
@@ -2460,25 +2487,27 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	}
 
 	config := conns.Config{
-		BluemixAPIKey:        bluemixAPIKey,
-		Region:               region,
-		ResourceGroup:        resourceGrp,
-		BluemixTimeout:       time.Duration(bluemixTimeout) * time.Second,
-		SoftLayerTimeout:     time.Duration(softlayerTimeout) * time.Second,
-		SoftLayerUserName:    softlayerUsername,
-		SoftLayerAPIKey:      softlayerAPIKey,
-		RetryCount:           retryCount,
-		SoftLayerEndpointURL: softlayerEndpointUrl,
-		RetryDelay:           conns.RetryAPIDelay,
-		FunctionNameSpace:    wskNameSpace,
-		RiaasEndPoint:        riaasEndPoint,
-		IAMToken:             iamToken,
-		IAMRefreshToken:      iamRefreshToken,
-		Zone:                 zone,
-		Visibility:           visibility,
-		PrivateEndpointType:  privateEndpointType,
-		EndpointsFile:        file,
-		IAMTrustedProfileID:  iamTrustedProfileId,
+		BluemixAPIKey:         bluemixAPIKey,
+		Region:                region,
+		ResourceGroup:         resourceGrp,
+		BluemixTimeout:        time.Duration(bluemixTimeout) * time.Second,
+		SoftLayerTimeout:      time.Duration(softlayerTimeout) * time.Second,
+		SoftLayerUserName:     softlayerUsername,
+		SoftLayerAPIKey:       softlayerAPIKey,
+		RetryCount:            retryCount,
+		SoftLayerEndpointURL:  softlayerEndpointUrl,
+		RetryDelay:            conns.RetryAPIDelay,
+		FunctionNameSpace:     wskNameSpace,
+		RiaasEndPoint:         riaasEndPoint,
+		IAMToken:              iamToken,
+		IAMRefreshToken:       iamRefreshToken,
+		Zone:                  zone,
+		Visibility:            visibility,
+		PrivateEndpointType:   privateEndpointType,
+		EndpointsFile:         file,
+		IAMTrustedProfileID:   iamTrustedProfileId,
+		IAMTrustedProfileName: iamTrustedProfileName,
+		Account:               account,
 	}
 
 	return config.ClientSession()
