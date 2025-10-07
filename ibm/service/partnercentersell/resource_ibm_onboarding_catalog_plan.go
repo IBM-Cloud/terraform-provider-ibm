@@ -2,7 +2,7 @@
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.104.0-b4a47c49-20250418-184351
+ * IBM OpenAPI Terraform Generator Version: 3.107.1-41b0fbd0-20250825-080732
  */
 
 package partnercentersell
@@ -36,7 +36,7 @@ func ResourceIbmOnboardingCatalogPlan() *schema.Resource {
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_onboarding_catalog_plan", "product_id"),
-				Description:  "The unique ID of the product.",
+				Description:  "The unique ID of the resource.",
 			},
 			"catalog_product_id": &schema.Schema{
 				Type:         schema.TypeString,
@@ -230,7 +230,7 @@ func ResourceIbmOnboardingCatalogPlan() *schema.Resource {
 															"navigation_items": &schema.Schema{
 																Type:        schema.TypeList,
 																Optional:    true,
-																Description: "List of custom navigation panel.",
+																Description: "The list of custom navigation panels.",
 																Elem: &schema.Resource{
 																	Schema: map[string]*schema.Schema{
 																		"id": &schema.Schema{
@@ -429,6 +429,27 @@ func ResourceIbmOnboardingCatalogPlan() *schema.Resource {
 													Type:        schema.TypeString,
 													Optional:    true,
 													Description: "The broker ID for the plan. Only needed if the service is MCSP.",
+												},
+											},
+										},
+									},
+									"target_plans": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "The selection of applicable plans.The resource controller can use this metadata to validate the plan update requests based on the plan name.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"id": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Computed:    true,
+													Description: "The plan ID for the resource controller to validate the plan update requests.",
+												},
+												"name": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Computed:    true,
+													Description: "The plan name for the resource controller to validate the plan update requests.",
 												},
 											},
 										},
@@ -1133,6 +1154,17 @@ func ResourceIbmOnboardingCatalogPlanMapToGlobalCatalogPlanMetadataOther(modelMa
 		}
 		model.ResourceController = ResourceControllerModel
 	}
+	if modelMap["target_plans"] != nil {
+		targetPlans := []partnercentersellv1.GlobalCatalogPlanMetadataOtherTargetPlansItem{}
+		for _, targetPlansItem := range modelMap["target_plans"].([]interface{}) {
+			targetPlansItemModel, err := ResourceIbmOnboardingCatalogPlanMapToGlobalCatalogPlanMetadataOtherTargetPlansItem(targetPlansItem.(map[string]interface{}))
+			if err != nil {
+				return model, err
+			}
+			targetPlans = append(targetPlans, *targetPlansItemModel)
+		}
+		model.TargetPlans = targetPlans
+	}
 	return model, nil
 }
 
@@ -1140,6 +1172,17 @@ func ResourceIbmOnboardingCatalogPlanMapToGlobalCatalogPlanMetadataOtherResource
 	model := &partnercentersellv1.GlobalCatalogPlanMetadataOtherResourceController{}
 	if modelMap["subscription_provider_id"] != nil && modelMap["subscription_provider_id"].(string) != "" {
 		model.SubscriptionProviderID = core.StringPtr(modelMap["subscription_provider_id"].(string))
+	}
+	return model, nil
+}
+
+func ResourceIbmOnboardingCatalogPlanMapToGlobalCatalogPlanMetadataOtherTargetPlansItem(modelMap map[string]interface{}) (*partnercentersellv1.GlobalCatalogPlanMetadataOtherTargetPlansItem, error) {
+	model := &partnercentersellv1.GlobalCatalogPlanMetadataOtherTargetPlansItem{}
+	if modelMap["id"] != nil && modelMap["id"].(string) != "" {
+		model.ID = core.StringPtr(modelMap["id"].(string))
+	}
+	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
+		model.Name = core.StringPtr(modelMap["name"].(string))
 	}
 	return model, nil
 }
@@ -1430,6 +1473,17 @@ func ResourceIbmOnboardingCatalogPlanGlobalCatalogPlanMetadataOtherToMap(model *
 		}
 		modelMap["resource_controller"] = []map[string]interface{}{resourceControllerMap}
 	}
+	if model.TargetPlans != nil {
+		targetPlans := []map[string]interface{}{}
+		for _, targetPlansItem := range model.TargetPlans {
+			targetPlansItemMap, err := ResourceIbmOnboardingCatalogPlanGlobalCatalogPlanMetadataOtherTargetPlansItemToMap(&targetPlansItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			targetPlans = append(targetPlans, targetPlansItemMap)
+		}
+		modelMap["target_plans"] = targetPlans
+	}
 	return modelMap, nil
 }
 
@@ -1437,6 +1491,17 @@ func ResourceIbmOnboardingCatalogPlanGlobalCatalogPlanMetadataOtherResourceContr
 	modelMap := make(map[string]interface{})
 	if model.SubscriptionProviderID != nil {
 		modelMap["subscription_provider_id"] = *model.SubscriptionProviderID
+	}
+	return modelMap, nil
+}
+
+func ResourceIbmOnboardingCatalogPlanGlobalCatalogPlanMetadataOtherTargetPlansItemToMap(model *partnercentersellv1.GlobalCatalogPlanMetadataOtherTargetPlansItem) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.ID != nil {
+		modelMap["id"] = *model.ID
+	}
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
 	}
 	return modelMap, nil
 }

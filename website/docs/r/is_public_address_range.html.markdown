@@ -12,9 +12,6 @@ description: |-
 Create, update, and delete a public address range. For more information, see [creating public address range](https://cloud.ibm.com/docs/vpc?topic=vpc-par-creating&interface=ui).
 
 **Note:** 
-The Public Address Range feature is currently available only with the `Select Availability`.
-
-**Note:** 
 VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
 
 **provider.tf**

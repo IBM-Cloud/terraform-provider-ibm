@@ -32,7 +32,7 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 				Config: testAccCheckIBMISBareMetalServerInitializationDataSourceConfig(vpcname, subnetname, sshname, publicKey, name),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMISBareMetalServerExists("ibm_is_bare_metal_server.testacc_bms", server),
-					resource.TestCheckResourceAttr(resName, "name", name),
+					resource.TestCheckResourceAttrSet(resName, "default_trusted_profile.#"),
 				),
 			},
 		},
@@ -41,7 +41,8 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 
 func testAccCheckIBMISBareMetalServerInitializationDataSourceConfig(vpcname, subnetname, sshname, publicKey, name string) string {
 	// status filter defaults to empty
-	return testAccCheckIBMISBareMetalServerConfig(vpcname, subnetname, sshname, publicKey, name) +
+	userdata1 := "a"
+	return testAccCheckIBMISBareMetalServerInitializationConfig(vpcname, subnetname, sshname, publicKey, name, acc.IsBareMetalServerImage, userdata1, true, "https", true) +
 		fmt.Sprintf(`
       data "ibm_is_bare_metal_server_initialization" "test1" {
 		  bare_metal_server = ibm_is_bare_metal_server.testacc_bms.id
