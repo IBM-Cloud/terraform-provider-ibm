@@ -1188,7 +1188,8 @@ func resourceIbmBackupRecoverySourceRegistrationRead(context context.Context, d 
 
 	if _, ok := d.GetOk("backup_recovery_endpoint"); ok {
 		if d.Get("backup_recovery_endpoint").(string) != "" {
-			backupRecoveryClient.Service.Options.URL = d.Get("backup_recovery_endpoint").(string)
+			endpointURL := d.Get("backup_recovery_endpoint").(string)
+			backupRecoveryClient.Service.SetServiceURL(endpointURL)
 		}
 	}
 	getProtectionSourceRegistrationOptions := &backuprecoveryv1.GetProtectionSourceRegistrationOptions{}
@@ -1352,7 +1353,8 @@ func resourceIbmBackupRecoverySourceRegistrationUpdate(context context.Context, 
 
 	if _, ok := d.GetOk("backup_recovery_endpoint"); ok {
 		if d.Get("backup_recovery_endpoint").(string) != "" {
-			backupRecoveryClient.Service.Options.URL = d.Get("backup_recovery_endpoint").(string)
+			endpointURL := d.Get("backup_recovery_endpoint").(string)
+			backupRecoveryClient.Service.SetServiceURL(endpointURL)
 		}
 	}
 
@@ -1506,7 +1508,8 @@ func resourceIbmBackupRecoverySourceRegistrationDelete(context context.Context, 
 	}
 	if _, ok := d.GetOk("backup_recovery_endpoint"); ok {
 		if d.Get("backup_recovery_endpoint").(string) != "" {
-			backupRecoveryClient.Service.Options.URL = d.Get("backup_recovery_endpoint").(string)
+			endpointURL := d.Get("backup_recovery_endpoint").(string)
+			backupRecoveryClient.Service.SetServiceURL(endpointURL)
 		}
 	}
 

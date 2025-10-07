@@ -231,7 +231,8 @@ func dataSourceIbmBackupRecoveryAgentUpgradeTasksRead(context context.Context, d
 	}
 	if _, ok := d.GetOk("backup_recovery_endpoint"); ok {
 		if d.Get("backup_recovery_endpoint").(string) != "" {
-			backupRecoveryClient.Service.Options.URL = d.Get("backup_recovery_endpoint").(string)
+			endpointURL := d.Get("backup_recovery_endpoint").(string)
+			backupRecoveryClient.Service.SetServiceURL(endpointURL)
 		}
 	}
 
