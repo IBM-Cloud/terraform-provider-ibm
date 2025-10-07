@@ -1,3 +1,16 @@
+# 1.83.2 (October 7, 2025)
+
+## Bug Fixes
+### Global Catalog
+* correct argument capitalization, update cm account doc ([6486](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6486))
+* only set rev field if it exists ([6494](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6494))
+
+### CIS
+* check position index before updating CIS ruleset rule ([6472](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6472))
+
+### General
+* removed platform-services-go-sdk replace from go.mod ([6495](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6495))
+
 # 1.83.1 (October 1, 2025)
 
 ## Bug Fixes
