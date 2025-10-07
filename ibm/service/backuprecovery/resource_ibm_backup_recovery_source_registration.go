@@ -164,6 +164,11 @@ func ResourceIbmBackupRecoverySourceRegistration() *schema.Resource {
 					},
 				},
 			},
+			"backup_recovery_endpoint": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Endpoint for the BRS instance",
+			},
 			"source_id": &schema.Schema{
 				Type:        schema.TypeInt,
 				Computed:    true,
@@ -1148,6 +1153,12 @@ func resourceIbmBackupRecoverySourceRegistrationCreate(context context.Context, 
 		}
 		registerProtectionSourceOptions.SetPhysicalParams(physicalParamsModel)
 	}
+	if _, ok := d.GetOk("backup_recovery_endpoint"); ok {
+		endpoint := d.Get("backup_recovery_endpoint").(string)
+		if endpoint != "" {
+			backupRecoveryClient.Service.Options.URL = endpoint
+		}
+	}
 
 	sourceRegistrationReponseParams, _, err := backupRecoveryClient.RegisterProtectionSourceWithContext(context, registerProtectionSourceOptions)
 	if err != nil {
@@ -1175,6 +1186,11 @@ func resourceIbmBackupRecoverySourceRegistrationRead(context context.Context, d 
 		return tfErr.GetDiag()
 	}
 
+	if _, ok := d.GetOk("backup_recovery_endpoint"); ok {
+		if d.Get("backup_recovery_endpoint").(string) != "" {
+			backupRecoveryClient.Service.Options.URL = d.Get("backup_recovery_endpoint").(string)
+		}
+	}
 	getProtectionSourceRegistrationOptions := &backuprecoveryv1.GetProtectionSourceRegistrationOptions{}
 
 	id, err := strconv.Atoi(registrationId)
@@ -1334,6 +1350,12 @@ func resourceIbmBackupRecoverySourceRegistrationUpdate(context context.Context, 
 		return tfErr.GetDiag()
 	}
 
+	if _, ok := d.GetOk("backup_recovery_endpoint"); ok {
+		if d.Get("backup_recovery_endpoint").(string) != "" {
+			backupRecoveryClient.Service.Options.URL = d.Get("backup_recovery_endpoint").(string)
+		}
+	}
+
 	tenantId := d.Get("x_ibm_tenant_id").(string)
 	registrationId := d.Id()
 	if strings.Contains(d.Id(), "::") {
@@ -1481,6 +1503,11 @@ func resourceIbmBackupRecoverySourceRegistrationDelete(context context.Context, 
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_source_registration", "delete", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
+	}
+	if _, ok := d.GetOk("backup_recovery_endpoint"); ok {
+		if d.Get("backup_recovery_endpoint").(string) != "" {
+			backupRecoveryClient.Service.Options.URL = d.Get("backup_recovery_endpoint").(string)
+		}
 	}
 
 	deleteProtectionSourceRegistrationOptions := &backuprecoveryv1.DeleteProtectionSourceRegistrationOptions{}

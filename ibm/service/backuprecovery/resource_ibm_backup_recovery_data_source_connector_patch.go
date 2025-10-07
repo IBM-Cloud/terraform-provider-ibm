@@ -43,6 +43,11 @@ func ResourceIbmBackupRecoveryDataSourceConnectorPatch() *schema.Resource {
 				// ForceNew:    true,
 				Description: "Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified.",
 			},
+			"backup_recovery_endpoint": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Endpoint for the BRS instance",
+			},
 			"connector_name": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
@@ -154,6 +159,11 @@ func resourceIbmBackupRecoveryDataSourceConnectorPatchCreate(context context.Con
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
+	if _, ok := d.GetOk("backup_recovery_endpoint"); ok {
+		if d.Get("backup_recovery_endpoint").(string) != "" {
+			backupRecoveryClient.Service.Options.URL = d.Get("backup_recovery_endpoint").(string)
+		}
+	}
 
 	patchDataSourceConnectorOptions := &backuprecoveryv1.PatchDataSourceConnectorOptions{}
 
@@ -181,6 +191,11 @@ func resourceIbmBackupRecoveryDataSourceConnectorPatchRead(context context.Conte
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_data_source_connector_patch", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
+	}
+	if _, ok := d.GetOk("backup_recovery_endpoint"); ok {
+		if d.Get("backup_recovery_endpoint").(string) != "" {
+			backupRecoveryClient.Service.Options.URL = d.Get("backup_recovery_endpoint").(string)
+		}
 	}
 
 	getDataSourceConnectorsOptions := &backuprecoveryv1.GetDataSourceConnectorsOptions{}

@@ -42,6 +42,11 @@ func ResourceIbmBackupRecoveryDataSourceConnection() *schema.Resource {
 				Computed:    true,
 				Description: "connection Id",
 			},
+			"backup_recovery_endpoint": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Endpoint for the BRS instance",
+			},
 			"connection_name": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
@@ -80,6 +85,11 @@ func resourceIbmBackupRecoveryDataSourceConnectionCreate(context context.Context
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
+	if _, ok := d.GetOk("backup_recovery_endpoint"); ok {
+		if d.Get("backup_recovery_endpoint").(string) != "" {
+			backupRecoveryClient.Service.Options.URL = d.Get("backup_recovery_endpoint").(string)
+		}
+	}
 
 	createDataSourceConnectionOptions := &backuprecoveryv1.CreateDataSourceConnectionOptions{}
 
@@ -108,6 +118,11 @@ func resourceIbmBackupRecoveryDataSourceConnectionRead(context context.Context, 
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_data_source_connection", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
+	}
+	if _, ok := d.GetOk("backup_recovery_endpoint"); ok {
+		if d.Get("backup_recovery_endpoint").(string) != "" {
+			backupRecoveryClient.Service.Options.URL = d.Get("backup_recovery_endpoint").(string)
+		}
 	}
 
 	tenantId := d.Get("x_ibm_tenant_id").(string)
@@ -188,6 +203,11 @@ func resourceIbmBackupRecoveryDataSourceConnectionUpdate(context context.Context
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
+	if _, ok := d.GetOk("backup_recovery_endpoint"); ok {
+		if d.Get("backup_recovery_endpoint").(string) != "" {
+			backupRecoveryClient.Service.Options.URL = d.Get("backup_recovery_endpoint").(string)
+		}
+	}
 
 	patchDataSourceConnectionOptions := &backuprecoveryv1.PatchDataSourceConnectionOptions{}
 	tenantId := d.Get("x_ibm_tenant_id").(string)
@@ -224,6 +244,11 @@ func resourceIbmBackupRecoveryDataSourceConnectionDelete(context context.Context
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_data_source_connection", "delete", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
+	}
+	if _, ok := d.GetOk("backup_recovery_endpoint"); ok {
+		if d.Get("backup_recovery_endpoint").(string) != "" {
+			backupRecoveryClient.Service.Options.URL = d.Get("backup_recovery_endpoint").(string)
+		}
 	}
 
 	deleteDataSourceConnectionOptions := &backuprecoveryv1.DeleteDataSourceConnectionOptions{}

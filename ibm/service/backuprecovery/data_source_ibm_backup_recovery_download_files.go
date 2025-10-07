@@ -36,6 +36,11 @@ func DataSourceIbmBackupRecoveryDownloadFiles() *schema.Resource {
 				Required:    true,
 				Description: "Specifies the id of a Recovery.",
 			},
+			"backup_recovery_endpoint": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Endpoint for the BRS instance",
+			},
 			"start_offset": &schema.Schema{
 				Type:        schema.TypeInt,
 				Optional:    true,
@@ -76,6 +81,11 @@ func dataSourceIbmBackupRecoveryDownloadFilesRead(context context.Context, d *sc
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_recovery_download_files", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
+	}
+	if _, ok := d.GetOk("backup_recovery_endpoint"); ok {
+		if d.Get("backup_recovery_endpoint").(string) != "" {
+			backupRecoveryClient.Service.Options.URL = d.Get("backup_recovery_endpoint").(string)
+		}
 	}
 
 	downloadFilesFromRecoveryOptions := &backuprecoveryv1.DownloadFilesFromRecoveryOptions{}

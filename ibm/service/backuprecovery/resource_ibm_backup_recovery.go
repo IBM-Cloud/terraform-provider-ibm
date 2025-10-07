@@ -56,6 +56,11 @@ func ResourceIbmBackupRecovery() *schema.Resource {
 				Computed:    true,
 				Description: "Recovery ID",
 			},
+			"backup_recovery_endpoint": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Endpoint for the BRS instance",
+			},
 			"snapshot_environment": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
@@ -2422,6 +2427,11 @@ func resourceIbmBackupRecoveryCreate(context context.Context, d *schema.Resource
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
+	if _, ok := d.GetOk("backup_recovery_endpoint"); ok {
+		if d.Get("backup_recovery_endpoint").(string) != "" {
+			backupRecoveryClient.Service.Options.URL = d.Get("backup_recovery_endpoint").(string)
+		}
+	}
 
 	createRecoveryOptions := &backuprecoveryv1.CreateRecoveryOptions{}
 	tenantId := d.Get("x_ibm_tenant_id").(string)
@@ -2465,6 +2475,11 @@ func resourceIbmBackupRecoveryRead(context context.Context, d *schema.ResourceDa
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_recovery", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
+	}
+	if _, ok := d.GetOk("backup_recovery_endpoint"); ok {
+		if d.Get("backup_recovery_endpoint").(string) != "" {
+			backupRecoveryClient.Service.Options.URL = d.Get("backup_recovery_endpoint").(string)
+		}
 	}
 
 	getRecoveryByIdOptions := &backuprecoveryv1.GetRecoveryByIdOptions{}

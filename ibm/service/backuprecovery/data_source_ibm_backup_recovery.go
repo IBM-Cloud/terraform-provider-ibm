@@ -31,6 +31,11 @@ func DataSourceIbmBackupRecovery() *schema.Resource {
 				Required:    true,
 				Description: "Specifies the id of a Recovery.",
 			},
+			"backup_recovery_endpoint": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Endpoint for the BRS instance",
+			},
 			"x_ibm_tenant_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
@@ -2207,6 +2212,11 @@ func dataSourceIbmBackupRecoveryRead(context context.Context, d *schema.Resource
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_recovery", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
+	}
+	if _, ok := d.GetOk("backup_recovery_endpoint"); ok {
+		if d.Get("backup_recovery_endpoint").(string) != "" {
+			backupRecoveryClient.Service.Options.URL = d.Get("backup_recovery_endpoint").(string)
+		}
 	}
 
 	getRecoveryByIdOptions := &backuprecoveryv1.GetRecoveryByIdOptions{}

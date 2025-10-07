@@ -32,6 +32,11 @@ func DataSourceIbmBackupRecoveryProtectionGroupRuns() *schema.Resource {
 				Required:    true,
 				Description: "Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified.",
 			},
+			"backup_recovery_endpoint": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Endpoint for the BRS instance",
+			},
 			"protection_group_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
@@ -3050,6 +3055,11 @@ func dataSourceIbmBackupRecoveryProtectionGroupRunsRead(context context.Context,
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_protection_group_runs", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
+	}
+	if _, ok := d.GetOk("backup_recovery_endpoint"); ok {
+		if d.Get("backup_recovery_endpoint").(string) != "" {
+			backupRecoveryClient.Service.Options.URL = d.Get("backup_recovery_endpoint").(string)
+		}
 	}
 
 	getProtectionGroupRunsOptions := &backuprecoveryv1.GetProtectionGroupRunsOptions{}

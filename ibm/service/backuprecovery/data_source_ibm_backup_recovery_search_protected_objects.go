@@ -42,6 +42,11 @@ func DataSourceIbmBackupRecoverySearchProtectedObjects() *schema.Resource {
 				Optional:    true,
 				Description: "Specifies the search string to filter the objects. This search string will be applicable for objectnames and Protection Group names. User can specify a wildcard character '*' as a suffix to a string where all object and their Protection Group names are matched with the prefix string. For example, if vm1 and vm2 are the names of objects, user can specify vm* to list the objects. If not specified, then all the objects with Protection Groups will be returned which will match other filtering criteria.",
 			},
+			"backup_recovery_endpoint": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Endpoint for the BRS instance",
+			},
 			"environments": &schema.Schema{
 				Type:        schema.TypeList,
 				Optional:    true,
@@ -1290,6 +1295,12 @@ func dataSourceIbmBackupRecoverySearchProtectedObjectsRead(context context.Conte
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_search_protected_objects", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
+	}
+
+	if _, ok := d.GetOk("backup_recovery_endpoint"); ok {
+		if d.Get("backup_recovery_endpoint").(string) != "" {
+			backupRecoveryClient.Service.Options.URL = d.Get("backup_recovery_endpoint").(string)
+		}
 	}
 
 	searchProtectedObjectsOptions := &backuprecoveryv1.SearchProtectedObjectsOptions{}

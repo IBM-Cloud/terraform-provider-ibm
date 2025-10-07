@@ -50,6 +50,11 @@ func DataSourceIbmBackupRecoverySourceRegistrations() *schema.Resource {
 				Optional:    true,
 				Description: "Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified.",
 			},
+			"backup_recovery_endpoint": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Endpoint for the BRS instance",
+			},
 			"use_cached_data": &schema.Schema{
 				Type:        schema.TypeBool,
 				Optional:    true,
@@ -990,6 +995,11 @@ func dataSourceIbmBackupRecoverySourceRegistrationsRead(context context.Context,
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_source_registrations", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
+	}
+	if _, ok := d.GetOk("backup_recovery_endpoint"); ok {
+		if d.Get("backup_recovery_endpoint").(string) != "" {
+			backupRecoveryClient.Service.Options.URL = d.Get("backup_recovery_endpoint").(string)
+		}
 	}
 
 	getSourceRegistrationsOptions := &backuprecoveryv1.GetSourceRegistrationsOptions{}

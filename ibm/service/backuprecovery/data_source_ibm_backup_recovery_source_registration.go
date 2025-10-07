@@ -677,6 +677,11 @@ func DataSourceIbmBackupRecoverySourceRegistration() *schema.Resource {
 				Computed:    true,
 				Description: "The user specified name for this source.",
 			},
+			"backup_recovery_endpoint": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Endpoint for the BRS instance",
+			},
 			"connection_id": &schema.Schema{
 				Type:        schema.TypeInt,
 				Computed:    true,
@@ -953,6 +958,11 @@ func dataSourceIbmBackupRecoverySourceRegistrationRead(context context.Context, 
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_source_registration", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
+	}
+	if _, ok := d.GetOk("backup_recovery_endpoint"); ok {
+		if d.Get("backup_recovery_endpoint").(string) != "" {
+			backupRecoveryClient.Service.Options.URL = d.Get("backup_recovery_endpoint").(string)
+		}
 	}
 
 	getProtectionSourceRegistrationOptions := &backuprecoveryv1.GetProtectionSourceRegistrationOptions{}

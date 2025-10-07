@@ -31,6 +31,12 @@ func DataSourceIbmBackupRecoveryProtectionGroup() *schema.Resource {
 				Required:    true,
 				Description: "Specifies a unique id of the Protection Group.",
 			},
+			"backup_recovery_endpoint": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Endpoint for the BRS instance",
+			},
+
 			"x_ibm_tenant_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
@@ -4640,6 +4646,12 @@ func dataSourceIbmBackupRecoveryProtectionGroupRead(context context.Context, d *
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_protection_group", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
+	}
+
+	if _, ok := d.GetOk("backup_recovery_endpoint"); ok {
+		if d.Get("backup_recovery_endpoint").(string) != "" {
+			backupRecoveryClient.Service.Options.URL = d.Get("backup_recovery_endpoint").(string)
+		}
 	}
 	tenantId := d.Get("x_ibm_tenant_id").(string)
 	getProtectionGroupByIdOptions := &backuprecoveryv1.GetProtectionGroupByIdOptions{}

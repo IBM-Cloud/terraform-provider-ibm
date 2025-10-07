@@ -42,6 +42,11 @@ func ResourceIbmBackupRecoveryAgentUpgradeTask() *schema.Resource {
 				Optional:    true,
 				Description: "Specifies ID of a task which is to be retried.",
 			},
+			"backup_recovery_endpoint": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Endpoint for the BRS instance",
+			},
 			"agent_ids": &schema.Schema{
 				Type:     schema.TypeList,
 				Optional: true,
@@ -248,6 +253,11 @@ func resourceIbmBackupRecoveryAgentUpgradeTaskCreate(context context.Context, d 
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
+	if _, ok := d.GetOk("backup_recovery_endpoint"); ok {
+		if d.Get("backup_recovery_endpoint").(string) != "" {
+			backupRecoveryClient.Service.Options.URL = d.Get("backup_recovery_endpoint").(string)
+		}
+	}
 
 	createUpgradeTaskOptions := &backuprecoveryv1.CreateUpgradeTaskOptions{}
 
@@ -295,6 +305,11 @@ func resourceIbmBackupRecoveryAgentUpgradeTaskRead(context context.Context, d *s
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_agent_upgrade_task", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
+	}
+	if _, ok := d.GetOk("backup_recovery_endpoint"); ok {
+		if d.Get("backup_recovery_endpoint").(string) != "" {
+			backupRecoveryClient.Service.Options.URL = d.Get("backup_recovery_endpoint").(string)
+		}
 	}
 
 	getUpgradeTasksOptions := &backuprecoveryv1.GetUpgradeTasksOptions{}

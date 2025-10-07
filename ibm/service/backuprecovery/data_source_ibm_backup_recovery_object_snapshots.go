@@ -37,6 +37,11 @@ func DataSourceIbmBackupRecoveryObjectSnapshots() *schema.Resource {
 				Required:    true,
 				Description: "Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified.",
 			},
+			"backup_recovery_endpoint": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Endpoint for the BRS instance",
+			},
 			"from_time_usecs": &schema.Schema{
 				Type:        schema.TypeInt,
 				Optional:    true,
@@ -626,6 +631,11 @@ func dataSourceIbmBackupRecoveryObjectSnapshotsRead(context context.Context, d *
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_object_snapshots", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
+	}
+	if _, ok := d.GetOk("backup_recovery_endpoint"); ok {
+		if d.Get("backup_recovery_endpoint").(string) != "" {
+			backupRecoveryClient.Service.Options.URL = d.Get("backup_recovery_endpoint").(string)
+		}
 	}
 
 	getObjectSnapshotsOptions := &backuprecoveryv1.GetObjectSnapshotsOptions{}

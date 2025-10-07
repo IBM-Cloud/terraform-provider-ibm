@@ -34,6 +34,11 @@ func DataSourceIbmBackupRecoveryDownloadAgent() *schema.Resource {
 				Required:    true,
 				Description: "Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified.",
 			},
+			"backup_recovery_endpoint": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Endpoint for the BRS instance",
+			},
 			"file_path": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
@@ -69,6 +74,11 @@ func DataSourceIbmBackupRecoveryDownloadAgentRead(context context.Context, d *sc
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_download_agent", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
+	}
+	if _, ok := d.GetOk("backup_recovery_endpoint"); ok {
+		if d.Get("backup_recovery_endpoint").(string) != "" {
+			backupRecoveryClient.Service.Options.URL = d.Get("backup_recovery_endpoint").(string)
+		}
 	}
 
 	downloadAgentOptions := &backuprecoveryv1.DownloadAgentOptions{}
