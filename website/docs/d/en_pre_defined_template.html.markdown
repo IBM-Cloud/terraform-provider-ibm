@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_en_pre_defined_template"
 description: |-
   Get information about en_pre_defined_template
-subcategory: "Event Notifications API"
+subcategory: "Event Notifications"
 ---
 
 # ibm_en_pre_defined_template
