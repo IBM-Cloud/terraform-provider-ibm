@@ -350,7 +350,8 @@ func ResourceIbmProject() *schema.Resource {
 						},
 						"auto_deploy_mode": &schema.Schema{
 							Type:        schema.TypeString,
-							Required:    true,
+							Optional:    true,
+							Default:     "manual_approval",
 							Description: "This is an advanced setting to auto deploy to tell how auto deploy should behave when it is enabled. There are 2 options:> 1. `auto_approval` will automatically approve the configuration after validated without user confirmation.> 2. `manual_approval` will require user confirmation to approve the configuration after validated before deploying the configuration starts.",
 						},
 						"monitoring_enabled": &schema.Schema{
