@@ -780,6 +780,32 @@ func DataSourceIBMISInstanceProfile() *schema.Resource {
 					},
 				},
 			},
+			"volume_bandwidth_qos_modes": &schema.Schema{
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"type": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The type for this profile field.",
+						},
+						"default": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The default volume bandwidth QoS mode for this profile.",
+						},
+						"values": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The permitted volume bandwidth QoS modes for an instance using this profile.",
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -990,6 +1016,12 @@ func instanceProfileGet(context context.Context, d *schema.ResourceData, meta in
 		err = d.Set("vcpu_count", dataSourceInstanceProfileFlattenVcpuCount(*profile.VcpuCount.(*vpcv1.InstanceProfileVcpu)))
 		if err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting vcpu_count: %s", err), "(Data) ibm_is_instance_profile", "read", "set-vcpu_count").GetDiag()
+		}
+	}
+	if profile.VolumeBandwidthQosModes != nil {
+		err = d.Set("volume_bandwidth_qos_modes", dataSourceInstanceProfileFlattenVolumeBandwidthQoSMode(*profile.VolumeBandwidthQosModes.(*vpcv1.InstanceProfileVolumeBandwidthQoSModes)))
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting volume_bandwidth_qos_modes: %s", err), "(Data) ibm_is_instance_profile", "read", "set-volume_bandwidth_qos_modes").GetDiag()
 		}
 	}
 	return nil
@@ -1318,6 +1350,13 @@ func dataSourceInstanceProfileFlattenVcpuCount(result vpcv1.InstanceProfileVcpu)
 
 	return finalList
 }
+func dataSourceInstanceProfileFlattenVolumeBandwidthQoSMode(result vpcv1.InstanceProfileVolumeBandwidthQoSModes) (finalList []map[string]interface{}) {
+	finalList = []map[string]interface{}{}
+	finalMap := dataSourceInstanceProfileVolumeBandwidthQoSModeToMap(result)
+	finalList = append(finalList, finalMap)
+
+	return finalList
+}
 
 func dataSourceInstanceProfileVcpuCountToMap(vcpuCountItem vpcv1.InstanceProfileVcpu) (vcpuCountMap map[string]interface{}) {
 	vcpuCountMap = map[string]interface{}{}
@@ -1345,6 +1384,21 @@ func dataSourceInstanceProfileVcpuCountToMap(vcpuCountItem vpcv1.InstanceProfile
 	}
 
 	return vcpuCountMap
+}
+
+func dataSourceInstanceProfileVolumeBandwidthQoSModeToMap(volumeBandwidthQoSModeItem vpcv1.InstanceProfileVolumeBandwidthQoSModes) (volumeBandwidthQoSModeItemMap map[string]interface{}) {
+	volumeBandwidthQoSModeItemMap = map[string]interface{}{}
+
+	if volumeBandwidthQoSModeItem.Type != nil {
+		volumeBandwidthQoSModeItemMap["type"] = volumeBandwidthQoSModeItem.Type
+	}
+	if volumeBandwidthQoSModeItem.Default != nil {
+		volumeBandwidthQoSModeItemMap["default"] = volumeBandwidthQoSModeItem.Default
+	}
+	if volumeBandwidthQoSModeItem.Values != nil {
+		volumeBandwidthQoSModeItemMap["values"] = volumeBandwidthQoSModeItem.Values
+	}
+	return volumeBandwidthQoSModeItemMap
 }
 
 func dataSourceInstanceProfileFlattenDisks(result []vpcv1.InstanceProfileDisk) (disks []map[string]interface{}) {

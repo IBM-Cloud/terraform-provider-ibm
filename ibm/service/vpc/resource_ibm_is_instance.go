@@ -130,6 +130,7 @@ const (
 	isInstanceMetadataServiceEnabled1     = "enabled"
 	isInstanceMetadataServiceProtocol     = "protocol"
 	isInstanceMetadataServiceRespHopLimit = "response_hop_limit"
+	isInstanceVolumeBandwidthQoSMode      = "volume_bandwidth_qos_mode"
 )
 
 func ResourceIBMISInstance() *schema.Resource {
@@ -478,6 +479,14 @@ func ResourceIBMISInstance() *schema.Resource {
 				Computed:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_is_instance", isInstanceTotalVolumeBandwidth),
 				Description:  "The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes",
+			},
+
+			isInstanceVolumeBandwidthQoSMode: &schema.Schema{
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validate.InvokeValidator("ibm_is_instance", isInstanceVolumeBandwidthQoSMode),
+				Description:  "The volume bandwidth QoS mode for this virtual server instance.",
 			},
 
 			isInstanceBandwidth: {
@@ -2251,6 +2260,17 @@ func ResourceIBMISInstanceValidator() *validate.ResourceValidator {
 			MinValueLength:             1,
 			MaxValueLength:             128})
 
+	validateSchema = append(validateSchema, validate.ValidateSchema{
+		Identifier:                 isInstanceVolumeBandwidthQoSMode,
+		ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
+		Type:                       validate.TypeString,
+		Optional:                   true,
+		AllowedValues:              "pooled, weighted",
+		Regexp:                     `^[a-z][a-z0-9]*(_[a-z0-9]+)*$`,
+		MinValueLength:             1,
+		MaxValueLength:             128,
+	})
+
 	ibmISInstanceValidator := validate.ResourceValidator{ResourceName: "ibm_is_instance", Schema: validateSchema}
 	return &ibmISInstanceValidator
 }
@@ -2419,6 +2439,10 @@ func instanceCreateByImage(context context.Context, d *schema.ResourceData, meta
 	if totalVolBandwidthIntf, ok := d.GetOk(isInstanceTotalVolumeBandwidth); ok {
 		totalVolBandwidthStr := int64(totalVolBandwidthIntf.(int))
 		instanceproto.TotalVolumeBandwidth = &totalVolBandwidthStr
+	}
+	if volumeBandwidthQoSModeIntf, ok := d.GetOk(isInstanceVolumeBandwidthQoSMode); ok {
+		volumeBandwidthQoSModeStr := volumeBandwidthQoSModeIntf.(string)
+		instanceproto.VolumeBandwidthQosMode = &volumeBandwidthQoSModeStr
 	}
 	if dHostIdInf, ok := d.GetOk(isPlacementTargetDedicatedHost); ok {
 		dHostIdStr := dHostIdInf.(string)
@@ -3026,6 +3050,10 @@ func instanceCreateByCatalogOffering(context context.Context, d *schema.Resource
 		totalVolBandwidthStr := int64(totalVolBandwidthIntf.(int))
 		instanceproto.TotalVolumeBandwidth = &totalVolBandwidthStr
 	}
+	if volumeBandwidthQoSModeIntf, ok := d.GetOk(isInstanceVolumeBandwidthQoSMode); ok {
+		volumeBandwidthQoSModeStr := volumeBandwidthQoSModeIntf.(string)
+		instanceproto.VolumeBandwidthQosMode = &volumeBandwidthQoSModeStr
+	}
 	if dHostIdInf, ok := d.GetOk(isPlacementTargetDedicatedHost); ok {
 		dHostIdStr := dHostIdInf.(string)
 		dHostPlaementTarget := &vpcv1.InstancePlacementTargetPrototypeDedicatedHostIdentity{
@@ -3572,7 +3600,10 @@ func instanceCreateByTemplate(context context.Context, d *schema.ResourceData, m
 		totalVolBandwidthStr := int64(totalVolBandwidthIntf.(int))
 		instanceproto.TotalVolumeBandwidth = &totalVolBandwidthStr
 	}
-
+	if volumeBandwidthQoSModeIntf, ok := d.GetOk(isInstanceVolumeBandwidthQoSMode); ok {
+		volumeBandwidthQoSModeStr := volumeBandwidthQoSModeIntf.(string)
+		instanceproto.VolumeBandwidthQosMode = &volumeBandwidthQoSModeStr
+	}
 	if vpcID != "" {
 		instanceproto.VPC = &vpcv1.VPCIdentity{
 			ID: &vpcID,
@@ -4279,6 +4310,10 @@ func instanceCreateBySnapshot(context context.Context, d *schema.ResourceData, m
 		totalVolBandwidthStr := int64(totalVolBandwidthIntf.(int))
 		instanceproto.TotalVolumeBandwidth = &totalVolBandwidthStr
 	}
+	if volumeBandwidthQoSModeIntf, ok := d.GetOk(isInstanceVolumeBandwidthQoSMode); ok {
+		volumeBandwidthQoSModeStr := volumeBandwidthQoSModeIntf.(string)
+		instanceproto.VolumeBandwidthQosMode = &volumeBandwidthQoSModeStr
+	}
 
 	if networkattachmentsintf, ok := d.GetOk("network_attachments"); ok {
 		networkAttachments := []vpcv1.InstanceNetworkAttachmentPrototype{}
@@ -4801,6 +4836,10 @@ func instanceCreateByVolume(context context.Context, d *schema.ResourceData, met
 	if totalVolBandwidthIntf, ok := d.GetOk(isInstanceTotalVolumeBandwidth); ok {
 		totalVolBandwidthStr := int64(totalVolBandwidthIntf.(int))
 		instanceproto.TotalVolumeBandwidth = &totalVolBandwidthStr
+	}
+	if volumeBandwidthQoSModeIntf, ok := d.GetOk(isInstanceVolumeBandwidthQoSMode); ok {
+		volumeBandwidthQoSModeStr := volumeBandwidthQoSModeIntf.(string)
+		instanceproto.VolumeBandwidthQosMode = &volumeBandwidthQoSModeStr
 	}
 	if networkattachmentsintf, ok := d.GetOk("network_attachments"); ok {
 		networkAttachments := []vpcv1.InstanceNetworkAttachmentPrototype{}
@@ -5436,6 +5475,12 @@ func instanceGet(context context.Context, d *schema.ResourceData, meta interface
 		if err = d.Set("total_volume_bandwidth", flex.IntValue(instance.TotalVolumeBandwidth)); err != nil {
 			err = fmt.Errorf("Error setting total_volume_bandwidth: %s", err)
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-total_volume_bandwidth").GetDiag()
+		}
+	}
+	if instance.VolumeBandwidthQosMode != nil {
+		if err = d.Set(isInstanceVolumeBandwidthQoSMode, string(*instance.VolumeBandwidthQosMode)); err != nil {
+			err = fmt.Errorf("Error setting volume_bandwidth_qos_mode: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-volume_bandwidth_qos_mode").GetDiag()
 		}
 	}
 
@@ -7330,7 +7375,7 @@ func instanceUpdate(context context.Context, d *schema.ResourceData, meta interf
 
 	}
 
-	if (d.HasChange(isInstanceName) || d.HasChange("confidential_compute_mode") || d.HasChange("enable_secure_boot")) && !d.IsNewResource() {
+	if (d.HasChange(isInstanceName) || d.HasChange("confidential_compute_mode") || d.HasChange("enable_secure_boot") || d.HasChange(isInstanceVolumeBandwidthQoSMode)) && !d.IsNewResource() {
 		restartNeeded := false
 		serverstopped := false
 		name := d.Get(isInstanceName).(string)
@@ -7344,6 +7389,12 @@ func instanceUpdate(context context.Context, d *schema.ResourceData, meta interf
 		}
 		if _, ok := d.GetOkExists("enable_secure_boot"); ok && d.HasChange("enable_secure_boot") {
 			instanceCCMPatchModel.EnableSecureBoot = core.BoolPtr(d.Get("enable_secure_boot").(bool))
+			restartNeeded = true
+		}
+
+		if _, ok := d.GetOkExists(isInstanceVolumeBandwidthQoSMode); ok && d.HasChange(isInstanceVolumeBandwidthQoSMode) {
+			instanceCCMPatchModel.VolumeBandwidthQosMode = core.StringPtr(d.Get(isInstanceVolumeBandwidthQoSMode).(string))
+			restartNeeded = true
 		}
 		if d.HasChange("name") {
 			instanceCCMPatchModel.Name = &name
