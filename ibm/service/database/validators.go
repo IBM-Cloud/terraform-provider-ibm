@@ -8,6 +8,7 @@ import (
 	"log"
 
 	"github.com/IBM/cloud-databases-go-sdk/clouddatabasesv5"
+	"github.com/IBM/go-sdk-core/v5/core"
 )
 
 /* TODO move other validators in here */
@@ -107,7 +108,14 @@ func (v *Version) getAllowedVersionsList() []string {
 var fetchDeploymentVersionFn = fetchDeploymentVersion
 
 func fetchDeploymentVersion(instanceId string, location string, meta interface{}) *Version {
-	capability, err := getDeploymentCapability(versions, instanceId, classicPlatform, location, meta)
+	options := CapabilityOptions{
+		Platform:      classicPlatform,
+		Location:      location,
+		IncludeHidden: core.BoolPtr(true),
+		IncludeBeta:   core.BoolPtr(true),
+	}
+
+	capability, err := getDeploymentCapability(versions, instanceId, options, meta)
 	if err != nil {
 		log.Fatalf("Error fetching deployment versions: %v", err)
 	}
