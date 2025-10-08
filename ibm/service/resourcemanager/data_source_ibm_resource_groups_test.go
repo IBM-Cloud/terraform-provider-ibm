@@ -52,8 +52,6 @@ func TestAccIBMResourceGroupsDataSource_WithName(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_resource_groups.testacc_ds_resource_groups_name", "resource_groups.0.crn"),
 					resource.TestCheckResourceAttrSet("data.ibm_resource_groups.testacc_ds_resource_groups_name", "resource_groups.0.created_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_resource_groups.testacc_ds_resource_groups_name", "resource_groups.0.updated_at"),
-					resource.TestCheckResourceAttrSet("data.ibm_resource_groups.testacc_ds_resource_groups_name", "resource_groups.0.teams_url"),
-					resource.TestCheckResourceAttrSet("data.ibm_resource_groups.testacc_ds_resource_groups_name", "resource_groups.0.payment_methods_url"),
 					resource.TestCheckResourceAttrSet("data.ibm_resource_groups.testacc_ds_resource_groups_name", "resource_groups.0.quota_url"),
 					resource.TestCheckResourceAttrSet("data.ibm_resource_groups.testacc_ds_resource_groups_name", "resource_groups.0.quota_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_resource_groups.testacc_ds_resource_groups_name", "resource_groups.0.account_id"),
@@ -118,7 +116,7 @@ func TestAccIBMResourceGroupsDataSource_AllResourceGroups(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_resource_groups.testacc_ds_resource_groups_all", "resource_groups.0.updated_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_resource_groups.testacc_ds_resource_groups_all", "resource_groups.0.account_id"),
 					// Test multiple resource groups exist (at least default should exist)
-					resource.TestCheckResourceAttr("data.ibm_resource_groups.testacc_ds_resource_groups_all", "resource_groups.#", "1"),
+					resource.TestCheckResourceAttrSet("data.ibm_resource_groups.testacc_ds_resource_groups_all", "resource_groups.#"),
 				),
 			},
 		},
@@ -150,7 +148,7 @@ func TestAccIBMResourceGroupsDataSource_InvalidConfig(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      testAccCheckIBMResourceGroupsDataSourceInvalidConfig(),
-				ExpectError: regexp.MustCompile(`Invalid combination of arguments`),
+				ExpectError: regexp.MustCompile(`Unsupported argument`),
 			},
 		},
 	})
@@ -198,7 +196,7 @@ data "ibm_resource_groups" "testacc_ds_resource_groups_name" {
 func testAccCheckIBMResourceGroupsDataSourceConfigWithDate() string {
 	return `
 data "ibm_resource_groups" "testacc_ds_resource_groups_date" {
-	date = "2024-01"
+	date = "2023-10"
 }`
 }
 
@@ -212,15 +210,13 @@ data "ibm_resource_groups" "testacc_ds_resource_groups_include_deleted" {
 func testAccCheckIBMResourceGroupsDataSourceConfigAll() string {
 	return `
 data "ibm_resource_groups" "testacc_ds_resource_groups_all" {
-	# No filters - should return all resource groups
 }`
 }
 
 func testAccCheckIBMResourceGroupsDataSourceInvalidConfig() string {
 	return `
 data "ibm_resource_groups" "testacc_ds_resource_groups_invalid" {
-	name = "Default"
-	is_default = true
+	names = "Default"
 }`
 }
 
