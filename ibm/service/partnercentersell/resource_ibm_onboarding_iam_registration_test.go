@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2024 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package partnercentersell_test
@@ -6,6 +6,7 @@ package partnercentersell_test
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -46,12 +47,12 @@ func TestAccIbmOnboardingIamRegistrationAllArgs(t *testing.T) {
 	productID := acc.PcsOnboardingProductWithCatalogProduct
 	env := "current"
 	name := acc.PcsIamServiceRegistrationId
-	roleDisplayName := fmt.Sprintf("random-%d", acctest.RandIntRange(10, 100))
+	roleDisplayName := fmt.Sprintf("random-name-%d", acctest.RandIntRange(10, 100))
 	iamRegistrationRole := fmt.Sprintf("crn:v1:bluemix:public:%s::::serviceRole:%s", acc.PcsIamServiceRegistrationId, roleDisplayName)
 	enabled := "true"
 	serviceType := "platform_service"
 	envUpdate := "current"
-	roleDisplayNameUpdate := fmt.Sprintf("random-%d", acctest.RandIntRange(10, 100))
+	roleDisplayNameUpdate := fmt.Sprintf("random-name-%d", acctest.RandIntRange(10, 100))
 	iamRegistrationRoleUpdate := fmt.Sprintf("crn:v1:bluemix:public:%s::::serviceRole:%s", acc.PcsIamServiceRegistrationId, roleDisplayNameUpdate)
 	nameUpdate := acc.PcsIamServiceRegistrationId
 	enabledUpdate := "true"
@@ -175,6 +176,7 @@ func testAccCheckIbmOnboardingIamRegistrationConfig(
 			service_type = "%s"
 			actions {
 				id = "id"
+				api_types = ["crn:v1:bluemix:public:context-based-restrictions::::api-type:control-plane", "crn:v1:bluemix:public:%s::::api-type:smtp-configuration"]
 				roles = [ "%s" ]
 				description {
 					default = "%s"
@@ -312,6 +314,58 @@ func testAccCheckIbmOnboardingIamRegistrationConfig(
 						hidden = false
 					}
 				}
+				operations {
+					api_types {
+						name = "crn:v1:bluemix:public:context-based-restrictions::::api-type:control-plane"
+						description {					
+							default = "default"
+							en = "en"
+							de = "de"
+							es = "es"
+							fr = "fr"
+							it = "it"
+							ja = "ja"
+							ko = "ko"
+							pt_br = "pt_br"
+							zh_tw = "zh_tw"
+							zh_cn = "zh_cn"
+						}
+					}
+					api_types {
+						name = "crn:v1:bluemix:public:%s::::api-type:smtp-configuration"
+						description {					
+							default = "default"
+							en = "en"
+							de = "de"
+							es = "es"
+							fr = "fr"
+							it = "it"
+							ja = "ja"
+							ko = "ko"
+							pt_br = "pt_br"
+							zh_tw = "zh_tw"
+							zh_cn = "zh_cn"
+						}
+						display_name {					
+							default = "default"
+							en = "en"
+							de = "de"
+							es = "es"
+							fr = "fr"
+							it = "it"
+							ja = "ja"
+							ko = "ko"
+							pt_br = "pt_br"
+							zh_tw = "zh_tw"
+							zh_cn = "zh_cn"
+						}
+					}
+				}
+				self_managed_allowlist_enforcement {
+					event_publishing {
+						api_types = ["crn:v1:bluemix:public:%s::::api-type:smtp-configuration"]
+					}
+				}
 			}
 			supported_anonymous_accesses {
 				attributes {
@@ -322,7 +376,7 @@ func testAccCheckIbmOnboardingIamRegistrationConfig(
 				roles = [ "%s" ]
 			}
 		}
-	`, productID, env, name, enabled, serviceType, iamRegistrationRole, actionDescription, name, name, supportedAttributeDisplayName, supportedAttributeInputDetailsDisplayName, supportedAuthorizationSubjectsService, iamRegistrationRole, iamRegistrationRole, roleDisplayName, environmentAttributesValues, iamRegistrationID, supportedAnonymousAccessesAdditionalPropValue, iamRegistrationRole)
+	`, productID, env, name, enabled, serviceType, iamRegistrationID, iamRegistrationRole, actionDescription, name, name, supportedAttributeDisplayName, supportedAttributeInputDetailsDisplayName, supportedAuthorizationSubjectsService, iamRegistrationRole, iamRegistrationRole, roleDisplayName, environmentAttributesValues, iamRegistrationID, iamRegistrationID, iamRegistrationID, supportedAnonymousAccessesAdditionalPropValue, iamRegistrationRole)
 }
 
 func testAccCheckIbmOnboardingIamRegistrationUpdateConfig(
@@ -341,7 +395,7 @@ func testAccCheckIbmOnboardingIamRegistrationUpdateConfig(
 	environmentAttributesValues string,
 	supportedAnonymousAccessesAdditionalPropValue string,
 ) string {
-	roleDisplayName2 := fmt.Sprintf("random-2-%d", acctest.RandIntRange(10, 100))
+	roleDisplayName2 := fmt.Sprintf("random-name-2-%d", acctest.RandIntRange(10, 100))
 	iamRegistrationRole2 := fmt.Sprintf("crn:v1:bluemix:public:%s::::serviceRole:%s", iamRegistrationID, roleDisplayName2)
 
 	return fmt.Sprintf(`
@@ -353,42 +407,10 @@ func testAccCheckIbmOnboardingIamRegistrationUpdateConfig(
 			service_type = "%s"
 			actions {
 				id = "id"
+				api_types = ["crn:v1:bluemix:public:context-based-restrictions::::api-type:control-plane", "crn:v1:bluemix:public:%s::::api-type:smtp-configuration"]
 				roles = [ "%s", "%s" ]
 				description {
 					default = "%s"
-					en = "en"
-					de = "de"
-					es = "es"
-					fr = "fr"
-					it = "it"
-					ja = "ja"
-					ko = "ko"
-					pt_br = "pt_br"
-					zh_tw = "zh_tw"
-					zh_cn = "zh_cn"
-				}
-							display_name {
-								default = "default"
-								en = "en"
-								de = "de"
-								es = "es"
-								fr = "fr"
-								it = "it"
-								ja = "ja"
-								ko = "ko"
-								pt_br = "pt_br"
-								zh_tw = "zh_tw"
-								zh_cn = "zh_cn"
-							}
-				options {
-					hidden = true
-				}
-			}
-			actions {
-				id = "idtwo"
-				roles = [ "%s" ]
-				description {
-					default = "default"
 					en = "en"
 					de = "de"
 					es = "es"
@@ -417,8 +439,42 @@ func testAccCheckIbmOnboardingIamRegistrationUpdateConfig(
 					hidden = true
 				}
 			}
+			actions {
+				id = "idtwo"
+				api_types = ["crn:v1:bluemix:public:context-based-restrictions::::api-type:control-plane"]
+				roles = [ "%s" ]
+				description {
+					default = "default"
+					en = "en"
+					de = "de"
+					es = "es"
+					fr = "fr"
+					it = "it"
+					ja = "ja"
+					ko = "ko"
+					pt_br = "pt_br"
+					zh_tw = "zh_tw"
+					zh_cn = "zh_cn"
+				}
+				display_name {
+					default = "default"
+					en = "en"
+					de = "de"
+					es = "es"
+					fr = "fr"
+					it = "it"
+					ja = "ja"
+					ko = "ko"
+					pt_br = "pt_br"
+					zh_tw = "zh_tw"
+					zh_cn = "zh_cn"
+				}
+					options {
+						hidden = true
+					}
+				}
 			additional_policy_scopes = ["%s", "%s.some"]
-			display_name {
+						display_name {
 				default = "%s"
 				en = "en"
 				de = "de"
@@ -443,30 +499,30 @@ func testAccCheckIbmOnboardingIamRegistrationUpdateConfig(
 				}
 				display_name {
 					default = "%s"
-					en = "en"
-					de = "de"
-					es = "es"
-					fr = "fr"
-					it = "it"
-					ja = "ja"
-					ko = "ko"
-					pt_br = "pt_br"
-					zh_tw = "zh_tw"
-					zh_cn = "zh_cn"
-				}
-				description {
-					default = "default"
-					en = "en"
-					de = "de"
-					es = "es"
-					fr = "fr"
-					it = "it"
-					ja = "ja"
-					ko = "ko"
-					pt_br = "pt_br"
-					zh_tw = "zh_tw"
-					zh_cn = "zh_cn"
-				}
+							en = "en"
+							de = "de"
+							es = "es"
+							fr = "fr"
+							it = "it"
+							ja = "ja"
+							ko = "ko"
+							pt_br = "pt_br"
+							zh_tw = "zh_tw"
+							zh_cn = "zh_cn"
+						}
+						description {
+							default = "default"
+							en = "en"
+							de = "de"
+							es = "es"
+							fr = "fr"
+							it = "it"
+							ja = "ja"
+							ko = "ko"
+							pt_br = "pt_br"
+							zh_tw = "zh_tw"
+							zh_cn = "zh_cn"
+						}
 				ui {
 					input_type = "selector"
 					input_details {
@@ -548,6 +604,55 @@ func testAccCheckIbmOnboardingIamRegistrationUpdateConfig(
 						hidden = true
 					}
 				}
+				operations {
+					api_types {
+						name = "crn:v1:bluemix:public:context-based-restrictions::::api-type:control-plane"
+						enforcement_method = ["authz-network"]
+						description {					
+							default = "default"
+							en = "en"
+							de = "de"
+							es = "es"
+							fr = "fr"
+							it = "it"
+							ja = "ja"
+							ko = "ko"
+							pt_br = "pt_br"
+							zh_tw = "zh_tw"
+							zh_cn = "zh_cn"
+						}
+					}
+					api_types {
+						name = "crn:v1:bluemix:public:%s::::api-type:smtp-configuration"
+						enforcement_method = ["authz-network"]
+						description {					
+							default = "default"
+							en = "en"
+							de = "de"
+							es = "es"
+							fr = "fr"
+							it = "it"
+							ja = "ja"
+							ko = "ko"
+							pt_br = "pt_br"
+							zh_tw = "zh_tw"
+							zh_cn = "zh_cn"
+						}
+						display_name {					
+							default = "default"
+							en = "en"
+							de = "de"
+							es = "es"
+							fr = "fr"
+							it = "it"
+							ja = "ja"
+							ko = "ko"
+							pt_br = "pt_br"
+							zh_tw = "zh_tw"
+							zh_cn = "zh_cn"
+						}
+					}
+				}
 			}
 			supported_anonymous_accesses {
 				attributes {
@@ -566,11 +671,11 @@ func testAccCheckIbmOnboardingIamRegistrationUpdateConfig(
 				roles = [ "%s" ]
 			}
 		}
-	`, productID, env, name, enabled, serviceType, iamRegistrationRole, iamRegistrationRole2, iamRegistrationRole, iamRegistrationRole, name, name, name, supportedAttributeDisplayName, supportedAttributeInputDetailsDisplayName, supportedAuthorizationSubjectsService, iamRegistrationRole, iamRegistrationRole, roleDisplayName, iamRegistrationRole2, roleDisplayName2, environmentAttributesValues, iamRegistrationID, supportedAnonymousAccessesAdditionalPropValue, iamRegistrationRole, iamRegistrationID, iamRegistrationRole)
+	`, productID, env, name, enabled, serviceType, iamRegistrationID, iamRegistrationRole, iamRegistrationRole2, iamRegistrationRole, iamRegistrationRole, name, name, name, supportedAttributeDisplayName, supportedAttributeInputDetailsDisplayName, supportedAuthorizationSubjectsService, iamRegistrationRole, iamRegistrationRole, roleDisplayName, iamRegistrationRole2, roleDisplayName2, environmentAttributesValues, iamRegistrationID, iamRegistrationID, supportedAnonymousAccessesAdditionalPropValue, iamRegistrationRole, iamRegistrationID, iamRegistrationRole)
 }
 
 func testAccCheckIbmOnboardingIamRegistrationExists(n string, obj partnercentersellv1.IamServiceRegistration) resource.TestCheckFunc {
-
+	time.Sleep(20 * time.Second)
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -603,6 +708,7 @@ func testAccCheckIbmOnboardingIamRegistrationExists(n string, obj partnercenters
 }
 
 func testAccCheckIbmOnboardingIamRegistrationDestroy(s *terraform.State) error {
+	time.Sleep(30 * time.Second)
 	partnerCenterSellClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).PartnerCenterSellV1()
 	if err != nil {
 		return err
@@ -672,6 +778,7 @@ func TestResourceIbmOnboardingIamRegistrationIamServiceRegistrationActionToMap(t
 		model["description"] = []map[string]interface{}{iamServiceRegistrationDescriptionObjectModel}
 		model["display_name"] = []map[string]interface{}{iamServiceRegistrationDisplayNameObjectModel}
 		model["options"] = []map[string]interface{}{iamServiceRegistrationActionOptionsModel}
+		model["api_types"] = []string{"testString"}
 
 		assert.Equal(t, result, model)
 	}
@@ -711,6 +818,7 @@ func TestResourceIbmOnboardingIamRegistrationIamServiceRegistrationActionToMap(t
 	model.Description = iamServiceRegistrationDescriptionObjectModel
 	model.DisplayName = iamServiceRegistrationDisplayNameObjectModel
 	model.Options = iamServiceRegistrationActionOptionsModel
+	model.ApiTypes = []string{"testString"}
 
 	result, err := partnercentersell.ResourceIbmOnboardingIamRegistrationIamServiceRegistrationActionToMap(model)
 	assert.Nil(t, err)
@@ -1557,8 +1665,51 @@ func TestResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedNetw
 		environmentAttributeModel["values"] = []string{"testString"}
 		environmentAttributeModel["options"] = []map[string]interface{}{environmentAttributeOptionsModel}
 
+		iamServiceRegistrationDisplayNameObjectModel := make(map[string]interface{})
+		iamServiceRegistrationDisplayNameObjectModel["default"] = "testString"
+		iamServiceRegistrationDisplayNameObjectModel["en"] = "testString"
+		iamServiceRegistrationDisplayNameObjectModel["de"] = "testString"
+		iamServiceRegistrationDisplayNameObjectModel["es"] = "testString"
+		iamServiceRegistrationDisplayNameObjectModel["fr"] = "testString"
+		iamServiceRegistrationDisplayNameObjectModel["it"] = "testString"
+		iamServiceRegistrationDisplayNameObjectModel["ja"] = "testString"
+		iamServiceRegistrationDisplayNameObjectModel["ko"] = "testString"
+		iamServiceRegistrationDisplayNameObjectModel["pt_br"] = "testString"
+		iamServiceRegistrationDisplayNameObjectModel["zh_tw"] = "testString"
+		iamServiceRegistrationDisplayNameObjectModel["zh_cn"] = "testString"
+
+		iamServiceRegistrationDescriptionObjectModel := make(map[string]interface{})
+		iamServiceRegistrationDescriptionObjectModel["default"] = "testString"
+		iamServiceRegistrationDescriptionObjectModel["en"] = "testString"
+		iamServiceRegistrationDescriptionObjectModel["de"] = "testString"
+		iamServiceRegistrationDescriptionObjectModel["es"] = "testString"
+		iamServiceRegistrationDescriptionObjectModel["fr"] = "testString"
+		iamServiceRegistrationDescriptionObjectModel["it"] = "testString"
+		iamServiceRegistrationDescriptionObjectModel["ja"] = "testString"
+		iamServiceRegistrationDescriptionObjectModel["ko"] = "testString"
+		iamServiceRegistrationDescriptionObjectModel["pt_br"] = "testString"
+		iamServiceRegistrationDescriptionObjectModel["zh_tw"] = "testString"
+		iamServiceRegistrationDescriptionObjectModel["zh_cn"] = "testString"
+
+		iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel := make(map[string]interface{})
+		iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel["name"] = "testString"
+		iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel["enforcement_method"] = []string{"testString"}
+		iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel["display_name"] = []map[string]interface{}{iamServiceRegistrationDisplayNameObjectModel}
+		iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel["description"] = []map[string]interface{}{iamServiceRegistrationDescriptionObjectModel}
+
+		iamServiceRegistrationSupportedNetworkOperationsModel := make(map[string]interface{})
+		iamServiceRegistrationSupportedNetworkOperationsModel["api_types"] = []map[string]interface{}{iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel}
+
+		iamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcementEventPublishingModel := make(map[string]interface{})
+		iamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcementEventPublishingModel["api_types"] = []string{"testString"}
+
+		iamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcementModel := make(map[string]interface{})
+		iamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcementModel["event_publishing"] = []map[string]interface{}{iamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcementEventPublishingModel}
+
 		model := make(map[string]interface{})
 		model["environment_attributes"] = []map[string]interface{}{environmentAttributeModel}
+		model["operations"] = []map[string]interface{}{iamServiceRegistrationSupportedNetworkOperationsModel}
+		model["self_managed_allowlist_enforcement"] = []map[string]interface{}{iamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcementModel}
 
 		assert.Equal(t, result, model)
 	}
@@ -1571,8 +1722,51 @@ func TestResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedNetw
 	environmentAttributeModel.Values = []string{"testString"}
 	environmentAttributeModel.Options = environmentAttributeOptionsModel
 
+	iamServiceRegistrationDisplayNameObjectModel := new(partnercentersellv1.IamServiceRegistrationDisplayNameObject)
+	iamServiceRegistrationDisplayNameObjectModel.Default = core.StringPtr("testString")
+	iamServiceRegistrationDisplayNameObjectModel.En = core.StringPtr("testString")
+	iamServiceRegistrationDisplayNameObjectModel.De = core.StringPtr("testString")
+	iamServiceRegistrationDisplayNameObjectModel.Es = core.StringPtr("testString")
+	iamServiceRegistrationDisplayNameObjectModel.Fr = core.StringPtr("testString")
+	iamServiceRegistrationDisplayNameObjectModel.It = core.StringPtr("testString")
+	iamServiceRegistrationDisplayNameObjectModel.Ja = core.StringPtr("testString")
+	iamServiceRegistrationDisplayNameObjectModel.Ko = core.StringPtr("testString")
+	iamServiceRegistrationDisplayNameObjectModel.PtBr = core.StringPtr("testString")
+	iamServiceRegistrationDisplayNameObjectModel.ZhTw = core.StringPtr("testString")
+	iamServiceRegistrationDisplayNameObjectModel.ZhCn = core.StringPtr("testString")
+
+	iamServiceRegistrationDescriptionObjectModel := new(partnercentersellv1.IamServiceRegistrationDescriptionObject)
+	iamServiceRegistrationDescriptionObjectModel.Default = core.StringPtr("testString")
+	iamServiceRegistrationDescriptionObjectModel.En = core.StringPtr("testString")
+	iamServiceRegistrationDescriptionObjectModel.De = core.StringPtr("testString")
+	iamServiceRegistrationDescriptionObjectModel.Es = core.StringPtr("testString")
+	iamServiceRegistrationDescriptionObjectModel.Fr = core.StringPtr("testString")
+	iamServiceRegistrationDescriptionObjectModel.It = core.StringPtr("testString")
+	iamServiceRegistrationDescriptionObjectModel.Ja = core.StringPtr("testString")
+	iamServiceRegistrationDescriptionObjectModel.Ko = core.StringPtr("testString")
+	iamServiceRegistrationDescriptionObjectModel.PtBr = core.StringPtr("testString")
+	iamServiceRegistrationDescriptionObjectModel.ZhTw = core.StringPtr("testString")
+	iamServiceRegistrationDescriptionObjectModel.ZhCn = core.StringPtr("testString")
+
+	iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel := new(partnercentersellv1.IamServiceRegistrationSupportedNetworkOperationsApiTypeItems)
+	iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel.Name = core.StringPtr("testString")
+	iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel.EnforcementMethod = []string{"testString"}
+	iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel.DisplayName = iamServiceRegistrationDisplayNameObjectModel
+	iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel.Description = iamServiceRegistrationDescriptionObjectModel
+
+	iamServiceRegistrationSupportedNetworkOperationsModel := new(partnercentersellv1.IamServiceRegistrationSupportedNetworkOperations)
+	iamServiceRegistrationSupportedNetworkOperationsModel.ApiTypes = []partnercentersellv1.IamServiceRegistrationSupportedNetworkOperationsApiTypeItems{*iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel}
+
+	iamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcementEventPublishingModel := new(partnercentersellv1.IamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcementEventPublishing)
+	iamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcementEventPublishingModel.ApiTypes = []string{"testString"}
+
+	iamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcementModel := new(partnercentersellv1.IamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcement)
+	iamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcementModel.EventPublishing = iamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcementEventPublishingModel
+
 	model := new(partnercentersellv1.IamServiceRegistrationSupportedNetwork)
 	model.EnvironmentAttributes = []partnercentersellv1.EnvironmentAttribute{*environmentAttributeModel}
+	model.Operations = iamServiceRegistrationSupportedNetworkOperationsModel
+	model.SelfManagedAllowlistEnforcement = iamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcementModel
 
 	result, err := partnercentersell.ResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedNetworkToMap(model)
 	assert.Nil(t, err)
@@ -1621,6 +1815,198 @@ func TestResourceIbmOnboardingIamRegistrationEnvironmentAttributeOptionsToMap(t 
 	checkResult(result)
 }
 
+func TestResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedNetworkOperationsToMap(t *testing.T) {
+	checkResult := func(result map[string]interface{}) {
+		iamServiceRegistrationDisplayNameObjectModel := make(map[string]interface{})
+		iamServiceRegistrationDisplayNameObjectModel["default"] = "testString"
+		iamServiceRegistrationDisplayNameObjectModel["en"] = "testString"
+		iamServiceRegistrationDisplayNameObjectModel["de"] = "testString"
+		iamServiceRegistrationDisplayNameObjectModel["es"] = "testString"
+		iamServiceRegistrationDisplayNameObjectModel["fr"] = "testString"
+		iamServiceRegistrationDisplayNameObjectModel["it"] = "testString"
+		iamServiceRegistrationDisplayNameObjectModel["ja"] = "testString"
+		iamServiceRegistrationDisplayNameObjectModel["ko"] = "testString"
+		iamServiceRegistrationDisplayNameObjectModel["pt_br"] = "testString"
+		iamServiceRegistrationDisplayNameObjectModel["zh_tw"] = "testString"
+		iamServiceRegistrationDisplayNameObjectModel["zh_cn"] = "testString"
+
+		iamServiceRegistrationDescriptionObjectModel := make(map[string]interface{})
+		iamServiceRegistrationDescriptionObjectModel["default"] = "testString"
+		iamServiceRegistrationDescriptionObjectModel["en"] = "testString"
+		iamServiceRegistrationDescriptionObjectModel["de"] = "testString"
+		iamServiceRegistrationDescriptionObjectModel["es"] = "testString"
+		iamServiceRegistrationDescriptionObjectModel["fr"] = "testString"
+		iamServiceRegistrationDescriptionObjectModel["it"] = "testString"
+		iamServiceRegistrationDescriptionObjectModel["ja"] = "testString"
+		iamServiceRegistrationDescriptionObjectModel["ko"] = "testString"
+		iamServiceRegistrationDescriptionObjectModel["pt_br"] = "testString"
+		iamServiceRegistrationDescriptionObjectModel["zh_tw"] = "testString"
+		iamServiceRegistrationDescriptionObjectModel["zh_cn"] = "testString"
+
+		iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel := make(map[string]interface{})
+		iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel["name"] = "testString"
+		iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel["enforcement_method"] = []string{"testString"}
+		iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel["display_name"] = []map[string]interface{}{iamServiceRegistrationDisplayNameObjectModel}
+		iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel["description"] = []map[string]interface{}{iamServiceRegistrationDescriptionObjectModel}
+
+		model := make(map[string]interface{})
+		model["api_types"] = []map[string]interface{}{iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel}
+
+		assert.Equal(t, result, model)
+	}
+
+	iamServiceRegistrationDisplayNameObjectModel := new(partnercentersellv1.IamServiceRegistrationDisplayNameObject)
+	iamServiceRegistrationDisplayNameObjectModel.Default = core.StringPtr("testString")
+	iamServiceRegistrationDisplayNameObjectModel.En = core.StringPtr("testString")
+	iamServiceRegistrationDisplayNameObjectModel.De = core.StringPtr("testString")
+	iamServiceRegistrationDisplayNameObjectModel.Es = core.StringPtr("testString")
+	iamServiceRegistrationDisplayNameObjectModel.Fr = core.StringPtr("testString")
+	iamServiceRegistrationDisplayNameObjectModel.It = core.StringPtr("testString")
+	iamServiceRegistrationDisplayNameObjectModel.Ja = core.StringPtr("testString")
+	iamServiceRegistrationDisplayNameObjectModel.Ko = core.StringPtr("testString")
+	iamServiceRegistrationDisplayNameObjectModel.PtBr = core.StringPtr("testString")
+	iamServiceRegistrationDisplayNameObjectModel.ZhTw = core.StringPtr("testString")
+	iamServiceRegistrationDisplayNameObjectModel.ZhCn = core.StringPtr("testString")
+
+	iamServiceRegistrationDescriptionObjectModel := new(partnercentersellv1.IamServiceRegistrationDescriptionObject)
+	iamServiceRegistrationDescriptionObjectModel.Default = core.StringPtr("testString")
+	iamServiceRegistrationDescriptionObjectModel.En = core.StringPtr("testString")
+	iamServiceRegistrationDescriptionObjectModel.De = core.StringPtr("testString")
+	iamServiceRegistrationDescriptionObjectModel.Es = core.StringPtr("testString")
+	iamServiceRegistrationDescriptionObjectModel.Fr = core.StringPtr("testString")
+	iamServiceRegistrationDescriptionObjectModel.It = core.StringPtr("testString")
+	iamServiceRegistrationDescriptionObjectModel.Ja = core.StringPtr("testString")
+	iamServiceRegistrationDescriptionObjectModel.Ko = core.StringPtr("testString")
+	iamServiceRegistrationDescriptionObjectModel.PtBr = core.StringPtr("testString")
+	iamServiceRegistrationDescriptionObjectModel.ZhTw = core.StringPtr("testString")
+	iamServiceRegistrationDescriptionObjectModel.ZhCn = core.StringPtr("testString")
+
+	iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel := new(partnercentersellv1.IamServiceRegistrationSupportedNetworkOperationsApiTypeItems)
+	iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel.Name = core.StringPtr("testString")
+	iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel.EnforcementMethod = []string{"testString"}
+	iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel.DisplayName = iamServiceRegistrationDisplayNameObjectModel
+	iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel.Description = iamServiceRegistrationDescriptionObjectModel
+
+	model := new(partnercentersellv1.IamServiceRegistrationSupportedNetworkOperations)
+	model.ApiTypes = []partnercentersellv1.IamServiceRegistrationSupportedNetworkOperationsApiTypeItems{*iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel}
+
+	result, err := partnercentersell.ResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedNetworkOperationsToMap(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedNetworkOperationsApiTypeItemsToMap(t *testing.T) {
+	checkResult := func(result map[string]interface{}) {
+		iamServiceRegistrationDisplayNameObjectModel := make(map[string]interface{})
+		iamServiceRegistrationDisplayNameObjectModel["default"] = "testString"
+		iamServiceRegistrationDisplayNameObjectModel["en"] = "testString"
+		iamServiceRegistrationDisplayNameObjectModel["de"] = "testString"
+		iamServiceRegistrationDisplayNameObjectModel["es"] = "testString"
+		iamServiceRegistrationDisplayNameObjectModel["fr"] = "testString"
+		iamServiceRegistrationDisplayNameObjectModel["it"] = "testString"
+		iamServiceRegistrationDisplayNameObjectModel["ja"] = "testString"
+		iamServiceRegistrationDisplayNameObjectModel["ko"] = "testString"
+		iamServiceRegistrationDisplayNameObjectModel["pt_br"] = "testString"
+		iamServiceRegistrationDisplayNameObjectModel["zh_tw"] = "testString"
+		iamServiceRegistrationDisplayNameObjectModel["zh_cn"] = "testString"
+
+		iamServiceRegistrationDescriptionObjectModel := make(map[string]interface{})
+		iamServiceRegistrationDescriptionObjectModel["default"] = "testString"
+		iamServiceRegistrationDescriptionObjectModel["en"] = "testString"
+		iamServiceRegistrationDescriptionObjectModel["de"] = "testString"
+		iamServiceRegistrationDescriptionObjectModel["es"] = "testString"
+		iamServiceRegistrationDescriptionObjectModel["fr"] = "testString"
+		iamServiceRegistrationDescriptionObjectModel["it"] = "testString"
+		iamServiceRegistrationDescriptionObjectModel["ja"] = "testString"
+		iamServiceRegistrationDescriptionObjectModel["ko"] = "testString"
+		iamServiceRegistrationDescriptionObjectModel["pt_br"] = "testString"
+		iamServiceRegistrationDescriptionObjectModel["zh_tw"] = "testString"
+		iamServiceRegistrationDescriptionObjectModel["zh_cn"] = "testString"
+
+		model := make(map[string]interface{})
+		model["name"] = "testString"
+		model["enforcement_method"] = []string{"testString"}
+		model["display_name"] = []map[string]interface{}{iamServiceRegistrationDisplayNameObjectModel}
+		model["description"] = []map[string]interface{}{iamServiceRegistrationDescriptionObjectModel}
+
+		assert.Equal(t, result, model)
+	}
+
+	iamServiceRegistrationDisplayNameObjectModel := new(partnercentersellv1.IamServiceRegistrationDisplayNameObject)
+	iamServiceRegistrationDisplayNameObjectModel.Default = core.StringPtr("testString")
+	iamServiceRegistrationDisplayNameObjectModel.En = core.StringPtr("testString")
+	iamServiceRegistrationDisplayNameObjectModel.De = core.StringPtr("testString")
+	iamServiceRegistrationDisplayNameObjectModel.Es = core.StringPtr("testString")
+	iamServiceRegistrationDisplayNameObjectModel.Fr = core.StringPtr("testString")
+	iamServiceRegistrationDisplayNameObjectModel.It = core.StringPtr("testString")
+	iamServiceRegistrationDisplayNameObjectModel.Ja = core.StringPtr("testString")
+	iamServiceRegistrationDisplayNameObjectModel.Ko = core.StringPtr("testString")
+	iamServiceRegistrationDisplayNameObjectModel.PtBr = core.StringPtr("testString")
+	iamServiceRegistrationDisplayNameObjectModel.ZhTw = core.StringPtr("testString")
+	iamServiceRegistrationDisplayNameObjectModel.ZhCn = core.StringPtr("testString")
+
+	iamServiceRegistrationDescriptionObjectModel := new(partnercentersellv1.IamServiceRegistrationDescriptionObject)
+	iamServiceRegistrationDescriptionObjectModel.Default = core.StringPtr("testString")
+	iamServiceRegistrationDescriptionObjectModel.En = core.StringPtr("testString")
+	iamServiceRegistrationDescriptionObjectModel.De = core.StringPtr("testString")
+	iamServiceRegistrationDescriptionObjectModel.Es = core.StringPtr("testString")
+	iamServiceRegistrationDescriptionObjectModel.Fr = core.StringPtr("testString")
+	iamServiceRegistrationDescriptionObjectModel.It = core.StringPtr("testString")
+	iamServiceRegistrationDescriptionObjectModel.Ja = core.StringPtr("testString")
+	iamServiceRegistrationDescriptionObjectModel.Ko = core.StringPtr("testString")
+	iamServiceRegistrationDescriptionObjectModel.PtBr = core.StringPtr("testString")
+	iamServiceRegistrationDescriptionObjectModel.ZhTw = core.StringPtr("testString")
+	iamServiceRegistrationDescriptionObjectModel.ZhCn = core.StringPtr("testString")
+
+	model := new(partnercentersellv1.IamServiceRegistrationSupportedNetworkOperationsApiTypeItems)
+	model.Name = core.StringPtr("testString")
+	model.EnforcementMethod = []string{"testString"}
+	model.DisplayName = iamServiceRegistrationDisplayNameObjectModel
+	model.Description = iamServiceRegistrationDescriptionObjectModel
+
+	result, err := partnercentersell.ResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedNetworkOperationsApiTypeItemsToMap(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcementToMap(t *testing.T) {
+	checkResult := func(result map[string]interface{}) {
+		iamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcementEventPublishingModel := make(map[string]interface{})
+		iamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcementEventPublishingModel["api_types"] = []string{"testString"}
+
+		model := make(map[string]interface{})
+		model["event_publishing"] = []map[string]interface{}{iamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcementEventPublishingModel}
+
+		assert.Equal(t, result, model)
+	}
+
+	iamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcementEventPublishingModel := new(partnercentersellv1.IamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcementEventPublishing)
+	iamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcementEventPublishingModel.ApiTypes = []string{"testString"}
+
+	model := new(partnercentersellv1.IamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcement)
+	model.EventPublishing = iamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcementEventPublishingModel
+
+	result, err := partnercentersell.ResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcementToMap(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcementEventPublishingToMap(t *testing.T) {
+	checkResult := func(result map[string]interface{}) {
+		model := make(map[string]interface{})
+		model["api_types"] = []string{"testString"}
+
+		assert.Equal(t, result, model)
+	}
+
+	model := new(partnercentersellv1.IamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcementEventPublishing)
+	model.ApiTypes = []string{"testString"}
+
+	result, err := partnercentersell.ResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcementEventPublishingToMap(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
 func TestResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationAction(t *testing.T) {
 	checkResult := func(result *partnercentersellv1.IamServiceRegistrationAction) {
 		iamServiceRegistrationDescriptionObjectModel := new(partnercentersellv1.IamServiceRegistrationDescriptionObject)
@@ -1658,6 +2044,7 @@ func TestResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationAction(t
 		model.Description = iamServiceRegistrationDescriptionObjectModel
 		model.DisplayName = iamServiceRegistrationDisplayNameObjectModel
 		model.Options = iamServiceRegistrationActionOptionsModel
+		model.ApiTypes = []string{"testString"}
 
 		assert.Equal(t, result, model)
 	}
@@ -1697,6 +2084,7 @@ func TestResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationAction(t
 	model["description"] = []interface{}{iamServiceRegistrationDescriptionObjectModel}
 	model["display_name"] = []interface{}{iamServiceRegistrationDisplayNameObjectModel}
 	model["options"] = []interface{}{iamServiceRegistrationActionOptionsModel}
+	model["api_types"] = []interface{}{"testString"}
 
 	result, err := partnercentersell.ResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationAction(model)
 	assert.Nil(t, err)
@@ -2543,8 +2931,51 @@ func TestResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupporte
 		environmentAttributeModel.Values = []string{"testString"}
 		environmentAttributeModel.Options = environmentAttributeOptionsModel
 
+		iamServiceRegistrationDisplayNameObjectModel := new(partnercentersellv1.IamServiceRegistrationDisplayNameObject)
+		iamServiceRegistrationDisplayNameObjectModel.Default = core.StringPtr("testString")
+		iamServiceRegistrationDisplayNameObjectModel.En = core.StringPtr("testString")
+		iamServiceRegistrationDisplayNameObjectModel.De = core.StringPtr("testString")
+		iamServiceRegistrationDisplayNameObjectModel.Es = core.StringPtr("testString")
+		iamServiceRegistrationDisplayNameObjectModel.Fr = core.StringPtr("testString")
+		iamServiceRegistrationDisplayNameObjectModel.It = core.StringPtr("testString")
+		iamServiceRegistrationDisplayNameObjectModel.Ja = core.StringPtr("testString")
+		iamServiceRegistrationDisplayNameObjectModel.Ko = core.StringPtr("testString")
+		iamServiceRegistrationDisplayNameObjectModel.PtBr = core.StringPtr("testString")
+		iamServiceRegistrationDisplayNameObjectModel.ZhTw = core.StringPtr("testString")
+		iamServiceRegistrationDisplayNameObjectModel.ZhCn = core.StringPtr("testString")
+
+		iamServiceRegistrationDescriptionObjectModel := new(partnercentersellv1.IamServiceRegistrationDescriptionObject)
+		iamServiceRegistrationDescriptionObjectModel.Default = core.StringPtr("testString")
+		iamServiceRegistrationDescriptionObjectModel.En = core.StringPtr("testString")
+		iamServiceRegistrationDescriptionObjectModel.De = core.StringPtr("testString")
+		iamServiceRegistrationDescriptionObjectModel.Es = core.StringPtr("testString")
+		iamServiceRegistrationDescriptionObjectModel.Fr = core.StringPtr("testString")
+		iamServiceRegistrationDescriptionObjectModel.It = core.StringPtr("testString")
+		iamServiceRegistrationDescriptionObjectModel.Ja = core.StringPtr("testString")
+		iamServiceRegistrationDescriptionObjectModel.Ko = core.StringPtr("testString")
+		iamServiceRegistrationDescriptionObjectModel.PtBr = core.StringPtr("testString")
+		iamServiceRegistrationDescriptionObjectModel.ZhTw = core.StringPtr("testString")
+		iamServiceRegistrationDescriptionObjectModel.ZhCn = core.StringPtr("testString")
+
+		iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel := new(partnercentersellv1.IamServiceRegistrationSupportedNetworkOperationsApiTypeItems)
+		iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel.Name = core.StringPtr("testString")
+		iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel.EnforcementMethod = []string{"testString"}
+		iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel.DisplayName = iamServiceRegistrationDisplayNameObjectModel
+		iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel.Description = iamServiceRegistrationDescriptionObjectModel
+
+		iamServiceRegistrationSupportedNetworkOperationsModel := new(partnercentersellv1.IamServiceRegistrationSupportedNetworkOperations)
+		iamServiceRegistrationSupportedNetworkOperationsModel.ApiTypes = []partnercentersellv1.IamServiceRegistrationSupportedNetworkOperationsApiTypeItems{*iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel}
+
+		iamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcementEventPublishingModel := new(partnercentersellv1.IamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcementEventPublishing)
+		iamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcementEventPublishingModel.ApiTypes = []string{"testString"}
+
+		iamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcementModel := new(partnercentersellv1.IamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcement)
+		iamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcementModel.EventPublishing = iamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcementEventPublishingModel
+
 		model := new(partnercentersellv1.IamServiceRegistrationSupportedNetwork)
 		model.EnvironmentAttributes = []partnercentersellv1.EnvironmentAttribute{*environmentAttributeModel}
+		model.Operations = iamServiceRegistrationSupportedNetworkOperationsModel
+		model.SelfManagedAllowlistEnforcement = iamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcementModel
 
 		assert.Equal(t, result, model)
 	}
@@ -2557,8 +2988,51 @@ func TestResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupporte
 	environmentAttributeModel["values"] = []interface{}{"testString"}
 	environmentAttributeModel["options"] = []interface{}{environmentAttributeOptionsModel}
 
+	iamServiceRegistrationDisplayNameObjectModel := make(map[string]interface{})
+	iamServiceRegistrationDisplayNameObjectModel["default"] = "testString"
+	iamServiceRegistrationDisplayNameObjectModel["en"] = "testString"
+	iamServiceRegistrationDisplayNameObjectModel["de"] = "testString"
+	iamServiceRegistrationDisplayNameObjectModel["es"] = "testString"
+	iamServiceRegistrationDisplayNameObjectModel["fr"] = "testString"
+	iamServiceRegistrationDisplayNameObjectModel["it"] = "testString"
+	iamServiceRegistrationDisplayNameObjectModel["ja"] = "testString"
+	iamServiceRegistrationDisplayNameObjectModel["ko"] = "testString"
+	iamServiceRegistrationDisplayNameObjectModel["pt_br"] = "testString"
+	iamServiceRegistrationDisplayNameObjectModel["zh_tw"] = "testString"
+	iamServiceRegistrationDisplayNameObjectModel["zh_cn"] = "testString"
+
+	iamServiceRegistrationDescriptionObjectModel := make(map[string]interface{})
+	iamServiceRegistrationDescriptionObjectModel["default"] = "testString"
+	iamServiceRegistrationDescriptionObjectModel["en"] = "testString"
+	iamServiceRegistrationDescriptionObjectModel["de"] = "testString"
+	iamServiceRegistrationDescriptionObjectModel["es"] = "testString"
+	iamServiceRegistrationDescriptionObjectModel["fr"] = "testString"
+	iamServiceRegistrationDescriptionObjectModel["it"] = "testString"
+	iamServiceRegistrationDescriptionObjectModel["ja"] = "testString"
+	iamServiceRegistrationDescriptionObjectModel["ko"] = "testString"
+	iamServiceRegistrationDescriptionObjectModel["pt_br"] = "testString"
+	iamServiceRegistrationDescriptionObjectModel["zh_tw"] = "testString"
+	iamServiceRegistrationDescriptionObjectModel["zh_cn"] = "testString"
+
+	iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel := make(map[string]interface{})
+	iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel["name"] = "testString"
+	iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel["enforcement_method"] = []interface{}{"testString"}
+	iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel["display_name"] = []interface{}{iamServiceRegistrationDisplayNameObjectModel}
+	iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel["description"] = []interface{}{iamServiceRegistrationDescriptionObjectModel}
+
+	iamServiceRegistrationSupportedNetworkOperationsModel := make(map[string]interface{})
+	iamServiceRegistrationSupportedNetworkOperationsModel["api_types"] = []interface{}{iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel}
+
+	iamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcementEventPublishingModel := make(map[string]interface{})
+	iamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcementEventPublishingModel["api_types"] = []interface{}{"testString"}
+
+	iamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcementModel := make(map[string]interface{})
+	iamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcementModel["event_publishing"] = []interface{}{iamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcementEventPublishingModel}
+
 	model := make(map[string]interface{})
 	model["environment_attributes"] = []interface{}{environmentAttributeModel}
+	model["operations"] = []interface{}{iamServiceRegistrationSupportedNetworkOperationsModel}
+	model["self_managed_allowlist_enforcement"] = []interface{}{iamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcementModel}
 
 	result, err := partnercentersell.ResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupportedNetwork(model)
 	assert.Nil(t, err)
@@ -2603,6 +3077,198 @@ func TestResourceIbmOnboardingIamRegistrationMapToEnvironmentAttributeOptions(t 
 	model["hidden"] = true
 
 	result, err := partnercentersell.ResourceIbmOnboardingIamRegistrationMapToEnvironmentAttributeOptions(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupportedNetworkOperations(t *testing.T) {
+	checkResult := func(result *partnercentersellv1.IamServiceRegistrationSupportedNetworkOperations) {
+		iamServiceRegistrationDisplayNameObjectModel := new(partnercentersellv1.IamServiceRegistrationDisplayNameObject)
+		iamServiceRegistrationDisplayNameObjectModel.Default = core.StringPtr("testString")
+		iamServiceRegistrationDisplayNameObjectModel.En = core.StringPtr("testString")
+		iamServiceRegistrationDisplayNameObjectModel.De = core.StringPtr("testString")
+		iamServiceRegistrationDisplayNameObjectModel.Es = core.StringPtr("testString")
+		iamServiceRegistrationDisplayNameObjectModel.Fr = core.StringPtr("testString")
+		iamServiceRegistrationDisplayNameObjectModel.It = core.StringPtr("testString")
+		iamServiceRegistrationDisplayNameObjectModel.Ja = core.StringPtr("testString")
+		iamServiceRegistrationDisplayNameObjectModel.Ko = core.StringPtr("testString")
+		iamServiceRegistrationDisplayNameObjectModel.PtBr = core.StringPtr("testString")
+		iamServiceRegistrationDisplayNameObjectModel.ZhTw = core.StringPtr("testString")
+		iamServiceRegistrationDisplayNameObjectModel.ZhCn = core.StringPtr("testString")
+
+		iamServiceRegistrationDescriptionObjectModel := new(partnercentersellv1.IamServiceRegistrationDescriptionObject)
+		iamServiceRegistrationDescriptionObjectModel.Default = core.StringPtr("testString")
+		iamServiceRegistrationDescriptionObjectModel.En = core.StringPtr("testString")
+		iamServiceRegistrationDescriptionObjectModel.De = core.StringPtr("testString")
+		iamServiceRegistrationDescriptionObjectModel.Es = core.StringPtr("testString")
+		iamServiceRegistrationDescriptionObjectModel.Fr = core.StringPtr("testString")
+		iamServiceRegistrationDescriptionObjectModel.It = core.StringPtr("testString")
+		iamServiceRegistrationDescriptionObjectModel.Ja = core.StringPtr("testString")
+		iamServiceRegistrationDescriptionObjectModel.Ko = core.StringPtr("testString")
+		iamServiceRegistrationDescriptionObjectModel.PtBr = core.StringPtr("testString")
+		iamServiceRegistrationDescriptionObjectModel.ZhTw = core.StringPtr("testString")
+		iamServiceRegistrationDescriptionObjectModel.ZhCn = core.StringPtr("testString")
+
+		iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel := new(partnercentersellv1.IamServiceRegistrationSupportedNetworkOperationsApiTypeItems)
+		iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel.Name = core.StringPtr("testString")
+		iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel.EnforcementMethod = []string{"testString"}
+		iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel.DisplayName = iamServiceRegistrationDisplayNameObjectModel
+		iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel.Description = iamServiceRegistrationDescriptionObjectModel
+
+		model := new(partnercentersellv1.IamServiceRegistrationSupportedNetworkOperations)
+		model.ApiTypes = []partnercentersellv1.IamServiceRegistrationSupportedNetworkOperationsApiTypeItems{*iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel}
+
+		assert.Equal(t, result, model)
+	}
+
+	iamServiceRegistrationDisplayNameObjectModel := make(map[string]interface{})
+	iamServiceRegistrationDisplayNameObjectModel["default"] = "testString"
+	iamServiceRegistrationDisplayNameObjectModel["en"] = "testString"
+	iamServiceRegistrationDisplayNameObjectModel["de"] = "testString"
+	iamServiceRegistrationDisplayNameObjectModel["es"] = "testString"
+	iamServiceRegistrationDisplayNameObjectModel["fr"] = "testString"
+	iamServiceRegistrationDisplayNameObjectModel["it"] = "testString"
+	iamServiceRegistrationDisplayNameObjectModel["ja"] = "testString"
+	iamServiceRegistrationDisplayNameObjectModel["ko"] = "testString"
+	iamServiceRegistrationDisplayNameObjectModel["pt_br"] = "testString"
+	iamServiceRegistrationDisplayNameObjectModel["zh_tw"] = "testString"
+	iamServiceRegistrationDisplayNameObjectModel["zh_cn"] = "testString"
+
+	iamServiceRegistrationDescriptionObjectModel := make(map[string]interface{})
+	iamServiceRegistrationDescriptionObjectModel["default"] = "testString"
+	iamServiceRegistrationDescriptionObjectModel["en"] = "testString"
+	iamServiceRegistrationDescriptionObjectModel["de"] = "testString"
+	iamServiceRegistrationDescriptionObjectModel["es"] = "testString"
+	iamServiceRegistrationDescriptionObjectModel["fr"] = "testString"
+	iamServiceRegistrationDescriptionObjectModel["it"] = "testString"
+	iamServiceRegistrationDescriptionObjectModel["ja"] = "testString"
+	iamServiceRegistrationDescriptionObjectModel["ko"] = "testString"
+	iamServiceRegistrationDescriptionObjectModel["pt_br"] = "testString"
+	iamServiceRegistrationDescriptionObjectModel["zh_tw"] = "testString"
+	iamServiceRegistrationDescriptionObjectModel["zh_cn"] = "testString"
+
+	iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel := make(map[string]interface{})
+	iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel["name"] = "testString"
+	iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel["enforcement_method"] = []interface{}{"testString"}
+	iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel["display_name"] = []interface{}{iamServiceRegistrationDisplayNameObjectModel}
+	iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel["description"] = []interface{}{iamServiceRegistrationDescriptionObjectModel}
+
+	model := make(map[string]interface{})
+	model["api_types"] = []interface{}{iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel}
+
+	result, err := partnercentersell.ResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupportedNetworkOperations(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupportedNetworkOperationsApiTypeItems(t *testing.T) {
+	checkResult := func(result *partnercentersellv1.IamServiceRegistrationSupportedNetworkOperationsApiTypeItems) {
+		iamServiceRegistrationDisplayNameObjectModel := new(partnercentersellv1.IamServiceRegistrationDisplayNameObject)
+		iamServiceRegistrationDisplayNameObjectModel.Default = core.StringPtr("testString")
+		iamServiceRegistrationDisplayNameObjectModel.En = core.StringPtr("testString")
+		iamServiceRegistrationDisplayNameObjectModel.De = core.StringPtr("testString")
+		iamServiceRegistrationDisplayNameObjectModel.Es = core.StringPtr("testString")
+		iamServiceRegistrationDisplayNameObjectModel.Fr = core.StringPtr("testString")
+		iamServiceRegistrationDisplayNameObjectModel.It = core.StringPtr("testString")
+		iamServiceRegistrationDisplayNameObjectModel.Ja = core.StringPtr("testString")
+		iamServiceRegistrationDisplayNameObjectModel.Ko = core.StringPtr("testString")
+		iamServiceRegistrationDisplayNameObjectModel.PtBr = core.StringPtr("testString")
+		iamServiceRegistrationDisplayNameObjectModel.ZhTw = core.StringPtr("testString")
+		iamServiceRegistrationDisplayNameObjectModel.ZhCn = core.StringPtr("testString")
+
+		iamServiceRegistrationDescriptionObjectModel := new(partnercentersellv1.IamServiceRegistrationDescriptionObject)
+		iamServiceRegistrationDescriptionObjectModel.Default = core.StringPtr("testString")
+		iamServiceRegistrationDescriptionObjectModel.En = core.StringPtr("testString")
+		iamServiceRegistrationDescriptionObjectModel.De = core.StringPtr("testString")
+		iamServiceRegistrationDescriptionObjectModel.Es = core.StringPtr("testString")
+		iamServiceRegistrationDescriptionObjectModel.Fr = core.StringPtr("testString")
+		iamServiceRegistrationDescriptionObjectModel.It = core.StringPtr("testString")
+		iamServiceRegistrationDescriptionObjectModel.Ja = core.StringPtr("testString")
+		iamServiceRegistrationDescriptionObjectModel.Ko = core.StringPtr("testString")
+		iamServiceRegistrationDescriptionObjectModel.PtBr = core.StringPtr("testString")
+		iamServiceRegistrationDescriptionObjectModel.ZhTw = core.StringPtr("testString")
+		iamServiceRegistrationDescriptionObjectModel.ZhCn = core.StringPtr("testString")
+
+		model := new(partnercentersellv1.IamServiceRegistrationSupportedNetworkOperationsApiTypeItems)
+		model.Name = core.StringPtr("testString")
+		model.EnforcementMethod = []string{"testString"}
+		model.DisplayName = iamServiceRegistrationDisplayNameObjectModel
+		model.Description = iamServiceRegistrationDescriptionObjectModel
+
+		assert.Equal(t, result, model)
+	}
+
+	iamServiceRegistrationDisplayNameObjectModel := make(map[string]interface{})
+	iamServiceRegistrationDisplayNameObjectModel["default"] = "testString"
+	iamServiceRegistrationDisplayNameObjectModel["en"] = "testString"
+	iamServiceRegistrationDisplayNameObjectModel["de"] = "testString"
+	iamServiceRegistrationDisplayNameObjectModel["es"] = "testString"
+	iamServiceRegistrationDisplayNameObjectModel["fr"] = "testString"
+	iamServiceRegistrationDisplayNameObjectModel["it"] = "testString"
+	iamServiceRegistrationDisplayNameObjectModel["ja"] = "testString"
+	iamServiceRegistrationDisplayNameObjectModel["ko"] = "testString"
+	iamServiceRegistrationDisplayNameObjectModel["pt_br"] = "testString"
+	iamServiceRegistrationDisplayNameObjectModel["zh_tw"] = "testString"
+	iamServiceRegistrationDisplayNameObjectModel["zh_cn"] = "testString"
+
+	iamServiceRegistrationDescriptionObjectModel := make(map[string]interface{})
+	iamServiceRegistrationDescriptionObjectModel["default"] = "testString"
+	iamServiceRegistrationDescriptionObjectModel["en"] = "testString"
+	iamServiceRegistrationDescriptionObjectModel["de"] = "testString"
+	iamServiceRegistrationDescriptionObjectModel["es"] = "testString"
+	iamServiceRegistrationDescriptionObjectModel["fr"] = "testString"
+	iamServiceRegistrationDescriptionObjectModel["it"] = "testString"
+	iamServiceRegistrationDescriptionObjectModel["ja"] = "testString"
+	iamServiceRegistrationDescriptionObjectModel["ko"] = "testString"
+	iamServiceRegistrationDescriptionObjectModel["pt_br"] = "testString"
+	iamServiceRegistrationDescriptionObjectModel["zh_tw"] = "testString"
+	iamServiceRegistrationDescriptionObjectModel["zh_cn"] = "testString"
+
+	model := make(map[string]interface{})
+	model["name"] = "testString"
+	model["enforcement_method"] = []interface{}{"testString"}
+	model["display_name"] = []interface{}{iamServiceRegistrationDisplayNameObjectModel}
+	model["description"] = []interface{}{iamServiceRegistrationDescriptionObjectModel}
+
+	result, err := partnercentersell.ResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupportedNetworkOperationsApiTypeItems(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcement(t *testing.T) {
+	checkResult := func(result *partnercentersellv1.IamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcement) {
+		iamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcementEventPublishingModel := new(partnercentersellv1.IamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcementEventPublishing)
+		iamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcementEventPublishingModel.ApiTypes = []string{"testString"}
+
+		model := new(partnercentersellv1.IamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcement)
+		model.EventPublishing = iamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcementEventPublishingModel
+
+		assert.Equal(t, result, model)
+	}
+
+	iamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcementEventPublishingModel := make(map[string]interface{})
+	iamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcementEventPublishingModel["api_types"] = []interface{}{"testString"}
+
+	model := make(map[string]interface{})
+	model["event_publishing"] = []interface{}{iamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcementEventPublishingModel}
+
+	result, err := partnercentersell.ResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcement(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcementEventPublishing(t *testing.T) {
+	checkResult := func(result *partnercentersellv1.IamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcementEventPublishing) {
+		model := new(partnercentersellv1.IamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcementEventPublishing)
+		model.ApiTypes = []string{"testString"}
+
+		assert.Equal(t, result, model)
+	}
+
+	model := make(map[string]interface{})
+	model["api_types"] = []interface{}{"testString"}
+
+	result, err := partnercentersell.ResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcementEventPublishing(model)
 	assert.Nil(t, err)
 	checkResult(result)
 }

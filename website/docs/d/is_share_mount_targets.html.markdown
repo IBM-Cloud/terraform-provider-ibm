@@ -40,6 +40,7 @@ The following attributes are exported:
 
 - `id` - The unique identifier of the ShareTargetCollection.
 - `mount_targets` - Collection of share targets. Nested `targets` blocks have the following structure:
+	- `access_protocol` - The protocol to use to access the share for this share mount target
 	- `created_at` - The date and time that the share target was created.
 	- `href` - The URL for this share target.
 	- `id` - The unique identifier for this share target.

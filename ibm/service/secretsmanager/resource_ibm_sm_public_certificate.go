@@ -469,13 +469,13 @@ func waitForIbmSmPublicCertificateCreate(secretsManagerClient *secretsmanagerv2.
 		Target:  []string{targetStatus},
 		Refresh: func() (interface{}, string, error) {
 			stateObjIntf, response, err := secretsManagerClient.GetSecret(getSecretOptions)
-			stateObj := stateObjIntf.(*secretsmanagerv2.PublicCertificate)
 			if err != nil {
 				if apiErr, ok := err.(bmxerror.RequestFailure); ok && apiErr.StatusCode() == 404 {
 					return nil, "", fmt.Errorf("The instance %s does not exist anymore: %s\n%s", "getSecretOptions", err, response)
 				}
 				return nil, "", err
 			}
+			stateObj := stateObjIntf.(*secretsmanagerv2.PublicCertificate)
 			failStates := map[string]bool{"destroyed": true}
 			if failStates[*stateObj.StateDescription] {
 				return stateObj, *stateObj.StateDescription, fmt.Errorf("The instance %s failed: %s\n%s", "getSecretOptions", err, response)

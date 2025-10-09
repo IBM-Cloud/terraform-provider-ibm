@@ -178,6 +178,28 @@ var CISRulesetsRulesObject = &schema.Resource{
 							},
 						},
 					},
+					CISRulesToSkip: {
+						Type:        schema.TypeList,
+						Optional:    true,
+						Description: "A list of ruleset mappings, where each element is a map of ruleset_id and its associated rule_ids",
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"ruleset_id": {
+									Type:        schema.TypeString,
+									Required:    true,
+									Description: "The ruleset identifier",
+								},
+								"rule_ids": {
+									Type:        schema.TypeList,
+									Required:    true,
+									Description: "A list of rule IDs to be skipped",
+									Elem: &schema.Schema{
+										Type: schema.TypeString,
+									},
+								},
+							},
+						},
+					},
 				},
 			},
 		},
@@ -311,6 +333,7 @@ func ResourceIBMCISRulesetRule() *schema.Resource {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "Rules of the rulesets",
+				MaxItems:    1,
 				Elem:        CISRulesetsRulesObject,
 			},
 		},
@@ -499,11 +522,13 @@ func ResourceIBMCISRulesetRuleUpdate(d *schema.ResourceData, meta interface{}) e
 		opt.SetEnabled(rulesetsRuleObject[CISRulesetsRuleActionEnabled].(bool))
 		opt.SetExpression(rulesetsRuleObject[CISRulesetsRuleExpression].(string))
 		opt.SetRef(rulesetsRuleObject[CISRulesetsRuleRef].(string))
-		position, positionError := expandCISRulesetsRulesPositions(rulesetsRuleObject[CISRulesetsRulePosition])
-		if positionError != nil {
-			return flex.FmtErrorf("[ERROR] Error while updating the zone Ruleset %s", err)
+		if d.HasChange(CISRulesetsRule + ".0." + CISRulesetsRulePosition) {
+			position, positionError := expandCISRulesetsRulesPositions(rulesetsRuleObject[CISRulesetsRulePosition])
+			if positionError != nil {
+				return flex.FmtErrorf("[ERROR] Error while updating the zone Ruleset %s", positionError)
+			}
+			opt.SetPosition(&position)
 		}
-		opt.SetPosition(&position)
 
 		if v, ok := rulesetsRuleObject[CISRulesetsRuleRateLimit]; ok && v != nil {
 			ratelimit, ratelimitErr := expandCISRulesetsRulesRateLimits(v)
