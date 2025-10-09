@@ -1,3 +1,9 @@
+# 1.83.3 (October 9, 2025)
+
+## Bug Fixes
+### VPC Infrastructure
+* migrated provider to v0.74.1 vpc-go-sdk ([6500](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6500))
+
 # 1.83.2 (October 7, 2025)
 
 ## Bug Fixes
