@@ -1,4 +1,4 @@
-# 1.83.3 (October 7, 2025)
+# 1.83.3 (October 9, 2025)
 
 ## Bug Fixes
 ### VPC Infrastructure
