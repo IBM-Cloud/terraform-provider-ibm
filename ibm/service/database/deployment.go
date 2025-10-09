@@ -15,14 +15,14 @@ import (
    TODO Move other deployment api endpoints in here
 */
 
-type CapabilityOptions struct {
+type DeploymentCapabilityOptions struct {
 	Platform      string
 	Location      string
 	IncludeHidden *bool
 	IncludeBeta   *bool
 }
 
-func getDeploymentCapability(capabilityId string, deploymentId string, options CapabilityOptions, meta interface{}) (*clouddatabasesv5.Capability, error) {
+func getDeploymentCapability(capabilityId string, deploymentId string, options DeploymentCapabilityOptions, meta interface{}) (*clouddatabasesv5.Capability, error) {
 	cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
 	if err != nil {
 		return nil, err

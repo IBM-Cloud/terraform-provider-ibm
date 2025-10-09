@@ -108,7 +108,7 @@ func (v *Version) getAllowedVersionsList() []string {
 var fetchDeploymentVersionFn = fetchDeploymentVersion
 
 func fetchDeploymentVersion(instanceId string, location string, meta interface{}) *Version {
-	options := CapabilityOptions{
+	options := DeploymentCapabilityOptions{
 		Platform:      classicPlatform,
 		Location:      location,
 		IncludeHidden: core.BoolPtr(true),
