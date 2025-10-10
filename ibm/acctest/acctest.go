@@ -247,7 +247,7 @@ var (
 	Pi_network_security_group_id      string
 	Pi_network_security_group_rule_id string
 	Pi_peer_interface_id              string
-	Pi_placement_group_name           string
+	Pi_placement_group_id             string
 	Pi_remote_id                      string
 	Pi_remote_type                    string
 	Pi_replication_volume_name        string
@@ -1339,10 +1339,10 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable PI_SAP_PROFILE_ID for testing ibm_pi_sap_profile resource else it is set to default value 'terraform-test-power'")
 	}
 
-	Pi_placement_group_name = os.Getenv("PI_PLACEMENT_GROUP_NAME")
-	if Pi_placement_group_name == "" {
-		Pi_placement_group_name = "tf-pi-placement-group"
-		fmt.Println("[WARN] Set the environment variable PI_PLACEMENT_GROUP_NAME for testing ibm_pi_placement_group resource else it is set to default value 'tf-pi-placement-group'")
+	Pi_placement_group_id = os.Getenv("PI_PLACEMENT_GROUP_ID")
+	if Pi_placement_group_id == "" {
+		Pi_placement_group_id = "tf-pi-placement-group"
+		fmt.Println("[WARN] Set the environment variable PI_PLACEMENT_GROUP_ID for testing ibm_pi_placement_group resource else it is set to default value 'tf-pi-placement-group'")
 	}
 
 	Pi_remote_id = os.Getenv("PI_REMOTE_ID")
