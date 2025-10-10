@@ -706,6 +706,7 @@ func Provider() *schema.Provider {
 
 			"ibm_resource_quota":    resourcecontroller.DataSourceIBMResourceQuota(),
 			"ibm_resource_group":    resourcemanager.DataSourceIBMResourceGroup(),
+			"ibm_resource_groups":   resourcemanager.DataSourceIBMResourceGroups(),
 			"ibm_resource_instance": resourcecontroller.DataSourceIBMResourceInstance(),
 			"ibm_resource_key":      resourcecontroller.DataSourceIBMResourceKey(),
 			"ibm_security_group":    classicinfrastructure.DataSourceIBMSecurityGroup(),
@@ -2313,6 +2314,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_resource_instance":             resourcecontroller.DataSourceIBMResourceInstanceValidator(),
 				"ibm_resource_key":                  resourcecontroller.DataSourceIBMResourceKeyValidator(),
 				"ibm_resource_group":                resourcemanager.DataSourceIBMResourceGroupValidator(),
+				"ibm_resource_groups":               resourcemanager.DataSourceIBMResourceGroupsValidator(),
 
 				// bare_metal_server
 				"ibm_is_bare_metal_server": vpc.DataSourceIBMIsBareMetalServerValidator(),
