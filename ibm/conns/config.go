@@ -1664,7 +1664,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 
 	// Construct the service options.
-	var backupRecoveryURL string
+	var backupRecoveryURL string = "https://default.backup-recovery.cloud.ibm.com/v2"
 	var backupRecoveryConnectorURL string
 
 	if fileMap != nil && c.Visibility != "public-and-private" {
@@ -1676,9 +1676,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		Authenticator: authenticator,
 		URL:           EnvFallBack([]string{"IBMCLOUD_BACKUP_RECOVERY_ENDPOINT"}, backupRecoveryURL),
 	}
-	if backupRecoveryClientOptions.URL == "" {
-		session.backupRecoveryClientErr = fmt.Errorf("IBMCLOUD_BACKUP_RECOVERY_ENDPOINT not set in env or endpoints file")
-	}
+
 	// Construct the service client.
 	session.backupRecoveryClient, err = backuprecoveryv1.NewBackupRecoveryV1(backupRecoveryClientOptions)
 	if err != nil {

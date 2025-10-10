@@ -1206,6 +1206,11 @@ func ResourceIbmBackupRecoveryProtectionPolicy() *schema.Resource {
 				Optional:    true,
 				Description: "Specifies the description of the Protection Policy.",
 			},
+			"backup_recovery_endpoint": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Endpoint for the BRS instance",
+			},
 			"blackout_window": &schema.Schema{
 				Type:        schema.TypeList,
 				Optional:    true,
@@ -4223,6 +4228,12 @@ func resourceIbmBackupRecoveryProtectionPolicyCreate(context context.Context, d 
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
+	if _, ok := d.GetOk("backup_recovery_endpoint"); ok {
+		if d.Get("backup_recovery_endpoint").(string) != "" {
+			endpointURL := d.Get("backup_recovery_endpoint").(string)
+			backupRecoveryClient.Service.SetServiceURL(endpointURL)
+		}
+	}
 
 	tenantId := d.Get("x_ibm_tenant_id").(string)
 
@@ -4328,6 +4339,18 @@ func resourceIbmBackupRecoveryProtectionPolicyRead(context context.Context, d *s
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_policy", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
+	}
+	if _, ok := d.GetOk("backup_recovery_endpoint"); ok {
+		if d.Get("backup_recovery_endpoint").(string) != "" {
+			endpointURL := d.Get("backup_recovery_endpoint").(string)
+			backupRecoveryClient.Service.SetServiceURL(endpointURL)
+		}
+	}
+	if _, ok := d.GetOk("backup_recovery_endpoint"); ok {
+		if d.Get("backup_recovery_endpoint").(string) != "" {
+			endpointURL := d.Get("backup_recovery_endpoint").(string)
+			backupRecoveryClient.Service.SetServiceURL(endpointURL)
+		}
 	}
 
 	getProtectionPolicyByIdOptions := &backuprecoveryv1.GetProtectionPolicyByIdOptions{}
@@ -4502,6 +4525,12 @@ func resourceIbmBackupRecoveryProtectionPolicyUpdate(context context.Context, d 
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
+	if _, ok := d.GetOk("backup_recovery_endpoint"); ok {
+		if d.Get("backup_recovery_endpoint").(string) != "" {
+			endpointURL := d.Get("backup_recovery_endpoint").(string)
+			backupRecoveryClient.Service.SetServiceURL(endpointURL)
+		}
+	}
 
 	tenantId := d.Get("x_ibm_tenant_id").(string)
 	policyId := d.Id()
@@ -4605,6 +4634,12 @@ func resourceIbmBackupRecoveryProtectionPolicyDelete(context context.Context, d 
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_policy", "delete", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
+	}
+	if _, ok := d.GetOk("backup_recovery_endpoint"); ok {
+		if d.Get("backup_recovery_endpoint").(string) != "" {
+			endpointURL := d.Get("backup_recovery_endpoint").(string)
+			backupRecoveryClient.Service.SetServiceURL(endpointURL)
+		}
 	}
 
 	tenantId := d.Get("x_ibm_tenant_id").(string)
