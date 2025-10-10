@@ -7,9 +7,11 @@ description: |-
 ---
 
 # ibm_pi_pvm_snapshots
+
 Retrieve information about a Power Systems Virtual Server instance snapshots. For more information, about Power Virtual Server PVM instance snapshots, see [getting started with IBM Power Systems Virtual Servers](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-getting-started).
 
-## Example usage
+## Example Usage
+
 ```terraform
 data "ibm_pi_pvm_snapshots" "ds_pvm_snapshots" {
   pi_instance_name     = "terraform-test-instance"
@@ -17,13 +19,15 @@ data "ibm_pi_pvm_snapshots" "ds_pvm_snapshots" {
 }
 ```
 
-**Notes**
+### Notes
+
 - Please find [supported Regions](https://cloud.ibm.com/apidocs/power-cloud#endpoint) for endpoints.
 - If a Power cloud instance is provisioned at `lon04`, The provider level attributes should be as follows:
   - `region` - `lon`
   - `zone` - `lon04`
 
 Example usage:
+
   ```terraform
     provider "ibm" {
       region    =   "lon"
@@ -31,14 +35,17 @@ Example usage:
     }
   ```
 
-## Argument reference
-Review the argument references that you can specify for your data source. 
+## Argument Reference
+
+Review the argument references that you can specify for your data source.
 
 - `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
-- `pi_instance_name` - (Required, String) The unique identifier or name of the instance.
+- `pi_instance_id` - (Optional, String) The PVM instance ID.
+- `pi_instance_name` - (Deprecated, Optional, String) The unique identifier or name of the instance. Passing the name of the instance could fail or fetch stale data. Please pass an id and use `pi_instance_id` instead.
 
-## Attribute reference
-In addition to all argument reference list, you can access the following attribute references after your data source is created. 
+## Attribute Reference
+
+In addition to all argument reference list, you can access the following attribute references after your data source is created.
 
 - `pvm_snapshots` - The list of Power Virtual Machine instance snapshots.
   
