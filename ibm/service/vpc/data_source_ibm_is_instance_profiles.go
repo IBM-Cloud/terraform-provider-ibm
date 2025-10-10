@@ -759,6 +759,32 @@ func DataSourceIBMISInstanceProfiles() *schema.Resource {
 								},
 							},
 						},
+						"volume_bandwidth_qos_modes": &schema.Schema{
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"type": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The type for this profile field.",
+									},
+									"default": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The default volume bandwidth QoS mode for this profile.",
+									},
+									"values": {
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "The permitted volume bandwidth QoS modes for an instance using this profile.",
+										Elem: &schema.Schema{
+											Type: schema.TypeString,
+										},
+									},
+								},
+							},
+						},
 						"vcpu_manufacturer": &schema.Schema{
 							Type:     schema.TypeList,
 							Computed: true,
@@ -947,6 +973,12 @@ func instanceProfilesList(context context.Context, d *schema.ResourceData, meta 
 			vcpuCountMap := dataSourceInstanceProfileVcpuCountToMap(*profile.VcpuCount.(*vpcv1.InstanceProfileVcpu))
 			vcpuCountList = append(vcpuCountList, vcpuCountMap)
 			l["vcpu_count"] = vcpuCountList
+		}
+		if profile.VolumeBandwidthQosModes != nil {
+			volumeBandwidthQosModesList := []map[string]interface{}{}
+			volumeBandwidthQosModesMap := dataSourceInstanceProfileVolumeBandwidthQoSModeToMap(*profile.VolumeBandwidthQosModes.(*vpcv1.InstanceProfileVolumeBandwidthQoSModes))
+			volumeBandwidthQosModesList = append(volumeBandwidthQosModesList, volumeBandwidthQosModesMap)
+			l["volume_bandwidth_qos_modes"] = volumeBandwidthQosModesList
 		}
 		// Changes for manufacturer for AMD Support.
 		// reduce the line of code here. - sumit's suggestions
