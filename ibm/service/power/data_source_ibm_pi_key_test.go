@@ -30,7 +30,7 @@ func TestAccIBMPIKeyDataSource_basic(t *testing.T) {
 func testAccCheckIBMPIKeyDataSourceConfig() string {
 	return fmt.Sprintf(`
 		data "ibm_pi_key" "testacc_ds_key" {
-			pi_key_name = "%s"
-			pi_cloud_instance_id = "%s"
-		}`, acc.Pi_key_name, acc.Pi_cloud_instance_id)
+			pi_cloud_instance_id = "%[1]s"
+			pi_ssh_key_id        = "%[2]s"
+		}`, acc.Pi_cloud_instance_id, acc.Pi_ssh_key_id)
 }
