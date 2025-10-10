@@ -14,8 +14,8 @@ Retrieve information about the network that your Power Systems Virtual Server in
 
 ```terraform
 data "ibm_pi_network" "ds_network" {
-  pi_network_name = "APP"
   pi_cloud_instance_id = "49fba6c9-23f8-40bc-9899-aca322ee7d5b"
+  pi_network_id        = "7f8e2a9d-3b4c-4e4f-8e8d-f7e7e1e23456"
 }
 ```
 
@@ -40,7 +40,8 @@ Example usage:
 Review the argument references that you can specify for your data source.
 
 - `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
-- `pi_network_name` - (Required, String) The name of the network.
+- `pi_network_id` - (Optional, String) The network ID.
+- `pi_network_name` - (Deprecated, Optional, String) The unique identifier or name of the network. Passing the name of the instance could fail or fetch stale data. Please pass an id and use `pi_network_id` instead.
 
 ## Attribute Reference
 
@@ -54,6 +55,7 @@ In addition to all argument reference list, you can access the following attribu
 - `dns`- (Set) The DNS Servers for the network.
 - `gateway` - (String) The network gateway that is attached to your network.
 - `id` - (String) The ID of the network.
+- `name` - (String) The name of the network.
 - `mtu` - (Boolean) Maximum Transmission Unit option of the network.
 - `network_address_translation` - (Deprecated, List) Contains the network address translation details (for on-prem locations only).
 

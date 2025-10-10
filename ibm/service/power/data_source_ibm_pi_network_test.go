@@ -31,7 +31,7 @@ func TestAccIBMPINetworkDataSource_basic(t *testing.T) {
 func testAccCheckIBMPINetworkDataSourceConfig() string {
 	return fmt.Sprintf(`
 		data "ibm_pi_network" "testacc_ds_network" {
-			pi_network_name = "%s"
-			pi_cloud_instance_id = "%s"
-		}`, acc.Pi_network_name, acc.Pi_cloud_instance_id)
+			pi_cloud_instance_id = "%[2]s"
+			pi_network_id        = "%[1]s"
+		}`, acc.Pi_network_id, acc.Pi_cloud_instance_id)
 }

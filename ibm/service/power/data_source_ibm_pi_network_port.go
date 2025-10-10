@@ -8,7 +8,6 @@ import (
 	"log"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
-	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/hashicorp/go-uuid"
@@ -28,11 +27,20 @@ func DataSourceIBMPINetworkPort() *schema.Resource {
 				Type:         schema.TypeString,
 				ValidateFunc: validation.NoZeroValues,
 			},
+			Arg_NetworkID: {
+				AtLeastOneOf:  []string{Arg_NetworkID, Arg_NetworkName},
+				ConflictsWith: []string{Arg_NetworkName},
+				Description:   "The network ID.",
+				Optional:      true,
+				Type:          schema.TypeString,
+			},
 			Arg_NetworkName: {
-				Description:  "The unique identifier or name of a network.",
-				Required:     true,
-				Type:         schema.TypeString,
-				ValidateFunc: validation.NoZeroValues,
+				AtLeastOneOf:  []string{Arg_NetworkID, Arg_NetworkName},
+				ConflictsWith: []string{Arg_NetworkID},
+				Deprecated:    "The pi_network_name field is deprecated. Please use pi_network_id instead",
+				Description:   "The unique identifier or name of a network.",
+				Optional:      true,
+				Type:          schema.TypeString,
 			},
 
 			// Attributes
@@ -97,9 +105,15 @@ func dataSourceIBMPINetworkPortsRead(ctx context.Context, d *schema.ResourceData
 	}
 
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
+	var networkID string
+	if v, ok := d.GetOk(Arg_NetworkID); ok {
+		networkID = v.(string)
+	} else if v, ok := d.GetOk(Arg_NetworkName); ok {
+		networkID = v.(string)
+	}
 
 	networkportC := instance.NewIBMPINetworkClient(ctx, sess, cloudInstanceID)
-	networkportdata, err := networkportC.GetAllPorts(d.Get(helpers.PINetworkName).(string))
+	networkportdata, err := networkportC.GetAllPorts(networkID)
 	if err != nil {
 		return diag.FromErr(err)
 	}

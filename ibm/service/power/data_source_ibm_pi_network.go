@@ -8,7 +8,6 @@ import (
 	"log"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
-	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -27,11 +26,20 @@ func DataSourceIBMPINetwork() *schema.Resource {
 				Type:         schema.TypeString,
 				ValidateFunc: validation.NoZeroValues,
 			},
+			Arg_NetworkID: {
+				AtLeastOneOf:  []string{Arg_NetworkID, Arg_NetworkName},
+				ConflictsWith: []string{Arg_NetworkName},
+				Description:   "The network ID.",
+				Optional:      true,
+				Type:          schema.TypeString,
+			},
 			Arg_NetworkName: {
-				Description:  "The unique identifier or name of a network.",
-				Required:     true,
-				Type:         schema.TypeString,
-				ValidateFunc: validation.NoZeroValues,
+				AtLeastOneOf:  []string{Arg_NetworkID, Arg_NetworkName},
+				ConflictsWith: []string{Arg_NetworkID},
+				Deprecated:    "The pi_network_name field is deprecated. Please use pi_network_id instead",
+				Description:   "The unique identifier or name of a network.",
+				Optional:      true,
+				Type:          schema.TypeString,
 			},
 
 			// Attributes
@@ -78,8 +86,7 @@ func DataSourceIBMPINetwork() *schema.Resource {
 			},
 			Attr_Name: {
 				Computed:    true,
-				Deprecated:  "This field is deprecated, use pi_network_name instead.",
-				Description: "The unique identifier or name of a network.",
+				Description: "The name of the network.",
 				Type:        schema.TypeString,
 			},
 			Attr_NetworkAddressTranslation: {
@@ -140,9 +147,15 @@ func dataSourceIBMPINetworkRead(ctx context.Context, d *schema.ResourceData, met
 	}
 
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
+	var networkID string
+	if v, ok := d.GetOk(Arg_NetworkID); ok {
+		networkID = v.(string)
+	} else if v, ok := d.GetOk(Arg_NetworkName); ok {
+		networkID = v.(string)
+	}
 
 	networkC := instance.NewIBMPINetworkClient(ctx, sess, cloudInstanceID)
-	networkdata, err := networkC.Get(d.Get(helpers.PINetworkName).(string))
+	networkdata, err := networkC.Get(networkID)
 	if err != nil || networkdata == nil {
 		return diag.FromErr(err)
 	}

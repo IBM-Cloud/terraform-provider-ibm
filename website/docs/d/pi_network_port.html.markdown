@@ -16,8 +16,8 @@ Retrieve information about a network port in the Power Virtual Server Cloud. For
 
 ```terraform
 data "ibm_pi_network_port" "test-network-port" {
-    pi_network_name             = "Zone1-CFN"
     pi_cloud_instance_id        = "51e1879c-bcbe-4ee1-a008-49cdba0eaf60"
+    pi_network_id               = "7e1c3b2a-9f0d-4e5f-a1bc-def012345678"
 }
 ```
 
@@ -42,7 +42,8 @@ Example usage:
 Review the argument references that you can specify for your data source.
 
 - `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
-- `pi_network_name` - (Required, String) The unique identifier or name of a network.
+- `pi_network_id` - (Optional, String) The network ID.
+- `pi_network_name` - (Deprecated, Optional, String) The unique identifier or name of a network. Please use `pi_network_id` instead.
 
 ## Attribute Reference
 
