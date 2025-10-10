@@ -32,7 +32,6 @@ func DataSourceIBMPINetwork() *schema.Resource {
 				Description:   "The network ID.",
 				Optional:      true,
 				Type:          schema.TypeString,
-				ValidateFunc:  validation.NoZeroValues,
 			},
 			Arg_NetworkName: {
 				AtLeastOneOf:  []string{Arg_NetworkID, Arg_NetworkName},
@@ -41,7 +40,6 @@ func DataSourceIBMPINetwork() *schema.Resource {
 				Description:   "The unique identifier or name of a network.",
 				Optional:      true,
 				Type:          schema.TypeString,
-				ValidateFunc:  validation.NoZeroValues,
 			},
 
 			// Attributes
