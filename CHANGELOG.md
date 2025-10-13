@@ -1,3 +1,23 @@
+# 1.84.0 (October 13, 2025)
+
+## Bug Fixes
+
+### Cloud Databases
+* Add hidden and beta versions to in place upgrade ([6502](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6502))
+
+
+## Enhancements
+
+### Cloud Object Storage
+* Support Schematics replatform for COS resources ([6504](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6504))
+
+### Projects
+* projects - support auto deploy mode ([6492](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6492))
+
+### VPC Infrastructure
+* volume-qos-mode feature development ([6498](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6498))
+
+
 # 1.83.3 (October 9, 2025)
 
 ## Bug Fixes
