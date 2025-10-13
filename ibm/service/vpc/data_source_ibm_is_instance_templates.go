@@ -278,6 +278,11 @@ func DataSourceIBMISInstanceTemplates() *schema.Resource {
 							Computed:    true,
 							Description: "The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes",
 						},
+						isInstanceVolumeBandwidthQoSMode: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The volume bandwidth QoS mode for this virtual server instance.",
+						},
 						isInstanceDefaultTrustedProfileAutoLink: {
 							Type:        schema.TypeBool,
 							Computed:    true,
@@ -1177,6 +1182,10 @@ func dataSourceIBMISInstanceTemplatesRead(context context.Context, d *schema.Res
 					template[isInstanceTotalVolumeBandwidth] = int(*instance.TotalVolumeBandwidth)
 				}
 
+				if instance.VolumeBandwidthQosMode != nil {
+					template[isInstanceVolumeBandwidthQoSMode] = *instance.VolumeBandwidthQosMode
+				}
+
 				// vni
 
 				networkAttachments := []map[string]interface{}{}
@@ -1525,6 +1534,10 @@ func dataSourceIBMISInstanceTemplatesRead(context context.Context, d *schema.Res
 
 				if instance.TotalVolumeBandwidth != nil {
 					template[isInstanceTotalVolumeBandwidth] = int(*instance.TotalVolumeBandwidth)
+				}
+
+				if instance.VolumeBandwidthQosMode != nil {
+					template[isInstanceVolumeBandwidthQoSMode] = *instance.VolumeBandwidthQosMode
 				}
 
 				// vni

@@ -381,4 +381,5 @@ In addition to all argument reference list, you can access the following attribu
   - `name` - (String) The name of the volume attachment.
   - `volume_id` - (String) The ID of the volume that is associated with the volume attachment.
   - `volume_name` - (String) The name of the volume that is associated with the volume attachment.
+- `volume_bandwidth_qos_mode` - (String) The volume bandwidth QoS mode to use for this virtual server instance.  
 - `zone` - (String) The zone where the instance was created.
