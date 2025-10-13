@@ -5,6 +5,7 @@ package power
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"strconv"
 
@@ -44,6 +45,11 @@ func DataSourceIBMPIInstances() *schema.Resource {
 						Attr_DedicatedHostID: {
 							Computed:    true,
 							Description: "The dedicated host ID where the shared processor pool resides.",
+							Type:        schema.TypeString,
+						},
+						Attr_EffectiveProcessorCompatibilityMode: {
+							Computed:    true,
+							Description: "Effective processor compatibility mode.",
 							Type:        schema.TypeString,
 						},
 						Attr_Fault: {
@@ -161,6 +167,11 @@ func DataSourceIBMPIInstances() *schema.Resource {
 							Description: "The ID of the placement group that the instance is a member.",
 							Type:        schema.TypeString,
 						},
+						Attr_PreferredProcessorCompatibilityMode: {
+							Computed:    true,
+							Description: "Preferred processor compatibility mode.",
+							Type:        schema.TypeString,
+						},
 						Attr_Processors: {
 							Computed:    true,
 							Description: "The number of processors that are allocated to the instance.",
@@ -243,6 +254,11 @@ func DataSourceIBMPIInstances() *schema.Resource {
 										Description: "Virtual serial number.",
 										Type:        schema.TypeString,
 									},
+									Attr_SoftwareTier: {
+										Computed:    true,
+										Description: "Software tier.",
+										Type:        schema.TypeString,
+									},
 								},
 							},
 							Type: schema.TypeList,
@@ -255,11 +271,13 @@ func DataSourceIBMPIInstances() *schema.Resource {
 	}
 }
 
-func dataSourceIBMPIInstancesAllRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMPIInstancesAllRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_instances", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
@@ -268,7 +286,9 @@ func dataSourceIBMPIInstancesAllRead(ctx context.Context, d *schema.ResourceData
 	powervmdata, err := powerC.GetAll()
 
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetAll failed: %s", err.Error()), "ibm_pi_instances", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	var clientgenU, _ = uuid.GenerateUUID()
@@ -278,34 +298,36 @@ func dataSourceIBMPIInstancesAllRead(ctx context.Context, d *schema.ResourceData
 	return nil
 }
 
-func flattenPvmInstances(list []*models.PVMInstanceReference, meta interface{}) []map[string]interface{} {
-	result := make([]map[string]interface{}, 0, len(list))
+func flattenPvmInstances(list []*models.PVMInstanceReference, meta any) []map[string]any {
+	result := make([]map[string]any, 0, len(list))
 	for _, i := range list {
-		l := map[string]interface{}{
-			Attr_DedicatedHostID:           i.DedicatedHostID,
-			Attr_LicenseRepositoryCapacity: i.LicenseRepositoryCapacity,
-			Attr_MaxMem:                    i.Maxmem,
-			Attr_MaxProc:                   i.Maxproc,
-			Attr_MaxVirtualCores:           i.VirtualCores.Max,
-			Attr_Memory:                    *i.Memory,
-			Attr_MinMem:                    i.Minmem,
-			Attr_MinProc:                   i.Minproc,
-			Attr_MinVirtualCores:           i.VirtualCores.Min,
-			Attr_Networks:                  flattenPvmInstanceNetworks(i.Networks),
-			Attr_PinPolicy:                 i.PinPolicy,
-			Attr_PlacementGroupID:          i.PlacementGroup,
-			Attr_Processors:                *i.Processors,
-			Attr_ProcType:                  *i.ProcType,
-			Attr_PVMInstanceID:             *i.PvmInstanceID,
-			Attr_ServerName:                i.ServerName,
-			Attr_SharedProcessorPool:       i.SharedProcessorPool,
-			Attr_SharedProcessorPoolID:     i.SharedProcessorPoolID,
-			Attr_Status:                    *i.Status,
-			Attr_StorageConnection:         i.StorageConnection,
-			Attr_StoragePool:               i.StoragePool,
-			Attr_StoragePoolAffinity:       i.StoragePoolAffinity,
-			Attr_StorageType:               i.StorageType,
-			Attr_VirtualCoresAssigned:      i.VirtualCores.Assigned,
+		l := map[string]any{
+			Attr_DedicatedHostID:                     i.DedicatedHostID,
+			Attr_EffectiveProcessorCompatibilityMode: i.EffectiveProcessorCompatibilityMode,
+			Attr_LicenseRepositoryCapacity:           i.LicenseRepositoryCapacity,
+			Attr_MaxMem:                              i.Maxmem,
+			Attr_MaxProc:                             i.Maxproc,
+			Attr_MaxVirtualCores:                     i.VirtualCores.Max,
+			Attr_Memory:                              *i.Memory,
+			Attr_MinMem:                              i.Minmem,
+			Attr_MinProc:                             i.Minproc,
+			Attr_MinVirtualCores:                     i.VirtualCores.Min,
+			Attr_Networks:                            flattenPvmInstanceNetworks(i.Networks),
+			Attr_PinPolicy:                           i.PinPolicy,
+			Attr_PlacementGroupID:                    i.PlacementGroup,
+			Attr_PreferredProcessorCompatibilityMode: i.PreferredProcessorCompatibilityMode,
+			Attr_Processors:                          *i.Processors,
+			Attr_ProcType:                            *i.ProcType,
+			Attr_PVMInstanceID:                       *i.PvmInstanceID,
+			Attr_ServerName:                          i.ServerName,
+			Attr_SharedProcessorPool:                 i.SharedProcessorPool,
+			Attr_SharedProcessorPoolID:               i.SharedProcessorPoolID,
+			Attr_Status:                              *i.Status,
+			Attr_StorageConnection:                   i.StorageConnection,
+			Attr_StoragePool:                         i.StoragePool,
+			Attr_StoragePoolAffinity:                 i.StoragePoolAffinity,
+			Attr_StorageType:                         i.StorageType,
+			Attr_VirtualCoresAssigned:                i.VirtualCores.Assigned,
 		}
 
 		if i.Crn != "" {
@@ -334,11 +356,11 @@ func flattenPvmInstances(list []*models.PVMInstanceReference, meta interface{}) 
 	return result
 }
 
-func flattenPvmInstanceNetworks(list []*models.PVMInstanceNetwork) (networks []map[string]interface{}) {
+func flattenPvmInstanceNetworks(list []*models.PVMInstanceNetwork) (networks []map[string]any) {
 	if list != nil {
-		networks = make([]map[string]interface{}, len(list))
+		networks = make([]map[string]any, len(list))
 		for i, pvmip := range list {
-			p := make(map[string]interface{})
+			p := make(map[string]any)
 			p[Attr_ExternalIP] = pvmip.ExternalIP
 			p[Attr_IP] = pvmip.IPAddress
 			p[Attr_MacAddress] = pvmip.MacAddress
@@ -360,8 +382,8 @@ func flattenPvmInstanceNetworks(list []*models.PVMInstanceNetwork) (networks []m
 	return
 }
 
-func flattenPvmInstanceFault(fault *models.PVMInstanceFault) map[string]interface{} {
-	faultMap := make(map[string]interface{})
+func flattenPvmInstanceFault(fault *models.PVMInstanceFault) map[string]any {
+	faultMap := make(map[string]any)
 	faultMap[Attr_Code] = strconv.FormatFloat(fault.Code, 'f', -1, 64)
 	if !fault.Created.IsZero() {
 		faultMap[Attr_Created] = fault.Created.String()

@@ -5,6 +5,7 @@ package power
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
@@ -74,6 +75,11 @@ func DataSourceIBMPIInstanceSnapshot() *schema.Resource {
 				Description: "The status of the Power Virtual Machine instance snapshot.",
 				Type:        schema.TypeString,
 			},
+			Attr_StatusDetail: {
+				Computed:    true,
+				Description: "Detailed information for the last PVM instance snapshot action.",
+				Type:        schema.TypeString,
+			},
 			Attr_UserTags: {
 				Computed:    true,
 				Description: "List of user tags attached to the resource.",
@@ -90,17 +96,21 @@ func DataSourceIBMPIInstanceSnapshot() *schema.Resource {
 	}
 }
 
-func dataSourceIBMPIInstanceSnapshotRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMPIInstanceSnapshotRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "(Data) ibm_pi_instance_snapshot", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
 	snapshot := instance.NewIBMPISnapshotClient(ctx, sess, cloudInstanceID)
 	snapshotData, err := snapshot.Get(d.Get(Arg_SnapshotID).(string))
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Get failed: %s", err.Error()), "(Data) ibm_pi_instance_snapshot", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(*snapshotData.SnapshotID)
@@ -119,6 +129,7 @@ func dataSourceIBMPIInstanceSnapshotRead(ctx context.Context, d *schema.Resource
 	d.Set(Attr_Name, snapshotData.Name)
 	d.Set(Attr_PercentComplete, snapshotData.PercentComplete)
 	d.Set(Attr_Status, snapshotData.Status)
+	d.Set(Attr_StatusDetail, snapshotData.StatusDetail)
 	d.Set(Attr_VolumeSnapshots, snapshotData.VolumeSnapshots)
 	return nil
 }

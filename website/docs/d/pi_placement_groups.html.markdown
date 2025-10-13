@@ -47,7 +47,9 @@ In addition to all argument reference list, you can access the following attribu
 - `placement_groups` - (List) List of all the placement groups.
 
   Nested scheme for `placement_groups`:
+  - `crn` - (String) The CRN of this resource.
   - `id` - (String) The ID of the placement group.
   - `members` - (List) List of server instances IDs that are members of the placement group.
   - `name` - (String) User defined name for the placement group.
   - `policy` - (String) The value of the group's affinity policy. Valid values are affinity and anti-affinity.
+  - `user_tags` - (List) List of user tags attached to the resource.

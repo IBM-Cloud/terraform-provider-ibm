@@ -25,9 +25,11 @@ resource "ibm_is_share" "example" {
 }
 
 resource "ibm_is_share_mount_target" "example" {
+  access_protocol = "nfs4"
   share = ibm_is_share.is_share.id
   vpc   = ibm_is_vpc.example.id
   name  = "example-share-target"
+  transit_encryption = "none"
 }
 
 data "ibm_is_share_mount_target" "example" {
@@ -47,6 +49,7 @@ The following arguments are supported:
 
 The following attributes are exported:
 
+- `access_protocol` - The protocol to use to access the share for this share mount target.
 - `created_at` - The date and time that the share target was created.
 - `href` - The URL for this share target.
 - `lifecycle_state` - The lifecycle state of the mount target.

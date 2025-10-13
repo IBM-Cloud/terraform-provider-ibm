@@ -101,6 +101,11 @@ func ResourceIBMPIInstanceSnapshot() *schema.Resource {
 				Description: "Status of the PVM instance snapshot.",
 				Type:        schema.TypeString,
 			},
+			Attr_StatusDetail: {
+				Computed:    true,
+				Description: "Detailed information for the last PVM instance snapshot action.",
+				Type:        schema.TypeString,
+			},
 			Attr_VolumeSnapshots: {
 				Computed:    true,
 				Description: "A map of volume snapshots included in the PVM instance snapshot.",
@@ -197,6 +202,7 @@ func resourceIBMPIInstanceSnapshotRead(ctx context.Context, d *schema.ResourceDa
 	d.Set(Attr_LastUpdateDate, snapshotdata.LastUpdateDate.String())
 	d.Set(Attr_SnapshotID, *snapshotdata.SnapshotID)
 	d.Set(Attr_Status, snapshotdata.Status)
+	d.Set(Attr_StatusDetail, snapshotdata.StatusDetail)
 	d.Set(Attr_VolumeSnapshots, snapshotdata.VolumeSnapshots)
 
 	return nil
@@ -218,7 +224,7 @@ func resourceIBMPIInstanceSnapshotUpdate(ctx context.Context, d *schema.Resource
 	if d.HasChange(Arg_SnapshotName) || d.HasChange(Arg_Description) {
 		name := d.Get(Arg_SnapshotName).(string)
 		description := d.Get(Arg_Description).(string)
-		snapshotBody := &models.SnapshotUpdate{Name: name, Description: description}
+		snapshotBody := &models.SnapshotUpdate{Name: &name, Description: &description}
 
 		_, err := client.Update(snapshotID, snapshotBody)
 		if err != nil {

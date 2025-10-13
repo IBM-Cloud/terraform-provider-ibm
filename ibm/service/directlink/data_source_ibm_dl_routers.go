@@ -4,7 +4,6 @@
 package directlink
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -79,7 +78,7 @@ func dataSourceIBMDLRoutersRead(d *schema.ResourceData, meta interface{}) error 
 	listRouters, detail, err := directLink.ListOfferingTypeLocationCrossConnectRouters(listRoutersOptionsModel)
 
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error Getting Direct Link Location Cross Connect Routers: %s\n%s", err, detail)
+		return flex.FmtErrorf("[ERROR] Error Getting Direct Link Location Cross Connect Routers: %s\n%s", err, detail)
 	}
 
 	routers := make([]map[string]interface{}, 0)

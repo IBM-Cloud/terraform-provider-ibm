@@ -17,6 +17,7 @@ Provides an IBM Cloud Internet Services rulesets rule resource to create, update
 # Get the ruleset it for the entrypoint ruleset in which the rule will be added
 # use http_request_firewall_custom for custom entrypoint ruleset
 # use http_request_firewall_managed for managed entrypoint ruleset
+# use http_ratelimit for ratelimit entrypoint ruleset
 
   data "ibm_cis_ruleset_entrypoint_versions" "test"{
     cis_id    = ibm_cis.instance.id
@@ -29,7 +30,7 @@ Provides an IBM Cloud Internet Services rulesets rule resource to create, update
   resource "ibm_cis_ruleset_rule" "config" {
     cis_id    = ibm_cis.instance.id
     domain_id = data.ibm_cis_domain.cis_domain.domain_id
-    ruleset_id = "data.ibm_cis_ruleset_entrypoint_versions.ruleset_id"
+    ruleset_id = data.ibm_cis_ruleset_entrypoint_versions.config.rulesets[0].ruleset_id
       rule {
         action =  "execute"
         description = var.rule.description
@@ -67,7 +68,7 @@ Provides an IBM Cloud Internet Services rulesets rule resource to create, update
   resource ibm_cis_ruleset_rule "config" {
     cis_id    = ibm_cis.instance.id
     domain_id = data.ibm_cis_domain.cis_domain.domain_id
-    ruleset_id = "data.ibm_cis_ruleset_entrypoint_versions.ruleset_id"
+    ruleset_id = data.ibm_cis_ruleset_entrypoint_versions.config.rulesets[0].ruleset_id
     rule {
       action =  "block"
       description = "var.description"
@@ -84,6 +85,26 @@ Provides an IBM Cloud Internet Services rulesets rule resource to create, update
         index = var.index
         after = <id of any existing rule>
         before = <id of any existing rule>
+      }
+    }
+  }
+
+# Add/Update a ratelimit rule. make sure phase is http_ratelimit
+
+  resource ibm_cis_ruleset_rule "config" {
+    cis_id    = ibm_cis.instance.id
+    domain_id = data.ibm_cis_domain.cis_domain.domain_id
+    ruleset_id = data.ibm_cis_ruleset_entrypoint_versions.config.rulesets[0].ruleset_id
+    rule {
+      action =  "block"
+      description = "var.description"
+      expression = "true"
+      enabled = "false"
+      rate_limit {
+        characteristics = ['cf.colo.id', ...var.ratelimit.characteristics]
+        mitigation_timeout = var.ratelimit.mitigation_timeout
+        period = var.ratelimit.period
+        requests_per_period = var.ratelimit.requests_per_period
       }
     }
   }
@@ -136,10 +157,23 @@ Review the argument references that you can specify for your resource.
           - `category` (Required, String) Category of the rule.
           - `enabled` (Optional, Boolean) Enables/Disables the rule.
           - `action` (Optional, String) Action of the rule.
+
+      - `rules_to_skip` (Optional, List) Rules to be skipped when action is `skip`
+        
+        Nested scheme of `rules_to_skip`
+        - `ruleset_id` (Required, String) Id of the Ruleset
+        - `rule_ids` (Required, List) List of rule-ids
+  
     - `position` (Optional, List). You can use only one of the before, after, and index fields at a time. It is used to update the positing of the existing rule.
       - `index` (Optional, String) Index of the rule to be added.
       - `before` (Optional, String) ID of the rule before which the new rule will be added.
       - `after` (Optional, String) ID of the rule after which the new rule will be added.
+    - `rate_limit` (Optional, Map) Ratelimit of the rule to be added(custom ruleset). entry point ruleset should be `http_ratelimit` and Ruleset action should not be `execute`
+      - `characteristics` (StringList) Set of parameters defining how tracks the request rate for the rule. `cf.colo.id` is mandatory to be passed, regardless of any additional strings in the list.
+      - `counting_expression` (Optional, String) Defines the criteria used for determining the request rate. By default, the counting expression is the same as the rule matching expression (defined in If incoming requests match).
+      - `mitigation_timeout` (Integer) Once the rate is reached, the rate limiting rule applies the rule action to further requests for the period of time defined in this field (in seconds).
+      - `period` (Integer) The period of time to consider (in seconds) when evaluating the request rate.
+      - `requests_per_period` (Integer) The number of requests over the period of time that will trigger the rule.
 
 ## Attribute reference
 

@@ -31,6 +31,8 @@ You can specify the following arguments for this resource.
 
 * `cron` - (Optional, String) Only needed for timer triggers. CRON expression that indicates when this trigger will activate. Maximum frequency is every 5 minutes. The string is based on UNIX crontab syntax: minute, hour, day of month, month, day of week. Example: The CRON expression 0 *_/2 * * * - translates to - every 2 hours.
   * Constraints: The maximum length is `253` characters. The minimum length is `5` characters. The value must match regular expression `/^[-0-9a-zA-Z,\\*\/ ]{5,253}$/`.
+* `disable_draft_events` - (Optional, Boolean) Prevent new pipeline runs from being triggered by events from draft pull requests.
+  * Constraints: The default value is `false`.
 * `enable_events_from_forks` - (Optional, Boolean) When enabled, pull request events from forks of the selected repository will trigger a pipeline run.
   * Constraints: The default value is `false`.
 * `enabled` - (Optional, Boolean) Flag to check if the trigger is enabled.
@@ -43,6 +45,8 @@ You can specify the following arguments for this resource.
   * Constraints: The default value is `false`.
 * `filter` - (Optional, String) Either 'events' or 'filter' can be used. Stores the CEL (Common Expression Language) expression value which is used for event filtering against the Git webhook payloads.
   * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^.*$/`.
+* `limit_waiting_runs` - (Optional, Boolean) Flag that will limit the trigger to a maximum of one waiting run. A newly triggered run will cause any other waiting run(s) to be automatically cancelled.
+  * Constraints: The default value is `false`.
 * `max_concurrent_runs` - (Optional, Integer) Defines the maximum number of concurrent runs for this trigger. If omitted then the concurrency limit is disabled for this trigger.
 * `name` - (Required, String) Trigger name.
   * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^([a-zA-Z0-9]{1,2}|[a-zA-Z0-9][0-9a-zA-Z-_.: \/\\(\\)\\[\\]]{1,251}[a-zA-Z0-9])$/`.

@@ -9,7 +9,8 @@ import (
 	"strings"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	//"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -103,7 +104,8 @@ func ResourceIBMDNSLinkedZone() *schema.Resource {
 func resourceIBMDNSLinkedZoneCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).PrivateDNSClientSession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceIBMDNSLinkedZoneCreate Client initialization failed: %s", err.Error()), "ibm_dns_linked_zone", "create")
+		return tfErr.GetDiag()
 	}
 
 	var (
@@ -130,7 +132,8 @@ func resourceIBMDNSLinkedZoneCreate(ctx context.Context, d *schema.ResourceData,
 
 	resource, response, err := sess.CreateLinkedZone(createLinkedZoneOptions)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error creating DNS Linked zone:%s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateLinkedZone failed with error: %s and response:\n%s", err, response), "ibm_dns_linked_zone", "create")
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", instanceID, *resource.ID))
@@ -140,11 +143,14 @@ func resourceIBMDNSLinkedZoneCreate(ctx context.Context, d *schema.ResourceData,
 func resourceIBMDNSLinkedZoneRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).PrivateDNSClientSession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceIBMDNSLinkedZoneRead Client initialization failed: %s", err.Error()), "ibm_dns_linked_zone", "read")
+		return tfErr.GetDiag()
 	}
 	idSet := strings.Split(d.Id(), "/")
 	if len(idSet) < 2 {
-		return diag.FromErr(fmt.Errorf("[ERROR] Incorrect ID %s: Id should be a combination of InstanceID/linkedDnsZoneID", d.Id()))
+		err := fmt.Errorf("[ERROR] Incorrect ID %s: Id should be a combination of InstanceID/linkedDnsZoneID", d.Id())
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_dns_linked_zone", "read")
+		return tfErr.GetDiag()
 	}
 	instanceID := idSet[0]
 	linkedDnsZoneID := idSet[1]
@@ -156,7 +162,8 @@ func resourceIBMDNSLinkedZoneRead(ctx context.Context, d *schema.ResourceData, m
 			d.SetId("")
 			return nil
 		}
-		return diag.FromErr(fmt.Errorf("[ERROR] Error reading DNS Linked zone:%s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetLinkedZone failed with error: %s and response:\n%s", err, response), "ibm_dns_linked_zone", "read")
+		return tfErr.GetDiag()
 	}
 
 	d.Set(DnsLinkedZoneInstanceID, idSet[0])
@@ -171,12 +178,15 @@ func resourceIBMDNSLinkedZoneRead(ctx context.Context, d *schema.ResourceData, m
 func resourceIBMDNSLinkedZoneUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).PrivateDNSClientSession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceIBMDNSLinkedZoneUpdate Client initialization failed: %s", err.Error()), "ibm_dns_linked_zone", "update")
+		return tfErr.GetDiag()
 	}
 
 	idSet := strings.Split(d.Id(), "/")
 	if len(idSet) < 2 {
-		return diag.FromErr(fmt.Errorf("[ERROR] Incorrect ID %s: Id should be a combination of InstanceID/resolverID/secondaryZoneID", d.Id()))
+		err := fmt.Errorf("[ERROR] Incorrect ID %s: Id should be a combination of InstanceID/resolverID/secondaryZoneID", d.Id())
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_dns_linked_zone", "update")
+		return tfErr.GetDiag()
 	}
 	instanceID := idSet[0]
 	linkedDnsZoneID := idSet[1]
@@ -185,7 +195,8 @@ func resourceIBMDNSLinkedZoneUpdate(ctx context.Context, d *schema.ResourceData,
 	getLinkedZoneOptions := sess.NewGetLinkedZoneOptions(instanceID, linkedDnsZoneID)
 	_, response, err := sess.GetLinkedZone(getLinkedZoneOptions)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error fetching secondary zone:%s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceIBMDNSLinkedZoneUpdate GetLinkedZone failed with error: %s and response:\n%s", err, response), "ibm_dns_linked_zone", "update")
+		return tfErr.GetDiag()
 	}
 
 	// Update DNS Linked zone if attributes has any change
@@ -204,7 +215,8 @@ func resourceIBMDNSLinkedZoneUpdate(ctx context.Context, d *schema.ResourceData,
 		_, response, err := sess.UpdateLinkedZone(updateLinkedZoneOptions)
 
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error updating DNS Services zone:%s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateLinkedZone failed with error: %s and response:\n%s", err, response), "ibm_dns_linked_zone", "update")
+			return tfErr.GetDiag()
 		}
 	}
 
@@ -213,11 +225,14 @@ func resourceIBMDNSLinkedZoneUpdate(ctx context.Context, d *schema.ResourceData,
 func resourceIBMDNSLinkedZoneDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).PrivateDNSClientSession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceIBMDNSLinkedZoneDelete Client initialization failed: %s", err.Error()), "ibm_dns_linked_zone", "delete")
+		return tfErr.GetDiag()
 	}
 	idSet := strings.Split(d.Id(), "/")
 	if len(idSet) < 2 {
-		return diag.FromErr(fmt.Errorf("[ERROR] Incorrect ID %s: Id should be a combination of InstanceID/linkedDnsZoneID", d.Id()))
+		err := fmt.Errorf("[ERROR] Incorrect ID %s: Id should be a combination of InstanceID/linkedDnsZoneID", d.Id())
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_dns_linked_zone", "delete")
+		return tfErr.GetDiag()
 	}
 	instanceID := idSet[0]
 	linkedDnsZoneID := idSet[1]
@@ -232,7 +247,8 @@ func resourceIBMDNSLinkedZoneDelete(ctx context.Context, d *schema.ResourceData,
 		if response != nil && response.StatusCode == 404 {
 			return nil
 		}
-		return diag.FromErr(fmt.Errorf("[ERROR] Error reading DNS Services secondary zone:%s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceIBMDNSLinkedZoneDelete failed with error: %s and response:\n%s", err, response), "ibm_dns_linked_zone", "delete")
+		return tfErr.GetDiag()
 	}
 
 	d.SetId("")

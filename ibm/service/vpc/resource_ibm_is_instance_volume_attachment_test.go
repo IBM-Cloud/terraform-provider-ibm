@@ -611,3 +611,91 @@ func testAccCheckIBMISInstanceVolumeAttachmentUsertagConfig(vpcname, subnetname,
 	 
 	  `, vpcname, subnetname, acc.ISZoneName, sshname, publicKey, name, acc.IsImage, acc.InstanceProfileName, acc.ISZoneName, attName, capacity, iops, usertag, autoDelete, volName)
 }
+
+func TestAccIBMISInstanceVolumeAttachment_alloweduse(t *testing.T) {
+	var instanceVolAtt string
+	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tf-instnace-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tf-subnet-%d", acctest.RandIntRange(10, 100))
+	publicKey := strings.TrimSpace(`
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
+`)
+	sshname := fmt.Sprintf("tf-ssh-%d", acctest.RandIntRange(10, 100))
+	attName := fmt.Sprintf("tf-volatt-%d", acctest.RandIntRange(10, 100))
+	autoDelete := true
+	volName := fmt.Sprintf("tf-vol-%d", acctest.RandIntRange(10, 100))
+	apiVersion := "2025-07-02"
+	bareMetalServer := "true"
+	instanceVal := "true"
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISInstanceVolumeAttachmentAllowedUseConfig(vpcname, subnetname, sshname, publicKey, name, attName, volName, apiVersion, bareMetalServer, instanceVal, autoDelete),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISInstanceVolumeAttachmentExists("ibm_is_instance_volume_attachment.testacc_att", instanceVolAtt),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance_volume_attachment.testacc_att", "name", attName),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance_volume_attachment.testacc_att", "delete_volume_on_instance_delete", fmt.Sprintf("%t", autoDelete)),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance_volume_attachment.testacc_att", "capacity"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance_volume_attachment.testacc_att", "iops"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMISInstanceVolumeAttachmentAllowedUseConfig(vpcname, subnetname, sshname, publicKey, name, attName, volName, apiVersion, bareMetalServer, instanceVal string, autoDelete bool) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	}
+	resource "ibm_is_subnet" "testacc_subnet" {
+		name            			= "%s"
+		vpc             			= ibm_is_vpc.testacc_vpc.id
+		zone            			= "%s"
+		total_ipv4_address_count 	= 16
+	}
+	resource "ibm_is_ssh_key" "testacc_sshkey" {
+		name       = "%s"
+		public_key = "%s"
+	}
+	resource "ibm_is_instance" "testacc_instance" {
+		name    = "%s"
+		image   = "%s"
+		profile = "%s"
+		primary_network_interface {
+		  subnet     = ibm_is_subnet.testacc_subnet.id
+		}
+		vpc  = ibm_is_vpc.testacc_vpc.id
+		zone = "%s"
+		keys = [ibm_is_ssh_key.testacc_sshkey.id]
+		network_interfaces {
+		  subnet = ibm_is_subnet.testacc_subnet.id
+		  name   = "eth1"
+		}
+	}
+	resource "ibm_is_snapshot" "testacc_snapshot" {
+		name 			= "tf-test-snapshot"
+		source_volume 	= ibm_is_instance.testacc_instance.volume_attachments[0].volume_id
+	}
+	resource "ibm_is_instance_volume_attachment" "testacc_att" {
+		instance 		= ibm_is_instance.testacc_instance.id
+		name 			= "%s"
+		profile 		= "general-purpose"
+		snapshot_crn 	= ibm_is_snapshot.testacc_snapshot.crn
+		delete_volume_on_instance_delete = %t
+		volume_name = "%s"
+		allowed_use {
+			api_version       = "%s"
+			bare_metal_server = "%s"
+			instance          = "%s"		
+		}
+	}
+	`, vpcname, subnetname, acc.ISZoneName, sshname, publicKey, name, acc.IsImage, acc.InstanceProfileName, acc.ISZoneName, attName, autoDelete, volName, apiVersion, bareMetalServer, instanceVal)
+}

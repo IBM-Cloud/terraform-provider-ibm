@@ -119,6 +119,26 @@ func DataSourceIBMIsBareMetalServers() *schema.Resource {
 								},
 							},
 						},
+						isBareMetalServerMetadataService: {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The metadata service configuration",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									isBareMetalServerMetadataServiceEnabled: {
+										Type:        schema.TypeBool,
+										Computed:    true,
+										Description: "Indicates whether the metadata service endpoint will be available to the bare metal server",
+									},
+
+									isBareMetalServerMetadataServiceProtocol: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The communication protocol to use for the metadata service endpoint. Applies only when the metadata service is enabled.",
+									},
+								},
+							},
+						},
 						isBareMetalServerBootTarget: {
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -198,6 +218,25 @@ func DataSourceIBMIsBareMetalServers() *schema.Resource {
 										Type:        schema.TypeInt,
 										Computed:    true,
 										Description: "The size of the disk in GB (gigabytes)",
+									},
+									"allowed_use": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "The usage constraints to be matched against the requested bare metal server properties to determine compatibility.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"bare_metal_server": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The expression that must be satisfied by the properties of a bare metal server provisioned using the image data in this disk.",
+												},
+												"api_version": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The API version with which to evaluate the expressions.",
+												},
+											},
+										},
 									},
 								},
 							},
@@ -1045,6 +1084,16 @@ func dataSourceIBMISBareMetalServersRead(context context.Context, d *schema.Reso
 					isBareMetalServerDiskResourceType:  disk.ResourceType,
 					isBareMetalServerDiskSize:          disk.Size,
 				}
+				if disk.AllowedUse != nil {
+					usageConstraintList := []map[string]interface{}{}
+					modelMap, err := ResourceceIBMIsBareMetalServerDiskAllowedUseToMap(disk.AllowedUse)
+					if err != nil {
+						tfErr := flex.TerraformErrorf(err, err.Error(), "(Resource) ibm_is_bare_metal_server", "read")
+						log.Println(tfErr.GetDiag())
+					}
+					usageConstraintList = append(usageConstraintList, modelMap)
+					currentDisk["allowed_use"] = usageConstraintList
+				}
 				diskList = append(diskList, currentDisk)
 			}
 		}
@@ -1377,6 +1426,17 @@ func dataSourceIBMISBareMetalServersRead(context context.Context, d *schema.Reso
 			}
 			resList = append(resList, res)
 			l[isReservation] = resList
+		}
+		if bms.MetadataService != nil {
+			metadataServiceList := make([]map[string]interface{}, 0)
+			metadataServiceMap := map[string]interface{}{}
+
+			metadataServiceMap[isBareMetalServerMetadataServiceEnabled] = *bms.MetadataService.Enabled
+			if bms.MetadataService.Protocol != nil {
+				metadataServiceMap[isBareMetalServerMetadataServiceProtocol] = *bms.MetadataService.Protocol
+			}
+			metadataServiceList = append(metadataServiceList, metadataServiceMap)
+			l[isBareMetalServerMetadataService] = metadataServiceList
 		}
 		serversInfo = append(serversInfo, l)
 	}

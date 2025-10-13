@@ -78,6 +78,42 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 		},
 	})
 }
+func TestAccIBMISBMSDataSource_MetadataService(t *testing.T) {
+	resName := "data.ibm_is_bare_metal_server.test1"
+	var server string
+	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tf-server-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tfip-subnet-%d", acctest.RandIntRange(10, 100))
+	publicKey := strings.TrimSpace(`
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
+`)
+	sshname := fmt.Sprintf("tf-sshname-%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISBMSDataSourceMetadataServiceConfig(vpcname, subnetname, sshname, publicKey, name, true, "https"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISBareMetalServerExists("ibm_is_bare_metal_server.testacc_bms", server),
+					resource.TestCheckResourceAttrSet(resName, "metadata_service.0.enabled"),
+					resource.TestCheckResourceAttrSet(resName, "metadata_service.0.protocol"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMISBMSDataSourceMetadataServiceConfig(vpcname, subnetname, sshname, publicKey, name string, enabled bool, protocol string) string {
+	// status filter defaults to empty
+	return testAccCheckIBMISBareMetalServerMetadataServiceConfig(vpcname, subnetname, sshname, publicKey, name, enabled, protocol) + fmt.Sprintf(`
+      data "ibm_is_bare_metal_server" "test1" {
+	  	depends_on	= [ ibm_is_bare_metal_server.testacc_bms ]
+       name 			=	"%s"
+      }`, name)
+}
+
 func TestAccIBMISBMSDataSourceVNI_basic(t *testing.T) {
 	var server string
 	resName := "data.ibm_is_bare_metal_server.test1"

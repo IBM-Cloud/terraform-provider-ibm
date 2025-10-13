@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2024 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package mqcloud_test
@@ -18,7 +18,6 @@ import (
 )
 
 func TestAccIbmMqcloudVirtualPrivateEndpointGatewayBasic(t *testing.T) {
-	t.Parallel()
 	var conf mqcloudv1.VirtualPrivateEndpointGatewayDetails
 	serviceInstanceGuid := acc.MqcloudCapacityID
 	name := fmt.Sprintf("tf-name-%d", acctest.RandIntRange(10, 100))
@@ -43,7 +42,6 @@ func TestAccIbmMqcloudVirtualPrivateEndpointGatewayBasic(t *testing.T) {
 }
 
 func TestAccIbmMqcloudVirtualPrivateEndpointGatewayAllArgs(t *testing.T) {
-	t.Parallel()
 	var conf mqcloudv1.VirtualPrivateEndpointGatewayDetails
 	serviceInstanceGuid := acc.MqcloudCapacityID
 	trustedProfile := acc.MqCloudVirtualPrivateEndPointTrustedProfile

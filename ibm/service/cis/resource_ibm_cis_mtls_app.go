@@ -146,7 +146,10 @@ func resourceIBMCISMtlsAppCreate(context context.Context, d *schema.ResourceData
 	var common_rule_set bool
 	sess, err := meta.(conns.ClientSession).CisMtlsSession()
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error while getting the CisMtlsSession() %s %v", err, sess))
+		tfErr := flex.TerraformErrorf(err,
+			fmt.Sprintf("resourceIBMCISMtlsAppCreate CisMtlsSession initialization failed: %s", err.Error()),
+			"ibm_cis_mtls_app", "create")
+		return tfErr.GetDiag()
 	}
 	crn := d.Get(cisID).(string)
 	zoneID, _, _ := flex.ConvertTftoCisTwoVar(d.Get(cisDomainID).(string))
@@ -169,7 +172,10 @@ func resourceIBMCISMtlsAppCreate(context context.Context, d *schema.ResourceData
 	resultApp, responseApp, operationErrApp := sess.CreateAccessApplication(OptionsApp)
 
 	if operationErrApp != nil || resultApp == nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error creating access application  %v %v", operationErrApp, responseApp))
+		tfErr := flex.TerraformErrorf(operationErrApp,
+			fmt.Sprintf("resourceIBMCISMtlsAppCreate CreateAccessApplication failed: %s \nResponse: %s", operationErrApp.Error(), responseApp),
+			"ibm_cis_mtls_app", "create")
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(flex.ConvertCisToTfThreeVar(*resultApp.Result.ID, zoneID, crn))
@@ -218,7 +224,10 @@ func resourceIBMCISMtlsAppCreate(context context.Context, d *schema.ResourceData
 	resultPolicy, responsePolicy, operationErrPolicy := sess.CreateAccessPolicy(optionsPolicy)
 
 	if operationErrPolicy != nil || resultPolicy == nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error creating app policy  %v", responsePolicy))
+		tfErr := flex.TerraformErrorf(operationErrPolicy,
+			fmt.Sprintf("resourceIBMCISMtlsAppCreate CreateAccessPolicy failed: %s \nResponse: %s", operationErrPolicy.Error(), responsePolicy),
+			"ibm_cis_mtls_app", "create")
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(flex.ConvertCisToTfFourVar(*resultApp.Result.ID, *resultPolicy.Result.ID, zoneID, crn))
@@ -228,7 +237,10 @@ func resourceIBMCISMtlsAppCreate(context context.Context, d *schema.ResourceData
 func resourceIBMCISMtlsAppRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).CisMtlsSession()
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error while getting the CisMtlsSession() %s %v", err, sess))
+		tfErr := flex.TerraformErrorf(err,
+			fmt.Sprintf("resourceIBMCISMtlsAppRead CisMtlsSession initialization failed: %s", err.Error()),
+			"ibm_cis_mtls_app", "read")
+		return tfErr.GetDiag()
 	}
 
 	appID, policyID, zoneID, crn, _ := flex.ConvertTfToCisFourVar(d.Id())
@@ -237,14 +249,20 @@ func resourceIBMCISMtlsAppRead(context context.Context, d *schema.ResourceData, 
 	getAppResult, getAppResp, getAppErr := sess.GetAccessApplication(getAppOptions)
 
 	if getAppErr != nil || getAppResult == nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error getting app deatil  %v", getAppResp))
+		tfErr := flex.TerraformErrorf(getAppErr,
+			fmt.Sprintf("resourceIBMCISMtlsAppRead GetAccessApplication failed: %s \nResponse: %s", getAppErr.Error(), getAppResp),
+			"ibm_cis_mtls_app", "read")
+		return tfErr.GetDiag()
 	}
 
 	getPolicyOptions := sess.NewGetAccessPolicyOptions(zoneID, appID, policyID)
 	getPolicyResult, getPolicyResp, getPolicyErr := sess.GetAccessPolicy(getPolicyOptions)
 
 	if getPolicyErr != nil || getPolicyResult == nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error getting Policy  detail  %v", getPolicyResp))
+		tfErr := flex.TerraformErrorf(getPolicyErr,
+			fmt.Sprintf("resourceIBMCISMtlsAppRead GetAccessPolicy failed: %s \nResponse: %s", getPolicyErr.Error(), getPolicyResp),
+			"ibm_cis_mtls_app", "read")
+		return tfErr.GetDiag()
 	}
 
 	d.Set(cisID, crn)
@@ -261,7 +279,10 @@ func resourceIBMCISMtlsAppRead(context context.Context, d *schema.ResourceData, 
 func resourceIBMCISMtlsAppUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).CisMtlsSession()
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error while getting the CisMtlsSession() %s %v", err, sess))
+		tfErr := flex.TerraformErrorf(err,
+			fmt.Sprintf("resourceIBMCISMtlsAppUpdate CisMtlsSession initialization failed: %s", err.Error()),
+			"ibm_cis_mtls_app", "update")
+		return tfErr.GetDiag()
 	}
 
 	appID, _, zoneID, crn, _ := flex.ConvertTfToCisFourVar(d.Id())
@@ -286,7 +307,10 @@ func resourceIBMCISMtlsAppUpdate(context context.Context, d *schema.ResourceData
 				d.SetId("")
 				return nil
 			}
-			return diag.FromErr(fmt.Errorf("[ERROR] Error while updating the applicatoin values %v", updateResultApp))
+			tfErr := flex.TerraformErrorf(err,
+				fmt.Sprintf("resourceIBMCISMtlsAppUpdate UpdateAccessApplication failed: %s \nResponse: %v", updateErrApp.Error(), updateResultApp),
+				"ibm_cis_mtls_app", "update")
+			return tfErr.GetDiag()
 		}
 
 		optionsPolicy := sess.NewCreateAccessPolicyOptions(zoneID, appID)
@@ -304,7 +328,10 @@ func resourceIBMCISMtlsAppUpdate(context context.Context, d *schema.ResourceData
 				d.SetId("")
 				return nil
 			}
-			return diag.FromErr(fmt.Errorf("[ERROR] Error while updating the applicatoin values %v", resultPolicy))
+			tfErr := flex.TerraformErrorf(err,
+				fmt.Sprintf("resourceIBMCISMtlsAppUpdate CreateAccessPolicy failed: %s \nResponse: %v", operationErrPolicy.Error(), resultPolicy),
+				"ibm_cis_mtls_app", "update")
+			return tfErr.GetDiag()
 		}
 
 	}
@@ -314,7 +341,10 @@ func resourceIBMCISMtlsAppUpdate(context context.Context, d *schema.ResourceData
 func resourceIBMCISMtlsAppDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).CisMtlsSession()
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error while getting the CisMtlsSession() %s %v", err, sess))
+		tfErr := flex.TerraformErrorf(err,
+			fmt.Sprintf("resourceIBMCISMtlsAppDelete CisMtlsSession initialization failed: %s", err.Error()),
+			"ibm_cis_mtls_app", "delete")
+		return tfErr.GetDiag()
 	}
 
 	appID, policyID, zoneID, crn, _ := flex.ConvertTfToCisFourVar(d.Id())
@@ -325,13 +355,19 @@ func resourceIBMCISMtlsAppDelete(context context.Context, d *schema.ResourceData
 	delOptPolicy := sess.NewDeleteAccessPolicyOptions(zoneID, appID, policyID)
 	_, delRespPolicy, delErrPolicy := sess.DeleteAccessPolicy(delOptPolicy)
 	if delErrPolicy != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error While deleting the policy :%v", delRespPolicy))
+		tfErr := flex.TerraformErrorf(err,
+			fmt.Sprintf("resourceIBMCISMtlsAppDelete DeleteAccessPolicy failed: %s \nResponse: %v", err.Error(), delRespPolicy),
+			"ibm_cis_mtls_app", "delete")
+		return tfErr.GetDiag()
 	}
 
 	delAccOpt := sess.NewDeleteAccessApplicationOptions(zoneID, appID)
 	_, delAccResp, delAccErr := sess.DeleteAccessApplication(delAccOpt)
 	if delAccErr != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error While deleting the app :%v", delAccResp))
+		tfErr := flex.TerraformErrorf(err,
+			fmt.Sprintf("resourceIBMCISMtlsAppDelete DeleteAccessApplication failed: %s \nResponse: %v", err.Error(), delAccResp),
+			"ibm_cis_mtls_app", "delete")
+		return tfErr.GetDiag()
 	}
 
 	return nil

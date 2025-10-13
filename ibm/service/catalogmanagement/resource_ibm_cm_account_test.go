@@ -30,12 +30,15 @@ func TestAccIBMCmAccountBasic(t *testing.T) {
 				Config: testAccCheckIBMCmAccountConfigBasic(),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMCmAccountExists("ibm_cm_account.cm_account", conf),
+					resource.TestCheckResourceAttr("ibm_cm_account.cm_account", "hide_ibm_cloud_catalog", "true"),
 				),
 			},
 			resource.TestStep{
-				ResourceName:      "ibm_cm_account.cm_account",
-				ImportState:       true,
-				ImportStateVerify: true,
+				Config: testAccCheckIBMCmAccountConfigBasicUpdate(),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCmAccountExists("ibm_cm_account.cm_account", conf),
+					resource.TestCheckResourceAttr("ibm_cm_account.cm_account", "hide_ibm_cloud_catalog", "false"),
+				),
 			},
 		},
 	})
@@ -43,7 +46,60 @@ func TestAccIBMCmAccountBasic(t *testing.T) {
 
 func testAccCheckIBMCmAccountConfigBasic() string {
 	return fmt.Sprintf(`
+		resource "ibm_cm_catalog" "cm_catalog" {
+			label = "test_tf_account_catalog_label_1"
+			kind = "offering"
+		}
+
 		resource "ibm_cm_account" "cm_account" {
+			hide_ibm_cloud_catalog = true
+			terraform_engines {
+				name             = "my-tfe-instance"
+				type             = "terraform-enterprise"
+				public_endpoint  = "foo"
+				private_endpoint = "foo"
+				api_token        = "foo"
+				da_creation {
+					enabled                    = true
+					default_private_catalog_id = ibm_cm_catalog.cm_catalog.id
+					polling_info {
+						scopes {
+							name = "foo-project"
+							type = "project"
+						}
+					}
+				}
+			}
+		}
+	`)
+}
+
+func testAccCheckIBMCmAccountConfigBasicUpdate() string {
+	return fmt.Sprintf(`
+		resource "ibm_cm_catalog" "cm_catalog" {
+			label = "test_tf_account_catalog_label_1"
+			kind = "offering"
+		}
+
+		resource "ibm_cm_account" "cm_account" {
+			hide_ibm_cloud_catalog = false
+			terraform_engines {
+				name             = "my-tfe-instance"
+				type             = "terraform-enterprise"
+				public_endpoint  = "foo"
+				private_endpoint = "foo"
+				api_token        = "foo"
+				da_creation {
+					enabled                    = true
+					default_private_catalog_id = ibm_cm_catalog.cm_catalog.id
+					polling_info {
+						scopes {
+							name = "foo-project"
+							type = "project"
+						}
+					}
+				}
+			}
 		}
 	`)
 }
