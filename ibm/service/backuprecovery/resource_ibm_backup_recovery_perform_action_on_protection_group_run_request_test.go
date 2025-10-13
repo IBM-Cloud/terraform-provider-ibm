@@ -17,9 +17,9 @@ import (
 )
 
 func TestAccIbmBackupRecoveryPerformActionOnProtectionGroupRunRequestBasic(t *testing.T) {
-	objectId := 18
+	objectId := 344
 	runType := "kRegular"
-	groupName := "terra-test-group-4" //"tf-group-5"
+	groupName := "tetst-terra-group-2" //"tf-group-5"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
@@ -50,11 +50,13 @@ func testAccCheckIbmBackupRecoveryProtectionGroupRunRequest(groupName, runType s
 		data "ibm_backup_recovery_protection_groups" "ibm_backup_recovery_protection_groups_instance" {
 			x_ibm_tenant_id = "%s"
 			names = ["%s"]
+			backup_recovery_endpoint = "https://protectiondomain0103.us-east.backup-recovery-tests.cloud.ibm.com/v2"
 		}
 
 		resource "ibm_backup_recovery_protection_group_run_request" "baas_protection_group_run_request_instance" {
 			x_ibm_tenant_id = "%s"
 			run_type = "%s"
+			backup_recovery_endpoint = "https://protectiondomain0103.us-east.backup-recovery-tests.cloud.ibm.com/v2"
 			group_id = data.ibm_backup_recovery_protection_groups.ibm_backup_recovery_protection_groups_instance.protection_groups.0.id
 			lifecycle {
 				ignore_changes = ["x_ibm_tenant_id","run_type","group_id"]
@@ -76,6 +78,7 @@ func testPerformRunExists(n string) resource.TestCheckFunc {
 			if err != nil {
 				return err
 			}
+			backupRecoveryClient.Service.Options.URL = "https://protectiondomain0103.us-east.backup-recovery-tests.cloud.ibm.com/v2"
 
 			getProtectionGroupRunsOptions := &backuprecoveryv1.GetProtectionGroupRunsOptions{}
 			getProtectionGroupRunsOptions.SetID(rs.Primary.ID)
@@ -106,16 +109,19 @@ func testAccCheckIbmBackupRecoveryPerformActionOnProtectionGroupRunRequestConfig
 
 	data "ibm_backup_recovery_protection_groups" "ibm_backup_recovery_protection_groups_instance" {
 		x_ibm_tenant_id = "%s"
+		backup_recovery_endpoint = "https://protectiondomain0103.us-east.backup-recovery-tests.cloud.ibm.com/v2"
 		names = ["%s"]
 	  }
 
 	data "ibm_backup_recovery_protection_group_runs" "baas_protection_group_runs_instance" {
 		x_ibm_tenant_id = "%s"
+		backup_recovery_endpoint = "https://protectiondomain0103.us-east.backup-recovery-tests.cloud.ibm.com/v2"
 		protection_group_id = data.ibm_backup_recovery_protection_groups.ibm_backup_recovery_protection_groups_instance.protection_groups.0.id
 	}
 
 	resource "ibm_backup_recovery_perform_action_on_protection_group_run_request" "baas_perform_action_on_protection_group_run_request_instance" {
 		x_ibm_tenant_id = "%s"
+		backup_recovery_endpoint = "https://protectiondomain0103.us-east.backup-recovery-tests.cloud.ibm.com/v2"
 		group_id = data.ibm_backup_recovery_protection_group_runs.baas_protection_group_runs_instance.protection_group_id
 		action = "Cancel"
 		cancel_params {
@@ -145,6 +151,7 @@ func testAccCheckProtectionRunPerformActionCancelled(n string) resource.TestChec
 			if err != nil {
 				return err
 			}
+			backupRecoveryClient.Service.Options.URL = "https://protectiondomain0103.us-east.backup-recovery-tests.cloud.ibm.com/v2"
 
 			getProtectionGroupRunsOptions := &backuprecoveryv1.GetProtectionGroupRunsOptions{}
 

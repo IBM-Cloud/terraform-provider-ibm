@@ -19,7 +19,7 @@ import (
 
 func TestAccIbmBackupRecoverySourceRegistrationDataSourceBasic(t *testing.T) {
 	// environment := "kPhysical"
-	objectId := 18
+	objectId := 344
 	// endpoint := "172.26.1.24"
 	// hostType := "kLinux"
 	// physicalType := "kHost"
@@ -57,6 +57,7 @@ func testAccCheckIbmBackupRecoverySourceRegistrationDataSourceConfigBasic(object
 	return fmt.Sprintf(`
 
 			data "ibm_backup_recovery_source_registration" "baas_source_registration_instance" {
+				backup_recovery_endpoint = "https://protectiondomain0103.us-east.backup-recovery-tests.cloud.ibm.com/v2"
 				source_registration_id = %d
 				x_ibm_tenant_id = "%s"
 			}

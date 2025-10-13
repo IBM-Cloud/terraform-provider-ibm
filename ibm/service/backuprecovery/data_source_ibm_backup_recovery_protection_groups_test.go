@@ -20,7 +20,7 @@ import (
 func TestAccIbmBackupRecoveryProtectionGroupsDataSourceBasic(t *testing.T) {
 	groupName := fmt.Sprintf("tf_groupname_%d", acctest.RandIntRange(10, 100))
 	policyName := fmt.Sprintf("tf_policyname_%d", acctest.RandIntRange(10, 100))
-	objectId := 18
+	objectId := 344
 	environment := "kPhysical"
 	includedPath := "/data1/data/dat2/"
 	protectionType := "kFile"
@@ -53,6 +53,8 @@ func testAccCheckIbmBackupRecoveryProtectionGroupsDataSourceConfigBasic(name, en
 	resource "ibm_backup_recovery_protection_policy" "baas_protection_policy_instance" {
 		x_ibm_tenant_id = "%s"
 		name = "%s"
+		backup_recovery_endpoint = "https://protectiondomain0103.us-east.backup-recovery-tests.cloud.ibm.com/v2"
+
 		backup_policy {
 				regular {
 					incremental{
@@ -81,6 +83,7 @@ func testAccCheckIbmBackupRecoveryProtectionGroupsDataSourceConfigBasic(name, en
 	resource "ibm_backup_recovery_protection_group" "baas_protection_group_instance" {
 		x_ibm_tenant_id = "%s"
 		policy_id = ibm_backup_recovery_protection_policy.baas_protection_policy_instance.policy_id
+		backup_recovery_endpoint = "https://protectiondomain0103.us-east.backup-recovery-tests.cloud.ibm.com/v2"
 		name = "%s"
 		environment = "%s"
 		physical_params {
@@ -97,6 +100,7 @@ func testAccCheckIbmBackupRecoveryProtectionGroupsDataSourceConfigBasic(name, en
 	}
 		data "ibm_backup_recovery_protection_groups" "baas_protection_groups_instance" {
 			x_ibm_tenant_id = "%[1]s"
+			backup_recovery_endpoint = "https://protectiondomain0103.us-east.backup-recovery-tests.cloud.ibm.com/v2"
 			ids = [ ibm_backup_recovery_protection_group.baas_protection_group_instance.group_id ]
 		}
 	`, tenantId, policyName, tenantId, name, environment, protectionType, objectId, includedPath)

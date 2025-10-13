@@ -15,7 +15,7 @@ import (
 
 func TestAccIbmBackupRecoverySearchIndexedObjectDataSourceBasic(t *testing.T) {
 	objectType := "Files"
-	objectId := 18
+	objectId := 344
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
@@ -37,6 +37,7 @@ func testAccCheckIbmBackupRecoverySearchIndexedObjectConfigBasic(objectType stri
 
 		data "ibm_backup_recovery_search_indexed_object" "baas_search_indexed_object_instance" {
 			x_ibm_tenant_id = "%s"
+			backup_recovery_endpoint = "https://protectiondomain0103.us-east.backup-recovery-tests.cloud.ibm.com/v2"
 			object_type = "%s"
 			file_params {
 			  source_ids = [%d]

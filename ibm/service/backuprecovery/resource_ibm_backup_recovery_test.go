@@ -19,9 +19,9 @@ import (
 func TestAccIbmBackupRecoveryBasic(t *testing.T) {
 	name := fmt.Sprintf("tf_recovery_name_%d", acctest.RandIntRange(10, 100))
 	snapshotEnvironment := "kPhysical"
-	objectId := 18
+	objectId := 344
 	targetenvironment := "kPhysical"
-	absolutePath := "/data/"
+	absolutePath := "/mnt"
 	restoreEntityType := "kRegular"
 	recoveryAction := "RecoverFiles"
 
@@ -47,11 +47,13 @@ func testAccCheckIbmBackupRecoveryConfigBasic(objectId int, name, snapshotEnviro
 
 	data "ibm_backup_recovery_object_snapshots" "object_snapshot" {
 		x_ibm_tenant_id = "%s"
+		backup_recovery_endpoint = "https://protectiondomain0103.us-east.backup-recovery-tests.cloud.ibm.com/v2"
 		object_id = %d
 	  }
 
 	resource "ibm_backup_recovery" "baas_recovery_instance" {
 		x_ibm_tenant_id = "%s"
+		backup_recovery_endpoint = "https://protectiondomain0103.us-east.backup-recovery-tests.cloud.ibm.com/v2"
 		snapshot_environment = "%s"
 		name = "%s"
 		physical_params {
@@ -89,6 +91,7 @@ func testAccCheckIbmBackupRecoveryExists(n string) resource.TestCheckFunc {
 		if err != nil {
 			return err
 		}
+		backupRecoveryClient.Service.Options.URL = "https://protectiondomain0103.us-east.backup-recovery-tests.cloud.ibm.com/v2"
 
 		getRecoveryByIdOptions := &backuprecoveryv1.GetRecoveryByIdOptions{}
 

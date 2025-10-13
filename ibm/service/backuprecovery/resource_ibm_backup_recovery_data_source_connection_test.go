@@ -54,6 +54,7 @@ func testAccCheckIbmBackupRecoveryDataSourceConnectionConfigBasic(connectionName
 	return fmt.Sprintf(`
 	resource "ibm_backup_recovery_data_source_connection" "baas_data_source_connection_instance" {
 		x_ibm_tenant_id = "%s"
+		backup_recovery_endpoint = "https://protectiondomain0103.us-east.backup-recovery-tests.cloud.ibm.com/v2"
 		connection_name = "%s"
 	  }
 	`, tenantId, connectionName)
@@ -71,6 +72,7 @@ func testAccCheckIbmBackupRecoveryDataSourceConnectionExists(resource string, ob
 		if err != nil {
 			return err
 		}
+		backupRecoveryClient.Service.Options.URL = "https://protectiondomain0103.us-east.backup-recovery-tests.cloud.ibm.com/v2"
 
 		getDataSourceConnectionsOptions := &backuprecoveryv1.GetDataSourceConnectionsOptions{}
 
@@ -95,6 +97,7 @@ func testAccCheckIbmBackupRecoveryDataSourceConnectionDestroy(s *terraform.State
 	if err != nil {
 		return err
 	}
+	backupRecoveryClient.Service.Options.URL = "https://protectiondomain0103.us-east.backup-recovery-tests.cloud.ibm.com/v2"
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "ibm_backup_recovery_data_source_connection" {
 			continue

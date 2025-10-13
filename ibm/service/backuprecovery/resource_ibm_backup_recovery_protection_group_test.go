@@ -25,7 +25,7 @@ func TestAccIbmBackupRecoveryProtectionGroupBasic(t *testing.T) {
 	includedPath := "/data2/data/"
 	includedPathUpdate := "/data1/"
 	protectionType := "kFile"
-	objectId := 18
+	objectId := 344
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -54,6 +54,7 @@ func TestAccIbmBackupRecoveryProtectionGroupBasic(t *testing.T) {
 func testAccCheckIbmBackupRecoveryProtectionGroupConfigBasic(name, environment, includedPath, protectionType, policyName string, objectId int) string {
 	return fmt.Sprintf(`
 			resource "ibm_backup_recovery_protection_policy" "baas_protection_policy_instance" {
+				backup_recovery_endpoint = "https://protectiondomain0103.us-east.backup-recovery-tests.cloud.ibm.com/v2"
 				x_ibm_tenant_id = "%s"
 				name = "%s"
 				backup_policy {
@@ -83,6 +84,7 @@ func testAccCheckIbmBackupRecoveryProtectionGroupConfigBasic(name, environment, 
 
 		resource "ibm_backup_recovery_protection_group" "baas_protection_group_instance" {
 			x_ibm_tenant_id = "%s"
+			backup_recovery_endpoint = "https://protectiondomain0103.us-east.backup-recovery-tests.cloud.ibm.com/v2"
 			policy_id = ibm_backup_recovery_protection_policy.baas_protection_policy_instance.policy_id
 			name = "%s"
 			environment = "%s"
@@ -113,6 +115,7 @@ func testAccCheckIbmBackupRecoveryProtectionGroupExists(n string, obj backupreco
 		if err != nil {
 			return err
 		}
+		backupRecoveryClient.Service.Options.URL = "https://protectiondomain0103.us-east.backup-recovery-tests.cloud.ibm.com/v2"
 
 		getProtectionGroupByIdOptions := &backuprecoveryv1.GetProtectionGroupByIdOptions{}
 
