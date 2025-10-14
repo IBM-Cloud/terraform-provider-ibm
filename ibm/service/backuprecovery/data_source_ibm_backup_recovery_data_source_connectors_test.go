@@ -45,7 +45,7 @@ func testAccCheckIbmBackupRecoveryDataSourceConnectorsDataSourceConfigBasic(data
 	return fmt.Sprintf(`
 		data "ibm_backup_recovery_data_source_connectors" "baas_data_source_connectors_instance" {
 			x_ibm_tenant_id = "%s"
-			backup_recovery_endpoint = "https://protectiondomain0103.us-east.backup-recovery-tests.cloud.ibm.com/v2"
+			
 			connection_id = "%s"
 		  }
 	`, tenantId, dataSourceConnectorConnectioID)

@@ -2048,6 +2048,21 @@ func Validator() validate.ValidatorDict {
 				"ibm_hpcs_vault":                               hpcs.ResourceIbmVaultValidator(),
 				"ibm_config_aggregator_settings":               configurationaggregator.ResourceIbmConfigAggregatorSettingsValidator(),
 
+				// BackupRecovery
+
+				"ibm_backup_recovery_agent_upgrade_task":                             backuprecovery.ResourceIbmBackupRecoveryAgentUpgradeTaskValidator(),
+				"ibm_backup_recovery_protection_group_run_request":                   backuprecovery.ResourceIbmBackupRecoveryUpdateProtectionGroupRunRequestValidator(),
+				"ibm_backup_recovery_data_source_connection":                         backuprecovery.ResourceIbmBackupRecoveryDataSourceConnectionValidator(),
+				"ibm_backup_recovery_data_source_connector_patch":                    backuprecovery.ResourceIbmBackupRecoveryDataSourceConnectorPatchValidator(),
+				"ibm_backup_recovery_download_files_folders":                         backuprecovery.ResourceIbmBackupRecoveryDownloadFilesFoldersValidator(),
+				"ibm_backup_recovery_restore_points":                                 backuprecovery.ResourceIbmBackupRecoveryRestorePointsValidator(),
+				"ibm_backup_recovery_perform_action_on_protection_group_run_request": backuprecovery.ResourceIbmBackupRecoveryPerformActionOnProtectionGroupRunRequestValidator(),
+				"ibm_backup_recovery_protection_group":                               backuprecovery.ResourceIbmBackupRecoveryProtectionGroupValidator(),
+				"ibm_backup_recovery_protection_policy":                              backuprecovery.ResourceIbmBackupRecoveryProtectionPolicyValidator(),
+				"ibm_backup_recovery":                                                backuprecovery.ResourceIbmBackupRecoveryValidator(),
+				"ibm_backup_recovery_source_registration":                            backuprecovery.ResourceIbmBackupRecoverySourceRegistrationValidator(),
+				"ibm_backup_recovery_update_protection_group_run_request":            backuprecovery.ResourceIbmBackupRecoveryUpdateProtectionGroupRunRequestValidator(),
+
 				// Cloudshell
 				"ibm_cloud_shell_account_settings": cloudshell.ResourceIBMCloudShellAccountSettingsValidator(),
 
@@ -2313,6 +2328,29 @@ func Validator() validate.ValidatorDict {
 				"ibm_resource_instance":             resourcecontroller.DataSourceIBMResourceInstanceValidator(),
 				"ibm_resource_key":                  resourcecontroller.DataSourceIBMResourceKeyValidator(),
 				"ibm_resource_group":                resourcemanager.DataSourceIBMResourceGroupValidator(),
+
+				// BackupAndRecovery
+				"ibm_backup_recovery_agent_upgrade_tasks":      backuprecovery.DataSourceIbmBackupRecoveryAgentUpgradeTasksValidator(),
+				"ibm_backup_recovery_download_agent":           backuprecovery.DataSourceIbmBackupRecoveryDownloadAgentValidator(),
+				"ibm_backup_recovery_search_indexed_object":    backuprecovery.DataSourceIbmBackupRecoverySearchIndexedObjectValidator(),
+				"ibm_backup_recovery_object_snapshots":         backuprecovery.DataSourceIbmBackupRecoveryObjectSnapshotsValidator(),
+				"ibm_backup_recovery_connectors_metadata":      backuprecovery.DataSourceIbmBackupRecoveryConnectorsMetadataValidator(),
+				"ibm_backup_recovery_data_source_connections":  backuprecovery.DataSourceIbmBackupRecoveryDataSourceConnectionsValidator(),
+				"ibm_backup_recovery_data_source_connectors":   backuprecovery.DataSourceIbmBackupRecoveryDataSourceConnectorsValidator(),
+				"ibm_backup_recovery_search_objects":           backuprecovery.DataSourceIbmBackupRecoverySearchObjectsValidator(),
+				"ibm_backup_recovery_search_protected_objects": backuprecovery.DataSourceIbmBackupRecoverySearchProtectedObjectsValidator(),
+				"ibm_backup_recovery_protection_group":         backuprecovery.DataSourceIbmBackupRecoveryProtectionGroupValidator(),
+				"ibm_backup_recovery_protection_groups":        backuprecovery.DataSourceIbmBackupRecoveryProtectionGroupsValidator(),
+				"ibm_backup_recovery_protection_group_runs":    backuprecovery.DataSourceIbmBackupRecoveryProtectionGroupRunsValidator(),
+				"ibm_backup_recovery_protection_policies":      backuprecovery.DataSourceIbmBackupRecoveryProtectionPoliciesValidator(),
+				"ibm_backup_recovery_protection_policy":        backuprecovery.DataSourceIbmBackupRecoveryProtectionPolicyValidator(),
+				"ibm_backup_recovery":                          backuprecovery.DataSourceIbmBackupRecoveryValidator(),
+				"ibm_backup_recoveries":                        backuprecovery.DataSourceIbmBackupRecoveriesValidator(),
+				"ibm_backup_recovery_download_files":           backuprecovery.DataSourceIbmBackupRecoveryDownloadFilesValidator(),
+				"ibm_backup_recovery_source_registrations":     backuprecovery.DataSourceIbmBackupRecoverySourceRegistrationsValidator(),
+				"ibm_backup_recovery_source_registration":      backuprecovery.DataSourceIbmBackupRecoverySourceRegistrationValidator(),
+				"ibm_backup_recovery_download_indexed_files":   backuprecovery.DataSourceIbmBackupRecoveryDownloadIndexedFilesValidator(),
+				"ibm_backup_recovery_protection_sources":       backuprecovery.DataSourceIbmBackupRecoveryProtectionSourcesValidator(),
 
 				// bare_metal_server
 				"ibm_is_bare_metal_server": vpc.DataSourceIBMIsBareMetalServerValidator(),

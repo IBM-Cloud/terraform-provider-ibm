@@ -70,7 +70,7 @@ func TestAccIbmBackupRecoverySourceRegistrationBasic(t *testing.T) {
 func testAccCheckIbmBackupRecoverySourceRegistrationConfigBasic(environment, applications, endpoint, hostType, physicalType string, connectionId string) string {
 	return fmt.Sprintf(`
 			resource "ibm_backup_recovery_source_registration" "baas_source_registration_instance" {
-				backup_recovery_endpoint = "https://protectiondomain0103.us-east.backup-recovery-tests.cloud.ibm.com/v2"
+				
 				x_ibm_tenant_id = "%s"
 				environment = "%s"
 				connection_id = "%s"

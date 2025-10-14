@@ -40,14 +40,14 @@ func testAccCheckIbmRecoveryDownloadFilesDataSourceConfigBasic(name string, obje
 	return fmt.Sprintf(`
 	data "ibm_backup_recovery_object_snapshots" "baas_object_snapshots_instance" {
 		x_ibm_tenant_id = "%s"
-		backup_recovery_endpoint = "https://protectiondomain0103.us-east.backup-recovery-tests.cloud.ibm.com/v2"
+		
 		object_id = %d
 	  }
 
 	resource "ibm_backup_recovery_download_files_folders" "baas_recovery_download_files_folders_instance" {
 		x_ibm_tenant_id = "%s"
 		name = "%s"
-		backup_recovery_endpoint = "https://protectiondomain0103.us-east.backup-recovery-tests.cloud.ibm.com/v2"
+		
 		object {
 		  snapshot_id = data.ibm_backup_recovery_object_snapshots.baas_object_snapshots_instance.snapshots[0].id
 		}
@@ -57,7 +57,7 @@ func testAccCheckIbmRecoveryDownloadFilesDataSourceConfigBasic(name string, obje
 	  }
 	  data "ibm_backup_recovery_download_files" "recovery_download_files_instance" {
 		x_ibm_tenant_id = "%[1]s"
-		backup_recovery_endpoint = "https://protectiondomain0103.us-east.backup-recovery-tests.cloud.ibm.com/v2"
+		
 		recovery_download_files_id = ibm_backup_recovery_download_files_folders.baas_recovery_download_files_folders_instance.id
 	}
 	`, tenantId, objectId, tenantId, name)

@@ -48,13 +48,13 @@ func testAccCheckIbmBackupRecoveryAgentUpgradeTasksDataSourceConfigBasic(name st
 		resource "ibm_backup_recovery_agent_upgrade_task" "baas_agent_upgrade_task_instance" {
 			x_ibm_tenant_id = "%s"
 			agent_ids = [%d]
-			backup_recovery_endpoint = "https://protectiondomain0103.us-east.backup-recovery-tests.cloud.ibm.com/v2"
+			
 			name = "%s"
 			description = "Includes Agents for Sources RHEL, Win Server and MS SQL"
 		}
 		data "ibm_backup_recovery_agent_upgrade_tasks" "baas_agent_upgrade_tasks_instance" {
 			x_ibm_tenant_id = "%[1]s"
-			backup_recovery_endpoint = "https://protectiondomain0103.us-east.backup-recovery-tests.cloud.ibm.com/v2"
+			
 			ids = [ibm_backup_recovery_agent_upgrade_task.baas_agent_upgrade_task_instance.id]
 		}
 	`, tenantId, agentId, name)

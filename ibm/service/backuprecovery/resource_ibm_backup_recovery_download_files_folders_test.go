@@ -47,14 +47,14 @@ func testAccCheckIbmBackupRecoveryDownloadFilesFoldersConfigBasic(name string, o
 	
 	data "ibm_backup_recovery_object_snapshots" "baas_object_snapshots_instance" {
 		x_ibm_tenant_id = "%s"
-		backup_recovery_endpoint = "https://protectiondomain0103.us-east.backup-recovery-tests.cloud.ibm.com/v2"
+		
 		object_id = %d
 	  }
 
 	resource "ibm_backup_recovery_download_files_folders" "baas_recovery_download_files_folders_instance" {
 		x_ibm_tenant_id = "%s"
 		name = "%s"
-		backup_recovery_endpoint = "https://protectiondomain0103.us-east.backup-recovery-tests.cloud.ibm.com/v2"
+		
 		object {
 		  snapshot_id = data.ibm_backup_recovery_object_snapshots.baas_object_snapshots_instance.snapshots[0].id
 		}
@@ -77,7 +77,6 @@ func testAccCheckIbmBackupRecoveryDownloadFilesFoldersExists(n string) resource.
 		if err != nil {
 			return err
 		}
-		backupRecoveryClient.Service.Options.URL = "https://protectiondomain0103.us-east.backup-recovery-tests.cloud.ibm.com/v2"
 
 		getDownloadFilesFromRecoveryOptionsOptions := &backuprecoveryv1.DownloadFilesFromRecoveryOptions{}
 

@@ -165,9 +165,10 @@ func ResourceIbmBackupRecoverySourceRegistration() *schema.Resource {
 				},
 			},
 			"backup_recovery_endpoint": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Endpoint for the BRS instance",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Description:  "Endpoint for the BRS instance",
+				ValidateFunc: validate.InvokeValidator("ibm_backup_recovery_source_registration", "backup_recovery_endpoint"),
 			},
 			"source_id": &schema.Schema{
 				Type:        schema.TypeInt,
@@ -1075,13 +1076,15 @@ func ResourceIbmBackupRecoverySourceRegistrationValidator() *validate.ResourceVa
 	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
-			Identifier:                 "environment",
-			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
+			Identifier:                 "backup_recovery_endpoint",
+			ValidateFunctionIdentifier: validate.ValidateRegexp,
 			Type:                       validate.TypeString,
-			Required:                   true,
-			AllowedValues:              "kPhysical, kSQL",
-		},
-	)
+			Optional:                   true,
+			// Regex: must start with http:// or https:// and contain at least one non-space after
+			Regexp:         `^(https?):\/\/[^\s/$.?#].[^\s]*$`,
+			MinValueLength: 1, // disallow empty if provided
+			MaxValueLength: 2048,
+		})
 
 	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_backup_recovery_source_registration", Schema: validateSchema}
 	return &resourceValidator
@@ -1187,10 +1190,8 @@ func resourceIbmBackupRecoverySourceRegistrationRead(context context.Context, d 
 	}
 
 	if _, ok := d.GetOk("backup_recovery_endpoint"); ok {
-		if d.Get("backup_recovery_endpoint").(string) != "" {
-			endpointURL := d.Get("backup_recovery_endpoint").(string)
-			backupRecoveryClient.Service.SetServiceURL(endpointURL)
-		}
+		endpointURL := d.Get("backup_recovery_endpoint").(string)
+		backupRecoveryClient.Service.SetServiceURL(endpointURL)
 	}
 	getProtectionSourceRegistrationOptions := &backuprecoveryv1.GetProtectionSourceRegistrationOptions{}
 
@@ -1211,6 +1212,12 @@ func resourceIbmBackupRecoverySourceRegistrationRead(context context.Context, d 
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetProtectionSourceRegistrationWithContext failed: %s", err.Error()), "ibm_backup_recovery_source_registration", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
+	}
+
+	if endpoint, ok := d.GetOk("backup_recovery_endpoint"); ok {
+		if err := d.Set("backup_recovery_endpoint", endpoint); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting backup_recovery_endpoint: %s", err), "(Resource) ibm_backup_recovery_source_registration", "read", "set-backup-recovery-endpoint").GetDiag()
+		}
 	}
 
 	if err = d.Set("environment", sourceRegistrationReponseParams.Environment); err != nil {
@@ -1352,10 +1359,8 @@ func resourceIbmBackupRecoverySourceRegistrationUpdate(context context.Context, 
 	}
 
 	if _, ok := d.GetOk("backup_recovery_endpoint"); ok {
-		if d.Get("backup_recovery_endpoint").(string) != "" {
-			endpointURL := d.Get("backup_recovery_endpoint").(string)
-			backupRecoveryClient.Service.SetServiceURL(endpointURL)
-		}
+		endpointURL := d.Get("backup_recovery_endpoint").(string)
+		backupRecoveryClient.Service.SetServiceURL(endpointURL)
 	}
 
 	tenantId := d.Get("x_ibm_tenant_id").(string)
@@ -1507,10 +1512,8 @@ func resourceIbmBackupRecoverySourceRegistrationDelete(context context.Context, 
 		return tfErr.GetDiag()
 	}
 	if _, ok := d.GetOk("backup_recovery_endpoint"); ok {
-		if d.Get("backup_recovery_endpoint").(string) != "" {
-			endpointURL := d.Get("backup_recovery_endpoint").(string)
-			backupRecoveryClient.Service.SetServiceURL(endpointURL)
-		}
+		endpointURL := d.Get("backup_recovery_endpoint").(string)
+		backupRecoveryClient.Service.SetServiceURL(endpointURL)
 	}
 
 	deleteProtectionSourceRegistrationOptions := &backuprecoveryv1.DeleteProtectionSourceRegistrationOptions{}

@@ -48,9 +48,10 @@ func ResourceIbmBackupRecoveryProtectionGroup() *schema.Resource {
 				Description: "Specifies the unique id of the Protection Policy associated with the Protection Group. The Policy provides retry settings Protection Schedules, Priority, SLA, etc.",
 			},
 			"backup_recovery_endpoint": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Endpoint for the BRS instance",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Description:  "Endpoint for the BRS instance",
+				ValidateFunc: validate.InvokeValidator("ibm_backup_recovery_protection_group", "backup_recovery_endpoint"),
 			},
 			"group_id": &schema.Schema{
 				Type:        schema.TypeString,
@@ -5082,27 +5083,15 @@ func ResourceIbmBackupRecoveryProtectionGroupValidator() *validate.ResourceValid
 	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
-			Identifier:                 "priority",
-			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
+			Identifier:                 "backup_recovery_endpoint",
+			ValidateFunctionIdentifier: validate.ValidateRegexp,
 			Type:                       validate.TypeString,
 			Optional:                   true,
-			AllowedValues:              "kHigh, kLow, kMedium",
-		},
-		validate.ValidateSchema{
-			Identifier:                 "qos_policy",
-			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
-			Type:                       validate.TypeString,
-			Optional:                   true,
-			AllowedValues:              "kBackupAll, kBackupHDD, kBackupSSD, kTestAndDevHigh",
-		},
-		validate.ValidateSchema{
-			Identifier:                 "environment",
-			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
-			Type:                       validate.TypeString,
-			Required:                   true,
-			AllowedValues:              "kPhysical, kSQL",
-		},
-	)
+			// Regex: must start with http:// or https:// and contain at least one non-space after
+			Regexp:         `^(https?):\/\/[^\s/$.?#].[^\s]*$`,
+			MinValueLength: 1, // disallow empty if provided
+			MaxValueLength: 2048,
+		})
 
 	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_backup_recovery_protection_group", Schema: validateSchema}
 	return &resourceValidator
@@ -5117,10 +5106,8 @@ func resourceIbmBackupRecoveryProtectionGroupCreate(context context.Context, d *
 	}
 
 	if _, ok := d.GetOk("backup_recovery_endpoint"); ok {
-		if d.Get("backup_recovery_endpoint").(string) != "" {
-			endpointURL := d.Get("backup_recovery_endpoint").(string)
-			backupRecoveryClient.Service.SetServiceURL(endpointURL)
-		}
+		endpointURL := d.Get("backup_recovery_endpoint").(string)
+		backupRecoveryClient.Service.SetServiceURL(endpointURL)
 	}
 
 	createProtectionGroupOptions := &backuprecoveryv1.CreateProtectionGroupOptions{}
@@ -5228,10 +5215,8 @@ func resourceIbmBackupRecoveryProtectionGroupRead(context context.Context, d *sc
 	}
 
 	if _, ok := d.GetOk("backup_recovery_endpoint"); ok {
-		if d.Get("backup_recovery_endpoint").(string) != "" {
-			endpointURL := d.Get("backup_recovery_endpoint").(string)
-			backupRecoveryClient.Service.SetServiceURL(endpointURL)
-		}
+		endpointURL := d.Get("backup_recovery_endpoint").(string)
+		backupRecoveryClient.Service.SetServiceURL(endpointURL)
 	}
 
 	getProtectionGroupByIdOptions := &backuprecoveryv1.GetProtectionGroupByIdOptions{}
@@ -5255,6 +5240,11 @@ func resourceIbmBackupRecoveryProtectionGroupRead(context context.Context, d *sc
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetProtectionGroupByIDWithContext failed: %s", err.Error()), "ibm_backup_recovery_protection_group", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
+	}
+	if endpoint, ok := d.GetOk("backup_recovery_endpoint"); ok {
+		if err := d.Set("backup_recovery_endpoint", endpoint); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting backup_recovery_endpoint: %s", err), "(Resource) ibm_backup_recovery_protection_group", "read", "set-backup-recovery-endpoint").GetDiag()
+		}
 	}
 
 	if err = d.Set("name", protectionGroupResponse.Name); err != nil {
@@ -5508,10 +5498,8 @@ func resourceIbmBackupRecoveryProtectionGroupUpdate(context context.Context, d *
 		return tfErr.GetDiag()
 	}
 	if _, ok := d.GetOk("backup_recovery_endpoint"); ok {
-		if d.Get("backup_recovery_endpoint").(string) != "" {
-			endpointURL := d.Get("backup_recovery_endpoint").(string)
-			backupRecoveryClient.Service.SetServiceURL(endpointURL)
-		}
+		endpointURL := d.Get("backup_recovery_endpoint").(string)
+		backupRecoveryClient.Service.SetServiceURL(endpointURL)
 	}
 
 	updateProtectionGroupOptions := &backuprecoveryv1.UpdateProtectionGroupOptions{}
@@ -5624,10 +5612,8 @@ func resourceIbmBackupRecoveryProtectionGroupDelete(context context.Context, d *
 		return tfErr.GetDiag()
 	}
 	if _, ok := d.GetOk("backup_recovery_endpoint"); ok {
-		if d.Get("backup_recovery_endpoint").(string) != "" {
-			endpointURL := d.Get("backup_recovery_endpoint").(string)
-			backupRecoveryClient.Service.SetServiceURL(endpointURL)
-		}
+		endpointURL := d.Get("backup_recovery_endpoint").(string)
+		backupRecoveryClient.Service.SetServiceURL(endpointURL)
 	}
 
 	deleteProtectionGroupOptions := &backuprecoveryv1.DeleteProtectionGroupOptions{}

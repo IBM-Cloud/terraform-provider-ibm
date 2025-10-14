@@ -18,6 +18,7 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 )
@@ -33,9 +34,10 @@ func DataSourceIbmBackupRecoveryProtectionSources() *schema.Resource {
 				Description: "Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified.",
 			},
 			"backup_recovery_endpoint": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Endpoint for the BRS instance",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Description:  "Endpoint for the BRS instance",
+				ValidateFunc: validate.InvokeDataSourceValidator("ibm_backup_recovery_protection_sources", "backup_recovery_endpoint"),
 			},
 			"exclude_office365_types": &schema.Schema{
 				Type:        schema.TypeList,
@@ -22058,6 +22060,24 @@ func DataSourceIbmBackupRecoveryProtectionSources() *schema.Resource {
 	}
 }
 
+func DataSourceIbmBackupRecoveryProtectionSourcesValidator() *validate.ResourceValidator {
+	validateSchema := make([]validate.ValidateSchema, 0)
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "backup_recovery_endpoint",
+			ValidateFunctionIdentifier: validate.ValidateRegexp,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			// Regex: must start with http:// or https:// and contain at least one non-space after
+			Regexp:         `^(https?):\/\/[^\s/$.?#].[^\s]*$`,
+			MinValueLength: 1, // disallow empty if provided
+			MaxValueLength: 2048,
+		})
+
+	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_backup_recovery_protection_sources", Schema: validateSchema}
+	return &resourceValidator
+}
+
 func dataSourceIbmBackupRecoveryProtectionSourcesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
@@ -22066,10 +22086,8 @@ func dataSourceIbmBackupRecoveryProtectionSourcesRead(context context.Context, d
 		return tfErr.GetDiag()
 	}
 	if _, ok := d.GetOk("backup_recovery_endpoint"); ok {
-		if d.Get("backup_recovery_endpoint").(string) != "" {
-			endpointURL := d.Get("backup_recovery_endpoint").(string)
-			backupRecoveryClient.Service.SetServiceURL(endpointURL)
-		}
+		endpointURL := d.Get("backup_recovery_endpoint").(string)
+		backupRecoveryClient.Service.SetServiceURL(endpointURL)
 	}
 
 	listProtectionSourcesOptions := &backuprecoveryv1.ListProtectionSourcesOptions{}
@@ -22217,7 +22235,7 @@ func dataSourceIbmBackupRecoveryProtectionSourcesRead(context context.Context, d
 			}
 			protectionSources = append(protectionSources, protectionSourcesItemMap)
 		}
-		fmt.Println("protectionSources....", protectionSources)
+
 		if err = d.Set("protection_sources", protectionSources); err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting protection_sources: %s", err), "(Data) ibm_backup_recovery_protection_sources", "read", "set-protection_sources").GetDiag()
 		}
@@ -22493,7 +22511,6 @@ func DataSourceIbmBackupRecoveryProtectionSourcesProtectionSourceNodeToMap(model
 		modelMap["environment"] = *model.Environment
 	}
 	if model.ID != nil {
-		fmt.Println("ps id...: ", flex.IntValue(model.ID))
 		modelMap["id"] = flex.IntValue(model.ID)
 	}
 	if model.Name != nil {

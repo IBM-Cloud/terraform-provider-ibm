@@ -38,14 +38,14 @@ func testAccCheckIbmBackupRecoveryDownloadIndexedFilesDataSourceConfigBasic(obje
 	return fmt.Sprintf(`
 		data "ibm_backup_recovery_object_snapshots" "baas_object_snapshots_instance" {
 			x_ibm_tenant_id = "%s"
-			backup_recovery_endpoint = "https://protectiondomain0103.us-east.backup-recovery-tests.cloud.ibm.com/v2"
+			
 			object_id = %d
 		}
 
 		data "ibm_backup_recovery_download_indexed_files" "baas_download_indexed_files_instance" {
 			x_ibm_tenant_id = "%s"
 			snapshots_id = data.ibm_backup_recovery_object_snapshots.baas_object_snapshots_instance.snapshots.0.id
-			backup_recovery_endpoint = "https://protectiondomain0103.us-east.backup-recovery-tests.cloud.ibm.com/v2"
+			
 			file_path = "/mnt"
 		}
 	`, tenantId, objectId, tenantId)

@@ -60,7 +60,7 @@ func testAccCheckIbmBackupRecoveryObjectSnapshotsDataSourceConfigBasic(objectId 
 	data "ibm_backup_recovery_object_snapshots" "baas_object_snapshots_instance" {
 		x_ibm_tenant_id = "%s"
 		object_id = %d
-		backup_recovery_endpoint = "https://protectiondomain0103.us-east.backup-recovery-tests.cloud.ibm.com/v2"
+		
 	  }
 	`, tenantId, objectId)
 }

@@ -39,9 +39,10 @@ func ResourceIbmBackupRecoveryDownloadFilesFolders() *schema.Resource {
 				Description: "Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified.",
 			},
 			"backup_recovery_endpoint": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Endpoint for the BRS instance",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Description:  "Endpoint for the BRS instance",
+				ValidateFunc: validate.InvokeValidator("ibm_cos_bucket", "backup_recovery_endpoint"),
 			},
 			"documents": &schema.Schema{
 				Type:        schema.TypeList,
@@ -2877,7 +2878,16 @@ func ResourceIbmBackupRecoveryDownloadFilesFoldersValidator() *validate.Resource
 			Optional:                   true,
 			AllowedValues:              "kExpeditedNoPCU, kExpeditedWithPCU, kStandard",
 		},
-	)
+		validate.ValidateSchema{
+			Identifier:                 "backup_recovery_endpoint",
+			ValidateFunctionIdentifier: validate.ValidateRegexp,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			// Regex: must start with http:// or https:// and contain at least one non-space after
+			Regexp:         `^(https?):\/\/[^\s/$.?#].[^\s]*$`,
+			MinValueLength: 1, // disallow empty if provided
+			MaxValueLength: 2048,
+		})
 
 	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_backup_recovery_recovery_download_files_folders", Schema: validateSchema}
 	return &resourceValidator
@@ -2891,10 +2901,8 @@ func resourceIbmBackupRecoveryDownloadFilesFoldersCreate(context context.Context
 		return tfErr.GetDiag()
 	}
 	if _, ok := d.GetOk("backup_recovery_endpoint"); ok {
-		if d.Get("backup_recovery_endpoint").(string) != "" {
-			endpointURL := d.Get("backup_recovery_endpoint").(string)
-			backupRecoveryClient.Service.SetServiceURL(endpointURL)
-		}
+		endpointURL := d.Get("backup_recovery_endpoint").(string)
+		backupRecoveryClient.Service.SetServiceURL(endpointURL)
 	}
 
 	createDownloadFilesAndFoldersRecoveryOptions := &backuprecoveryv1.CreateDownloadFilesAndFoldersRecoveryOptions{}
@@ -2955,10 +2963,8 @@ func resourceIbmBackupRecoveryDownloadFilesFoldersRead(context context.Context, 
 		return tfErr.GetDiag()
 	}
 	if _, ok := d.GetOk("backup_recovery_endpoint"); ok {
-		if d.Get("backup_recovery_endpoint").(string) != "" {
-			endpointURL := d.Get("backup_recovery_endpoint").(string)
-			backupRecoveryClient.Service.SetServiceURL(endpointURL)
-		}
+		endpointURL := d.Get("backup_recovery_endpoint").(string)
+		backupRecoveryClient.Service.SetServiceURL(endpointURL)
 	}
 
 	getRecoveryByIdOptions := &backuprecoveryv1.GetRecoveryByIdOptions{}
@@ -2978,6 +2984,12 @@ func resourceIbmBackupRecoveryDownloadFilesFoldersRead(context context.Context, 
 	}
 
 	d.SetId(*getRecoveryByIdOptions.ID)
+
+	if endpoint, ok := d.GetOk("backup_recovery_endpoint"); ok {
+		if err := d.Set("backup_recovery_endpoint", endpoint); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting backup_recovery_endpoint: %s", err), "(Resource) ibm_backup_recovery_recovery_download_files_folders", "read", "set-backup-recovery-endpoint").GetDiag()
+		}
+	}
 
 	if !core.IsNil(recovery.Name) {
 		if err = d.Set("recovery_name", recovery.Name); err != nil {

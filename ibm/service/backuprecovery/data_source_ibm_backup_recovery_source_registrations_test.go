@@ -63,7 +63,7 @@ func testAccCheckIbmBackupRecoverySourceRegistrationsDataSourceConfigBasic(objec
 	return fmt.Sprintf(`
 
 			data "ibm_backup_recovery_source_registrations" "baas_source_registrations_instance" {
-				backup_recovery_endpoint = "https://protectiondomain0103.us-east.backup-recovery-tests.cloud.ibm.com/v2"
+				
 				ids = [%d]
 				x_ibm_tenant_id = "%s"
 			}

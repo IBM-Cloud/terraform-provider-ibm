@@ -43,7 +43,7 @@ func testAccCheckIbmBackupRecoveryAgentUpgradeTaskConfigBasic(name string, agent
 	return fmt.Sprintf(`
 		resource "ibm_backup_recovery_agent_upgrade_task" "baas_agent_upgrade_task_instance" {
 			x_ibm_tenant_id = "%s"
-			backup_recovery_endpoint = "https://protectiondomain0103.us-east.backup-recovery-tests.cloud.ibm.com/v2"
+			
 			agent_ids = [%d]
 			name = "%s"
 		}
@@ -62,7 +62,6 @@ func testAccCheckIbmBackupRecoveryAgentUpgradeTaskExists(n string, obj backuprec
 		if err != nil {
 			return err
 		}
-		backupRecoveryClient.Service.Options.URL = "https://protectiondomain0103.us-east.backup-recovery-tests.cloud.ibm.com/v2"
 
 		getUpgradeTasksOptions := &backuprecoveryv1.GetUpgradeTasksOptions{}
 		taskId, _ := strconv.Atoi(rs.Primary.ID)

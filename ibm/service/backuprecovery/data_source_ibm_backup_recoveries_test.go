@@ -51,14 +51,14 @@ func testAccCheckIbmBackupRecoveriesDataSourceConfigBasic(objectId int, name, sn
 
 	data "ibm_backup_recovery_object_snapshots" "object_snapshot" {
 		x_ibm_tenant_id = "%s"
-		backup_recovery_endpoint = "https://protectiondomain0103.us-east.backup-recovery-tests.cloud.ibm.com/v2"
+		
 		object_id = %d
 	  }
 
 	resource "ibm_backup_recovery" "baas_recovery_instance" {
 		x_ibm_tenant_id = "%s"
 		snapshot_environment = "%s"
-		backup_recovery_endpoint = "https://protectiondomain0103.us-east.backup-recovery-tests.cloud.ibm.com/v2"
+		
 		name = "%s"
 		physical_params {
 		  recovery_action = "%s"
@@ -83,7 +83,7 @@ func testAccCheckIbmBackupRecoveriesDataSourceConfigBasic(objectId int, name, sn
 
 	  data "ibm_backup_recoveries" "baas_recoveries_instance" {
 		x_ibm_tenant_id = "%[1]s"
-		backup_recovery_endpoint = "https://protectiondomain0103.us-east.backup-recovery-tests.cloud.ibm.com/v2"
+		
 		ids = [ ibm_backup_recovery.baas_recovery_instance.recovery_id ]
 	}
 	`, tenantId, objectId, tenantId, snapshotEnvironment, name, recoveryAction, targetenvironment, absolutePath, objectId, restoreEntityType, absolutePath)

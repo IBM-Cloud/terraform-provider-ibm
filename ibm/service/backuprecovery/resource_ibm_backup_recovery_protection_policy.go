@@ -1207,9 +1207,10 @@ func ResourceIbmBackupRecoveryProtectionPolicy() *schema.Resource {
 				Description: "Specifies the description of the Protection Policy.",
 			},
 			"backup_recovery_endpoint": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Endpoint for the BRS instance",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Description:  "Endpoint for the BRS instance",
+				ValidateFunc: validate.InvokeValidator("ibm_backup_recovery_protection_policy", "backup_recovery_endpoint"),
 			},
 			"blackout_window": &schema.Schema{
 				Type:        schema.TypeList,
@@ -4209,13 +4210,15 @@ func ResourceIbmBackupRecoveryProtectionPolicyValidator() *validate.ResourceVali
 	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
-			Identifier:                 "data_lock",
-			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
+			Identifier:                 "backup_recovery_endpoint",
+			ValidateFunctionIdentifier: validate.ValidateRegexp,
 			Type:                       validate.TypeString,
 			Optional:                   true,
-			AllowedValues:              "Administrative, Compliance",
-		},
-	)
+			// Regex: must start with http:// or https:// and contain at least one non-space after
+			Regexp:         `^(https?):\/\/[^\s/$.?#].[^\s]*$`,
+			MinValueLength: 1, // disallow empty if provided
+			MaxValueLength: 2048,
+		})
 
 	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_backup_recovery_protection_policy", Schema: validateSchema}
 	return &resourceValidator
@@ -4229,10 +4232,8 @@ func resourceIbmBackupRecoveryProtectionPolicyCreate(context context.Context, d 
 		return tfErr.GetDiag()
 	}
 	if _, ok := d.GetOk("backup_recovery_endpoint"); ok {
-		if d.Get("backup_recovery_endpoint").(string) != "" {
-			endpointURL := d.Get("backup_recovery_endpoint").(string)
-			backupRecoveryClient.Service.SetServiceURL(endpointURL)
-		}
+		endpointURL := d.Get("backup_recovery_endpoint").(string)
+		backupRecoveryClient.Service.SetServiceURL(endpointURL)
 	}
 
 	tenantId := d.Get("x_ibm_tenant_id").(string)
@@ -4341,16 +4342,12 @@ func resourceIbmBackupRecoveryProtectionPolicyRead(context context.Context, d *s
 		return tfErr.GetDiag()
 	}
 	if _, ok := d.GetOk("backup_recovery_endpoint"); ok {
-		if d.Get("backup_recovery_endpoint").(string) != "" {
-			endpointURL := d.Get("backup_recovery_endpoint").(string)
-			backupRecoveryClient.Service.SetServiceURL(endpointURL)
-		}
+		endpointURL := d.Get("backup_recovery_endpoint").(string)
+		backupRecoveryClient.Service.SetServiceURL(endpointURL)
 	}
 	if _, ok := d.GetOk("backup_recovery_endpoint"); ok {
-		if d.Get("backup_recovery_endpoint").(string) != "" {
-			endpointURL := d.Get("backup_recovery_endpoint").(string)
-			backupRecoveryClient.Service.SetServiceURL(endpointURL)
-		}
+		endpointURL := d.Get("backup_recovery_endpoint").(string)
+		backupRecoveryClient.Service.SetServiceURL(endpointURL)
 	}
 
 	getProtectionPolicyByIdOptions := &backuprecoveryv1.GetProtectionPolicyByIdOptions{}
@@ -4367,6 +4364,12 @@ func resourceIbmBackupRecoveryProtectionPolicyRead(context context.Context, d *s
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetProtectionPolicyByIDWithContext failed: %s", err.Error()), "ibm_backup_recovery_protection_policy", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
+	}
+
+	if endpoint, ok := d.GetOk("backup_recovery_endpoint"); ok {
+		if err := d.Set("backup_recovery_endpoint", endpoint); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting backup_recovery_endpoint: %s", err), "(Resource) ibm_backup_recovery_protection_policy", "read", "set-backup-recovery-endpoint").GetDiag()
+		}
 	}
 
 	if err = d.Set("x_ibm_tenant_id", tenantId); err != nil {
@@ -4526,10 +4529,8 @@ func resourceIbmBackupRecoveryProtectionPolicyUpdate(context context.Context, d 
 		return tfErr.GetDiag()
 	}
 	if _, ok := d.GetOk("backup_recovery_endpoint"); ok {
-		if d.Get("backup_recovery_endpoint").(string) != "" {
-			endpointURL := d.Get("backup_recovery_endpoint").(string)
-			backupRecoveryClient.Service.SetServiceURL(endpointURL)
-		}
+		endpointURL := d.Get("backup_recovery_endpoint").(string)
+		backupRecoveryClient.Service.SetServiceURL(endpointURL)
 	}
 
 	tenantId := d.Get("x_ibm_tenant_id").(string)
@@ -4636,10 +4637,8 @@ func resourceIbmBackupRecoveryProtectionPolicyDelete(context context.Context, d 
 		return tfErr.GetDiag()
 	}
 	if _, ok := d.GetOk("backup_recovery_endpoint"); ok {
-		if d.Get("backup_recovery_endpoint").(string) != "" {
-			endpointURL := d.Get("backup_recovery_endpoint").(string)
-			backupRecoveryClient.Service.SetServiceURL(endpointURL)
-		}
+		endpointURL := d.Get("backup_recovery_endpoint").(string)
+		backupRecoveryClient.Service.SetServiceURL(endpointURL)
 	}
 
 	tenantId := d.Get("x_ibm_tenant_id").(string)

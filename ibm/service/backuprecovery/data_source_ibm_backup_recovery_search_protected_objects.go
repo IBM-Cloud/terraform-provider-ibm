@@ -18,6 +18,7 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 )
@@ -43,9 +44,10 @@ func DataSourceIbmBackupRecoverySearchProtectedObjects() *schema.Resource {
 				Description: "Specifies the search string to filter the objects. This search string will be applicable for objectnames and Protection Group names. User can specify a wildcard character '*' as a suffix to a string where all object and their Protection Group names are matched with the prefix string. For example, if vm1 and vm2 are the names of objects, user can specify vm* to list the objects. If not specified, then all the objects with Protection Groups will be returned which will match other filtering criteria.",
 			},
 			"backup_recovery_endpoint": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Endpoint for the BRS instance",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Description:  "Endpoint for the BRS instance",
+				ValidateFunc: validate.InvokeDataSourceValidator("ibm_backup_recovery_search_protected_objects", "backup_recovery_endpoint"),
 			},
 			"environments": &schema.Schema{
 				Type:        schema.TypeList,
@@ -1289,6 +1291,24 @@ func DataSourceIbmBackupRecoverySearchProtectedObjects() *schema.Resource {
 	}
 }
 
+func DataSourceIbmBackupRecoverySearchProtectedObjectsValidator() *validate.ResourceValidator {
+	validateSchema := make([]validate.ValidateSchema, 0)
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "backup_recovery_endpoint",
+			ValidateFunctionIdentifier: validate.ValidateRegexp,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			// Regex: must start with http:// or https:// and contain at least one non-space after
+			Regexp:         `^(https?):\/\/[^\s/$.?#].[^\s]*$`,
+			MinValueLength: 1, // disallow empty if provided
+			MaxValueLength: 2048,
+		})
+
+	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_backup_recovery_search_protected_objects", Schema: validateSchema}
+	return &resourceValidator
+}
+
 func dataSourceIbmBackupRecoverySearchProtectedObjectsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
@@ -1298,10 +1318,8 @@ func dataSourceIbmBackupRecoverySearchProtectedObjectsRead(context context.Conte
 	}
 
 	if _, ok := d.GetOk("backup_recovery_endpoint"); ok {
-		if d.Get("backup_recovery_endpoint").(string) != "" {
-			endpointURL := d.Get("backup_recovery_endpoint").(string)
-			backupRecoveryClient.Service.SetServiceURL(endpointURL)
-		}
+		endpointURL := d.Get("backup_recovery_endpoint").(string)
+		backupRecoveryClient.Service.SetServiceURL(endpointURL)
 	}
 
 	searchProtectedObjectsOptions := &backuprecoveryv1.SearchProtectedObjectsOptions{}

@@ -64,7 +64,7 @@ func testAccCheckIbmBackupRecoveryDownloadAgentDataSourceConfigBasic(filePath st
 	return fmt.Sprintf(`
 		data "ibm_backup_recovery_download_agent" "baas_download_agent_instance" {
 			x_ibm_tenant_id = "%s"
-			backup_recovery_endpoint = "https://protectiondomain0103.us-east.backup-recovery-tests.cloud.ibm.com/v2"
+			
 			platform = "kWindows"
 			file_path = "%s"
 		}

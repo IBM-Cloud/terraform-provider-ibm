@@ -51,13 +51,13 @@ func testAccCheckIbmBackupRecoveryProtectionGroupRunsDataSourceConfigBasic(group
 	return fmt.Sprintf(`
 	data "ibm_backup_recovery_protection_groups" "ibm_backup_recovery_protection_groups_instance" {
 		x_ibm_tenant_id = "%s"
-		backup_recovery_endpoint = "https://protectiondomain0103.us-east.backup-recovery-tests.cloud.ibm.com/v2"
+		
 		names = ["%s"]
 	}
 
 	data "ibm_backup_recovery_protection_group_runs" "baas_protection_group_runs_instance" {
 		x_ibm_tenant_id = "%[1]s"
-		backup_recovery_endpoint = "https://protectiondomain0103.us-east.backup-recovery-tests.cloud.ibm.com/v2"
+		
 		protection_group_id = data.ibm_backup_recovery_protection_groups.ibm_backup_recovery_protection_groups_instance.protection_groups.0.id
 	}
 	`, tenantId, groupName)
