@@ -1,5 +1,9 @@
-// Copyright IBM Corp. 2023 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
+
+/*
+ * IBM OpenAPI Terraform Generator Version: 3.98.0-8be2046a-20241205-162752
+ */
 
 package iamidentity
 
@@ -357,7 +361,9 @@ func DataSourceIBMTrustedProfileTemplateAssignment() *schema.Resource {
 func dataSourceIBMTrustedProfileTemplateAssignmentRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamIdentityClient, err := meta.(conns.ClientSession).IAMIdentityV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_iam_trusted_profile_template_assignment", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	getTrustedProfileAssignmentOptions := &iamidentityv1.GetTrustedProfileAssignmentOptions{}
@@ -367,10 +373,11 @@ func dataSourceIBMTrustedProfileTemplateAssignmentRead(context context.Context, 
 		getTrustedProfileAssignmentOptions.SetIncludeHistory(d.Get("include_history").(bool))
 	}
 
-	templateAssignmentResponse, response, err := iamIdentityClient.GetTrustedProfileAssignmentWithContext(context, getTrustedProfileAssignmentOptions)
+	templateAssignmentResponse, _, err := iamIdentityClient.GetTrustedProfileAssignmentWithContext(context, getTrustedProfileAssignmentOptions)
 	if err != nil {
-		log.Printf("[DEBUG] GetTrustedProfileAssignmentWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetTrustedProfileAssignmentWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetTrustedProfileAssignmentWithContext failed: %s", err.Error()), "(Data) ibm_iam_trusted_profile_template_assignment", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(fmt.Sprintf("%s", *getTrustedProfileAssignmentOptions.AssignmentID))
@@ -379,40 +386,40 @@ func dataSourceIBMTrustedProfileTemplateAssignmentRead(context context.Context, 
 	if templateAssignmentResponse.Context != nil {
 		modelMap, err := dataSourceIBMAccountSettingsTemplateAssignmentResponseContextToMap(templateAssignmentResponse.Context)
 		if err != nil {
-			return diag.FromErr(err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_iam_trusted_profile_template_assignment", "read", "context-to-map").GetDiag()
 		}
 		respContext = append(respContext, modelMap)
 	}
 	if err = d.Set("context", respContext); err != nil {
-		return diag.FromErr(fmt.Errorf("error setting context %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting context: %s", err), "(Data) ibm_iam_trusted_profile_template_assignment", "read", "set-context").GetDiag()
 	}
 
 	if err = d.Set("id", templateAssignmentResponse.ID); err != nil {
-		return diag.FromErr(fmt.Errorf("error setting id: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting id: %s", err), "(Data) ibm_iam_trusted_profile_template_assignment", "read", "set-id").GetDiag()
 	}
 
 	if err = d.Set("account_id", templateAssignmentResponse.AccountID); err != nil {
-		return diag.FromErr(fmt.Errorf("error setting account_id: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting account_id: %s", err), "(Data) ibm_iam_trusted_profile_template_assignment", "read", "set-account_id").GetDiag()
 	}
 
 	if err = d.Set("template_id", templateAssignmentResponse.TemplateID); err != nil {
-		return diag.FromErr(fmt.Errorf("error setting template_id: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting template_id: %s", err), "(Data) ibm_iam_trusted_profile_template_assignment", "read", "set-template_id").GetDiag()
 	}
 
 	if err = d.Set("template_version", flex.IntValue(templateAssignmentResponse.TemplateVersion)); err != nil {
-		return diag.FromErr(fmt.Errorf("error setting template_version: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting template_version: %s", err), "(Data) ibm_iam_trusted_profile_template_assignment", "read", "set-template_version").GetDiag()
 	}
 
 	if err = d.Set("target_type", templateAssignmentResponse.TargetType); err != nil {
-		return diag.FromErr(fmt.Errorf("error setting target_type: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting target_type: %s", err), "(Data) ibm_iam_trusted_profile_template_assignment", "read", "set-target_type").GetDiag()
 	}
 
 	if err = d.Set("target", templateAssignmentResponse.Target); err != nil {
-		return diag.FromErr(fmt.Errorf("error setting target: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting target: %s", err), "(Data) ibm_iam_trusted_profile_template_assignment", "read", "set-target").GetDiag()
 	}
 
 	if err = d.Set("status", templateAssignmentResponse.Status); err != nil {
-		return diag.FromErr(fmt.Errorf("error setting status: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting status: %s", err), "(Data) ibm_iam_trusted_profile_template_assignment", "read", "set-status").GetDiag()
 	}
 
 	var resources []map[string]interface{}
@@ -420,13 +427,13 @@ func dataSourceIBMTrustedProfileTemplateAssignmentRead(context context.Context, 
 		for _, modelItem := range templateAssignmentResponse.Resources {
 			modelMap, err := dataSourceIBMTrustedProfileTemplateAssignmentTemplateAssignmentResponseResourceToMap(&modelItem)
 			if err != nil {
-				return diag.FromErr(err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_iam_trusted_profile_template_assignment", "read", "resources-to-map").GetDiag()
 			}
 			resources = append(resources, modelMap)
 		}
 	}
 	if err = d.Set("resources", resources); err != nil {
-		return diag.FromErr(fmt.Errorf("error setting resources %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting status: %s", err), "(Data) ibm_iam_trusted_profile_template_assignment", "read", "set-status").GetDiag()
 	}
 
 	var history []map[string]interface{}
@@ -434,37 +441,37 @@ func dataSourceIBMTrustedProfileTemplateAssignmentRead(context context.Context, 
 		for _, modelItem := range templateAssignmentResponse.History {
 			modelMap, err := dataSourceIBMTrustedProfileTemplateAssignmentEnityHistoryRecordToMap(&modelItem)
 			if err != nil {
-				return diag.FromErr(err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_iam_trusted_profile_template_assignment", "read", "history-to-map").GetDiag()
 			}
 			history = append(history, modelMap)
 		}
 	}
 	if err = d.Set("history", history); err != nil {
-		return diag.FromErr(fmt.Errorf("error setting history %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting history: %s", err), "(Data) ibm_iam_trusted_profile_template_assignment", "read", "set-history").GetDiag()
 	}
 
 	if err = d.Set("href", templateAssignmentResponse.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("error setting href: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting href: %s", err), "(Data) ibm_iam_trusted_profile_template_assignment", "read", "set-href").GetDiag()
 	}
 
 	if err = d.Set("created_at", templateAssignmentResponse.CreatedAt); err != nil {
-		return diag.FromErr(fmt.Errorf("error setting created_at: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting created_at: %s", err), "(Data) ibm_iam_trusted_profile_template_assignment", "read", "set-created_at").GetDiag()
 	}
 
 	if err = d.Set("created_by_id", templateAssignmentResponse.CreatedByID); err != nil {
-		return diag.FromErr(fmt.Errorf("error setting created_by_id: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting created_by_id: %s", err), "(Data) ibm_iam_trusted_profile_template_assignment", "read", "set-created_by_id").GetDiag()
 	}
 
 	if err = d.Set("last_modified_at", templateAssignmentResponse.LastModifiedAt); err != nil {
-		return diag.FromErr(fmt.Errorf("error setting last_modified_at: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting last_modified_at: %s", err), "(Data) ibm_iam_trusted_profile_template_assignment", "read", "set-last_modified_at").GetDiag()
 	}
 
 	if err = d.Set("last_modified_by_id", templateAssignmentResponse.LastModifiedByID); err != nil {
-		return diag.FromErr(fmt.Errorf("error setting last_modified_by_id: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting last_modified_by_id: %s", err), "(Data) ibm_iam_trusted_profile_template_assignment", "read", "set-last_modified_by_id").GetDiag()
 	}
 
 	if err = d.Set("entity_tag", templateAssignmentResponse.EntityTag); err != nil {
-		return diag.FromErr(fmt.Errorf("error setting entity_tag: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting entity_tag: %s", err), "(Data) ibm_iam_trusted_profile_template_assignment", "read", "set-entity_tag").GetDiag()
 	}
 
 	return nil
