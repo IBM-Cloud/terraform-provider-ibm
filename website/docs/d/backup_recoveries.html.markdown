@@ -3,18 +3,18 @@ layout: "ibm"
 page_title: "IBM : ibm_backup_recoveries"
 description: |-
   Get information about List of Recoveries.
-subcategory: "IBM Backup Recovery"
+subcategory: "IBM Backup Recovery API"
 ---
 
 # ibm_backup_recoveries
 
 Provides a read-only data source to retrieve information about a List of Recoveries.. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
 
-
 ## Example Usage
 
 ```hcl
 data "ibm_backup_recoveries" "backup_recoveries" {
+	ids = ["11:111:11"]
 	x_ibm_tenant_id = ibm_backup_recovery.backup_recovery_instance.x_ibm_tenant_id
 }
 ```
@@ -32,7 +32,7 @@ You can specify the following arguments for this data source.
   * Constraints: Allowable list items are: `RecoverVMs`, `RecoverFiles`, `InstantVolumeMount`, `RecoverVmDisks`, `RecoverVApps`, `RecoverVAppTemplates`, `UptierSnapshot`, `RecoverRDS`, `RecoverAurora`, `RecoverS3Buckets`, `RecoverRDSPostgres`, `RecoverAzureSQL`, `RecoverApps`, `CloneApps`, `RecoverNasVolume`, `RecoverPhysicalVolumes`, `RecoverSystem`, `RecoverExchangeDbs`, `CloneAppView`, `RecoverSanVolumes`, `RecoverSanGroup`, `RecoverMailbox`, `RecoverOneDrive`, `RecoverSharePoint`, `RecoverPublicFolders`, `RecoverMsGroup`, `RecoverMsTeam`, `ConvertToPst`, `DownloadChats`, `RecoverMailboxCSM`, `RecoverOneDriveCSM`, `RecoverSharePointCSM`, `RecoverNamespaces`, `RecoverObjects`, `RecoverSfdcObjects`, `RecoverSfdcOrg`, `RecoverSfdcRecords`, `DownloadFilesAndFolders`, `CloneVMs`, `CloneView`, `CloneRefreshApp`, `CloneVMsToView`, `ConvertAndDeployVMs`, `DeployVMs`.
 * `return_only_child_recoveries` - (Optional, Boolean) Returns only child recoveries if passed as true. This filter should always be used along with 'ids' filter.
 * `snapshot_environments` - (Optional, List) Specifies the list of snapshot environment types to filter Recoveries. If empty, Recoveries related to all environments will be returned.
-  * Constraints: Allowable list items are: `kPhysical`, `kSQL`.
+  * Constraints: Allowable list items are: `kPhysical`, `kSQL`, `kKubernetes`.
 * `snapshot_target_type` - (Optional, List) Specifies the snapshot's target type from which recovery has been performed.
   * Constraints: Allowable list items are: `Local`, `Archival`, `RpaasArchival`, `StorageArraySnapshot`, `Remote`.
 * `start_time_usecs` - (Optional, Integer) Returns the recoveries which are started after the specific time. This value should be in Unix timestamp epoch in microseconds.
@@ -56,6 +56,386 @@ Nested schema for **recoveries**:
 	  * Constraints: The value must match regular expression `/^\\d+:\\d+:\\d+$/`.
 	* `is_multi_stage_restore` - (Boolean) Specifies whether the current recovery operation is a multi-stage restore operation. This is currently used by VMware recoveres for the migration/hot-standby use case.
 	* `is_parent_recovery` - (Boolean) Specifies whether the current recovery operation has created child recoveries. This is currently used in SQL recovery where multiple child recoveries can be tracked under a common/parent recovery.
+	* `kubernetes_params` - (List) Specifies the recovery options specific to Kubernetes environment.
+	Nested schema for **kubernetes_params**:
+		* `download_file_and_folder_params` - (List) Specifies the parameters to download files and folders.
+		Nested schema for **download_file_and_folder_params**:
+			* `download_file_path` - (String) Specifies the path location to download the files and folders.
+			* `expiry_time_usecs` - (Integer) Specifies the time upto which the download link is available.
+			* `files_and_folders` - (List) Specifies the info about the files and folders to be recovered.
+			Nested schema for **files_and_folders**:
+				* `absolute_path` - (String) Specifies the absolute path to the file or folder.
+				* `destination_dir` - (String) Specifies the destination directory where the file/directory was copied.
+				* `is_directory` - (Boolean) Specifies whether this is a directory or not.
+				* `is_view_file_recovery` - (Boolean) Specify if the recovery is of type view file/folder.
+				* `messages` - (List) Specify error messages about the file during recovery.
+				* `status` - (String) Specifies the recovery status for this file or folder.
+				  * Constraints: Allowable values are: `NotStarted`, `EstimationInProgress`, `EstimationDone`, `CopyInProgress`, `Finished`.
+		* `objects` - (List) Specifies the list of objects which need to be recovered.
+		Nested schema for **objects**:
+			* `archival_target_info` - (List) Specifies the archival target information if the snapshot is an archival snapshot.
+			Nested schema for **archival_target_info**:
+				* `archival_task_id` - (String) Specifies the archival task id. This is a protection group UID which only applies when archival type is 'Tape'.
+				* `ownership_context` - (String) Specifies the ownership context for the target.
+				  * Constraints: Allowable values are: `Local`, `FortKnox`.
+				* `target_id` - (Integer) Specifies the archival target ID.
+				* `target_name` - (String) Specifies the archival target name.
+				* `target_type` - (String) Specifies the archival target type.
+				  * Constraints: Allowable values are: `Tape`, `Cloud`, `Nas`.
+				* `tier_settings` - (List) Specifies the tier info for archival.
+				Nested schema for **tier_settings**:
+					* `aws_tiering` - (List) Specifies aws tiers.
+					Nested schema for **aws_tiering**:
+						* `tiers` - (List) Specifies the tiers that are used to move the archived backup from current tier to next tier. The order of the tiers determines which tier will be used next for moving the archived backup. The first tier input should always be default tier where backup will be acrhived. Each tier specifies how much time after the backup will be moved to next tier from the current tier.
+						Nested schema for **tiers**:
+							* `move_after` - (Integer) Specifies the time period after which the backup will be moved from current tier to next tier.
+							* `move_after_unit` - (String) Specifies the unit for moving the data from current tier to next tier. This unit will be a base unit for the 'moveAfter' field specified below.
+							  * Constraints: Allowable values are: `Days`, `Weeks`, `Months`, `Years`.
+							* `tier_type` - (String) Specifies the AWS tier types.
+							  * Constraints: Allowable values are: `kAmazonS3Standard`, `kAmazonS3StandardIA`, `kAmazonS3OneZoneIA`, `kAmazonS3IntelligentTiering`, `kAmazonS3Glacier`, `kAmazonS3GlacierDeepArchive`.
+					* `azure_tiering` - (List) Specifies Azure tiers.
+					Nested schema for **azure_tiering**:
+						* `tiers` - (List) Specifies the tiers that are used to move the archived backup from current tier to next tier. The order of the tiers determines which tier will be used next for moving the archived backup. The first tier input should always be default tier where backup will be acrhived. Each tier specifies how much time after the backup will be moved to next tier from the current tier.
+						Nested schema for **tiers**:
+							* `move_after` - (Integer) Specifies the time period after which the backup will be moved from current tier to next tier.
+							* `move_after_unit` - (String) Specifies the unit for moving the data from current tier to next tier. This unit will be a base unit for the 'moveAfter' field specified below.
+							  * Constraints: Allowable values are: `Days`, `Weeks`, `Months`, `Years`.
+							* `tier_type` - (String) Specifies the Azure tier types.
+							  * Constraints: Allowable values are: `kAzureTierHot`, `kAzureTierCool`, `kAzureTierArchive`.
+					* `cloud_platform` - (String) Specifies the cloud platform to enable tiering.
+					  * Constraints: Allowable values are: `AWS`, `Azure`, `Oracle`, `Google`.
+					* `current_tier_type` - (String) Specifies the type of the current tier where the snapshot resides. This will be specified if the run is a CAD run.
+					  * Constraints: Allowable values are: `kAmazonS3Standard`, `kAmazonS3StandardIA`, `kAmazonS3OneZoneIA`, `kAmazonS3IntelligentTiering`, `kAmazonS3Glacier`, `kAmazonS3GlacierDeepArchive`, `kAzureTierHot`, `kAzureTierCool`, `kAzureTierArchive`, `kGoogleStandard`, `kGoogleRegional`, `kGoogleMultiRegional`, `kGoogleNearline`, `kGoogleColdline`, `kOracleTierStandard`, `kOracleTierArchive`.
+					* `google_tiering` - (List) Specifies Google tiers.
+					Nested schema for **google_tiering**:
+						* `tiers` - (List) Specifies the tiers that are used to move the archived backup from current tier to next tier. The order of the tiers determines which tier will be used next for moving the archived backup. The first tier input should always be default tier where backup will be acrhived. Each tier specifies how much time after the backup will be moved to next tier from the current tier.
+						Nested schema for **tiers**:
+							* `move_after` - (Integer) Specifies the time period after which the backup will be moved from current tier to next tier.
+							* `move_after_unit` - (String) Specifies the unit for moving the data from current tier to next tier. This unit will be a base unit for the 'moveAfter' field specified below.
+							  * Constraints: Allowable values are: `Days`, `Weeks`, `Months`, `Years`.
+							* `tier_type` - (String) Specifies the Google tier types.
+							  * Constraints: Allowable values are: `kGoogleStandard`, `kGoogleRegional`, `kGoogleMultiRegional`, `kGoogleNearline`, `kGoogleColdline`.
+					* `oracle_tiering` - (List) Specifies Oracle tiers.
+					Nested schema for **oracle_tiering**:
+						* `tiers` - (List) Specifies the tiers that are used to move the archived backup from current tier to next tier. The order of the tiers determines which tier will be used next for moving the archived backup. The first tier input should always be default tier where backup will be acrhived. Each tier specifies how much time after the backup will be moved to next tier from the current tier.
+						Nested schema for **tiers**:
+							* `move_after` - (Integer) Specifies the time period after which the backup will be moved from current tier to next tier.
+							* `move_after_unit` - (String) Specifies the unit for moving the data from current tier to next tier. This unit will be a base unit for the 'moveAfter' field specified below.
+							  * Constraints: Allowable values are: `Days`, `Weeks`, `Months`, `Years`.
+							* `tier_type` - (String) Specifies the Oracle tier types.
+							  * Constraints: Allowable values are: `kOracleTierStandard`, `kOracleTierArchive`.
+				* `usage_type` - (String) Specifies the usage type for the target.
+				  * Constraints: Allowable values are: `Archival`, `Tiering`, `Rpaas`.
+			* `bytes_restored` - (Integer) Specify the total bytes restored.
+			* `end_time_usecs` - (Integer) Specifies the end time of the Recovery in Unix timestamp epoch in microseconds. This field will be populated only after Recovery is finished.
+			* `messages` - (List) Specify error messages about the object.
+			* `object_info` - (List) Specifies the information about the object for which the snapshot is taken.
+			Nested schema for **object_info**:
+				* `child_objects` - (List) Specifies child object details.
+				Nested schema for **child_objects**:
+					* `child_objects` - (List) Specifies child object details.
+					Nested schema for **child_objects**:
+					* `environment` - (String) Specifies the environment of the object.
+					  * Constraints: Allowable values are: `kPhysical`, `kSQL`.
+					* `global_id` - (String) Specifies the global id which is a unique identifier of the object.
+					* `id` - (Integer) Specifies object id.
+					* `logical_size_bytes` - (Integer) Specifies the logical size of object in bytes.
+					* `name` - (String) Specifies the name of the object.
+					* `object_hash` - (String) Specifies the hash identifier of the object.
+					* `object_type` - (String) Specifies the type of the object.
+					  * Constraints: Allowable values are: `kCluster`, `kVserver`, `kVolume`, `kVCenter`, `kStandaloneHost`, `kvCloudDirector`, `kFolder`, `kDatacenter`, `kComputeResource`, `kClusterComputeResource`, `kResourcePool`, `kDatastore`, `kHostSystem`, `kVirtualMachine`, `kVirtualApp`, `kStoragePod`, `kNetwork`, `kDistributedVirtualPortgroup`, `kTagCategory`, `kTag`, `kOpaqueNetwork`, `kOrganization`, `kVirtualDatacenter`, `kCatalog`, `kOrgMetadata`, `kStoragePolicy`, `kVirtualAppTemplate`, `kDomain`, `kOutlook`, `kMailbox`, `kUsers`, `kGroups`, `kSites`, `kUser`, `kGroup`, `kSite`, `kApplication`, `kGraphUser`, `kPublicFolders`, `kPublicFolder`, `kTeams`, `kTeam`, `kRootPublicFolder`, `kO365Exchange`, `kO365OneDrive`, `kO365Sharepoint`, `kKeyspace`, `kTable`, `kDatabase`, `kCollection`, `kBucket`, `kNamespace`, `kSCVMMServer`, `kStandaloneCluster`, `kHostGroup`, `kHypervHost`, `kHostCluster`, `kCustomProperty`, `kTenant`, `kSubscription`, `kResourceGroup`, `kStorageAccount`, `kStorageKey`, `kStorageContainer`, `kStorageBlob`, `kNetworkSecurityGroup`, `kVirtualNetwork`, `kSubnet`, `kComputeOptions`, `kSnapshotManagerPermit`, `kAvailabilitySet`, `kOVirtManager`, `kHost`, `kStorageDomain`, `kVNicProfile`, `kIAMUser`, `kRegion`, `kAvailabilityZone`, `kEC2Instance`, `kVPC`, `kInstanceType`, `kKeyPair`, `kRDSOptionGroup`, `kRDSParameterGroup`, `kRDSInstance`, `kRDSSubnet`, `kRDSTag`, `kAuroraTag`, `kAuroraCluster`, `kAccount`, `kSubTaskPermit`, `kS3Bucket`, `kS3Tag`, `kKmsKey`, `kProject`, `kLabel`, `kMetadata`, `kVPCConnector`, `kPrismCentral`, `kOtherHypervisorCluster`, `kZone`, `kMountPoint`, `kStorageArray`, `kFileSystem`, `kContainer`, `kFilesystem`, `kFileset`, `kPureProtectionGroup`, `kVolumeGroup`, `kStoragePool`, `kViewBox`, `kView`, `kWindowsCluster`, `kOracleRACCluster`, `kOracleAPCluster`, `kService`, `kPVC`, `kPersistentVolumeClaim`, `kPersistentVolume`, `kRootContainer`, `kDAGRootContainer`, `kExchangeNode`, `kExchangeDAGDatabaseCopy`, `kExchangeStandaloneDatabase`, `kExchangeDAG`, `kExchangeDAGDatabase`, `kDomainController`, `kInstance`, `kAAG`, `kAAGRootContainer`, `kAAGDatabase`, `kRACRootContainer`, `kTableSpace`, `kPDB`, `kObject`, `kOrg`, `kAppInstance`.
+					* `os_type` - (String) Specifies the operating system type of the object.
+					  * Constraints: Allowable values are: `kLinux`, `kWindows`.
+					* `protection_type` - (String) Specifies the protection type of the object if any.
+					  * Constraints: Allowable values are: `kAgent`, `kNative`, `kSnapshotManager`, `kRDSSnapshotManager`, `kAuroraSnapshotManager`, `kAwsS3`, `kAwsRDSPostgresBackup`, `kAwsAuroraPostgres`, `kAwsRDSPostgres`, `kAzureSQL`, `kFile`, `kVolume`.
+					* `sharepoint_site_summary` - (List) Specifies the common parameters for Sharepoint site objects.
+					Nested schema for **sharepoint_site_summary**:
+						* `site_web_url` - (String) Specifies the web url for the Sharepoint site.
+					* `source_id` - (Integer) Specifies registered source id to which object belongs.
+					* `source_name` - (String) Specifies registered source name to which object belongs.
+					* `uuid` - (String) Specifies the uuid which is a unique identifier of the object.
+					* `v_center_summary` - (List)
+					Nested schema for **v_center_summary**:
+						* `is_cloud_env` - (Boolean) Specifies that registered vCenter source is a VMC (VMware Cloud) environment or not.
+					* `windows_cluster_summary` - (List)
+					Nested schema for **windows_cluster_summary**:
+						* `cluster_source_type` - (String) Specifies the type of cluster resource this source represents.
+				* `environment` - (String) Specifies the environment of the object.
+				  * Constraints: Allowable values are: `kPhysical`, `kSQL`.
+				* `global_id` - (String) Specifies the global id which is a unique identifier of the object.
+				* `id` - (Integer) Specifies object id.
+				* `logical_size_bytes` - (Integer) Specifies the logical size of object in bytes.
+				* `name` - (String) Specifies the name of the object.
+				* `object_hash` - (String) Specifies the hash identifier of the object.
+				* `object_type` - (String) Specifies the type of the object.
+				  * Constraints: Allowable values are: `kCluster`, `kVserver`, `kVolume`, `kVCenter`, `kStandaloneHost`, `kvCloudDirector`, `kFolder`, `kDatacenter`, `kComputeResource`, `kClusterComputeResource`, `kResourcePool`, `kDatastore`, `kHostSystem`, `kVirtualMachine`, `kVirtualApp`, `kStoragePod`, `kNetwork`, `kDistributedVirtualPortgroup`, `kTagCategory`, `kTag`, `kOpaqueNetwork`, `kOrganization`, `kVirtualDatacenter`, `kCatalog`, `kOrgMetadata`, `kStoragePolicy`, `kVirtualAppTemplate`, `kDomain`, `kOutlook`, `kMailbox`, `kUsers`, `kGroups`, `kSites`, `kUser`, `kGroup`, `kSite`, `kApplication`, `kGraphUser`, `kPublicFolders`, `kPublicFolder`, `kTeams`, `kTeam`, `kRootPublicFolder`, `kO365Exchange`, `kO365OneDrive`, `kO365Sharepoint`, `kKeyspace`, `kTable`, `kDatabase`, `kCollection`, `kBucket`, `kNamespace`, `kSCVMMServer`, `kStandaloneCluster`, `kHostGroup`, `kHypervHost`, `kHostCluster`, `kCustomProperty`, `kTenant`, `kSubscription`, `kResourceGroup`, `kStorageAccount`, `kStorageKey`, `kStorageContainer`, `kStorageBlob`, `kNetworkSecurityGroup`, `kVirtualNetwork`, `kSubnet`, `kComputeOptions`, `kSnapshotManagerPermit`, `kAvailabilitySet`, `kOVirtManager`, `kHost`, `kStorageDomain`, `kVNicProfile`, `kIAMUser`, `kRegion`, `kAvailabilityZone`, `kEC2Instance`, `kVPC`, `kInstanceType`, `kKeyPair`, `kRDSOptionGroup`, `kRDSParameterGroup`, `kRDSInstance`, `kRDSSubnet`, `kRDSTag`, `kAuroraTag`, `kAuroraCluster`, `kAccount`, `kSubTaskPermit`, `kS3Bucket`, `kS3Tag`, `kKmsKey`, `kProject`, `kLabel`, `kMetadata`, `kVPCConnector`, `kPrismCentral`, `kOtherHypervisorCluster`, `kZone`, `kMountPoint`, `kStorageArray`, `kFileSystem`, `kContainer`, `kFilesystem`, `kFileset`, `kPureProtectionGroup`, `kVolumeGroup`, `kStoragePool`, `kViewBox`, `kView`, `kWindowsCluster`, `kOracleRACCluster`, `kOracleAPCluster`, `kService`, `kPVC`, `kPersistentVolumeClaim`, `kPersistentVolume`, `kRootContainer`, `kDAGRootContainer`, `kExchangeNode`, `kExchangeDAGDatabaseCopy`, `kExchangeStandaloneDatabase`, `kExchangeDAG`, `kExchangeDAGDatabase`, `kDomainController`, `kInstance`, `kAAG`, `kAAGRootContainer`, `kAAGDatabase`, `kRACRootContainer`, `kTableSpace`, `kPDB`, `kObject`, `kOrg`, `kAppInstance`.
+				* `os_type` - (String) Specifies the operating system type of the object.
+				  * Constraints: Allowable values are: `kLinux`, `kWindows`.
+				* `protection_type` - (String) Specifies the protection type of the object if any.
+				  * Constraints: Allowable values are: `kAgent`, `kNative`, `kSnapshotManager`, `kRDSSnapshotManager`, `kAuroraSnapshotManager`, `kAwsS3`, `kAwsRDSPostgresBackup`, `kAwsAuroraPostgres`, `kAwsRDSPostgres`, `kAzureSQL`, `kFile`, `kVolume`.
+				* `sharepoint_site_summary` - (List) Specifies the common parameters for Sharepoint site objects.
+				Nested schema for **sharepoint_site_summary**:
+					* `site_web_url` - (String) Specifies the web url for the Sharepoint site.
+				* `source_id` - (Integer) Specifies registered source id to which object belongs.
+				* `source_name` - (String) Specifies registered source name to which object belongs.
+				* `uuid` - (String) Specifies the uuid which is a unique identifier of the object.
+				* `v_center_summary` - (List)
+				Nested schema for **v_center_summary**:
+					* `is_cloud_env` - (Boolean) Specifies that registered vCenter source is a VMC (VMware Cloud) environment or not.
+				* `windows_cluster_summary` - (List)
+				Nested schema for **windows_cluster_summary**:
+					* `cluster_source_type` - (String) Specifies the type of cluster resource this source represents.
+			* `point_in_time_usecs` - (Integer) Specifies the timestamp (in microseconds. from epoch) for recovering to a point-in-time in the past.
+			* `progress_task_id` - (String) Progress monitor task id for Recovery of VM.
+			* `protection_group_id` - (String) Specifies the protection group id of the object snapshot.
+			* `protection_group_name` - (String) Specifies the protection group name of the object snapshot.
+			* `recover_from_standby` - (Boolean) Specifies that user wants to perform standby restore if it is enabled for this object.
+			* `snapshot_creation_time_usecs` - (Integer) Specifies the time when the snapshot is created in Unix timestamp epoch in microseconds.
+			* `snapshot_id` - (String) Specifies the snapshot id.
+			* `snapshot_target_type` - (String) Specifies the snapshot target type.
+			  * Constraints: Allowable values are: `Local`, `Archival`, `RpaasArchival`, `StorageArraySnapshot`, `Remote`.
+			* `start_time_usecs` - (Integer) Specifies the start time of the Recovery in Unix timestamp epoch in microseconds.
+			* `status` - (String) Status of the Recovery. 'Running' indicates that the Recovery is still running. 'Canceled' indicates that the Recovery has been cancelled. 'Canceling' indicates that the Recovery is in the process of being cancelled. 'Failed' indicates that the Recovery has failed. 'Succeeded' indicates that the Recovery has finished successfully. 'SucceededWithWarning' indicates that the Recovery finished successfully, but there were some warning messages. 'Skipped' indicates that the Recovery task was skipped.
+			  * Constraints: Allowable values are: `Accepted`, `Running`, `Canceled`, `Canceling`, `Failed`, `Missed`, `Succeeded`, `SucceededWithWarning`, `OnHold`, `Finalizing`, `Skipped`, `LegalHold`.
+		* `recover_file_and_folder_params` - (List) Specifies the parameters to perform a file and folder recovery.
+		Nested schema for **recover_file_and_folder_params**:
+			* `files_and_folders` - (List) Specifies the information about the files and folders to be recovered.
+			Nested schema for **files_and_folders**:
+				* `absolute_path` - (String) Specifies the absolute path to the file or folder.
+				* `destination_dir` - (String) Specifies the destination directory where the file/directory was copied.
+				* `is_directory` - (Boolean) Specifies whether this is a directory or not.
+				* `is_view_file_recovery` - (Boolean) Specify if the recovery is of type view file/folder.
+				* `messages` - (List) Specify error messages about the file during recovery.
+				* `status` - (String) Specifies the recovery status for this file or folder.
+				  * Constraints: Allowable values are: `NotStarted`, `EstimationInProgress`, `EstimationDone`, `CopyInProgress`, `Finished`.
+			* `kubernetes_target_params` - (List) Specifies the parameters to recover to a Kubernetes target.
+			Nested schema for **kubernetes_target_params**:
+				* `continue_on_error` - (Boolean) Specifies whether to continue recovering other files if one of files or folders failed to recover. Default value is false.
+				* `new_target_config` - (List) Specifies the configuration for recovering to a new target.
+				Nested schema for **new_target_config**:
+					* `absolute_path` - (String) Specifies the absolute path of the file.
+					* `target_namespace` - (List) Specifies the target namespace to recover files and folders to.
+					Nested schema for **target_namespace**:
+						* `id` - (Integer) Specifies the id of the object.
+						* `name` - (String) Specifies the name of the object.
+						* `parent_source_id` - (Integer) Specifies the id of the parent source of the target.
+						* `parent_source_name` - (String) Specifies the name of the parent source of the target.
+					* `target_pvc` - (List) Specifies the target PVC(Persistent Volume Claim) to recover files and folders to.
+					Nested schema for **target_pvc**:
+						* `id` - (Integer) Specifies the id of the object.
+						* `name` - (String) Specifies the name of the object.
+						* `parent_source_id` - (Integer) Specifies the id of the parent source of the target.
+						* `parent_source_name` - (String) Specifies the name of the parent source of the target.
+					* `target_source` - (List) Specifies the target kubernetes to recover files and folders to.
+					Nested schema for **target_source**:
+						* `id` - (Integer) Specifies the id of the object.
+						* `name` - (String) Specifies the name of the object.
+						* `parent_source_id` - (Integer) Specifies the id of the parent source of the target.
+						* `parent_source_name` - (String) Specifies the name of the parent source of the target.
+				* `original_target_config` - (List) Specifies the configuration for recovering to the original target.
+				Nested schema for **original_target_config**:
+					* `alternate_path` - (String) Specifies the alternate path location to recover files to.
+					* `recover_to_original_path` - (Boolean) Specifies whether to recover files and folders to the original path location. If false, alternatePath must be specified.
+				* `overwrite_existing` - (Boolean) Specifies whether to overwrite the existing files. Default is true.
+				* `preserve_attributes` - (Boolean) Specifies whether to preserve original attributes. Default is true.
+				* `recover_to_original_target` - (Boolean) Specifies whether to recover to the original target. If true, originalTargetConfig must be specified. If false, newTargetConfig must be specified.
+				* `vlan_config` - (List) Specifies VLAN Params associated with the recovered files and folders. If this is not specified, then the VLAN settings will be automatically selected from one of the below options: a. If VLANs are configured on Cohesity, then the VLAN host/VIP will be automatically based on the client's (e.g. ESXI host) IP address. b. If VLANs are not configured on Cohesity, then the partition hostname or VIPs will be used for Recovery.
+				Nested schema for **vlan_config**:
+					* `disable_vlan` - (Boolean) If this is set to true, then even if VLANs are configured on the system, the partition VIPs will be used for the Recovery.
+					* `id` - (Integer) If this is set, then the Cohesity host name or the IP address associated with this vlan is used for mounting Cohesity's view on the remote host.
+					* `interface_name` - (String) Interface group to use for Recovery.
+			* `target_environment` - (String) Specifies the environment of the recovery target. The corresponding params below must be filled out.
+			  * Constraints: Allowable values are: `kKubernetes`.
+		* `recover_namespace_params` - (List) Specifies the parameters to recover Kubernetes Namespaces.
+		Nested schema for **recover_namespace_params**:
+			* `kubernetes_target_params` - (List) Specifies the params for recovering to a Kubernetes host.
+			Nested schema for **kubernetes_target_params**:
+				* `exclude_params` - (List) Specifies the parameters to in/exclude objects (e.g.: volumes). An object satisfying any of these criteria will be included by this filter.
+				Nested schema for **exclude_params**:
+					* `label_combination_method` - (String) Whether to include all the labels or any of them while performing inclusion/exclusion of objects.
+					  * Constraints: Allowable values are: `AND`, `OR`.
+					* `label_vector` - (List) Array of Object to represent Label that Specify Objects (e.g.: Persistent Volumes and Persistent Volume Claims) to Include or Exclude.It will be a two-dimensional array, where each inner array will consist of a key and value representing labels. Using this two dimensional array of Labels, the Cluster generates a list of items to include in the filter, which are derived from intersections or the union of these labels, as decided by operation parameter.
+					Nested schema for **label_vector**:
+						* `key` - (String) The key of the label, used to identify the label.
+						* `value` - (String) The value associated with the label key.
+					* `objects` - (List) Array of objects that are to be included.
+				* `excluded_pvcs` - (List) Specifies the list of pvc to be excluded from recovery.
+				Nested schema for **excluded_pvcs**:
+					* `id` - (Integer) Specifies the id of the pvc.
+					* `name` - (String) Name of the pvc.
+				* `include_params` - (List) Specifies the parameters to in/exclude objects (e.g.: volumes). An object satisfying any of these criteria will be included by this filter.
+				Nested schema for **include_params**:
+					* `label_combination_method` - (String) Whether to include all the labels or any of them while performing inclusion/exclusion of objects.
+					  * Constraints: Allowable values are: `AND`, `OR`.
+					* `label_vector` - (List) Array of Object to represent Label that Specify Objects (e.g.: Persistent Volumes and Persistent Volume Claims) to Include or Exclude.It will be a two-dimensional array, where each inner array will consist of a key and value representing labels. Using this two dimensional array of Labels, the Cluster generates a list of items to include in the filter, which are derived from intersections or the union of these labels, as decided by operation parameter.
+					Nested schema for **label_vector**:
+						* `key` - (String) The key of the label, used to identify the label.
+						* `value` - (String) The value associated with the label key.
+					* `objects` - (List) Array of objects that are to be included.
+				* `objects` - (List) Specifies the objects to be recovered.
+				Nested schema for **objects**:
+					* `archival_target_info` - (List) Specifies the archival target information if the snapshot is an archival snapshot.
+					Nested schema for **archival_target_info**:
+						* `archival_task_id` - (String) Specifies the archival task id. This is a protection group UID which only applies when archival type is 'Tape'.
+						* `ownership_context` - (String) Specifies the ownership context for the target.
+						  * Constraints: Allowable values are: `Local`, `FortKnox`.
+						* `target_id` - (Integer) Specifies the archival target ID.
+						* `target_name` - (String) Specifies the archival target name.
+						* `target_type` - (String) Specifies the archival target type.
+						  * Constraints: Allowable values are: `Tape`, `Cloud`, `Nas`.
+						* `tier_settings` - (List) Specifies the tier info for archival.
+						Nested schema for **tier_settings**:
+							* `aws_tiering` - (List) Specifies aws tiers.
+							Nested schema for **aws_tiering**:
+								* `tiers` - (List) Specifies the tiers that are used to move the archived backup from current tier to next tier. The order of the tiers determines which tier will be used next for moving the archived backup. The first tier input should always be default tier where backup will be acrhived. Each tier specifies how much time after the backup will be moved to next tier from the current tier.
+								Nested schema for **tiers**:
+									* `move_after` - (Integer) Specifies the time period after which the backup will be moved from current tier to next tier.
+									* `move_after_unit` - (String) Specifies the unit for moving the data from current tier to next tier. This unit will be a base unit for the 'moveAfter' field specified below.
+									  * Constraints: Allowable values are: `Days`, `Weeks`, `Months`, `Years`.
+									* `tier_type` - (String) Specifies the AWS tier types.
+									  * Constraints: Allowable values are: `kAmazonS3Standard`, `kAmazonS3StandardIA`, `kAmazonS3OneZoneIA`, `kAmazonS3IntelligentTiering`, `kAmazonS3Glacier`, `kAmazonS3GlacierDeepArchive`.
+							* `azure_tiering` - (List) Specifies Azure tiers.
+							Nested schema for **azure_tiering**:
+								* `tiers` - (List) Specifies the tiers that are used to move the archived backup from current tier to next tier. The order of the tiers determines which tier will be used next for moving the archived backup. The first tier input should always be default tier where backup will be acrhived. Each tier specifies how much time after the backup will be moved to next tier from the current tier.
+								Nested schema for **tiers**:
+									* `move_after` - (Integer) Specifies the time period after which the backup will be moved from current tier to next tier.
+									* `move_after_unit` - (String) Specifies the unit for moving the data from current tier to next tier. This unit will be a base unit for the 'moveAfter' field specified below.
+									  * Constraints: Allowable values are: `Days`, `Weeks`, `Months`, `Years`.
+									* `tier_type` - (String) Specifies the Azure tier types.
+									  * Constraints: Allowable values are: `kAzureTierHot`, `kAzureTierCool`, `kAzureTierArchive`.
+							* `cloud_platform` - (String) Specifies the cloud platform to enable tiering.
+							  * Constraints: Allowable values are: `AWS`, `Azure`, `Oracle`, `Google`.
+							* `current_tier_type` - (String) Specifies the type of the current tier where the snapshot resides. This will be specified if the run is a CAD run.
+							  * Constraints: Allowable values are: `kAmazonS3Standard`, `kAmazonS3StandardIA`, `kAmazonS3OneZoneIA`, `kAmazonS3IntelligentTiering`, `kAmazonS3Glacier`, `kAmazonS3GlacierDeepArchive`, `kAzureTierHot`, `kAzureTierCool`, `kAzureTierArchive`, `kGoogleStandard`, `kGoogleRegional`, `kGoogleMultiRegional`, `kGoogleNearline`, `kGoogleColdline`, `kOracleTierStandard`, `kOracleTierArchive`.
+							* `google_tiering` - (List) Specifies Google tiers.
+							Nested schema for **google_tiering**:
+								* `tiers` - (List) Specifies the tiers that are used to move the archived backup from current tier to next tier. The order of the tiers determines which tier will be used next for moving the archived backup. The first tier input should always be default tier where backup will be acrhived. Each tier specifies how much time after the backup will be moved to next tier from the current tier.
+								Nested schema for **tiers**:
+									* `move_after` - (Integer) Specifies the time period after which the backup will be moved from current tier to next tier.
+									* `move_after_unit` - (String) Specifies the unit for moving the data from current tier to next tier. This unit will be a base unit for the 'moveAfter' field specified below.
+									  * Constraints: Allowable values are: `Days`, `Weeks`, `Months`, `Years`.
+									* `tier_type` - (String) Specifies the Google tier types.
+									  * Constraints: Allowable values are: `kGoogleStandard`, `kGoogleRegional`, `kGoogleMultiRegional`, `kGoogleNearline`, `kGoogleColdline`.
+							* `oracle_tiering` - (List) Specifies Oracle tiers.
+							Nested schema for **oracle_tiering**:
+								* `tiers` - (List) Specifies the tiers that are used to move the archived backup from current tier to next tier. The order of the tiers determines which tier will be used next for moving the archived backup. The first tier input should always be default tier where backup will be acrhived. Each tier specifies how much time after the backup will be moved to next tier from the current tier.
+								Nested schema for **tiers**:
+									* `move_after` - (Integer) Specifies the time period after which the backup will be moved from current tier to next tier.
+									* `move_after_unit` - (String) Specifies the unit for moving the data from current tier to next tier. This unit will be a base unit for the 'moveAfter' field specified below.
+									  * Constraints: Allowable values are: `Days`, `Weeks`, `Months`, `Years`.
+									* `tier_type` - (String) Specifies the Oracle tier types.
+									  * Constraints: Allowable values are: `kOracleTierStandard`, `kOracleTierArchive`.
+						* `usage_type` - (String) Specifies the usage type for the target.
+						  * Constraints: Allowable values are: `Archival`, `Tiering`, `Rpaas`.
+					* `bytes_restored` - (Integer) Specify the total bytes restored.
+					* `end_time_usecs` - (Integer) Specifies the end time of the Recovery in Unix timestamp epoch in microseconds. This field will be populated only after Recovery is finished.
+					* `messages` - (List) Specify error messages about the object.
+					* `object_info` - (List) Specifies the information about the object for which the snapshot is taken.
+					Nested schema for **object_info**:
+						* `child_objects` - (List) Specifies child object details.
+						Nested schema for **child_objects**:
+							* `child_objects` - (List) Specifies child object details.
+							Nested schema for **child_objects**:
+							* `environment` - (String) Specifies the environment of the object.
+							  * Constraints: Allowable values are: `kPhysical`, `kSQL`.
+							* `global_id` - (String) Specifies the global id which is a unique identifier of the object.
+							* `id` - (Integer) Specifies object id.
+							* `logical_size_bytes` - (Integer) Specifies the logical size of object in bytes.
+							* `name` - (String) Specifies the name of the object.
+							* `object_hash` - (String) Specifies the hash identifier of the object.
+							* `object_type` - (String) Specifies the type of the object.
+							  * Constraints: Allowable values are: `kCluster`, `kVserver`, `kVolume`, `kVCenter`, `kStandaloneHost`, `kvCloudDirector`, `kFolder`, `kDatacenter`, `kComputeResource`, `kClusterComputeResource`, `kResourcePool`, `kDatastore`, `kHostSystem`, `kVirtualMachine`, `kVirtualApp`, `kStoragePod`, `kNetwork`, `kDistributedVirtualPortgroup`, `kTagCategory`, `kTag`, `kOpaqueNetwork`, `kOrganization`, `kVirtualDatacenter`, `kCatalog`, `kOrgMetadata`, `kStoragePolicy`, `kVirtualAppTemplate`, `kDomain`, `kOutlook`, `kMailbox`, `kUsers`, `kGroups`, `kSites`, `kUser`, `kGroup`, `kSite`, `kApplication`, `kGraphUser`, `kPublicFolders`, `kPublicFolder`, `kTeams`, `kTeam`, `kRootPublicFolder`, `kO365Exchange`, `kO365OneDrive`, `kO365Sharepoint`, `kKeyspace`, `kTable`, `kDatabase`, `kCollection`, `kBucket`, `kNamespace`, `kSCVMMServer`, `kStandaloneCluster`, `kHostGroup`, `kHypervHost`, `kHostCluster`, `kCustomProperty`, `kTenant`, `kSubscription`, `kResourceGroup`, `kStorageAccount`, `kStorageKey`, `kStorageContainer`, `kStorageBlob`, `kNetworkSecurityGroup`, `kVirtualNetwork`, `kSubnet`, `kComputeOptions`, `kSnapshotManagerPermit`, `kAvailabilitySet`, `kOVirtManager`, `kHost`, `kStorageDomain`, `kVNicProfile`, `kIAMUser`, `kRegion`, `kAvailabilityZone`, `kEC2Instance`, `kVPC`, `kInstanceType`, `kKeyPair`, `kRDSOptionGroup`, `kRDSParameterGroup`, `kRDSInstance`, `kRDSSubnet`, `kRDSTag`, `kAuroraTag`, `kAuroraCluster`, `kAccount`, `kSubTaskPermit`, `kS3Bucket`, `kS3Tag`, `kKmsKey`, `kProject`, `kLabel`, `kMetadata`, `kVPCConnector`, `kPrismCentral`, `kOtherHypervisorCluster`, `kZone`, `kMountPoint`, `kStorageArray`, `kFileSystem`, `kContainer`, `kFilesystem`, `kFileset`, `kPureProtectionGroup`, `kVolumeGroup`, `kStoragePool`, `kViewBox`, `kView`, `kWindowsCluster`, `kOracleRACCluster`, `kOracleAPCluster`, `kService`, `kPVC`, `kPersistentVolumeClaim`, `kPersistentVolume`, `kRootContainer`, `kDAGRootContainer`, `kExchangeNode`, `kExchangeDAGDatabaseCopy`, `kExchangeStandaloneDatabase`, `kExchangeDAG`, `kExchangeDAGDatabase`, `kDomainController`, `kInstance`, `kAAG`, `kAAGRootContainer`, `kAAGDatabase`, `kRACRootContainer`, `kTableSpace`, `kPDB`, `kObject`, `kOrg`, `kAppInstance`.
+							* `os_type` - (String) Specifies the operating system type of the object.
+							  * Constraints: Allowable values are: `kLinux`, `kWindows`.
+							* `protection_type` - (String) Specifies the protection type of the object if any.
+							  * Constraints: Allowable values are: `kAgent`, `kNative`, `kSnapshotManager`, `kRDSSnapshotManager`, `kAuroraSnapshotManager`, `kAwsS3`, `kAwsRDSPostgresBackup`, `kAwsAuroraPostgres`, `kAwsRDSPostgres`, `kAzureSQL`, `kFile`, `kVolume`.
+							* `sharepoint_site_summary` - (List) Specifies the common parameters for Sharepoint site objects.
+							Nested schema for **sharepoint_site_summary**:
+								* `site_web_url` - (String) Specifies the web url for the Sharepoint site.
+							* `source_id` - (Integer) Specifies registered source id to which object belongs.
+							* `source_name` - (String) Specifies registered source name to which object belongs.
+							* `uuid` - (String) Specifies the uuid which is a unique identifier of the object.
+							* `v_center_summary` - (List)
+							Nested schema for **v_center_summary**:
+								* `is_cloud_env` - (Boolean) Specifies that registered vCenter source is a VMC (VMware Cloud) environment or not.
+							* `windows_cluster_summary` - (List)
+							Nested schema for **windows_cluster_summary**:
+								* `cluster_source_type` - (String) Specifies the type of cluster resource this source represents.
+						* `environment` - (String) Specifies the environment of the object.
+						  * Constraints: Allowable values are: `kPhysical`, `kSQL`.
+						* `global_id` - (String) Specifies the global id which is a unique identifier of the object.
+						* `id` - (Integer) Specifies object id.
+						* `logical_size_bytes` - (Integer) Specifies the logical size of object in bytes.
+						* `name` - (String) Specifies the name of the object.
+						* `object_hash` - (String) Specifies the hash identifier of the object.
+						* `object_type` - (String) Specifies the type of the object.
+						  * Constraints: Allowable values are: `kCluster`, `kVserver`, `kVolume`, `kVCenter`, `kStandaloneHost`, `kvCloudDirector`, `kFolder`, `kDatacenter`, `kComputeResource`, `kClusterComputeResource`, `kResourcePool`, `kDatastore`, `kHostSystem`, `kVirtualMachine`, `kVirtualApp`, `kStoragePod`, `kNetwork`, `kDistributedVirtualPortgroup`, `kTagCategory`, `kTag`, `kOpaqueNetwork`, `kOrganization`, `kVirtualDatacenter`, `kCatalog`, `kOrgMetadata`, `kStoragePolicy`, `kVirtualAppTemplate`, `kDomain`, `kOutlook`, `kMailbox`, `kUsers`, `kGroups`, `kSites`, `kUser`, `kGroup`, `kSite`, `kApplication`, `kGraphUser`, `kPublicFolders`, `kPublicFolder`, `kTeams`, `kTeam`, `kRootPublicFolder`, `kO365Exchange`, `kO365OneDrive`, `kO365Sharepoint`, `kKeyspace`, `kTable`, `kDatabase`, `kCollection`, `kBucket`, `kNamespace`, `kSCVMMServer`, `kStandaloneCluster`, `kHostGroup`, `kHypervHost`, `kHostCluster`, `kCustomProperty`, `kTenant`, `kSubscription`, `kResourceGroup`, `kStorageAccount`, `kStorageKey`, `kStorageContainer`, `kStorageBlob`, `kNetworkSecurityGroup`, `kVirtualNetwork`, `kSubnet`, `kComputeOptions`, `kSnapshotManagerPermit`, `kAvailabilitySet`, `kOVirtManager`, `kHost`, `kStorageDomain`, `kVNicProfile`, `kIAMUser`, `kRegion`, `kAvailabilityZone`, `kEC2Instance`, `kVPC`, `kInstanceType`, `kKeyPair`, `kRDSOptionGroup`, `kRDSParameterGroup`, `kRDSInstance`, `kRDSSubnet`, `kRDSTag`, `kAuroraTag`, `kAuroraCluster`, `kAccount`, `kSubTaskPermit`, `kS3Bucket`, `kS3Tag`, `kKmsKey`, `kProject`, `kLabel`, `kMetadata`, `kVPCConnector`, `kPrismCentral`, `kOtherHypervisorCluster`, `kZone`, `kMountPoint`, `kStorageArray`, `kFileSystem`, `kContainer`, `kFilesystem`, `kFileset`, `kPureProtectionGroup`, `kVolumeGroup`, `kStoragePool`, `kViewBox`, `kView`, `kWindowsCluster`, `kOracleRACCluster`, `kOracleAPCluster`, `kService`, `kPVC`, `kPersistentVolumeClaim`, `kPersistentVolume`, `kRootContainer`, `kDAGRootContainer`, `kExchangeNode`, `kExchangeDAGDatabaseCopy`, `kExchangeStandaloneDatabase`, `kExchangeDAG`, `kExchangeDAGDatabase`, `kDomainController`, `kInstance`, `kAAG`, `kAAGRootContainer`, `kAAGDatabase`, `kRACRootContainer`, `kTableSpace`, `kPDB`, `kObject`, `kOrg`, `kAppInstance`.
+						* `os_type` - (String) Specifies the operating system type of the object.
+						  * Constraints: Allowable values are: `kLinux`, `kWindows`.
+						* `protection_type` - (String) Specifies the protection type of the object if any.
+						  * Constraints: Allowable values are: `kAgent`, `kNative`, `kSnapshotManager`, `kRDSSnapshotManager`, `kAuroraSnapshotManager`, `kAwsS3`, `kAwsRDSPostgresBackup`, `kAwsAuroraPostgres`, `kAwsRDSPostgres`, `kAzureSQL`, `kFile`, `kVolume`.
+						* `sharepoint_site_summary` - (List) Specifies the common parameters for Sharepoint site objects.
+						Nested schema for **sharepoint_site_summary**:
+							* `site_web_url` - (String) Specifies the web url for the Sharepoint site.
+						* `source_id` - (Integer) Specifies registered source id to which object belongs.
+						* `source_name` - (String) Specifies registered source name to which object belongs.
+						* `uuid` - (String) Specifies the uuid which is a unique identifier of the object.
+						* `v_center_summary` - (List)
+						Nested schema for **v_center_summary**:
+							* `is_cloud_env` - (Boolean) Specifies that registered vCenter source is a VMC (VMware Cloud) environment or not.
+						* `windows_cluster_summary` - (List)
+						Nested schema for **windows_cluster_summary**:
+							* `cluster_source_type` - (String) Specifies the type of cluster resource this source represents.
+					* `point_in_time_usecs` - (Integer) Specifies the timestamp (in microseconds. from epoch) for recovering to a point-in-time in the past.
+					* `progress_task_id` - (String) Progress monitor task id for Recovery of VM.
+					* `protection_group_id` - (String) Specifies the protection group id of the object snapshot.
+					* `protection_group_name` - (String) Specifies the protection group name of the object snapshot.
+					* `recover_from_standby` - (Boolean) Specifies that user wants to perform standby restore if it is enabled for this object.
+					* `snapshot_creation_time_usecs` - (Integer) Specifies the time when the snapshot is created in Unix timestamp epoch in microseconds.
+					* `snapshot_id` - (String) Specifies the snapshot id.
+					* `snapshot_target_type` - (String) Specifies the snapshot target type.
+					  * Constraints: Allowable values are: `Local`, `Archival`, `RpaasArchival`, `StorageArraySnapshot`, `Remote`.
+					* `start_time_usecs` - (Integer) Specifies the start time of the Recovery in Unix timestamp epoch in microseconds.
+					* `status` - (String) Status of the Recovery. 'Running' indicates that the Recovery is still running. 'Canceled' indicates that the Recovery has been cancelled. 'Canceling' indicates that the Recovery is in the process of being cancelled. 'Failed' indicates that the Recovery has failed. 'Succeeded' indicates that the Recovery has finished successfully. 'SucceededWithWarning' indicates that the Recovery finished successfully, but there were some warning messages. 'Skipped' indicates that the Recovery task was skipped.
+					  * Constraints: Allowable values are: `Accepted`, `Running`, `Canceled`, `Canceling`, `Failed`, `Missed`, `Succeeded`, `SucceededWithWarning`, `OnHold`, `Finalizing`, `Skipped`, `LegalHold`.
+				* `recover_protection_group_runs_params` - (List) Specifies the Protection Group Runs params to recover. All the VM's that are successfully backed up by specified Runs will be recovered. This can be specified along with individual snapshots of VMs. User has to make sure that specified Object snapshots and Protection Group Runs should not have any intersection. For example, user cannot specify multiple Runs which has same Object or an Object snapshot and a Run which has same Object's snapshot.
+				Nested schema for **recover_protection_group_runs_params**:
+					* `archival_target_id` - (Integer) Specifies the archival target id. If specified and Protection Group run has an archival snapshot then VMs are recovered from the specified archival snapshot. If not specified (default), VMs are recovered from local snapshot.
+					* `protection_group_id` - (String) Specifies the local Protection Group id. In case of recovering a replication Run, this field should be provided with local Protection Group id.
+					* `protection_group_instance_id` - (Integer) Specifies the Protection Group Instance id.
+					* `protection_group_run_id` - (String) Specifies the Protection Group Run id from which to recover VMs. All the VM's that are successfully protected by this Run will be recovered.
+					  * Constraints: The value must match regular expression `/^\\d+:\\d+$/`.
+				* `recover_pvcs_only` - (Boolean) Specifies whether to recover PVCs only during recovery.
+				* `recovery_target_config` - (List) Specifies the recovery target configuration of the Namespace recovery.
+				Nested schema for **recovery_target_config**:
+					* `new_source_config` - (List) Specifies the new source configuration if a Kubernetes Namespace is being restored to a different source than the one from which it was protected.
+					Nested schema for **new_source_config**:
+						* `source` - (List) Specifies the id of the parent source to recover the Namespaces.
+						Nested schema for **source**:
+							* `id` - (Integer) Specifies the id of the object.
+							* `name` - (String) Specifies the name of the object.
+					* `recover_to_new_source` - (Boolean) Specifies whether or not to recover the Namespaces to a different source than they were backed up from.
+				* `rename_recovered_namespaces_params` - (List) Specifies params to rename the Namespaces that are recovered. If not specified, the original names of the Namespaces are preserved. If a name collision occurs then the Namespace being recovered will overwrite the Namespace already present on the source.
+				Nested schema for **rename_recovered_namespaces_params**:
+					* `prefix` - (String) Specifies the prefix string to be added to recovered or cloned object names.
+					* `suffix` - (String) Specifies the suffix string to be added to recovered or cloned object names.
+				* `skip_cluster_compatibility_check` - (Boolean) Specifies whether to skip checking if the target cluster, to restore to, is compatible or not. By default restore allowed to compatible cluster only.
+				* `storage_class` - (List) Specifies the storage class parameters for recovery of namespace.
+				Nested schema for **storage_class**:
+					* `storage_class_mapping` - (List) Specifies mapping of storage classes.
+					Nested schema for **storage_class_mapping**:
+						* `key` - (String) The key of the label, used to identify the label.
+						* `value` - (String) The value associated with the label key.
+					* `use_storage_class_mapping` - (Boolean) Specifies whether or not to use storage class mapping.
+			* `target_environment` - (String) Specifies the environment of the recovery target. The corresponding params below must be filled out. As of now only kubernetes target environment is supported.
+			  * Constraints: Allowable values are: `kKubernetes`.
+			* `vlan_config` - (List) Specifies VLAN Params associated with the recovered. If this is not specified, then the VLAN settings will be automatically selected from one of the below options: a. If VLANs are configured on Cohesity, then the VLAN host/VIP will be automatically based on the client's (e.g. ESXI host) IP address. b. If VLANs are not configured on Cohesity, then the partition hostname or VIPs will be used for Recovery.
+			Nested schema for **vlan_config**:
+				* `disable_vlan` - (Boolean) If this is set to true, then even if VLANs are configured on the system, the partition VIPs will be used for the Recovery.
+				* `id` - (Integer) If this is set, then the Cohesity host name or the IP address associated with this vlan is used for mounting Cohesity's view on the remote host.
+				* `interface_name` - (String) Interface group to use for Recovery.
+		* `recovery_action` - (String) Specifies the type of recover action to be performed.
+		  * Constraints: Allowable values are: `RecoverNamespaces`, `RecoverFiles`, `DownloadFilesAndFolders`.
 	* `messages` - (List) Specifies messages about the recovery.
 	* `mssql_params` - (List) Specifies the recovery options specific to Sql environment.
 	Nested schema for **mssql_params**:
@@ -558,7 +938,7 @@ Nested schema for **recoveries**:
 		  * Constraints: The value must match regular expression `/^\\d+:\\d+:\\d+$/`.
 		* `uptier_expiry_times` - (List) Specifies how much time the retrieved entity is present in the hot-tiers.
 	* `snapshot_environment` - (String) Specifies the type of snapshot environment for which the Recovery was performed.
-	  * Constraints: Allowable values are: `kPhysical`, `kSQL`.
+	  * Constraints: Allowable values are: `kPhysical`, `kSQL`, `kKubernetes`.
 	* `start_time_usecs` - (Integer) Specifies the start time of the Recovery in Unix timestamp epoch in microseconds.
 	* `status` - (String) Status of the Recovery. 'Running' indicates that the Recovery is still running. 'Canceled' indicates that the Recovery has been cancelled. 'Canceling' indicates that the Recovery is in the process of being cancelled. 'Failed' indicates that the Recovery has failed. 'Succeeded' indicates that the Recovery has finished successfully. 'SucceededWithWarning' indicates that the Recovery finished successfully, but there were some warning messages. 'Skipped' indicates that the Recovery task was skipped.
 	  * Constraints: Allowable values are: `Accepted`, `Running`, `Canceled`, `Canceling`, `Failed`, `Missed`, `Succeeded`, `SucceededWithWarning`, `OnHold`, `Finalizing`, `Skipped`, `LegalHold`.
