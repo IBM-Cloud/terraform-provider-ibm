@@ -25,6 +25,7 @@ You can specify the following arguments for this data source.
 * `environments` - (Optional, List) Filter by environment types such as 'kVMware', 'kView', etc. Only Protection Groups protecting the specified environment types are returned.
   * Constraints: Allowable list items are: `kPhysical`, `kSQL`.
 * `ids` - (Optional, List) Filter by a list of Protection Group ids.
+* `backup_recovery_endpoint` - (Optional, String) Backup Recovery Endpoint URL. If provided here, it overrides values configured via environment variable (IBMCLOUD_BACKUP_RECOVERY_ENDPOINT) or endpoints.json.   
 * `include_groups_with_datalock_only` - (Optional, Boolean) Whether to only return Protection Groups with a datalock.
 * `include_last_run_info` - (Optional, Boolean) If true, the response will include last run info. If it is false or not specified, the last run info won't be returned.
 * `is_active` - (Optional, Boolean) Filter by Inactive or Active Protection Groups. If not set, all Inactive and Active Protection Groups are returned. If true, only Active Protection Groups are returned. If false, only Inactive Protection Groups are returned. When you create a Protection Group on a Primary Cluster with a replication schedule, the Cluster creates an Inactive copy of the Protection Group on the Remote Cluster. In addition, when an Active and running Protection Group is deactivated, the Protection Group becomes Inactive.

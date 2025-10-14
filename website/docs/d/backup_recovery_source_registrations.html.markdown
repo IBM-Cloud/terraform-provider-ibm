@@ -23,6 +23,7 @@ data "ibm_backup_recovery_source_registrations" "backup_recovery_source_registra
 You can specify the following arguments for this data source.
 
 * `encryption_key` - (Optional, String) Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified.
+* `backup_recovery_endpoint` - (Optional, String) Backup Recovery Endpoint URL. If provided here, it overrides values configured via environment variable (IBMCLOUD_BACKUP_RECOVERY_ENDPOINT) or endpoints.json.   
 * `ids` - (Optional, List) Ids specifies the list of source registration ids to return. If left empty, every source registration will be returned by default.
 * `ignore_tenant_migration_in_progress_check` - (Optional, Boolean) If true, tenant migration check will be ignored.
 * `include_external_metadata` - (Optional, Boolean) If true, the external entity metadata like maintenance mode config for the registered sources will be included.

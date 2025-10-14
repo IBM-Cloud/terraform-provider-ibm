@@ -30,6 +30,7 @@ You can specify the following arguments for this resource.
 
 * `connection_id` - (Required, Forces new resource, String) Specifies the ID of the connection, connectors belonging to which are to be fetched.
 * `x_ibm_tenant_id` - (Required, Forces new resource, String) Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified.
+* `backup_recovery_endpoint` - (Optional, String) Backup Recovery Endpoint URL. If provided here, it overrides values configured via environment variable (IBMCLOUD_BACKUP_RECOVERY_ENDPOINT) or endpoints.json.   
 
 ## Attribute Reference
 

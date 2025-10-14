@@ -24,6 +24,7 @@ You can specify the following arguments for this resource.
 
 * `connection_name` - (Required, String) Specifies the name of the connection. For a given tenant, different connections can't have the same name. However, two (or more) different tenants can each have a connection with the same name.
 * `x_ibm_tenant_id` - (Optional, String) Id of the tenant accessing the cluster.
+* `backup_recovery_endpoint` - (Optional, String) Backup Recovery Endpoint URL. If provided here, it overrides values configured via environment variable (IBMCLOUD_BACKUP_RECOVERY_ENDPOINT) or endpoints.json.   
 
 ## Attribute Reference
 

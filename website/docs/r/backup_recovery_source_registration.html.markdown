@@ -56,6 +56,7 @@ Nested schema for **connections**:
 * `environment` - (Required, String) Specifies the environment type of the Protection Source.
   * Constraints: Allowable values are: `kPhysical`, `kSQL`.
 * `name` - (Optional, String) The user specified name for this source.
+* `backup_recovery_endpoint` - (Optional, String) Backup Recovery Endpoint URL. If provided here, it overrides values configured via environment variable (IBMCLOUD_BACKUP_RECOVERY_ENDPOINT) or endpoints.json.   
 * `physical_params` - (Optional, List) Specifies parameters to register physical server.
 Nested schema for **physical_params**:
 	* `applications` - (Optional, List) Specifies the list of applications to be registered with Physical Source.

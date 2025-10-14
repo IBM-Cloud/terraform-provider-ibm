@@ -606,6 +606,7 @@ Nested schema for **mssql_params**:
 		* `id` - (Optional, Integer) If this is set, then the Cohesity host name or the IP address associated with this vlan is used for mounting Cohesity's view on the remote host.
 		* `interface_name` - (Computed, String) Interface group to use for Recovery.
 * `name` - (Required, Forces new resource, String) Specifies the name of the Recovery.
+* `backup_recovery_endpoint` - (Optional, String) Backup Recovery Endpoint URL. If provided here, it overrides values configured via environment variable (IBMCLOUD_BACKUP_RECOVERY_ENDPOINT) or endpoints.json.   
 * `physical_params` - (Optional, Forces new resource, List) Specifies the recovery options specific to Physical environment.
 Nested schema for **physical_params**:
 	* `download_file_and_folder_params` - (Optional, List) Specifies the parameters to download files and folders.

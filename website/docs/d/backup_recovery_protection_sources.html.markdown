@@ -23,6 +23,7 @@ data "ibm_backup_recovery_protection_sources" "backup_recovery_protection_source
 You can specify the following arguments for this data source.
 
 * `after_cursor_entity_id` - (Optional, Integer) Specifies the entity id starting from which the items are to be returned.
+* `backup_recovery_endpoint` - (Optional, String) Backup Recovery Endpoint URL. If provided here, it overrides values configured via environment variable (IBMCLOUD_BACKUP_RECOVERY_ENDPOINT) or endpoints.json.   
 * `all_under_hierarchy` - (Optional, Boolean) AllUnderHierarchy specifies if objects of all the tenants under the hierarchy of the logged in user's organization should be returned.
 * `backup_recovery_protection_sources_id` - (Optional, Integer) Return the Object subtree for the passed in Protection Source id.
 * `before_cursor_entity_id` - (Optional, Integer) Specifies the entity id upto which the items are to be returned.

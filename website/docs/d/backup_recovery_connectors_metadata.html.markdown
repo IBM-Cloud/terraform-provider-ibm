@@ -23,6 +23,7 @@ data "ibm_backup_recovery_connectors_metadata" "backup_recovery_connectors_metad
 You can specify the following arguments for this data source.
 
 * `x_ibm_tenant_id` - (Required, String) Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified.
+* `backup_recovery_endpoint` - (Optional, String) Backup Recovery Endpoint URL. If provided here, it overrides values configured via environment variable (IBMCLOUD_BACKUP_RECOVERY_ENDPOINT) or endpoints.json.   
 
 ## Attribute Reference
 

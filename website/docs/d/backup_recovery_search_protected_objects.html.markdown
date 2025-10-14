@@ -23,6 +23,7 @@ data "ibm_backup_recovery_search_protected_objects" "backup_recovery_search_prot
 You can specify the following arguments for this data source.
 
 * `cdp_protected_only` - (Optional, Boolean) Specifies whether to only return the CDP protected objects.
+* `backup_recovery_endpoint` - (Optional, String) Backup Recovery Endpoint URL. If provided here, it overrides values configured via environment variable (IBMCLOUD_BACKUP_RECOVERY_ENDPOINT) or endpoints.json.   
 * `environments` - (Optional, List) Specifies the environment type to filter objects.
   * Constraints: Allowable list items are: `kPhysical`, `kSQL`.
 * `filter_snapshot_from_usecs` - (Optional, Integer) Specifies the timestamp in Unix time epoch in microseconds to filter the objects if the Object has a successful snapshot after this value.

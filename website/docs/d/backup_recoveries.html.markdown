@@ -56,6 +56,7 @@ Nested schema for **recoveries**:
 	  * Constraints: The value must match regular expression `/^\\d+:\\d+:\\d+$/`.
 	* `is_multi_stage_restore` - (Boolean) Specifies whether the current recovery operation is a multi-stage restore operation. This is currently used by VMware recoveres for the migration/hot-standby use case.
 	* `is_parent_recovery` - (Boolean) Specifies whether the current recovery operation has created child recoveries. This is currently used in SQL recovery where multiple child recoveries can be tracked under a common/parent recovery.
+	* `backup_recovery_endpoint` - (Optional, String) Backup Recovery Endpoint URL. If provided here, it overrides values configured via environment variable (IBMCLOUD_BACKUP_RECOVERY_ENDPOINT) or endpoints.json.   
 	* `messages` - (List) Specifies messages about the recovery.
 	* `mssql_params` - (List) Specifies the recovery options specific to Sql environment.
 	Nested schema for **mssql_params**:

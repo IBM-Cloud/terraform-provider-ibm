@@ -30,6 +30,7 @@ You can specify the following arguments for this data source.
 * `snapshots_id` - (Required, Forces new resource, String) Specifies the snapshot id to download from.
 * `start_offset` - (Optional, Integer) Specifies the start offset of file chunk to be downloaded.
 * `x_ibm_tenant_id` - (Required, String) Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified.
+* `backup_recovery_endpoint` - (Optional, String) Backup Recovery Endpoint URL. If provided here, it overrides values configured via environment variable (IBMCLOUD_BACKUP_RECOVERY_ENDPOINT) or endpoints.json.   
 
 ## Attribute Reference
 

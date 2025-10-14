@@ -24,6 +24,7 @@ resource "ibm_backup_recovery_data_source_connector_patch" "backup_recovery_data
 You can specify the following arguments for this resource.
 
 * `connector_id` - (Required, Forces new resource, String) Specifies the unique ID of the connector which is to be deleted.
+* `backup_recovery_endpoint` - (Optional, String) Backup Recovery Endpoint URL. If provided here, it overrides values configured via environment variable (IBMCLOUD_BACKUP_RECOVERY_ENDPOINT) or endpoints.json.   
 * `connector_name` - (Optional, Forces new resource, String) Specifies the name of the connector. The name of a connector need not be unique within a tenant or across tenants. The name of the connector can be updated as needed.
 * `x_ibm_tenant_id` - (Required, Forces new resource, String) Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified.
 

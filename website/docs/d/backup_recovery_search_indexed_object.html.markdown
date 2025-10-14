@@ -241,6 +241,7 @@ Nested schema for **couchbase_params**:
 	* `search_string` - (Required, String) Specifies the search string to search the Couchbase Objects.
 	* `source_ids` - (Optional, List) Specifies a list of source ids. Only files found in these sources will be returned.
 * `count` - (Optional, Forces new resource, Integer) Specifies the number of indexed objects to be fetched for the specified pagination cookie.
+* `backup_recovery_endpoint` - (Optional, String) Backup Recovery Endpoint URL. If provided here, it overrides values configured via environment variable (IBMCLOUD_BACKUP_RECOVERY_ENDPOINT) or endpoints.json.   
 * `email_params` - (Optional, Forces new resource, List) Specifies the request parameters to search for emails and email folders.
 Nested schema for **email_params**:
 	* `attendees_addresses` - (Optional, List) Filters the calendar items which have specified email addresses as attendees.

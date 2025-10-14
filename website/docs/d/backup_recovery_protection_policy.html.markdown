@@ -24,6 +24,7 @@ data "ibm_backup_recovery_protection_policy" "backup_recovery_protection_policy"
 You can specify the following arguments for this data source.
 
 * `protection_policy_id` - (Required, Forces new resource, String) Specifies a unique id of the Protection Policy to return.
+* `backup_recovery_endpoint` - (Optional, String) Backup Recovery Endpoint URL. If provided here, it overrides values configured via environment variable (IBMCLOUD_BACKUP_RECOVERY_ENDPOINT) or endpoints.json.   
 * `request_initiator_type` - (Optional, String) Specifies the type of request from UI, which is used for services like magneto to determine the priority of requests.
   * Constraints: Allowable values are: `UIUser`, `UIAuto`, `Helios`.
 * `x_ibm_tenant_id` - (Required, String) Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified.
