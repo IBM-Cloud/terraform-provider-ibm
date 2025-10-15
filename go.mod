@@ -27,7 +27,7 @@ require (
 	github.com/IBM/logs-go-sdk v0.4.0
 	github.com/IBM/logs-router-go-sdk v1.0.8
 	github.com/IBM/mqcloud-go-sdk v0.4.0
-	github.com/IBM/networking-go-sdk v0.51.12
+	github.com/IBM/networking-go-sdk v0.51.13
 	github.com/IBM/platform-services-go-sdk v0.87.0
 	github.com/IBM/project-go-sdk v0.3.9
 	github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5
@@ -109,6 +109,7 @@ require (
 	github.com/go-ozzo/ozzo-validation/v4 v4.3.0 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
+	github.com/go-playground/validator/v10 v10.27.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
@@ -150,6 +151,7 @@ require (
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
+	github.com/k8snetworkplumbingwg/network-attachment-definition-client v1.7.6 // indirect
 	github.com/klauspost/compress v1.17.11 // indirect
 	github.com/kube-object-storage/lib-bucket-provisioner v0.0.0-20221122204822-d1a8c34382f1 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
@@ -185,6 +187,23 @@ require (
 	github.com/vmihailenco/msgpack/v5 v5.4.1 // indirect
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
+	github.com/zclconf/go-cty v1.16.2 // indirect
+	go.mongodb.org/mongo-driver v1.17.4 // indirect
+	go.opentelemetry.io/auto/sdk v1.1.0 // indirect
+	go.opentelemetry.io/otel v1.35.0 // indirect
+	go.opentelemetry.io/otel/metric v1.35.0 // indirect
+	go.opentelemetry.io/otel/trace v1.35.0 // indirect
+	go.uber.org/automaxprocs v1.6.0 // indirect
+	go.uber.org/ratelimit v0.2.0 // indirect
+	go.yaml.in/yaml/v2 v2.4.2 // indirect
+	golang.org/x/mod v0.26.0 // indirect
+	golang.org/x/net v0.43.0 // indirect
+	golang.org/x/oauth2 v0.27.0 // indirect
+	golang.org/x/sync v0.16.0 // indirect
+	golang.org/x/sys v0.35.0 // indirect
+	golang.org/x/term v0.34.0 // indirect
+	golang.org/x/text v0.28.0 // indirect
+	golang.org/x/time v0.9.0 // indirect
 	golang.org/x/tools v0.35.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250218202821-56aae31c358a // indirect
