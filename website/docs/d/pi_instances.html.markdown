@@ -49,6 +49,7 @@ In addition to all argument reference list, you can access the following attribu
   Nested scheme for `pvm_instances`:
   - `crn` - (String) The CRN of this resource.
   - `dedicated_host_id` - (String) The dedicated host ID where the shared processor pool resides.
+  - `effective_processor_compatibility_mode` - (String) Effective processor compatibility mode.
   - `fault` - (Map) Fault information, if any.
 
       Nested scheme for `fault`:
@@ -80,7 +81,8 @@ In addition to all argument reference list, you can access the following attribu
         - `type` - (String) The type of the network.
 
   - `pin_policy` - (String) The pinning policy of the instance.
-  - `placement_group_id`- (String) The ID of the placement group that the instance is a member.
+  - `placement_group_id` - (String) The ID of the placement group that the instance is a member.
+  - `preferred_processor_compatibility_mode` - (String) Preferred processor compatibility mode.
   - `processors` - (Float) The number of processors that are allocated to the instance.
   - `proctype` - (String) The procurement type of the instance. Supported values are `shared` and `dedicated`.
   - `pvm_instance_id` - (String) The unique identifier of the instance.

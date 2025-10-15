@@ -5,6 +5,7 @@ package power
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
@@ -47,6 +48,11 @@ func DataSourceIBMPIInstance() *schema.Resource {
 			Attr_DeploymentType: {
 				Computed:    true,
 				Description: "The custom deployment type.",
+				Type:        schema.TypeString,
+			},
+			Attr_EffectiveProcessorCompatibilityMode: {
+				Computed:    true,
+				Description: "Effective processor compatibility mode.",
 				Type:        schema.TypeString,
 			},
 			Attr_Fault: {
@@ -185,6 +191,11 @@ func DataSourceIBMPIInstance() *schema.Resource {
 				Description: "The ID of the placement group that the instance is a member.",
 				Type:        schema.TypeString,
 			},
+			Attr_PreferredProcessorCompatibilityMode: {
+				Computed:    true,
+				Description: "Preferred processor compatibility mode.",
+				Type:        schema.TypeString,
+			},
 			Attr_Processors: {
 				Computed:    true,
 				Description: "The number of processors that are allocated to the instance.",
@@ -281,10 +292,12 @@ func DataSourceIBMPIInstance() *schema.Resource {
 	}
 }
 
-func dataSourceIBMPIInstancesRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMPIInstancesRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "(Data) ibm_pi_instance", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
@@ -292,7 +305,9 @@ func dataSourceIBMPIInstancesRead(ctx context.Context, d *schema.ResourceData, m
 	powerC := instance.NewIBMPIInstanceClient(ctx, sess, cloudInstanceID)
 	powervmdata, err := powerC.Get(d.Get(Arg_InstanceName).(string))
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Get failed: %s", err.Error()), "(Data) ibm_pi_instance", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	pvminstanceid := *powervmdata.PvmInstanceID
@@ -305,8 +320,10 @@ func dataSourceIBMPIInstancesRead(ctx context.Context, d *schema.ResourceData, m
 		}
 		d.Set(Attr_UserTags, tags)
 	}
+
 	d.Set(Attr_DedicatedHostID, powervmdata.DedicatedHostID)
 	d.Set(Attr_DeploymentType, powervmdata.DeploymentType)
+	d.Set(Attr_EffectiveProcessorCompatibilityMode, powervmdata.EffectiveProcessorCompatibilityMode)
 	d.Set(Attr_LicenseRepositoryCapacity, powervmdata.LicenseRepositoryCapacity)
 	d.Set(Attr_MaxMem, powervmdata.Maxmem)
 	d.Set(Attr_MaxProc, powervmdata.Maxproc)
@@ -317,6 +334,7 @@ func dataSourceIBMPIInstancesRead(ctx context.Context, d *schema.ResourceData, m
 	d.Set(Attr_MinVirtualCores, powervmdata.VirtualCores.Min)
 	d.Set(Attr_Networks, flattenPvmInstanceNetworks(powervmdata.Networks))
 	d.Set(Attr_PinPolicy, powervmdata.PinPolicy)
+	d.Set(Attr_PreferredProcessorCompatibilityMode, powervmdata.PreferredProcessorCompatibilityMode)
 	d.Set(Attr_Processors, powervmdata.Processors)
 	d.Set(Attr_ProcType, powervmdata.ProcType)
 	d.Set(Attr_ServerName, powervmdata.ServerName)
@@ -324,11 +342,11 @@ func dataSourceIBMPIInstancesRead(ctx context.Context, d *schema.ResourceData, m
 	d.Set(Attr_SharedProcessorPoolID, powervmdata.SharedProcessorPoolID)
 	d.Set(Attr_Status, powervmdata.Status)
 	d.Set(Attr_StorageConnection, powervmdata.StorageConnection)
-	d.Set(Attr_StorageType, powervmdata.StorageType)
 	d.Set(Attr_StoragePool, powervmdata.StoragePool)
 	d.Set(Attr_StoragePoolAffinity, powervmdata.StoragePoolAffinity)
-	d.Set(Attr_Volumes, powervmdata.VolumeIDs)
+	d.Set(Attr_StorageType, powervmdata.StorageType)
 	d.Set(Attr_VirtualCoresAssigned, powervmdata.VirtualCores.Assigned)
+	d.Set(Attr_Volumes, powervmdata.VolumeIDs)
 
 	if *powervmdata.PlacementGroup != "none" {
 		d.Set(Attr_PlacementGroupID, powervmdata.PlacementGroup)

@@ -40,7 +40,7 @@ Review the argument references that you can specify for your data source.
 
 - `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
 - `pi_family_filter` - (Optional, String) SAP profile family filter. Allowed values are: ["balanced", "compute", "memory", "sap-rise", "sap-rise-app", "small", "ultra-memory"].
-- `pi_prefix_filter` - (Optional, String) SAP profile prefix filter. Allowed values are: ["bh1", "bh2", "ch1", "ch2", "mh1", "mh2", "umh", "ush1", "sh2", "sr2"].
+- `pi_prefix_filter` - (Optional, String) SAP profile prefix filter. Allowed values are: ["bh1", "bh2", "ch1", "ch2", "mh1", "mh2", "umh", "ush1", "sh2", "sr2", "sr3"].
 
 ## Attribute Reference
 

@@ -379,14 +379,14 @@ func resourceIBMTransitGatewayConnectionCreate(d *schema.ResourceData, meta inte
 		createTransitGatewayConnectionOptions.SetPrefixFiltersDefault(default_prefix_filter)
 	}
 
-	tunnelCreateList := make([]transitgatewayapisv1.TransitGatewayRedundantGRETunnelTemplate, 0)
+	tunnelCreateList := make([]transitgatewayapisv1.TransitGatewayTunnelTemplate, 0)
 
 	if _, ok := d.GetOk(tgrGREtunnels); ok {
 		tunnelList := d.Get(tgrGREtunnels).(*schema.Set).List()
 		for _, tunnel := range tunnelList {
 			tunnelData := tunnel.(map[string]interface{})
 
-			tunnelTemplateModel := new(transitgatewayapisv1.TransitGatewayRedundantGRETunnelTemplate)
+			tunnelTemplateModel := new(transitgatewayapisv1.TransitGatewayTunnelTemplate)
 
 			if _, ok := tunnelData[tgLocalGatewayIp]; ok {
 				tunnelTemplateModel.LocalGatewayIp = NewStrPointer(tunnelData[tgLocalGatewayIp].(string))

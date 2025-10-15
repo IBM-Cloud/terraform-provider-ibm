@@ -1,8 +1,8 @@
-// Copyright IBM Corp. 2024 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.92.1-44330004-20240620-143510
+ * IBM OpenAPI Terraform Generator Version: 3.107.1-41b0fbd0-20250825-080732
  */
 
 package project
@@ -17,6 +17,7 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/project-go-sdk/projectv1"
 )
 
@@ -49,7 +50,7 @@ func DataSourceIbmProjectEnvironment() *schema.Resource {
 						"href": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "A URL.",
+							Description: "A Url.",
 						},
 						"definition": &schema.Schema{
 							Type:        schema.TypeList,
@@ -91,7 +92,7 @@ func DataSourceIbmProjectEnvironment() *schema.Resource {
 			"href": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "A URL.",
+				Description: "A Url.",
 			},
 			"definition": &schema.Schema{
 				Type:        schema.TypeList,
@@ -112,7 +113,7 @@ func DataSourceIbmProjectEnvironment() *schema.Resource {
 						"authorizations": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "The authorization details. You can authorize by using a trusted profile or an API key in Secrets Manager.",
+							Description: "The authorization details. It can authorize by using a trusted profile or an API key in Secrets Manager.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"trusted_profile_id": &schema.Schema{
@@ -123,7 +124,7 @@ func DataSourceIbmProjectEnvironment() *schema.Resource {
 									"method": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "The authorization method. You can authorize by using a trusted profile or an API key in Secrets Manager.",
+										Description: "The authorization method. It can authorize by using a trusted profile or an API key in Secrets Manager.",
 									},
 									"api_key": &schema.Schema{
 										Type:        schema.TypeString,
@@ -173,6 +174,41 @@ func DataSourceIbmProjectEnvironment() *schema.Resource {
 										Computed:    true,
 										Description: "The name of the compliance profile.",
 									},
+									"wp_policy_id": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The unique ID for the Workload Protection policy.",
+									},
+									"wp_instance_id": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "A unique ID for the instance of a Workload Protection.",
+									},
+									"wp_instance_name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The name of the Workload Protection instance.",
+									},
+									"wp_instance_location": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The location of the compliance instance.",
+									},
+									"wp_zone_id": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "A unique ID for the zone to a Workload Protection policy.",
+									},
+									"wp_zone_name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "A unique ID for the zone to a Workload Protection policy.",
+									},
+									"wp_policy_name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The name of the Workload Protection policy.",
+									},
 								},
 							},
 						},
@@ -186,8 +222,7 @@ func DataSourceIbmProjectEnvironment() *schema.Resource {
 func dataSourceIbmProjectEnvironmentRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	projectClient, err := meta.(conns.ClientSession).ProjectV1()
 	if err != nil {
-		// Error is coming from SDK client, so it doesn't need to be discriminated.
-		tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_project_environment", "read")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_project_environment", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -207,13 +242,11 @@ func dataSourceIbmProjectEnvironmentRead(context context.Context, d *schema.Reso
 	d.SetId(fmt.Sprintf("%s/%s", *getProjectEnvironmentOptions.ProjectID, *getProjectEnvironmentOptions.ID))
 
 	project := []map[string]interface{}{}
-	if environment.Project != nil {
-		modelMap, err := DataSourceIbmProjectEnvironmentProjectReferenceToMap(environment.Project)
-		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_project_environment", "read", "project-to-map").GetDiag()
-		}
-		project = append(project, modelMap)
+	projectMap, err := DataSourceIbmProjectEnvironmentProjectReferenceToMap(environment.Project)
+	if err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_project_environment", "read", "project-to-map").GetDiag()
 	}
+	project = append(project, projectMap)
 	if err = d.Set("project", project); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting project: %s", err), "(Data) ibm_project_environment", "read", "set-project").GetDiag()
 	}
@@ -222,8 +255,10 @@ func dataSourceIbmProjectEnvironmentRead(context context.Context, d *schema.Reso
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting created_at: %s", err), "(Data) ibm_project_environment", "read", "set-created_at").GetDiag()
 	}
 
-	if err = d.Set("target_account", environment.TargetAccount); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting target_account: %s", err), "(Data) ibm_project_environment", "read", "set-target_account").GetDiag()
+	if !core.IsNil(environment.TargetAccount) {
+		if err = d.Set("target_account", environment.TargetAccount); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting target_account: %s", err), "(Data) ibm_project_environment", "read", "set-target_account").GetDiag()
+		}
 	}
 
 	if err = d.Set("modified_at", flex.DateTimeToString(environment.ModifiedAt)); err != nil {
@@ -235,13 +270,11 @@ func dataSourceIbmProjectEnvironmentRead(context context.Context, d *schema.Reso
 	}
 
 	definition := []map[string]interface{}{}
-	if environment.Definition != nil {
-		modelMap, err := DataSourceIbmProjectEnvironmentEnvironmentDefinitionRequiredPropertiesResponseToMap(environment.Definition)
-		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_project_environment", "read", "definition-to-map").GetDiag()
-		}
-		definition = append(definition, modelMap)
+	definitionMap, err := DataSourceIbmProjectEnvironmentEnvironmentDefinitionRequiredPropertiesResponseToMap(environment.Definition)
+	if err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_project_environment", "read", "definition-to-map").GetDiag()
 	}
+	definition = append(definition, definitionMap)
 	if err = d.Set("definition", definition); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting definition: %s", err), "(Data) ibm_project_environment", "read", "set-definition").GetDiag()
 	}
@@ -310,7 +343,62 @@ func DataSourceIbmProjectEnvironmentProjectConfigAuthToMap(model *projectv1.Proj
 	return modelMap, nil
 }
 
-func DataSourceIbmProjectEnvironmentProjectComplianceProfileToMap(model *projectv1.ProjectComplianceProfile) (map[string]interface{}, error) {
+func DataSourceIbmProjectEnvironmentProjectComplianceProfileToMap(model projectv1.ProjectComplianceProfileIntf) (map[string]interface{}, error) {
+	if _, ok := model.(*projectv1.ProjectComplianceProfileNullableObject); ok {
+		return DataSourceIbmProjectEnvironmentProjectComplianceProfileNullableObjectToMap(model.(*projectv1.ProjectComplianceProfileNullableObject))
+	} else if _, ok := model.(*projectv1.ProjectComplianceProfileV1); ok {
+		return DataSourceIbmProjectEnvironmentProjectComplianceProfileV1ToMap(model.(*projectv1.ProjectComplianceProfileV1))
+	} else if _, ok := model.(*projectv1.ProjectComplianceProfile); ok {
+		modelMap := make(map[string]interface{})
+		model := model.(*projectv1.ProjectComplianceProfile)
+		if model.ID != nil {
+			modelMap["id"] = *model.ID
+		}
+		if model.InstanceID != nil {
+			modelMap["instance_id"] = *model.InstanceID
+		}
+		if model.InstanceLocation != nil {
+			modelMap["instance_location"] = *model.InstanceLocation
+		}
+		if model.AttachmentID != nil {
+			modelMap["attachment_id"] = *model.AttachmentID
+		}
+		if model.ProfileName != nil {
+			modelMap["profile_name"] = *model.ProfileName
+		}
+		if model.WpPolicyID != nil {
+			modelMap["wp_policy_id"] = *model.WpPolicyID
+		}
+		if model.WpInstanceID != nil {
+			modelMap["wp_instance_id"] = *model.WpInstanceID
+		}
+		if model.WpInstanceName != nil {
+			modelMap["wp_instance_name"] = *model.WpInstanceName
+		}
+		if model.WpInstanceLocation != nil {
+			modelMap["wp_instance_location"] = *model.WpInstanceLocation
+		}
+		if model.WpZoneID != nil {
+			modelMap["wp_zone_id"] = *model.WpZoneID
+		}
+		if model.WpZoneName != nil {
+			modelMap["wp_zone_name"] = *model.WpZoneName
+		}
+		if model.WpPolicyName != nil {
+			modelMap["wp_policy_name"] = *model.WpPolicyName
+		}
+		return modelMap, nil
+	} else {
+		return nil, fmt.Errorf("Unrecognized projectv1.ProjectComplianceProfileIntf subtype encountered")
+	}
+}
+
+func DataSourceIbmProjectEnvironmentProjectComplianceProfileNullableObjectToMap(model *projectv1.ProjectComplianceProfileNullableObject) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	return modelMap, nil
+}
+
+func DataSourceIbmProjectEnvironmentProjectComplianceProfileV1ToMap(model *projectv1.ProjectComplianceProfileV1) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
 		modelMap["id"] = *model.ID
@@ -326,6 +414,27 @@ func DataSourceIbmProjectEnvironmentProjectComplianceProfileToMap(model *project
 	}
 	if model.ProfileName != nil {
 		modelMap["profile_name"] = *model.ProfileName
+	}
+	if model.WpPolicyID != nil {
+		modelMap["wp_policy_id"] = *model.WpPolicyID
+	}
+	if model.WpInstanceID != nil {
+		modelMap["wp_instance_id"] = *model.WpInstanceID
+	}
+	if model.WpInstanceName != nil {
+		modelMap["wp_instance_name"] = *model.WpInstanceName
+	}
+	if model.WpInstanceLocation != nil {
+		modelMap["wp_instance_location"] = *model.WpInstanceLocation
+	}
+	if model.WpZoneID != nil {
+		modelMap["wp_zone_id"] = *model.WpZoneID
+	}
+	if model.WpZoneName != nil {
+		modelMap["wp_zone_name"] = *model.WpZoneName
+	}
+	if model.WpPolicyName != nil {
+		modelMap["wp_policy_name"] = *model.WpPolicyName
 	}
 	return modelMap, nil
 }

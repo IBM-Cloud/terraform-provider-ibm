@@ -240,7 +240,7 @@ func TestGetAllowedVersionsList(t *testing.T) {
 
 type MockMeta struct{}
 
-func MockGetDeploymentCapability(capability string, instanceID string, platform string, location string, meta interface{}) (*clouddatabasesv5.Capability, error) {
+func MockGetDeploymentCapability(capability string, instanceID string, options DeploymentCapabilityOptions, meta interface{}) (*clouddatabasesv5.Capability, error) {
 	return &clouddatabasesv5.Capability{
 		Versions: []clouddatabasesv5.VersionsCapabilityItem{
 			{
@@ -275,7 +275,7 @@ func MockGetDeploymentCapability(capability string, instanceID string, platform 
 	}, nil
 }
 
-func MockGetDeploymentCapabilityNoTransitions(capability string, instanceID string, platform string, location string, meta interface{}) (*clouddatabasesv5.Capability, error) {
+func MockGetDeploymentCapabilityNoTransitions(capability string, instanceID string, options DeploymentCapabilityOptions, meta interface{}) (*clouddatabasesv5.Capability, error) {
 	return &clouddatabasesv5.Capability{
 		Versions: []clouddatabasesv5.VersionsCapabilityItem{
 			{
@@ -297,7 +297,7 @@ func TestValidateVersion(t *testing.T) {
 		oldVersion         string
 		upgradeVersion     string
 		skipBackup         bool
-		mockCapabilityFunc func(capability string, instanceID string, platform string, location string, meta interface{}) (*clouddatabasesv5.Capability, error)
+		mockCapabilityFunc func(capability string, instanceID string, options DeploymentCapabilityOptions, meta interface{}) (*clouddatabasesv5.Capability, error)
 		expectedError      string
 	}{
 		{
@@ -348,7 +348,14 @@ func TestValidateVersion(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.description, func(t *testing.T) {
 			fetchDeploymentVersionFn = func(instanceID string, location string, meta interface{}) *Version {
-				capability, err := tc.mockCapabilityFunc(versions, instanceID, classicPlatform, location, meta)
+				options := DeploymentCapabilityOptions{
+					Platform:      classicPlatform,
+					Location:      location,
+					IncludeHidden: core.BoolPtr(true),
+					IncludeBeta:   core.BoolPtr(true),
+				}
+
+				capability, err := tc.mockCapabilityFunc(versions, instanceID, options, meta)
 				require.NoError(t, err)
 				return expandVersion(capability.Versions[0])
 			}

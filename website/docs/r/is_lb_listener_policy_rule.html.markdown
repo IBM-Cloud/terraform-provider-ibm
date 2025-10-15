@@ -7,7 +7,7 @@ description: |-
   Manages IBM VPC load balancer listener policy rule.
 ---
 
-# ibm_is_lb_listener_policy
+# ibm_is_lb_listener_policy_rule
 Create, update, or delete a VPC load balancer listener policy rule. For more information, about load balancer listener policy and rules, see [layer 7 load balancing policies and rules](https://cloud.ibm.com/docs/vpc?topic=vpc-layer-7-load-balancing).
 
 **Note:** 
@@ -85,7 +85,7 @@ resource "ibm_is_lb_listener_policy" "example" {
   target_url              = "https://www.redirect.com"
   rules {
     condition = "contains"
-    type      = "header"
+    type      = "tcp"
     field     = "1"
     value     = "2"
   }
@@ -105,7 +105,7 @@ resource "ibm_is_lb_listener_policy_rule" "example" {
 
 
 ## Timeouts
-The `ibm_is_lb_listener_policy` rule provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
+The `ibm_is_lb_listener_policy_rule` rule provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
 - **Create**: The creation of the resource is considered failed if no response is received for 10 minutes. 
 - **Update**: The update of the resource is considered failed if no response is received for 10 minutes. 
@@ -119,27 +119,50 @@ Review the argument references that you can specify for your resource.
 - `lb` - (Required, Forces new resource, String) The ID of the load balancer for which you want to create a listener policy rule.
 - `listener` - (Required, Forces new resource, String) The ID of the load balancer listener for which you want to create a policy rule. 
 - `policy` - (Required, Forces new resource, String) The ID of the load balancer listener policy for which you want to create a policy rule. 
-- `type` - (Required, String) The object where you want to apply the rule. Supported values are `header`, `hostname`,`sni_hostname` and `path`.
+- `type` - (Required, String) The object where you want to apply the rule. Supported values are `body`, `header`, `hostname`, `path`, `query`, and `sni_hostname`.
+  The content the rule applies to:
+    - `body`: The UTF-8 form-encoded HTTP request body
+    - `header`: The HTTP header
+    - `hostname`: The fully-qualified domain name of the server specified in the Host HTTP request header
+    - `path`: The path of the HTTP request
+    - `query`: The query of the HTTP request URL
+    - `sni_hostname`: The fully-qualified domain name of the server provided in the "server name indicator" extension during TLS negotiation
+    - For listeners with protocol http or https, any type may be specified.
+    - For listeners with protocol tcp, only type `sni_hostname` may be specified.
+
 - `value` - (Required, String) The value that must match the rule condition. The value can be between 1 and 128 characters long. No.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-- `id` - (String) The ID of the load balancer listener policy rule. The ID is composed of ` <loadbalancer_ID>/<listener_ID>/<policy>ID>`.
+- `id` - (String) The ID of the load balancer listener policy rule. The ID is composed of ` <loadbalancer_ID>/<listener_ID>/<policy_ID>/<rule_ID>`.
 - `rule` - (String) The ID of the rule.
-- `status` - (String) The status of the load balancer listener.
+- `status` - (String) The status of the load balancer listener policy rule.
+
 
 ## Import
-The `ibm_is_lb_listener_policy_rule` resource can be imported by using `lb_ID`, `listener_ID`, `policy_ID` and `rule_ID`.
+
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) to import the **listener policy rule** using `lb_ID`, `listener_ID`, `policy_ID`, and `rule_ID`.
+
+**Example**
+
+```hcl
+import {
+  to = ibm_is_lb_listener_policy_rule.example
+  id = "c1e3d5d3-8836-4328-b473-a90e0c9ba941/3ea13dc7-25b4-4c62-8cc7-0f7e092e7a8f/2161a3fb-123c-4a33-9a3d-b3154ef42009/356789523dc7-25b4-4c62-8cc7-0f7e092e7a8f"
+}
+```
+
+For versions prior to Terraform v1.5.0, use the `terraform import` command:
 
 **Syntax**
 
-```
-$ terraform import ibm_is_lb_listener_policy.example <loadbalancer_ID>/<listener_ID>/<policy>ID>
+```console
+$ terraform import ibm_is_lb_listener_policy_rule.example <loadbalancer_ID>/<listener_ID>/<policy_ID>/<rule_ID>
 ```
 
 **Example**
 
-```
-$ terraform import ibm_is_lb_listener_policy.example c1e3d5d3-8836-4328-b473-a90e0c9ba941/3ea13dc7-25b4-4c62-8cc7-0f7e092e7a8f/2161a3fb-123c-4a33-9a3d-b3154ef42009/356789523dc7-25b4-4c62-8cc7-0f7e092e7a8f
+```console
+$ terraform import ibm_is_lb_listener_policy_rule.example c1e3d5d3-8836-4328-b473-a90e0c9ba941/3ea13dc7-25b4-4c62-8cc7-0f7e092e7a8f/2161a3fb-123c-4a33-9a3d-b3154ef42009/356789523dc7-25b4-4c62-8cc7-0f7e092e7a8f
 ```
