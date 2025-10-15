@@ -2234,15 +2234,15 @@ func TestProvider_impl(t *testing.T) {
 }
 
 func TestAccPreCheck(t *testing.T) {
-	// if v := os.Getenv("IC_API_KEY"); v == "" {
-	// 	t.Fatal("IC_API_KEY must be set for acceptance tests")
-	// }
-	// if v := os.Getenv("IAAS_CLASSIC_API_KEY"); v == "" {
-	// 	t.Fatal("IAAS_CLASSIC_API_KEY must be set for acceptance tests")
-	// }
-	// if v := os.Getenv("IAAS_CLASSIC_USERNAME"); v == "" {
-	// 	t.Fatal("IAAS_CLASSIC_USERNAME must be set for acceptance tests")
-	// }
+	if v := os.Getenv("IC_API_KEY"); v == "" {
+		t.Fatal("IC_API_KEY must be set for acceptance tests")
+	}
+	if v := os.Getenv("IAAS_CLASSIC_API_KEY"); v == "" {
+		t.Fatal("IAAS_CLASSIC_API_KEY must be set for acceptance tests")
+	}
+	if v := os.Getenv("IAAS_CLASSIC_USERNAME"); v == "" {
+		t.Fatal("IAAS_CLASSIC_USERNAME must be set for acceptance tests")
+	}
 
 	testAccProviderConfigure.Do(func() {
 		diags := TestAccProvider.Configure(context.Background(), terraformsdk.NewResourceConfigRaw(nil))
