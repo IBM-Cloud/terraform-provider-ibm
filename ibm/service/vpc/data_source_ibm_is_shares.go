@@ -45,10 +45,26 @@ func DataSourceIbmIsShares() *schema.Resource {
 							Elem:        &schema.Schema{Type: schema.TypeString},
 							Description: "Allowed transit encryption modes",
 						},
+						"availability_mode": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Availability mode of the share.",
+						},
 						"access_control_mode": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The access control mode for the share",
+						},
+						"allowed_access_protocols": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Description: "Allowed access protocols for this share",
+						},
+						"bandwidth": {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The bandwidth for this share.",
 						},
 						"created_at": {
 							Type:        schema.TypeString,
@@ -561,6 +577,11 @@ func DataSourceIbmIsShares() *schema.Resource {
 								},
 							},
 						},
+						"storage_generation": {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The storage generation for this share",
+						},
 					},
 				},
 			},
@@ -576,7 +597,9 @@ func DataSourceIbmIsShares() *schema.Resource {
 func dataSourceIbmIsSharesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("vpcClient creation failed: %s", err.Error()), "(Data) ibm_is_shares", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	shareName := ""
 	if shareNameIntf, ok := d.GetOk("name"); ok {
@@ -603,8 +626,9 @@ func dataSourceIbmIsSharesRead(context context.Context, d *schema.ResourceData, 
 		}
 		shareCollection, response, err := vpcClient.ListSharesWithContext(context, listSharesOptions)
 		if err != nil {
-			log.Printf("[DEBUG] ListSharesWithContext failed %s\n%s", err, response)
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListSharesWithContext failed: %s\n%s", err.Error(), response), "(Data) ibm_is_shares", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		if totalCount == 0 {
 			totalCount = int(*shareCollection.TotalCount)
@@ -625,7 +649,8 @@ func dataSourceIbmIsSharesRead(context context.Context, d *schema.ResourceData, 
 		}
 		errSettingShares := d.Set("shares", shares)
 		if errSettingShares != nil {
-			return diag.FromErr(fmt.Errorf("Error setting shares %s", errSettingShares))
+			errSettingShares = fmt.Errorf("Error setting shares: %s", errSettingShares)
+			return flex.DiscriminatedTerraformErrorf(errSettingShares, errSettingShares.Error(), "(Data) ibm_is_shares", "read", "set-shares").GetDiag()
 		}
 	}
 	if err = d.Set("total_count", totalCount); err != nil {
@@ -711,6 +736,15 @@ func dataSourceShareCollectionSharesToMap(meta interface{}, sharesItem vpcv1.Sha
 	if !core.IsNil(sharesItem.AllowedTransitEncryptionModes) {
 		sharesMap["allowed_transit_encryption_modes"] = sharesItem.AllowedTransitEncryptionModes
 	}
+	if sharesItem.AvailabilityMode != nil {
+		sharesMap["availability_mode"] = *sharesItem.AvailabilityMode
+	}
+	if !core.IsNil(sharesItem.AllowedAccessProtocols) {
+		sharesMap["allowed_access_protocols"] = sharesItem.AllowedAccessProtocols
+	}
+	if sharesItem.Bandwidth != nil {
+		sharesMap["bandwidth"] = sharesItem.Bandwidth
+	}
 	if sharesItem.AccessorBindingRole != nil {
 		sharesMap["accessor_binding_role"] = sharesItem.AccessorBindingRole
 	}
@@ -769,6 +803,9 @@ func dataSourceShareCollectionSharesToMap(meta interface{}, sharesItem vpcv1.Sha
 		sourceSnapshot = append(sourceSnapshot, modelMap)
 	}
 	sharesMap["source_snapshot"] = sourceSnapshot
+
+	sharesMap["storage_generation"] = flex.IntValue(sharesItem.StorageGeneration)
+
 	accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *sharesItem.CRN, "", isAccessTagType)
 	if err != nil {
 		log.Printf(

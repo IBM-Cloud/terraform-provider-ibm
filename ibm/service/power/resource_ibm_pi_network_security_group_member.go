@@ -32,6 +32,7 @@ func ResourceIBMPINetworkSecurityGroupMember() *schema.Resource {
 		Importer:      &schema.ResourceImporter{},
 
 		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(20 * time.Minute),
 			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
 		Schema: map[string]*schema.Schema{
@@ -307,7 +308,7 @@ func resourceIBMPINetworkSecurityGroupMemberRead(ctx context.Context, d *schema.
 
 	if networkSecurityGroup.Crn != nil {
 		d.Set(Attr_CRN, networkSecurityGroup.Crn)
-		userTags, err := flex.GetTagsUsingCRN(meta, string(*networkSecurityGroup.Crn))
+		userTags, err := flex.GetGlobalTagsUsingCRN(meta, string(*networkSecurityGroup.Crn), "", UserTagType)
 		if err != nil {
 			log.Printf("Error on get of network security group (%s) user_tags: %s", parts[1], err)
 		}

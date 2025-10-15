@@ -5,11 +5,13 @@ package power
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -110,10 +112,12 @@ func DataSourceIBMPICloudConnection() *schema.Resource {
 	}
 }
 
-func dataSourceIBMPICloudConnectionRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMPICloudConnectionRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "(Data) ibm_pi_cloud_connection", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
@@ -129,8 +133,9 @@ func dataSourceIBMPICloudConnectionRead(ctx context.Context, d *schema.ResourceD
 	// }
 	cloudConnections, err := client.GetAll()
 	if err != nil {
-		log.Printf("[DEBUG] get cloud connections failed %v", err)
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetAll failed: %s", err.Error()), "(Data) ibm_pi_cloud_connection", "read")
+		log.Printf("[DEBUG] get cloud connections failed %v\n%s", err, tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	var cloudConnection *models.CloudConnection
 	if cloudConnections != nil {
@@ -142,14 +147,17 @@ func dataSourceIBMPICloudConnectionRead(ctx context.Context, d *schema.ResourceD
 		}
 	}
 	if cloudConnection == nil {
-		log.Printf("[DEBUG] cloud connection not found")
-		return diag.Errorf("failed to perform get cloud connection operation for name %s", cloudConnectionName)
+		err = flex.FmtErrorf("response returned empty")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("failed to perform get cloud connection operation for name: %s", cloudConnectionName), "(Data) ibm_pi_cloud_connection", "read")
+		log.Printf("[DEBUG] cloud connection not found\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudConnection, err = client.Get(*cloudConnection.CloudConnectionID)
 	if err != nil {
-		log.Printf("[DEBUG] get cloud connection failed %v", err)
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Get failed: %s", err.Error()), "(Data) ibm_pi_cloud_connection", "read")
+		log.Printf("[DEBUG] get cloud connection failed \n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(*cloudConnection.CloudConnectionID)
@@ -157,14 +165,14 @@ func dataSourceIBMPICloudConnectionRead(ctx context.Context, d *schema.ResourceD
 	d.Set(Arg_CloudInstanceID, cloudInstanceID)
 	d.Set(Arg_CloudConnectionName, cloudConnection.Name)
 
+	d.Set(Attr_ConnectionMode, cloudConnection.ConnectionMode)
 	d.Set(Attr_GlobalRouting, cloudConnection.GlobalRouting)
-	d.Set(Attr_Metered, cloudConnection.Metered)
 	d.Set(Attr_IBMIPAddress, cloudConnection.IbmIPAddress)
-	d.Set(Attr_UserIPAddress, cloudConnection.UserIPAddress)
-	d.Set(Attr_Status, cloudConnection.LinkStatus)
+	d.Set(Attr_Metered, cloudConnection.Metered)
 	d.Set(Attr_Port, cloudConnection.Port)
 	d.Set(Attr_Speed, cloudConnection.Speed)
-	d.Set(Attr_ConnectionMode, cloudConnection.ConnectionMode)
+	d.Set(Attr_Status, cloudConnection.LinkStatus)
+	d.Set(Attr_UserIPAddress, cloudConnection.UserIPAddress)
 	if cloudConnection.Networks != nil {
 		networks := make([]string, len(cloudConnection.Networks))
 		for i, ccNetwork := range cloudConnection.Networks {
@@ -183,7 +191,7 @@ func dataSourceIBMPICloudConnectionRead(ctx context.Context, d *schema.ResourceD
 	}
 	if cloudConnection.Vpc != nil {
 		d.Set(Attr_VPCEnabled, cloudConnection.Vpc.Enabled)
-		if cloudConnection.Vpc.Vpcs != nil && len(cloudConnection.Vpc.Vpcs) > 0 {
+		if len(cloudConnection.Vpc.Vpcs) > 0 {
 			vpcCRNs := make([]string, len(cloudConnection.Vpc.Vpcs))
 			for i, vpc := range cloudConnection.Vpc.Vpcs {
 				vpcCRNs[i] = *vpc.VpcID

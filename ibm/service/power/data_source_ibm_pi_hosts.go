@@ -5,16 +5,16 @@ package power
 
 import (
 	"context"
+	"fmt"
 	"log"
-
-	"github.com/hashicorp/go-uuid"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/hashicorp/go-uuid"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 func DataSourceIBMPIHosts() *schema.Resource {
@@ -25,12 +25,12 @@ func DataSourceIBMPIHosts() *schema.Resource {
 			// Arguments
 			Arg_CloudInstanceID: {
 				Description:  "The GUID of the service instance associated with an account.",
-				ForceNew:     true,
 				Required:     true,
 				Type:         schema.TypeString,
 				ValidateFunc: validation.NoZeroValues,
 			},
-			//Attribute
+
+			// Attributes
 			Attr_Hosts: {
 				Computed:    true,
 				Description: "List of hosts",
@@ -139,31 +139,35 @@ func DataSourceIBMPIHosts() *schema.Resource {
 	}
 }
 
-func dataSourceIBMPIHostsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMPIHostsRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "(Data) ibm_pi_hosts", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
+
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
 	client := instance.NewIBMPIHostGroupsClient(ctx, sess, cloudInstanceID)
-
 	hosts, err := client.GetHosts()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetHosts failed: %s", err.Error()), "(Data) ibm_pi_hosts", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
+
 	var clientgenU, _ = uuid.GenerateUUID()
 	d.SetId(clientgenU)
-	hostList := make([]map[string]interface{}, 0, len(hosts))
+	hostList := make([]map[string]any, 0, len(hosts))
 	for _, host := range hosts {
 		if host != nil {
-
-			hs := map[string]interface{}{}
+			hs := map[string]any{}
 			if host.Capacity != nil {
 				hs[Attr_Capacity] = hostCapacityToMap(host.Capacity)
 			}
 			if host.Crn != "" {
 				hs[Attr_CRN] = host.Crn
-				tags, err := flex.GetTagsUsingCRN(meta, string(host.Crn))
+				tags, err := flex.GetGlobalTagsUsingCRN(meta, string(host.Crn), "", UserTagType)
 				if err != nil {
 					log.Printf("Error on get of pi host (%s) user_tags: %s", host.ID, err)
 				}

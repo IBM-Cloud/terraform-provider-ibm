@@ -360,7 +360,7 @@ func resourceIBMTransitGatewayConnectionCreate(d *schema.ResourceData, meta inte
 
 	if _, ok := d.GetOk(tgDefaultPrefixFilter); ok {
 		if "redundant_gre" == networkType {
-			err = fmt.Errorf("[ERROR] Error default_prefix_filter is not allowed for connection type %s,", networkType)
+			err = flex.FmtErrorf("[ERROR] Error default_prefix_filter is not allowed for connection type %s,", networkType)
 			log.Printf("[ERROR] Error default_prefix_filter is not allowed for connection type %s ", networkType)
 			return err
 		}
@@ -368,14 +368,14 @@ func resourceIBMTransitGatewayConnectionCreate(d *schema.ResourceData, meta inte
 		createTransitGatewayConnectionOptions.SetPrefixFiltersDefault(default_prefix_filter)
 	}
 
-	tunnelCreateList := make([]transitgatewayapisv1.TransitGatewayRedundantGRETunnelTemplate, 0)
+	tunnelCreateList := make([]transitgatewayapisv1.TransitGatewayTunnelTemplate, 0)
 
 	if _, ok := d.GetOk(tgrGREtunnels); ok {
 		tunnelList := d.Get(tgrGREtunnels).(*schema.Set).List()
 		for _, tunnel := range tunnelList {
 			tunnelData := tunnel.(map[string]interface{})
 
-			tunnelTemplateModel := new(transitgatewayapisv1.TransitGatewayRedundantGRETunnelTemplate)
+			tunnelTemplateModel := new(transitgatewayapisv1.TransitGatewayTunnelTemplate)
 
 			if _, ok := tunnelData[tgLocalGatewayIp]; ok {
 				tunnelTemplateModel.LocalGatewayIp = NewStrPointer(tunnelData[tgLocalGatewayIp].(string))
@@ -411,7 +411,7 @@ func resourceIBMTransitGatewayConnectionCreate(d *schema.ResourceData, meta inte
 
 	tgConnections, response, err := client.CreateTransitGatewayConnection(createTransitGatewayConnectionOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Create Transit Gateway connection err %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Create Transit Gateway connection err %s\n%s", err, response)
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", gatewayId, *tgConnections.ID))
@@ -447,7 +447,7 @@ func isTransitGatewayConnectionRefreshFunc(client *transitgatewayapisv1.TransitG
 
 		parts, err := flex.IdParts(id)
 		if err != nil {
-			return nil, "", fmt.Errorf("[ERROR] Error Getting Transit Gateway connection: %s", err)
+			return nil, "", flex.FmtErrorf("[ERROR] Error Getting Transit Gateway connection: %s", err)
 		}
 
 		gatewayId := parts[0]
@@ -457,7 +457,7 @@ func isTransitGatewayConnectionRefreshFunc(client *transitgatewayapisv1.TransitG
 		getTransitGatewayConnectionOptions.SetID(ID)
 		tgConnection, response, err := client.GetTransitGatewayConnection(getTransitGatewayConnectionOptions)
 		if err != nil {
-			return nil, "", fmt.Errorf("[ERROR] Error Getting Transit Gateway Connection (%s): %s\n%s", ID, err, response)
+			return nil, "", flex.FmtErrorf("[ERROR] Error Getting Transit Gateway Connection (%s): %s\n%s", ID, err, response)
 		}
 		if *tgConnection.Status == "attached" || *tgConnection.Status == "failed" {
 			return tgConnection, isTransitGatewayConnectionAttached, nil
@@ -488,7 +488,7 @@ func resourceIBMTransitGatewayConnectionRead(d *schema.ResourceData, meta interf
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error Getting Transit Gateway Connection (%s): %s\n%s", ID, err, response)
+		return flex.FmtErrorf("[ERROR] Error Getting Transit Gateway Connection (%s): %s\n%s", ID, err, response)
 	}
 
 	if instance.Name != nil {
@@ -541,7 +541,7 @@ func resourceIBMTransitGatewayConnectionRead(d *schema.ResourceData, meta interf
 	}
 	tgw, response, err := client.GetTransitGateway(getTransitGatewayOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error Getting Transit Gateway : %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error Getting Transit Gateway : %s\n%s", err, response)
 	}
 	d.Set(flex.RelatedCRN, *tgw.Crn)
 
@@ -616,7 +616,7 @@ func resourceIBMTransitGatewayConnectionUpdate(d *schema.ResourceData, meta inte
 
 	_, response, err := client.GetTransitGatewayConnection(getTransitGatewayConnectionOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error Getting Transit Gateway Connection: %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error Getting Transit Gateway Connection: %s\n%s", err, response)
 	}
 
 	updateTransitGatewayConnectionOptions := &transitgatewayapisv1.UpdateTransitGatewayConnectionOptions{}
@@ -637,7 +637,7 @@ func resourceIBMTransitGatewayConnectionUpdate(d *schema.ResourceData, meta inte
 
 	_, response, err = client.UpdateTransitGatewayConnection(updateTransitGatewayConnectionOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error in Update Transit Gateway Connection : %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error in Update Transit Gateway Connection : %s\n%s", err, response)
 	}
 
 	return resourceIBMTransitGatewayConnectionRead(d, meta)
@@ -666,7 +666,7 @@ func resourceIBMTransitGatewayConnectionDelete(d *schema.ResourceData, meta inte
 		if response != nil && response.StatusCode == 404 {
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error deleting Transit Gateway Connection(%s): %s\n%s", ID, err, response)
+		return flex.FmtErrorf("[ERROR] Error deleting Transit Gateway Connection(%s): %s\n%s", ID, err, response)
 	}
 	_, err = isWaitForTransitGatewayConnectionDeleted(client, d.Id(), d.Timeout(schema.TimeoutCreate))
 
@@ -698,7 +698,7 @@ func isTransitGatewayConnectionDeleteRefreshFunc(client *transitgatewayapisv1.Tr
 		log.Printf("[DEBUG] tg gateway connection delete function here")
 		parts, err := flex.IdParts(id)
 		if err != nil {
-			return nil, "", fmt.Errorf("[ERROR] Error Getting Transit Gateway connection: %s", err)
+			return nil, "", flex.FmtErrorf("[ERROR] Error Getting Transit Gateway connection: %s", err)
 
 		}
 
@@ -715,7 +715,7 @@ func isTransitGatewayConnectionDeleteRefreshFunc(client *transitgatewayapisv1.Tr
 				return tgConnection, isTransitGatewayConnectionDeleted, nil
 			}
 
-			return nil, "", fmt.Errorf("[ERROR] Error Getting Transit Gateway Connection (%s): %s\n%s", ID, err, response)
+			return nil, "", flex.FmtErrorf("[ERROR] Error Getting Transit Gateway Connection (%s): %s\n%s", ID, err, response)
 		}
 		return tgConnection, isTransitGatewayConnectionDeleting, err
 	}
@@ -730,7 +730,7 @@ func resourceIBMTransitGatewayConnectionExists(d *schema.ResourceData, meta inte
 		return false, err
 	}
 	if len(parts) < 2 {
-		return false, fmt.Errorf("[ERROR] Incorrect ID %s: Id should be a combination of gatewayID/ConnectionID", d.Id())
+		return false, flex.FmtErrorf("[ERROR] Incorrect ID %s: Id should be a combination of gatewayID/ConnectionID", d.Id())
 	}
 	gatewayId := parts[0]
 	ID := parts[1]
@@ -745,7 +745,7 @@ func resourceIBMTransitGatewayConnectionExists(d *schema.ResourceData, meta inte
 			d.SetId("")
 			return false, nil
 		}
-		return false, fmt.Errorf("[ERROR] Error Getting Transit Gateway Connection: %s\n%s", err, response)
+		return false, flex.FmtErrorf("[ERROR] Error Getting Transit Gateway Connection: %s\n%s", err, response)
 	}
 
 	return true, nil

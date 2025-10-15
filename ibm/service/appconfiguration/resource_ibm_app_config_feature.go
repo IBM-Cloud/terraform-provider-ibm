@@ -27,6 +27,7 @@ func ResourceIBMIbmAppConfigFeature() *schema.Resource {
 			"guid": {
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 				Description: "GUID of the App Configuration service. Get it from the service instance credentials section of the dashboard.",
 			},
 			"environment_id": {
@@ -130,6 +131,11 @@ func ResourceIBMIbmAppConfigFeature() *schema.Resource {
 							Required:    true,
 							Description: "Collection id.",
 						},
+						"deleted": {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Description: "Remove Collection Association with Resource",
+						},
 					},
 				},
 			},
@@ -166,7 +172,7 @@ func resourceIbmIbmAppConfigFeatureCreate(d *schema.ResourceData, meta interface
 	guid := d.Get("guid").(string)
 	appconfigClient, err := getAppConfigClient(meta, guid)
 	if err != nil {
-		return flex.FmtErrorf(fmt.Sprintf("%s", err))
+		return flex.FmtErrorf("%s", err)
 	}
 	options := &appconfigurationv1.CreateFeatureOptions{}
 	options.SetType(d.Get("type").(string))
@@ -197,7 +203,7 @@ func resourceIbmIbmAppConfigFeatureCreate(d *schema.ResourceData, meta interface
 			value := e.(map[string]interface{})
 			segmentRulesItem, err := resourceIbmAppConfigFeatureMapToSegmentRule(d, value)
 			if err != nil {
-				return flex.FmtErrorf(fmt.Sprintf("%s", err))
+				return flex.FmtErrorf("%s", err)
 			}
 			segmentRules = append(segmentRules, segmentRulesItem)
 		}
@@ -207,7 +213,10 @@ func resourceIbmIbmAppConfigFeatureCreate(d *schema.ResourceData, meta interface
 		var collections []appconfigurationv1.CollectionRef
 		for _, e := range d.Get("collections").([]interface{}) {
 			value := e.(map[string]interface{})
-			collectionsItem := resourceIbmAppConfigFeatureMapToCollectionRef(value)
+			collectionsItem, err := resourceIbmAppConfigFeatureMapToCollectionRef(value)
+			if err != nil {
+				return err
+			}
 			collections = append(collections, collectionsItem)
 		}
 		options.SetCollections(collections)
@@ -229,7 +238,7 @@ func resourceIbmIbmAppConfigFeatureUpdate(d *schema.ResourceData, meta interface
 	}
 	appconfigClient, err := getAppConfigClient(meta, parts[0])
 	if err != nil {
-		return flex.FmtErrorf(fmt.Sprintf("%s", err))
+		return flex.FmtErrorf("%s", err)
 	}
 
 	options := &appconfigurationv1.UpdateFeatureOptions{}
@@ -259,17 +268,17 @@ func resourceIbmIbmAppConfigFeatureUpdate(d *schema.ResourceData, meta interface
 				value := e.(map[string]interface{})
 				segmentRulesItem, err := resourceIbmAppConfigFeatureMapToSegmentRule(d, value)
 				if err != nil {
-					return flex.FmtErrorf(fmt.Sprintf("%s", err))
+					return flex.FmtErrorf("%s", err)
 				}
 				segmentRules = append(segmentRules, segmentRulesItem)
 			}
 			options.SetSegmentRules(segmentRules)
 		}
 		if _, ok := GetFieldExists(d, "collections"); ok {
-			var collections []appconfigurationv1.CollectionRef
+			var collections []appconfigurationv1.CollectionUpdateRef
 			for _, e := range d.Get("collections").([]interface{}) {
 				value := e.(map[string]interface{})
-				collectionsItem := resourceIbmAppConfigFeatureMapToCollectionRef(value)
+				collectionsItem := resourceIbmAppConfigFeatureMapToCollectionUpdateRef(value)
 				collections = append(collections, collectionsItem)
 			}
 			options.SetCollections(collections)
@@ -291,12 +300,13 @@ func resourceIbmIbmAppConfigFeatureRead(d *schema.ResourceData, meta interface{}
 	}
 	appconfigClient, err := getAppConfigClient(meta, parts[0])
 	if err != nil {
-		return flex.FmtErrorf(fmt.Sprintf("%s", err))
+		return flex.FmtErrorf("%s", err)
 	}
 
 	options := &appconfigurationv1.GetFeatureOptions{}
 	options.SetEnvironmentID(parts[1])
 	options.SetFeatureID(parts[2])
+	options.SetInclude([]string{"collections"})
 
 	result, response, err := appconfigClient.GetFeature(options)
 	if err != nil {
@@ -423,7 +433,7 @@ func resourceIbmIbmAppConfigFeatureDelete(d *schema.ResourceData, meta interface
 	}
 	appconfigClient, err := getAppConfigClient(meta, parts[0])
 	if err != nil {
-		return flex.FmtErrorf(fmt.Sprintf("%s", err))
+		return flex.FmtErrorf("%s", err)
 	}
 
 	options := &appconfigurationv1.DeleteFeatureOptions{}
@@ -498,7 +508,6 @@ func resourceIbmAppConfigFeatureRuleToMap(rule appconfigurationv1.TargetSegments
 func resourceIbmAppConfigFeatureCollectionRefToMap(collectionRef appconfigurationv1.CollectionRef) map[string]interface{} {
 	collectionRefMap := map[string]interface{}{}
 	collectionRefMap["collection_id"] = collectionRef.CollectionID
-	collectionRefMap["name"] = collectionRef.Name
 	return collectionRefMap
 }
 
@@ -550,9 +559,20 @@ func resourceIbmAppConfigFeatureMapToRule(ruleMap map[string]interface{}) appcon
 	return rule
 }
 
-func resourceIbmAppConfigFeatureMapToCollectionRef(collectionRefMap map[string]interface{}) appconfigurationv1.CollectionRef {
+func resourceIbmAppConfigFeatureMapToCollectionRef(collectionRefMap map[string]interface{}) (appconfigurationv1.CollectionRef, error) {
 	collectionRef := appconfigurationv1.CollectionRef{}
 	collectionRef.CollectionID = core.StringPtr(collectionRefMap["collection_id"].(string))
+	if value, exists := collectionRefMap["deleted"]; exists && value.(bool) {
+		return collectionRef, flex.FmtErrorf("'deleted' attributed is not allowed in creation of feature")
+	}
+	return collectionRef, nil
+}
 
-	return collectionRef
+func resourceIbmAppConfigFeatureMapToCollectionUpdateRef(collectionUpdateRefMap map[string]interface{}) appconfigurationv1.CollectionUpdateRef {
+	collectionUpdateRef := appconfigurationv1.CollectionUpdateRef{}
+	collectionUpdateRef.CollectionID = core.StringPtr(collectionUpdateRefMap["collection_id"].(string))
+	if value, exists := collectionUpdateRefMap["deleted"]; exists {
+		collectionUpdateRef.Deleted = core.BoolPtr(value.(bool))
+	}
+	return collectionUpdateRef
 }

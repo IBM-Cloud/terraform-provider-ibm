@@ -24,7 +24,7 @@ func TestAccIbmOnboardingCatalogPlanBasic(t *testing.T) {
 	var conf partnercentersellv1.GlobalCatalogPlan
 	productID := acc.PcsOnboardingProductWithCatalogProduct
 	catalogProductID := acc.PcsOnboardingCatalogProductId
-	objectId := fmt.Sprintf("test-object-id-terraform-2-%d", acctest.RandIntRange(10, 100))
+	objectId := fmt.Sprintf("test-object-id-terraform-3-%d", acctest.RandIntRange(10, 100))
 	name := "test-plan-name-terraform"
 	active := "true"
 	disabled := "false"
@@ -70,7 +70,7 @@ func TestAccIbmOnboardingCatalogPlanAllArgs(t *testing.T) {
 	var conf partnercentersellv1.GlobalCatalogPlan
 	productID := acc.PcsOnboardingProductWithCatalogProduct
 	catalogProductID := acc.PcsOnboardingCatalogProductId
-	objectId := fmt.Sprintf("test-object-id-terraform-2-%d", acctest.RandIntRange(10, 100))
+	objectId := fmt.Sprintf("test-object-id-terraform-3-%d", acctest.RandIntRange(10, 100))
 	env := "current"
 	name := "test-plan-name-terraform"
 	active := "true"
@@ -148,7 +148,6 @@ func testAccCheckIbmOnboardingCatalogPlanConfigBasic(productID string, catalogPr
 			object_id = "%s"
 			object_provider {
 				name = "name"
-				email = "email@email.com"
 			}
 			metadata {
                 rc_compatible =	 false
@@ -190,7 +189,6 @@ func testAccCheckIbmOnboardingCatalogPlanConfig(productID string, catalogProduct
 			pricing_tags = ["free"]
 			object_provider {
 				name = "name"
-				email = "email@email.com"
 			}
 			metadata {
 				rc_compatible = "%s"
@@ -259,7 +257,6 @@ func testAccCheckIbmOnboardingCatalogPlanUpdateConfig(productID string, catalogP
 			tags = ["tag"]
 			object_provider {
 				name = "name"
-				email = "email@email.com"
 			}
 			metadata {
 			    other {
@@ -279,11 +276,11 @@ func testAccCheckIbmOnboardingCatalogPlanUpdateConfig(productID string, catalogP
 					provision_type = "ibm_cloud"
 				}
 				service {
-				    rc_provisionable = true
+					rc_provisionable = true
       				iam_compatible = false
-				    bindable = true
-      				plan_updateable = true
-      				service_key_supported = true
+					bindable = true
+					plan_updateable = true
+					service_key_supported = true
 				}
 				ui {
             		strings {
@@ -980,6 +977,24 @@ func TestResourceIbmOnboardingCatalogPlanGlobalCatalogPlanMetadataOtherResourceC
 	checkResult(result)
 }
 
+func TestResourceIbmOnboardingCatalogPlanGlobalCatalogPlanMetadataOtherTargetPlansItemToMap(t *testing.T) {
+	checkResult := func(result map[string]interface{}) {
+		model := make(map[string]interface{})
+		model["id"] = "testString"
+		model["name"] = "testString"
+
+		assert.Equal(t, result, model)
+	}
+
+	model := new(partnercentersellv1.GlobalCatalogPlanMetadataOtherTargetPlansItem)
+	model.ID = core.StringPtr("testString")
+	model.Name = core.StringPtr("testString")
+
+	result, err := partnercentersell.ResourceIbmOnboardingCatalogPlanGlobalCatalogPlanMetadataOtherTargetPlansItemToMap(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
 func TestResourceIbmOnboardingCatalogPlanMapToCatalogProductProvider(t *testing.T) {
 	checkResult := func(result *partnercentersellv1.CatalogProductProvider) {
 		model := new(partnercentersellv1.CatalogProductProvider)
@@ -1572,6 +1587,24 @@ func TestResourceIbmOnboardingCatalogPlanMapToGlobalCatalogPlanMetadataOtherReso
 	model["subscription_provider_id"] = "testString"
 
 	result, err := partnercentersell.ResourceIbmOnboardingCatalogPlanMapToGlobalCatalogPlanMetadataOtherResourceController(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestResourceIbmOnboardingCatalogPlanMapToGlobalCatalogPlanMetadataOtherTargetPlansItem(t *testing.T) {
+	checkResult := func(result *partnercentersellv1.GlobalCatalogPlanMetadataOtherTargetPlansItem) {
+		model := new(partnercentersellv1.GlobalCatalogPlanMetadataOtherTargetPlansItem)
+		model.ID = core.StringPtr("testString")
+		model.Name = core.StringPtr("testString")
+
+		assert.Equal(t, result, model)
+	}
+
+	model := make(map[string]interface{})
+	model["id"] = "testString"
+	model["name"] = "testString"
+
+	result, err := partnercentersell.ResourceIbmOnboardingCatalogPlanMapToGlobalCatalogPlanMetadataOtherTargetPlansItem(model)
 	assert.Nil(t, err)
 	checkResult(result)
 }

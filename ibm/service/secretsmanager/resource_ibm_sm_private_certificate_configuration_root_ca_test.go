@@ -80,27 +80,29 @@ func TestAccIbmSmPrivateCertificateConfigurationRootCAllArgs(t *testing.T) {
 }
 
 func TestAccIbmSmPrivateCertificateConfigurationRootCACryptoKey(t *testing.T) {
-	resourceName := "ibm_sm_private_certificate_configuration_root_ca.sm_private_cert_root_ca_crypto_key"
+	if acc.SecretsManagerPrivateCertificateConfigurationCryptoKeyProviderInstanceCrn != "" {
+		resourceName := "ibm_sm_private_certificate_configuration_root_ca.sm_private_cert_root_ca_crypto_key"
 
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
-		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIbmSmPrivateCertificateConfigurationRootCADestroy,
-		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: privateCertificateRootCAConfigCryptoKey(),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmSmPrivateCertificateConfigurationRootCAExists(resourceName, 157788000, 259200, false, true, true),
-				),
+		resource.Test(t, resource.TestCase{
+			PreCheck:     func() { acc.TestAccPreCheck(t) },
+			Providers:    acc.TestAccProviders,
+			CheckDestroy: testAccCheckIbmSmPrivateCertificateConfigurationRootCADestroy,
+			Steps: []resource.TestStep{
+				resource.TestStep{
+					Config: privateCertificateRootCAConfigCryptoKey(),
+					Check: resource.ComposeAggregateTestCheckFunc(
+						testAccCheckIbmSmPrivateCertificateConfigurationRootCAExists(resourceName, 157788000, 259200, false, true, true),
+					),
+				},
+				resource.TestStep{
+					ResourceName:            resourceName,
+					ImportState:             true,
+					ImportStateVerify:       true,
+					ImportStateVerifyIgnore: []string{"crl_expiry", "max_ttl", "ttl"},
+				},
 			},
-			resource.TestStep{
-				ResourceName:            resourceName,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"crl_expiry", "max_ttl", "ttl"},
-			},
-		},
-	})
+		})
+	}
 }
 
 var rootCaBasicConfigFormat = `
@@ -183,8 +185,8 @@ func privateCertificateRootCAConfigCryptoKey() string {
 			common_name   = "ibm.com"
 			alt_names = ["ddd.com", "aaa.com"]
 			crypto_key {
-				allow_generate_key = true
-				label = "e2e-tf-test"
+				allow_generate_key = false
+				label = "e2e-tf-ca"
 				provider {
 					type = "%s"
 					instance_crn = "%s"

@@ -4,6 +4,7 @@ import (
 	// "encoding/json"
 	"context"
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
@@ -568,7 +569,7 @@ func resourceIBMCOSBucketLifecycleConfigurationRead(ctx context.Context, d *sche
 	}
 	//getBucketConfiguration
 	const (
-		lifecycleConfigurationRulesSteadyTimeout = 2 * time.Minute
+		lifecycleConfigurationRulesSteadyTimeout = 5 * time.Minute
 	)
 	getLifecycleConfigurationInput := &s3.GetBucketLifecycleConfigurationInput{
 		Bucket: aws.String(bucketName),
@@ -580,8 +581,7 @@ func resourceIBMCOSBucketLifecycleConfigurationRead(ctx context.Context, d *sche
 		var err error
 		output, err = s3Client.GetBucketLifecycleConfiguration(getLifecycleConfigurationInput)
 
-		if d.IsNewResource() && err != nil && strings.Contains(err.Error(), "NoSuchLifecycleConfiguration: The lifecycle configuration does not exist") {
-
+		if err != nil && strings.Contains(err.Error(), "NoSuchLifecycleConfiguration: The lifecycle configuration does not exist") {
 			return resource.RetryableError(err)
 		}
 		if err != nil {
@@ -650,7 +650,13 @@ func parseLifecycleId(id string, info string) string {
 		return strings.Split(meta, ":")[0]
 	}
 	if info == "endpointType" {
-		return strings.Split(meta, ":")[1]
+		eType := strings.Split(meta, ":")[1]
+		// This changes is only for Schematics
+		schET := os.Getenv("IBMCLOUD_ENV_SCH_COS_ENDPOINT_OVERRIDE")
+		if eType != "" && eType == "private" && schET != "" {
+			return schET
+		}
+		return eType
 	}
 	if info == "keyName" {
 		return strings.Split(meta, ":key:")[1]

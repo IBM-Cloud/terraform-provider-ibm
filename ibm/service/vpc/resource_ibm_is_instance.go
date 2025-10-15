@@ -17,6 +17,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -129,15 +130,16 @@ const (
 	isInstanceMetadataServiceEnabled1     = "enabled"
 	isInstanceMetadataServiceProtocol     = "protocol"
 	isInstanceMetadataServiceRespHopLimit = "response_hop_limit"
+	isInstanceVolumeBandwidthQoSMode      = "volume_bandwidth_qos_mode"
 )
 
 func ResourceIBMISInstance() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceIBMisInstanceCreate,
-		Read:   resourceIBMisInstanceRead,
-		Update: resourceIBMisInstanceUpdate,
-		Delete: resourceIBMisInstanceDelete,
-		Exists: resourceIBMisInstanceExists,
+		CreateContext: resourceIBMisInstanceCreate,
+		ReadContext:   resourceIBMisInstanceRead,
+		UpdateContext: resourceIBMisInstanceUpdate,
+		DeleteContext: resourceIBMisInstanceDelete,
+		Exists:        resourceIBMisInstanceExists,
 		Importer: &schema.ResourceImporter{
 			State: func(d *schema.ResourceData, meta interface{}) (result []*schema.ResourceData, err error) {
 				log.Printf("[INFO] Instance (%s) importing", d.Id())
@@ -479,6 +481,14 @@ func ResourceIBMISInstance() *schema.Resource {
 				Description:  "The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes",
 			},
 
+			isInstanceVolumeBandwidthQoSMode: &schema.Schema{
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validate.InvokeValidator("ibm_is_instance", isInstanceVolumeBandwidthQoSMode),
+				Description:  "The volume bandwidth QoS mode for this virtual server instance.",
+			},
+
 			isInstanceBandwidth: {
 				Type:        schema.TypeInt,
 				Computed:    true,
@@ -809,6 +819,39 @@ func ResourceIBMISInstance() *schema.Resource {
 							Computed:    true,
 							Description: "The maximum bandwidth (in megabits per second) for the volume. For this property to be specified, the volume storage_generation must be 2.",
 						},
+
+						"allowed_use": &schema.Schema{
+							Type:        schema.TypeList,
+							MaxItems:    1,
+							Optional:    true,
+							Computed:    true,
+							Description: "The usage constraints to be matched against requested instance or bare metal server properties to determine compatibility.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"api_version": &schema.Schema{
+										Type:         schema.TypeString,
+										Optional:     true,
+										Computed:     true,
+										ValidateFunc: validate.InvokeValidator("ibm_is_volume", "allowed_use.api_version"),
+										Description:  "The API version with which to evaluate the expressions.",
+									},
+									"bare_metal_server": &schema.Schema{
+										Type:         schema.TypeString,
+										Optional:     true,
+										Computed:     true,
+										ValidateFunc: validate.InvokeValidator("ibm_is_volume", "allowed_use.bare_metal_server"),
+										Description:  "The expression that must be satisfied by the properties of a bare metal server provisioned using the image data in this volume.",
+									},
+									"instance": &schema.Schema{
+										Type:         schema.TypeString,
+										Optional:     true,
+										Computed:     true,
+										ValidateFunc: validate.InvokeValidator("ibm_is_volume", "allowed_use.instance"),
+										Description:  "The expression that must be satisfied by the properties of a virtual server instance provisioned using this volume.",
+									},
+								},
+							},
+						},
 					},
 				},
 			},
@@ -1024,16 +1067,18 @@ func ResourceIBMISInstance() *schema.Resource {
 									"primary_ip": &schema.Schema{
 										Type:          schema.TypeList,
 										Optional:      true,
+										MaxItems:      1,
 										ConflictsWith: []string{"primary_network_attachment.0.virtual_network_interface.0.id"},
 										Computed:      true,
 										Description:   "The primary IP address of the virtual network interface for the instance networkattachment.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"address": &schema.Schema{
-													Type:        schema.TypeString,
-													Optional:    true,
-													Computed:    true,
-													Description: "The IP address.If the address has not yet been selected, the value will be `0.0.0.0`.This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.",
+													Type:          schema.TypeString,
+													Optional:      true,
+													ConflictsWith: []string{"primary_network_attachment.0.virtual_network_interface.0.primary_ip.0.reserved_ip"},
+													Computed:      true,
+													Description:   "The IP address.If the address has not yet been selected, the value will be `0.0.0.0`.This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.",
 												},
 												"deleted": &schema.Schema{
 													Type:        schema.TypeList,
@@ -1055,16 +1100,18 @@ func ResourceIBMISInstance() *schema.Resource {
 													Description: "The URL for this reserved IP.",
 												},
 												"reserved_ip": &schema.Schema{
-													Type:        schema.TypeString,
-													Optional:    true,
-													Computed:    true,
-													Description: "The unique identifier for this reserved IP.",
+													Type:          schema.TypeString,
+													Optional:      true,
+													ConflictsWith: []string{"primary_network_attachment.0.virtual_network_interface.0.primary_ip.0.address", "primary_network_attachment.0.virtual_network_interface.0.primary_ip.0.auto_delete", "primary_network_attachment.0.virtual_network_interface.0.primary_ip.0.name"},
+													Computed:      true,
+													Description:   "The unique identifier for this reserved IP.",
 												},
 												"name": &schema.Schema{
-													Type:        schema.TypeString,
-													Optional:    true,
-													Computed:    true,
-													Description: "The name for this reserved IP. The name is unique across all reserved IPs in a subnet.",
+													Type:          schema.TypeString,
+													Optional:      true,
+													ConflictsWith: []string{"primary_network_attachment.0.virtual_network_interface.0.primary_ip.0.reserved_ip"},
+													Computed:      true,
+													Description:   "The name for this reserved IP. The name is unique across all reserved IPs in a subnet.",
 												},
 												"resource_type": &schema.Schema{
 													Type:        schema.TypeString,
@@ -1072,10 +1119,10 @@ func ResourceIBMISInstance() *schema.Resource {
 													Description: "The resource type.",
 												},
 												"auto_delete": &schema.Schema{
-													Type:        schema.TypeBool,
-													Optional:    true,
-													Default:     true,
-													Description: "Indicates whether this reserved ip will be automatically deleted when `target` is deleted.",
+													Type:          schema.TypeBool,
+													Optional:      true,
+													ConflictsWith: []string{"primary_network_attachment.0.virtual_network_interface.0.primary_ip.0.reserved_ip"},
+													Description:   "Indicates whether this reserved ip will be automatically deleted when `target` is deleted.",
 												},
 											},
 										},
@@ -1092,6 +1139,11 @@ func ResourceIBMISInstance() *schema.Resource {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The resource type.",
+									},
+									"crn": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The crn of the virtual network interface.",
 									},
 									"security_groups": {
 										Type:          schema.TypeSet,
@@ -1480,6 +1532,11 @@ func ResourceIBMISInstance() *schema.Resource {
 										Computed:    true,
 										Description: "The resource type.",
 									},
+									"crn": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The crn of the virtual network interface.",
+									},
 									"security_groups": {
 										Type:        schema.TypeSet,
 										Optional:    true,
@@ -1535,6 +1592,38 @@ func ResourceIBMISInstance() *schema.Resource {
 							AtLeastOneOf:  []string{isInstanceImage, isInstanceSourceTemplate, "boot_volume.0.volume_id", "boot_volume.0.snapshot", "boot_volume.0.snapshot_crn", "catalog_offering.0.offering_crn", "catalog_offering.0.version_crn"},
 							ConflictsWith: []string{isInstanceImage, isInstanceSourceTemplate, "boot_volume.0.snapshot", "boot_volume.0.snapshot_crn", "boot_volume.0.name", "boot_volume.0.encryption", "catalog_offering.0.offering_crn", "catalog_offering.0.version_crn"},
 							Description:   "The unique identifier for this volume",
+						},
+						"allowed_use": &schema.Schema{
+							Type:        schema.TypeList,
+							MaxItems:    1,
+							Optional:    true,
+							Computed:    true,
+							Description: "The usage constraints to be matched against requested instance or bare metal server properties to determine compatibility.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"api_version": &schema.Schema{
+										Type:         schema.TypeString,
+										Optional:     true,
+										Computed:     true,
+										ValidateFunc: validate.InvokeValidator("ibm_is_volume", "allowed_use.api_version"),
+										Description:  "The API version with which to evaluate the expressions.",
+									},
+									"bare_metal_server": &schema.Schema{
+										Type:         schema.TypeString,
+										Optional:     true,
+										Computed:     true,
+										ValidateFunc: validate.InvokeValidator("ibm_is_volume", "allowed_use.bare_metal_server"),
+										Description:  "The expression that must be satisfied by the properties of a bare metal server provisioned using the image data in this volume.",
+									},
+									"instance": &schema.Schema{
+										Type:         schema.TypeString,
+										Optional:     true,
+										Computed:     true,
+										ValidateFunc: validate.InvokeValidator("ibm_is_volume", "allowed_use.instance"),
+										Description:  "The expression that must be satisfied by the properties of a virtual server instance provisioned using this volume.",
+									},
+								},
+							},
 						},
 						isInstanceVolAttVolAutoDelete: {
 							Type:        schema.TypeBool,
@@ -2171,14 +2260,27 @@ func ResourceIBMISInstanceValidator() *validate.ResourceValidator {
 			MinValueLength:             1,
 			MaxValueLength:             128})
 
+	validateSchema = append(validateSchema, validate.ValidateSchema{
+		Identifier:                 isInstanceVolumeBandwidthQoSMode,
+		ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
+		Type:                       validate.TypeString,
+		Optional:                   true,
+		AllowedValues:              "pooled, weighted",
+		Regexp:                     `^[a-z][a-z0-9]*(_[a-z0-9]+)*$`,
+		MinValueLength:             1,
+		MaxValueLength:             128,
+	})
+
 	ibmISInstanceValidator := validate.ResourceValidator{ResourceName: "ibm_is_instance", Schema: validateSchema}
 	return &ibmISInstanceValidator
 }
 
-func instanceCreateByImage(d *schema.ResourceData, meta interface{}, profile, name, vpcID, zone, image, bootProfile string) error {
+func instanceCreateByImage(context context.Context, d *schema.ResourceData, meta interface{}, profile, name, vpcID, zone, image, bootProfile string) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "create", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	instanceproto := &vpcv1.InstancePrototype{
 		Image: &vpcv1.ImageIdentity{
@@ -2204,7 +2306,7 @@ func instanceCreateByImage(d *schema.ResourceData, meta interface{}, profile, na
 			for _, clusterNetworkAttachmentsItem := range clusterNetworkAttachmentList {
 				clusterNetworkAttachmentsItemModel, err := ResourceIBMIsInstanceMapToInstanceClusterNetworkAttachmentPrototypeInstanceContext(clusterNetworkAttachmentsItem.(map[string]interface{}))
 				if err != nil {
-					return err
+					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "create", "parse-cluster_network_attachments").GetDiag()
 				}
 				clusterNetworkAttachments = append(clusterNetworkAttachments, *clusterNetworkAttachmentsItemModel)
 			}
@@ -2291,6 +2393,11 @@ func instanceCreateByImage(d *schema.ResourceData, meta interface{}, profile, na
 				}
 				volumeattItemPrototypeModel.UserTags = userTagsArray
 			}
+			//allowed use
+			if _, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.allowed_use", i)); ok {
+				allowedUseModel, _ := ResourceIBMIsVolumeAllowedUseMapToVolumeAllowedUsePrototype(d.Get(fmt.Sprintf("volume_prototypes.%d.allowed_use", i)).([]interface{})[0].(map[string]interface{}))
+				volumeattItemPrototypeModel.AllowedUse = allowedUseModel
+			}
 
 			volumeattItemModel.Volume = volumeattItemPrototypeModel
 
@@ -2332,6 +2439,10 @@ func instanceCreateByImage(d *schema.ResourceData, meta interface{}, profile, na
 	if totalVolBandwidthIntf, ok := d.GetOk(isInstanceTotalVolumeBandwidth); ok {
 		totalVolBandwidthStr := int64(totalVolBandwidthIntf.(int))
 		instanceproto.TotalVolumeBandwidth = &totalVolBandwidthStr
+	}
+	if volumeBandwidthQoSModeIntf, ok := d.GetOk(isInstanceVolumeBandwidthQoSMode); ok {
+		volumeBandwidthQoSModeStr := volumeBandwidthQoSModeIntf.(string)
+		instanceproto.VolumeBandwidthQosMode = &volumeBandwidthQoSModeStr
 	}
 	if dHostIdInf, ok := d.GetOk(isPlacementTargetDedicatedHost); ok {
 		dHostIdStr := dHostIdInf.(string)
@@ -2393,6 +2504,13 @@ func instanceCreateByImage(d *schema.ResourceData, meta interface{}, profile, na
 		volTemplate.Profile = &vpcv1.VolumeProfileIdentity{
 			Name: &bootProfile,
 		}
+		//boot volume allowed use
+		if _, ok := bootvol["allowed_use"]; ok && len(bootvol["allowed_use"].([]interface{})) > 0 {
+			allowedUseModel, _ := ResourceIBMIsVolumeAllowedUseMapToVolumeAllowedUsePrototype(bootvol["allowed_use"].([]interface{})[0].(map[string]interface{}))
+			if allowedUseModel != nil {
+				volTemplate.AllowedUse = allowedUseModel
+			}
+		}
 		var userTags *schema.Set
 		if v, ok := bootvol[isInstanceBootVolumeTags]; ok {
 			userTags = v.(*schema.Set)
@@ -2425,7 +2543,7 @@ func instanceCreateByImage(d *schema.ResourceData, meta interface{}, profile, na
 			// enablenat := "primary_network_attachment.0.enable_infrastructure_nat"
 			networkAttachmentsItemModel, err := resourceIBMIsInstanceMapToInstanceNetworkAttachmentPrototype(allowipspoofing, autodelete, enablenat, d, networkAttachmentsItem.(map[string]interface{}))
 			if err != nil {
-				return err
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "create", "parse-network_attachments").GetDiag()
 			}
 			networkAttachments = append(networkAttachments, *networkAttachmentsItemModel)
 		}
@@ -2438,7 +2556,7 @@ func instanceCreateByImage(d *schema.ResourceData, meta interface{}, profile, na
 		enablenat := fmt.Sprintf("primary_network_attachment.%d.virtual_network_interface.0.enable_infrastructure_nat", i)
 		primaryNetworkAttachmentModel, err := resourceIBMIsInstanceMapToInstanceNetworkAttachmentPrototype(allowipspoofing, autodelete, enablenat, d, primnetworkattachmentintf.([]interface{})[0].(map[string]interface{}))
 		if err != nil {
-			return err
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "create", "parse-primary_network_attachments").GetDiag()
 		}
 		instanceproto.PrimaryNetworkAttachment = primaryNetworkAttachmentModel
 	}
@@ -2506,10 +2624,16 @@ func instanceCreateByImage(d *schema.ResourceData, meta interface{}, profile, na
 			autodelete = reservedipautodeleteok.(bool)
 		}
 		if ipv4str != "" && reservedipv4 != "" && ipv4str != reservedipv4 {
-			return fmt.Errorf("[ERROR] Error creating instance, primary_network_interface error, use either primary_ipv4_address(%s) or primary_ip.0.address(%s)", ipv4str, reservedipv4)
+			err = fmt.Errorf("Error creating instance, primary_network_interface error, use either primary_ipv4_address(%s) or primary_ip.0.address(%s)", ipv4str, reservedipv4)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Validation failed: %s", err.Error()), "ibm_is_instance", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		if reservedIp != "" && (ipv4str != "" || reservedipv4 != "" || reservedipname != "") {
-			return fmt.Errorf("[ERROR] Error creating instance, primary_network_interface error, reserved_ip(%s) is mutually exclusive with other primary_ip attributes", reservedIp)
+			err = fmt.Errorf("Error creating instance, primary_network_interface error, reserved_ip(%s) is mutually exclusive with other primary_ip attributes", reservedIp)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Validation failed: %s", err.Error()), "ibm_is_instance", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		if reservedIp != "" {
 			primnicobj.PrimaryIP = &vpcv1.NetworkInterfaceIPPrototypeReservedIPIdentity{
@@ -2597,10 +2721,16 @@ func instanceCreateByImage(d *schema.ResourceData, meta interface{}, profile, na
 				autodelete = reservedipautodeleteok.(bool)
 			}
 			if ipv4str != "" && reservedipv4 != "" && ipv4str != reservedipv4 {
-				return fmt.Errorf("[ERROR] Error creating instance, network_interfaces error, use either primary_ipv4_address(%s) or primary_ip.0.address(%s)", ipv4str, reservedipv4)
+				err = fmt.Errorf("Error creating instance, network_interfaces error, use either primary_ipv4_address(%s) or primary_ip.0.address(%s)", ipv4str, reservedipv4)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Validation failed: %s", err.Error()), "ibm_is_instance", "create")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			if reservedIp != "" && (ipv4str != "" || reservedipv4 != "" || reservedipname != "") {
-				return fmt.Errorf("[ERROR] Error creating instance, network_interfaces error, reserved_ip(%s) is mutually exclusive with other primary_ip attributes", reservedIp)
+				err = fmt.Errorf("Error creating instance, network_interfaces error, reserved_ip(%s) is mutually exclusive with other primary_ip attributes", reservedIp)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Validation failed: %s", err.Error()), "ibm_is_instance", "create")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			if reservedIp != "" {
 				nwInterface.PrimaryIP = &vpcv1.NetworkInterfaceIPPrototypeReservedIPIdentity{
@@ -2690,10 +2820,11 @@ func instanceCreateByImage(d *schema.ResourceData, meta interface{}, profile, na
 		InstancePrototype: instanceproto,
 	}
 
-	instance, response, err := sess.CreateInstance(options)
+	instance, _, err := sess.CreateInstanceWithContext(context, options)
 	if err != nil {
-		log.Printf("[DEBUG] Instance err %s\n%s", err, response)
-		return err
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateInstanceWithContext failed: %s", err.Error()), "ibm_is_instance", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	d.SetId(*instance.ID)
 
@@ -2702,7 +2833,9 @@ func instanceCreateByImage(d *schema.ResourceData, meta interface{}, profile, na
 
 	_, err = isWaitForInstanceAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate), d)
 	if err != nil {
-		return err
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForInstanceAvailable failed: %s", err.Error()), "ibm_is_instance", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	v := os.Getenv("IC_ENV_TAGS")
@@ -2724,10 +2857,12 @@ func instanceCreateByImage(d *schema.ResourceData, meta interface{}, profile, na
 	}
 	return nil
 }
-func instanceCreateByCatalogOffering(d *schema.ResourceData, meta interface{}, profile, name, vpcID, zone, image, offerringCrn, versionCrn, planCrn string) error {
+func instanceCreateByCatalogOffering(context context.Context, d *schema.ResourceData, meta interface{}, profile, name, vpcID, zone, image, offerringCrn, versionCrn, planCrn string) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "create", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	instanceproto := &vpcv1.InstancePrototypeInstanceByCatalogOffering{
 		Zone: &vpcv1.ZoneIdentity{
@@ -2749,7 +2884,7 @@ func instanceCreateByCatalogOffering(d *schema.ResourceData, meta interface{}, p
 			for _, clusterNetworkAttachmentsItem := range clusterNetworkAttachmentList {
 				clusterNetworkAttachmentsItemModel, err := ResourceIBMIsInstanceMapToInstanceClusterNetworkAttachmentPrototypeInstanceContext(clusterNetworkAttachmentsItem.(map[string]interface{}))
 				if err != nil {
-					return err
+					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "create", "parse-cluster_network_attachments").GetDiag()
 				}
 				clusterNetworkAttachments = append(clusterNetworkAttachments, *clusterNetworkAttachmentsItemModel)
 			}
@@ -2834,6 +2969,12 @@ func instanceCreateByCatalogOffering(d *schema.ResourceData, meta interface{}, p
 					userTagsArray[i] = userTagStr
 				}
 				volumeattItemPrototypeModel.UserTags = userTagsArray
+			}
+
+			//allowed use
+			if _, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.allowed_use", i)); ok {
+				allowedUseModel, _ := ResourceIBMIsVolumeAllowedUseMapToVolumeAllowedUsePrototype(d.Get(fmt.Sprintf("volume_prototypes.%d.allowed_use", i)).([]interface{})[0].(map[string]interface{}))
+				volumeattItemPrototypeModel.AllowedUse = allowedUseModel
 			}
 
 			volumeattItemModel.Volume = volumeattItemPrototypeModel
@@ -2909,6 +3050,10 @@ func instanceCreateByCatalogOffering(d *schema.ResourceData, meta interface{}, p
 		totalVolBandwidthStr := int64(totalVolBandwidthIntf.(int))
 		instanceproto.TotalVolumeBandwidth = &totalVolBandwidthStr
 	}
+	if volumeBandwidthQoSModeIntf, ok := d.GetOk(isInstanceVolumeBandwidthQoSMode); ok {
+		volumeBandwidthQoSModeStr := volumeBandwidthQoSModeIntf.(string)
+		instanceproto.VolumeBandwidthQosMode = &volumeBandwidthQoSModeStr
+	}
 	if dHostIdInf, ok := d.GetOk(isPlacementTargetDedicatedHost); ok {
 		dHostIdStr := dHostIdInf.(string)
 		dHostPlaementTarget := &vpcv1.InstancePlacementTargetPrototypeDedicatedHostIdentity{
@@ -2968,6 +3113,13 @@ func instanceCreateByCatalogOffering(d *schema.ResourceData, meta interface{}, p
 		volTemplate.Profile = &vpcv1.VolumeProfileIdentity{
 			Name: &volprof,
 		}
+		//boot volume allowed use
+		if _, ok := bootvol["allowed_use"]; ok && len(bootvol["allowed_use"].([]interface{})) > 0 {
+			allowedUseModel, _ := ResourceIBMIsVolumeAllowedUseMapToVolumeAllowedUsePrototype(bootvol["allowed_use"].([]interface{})[0].(map[string]interface{}))
+			if allowedUseModel != nil {
+				volTemplate.AllowedUse = allowedUseModel
+			}
+		}
 		deleteboolIntf := bootvol[isInstanceVolAttVolAutoDelete]
 		deletebool := deleteboolIntf.(bool)
 		instanceproto.BootVolumeAttachment = &vpcv1.VolumeAttachmentPrototypeInstanceByImageContext{
@@ -2988,7 +3140,7 @@ func instanceCreateByCatalogOffering(d *schema.ResourceData, meta interface{}, p
 			// enablenat := "primary_network_attachment.0.enable_infrastructure_nat"
 			networkAttachmentsItemModel, err := resourceIBMIsInstanceMapToInstanceNetworkAttachmentPrototype(allowipspoofing, autodelete, enablenat, d, networkAttachmentsItem.(map[string]interface{}))
 			if err != nil {
-				return err
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "create", "parse-network_attachments").GetDiag()
 			}
 			networkAttachments = append(networkAttachments, *networkAttachmentsItemModel)
 		}
@@ -3001,7 +3153,7 @@ func instanceCreateByCatalogOffering(d *schema.ResourceData, meta interface{}, p
 		enablenat := fmt.Sprintf("primary_network_attachment.%d.virtual_network_interface.0.enable_infrastructure_nat", i)
 		primaryNetworkAttachmentModel, err := resourceIBMIsInstanceMapToInstanceNetworkAttachmentPrototype(allowipspoofing, autodelete, enablenat, d, primnetworkattachmentintf.([]interface{})[0].(map[string]interface{}))
 		if err != nil {
-			return err
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "create", "parse-primary_network_attachments").GetDiag()
 		}
 		instanceproto.PrimaryNetworkAttachment = primaryNetworkAttachmentModel
 	}
@@ -3069,10 +3221,16 @@ func instanceCreateByCatalogOffering(d *schema.ResourceData, meta interface{}, p
 			autodelete = reservedipautodeleteok.(bool)
 		}
 		if ipv4str != "" && reservedipv4 != "" && ipv4str != reservedipv4 {
-			return fmt.Errorf("[ERROR] Error creating instance, primary_network_interface error, use either primary_ipv4_address(%s) or primary_ip.0.address(%s)", ipv4str, reservedipv4)
+			err = fmt.Errorf("Error creating instance, primary_network_interface error, use either primary_ipv4_address(%s) or primary_ip.0.address(%s)", ipv4str, reservedipv4)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Validation failed: %s", err.Error()), "ibm_is_instance", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		if reservedIp != "" && (ipv4str != "" || reservedipv4 != "" || reservedipname != "") {
-			return fmt.Errorf("[ERROR] Error creating instance, primary_network_interface error, reserved_ip(%s) is mutually exclusive with other primary_ip attributes", reservedIp)
+			err = fmt.Errorf("Error creating instance, primary_network_interface error, reserved_ip(%s) is mutually exclusive with other primary_ip attributes", reservedIp)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Validation failed: %s", err.Error()), "ibm_is_instance", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		if reservedIp != "" {
 			primnicobj.PrimaryIP = &vpcv1.NetworkInterfaceIPPrototypeReservedIPIdentity{
@@ -3160,10 +3318,16 @@ func instanceCreateByCatalogOffering(d *schema.ResourceData, meta interface{}, p
 				autodelete = reservedipautodeleteok.(bool)
 			}
 			if ipv4str != "" && reservedipv4 != "" && ipv4str != reservedipv4 {
-				return fmt.Errorf("[ERROR] Error creating instance, network_interfaces error, use either primary_ipv4_address(%s) or primary_ip.0.address(%s)", ipv4str, reservedipv4)
+				err = fmt.Errorf("Error creating instance, network_interfaces error, use either primary_ipv4_address(%s) or primary_ip.0.address(%s)", ipv4str, reservedipv4)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Validation failed: %s", err.Error()), "ibm_is_instance", "create")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			if reservedIp != "" && (ipv4str != "" || reservedipv4 != "" || reservedipname != "") {
-				return fmt.Errorf("[ERROR] Error creating instance, network_interfaces error, reserved_ip(%s) is mutually exclusive with other primary_ip attributes", reservedIp)
+				err = fmt.Errorf("Error creating instance, network_interfaces error, reserved_ip(%s) is mutually exclusive with other primary_ip attributes", reservedIp)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Validation failed: %s", err.Error()), "ibm_is_instance", "create")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			if reservedIp != "" {
 				nwInterface.PrimaryIP = &vpcv1.NetworkInterfaceIPPrototypeReservedIPIdentity{
@@ -3253,10 +3417,11 @@ func instanceCreateByCatalogOffering(d *schema.ResourceData, meta interface{}, p
 		InstancePrototype: instanceproto,
 	}
 
-	instance, response, err := sess.CreateInstance(options)
+	instance, _, err := sess.CreateInstanceWithContext(context, options)
 	if err != nil {
-		log.Printf("[DEBUG] Instance err %s\n%s", err, response)
-		return err
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateInstanceWithContext failed: %s", err.Error()), "ibm_is_instance", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	d.SetId(*instance.ID)
 
@@ -3265,7 +3430,9 @@ func instanceCreateByCatalogOffering(d *schema.ResourceData, meta interface{}, p
 
 	_, err = isWaitForInstanceAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate), d)
 	if err != nil {
-		return err
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForInstanceAvailable failed: %s", err.Error()), "ibm_is_instance", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	v := os.Getenv("IC_ENV_TAGS")
@@ -3280,10 +3447,12 @@ func instanceCreateByCatalogOffering(d *schema.ResourceData, meta interface{}, p
 	return nil
 }
 
-func instanceCreateByTemplate(d *schema.ResourceData, meta interface{}, profile, name, vpcID, zone, image, template string) error {
+func instanceCreateByTemplate(context context.Context, d *schema.ResourceData, meta interface{}, profile, name, vpcID, zone, image, template string) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "create", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	instanceproto := &vpcv1.InstancePrototypeInstanceBySourceTemplate{
 		SourceTemplate: &vpcv1.InstanceTemplateIdentity{
@@ -3299,7 +3468,7 @@ func instanceCreateByTemplate(d *schema.ResourceData, meta interface{}, profile,
 			for _, clusterNetworkAttachmentsItem := range clusterNetworkAttachmentList {
 				clusterNetworkAttachmentsItemModel, err := ResourceIBMIsInstanceMapToInstanceClusterNetworkAttachmentPrototypeInstanceContext(clusterNetworkAttachmentsItem.(map[string]interface{}))
 				if err != nil {
-					return err
+					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "create", "parse-cluster_network_attachments").GetDiag()
 				}
 				clusterNetworkAttachments = append(clusterNetworkAttachments, *clusterNetworkAttachmentsItemModel)
 			}
@@ -3386,6 +3555,12 @@ func instanceCreateByTemplate(d *schema.ResourceData, meta interface{}, profile,
 				volumeattItemPrototypeModel.UserTags = userTagsArray
 			}
 
+			//allowed use
+			if _, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.allowed_use", i)); ok {
+				allowedUseModel, _ := ResourceIBMIsVolumeAllowedUseMapToVolumeAllowedUsePrototype(d.Get(fmt.Sprintf("volume_prototypes.%d.allowed_use", i)).([]interface{})[0].(map[string]interface{}))
+				volumeattItemPrototypeModel.AllowedUse = allowedUseModel
+			}
+
 			volumeattItemModel.Volume = volumeattItemPrototypeModel
 
 			volumeatt = append(volumeatt, *volumeattItemModel)
@@ -3425,7 +3600,10 @@ func instanceCreateByTemplate(d *schema.ResourceData, meta interface{}, profile,
 		totalVolBandwidthStr := int64(totalVolBandwidthIntf.(int))
 		instanceproto.TotalVolumeBandwidth = &totalVolBandwidthStr
 	}
-
+	if volumeBandwidthQoSModeIntf, ok := d.GetOk(isInstanceVolumeBandwidthQoSMode); ok {
+		volumeBandwidthQoSModeStr := volumeBandwidthQoSModeIntf.(string)
+		instanceproto.VolumeBandwidthQosMode = &volumeBandwidthQoSModeStr
+	}
 	if vpcID != "" {
 		instanceproto.VPC = &vpcv1.VPCIdentity{
 			ID: &vpcID,
@@ -3502,6 +3680,13 @@ func instanceCreateByTemplate(d *schema.ResourceData, meta interface{}, profile,
 		volTemplate.Profile = &vpcv1.VolumeProfileIdentity{
 			Name: &volprof,
 		}
+		//boot volume allowed use
+		if _, ok := bootvol["allowed_use"]; ok && len(bootvol["allowed_use"].([]interface{})) > 0 {
+			allowedUseModel, _ := ResourceIBMIsVolumeAllowedUseMapToVolumeAllowedUsePrototype(bootvol["allowed_use"].([]interface{})[0].(map[string]interface{}))
+			if allowedUseModel != nil {
+				volTemplate.AllowedUse = allowedUseModel
+			}
+		}
 		var userTags *schema.Set
 		if v, ok := bootvol[isInstanceBootVolumeTags]; ok {
 			userTags = v.(*schema.Set)
@@ -3531,7 +3716,7 @@ func instanceCreateByTemplate(d *schema.ResourceData, meta interface{}, profile,
 			enablenat := fmt.Sprintf("network_attachments.%d.enable_infrastructure_nat", i)
 			networkAttachmentsItemModel, err := resourceIBMIsInstanceMapToInstanceNetworkAttachmentPrototype(allowipspoofing, autodelete, enablenat, d, networkAttachmentsItem.(map[string]interface{}))
 			if err != nil {
-				return err
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "create", "parse-network_attachments").GetDiag()
 			}
 			networkAttachments = append(networkAttachments, *networkAttachmentsItemModel)
 		}
@@ -3544,7 +3729,7 @@ func instanceCreateByTemplate(d *schema.ResourceData, meta interface{}, profile,
 		enablenat := fmt.Sprintf("primary_network_attachment.%d.virtual_network_interface.0.enable_infrastructure_nat", i)
 		primaryNetworkAttachmentModel, err := resourceIBMIsInstanceMapToInstanceNetworkAttachmentPrototype(allowipspoofing, autodelete, enablenat, d, primnetworkattachmentintf.([]interface{})[0].(map[string]interface{}))
 		if err != nil {
-			return err
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "create", "parse-primary_network_attachments").GetDiag()
 		}
 		instanceproto.PrimaryNetworkAttachment = primaryNetworkAttachmentModel
 	}
@@ -3612,10 +3797,16 @@ func instanceCreateByTemplate(d *schema.ResourceData, meta interface{}, profile,
 			autodelete = reservedipautodeleteok.(bool)
 		}
 		if ipv4str != "" && reservedipv4 != "" && ipv4str != reservedipv4 {
-			return fmt.Errorf("[ERROR] Error creating instance, primary_network_interface error, use either primary_ipv4_address(%s) or primary_ip.0.address(%s)", ipv4str, reservedipv4)
+			err = fmt.Errorf("Error creating instance, primary_network_interface error, use either primary_ipv4_address(%s) or primary_ip.0.address(%s)", ipv4str, reservedipv4)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Validation failed: %s", err.Error()), "ibm_is_instance", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		if reservedIp != "" && (ipv4str != "" || reservedipv4 != "" || reservedipname != "") {
-			return fmt.Errorf("[ERROR] Error creating instance, primary_network_interface error, reserved_ip(%s) is mutually exclusive with other primary_ip attributes", reservedIp)
+			err = fmt.Errorf("Error creating instance, primary_network_interface error, reserved_ip(%s) is mutually exclusive with other primary_ip attributes", reservedIp)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Validation failed: %s", err.Error()), "ibm_is_instance", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		if reservedIp != "" {
 			primnicobj.PrimaryIP = &vpcv1.NetworkInterfaceIPPrototypeReservedIPIdentity{
@@ -3702,10 +3893,16 @@ func instanceCreateByTemplate(d *schema.ResourceData, meta interface{}, profile,
 				autodelete = reservedipautodeleteok.(bool)
 			}
 			if ipv4str != "" && reservedipv4 != "" && ipv4str != reservedipv4 {
-				return fmt.Errorf("[ERROR] Error creating instance, network_interfaces error, use either primary_ipv4_address(%s) or primary_ip.0.address(%s)", ipv4str, reservedipv4)
+				err = fmt.Errorf("Error creating instance, network_interfaces error, use either primary_ipv4_address(%s) or primary_ip.0.address(%s)", ipv4str, reservedipv4)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Validation failed: %s", err.Error()), "ibm_is_instance", "create")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			if reservedIp != "" && (ipv4str != "" || reservedipv4 != "" || reservedipname != "") {
-				return fmt.Errorf("[ERROR] Error creating instance, network_interfaces error, reserved_ip(%s) is mutually exclusive with other primary_ip attributes", reservedIp)
+				err = fmt.Errorf("Error creating instance, network_interfaces error, reserved_ip(%s) is mutually exclusive with other primary_ip attributes", reservedIp)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Validation failed: %s", err.Error()), "ibm_is_instance", "create")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			if reservedIp != "" {
 				nwInterface.PrimaryIP = &vpcv1.NetworkInterfaceIPPrototypeReservedIPIdentity{
@@ -3795,10 +3992,11 @@ func instanceCreateByTemplate(d *schema.ResourceData, meta interface{}, profile,
 		InstancePrototype: instanceproto,
 	}
 
-	instance, response, err := sess.CreateInstance(options)
+	instance, _, err := sess.CreateInstanceWithContext(context, options)
 	if err != nil {
-		log.Printf("[DEBUG] Instance err %s\n%s", err, response)
-		return err
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateInstanceWithContext failed: %s", err.Error()), "ibm_is_instance", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	d.SetId(*instance.ID)
 
@@ -3807,7 +4005,9 @@ func instanceCreateByTemplate(d *schema.ResourceData, meta interface{}, profile,
 
 	_, err = isWaitForInstanceAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate), d)
 	if err != nil {
-		return err
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForInstanceAvailable failed: %s", err.Error()), "ibm_is_instance", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	v := os.Getenv("IC_ENV_TAGS")
@@ -3830,10 +4030,12 @@ func instanceCreateByTemplate(d *schema.ResourceData, meta interface{}, profile,
 	return nil
 }
 
-func instanceCreateBySnapshot(d *schema.ResourceData, meta interface{}, profile, name, vpcID, zone string) error {
+func instanceCreateBySnapshot(context context.Context, d *schema.ResourceData, meta interface{}, profile, name, vpcID, zone string) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "create", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	instanceproto := &vpcv1.InstancePrototypeInstanceBySourceSnapshot{
 		Zone: &vpcv1.ZoneIdentity{
@@ -3855,7 +4057,7 @@ func instanceCreateBySnapshot(d *schema.ResourceData, meta interface{}, profile,
 			for _, clusterNetworkAttachmentsItem := range clusterNetworkAttachmentList {
 				clusterNetworkAttachmentsItemModel, err := ResourceIBMIsInstanceMapToInstanceClusterNetworkAttachmentPrototypeInstanceContext(clusterNetworkAttachmentsItem.(map[string]interface{}))
 				if err != nil {
-					return err
+					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "create", "parse-cluster_network_attachments").GetDiag()
 				}
 				clusterNetworkAttachments = append(clusterNetworkAttachments, *clusterNetworkAttachmentsItemModel)
 			}
@@ -3932,6 +4134,12 @@ func instanceCreateBySnapshot(d *schema.ResourceData, meta interface{}, profile,
 					}
 				}
 			}
+			//allowed use
+			if _, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.allowed_use", i)); ok {
+				allowedUseModel, _ := ResourceIBMIsVolumeAllowedUseMapToVolumeAllowedUsePrototype(d.Get(fmt.Sprintf("volume_prototypes.%d.allowed_use", i)).([]interface{})[0].(map[string]interface{}))
+				volumeattItemPrototypeModel.AllowedUse = allowedUseModel
+			}
+
 			volTags := d.Get(fmt.Sprintf("volume_prototypes.%d.volume_tags", i)).(*schema.Set)
 			if volTags != nil && volTags.Len() != 0 {
 				userTagsArray := make([]string, volTags.Len())
@@ -4058,6 +4266,12 @@ func instanceCreateBySnapshot(d *schema.ResourceData, meta interface{}, profile,
 				CRN: &snapshotCrnStr,
 			}
 		}
+		if _, ok := bootvol["allowed_use"]; ok && len(bootvol["allowed_use"].([]interface{})) > 0 {
+			allowedUseModel, _ := ResourceIBMIsVolumeAllowedUseMapToVolumeAllowedUsePrototype(bootvol["allowed_use"].([]interface{})[0].(map[string]interface{}))
+			if allowedUseModel != nil {
+				volTemplate.AllowedUse = allowedUseModel
+			}
+		}
 		deleteboolIntf := bootvol[isInstanceVolAttVolAutoDelete]
 		deletebool := deleteboolIntf.(bool)
 		instanceproto.BootVolumeAttachment = &vpcv1.VolumeAttachmentPrototypeInstanceBySourceSnapshotContext{
@@ -4096,6 +4310,10 @@ func instanceCreateBySnapshot(d *schema.ResourceData, meta interface{}, profile,
 		totalVolBandwidthStr := int64(totalVolBandwidthIntf.(int))
 		instanceproto.TotalVolumeBandwidth = &totalVolBandwidthStr
 	}
+	if volumeBandwidthQoSModeIntf, ok := d.GetOk(isInstanceVolumeBandwidthQoSMode); ok {
+		volumeBandwidthQoSModeStr := volumeBandwidthQoSModeIntf.(string)
+		instanceproto.VolumeBandwidthQosMode = &volumeBandwidthQoSModeStr
+	}
 
 	if networkattachmentsintf, ok := d.GetOk("network_attachments"); ok {
 		networkAttachments := []vpcv1.InstanceNetworkAttachmentPrototype{}
@@ -4105,7 +4323,7 @@ func instanceCreateBySnapshot(d *schema.ResourceData, meta interface{}, profile,
 			enablenat := fmt.Sprintf("network_attachments.%d.enable_infrastructure_nat", i)
 			networkAttachmentsItemModel, err := resourceIBMIsInstanceMapToInstanceNetworkAttachmentPrototype(allowipspoofing, autodelete, enablenat, d, networkAttachmentsItem.(map[string]interface{}))
 			if err != nil {
-				return err
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "create", "parse-network_attachments").GetDiag()
 			}
 			networkAttachments = append(networkAttachments, *networkAttachmentsItemModel)
 		}
@@ -4118,7 +4336,7 @@ func instanceCreateBySnapshot(d *schema.ResourceData, meta interface{}, profile,
 		enablenat := fmt.Sprintf("primary_network_attachment.%d.virtual_network_interface.0.enable_infrastructure_nat", i)
 		primaryNetworkAttachmentModel, err := resourceIBMIsInstanceMapToInstanceNetworkAttachmentPrototype(allowipspoofing, autodelete, enablenat, d, primnetworkattachmentintf.([]interface{})[0].(map[string]interface{}))
 		if err != nil {
-			return err
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "create", "parse-primary_network_attachments").GetDiag()
 		}
 		instanceproto.PrimaryNetworkAttachment = primaryNetworkAttachmentModel
 	}
@@ -4161,10 +4379,16 @@ func instanceCreateBySnapshot(d *schema.ResourceData, meta interface{}, profile,
 			autodelete = reservedipautodeleteok.(bool)
 		}
 		if ipv4str != "" && reservedipv4 != "" && ipv4str != reservedipv4 {
-			return fmt.Errorf("[ERROR] Error creating instance, primary_network_interface error, use either primary_ipv4_address(%s) or primary_ip.0.address(%s)", ipv4str, reservedipv4)
+			err = fmt.Errorf("Error creating instance, primary_network_interface error, use either primary_ipv4_address(%s) or primary_ip.0.address(%s)", ipv4str, reservedipv4)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Validation failed: %s", err.Error()), "ibm_is_instance", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		if reservedIp != "" && (ipv4str != "" || reservedipv4 != "" || reservedipname != "") {
-			return fmt.Errorf("[ERROR] Error creating instance, primary_network_interface error, reserved_ip(%s) is mutually exclusive with other primary_ip attributes", reservedIp)
+			err = fmt.Errorf("Error creating instance, primary_network_interface error, reserved_ip(%s) is mutually exclusive with other primary_ip attributes", reservedIp)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Validation failed: %s", err.Error()), "ibm_is_instance", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		if reservedIp != "" {
 			primnicobj.PrimaryIP = &vpcv1.NetworkInterfaceIPPrototypeReservedIPIdentity{
@@ -4251,10 +4475,16 @@ func instanceCreateBySnapshot(d *schema.ResourceData, meta interface{}, profile,
 				autodelete = reservedipautodeleteok.(bool)
 			}
 			if ipv4str != "" && reservedipv4 != "" && ipv4str != reservedipv4 {
-				return fmt.Errorf("[ERROR] Error creating instance, network_interfaces error, use either primary_ipv4_address(%s) or primary_ip.0.address(%s)", ipv4str, reservedipv4)
+				err = fmt.Errorf("Error creating instance, network_interfaces error, use either primary_ipv4_address(%s) or primary_ip.0.address(%s)", ipv4str, reservedipv4)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Validation failed: %s", err.Error()), "ibm_is_instance", "create")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			if reservedIp != "" && (ipv4str != "" || reservedipv4 != "" || reservedipname != "") {
-				return fmt.Errorf("[ERROR] Error creating instance, network_interfaces error, reserved_ip(%s) is mutually exclusive with other primary_ip attributes", reservedIp)
+				err = fmt.Errorf("Error creating instance, network_interfaces error, reserved_ip(%s) is mutually exclusive with other primary_ip attributes", reservedIp)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Validation failed: %s", err.Error()), "ibm_is_instance", "create")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			if reservedIp != "" {
 				nwInterface.PrimaryIP = &vpcv1.NetworkInterfaceIPPrototypeReservedIPIdentity{
@@ -4349,10 +4579,11 @@ func instanceCreateBySnapshot(d *schema.ResourceData, meta interface{}, profile,
 		InstancePrototype: instanceproto,
 	}
 
-	instance, response, err := sess.CreateInstance(options)
+	instance, _, err := sess.CreateInstanceWithContext(context, options)
 	if err != nil {
-		log.Printf("[DEBUG] Instance err %s\n%s", err, response)
-		return err
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateInstanceWithContext failed: %s", err.Error()), "ibm_is_instance", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	d.SetId(*instance.ID)
 
@@ -4361,7 +4592,9 @@ func instanceCreateBySnapshot(d *schema.ResourceData, meta interface{}, profile,
 
 	_, err = isWaitForInstanceAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate), d)
 	if err != nil {
-		return err
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForInstanceAvailable failed: %s", err.Error()), "ibm_is_instance", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	v := os.Getenv("IC_ENV_TAGS")
@@ -4384,10 +4617,12 @@ func instanceCreateBySnapshot(d *schema.ResourceData, meta interface{}, profile,
 	return nil
 }
 
-func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, name, vpcID, zone string) error {
+func instanceCreateByVolume(context context.Context, d *schema.ResourceData, meta interface{}, profile, name, vpcID, zone string) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "create", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	instanceproto := &vpcv1.InstancePrototypeInstanceByVolume{
 		Zone: &vpcv1.ZoneIdentity{
@@ -4409,7 +4644,7 @@ func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, n
 			for _, clusterNetworkAttachmentsItem := range clusterNetworkAttachmentList {
 				clusterNetworkAttachmentsItemModel, err := ResourceIBMIsInstanceMapToInstanceClusterNetworkAttachmentPrototypeInstanceContext(clusterNetworkAttachmentsItem.(map[string]interface{}))
 				if err != nil {
-					return err
+					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "create", "parse-cluster_network_attachments").GetDiag()
 				}
 				clusterNetworkAttachments = append(clusterNetworkAttachments, *clusterNetworkAttachmentsItemModel)
 			}
@@ -4494,6 +4729,12 @@ func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, n
 					userTagsArray[i] = userTagStr
 				}
 				volumeattItemPrototypeModel.UserTags = userTagsArray
+			}
+
+			//allowed use
+			if _, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.allowed_use", i)); ok {
+				allowedUseModel, _ := ResourceIBMIsVolumeAllowedUseMapToVolumeAllowedUsePrototype(d.Get(fmt.Sprintf("volume_prototypes.%d.allowed_use", i)).([]interface{})[0].(map[string]interface{}))
+				volumeattItemPrototypeModel.AllowedUse = allowedUseModel
 			}
 
 			volumeattItemModel.Volume = volumeattItemPrototypeModel
@@ -4596,6 +4837,10 @@ func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, n
 		totalVolBandwidthStr := int64(totalVolBandwidthIntf.(int))
 		instanceproto.TotalVolumeBandwidth = &totalVolBandwidthStr
 	}
+	if volumeBandwidthQoSModeIntf, ok := d.GetOk(isInstanceVolumeBandwidthQoSMode); ok {
+		volumeBandwidthQoSModeStr := volumeBandwidthQoSModeIntf.(string)
+		instanceproto.VolumeBandwidthQosMode = &volumeBandwidthQoSModeStr
+	}
 	if networkattachmentsintf, ok := d.GetOk("network_attachments"); ok {
 		networkAttachments := []vpcv1.InstanceNetworkAttachmentPrototype{}
 		for i, networkAttachmentsItem := range networkattachmentsintf.([]interface{}) {
@@ -4607,7 +4852,7 @@ func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, n
 			// enablenat := "primary_network_attachment.0.enable_infrastructure_nat"
 			networkAttachmentsItemModel, err := resourceIBMIsInstanceMapToInstanceNetworkAttachmentPrototype(allowipspoofing, autodelete, enablenat, d, networkAttachmentsItem.(map[string]interface{}))
 			if err != nil {
-				return err
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "create", "parse-network_attachments").GetDiag()
 			}
 			networkAttachments = append(networkAttachments, *networkAttachmentsItemModel)
 		}
@@ -4620,7 +4865,7 @@ func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, n
 		enablenat := fmt.Sprintf("primary_network_attachment.%d.virtual_network_interface.0.enable_infrastructure_nat", i)
 		primaryNetworkAttachmentModel, err := resourceIBMIsInstanceMapToInstanceNetworkAttachmentPrototype(allowipspoofing, autodelete, enablenat, d, primnetworkattachmentintf.([]interface{})[0].(map[string]interface{}))
 		if err != nil {
-			return err
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "create", "parse-primary_network_attachments").GetDiag()
 		}
 		instanceproto.PrimaryNetworkAttachment = primaryNetworkAttachmentModel
 	}
@@ -4663,10 +4908,16 @@ func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, n
 			autodelete = reservedipautodeleteok.(bool)
 		}
 		if ipv4str != "" && reservedipv4 != "" && ipv4str != reservedipv4 {
-			return fmt.Errorf("[ERROR] Error creating instance, primary_network_interface error, use either primary_ipv4_address(%s) or primary_ip.0.address(%s)", ipv4str, reservedipv4)
+			err = fmt.Errorf("Error creating instance, primary_network_interface error, use either primary_ipv4_address(%s) or primary_ip.0.address(%s)", ipv4str, reservedipv4)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Validation failed: %s", err.Error()), "ibm_is_instance", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		if reservedIp != "" && (ipv4str != "" || reservedipv4 != "" || reservedipname != "") {
-			return fmt.Errorf("[ERROR] Error creating instance, primary_network_interface error, reserved_ip(%s) is mutually exclusive with other primary_ip attributes", reservedIp)
+			err = fmt.Errorf("Error creating instance, primary_network_interface error, reserved_ip(%s) is mutually exclusive with other primary_ip attributes", reservedIp)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Validation failed: %s", err.Error()), "ibm_is_instance", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		if reservedIp != "" {
 			primnicobj.PrimaryIP = &vpcv1.NetworkInterfaceIPPrototypeReservedIPIdentity{
@@ -4753,10 +5004,16 @@ func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, n
 				autodelete = reservedipautodeleteok.(bool)
 			}
 			if ipv4str != "" && reservedipv4 != "" && ipv4str != reservedipv4 {
-				return fmt.Errorf("[ERROR] Error creating instance, network_interfaces error, use either primary_ipv4_address(%s) or primary_ip.0.address(%s)", ipv4str, reservedipv4)
+				err = fmt.Errorf("Error creating instance, network_interfaces error, use either primary_ipv4_address(%s) or primary_ip.0.address(%s)", ipv4str, reservedipv4)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Validation failed: %s", err.Error()), "ibm_is_instance", "create")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			if reservedIp != "" && (ipv4str != "" || reservedipv4 != "" || reservedipname != "") {
-				return fmt.Errorf("[ERROR] Error creating instance, network_interfaces error, reserved_ip(%s) is mutually exclusive with other primary_ip attributes", reservedIp)
+				err = fmt.Errorf("Error creating instance, network_interfaces error, reserved_ip(%s) is mutually exclusive with other primary_ip attributes", reservedIp)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Validation failed: %s", err.Error()), "ibm_is_instance", "create")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			if reservedIp != "" {
 				nwInterface.PrimaryIP = &vpcv1.NetworkInterfaceIPPrototypeReservedIPIdentity{
@@ -4850,10 +5107,11 @@ func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, n
 		InstancePrototype: instanceproto,
 	}
 
-	instance, response, err := sess.CreateInstance(options)
+	instance, _, err := sess.CreateInstanceWithContext(context, options)
 	if err != nil {
-		log.Printf("[DEBUG] Instance err %s\n%s", err, response)
-		return err
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateInstanceWithContext failed: %s", err.Error()), "ibm_is_instance", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	d.SetId(*instance.ID)
 
@@ -4862,7 +5120,9 @@ func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, n
 
 	_, err = isWaitForInstanceAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate), d)
 	if err != nil {
-		return err
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForInstanceAvailable failed: %s", err.Error()), "ibm_is_instance", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	v := os.Getenv("IC_ENV_TAGS")
@@ -4885,7 +5145,7 @@ func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, n
 	return nil
 }
 
-func resourceIBMisInstanceCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMisInstanceCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 	profile := d.Get(isInstanceProfile).(string)
 	name := d.Get(isInstanceName).(string)
@@ -4902,34 +5162,34 @@ func resourceIBMisInstanceCreate(d *schema.ResourceData, meta interface{}) error
 		offeringCrn, _ := catalogOffering[isInstanceCatalogOfferingOfferingCrn].(string)
 		versionCrn, _ := catalogOffering[isInstanceCatalogOfferingVersionCrn].(string)
 		planCrn, _ := catalogOffering[isInstanceCatalogOfferingPlanCrn].(string)
-		err := instanceCreateByCatalogOffering(d, meta, profile, name, vpcID, zone, image, offeringCrn, versionCrn, planCrn)
+		err := instanceCreateByCatalogOffering(context, d, meta, profile, name, vpcID, zone, image, offeringCrn, versionCrn, planCrn)
 		if err != nil {
 			return err
 		}
 
 	} else if volume != "" {
-		err := instanceCreateByVolume(d, meta, profile, name, vpcID, zone)
+		err := instanceCreateByVolume(context, d, meta, profile, name, vpcID, zone)
 		if err != nil {
 			return err
 		}
 	} else if snapshot != "" || snapshotcrn != "" {
-		err := instanceCreateBySnapshot(d, meta, profile, name, vpcID, zone)
+		err := instanceCreateBySnapshot(context, d, meta, profile, name, vpcID, zone)
 		if err != nil {
 			return err
 		}
 	} else if template != "" {
-		err := instanceCreateByTemplate(d, meta, profile, name, vpcID, zone, image, template)
+		err := instanceCreateByTemplate(context, d, meta, profile, name, vpcID, zone, image, template)
 		if err != nil {
 			return err
 		}
 	} else {
-		err := instanceCreateByImage(d, meta, profile, name, vpcID, zone, image, bootProfile)
+		err := instanceCreateByImage(context, d, meta, profile, name, vpcID, zone, image, bootProfile)
 		if err != nil {
 			return err
 		}
 	}
 
-	return resourceIBMisInstanceUpdate(d, meta)
+	return resourceIBMisInstanceUpdate(context, d, meta)
 }
 
 func isWaitForInstanceAvailable(instanceC *vpcv1.VpcV1, id string, timeout time.Duration, d *schema.ResourceData) (interface{}, error) {
@@ -5016,7 +5276,6 @@ func isRestartStartAction(instanceC *vpcv1.VpcV1, id string, d *schema.ResourceD
 		select {
 
 		case <-subticker.C:
-			log.Println("Instance is still in starting state, force retry by restarting the instance.")
 			actiontype := "stop"
 			createinsactoptions := &vpcv1.CreateInstanceActionOptions{
 				InstanceID: &id,
@@ -5047,21 +5306,23 @@ func isRestartStartAction(instanceC *vpcv1.VpcV1, id string, d *schema.ResourceD
 		}
 	}
 }
-func resourceIBMisInstanceRead(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMisInstanceRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 	ID := d.Id()
 
-	err := instanceGet(d, meta, ID)
+	err := instanceGet(context, d, meta, ID)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
+func instanceGet(context context.Context, d *schema.ResourceData, meta interface{}, id string) diag.Diagnostics {
 	instanceC, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	getinsOptions := &vpcv1.GetInstanceOptions{
 		ID: &id,
@@ -5069,13 +5330,15 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 	getinsIniOptions := &vpcv1.GetInstanceInitializationOptions{
 		ID: &id,
 	}
-	instance, response, err := instanceC.GetInstance(getinsOptions)
+	instance, response, err := instanceC.GetInstanceWithContext(context, getinsOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error getting Instance: %s\n%s", err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetInstanceWithContext failed: %s", err.Error()), "ibm_is_instance", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	// cluster changes
 	if !core.IsNil(instance.ClusterNetworkAttachments) {
@@ -5083,55 +5346,71 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 		for _, clusterNetworkAttachmentsItem := range instance.ClusterNetworkAttachments {
 			clusterNetworkAttachmentsItemMap, err := ResourceIBMIsInstanceInstanceClusterNetworkAttachmentReferenceToMap(instanceC, &clusterNetworkAttachmentsItem, *instance.ID) // #nosec G601
 			if err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "cluster_network_attachments-to-map")
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "cluster_network_attachments-to-map").GetDiag()
 			}
 			clusterNetworkAttachments = append(clusterNetworkAttachments, clusterNetworkAttachmentsItemMap)
 		}
 		if err = d.Set("cluster_network_attachments", clusterNetworkAttachments); err != nil {
 			err = fmt.Errorf("Error setting cluster_network_attachments: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-cluster_network_attachments")
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-cluster_network_attachments").GetDiag()
 		}
 	}
 	clusterNetwork := make([]map[string]interface{}, 0)
 	if !core.IsNil(instance.ClusterNetwork) {
 		clusterNetworkMap, err := ResourceIBMIsInstanceClusterNetworkReferenceToMap(instance.ClusterNetwork)
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "cluster_network-to-map")
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "cluster_network-to-map").GetDiag()
 		}
 		clusterNetwork = append(clusterNetwork, clusterNetworkMap)
 	}
 	if err = d.Set("cluster_network", clusterNetwork); err != nil {
 		err = fmt.Errorf("Error setting cluster_network: %s", err)
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-cluster_network")
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-cluster_network").GetDiag()
 	}
 	if !core.IsNil(instance.ConfidentialComputeMode) {
 		if err = d.Set("confidential_compute_mode", instance.ConfidentialComputeMode); err != nil {
-			return fmt.Errorf("Error setting confidential_compute_mode: %s", err)
+			err = fmt.Errorf("Error setting confidential_compute_mode: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-confidential_compute_mode").GetDiag()
 		}
 	}
 	if !core.IsNil(instance.EnableSecureBoot) {
 		if err = d.Set("enable_secure_boot", instance.EnableSecureBoot); err != nil {
-			return fmt.Errorf("Error setting enable_secure_boot: %s", err)
+			err = fmt.Errorf("Error setting enable_secure_boot: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-enable_secure_boot").GetDiag()
 		}
 	}
-	instanceInitialization, response, err := instanceC.GetInstanceInitialization(getinsIniOptions)
+	instanceInitialization, response, err := instanceC.GetInstanceInitializationWithContext(context, getinsIniOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error getting Instance initialization details: %s\n%s", err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetInstanceInitializationWithContext failed: %s", err.Error()), "ibm_is_instance", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if instanceInitialization.DefaultTrustedProfile != nil && instanceInitialization.DefaultTrustedProfile.AutoLink != nil {
-		d.Set(isInstanceDefaultTrustedProfileAutoLink, *instanceInitialization.DefaultTrustedProfile.AutoLink)
+		if err = d.Set(isInstanceDefaultTrustedProfileAutoLink, *instanceInitialization.DefaultTrustedProfile.AutoLink); err != nil {
+			err = fmt.Errorf("Error setting default_trusted_profile_auto_link: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-default_trusted_profile_auto_link").GetDiag()
+		}
 	}
 	if instanceInitialization.DefaultTrustedProfile != nil && instanceInitialization.DefaultTrustedProfile.Target != nil {
-		d.Set(isInstanceDefaultTrustedProfileTarget, *instanceInitialization.DefaultTrustedProfile.Target.ID)
+		if err = d.Set(isInstanceDefaultTrustedProfileTarget, *instanceInitialization.DefaultTrustedProfile.Target.ID); err != nil {
+			err = fmt.Errorf("Error setting default_trusted_profile_target: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-default_trusted_profile_target").GetDiag()
+		}
 	}
 
 	if instance.AvailabilityPolicy != nil && instance.AvailabilityPolicy.HostFailure != nil {
-		d.Set(isInstanceAvailablePolicyHostFailure, *instance.AvailabilityPolicy.HostFailure)
+		if err = d.Set(isInstanceAvailablePolicyHostFailure, *instance.AvailabilityPolicy.HostFailure); err != nil {
+			err = fmt.Errorf("Error setting availability_policy_host_failure: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-availability_policy_host_failure").GetDiag()
+		}
 	}
 
 	// volume_prototypes
 	volList, _ := setVolumePrototypesInState(d, instance, instanceC)
-	d.Set("volume_prototypes", volList)
+	if err = d.Set("volume_prototypes", volList); err != nil {
+		err = fmt.Errorf("Error setting volume_prototypes: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-volume_prototypes").GetDiag()
+	}
 
 	// catalog
 	if instance.CatalogOffering != nil {
@@ -5149,11 +5428,22 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 			}
 		}
 		catalogList = append(catalogList, catalogMap)
-		d.Set(isInstanceCatalogOffering, catalogList)
+		if err = d.Set(isInstanceCatalogOffering, catalogList); err != nil {
+			err = fmt.Errorf("Error setting catalog_offering: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-catalog_offering").GetDiag()
+		}
 	}
-	d.Set(isInstanceName, *instance.Name)
+	if !core.IsNil(instance.Name) {
+		if err = d.Set("name", instance.Name); err != nil {
+			err = fmt.Errorf("Error setting name: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-name").GetDiag()
+		}
+	}
 	if instance.Profile != nil {
-		d.Set(isInstanceProfile, *instance.Profile.Name)
+		if err = d.Set(isInstanceProfile, *instance.Profile.Name); err != nil {
+			err = fmt.Errorf("Error setting profile: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-profile").GetDiag()
+		}
 	}
 	cpuList := make([]map[string]interface{}, 0)
 	if instance.Vcpu != nil {
@@ -5163,21 +5453,41 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 		currentCPU[isInstanceCPUManufacturer] = instance.Vcpu.Manufacturer
 		cpuList = append(cpuList, currentCPU)
 	}
-	d.Set(isInstanceCPU, cpuList)
-
+	if err = d.Set(isInstanceCPU, cpuList); err != nil {
+		err = fmt.Errorf("Error setting vcpu: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-vcpu").GetDiag()
+	}
 	if instance.Bandwidth != nil {
-		d.Set(isInstanceBandwidth, int(*instance.Bandwidth))
+		if err = d.Set("bandwidth", flex.IntValue(instance.Bandwidth)); err != nil {
+			err = fmt.Errorf("Error setting bandwidth: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-bandwidth").GetDiag()
+		}
 	}
 
 	if instance.TotalNetworkBandwidth != nil {
-		d.Set(isInstanceTotalNetworkBandwidth, int(*instance.TotalNetworkBandwidth))
+		if err = d.Set("total_network_bandwidth", flex.IntValue(instance.TotalNetworkBandwidth)); err != nil {
+			err = fmt.Errorf("Error setting total_network_bandwidth: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-total_network_bandwidth").GetDiag()
+		}
 	}
 
 	if instance.TotalVolumeBandwidth != nil {
-		d.Set(isInstanceTotalVolumeBandwidth, int(*instance.TotalVolumeBandwidth))
+		if err = d.Set("total_volume_bandwidth", flex.IntValue(instance.TotalVolumeBandwidth)); err != nil {
+			err = fmt.Errorf("Error setting total_volume_bandwidth: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-total_volume_bandwidth").GetDiag()
+		}
+	}
+	if instance.VolumeBandwidthQosMode != nil {
+		if err = d.Set(isInstanceVolumeBandwidthQoSMode, string(*instance.VolumeBandwidthQosMode)); err != nil {
+			err = fmt.Errorf("Error setting volume_bandwidth_qos_mode: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-volume_bandwidth_qos_mode").GetDiag()
+		}
 	}
 
-	d.Set(isInstanceMemory, *instance.Memory)
+	if err = d.Set("memory", flex.IntValue(instance.Memory)); err != nil {
+		err = fmt.Errorf("Error setting memory: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-memory").GetDiag()
+	}
 	gpuList := make([]map[string]interface{}, 0)
 	if instance.Gpu != nil {
 		currentGpu := map[string]interface{}{}
@@ -5187,8 +5497,10 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 		currentGpu[isInstanceGpuMemory] = instance.Gpu.Memory
 		gpuList = append(gpuList, currentGpu)
 	}
-	d.Set(isInstanceGpu, gpuList)
-
+	if err = d.Set(isInstanceGpu, gpuList); err != nil {
+		err = fmt.Errorf("Error setting gpu: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-gpu").GetDiag()
+	}
 	if instance.PrimaryNetworkInterface != nil {
 		primaryNicList := make([]map[string]interface{}, 0)
 		currentPrimNic := map[string]interface{}{}
@@ -5218,9 +5530,11 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 			SubnetID: instance.PrimaryNetworkInterface.Subnet.ID,
 			ID:       instance.PrimaryNetworkInterface.PrimaryIP.ID,
 		}
-		insRip, response, err := instanceC.GetSubnetReservedIP(getripoptions)
+		insRip, _, err := instanceC.GetSubnetReservedIPWithContext(context, getripoptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error getting network interface reserved ip(%s) attached to the instance network interface(%s): %s\n%s", *instance.PrimaryNetworkInterface.PrimaryIP.ID, *instance.PrimaryNetworkInterface.ID, err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetSubnetReservedIPWithContext failed: %s", err.Error()), "ibm_is_instance", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		currentPrimIp[isInstanceNicReservedIpAutoDelete] = insRip.AutoDelete
 
@@ -5231,9 +5545,11 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 			InstanceID: &id,
 			ID:         instance.PrimaryNetworkInterface.ID,
 		}
-		insnic, response, err := instanceC.GetInstanceNetworkInterface(getnicoptions)
+		insnic, _, err := instanceC.GetInstanceNetworkInterfaceWithContext(context, getnicoptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error getting network interfaces attached to the instance %s\n%s", err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetInstanceNetworkInterfaceWithContext failed: %s", err.Error()), "ibm_is_instance", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		currentPrimNic[isInstanceNicAllowIPSpoofing] = *insnic.AllowIPSpoofing
 		if insnic.PortSpeed != nil {
@@ -5249,7 +5565,10 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 		}
 
 		primaryNicList = append(primaryNicList, currentPrimNic)
-		d.Set(isInstancePrimaryNetworkInterface, primaryNicList)
+		if err = d.Set(isInstancePrimaryNetworkInterface, primaryNicList); err != nil {
+			err = fmt.Errorf("Error setting primary_network_interface: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-primary_network_interface").GetDiag()
+		}
 	}
 	if instance.HealthReasons != nil {
 		healthReasonsList := make([]map[string]interface{}, 0)
@@ -5264,10 +5583,14 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 				healthReasonsList = append(healthReasonsList, currentSR)
 			}
 		}
-		d.Set("health_reasons", healthReasonsList)
+		if err = d.Set("health_reasons", healthReasonsList); err != nil {
+			err = fmt.Errorf("Error setting health_reasons: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-health_reasons").GetDiag()
+		}
 	}
 	if err = d.Set("health_state", instance.HealthState); err != nil {
-		return err
+		err = fmt.Errorf("Error setting health_state: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-health_state").GetDiag()
 	}
 	if instance.ReservationAffinity != nil {
 		reservationAffinity := []map[string]interface{}{}
@@ -5295,7 +5618,10 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 			reservationAffinityMap[isReservationAffinityPool] = poolList
 		}
 		reservationAffinity = append(reservationAffinity, reservationAffinityMap)
-		d.Set(isReservationAffinity, reservationAffinity)
+		if err = d.Set("reservation_affinity", reservationAffinity); err != nil {
+			err = fmt.Errorf("Error setting reservation_affinity: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-reservation_affinity").GetDiag()
+		}
 	}
 	resList := make([]map[string]interface{}, 0)
 	if instance.Reservation != nil {
@@ -5314,29 +5640,35 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 		}
 		resList = append(resList, res)
 	}
-	d.Set(isInstanceReservation, resList)
-
+	if err = d.Set(isInstanceReservation, resList); err != nil {
+		err = fmt.Errorf("Error setting reservation: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-reservation").GetDiag()
+	}
 	if !core.IsNil(instance.PrimaryNetworkAttachment) {
-
 		pnaId := *instance.PrimaryNetworkAttachment.ID
 		getInstanceNetworkAttachment := &vpcv1.GetInstanceNetworkAttachmentOptions{
 			InstanceID: &id,
 			ID:         &pnaId,
 		}
 		autoDelete := true
+		autoDeleteExists := false
 		if autoDeleteOk, ok := d.GetOkExists("primary_network_attachment.0.virtual_network_interface.0.primary_ip.0.auto_delete"); ok {
 			autoDelete = autoDeleteOk.(bool)
+			autoDeleteExists = true
 		}
-		pna, response, err := instanceC.GetInstanceNetworkAttachment(getInstanceNetworkAttachment)
+		pna, _, err := instanceC.GetInstanceNetworkAttachmentWithContext(context, getInstanceNetworkAttachment)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error on GetInstanceNetworkAttachment in instance : %s\n%s", err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetInstanceNetworkAttachmentWithContext failed: %s", err.Error()), "ibm_is_instance", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
-		primaryNetworkAttachmentMap, err := resourceIBMIsInstanceInstanceNetworkAttachmentReferenceToMap(instance.PrimaryNetworkAttachment, pna, instanceC, autoDelete)
+		primaryNetworkAttachmentMap, err := resourceIBMIsInstanceInstanceNetworkAttachmentReferenceToMap(instance.PrimaryNetworkAttachment, pna, instanceC, autoDelete, autoDeleteExists)
 		if err != nil {
-			return err
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "primary_network_attachment-to-map").GetDiag()
 		}
 		if err = d.Set("primary_network_attachment", []map[string]interface{}{primaryNetworkAttachmentMap}); err != nil {
-			return fmt.Errorf("[ERROR] Error setting primary_network_attachment: %s", err)
+			err = fmt.Errorf("Error setting primary_network_attachment: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-primary_network_attachment").GetDiag()
 		}
 	}
 
@@ -5373,9 +5705,11 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 					SubnetID: intfc.Subnet.ID,
 					ID:       intfc.PrimaryIP.ID,
 				}
-				insRip, response, err := instanceC.GetSubnetReservedIP(getripoptions)
+				insRip, _, err := instanceC.GetSubnetReservedIPWithContext(context, getripoptions)
 				if err != nil {
-					return fmt.Errorf("[ERROR] Error getting network interface reserved ip(%s) attached to the instance network interface(%s): %s\n%s", *intfc.PrimaryIP.ID, *intfc.ID, err, response)
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetSubnetReservedIPWithContext failed: %s", err.Error()), "ibm_is_instance", "read")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
 				currentPrimIp[isInstanceNicReservedIpAutoDelete] = insRip.AutoDelete
 
@@ -5386,9 +5720,11 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 					InstanceID: &id,
 					ID:         intfc.ID,
 				}
-				insnic, response, err := instanceC.GetInstanceNetworkInterface(getnicoptions)
+				insnic, _, err := instanceC.GetInstanceNetworkInterfaceWithContext(context, getnicoptions)
 				if err != nil {
-					return fmt.Errorf("[ERROR] Error getting network interfaces attached to the instance %s\n%s", err, response)
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetInstanceNetworkInterfaceWithContext failed: %s", err.Error()), "ibm_is_instance", "read")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
 				currentNic[isInstanceNicAllowIPSpoofing] = *insnic.AllowIPSpoofing
 				currentNic[isInstanceNicSubnet] = *insnic.Subnet.ID
@@ -5400,11 +5736,12 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 					currentNic[isInstanceNicSecurityGroups] = flex.NewStringSet(schema.HashString, secgrpList)
 				}
 				interfacesList = append(interfacesList, currentNic)
-
 			}
 		}
-
-		d.Set(isInstanceNetworkInterfaces, interfacesList)
+		if err = d.Set("network_interfaces", interfacesList); err != nil {
+			err = fmt.Errorf("Error setting network_interfaces: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-network_interfaces").GetDiag()
+		}
 	}
 
 	if !core.IsNil(instance.NetworkAttachments) {
@@ -5413,36 +5750,49 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 			naId := *networkAttachmentsItem.ID
 			if *instance.PrimaryNetworkAttachment.ID != naId {
 				autoDelete := true
+				autoDeleteExists := false
 				if autoDeleteOk, ok := d.GetOkExists(fmt.Sprintf("network_attachments.%d.virtual_network_interface.0.primary_ip.0.auto_delete", i)); ok {
 					autoDelete = autoDeleteOk.(bool)
+					autoDeleteExists = true
 				}
 				getInstanceNetworkAttachment := &vpcv1.GetInstanceNetworkAttachmentOptions{
 					InstanceID: &id,
 					ID:         &naId,
 				}
-				na, response, err := instanceC.GetInstanceNetworkAttachment(getInstanceNetworkAttachment)
+				na, _, err := instanceC.GetInstanceNetworkAttachmentWithContext(context, getInstanceNetworkAttachment)
 				if err != nil {
-					return fmt.Errorf("[ERROR] Error on GetInstanceNetworkAttachment in instance : %s\n%s", err, response)
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetInstanceNetworkAttachmentWithContext failed: %s", err.Error()), "ibm_is_instance", "read")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
-				networkAttachmentsItemMap, err := resourceIBMIsInstanceInstanceNetworkAttachmentReferenceToMap(&networkAttachmentsItem, na, instanceC, autoDelete)
+				networkAttachmentsItemMap, err := resourceIBMIsInstanceInstanceNetworkAttachmentReferenceToMap(&networkAttachmentsItem, na, instanceC, autoDelete, autoDeleteExists)
 				if err != nil {
-					return err
+					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "network_attachments-to-map").GetDiag()
 				}
 				networkAttachments = append(networkAttachments, networkAttachmentsItemMap)
 			}
 		}
 		if err = d.Set("network_attachments", networkAttachments); err != nil {
-			return fmt.Errorf("[ERROR] Error setting network_attachments: %s", err)
+			err = fmt.Errorf("Error setting network_attachments: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-network_attachments").GetDiag()
 		}
 	}
 	if instance.Image != nil {
-		d.Set(isInstanceImage, *instance.Image.ID)
+		if err = d.Set("image", *instance.Image.ID); err != nil {
+			err = fmt.Errorf("Error setting image: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-image").GetDiag()
+		}
 	}
 	if instance.NumaCount != nil {
-		d.Set("numa_count", int(*instance.NumaCount))
+		if err = d.Set("numa_count", flex.IntValue(instance.NumaCount)); err != nil {
+			err = fmt.Errorf("Error setting numa_count: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-numa_count").GetDiag()
+		}
 	}
-	d.Set(isInstanceStatus, *instance.Status)
-
+	if err = d.Set("status", instance.Status); err != nil {
+		err = fmt.Errorf("Error setting status: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-status").GetDiag()
+	}
 	//set the status reasons
 	if instance.StatusReasons != nil {
 		statusReasonsList := make([]map[string]interface{}, 0)
@@ -5457,20 +5807,33 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 				statusReasonsList = append(statusReasonsList, currentSR)
 			}
 		}
-		d.Set(isInstanceStatusReasons, statusReasonsList)
+		if err = d.Set("status_reasons", statusReasonsList); err != nil {
+			err = fmt.Errorf("Error setting status_reasons: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-status_reasons").GetDiag()
+		}
 	}
 
 	//set the lifecycle status, reasons
 	if instance.LifecycleState != nil {
-		d.Set(isInstanceLifecycleState, *instance.LifecycleState)
+		if err = d.Set("lifecycle_state", instance.LifecycleState); err != nil {
+			err = fmt.Errorf("Error setting lifecycle_state: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-lifecycle_state").GetDiag()
+		}
 	}
 	if instance.LifecycleReasons != nil {
-		d.Set(isInstanceLifecycleReasons, dataSourceInstanceFlattenLifecycleReasons(instance.LifecycleReasons))
+		if err = d.Set(isInstanceLifecycleReasons, dataSourceInstanceFlattenLifecycleReasons(instance.LifecycleReasons)); err != nil {
+			err = fmt.Errorf("Error setting lifecycle_reasons: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-lifecycle_reasons").GetDiag()
+		}
 	}
-
-	d.Set(isInstanceVPC, *instance.VPC.ID)
-	d.Set(isInstanceZone, *instance.Zone.Name)
-
+	if err = d.Set(isInstanceVPC, *instance.VPC.ID); err != nil {
+		err = fmt.Errorf("Error setting vpc: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-vpc").GetDiag()
+	}
+	if err = d.Set(isInstanceZone, *instance.Zone.Name); err != nil {
+		err = fmt.Errorf("Error setting zone: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-zone").GetDiag()
+	}
 	if instance.VolumeAttachments != nil {
 		volList := make([]map[string]interface{}, 0)
 		for _, volume := range instance.VolumeAttachments {
@@ -5484,7 +5847,10 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 				volList = append(volList, vol)
 			}
 		}
-		d.Set(isInstanceVolumeAttachments, volList)
+		if err = d.Set("volume_attachments", volList); err != nil {
+			err = fmt.Errorf("Error setting volume_attachments: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-volume_attachments").GetDiag()
+		}
 	}
 
 	if instance.BootVolumeAttachment != nil {
@@ -5500,18 +5866,22 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 				InstanceID: &instanceId,
 				ID:         &bootVolID,
 			}
-			bootVolumeAtt, response, err := instanceC.GetInstanceVolumeAttachment(getinsVolAttOptions)
+			bootVolumeAtt, _, err := instanceC.GetInstanceVolumeAttachmentWithContext(context, getinsVolAttOptions)
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error getting Instance boot volume attachment : %s\n%s", err, response)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetInstanceVolumeAttachmentWithContext failed: %s", err.Error()), "ibm_is_instance", "read")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 
 			bootVol[isInstanceVolAttVolAutoDelete] = *bootVolumeAtt.DeleteVolumeOnInstanceDelete
 			options := &vpcv1.GetVolumeOptions{
 				ID: instance.BootVolumeAttachment.Volume.ID,
 			}
-			vol, response, err := instanceC.GetVolume(options)
+			vol, _, err := instanceC.GetVolumeWithContext(context, options)
 			if err != nil {
-				log.Printf("[ERROR] Error Getting Boot Volume (%s): %s\n%s", id, err, response)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetVolumeWithContext failed: %s", err.Error()), "ibm_is_instance", "read")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			if vol != nil {
 				bootVol[isInstanceBootSize] = *vol.Capacity
@@ -5528,38 +5898,80 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 				if vol.UserTags != nil {
 					bootVol[isInstanceBootVolumeTags] = vol.UserTags
 				}
+				if vol.AllowedUse != nil {
+					usageConstraintList := []map[string]interface{}{}
+					modelMap, _ := ResourceceIBMIsVolumeAllowedUseToMap(vol.AllowedUse)
+					usageConstraintList = append(usageConstraintList, modelMap)
+					bootVol["allowed_use"] = usageConstraintList
+				}
 			}
 		}
 		bootVolList = append(bootVolList, bootVol)
-		d.Set(isInstanceBootVolume, bootVolList)
+		if err = d.Set(isInstanceBootVolume, bootVolList); err != nil {
+			err = fmt.Errorf("Error setting boot_volume: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-boot_volume").GetDiag()
+		}
 	}
 	tags, err := flex.GetGlobalTagsUsingCRN(meta, *instance.CRN, "", isInstanceUserTagType)
 	if err != nil {
 		log.Printf(
 			"[ERROR] Error on get of resource Instance (%s) tags: %s", d.Id(), err)
 	}
-	d.Set(isInstanceTags, tags)
+
+	if err = d.Set(isInstanceTags, tags); err != nil {
+		err = fmt.Errorf("Error setting tags: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-tags").GetDiag()
+	}
 	accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *instance.CRN, "", isInstanceAccessTagType)
 	if err != nil {
 		log.Printf(
 			"[ERROR] Error on get of resource Instance (%s) access tags: %s", d.Id(), err)
 	}
-	d.Set(isInstanceAccessTags, accesstags)
+	if err = d.Set(isInstanceAccessTags, accesstags); err != nil {
+		err = fmt.Errorf("Error setting access_tags: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-access_tags").GetDiag()
+	}
 	controller, err := flex.GetBaseController(meta)
 	if err != nil {
-		return err
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetBaseController failed: %s", err.Error()), "ibm_is_instance", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
-	d.Set(flex.ResourceControllerURL, controller+"/vpc-ext/compute/vs")
-	d.Set(flex.ResourceName, *instance.Name)
-	d.Set(flex.ResourceCRN, *instance.CRN)
-	d.Set(IsInstanceCRN, *instance.CRN)
-	d.Set(flex.ResourceStatus, *instance.Status)
+	if err = d.Set(flex.ResourceControllerURL, controller+"/vpc-ext/compute/vs"); err != nil {
+		err = fmt.Errorf("Error setting resource_controller_url: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-resource_controller_url").GetDiag()
+	}
+	if err = d.Set(flex.ResourceName, *instance.Name); err != nil {
+		err = fmt.Errorf("Error setting resource_name: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-resource_name").GetDiag()
+	}
+	if err = d.Set(flex.ResourceCRN, *instance.CRN); err != nil {
+		err = fmt.Errorf("Error setting resource_crn: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-resource_crn").GetDiag()
+	}
+	if err = d.Set(IsInstanceCRN, *instance.CRN); err != nil {
+		err = fmt.Errorf("Error setting crn: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-crn").GetDiag()
+	}
+	if err = d.Set(flex.ResourceStatus, *instance.Status); err != nil {
+		err = fmt.Errorf("Error setting resource_status: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-resource_status").GetDiag()
+	}
 	if instance.ResourceGroup != nil {
-		d.Set(isInstanceResourceGroup, *instance.ResourceGroup.ID)
-		d.Set(flex.ResourceGroupName, *instance.ResourceGroup.Name)
+		if err = d.Set(isInstanceResourceGroup, *instance.ResourceGroup.ID); err != nil {
+			err = fmt.Errorf("Error setting resource_group: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-resource_group").GetDiag()
+		}
+		if err = d.Set(flex.ResourceGroupName, *instance.ResourceGroup.Name); err != nil {
+			err = fmt.Errorf("Error setting resource_group_name: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-resource_group_name").GetDiag()
+		}
 	}
 	if instance.MetadataService != nil {
-		d.Set(isInstanceMetadataServiceEnabled, instance.MetadataService.Enabled)
+		if err = d.Set(isInstanceMetadataServiceEnabled, instance.MetadataService.Enabled); err != nil {
+			err = fmt.Errorf("Error setting metadata_service_enabled: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-metadata_service_enabled").GetDiag()
+		}
 		metadataService := []map[string]interface{}{}
 		metadataServiceMap := map[string]interface{}{}
 
@@ -5571,7 +5983,10 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 			metadataServiceMap[isInstanceMetadataServiceRespHopLimit] = instance.MetadataService.ResponseHopLimit
 		}
 		metadataService = append(metadataService, metadataServiceMap)
-		d.Set(isInstanceMetadataService, metadataService)
+		if err = d.Set(isInstanceMetadataService, metadataService); err != nil {
+			err = fmt.Errorf("Error setting metadata_service: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-metadata_service").GetDiag()
+		}
 	}
 
 	if instance.Disks != nil {
@@ -5581,7 +5996,8 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 			disks = append(disks, disksItemMap)
 		}
 		if err = d.Set(isInstanceDisks, disks); err != nil {
-			return fmt.Errorf("[ERROR] Error setting disks: %s", err)
+			err = fmt.Errorf("Error setting disks: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-disks").GetDiag()
 		}
 	}
 
@@ -5591,26 +6007,33 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 		placementTarget = append(placementTarget, placementTargetMap)
 	}
 	if err = d.Set(isInstancePlacementTarget, placementTarget); err != nil {
-		return fmt.Errorf("[ERROR] Error setting placement_target: %s", err)
+		err = fmt.Errorf("Error setting placement_target: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-placement_target").GetDiag()
 	}
 	return nil
 }
 
-func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
+func instanceUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	instanceC, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "update", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	id := d.Id()
 	// network attachments
 
 	err = handleVolumePrototypesUpdate(d, instanceC)
 	if err != nil {
-		return err
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("handleVolumePrototypesUpdate failed: %s", err.Error()), "ibm_is_instance", "update")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	err = handleClusterNetworkAttachmentUpdate(d, instanceC)
 	if err != nil {
-		return err
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("handleClusterNetworkAttachmentUpdate failed: %s", err.Error()), "ibm_is_instance", "update")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	if d.HasChange("network_attachments") && !d.IsNewResource() {
@@ -5641,9 +6064,11 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 							InstanceID: &id,
 							ID:         &nacIdStr,
 						}
-						res, err := instanceC.DeleteInstanceNetworkAttachment(deleteInstanceNetworkAttachmentOptions)
+						_, err := instanceC.DeleteInstanceNetworkAttachmentWithContext(context, deleteInstanceNetworkAttachmentOptions)
 						if err != nil {
-							return fmt.Errorf("[ERROR] Error while deleting network attachment(%s) of instance(%s) \n%s: %q", nacIdStr, d.Id(), err, res)
+							tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteInstanceNetworkAttachmentWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
+							log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+							return tfErr.GetDiag()
 						}
 					}
 				}
@@ -5664,7 +6089,7 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 				nacMap := nac.(map[string]interface{})
 				VirtualNetworkInterfaceModel, err := resourceIBMIsInstanceMapToVirtualNetworkInterfacePrototypeAttachmentContext(allowipspoofing, autodelete, enablenat, d, nacMap["virtual_network_interface"].([]interface{})[0].(map[string]interface{}))
 				if err != nil {
-					return err
+					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "update", "parse-virtual_network_interface_model").GetDiag()
 				}
 				nacNameStr := nacMap["name"].(string)
 				createInstanceNetworkAttachmentOptions := &vpcv1.CreateInstanceNetworkAttachmentOptions{
@@ -5672,9 +6097,11 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 					Name:                    &nacNameStr,
 					VirtualNetworkInterface: VirtualNetworkInterfaceModel,
 				}
-				_, res, err := instanceC.CreateInstanceNetworkAttachment(createInstanceNetworkAttachmentOptions)
+				_, _, err = instanceC.CreateInstanceNetworkAttachmentWithContext(context, createInstanceNetworkAttachmentOptions)
 				if err != nil {
-					return fmt.Errorf("[ERROR] Error while creating network attachment(%s) of instance(%s) \n%s: %q", nacNameStr, d.Id(), err, res)
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateInstanceNetworkAttachmentWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
 			} else {
 				log.Printf("[DEBUG] nacId is not empty")
@@ -5693,12 +6120,16 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 					}
 					instanceNetworkAttachmentPatchAsPatch, err := instanceNetworkAttachmentPatch.AsPatch()
 					if err != nil {
-						return (fmt.Errorf("[ERROR] Error encountered while apply as patch for instanceNetworkAttachmentPatchAsPatch of network attachment(%s) of instance(%s) %s", nacId, id, err))
+						tfErr := flex.TerraformErrorf(err, fmt.Sprintf("instanceNetworkAttachmentPatch.AsPatch() failed: %s", err.Error()), "ibm_is_instance", "update")
+						log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+						return tfErr.GetDiag()
 					}
 					updateInstanceNetworkAttachmentOptions.InstanceNetworkAttachmentPatch = instanceNetworkAttachmentPatchAsPatch
-					_, res, err := instanceC.UpdateInstanceNetworkAttachment(updateInstanceNetworkAttachmentOptions)
+					_, _, err = instanceC.UpdateInstanceNetworkAttachmentWithContext(context, updateInstanceNetworkAttachmentOptions)
 					if err != nil {
-						return (fmt.Errorf("[ERROR] Error encountered while updating network attachment(%s) name of instance(%s) %s/n%s", nacId, id, err, res))
+						tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateInstanceNetworkAttachmentWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
+						log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+						return tfErr.GetDiag()
 					}
 					// output, err := json.MarshalIndent(updateInstanceNetworkAttachmentOptions, "", "    ")
 					// if err == nil {
@@ -5741,13 +6172,16 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 					}
 					virtualNetworkInterfacePatchAsPatch, err := virtualNetworkInterfacePatch.AsPatch()
 					if err != nil {
-						return fmt.Errorf("[ERROR] Error encountered while apply as patch for virtualNetworkInterfacePatch of instance(%s) vni (%s) %s", d.Id(), vniId, err)
+						tfErr := flex.TerraformErrorf(err, fmt.Sprintf("virtualNetworkInterfacePatch.AsPatch() failed: %s", err.Error()), "ibm_is_instance", "update")
+						log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+						return tfErr.GetDiag()
 					}
 					updateVirtualNetworkInterfaceOptions.VirtualNetworkInterfacePatch = virtualNetworkInterfacePatchAsPatch
-					_, response, err := instanceC.UpdateVirtualNetworkInterface(updateVirtualNetworkInterfaceOptions)
+					_, _, err = instanceC.UpdateVirtualNetworkInterfaceWithContext(context, updateVirtualNetworkInterfaceOptions)
 					if err != nil {
-						log.Printf("[DEBUG] UpdateVirtualNetworkInterfaceWithContext failed %s\n%s", err, response)
-						return fmt.Errorf("UpdateVirtualNetworkInterfaceWithContext failed during instance(%s) network attachment patch %s\n%s", d.Id(), err, response)
+						tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateVirtualNetworkInterfaceWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
+						log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+						return tfErr.GetDiag()
 					}
 
 					if d.HasChange(ipsName) {
@@ -5779,10 +6213,11 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 									addVirtualNetworkInterfaceIPOptions := &vpcv1.AddVirtualNetworkInterfaceIPOptions{}
 									addVirtualNetworkInterfaceIPOptions.SetVirtualNetworkInterfaceID(vniId)
 									addVirtualNetworkInterfaceIPOptions.SetID(ipItem)
-									_, response, err := instanceC.AddVirtualNetworkInterfaceIP(addVirtualNetworkInterfaceIPOptions)
+									_, _, err := instanceC.AddVirtualNetworkInterfaceIPWithContext(context, addVirtualNetworkInterfaceIPOptions)
 									if err != nil {
-										log.Printf("[DEBUG] AddVirtualNetworkInterfaceIPWithContext failed in VirtualNetworkInterface patch during instance nac patch %s\n%s", err, response)
-										return fmt.Errorf("AddVirtualNetworkInterfaceIPWithContext failed in VirtualNetworkInterface patch during instance nac patch %s\n%s", err, response)
+										tfErr := flex.TerraformErrorf(err, fmt.Sprintf("AddVirtualNetworkInterfaceIPWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
+										log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+										return tfErr.GetDiag()
 									}
 								}
 							}
@@ -5793,10 +6228,11 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 									removeVirtualNetworkInterfaceIPOptions := &vpcv1.RemoveVirtualNetworkInterfaceIPOptions{}
 									removeVirtualNetworkInterfaceIPOptions.SetVirtualNetworkInterfaceID(vniId)
 									removeVirtualNetworkInterfaceIPOptions.SetID(ipItem)
-									response, err := instanceC.RemoveVirtualNetworkInterfaceIP(removeVirtualNetworkInterfaceIPOptions)
+									_, err := instanceC.RemoveVirtualNetworkInterfaceIPWithContext(context, removeVirtualNetworkInterfaceIPOptions)
 									if err != nil {
-										log.Printf("[DEBUG] RemoveVirtualNetworkInterfaceIPWithContext failed in VirtualNetworkInterface patch during instance nac patch %s\n%s", err, response)
-										return fmt.Errorf("RemoveVirtualNetworkInterfaceIPWithContext failed in VirtualNetworkInterface patch during instance nac patch %s\n%s", err, response)
+										tfErr := flex.TerraformErrorf(err, fmt.Sprintf("RemoveVirtualNetworkInterfaceIPWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
+										log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+										return tfErr.GetDiag()
 									}
 								}
 							}
@@ -5814,23 +6250,27 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 							SubnetID: &subnetId,
 							ID:       &ripId,
 						}
-						reservedIpPath := &vpcv1.ReservedIPPatch{}
+						nacvnireservedIpPatch := &vpcv1.ReservedIPPatch{}
 						if d.HasChange(primaryipNameName) {
 							name := d.Get(primaryipNameName).(string)
-							reservedIpPath.Name = &name
+							nacvnireservedIpPatch.Name = &name
 						}
 						if d.HasChange(primaryipAutoDeleteName) {
 							auto := d.Get(primaryipAutoDeleteName).(bool)
-							reservedIpPath.AutoDelete = &auto
+							nacvnireservedIpPatch.AutoDelete = &auto
 						}
-						reservedIpPathAsPatch, err := reservedIpPath.AsPatch()
+						reservedIpPathAsPatch, err := nacvnireservedIpPatch.AsPatch()
 						if err != nil {
-							return fmt.Errorf("[ERROR] Error calling reserved ip as patch on vni patch \n%s", err)
+							tfErr := flex.TerraformErrorf(err, fmt.Sprintf("nacvnireservedIpPatch.AsPatch() failed: %s", err.Error()), "ibm_is_instance", "update")
+							log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+							return tfErr.GetDiag()
 						}
 						updateripoptions.ReservedIPPatch = reservedIpPathAsPatch
-						_, response, err := instanceC.UpdateSubnetReservedIP(updateripoptions)
+						_, _, err = instanceC.UpdateSubnetReservedIPWithContext(context, updateripoptions)
 						if err != nil {
-							return fmt.Errorf("[ERROR] Error updating vni reserved ip(%s): %s\n%s", ripId, err, response)
+							tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateSubnetReservedIPWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
+							log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+							return tfErr.GetDiag()
 						}
 					}
 					if d.HasChange(sgName) {
@@ -5845,13 +6285,18 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 									SecurityGroupID: &add[i],
 									ID:              &vniId,
 								}
-								_, response, err := instanceC.CreateSecurityGroupTargetBinding(createsgnicoptions)
+								_, response, err := instanceC.CreateSecurityGroupTargetBindingWithContext(context, createsgnicoptions)
 								if err != nil {
-									return fmt.Errorf("[ERROR] Error while creating security group %q for virtual network interface %s\n%s: %q", add[i], vniId, err, response)
+									err = fmt.Errorf("Error while creating security group %q for virtual network interface %s\n%s: %q", add[i], vniId, err, response)
+									tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateSecurityGroupTargetBindingWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
+									log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+									return tfErr.GetDiag()
 								}
 								_, err = isWaitForVirtualNetworkInterfaceAvailable(instanceC, vniId, d.Timeout(schema.TimeoutUpdate))
 								if err != nil {
-									return err
+									tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForVirtualNetworkInterfaceAvailable failed: %s", err.Error()), "ibm_is_instance", "update")
+									log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+									return tfErr.GetDiag()
 								}
 							}
 
@@ -5862,13 +6307,18 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 									SecurityGroupID: &remove[i],
 									ID:              &vniId,
 								}
-								response, err := instanceC.DeleteSecurityGroupTargetBinding(deletesgnicoptions)
+								response, err := instanceC.DeleteSecurityGroupTargetBindingWithContext(context, deletesgnicoptions)
 								if err != nil {
-									return fmt.Errorf("[ERROR] Error while removing security group %q for virtual network interface %s\n%s: %q", remove[i], d.Id(), err, response)
+									err = fmt.Errorf("[ERROR] Error while removing security group %q for virtual network interface %s\n%s: %q", remove[i], d.Id(), err, response)
+									tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteSecurityGroupTargetBindingWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
+									log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+									return tfErr.GetDiag()
 								}
 								_, err = isWaitForVirtualNetworkInterfaceAvailable(instanceC, vniId, d.Timeout(schema.TimeoutUpdate))
 								if err != nil {
-									return err
+									tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForVirtualNetworkInterfaceAvailable failed: %s", err.Error()), "ibm_is_instance", "update")
+									log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+									return tfErr.GetDiag()
 								}
 							}
 						}
@@ -5893,17 +6343,21 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 				InstanceID: &id,
 				ID:         &networkID,
 			}
-			instanceNetworkAttachmentPatch := &vpcv1.InstanceNetworkAttachmentPatch{
+			instancePrimaryNetworkAttachmentPatch := &vpcv1.InstanceNetworkAttachmentPatch{
 				Name: &networkNameString,
 			}
-			instanceNetworkAttachmentPatchAsPatch, err := instanceNetworkAttachmentPatch.AsPatch()
+			instanceNetworkAttachmentPatchAsPatch, err := instancePrimaryNetworkAttachmentPatch.AsPatch()
 			if err != nil {
-				return (fmt.Errorf("[ERROR] Error encountered while apply as patch for instanceNetworkAttachmentPatchAsPatch of pna of instance(%s) %s", id, err))
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("instancePrimaryNetworkAttachmentPatch.AsPatch() failed: %s", err.Error()), "ibm_is_instance", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			updateInstanceNetworkAttachmentOptions.InstanceNetworkAttachmentPatch = instanceNetworkAttachmentPatchAsPatch
-			_, res, err := instanceC.UpdateInstanceNetworkAttachment(updateInstanceNetworkAttachmentOptions)
+			_, _, err = instanceC.UpdateInstanceNetworkAttachmentWithContext(context, updateInstanceNetworkAttachmentOptions)
 			if err != nil {
-				return (fmt.Errorf("[ERROR] Error encountered while updating pna name of instance(%s) %s/n%s", id, err, res))
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateInstanceNetworkAttachmentWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 		}
 		if d.HasChange(nacVniName) {
@@ -5911,7 +6365,7 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 			updateVirtualNetworkInterfaceOptions := &vpcv1.UpdateVirtualNetworkInterfaceOptions{
 				ID: &vniId,
 			}
-			virtualNetworkInterfacePatch := &vpcv1.VirtualNetworkInterfacePatch{}
+			pnavirtualNetworkInterfacePatch := &vpcv1.VirtualNetworkInterfacePatch{}
 			autoDeleteName := fmt.Sprintf("%s.%s", nacVniName, "0.auto_delete")
 			nameName := fmt.Sprintf("%s.%s", nacVniName, "0.name")
 			ipsName := fmt.Sprintf("%s.%s", nacVniName, "0.ips")
@@ -5922,33 +6376,36 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 			pStateFilteringModeSchemaName := fmt.Sprintf("%s.%s", nacVniName, "0.protocol_state_filtering_mode")
 			if d.HasChange(autoDeleteName) {
 				autodelete := d.Get(autoDeleteName).(bool)
-				virtualNetworkInterfacePatch.AutoDelete = &autodelete
+				pnavirtualNetworkInterfacePatch.AutoDelete = &autodelete
 			}
 			if d.HasChange(nameName) {
 				name := d.Get(nameName).(string)
-				virtualNetworkInterfacePatch.Name = &name
+				pnavirtualNetworkInterfacePatch.Name = &name
 			}
 			if d.HasChange(enableNatName) {
 				enableNat := d.Get(enableNatName).(bool)
-				virtualNetworkInterfacePatch.EnableInfrastructureNat = &enableNat
+				pnavirtualNetworkInterfacePatch.EnableInfrastructureNat = &enableNat
 			}
 			if d.HasChange(allowIpSpoofingName) {
 				allIpSpoofing := d.Get(allowIpSpoofingName).(bool)
-				virtualNetworkInterfacePatch.AllowIPSpoofing = &allIpSpoofing
+				pnavirtualNetworkInterfacePatch.AllowIPSpoofing = &allIpSpoofing
 			}
 			if d.HasChange(pStateFilteringModeSchemaName) {
 				pStateFilteringMode := d.Get(pStateFilteringModeSchemaName).(string)
-				virtualNetworkInterfacePatch.ProtocolStateFilteringMode = &pStateFilteringMode
+				pnavirtualNetworkInterfacePatch.ProtocolStateFilteringMode = &pStateFilteringMode
 			}
-			virtualNetworkInterfacePatchAsPatch, err := virtualNetworkInterfacePatch.AsPatch()
+			virtualNetworkInterfacePatchAsPatch, err := pnavirtualNetworkInterfacePatch.AsPatch()
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error encountered while apply as patch for virtualNetworkInterfacePatch of instance(%s) vni (%s) %s", d.Id(), vniId, err)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("pnavirtualNetworkInterfacePatch.AsPatch() failed: %s", err.Error()), "ibm_is_instance", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			updateVirtualNetworkInterfaceOptions.VirtualNetworkInterfacePatch = virtualNetworkInterfacePatchAsPatch
-			_, response, err := instanceC.UpdateVirtualNetworkInterface(updateVirtualNetworkInterfaceOptions)
+			_, _, err = instanceC.UpdateVirtualNetworkInterfaceWithContext(context, updateVirtualNetworkInterfaceOptions)
 			if err != nil {
-				log.Printf("[DEBUG] UpdateVirtualNetworkInterfaceWithContext failed %s\n%s", err, response)
-				return fmt.Errorf("UpdateVirtualNetworkInterfaceWithContext failed during instance(%s) network attachment patch %s\n%s", d.Id(), err, response)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateVirtualNetworkInterfaceWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 
 			if d.HasChange(ipsName) {
@@ -5980,10 +6437,11 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 							addVirtualNetworkInterfaceIPOptions := &vpcv1.AddVirtualNetworkInterfaceIPOptions{}
 							addVirtualNetworkInterfaceIPOptions.SetVirtualNetworkInterfaceID(vniId)
 							addVirtualNetworkInterfaceIPOptions.SetID(ipItem)
-							_, response, err := instanceC.AddVirtualNetworkInterfaceIP(addVirtualNetworkInterfaceIPOptions)
+							_, _, err := instanceC.AddVirtualNetworkInterfaceIPWithContext(context, addVirtualNetworkInterfaceIPOptions)
 							if err != nil {
-								log.Printf("[DEBUG] AddVirtualNetworkInterfaceIPWithContext failed in VirtualNetworkInterface patch during instance nac patch %s\n%s", err, response)
-								return fmt.Errorf("AddVirtualNetworkInterfaceIPWithContext failed in VirtualNetworkInterface patch during instance nac patch %s\n%s", err, response)
+								tfErr := flex.TerraformErrorf(err, fmt.Sprintf("AddVirtualNetworkInterfaceIPWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
+								log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+								return tfErr.GetDiag()
 							}
 						}
 					}
@@ -5994,10 +6452,11 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 							removeVirtualNetworkInterfaceIPOptions := &vpcv1.RemoveVirtualNetworkInterfaceIPOptions{}
 							removeVirtualNetworkInterfaceIPOptions.SetVirtualNetworkInterfaceID(vniId)
 							removeVirtualNetworkInterfaceIPOptions.SetID(ipItem)
-							response, err := instanceC.RemoveVirtualNetworkInterfaceIP(removeVirtualNetworkInterfaceIPOptions)
+							_, err := instanceC.RemoveVirtualNetworkInterfaceIPWithContext(context, removeVirtualNetworkInterfaceIPOptions)
 							if err != nil {
-								log.Printf("[DEBUG] RemoveVirtualNetworkInterfaceIPWithContext failed in VirtualNetworkInterface patch during instance nac patch %s\n%s", err, response)
-								return fmt.Errorf("RemoveVirtualNetworkInterfaceIPWithContext failed in VirtualNetworkInterface patch during instance nac patch %s\n%s", err, response)
+								tfErr := flex.TerraformErrorf(err, fmt.Sprintf("RemoveVirtualNetworkInterfaceIPWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
+								log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+								return tfErr.GetDiag()
 							}
 						}
 					}
@@ -6015,23 +6474,27 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 					SubnetID: &subnetId,
 					ID:       &ripId,
 				}
-				reservedIpPath := &vpcv1.ReservedIPPatch{}
+				pnavnireservedIpPatch := &vpcv1.ReservedIPPatch{}
 				if d.HasChange(primaryipNameName) {
 					name := d.Get(primaryipNameName).(string)
-					reservedIpPath.Name = &name
+					pnavnireservedIpPatch.Name = &name
 				}
 				if d.HasChange(primaryipAutoDeleteName) {
 					auto := d.Get(primaryipAutoDeleteName).(bool)
-					reservedIpPath.AutoDelete = &auto
+					pnavnireservedIpPatch.AutoDelete = &auto
 				}
-				reservedIpPathAsPatch, err := reservedIpPath.AsPatch()
+				reservedIpPathAsPatch, err := pnavnireservedIpPatch.AsPatch()
 				if err != nil {
-					return fmt.Errorf("[ERROR] Error calling reserved ip as patch on vni patch \n%s", err)
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("pnavnireservedIpPatch.AsPatch() failed: %s", err.Error()), "ibm_is_instance", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
 				updateripoptions.ReservedIPPatch = reservedIpPathAsPatch
-				_, response, err := instanceC.UpdateSubnetReservedIP(updateripoptions)
+				_, _, err = instanceC.UpdateSubnetReservedIPWithContext(context, updateripoptions)
 				if err != nil {
-					return fmt.Errorf("[ERROR] Error updating vni reserved ip(%s): %s\n%s", ripId, err, response)
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateSubnetReservedIPWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
 			}
 			if d.HasChange(sgName) {
@@ -6046,13 +6509,17 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 							SecurityGroupID: &add[i],
 							ID:              &vniId,
 						}
-						_, response, err := instanceC.CreateSecurityGroupTargetBinding(createsgnicoptions)
+						_, _, err := instanceC.CreateSecurityGroupTargetBindingWithContext(context, createsgnicoptions)
 						if err != nil {
-							return fmt.Errorf("[ERROR] Error while creating security group %q for virtual network interface %s\n%s: %q", add[i], vniId, err, response)
+							tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateSecurityGroupTargetBindingWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
+							log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+							return tfErr.GetDiag()
 						}
 						_, err = isWaitForVirtualNetworkInterfaceAvailable(instanceC, vniId, d.Timeout(schema.TimeoutUpdate))
 						if err != nil {
-							return err
+							tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForVirtualNetworkInterfaceAvailable failed: %s", err.Error()), "ibm_is_instance", "update")
+							log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+							return tfErr.GetDiag()
 						}
 					}
 
@@ -6063,13 +6530,17 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 							SecurityGroupID: &remove[i],
 							ID:              &vniId,
 						}
-						response, err := instanceC.DeleteSecurityGroupTargetBinding(deletesgnicoptions)
+						_, err := instanceC.DeleteSecurityGroupTargetBindingWithContext(context, deletesgnicoptions)
 						if err != nil {
-							return fmt.Errorf("[ERROR] Error while removing security group %q for virtual network interface %s\n%s: %q", remove[i], d.Id(), err, response)
+							tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteSecurityGroupTargetBindingWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
+							log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+							return tfErr.GetDiag()
 						}
 						_, err = isWaitForVirtualNetworkInterfaceAvailable(instanceC, vniId, d.Timeout(schema.TimeoutUpdate))
 						if err != nil {
-							return err
+							tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForVirtualNetworkInterfaceAvailable failed: %s", err.Error()), "ibm_is_instance", "update")
+							log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+							return tfErr.GetDiag()
 						}
 					}
 				}
@@ -6087,9 +6558,11 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 			getinsOptions := &vpcv1.GetInstanceOptions{
 				ID: &id,
 			}
-			_, response, err := instanceC.GetInstance(getinsOptions)
+			_, response, err := instanceC.GetInstanceWithContext(context, getinsOptions)
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error getting instance (%s): %s\n%s", id, err, response)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetInstanceWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			eTag := response.Headers.Get("ETag")
 
@@ -6120,12 +6593,14 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 				}
 			}
 
-			instancePatchModel := &vpcv1.InstancePatch{
+			instanceReservationAffinityPatchModel := &vpcv1.InstancePatch{
 				ReservationAffinity: resAffinityPatch,
 			}
-			mpatch, err := instancePatchModel.AsPatch()
+			mpatch, err := instanceReservationAffinityPatchModel.AsPatch()
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error calling asPatch with reservation affinity: %s", err)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("instanceReservationAffinityPatchModel.AsPatch() failed: %s", err.Error()), "ibm_is_instance", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			//Detaching the reservation from the reserved instance
 			if policyStr == "disabled" && idStr == "" {
@@ -6138,9 +6613,11 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 				ID:            &id,
 			}
 			param.IfMatch = &eTag
-			_, _, err = instanceC.UpdateInstance(param)
+			_, _, err = instanceC.UpdateInstanceWithContext(context, param)
 			if err != nil {
-				return err
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateInstanceWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 		}
 	}
@@ -6156,59 +6633,74 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 		updateVolumeOptions := &vpcv1.UpdateVolumeOptions{
 			ID: &volId,
 		}
-		volPatchModel := &vpcv1.VolumePatch{
+		bootvolPatchModel := &vpcv1.VolumePatch{
 			Bandwidth: &newBandwidth,
 		}
-		volPatchModelAsPatch, err := volPatchModel.AsPatch()
+		volPatchModelAsPatch, err := bootvolPatchModel.AsPatch()
 
 		if err != nil {
-			return (fmt.Errorf("[ERROR] Error encountered while apply as patch for boot volume bandwidth of instance %s", err))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("bootvolPatchModel.AsPatch() failed: %s", err.Error()), "ibm_is_instance", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
 		updateVolumeOptions.VolumePatch = volPatchModelAsPatch
 
-		vol, res, err := instanceC.UpdateVolume(updateVolumeOptions)
+		vol, _, err := instanceC.UpdateVolumeWithContext(context, updateVolumeOptions)
 
 		if vol == nil || err != nil {
-			return (fmt.Errorf("[ERROR] Error encountered while expanding boot volume bandwidth of instance %s/n%s", err, res))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateVolumeWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
 		_, err = isWaitForVolumeAvailable(instanceC, volId, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
-			return err
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForVolumeAvailable failed: %s", err.Error()), "ibm_is_instance", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 
 	if d.HasChange(bootVolSize) && !d.IsNewResource() {
 		old, new := d.GetChange(bootVolSize)
 		if new.(int) < old.(int) {
-			return fmt.Errorf("[ERROR] Error while updating boot volume size of the instance, only expansion is possible")
+			err = fmt.Errorf("Error while updating boot volume size of the instance, only expansion is possible")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateInstance validation failed: %s", err.Error()), "ibm_is_instance", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		bootVol := int64(new.(int))
 		volId := d.Get("boot_volume.0.volume_id").(string)
 		updateVolumeOptions := &vpcv1.UpdateVolumeOptions{
 			ID: &volId,
 		}
-		volPatchModel := &vpcv1.VolumePatch{
+		bootvolsizePatchModel := &vpcv1.VolumePatch{
 			Capacity: &bootVol,
 		}
-		volPatchModelAsPatch, err := volPatchModel.AsPatch()
+		volPatchModelAsPatch, err := bootvolsizePatchModel.AsPatch()
 
 		if err != nil {
-			return (fmt.Errorf("[ERROR] Error encountered while apply as patch for boot volume of instance %s", err))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("bootvolsizePatchModel.AsPatch() failed: %s", err.Error()), "ibm_is_instance", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
 		updateVolumeOptions.VolumePatch = volPatchModelAsPatch
 
-		vol, res, err := instanceC.UpdateVolume(updateVolumeOptions)
+		vol, _, err := instanceC.UpdateVolumeWithContext(context, updateVolumeOptions)
 
 		if vol == nil || err != nil {
-			return (fmt.Errorf("[ERROR] Error encountered while expanding boot volume of instance %s/n%s", err, res))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateVolumeWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
 		_, err = isWaitForVolumeAvailable(instanceC, volId, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
-			return err
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForVolumeAvailable failed: %s", err.Error()), "ibm_is_instance", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 	if d.HasChange(bootIopsSize) && !d.IsNewResource() {
@@ -6219,28 +6711,76 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 		updateVolumeOptions := &vpcv1.UpdateVolumeOptions{
 			ID: &volId,
 		}
-		volPatchModel := &vpcv1.VolumePatch{
+		bootvolIopsPatchModel := &vpcv1.VolumePatch{
 			Iops: &bootVolIops,
 		}
-		volPatchModelAsPatch, err := volPatchModel.AsPatch()
+		volPatchModelAsPatch, err := bootvolIopsPatchModel.AsPatch()
 
 		if err != nil {
-			return (fmt.Errorf("[ERROR] Error encountered while apply as patch for boot iops of instance %s", err))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("bootvolIopsPatchModel.AsPatch() failed: %s", err.Error()), "ibm_is_instance", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
 		updateVolumeOptions.VolumePatch = volPatchModelAsPatch
 
-		vol, res, err := instanceC.UpdateVolume(updateVolumeOptions)
+		vol, _, err := instanceC.UpdateVolumeWithContext(context, updateVolumeOptions)
 
 		if vol == nil || err != nil {
-			return (fmt.Errorf("[ERROR] Error encountered while expanding boot iops of instance %s/n%s", err, res))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateVolumeWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
 		_, err = isWaitForVolumeAvailable(instanceC, volId, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
-			return err
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForVolumeAvailable failed: %s", err.Error()), "ibm_is_instance", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
+
+	bootVolAllowedUse := "boot_volume.0.allowed_use"
+	if d.HasChange(bootVolAllowedUse) && !d.IsNewResource() {
+		volId := d.Get("boot_volume.0.volume_id").(string)
+		allowedUseModel, _ := ResourceIBMIsInstanceMapToVolumeAllowedUsePatchPrototype(d.Get("boot_volume.0.allowed_use").([]interface{})[0].(map[string]interface{}))
+		optionsget := &vpcv1.GetVolumeOptions{
+			ID: &volId,
+		}
+		_, response, err := instanceC.GetVolumeWithContext(context, optionsget)
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetVolumeWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
+		eTag := response.Headers.Get("ETag")
+		options := &vpcv1.UpdateVolumeOptions{
+			ID: &volId,
+		}
+		options.IfMatch = &eTag
+		volumeAllowedUsePatchModel := &vpcv1.VolumePatch{}
+		volumeAllowedUsePatchModel.AllowedUse = allowedUseModel
+		volumeNamePatch, err := volumeAllowedUsePatchModel.AsPatch()
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("bootvolumeTagsPatchModel.AsPatch() failed: %s", err.Error()), "ibm_is_instance", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
+		options.VolumePatch = volumeNamePatch
+		vol, _, err := instanceC.UpdateVolumeWithContext(context, options)
+		if vol == nil || err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateVolumeWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
+		_, err = isWaitForVolumeAvailable(instanceC, volId, d.Timeout(schema.TimeoutCreate))
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForVolumeAvailable failed: %s", err.Error()), "ibm_is_instance", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
+	}
+
 	bootVolTags := "boot_volume.0.tags"
 	if d.HasChange(bootVolTags) && !d.IsNewResource() {
 		var userTags *schema.Set
@@ -6256,29 +6796,37 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 					userTagStr := userTag.(string)
 					userTagsArray[i] = userTagStr
 				}
-				volumePatchModel := &vpcv1.VolumePatch{}
-				volumePatchModel.UserTags = userTagsArray
-				volumePatch, err := volumePatchModel.AsPatch()
+				bootvolumeTagsPatchModel := &vpcv1.VolumePatch{}
+				bootvolumeTagsPatchModel.UserTags = userTagsArray
+				volumePatch, err := bootvolumeTagsPatchModel.AsPatch()
 				if err != nil {
-					return fmt.Errorf("[ERROR] Error encountered while apply as patch for boot volume of instance %s", err)
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("bootvolumeTagsPatchModel.AsPatch() failed: %s", err.Error()), "ibm_is_instance", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
 				optionsget := &vpcv1.GetVolumeOptions{
 					ID: &volId,
 				}
-				_, response, err := instanceC.GetVolume(optionsget)
+				_, response, err := instanceC.GetVolumeWithContext(context, optionsget)
 				if err != nil {
-					return fmt.Errorf("[ERROR] Error getting Boot Volume (%s): %s\n%s", id, err, response)
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetVolumeWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
 				eTag := response.Headers.Get("ETag")
 				updateVolumeOptions.IfMatch = &eTag
 				updateVolumeOptions.VolumePatch = volumePatch
-				vol, res, err := instanceC.UpdateVolume(updateVolumeOptions)
+				vol, _, err := instanceC.UpdateVolumeWithContext(context, updateVolumeOptions)
 				if vol == nil || err != nil {
-					return (fmt.Errorf("[ERROR] Error encountered while applying tags for boot volume of instance %s/n%s", err, res))
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateVolumeWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
 				_, err = isWaitForVolumeAvailable(instanceC, volId, d.Timeout(schema.TimeoutCreate))
 				if err != nil {
-					return err
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForVolumeAvailable failed: %s", err.Error()), "ibm_is_instance", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
 			}
 		}
@@ -6290,21 +6838,25 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 		updateVolumeOptions := &vpcv1.UpdateVolumeOptions{
 			ID: &volId,
 		}
-		volPatchModel := &vpcv1.VolumePatch{
+		bootvolNamePatchModel := &vpcv1.VolumePatch{
 			Name: &volName,
 		}
-		volPatchModelAsPatch, err := volPatchModel.AsPatch()
+		volPatchModelAsPatch, err := bootvolNamePatchModel.AsPatch()
 
 		if err != nil {
-			return (fmt.Errorf("[ERROR] Error encountered while apply as patch for boot volume name update of instance %s", err))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("bootvolNamePatchModel.AsPatch() failed: %s", err.Error()), "ibm_is_instance", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
 		updateVolumeOptions.VolumePatch = volPatchModelAsPatch
 
-		vol, res, err := instanceC.UpdateVolume(updateVolumeOptions)
+		vol, _, err := instanceC.UpdateVolumeWithContext(context, updateVolumeOptions)
 
 		if vol == nil || err != nil {
-			return (fmt.Errorf("[ERROR] Error encountered while updating name of boot volume of instance %s/n%s", err, res))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateVolumeWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 	bootVolAutoDel := "boot_volume.0.auto_delete_volume"
@@ -6312,9 +6864,11 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 		listvolattoptions := &vpcv1.ListInstanceVolumeAttachmentsOptions{
 			InstanceID: &id,
 		}
-		vols, _, err := instanceC.ListInstanceVolumeAttachments(listvolattoptions)
+		vols, _, err := instanceC.ListInstanceVolumeAttachmentsWithContext(context, listvolattoptions)
 		if err != nil {
-			return err
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListInstanceVolumeAttachmentsWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
 		auto_delete := d.Get(bootVolAutoDel).(bool)
@@ -6325,19 +6879,22 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 					InstanceID: &id,
 					ID:         &volAttachmentID,
 				}
-				volAttNamePatchModel := &vpcv1.VolumeAttachmentPatch{
+				bootvolAttNamePatchModel := &vpcv1.VolumeAttachmentPatch{
 					DeleteVolumeOnInstanceDelete: &auto_delete,
 				}
-				volAttNamePatchModelAsPatch, err := volAttNamePatchModel.AsPatch()
+				volAttNamePatchModelAsPatch, err := bootvolAttNamePatchModel.AsPatch()
 				if err != nil || volAttNamePatchModelAsPatch == nil {
-					return fmt.Errorf("[ERROR] Error Instance volume attachment (%s) as patch : %s", id, err)
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("bootvolAttNamePatchModel.AsPatch() failed: %s", err.Error()), "ibm_is_instance", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
 				updateInstanceVolAttOptions.VolumeAttachmentPatch = volAttNamePatchModelAsPatch
 
-				instanceVolAttUpdate, response, err := instanceC.UpdateInstanceVolumeAttachment(updateInstanceVolAttOptions)
+				instanceVolAttUpdate, _, err := instanceC.UpdateInstanceVolumeAttachmentWithContext(context, updateInstanceVolAttOptions)
 				if err != nil || instanceVolAttUpdate == nil {
-					log.Printf("[DEBUG] Instance volume attachment updation err %s\n%s", err, response)
-					return err
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateInstanceVolumeAttachmentWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
 			}
 		}
@@ -6348,53 +6905,64 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 		actiontype := "stop"
 
 		if dedicatedHost == "" && dedicatedHostGroup == "" {
-			return fmt.Errorf("[ERROR] Error: Instances cannot be moved from private to public hosts")
+			err = fmt.Errorf("Error: Instances cannot be moved from private to public hosts")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateInstance failed: %s", err.Error()), "ibm_is_instance", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
 		createinsactoptions := &vpcv1.CreateInstanceActionOptions{
 			InstanceID: &id,
 			Type:       &actiontype,
 		}
-		_, response, err := instanceC.CreateInstanceAction(createinsactoptions)
+		_, response, err := instanceC.CreateInstanceActionWithContext(context, createinsactoptions)
 		if err != nil {
 			if response != nil && response.StatusCode == 404 {
 				return nil
 			}
-			return fmt.Errorf("[ERROR] Error Creating Instance Action: %s\n%s", err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateInstanceActionWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		_, err = isWaitForInstanceActionStop(instanceC, d.Timeout(schema.TimeoutUpdate), id, d)
 		if err != nil {
-			return err
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForInstanceActionStop failed: %s", err.Error()), "ibm_is_instance", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
 		updateOptions := &vpcv1.UpdateInstanceOptions{
 			ID: &id,
 		}
 
-		instancePatchModel := &vpcv1.InstancePatch{}
+		instanceDHPatchModel := &vpcv1.InstancePatch{}
 
 		if dedicatedHost != "" {
 			placementTarget := &vpcv1.InstancePlacementTargetPatch{
 				ID: &dedicatedHost,
 			}
-			instancePatchModel.PlacementTarget = placementTarget
+			instanceDHPatchModel.PlacementTarget = placementTarget
 		} else if dedicatedHostGroup != "" {
 			placementTarget := &vpcv1.InstancePlacementTargetPatch{
 				ID: &dedicatedHostGroup,
 			}
-			instancePatchModel.PlacementTarget = placementTarget
+			instanceDHPatchModel.PlacementTarget = placementTarget
 		}
 
-		instancePatch, err := instancePatchModel.AsPatch()
+		instancePatch, err := instanceDHPatchModel.AsPatch()
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch with total volume bandwidth for InstancePatch: %s", err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("instanceDHPatchModel.AsPatch() failed: %s", err.Error()), "ibm_is_instance", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
 		updateOptions.InstancePatch = instancePatch
 
-		_, _, err = instanceC.UpdateInstance(updateOptions)
+		_, _, err = instanceC.UpdateInstanceWithContext(context, updateOptions)
 		if err != nil {
-			return err
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateInstanceWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
 		actiontype = "start"
@@ -6402,16 +6970,20 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 			InstanceID: &id,
 			Type:       &actiontype,
 		}
-		_, response, err = instanceC.CreateInstanceAction(createinsactoptions)
+		_, response, err = instanceC.CreateInstanceActionWithContext(context, createinsactoptions)
 		if err != nil {
 			if response != nil && response.StatusCode == 404 {
 				return nil
 			}
-			return fmt.Errorf("[ERROR] Error Creating Instance Action: %s\n%s", err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateInstanceActionWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		_, err = isWaitForInstanceActionStart(instanceC, d.Timeout(schema.TimeoutUpdate), id, d)
 		if err != nil {
-			return err
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForInstanceActionStart failed: %s", err.Error()), "ibm_is_instance", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 
@@ -6422,16 +6994,24 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 			getinsOptions := &vpcv1.GetInstanceOptions{
 				ID: &id,
 			}
-			instance, response, err := instanceC.GetInstance(getinsOptions)
+			instance, _, err := instanceC.GetInstanceWithContext(context, getinsOptions)
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error Getting Instance (%s): %s\n%s", id, err, response)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetInstanceWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			if (actiontype == "stop" || actiontype == "reboot") && *instance.Status != isInstanceStatusRunning {
 				d.Set(isInstanceAction, nil)
-				return fmt.Errorf("[ERROR] Error with stop/reboot action: Cannot invoke stop/reboot action while instance is not in running state")
+				err = fmt.Errorf("Error with stop/reboot action: Cannot invoke stop/reboot action while instance is not in running state")
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetInstanceWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			} else if actiontype == "start" && *instance.Status != isInstanceActionStatusStopped {
 				d.Set(isInstanceAction, nil)
-				return fmt.Errorf("[ERROR] Error with start action: Cannot invoke start action while instance is not in stopped state")
+				err = fmt.Errorf("Error with start action: Cannot invoke start action while instance is not in stopped state")
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetInstanceWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			createinsactoptions := &vpcv1.CreateInstanceActionOptions{
 				InstanceID: &id,
@@ -6441,19 +7021,25 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 				force := instanceActionForceIntf.(bool)
 				createinsactoptions.Force = &force
 			}
-			_, response, err = instanceC.CreateInstanceAction(createinsactoptions)
+			_, _, err = instanceC.CreateInstanceActionWithContext(context, createinsactoptions)
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error Creating Instance Action: %s\n%s", err, response)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateInstanceActionWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			if actiontype == "stop" {
 				_, err = isWaitForInstanceActionStop(instanceC, d.Timeout(schema.TimeoutUpdate), id, d)
 				if err != nil {
-					return err
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForInstanceActionStop failed: %s", err.Error()), "ibm_is_instance", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
 			} else if actiontype == "start" || actiontype == "reboot" {
 				_, err = isWaitForInstanceActionStart(instanceC, d.Timeout(schema.TimeoutUpdate), id, d)
 				if err != nil {
-					return err
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForInstanceActionStart failed: %s", err.Error()), "ibm_is_instance", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
 			}
 
@@ -6488,13 +7074,17 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 					},
 					DeleteVolumeOnInstanceDelete: &volautoDelete,
 				}
-				vol, _, err := instanceC.CreateInstanceVolumeAttachment(createvolattoptions)
+				vol, _, err := instanceC.CreateInstanceVolumeAttachmentWithContext(context, createvolattoptions)
 				if err != nil {
-					return fmt.Errorf("[ERROR] Error while attaching volume %q for instance %s: %q", add[i], d.Id(), err)
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateInstanceVolumeAttachmentWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
 				_, err = isWaitForInstanceVolumeAttached(instanceC, d, id, *vol.ID)
 				if err != nil {
-					return err
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForInstanceVolumeAttached failed: %s", err.Error()), "ibm_is_instance", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
 			}
 
@@ -6504,9 +7094,11 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 				listvolattoptions := &vpcv1.ListInstanceVolumeAttachmentsOptions{
 					InstanceID: &id,
 				}
-				vols, _, err := instanceC.ListInstanceVolumeAttachments(listvolattoptions)
+				vols, _, err := instanceC.ListInstanceVolumeAttachmentsWithContext(context, listvolattoptions)
 				if err != nil {
-					return err
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListInstanceVolumeAttachmentsWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
 				for _, vol := range vols.VolumeAttachments {
 					if *vol.Volume.ID == remove[i] {
@@ -6514,13 +7106,17 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 							InstanceID: &id,
 							ID:         vol.ID,
 						}
-						_, err := instanceC.DeleteInstanceVolumeAttachment(delvolattoptions)
+						_, err := instanceC.DeleteInstanceVolumeAttachmentWithContext(context, delvolattoptions)
 						if err != nil {
-							return fmt.Errorf("[ERROR] Error while removing volume %q for instance %s: %q", remove[i], d.Id(), err)
+							tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteInstanceVolumeAttachmentWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
+							log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+							return tfErr.GetDiag()
 						}
 						_, err = isWaitForInstanceVolumeDetached(instanceC, d, d.Id(), *vol.ID)
 						if err != nil {
-							return err
+							tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForInstanceVolumeDetached failed: %s", err.Error()), "ibm_is_instance", "update")
+							log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+							return tfErr.GetDiag()
 						}
 						break
 					}
@@ -6542,13 +7138,17 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 					SecurityGroupID: &add[i],
 					ID:              &networkID,
 				}
-				_, response, err := instanceC.CreateSecurityGroupTargetBinding(createsgnicoptions)
+				_, _, err := instanceC.CreateSecurityGroupTargetBindingWithContext(context, createsgnicoptions)
 				if err != nil {
-					return fmt.Errorf("[ERROR] Error while creating security group %q for primary network interface of instance %s\n%s: %q", add[i], d.Id(), err, response)
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateSecurityGroupTargetBindingWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
 				_, err = isWaitForInstanceAvailable(instanceC, d.Id(), d.Timeout(schema.TimeoutUpdate), d)
 				if err != nil {
-					return err
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForInstanceAvailable failed: %s", err.Error()), "ibm_is_instance", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
 			}
 
@@ -6560,13 +7160,17 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 					SecurityGroupID: &remove[i],
 					ID:              &networkID,
 				}
-				response, err := instanceC.DeleteSecurityGroupTargetBinding(deletesgnicoptions)
+				_, err := instanceC.DeleteSecurityGroupTargetBindingWithContext(context, deletesgnicoptions)
 				if err != nil {
-					return fmt.Errorf("[ERROR] Error while removing security group %q for primary network interface of instance %s\n%s: %q", remove[i], d.Id(), err, response)
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteSecurityGroupTargetBindingWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
 				_, err = isWaitForInstanceAvailable(instanceC, d.Id(), d.Timeout(schema.TimeoutUpdate), d)
 				if err != nil {
-					return err
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForInstanceAvailable failed: %s", err.Error()), "ibm_is_instance", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
 			}
 		}
@@ -6579,23 +7183,27 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 			SubnetID: &subnetId,
 			ID:       &ripId,
 		}
-		reservedIpPath := &vpcv1.ReservedIPPatch{}
+		pnicreservedIpPatch := &vpcv1.ReservedIPPatch{}
 		if d.HasChange("primary_network_interface.0.primary_ip.0.name") {
 			name := d.Get("primary_network_interface.0.primary_ip.0.name").(string)
-			reservedIpPath.Name = &name
+			pnicreservedIpPatch.Name = &name
 		}
 		if d.HasChange("primary_network_interface.0.primary_ip.0.auto_delete") {
 			auto := d.Get("primary_network_interface.0.primary_ip.0.auto_delete").(bool)
-			reservedIpPath.AutoDelete = &auto
+			pnicreservedIpPatch.AutoDelete = &auto
 		}
-		reservedIpPathAsPatch, err := reservedIpPath.AsPatch()
+		reservedIpPathAsPatch, err := pnicreservedIpPatch.AsPatch()
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling reserved ip as patch \n%s", err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("pnicreservedIpPatch.AsPatch() failed: %s", err.Error()), "ibm_is_instance", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		updateripoptions.ReservedIPPatch = reservedIpPathAsPatch
-		_, response, err := instanceC.UpdateSubnetReservedIP(updateripoptions)
+		_, _, err = instanceC.UpdateSubnetReservedIPWithContext(context, updateripoptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error updating instance network interface reserved ip(%s): %s\n%s", ripId, err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateSubnetReservedIPWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 
@@ -6608,23 +7216,29 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 			ID:         &networkID,
 		}
 
-		networkInterfacePatchModel := &vpcv1.NetworkInterfacePatch{
+		pnetworkInterfacePatchModel := &vpcv1.NetworkInterfacePatch{
 			Name:            &newName,
 			AllowIPSpoofing: &allowIPSpoofing,
 		}
-		networkInterfacePatch, err := networkInterfacePatchModel.AsPatch()
+		networkInterfacePatch, err := pnetworkInterfacePatchModel.AsPatch()
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for NetworkInterfacePatch: %s", err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("pnetworkInterfacePatchModel.AsPatch() failed: %s", err.Error()), "ibm_is_instance", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		updatepnicfoptions.NetworkInterfacePatch = networkInterfacePatch
 
-		_, response, err := instanceC.UpdateInstanceNetworkInterface(updatepnicfoptions)
+		_, _, err = instanceC.UpdateInstanceNetworkInterfaceWithContext(context, updatepnicfoptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error while updating name %s for primary network interface of instance %s\n%s: %q", newName, d.Id(), err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateInstanceNetworkInterfaceWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		_, err = isWaitForInstanceAvailable(instanceC, d.Id(), d.Timeout(schema.TimeoutUpdate), d)
 		if err != nil {
-			return err
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForInstanceAvailable failed: %s", err.Error()), "ibm_is_instance", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 
@@ -6645,23 +7259,27 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 					SubnetID: &subnetId,
 					ID:       &ripId,
 				}
-				reservedIpPath := &vpcv1.ReservedIPPatch{}
+				nicreservedIpPatch := &vpcv1.ReservedIPPatch{}
 				if d.HasChange(primaryipname) {
 					name := d.Get(primaryipname).(string)
-					reservedIpPath.Name = &name
+					nicreservedIpPatch.Name = &name
 				}
 				if d.HasChange(primaryipauto) {
 					auto := d.Get(primaryipauto).(bool)
-					reservedIpPath.AutoDelete = &auto
+					nicreservedIpPatch.AutoDelete = &auto
 				}
-				reservedIpPathAsPatch, err := reservedIpPath.AsPatch()
+				reservedIpPathAsPatch, err := nicreservedIpPatch.AsPatch()
 				if err != nil {
-					return fmt.Errorf("[ERROR] Error calling reserved ip as patch \n%s", err)
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("nicreservedIpPatch.AsPatch() failed: %s", err.Error()), "ibm_is_instance", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
 				updateripoptions.ReservedIPPatch = reservedIpPathAsPatch
-				_, response, err := instanceC.UpdateSubnetReservedIP(updateripoptions)
+				_, _, err = instanceC.UpdateSubnetReservedIPWithContext(context, updateripoptions)
 				if err != nil {
-					return fmt.Errorf("[ERROR] Error updating instance network interface reserved ip(%s): %s\n%s", ripId, err, response)
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateSubnetReservedIPWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
 			}
 
@@ -6679,13 +7297,17 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 							SecurityGroupID: &add[i],
 							ID:              &networkID,
 						}
-						_, response, err := instanceC.CreateSecurityGroupTargetBinding(createsgnicoptions)
+						_, _, err := instanceC.CreateSecurityGroupTargetBindingWithContext(context, createsgnicoptions)
 						if err != nil {
-							return fmt.Errorf("[ERROR] Error while creating security group %q for network interface of instance %s\n%s: %q", add[i], d.Id(), err, response)
+							tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateSecurityGroupTargetBindingWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
+							log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+							return tfErr.GetDiag()
 						}
 						_, err = isWaitForInstanceAvailable(instanceC, d.Id(), d.Timeout(schema.TimeoutUpdate), d)
 						if err != nil {
-							return err
+							tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForInstanceAvailable failed: %s", err.Error()), "ibm_is_instance", "update")
+							log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+							return tfErr.GetDiag()
 						}
 					}
 
@@ -6698,13 +7320,17 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 							SecurityGroupID: &remove[i],
 							ID:              &networkID,
 						}
-						response, err := instanceC.DeleteSecurityGroupTargetBinding(deletesgnicoptions)
+						_, err := instanceC.DeleteSecurityGroupTargetBindingWithContext(context, deletesgnicoptions)
 						if err != nil {
-							return fmt.Errorf("[ERROR] Error while removing security group %q for network interface of instance %s\n%s: %q", remove[i], d.Id(), err, response)
+							tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteSecurityGroupTargetBindingWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
+							log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+							return tfErr.GetDiag()
 						}
 						_, err = isWaitForInstanceAvailable(instanceC, d.Id(), d.Timeout(schema.TimeoutUpdate), d)
 						if err != nil {
-							return err
+							tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForInstanceAvailable failed: %s", err.Error()), "ibm_is_instance", "update")
+							log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+							return tfErr.GetDiag()
 						}
 					}
 				}
@@ -6721,84 +7347,79 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 					ID:         &networkID,
 				}
 
-				instancePatchModel := &vpcv1.NetworkInterfacePatch{
+				instancenicPatchModel := &vpcv1.NetworkInterfacePatch{
 					Name:            &newName,
 					AllowIPSpoofing: &ipSpoofing,
 				}
-				networkInterfacePatch, err := instancePatchModel.AsPatch()
+				networkInterfacePatch, err := instancenicPatchModel.AsPatch()
 				if err != nil {
-					return fmt.Errorf("[ERROR] Error calling asPatch for NetworkInterfacePatch: %s", err)
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("instancenicPatchModel.AsPatch() failed: %s", err.Error()), "ibm_is_instance", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
 				updatepnicfoptions.NetworkInterfacePatch = networkInterfacePatch
 
-				_, response, err := instanceC.UpdateInstanceNetworkInterface(updatepnicfoptions)
+				_, _, err = instanceC.UpdateInstanceNetworkInterfaceWithContext(context, updatepnicfoptions)
 				if err != nil {
-					return fmt.Errorf("[ERROR] Error while updating name %s for network interface of instance %s\n%s: %q", newName, d.Id(), err, response)
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateInstanceNetworkInterfaceWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
 				if err != nil {
-					return err
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateInstanceNetworkInterfaceWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
 			}
 		}
 
 	}
 
-	if d.HasChange(isInstanceTotalVolumeBandwidth) && !d.IsNewResource() {
-		totalVolBandwidth := int64(d.Get(isInstanceTotalVolumeBandwidth).(int))
-		updnetoptions := &vpcv1.UpdateInstanceOptions{
-			ID: &id,
-		}
-
-		instancePatchModel := &vpcv1.InstancePatch{
-			TotalVolumeBandwidth: &totalVolBandwidth,
-		}
-		instancePatch, err := instancePatchModel.AsPatch()
-		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch with total volume bandwidth for InstancePatch: %s", err)
-		}
-		updnetoptions.InstancePatch = instancePatch
-
-		_, _, err = instanceC.UpdateInstance(updnetoptions)
-		if err != nil {
-			return err
-		}
-	}
-
-	if (d.HasChange(isInstanceName) || d.HasChange("confidential_compute_mode") || d.HasChange("enable_secure_boot")) && !d.IsNewResource() {
+	if (d.HasChange(isInstanceName) || d.HasChange("confidential_compute_mode") || d.HasChange("enable_secure_boot") || d.HasChange(isInstanceVolumeBandwidthQoSMode)) && !d.IsNewResource() {
 		restartNeeded := false
 		serverstopped := false
 		name := d.Get(isInstanceName).(string)
 		updnetoptions := &vpcv1.UpdateInstanceOptions{
 			ID: &id,
 		}
-		instancePatchModel := &vpcv1.InstancePatch{}
+		instanceCCMPatchModel := &vpcv1.InstancePatch{}
 		if d.HasChange("confidential_compute_mode") {
-			instancePatchModel.ConfidentialComputeMode = core.StringPtr(d.Get("confidential_compute_mode").(string))
+			instanceCCMPatchModel.ConfidentialComputeMode = core.StringPtr(d.Get("confidential_compute_mode").(string))
 			restartNeeded = true
 		}
 		if _, ok := d.GetOkExists("enable_secure_boot"); ok && d.HasChange("enable_secure_boot") {
-			instancePatchModel.EnableSecureBoot = core.BoolPtr(d.Get("enable_secure_boot").(bool))
-		}
-		if d.HasChange("name") {
-			instancePatchModel.Name = &name
+			instanceCCMPatchModel.EnableSecureBoot = core.BoolPtr(d.Get("enable_secure_boot").(bool))
+			restartNeeded = true
 		}
 
-		instancePatch, err := instancePatchModel.AsPatch()
+		if _, ok := d.GetOkExists(isInstanceVolumeBandwidthQoSMode); ok && d.HasChange(isInstanceVolumeBandwidthQoSMode) {
+			instanceCCMPatchModel.VolumeBandwidthQosMode = core.StringPtr(d.Get(isInstanceVolumeBandwidthQoSMode).(string))
+			restartNeeded = true
+		}
+		if d.HasChange("name") {
+			instanceCCMPatchModel.Name = &name
+		}
+
+		instancePatch, err := instanceCCMPatchModel.AsPatch()
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for InstancePatch: %s", err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("instanceCCMPatchModel.AsPatch() failed: %s", err.Error()), "ibm_is_instance", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		updnetoptions.InstancePatch = instancePatch
 		if restartNeeded {
 			getinsOptions := &vpcv1.GetInstanceOptions{
 				ID: &id,
 			}
-			instance, response, err := instanceC.GetInstance(getinsOptions)
+			instance, response, err := instanceC.GetInstanceWithContext(context, getinsOptions)
 			if err != nil {
 				if response != nil && response.StatusCode == 404 {
 					d.SetId("")
 					return nil
 				}
-				return fmt.Errorf("[ERROR] Error Getting Instance (%s): %s\n%s", id, err, response)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetInstanceWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 
 			if instance != nil && *instance.Status == "running" {
@@ -6807,23 +7428,29 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 					InstanceID: &id,
 					Type:       &actiontype,
 				}
-				_, response, err = instanceC.CreateInstanceAction(createinsactoptions)
+				_, response, err = instanceC.CreateInstanceActionWithContext(context, createinsactoptions)
 				if err != nil {
 					if response != nil && response.StatusCode == 404 {
 						return nil
 					}
-					return fmt.Errorf("[ERROR] Error Creating Instance Action: %s\n%s", err, response)
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateInstanceActionWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
 				_, err = isWaitForInstanceActionStop(instanceC, d.Timeout(schema.TimeoutUpdate), id, d)
 				if err != nil {
-					return err
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForInstanceActionStop failed: %s", err.Error()), "ibm_is_instance", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
 				serverstopped = true
 			}
 		}
-		_, _, err = instanceC.UpdateInstance(updnetoptions)
+		_, _, err = instanceC.UpdateInstanceWithContext(context, updnetoptions)
 		if err != nil {
-			return err
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateInstanceWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		if serverstopped {
 			actiontype := "start"
@@ -6831,16 +7458,20 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 				InstanceID: &id,
 				Type:       &actiontype,
 			}
-			_, response, err := instanceC.CreateInstanceAction(createinsactoptions)
+			_, response, err := instanceC.CreateInstanceActionWithContext(context, createinsactoptions)
 			if err != nil {
 				if response != nil && response.StatusCode == 404 {
 					return nil
 				}
-				return fmt.Errorf("[ERROR] Error Creating Instance Action: %s\n%s", err, response)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateInstanceActionWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			_, err = isWaitForInstanceAvailable(instanceC, d.Id(), d.Timeout(schema.TimeoutUpdate), d)
 			if err != nil {
-				return err
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForInstanceAvailable failed: %s", err.Error()), "ibm_is_instance", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 		}
 	}
@@ -6850,20 +7481,24 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 		updatedoptions := &vpcv1.UpdateInstanceOptions{
 			ID: &id,
 		}
-		instancePatchModel := &vpcv1.InstancePatch{
+		instanceMDSPatchModel := &vpcv1.InstancePatch{
 			MetadataService: &vpcv1.InstanceMetadataServicePatch{
 				Enabled: &enabled,
 			},
 		}
-		instancePatch, err := instancePatchModel.AsPatch()
+		instancePatch, err := instanceMDSPatchModel.AsPatch()
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for InstancePatch: %s", err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("instanceMDSPatchModel.AsPatch() failed: %s", err.Error()), "ibm_is_instance", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		updatedoptions.InstancePatch = instancePatch
 
-		_, _, err = instanceC.UpdateInstance(updatedoptions)
+		_, _, err = instanceC.UpdateInstanceWithContext(context, updatedoptions)
 		if err != nil {
-			return err
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateInstanceWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 
@@ -6873,7 +7508,7 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 			ID: &id,
 		}
 		metadataServicePatchModel := &vpcv1.InstanceMetadataServicePatch{}
-		instancePatchModel := &vpcv1.InstancePatch{}
+		instanceMSPatchModel := &vpcv1.InstancePatch{}
 		metadataServiceMap := metadataServiceIntf.([]interface{})[0].(map[string]interface{})
 		if d.HasChange(isInstanceMetadataService + ".0." + isInstanceMetadataServiceEnabled1) {
 			enabledIntf, ok := metadataServiceMap[isInstanceMetadataServiceEnabled1]
@@ -6896,17 +7531,21 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 				metadataServicePatchModel.ResponseHopLimit = &respHopLimit
 			}
 		}
-		instancePatchModel.MetadataService = metadataServicePatchModel
+		instanceMSPatchModel.MetadataService = metadataServicePatchModel
 
-		instancePatch, err := instancePatchModel.AsPatch()
+		instancePatch, err := instanceMSPatchModel.AsPatch()
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for InstancePatch: %s", err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("instanceMSPatchModel.AsPatch() failed: %s", err.Error()), "ibm_is_instance", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		updatedoptions.InstancePatch = instancePatch
 
-		_, _, err = instanceC.UpdateInstance(updatedoptions)
+		_, _, err = instanceC.UpdateInstanceWithContext(context, updatedoptions)
 		if err != nil {
-			return err
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateInstanceWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 
@@ -6916,20 +7555,24 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 			ID: &id,
 		}
 		availablePolicyHostFailure := d.Get(isInstanceAvailablePolicyHostFailure).(string)
-		instancePatchModel := &vpcv1.InstancePatch{
+		instanceAPHFPatchModel := &vpcv1.InstancePatch{
 			AvailabilityPolicy: &vpcv1.InstanceAvailabilityPolicyPatch{
 				HostFailure: &availablePolicyHostFailure,
 			},
 		}
-		instancePatch, err := instancePatchModel.AsPatch()
+		instancePatch, err := instanceAPHFPatchModel.AsPatch()
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for InstancePatch: %s", err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("instanceAPHFPatchModel.AsPatch() failed: %s", err.Error()), "ibm_is_instance", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		updatedoptions.InstancePatch = instancePatch
 
-		_, _, err = instanceC.UpdateInstance(updatedoptions)
+		_, _, err = instanceC.UpdateInstanceWithContext(context, updatedoptions)
 		if err != nil {
-			return err
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateInstanceWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 
@@ -6938,13 +7581,15 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 		getinsOptions := &vpcv1.GetInstanceOptions{
 			ID: &id,
 		}
-		instance, response, err := instanceC.GetInstance(getinsOptions)
+		instance, response, err := instanceC.GetInstanceWithContext(context, getinsOptions)
 		if err != nil {
 			if response != nil && response.StatusCode == 404 {
 				d.SetId("")
 				return nil
 			}
-			return fmt.Errorf("[ERROR] Error Getting Instance (%s): %s\n%s", id, err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetInstanceWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
 		if instance != nil && *instance.Status == "running" {
@@ -6953,16 +7598,20 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 				InstanceID: &id,
 				Type:       &actiontype,
 			}
-			_, response, err = instanceC.CreateInstanceAction(createinsactoptions)
+			_, response, err = instanceC.CreateInstanceActionWithContext(context, createinsactoptions)
 			if err != nil {
 				if response != nil && response.StatusCode == 404 {
 					return nil
 				}
-				return fmt.Errorf("[ERROR] Error Creating Instance Action: %s\n%s", err, response)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateInstanceActionWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			_, err = isWaitForInstanceActionStop(instanceC, d.Timeout(schema.TimeoutUpdate), id, d)
 			if err != nil {
-				return err
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForInstanceActionStop failed: %s", err.Error()), "ibm_is_instance", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 		}
 
@@ -6974,18 +7623,22 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 		profile := &vpcv1.InstancePatchProfile{
 			Name: &instanceProfile,
 		}
-		instancePatchModel := &vpcv1.InstancePatch{
+		instanceProfilePatchModel := &vpcv1.InstancePatch{
 			Profile: profile,
 		}
-		instancePatch, err := instancePatchModel.AsPatch()
+		instancePatch, err := instanceProfilePatchModel.AsPatch()
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for InstancePatch: %s", err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("instanceProfilePatchModel.AsPatch() failed: %s", err.Error()), "ibm_is_instance", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		updnetoptions.InstancePatch = instancePatch
 
-		_, response, err = instanceC.UpdateInstance(updnetoptions)
+		_, response, err = instanceC.UpdateInstanceWithContext(context, updnetoptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error in UpdateInstancePatch: %s\n%s", err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateInstanceWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
 		actiontype := "start"
@@ -6993,26 +7646,56 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 			InstanceID: &id,
 			Type:       &actiontype,
 		}
-		_, response, err = instanceC.CreateInstanceAction(createinsactoptions)
+		_, response, err = instanceC.CreateInstanceActionWithContext(context, createinsactoptions)
 		if err != nil {
 			if response != nil && response.StatusCode == 404 {
 				return nil
 			}
-			return fmt.Errorf("[ERROR] Error Creating Instance Action: %s\n%s", err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateInstanceActionWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		_, err = isWaitForInstanceAvailable(instanceC, d.Id(), d.Timeout(schema.TimeoutUpdate), d)
 		if err != nil {
-			return err
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForInstanceAvailable failed: %s", err.Error()), "ibm_is_instance", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
+	}
+	if d.HasChange(isInstanceTotalVolumeBandwidth) && !d.IsNewResource() {
+		totalVolBandwidth := int64(d.Get(isInstanceTotalVolumeBandwidth).(int))
+		updnetoptions := &vpcv1.UpdateInstanceOptions{
+			ID: &id,
+		}
+
+		instanceTotalVolumeBandwidthPatchModel := &vpcv1.InstancePatch{
+			TotalVolumeBandwidth: &totalVolBandwidth,
+		}
+		instancePatch, err := instanceTotalVolumeBandwidthPatchModel.AsPatch()
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("instanceTotalVolumeBandwidthPatchModel.AsPatch() failed: %s", err.Error()), "ibm_is_instance", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
+		updnetoptions.InstancePatch = instancePatch
+
+		_, _, err = instanceC.UpdateInstanceWithContext(context, updnetoptions)
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateInstanceWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
 	}
 
 	getinsOptions := &vpcv1.GetInstanceOptions{
 		ID: &id,
 	}
-	instance, response, err := instanceC.GetInstance(getinsOptions)
+	instance, _, err := instanceC.GetInstanceWithContext(context, getinsOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error Getting Instance: %s\n%s", err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetInstanceWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if d.HasChange(isInstanceTags) {
 		oldList, newList := d.GetChange(isInstanceTags)
@@ -7033,33 +7716,37 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func resourceIBMisInstanceUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMisInstanceUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
-	err := instanceUpdate(d, meta)
+	err := instanceUpdate(context, d, meta)
 	if err != nil {
 		return err
 	}
 
-	return resourceIBMisInstanceRead(d, meta)
+	return resourceIBMisInstanceRead(context, d, meta)
 }
 
-func instanceDelete(d *schema.ResourceData, meta interface{}, id string) error {
+func instanceDelete(context context.Context, d *schema.ResourceData, meta interface{}, id string) diag.Diagnostics {
 	instanceC, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "delete", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cleanDelete := d.Get(isEnableCleanDelete).(bool)
 	getinsOptions := &vpcv1.GetInstanceOptions{
 		ID: &id,
 	}
-	_, response, err := instanceC.GetInstance(getinsOptions)
+	_, response, err := instanceC.GetInstanceWithContext(context, getinsOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error Getting Instance (%s): %s\n%s", id, err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetInstanceWithContext failed: %s", err.Error()), "ibm_is_instance", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	bootvolid := ""
@@ -7070,23 +7757,29 @@ func instanceDelete(d *schema.ResourceData, meta interface{}, id string) error {
 			InstanceID: &id,
 			Type:       &actiontype,
 		}
-		_, response, err = instanceC.CreateInstanceAction(createinsactoptions)
+		_, response, err = instanceC.CreateInstanceActionWithContext(context, createinsactoptions)
 		if err != nil {
 			if response != nil && response.StatusCode == 404 {
 				return nil
 			}
-			return fmt.Errorf("[ERROR] Error Creating Instance Action: %s\n%s", err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateInstanceActionWithContext failed: %s", err.Error()), "ibm_is_instance", "delete")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		_, err = isWaitForInstanceActionStop(instanceC, d.Timeout(schema.TimeoutDelete), id, d)
 		if err != nil {
-			return err
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForInstanceActionStop failed: %s", err.Error()), "ibm_is_instance", "delete")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		listvolattoptions := &vpcv1.ListInstanceVolumeAttachmentsOptions{
 			InstanceID: &id,
 		}
-		vols, response, err := instanceC.ListInstanceVolumeAttachments(listvolattoptions)
+		vols, _, err := instanceC.ListInstanceVolumeAttachmentsWithContext(context, listvolattoptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Listing volume attachments to the instance: %s\n%s", err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListInstanceVolumeAttachmentsWithContext failed: %s", err.Error()), "ibm_is_instance", "delete")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		for _, vol := range vols.VolumeAttachments {
 			if *vol.Type == "data" && *vol.DeleteVolumeOnInstanceDelete {
@@ -7094,13 +7787,17 @@ func instanceDelete(d *schema.ResourceData, meta interface{}, id string) error {
 					InstanceID: &id,
 					ID:         vol.ID,
 				}
-				_, err := instanceC.DeleteInstanceVolumeAttachment(delvolattoptions)
+				_, err := instanceC.DeleteInstanceVolumeAttachmentWithContext(context, delvolattoptions)
 				if err != nil {
-					return fmt.Errorf("[ERROR] Error while removing volume Attachment %q for instance %s: %q", *vol.ID, d.Id(), err)
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteInstanceVolumeAttachmentWithContext failed: %s", err.Error()), "ibm_is_instance", "delete")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
 				_, err = isWaitForInstanceVolumeDetached(instanceC, d, d.Id(), *vol.ID)
 				if err != nil {
-					return err
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForInstanceVolumeDetached failed: %s", err.Error()), "ibm_is_instance", "delete")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
 			}
 			if *vol.Type == "boot" {
@@ -7111,13 +7808,17 @@ func instanceDelete(d *schema.ResourceData, meta interface{}, id string) error {
 	deleteinstanceOptions := &vpcv1.DeleteInstanceOptions{
 		ID: &id,
 	}
-	_, err = instanceC.DeleteInstance(deleteinstanceOptions)
+	_, err = instanceC.DeleteInstanceWithContext(context, deleteinstanceOptions)
 	if err != nil {
-		return err
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteInstanceWithContext failed: %s", err.Error()), "ibm_is_instance", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	_, err = isWaitForInstanceDelete(instanceC, d, d.Id())
 	if err != nil {
-		return err
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForInstanceDelete failed: %s", err.Error()), "ibm_is_instance", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if cleanDelete {
 		if _, ok := d.GetOk(isInstanceBootVolume); ok {
@@ -7125,7 +7826,9 @@ func instanceDelete(d *schema.ResourceData, meta interface{}, id string) error {
 			if autoDel {
 				_, err = isWaitForVolumeDeleted(instanceC, bootvolid, d.Timeout(schema.TimeoutDelete))
 				if err != nil {
-					return err
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForVolumeDeleted failed: %s", err.Error()), "ibm_is_instance", "delete")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
 			}
 		}
@@ -7133,10 +7836,10 @@ func instanceDelete(d *schema.ResourceData, meta interface{}, id string) error {
 	return nil
 }
 
-func resourceIBMisInstanceDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMisInstanceDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 	id := d.Id()
-	err := instanceDelete(d, meta, id)
+	err := instanceDelete(context, d, meta, id)
 	if err != nil {
 		return err
 	}
@@ -7286,7 +7989,6 @@ func isRestartStopAction(instanceC *vpcv1.VpcV1, id string, d *schema.ResourceDa
 		select {
 
 		case <-subticker.C:
-			log.Println("Instance is still in stopping state, retrying to stop with -force")
 			actiontype := "stop"
 			createinsactoptions := &vpcv1.CreateInstanceActionOptions{
 				InstanceID: &id,
@@ -7442,7 +8144,7 @@ func GetInstanceMetadataServiceOptions(d *schema.ResourceData) (metadataService 
 	return nil
 }
 
-func resourceIBMIsInstanceInstanceNetworkAttachmentReferenceToMap(model *vpcv1.InstanceNetworkAttachmentReference, pna *vpcv1.InstanceNetworkAttachment, instanceC *vpcv1.VpcV1, autoDelete bool) (map[string]interface{}, error) {
+func resourceIBMIsInstanceInstanceNetworkAttachmentReferenceToMap(model *vpcv1.InstanceNetworkAttachmentReference, pna *vpcv1.InstanceNetworkAttachment, instanceC *vpcv1.VpcV1, autoDelete, autoDeleteExists bool) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Deleted != nil {
 		deletedMap, err := resourceIBMIsInstanceInstanceNetworkAttachmentReferenceDeletedToMap(model.Deleted)
@@ -7463,6 +8165,7 @@ func resourceIBMIsInstanceInstanceNetworkAttachmentReferenceToMap(model *vpcv1.I
 	vniMap := make(map[string]interface{})
 	if pna.VirtualNetworkInterface != nil {
 		vniMap["id"] = *pna.VirtualNetworkInterface.ID
+		vniMap["crn"] = *pna.VirtualNetworkInterface.CRN
 		vniMap["name"] = pna.VirtualNetworkInterface.Name
 		vniMap["resource_type"] = pna.VirtualNetworkInterface.ResourceType
 	}
@@ -7487,7 +8190,7 @@ func resourceIBMIsInstanceInstanceNetworkAttachmentReferenceToMap(model *vpcv1.I
 		ips := []map[string]interface{}{}
 		for _, ipsItem := range vniDetails.Ips {
 			if *ipsItem.ID != primaryipId {
-				ipsItemMap, err := resourceIBMIsVirtualNetworkInterfaceReservedIPReferenceToMap(&ipsItem, autoDelete)
+				ipsItemMap, err := resourceIBMIsVirtualNetworkInterfaceReservedIPReferenceToMap(&ipsItem, autoDelete, autoDeleteExists)
 				if err != nil {
 					return nil, err
 				}
@@ -7654,18 +8357,18 @@ func resourceIBMIsInstanceMapToVirtualNetworkInterfaceIPsReservedIPPrototype(mod
 	model := &vpcv1.VirtualNetworkInterfaceIPPrototype{}
 	if modelMap["reserved_ip"] != nil && modelMap["reserved_ip"].(string) != "" {
 		model.ID = core.StringPtr(modelMap["reserved_ip"].(string))
-	}
-	if modelMap["href"] != nil && modelMap["href"].(string) != "" {
+	} else if modelMap["href"] != nil && modelMap["href"].(string) != "" {
 		model.Href = core.StringPtr(modelMap["href"].(string))
-	}
-	if modelMap["address"] != nil && modelMap["address"].(string) != "" {
-		model.Address = core.StringPtr(modelMap["address"].(string))
-	}
-	if modelMap["auto_delete"] != nil {
-		model.AutoDelete = core.BoolPtr(modelMap["auto_delete"].(bool))
-	}
-	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
-		model.Name = core.StringPtr(modelMap["name"].(string))
+	} else {
+		if modelMap["address"] != nil && modelMap["address"].(string) != "" {
+			model.Address = core.StringPtr(modelMap["address"].(string))
+		}
+		if modelMap["auto_delete"] != nil {
+			model.AutoDelete = core.BoolPtr(modelMap["auto_delete"].(bool))
+		}
+		if modelMap["name"] != nil && modelMap["name"].(string) != "" {
+			model.Name = core.StringPtr(modelMap["name"].(string))
+		}
 	}
 	return model, nil
 }
@@ -7673,18 +8376,18 @@ func resourceIBMIsInstanceMapToVirtualNetworkInterfacePrimaryIPReservedIPPrototy
 	model := &vpcv1.VirtualNetworkInterfacePrimaryIPPrototype{}
 	if modelMap["reserved_ip"] != nil && modelMap["reserved_ip"].(string) != "" {
 		model.ID = core.StringPtr(modelMap["reserved_ip"].(string))
-	}
-	if modelMap["href"] != nil && modelMap["href"].(string) != "" {
+	} else if modelMap["href"] != nil && modelMap["href"].(string) != "" {
 		model.Href = core.StringPtr(modelMap["href"].(string))
-	}
-	if modelMap["address"] != nil && modelMap["address"].(string) != "" {
-		model.Address = core.StringPtr(modelMap["address"].(string))
-	}
-	if modelMap["auto_delete"] != nil {
-		model.AutoDelete = core.BoolPtr(modelMap["auto_delete"].(bool))
-	}
-	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
-		model.Name = core.StringPtr(modelMap["name"].(string))
+	} else {
+		if modelMap["address"] != nil && modelMap["address"].(string) != "" {
+			model.Address = core.StringPtr(modelMap["address"].(string))
+		}
+		if modelMap["auto_delete"] != nil {
+			model.AutoDelete = core.BoolPtr(modelMap["auto_delete"].(bool))
+		}
+		if modelMap["name"] != nil && modelMap["name"].(string) != "" {
+			model.Name = core.StringPtr(modelMap["name"].(string))
+		}
 	}
 	return model, nil
 }
@@ -7914,6 +8617,7 @@ func volumesEqual(oldVol, newVol map[string]interface{}) bool {
 		"volume_encryption_key",
 		"volume_tags",
 		"volume_bandwidth",
+		"allowed_use",
 	}
 
 	for _, field := range fieldsToCompare {
@@ -7927,6 +8631,12 @@ func volumesEqual(oldVol, newVol map[string]interface{}) bool {
 		if oldOk && newOk {
 			if field == "volume_tags" {
 				if !compareVolumeTags(oldVal, newVal) {
+					return false
+				}
+				continue
+			}
+			if field == "allowed_use" {
+				if !compareAllowedUse(oldVal, newVal) {
 					return false
 				}
 				continue
@@ -8107,6 +8817,30 @@ func handleVolumePrototypesUpdate(d *schema.ResourceData, instanceC *vpcv1.VpcV1
 					volumePatchModel.UserTags = userTagsArray
 					volchanged = true
 				}
+
+				// Compare allowed_use if present
+				allowedUseOld, oldOk := oldVol["allowed_use"].([]interface{})
+				allowedUseNew, newOk := newVol["allowed_use"].([]interface{})
+				if oldOk == newOk && oldOk && newOk {
+					if len(allowedUseOld) == len(allowedUseNew) && len(allowedUseOld) > 0 && len(allowedUseNew) > 0 {
+						oldallowedUse := allowedUseOld[0].(map[string]interface{})
+						newallowedUse := allowedUseNew[0].(map[string]interface{})
+						model := &vpcv1.VolumeAllowedUsePatch{}
+						if oldallowedUse["api_version"] != newallowedUse["api_version"] {
+							model.ApiVersion = core.StringPtr(oldallowedUse["api_version"].(string))
+						}
+						if oldallowedUse["bare_metal_server"] != newallowedUse["bare_metal_server"] {
+							model.BareMetalServer = core.StringPtr(oldallowedUse["bare_metal_server"].(string))
+						}
+						if oldallowedUse["instance"] != newallowedUse["instance"] {
+							model.Instance = core.StringPtr(oldallowedUse["instance"].(string))
+						}
+						if model != nil {
+							volumePatchModel.AllowedUse = model
+							volchanged = true
+						}
+					}
+				}
 				if volchanged {
 					volumePatch, err := volumePatchModel.AsPatch()
 					if err != nil {
@@ -8202,6 +8936,15 @@ func handleVolumePrototypesUpdate(d *schema.ResourceData, instanceC *vpcv1.VpcV1
 					volAtt.Iops = &iops
 				}
 			}
+
+			//allowed use
+			if _, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.allowed_use", i)); ok {
+				allowedUseModel, err := ResourceIBMIsVolumeAllowedUseMapToVolumeAllowedUsePrototype(d.Get(fmt.Sprintf("volume_prototypes.%d.allowed_use", i)).([]interface{})[0].(map[string]interface{}))
+				if err != nil {
+					return err
+				}
+				volAtt.AllowedUse = allowedUseModel
+			}
 			createvolattoptions.Volume = volAtt
 			newVolume, _, err := instanceC.CreateInstanceVolumeAttachment(createvolattoptions)
 			if err != nil {
@@ -8251,15 +8994,30 @@ func hasVolumeChanged(d *schema.ResourceData, newIndex int, oldVol, newVol map[s
 		"volume_capacity",
 		"volume_profile",
 		"volume_bandwidth",
+		"allowed_use",
 	}
 
 	// Compare standard fields
 	for _, field := range fieldsToCompare {
-		oldVal := oldVol[field]
-		newVal := newVol[field]
 
-		if !reflect.DeepEqual(oldVal, newVal) {
+		oldVal, oldOk := oldVol[field]
+		newVal, newOk := newVol[field]
+
+		if oldOk != newOk {
 			return true
+		}
+
+		if oldOk && newOk {
+			if field == "allowed_use" {
+				if !compareAllowedUse(oldVal, newVal) {
+					return true
+				}
+				continue
+			}
+
+			if !reflect.DeepEqual(oldVal, newVal) {
+				return true
+			}
 		}
 	}
 
@@ -8286,6 +9044,36 @@ func hasVolumeChanged(d *schema.ResourceData, newIndex int, oldVol, newVol map[s
 	}
 
 	return false
+}
+
+// Helper function to compare allowed use
+func compareAllowedUse(old, new interface{}) bool {
+	if old == nil && new == nil {
+		return true
+	}
+	if old == nil || new == nil {
+		return false
+	}
+
+	oldSchema, okOld := old.(*map[string]interface{})
+	newSchema, okNew := new.(*map[string]interface{})
+
+	if !okOld || !okNew {
+		// Ensure the old and new are actually maps
+		// fmt.Println("Error: Provided values are not of expected type")
+		return false
+	}
+
+	// Compare each field in the schema
+	// Fields: api_version, bare_metal_server, instance
+	for key := range *oldSchema {
+		if !reflect.DeepEqual((*oldSchema)[key], (*newSchema)[key]) {
+			// If any field differs, return false
+			return false
+		}
+	}
+
+	return true
 }
 
 func isTieredProfile(profile string) bool {
@@ -8370,10 +9158,24 @@ func setVolumePrototypesInState(d *schema.ResourceData, instance *vpcv1.Instance
 					vol["volume_name"] = *volumeRef.Name
 					vol["volume_profile"] = *volumeRef.Profile.Name
 					vol["volume_iops"] = *volumeRef.Iops
+					tags := make([]interface{}, len(volumeRef.UserTags))
+					for i, v := range volumeRef.UserTags {
+						tags[i] = v
+					}
+					vol["volume_tags"] = schema.NewSet(schema.HashString, tags)
 					vol["volume_capacity"] = *volumeRef.Capacity
 					vol["volume_bandwidth"] = volumeRef.Bandwidth
 					vol["volume_crn"] = *volume.Volume.CRN
 					vol["volume_resource_type"] = *volume.Volume.ResourceType
+					if volumeRef.AllowedUse != nil {
+						allowedUseList := []map[string]interface{}{}
+						modelMap, _ := ResourceceIBMIsVolumeAllowedUseToMap(volumeRef.AllowedUse)
+						allowedUseList = append(allowedUseList, modelMap)
+						vol["allowed_use"] = allowedUseList
+					}
+					if volumeRef.SourceSnapshot != nil && volumeRef.SourceSnapshot.ID != nil {
+						vol["volume_source_snapshot"] = *volumeRef.SourceSnapshot.ID
+					}
 				}
 
 				volumeAttRef, _, err := instanceC.GetInstanceVolumeAttachment(getInstanceVolumeAttachmentOptions)

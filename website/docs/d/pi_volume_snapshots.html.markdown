@@ -48,7 +48,7 @@ In addition to all argument reference list, you can access the following attribu
 
   Nested schema for `volume_snapshots`:
   - `creation_date` - (String) The date and time when the volume snapshot was created.
-  - `crn` - (String) The CRN of the volume snapshot.
+  - `crn` - (Deprecated, String) The CRN of the volume snapshot.
   - `id` - (String) The volume snapshot UUID.
   - `name` - (String) The volume snapshot name.
   - `size` - (Float) The size of the volume snapshot, in gibibytes (GiB).

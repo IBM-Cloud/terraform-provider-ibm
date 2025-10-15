@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2024 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package mqcloud_test
@@ -28,9 +28,7 @@ func TestAccIbmMqcloudKeystoreCertificateBasic(t *testing.T) {
 	certificateFile := acc.MqcloudKSCertFilePath
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			acc.TestAccPreCheckMqcloud(t)
-		},
+		PreCheck:     func() { acc.TestAccPreCheckMqcloud(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmMqcloudKeystoreCertificateDestroy,
 		Steps: []resource.TestStep{

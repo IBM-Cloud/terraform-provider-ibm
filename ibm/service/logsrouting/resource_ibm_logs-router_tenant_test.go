@@ -25,10 +25,10 @@ func TestAccIBMLogsRouterTenantBasic(t *testing.T) {
 	var conf ibmcloudlogsroutingv0.Tenant
 	name := fmt.Sprintf("tf-name-%d", acctest.RandIntRange(10, 100))
 	host := fmt.Sprintf("www.example.%d.com", acctest.RandIntRange(10, 100))
-	crn := "crn:v1:bluemix:public:logdna:eu-de:a/3516b8fa0a174a71899f5affa4f18d78:3517d2ed-9429-af34-ad52-34278391cbc8::"
+	crn := "crn:v1:bluemix:public:logs:eu-de:a/3516b8fa0a174a71899f5affa4f18d78:3517d2ed-9429-af34-ad52-34278391cbc8::"
 	nameUpdate := fmt.Sprintf("tf-name-%d", acctest.RandIntRange(10, 100))
 	hostUpdate := fmt.Sprintf("www.example.%d.com", acctest.RandIntRange(10, 100))
-	crnUpdate := "crn:v1:bluemix:public:logdna:eu-de:a/3516b8fa0a174a71899f5affa4f18d78:3517d2ed-9429-af34-ad52-34278391cbc8::"
+	crnUpdate := "crn:v1:bluemix:public:logs:eu-de:a/3516b8fa0a174a71899f5affa4f18d78:3517d2ed-9429-af34-ad52-34278391cbc8::"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -72,13 +72,11 @@ func TestAccIBMLogsRouterTenantAllArgs(t *testing.T) {
 	host0 := fmt.Sprintf("www.example.%d.com", acctest.RandIntRange(10, 100))
 	port0 := acctest.RandIntRange(1, 9999)
 	target0Name := fmt.Sprintf("target-%s", acctest.RandString(4))
-	accessCredential := fmt.Sprintf("access-%s", acctest.RandString(4))
 
 	nameUpdate := fmt.Sprintf("tenant-name-%d", acctest.RandIntRange(10, 100))
 	host0Update := fmt.Sprintf("www.example.%d.com", acctest.RandIntRange(10, 100))
 	port0Update := acctest.RandIntRange(1, 9999)
 	target0NameUpdate := fmt.Sprintf("target-%s", acctest.RandString(4))
-	accessCredentialUpdate := fmt.Sprintf("access-%s", acctest.RandString(4))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -86,14 +84,14 @@ func TestAccIBMLogsRouterTenantAllArgs(t *testing.T) {
 		CheckDestroy: testAccCheckIBMLogsRouterTenantDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMLogsRouterTenantConfigAllArgs(name, target0Name, host0, port0, accessCredential),
+				Config: testAccCheckIBMLogsRouterTenantConfigAllArgs(name, target0Name, host0, port0),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMLogsRouterTenantExists("ibm_logs_router_tenant.logs_router_tenant_instance", conf),
 					resource.TestCheckResourceAttr("ibm_logs_router_tenant.logs_router_tenant_instance", "name", name),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIBMLogsRouterTenantConfigAllArgs(nameUpdate, target0NameUpdate, host0Update, port0Update, accessCredentialUpdate),
+				Config: testAccCheckIBMLogsRouterTenantConfigAllArgs(nameUpdate, target0NameUpdate, host0Update, port0Update),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_logs_router_tenant.logs_router_tenant_instance", "name", nameUpdate),
 				),
@@ -119,36 +117,34 @@ func testAccCheckIBMLogsRouterTenantConfigBasic(name string, crn string, host st
 	return fmt.Sprintf(`
 		resource "ibm_logs_router_tenant" "logs_router_tenant_instance" {
 			name = "%s"
-			region = "br-sao"
+			region = "ca-tor"
 			targets {
 				log_sink_crn = "%s"
 				name = "my-log-sink"
 				parameters {
 					host = "%s"
 					port = 1
-					access_credential = "%s"
 				}
 			}
 		}
-		`, name, crn, host, acc.IngestionKey)
+		`, name, crn, host)
 }
 
-func testAccCheckIBMLogsRouterTenantConfigAllArgs(name string, target0Name string, host0 string, port0 int, accessCredential string) string {
+func testAccCheckIBMLogsRouterTenantConfigAllArgs(name string, target0Name string, host0 string, port0 int) string {
 	return fmt.Sprintf(`
 		resource "ibm_logs_router_tenant" "logs_router_tenant_instance" {
 			name = "%s"
-			region = "br-sao"
+			region = "ca-tor"
 			targets {
-				log_sink_crn = "crn:v1:bluemix:public:logdna:eu-de:a/3516b8fa0a174a71899f5affa4f18d78:3517d2ed-9429-af34-ad52-34278391cbc8::"
+				log_sink_crn = "crn:v1:bluemix:public:logs:eu-de:a/3516b8fa0a174a71899f5affa4f18d78:3517d2ed-9429-af34-ad52-34278391cbc8::"
 				name = "%s"
 				parameters {
 					host = "%s"
 					port = %d
-					access_credential = "%s"
 				}
 			}
 		}
-		`, name, target0Name, host0, port0, accessCredential)
+		`, name, target0Name, host0, port0)
 }
 
 func testAccCheckIBMLogsRouterTenantExists(n string, obj ibmcloudlogsroutingv0.Tenant) resource.TestCheckFunc {
@@ -363,7 +359,6 @@ func TestResourceIBMLogsRouterTenantMapToTargetTypePrototype(t *testing.T) {
 		targetParametersTypeLogDnaPrototypeModel := new(ibmcloudlogsroutingv0.TargetParametersTypeLogDnaPrototype)
 		targetParametersTypeLogDnaPrototypeModel.Host = core.StringPtr("www.example.com")
 		targetParametersTypeLogDnaPrototypeModel.Port = core.Int64Ptr(int64(1))
-		targetParametersTypeLogDnaPrototypeModel.AccessCredential = core.StringPtr("ingestion-secret")
 
 		model := new(ibmcloudlogsroutingv0.TargetTypePrototype)
 		model.LogSinkCRN = core.StringPtr("crn:v1:bluemix:public:logdna:eu-de:a/3516b8fa0a174a71899f5affa4f18d78:3517d2ed-9429-af34-ad52-34278391cbc8::")
@@ -393,7 +388,6 @@ func TestResourceIBMLogsRouterTenantMapToTargetParametersTypeLogDnaPrototype(t *
 		model := new(ibmcloudlogsroutingv0.TargetParametersTypeLogDnaPrototype)
 		model.Host = core.StringPtr("www.example.com")
 		model.Port = core.Int64Ptr(int64(1))
-		model.AccessCredential = core.StringPtr("ingestion-secret")
 
 		assert.Equal(t, result, model)
 	}
@@ -413,7 +407,6 @@ func TestResourceIBMLogsRouterTenantMapToTargetTypePrototypeTargetTypeLogDnaProt
 		targetParametersTypeLogDnaPrototypeModel := new(ibmcloudlogsroutingv0.TargetParametersTypeLogDnaPrototype)
 		targetParametersTypeLogDnaPrototypeModel.Host = core.StringPtr("www.example.com")
 		targetParametersTypeLogDnaPrototypeModel.Port = core.Int64Ptr(int64(8080))
-		targetParametersTypeLogDnaPrototypeModel.AccessCredential = core.StringPtr("an-ingestion-secret")
 
 		model := new(ibmcloudlogsroutingv0.TargetTypePrototypeTargetTypeLogDnaPrototype)
 		model.LogSinkCRN = core.StringPtr("crn:v1:bluemix:public:logdna:eu-de:a/3516b8fa0a174a71899f5affa4f18d78:3517d2ed-9429-af34-ad52-34278391cbc8::")

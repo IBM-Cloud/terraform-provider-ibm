@@ -113,6 +113,13 @@ Nested schema for **metadata**:
 		Nested schema for **resource_controller**:
 			* `subscription_provider_id` - (Optional, String) The broker ID for the plan. Only needed if the service is MCSP.
 			  * Constraints: The maximum length is `256` characters. The minimum length is `32` characters. The value must match regular expression `/^[a-zA-Z:\\-_\\d\/]+$/`.
+		* `target_plans` - (Optional, List) The selection of applicable plans.The resource controller can use this metadata to validate the plan update requests based on the plan name.
+		  * Constraints: The maximum length is `1000` items. The minimum length is `0` items.
+		Nested schema for **target_plans**:
+			* `id` - (Computed, String) The plan ID for the resource controller to validate the plan update requests.
+			  * Constraints: The maximum length is `2000` characters. The minimum length is `1` character. The value must match regular expression `/./`.
+			* `name` - (Computed, String) The plan name for the resource controller to validate the plan update requests.
+			  * Constraints: The maximum length is `2000` characters. The minimum length is `1` character. The value must match regular expression `/./`.
 	* `plan` - (Optional, List) Metadata controlling Plan related settings.
 	Nested schema for **plan**:
 		* `allow_internal_users` - (Optional, Boolean) Controls if IBMers are allowed to provision this plan.
@@ -155,15 +162,15 @@ Nested schema for **metadata**:
 				* `media` - (Optional, List) The list of supporting media for this product.
 				  * Constraints: The maximum length is `100` items. The minimum length is `0` items.
 				Nested schema for **media**:
-					* `caption` - (Required, String) Provide a descriptive caption that indicates what the media illustrates. This caption is displayed in the catalog.
+					* `caption` - (Optional, String) Provide a descriptive caption that indicates what the media illustrates. This caption is displayed in the catalog.
 					  * Constraints: The maximum length is `2000` characters. The minimum length is `0` characters. The value must match regular expression `/^[ -~\\s]*$/`.
 					* `thumbnail` - (Optional, String) The reduced-size version of your images and videos.
 					  * Constraints: The maximum length is `2083` characters. The minimum length is `0` characters.
-					* `type` - (Required, String) The type of the media.
+					* `type` - (Optional, String) The type of the media.
 					  * Constraints: Allowable values are: `image`, `youtube`, `video_mp_4`, `video_webm`.
-					* `url` - (Required, String) The URL that links to the media that shows off the product.
+					* `url` - (Optional, String) The URL that links to the media that shows off the product.
 					  * Constraints: The maximum length is `2083` characters. The minimum length is `0` characters.
-				* `navigation_items` - (Optional, List) List of custom navigation panel.
+				* `navigation_items` - (Optional, List) The list of custom navigation panels.
 				  * Constraints: The maximum length is `100` items. The minimum length is `0` items.
 				Nested schema for **navigation_items**:
 					* `id` - (Optional, String) Id of custom navigation panel.
@@ -204,7 +211,7 @@ Nested schema for **overview_ui**:
 		* `long_description` - (Optional, String) The detailed description of your product that is displayed at the beginning of your product page in the catalog. Markdown markup language is supported.
 * `pricing_tags` - (Optional, List) A list of tags that carry information about the pricing information of your product.
   * Constraints: The list items must match regular expression `/^[a-z0-9\\-._]+$/`. The maximum length is `100` items. The minimum length is `0` items.
-* `product_id` - (Required, Forces new resource, String) The unique ID of the product.
+* `product_id` - (Required, Forces new resource, String) The unique ID of the resource.
   * Constraints: The maximum length is `71` characters. The minimum length is `71` characters. The value must match regular expression `/^[a-zA-Z0-9]{32}:o:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/`.
 * `tags` - (Optional, List) A list of tags that carry information about your product. These tags can be used to find your product in the IBM Cloud catalog.
   * Constraints: The list items must match regular expression `/^[a-z0-9\\-._]+$/`. The maximum length is `100` items. The minimum length is `0` items.
@@ -229,7 +236,7 @@ The `id` property can be formed from `product_id`, `catalog_product_id`, and `ca
 <pre>
 product_id/catalog_product_id/catalog_plan_id
 </pre>
-* `product_id`: A string. The unique ID of the product.
+* `product_id`: A string. The unique ID of the resource.
 * `catalog_product_id`: A string. The unique ID of this global catalog product.
 * `catalog_plan_id`: A string. The ID of a global catalog object.
 

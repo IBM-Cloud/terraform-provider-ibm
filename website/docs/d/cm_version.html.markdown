@@ -56,6 +56,11 @@ Nested scheme for **configuration**:
 	* `type` - (String) Value type (string, boolean, int).
 	* `type_metadata` - (String) The original type, as found in the source being onboarded.
 	* `value_constraint` - (String) Constraint associated with value, e.g., for string type - regx:[a-z].
+	* `value_constraints` - (List) Validation rules for this input value.
+	Nested scheme for **value_constraints**:
+		* `description` - (String) The value to display if the inptu value does not match the specified constraint.
+		* `type` - (String) Type of constraint.
+		* `value` - (String) Contstraint value. For type regex, this is a regular expression in Javascript notation.
 
 * `created` - (String) The date and time this version was created.
 

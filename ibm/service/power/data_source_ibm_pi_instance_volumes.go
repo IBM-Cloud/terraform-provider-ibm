@@ -5,6 +5,7 @@ package power
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
@@ -137,10 +138,12 @@ func DataSourceIBMPIInstanceVolumes() *schema.Resource {
 	}
 }
 
-func dataSourceIBMPIInstanceVolumesRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMPIInstanceVolumesRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "(Data) ibm_pi_instance_volumes", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
@@ -148,22 +151,26 @@ func dataSourceIBMPIInstanceVolumesRead(ctx context.Context, d *schema.ResourceD
 	volumeC := instance.NewIBMPIVolumeClient(ctx, sess, cloudInstanceID)
 	volumedata, err := volumeC.GetAllInstanceVolumes(d.Get(Arg_InstanceName).(string))
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf(" failed: %s", err.Error()), "(Data) ibm_pi_instance_volumes", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	var clientgenU, _ = uuid.GenerateUUID()
 	d.SetId(clientgenU)
-	d.Set(Attr_BootVolumeID, *volumedata.Volumes[0].VolumeID)
+	if len(volumedata.Volumes) > 0 {
+		d.Set(Attr_BootVolumeID, *volumedata.Volumes[0].VolumeID)
+	}
+
 	d.Set(Attr_InstanceVolumes, flattenVolumesInstances(volumedata.Volumes, meta))
 
 	return nil
 }
 
-func flattenVolumesInstances(list []*models.VolumeReference, meta interface{}) []map[string]interface{} {
-	result := make([]map[string]interface{}, 0, len(list))
+func flattenVolumesInstances(list []*models.VolumeReference, meta any) []map[string]any {
+	result := make([]map[string]any, 0, len(list))
 	for _, i := range list {
-
-		l := map[string]interface{}{
+		l := map[string]any{
 			Attr_Bootable:           *i.Bootable,
 			Attr_CreationDate:       i.CreationDate.String(),
 			Attr_Href:               *i.Href,
@@ -191,7 +198,6 @@ func flattenVolumesInstances(list []*models.VolumeReference, meta interface{}) [
 		if len(i.ReplicationSites) > 0 {
 			l[Attr_ReplicationSites] = i.ReplicationSites
 		}
-
 		result = append(result, l)
 	}
 	return result

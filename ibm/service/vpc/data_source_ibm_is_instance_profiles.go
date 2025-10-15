@@ -4,11 +4,14 @@
 package vpc
 
 import (
+	"context"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -18,7 +21,7 @@ const (
 
 func DataSourceIBMISInstanceProfiles() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceIBMISInstanceProfilesRead,
+		ReadContext: dataSourceIBMISInstanceProfilesRead,
 
 		Schema: map[string]*schema.Schema{
 
@@ -756,6 +759,32 @@ func DataSourceIBMISInstanceProfiles() *schema.Resource {
 								},
 							},
 						},
+						"volume_bandwidth_qos_modes": &schema.Schema{
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"type": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The type for this profile field.",
+									},
+									"default": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The default volume bandwidth QoS mode for this profile.",
+									},
+									"values": {
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "The permitted volume bandwidth QoS modes for an instance using this profile.",
+										Elem: &schema.Schema{
+											Type: schema.TypeString,
+										},
+									},
+								},
+							},
+						},
 						"vcpu_manufacturer": &schema.Schema{
 							Type:     schema.TypeList,
 							Computed: true,
@@ -781,23 +810,27 @@ func DataSourceIBMISInstanceProfiles() *schema.Resource {
 	}
 }
 
-func dataSourceIBMISInstanceProfilesRead(d *schema.ResourceData, meta interface{}) error {
-	err := instanceProfilesList(d, meta)
+func dataSourceIBMISInstanceProfilesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	err := instanceProfilesList(context, d, meta)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func instanceProfilesList(d *schema.ResourceData, meta interface{}) error {
+func instanceProfilesList(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instance_profiles", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	listInstanceProfilesOptions := &vpcv1.ListInstanceProfilesOptions{}
-	availableProfiles, response, err := sess.ListInstanceProfiles(listInstanceProfilesOptions)
+	availableProfiles, _, err := sess.ListInstanceProfilesWithContext(context, listInstanceProfilesOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error Fetching Instance Profiles %s\n%s", err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListInstanceProfilesWithContext failed: %s", err.Error()), "(Data) ibm_is_instance_profiles", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	profilesInfo := make([]map[string]interface{}, 0)
 	for _, profile := range availableProfiles.Profiles {
@@ -833,7 +866,7 @@ func instanceProfilesList(d *schema.ResourceData, meta interface{}) error {
 		for _, supportedClusterNetworkProfilesItem := range profile.SupportedClusterNetworkProfiles {
 			supportedClusterNetworkProfilesItemMap, err := DataSourceIBMIsInstanceProfilesClusterNetworkProfileReferenceToMap(&supportedClusterNetworkProfilesItem) // #nosec G601
 			if err != nil {
-				return err
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instance_profiles", "read", "supported_cluster_network_profiles-to-map").GetDiag()
 			}
 			supportedClusterNetworkProfiles = append(supportedClusterNetworkProfiles, supportedClusterNetworkProfilesItemMap)
 		}
@@ -841,7 +874,7 @@ func instanceProfilesList(d *schema.ResourceData, meta interface{}) error {
 
 		clusterNetworkAttachmentCountMap, err := DataSourceIBMIsInstanceProfilesInstanceProfileClusterNetworkAttachmentCountToMap(profile.ClusterNetworkAttachmentCount)
 		if err != nil {
-			return err
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instance_profiles", "read", "cluster_network_attachment_count-to-map").GetDiag()
 		}
 		l["cluster_network_attachment_count"] = []map[string]interface{}{clusterNetworkAttachmentCountMap}
 
@@ -883,7 +916,7 @@ func instanceProfilesList(d *schema.ResourceData, meta interface{}) error {
 		if profile.ConfidentialComputeModes != nil {
 			modelMap, err := dataSourceIBMIsInstanceProfileInstanceProfileSupportedConfidentialComputeModesToMap(profile.ConfidentialComputeModes)
 			if err != nil {
-				return (err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instance_profiles", "read", "confidential_compute_modes-to-map").GetDiag()
 			}
 			confidentialComputeModes = append(confidentialComputeModes, modelMap)
 		}
@@ -893,7 +926,7 @@ func instanceProfilesList(d *schema.ResourceData, meta interface{}) error {
 		if profile.SecureBootModes != nil {
 			modelMap, err := dataSourceIBMIsInstanceProfileInstanceProfileSupportedSecureBootModesToMap(profile.SecureBootModes)
 			if err != nil {
-				return err
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instance_profiles", "read", "secure_boot_modes-to-map").GetDiag()
 			}
 			secureBootModes = append(secureBootModes, modelMap)
 		}
@@ -941,25 +974,30 @@ func instanceProfilesList(d *schema.ResourceData, meta interface{}) error {
 			vcpuCountList = append(vcpuCountList, vcpuCountMap)
 			l["vcpu_count"] = vcpuCountList
 		}
+		if profile.VolumeBandwidthQosModes != nil {
+			volumeBandwidthQosModesList := []map[string]interface{}{}
+			volumeBandwidthQosModesMap := dataSourceInstanceProfileVolumeBandwidthQoSModeToMap(*profile.VolumeBandwidthQosModes.(*vpcv1.InstanceProfileVolumeBandwidthQoSModes))
+			volumeBandwidthQosModesList = append(volumeBandwidthQosModesList, volumeBandwidthQosModesMap)
+			l["volume_bandwidth_qos_modes"] = volumeBandwidthQosModesList
+		}
 		// Changes for manufacturer for AMD Support.
 		// reduce the line of code here. - sumit's suggestions
 		if profile.VcpuManufacturer != nil {
 			vcpuManufacturerList := []map[string]interface{}{}
-			vcpuManufacturerMap := dataSourceInstanceProfileVcpuManufacturerToMap(*profile.VcpuManufacturer)
+			vcpuManufacturerMap := dataSourceInstanceProfileVcpuManufacturerToMap(*profile.VcpuManufacturer.(*vpcv1.InstanceProfileVcpuManufacturer))
 			vcpuManufacturerList = append(vcpuManufacturerList, vcpuManufacturerMap)
 			l["vcpu_manufacturer"] = vcpuManufacturerList
 		}
 
 		if profile.Disks != nil {
 			l[isInstanceDisks] = dataSourceInstanceProfileFlattenDisks(profile.Disks)
-			if err != nil {
-				return fmt.Errorf("[ERROR] Error setting disks %s", err)
-			}
 		}
 		profilesInfo = append(profilesInfo, l)
 	}
 	d.SetId(dataSourceIBMISInstanceProfilesID(d))
-	d.Set(isInstanceProfiles, profilesInfo)
+	if err = d.Set("profiles", profilesInfo); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting profiles: %s", err), "(Data) ibm_is_instance_profiles", "read", "set-profiles").GetDiag()
+	}
 	return nil
 }
 

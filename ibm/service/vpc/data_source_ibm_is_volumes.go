@@ -411,6 +411,11 @@ func DataSourceIBMIsVolumes() *schema.Resource {
 								Type: schema.TypeString,
 							},
 						},
+						"storage_generation": {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "storage_generation indicates which generation the profile family belongs to. For the custom and tiered profiles, this value is 1.",
+						},
 						isVolumesStatus: &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -641,6 +646,30 @@ func DataSourceIBMIsVolumes() *schema.Resource {
 							Computed:    true,
 							Description: "The health of this resource.",
 						},
+						"allowed_use": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The usage constraints to be matched against the requested instance or bare metal server properties to determine compatibility.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"bare_metal_server": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The expression that must be satisfied by the properties of a bare metal server provisioned using the image data in this volume.",
+									},
+									"instance": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The expression that must be satisfied by the properties of a virtual server instance provisioned using this volume.",
+									},
+									"api_version": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The API version with which to evaluate the expressions.",
+									},
+								},
+							},
+						},
 					},
 				},
 			},
@@ -651,7 +680,9 @@ func DataSourceIBMIsVolumes() *schema.Resource {
 func dataSourceIBMIsVolumesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_volumes", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	// filters - volume-name and zone-name
@@ -692,10 +723,11 @@ func dataSourceIBMIsVolumesRead(context context.Context, d *schema.ResourceData,
 		if start != "" {
 			listVolumesOptions.Start = &start
 		}
-		volumeCollection, response, err := vpcClient.ListVolumesWithContext(context, listVolumesOptions)
+		volumeCollection, _, err := vpcClient.ListVolumesWithContext(context, listVolumesOptions)
 		if err != nil {
-			log.Printf("[DEBUG] ListVolumesWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("ListVolumesWithContext failed %s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListVolumesWithContext failed %s", err), "(Data) ibm_is_volumes", "read")
+			log.Printf("[DEBUG] %s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
 		start = flex.GetNext(volumeCollection.Next)
@@ -711,7 +743,7 @@ func dataSourceIBMIsVolumesRead(context context.Context, d *schema.ResourceData,
 
 	err = d.Set(isVolumes, dataSourceVolumeCollectionFlattenVolumes(allrecs, meta))
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting volumes %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting volumes %s", err), "(Data) ibm_is_volumes", "read", "volumes-set").GetDiag()
 	}
 
 	return nil
@@ -771,6 +803,9 @@ func dataSourceVolumeCollectionVolumesToMap(volumesItem vpcv1.Volume, meta inter
 	}
 	if volumesItem.Iops != nil {
 		volumesMap[isVolumesIops] = volumesItem.Iops
+	}
+	if volumesItem.StorageGeneration != nil {
+		volumesMap["storage_generation"] = volumesItem.StorageGeneration
 	}
 	if volumesItem.Name != nil {
 		volumesMap[isVolumesName] = volumesItem.Name
@@ -868,6 +903,16 @@ func dataSourceVolumeCollectionVolumesToMap(volumesItem vpcv1.Volume, meta inter
 	}
 	if volumesItem.UserTags != nil {
 		volumesMap[isVolumeTags] = volumesItem.UserTags
+	}
+	if volumesItem.AllowedUse != nil {
+		usageConstraintList := []map[string]interface{}{}
+		modelMap, err := ResourceceIBMIsVolumeAllowedUseToMap(volumesItem.AllowedUse)
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_is_volumes", "read")
+			log.Println(tfErr.GetDiag())
+		}
+		usageConstraintList = append(usageConstraintList, modelMap)
+		volumesMap["allowed_use"] = usageConstraintList
 	}
 	accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *volumesItem.CRN, "", isVolumeAccessTagType)
 	if err != nil {

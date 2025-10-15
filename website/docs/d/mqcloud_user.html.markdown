@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_mqcloud_user"
 description: |-
   Get information about mqcloud_user
-subcategory: "MQaaS"
+subcategory: "MQ SaaS"
 ---
 
 # ibm_mqcloud_user
@@ -27,7 +27,7 @@ You can specify the following arguments for this data source.
 
 * `name` - (Optional, String) The shortname of the user that will be used as the IBM MQ administrator in interactions with a queue manager for this service instance.
   * Constraints: The maximum length is `12` characters. The minimum length is `1` character. The value must match regular expression `/^[a-z][-a-z0-9]*$/`.
-* `service_instance_guid` - (Required, Forces new resource, String) The GUID that uniquely identifies the MQaaS service instance.
+* `service_instance_guid` - (Required, Forces new resource, String) The GUID that uniquely identifies the MQ SaaS service instance.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/`.
 
 ## Attribute Reference
@@ -41,7 +41,12 @@ Nested schema for **users**:
 	* `email` - (String) The email of the user.
 	  * Constraints: The maximum length is `253` characters. The minimum length is `5` characters.
 	* `href` - (String) The URL for the user details.
+	* `iam_managed` - (Boolean) Indicates whether the user is managed by IAM.
+	* `iam_service_id` - (String) The IAM ID of the user.
+	  * Constraints: The maximum length is `50` characters. The minimum length is `5` characters.
 	* `id` - (String) The ID of the user which was allocated on creation, and can be used for delete calls.
 	* `name` - (String) The shortname of the user that will be used as the IBM MQ administrator in interactions with a queue manager for this service instance.
 	  * Constraints: The maximum length is `12` characters. The minimum length is `1` character. The value must match regular expression `/^[a-z][-a-z0-9]*$/`.
+	* `roles` - (List) A list of roles the user has.
+	  * Constraints: The maximum length is `200` items. The minimum length is `0` items.
 

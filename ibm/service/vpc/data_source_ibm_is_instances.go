@@ -4,12 +4,14 @@
 package vpc
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -20,7 +22,7 @@ const (
 
 func DataSourceIBMISInstances() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceIBMISInstancesRead,
+		ReadContext: dataSourceIBMISInstancesRead,
 
 		Schema: map[string]*schema.Schema{
 			isInstanceGroup: {
@@ -1013,6 +1015,12 @@ func DataSourceIBMISInstances() *schema.Resource {
 							Description: "The total bandwidth (in megabits per second) shared across the instance's network interfaces and storage volumes",
 						},
 
+						isInstanceVolumeBandwidthQoSMode: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The volume bandwidth QoS mode for this virtual server instance.",
+						},
+
 						isInstanceTotalNetworkBandwidth: {
 							Type:        schema.TypeInt,
 							Computed:    true,
@@ -1273,19 +1281,21 @@ func DataSourceIBMISInstances() *schema.Resource {
 	}
 }
 
-func dataSourceIBMISInstancesRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceIBMISInstancesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
-	err := instancesList(d, meta)
+	err := instancesList(context, d, meta)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func instancesList(d *schema.ResourceData, meta interface{}) error {
+func instancesList(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instances", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	var vpcName, vpcID, vpcCrn, resourceGroup, insGrp, dHostNameStr, dHostIdStr, placementGrpNameStr, placementGrpIdStr string
@@ -1333,9 +1343,11 @@ func instancesList(d *schema.ResourceData, meta interface{}) error {
 			if start != "" {
 				listInstanceGroupOptions.Start = &start
 			}
-			instanceGroupsCollection, response, err := sess.ListInstanceGroups(&listInstanceGroupOptions)
+			instanceGroupsCollection, _, err := sess.ListInstanceGroupsWithContext(context, &listInstanceGroupOptions)
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error Fetching InstanceGroups %s\n%s", err, response)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListInstanceGroupsWithContext failed %s", err), "(Data) ibm_is_instances", "read")
+				log.Printf("[DEBUG] %s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			start = flex.GetNext(instanceGroupsCollection.Next)
 			allrecs = append(allrecs, instanceGroupsCollection.InstanceGroups...)
@@ -1404,9 +1416,11 @@ func instancesList(d *schema.ResourceData, meta interface{}) error {
 			listInstancesOptions.Start = &start
 		}
 
-		instances, response, err := sess.ListInstances(listInstancesOptions)
+		instances, _, err := sess.ListInstancesWithContext(context, listInstancesOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Fetching Instances %s\n%s", err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListInstancesWithContext failed %s", err), "(Data) ibm_is_instances", "read")
+			log.Printf("[DEBUG] %s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		start = flex.GetNext(instances.Next)
 		allrecs = append(allrecs, instances.Instances...)
@@ -1425,9 +1439,11 @@ func instancesList(d *schema.ResourceData, meta interface{}) error {
 			if start != "" {
 				listInstanceGroupMembershipsOptions.Start = &start
 			}
-			instanceGroupMembershipCollection, response, err := sess.ListInstanceGroupMemberships(&listInstanceGroupMembershipsOptions)
+			instanceGroupMembershipCollection, _, err := sess.ListInstanceGroupMembershipsWithContext(context, &listInstanceGroupMembershipsOptions)
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error Getting InstanceGroup Membership Collection %s\n%s", err, response)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListInstanceGroupMembershipsWithContext failed %s", err), "(Data) ibm_is_instances", "read")
+				log.Printf("[DEBUG] %s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 
 			start = flex.GetNext(instanceGroupMembershipCollection.Next)
@@ -1496,6 +1512,9 @@ func instancesList(d *schema.ResourceData, meta interface{}) error {
 		if instance.Bandwidth != nil {
 			l[isInstanceBandwidth] = int(*instance.Bandwidth)
 		}
+		if instance.VolumeBandwidthQosMode != nil {
+			l[isInstanceVolumeBandwidthQoSMode] = string(*instance.VolumeBandwidthQosMode)
+		}
 
 		if instance.TotalNetworkBandwidth != nil {
 			l[isInstanceTotalNetworkBandwidth] = int(*instance.TotalNetworkBandwidth)
@@ -1527,7 +1546,7 @@ func instancesList(d *schema.ResourceData, meta interface{}) error {
 		if instance.ClusterNetwork != nil {
 			clusterNetworkMap, err := DataSourceIBMIsInstancesClusterNetworkReferenceToMap(instance.ClusterNetwork)
 			if err != nil {
-				return err
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instances", "read", "cluster_network-to-map").GetDiag()
 			}
 			clusterNetwork = append(clusterNetwork, clusterNetworkMap)
 		}
@@ -1536,7 +1555,7 @@ func instancesList(d *schema.ResourceData, meta interface{}) error {
 		for _, clusterNetworkAttachmentsItem := range instance.ClusterNetworkAttachments {
 			clusterNetworkAttachmentsItemMap, err := DataSourceIBMIsInstancesInstanceClusterNetworkAttachmentReferenceToMap(&clusterNetworkAttachmentsItem) // #nosec G601
 			if err != nil {
-				return err
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instances", "read", "cluster_network_attachments-to-map").GetDiag()
 			}
 			clusterNetworkAttachments = append(clusterNetworkAttachments, clusterNetworkAttachmentsItemMap)
 		}
@@ -1636,9 +1655,11 @@ func instancesList(d *schema.ResourceData, meta interface{}) error {
 				InstanceID: &id,
 				ID:         instance.PrimaryNetworkInterface.ID,
 			}
-			insnic, response, err := sess.GetInstanceNetworkInterface(getnicoptions)
+			insnic, _, err := sess.GetInstanceNetworkInterfaceWithContext(context, getnicoptions)
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error getting network interfaces attached to the instance %s\n%s", err, response)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetInstanceNetworkInterfaceWithContext failed %s", err), "(Data) ibm_is_instances", "read")
+				log.Printf("[DEBUG] %s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			currentPrimNic[isInstanceNicSubnet] = *insnic.Subnet.ID
 			if len(insnic.SecurityGroups) != 0 {
@@ -1657,7 +1678,7 @@ func instancesList(d *schema.ResourceData, meta interface{}) error {
 		if instance.PrimaryNetworkAttachment != nil {
 			modelMap, err := dataSourceIBMIsInstanceInstanceNetworkAttachmentReferenceToMap(instance.PrimaryNetworkAttachment)
 			if err != nil {
-				return err
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instances", "read", "primary_network_attachment-to-map").GetDiag()
 			}
 			primaryNetworkAttachment = append(primaryNetworkAttachment, modelMap)
 		}
@@ -1697,9 +1718,11 @@ func instancesList(d *schema.ResourceData, meta interface{}) error {
 						InstanceID: &id,
 						ID:         intfc.ID,
 					}
-					insnic, response, err := sess.GetInstanceNetworkInterface(getnicoptions)
+					insnic, _, err := sess.GetInstanceNetworkInterfaceWithContext(context, getnicoptions)
 					if err != nil {
-						return fmt.Errorf("[ERROR] Error getting network interfaces attached to the instance %s\n%s", err, response)
+						tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetInstanceNetworkInterfaceWithContext failed %s", err), "(Data) ibm_is_instances", "read")
+						log.Printf("[DEBUG] %s", tfErr.GetDebugMessage())
+						return tfErr.GetDiag()
 					}
 					currentNic[isInstanceNicSubnet] = *insnic.Subnet.ID
 					if len(insnic.SecurityGroups) != 0 {
@@ -1720,7 +1743,7 @@ func instancesList(d *schema.ResourceData, meta interface{}) error {
 			for _, modelItem := range instance.NetworkAttachments {
 				modelMap, err := dataSourceIBMIsInstanceInstanceNetworkAttachmentReferenceToMap(&modelItem)
 				if err != nil {
-					return err
+					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instances", "read", "network_attachments-to-map").GetDiag()
 				}
 				networkAttachments = append(networkAttachments, modelMap)
 			}
@@ -1826,7 +1849,9 @@ func instancesList(d *schema.ResourceData, meta interface{}) error {
 		instancesInfo = append(instancesInfo, l)
 	}
 	d.SetId(dataSourceIBMISInstancesID(d))
-	d.Set(isInstances, instancesInfo)
+	if err = d.Set("instances", instancesInfo); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting instances %s", err), "(Data) ibm_is_instances", "read", "instances-set").GetDiag()
+	}
 	return nil
 }
 

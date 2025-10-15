@@ -266,7 +266,7 @@ func DataSourceIBMIsShareSnapshots() *schema.Resource {
 func dataSourceIBMIsShareSnapshotsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_is_share_snapshots", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("vpcClient creation failed: %s", err.Error()), "(Data) ibm_is_share_snapshots", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -314,8 +314,7 @@ func dataSourceIBMIsShareSnapshotsRead(context context.Context, d *schema.Resour
 	}
 
 	if err = d.Set("snapshots", mapSlice); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting snapshots %s", err), "(Data) ibm_is_share_snapshots", "read")
-		return tfErr.GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting snapshots: %s", err), "(Data) ibm_is_share_snapshots", "read", "set-snapshots").GetDiag()
 	}
 
 	return nil
@@ -367,12 +366,13 @@ func DataSourceIBMIsShareSnapshotsShareSnapshotToMap(model *vpcv1.ShareSnapshot)
 	if model.UserTags != nil {
 		modelMap["user_tags"] = model.UserTags
 	}
-	zoneMap, err := DataSourceIBMIsShareSnapshotsZoneReferenceToMap(model.Zone)
-	if err != nil {
-		return modelMap, err
+	if model.Zone != nil {
+		zoneMap, err := DataSourceIBMIsShareSnapshotsZoneReferenceToMap(model.Zone)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["zone"] = []map[string]interface{}{zoneMap}
 	}
-	modelMap["zone"] = []map[string]interface{}{zoneMap}
-
 	if model.UserTags != nil {
 		modelMap["tags"] = model.UserTags
 	}

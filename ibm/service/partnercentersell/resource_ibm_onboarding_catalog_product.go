@@ -2,7 +2,7 @@
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.103.0-e8b84313-20250402-201816
+ * IBM OpenAPI Terraform Generator Version: 3.107.1-41b0fbd0-20250825-080732
  */
 
 package partnercentersell
@@ -36,7 +36,7 @@ func ResourceIbmOnboardingCatalogProduct() *schema.Resource {
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_onboarding_catalog_product", "product_id"),
-				Description:  "The unique ID of the product.",
+				Description:  "The unique ID of the resource.",
 			},
 			"env": &schema.Schema{
 				Type:         schema.TypeString,
@@ -208,7 +208,7 @@ func ResourceIbmOnboardingCatalogProduct() *schema.Resource {
 																	Schema: map[string]*schema.Schema{
 																		"caption": &schema.Schema{
 																			Type:        schema.TypeString,
-																			Required:    true,
+																			Optional:    true,
 																			Description: "Provide a descriptive caption that indicates what the media illustrates. This caption is displayed in the catalog.",
 																		},
 																		"thumbnail": &schema.Schema{
@@ -218,12 +218,12 @@ func ResourceIbmOnboardingCatalogProduct() *schema.Resource {
 																		},
 																		"type": &schema.Schema{
 																			Type:        schema.TypeString,
-																			Required:    true,
+																			Optional:    true,
 																			Description: "The type of the media.",
 																		},
 																		"url": &schema.Schema{
 																			Type:        schema.TypeString,
-																			Required:    true,
+																			Optional:    true,
 																			Description: "The URL that links to the media that shows off the product.",
 																		},
 																	},
@@ -232,7 +232,7 @@ func ResourceIbmOnboardingCatalogProduct() *schema.Resource {
 															"navigation_items": &schema.Schema{
 																Type:        schema.TypeList,
 																Optional:    true,
-																Description: "List of custom navigation panel.",
+																Description: "The list of custom navigation panels.",
 																Elem: &schema.Resource{
 																	Schema: map[string]*schema.Schema{
 																		"id": &schema.Schema{
@@ -643,10 +643,74 @@ func ResourceIbmOnboardingCatalogProduct() *schema.Resource {
 													Description: "Specifies the layout of check box or radio input types. When unspecified, the default layout is horizontal.",
 												},
 												"associations": &schema.Schema{
-													Type:        schema.TypeMap,
+													Type:        schema.TypeList,
+													MaxItems:    1,
 													Optional:    true,
-													Description: "A JSON structure to describe the interactions with pricing plans and/or other custom parameters.",
-													Elem:        &schema.Schema{Type: schema.TypeString},
+													Description: "A JSON to describe other parameters or plans associated with this parameter.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"plan": &schema.Schema{
+																Type:     schema.TypeList,
+																MaxItems: 1,
+																Optional: true,
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"show_for": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Optional:    true,
+																			Description: "An array of pricing plan IDs, parameters or locations depending on parent.",
+																			Elem:        &schema.Schema{Type: schema.TypeString},
+																		},
+																		"options_refresh": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Optional:    true,
+																			Description: "Indicates whether re-fetching the options is needed when the plan changes.",
+																		},
+																	},
+																},
+															},
+															"parameters": &schema.Schema{
+																Type:        schema.TypeList,
+																Optional:    true,
+																Description: "Indicates whether this parameter is associated with any other parameters.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"name": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Description: "Indicates whether this parameter is associated with any other parameters.",
+																		},
+																		"show_for": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Optional:    true,
+																			Description: "An array of pricing plan IDs, parameters or locations depending on parent.",
+																			Elem:        &schema.Schema{Type: schema.TypeString},
+																		},
+																		"options_refresh": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Optional:    true,
+																			Description: "Indicates whether re-fetching the options is needed when the plan changes.",
+																		},
+																	},
+																},
+															},
+															"location": &schema.Schema{
+																Type:     schema.TypeList,
+																MaxItems: 1,
+																Optional: true,
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"show_for": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Optional:    true,
+																			Description: "An array of pricing plan IDs, parameters or locations depending on parent.",
+																			Elem:        &schema.Schema{Type: schema.TypeString},
+																		},
+																	},
+																},
+															},
+														},
+													},
 												},
 												"validation_url": &schema.Schema{
 													Type:        schema.TypeString,
@@ -1731,12 +1795,18 @@ func ResourceIbmOnboardingCatalogProductMapToCatalogHighlightItem(modelMap map[s
 
 func ResourceIbmOnboardingCatalogProductMapToCatalogProductMediaItem(modelMap map[string]interface{}) (*partnercentersellv1.CatalogProductMediaItem, error) {
 	model := &partnercentersellv1.CatalogProductMediaItem{}
-	model.Caption = core.StringPtr(modelMap["caption"].(string))
+	if modelMap["caption"] != nil && modelMap["caption"].(string) != "" {
+		model.Caption = core.StringPtr(modelMap["caption"].(string))
+	}
 	if modelMap["thumbnail"] != nil && modelMap["thumbnail"].(string) != "" {
 		model.Thumbnail = core.StringPtr(modelMap["thumbnail"].(string))
 	}
-	model.Type = core.StringPtr(modelMap["type"].(string))
-	model.URL = core.StringPtr(modelMap["url"].(string))
+	if modelMap["type"] != nil && modelMap["type"].(string) != "" {
+		model.Type = core.StringPtr(modelMap["type"].(string))
+	}
+	if modelMap["url"] != nil && modelMap["url"].(string) != "" {
+		model.URL = core.StringPtr(modelMap["url"].(string))
+	}
 	return model, nil
 }
 
@@ -1849,8 +1919,12 @@ func ResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataServiceCustomP
 	if modelMap["layout"] != nil && modelMap["layout"].(string) != "" {
 		model.Layout = core.StringPtr(modelMap["layout"].(string))
 	}
-	if modelMap["associations"] != nil {
-		model.Associations = modelMap["associations"].(map[string]interface{})
+	if modelMap["associations"] != nil && len(modelMap["associations"].([]interface{})) > 0 && modelMap["associations"].([]interface{})[0] != nil {
+		AssociationsModel, err := ResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataServiceCustomParametersAssociations(modelMap["associations"].([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.Associations = AssociationsModel
 	}
 	if modelMap["validation_url"] != nil && modelMap["validation_url"].(string) != "" {
 		model.ValidationURL = core.StringPtr(modelMap["validation_url"].(string))
@@ -1989,6 +2063,81 @@ func ResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataServiceCustomP
 	}
 	if modelMap["description"] != nil && modelMap["description"].(string) != "" {
 		model.Description = core.StringPtr(modelMap["description"].(string))
+	}
+	return model, nil
+}
+
+func ResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataServiceCustomParametersAssociations(modelMap map[string]interface{}) (*partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersAssociations, error) {
+	model := &partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersAssociations{}
+	if modelMap["plan"] != nil && len(modelMap["plan"].([]interface{})) > 0 && modelMap["plan"].([]interface{})[0] != nil {
+		PlanModel, err := ResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataServiceCustomParametersAssociationsPlan(modelMap["plan"].([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.Plan = PlanModel
+	}
+	if modelMap["parameters"] != nil {
+		parameters := []partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersAssociationsParametersItem{}
+		for _, parametersItem := range modelMap["parameters"].([]interface{}) {
+			parametersItemModel, err := ResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataServiceCustomParametersAssociationsParametersItem(parametersItem.(map[string]interface{}))
+			if err != nil {
+				return model, err
+			}
+			parameters = append(parameters, *parametersItemModel)
+		}
+		model.Parameters = parameters
+	}
+	if modelMap["location"] != nil && len(modelMap["location"].([]interface{})) > 0 && modelMap["location"].([]interface{})[0] != nil {
+		LocationModel, err := ResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataServiceCustomParametersAssociationsLocation(modelMap["location"].([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.Location = LocationModel
+	}
+	return model, nil
+}
+
+func ResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataServiceCustomParametersAssociationsPlan(modelMap map[string]interface{}) (*partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersAssociationsPlan, error) {
+	model := &partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersAssociationsPlan{}
+	if modelMap["show_for"] != nil {
+		showFor := []string{}
+		for _, showForItem := range modelMap["show_for"].([]interface{}) {
+			showFor = append(showFor, showForItem.(string))
+		}
+		model.ShowFor = showFor
+	}
+	if modelMap["options_refresh"] != nil {
+		model.OptionsRefresh = core.BoolPtr(modelMap["options_refresh"].(bool))
+	}
+	return model, nil
+}
+
+func ResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataServiceCustomParametersAssociationsParametersItem(modelMap map[string]interface{}) (*partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersAssociationsParametersItem, error) {
+	model := &partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersAssociationsParametersItem{}
+	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
+		model.Name = core.StringPtr(modelMap["name"].(string))
+	}
+	if modelMap["show_for"] != nil {
+		showFor := []string{}
+		for _, showForItem := range modelMap["show_for"].([]interface{}) {
+			showFor = append(showFor, showForItem.(string))
+		}
+		model.ShowFor = showFor
+	}
+	if modelMap["options_refresh"] != nil {
+		model.OptionsRefresh = core.BoolPtr(modelMap["options_refresh"].(bool))
+	}
+	return model, nil
+}
+
+func ResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataServiceCustomParametersAssociationsLocation(modelMap map[string]interface{}) (*partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersAssociationsLocation, error) {
+	model := &partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersAssociationsLocation{}
+	if modelMap["show_for"] != nil {
+		showFor := []string{}
+		for _, showForItem := range modelMap["show_for"].([]interface{}) {
+			showFor = append(showFor, showForItem.(string))
+		}
+		model.ShowFor = showFor
 	}
 	return model, nil
 }
@@ -2379,12 +2528,18 @@ func ResourceIbmOnboardingCatalogProductCatalogHighlightItemToMap(model *partner
 
 func ResourceIbmOnboardingCatalogProductCatalogProductMediaItemToMap(model *partnercentersellv1.CatalogProductMediaItem) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["caption"] = *model.Caption
+	if model.Caption != nil {
+		modelMap["caption"] = *model.Caption
+	}
 	if model.Thumbnail != nil {
 		modelMap["thumbnail"] = *model.Thumbnail
 	}
-	modelMap["type"] = *model.Type
-	modelMap["url"] = *model.URL
+	if model.Type != nil {
+		modelMap["type"] = *model.Type
+	}
+	if model.URL != nil {
+		modelMap["url"] = *model.URL
+	}
 	return modelMap, nil
 }
 
@@ -2500,11 +2655,11 @@ func ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceCustomParame
 		modelMap["layout"] = *model.Layout
 	}
 	if model.Associations != nil {
-		associations := make(map[string]interface{})
-		for k, v := range model.Associations {
-			associations[k] = flex.Stringify(v)
+		associationsMap, err := ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceCustomParametersAssociationsToMap(model.Associations)
+		if err != nil {
+			return modelMap, err
 		}
-		modelMap["associations"] = associations
+		modelMap["associations"] = []map[string]interface{}{associationsMap}
 	}
 	if model.ValidationURL != nil {
 		modelMap["validation_url"] = *model.ValidationURL
@@ -2643,6 +2798,69 @@ func ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceCustomParame
 	}
 	if model.Description != nil {
 		modelMap["description"] = *model.Description
+	}
+	return modelMap, nil
+}
+
+func ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceCustomParametersAssociationsToMap(model *partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersAssociations) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Plan != nil {
+		planMap, err := ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceCustomParametersAssociationsPlanToMap(model.Plan)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["plan"] = []map[string]interface{}{planMap}
+	}
+	if model.Parameters != nil {
+		parameters := []map[string]interface{}{}
+		for _, parametersItem := range model.Parameters {
+			parametersItemMap, err := ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceCustomParametersAssociationsParametersItemToMap(&parametersItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			parameters = append(parameters, parametersItemMap)
+		}
+		modelMap["parameters"] = parameters
+	}
+	if model.Location != nil {
+		locationMap, err := ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceCustomParametersAssociationsLocationToMap(model.Location)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["location"] = []map[string]interface{}{locationMap}
+	}
+	return modelMap, nil
+}
+
+func ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceCustomParametersAssociationsPlanToMap(model *partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersAssociationsPlan) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.ShowFor != nil {
+		modelMap["show_for"] = model.ShowFor
+	}
+	if model.OptionsRefresh != nil {
+		modelMap["options_refresh"] = *model.OptionsRefresh
+	}
+	return modelMap, nil
+}
+
+func ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceCustomParametersAssociationsParametersItemToMap(model *partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersAssociationsParametersItem) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
+	}
+	if model.ShowFor != nil {
+		modelMap["show_for"] = model.ShowFor
+	}
+	if model.OptionsRefresh != nil {
+		modelMap["options_refresh"] = *model.OptionsRefresh
+	}
+	return modelMap, nil
+}
+
+func ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceCustomParametersAssociationsLocationToMap(model *partnercentersellv1.GlobalCatalogMetadataServiceCustomParametersAssociationsLocation) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.ShowFor != nil {
+		modelMap["show_for"] = model.ShowFor
 	}
 	return modelMap, nil
 }
@@ -3322,6 +3540,8 @@ func ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceCustomParame
 	path = rootPath + ".associations"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["associations"] = nil
+	} else if exists && patch["associations"] != nil {
+		ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceCustomParametersAssociationsAsPatch(patch["associations"].(map[string]interface{}), d, fmt.Sprintf("%s.0", path))
 	} else if !exists {
 		delete(patch, "associations")
 	}
@@ -3384,6 +3604,89 @@ func ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceCustomParame
 		patch["i18n"] = nil
 	} else if !exists {
 		delete(patch, "i18n")
+	}
+}
+
+func ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceCustomParametersAssociationsAsPatch(patch map[string]interface{}, d *schema.ResourceData, rootPath string) {
+	var path string
+
+	path = rootPath + ".plan"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["plan"] = nil
+	} else if exists && patch["plan"] != nil {
+		ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceCustomParametersAssociationsPlanAsPatch(patch["plan"].(map[string]interface{}), d, fmt.Sprintf("%s.0", path))
+	} else if !exists {
+		delete(patch, "plan")
+	}
+	path = rootPath + ".parameters"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["parameters"] = nil
+	} else if exists && patch["parameters"] != nil {
+		parametersList := patch["parameters"].([]map[string]interface{})
+		for i, parametersItem := range parametersList {
+			ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceCustomParametersAssociationsParametersItemAsPatch(parametersItem, d, fmt.Sprintf("%s.%d", path, i))
+		}
+	} else if !exists {
+		delete(patch, "parameters")
+	}
+	path = rootPath + ".location"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["location"] = nil
+	} else if exists && patch["location"] != nil {
+		ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceCustomParametersAssociationsLocationAsPatch(patch["location"].(map[string]interface{}), d, fmt.Sprintf("%s.0", path))
+	} else if !exists {
+		delete(patch, "location")
+	}
+}
+
+func ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceCustomParametersAssociationsLocationAsPatch(patch map[string]interface{}, d *schema.ResourceData, rootPath string) {
+	var path string
+
+	path = rootPath + ".show_for"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["show_for"] = nil
+	} else if !exists {
+		delete(patch, "show_for")
+	}
+}
+
+func ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceCustomParametersAssociationsParametersItemAsPatch(patch map[string]interface{}, d *schema.ResourceData, rootPath string) {
+	var path string
+
+	path = rootPath + ".name"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["name"] = nil
+	} else if !exists {
+		delete(patch, "name")
+	}
+	path = rootPath + ".show_for"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["show_for"] = nil
+	} else if !exists {
+		delete(patch, "show_for")
+	}
+	path = rootPath + ".options_refresh"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["options_refresh"] = nil
+	} else if !exists {
+		delete(patch, "options_refresh")
+	}
+}
+
+func ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataServiceCustomParametersAssociationsPlanAsPatch(patch map[string]interface{}, d *schema.ResourceData, rootPath string) {
+	var path string
+
+	path = rootPath + ".show_for"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["show_for"] = nil
+	} else if !exists {
+		delete(patch, "show_for")
+	}
+	path = rootPath + ".options_refresh"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["options_refresh"] = nil
+	} else if !exists {
+		delete(patch, "options_refresh")
 	}
 }
 
@@ -3671,11 +3974,29 @@ func ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataUINavigationItemAsP
 func ResourceIbmOnboardingCatalogProductCatalogProductMediaItemAsPatch(patch map[string]interface{}, d *schema.ResourceData, rootPath string) {
 	var path string
 
+	path = rootPath + ".caption"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["caption"] = nil
+	} else if !exists {
+		delete(patch, "caption")
+	}
 	path = rootPath + ".thumbnail"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["thumbnail"] = nil
 	} else if !exists {
 		delete(patch, "thumbnail")
+	}
+	path = rootPath + ".type"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["type"] = nil
+	} else if !exists {
+		delete(patch, "type")
+	}
+	path = rootPath + ".url"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["url"] = nil
+	} else if !exists {
+		delete(patch, "url")
 	}
 }
 

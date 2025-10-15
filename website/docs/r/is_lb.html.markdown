@@ -91,7 +91,13 @@ Review the argument references that you can specify for your resource.
   Nested scheme for `dns`:
   - `instance_crn` - (Required, String) The CRN of the DNS instance associated with the DNS zone
   - `zone_id` - (Required, String) The unique identifier of the DNS zone.
-- `failsafe_policy_actions` - (List) The supported `failsafe_policy.action` values for this load balancer's pools. Allowable list items are: `fail`, `forward`.
+- `failsafe_policy_actions` - (List) The supported `failsafe_policy.action` values for this load balancer's pools. Allowable list items are: [ `bypass`, `drop`, `fail`, `forward` ]. 
+    A load balancer failsafe policy action:
+    - `bypass`: Bypasses the members and sends requests directly to their destination IPs.
+    - `drop`: Drops requests.
+    - `fail`: Fails requests with an HTTP 503 status code.
+    - `forward`: Forwards requests to the target pool.
+
 - `logging`- (Optional, Bool) Enable or disable datapath logging for the load balancer. This is applicable only for application load balancer. Supported values are **true** or **false**. Default value is **false**.
 - `name` - (Required, String) The name of the VPC load balancer.
 - `profile` - (Optional, Forces new resource, String) For a Network Load Balancer, this attribute is required for network and private path load balancers. Should be set to  `network-private-path` for private path load balancers and `network-fixed` for a network load balancer. For Application Load Balancer, profile is not a required attribute.
@@ -113,6 +119,13 @@ Review the argument references that you can specify for your resource.
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
 - `access_mode` - (String) The access mode for this load balancer. One of **private**, **public**, **private_path**.
+- `attached_load_balancer_pool_members` - (List) The load balancer pool members attached to this load balancer.
+	Nested scheme for `members`:
+	- `deleted` - (List) If present, this property indicates the referenced resource has been deleted and providessome supplementary information.
+		Nested scheme for `deleted`:
+    	- `more_info` - (String) Link to documentation about deleted resources.
+    - `href` - (String) The URL for this load balancer pool member.
+    - `id` - (String) The unique identifier for this load balancer pool member.
 - `availability` - (String) The availability of this load balancer
 - `crn` - (String) The CRN for this load balancer.
 - `hostname` - (String) The fully qualified domain name assigned to this load balancer.

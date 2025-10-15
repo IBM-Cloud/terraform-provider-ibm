@@ -777,31 +777,48 @@ func testAccCheckIBMPIStoppedInstanceConfigUpdate(name, instanceHealthStatus, pr
 func TestAccIBMPIInstanceVirtualSerialNumber(t *testing.T) {
 	instanceRes := "ibm_pi_instance.power_instance"
 	name := fmt.Sprintf("tf-pi-instance-%d", acctest.RandIntRange(10, 100))
+	description := "VSN for TF test"
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMPIInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMPIInstanceVirtualSerialNumber(name, power.OK, "s922"),
+				Config: testAccCheckIBMPIInstanceVirtualSerialNumber(name, power.OK, "s1022", "P05", description),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMPIInstanceExists(instanceRes),
 					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),
 					resource.TestCheckResourceAttrSet(instanceRes, "pi_virtual_serial_number.0.serial"),
-					resource.TestCheckResourceAttr(instanceRes, "pi_virtual_serial_number.0.description", "VSN for TF test"),
+					resource.TestCheckResourceAttr(instanceRes, "pi_virtual_serial_number.0.description", description),
+					resource.TestCheckResourceAttr(instanceRes, "pi_virtual_serial_number.0.software_tier", "P05"),
+				),
+			},
+			{
+				Config: testAccCheckIBMPIInstanceVirtualSerialNumber(name, power.OK, "s1022", "P10", description+" updated"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIInstanceExists(instanceRes),
+					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),
+					resource.TestCheckResourceAttrSet(instanceRes, "pi_virtual_serial_number.0.serial"),
+					resource.TestCheckResourceAttr(instanceRes, "pi_virtual_serial_number.0.description", description+" updated"),
+					resource.TestCheckResourceAttr(instanceRes, "pi_virtual_serial_number.0.software_tier", "P10"),
+				),
+			},
+			{
+				Config: testAccCheckIBMPIInstanceVirtualSerialNumber(name, power.OK, "s1022", "P05", description+" updated"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIInstanceExists(instanceRes),
+					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),
+					resource.TestCheckResourceAttrSet(instanceRes, "pi_virtual_serial_number.0.serial"),
+					resource.TestCheckResourceAttr(instanceRes, "pi_virtual_serial_number.0.description", description+" updated"),
+					resource.TestCheckResourceAttr(instanceRes, "pi_virtual_serial_number.0.software_tier", "P05"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckIBMPIInstanceVirtualSerialNumber(name, instanceHealthStatus, systype string) string {
+func testAccCheckIBMPIInstanceVirtualSerialNumber(name, instanceHealthStatus, systype string, softwareTier string, description string) string {
 	return fmt.Sprintf(`
-	resource "ibm_pi_key" "key" {
-		pi_cloud_instance_id = "%[1]s"
-		pi_key_name          = "%[2]s"
-		pi_ssh_key           = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR"
-	  }
 	  data "ibm_pi_image" "power_image" {
 		pi_cloud_instance_id = "%[1]s"
 		pi_image_name        = "%[3]s"
@@ -815,7 +832,6 @@ func testAccCheckIBMPIInstanceVirtualSerialNumber(name, instanceHealthStatus, sy
 		pi_health_status      = "%[5]s"
 		pi_image_id           = data.ibm_pi_image.power_image.id
 		pi_instance_name      = "%[2]s"
-		pi_key_pair_name      = ibm_pi_key.key.name
 		pi_memory             = "2"
 		pi_proc_type          = "shared"
 		pi_processors         = "0.25"
@@ -825,11 +841,12 @@ func testAccCheckIBMPIInstanceVirtualSerialNumber(name, instanceHealthStatus, sy
 			network_id = data.ibm_pi_network.power_networks.id
 		}
 		pi_virtual_serial_number {
-			serial      = "auto-assign"
-			description = "VSN for TF test"
+			serial        = "auto-assign"
+			description   = "%[9]s"
+			software_tier = "%[8]s"
 		}
 	  }
-	`, acc.Pi_cloud_instance_id, name, acc.Pi_image, acc.Pi_network_name, instanceHealthStatus, systype, acc.PiStorageType)
+	`, acc.Pi_cloud_instance_id, name, acc.Pi_image, acc.Pi_network_name, instanceHealthStatus, systype, acc.PiStorageType, softwareTier, description)
 }
 
 func TestAccIBMPIInstanceDeploymentGRS(t *testing.T) {
@@ -968,7 +985,71 @@ func testAccCheckIBMPIInstanceUserTagsConfig(name, instanceHealthStatus string, 
 	  }
 	`, acc.Pi_cloud_instance_id, name, acc.Pi_image, acc.Pi_network_name, instanceHealthStatus, acc.PiStorageType, userTagsString)
 }
+func TestAccIBMPIInstanceCompMode(t *testing.T) {
+	instanceRes := "ibm_pi_instance.power_instance"
+	name := fmt.Sprintf("tf-pi-instance-%d", acctest.RandIntRange(10, 100))
 
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPIInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMPInstanceCompMode(name, power.OK, "0.25", "2", "default"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIInstanceExists(instanceRes),
+					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),
+					resource.TestCheckResourceAttr(instanceRes, "pi_preferred_processor_compatibility_mode", "default"),
+					resource.TestCheckResourceAttr(instanceRes, "status", strings.ToUpper(power.State_Active)),
+				),
+			},
+			{
+				Config: testAccCheckIBMPInstanceCompMode(name, power.OK, "0.25", "2", "POWER10"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIInstanceExists(instanceRes),
+					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),
+					resource.TestCheckResourceAttr(instanceRes, "pi_preferred_processor_compatibility_mode", "POWER10"),
+				),
+			},
+		},
+	})
+}
+func testAccCheckIBMPInstanceCompMode(name, instanceHealthStatus, proc, memory, compMode string) string {
+	return fmt.Sprintf(`
+	data "ibm_pi_image" "power_image" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_image_name        = "%[3]s"
+	}
+	data "ibm_pi_network" "power_networks" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_network_name      = "%[4]s"
+	}
+	resource "ibm_pi_volume" "power_volume" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_volume_name       = "%[2]s"
+		pi_volume_pool       = data.ibm_pi_image.power_image.storage_pool
+		pi_volume_shareable  = true
+		pi_volume_size       = 20
+	}
+	resource "ibm_pi_instance" "power_instance" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_health_status     = "%[5]s"
+		pi_image_id          = data.ibm_pi_image.power_image.id
+		pi_instance_name     = "%[2]s"
+		pi_memory            = "%[7]s"
+		pi_pin_policy        = "none"
+		pi_proc_type         = "shared"
+		pi_processors        = "%[6]s"
+		pi_preferred_processor_compatibility_mode =  "%[8]s"
+		pi_storage_pool      = data.ibm_pi_image.power_image.storage_pool
+		pi_sys_type          = "s1022"
+		pi_volume_ids        = [ibm_pi_volume.power_volume.volume_id]
+		pi_network {
+			network_id = data.ibm_pi_network.power_networks.id
+		}
+	}
+	`, acc.Pi_cloud_instance_id, name, acc.Pi_image, acc.Pi_network_name, instanceHealthStatus, proc, memory, compMode)
+}
 func testAccCheckIBMPIInstanceDestroy(s *terraform.State) error {
 	sess, err := acc.TestAccProvider.Meta().(conns.ClientSession).IBMPISession()
 	if err != nil {

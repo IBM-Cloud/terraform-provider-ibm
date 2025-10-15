@@ -175,7 +175,19 @@ var CISResourceResponseObject = &schema.Resource{
 								CISRuleset: {
 									Type:        schema.TypeString,
 									Optional:    true,
-									Description: "Ruleset ID of the ruleset to apply action to",
+									Description: "Ruleset of the rule",
+								},
+								CISRulesetsRulePhases: {
+									Type:        schema.TypeList,
+									Optional:    true,
+									Description: "Phases of the rule",
+									Elem:        &schema.Schema{Type: schema.TypeString},
+								},
+								CISRulesetsRuleProducts: {
+									Type:        schema.TypeList,
+									Optional:    true,
+									Description: "Products of the rule",
+									Elem:        &schema.Schema{Type: schema.TypeString},
 								},
 								CISRulesetList: {
 									Type:        schema.TypeList,
@@ -331,7 +343,7 @@ func ResourceIBMCISRulesetValidator() *validate.ResourceValidator {
 func ResourceIBMCISRulesetCreate(d *schema.ResourceData, meta interface{}) error {
 	// check if it is a new resource, if true then return error that user need to import it first
 	if d.IsNewResource() {
-		return fmt.Errorf("[ERROR] You can not create a new resource. Please import the resource first. Check documentation for import usage")
+		return flex.FmtErrorf("[ERROR] You can not create a new resource. Please import the resource first. Check documentation for import usage")
 	}
 	return nil
 }
@@ -339,7 +351,7 @@ func ResourceIBMCISRulesetCreate(d *schema.ResourceData, meta interface{}) error
 func ResourceIBMCISRulesetUpdate(d *schema.ResourceData, meta interface{}) error {
 	sess, err := meta.(conns.ClientSession).CisRulesetsSession()
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while getting the CisRulesetsSession %s", err)
+		return flex.FmtErrorf("[ERROR] Error while getting the CisRulesetsSession %s", err)
 	}
 
 	crn := d.Get(cisID).(string)
@@ -363,7 +375,7 @@ func ResourceIBMCISRulesetUpdate(d *schema.ResourceData, meta interface{}) error
 		_, resp, err := sess.UpdateZoneRuleset(opt)
 
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error while updating the zone Ruleset %s", resp)
+			return flex.FmtErrorf("[ERROR] Error while updating the zone Ruleset %s", resp)
 		}
 
 		d.SetId(dataSourceCISRulesetsCheckID(d))
@@ -382,7 +394,7 @@ func ResourceIBMCISRulesetUpdate(d *schema.ResourceData, meta interface{}) error
 		_, _, err := sess.UpdateInstanceRuleset(opt)
 
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error while updating the zone Ruleset %s", err)
+			return flex.FmtErrorf("[ERROR] Error while updating the zone Ruleset %s", err)
 		}
 
 		d.SetId(dataSourceCISRulesetsCheckID(d))
@@ -394,7 +406,7 @@ func ResourceIBMCISRulesetUpdate(d *schema.ResourceData, meta interface{}) error
 func ResourceIBMCISRulesetRead(d *schema.ResourceData, meta interface{}) error {
 	sess, err := meta.(conns.ClientSession).CisRulesetsSession()
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while getting the CisRulesetsSession %s", err)
+		return flex.FmtErrorf("[ERROR] Error while getting the CisRulesetsSession %s", err)
 	}
 
 	rulesetId, zoneId, crn, _ := flex.ConvertTfToCisThreeVar(d.Id())
@@ -409,7 +421,7 @@ func ResourceIBMCISRulesetRead(d *schema.ResourceData, meta interface{}) error {
 		opt := sess.NewGetZoneRulesetOptions(rulesetId)
 		result, resp, err := sess.GetZoneRuleset(opt)
 		if err != nil {
-			return fmt.Errorf("[WARN] Resource: Get zone ruleset failed:  %v \n", resp)
+			return flex.FmtErrorf("[WARN] Resource: Get zone ruleset failed:  %v \n", resp)
 		}
 
 		rulesetObj := flattenCISRulesets(*result.Result)
@@ -423,7 +435,7 @@ func ResourceIBMCISRulesetRead(d *schema.ResourceData, meta interface{}) error {
 		opt := sess.NewGetInstanceRulesetOptions(rulesetId)
 		result, resp, err := sess.GetInstanceRuleset(opt)
 		if err != nil {
-			return fmt.Errorf("[WARN] Resource: Get Instance ruleset failed: %v \n", resp)
+			return flex.FmtErrorf("[WARN] Resource: Get Instance ruleset failed: %v \n", resp)
 		}
 
 		rulesetObj := flattenCISRulesets(*result.Result)
@@ -441,7 +453,7 @@ func ResourceIBMCISRulesetDelete(d *schema.ResourceData, meta interface{}) error
 
 	sess, err := meta.(conns.ClientSession).CisRulesetsSession()
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while getting the CisRulesetsSession %s", err)
+		return flex.FmtErrorf("[ERROR] Error while getting the CisRulesetsSession %s", err)
 	}
 
 	rulesetId, zoneId, crn, _ := flex.ConvertTfToCisThreeVar(d.Id())
@@ -452,13 +464,13 @@ func ResourceIBMCISRulesetDelete(d *schema.ResourceData, meta interface{}) error
 		opt := sess.NewDeleteZoneRulesetOptions(rulesetId)
 		res, err := sess.DeleteZoneRuleset(opt)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error deleting the zone ruleset %s:%s", err, res)
+			return flex.FmtErrorf("[ERROR] Error deleting the zone ruleset %s:%s", err, res)
 		}
 	} else {
 		opt := sess.NewDeleteInstanceRulesetOptions(rulesetId)
 		res, err := sess.DeleteInstanceRuleset(opt)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error deleting the Instance ruleset %s:%s", err, res)
+			return flex.FmtErrorf("[ERROR] Error deleting the Instance ruleset %s:%s", err, res)
 		}
 	}
 
@@ -540,7 +552,7 @@ func expandCISRulesetsRulesPositions(obj interface{}) (rulesetsv1.Position, erro
 				Index: &index,
 			}
 		} else {
-			return rulesetsv1.Position{}, fmt.Errorf("only one of 'before', 'after', or 'index' can be set")
+			return rulesetsv1.Position{}, flex.FmtErrorf("only one of 'before', 'after', or 'index' can be set")
 		}
 	}
 	return responseObj, nil
@@ -571,6 +583,45 @@ func expandCISRulesetsRulesActionParameters(obj interface{}) rulesetsv1.ActionPa
 		ruleList[i] = fmt.Sprint(v)
 	}
 	actionParameterRespObj.Rulesets = ruleList
+
+	ruleset := actionParameterObj[CISRuleset].(string)
+	if ruleset != "" {
+		actionParameterRespObj.Ruleset = &ruleset
+	}
+
+	phases := actionParameterObj[CISRulesetsRulePhases].([]interface{})
+	phasesList := flex.ExpandStringList(phases)
+	actionParameterRespObj.Phases = phasesList
+
+	products := actionParameterObj[CISRulesetsRuleProducts].([]interface{})
+	productsList := flex.ExpandStringList(products)
+	actionParameterRespObj.Products = productsList
+
+	if v, ok := actionParameterObj[CISRulesToSkip].([]interface{}); ok && len(v) > 0 {
+		rulesToSkipMap := make(map[string][]string)
+
+		for _, item := range v {
+			if item == nil {
+				continue
+			}
+			entry := item.(map[string]interface{})
+
+			rulesetID, _ := entry["ruleset_id"].(string)
+			if rulesetID == "" {
+				continue
+			}
+
+			ruleIDsIface, _ := entry["rule_ids"].([]interface{})
+			ruleIDs := make([]string, 0, len(ruleIDsIface))
+			for _, ruleID := range ruleIDsIface {
+				ruleIDs = append(ruleIDs, fmt.Sprint(ruleID))
+			}
+
+			rulesToSkipMap[rulesetID] = ruleIDs
+		}
+
+		actionParameterRespObj.Rules = rulesToSkipMap
+	}
 
 	finalResponse := make([]rulesetsv1.ActionParameters, 0)
 
@@ -649,15 +700,11 @@ func expandCISRulesetsRulesActionParametersOverridesCategories(obj interface{}) 
 		category := response[CISRulesetOverridesCategoriesCategory].(string)
 		overrideRespObj := rulesetsv1.CategoriesOverride{
 			Category: &category,
+			Enabled:  &enabled,
 		}
-
 		if action != "" {
 			overrideRespObj.Action = &action
 		}
-		if enabled {
-			overrideRespObj.Enabled = &enabled
-		}
-
 		finalResponse = append(finalResponse, overrideRespObj)
 
 	}
@@ -677,13 +724,11 @@ func expandCISRulesetsRulesActionParametersOverridesRules(obj interface{}) []rul
 		score := int64(response[CISRulesetOverridesScoreThreshold].(int))
 
 		overrideRespObj := rulesetsv1.RulesOverride{
-			ID: &id,
+			ID:      &id,
+			Enabled: &enabled,
 		}
 		if action != "" {
 			overrideRespObj.Action = &action
-		}
-		if enabled {
-			overrideRespObj.Enabled = &enabled
 		}
 		if score != 0 {
 			overrideRespObj.ScoreThreshold = &score
@@ -692,4 +737,43 @@ func expandCISRulesetsRulesActionParametersOverridesRules(obj interface{}) []rul
 	}
 
 	return finalResponse
+}
+
+func expandCISRulesetsRulesRateLimits(obj interface{}) (rulesetsv1.Ratelimit, error) {
+	ratelimitRespObj := rulesetsv1.Ratelimit{}
+
+	// return empty object if ratelimit is not provided.
+	// Expecting obj to be a []interface{}, since the schema uses TypeList
+	ratelimitList, ok := obj.([]interface{})
+	if !ok || len(ratelimitList) == 0 || ratelimitList[0] == nil {
+		return ratelimitRespObj, nil
+	}
+
+	ratelimitMap := ratelimitList[0].(map[string]interface{})
+
+	if v, ok := ratelimitMap[CISRulesetsRuleRateLimitCharacteristics]; ok && v != nil {
+		ratelimitRespObj.Characteristics = flex.ExpandStringList(v.([]interface{}))
+	}
+
+	if v, ok := ratelimitMap[CISRulesetsRuleRateLimitCountingExpression]; ok && v.(string) != "" {
+		val := v.(string)
+		ratelimitRespObj.CountingExpression = &val
+	}
+
+	if v, ok := ratelimitMap[CISRulesetsRuleRateLimitMitigationTimeout]; ok && v.(int) != 0 {
+		val := int64(v.(int))
+		ratelimitRespObj.MitigationTimeout = &val
+	}
+
+	if v, ok := ratelimitMap[CISRulesetsRuleRateLimitPeriod]; ok && v.(int) != 0 {
+		val := int64(v.(int))
+		ratelimitRespObj.Period = &val
+	}
+
+	if v, ok := ratelimitMap[CISRulesetsRuleRateLimitRequestsPerPeriod]; ok && v.(int) != 0 {
+		val := int64(v.(int))
+		ratelimitRespObj.RequestsPerPeriod = &val
+	}
+
+	return ratelimitRespObj, nil
 }

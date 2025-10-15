@@ -5,9 +5,12 @@ package power
 
 import (
 	"context"
+	"fmt"
+	"log"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/go-uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -74,20 +77,24 @@ func DataSourceIBMPIDisasterRecoveryLocation() *schema.Resource {
 	}
 }
 
-func dataSourceIBMPIDisasterRecoveryLocation(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMPIDisasterRecoveryLocation(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "(Data) ibm_pi_disaster_recovery_location", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
 	drClient := instance.NewIBMPIDisasterRecoveryLocationClient(ctx, sess, cloudInstanceID)
 	drLocationSite, err := drClient.Get()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Get failed: %s", err.Error()), "(Data) ibm_pi_disaster_recovery_location", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
-	result := make([]map[string]interface{}, 0, len(drLocationSite.ReplicationSites))
+	result := make([]map[string]any, 0, len(drLocationSite.ReplicationSites))
 	for _, site := range drLocationSite.ReplicationSites {
 		if site != nil {
 			replicationPoolMap := make([]map[string]string, 0)
@@ -100,7 +107,7 @@ func dataSourceIBMPIDisasterRecoveryLocation(ctx context.Context, d *schema.Reso
 				}
 			}
 
-			l := map[string]interface{}{
+			l := map[string]any{
 				Attr_IsActive:           site.IsActive,
 				Attr_Location:           site.Location,
 				Attr_ReplicationPoolMap: replicationPoolMap,

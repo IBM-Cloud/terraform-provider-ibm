@@ -2,7 +2,7 @@
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.98.0-8be2046a-20241205-162752
+ * IBM OpenAPI Terraform Generator Version: 3.106.0-09823488-20250707-071701
  */
 
 package iamidentity
@@ -62,7 +62,7 @@ func DataSourceIBMIamTrustedProfileLink() *schema.Resource {
 			"cr_type": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The compute resource type. Valid values are VSI, IKS_SA, ROKS_SA.",
+				Description: "The compute resource type. Valid values are VSI, BMS, IKS_SA, ROKS_SA, CE.",
 			},
 			"link": &schema.Schema{
 				Type:     schema.TypeList,
@@ -83,6 +83,16 @@ func DataSourceIBMIamTrustedProfileLink() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Name of the compute resource, only required if cr_type is IKS_SA or ROKS_SA.",
+						},
+						"component_type": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Component type of the compute resource, only required if cr_type is CE.",
+						},
+						"component_name": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Component name of the compute resource, only required if cr_type is CE.",
 						},
 					},
 				},
@@ -173,6 +183,12 @@ func DataSourceIBMIamTrustedProfileLinkProfileLinkLinkToMap(model *iamidentityv1
 	}
 	if model.Name != nil {
 		modelMap["name"] = *model.Name
+	}
+	if model.ComponentType != nil {
+		modelMap["component_type"] = *model.ComponentType
+	}
+	if model.ComponentName != nil {
+		modelMap["component_name"] = *model.ComponentName
 	}
 	return modelMap, nil
 }

@@ -4,12 +4,14 @@
 package vpc
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -30,7 +32,7 @@ const (
 
 func DataSourceSnapshots() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceIBMISSnapshotsRead,
+		ReadContext: dataSourceIBMISSnapshotsRead,
 
 		Schema: map[string]*schema.Schema{
 
@@ -514,6 +516,30 @@ func DataSourceSnapshots() *schema.Resource {
 								},
 							},
 						},
+						"allowed_use": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The usage constraints to match against the requested instance or bare metal server properties to determine compatibility. Can only be specified for bootable snapshots.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"bare_metal_server": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The expression that must be satisfied by the properties of a bare metal server provisioned using the image data in this snapshot.",
+									},
+									"instance": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The expression that must be satisfied by the properties of a virtual server instance provisioned using this snapshot.",
+									},
+									"api_version": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The API version with which to evaluate the expressions.",
+									},
+								},
+							},
+						},
 					},
 				},
 			},
@@ -521,18 +547,20 @@ func DataSourceSnapshots() *schema.Resource {
 	}
 }
 
-func dataSourceIBMISSnapshotsRead(d *schema.ResourceData, meta interface{}) error {
-	err := getSnapshots(d, meta)
+func dataSourceIBMISSnapshotsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	err := getSnapshots(context, d, meta)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func getSnapshots(d *schema.ResourceData, meta interface{}) error {
+func getSnapshots(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_snapshots", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	start := ""
 	allrecs := []vpcv1.Snapshot{}
@@ -601,9 +629,11 @@ func getSnapshots(d *schema.ResourceData, meta interface{}) error {
 			snapshotConsistencyGroupCrnFilter := snapshotConsistencyGroupCrn.(string)
 			listSnapshotOptions.SnapshotConsistencyGroupCRN = &snapshotConsistencyGroupCrnFilter
 		}
-		snapshots, response, err := sess.ListSnapshots(listSnapshotOptions)
+		snapshots, _, err := sess.ListSnapshotsWithContext(context, listSnapshotOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error fetching snapshots %s\n%s", err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListSnapshotsWithContext failed %s", err), "(Data) ibm_is_snapshots", "read")
+			log.Printf("[DEBUG] %s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		start = flex.GetNext(snapshots.Next)
 		allrecs = append(allrecs, snapshots.Snapshots...)
@@ -662,7 +692,7 @@ func getSnapshots(d *schema.ResourceData, meta interface{}) error {
 			for _, copiesItem := range snapshot.Copies {
 				copiesMap, err := dataSourceIBMIsSnapshotsSnapshotCopiesItemToMap(&copiesItem)
 				if err != nil {
-					return fmt.Errorf("[ERROR] Error fetching snapshot copies: %s", err)
+					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_snapshots", "read", "copies-to-map").GetDiag()
 				}
 				snapshotCopies = append(snapshotCopies, copiesMap)
 			}
@@ -756,6 +786,16 @@ func getSnapshots(d *schema.ResourceData, meta interface{}) error {
 			backupPolicyPlanList = append(backupPolicyPlanList, backupPolicyPlan)
 		}
 		l[isSnapshotBackupPolicyPlan] = backupPolicyPlanList
+		if snapshot.AllowedUse != nil {
+			allowedUseList := []map[string]interface{}{}
+			modelMap, err := DataSourceIBMIsSnapshotAllowedUseToMap(snapshot.AllowedUse)
+			if err != nil {
+				tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_is_snapshots", "read")
+				log.Println(tfErr.GetDiag())
+			}
+			allowedUseList = append(allowedUseList, modelMap)
+			l["allowed_use"] = allowedUseList
+		}
 		accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *snapshot.CRN, "", isAccessTagType)
 		if err != nil {
 			log.Printf(
@@ -765,7 +805,9 @@ func getSnapshots(d *schema.ResourceData, meta interface{}) error {
 		snapshotsInfo = append(snapshotsInfo, l)
 	}
 	d.SetId(dataSourceIBMISSnapshotsID(d))
-	d.Set(isSnapshots, snapshotsInfo)
+	if err = d.Set("snapshots", snapshotsInfo); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting snapshots %s", err), "(Data) ibm_is_snapshots", "read", "snapshots-set").GetDiag()
+	}
 	return nil
 }
 

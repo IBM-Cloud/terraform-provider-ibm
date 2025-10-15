@@ -13,7 +13,8 @@ Create, update, and delete a policy_template versions with this resource.
 ## Example Usage
 
 ```hcl
-resource "ibm_iam_policy_template_version" "policy_template_instance" {
+resource "ibm_iam_policy_template_version" "policy_template_v2" {
+  template_id = ibm_iam_policy_template.policy_template_v1.template_id
   description = "Template description"
   policy {
 		type = "access"
@@ -46,6 +47,7 @@ resource "ibm_iam_policy_template_version" "policy_template_instance" {
 
 You can specify the following arguments for this resource.
 
+* `template_id` - (Required, String) Template id for the policy template to create a new version.
 * `name` - (Optional) field when creating a new template. Otherwise this field is optional. If the field is included it will change the name value for all existing versions of the template.
 * `committed` - (Optional, Boolean) Committed status of the template version.
 * `description` - (Optional, String) Description of the policy template. This is shown to users in the enterprise account. Use this to describe the purpose or context of the policy for enterprise users managing IAM templates.
@@ -81,6 +83,7 @@ Nested schema for **policy**:
 		* `operator` - (Optional, String) The operator of an attribute.
 		* `value` - (Optional, String) The value of a rule or resource attribute; can be boolean or string for resource attribute. Can be string or an array of strings (e.g., array of days to permit access) for rule attribute.
 	* `type` - (Required, String) The policy type: 'access'.
+
 ## Attribute Reference
 
 After your resource is created, you can read values from the listed arguments and the following attributes.
@@ -90,21 +93,18 @@ After your resource is created, you can read values from the listed arguments an
 * `name` - (String) Required field when creating a new template. Otherwise this field is optional. If the field is included it will change the name value for all existing versions of the template.
 * `version` - (String) The policy template version.
 * `account_id` - (String) Enterprise account ID where template will be created.
-
 * `etag` - ETag identifier for policy_template.
 
 ## Import
 
 You can import the `ibm_iam_policy_template_version` resource by using `version`.
-The `version` property can be formed from `policy_template_id`, and `version` in the following format:
+The `version` property can be formed from `template_id`, and `version` in the following format: `<template_id>/<version>`
 
-```
-<policy_template_id>/<version>
-```
-* `policy_template_id`: A string. The policy template ID.
+* `template_id`: A string. The policy template ID.
 * `version`: A string. The policy template version.
 
-# Syntax
-```
-$ terraform import ibm_iam_policy_template_version.policy_template <policy_template_id>/<version>
+### Syntax
+
+```bash
+$ terraform import ibm_iam_policy_template_version.policy_template $template_id/$version
 ```

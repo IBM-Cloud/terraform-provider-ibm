@@ -4,10 +4,10 @@
 package dnsservices
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -139,7 +139,7 @@ func dataSourceIBMPrivateDNSGLBMonitorsRead(d *schema.ResourceData, meta interfa
 	listDNSGLBMonitorions := sess.NewListMonitorsOptions(instanceID)
 	availableGLBMonitors, detail, err := sess.ListMonitors(listDNSGLBMonitorions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error reading list of pdns GLB monitors:%s\n%s", err, detail)
+		return flex.FmtErrorf("[ERROR] Error reading list of dns services GLB monitors:%s\n%s", err, detail)
 	}
 
 	dnsMonitors := make([]map[string]interface{}, 0)

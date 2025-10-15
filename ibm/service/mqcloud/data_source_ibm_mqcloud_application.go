@@ -1,8 +1,8 @@
-// Copyright IBM Corp. 2024 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.95.2-120e65bc-20240924-152329
+ * IBM OpenAPI Terraform Generator Version: 3.104.0-b4a47c49-20250418-184351
  */
 
 package mqcloud
@@ -29,7 +29,7 @@ func DataSourceIbmMqcloudApplication() *schema.Resource {
 			"service_instance_guid": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The GUID that uniquely identifies the MQaaS service instance.",
+				Description: "The GUID that uniquely identifies the MQ SaaS service instance.",
 			},
 			"name": {
 				Type:        schema.TypeString,
@@ -52,6 +52,11 @@ func DataSourceIbmMqcloudApplication() *schema.Resource {
 							Computed:    true,
 							Description: "The name of the application - conforming to MQ rules.",
 						},
+						"iam_service_id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The IAM ID of the application.",
+						},
 						"create_api_key_uri": {
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -72,14 +77,7 @@ func DataSourceIbmMqcloudApplication() *schema.Resource {
 func dataSourceIbmMqcloudApplicationRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	mqcloudClient, err := meta.(conns.ClientSession).MqcloudV1()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_mqcloud_application", "read")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		return tfErr.GetDiag()
-	}
-
-	err = checkSIPlan(d, meta)
-	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Read Application failed: %s", err.Error()), "(Data) ibm_mqcloud_application", "read")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_mqcloud_application", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -133,18 +131,15 @@ func dataSourceIbmMqcloudApplicationRead(context context.Context, d *schema.Reso
 
 	mapSlice := []map[string]interface{}{}
 	for _, modelItem := range allItems {
-		modelItem := modelItem
 		modelMap, err := DataSourceIbmMqcloudApplicationApplicationDetailsToMap(&modelItem) // #nosec G601
 		if err != nil {
-			tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_mqcloud_application", "read")
-			return tfErr.GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_mqcloud_application", "read", "Applications-to-map").GetDiag()
 		}
 		mapSlice = append(mapSlice, modelMap)
 	}
 
 	if err = d.Set("applications", mapSlice); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting applications %s", err), "(Data) ibm_mqcloud_application", "read")
-		return tfErr.GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting applications %s", err), "(Data) ibm_mqcloud_application", "read", "applications-set").GetDiag()
 	}
 
 	return nil
@@ -159,6 +154,7 @@ func DataSourceIbmMqcloudApplicationApplicationDetailsToMap(model *mqcloudv1.App
 	modelMap := make(map[string]interface{})
 	modelMap["id"] = *model.ID
 	modelMap["name"] = *model.Name
+	modelMap["iam_service_id"] = *model.IamServiceID
 	modelMap["create_api_key_uri"] = *model.CreateApiKeyURI
 	modelMap["href"] = *model.Href
 	return modelMap, nil

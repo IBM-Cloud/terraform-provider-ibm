@@ -143,10 +143,14 @@ resource "ibm_is_ssh_key" "testacc_sshkey" {
   public_key = "<your_public_ssh_key>"
 }
 
+data "ibm_is_image" "ubuntu" {
+  name = "ibm-ubuntu-20-04-6-minimal-amd64-6"
+}
+
 resource "ibm_is_instance" "testacc_instance" {
   name    = "testinstance1"
-  image   = "7eb4e35b-4257-56f8-d7da-326d85452591"
-  profile = "b-2x8"
+  image   = data.ibm_is_image.ubuntu.id
+  profile = "bx2-2x8"
 
   primary_network_interface {
     subnet = ibm_is_subnet.testacc_subnet.id
@@ -212,6 +216,37 @@ terraform plan
   * Find user name in the `VPN password` section under `User Details` tab
 
 
+#### IAMAssume Authenticator Support
+The IBM Cloud Terraform provider supports the use of the IamAssumeAuthenticator, which enables applications to authenticate using a trusted profile through a two-step token acquisition process:
+
+Initial Token Acquisition: The provider first retrieves a bearer token using the urn:ibm:params:oauth:grant-type:apikey grant type. This token represents the identity associated with the provided IBM Cloud API key.
+
+Trusted Profile Token Exchange: Next, the provider exchanges the initial token for a new bearer token using the urn:ibm:params:oauth:grant-type:assume grant type. This second token reflects the identity of a trusted profile and is obtained by submitting the initial token along with trusted profile configuration details.
+
+This process allows Terraform to authenticate securely using IAM trusted profiles without requiring static credentials in the configuration. 
+
+This process helps in [Automating resource management for child accounts from Enterprise root account](https://developer.ibm.com/tutorials/awb-centrally-manage-cloud-resources-apis/).
+
+Usage:
+- Using IAM Trusted Profile ID:
+```terraform
+provider "ibm" {
+    ibmcloud_api_key = ""
+    iam_profile_id = ""
+}
+```
+
+- Using IAM Trusted Profile Name:
+```terraform
+provider "ibm" {
+    ibmcloud_api_key = ""
+    iam_profile_name = ""
+    account_id = ""
+}
+```
+
+
+
 ## Argument reference
 
 The following arguments are supported in the `provider` block:
@@ -262,6 +297,12 @@ The following arguments are supported in the `provider` block:
 * `private_endpoint_type` - (Optional) Private Endpoint type used by the service endpoints. Allowable values are `vpe`.
 By default provider targets to cse endpoints when the `visibility` is set to `private`. If you want to target to vpe private endpoints, set `private_endpoint_type` to `vpe`.
     * This can also be sourced from the `IC_PRIVATE_ENDPOINT_TYPE` (higher precedence) or `IBMCLOUD_PRIVATE_ENDPOINT_TYPE` environment variable.
+
+* `iam_profile_id` - (optional) The IBM Cloud IAM trusted profile ID. You must either add it as a credential in the provider block or source it from the `IC_IAM_PROFILE_ID`  or `IBMCLOUD_IAM_PROFILE_ID` environment variable.
+
+* `iam_profile_name` - (optional) The IBM Cloud IAM trusted profile name. You must either add it as a credential in the provider block or source it from the `IC_IAM_PROFILE_NAME`  or `IBMCLOUD_IAM_PROFILE_NAME` environment variable.
+
+* `ibmcloud_account_id` -  - (optional) The IBM Cloud IAM trusted profile name. You must either add it as a credential in the provider block or source it from the `IC_ACCOUNT_ID`  or `IBMCLOUD_IAM_PROFILE_NAME` environment variable.
 
 ***Note***
 The CloudFoundry endpoint has been updated in this release of IBM Cloud Terraform provider v0.17.4.  If you are using an earlier version of IBM Cloud Terraform provider, export the `IBMCLOUD_UAA_ENDPOINT` to the new authentication endpoint, as illustrated below

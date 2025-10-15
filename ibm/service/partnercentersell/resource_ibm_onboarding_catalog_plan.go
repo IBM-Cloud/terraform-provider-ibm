@@ -2,7 +2,7 @@
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.103.0-e8b84313-20250402-201816
+ * IBM OpenAPI Terraform Generator Version: 3.107.1-41b0fbd0-20250825-080732
  */
 
 package partnercentersell
@@ -36,7 +36,7 @@ func ResourceIbmOnboardingCatalogPlan() *schema.Resource {
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_onboarding_catalog_plan", "product_id"),
-				Description:  "The unique ID of the product.",
+				Description:  "The unique ID of the resource.",
 			},
 			"catalog_product_id": &schema.Schema{
 				Type:         schema.TypeString,
@@ -206,7 +206,7 @@ func ResourceIbmOnboardingCatalogPlan() *schema.Resource {
 																	Schema: map[string]*schema.Schema{
 																		"caption": &schema.Schema{
 																			Type:        schema.TypeString,
-																			Required:    true,
+																			Optional:    true,
 																			Description: "Provide a descriptive caption that indicates what the media illustrates. This caption is displayed in the catalog.",
 																		},
 																		"thumbnail": &schema.Schema{
@@ -216,12 +216,12 @@ func ResourceIbmOnboardingCatalogPlan() *schema.Resource {
 																		},
 																		"type": &schema.Schema{
 																			Type:        schema.TypeString,
-																			Required:    true,
+																			Optional:    true,
 																			Description: "The type of the media.",
 																		},
 																		"url": &schema.Schema{
 																			Type:        schema.TypeString,
-																			Required:    true,
+																			Optional:    true,
 																			Description: "The URL that links to the media that shows off the product.",
 																		},
 																	},
@@ -230,7 +230,7 @@ func ResourceIbmOnboardingCatalogPlan() *schema.Resource {
 															"navigation_items": &schema.Schema{
 																Type:        schema.TypeList,
 																Optional:    true,
-																Description: "List of custom navigation panel.",
+																Description: "The list of custom navigation panels.",
 																Elem: &schema.Resource{
 																	Schema: map[string]*schema.Schema{
 																		"id": &schema.Schema{
@@ -429,6 +429,27 @@ func ResourceIbmOnboardingCatalogPlan() *schema.Resource {
 													Type:        schema.TypeString,
 													Optional:    true,
 													Description: "The broker ID for the plan. Only needed if the service is MCSP.",
+												},
+											},
+										},
+									},
+									"target_plans": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "The selection of applicable plans.The resource controller can use this metadata to validate the plan update requests based on the plan name.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"id": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Computed:    true,
+													Description: "The plan ID for the resource controller to validate the plan update requests.",
+												},
+												"name": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Computed:    true,
+													Description: "The plan name for the resource controller to validate the plan update requests.",
 												},
 											},
 										},
@@ -916,7 +937,7 @@ func ResourceIbmOnboardingCatalogPlanMapToGlobalCatalogPlanMetadataPrototypePatc
 		}
 		model.Plan = PlanModel
 	}
-	if modelMap["other"] != nil && len(modelMap["other"].([]interface{})) > 0 {
+	if modelMap["other"] != nil && len(modelMap["other"].([]interface{})) > 0 && modelMap["other"].([]interface{})[0] != nil {
 		OtherModel, err := ResourceIbmOnboardingCatalogPlanMapToGlobalCatalogPlanMetadataOther(modelMap["other"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
@@ -1014,12 +1035,18 @@ func ResourceIbmOnboardingCatalogPlanMapToCatalogHighlightItem(modelMap map[stri
 
 func ResourceIbmOnboardingCatalogPlanMapToCatalogProductMediaItem(modelMap map[string]interface{}) (*partnercentersellv1.CatalogProductMediaItem, error) {
 	model := &partnercentersellv1.CatalogProductMediaItem{}
-	model.Caption = core.StringPtr(modelMap["caption"].(string))
+	if modelMap["caption"] != nil && modelMap["caption"].(string) != "" {
+		model.Caption = core.StringPtr(modelMap["caption"].(string))
+	}
 	if modelMap["thumbnail"] != nil && modelMap["thumbnail"].(string) != "" {
 		model.Thumbnail = core.StringPtr(modelMap["thumbnail"].(string))
 	}
-	model.Type = core.StringPtr(modelMap["type"].(string))
-	model.URL = core.StringPtr(modelMap["url"].(string))
+	if modelMap["type"] != nil && modelMap["type"].(string) != "" {
+		model.Type = core.StringPtr(modelMap["type"].(string))
+	}
+	if modelMap["url"] != nil && modelMap["url"].(string) != "" {
+		model.URL = core.StringPtr(modelMap["url"].(string))
+	}
 	return model, nil
 }
 
@@ -1120,12 +1147,23 @@ func ResourceIbmOnboardingCatalogPlanMapToGlobalCatalogPlanMetadataPlan(modelMap
 
 func ResourceIbmOnboardingCatalogPlanMapToGlobalCatalogPlanMetadataOther(modelMap map[string]interface{}) (*partnercentersellv1.GlobalCatalogPlanMetadataOther, error) {
 	model := &partnercentersellv1.GlobalCatalogPlanMetadataOther{}
-	if modelMap["resource_controller"] != nil && len(modelMap["resource_controller"].([]interface{})) > 0 {
+	if modelMap["resource_controller"] != nil && len(modelMap["resource_controller"].([]interface{})) > 0 && modelMap["resource_controller"].([]interface{})[0] != nil {
 		ResourceControllerModel, err := ResourceIbmOnboardingCatalogPlanMapToGlobalCatalogPlanMetadataOtherResourceController(modelMap["resource_controller"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
 		model.ResourceController = ResourceControllerModel
+	}
+	if modelMap["target_plans"] != nil {
+		targetPlans := []partnercentersellv1.GlobalCatalogPlanMetadataOtherTargetPlansItem{}
+		for _, targetPlansItem := range modelMap["target_plans"].([]interface{}) {
+			targetPlansItemModel, err := ResourceIbmOnboardingCatalogPlanMapToGlobalCatalogPlanMetadataOtherTargetPlansItem(targetPlansItem.(map[string]interface{}))
+			if err != nil {
+				return model, err
+			}
+			targetPlans = append(targetPlans, *targetPlansItemModel)
+		}
+		model.TargetPlans = targetPlans
 	}
 	return model, nil
 }
@@ -1134,6 +1172,17 @@ func ResourceIbmOnboardingCatalogPlanMapToGlobalCatalogPlanMetadataOtherResource
 	model := &partnercentersellv1.GlobalCatalogPlanMetadataOtherResourceController{}
 	if modelMap["subscription_provider_id"] != nil && modelMap["subscription_provider_id"].(string) != "" {
 		model.SubscriptionProviderID = core.StringPtr(modelMap["subscription_provider_id"].(string))
+	}
+	return model, nil
+}
+
+func ResourceIbmOnboardingCatalogPlanMapToGlobalCatalogPlanMetadataOtherTargetPlansItem(modelMap map[string]interface{}) (*partnercentersellv1.GlobalCatalogPlanMetadataOtherTargetPlansItem, error) {
+	model := &partnercentersellv1.GlobalCatalogPlanMetadataOtherTargetPlansItem{}
+	if modelMap["id"] != nil && modelMap["id"].(string) != "" {
+		model.ID = core.StringPtr(modelMap["id"].(string))
+	}
+	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
+		model.Name = core.StringPtr(modelMap["name"].(string))
 	}
 	return model, nil
 }
@@ -1306,12 +1355,18 @@ func ResourceIbmOnboardingCatalogPlanCatalogHighlightItemToMap(model *partnercen
 
 func ResourceIbmOnboardingCatalogPlanCatalogProductMediaItemToMap(model *partnercentersellv1.CatalogProductMediaItem) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["caption"] = *model.Caption
+	if model.Caption != nil {
+		modelMap["caption"] = *model.Caption
+	}
 	if model.Thumbnail != nil {
 		modelMap["thumbnail"] = *model.Thumbnail
 	}
-	modelMap["type"] = *model.Type
-	modelMap["url"] = *model.URL
+	if model.Type != nil {
+		modelMap["type"] = *model.Type
+	}
+	if model.URL != nil {
+		modelMap["url"] = *model.URL
+	}
 	return modelMap, nil
 }
 
@@ -1418,6 +1473,17 @@ func ResourceIbmOnboardingCatalogPlanGlobalCatalogPlanMetadataOtherToMap(model *
 		}
 		modelMap["resource_controller"] = []map[string]interface{}{resourceControllerMap}
 	}
+	if model.TargetPlans != nil {
+		targetPlans := []map[string]interface{}{}
+		for _, targetPlansItem := range model.TargetPlans {
+			targetPlansItemMap, err := ResourceIbmOnboardingCatalogPlanGlobalCatalogPlanMetadataOtherTargetPlansItemToMap(&targetPlansItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			targetPlans = append(targetPlans, targetPlansItemMap)
+		}
+		modelMap["target_plans"] = targetPlans
+	}
 	return modelMap, nil
 }
 
@@ -1425,6 +1491,17 @@ func ResourceIbmOnboardingCatalogPlanGlobalCatalogPlanMetadataOtherResourceContr
 	modelMap := make(map[string]interface{})
 	if model.SubscriptionProviderID != nil {
 		modelMap["subscription_provider_id"] = *model.SubscriptionProviderID
+	}
+	return modelMap, nil
+}
+
+func ResourceIbmOnboardingCatalogPlanGlobalCatalogPlanMetadataOtherTargetPlansItemToMap(model *partnercentersellv1.GlobalCatalogPlanMetadataOtherTargetPlansItem) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.ID != nil {
+		modelMap["id"] = *model.ID
+	}
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
 	}
 	return modelMap, nil
 }
@@ -1798,11 +1875,29 @@ func ResourceIbmOnboardingCatalogPlanGlobalCatalogMetadataUINavigationItemAsPatc
 func ResourceIbmOnboardingCatalogPlanCatalogProductMediaItemAsPatch(patch map[string]interface{}, d *schema.ResourceData, rootPath string) {
 	var path string
 
+	path = rootPath + ".caption"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["caption"] = nil
+	} else if !exists {
+		delete(patch, "caption")
+	}
 	path = rootPath + ".thumbnail"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["thumbnail"] = nil
 	} else if !exists {
 		delete(patch, "thumbnail")
+	}
+	path = rootPath + ".type"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["type"] = nil
+	} else if !exists {
+		delete(patch, "type")
+	}
+	path = rootPath + ".url"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["url"] = nil
+	} else if !exists {
+		delete(patch, "url")
 	}
 }
 

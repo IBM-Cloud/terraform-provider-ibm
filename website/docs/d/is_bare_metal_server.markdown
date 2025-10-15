@@ -63,12 +63,21 @@ In addition to all argument reference list, you can access the following attribu
 - `crn` - (String) The CRN for this bare metal server
 - `disks` - (List) The disks for this bare metal server, including any disks that are associated with the boot_target.
   Nested scheme for `disks`:
+    - `allowed_use` - (List) The usage constraints to be matched against the requested bare metal server properties to determine compatibility.
+    
+      Nested schema for `allowed_use`:
+      - `api_version` - (String) The API version with which to evaluate the expressions.
+
+      - `bare_metal_server` - (String)The expression that must be satisfied by the properties of a bare metal server provisioned using the image data in this disk. The expression follows [Common Expression Language](https://github.com/google/cel-spec/blob/master/doc/langdef.md), but does not support built-in functions and macros. 
+      
+      ~> **NOTE** </br> In addition, the following property is supported: </br>
+      **&#x2022;** `enable_secure_boot` - (boolean) Indicates whether secure boot is enabled for this bare metal server.   
     - `href` - (String) The URL for this bare metal server disk.
     - `id` - (String) The unique identifier for this bare metal server disk.
     - `interface_type` - (String) The disk interface used for attaching the disk. The enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the unexpected property value was encountered. [ **nvme**, **sata** ]
     - `name` - (String) The user-defined name for this disk
     - `resource_type` - (String) The resource type
-    - `size` - (Integer) The size of the disk in GB (gigabytes)
+    - `size` - (Integer) The size of the disk in GB (gigabytes) 
 - `enable_secure_boot` - (Boolean) Indicates whether secure boot is enabled. If enabled, the image must support secure boot or the server will fail to boot.
 - `health_reasons` - (List) The reasons for the current health_state (if any).
 
@@ -82,6 +91,12 @@ In addition to all argument reference list, you can access the following attribu
 - `image` - (String) Image used in the bare metal server.
 - `keys` - (String) Image used in the bare metal server.
 - `memory` - (Integer) The amount of memory, truncated to whole gibibytes
+- `metadata_service` - (List) The metadata service configuration for the bare metal server
+  Nested scheme for `metadata_service`:
+  - `enabled` - (Boolean) Indicates whether the metadata service endpoint is available to the bare metal server
+  - `protocol` - (String) The communication protocol to use for the metadata service endpoint. Applies only when the metadata service is enabled.
+    - **http: HTTP protocol (unencrypted)**
+    - **https:  HTTP Secure protocol**
 - `name` - (String) The name of the bare metal server.
 - `network_attachments` - (List) The network attachments for this bare metal server, including the primary network attachment.
   Nested schema for **network_attachments**:

@@ -43,6 +43,7 @@ func ResourceIBMPISnapshot() *schema.Resource {
 			// Arguments
 			Arg_CloudInstanceID: {
 				Description:  "The GUID of the service instance associated with an account.",
+				ForceNew:     true,
 				Required:     true,
 				Type:         schema.TypeString,
 				ValidateFunc: validation.NoZeroValues,
@@ -227,7 +228,7 @@ func resourceIBMPISnapshotUpdate(ctx context.Context, d *schema.ResourceData, me
 	if d.HasChange(Arg_SnapShotName) || d.HasChange(Arg_Description) {
 		name := d.Get(Arg_SnapShotName).(string)
 		description := d.Get(Arg_Description).(string)
-		snapshotBody := &models.SnapshotUpdate{Name: name, Description: description}
+		snapshotBody := &models.SnapshotUpdate{Name: &name, Description: &description}
 
 		_, err := client.Update(snapshotID, snapshotBody)
 		if err != nil {

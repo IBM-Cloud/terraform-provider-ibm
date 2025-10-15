@@ -119,7 +119,20 @@ resource "ibm_onboarding_catalog_product" "onboarding_catalog_product_instance" 
 				}
 				value = [ "value" ]
 				layout = "layout"
-				associations = { "key" = "anything as a string" }
+				associations {
+					plan {
+						show_for = [ "show_for" ]
+						options_refresh = true
+					}
+					parameters {
+						name = "name"
+						show_for = [ "show_for" ]
+						options_refresh = true
+					}
+					location {
+						show_for = [ "show_for" ]
+					}
+				}
 				validation_url = "validation_url"
 				options_url = "options_url"
 				invalidmessage = "invalidmessage"
@@ -327,7 +340,25 @@ Nested schema for **metadata**:
 		* `parameters` - (Optional, List)
 		  * Constraints: The maximum length is `1000` items. The minimum length is `0` items.
 		Nested schema for **parameters**:
-			* `associations` - (Optional, Map) A JSON structure to describe the interactions with pricing plans and/or other custom parameters.
+			* `associations` - (Optional, List) A JSON to describe other parameters or plans associated with this parameter.
+			Nested schema for **associations**:
+				* `location` - (Optional, List)
+				Nested schema for **location**:
+					* `show_for` - (Optional, List) An array of pricing plan IDs, parameters or locations depending on parent.
+					  * Constraints: The list items must match regular expression `/^[ -~\\s]*$/`. The maximum length is `1000` items. The minimum length is `0` items.
+				* `parameters` - (Optional, List) Indicates whether this parameter is associated with any other parameters.
+				  * Constraints: The maximum length is `1000` items. The minimum length is `0` items.
+				Nested schema for **parameters**:
+					* `name` - (Optional, String) Indicates whether this parameter is associated with any other parameters.
+					  * Constraints: The maximum length is `2000` characters. The minimum length is `0` characters. The value must match regular expression `/^[ -~\\s]*$/`.
+					* `options_refresh` - (Optional, Boolean) Indicates whether re-fetching the options is needed when the plan changes.
+					* `show_for` - (Optional, List) An array of pricing plan IDs, parameters or locations depending on parent.
+					  * Constraints: The list items must match regular expression `/^[ -~\\s]*$/`. The maximum length is `1000` items. The minimum length is `0` items.
+				* `plan` - (Optional, List)
+				Nested schema for **plan**:
+					* `options_refresh` - (Optional, Boolean) Indicates whether re-fetching the options is needed when the plan changes.
+					* `show_for` - (Optional, List) An array of pricing plan IDs, parameters or locations depending on parent.
+					  * Constraints: The list items must match regular expression `/^[ -~\\s]*$/`. The maximum length is `1000` items. The minimum length is `0` items.
 			* `description` - (Optional, String) The description of the parameter that is displayed to help users with the value of the parameter.
 			  * Constraints: The maximum length is `2000` characters. The minimum length is `1` character. The value must match regular expression `/^[ -~\\s]*$/`.
 			* `displayname` - (Optional, String) The display name for custom service parameters.
@@ -511,15 +542,15 @@ Nested schema for **metadata**:
 				* `media` - (Optional, List) The list of supporting media for this product.
 				  * Constraints: The maximum length is `100` items. The minimum length is `0` items.
 				Nested schema for **media**:
-					* `caption` - (Required, String) Provide a descriptive caption that indicates what the media illustrates. This caption is displayed in the catalog.
+					* `caption` - (Optional, String) Provide a descriptive caption that indicates what the media illustrates. This caption is displayed in the catalog.
 					  * Constraints: The maximum length is `2000` characters. The minimum length is `0` characters. The value must match regular expression `/^[ -~\\s]*$/`.
 					* `thumbnail` - (Optional, String) The reduced-size version of your images and videos.
 					  * Constraints: The maximum length is `2083` characters. The minimum length is `0` characters.
-					* `type` - (Required, String) The type of the media.
+					* `type` - (Optional, String) The type of the media.
 					  * Constraints: Allowable values are: `image`, `youtube`, `video_mp_4`, `video_webm`.
-					* `url` - (Required, String) The URL that links to the media that shows off the product.
+					* `url` - (Optional, String) The URL that links to the media that shows off the product.
 					  * Constraints: The maximum length is `2083` characters. The minimum length is `0` characters.
-				* `navigation_items` - (Optional, List) List of custom navigation panel.
+				* `navigation_items` - (Optional, List) The list of custom navigation panels.
 				  * Constraints: The maximum length is `100` items. The minimum length is `0` items.
 				Nested schema for **navigation_items**:
 					* `id` - (Optional, String) Id of custom navigation panel.
@@ -558,7 +589,7 @@ Nested schema for **overview_ui**:
 		* `description` - (Optional, String) The short description of the product that is displayed in your catalog entry.
 		* `display_name` - (Optional, String) The display name of the product.
 		* `long_description` - (Optional, String) The detailed description of your product that is displayed at the beginning of your product page in the catalog. Markdown markup language is supported.
-* `product_id` - (Required, Forces new resource, String) The unique ID of the product.
+* `product_id` - (Required, Forces new resource, String) The unique ID of the resource.
   * Constraints: The maximum length is `71` characters. The minimum length is `71` characters. The value must match regular expression `/^[a-zA-Z0-9]{32}:o:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/`.
 * `tags` - (Required, List) A list of tags that carry information about your product. These tags can be used to find your product in the IBM Cloud catalog.
   * Constraints: The list items must match regular expression `/^[a-z0-9\\-._]+$/`. The maximum length is `100` items. The minimum length is `0` items.
@@ -586,7 +617,7 @@ The `id` property can be formed from `product_id`, and `catalog_product_id` in t
 <pre>
 	product_id/catalog_product_id;
 </pre>
-* `product_id`: A string. The unique ID of the product.
+* `product_id`: A string. The unique ID of the resource.
 * `catalog_product_id`: A string. The ID of a global catalog object.
 
 # Syntax
