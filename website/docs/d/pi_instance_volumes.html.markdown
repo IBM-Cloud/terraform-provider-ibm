@@ -16,8 +16,8 @@ The following example retrieves information about the volumes attached to the `t
 
 ```terraform
 data "ibm_pi_instance_volumes" "ds_volumes" {
-  pi_instance_name     = "terraform-test-instance"
   pi_cloud_instance_id = "49fba6c9-23f8-40bc-9899-aca322ee7d5b"
+  pi_instance_id       = "e6b579b7-d94b-42e5-a19d-5d1e0b2547c4"
 }
 ```
 

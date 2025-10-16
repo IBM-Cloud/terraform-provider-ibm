@@ -382,7 +382,9 @@ func resourceIBMCmAccountUpdate(context context.Context, d *schema.ResourceData,
 
 	updateCatalogAccountOptions := &catalogmanagementv1.UpdateCatalogAccountOptions{}
 	updateCatalogAccountOptions.SetID(*account.ID)
-	updateCatalogAccountOptions.SetRev(*account.Rev)
+	if account.Rev != nil {
+		updateCatalogAccountOptions.SetRev(*account.Rev)
+	}
 
 	if d.HasChange("hide_ibm_cloud_catalog") {
 		if v, ok := d.GetOk("hide_ibm_cloud_catalog"); ok {

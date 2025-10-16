@@ -35,7 +35,6 @@ func DataSourceIBMPIInstanceConsoleLanguages() *schema.Resource {
 				Description:   "The ID of the PVM instance.",
 				Optional:      true,
 				Type:          schema.TypeString,
-				ValidateFunc:  validation.NoZeroValues,
 			},
 			Arg_InstanceName: {
 				AtLeastOneOf:  []string{Arg_InstanceID, Arg_InstanceName},
@@ -44,7 +43,6 @@ func DataSourceIBMPIInstanceConsoleLanguages() *schema.Resource {
 				Description:   "The name of the PVM instance.",
 				Optional:      true,
 				Type:          schema.TypeString,
-				ValidateFunc:  validation.NoZeroValues,
 			},
 
 			// Attributes

@@ -14,8 +14,8 @@ Retrieve information about all the available Console Languages for an Instance. 
 
 ```terraform
 data "ibm_pi_console_languages" "example" {
-  pi_cloud_instance_id  = "<value of the cloud_instance_id>"
-  pi_instance_name      = "<instance name or id>"
+  pi_cloud_instance_id  = "e6b579b7-d94b-42e5-a19d-5d1e0b2547c4"
+  pi_instance_id        = "b0f1b2e4-cc61-49df-a6c2-29fa58b4a915"
 }
 ```
 

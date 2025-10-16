@@ -775,6 +775,40 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 	})
 }
 
+func TestAccIBMISInstance_QoS(t *testing.T) {
+	var instance string
+	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tf-instnace-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tf-subnet-%d", acctest.RandIntRange(10, 100))
+	publicKey := strings.TrimSpace(`
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
+`)
+	sshname := fmt.Sprintf("tf-ssh-%d", acctest.RandIntRange(10, 100))
+	totalVolumeBandwidth := 1000
+	qosMode := "weighted"
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISInstanceQOSConfig(vpcname, subnetname, sshname, publicKey, name, qosMode, totalVolumeBandwidth),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISInstanceExists("ibm_is_instance.testacc_instance", instance),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "zone", acc.ISZoneName),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "total_volume_bandwidth", strconv.Itoa(totalVolumeBandwidth)),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "volume_bandwidth_qos_mode", qosMode),
+				),
+			},
+		},
+	})
+}
+
 func TestAccIBMISInstanceWithSecurityGroup_basic(t *testing.T) {
 	var instance string
 	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
@@ -1533,21 +1567,21 @@ func testAccCheckIBMISInstanceConfig(vpcname, subnetname, sshname, publicKey, na
 		public_key = "%s"
 	  }
 	  
-	  resource "ibm_is_instance" "testacc_instance" {
+resource "ibm_is_instance" "testacc_instance" {
 		name    = "%s"
 		image   = "%s"
 		profile = "%s"
-		primary_network_interface {
+  primary_network_interface {
 		  subnet     = ibm_is_subnet.testacc_subnet.id
-		}
+  }
 		user_data = "%s"
 		vpc  = ibm_is_vpc.testacc_vpc.id
 		zone = "%s"
 		keys = [ibm_is_ssh_key.testacc_sshkey.id]
-		network_interfaces {
+  network_interfaces {
 		  subnet = ibm_is_subnet.testacc_subnet.id
-		  name   = "eth1"
-		}
+    name   = "eth1"
+  }
 	  }`, vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, sshname, publicKey, name, acc.IsImage, acc.InstanceProfileName, userData, acc.ISZoneName)
 }
 func testAccCheckIBMISInstanceSdpConfig(vpcname, subnetname, sshname, publicKey, name, userData string) string {
@@ -1983,6 +2017,43 @@ func testAccCheckIBMISInstanceRenameConfig(vpcname, subnetname, sshname, publicK
 		keys = [ibm_is_ssh_key.testacc_sshkey.id]
 	  }
 	  `, vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, sshname, publicKey, name, acc.IsImage, acc.InstanceProfileName, rename, userData, acc.ISZoneName)
+}
+
+func testAccCheckIBMISInstanceQOSConfig(vpcname, subnetname, sshname, publicKey, name, qosMode string, bandwidth int) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	  }
+	  
+	  resource "ibm_is_subnet" "testacc_subnet" {
+		name            = "%s"
+		vpc             = ibm_is_vpc.testacc_vpc.id
+		zone            = "%s"
+		ipv4_cidr_block = "%s"
+	  }
+	  
+	  resource "ibm_is_ssh_key" "testacc_sshkey" {
+		name       = "%s"
+		public_key = "%s"
+	  }
+	  
+resource "ibm_is_instance" "testacc_instance" {
+		name    = "%s"
+		image   = "%s"
+		profile = "%s"
+  primary_network_interface {
+		  subnet     = ibm_is_subnet.testacc_subnet.id
+  }
+		total_volume_bandwidth = %d
+		vpc  = ibm_is_vpc.testacc_vpc.id
+		zone = "%s"
+		keys = [ibm_is_ssh_key.testacc_sshkey.id]
+  network_interfaces {
+		  subnet = ibm_is_subnet.testacc_subnet.id
+    name   = "eth1"
+  }
+		volume_bandwidth_qos_mode = "%s"  
+	  }`, vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, sshname, publicKey, name, acc.IsImage, acc.InstanceProfileName, bandwidth, acc.ISZoneName, qosMode)
 }
 
 func testAccCheckIBMISInstanceBandwidthConfig(vpcname, subnetname, sshname, publicKey, name string, bandwidth int) string {

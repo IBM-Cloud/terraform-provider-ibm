@@ -14,8 +14,8 @@ Retrieve information about a Power Systems Virtual Server instance. For more inf
 
 ```terraform
 data "ibm_pi_instance" "ds_instance" {
-  pi_instance_name     = "terraform-test-instance"
   pi_cloud_instance_id = "49fba6c9-23f8-40bc-9899-aca322ee7d5b"
+  pi_instance_id       = "e6b579b7-d94b-42e5-a19d-5d1e0b2547c4"
 }
 ```
 

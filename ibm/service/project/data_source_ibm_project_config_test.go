@@ -61,6 +61,7 @@ func testAccCheckIbmProjectConfigDataSourceConfigBasic() string {
                 destroy_on_delete = true
                 monitoring_enabled = true
                 auto_deploy = false
+                auto_deploy_mode = "manual_approval"
             }
 		}
 
