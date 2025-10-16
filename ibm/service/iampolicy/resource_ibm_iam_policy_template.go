@@ -395,12 +395,12 @@ func generateTemplatePolicy(d *schema.ResourceData, iamPolicyManagementClient *i
 					sourceServiceName = item.((map[string]interface{}))["value"].(string)
 				}
 				if *attributesItemModel.Operator == "stringExists" {
-					if attributesItemModel.Value == "true" {
+					if *attributesItemModel.Value == "true" {
 						attributesItemModel.Value = true
-					} else if attributesItemModel.Value == "false" {
+					} else if *attributesItemModel.Value == "false" {
 						attributesItemModel.Value = false
 					} else {
-						return model, fmt.Errorf("[ERROR] Only values \"true\" and \"false\" are allowed when operator is \"stringExists\". Received %s.", attributesItemModel.Value)
+						return model, fmt.Errorf("[ERROR] Only values \"true\" and \"false\" are allowed when operator is \"stringExists\". Received %s.", *attributesItemModel.Value)
 					}
 				}
 				if *model.Type == "authorization" && *attributesItemModel.Operator == "" && attributesItemModel.Value == "*" && *attributesItemModel.Key == "resourceGroupId" {
