@@ -259,6 +259,7 @@ var (
 	Pi_shared_processor_pool_id       string
 	Pi_snapshot_id                    string
 	Pi_spp_placement_group_id         string
+	Pi_ssh_key_id                     string
 	Pi_storage_connection             string
 	Pi_target_storage_tier            string
 	Pi_virtual_serial_number          string
@@ -1195,7 +1196,13 @@ func init() {
 	Pi_key_name = os.Getenv("PI_KEY_NAME")
 	if Pi_key_name == "" {
 		Pi_key_name = "terraform-test-power"
-		fmt.Println("[INFO] Set the environment variable PI_KEY_NAME for testing ibm_pi_key_name resource else it is set to default value 'terraform-test-power'")
+		fmt.Println("[INFO] Set the environment variable PI_KEY_NAME for testing ibm_pi_key resource else it is set to default value 'terraform-test-power'")
+	}
+
+	Pi_ssh_key_id = os.Getenv("PI_SSH_KEY_ID")
+	if Pi_ssh_key_id == "" {
+		Pi_ssh_key_id = "terraform-test-power"
+		fmt.Println("[INFO] Set the environment variable PI_SSH_KEY_ID for testing ibm_pi_key resource else it is set to default value 'terraform-test-power'")
 	}
 
 	Pi_network_name = os.Getenv("PI_NETWORK_NAME")

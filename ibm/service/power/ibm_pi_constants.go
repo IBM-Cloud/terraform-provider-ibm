@@ -160,6 +160,7 @@ const (
 	Arg_SPPPlacementGroupName                = "pi_spp_placement_group_name"
 	Arg_SPPPlacementGroupPolicy              = "pi_spp_placement_group_policy"
 	Arg_SSHKey                               = "pi_ssh_key"
+	Arg_SSHKeyID                             = "pi_ssh_key_id"
 	Arg_StartingIPAddress                    = "pi_starting_ip_address"
 	Arg_StorageConnection                    = "pi_storage_connection"
 	Arg_StoragePool                          = "pi_storage_pool"
