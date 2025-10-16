@@ -18,7 +18,6 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 	validation "github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -56,12 +55,6 @@ func ResourceIbmBackupRecovery() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Recovery ID",
-			},
-			"backup_recovery_endpoint": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Description:  "Endpoint for the BRS instance",
-				ValidateFunc: validate.InvokeValidator("ibm_backup_recovery", "backup_recovery_endpoint"),
 			},
 			"snapshot_environment": &schema.Schema{
 				Type:     schema.TypeString,
@@ -2403,24 +2396,6 @@ func ResourceIbmBackupRecovery() *schema.Resource {
 	}
 }
 
-func ResourceIbmBackupRecoveryValidator() *validate.ResourceValidator {
-	validateSchema := make([]validate.ValidateSchema, 0)
-	validateSchema = append(validateSchema,
-		validate.ValidateSchema{
-			Identifier:                 "backup_recovery_endpoint",
-			ValidateFunctionIdentifier: validate.ValidateRegexp,
-			Type:                       validate.TypeString,
-			Optional:                   true,
-			// Regex: must start with http:// or https:// and contain at least one non-space after
-			Regexp:         `^(https?):\/\/[^\s/$.?#].[^\s]*$`,
-			MinValueLength: 1, // disallow empty if provided
-			MaxValueLength: 2048,
-		})
-
-	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_backup_recovery", Schema: validateSchema}
-	return &resourceValidator
-}
-
 func checkDiffResourceIbmBackupRecovery(context context.Context, d *schema.ResourceDiff, meta interface{}) error {
 	// oldId, _ := d.GetChange("x_ibm_tenant_id")
 	// if oldId == "" {
@@ -2447,9 +2422,11 @@ func resourceIbmBackupRecoveryCreate(context context.Context, d *schema.Resource
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
-	if _, ok := d.GetOk("backup_recovery_endpoint"); ok {
-		endpointURL := d.Get("backup_recovery_endpoint").(string)
-		backupRecoveryClient.Service.SetServiceURL(endpointURL)
+
+	endpointType := d.Get("endpoint_type").(string)
+	instanceId, region := getInstanceIdAndRegion(d)
+	if instanceId != "" && region != "" {
+		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, instanceId, region, endpointType)
 	}
 
 	createRecoveryOptions := &backuprecoveryv1.CreateRecoveryOptions{}
@@ -2495,9 +2472,10 @@ func resourceIbmBackupRecoveryRead(context context.Context, d *schema.ResourceDa
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
-	if _, ok := d.GetOk("backup_recovery_endpoint"); ok {
-		endpointURL := d.Get("backup_recovery_endpoint").(string)
-		backupRecoveryClient.Service.SetServiceURL(endpointURL)
+	endpointType := d.Get("endpoint_type").(string)
+	instanceId, region := getInstanceIdAndRegion(d)
+	if instanceId != "" && region != "" {
+		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, instanceId, region, endpointType)
 	}
 
 	getRecoveryByIdOptions := &backuprecoveryv1.GetRecoveryByIdOptions{}
@@ -2521,10 +2499,20 @@ func resourceIbmBackupRecoveryRead(context context.Context, d *schema.ResourceDa
 		return tfErr.GetDiag()
 	}
 
-	if endpoint, ok := d.GetOk("backup_recovery_endpoint"); ok {
-		if err := d.Set("backup_recovery_endpoint", endpoint); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting backup_recovery_endpoint: %s", err), "(Resource) ibm_backup_recovery_recovery", "read", "set-backup-recovery-endpoint").GetDiag()
+	if instanceId != "" {
+		if err := d.Set("instance_id", instanceId); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting instance_id: %s", err), "(Resource) ibm_backup_recovery_recovery", "read", "set-backup-recovery-instance-id").GetDiag()
 		}
+	}
+	if region != "" {
+		if err := d.Set("region", region); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting region: %s", err), "(Resource) ibm_backup_recovery_recovery", "read", "set-backup-recovery-region").GetDiag()
+		}
+	}
+
+	if err = d.Set("endpoint_type", d.Get("endpoint_type").(string)); err != nil {
+		err = fmt.Errorf("Error setting endpoint_type: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_recovery", "read", "set-endpoint-type").GetDiag()
 	}
 
 	if err = d.Set("name", recovery.Name); err != nil {

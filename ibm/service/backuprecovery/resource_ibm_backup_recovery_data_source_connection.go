@@ -18,7 +18,6 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 )
@@ -42,12 +41,6 @@ func ResourceIbmBackupRecoveryDataSourceConnection() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "connection Id",
-			},
-			"backup_recovery_endpoint": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Description:  "Endpoint for the BRS instance",
-				ValidateFunc: validate.InvokeValidator("ibm_backup_recovery_data_source_connection", "backup_recovery_endpoint"),
 			},
 			"connection_name": &schema.Schema{
 				Type:        schema.TypeString,
@@ -80,24 +73,6 @@ func ResourceIbmBackupRecoveryDataSourceConnection() *schema.Resource {
 	}
 }
 
-func ResourceIbmBackupRecoveryDataSourceConnectionValidator() *validate.ResourceValidator {
-	validateSchema := make([]validate.ValidateSchema, 0)
-	validateSchema = append(validateSchema,
-		validate.ValidateSchema{
-			Identifier:                 "backup_recovery_endpoint",
-			ValidateFunctionIdentifier: validate.ValidateRegexp,
-			Type:                       validate.TypeString,
-			Optional:                   true,
-			// Regex: must start with http:// or https:// and contain at least one non-space after
-			Regexp:         `^(https?):\/\/[^\s/$.?#].[^\s]*$`,
-			MinValueLength: 1, // disallow empty if provided
-			MaxValueLength: 2048,
-		})
-
-	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_backup_recovery_data_source_connection", Schema: validateSchema}
-	return &resourceValidator
-}
-
 func resourceIbmBackupRecoveryDataSourceConnectionCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
@@ -105,9 +80,10 @@ func resourceIbmBackupRecoveryDataSourceConnectionCreate(context context.Context
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
-	if _, ok := d.GetOk("backup_recovery_endpoint"); ok {
-		endpointURL := d.Get("backup_recovery_endpoint").(string)
-		backupRecoveryClient.Service.SetServiceURL(endpointURL)
+	endpointType := d.Get("endpoint_type").(string)
+	instanceId, region := getInstanceIdAndRegion(d)
+	if instanceId != "" && region != "" {
+		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, instanceId, region, endpointType)
 	}
 
 	createDataSourceConnectionOptions := &backuprecoveryv1.CreateDataSourceConnectionOptions{}
@@ -138,9 +114,10 @@ func resourceIbmBackupRecoveryDataSourceConnectionRead(context context.Context, 
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
-	if _, ok := d.GetOk("backup_recovery_endpoint"); ok {
-		endpointURL := d.Get("backup_recovery_endpoint").(string)
-		backupRecoveryClient.Service.SetServiceURL(endpointURL)
+	endpointType := d.Get("endpoint_type").(string)
+	instanceId, region := getInstanceIdAndRegion(d)
+	if instanceId != "" && region != "" {
+		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, instanceId, region, endpointType)
 	}
 
 	tenantId := d.Get("x_ibm_tenant_id").(string)
@@ -165,10 +142,20 @@ func resourceIbmBackupRecoveryDataSourceConnectionRead(context context.Context, 
 		return tfErr.GetDiag()
 	}
 
-	if endpoint, ok := d.GetOk("backup_recovery_endpoint"); ok {
-		if err := d.Set("backup_recovery_endpoint", endpoint); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting backup_recovery_endpoint: %s", err), "(Resource) ibm_backup_recovery_data_source_connection", "read", "set-backup-recovery-endpoint").GetDiag()
+	if instanceId != "" {
+		if err := d.Set("instance_id", instanceId); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting instance_id: %s", err), "(Resource) ibm_backup_recovery_data_source_connection", "read", "set-instance-id").GetDiag()
 		}
+	}
+	if region != "" {
+		if err := d.Set("region", region); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting region: %s", err), "(Resource) ibm_backup_recovery_data_source_connection", "read", "set--region").GetDiag()
+		}
+	}
+
+	if err = d.Set("endpoint_type", d.Get("endpoint_type").(string)); err != nil {
+		err = fmt.Errorf("Error setting endpoint_type: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_data_source_connection", "read", "set-endpoint-type").GetDiag()
 	}
 
 	if err = d.Set("connection_id", dataSourceConnectionList.Connections[0].ConnectionID); err != nil {
@@ -227,9 +214,10 @@ func resourceIbmBackupRecoveryDataSourceConnectionUpdate(context context.Context
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
-	if _, ok := d.GetOk("backup_recovery_endpoint"); ok {
-		endpointURL := d.Get("backup_recovery_endpoint").(string)
-		backupRecoveryClient.Service.SetServiceURL(endpointURL)
+	endpointType := d.Get("endpoint_type").(string)
+	instanceId, region := getInstanceIdAndRegion(d)
+	if instanceId != "" && region != "" {
+		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, instanceId, region, endpointType)
 	}
 
 	patchDataSourceConnectionOptions := &backuprecoveryv1.PatchDataSourceConnectionOptions{}
@@ -268,9 +256,10 @@ func resourceIbmBackupRecoveryDataSourceConnectionDelete(context context.Context
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
-	if _, ok := d.GetOk("backup_recovery_endpoint"); ok {
-		endpointURL := d.Get("backup_recovery_endpoint").(string)
-		backupRecoveryClient.Service.SetServiceURL(endpointURL)
+	endpointType := d.Get("endpoint_type").(string)
+	instanceId, region := getInstanceIdAndRegion(d)
+	if instanceId != "" && region != "" {
+		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, instanceId, region, endpointType)
 	}
 
 	deleteDataSourceConnectionOptions := &backuprecoveryv1.DeleteDataSourceConnectionOptions{}

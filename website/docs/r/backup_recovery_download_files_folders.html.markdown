@@ -150,7 +150,9 @@ Nested schema for **files_and_folders**:
 * `glacier_retrieval_type` - (Optional, Forces new resource, String) Specifies the glacier retrieval type when restoring or downloding files or folders from a Glacier-based cloud snapshot.
   * Constraints: Allowable values are: `kStandard`, `kExpeditedNoPCU`, `kExpeditedWithPCU`.
 * `name` - (Required, Forces new resource, String) Specifies the name of the recovery task. This field must be set and must be a unique name.
-* `backup_recovery_endpoint` - (Optional, String) Backup Recovery Endpoint URL. If provided here, it overrides values configured via environment variable (IBMCLOUD_BACKUP_RECOVERY_ENDPOINT) or endpoints.json.   
+* `endpoint_type` - (Optional, String) Backup Recovery Endpoint type. By default set to "public".
+* `instance_id` - (Optional, String) Backup Recovery instance ID. If provided here along with region, the provider constructs the endpoint URL using them, which overrides any value set through environment variables or the `endpoints.json` file.
+* `region` - (Optional, String) Backup Recovery region. If provided here along with instance_id, the provider constructs the endpoint URL using them, which overrides any value set through environment variables or the `endpoints.json` file.  
 * `object` - (Required, Forces new resource, List) Specifies the common snapshot parameters for a protected object.
 Nested schema for **object**:
 	* `archival_target_info` - (Optional, List) Specifies the archival target information if the snapshot is an archival snapshot.

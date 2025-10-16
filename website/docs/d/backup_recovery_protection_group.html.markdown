@@ -24,7 +24,9 @@ data "ibm_backup_recovery_protection_group" "backup_recovery_protection_group" {
 You can specify the following arguments for this data source.
 
 * `protection_group_id` - (Required, Forces new resource, String) Specifies a unique id of the Protection Group.
-* `backup_recovery_endpoint` - (Optional, String) Backup Recovery Endpoint URL. If provided here, it overrides values configured via environment variable (IBMCLOUD_BACKUP_RECOVERY_ENDPOINT) or endpoints.json.   
+* `endpoint_type` - (Optional, String) Backup Recovery Endpoint type. By default set to "public".
+* `instance_id` - (Optional, String) Backup Recovery instance ID. If provided here along with region, the provider constructs the endpoint URL using them, which overrides any value set through environment variables or the `endpoints.json` file.
+* `region` - (Optional, String) Backup Recovery region. If provided here along with instance_id, the provider constructs the endpoint URL using them, which overrides any value set through environment variables or the `endpoints.json` file.  
 * `include_last_run_info` - (Optional, Boolean) If true, the response will include last run info. If it is false or not specified, the last run info won't be returned.
 * `prune_excluded_source_ids` - (Optional, Boolean) If true, the response will not include the list of excluded source IDs in groups that contain this field. This can be set to true in order to improve performance if excluded source IDs are not needed by the user.
 * `prune_source_ids` - (Optional, Boolean) If true, the response will exclude the list of source IDs within the group specified.

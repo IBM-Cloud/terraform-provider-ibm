@@ -18,7 +18,6 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 )
@@ -678,12 +677,6 @@ func DataSourceIbmBackupRecoverySourceRegistration() *schema.Resource {
 				Computed:    true,
 				Description: "The user specified name for this source.",
 			},
-			"backup_recovery_endpoint": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Description:  "Endpoint for the BRS instance",
-				ValidateFunc: validate.InvokeDataSourceValidator("ibm_backup_recovery_source_registration", "backup_recovery_endpoint"),
-			},
 			"connection_id": &schema.Schema{
 				Type:        schema.TypeInt,
 				Computed:    true,
@@ -954,24 +947,6 @@ func DataSourceIbmBackupRecoverySourceRegistration() *schema.Resource {
 	}
 }
 
-func DataSourceIbmBackupRecoverySourceRegistrationValidator() *validate.ResourceValidator {
-	validateSchema := make([]validate.ValidateSchema, 0)
-	validateSchema = append(validateSchema,
-		validate.ValidateSchema{
-			Identifier:                 "backup_recovery_endpoint",
-			ValidateFunctionIdentifier: validate.ValidateRegexp,
-			Type:                       validate.TypeString,
-			Optional:                   true,
-			// Regex: must start with http:// or https:// and contain at least one non-space after
-			Regexp:         `^(https?):\/\/[^\s/$.?#].[^\s]*$`,
-			MinValueLength: 1, // disallow empty if provided
-			MaxValueLength: 2048,
-		})
-
-	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_backup_recovery_source_registration", Schema: validateSchema}
-	return &resourceValidator
-}
-
 func dataSourceIbmBackupRecoverySourceRegistrationRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
@@ -979,9 +954,10 @@ func dataSourceIbmBackupRecoverySourceRegistrationRead(context context.Context, 
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
-	if _, ok := d.GetOk("backup_recovery_endpoint"); ok {
-		endpointURL := d.Get("backup_recovery_endpoint").(string)
-		backupRecoveryClient.Service.SetServiceURL(endpointURL)
+	endpointType := d.Get("endpoint_type").(string)
+	instanceId, region := getInstanceIdAndRegion(d)
+	if instanceId != "" && region != "" {
+		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, instanceId, region, endpointType)
 	}
 
 	getProtectionSourceRegistrationOptions := &backuprecoveryv1.GetProtectionSourceRegistrationOptions{}
