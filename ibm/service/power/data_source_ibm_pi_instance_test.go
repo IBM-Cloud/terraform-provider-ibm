@@ -31,7 +31,7 @@ func TestAccIBMPIInstanceDataSource_basic(t *testing.T) {
 func testAccCheckIBMPIInstanceDataSourceConfig() string {
 	return fmt.Sprintf(`
 		data "ibm_pi_instance" "testacc_ds_instance" {
-			pi_instance_name="%s"
-			pi_cloud_instance_id = "%s"
-		}`, acc.Pi_instance_name, acc.Pi_cloud_instance_id)
+			pi_cloud_instance_id = "%[1]s"
+			pi_instance_id       = "%[2]s"
+		}`, acc.Pi_cloud_instance_id, acc.Pi_instance_id)
 }

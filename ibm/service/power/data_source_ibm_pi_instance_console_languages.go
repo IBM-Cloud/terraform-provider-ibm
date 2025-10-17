@@ -29,11 +29,20 @@ func DataSourceIBMPIInstanceConsoleLanguages() *schema.Resource {
 				Type:         schema.TypeString,
 				ValidateFunc: validation.NoZeroValues,
 			},
+			Arg_InstanceID: {
+				AtLeastOneOf:  []string{Arg_InstanceID, Arg_InstanceName},
+				ConflictsWith: []string{Arg_InstanceName},
+				Description:   "The ID of the PVM instance.",
+				Optional:      true,
+				Type:          schema.TypeString,
+			},
 			Arg_InstanceName: {
-				Description:  "The unique identifier or name of the instance.",
-				Required:     true,
-				Type:         schema.TypeString,
-				ValidateFunc: validation.NoZeroValues,
+				AtLeastOneOf:  []string{Arg_InstanceID, Arg_InstanceName},
+				ConflictsWith: []string{Arg_InstanceID},
+				Deprecated:    "The pi_instance_name field is deprecated. Please use pi_instance_id instead",
+				Description:   "The name of the PVM instance.",
+				Optional:      true,
+				Type:          schema.TypeString,
 			},
 
 			// Attributes
@@ -69,10 +78,15 @@ func dataSourceIBMPIInstanceConsoleLanguagesRead(ctx context.Context, d *schema.
 	}
 
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
-	instanceName := d.Get(Arg_InstanceName).(string)
+	var instanceID string
+	if v, ok := d.GetOk(Arg_InstanceID); ok {
+		instanceID = v.(string)
+	} else if v, ok := d.GetOk(Arg_InstanceName); ok {
+		instanceID = v.(string)
+	}
 
 	client := instance.NewIBMPIInstanceClient(ctx, sess, cloudInstanceID)
-	languages, err := client.GetConsoleLanguages(instanceName)
+	languages, err := client.GetConsoleLanguages(instanceID)
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetConsoleLanguages failed: %s", err.Error()), "(Data) ibm_pi_instance_console_languages", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
