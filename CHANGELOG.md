@@ -1,3 +1,11 @@
+# 1.84.1 (October 17, 2025)
+
+## Enhancements
+
+### IAM
+* Add new attributes to IAM Identity Account Settings ([6491](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6491))
+
+
 # 1.84.0 (October 13, 2025)
 
 ## Bug Fixes
