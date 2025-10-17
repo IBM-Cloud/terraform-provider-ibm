@@ -407,6 +407,7 @@ var (
 
 // for IAM Identity
 var IamIdentityAssignmentTargetAccountId string
+var IamIdentityEnterpriseAccountId string
 
 // Projects
 var ProjectsConfigApiKey string
@@ -466,6 +467,7 @@ func init() {
 	}
 
 	IamIdentityAssignmentTargetAccountId = os.Getenv("IAM_IDENTITY_ASSIGNMENT_TARGET_ACCOUNT")
+	IamIdentityEnterpriseAccountId = os.Getenv("IAM_IDENTITY_ENTERPRISE_ACCOUNT")
 
 	ProjectsConfigApiKey = os.Getenv("IBM_PROJECTS_CONFIG_APIKEY")
 	if ProjectsConfigApiKey == "" {
@@ -2258,9 +2260,13 @@ func TestAccPreCheckEnterprise(t *testing.T) {
 	}
 }
 
-func TestAccPreCheckAssignmentTargetAccount(t *testing.T) {
+func TestAccPreCheckIamIdentityEnterpriseTemplates(t *testing.T) {
+	TestAccPreCheck(t)
 	if v := os.Getenv("IAM_IDENTITY_ASSIGNMENT_TARGET_ACCOUNT"); v == "" {
 		t.Fatal("IAM_IDENTITY_ASSIGNMENT_TARGET_ACCOUNT must be set for IAM identity assignment tests")
+	}
+	if v := os.Getenv("IAM_IDENTITY_ENTERPRISE_ACCOUNT"); v == "" {
+		t.Fatal("IAM_IDENTITY_ENTERPRISE_ACCOUNT must be set for IAM identity assignment tests")
 	}
 }
 
