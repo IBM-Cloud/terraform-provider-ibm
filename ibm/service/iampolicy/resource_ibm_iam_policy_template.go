@@ -357,7 +357,7 @@ func generateTemplatePolicy(d *schema.ResourceData, iamPolicyManagementClient *i
 				} else if attributesItemModel.Value == "false" {
 					attributesItemModel.Value = false
 				} else {
-					return model, fmt.Errorf("[ERROR] When operator equals stringExists, value should be either \"true\" or \"false\", instead of %s",
+					return model, fmt.Errorf("[ERROR] When operator equals stringExists, value should be either \"true\" or \"false\", instead of %v",
 						attributesItemModel.Value)
 				}
 			}
@@ -395,13 +395,21 @@ func generateTemplatePolicy(d *schema.ResourceData, iamPolicyManagementClient *i
 					sourceServiceName = item.((map[string]interface{}))["value"].(string)
 				}
 				if *attributesItemModel.Operator == "stringExists" {
-					valueStr := fmt.Sprintf("%v", attributesItemModel.Value)
+					// Get the string value regardless of whether it's a pointer or not
+					var valueStr string
+					if strPtr, ok := attributesItemModel.Value.(*string); ok {
+						valueStr = *strPtr
+					} else {
+						valueStr = fmt.Sprintf("%v", attributesItemModel.Value)
+					}
+
+					// Now handle the string value
 					if valueStr == "true" {
 						attributesItemModel.Value = true
 					} else if valueStr == "false" {
 						attributesItemModel.Value = false
 					} else {
-						return model, fmt.Errorf("[ERROR] Only values \"true\" and \"false\" are allowed when operator is \"stringExists\". Received %s.", valueStr)
+						return model, fmt.Errorf("[ERROR] Only values \"true\" and \"false\" are allowed when operator is \"stringExists\". Received %v.", valueStr)
 					}
 				}
 				if *model.Type == "authorization" && *attributesItemModel.Operator == "" && attributesItemModel.Value == "*" && *attributesItemModel.Key == "resourceGroupId" {

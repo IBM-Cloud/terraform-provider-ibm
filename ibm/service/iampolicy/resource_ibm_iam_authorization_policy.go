@@ -262,7 +262,7 @@ func resourceIBMIAMAuthorizationPolicyCreate(d *schema.ResourceData, meta interf
 				} else if value == "false" {
 					resourceValue = false
 				} else {
-					return fmt.Errorf("[ERROR] Only values \"true\" and \"false\" are allowed when operator is \"stringExists\". Received %s.", value)
+					return fmt.Errorf("[ERROR] Only values \"true\" and \"false\" are allowed when operator is \"stringExists\". Received %v.", value)
 				}
 				at := iampolicymanagementv1.V2PolicySubjectAttribute{
 					Key:      &name,
@@ -365,7 +365,7 @@ func resourceIBMIAMAuthorizationPolicyCreate(d *schema.ResourceData, meta interf
 				} else if value == "false" {
 					resourceValue = false
 				} else {
-					return fmt.Errorf("[ERROR] When operator equals stringExists, value should be either \"true\" or \"false\", instead of %s", value)
+					return fmt.Errorf("[ERROR] When operator equals stringExists, value should be either \"true\" or \"false\", instead of %v", value)
 				}
 				at := iampolicymanagementv1.V2PolicyResourceAttribute{
 					Key:      &name,
@@ -592,7 +592,7 @@ func resourceIBMIAMAuthorizationPolicyUpdate(d *schema.ResourceData, meta interf
 					} else if value == "false" {
 						resourceValue = false
 					} else {
-						return fmt.Errorf("[ERROR] Only values \"true\" and \"false\" are allowed when operator is \"stringExists\". Received %s.", value)
+						return fmt.Errorf("[ERROR] Only values \"true\" and \"false\" are allowed when operator is \"stringExists\". Received %v.", value)
 					}
 					at := iampolicymanagementv1.V2PolicySubjectAttribute{
 						Key:      &name,
@@ -695,7 +695,7 @@ func resourceIBMIAMAuthorizationPolicyUpdate(d *schema.ResourceData, meta interf
 					} else if value == "false" {
 						resourceValue = false
 					} else {
-						return fmt.Errorf("[ERROR] When operator equals stringExists, value should be either \"true\" or \"false\", instead of %s", value)
+						return fmt.Errorf("[ERROR] When operator equals stringExists, value should be either \"true\" or \"false\", instead of %v", value)
 					}
 					at := iampolicymanagementv1.V2PolicyResourceAttribute{
 						Key:      &name,
