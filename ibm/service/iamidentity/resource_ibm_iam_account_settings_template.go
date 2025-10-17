@@ -30,6 +30,7 @@ func ResourceIBMAccountSettingsTemplate() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"account_id": {
 				Type:        schema.TypeString,
+				Optional:    true,
 				Computed:    true,
 				Description: "ID of the account where the template resides.",
 			},
@@ -225,7 +226,13 @@ func resourceIBMAccountSettingsTemplateCreate(context context.Context, d *schema
 	}
 
 	createAccountSettingsTemplateOptions := &iamidentityv1.CreateAccountSettingsTemplateOptions{}
-
+	if _, ok := d.GetOk("account_id"); ok {
+		createAccountSettingsTemplateOptions.SetAccountID(d.Get("account_id").(string))
+	} else {
+		userDetails, _ := meta.(conns.ClientSession).BluemixUserDetails()
+		accountID := userDetails.UserAccount
+		createAccountSettingsTemplateOptions.SetAccountID(accountID)
+	}
 	if _, ok := d.GetOk("name"); ok {
 		createAccountSettingsTemplateOptions.SetName(d.Get("name").(string))
 	}
@@ -239,10 +246,6 @@ func resourceIBMAccountSettingsTemplateCreate(context context.Context, d *schema
 		}
 		createAccountSettingsTemplateOptions.SetAccountSettings(accountSettingsModel)
 	}
-
-	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
-	accountID := userDetails.UserAccount
-	createAccountSettingsTemplateOptions.SetAccountID(accountID)
 
 	accountSettingsTemplateResponse, response, err := iamIdentityClient.CreateAccountSettingsTemplateWithContext(context, createAccountSettingsTemplateOptions)
 	if err != nil {
@@ -279,6 +282,13 @@ func resourceIBMAccountSettingsTemplateCreateVersion(context context.Context, d 
 
 	createAccountSettingsTemplateVersionOptions.SetTemplateID(id)
 
+	if _, ok := d.GetOk("account_id"); ok {
+		createAccountSettingsTemplateVersionOptions.SetAccountID(d.Get("account_id").(string))
+	} else {
+		userDetails, _ := meta.(conns.ClientSession).BluemixUserDetails()
+		accountID := userDetails.UserAccount
+		createAccountSettingsTemplateVersionOptions.SetAccountID(accountID)
+	}
 	if _, ok := d.GetOk("name"); ok {
 		createAccountSettingsTemplateVersionOptions.SetName(d.Get("name").(string))
 	}
@@ -292,10 +302,6 @@ func resourceIBMAccountSettingsTemplateCreateVersion(context context.Context, d 
 		}
 		createAccountSettingsTemplateVersionOptions.SetAccountSettings(accountSettingsModel)
 	}
-
-	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
-	accountID := userDetails.UserAccount
-	createAccountSettingsTemplateVersionOptions.SetAccountID(accountID)
 
 	accountSettingsTemplateResponse, response, err := iamIdentityClient.CreateAccountSettingsTemplateVersionWithContext(context, createAccountSettingsTemplateVersionOptions)
 	if err != nil {
@@ -381,7 +387,7 @@ func resourceIBMAccountSettingsTemplateRead(context context.Context, d *schema.R
 	var history []map[string]interface{}
 	if !core.IsNil(accountSettingsTemplateResponse.History) {
 		for _, historyItem := range accountSettingsTemplateResponse.History {
-			historyItemMap, err := resourceIBMAccountSettingsTemplateEntityHistoryRecordToMap(&historyItem)
+			historyItemMap, err := EnityHistoryRecordToMap(&historyItem)
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -545,7 +551,7 @@ func resourceIBMAccountSettingsTemplateMapToAccountSettingsComponent(modelMap ma
 		model.Mfa = core.StringPtr(modelMap["mfa"].(string))
 	}
 	if modelMap["user_mfa"] != nil {
-		var userMfa []iamidentityv1.AccountSettingsUserMfa
+		var userMfa []iamidentityv1.UserMfa
 		for _, userMfaItem := range modelMap["user_mfa"].([]interface{}) {
 			userMfaItemModel, err := resourceIBMAccountSettingsTemplateMapToAccountSettingsUserMfa(userMfaItem.(map[string]interface{}))
 			if err != nil {
@@ -573,8 +579,8 @@ func resourceIBMAccountSettingsTemplateMapToAccountSettingsComponent(modelMap ma
 	return model, nil
 }
 
-func resourceIBMAccountSettingsTemplateMapToAccountSettingsUserMfa(modelMap map[string]interface{}) (*iamidentityv1.AccountSettingsUserMfa, error) {
-	model := &iamidentityv1.AccountSettingsUserMfa{}
+func resourceIBMAccountSettingsTemplateMapToAccountSettingsUserMfa(modelMap map[string]interface{}) (*iamidentityv1.UserMfa, error) {
+	model := &iamidentityv1.UserMfa{}
 	model.IamID = core.StringPtr(modelMap["iam_id"].(string))
 	model.Mfa = core.StringPtr(modelMap["mfa"].(string))
 	return model, nil
@@ -623,21 +629,10 @@ func resourceIBMAccountSettingsTemplateAccountSettingsComponentToMap(model *iami
 	return modelMap, nil
 }
 
-func resourceIBMAccountSettingsTemplateAccountSettingsUserMfaToMap(model *iamidentityv1.AccountSettingsUserMfa) (map[string]interface{}, error) {
+func resourceIBMAccountSettingsTemplateAccountSettingsUserMfaToMap(model *iamidentityv1.UserMfa) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["iam_id"] = model.IamID
 	modelMap["mfa"] = model.Mfa
-	return modelMap, nil
-}
-
-func resourceIBMAccountSettingsTemplateEntityHistoryRecordToMap(model *iamidentityv1.EnityHistoryRecord) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["timestamp"] = model.Timestamp
-	modelMap["iam_id"] = model.IamID
-	modelMap["iam_id_account"] = model.IamIDAccount
-	modelMap["action"] = model.Action
-	modelMap["params"] = model.Params
-	modelMap["message"] = model.Message
 	return modelMap, nil
 }
 
