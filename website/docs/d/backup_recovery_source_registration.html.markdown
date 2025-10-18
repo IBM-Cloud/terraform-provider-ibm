@@ -40,6 +40,7 @@ Nested schema for **advanced_configs**:
 * `authentication_status` - (String) Specifies the status of the authentication during the registration of a Protection Source. 'Pending' indicates the authentication is in progress. 'Scheduled' indicates the authentication is scheduled. 'Finished' indicates the authentication is completed. 'RefreshInProgress' indicates the refresh is in progress.
   * Constraints: Allowable values are: `Pending`, `Scheduled`, `Finished`, `RefreshInProgress`.
 * `connection_id` - (Integer) Specifies the id of the connection from where this source is reachable. This should only be set for a source being registered by a tenant user. This field will be depricated in future. Use connections field.
+
 * `connections` - (List) Specfies the list of connections for the source.
 Nested schema for **connections**:
 	* `connection_id` - (Integer) Specifies the id of the connection.
@@ -88,6 +89,58 @@ Nested schema for **external_metadata**:
 			  * Constraints: Allowable values are: `BackupRun`.
 * `last_refreshed_time_msecs` - (Integer) Specifies the time when the source was last refreshed in milliseconds.
 * `name` - (String) The user specified name for this source.
+* `kubernetes_params` - (List) Specifies the parameters to register a Kubernetes source.
+	Nested schema for **kubernetes_params**:
+		* `auto_protect_config` - (List) Specifies the parameters to auto protect the source after registration.
+		Nested schema for **auto_protect_config**:
+			* `error_message` - (String) Specifies the error message in case source registration is successful but protection job creation fails.
+			* `is_default_auto_protected` - (Boolean) Specifies if entire source should be auto protected after registration. Default: False.
+			* `policy_id` - (String) Specifies the protection policy to auto protect the source with.
+			* `protection_group_id` - (String) Specifies the protection group Id after it is successfully created.
+			* `storage_domain_id` - (Integer) Specifies the storage domain id for the protection job.
+		* `client_private_key` - (String) Specifies the bearer token or private key of Kubernetes source.
+		* `data_mover_image_location` - (String) Specifies the datamover image location of Kubernetes source.
+		* `datamover_service_type` - (String) Specifies the data mover service type of Kubernetes source.
+		  * Constraints: Allowable values are: `kNodePort`, `kLoadBalancer`, `kClusterIp`.
+		* `default_vlan_params` - (List) Specifies VLAN params associated with the backup/restore operation.
+		Nested schema for **default_vlan_params**:
+			* `disable_vlan` - (Boolean) If this is set to true, then even if VLANs are configured on the system, the partition VIPs will be used for the restore.
+			* `interface_name` - (String) Interface group to use for backup/restore. If this is not specified, primary interface group for the cluster will be used.
+			* `vlan_id` - (Integer) If this is set, then the Cohesity host name or the IP address associated with this VLAN is used for mounting Cohesity's view on the remote host.
+		* `endpoint` - (String) Specifies the endpoint of Kubernetes source.
+		* `init_container_image_location` - (String) Specifies the initial container image location of Kubernetes source.
+		* `kubernetes_distribution` - (String) Specifies the distribution type of Kubernetes source.
+		  * Constraints: Allowable values are: `kOpenshift`, `kMainline`, `kVMwareTanzu`, `kRancher`, `kEKS`, `kGKE`, `kAKS`, `kIKS`, `kROKS`.
+		* `kubernetes_type` - (String) Specifies the type of kubernetes source.
+		  * Constraints: Allowable values are: `kCluster`, `kNamespace`, `kService`, `kPVC`, `kPersistentVolumeClaim`, `kPersistentVolume`, `kLabel`.
+		* `priority_class_name` - (String) Specifies the priority class name for cohesity resources.
+		* `resource_annotations` - (List) Specifies resource annotations to be applied on cohesity resources.
+		Nested schema for **resource_annotations**:
+			* `key` - (String) Specifies the label key.
+			* `value` - (String) Specifies the label value.
+		* `resource_labels` - (List) Specifies resource label to be applied on cohesity resources.
+		Nested schema for **resource_labels**:
+			* `key` - (String) Specifies the label key.
+			* `value` - (String) Specifies the label value.
+		* `san_fields` - (List) Specifies the SAN field for agent certificate.
+		* `service_annotations` - (List) Specifies the service annotation object of Kubernetes source.
+		Nested schema for **service_annotations**:
+			* `key` - (String) Specifies the service annotation key value.
+			* `value` - (String) Specifies the service annotation value.
+		* `velero_aws_plugin_image_location` - (String) Specifies the velero AWS plugin image location of the Kubernetes source.
+		* `velero_image_location` - (String) Specifies the velero image location of the Kubernetes source.
+		* `velero_openshift_plugin_image_location` - (String) Specifies the velero open shift plugin image for the Kubernetes source.
+		* `vlan_info_vec` - (List) Specifies VLAN information provided during registration.
+		Nested schema for **vlan_info_vec**:
+			* `service_annotations` - (List) Specifies annotations to be put on services for IP allocation. Applicable only when service is of type LoadBalancer.
+			Nested schema for **service_annotations**:
+				* `key` - (String) Specifies the service annotation key value.
+				* `value` - (String) Specifies the service annotation value.
+			* `vlan_params` - (List) Specifies VLAN params associated with the backup/restore operation.
+			Nested schema for **vlan_params**:
+				* `disable_vlan` - (Boolean) If this is set to true, then even if VLANs are configured on the system, the partition VIPs will be used for the restore.
+				* `interface_name` - (String) Interface group to use for backup/restore. If this is not specified, primary interface group for the cluster will be used.
+				* `vlan_id` - (Integer) If this is set, then the Cohesity host name or the IP address associated with this VLAN is used for mounting Cohesity's view on the remote host.
 * `physical_params` - (List) Specifies parameters to register physical server.
 Nested schema for **physical_params**:
 	* `applications` - (List) Specifies the list of applications to be registered with Physical Source.
