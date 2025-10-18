@@ -56,6 +56,9 @@ Nested schema for **connections**:
 * `environment` - (Required, String) Specifies the environment type of the Protection Source.
   * Constraints: Allowable values are: `kPhysical`, `kSQL`.
 * `name` - (Optional, String) The user specified name for this source.
+* `endpoint_type` - (Optional, String) Backup Recovery Endpoint type. By default set to "public".
+* `instance_id` - (Optional, String) Backup Recovery instance ID. If provided here along with region, the provider constructs the endpoint URL using them, which overrides any value set through environment variables or the `endpoints.json` file.
+* `region` - (Optional, String) Backup Recovery region. If provided here along with instance_id, the provider constructs the endpoint URL using them, which overrides any value set through environment variables or the `endpoints.json` file.  
 * `physical_params` - (Optional, List) Specifies parameters to register physical server.
 Nested schema for **physical_params**:
 	* `applications` - (Optional, List) Specifies the list of applications to be registered with Physical Source.

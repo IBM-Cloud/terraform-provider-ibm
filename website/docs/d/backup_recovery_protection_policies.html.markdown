@@ -23,6 +23,9 @@ data "ibm_backup_recovery_protection_policies" "backup_recovery_protection_polic
 You can specify the following arguments for this data source.
 
 * `exclude_linked_policies` - (Optional, Boolean) If excludeLinkedPolicies is set to true then only local policies created on cluster will be returned. The result will exclude all linked policies created from policy templates.
+* `endpoint_type` - (Optional, String) Backup Recovery Endpoint type. By default set to "public".
+* `instance_id` - (Optional, String) Backup Recovery instance ID. If provided here along with region, the provider constructs the endpoint URL using them, which overrides any value set through environment variables or the `endpoints.json` file.
+* `region` - (Optional, String) Backup Recovery region. If provided here along with instance_id, the provider constructs the endpoint URL using them, which overrides any value set through environment variables or the `endpoints.json` file.  
 * `ids` - (Optional, List) Filter policies by a list of policy ids.
 * `include_replicated_policies` - (Optional, Boolean) If includeReplicatedPolicies is set to true, then response will also contain replicated policies. By default, replication policies are not included in the response.
 * `include_stats` - (Optional, Boolean) If includeStats is set to true, then response will return number of protection groups and objects. By default, the protection stats are not included in the response.

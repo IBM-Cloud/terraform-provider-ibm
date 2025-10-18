@@ -18,7 +18,6 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 )
@@ -3365,28 +3364,17 @@ func checkDiffResourceIbmBackupRecoveryRestorePoints(context context.Context, d 
 	return nil
 }
 
-func ResourceIbmBackupRecoveryRestorePointsValidator() *validate.ResourceValidator {
-	validateSchema := make([]validate.ValidateSchema, 0)
-	validateSchema = append(validateSchema,
-		validate.ValidateSchema{
-			Identifier:                 "environment",
-			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
-			Type:                       validate.TypeString,
-			Required:                   true,
-			AllowedValues:              "kAcropolis, kAD, kAWS, kAzure, kCassandra, kCouchbase, kElastifile, kExchange, kFlashBlade, kGCP, kGenericNas, kGPFS, kHBase, kHdfs, kHive, kHyperV, kIbmFlashSystem, kIsilon, kKubernetes, kKVM, kMongoDB, kNetapp, kO365, kOracle, kPhysical, kPure, kRemoteAdapter, kSAPHANA, kSfdc, kSQL, kUDA, kView, kVMware",
-		},
-	)
-
-	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_backup_recovery_restore_points", Schema: validateSchema}
-	return &resourceValidator
-}
-
 func resourceIbmBackupRecoveryRestorePointsCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_restore_points", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
+	}
+	endpointType := d.Get("endpoint_type").(string)
+	instanceId, region := getInstanceIdAndRegion(d)
+	if instanceId != "" && region != "" {
+		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, instanceId, region, endpointType)
 	}
 
 	getRestorePointsInTimeRangeOptions := &backuprecoveryv1.GetRestorePointsInTimeRangeOptions{}
@@ -3416,6 +3404,12 @@ func resourceIbmBackupRecoveryRestorePointsCreate(context context.Context, d *sc
 	}
 
 	d.SetId(resourceIbmBackupRecoveryRestorePointsID(d))
+
+	if endpoint, ok := d.GetOk("backup_recovery_endpoint"); ok {
+		if err := d.Set("backup_recovery_endpoint", endpoint); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting backup_recovery_endpoint: %s", err), "(Resource) ibm_backup_recovery_restore_points", "create", "set-backup-recovery-endpoint").GetDiag()
+		}
+	}
 
 	if !core.IsNil(getRestorePointsInTimeRangeResponse.FullSnapshotInfo) {
 		fullSnapshotInfo := []map[string]interface{}{}

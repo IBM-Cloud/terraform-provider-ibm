@@ -158,6 +158,12 @@ func dataSourceIbmBackupRecoveryDataSourceConnectorsRead(context context.Context
 		return tfErr.GetDiag()
 	}
 
+	endpointType := d.Get("endpoint_type").(string)
+	instanceId, region := getInstanceIdAndRegion(d)
+	if instanceId != "" && region != "" {
+		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, instanceId, region, endpointType)
+	}
+
 	getDataSourceConnectorsOptions := &backuprecoveryv1.GetDataSourceConnectorsOptions{}
 
 	getDataSourceConnectorsOptions.SetXIBMTenantID(d.Get("x_ibm_tenant_id").(string))

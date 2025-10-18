@@ -17,15 +17,15 @@ import (
 )
 
 var (
-	tenantIdRegister = "jhxqx715r9/"
+	tenantIdRegister = "wkk1yqrdce/"
 )
 
 func TestAccIbmBackupRecoverySourceRegistrationBasic(t *testing.T) {
 	var conf backuprecoveryv1.SourceRegistrationResponseParams
 
 	environment := "kPhysical"
-	connectionId := "6456884682673709176"
-	endpoint := "172.26.1.21"
+	connectionId := "5128356219792164864"
+	endpoint := "172.26.202.5"
 	hostType := "kLinux"
 	physicalType := "kHost"
 	applications := ""
@@ -70,6 +70,7 @@ func TestAccIbmBackupRecoverySourceRegistrationBasic(t *testing.T) {
 func testAccCheckIbmBackupRecoverySourceRegistrationConfigBasic(environment, applications, endpoint, hostType, physicalType string, connectionId string) string {
 	return fmt.Sprintf(`
 			resource "ibm_backup_recovery_source_registration" "baas_source_registration_instance" {
+				
 				x_ibm_tenant_id = "%s"
 				environment = "%s"
 				connection_id = "%s"

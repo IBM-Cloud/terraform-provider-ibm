@@ -248,6 +248,11 @@ func resourceIbmBackupRecoveryAgentUpgradeTaskCreate(context context.Context, d 
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
+	endpointType := d.Get("endpoint_type").(string)
+	instanceId, region := getInstanceIdAndRegion(d)
+	if instanceId != "" && region != "" {
+		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, instanceId, region, endpointType)
+	}
 
 	createUpgradeTaskOptions := &backuprecoveryv1.CreateUpgradeTaskOptions{}
 
@@ -296,6 +301,11 @@ func resourceIbmBackupRecoveryAgentUpgradeTaskRead(context context.Context, d *s
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
+	endpointType := d.Get("endpoint_type").(string)
+	instanceId, region := getInstanceIdAndRegion(d)
+	if instanceId != "" && region != "" {
+		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, instanceId, region, endpointType)
+	}
 
 	getUpgradeTasksOptions := &backuprecoveryv1.GetUpgradeTasksOptions{}
 
@@ -317,6 +327,22 @@ func resourceIbmBackupRecoveryAgentUpgradeTaskRead(context context.Context, d *s
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetUpgradeTasksWithContext failed: %s", err.Error()), "ibm_backup_recovery_agent_upgrade_task", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
+	}
+
+	if instanceId != "" {
+		if err := d.Set("instance_id", instanceId); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting instance_id: %s", err), "(Resource) ibm_backup_recovery_agent_upgrade_task", "read", "set-instance-id").GetDiag()
+		}
+	}
+	if region != "" {
+		if err := d.Set("region", region); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting region: %s", err), "(Resource) ibm_backup_recovery_agent_upgrade_task", "read", "set--region").GetDiag()
+		}
+	}
+
+	if err = d.Set("endpoint_type", d.Get("endpoint_type").(string)); err != nil {
+		err = fmt.Errorf("Error setting endpoint_type: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_agent_upgrade_task", "read", "set-endpoint-type").GetDiag()
 	}
 
 	if !core.IsNil(agentUpgradeTaskStates.Tasks[0].AgentIDs) {

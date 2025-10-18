@@ -54,6 +54,7 @@ func testAccCheckIbmBackupRecoveryDataSourceConnectionConfigBasic(connectionName
 	return fmt.Sprintf(`
 	resource "ibm_backup_recovery_data_source_connection" "baas_data_source_connection_instance" {
 		x_ibm_tenant_id = "%s"
+		
 		connection_name = "%s"
 	  }
 	`, tenantId, connectionName)
@@ -95,6 +96,7 @@ func testAccCheckIbmBackupRecoveryDataSourceConnectionDestroy(s *terraform.State
 	if err != nil {
 		return err
 	}
+
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "ibm_backup_recovery_data_source_connection" {
 			continue

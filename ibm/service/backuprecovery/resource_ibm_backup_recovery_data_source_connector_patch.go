@@ -154,6 +154,11 @@ func resourceIbmBackupRecoveryDataSourceConnectorPatchCreate(context context.Con
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
+	endpointType := d.Get("endpoint_type").(string)
+	instanceId, region := getInstanceIdAndRegion(d)
+	if instanceId != "" && region != "" {
+		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, instanceId, region, endpointType)
+	}
 
 	patchDataSourceConnectorOptions := &backuprecoveryv1.PatchDataSourceConnectorOptions{}
 
@@ -182,6 +187,11 @@ func resourceIbmBackupRecoveryDataSourceConnectorPatchRead(context context.Conte
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
+	endpointType := d.Get("endpoint_type").(string)
+	instanceId, region := getInstanceIdAndRegion(d)
+	if instanceId != "" && region != "" {
+		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, instanceId, region, endpointType)
+	}
 
 	getDataSourceConnectorsOptions := &backuprecoveryv1.GetDataSourceConnectorsOptions{}
 
@@ -197,6 +207,12 @@ func resourceIbmBackupRecoveryDataSourceConnectorPatchRead(context context.Conte
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetDataSourceConnectorsWithContext failed: %s", err.Error()), "ibm_backup_recovery_data_source_connector_patch", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
+	}
+
+	if endpoint, ok := d.GetOk("backup_recovery_endpoint"); ok {
+		if err := d.Set("backup_recovery_endpoint", endpoint); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting backup_recovery_endpoint: %s", err), "(Resource) ibm_backup_recovery_data_source_connector_patch", "read", "set-backup-recovery-endpoint").GetDiag()
+		}
 	}
 
 	if !core.IsNil(dataSourceConnectorList.Connectors[0].ConnectorName) {

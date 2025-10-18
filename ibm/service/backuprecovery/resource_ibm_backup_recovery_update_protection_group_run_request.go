@@ -400,6 +400,11 @@ func resourceIbmBackupRecoveryUpdateProtectionGroupRunRequestCreate(context cont
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
+	endpointType := d.Get("endpoint_type").(string)
+	instanceId, region := getInstanceIdAndRegion(d)
+	if instanceId != "" && region != "" {
+		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, instanceId, region, endpointType)
+	}
 
 	updateProtectionGroupRunOptions := &backuprecoveryv1.UpdateProtectionGroupRunOptions{}
 
@@ -422,6 +427,12 @@ func resourceIbmBackupRecoveryUpdateProtectionGroupRunRequestCreate(context cont
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateProtectionGroupRunWithContext failed: %s", err.Error()), "ibm_backup_recovery_update_protection_group_run_request", "create")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
+	}
+
+	if endpoint, ok := d.GetOk("backup_recovery_endpoint"); ok {
+		if err := d.Set("backup_recovery_endpoint", endpoint); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting backup_recovery_endpoint: %s", err), "(Resource) ibm_backup_recovery_update_protection_group_run_request", "create", "set-backup-recovery-endpoint").GetDiag()
+		}
 	}
 
 	d.Set("successful_run_ids", strings.Join(updateProtectionGroupRunResponse.SuccessfulRunIds[:], ","))

@@ -4059,6 +4059,12 @@ func dataSourceIbmBackupRecoveryProtectionPoliciesRead(context context.Context, 
 		return tfErr.GetDiag()
 	}
 
+	endpointType := d.Get("endpoint_type").(string)
+	instanceId, region := getInstanceIdAndRegion(d)
+	if instanceId != "" && region != "" {
+		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, instanceId, region, endpointType)
+	}
+
 	getProtectionPoliciesOptions := &backuprecoveryv1.GetProtectionPoliciesOptions{}
 
 	getProtectionPoliciesOptions.SetXIBMTenantID(d.Get("x_ibm_tenant_id").(string))

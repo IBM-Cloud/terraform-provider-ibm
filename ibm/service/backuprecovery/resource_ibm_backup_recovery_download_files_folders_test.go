@@ -19,7 +19,7 @@ import (
 
 func TestAccIbmBackupRecoveryDownloadFilesFoldersBasic(t *testing.T) {
 	name := fmt.Sprintf("tf_recovery_download_files_folders_name_%d", acctest.RandIntRange(10, 100))
-	objectId := 18
+	objectId := 344
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
@@ -47,17 +47,19 @@ func testAccCheckIbmBackupRecoveryDownloadFilesFoldersConfigBasic(name string, o
 	
 	data "ibm_backup_recovery_object_snapshots" "baas_object_snapshots_instance" {
 		x_ibm_tenant_id = "%s"
+		
 		object_id = %d
 	  }
 
 	resource "ibm_backup_recovery_download_files_folders" "baas_recovery_download_files_folders_instance" {
 		x_ibm_tenant_id = "%s"
 		name = "%s"
+		
 		object {
 		  snapshot_id = data.ibm_backup_recovery_object_snapshots.baas_object_snapshots_instance.snapshots[0].id
 		}
 		files_and_folders {
-			absolute_path = "/data/"
+			absolute_path = "/mnt"
 		}
 	  }
 	`, tenantId, objectId, tenantId, name)

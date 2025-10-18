@@ -20,9 +20,9 @@ import (
 func TestAccIbmBackupRecoveriesDataSourceBasic(t *testing.T) {
 	name := fmt.Sprintf("tf_recovery_name_%d", acctest.RandIntRange(10, 100))
 	snapshotEnvironment := "kPhysical"
-	objectId := 3
+	objectId := 344
 	targetenvironment := "kPhysical"
-	absolutePath := "/data/"
+	absolutePath := "/mnt"
 	restoreEntityType := "kRegular"
 	recoveryAction := "RecoverFiles"
 
@@ -51,12 +51,14 @@ func testAccCheckIbmBackupRecoveriesDataSourceConfigBasic(objectId int, name, sn
 
 	data "ibm_backup_recovery_object_snapshots" "object_snapshot" {
 		x_ibm_tenant_id = "%s"
+		
 		object_id = %d
 	  }
 
 	resource "ibm_backup_recovery" "baas_recovery_instance" {
 		x_ibm_tenant_id = "%s"
 		snapshot_environment = "%s"
+		
 		name = "%s"
 		physical_params {
 		  recovery_action = "%s"
@@ -81,6 +83,7 @@ func testAccCheckIbmBackupRecoveriesDataSourceConfigBasic(objectId int, name, sn
 
 	  data "ibm_backup_recoveries" "baas_recoveries_instance" {
 		x_ibm_tenant_id = "%[1]s"
+		
 		ids = [ ibm_backup_recovery.baas_recovery_instance.recovery_id ]
 	}
 	`, tenantId, objectId, tenantId, snapshotEnvironment, name, recoveryAction, targetenvironment, absolutePath, objectId, restoreEntityType, absolutePath)

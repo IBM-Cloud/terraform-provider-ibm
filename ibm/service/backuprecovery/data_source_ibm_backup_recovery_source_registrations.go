@@ -991,6 +991,11 @@ func dataSourceIbmBackupRecoverySourceRegistrationsRead(context context.Context,
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
+	endpointType := d.Get("endpoint_type").(string)
+	instanceId, region := getInstanceIdAndRegion(d)
+	if instanceId != "" && region != "" {
+		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, instanceId, region, endpointType)
+	}
 
 	getSourceRegistrationsOptions := &backuprecoveryv1.GetSourceRegistrationsOptions{}
 

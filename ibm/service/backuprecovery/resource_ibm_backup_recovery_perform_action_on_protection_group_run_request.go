@@ -18,7 +18,6 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 )
@@ -148,28 +147,17 @@ func checkDiffResourceIbmBackupRecoveryPerformActionOnProtectionGroupRun(context
 	return nil
 }
 
-func ResourceIbmBackupRecoveryPerformActionOnProtectionGroupRunRequestValidator() *validate.ResourceValidator {
-	validateSchema := make([]validate.ValidateSchema, 0)
-	validateSchema = append(validateSchema,
-		validate.ValidateSchema{
-			Identifier:                 "action",
-			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
-			Type:                       validate.TypeString,
-			Required:                   true,
-			AllowedValues:              "Cancel, Pause, Resume",
-		},
-	)
-
-	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_backup_recovery_perform_action_on_protection_group_run_request", Schema: validateSchema}
-	return &resourceValidator
-}
-
 func resourceIbmBackupRecoveryPerformActionOnProtectionGroupRunRequestCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_perform_action_on_protection_group_run_request", "create", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
+	}
+	endpointType := d.Get("endpoint_type").(string)
+	instanceId, region := getInstanceIdAndRegion(d)
+	if instanceId != "" && region != "" {
+		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, instanceId, region, endpointType)
 	}
 
 	performActionOnProtectionGroupRunOptions := &backuprecoveryv1.PerformActionOnProtectionGroupRunOptions{}
@@ -221,6 +209,12 @@ func resourceIbmBackupRecoveryPerformActionOnProtectionGroupRunRequestCreate(con
 	}
 
 	d.SetId(resourceIbmBackupRecoveryProtectionRunActionID(d))
+
+	if endpoint, ok := d.GetOk("backup_recovery_endpoint"); ok {
+		if err := d.Set("backup_recovery_endpoint", endpoint); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting backup_recovery_endpoint: %s", err), "(Source) ibm_perform_action_on_protection_group_run_request", "create", "set-backup-recovery-endpoint").GetDiag()
+		}
+	}
 
 	d.Set("action", performRunActionResponse.Action)
 

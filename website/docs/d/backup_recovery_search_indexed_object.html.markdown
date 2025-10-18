@@ -241,6 +241,9 @@ Nested schema for **couchbase_params**:
 	* `search_string` - (Required, String) Specifies the search string to search the Couchbase Objects.
 	* `source_ids` - (Optional, List) Specifies a list of source ids. Only files found in these sources will be returned.
 * `count` - (Optional, Forces new resource, Integer) Specifies the number of indexed objects to be fetched for the specified pagination cookie.
+* `endpoint_type` - (Optional, String) Backup Recovery Endpoint type. By default set to "public".
+* `instance_id` - (Optional, String) Backup Recovery instance ID. If provided here along with region, the provider constructs the endpoint URL using them, which overrides any value set through environment variables or the `endpoints.json` file.
+* `region` - (Optional, String) Backup Recovery region. If provided here along with instance_id, the provider constructs the endpoint URL using them, which overrides any value set through environment variables or the `endpoints.json` file.  
 * `email_params` - (Optional, Forces new resource, List) Specifies the request parameters to search for emails and email folders.
 Nested schema for **email_params**:
 	* `attendees_addresses` - (Optional, List) Filters the calendar items which have specified email addresses as attendees.

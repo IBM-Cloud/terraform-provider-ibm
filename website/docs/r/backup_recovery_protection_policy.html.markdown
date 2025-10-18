@@ -1533,6 +1533,9 @@ Nested schema for **cascaded_targets_config**:
 * `data_lock` - (Optional, String) This field is now deprecated. Please use the DataLockConfig in the backup retention.
   * Constraints: Allowable values are: `Compliance`, `Administrative`.
 * `description` - (Optional, String) Specifies the description of the Protection Policy.
+* `endpoint_type` - (Optional, String) Backup Recovery Endpoint type. By default set to "public".
+* `instance_id` - (Optional, String) Backup Recovery instance ID. If provided here along with region, the provider constructs the endpoint URL using them, which overrides any value set through environment variables or the `endpoints.json` file.
+* `region` - (Optional, String) Backup Recovery region. If provided here along with instance_id, the provider constructs the endpoint URL using them, which overrides any value set through environment variables or the `endpoints.json` file.  
 * `extended_retention` - (Optional, List) Specifies additional retention policies that should be applied to the backup snapshots. A backup snapshot will be retained up to a time that is the maximum of all retention policies that are applicable to it.
 Nested schema for **extended_retention**:
 	* `config_id` - (Optional, String) Specifies the unique identifier for the target getting added. This field need to be passed olny when policies are updated.

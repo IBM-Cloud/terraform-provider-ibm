@@ -31,6 +31,9 @@ resource "ibm_backup_recovery_restore_points" "backup_recovery_restore_points_in
 You can specify the following arguments for this resource.
 
 * `end_time_usecs` - (Required, Forces new resource, Integer) Specifies the end time specified as a Unix epoch Timestamp in microseconds.
+* `endpoint_type` - (Optional, String) Backup Recovery Endpoint type. By default set to "public".
+* `instance_id` - (Optional, String) Backup Recovery instance ID. If provided here along with region, the provider constructs the endpoint URL using them, which overrides any value set through environment variables or the `endpoints.json` file.
+* `region` - (Optional, String) Backup Recovery region. If provided here along with instance_id, the provider constructs the endpoint URL using them, which overrides any value set through environment variables or the `endpoints.json` file.  
 * `environment` - (Required, Forces new resource, String) Specifies the protection source environment type.
   * Constraints: Allowable values are: `kVMware`, `kHyperV`, `kAzure`, `kGCP`, `kKVM`, `kAcropolis`, `kAWS`, `kPhysical`, `kGPFS`, `kElastifile`, `kNetapp`, `kGenericNas`, `kIsilon`, `kFlashBlade`, `kPure`, `kIbmFlashSystem`, `kSQL`, `kExchange`, `kAD`, `kOracle`, `kView`, `kRemoteAdapter`, `kO365`, `kKubernetes`, `kCassandra`, `kMongoDB`, `kCouchbase`, `kHdfs`, `kHive`, `kSAPHANA`, `kHBase`, `kUDA`, `kSfdc`.
 * `protection_group_ids` - (Required, Forces new resource, List) Specifies the jobs for which to get the full snapshot information.

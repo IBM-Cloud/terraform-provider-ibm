@@ -52,6 +52,7 @@ func testAccCheckIbmBackupRecoveryProtectionPolicyConfigBasic(name string, durat
 		resource "ibm_backup_recovery_protection_policy" "baas_protection_policy_instance" {
 			x_ibm_tenant_id = "%s"
 			name = "%s"
+			
 			backup_policy {
 					regular {
 						incremental{

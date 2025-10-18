@@ -224,6 +224,11 @@ func dataSourceIbmBackupRecoveryAgentUpgradeTasksRead(context context.Context, d
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
+	endpointType := d.Get("endpoint_type").(string)
+	instanceId, region := getInstanceIdAndRegion(d)
+	if instanceId != "" && region != "" {
+		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, instanceId, region, endpointType)
+	}
 
 	getUpgradeTasksOptions := &backuprecoveryv1.GetUpgradeTasksOptions{}
 
@@ -245,7 +250,11 @@ func dataSourceIbmBackupRecoveryAgentUpgradeTasksRead(context context.Context, d
 	}
 
 	d.SetId(dataSourceIbmBackupRecoveryAgentUpgradeTasksID(d))
-
+	if endpoint, ok := d.GetOk("backup_recovery_endpoint"); ok {
+		if err := d.Set("backup_recovery_endpoint", endpoint); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting backup_recovery_endpoint: %s", err), "(Data) ibm_backup_recovery_agent_upgrade_tasks", "read", "set-tasks").GetDiag()
+		}
+	}
 	if !core.IsNil(agentUpgradeTaskStates.Tasks) {
 		tasks := []map[string]interface{}{}
 		for _, tasksItem := range agentUpgradeTaskStates.Tasks {

@@ -1292,6 +1292,12 @@ func dataSourceIbmBackupRecoverySearchProtectedObjectsRead(context context.Conte
 		return tfErr.GetDiag()
 	}
 
+	endpointType := d.Get("endpoint_type").(string)
+	instanceId, region := getInstanceIdAndRegion(d)
+	if instanceId != "" && region != "" {
+		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, instanceId, region, endpointType)
+	}
+
 	searchProtectedObjectsOptions := &backuprecoveryv1.SearchProtectedObjectsOptions{}
 
 	searchProtectedObjectsOptions.SetXIBMTenantID(d.Get("x_ibm_tenant_id").(string))
