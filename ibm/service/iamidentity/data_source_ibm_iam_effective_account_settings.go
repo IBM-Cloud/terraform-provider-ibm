@@ -146,11 +146,6 @@ func DataSourceIBMIamEffectiveAccountSettings() *schema.Resource {
 				Description: "Input body parameters for the Account Settings REST request.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"account_id": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Unique ID of the account.",
-						},
 						"entity_tag": {
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -541,7 +536,7 @@ func DataSourceIBMIamEffectiveAccountSettingsAccountSettingsEffectiveSectionToMa
 
 func DataSourceIBMIamEffectiveAccountSettingsAccountSettingsAccountSectionToMap(model *iamidentityv1.AccountSettingsResponse) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["account_id"] = *model.AccountID
+
 	modelMap["entity_tag"] = *model.EntityTag
 	if model.History != nil {
 		var history []map[string]interface{}
