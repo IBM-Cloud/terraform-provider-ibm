@@ -54,6 +54,7 @@ func testAccCheckIbmProjectEnvironmentConfigBasic() string {
                 destroy_on_delete = true
                 monitoring_enabled = true
                 auto_deploy = true
+                auto_deploy_mode = "auto_approval"
             }
         }
 

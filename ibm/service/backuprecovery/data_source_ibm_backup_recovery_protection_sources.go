@@ -22060,6 +22060,17 @@ func dataSourceIbmBackupRecoveryProtectionSourcesRead(context context.Context, d
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
+	endpointType := d.Get("endpoint_type").(string)
+	instanceId, region := getInstanceIdAndRegion(d)
+	if instanceId != "" && region != "" {
+		bmxsession, err := meta.(conns.ClientSession).BluemixSession()
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("unable to get clientSession"), "ibm_backup_recovery", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
+		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, bmxsession, instanceId, region, endpointType)
+	}
 
 	listProtectionSourcesOptions := &backuprecoveryv1.ListProtectionSourcesOptions{}
 
@@ -22206,7 +22217,6 @@ func dataSourceIbmBackupRecoveryProtectionSourcesRead(context context.Context, d
 			}
 			protectionSources = append(protectionSources, protectionSourcesItemMap)
 		}
-		fmt.Println("protectionSources....", protectionSources)
 		if err = d.Set("protection_sources", protectionSources); err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting protection_sources: %s", err), "(Data) ibm_backup_recovery_protection_sources", "read", "set-protection_sources").GetDiag()
 		}

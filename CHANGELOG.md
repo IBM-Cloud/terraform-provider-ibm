@@ -1,3 +1,41 @@
+# 1.84.0 (October 13, 2025)
+
+## Bug Fixes
+
+### Cloud Databases
+* Add hidden and beta versions to in place upgrade ([6502](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6502))
+
+
+## Enhancements
+
+### Cloud Object Storage
+* Support Schematics replatform for COS resources ([6504](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6504))
+
+### Secrets Manager
+* projects - support auto deploy mode ([6492](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6492))
+
+### VPC Infrastructure
+* volume-qos-mode feature development ([6498](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6498))
+
+# 1.83.3 (October 9, 2025)
+
+## Bug Fixes
+### VPC Infrastructure
+* migrated provider to v0.74.1 vpc-go-sdk ([6500](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6500))
+
+# 1.83.2 (October 7, 2025)
+
+## Bug Fixes
+### Global Catalog
+* correct argument capitalization, update cm account doc ([6486](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6486))
+* only set rev field if it exists ([6494](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6494))
+
+### CIS
+* check position index before updating CIS ruleset rule ([6472](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6472))
+
+### General
+* removed platform-services-go-sdk replace from go.mod ([6495](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6495))
+
 # 1.83.1 (October 1, 2025)
 
 ## Bug Fixes

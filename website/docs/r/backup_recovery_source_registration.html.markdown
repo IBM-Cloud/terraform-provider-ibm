@@ -157,6 +157,9 @@ Nested schema for **kubernetes_params**:
 			* `interface_name` - (Optional, String) Interface group to use for backup/restore. If this is not specified, primary interface group for the cluster will be used.
 			* `vlan_id` - (Optional, Integer) If this is set, then the Cohesity host name or the IP address associated with this VLAN is used for mounting Cohesity's view on the remote host.
 * `name` - (Optional, String) The user specified name for this source.
+* `endpoint_type` - (Optional, String) Backup Recovery Endpoint type. By default set to "public".
+* `instance_id` - (Optional, String) Backup Recovery instance ID. If provided here along with region, the provider constructs the endpoint URL using them, which overrides any value set through environment variables or the `endpoints.json` file.
+* `region` - (Optional, String) Backup Recovery region. If provided here along with instance_id, the provider constructs the endpoint URL using them, which overrides any value set through environment variables or the `endpoints.json` file.  
 * `physical_params` - (Optional, List) Specifies parameters to register physical server.
 Nested schema for **physical_params**:
 	* `applications` - (Optional, List) Specifies the list of applications to be registered with Physical Source.

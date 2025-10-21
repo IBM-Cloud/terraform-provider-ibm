@@ -436,6 +436,9 @@ Nested schema for **recoveries**:
 				* `interface_name` - (String) Interface group to use for Recovery.
 		* `recovery_action` - (String) Specifies the type of recover action to be performed.
 		  * Constraints: Allowable values are: `RecoverNamespaces`, `RecoverFiles`, `DownloadFilesAndFolders`.
+	* `endpoint_type` - (Optional, String) Backup Recovery Endpoint type. By default set to "public".
+* `instance_id` - (Optional, String) Backup Recovery instance ID. If provided here along with region, the provider constructs the endpoint URL using them, which overrides any value set through environment variables or the `endpoints.json` file.
+* `region` - (Optional, String) Backup Recovery region. If provided here along with instance_id, the provider constructs the endpoint URL using them, which overrides any value set through environment variables or the `endpoints.json` file.  
 	* `messages` - (List) Specifies messages about the recovery.
 	* `mssql_params` - (List) Specifies the recovery options specific to Sql environment.
 	Nested schema for **mssql_params**:

@@ -14,10 +14,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/iamidentity"
-	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestAccIBMIAMTrustedProfileDataSourceBasic(t *testing.T) {
@@ -47,30 +43,4 @@ func testAccCheckIBMIamTrustedProfileDataSourceConfigBasic() string {
 			profile_id = "%s"
 		}
 	`, acc.IAMTrustedProfileID)
-}
-
-func TestDataSourceIBMIamTrustedProfileEnityHistoryRecordToMap(t *testing.T) {
-	checkResult := func(result map[string]interface{}) {
-		model := make(map[string]interface{})
-		model["timestamp"] = "testString"
-		model["iam_id"] = "testString"
-		model["iam_id_account"] = "testString"
-		model["action"] = "testString"
-		model["params"] = []string{"testString"}
-		model["message"] = "testString"
-
-		assert.Equal(t, result, model)
-	}
-
-	model := new(iamidentityv1.EnityHistoryRecord)
-	model.Timestamp = core.StringPtr("testString")
-	model.IamID = core.StringPtr("testString")
-	model.IamIDAccount = core.StringPtr("testString")
-	model.Action = core.StringPtr("testString")
-	model.Params = []string{"testString"}
-	model.Message = core.StringPtr("testString")
-
-	result, err := iamidentity.DataSourceIBMIamTrustedProfileEnityHistoryRecordToMap(model)
-	assert.Nil(t, err)
-	checkResult(result)
 }

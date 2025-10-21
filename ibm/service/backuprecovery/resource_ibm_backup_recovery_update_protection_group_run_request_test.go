@@ -17,9 +17,9 @@ import (
 )
 
 func TestAccIbmBackupRecoveryUpdateProtectionGroupRunRequestBasic(t *testing.T) {
-	objectId := 18
+	objectId := 344
 	runType := "kRegular"
-	groupName := "terra-test-group-4" // or can use "tf-group-5" //id: 5901263190628181:1725393921826:9414
+	groupName := "tetst-terra-group-2" // or can use "tf-group-5" //id: 5901263190628181:1725393921826:9414
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
@@ -91,10 +91,12 @@ func testAccCreateIbmBaasProtectionGroupForUpdateRunRequest(groupName, runType s
 
 		data "ibm_backup_recovery_protection_groups" "ibm_backup_recovery_protection_groups_instance" {
 			x_ibm_tenant_id = "%s"
+			
 			names = ["%s"]
 		}
 
 		resource "ibm_backup_recovery_protection_group_run_request" "baas_protection_group_run_request_instance" {
+			
 			x_ibm_tenant_id = "%s"
 			run_type = "%s"
 			group_id = data.ibm_backup_recovery_protection_groups.ibm_backup_recovery_protection_groups_instance.protection_groups.0.id
@@ -109,16 +111,19 @@ func testAccCreateIbmBaasProtectionGroupRunUpdateRequestConfigBasic(runType, gro
 	return fmt.Sprintf(`
 		data "ibm_backup_recovery_protection_groups" "baas_protection_group_existing_instance" {
 			x_ibm_tenant_id = "%[1]s"
+			
 			names = ["%[2]s"]
 		}
 
 		data "ibm_backup_recovery_protection_group_runs" "example_runs" {
 			x_ibm_tenant_id = "%[1]s"
+			
 			protection_group_id = data.ibm_backup_recovery_protection_groups.baas_protection_group_existing_instance.protection_groups.0.id
 		}
 
 		resource "ibm_backup_recovery_update_protection_group_run_request" "baas_update_protection_group_run_request_instance" {
 			x_ibm_tenant_id = "%[1]s"
+			
 			group_id = data.ibm_backup_recovery_protection_groups.baas_protection_group_existing_instance.protection_groups.0.id
 			update_protection_group_run_params {
 				run_id = data.ibm_backup_recovery_protection_group_runs.example_runs.runs.0.id
@@ -134,11 +139,13 @@ func testAccCreateIbmBaasProtectionGroupRunCancelUpdateRequestConfigBasic(runTyp
 	return fmt.Sprintf(`
 	data "ibm_backup_recovery_protection_groups" "baas_protection_group_existing_instance" {
 		x_ibm_tenant_id = "%[1]s"
+		
 		names = ["%[2]s"]
 	}
 
 	data "ibm_backup_recovery_protection_group_runs" "example_runs" {
 		x_ibm_tenant_id = "%[1]s"
+		
 		protection_group_id = data.ibm_backup_recovery_protection_groups.baas_protection_group_existing_instance.protection_groups.0.id
 	}
 
@@ -146,6 +153,7 @@ func testAccCreateIbmBaasProtectionGroupRunCancelUpdateRequestConfigBasic(runTyp
 		x_ibm_tenant_id = "%[1]s"
 		group_id = data.ibm_backup_recovery_protection_groups.baas_protection_group_existing_instance.protection_groups.0.id
 		action = "Cancel"
+		
 		cancel_params {
 			run_id = data.ibm_backup_recovery_protection_group_runs.example_runs.runs.0.id
 			local_task_id = data.ibm_backup_recovery_protection_group_runs.example_runs.runs.0.archival_info.0.archival_target_results.0.archival_task_id

@@ -423,114 +423,116 @@ Review the argument reference that you can specify for your resource.
       - `auto_scaling_over_time_period` - (Optional, Integer) Defines the time period over which auto-scaling adjustments are monitored and applied.
       - `auto_scaling_pause_limit` - (Optional, Integer) Specifies the duration to pause auto-scaling actions after a scaling event has occurred.
       - `auto_scaling_allow_plan_limit` - (Optional, Boolean) Indicates the maximum number of scaling actions that are allowed within a specified time period.
-- `custom_setting_config` (Optional, Set) Indicates the custom configuration fields related to database which you want to set to Db2 SaaS instance.
+- `custom_setting_config` - (Optional, Set) Indicates the custom configuration fields related to database which you want to set to Db2 SaaS instance.
     Nested schema for `custom_setting_config`
-      - `db` - (Optional, List) 
-          Nested scheme for `db`
-            * `act_sortmem_limit` - (Optional, String) Configures the sort memory limit for DB2. Valid values: range(10, 100)
-            * `alt_collate` - (Optional, String) Configures the collation sequence, Valid values: "NULL", "IDENTITY_16BIT"
-            * `app_ctl_heap_sz` - (Optional, String) Configures the application control heap size. Valid values: range(1, 64000)
-            * `appgroup_mem_sz` - (Optional, String) Sets the application group memory size. Valid values: range(1, 1000000)
-            * `appl_memory` - (Optional, String) Configures the application memory allocation. Valid values: AUTOMATIC range(128, 4294967295)
-            * `applheapsz` - (Optional, String) Configures the application heap size,Valid values: "AUTOMATIC" "range(16, 2147483647)
-            * `archretrydelay` - (Optional, String) Configures the archive retry delay time. Valid values: range(0, 65535)
-            * `authn_cache_duration` - (Optional, String) onfigures the authentication cache duration. Valid values: range(1,10000)
-            * `auto_cg_stats` - (Optional, String) Configures whether auto collection of CG statistics is enabled ,Valid values: ON, OFF
-            * `auto_maint` - (Optional, String) Configures automatic maintenance for the database,Valid values: ON ,OFF
-            * `auto_reorg` - (Optional, String) Configures automatic reorganization for the database,Valid values: ON ,OFF
-            * `auto_reval` - (Optional, String) Configures the auto refresh or revalidation method,Valid values: 'IMMEDIATE', 'DISABLED', 'DEFERRED', 'DEFERRED_FORCE'
-            * `auto_runstats` - (Optional, String) Configures automatic collection of run-time statistics,Valid values:'ON', 'OFF'
-            * `auto_sampling` - (Optional, String) Configures whether auto-sampling is enabled,Valid values: 'ON', 'OFF'
-            * `auto_stats_views` - (Optional, String) Configures automatic collection of statistics on views,Valid values: 'ON', 'OFF'
-            * `auto_stmt_stats` - (Optional, String) Configures automatic collection of statement-level statistics,Valid values: 'ON', 'OFF'
-            * `auto_tbl_maint` - (Optional, String) Configures automatic table maintenance,Valid values: 'ON', 'OFF'
-            * `autorestart` - (Optional, String) Configures whether the database will automatically restart,Valid values: 'ON', 'OFF'
-            * `avg_appls` - (Optional, String) Average number of applications.
-            * `catalogcache_sz` - (Optional, String) Configures the catalog cache size, 
-            * `chngpgs_thresh` - (Optional, String) Configures the change pages threshold percentage, Valid values: range(5,99)
-            * `cur_commit` - (Optional, String) Configures the commit behavior, Valid values: "ON" "AVAILABLE" "DISABLED
-            * `database_memory` - (Optional, String) Configures the database memory management, Valid values: "AUTOMATIC" "COMPUTED" "range(0,4294967295)"
-            * `db_collname` - (Optional, String) Specifies the database collation name
-            * `db_mem_thresh` - (Optional, String) Configures the memory threshold percentage for database,Valid values: range(0,100)
-            * `dbheap` - (Optional, String) Configures the database heap size,Valid values: "AUTOMATIC" range(32, 2147483647)
-            * `ddl_compression_def` - (Optional, String) Defines the default DDL compression behavior,Valid values: YES, NO
-            * `ddl_constraint_def` - (Optional, String) Defines the default constraint behavior in DDL,Valid values: YES ,NO
-            * `dec_arithmetic` - (Optional, String) Configures the default arithmetic for decimal operations
-            * `dec_to_char_fmt` - (Optional, String) Configures the decimal-to-character conversion format, Valid values: "NEW" "V95"
-            * `decflt_rounding` - (Optional, String) Configures the decimal floating-point rounding method, Valid values: 'ROUND_HALF_EVEN', 'ROUND_CEILING', 'ROUND_FLOOR', 'ROUND_HALF_UP', 'ROUND_DOWN'
-            * `dft_degree` - (Optional, String) Configures the default degree for parallelism, Valid values:'-1', 'ANY', 'range(1, 32767)'
-            * `dft_extent_sz` - (Optional, String) Configures the default extent size for tables, Valid values: range(2, 256)
-            * `dft_loadrec_ses` - (Optional, String) Configures the default load record session count, Valid values: range(1, 30000)
-            * `dft_mttb_types` - (Optional, String) Configures the default MTTB (multi-table table scan) types
-            * `dft_prefetch_sz` - (Optional, String) Configures the default prefetch size for queries, Valid values: 'range(0, 32767)', 'AUTOMATIC'
-            * `dft_queryopt` - (Optional, String) onfigures the default query optimization level, Valid values: range(0, 9)
-            * `dft_refresh_age` - (Optional, String) Configures the default refresh age for views
-            * `dft_schemas_dcc` - (Optional, String) Configures whether DCC (database control center) is enabled for schemas,Valid values:'YES', 'NO'
-            * `dft_sqlmathwarn` - (Optional, String) Configures whether SQL math warnings are enabled,Valid values: 'YES', 'NO'
-            * `dft_table_org` - (Optional, String) Configures the default table organization (ROW or COLUMN),Valid values: 'COLUMN', 'ROW'
-            * `dlchktime` - (Optional, String) Configures the deadlock check time in milliseconds, Valid values: range(1000, 600000)'
-            * `enable_xmlchar` - (Optional, String) Configures whether XML character support is enabled,Valid values: YES', 'NO'
-            * `extended_row_sz` - (Optional, String) Configures whether extended row size is enabled,Valid values: ENABLE', 'DISABLE'
-            * `groupheap_ratio` - (Optional, String) Configures the heap ratio for group heap memory, Valid values: range(1, 99)'
-            * `indexrec` - (Optional, String) Configures the index recovery method, Valid values:'SYSTEM', 'ACCESS', 'ACCESS_NO_REDO', 'RESTART', 'RESTART_NO_REDO'
-            * `large_aggregation` - (Optional, String) Configures whether large aggregation is enabled, Valid values:'YES', 'NO'
-            * `locklist` - (Optional, String) Configures the lock list memory size, Valid values:'AUTOMATIC', 'range(4, 134217728)'
-            * `locktimeout` - (Optional, String) Configures the lock timeout duration,Valid values: '-1', 'range(0, 32767)'
-            * `log_appl_info` - (Optional, String) Configures whether application information is logged,Valid values: 'YES', 'NO'
-            * `log_ddl_stmts` - (Optional, String) Configures whether DDL statements are logged, Valid values:'YES', 'NO'
-            * `log_disk_cap` - (Optional, String) Configures the disk capacity log setting,Valid values: '0', '-1', 'range(1, 2147483647)'
-            * `logindexbuild` - (Optional, String) Configures whether index builds are logged, Valid values:'ON', 'OFF'
-            * `maxappls` - (Optional, String) Configures the maximum number of applications,Valid values:range(1, 60000)
-            * `maxfilop` - (Optional, String) Configures the maximum number of file operations,Valid values: range(64, 61440)
-            * `maxlocks` - (Optional, String) Configures the maximum number of locks, Valid values:'AUTOMATIC', 'range(1, 100)'
-            * `min_dec_div_3` - (Optional, String) Configures whether decimal division by 3 should be handled,Valid values: 'YES', 'NO'
-            * `mon_act_metrics` - (Optional, String) Configures the level of activity metrics to be monitored,Valid values: 'NONE', 'BASE', 'EXTENDED'
-            * `mon_deadlock` - (Optional, String) Configures deadlock monitoring settings,Valid values: 'NONE', 'WITHOUT_HIST', 'HISTORY', 'HIST_AND_VALUES'
-            * `mon_lck_msg_lvl` - (Optional, String) Configures the lock message level for monitoring, Valid values: range(0, 3)
-            * `mon_locktimeout` - (Optional, String) Configures lock timeout monitoring settings, Valid values:'NONE', 'WITHOUT_HIST', 'HISTORY', 'HIST_AND_VALUES'
-            * `mon_lockwait` - (Optional, String) Configures lock wait monitoring settings,Valid values: 'NONE', 'WITHOUT_HIST', 'HISTORY', 'HIST_AND_VALUES'
-            * `mon_lw_thresh` - (Optional, String) Configures the lightweight threshold for monitoring, Valid values: range(1000, 4294967295)
-            * `mon_obj_metrics` - (Optional, String) Configures the object metrics level for monitoring,Valid values: 'NONE', 'BASE', 'EXTENDED'
-            * `mon_pkglist_sz` - (Optional, String) Configures the package list size for monitoring, Valid values: range(0, 1024)
-            * `mon_req_metrics` - (Optional, String) Configures the request metrics level for monitoring, Valid values: 'NONE', 'BASE', 'EXTENDED'
-            * `mon_rtn_data` - (Optional, String) Configures the level of return data for monitoring,Valid values: 'NONE', 'BASE'
-            * `mon_rtn_execlist` - (Optional, String) Configures whether stored procedure execution list is monitored, Valid values:'OFF', 'ON'
-            * `mon_uow_data` - (Optional, String) Configures the level of unit of work (UOW) data for monitoring,Valid values: 'NONE', 'BASE'
-            * `mon_uow_execlist` - (Optional, String) Configures whether UOW execution list is monitored,Valid values: 'ON', 'OFF'
-            * `mon_uow_pkglist` - (Optional, String) Configures whether UOW package list is monitored,Valid values: 'OFF', 'ON'
-            * `nchar_mapping` - (Optional, String) Configures the mapping of NCHAR character types, Valid values:'CHAR_CU32', 'GRAPHIC_CU32', 'GRAPHIC_CU16', 'NOT APPLICABLE'
-            * `num_freqvalues` - (Optional, String) Configures the number of frequent values for optimization, Valid values: range(0, 32767)
-            * `num_iocleaners` - (Optional, String) Configures the number of IO cleaners, 'AUTOMATIC', Valid values: 'range(0, 255)'
-            * `num_ioservers` - (Optional, String) Configures the number of IO servers, 'AUTOMATIC', Valid values: 'range(1, 255)'
-            * `num_log_span` - (Optional, String) Configures the number of log spans, Valid values: 'range(0, 65535)'
-            * `num_quantiles` - (Optional, String) Configures the number of quantiles for optimizations, Valid values: 'range(0, 32767)'
-            * `opt_buffpage` - (Optional, String) Configures the buffer page optimization setting
-            * `opt_direct_wrkld` - (Optional, String) Configures the direct workload optimization setting,Valid values: 'ON', 'OFF', 'YES', 'NO', 'AUTOMATIC'
-            * `opt_locklist` - (Optional, String) Configures the lock list optimization setting
-            * `opt_maxlocks` - (Optional, String) Configures the max locks optimization setting
-            * `opt_sortheap` - (Optional, String) Configures the sort heap optimization setting
-            * `page_age_trgt_gcr` - (Optional, String) Configures the page age target for garbage collection, Valid values: 'range(1, 65535)'
-            * `page_age_trgt_mcr` - (Optional, String) Configures the page age target for memory collection, Valid values: 'range(1, 65535)'
-            * `pckcachesz` - (Optional, String) Configures the package cache size,Valid values: 'AUTOMATIC', '-1', 'range(32, 2147483646)'
-            * `pl_stack_trace` - (Optional, String) Configures the level of stack trace logging for stored procedures, Valid values:'NONE', 'ALL', 'UNHANDLED'
-            * `self_tuning_mem` - (Optional, String) Configures whether self-tuning memory is enabled,Valid values: 'ON', 'OFF'
-            * `seqdetect` - (Optional, String) Configures sequence detection for queries,Valid values: 'YES', 'NO'
-            * `sheapthres_shr` - (Optional, String) Configures the shared heap threshold size, Valid values:'AUTOMATIC', 'range(250, 2147483647)'
-            * `softmax` - (Optional, String) Configures the soft max setting
-            * `sortheap` - (Optional, String) Configures the sort heap memory size,Valid values: 'AUTOMATIC', 'range(16, 4294967295)'
-            * `sql_ccflags` - (Optional, String) Configures the SQL compiler flags
-            * `stat_heap_sz` - (Optional, String) Configures the statistics heap size, Valid values:'AUTOMATIC', 'range(1096, 2147483647)'
-            * `stmt_conc` - (Optional, String) Configures the statement concurrency, Valid values:'OFF', 'LITERALS', 'COMMENTS', 'COMM_LIT'
-            * `stmtheap` - (Optional, String) Configures the statement heap size,Valid values: 'AUTOMATIC', 'range(128, 2147483647)'
-            * `string_units` - (Optional, String) Configures the string unit settings,Valid values: 'SYSTEM', 'CODEUNITS32'
-            * `systime_period_adj` - (Optional, String) Configures whether system time period adjustments are enabled,Valid values: 'NO', 'YES'
-            * `trackmod` - (Optional, String) Configures whether modifications to tracked objects are logged,Valid values: 'YES', 'NO'
-            * `util_heap_sz` - (Optional, String) Configures the utility heap size, Valid values:'AUTOMATIC', 'range(16, 2147483647)'
-            * `wlm_admission_ctrl` - (Optional, String) Configures whether WLM (Workload Management) admission control is enabled, Valid values:'YES', 'NO'
-            * `wlm_agent_load_trgt` - (Optional, String) Configures the WLM agent load target,Valid values: 'AUTOMATIC', 'range(1, 65535)'
-            * `wlm_cpu_limit` - (Optional, String) Configures the CPU limit for WLM workloads, Valid values: 'range(0, 100)'
-            * `wlm_cpu_share_mode` - (Optional, String) Configures the mode of CPU shares for WLM workloads,Valid values: 'HARD', 'SOFT'
-            * `wlm_cpu_shares` - (Optional, String) Configures the CPU share count for WLM workloads, Valid values: 'range(1, 65535)'
+
+      - `db` - (Optional, List) Tunable parameters related to the Db2 instance manager (dbm).
+	      Nested schema for **db**:
+          * `act_sortmem_limit` - (Optional, String) Configures the sort memory limit for DB2. Valid values: range(10, 100)
+          * `alt_collate` - (Optional, String) Configures the collation sequence, Valid values: "NULL", "IDENTITY_16BIT"
+          * `app_ctl_heap_sz` - (Optional, String) Configures the application control heap size. Valid values: range(1, 64000)
+          * `appgroup_mem_sz` - (Optional, String) Sets the application group memory size. Valid values: range(1, 1000000)
+          * `appl_memory` - (Optional, String) Configures the application memory allocation. Valid values: AUTOMATIC range(128, 4294967295)
+          * `applheapsz` - (Optional, String) Configures the application heap size,Valid values: "AUTOMATIC" "range(16, 2147483647)
+          * `archretrydelay` - (Optional, String) Configures the archive retry delay time. Valid values: range(0, 65535)
+          * `authn_cache_duration` - (Optional, String) onfigures the authentication cache duration. Valid values: range(1,10000)
+          * `auto_cg_stats` - (Optional, String) Configures whether auto collection of CG statistics is enabled ,Valid values: ON, OFF
+          * `auto_maint` - (Optional, String) Configures automatic maintenance for the database,Valid values: ON ,OFF
+          * `auto_reorg` - (Optional, String) Configures automatic reorganization for the database,Valid values: ON ,OFF
+          * `auto_reval` - (Optional, String) Configures the auto refresh or revalidation method,Valid values: 'IMMEDIATE', 'DISABLED', 'DEFERRED', 'DEFERRED_FORCE'
+          * `auto_runstats` - (Optional, String) Configures automatic collection of run-time statistics,Valid values:'ON', 'OFF'
+          * `auto_sampling` - (Optional, String) Configures whether auto-sampling is enabled,Valid values: 'ON', 'OFF'
+          * `auto_stats_views` - (Optional, String) Configures automatic collection of statistics on views,Valid values: 'ON', 'OFF'
+          * `auto_stmt_stats` - (Optional, String) Configures automatic collection of statement-level statistics,Valid values: 'ON', 'OFF'
+          * `auto_tbl_maint` - (Optional, String) Configures automatic table maintenance,Valid values: 'ON', 'OFF'
+          * `autorestart` - (Optional, String) Configures whether the database will automatically restart,Valid values: 'ON', 'OFF'
+          * `avg_appls` - (Optional, String) Average number of applications.
+          * `catalogcache_sz` - (Optional, String) Configures the catalog cache size, 
+          * `chngpgs_thresh` - (Optional, String) Configures the change pages threshold percentage, Valid values: range(5,99)
+          * `cur_commit` - (Optional, String) Configures the commit behavior, Valid values: "ON" "AVAILABLE" "DISABLED
+          * `database_memory` - (Optional, String) Configures the database memory management, Valid values: "AUTOMATIC" "COMPUTED" "range(0,4294967295)"
+          * `db_collname` - (Optional, String) Specifies the database collation name
+          * `db_mem_thresh` - (Optional, String) Configures the memory threshold percentage for database,Valid values: range(0,100)
+          * `dbheap` - (Optional, String) Configures the database heap size,Valid values: "AUTOMATIC" range(32, 2147483647)
+          * `ddl_compression_def` - (Optional, String) Defines the default DDL compression behavior,Valid values: YES, NO
+          * `ddl_constraint_def` - (Optional, String) Defines the default constraint behavior in DDL,Valid values: YES ,NO
+          * `dec_arithmetic` - (Optional, String) Configures the default arithmetic for decimal operations
+          * `dec_to_char_fmt` - (Optional, String) Configures the decimal-to-character conversion format, Valid values: "NEW" "V95"
+          * `decflt_rounding` - (Optional, String) Configures the decimal floating-point rounding method, Valid values: 'ROUND_HALF_EVEN', 'ROUND_CEILING', 'ROUND_FLOOR', 'ROUND_HALF_UP', 'ROUND_DOWN'
+          * `dft_degree` - (Optional, String) Configures the default degree for parallelism, Valid values:'-1', 'ANY', 'range(1, 32767)'
+          * `dft_extent_sz` - (Optional, String) Configures the default extent size for tables, Valid values: range(2, 256)
+          * `dft_loadrec_ses` - (Optional, String) Configures the default load record session count, Valid values: range(1, 30000)
+          * `dft_mttb_types` - (Optional, String) Configures the default MTTB (multi-table table scan) types
+          * `dft_prefetch_sz` - (Optional, String) Configures the default prefetch size for queries, Valid values: 'range(0, 32767)', 'AUTOMATIC'
+          * `dft_queryopt` - (Optional, String) onfigures the default query optimization level, Valid values: range(0, 9)
+          * `dft_refresh_age` - (Optional, String) Configures the default refresh age for views
+          * `dft_schemas_dcc` - (Optional, String) Configures whether DCC (database control center) is enabled for schemas,Valid values:'YES', 'NO'
+          * `dft_sqlmathwarn` - (Optional, String) Configures whether SQL math warnings are enabled,Valid values: 'YES', 'NO'
+          * `dft_table_org` - (Optional, String) Configures the default table organization (ROW or COLUMN),Valid values: 'COLUMN', 'ROW'
+          * `dlchktime` - (Optional, String) Configures the deadlock check time in milliseconds, Valid values: range(1000, 600000)'
+          * `enable_xmlchar` - (Optional, String) Configures whether XML character support is enabled,Valid values: YES', 'NO'
+          * `extended_row_sz` - (Optional, String) Configures whether extended row size is enabled,Valid values: ENABLE', 'DISABLE'
+          * `groupheap_ratio` - (Optional, String) Configures the heap ratio for group heap memory, Valid values: range(1, 99)'
+          * `indexrec` - (Optional, String) Configures the index recovery method, Valid values:'SYSTEM', 'ACCESS', 'ACCESS_NO_REDO', 'RESTART', 'RESTART_NO_REDO'
+          * `large_aggregation` - (Optional, String) Configures whether large aggregation is enabled, Valid values:'YES', 'NO'
+          * `locklist` - (Optional, String) Configures the lock list memory size, Valid values:'AUTOMATIC', 'range(4, 134217728)'
+          * `locktimeout` - (Optional, String) Configures the lock timeout duration,Valid values: '-1', 'range(0, 32767)'
+          * `log_appl_info` - (Optional, String) Configures whether application information is logged,Valid values: 'YES', 'NO'
+          * `log_ddl_stmts` - (Optional, String) Configures whether DDL statements are logged, Valid values:'YES', 'NO'
+          * `log_disk_cap` - (Optional, String) Configures the disk capacity log setting,Valid values: '0', '-1', 'range(1, 2147483647)'
+          * `logindexbuild` - (Optional, String) Configures whether index builds are logged, Valid values:'ON', 'OFF'
+          * `maxappls` - (Optional, String) Configures the maximum number of applications,Valid values:range(1, 60000)
+          * `maxfilop` - (Optional, String) Configures the maximum number of file operations,Valid values: range(64, 61440)
+          * `maxlocks` - (Optional, String) Configures the maximum number of locks, Valid values:'AUTOMATIC', 'range(1, 100)'
+          * `min_dec_div_3` - (Optional, String) Configures whether decimal division by 3 should be handled,Valid values: 'YES', 'NO'
+          * `mon_act_metrics` - (Optional, String) Configures the level of activity metrics to be monitored,Valid values: 'NONE', 'BASE', 'EXTENDED'
+          * `mon_deadlock` - (Optional, String) Configures deadlock monitoring settings,Valid values: 'NONE', 'WITHOUT_HIST', 'HISTORY', 'HIST_AND_VALUES'
+          * `mon_lck_msg_lvl` - (Optional, String) Configures the lock message level for monitoring, Valid values: range(0, 3)
+          * `mon_locktimeout` - (Optional, String) Configures lock timeout monitoring settings, Valid values:'NONE', 'WITHOUT_HIST', 'HISTORY', 'HIST_AND_VALUES'
+          * `mon_lockwait` - (Optional, String) Configures lock wait monitoring settings,Valid values: 'NONE', 'WITHOUT_HIST', 'HISTORY', 'HIST_AND_VALUES'
+          * `mon_lw_thresh` - (Optional, String) Configures the lightweight threshold for monitoring, Valid values: range(1000, 4294967295)
+          * `mon_obj_metrics` - (Optional, String) Configures the object metrics level for monitoring,Valid values: 'NONE', 'BASE', 'EXTENDED'
+          * `mon_pkglist_sz` - (Optional, String) Configures the package list size for monitoring, Valid values: range(0, 1024)
+          * `mon_req_metrics` - (Optional, String) Configures the request metrics level for monitoring, Valid values: 'NONE', 'BASE', 'EXTENDED'
+          * `mon_rtn_data` - (Optional, String) Configures the level of return data for monitoring,Valid values: 'NONE', 'BASE'
+          * `mon_rtn_execlist` - (Optional, String) Configures whether stored procedure execution list is monitored, Valid values:'OFF', 'ON'
+          * `mon_uow_data` - (Optional, String) Configures the level of unit of work (UOW) data for monitoring,Valid values: 'NONE', 'BASE'
+          * `mon_uow_execlist` - (Optional, String) Configures whether UOW execution list is monitored,Valid values: 'ON', 'OFF'
+          * `mon_uow_pkglist` - (Optional, String) Configures whether UOW package list is monitored,Valid values: 'OFF', 'ON'
+          * `nchar_mapping` - (Optional, String) Configures the mapping of NCHAR character types, Valid values:'CHAR_CU32', 'GRAPHIC_CU32', 'GRAPHIC_CU16', 'NOT APPLICABLE'
+          * `num_freqvalues` - (Optional, String) Configures the number of frequent values for optimization, Valid values: range(0, 32767)
+          * `num_iocleaners` - (Optional, String) Configures the number of IO cleaners, 'AUTOMATIC', Valid values: 'range(0, 255)'
+          * `num_ioservers` - (Optional, String) Configures the number of IO servers, 'AUTOMATIC', Valid values: 'range(1, 255)'
+          * `num_log_span` - (Optional, String) Configures the number of log spans, Valid values: 'range(0, 65535)'
+          * `num_quantiles` - (Optional, String) Configures the number of quantiles for optimizations, Valid values: 'range(0, 32767)'
+          * `opt_buffpage` - (Optional, String) Configures the buffer page optimization setting
+          * `opt_direct_wrkld` - (Optional, String) Configures the direct workload optimization setting,Valid values: 'ON', 'OFF', 'YES', 'NO', 'AUTOMATIC'
+          * `opt_locklist` - (Optional, String) Configures the lock list optimization setting
+          * `opt_maxlocks` - (Optional, String) Configures the max locks optimization setting
+          * `opt_sortheap` - (Optional, String) Configures the sort heap optimization setting
+          * `page_age_trgt_gcr` - (Optional, String) Configures the page age target for garbage collection, Valid values: 'range(1, 65535)'
+          * `page_age_trgt_mcr` - (Optional, String) Configures the page age target for memory collection, Valid values: 'range(1, 65535)'
+          * `pckcachesz` - (Optional, String) Configures the package cache size,Valid values: 'AUTOMATIC', '-1', 'range(32, 2147483646)'
+          * `pl_stack_trace` - (Optional, String) Configures the level of stack trace logging for stored procedures, Valid values:'NONE', 'ALL', 'UNHANDLED'
+          * `self_tuning_mem` - (Optional, String) Configures whether self-tuning memory is enabled,Valid values: 'ON', 'OFF'
+          * `seqdetect` - (Optional, String) Configures sequence detection for queries,Valid values: 'YES', 'NO'
+          * `sheapthres_shr` - (Optional, String) Configures the shared heap threshold size, Valid values:'AUTOMATIC', 'range(250, 2147483647)'
+          * `softmax` - (Optional, String) Configures the soft max setting
+          * `sortheap` - (Optional, String) Configures the sort heap memory size,Valid values: 'AUTOMATIC', 'range(16, 4294967295)'
+          * `sql_ccflags` - (Optional, String) Configures the SQL compiler flags
+          * `stat_heap_sz` - (Optional, String) Configures the statistics heap size, Valid values:'AUTOMATIC', 'range(1096, 2147483647)'
+          * `stmt_conc` - (Optional, String) Configures the statement concurrency, Valid values:'OFF', 'LITERALS', 'COMMENTS', 'COMM_LIT'
+          * `stmtheap` - (Optional, String) Configures the statement heap size,Valid values: 'AUTOMATIC', 'range(128, 2147483647)'
+          * `string_units` - (Optional, String) Configures the string unit settings,Valid values: 'SYSTEM', 'CODEUNITS32'
+          * `systime_period_adj` - (Optional, String) Configures whether system time period adjustments are enabled,Valid values: 'NO', 'YES'
+          * `trackmod` - (Optional, String) Configures whether modifications to tracked objects are logged,Valid values: 'YES', 'NO'
+          * `util_heap_sz` - (Optional, String) Configures the utility heap size, Valid values:'AUTOMATIC', 'range(16, 2147483647)'
+          * `wlm_admission_ctrl` - (Optional, String) Configures whether WLM (Workload Management) admission control is enabled, Valid values:'YES', 'NO'
+          * `wlm_agent_load_trgt` - (Optional, String) Configures the WLM agent load target,Valid values: 'AUTOMATIC', 'range(1, 65535)'
+          * `wlm_cpu_limit` - (Optional, String) Configures the CPU limit for WLM workloads, Valid values: 'range(0, 100)'
+          * `wlm_cpu_share_mode` - (Optional, String) Configures the mode of CPU shares for WLM workloads,Valid values: 'HARD', 'SOFT'
+          * `wlm_cpu_shares` - (Optional, String) Configures the CPU share count for WLM workloads, Valid values: 'range(1, 65535)'
+
 	    - `dbm` - (List) Tunable parameters related to the Db2 instance manager (dbm).
 	        Nested schema for **dbm**:
             * `comm_bandwidth` - (Optional, String) Configures the communication bandwidth for the database manager, Valid values: 'range(0.1, 100000)', '-1'
