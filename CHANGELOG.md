@@ -1,3 +1,10 @@
+# 1.84.2 (October 21, 2025)
+
+## Bug Fixes
+
+### General
+* Fix the filemap for IAM endpoint type from endpoints file ([6524](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6524))
+
 # 1.84.1 (October 17, 2025)
 
 ## Enhancements
