@@ -5,16 +5,16 @@ package power
 
 import (
 	"context"
+	"fmt"
 	"log"
-
-	"github.com/hashicorp/go-uuid"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/hashicorp/go-uuid"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
@@ -214,23 +214,27 @@ func DataSourceIBMPINetworkSecurityGroups() *schema.Resource {
 	}
 }
 
-func dataSourceIBMPINetworkSecurityGroupsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMPINetworkSecurityGroupsRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "(Data) ibm_pi_network_security_groups", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
 	nsgClient := instance.NewIBMIPINetworkSecurityGroupClient(ctx, sess, cloudInstanceID)
 	nsgResp, err := nsgClient.GetAll()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetAll failed: %s", err.Error()), "(Data) ibm_pi_network_security_groups", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	var clientgenU, _ = uuid.GenerateUUID()
 	d.SetId(clientgenU)
 
-	networkSecurityGroups := []map[string]interface{}{}
+	networkSecurityGroups := []map[string]any{}
 	if len(nsgResp.NetworkSecurityGroups) > 0 {
 		for _, nsg := range nsgResp.NetworkSecurityGroups {
 			networkSecurityGroup := networkSecurityGroupToMap(nsg, meta)
@@ -243,8 +247,8 @@ func dataSourceIBMPINetworkSecurityGroupsRead(ctx context.Context, d *schema.Res
 	return nil
 }
 
-func networkSecurityGroupToMap(nsg *models.NetworkSecurityGroup, meta interface{}) map[string]interface{} {
-	networkSecurityGroup := make(map[string]interface{})
+func networkSecurityGroupToMap(nsg *models.NetworkSecurityGroup, meta any) map[string]any {
+	networkSecurityGroup := make(map[string]any)
 	if nsg.Crn != nil {
 		networkSecurityGroup[Attr_CRN] = nsg.Crn
 		userTags, err := flex.GetGlobalTagsUsingCRN(meta, string(*nsg.Crn), "", UserTagType)
@@ -257,7 +261,7 @@ func networkSecurityGroupToMap(nsg *models.NetworkSecurityGroup, meta interface{
 
 	networkSecurityGroup[Attr_ID] = nsg.ID
 	if len(nsg.Members) > 0 {
-		members := []map[string]interface{}{}
+		members := []map[string]any{}
 		for _, mbr := range nsg.Members {
 			mbrMap := networkSecurityGroupMemberToMap(mbr)
 			members = append(members, mbrMap)
@@ -266,7 +270,7 @@ func networkSecurityGroupToMap(nsg *models.NetworkSecurityGroup, meta interface{
 	}
 	networkSecurityGroup[Attr_Name] = nsg.Name
 	if len(nsg.Rules) > 0 {
-		rules := []map[string]interface{}{}
+		rules := []map[string]any{}
 		for _, rule := range nsg.Rules {
 			rulesItemMap := networkSecurityGroupRuleToMap(rule)
 			rules = append(rules, rulesItemMap)
