@@ -8,7 +8,7 @@ require (
 	github.com/IBM-Cloud/power-go-client v1.13.0
 	github.com/IBM/appconfiguration-go-admin-sdk v0.5.1
 	github.com/IBM/appid-management-go-sdk v0.0.0-20210908164609-dd0e0eaf732f
-	github.com/IBM/cloud-databases-go-sdk v0.8.0
+	github.com/IBM/cloud-databases-go-sdk v0.8.1
 	github.com/IBM/cloud-db2-go-sdk v0.2.4
 	github.com/IBM/cloudant-go-sdk v0.8.0
 	github.com/IBM/code-engine-go-sdk v0.0.0-20241217191651-e1821f8c58c3
@@ -28,8 +28,8 @@ require (
 	github.com/IBM/logs-router-go-sdk v1.0.8
 	github.com/IBM/mqcloud-go-sdk v0.4.0
 	github.com/IBM/networking-go-sdk v0.51.12
-	github.com/IBM/platform-services-go-sdk v0.87.0
-	github.com/IBM/project-go-sdk v0.3.8
+	github.com/IBM/platform-services-go-sdk v0.88.0
+	github.com/IBM/project-go-sdk v0.3.9
 	github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5
 	github.com/IBM/sarama v1.45.0
 	github.com/IBM/scc-go-sdk/v5 v5.5.3
@@ -38,7 +38,7 @@ require (
 	github.com/IBM/secrets-manager-go-sdk/v2 v2.0.15
 	github.com/IBM/vmware-go-sdk v0.1.5
 	github.com/IBM/vpc-beta-go-sdk v0.8.0
-	github.com/IBM/vpc-go-sdk v0.73.0
+	github.com/IBM/vpc-go-sdk v0.74.1
 	github.com/ScaleFT/sshkeys v0.0.0-20200327173127-6142f742bca5
 	github.com/akamai/AkamaiOPEN-edgegrid-golang v1.2.2
 	github.com/akamai/AkamaiOPEN-edgegrid-golang/v5 v5.0.0
@@ -231,8 +231,6 @@ replace github.com/hashicorp/consul/api v1.1.0 => github.com/hashicorp/consul/ap
 replace github.com/hashicorp/vault => github.com/hashicorp/vault v1.18.2
 
 replace github.com/hashicorp/vault/api/auth/approle => github.com/hashicorp/vault/api/auth/approle v0.8.0
-
-replace github.com/IBM/platform-services-go-sdk v0.86.0 => ../platform-services-go-sdk
 
 exclude (
 	github.com/kubernetes-incubator/external-storage v0.0.0-00010101000000-000000000000

@@ -22492,7 +22492,7 @@ func DataSourceIbmBackupRecoveryProtectionSourcesProtectionSourceNodeToMap(model
 		modelMap["environment"] = *model.Environment
 	}
 	if model.ID != nil {
-		fmt.Println("ps id...: ", flex.IntValue(model.ID))
+		
 		modelMap["id"] = flex.IntValue(model.ID)
 	}
 	if model.Name != nil {
