@@ -2092,8 +2092,12 @@ func DataSourceIbmBackupRecoverySourceRegistrationsKubernetesSourceRegistrationP
 		}
 		modelMap["auto_protect_config"] = []map[string]interface{}{autoProtectConfigMap}
 	}
-	modelMap["client_private_key"] = *model.ClientPrivateKey
-	modelMap["data_mover_image_location"] = *model.DataMoverImageLocation
+	if model.ClientPrivateKey != nil {
+		modelMap["client_private_key"] = *model.ClientPrivateKey
+	}
+	if model.DataMoverImageLocation != nil {
+		modelMap["data_mover_image_location"] = *model.DataMoverImageLocation
+	}
 	if model.DatamoverServiceType != nil {
 		modelMap["datamover_service_type"] = *model.DatamoverServiceType
 	}
@@ -2104,11 +2108,15 @@ func DataSourceIbmBackupRecoverySourceRegistrationsKubernetesSourceRegistrationP
 		}
 		modelMap["default_vlan_params"] = []map[string]interface{}{defaultVlanParamsMap}
 	}
-	modelMap["endpoint"] = *model.Endpoint
+	if model.Endpoint != nil {
+		modelMap["endpoint"] = *model.Endpoint
+	}
 	if model.InitContainerImageLocation != nil {
 		modelMap["init_container_image_location"] = *model.InitContainerImageLocation
 	}
-	modelMap["kubernetes_distribution"] = *model.KubernetesDistribution
+	if model.KubernetesDistribution != nil {
+		modelMap["kubernetes_distribution"] = *model.KubernetesDistribution
+	}
 	if model.KubernetesType != nil {
 		modelMap["kubernetes_type"] = *model.KubernetesType
 	}
@@ -2179,8 +2187,12 @@ func DataSourceIbmBackupRecoverySourceRegistrationsKubernetesAutoProtectConfigTo
 	if model.ErrorMessage != nil {
 		modelMap["error_message"] = *model.ErrorMessage
 	}
-	modelMap["is_default_auto_protected"] = *model.IsDefaultAutoProtected
-	modelMap["policy_id"] = *model.PolicyID
+	if model.IsDefaultAutoProtected != nil {
+		modelMap["is_default_auto_protected"] = *model.IsDefaultAutoProtected
+	}
+	if model.PolicyID != nil {
+		modelMap["policy_id"] = *model.PolicyID
+	}
 	if model.ProtectionGroupID != nil {
 		modelMap["protection_group_id"] = *model.ProtectionGroupID
 	}

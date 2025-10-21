@@ -2151,8 +2151,12 @@ func DataSourceIbmBackupRecoverySourceRegistrationKubernetesAutoProtectConfigToM
 	if model.ErrorMessage != nil {
 		modelMap["error_message"] = *model.ErrorMessage
 	}
-	modelMap["is_default_auto_protected"] = *model.IsDefaultAutoProtected
-	modelMap["policy_id"] = *model.PolicyID
+	if model.IsDefaultAutoProtected != nil {
+		modelMap["is_default_auto_protected"] = *model.IsDefaultAutoProtected
+	}
+	if model.PolicyID != nil {
+		modelMap["policy_id"] = *model.PolicyID
+	}
 	if model.ProtectionGroupID != nil {
 		modelMap["protection_group_id"] = *model.ProtectionGroupID
 	}
