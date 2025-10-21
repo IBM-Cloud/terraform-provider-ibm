@@ -310,6 +310,9 @@ Nested schema for **alert_policy**:
 * `environment` - (Required, String) Specifies the environment of the Protection Group.
   * Constraints: Allowable values are: `kPhysical`, `kSQL`.
 * `is_paused` - (Optional, Boolean) Specifies if the the Protection Group is paused. New runs are not scheduled for the paused Protection Groups. Active run if any is not impacted.
+* `endpoint_type` - (Optional, String) Backup Recovery Endpoint type. By default set to "public".
+* `instance_id` - (Optional, String) Backup Recovery instance ID. If provided here along with region, the provider constructs the endpoint URL using them, which overrides any value set through environment variables or the `endpoints.json` file.
+* `region` - (Optional, String) Backup Recovery region. If provided here along with instance_id, the provider constructs the endpoint URL using them, which overrides any value set through environment variables or the `endpoints.json` file.  
 * `last_modified_timestamp_usecs` - (Optional, Integer) Specifies the last time this protection group was updated. If this is passed into a PUT request, then the backend will validate that the timestamp passed in matches the time that the protection group was actually last modified. If the two timestamps do not match, then the request will be rejected with a stale error.
 * `mssql_params` - (Optional, List) Specifies the parameters specific to MSSQL Protection Group.
 Nested schema for **mssql_params**:

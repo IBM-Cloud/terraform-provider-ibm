@@ -13,13 +13,12 @@ import (
 	"log"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/ibm-backup-recovery-sdk-go/backuprecoveryv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func DataSourceIbmBackupRecoveries() *schema.Resource {
@@ -2282,6 +2281,18 @@ func dataSourceIbmBackupRecoveriesRead(context context.Context, d *schema.Resour
 		return tfErr.GetDiag()
 	}
 
+	endpointType := d.Get("endpoint_type").(string)
+	instanceId, region := getInstanceIdAndRegion(d)
+	if instanceId != "" && region != "" {
+		bmxsession, err := meta.(conns.ClientSession).BluemixSession()
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("unable to get clientSession"), "ibm_backup_recovery", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
+		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, bmxsession, instanceId, region, endpointType)
+	}
+
 	getRecoveriesOptions := &backuprecoveryv1.GetRecoveriesOptions{}
 
 	getRecoveriesOptions.SetXIBMTenantID(d.Get("x_ibm_tenant_id").(string))
@@ -2351,7 +2362,6 @@ func dataSourceIbmBackupRecoveriesRead(context context.Context, d *schema.Resour
 	}
 
 	d.SetId(dataSourceIbmBackupRecoveriesID(d))
-
 	if !core.IsNil(recoveriesResponse.Recoveries) {
 		recoveries := []map[string]interface{}{}
 		for _, recoveriesItem := range recoveriesResponse.Recoveries {

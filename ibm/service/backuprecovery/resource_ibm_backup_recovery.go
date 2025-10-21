@@ -2423,6 +2423,18 @@ func resourceIbmBackupRecoveryCreate(context context.Context, d *schema.Resource
 		return tfErr.GetDiag()
 	}
 
+	endpointType := d.Get("endpoint_type").(string)
+	instanceId, region := getInstanceIdAndRegion(d)
+	if instanceId != "" && region != "" {
+		bmxsession, err := meta.(conns.ClientSession).BluemixSession()
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("unable to get clientSession"), "ibm_backup_recovery", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
+		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, bmxsession, instanceId, region, endpointType)
+	}
+
 	createRecoveryOptions := &backuprecoveryv1.CreateRecoveryOptions{}
 	tenantId := d.Get("x_ibm_tenant_id").(string)
 	createRecoveryOptions.SetXIBMTenantID(tenantId)
@@ -2466,6 +2478,17 @@ func resourceIbmBackupRecoveryRead(context context.Context, d *schema.ResourceDa
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
+	endpointType := d.Get("endpoint_type").(string)
+	instanceId, region := getInstanceIdAndRegion(d)
+	if instanceId != "" && region != "" {
+		bmxsession, err := meta.(conns.ClientSession).BluemixSession()
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("unable to get clientSession"), "ibm_backup_recovery", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
+		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, bmxsession, instanceId, region, endpointType)
+	}
 
 	getRecoveryByIdOptions := &backuprecoveryv1.GetRecoveryByIdOptions{}
 	tenantId := d.Get("x_ibm_tenant_id").(string)
@@ -2486,6 +2509,22 @@ func resourceIbmBackupRecoveryRead(context context.Context, d *schema.ResourceDa
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetRecoveryByIDWithContext failed: %s", err.Error()), "ibm_backup_recovery_recovery", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
+	}
+
+	if instanceId != "" {
+		if err := d.Set("instance_id", instanceId); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting instance_id: %s", err), "(Resource) ibm_backup_recovery_recovery", "read", "set-backup-recovery-instance-id").GetDiag()
+		}
+	}
+	if region != "" {
+		if err := d.Set("region", region); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting region: %s", err), "(Resource) ibm_backup_recovery_recovery", "read", "set-backup-recovery-region").GetDiag()
+		}
+	}
+
+	if err = d.Set("endpoint_type", d.Get("endpoint_type").(string)); err != nil {
+		err = fmt.Errorf("Error setting endpoint_type: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_recovery", "read", "set-endpoint-type").GetDiag()
 	}
 
 	if err = d.Set("name", recovery.Name); err != nil {

@@ -25,7 +25,7 @@ func TestAccIbmBackupRecoveryProtectionGroupBasic(t *testing.T) {
 	includedPath := "/data2/data/"
 	includedPathUpdate := "/data1/"
 	protectionType := "kFile"
-	objectId := 18
+	objectId := 344
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -83,6 +83,7 @@ func testAccCheckIbmBackupRecoveryProtectionGroupConfigBasic(name, environment, 
 
 		resource "ibm_backup_recovery_protection_group" "baas_protection_group_instance" {
 			x_ibm_tenant_id = "%s"
+			
 			policy_id = ibm_backup_recovery_protection_policy.baas_protection_policy_instance.policy_id
 			name = "%s"
 			environment = "%s"
