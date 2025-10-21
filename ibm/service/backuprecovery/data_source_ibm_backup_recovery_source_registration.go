@@ -957,7 +957,13 @@ func dataSourceIbmBackupRecoverySourceRegistrationRead(context context.Context, 
 	endpointType := d.Get("endpoint_type").(string)
 	instanceId, region := getInstanceIdAndRegion(d)
 	if instanceId != "" && region != "" {
-		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, instanceId, region, endpointType)
+		bmxsession, err := meta.(conns.ClientSession).BluemixSession()
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("unable to get clientSession"), "ibm_backup_recovery", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
+		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, bmxsession, instanceId, region, endpointType)
 	}
 
 	getProtectionSourceRegistrationOptions := &backuprecoveryv1.GetProtectionSourceRegistrationOptions{}

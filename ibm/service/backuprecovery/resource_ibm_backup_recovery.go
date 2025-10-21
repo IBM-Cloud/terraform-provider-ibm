@@ -2426,7 +2426,13 @@ func resourceIbmBackupRecoveryCreate(context context.Context, d *schema.Resource
 	endpointType := d.Get("endpoint_type").(string)
 	instanceId, region := getInstanceIdAndRegion(d)
 	if instanceId != "" && region != "" {
-		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, instanceId, region, endpointType)
+		bmxsession, err := meta.(conns.ClientSession).BluemixSession()
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("unable to get clientSession"), "ibm_backup_recovery", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
+		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, bmxsession, instanceId, region, endpointType)
 	}
 
 	createRecoveryOptions := &backuprecoveryv1.CreateRecoveryOptions{}
@@ -2475,7 +2481,13 @@ func resourceIbmBackupRecoveryRead(context context.Context, d *schema.ResourceDa
 	endpointType := d.Get("endpoint_type").(string)
 	instanceId, region := getInstanceIdAndRegion(d)
 	if instanceId != "" && region != "" {
-		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, instanceId, region, endpointType)
+		bmxsession, err := meta.(conns.ClientSession).BluemixSession()
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("unable to get clientSession"), "ibm_backup_recovery", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
+		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, bmxsession, instanceId, region, endpointType)
 	}
 
 	getRecoveryByIdOptions := &backuprecoveryv1.GetRecoveryByIdOptions{}

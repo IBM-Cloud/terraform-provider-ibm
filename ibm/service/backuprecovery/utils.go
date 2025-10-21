@@ -2,7 +2,11 @@ package backuprecovery
 
 import (
 	"fmt"
+	"os"
+	"strings"
 
+	session "github.com/IBM-Cloud/bluemix-go/session"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -26,7 +30,7 @@ func getInstanceIdAndRegion(d *schema.ResourceData) (string, string) {
 }
 
 // Clone the base backup recovery client and set the API endpoint per the instance
-func getClientWithInstanceEndpoint(originalClient *backuprecoveryv1.BackupRecoveryV1, instanceId, region, endpointType string) *backuprecoveryv1.BackupRecoveryV1 {
+func getClientWithInstanceEndpoint(originalClient *backuprecoveryv1.BackupRecoveryV1, bmxsession *session.Session, instanceId, region, endpointType string) *backuprecoveryv1.BackupRecoveryV1 {
 	// build the api endpoint
 
 	// default endpoint_type is set to public
@@ -36,6 +40,17 @@ func getClientWithInstanceEndpoint(originalClient *backuprecoveryv1.BackupRecove
 
 	domain := "cloud.ibm.com"
 	serviceName := "backup-recovery"
+
+	endpointsFile := bmxsession.Config.EndpointsFile
+
+	iamUrl := os.Getenv("IBMCLOUD_IAM_API_ENDPOINT")
+	if iamUrl == "" {
+		iamUrl = conns.FileFallBack(endpointsFile, endpointType, "IBMCLOUD_IAM_API_ENDPOINT", region, "https://iam.cloud.ibm.com")
+	}
+
+	if strings.Contains(iamUrl, "test") {
+		domain = "test.cloud.ibm.com"
+	}
 
 	var endpoint string
 	if endpointType == "private" {
