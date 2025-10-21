@@ -32,9 +32,9 @@ func ResourceIBMPdrValidateApikey() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"instance_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
+				Type:     schema.TypeString,
+				Required: true,
+				// ForceNew:    true,
 				Description: "instance id of instance to provision.",
 			},
 			"accept_language": &schema.Schema{

@@ -24,7 +24,7 @@ data "ibm_pdr_get_powervs_workspace" "pdr_get_powervs_workspace" {
 You can specify the following arguments for this data source.
 
 * `instance_id` - (Required, Forces new resource, String) ID of the service instance.
-* `location_id` - (Required, String) Location ID value. You can user datsource ibm_pdr_get_dr_locations to fetch location id.
+* `location_id` - (Required, String) Location ID value. You can use datsource ibm_pdr_get_dr_locations to fetch location id.
 
 ## Attribute Reference
 
