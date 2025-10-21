@@ -1357,7 +1357,7 @@ func (sess clientSession) GlobalCatalogV1API() (*globalcatalogv1.GlobalCatalogV1
 
 // ClientSession configures and returns a fully initialized ClientSession
 func (c *Config) ClientSession() (interface{}, error) {
-	sess, err := newSession(c)
+	sess, fileMap, err := newSession(c)
 	if err != nil {
 		return nil, err
 	}
@@ -1488,22 +1488,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	session.functionClient, session.functionConfigErr = FunctionClient(sess.BluemixSession.Config)
 
 	BluemixRegion = sess.BluemixSession.Config.Region
-	var fileMap map[string]interface{}
-	if f := EnvFallBack([]string{"IBMCLOUD_ENDPOINTS_FILE_PATH", "IC_ENDPOINTS_FILE_PATH"}, c.EndpointsFile); f != "" {
-		jsonFile, err := os.Open(f)
-		if err != nil {
-			log.Fatalf("Unable to open Endpoints File %s", err)
-		}
-		defer jsonFile.Close()
-		bytes, err := ioutil.ReadAll(jsonFile)
-		if err != nil {
-			log.Fatalf("Unable to read Endpoints File %s", err)
-		}
-		err = json.Unmarshal([]byte(bytes), &fileMap)
-		if err != nil {
-			log.Fatalf("Unable to unmarshal Endpoints File %s", err)
-		}
-	}
+
 	accv1API, err := accountv1.New(sess.BluemixSession)
 	if err != nil {
 		session.accountV1ConfigErr = fmt.Errorf("[ERROR] Error occured while configuring Bluemix Accountv1 Service: %q", err)
@@ -3756,7 +3741,7 @@ func CreateVersionDate() *string {
 	return &version
 }
 
-func newSession(c *Config) (*Session, error) {
+func newSession(c *Config) (*Session, map[string]interface{}, error) {
 	ibmSession := &Session{}
 
 	softlayerSession := &slsession.Session{
@@ -3784,7 +3769,34 @@ func newSession(c *Config) (*Session, error) {
 
 	var authenticator core.Authenticator
 	var err error
+	var fileMap map[string]interface{}
+	if f := EnvFallBack([]string{"IBMCLOUD_ENDPOINTS_FILE_PATH", "IC_ENDPOINTS_FILE_PATH"}, c.EndpointsFile); f != "" {
+		jsonFile, err := os.Open(f)
+		if err != nil {
+			log.Fatalf("Unable to open Endpoints File %s", err)
+		}
+		defer jsonFile.Close()
+		bytes, err := ioutil.ReadAll(jsonFile)
+		if err != nil {
+			log.Fatalf("Unable to read Endpoints File %s", err)
+		}
+		err = json.Unmarshal([]byte(bytes), &fileMap)
+		if err != nil {
+			log.Fatalf("Unable to unmarshal Endpoints File %s", err)
+		}
+	}
 	iamURL := EnvFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, IAMURL)
+
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		if c.Region == "us-south" || c.Region == "us-east" {
+			iamURL = ContructEndpoint(fmt.Sprintf("private.%s.iam", c.Region), cloudEndpoint)
+		} else {
+			iamURL = ContructEndpoint("private.iam", cloudEndpoint)
+		}
+	}
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		iamURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_IAM_API_ENDPOINT", c.Region, iamURL)
+	}
 	if (c.BluemixAPIKey != "") && (c.IAMTrustedProfileID != "" || c.IAMTrustedProfileName != "") {
 		if c.IAMTrustedProfileID != "" {
 			log.Println("Configuring Session with Trusted Profile ID")
@@ -3859,11 +3871,11 @@ func newSession(c *Config) (*Session, error) {
 	}
 	sess, err = bxsession.New(bmxConfig)
 	if err != nil {
-		return nil, err
+		return nil, fileMap, err
 	}
 	ibmSession.BluemixSession = sess
 
-	return ibmSession, nil
+	return ibmSession, fileMap, err
 }
 
 /*func authenticateAPIKey(sess *bxsession.Session) error {
