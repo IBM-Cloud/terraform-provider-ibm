@@ -1314,6 +1314,33 @@ func ResourceIbmBackupRecoverySourceRegistration() *schema.Resource {
 	}
 }
 
+func suppressParameterDuringRefresh(k, o, n string, d *schema.ResourceData) bool {
+	if len(d.Id()) == 0 {
+		return false
+	}
+	if len(d.Id()) != 0 {
+		if d.HasChange("kubernetes_params.0.data_mover_image_location") ||
+			d.HasChange("kubernetes_params.0.datamover_service_type") ||
+			d.HasChange("kubernetes_params.0.vlan_info_vec") ||
+			d.HasChange("kubernetes_params.0.resource_annotations") ||
+			d.HasChange("kubernetes_params.0.resource_labels") ||
+			d.HasChange("kubernetes_params.0.velero_openshift_plugin_image_location") ||
+			d.HasChange("kubernetes_params.0.velero_image_location") ||
+			d.HasChange("kubernetes_params.0.velero_aws_plugin_image_location") ||
+			d.HasChange("kubernetes_params.0.san_fields") ||
+			d.HasChange("kubernetes_params.0.service_annotations") ||
+			d.HasChange("kubernetes_params.0.priority_class_name") ||
+			d.HasChange("kubernetes_params.0.kubernetes_type") ||
+			d.HasChange("kubernetes_params.0.kubernetes_distribution") ||
+			d.HasChange("kubernetes_params.0.init_container_image_location") ||
+			d.HasChange("kubernetes_params.0.auto_protect_config") ||
+			d.HasChange("kubernetes_params.0.default_vlan_params") {
+			return false
+		}
+	}
+	return true
+}
+
 func resourceIbmBackupRecoverySourceRegistrationCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
